@@ -40,6 +40,26 @@
 #ifndef QXML_H
 #define QXML_H
 
+#if 0
+// This is needed because of QTBUG-80347
+#pragma qt_class(QXmlNamespaceSupport)
+#pragma qt_class(QXmlAttributes)
+#pragma qt_class(QXmlInputSource)
+#pragma qt_class(QXmlParseException)
+#pragma qt_class(QXmlReader)
+#pragma qt_class(QXmlSimpleReader)
+#pragma qt_class(QXmlLocator)
+#pragma qt_class(QXmlContentHandler)
+#pragma qt_class(QXmlErrorHandler)
+#pragma qt_class(QXmlDTDHandler)
+#pragma qt_class(QXmlEntityResolver)
+#pragma qt_class(QXmlLexicalHandler)
+#pragma qt_class(QXmlDeclHandler)
+#pragma qt_class(QXmlDefaultHandler)
+#endif
+
+#include <QtCore/qglobal.h>
+
 #include <QtXml/qtxmlglobal.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qfile.h>
@@ -48,8 +68,12 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
 QT_BEGIN_NAMESPACE
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
 class QXmlNamespaceSupport;
 class QXmlAttributes;
@@ -76,12 +100,11 @@ class QXmlParseExceptionPrivate;
 class QXmlLocatorPrivate;
 class QXmlDefaultHandlerPrivate;
 
-
 //
 // SAX Namespace Support
 //
 
-class Q_XML_EXPORT QXmlNamespaceSupport
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlNamespaceSupport
 {
 public:
     QXmlNamespaceSupport();
@@ -112,10 +135,15 @@ private:
 // SAX Attributes
 //
 
+// Although deprecated warnings are disabled, the intel icc 18 compiler
+// still complains during the instantiation of the templated qSwap() call below
+// (with the parameter QXmlAttributes::AttributeList) when QXmlAttributes is
+// deprecated. This makes the build fail when warnings are treated as errors.
+// To workaround this, deprecated only the constructor.
 class Q_XML_EXPORT QXmlAttributes
 {
 public:
-    QXmlAttributes();
+    QT_DEPRECATED_VERSION(5, 15) QXmlAttributes();
     QXmlAttributes(const QXmlAttributes &) = default;
     QXmlAttributes(QXmlAttributes &&) noexcept = default;
     QXmlAttributes &operator=(const QXmlAttributes &) = default;
@@ -158,6 +186,7 @@ private:
 
     QXmlAttributesPrivate *d;
 };
+
 Q_DECLARE_TYPEINFO(QXmlAttributes::Attribute, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QXmlAttributes)
 
@@ -165,7 +194,7 @@ Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QXmlAttributes)
 // SAX Input Source
 //
 
-class Q_XML_EXPORT QXmlInputSource
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlInputSource
 {
 public:
     QXmlInputSource();
@@ -194,7 +223,7 @@ private:
 // SAX Exception Classes
 //
 
-class Q_XML_EXPORT QXmlParseException
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlParseException
 {
 public:
     explicit QXmlParseException(const QString &name = QString(), int c = -1, int l = -1,
@@ -217,7 +246,7 @@ private:
 // XML Reader
 //
 
-class Q_XML_EXPORT QXmlReader
+class QT_DEPRECATED_VERSION_X(5, 15, "Use QXmlStreamReader") Q_XML_EXPORT QXmlReader
 {
 public:
     virtual ~QXmlReader() {}
@@ -243,7 +272,8 @@ public:
     virtual bool parse(const QXmlInputSource* input) = 0;
 };
 
-class Q_XML_EXPORT QXmlSimpleReader : public QXmlReader
+class QT_DEPRECATED_VERSION_X(5, 15, "Use QXmlStreamReader") Q_XML_EXPORT QXmlSimpleReader
+    : public QXmlReader
 {
 public:
     QXmlSimpleReader();
@@ -288,7 +318,7 @@ private:
 // SAX Locator
 //
 
-class Q_XML_EXPORT QXmlLocator
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlLocator
 {
 public:
     QXmlLocator();
@@ -304,7 +334,7 @@ public:
 // SAX handler classes
 //
 
-class Q_XML_EXPORT QXmlContentHandler
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlContentHandler
 {
 public:
     virtual ~QXmlContentHandler() {}
@@ -322,7 +352,7 @@ public:
     virtual QString errorString() const = 0;
 };
 
-class Q_XML_EXPORT QXmlErrorHandler
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlErrorHandler
 {
 public:
     virtual ~QXmlErrorHandler() {}
@@ -332,7 +362,7 @@ public:
     virtual QString errorString() const = 0;
 };
 
-class Q_XML_EXPORT QXmlDTDHandler
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlDTDHandler
 {
 public:
     virtual ~QXmlDTDHandler() {}
@@ -341,7 +371,7 @@ public:
     virtual QString errorString() const = 0;
 };
 
-class Q_XML_EXPORT QXmlEntityResolver
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlEntityResolver
 {
 public:
     virtual ~QXmlEntityResolver() {}
@@ -349,7 +379,7 @@ public:
     virtual QString errorString() const = 0;
 };
 
-class Q_XML_EXPORT QXmlLexicalHandler
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlLexicalHandler
 {
 public:
     virtual ~QXmlLexicalHandler() {}
@@ -363,7 +393,7 @@ public:
     virtual QString errorString() const = 0;
 };
 
-class Q_XML_EXPORT QXmlDeclHandler
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlDeclHandler
 {
 public:
     virtual ~QXmlDeclHandler() {}
@@ -374,8 +404,12 @@ public:
     // ### Conform to SAX by adding elementDecl
 };
 
-
-class Q_XML_EXPORT QXmlDefaultHandler : public QXmlContentHandler, public QXmlErrorHandler, public QXmlDTDHandler, public QXmlEntityResolver, public QXmlLexicalHandler, public QXmlDeclHandler
+class QT_DEPRECATED_VERSION(5, 15) Q_XML_EXPORT QXmlDefaultHandler : public QXmlContentHandler,
+                                                                     public QXmlErrorHandler,
+                                                                     public QXmlDTDHandler,
+                                                                     public QXmlEntityResolver,
+                                                                     public QXmlLexicalHandler,
+                                                                     public QXmlDeclHandler
 {
 public:
     QXmlDefaultHandler();
@@ -426,6 +460,10 @@ private:
 inline int QXmlAttributes::count() const
 { return length(); }
 
+QT_WARNING_POP
+
 QT_END_NAMESPACE
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 #endif // QXML_H

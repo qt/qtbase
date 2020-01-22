@@ -162,7 +162,7 @@ void SlippyMap::handleNetworkData(QNetworkReply *reply)
 {
     QImage img;
     QPoint tp = reply->request().attribute(QNetworkRequest::User).toPoint();
-    if (!reply->error())
+    if (!reply->networkError())
         if (!img.load(reply, 0))
             img = QImage();
     reply->deleteLater();

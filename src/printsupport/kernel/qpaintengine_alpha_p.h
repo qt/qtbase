@@ -81,7 +81,7 @@ public:
     void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) override;
 
 protected:
-    QAlphaPaintEngine(QAlphaPaintEnginePrivate &data, PaintEngineFeatures devcaps = 0);
+    QAlphaPaintEngine(QAlphaPaintEnginePrivate &data, PaintEngineFeatures devcaps = { });
     QRegion alphaClipping() const;
     bool continueCall() const;
     void flushAndInit(bool init = true);

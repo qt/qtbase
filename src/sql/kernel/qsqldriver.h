@@ -100,7 +100,7 @@ public:
     virtual QStringList tables(QSql::TableType tableType) const;
     virtual QSqlIndex primaryIndex(const QString &tableName) const;
     virtual QSqlRecord record(const QString &tableName) const;
-    virtual QString formatValue(const QSqlField& field, bool trimStrings = false) const;
+    virtual QString formatValue(const QSqlField &field, bool trimStrings = false) const;
 
     virtual QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
     virtual QString sqlStatement(StatementType type, const QString &tableName,
@@ -113,12 +113,12 @@ public:
     virtual void close() = 0;
     virtual QSqlResult *createResult() const = 0;
 
-    virtual bool open(const QString& db,
-                      const QString& user = QString(),
-                      const QString& password = QString(),
-                      const QString& host = QString(),
+    virtual bool open(const QString &db,
+                      const QString &user = QString(),
+                      const QString &password = QString(),
+                      const QString &host = QString(),
                       int port = -1,
-                      const QString& connOpts = QString()) = 0;
+                      const QString &connOpts = QString()) = 0;
     virtual bool subscribeToNotification(const QString &name);
     virtual bool unsubscribeFromNotification(const QString &name);
     virtual QStringList subscribedToNotifications() const;
@@ -135,10 +135,6 @@ public Q_SLOTS:
     virtual bool cancelQuery();
 
 Q_SIGNALS:
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use the 3-args version of notification() instead.")
-    void notification(const QString &name);
-#endif
     void notification(const QString &name, QSqlDriver::NotificationSource source, const QVariant &payload);
 
 protected:

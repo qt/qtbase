@@ -84,19 +84,19 @@ QT_BEGIN_NAMESPACE
 
 
 QAbstractStatePrivate::QAbstractStatePrivate(StateType type)
-    : stateType(type), isMachine(false), active(false), parentState(0)
+    : stateType(type), isMachine(false), active(false), parentState(nullptr)
 {
 }
 
 QStateMachine *QAbstractStatePrivate::machine() const
 {
     QObject *par = parent;
-    while (par != 0) {
+    while (par != nullptr) {
         if (QStateMachine *mach = qobject_cast<QStateMachine*>(par))
             return mach;
         par = par->parent();
     }
-    return 0;
+    return nullptr;
 }
 
 void QAbstractStatePrivate::callOnEntry(QEvent *e)

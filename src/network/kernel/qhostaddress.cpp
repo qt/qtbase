@@ -144,7 +144,7 @@ static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr,
     } else {
         scopeId->clear();
     }
-    return QIPAddressUtils::parseIp6(addr, tmp.constBegin(), tmp.constEnd()) == 0;
+    return QIPAddressUtils::parseIp6(addr, tmp.constBegin(), tmp.constEnd()) == nullptr;
 }
 
 bool QHostAddressPrivate::parse(const QString &ipString)

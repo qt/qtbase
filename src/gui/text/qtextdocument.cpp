@@ -347,7 +347,19 @@ QTextDocument *QTextDocument::clone(QObject *parent) const
 {
     Q_D(const QTextDocument);
     QTextDocument *doc = new QTextDocument(parent);
-    QTextCursor(doc).insertFragment(QTextDocumentFragment(this));
+    if (isEmpty()) {
+        const QTextCursor thisCursor(const_cast<QTextDocument *>(this));
+
+        const auto blockFormat = thisCursor.blockFormat();
+        if (blockFormat.isValid() && !blockFormat.isEmpty())
+            QTextCursor(doc).setBlockFormat(blockFormat);
+
+        const auto blockCharFormat = thisCursor.blockCharFormat();
+        if (blockCharFormat.isValid() && !blockCharFormat.isEmpty())
+            QTextCursor(doc).setBlockCharFormat(blockCharFormat);
+    } else {
+        QTextCursor(doc).insertFragment(QTextDocumentFragment(this));
+    }
     doc->rootFrame()->setFrameFormat(rootFrame()->frameFormat());
     QTextDocumentPrivate *priv = doc->d_func();
     priv->title = d->title;
@@ -1666,7 +1678,7 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, const QTextCurso
 */
 QTextObject *QTextDocument::createObject(const QTextFormat &f)
 {
-    QTextObject *obj = 0;
+    QTextObject *obj = nullptr;
     if (f.isListFormat())
         obj = new QTextList(this);
     else if (f.isTableFormat())
@@ -2285,6 +2297,15 @@ QTextHtmlExporter::QTextHtmlExporter(const QTextDocument *_doc)
     defaultCharFormat.clearProperty(QTextFormat::TextUnderlineStyle);
 }
 
+static QStringList resolvedFontFamilies(const QTextCharFormat &format)
+{
+    QStringList fontFamilies = format.fontFamilies().toStringList();
+    const QString mainFontFamily = format.fontFamily();
+    if (!mainFontFamily.isEmpty() && !fontFamilies.contains(mainFontFamily))
+        fontFamilies.append(mainFontFamily);
+    return fontFamilies;
+}
+
 /*!
     Returns the document in HTML format. The conversion may not be
     perfect, especially for complex documents, due to the limitations
@@ -2313,11 +2334,7 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
     if (mode == ExportEntireDocument) {
         html += QLatin1String(" style=\"");
 
-        QStringList fontFamilies = defaultCharFormat.fontFamilies().toStringList();
-        if (!fontFamilies.isEmpty())
-            emitFontFamily(fontFamilies);
-        else
-            emitFontFamily(defaultCharFormat.fontFamily());
+        emitFontFamily(resolvedFontFamilies(defaultCharFormat));
 
         if (defaultCharFormat.hasProperty(QTextFormat::FontPointSize)) {
             html += QLatin1String(" font-size:");
@@ -2379,13 +2396,9 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
     bool attributesEmitted = false;
 
     {
-        const QStringList families = format.fontFamilies().toStringList();
-        const QString family = format.fontFamily();
-        if (!families.isEmpty() && families != defaultCharFormat.fontFamilies().toStringList()) {
+        const QStringList families = resolvedFontFamilies(format);
+        if (!families.isEmpty() && families != resolvedFontFamilies(defaultCharFormat)) {
             emitFontFamily(families);
-            attributesEmitted = true;
-        } else if (!family.isEmpty() && family != defaultCharFormat.fontFamily()) {
-            emitFontFamily(family);
             attributesEmitted = true;
         }
     }
@@ -2408,7 +2421,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
             sizeof("small") + sizeof("medium") + 1,    // "x-large"  )> compressed into "xx-large"
             sizeof("small") + sizeof("medium"),        // "xx-large" )
         };
-        const char *name = 0;
+        const char *name = nullptr;
         const int idx = format.intProperty(QTextFormat::FontSizeAdjustment) + 1;
         if (idx >= 0 && idx <= 4) {
             name = sizeNameData + sizeNameOffsets[idx];
@@ -2647,20 +2660,6 @@ void QTextHtmlExporter::emitPageBreakPolicy(QTextFormat::PageBreakFlags policy)
 
     if (policy & QTextFormat::PageBreak_AlwaysAfter)
         html += QLatin1String(" page-break-after:always;");
-}
-
-void QTextHtmlExporter::emitFontFamily(const QString &family)
-{
-    html += QLatin1String(" font-family:");
-
-    QLatin1String quote("\'");
-    if (family.contains(QLatin1Char('\'')))
-        quote = QLatin1String("&quot;");
-
-    html += quote;
-    html += family.toHtmlEscaped();
-    html += quote;
-    html += QLatin1Char(';');
 }
 
 void QTextHtmlExporter::emitFontFamily(const QStringList &families)
@@ -3073,7 +3072,7 @@ void QTextDocumentPrivate::mergeCachedResources(const QTextDocumentPrivate *priv
     if (!priv)
         return;
 
-    cachedResources.unite(priv->cachedResources);
+    cachedResources.insert(priv->cachedResources);
 }
 
 void QTextHtmlExporter::emitBackgroundAttribute(const QTextFormat &format)
@@ -3256,7 +3255,7 @@ void QTextHtmlExporter::emitFrame(const QTextFrame::Iterator &frameIt)
         QTextFrame::Iterator next = frameIt;
         ++next;
         if (next.atEnd()
-            && frameIt.currentFrame() == 0
+            && frameIt.currentFrame() == nullptr
             && frameIt.parentFrame() != doc->rootFrame()
             && frameIt.currentBlock().begin().atEnd())
             return;

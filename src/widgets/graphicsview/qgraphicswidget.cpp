@@ -172,7 +172,7 @@ QT_BEGIN_NAMESPACE
     window, a tool, a popup, etc).
 */
 QGraphicsWidget::QGraphicsWidget(QGraphicsItem *parent, Qt::WindowFlags wFlags)
-    : QGraphicsObject(*new QGraphicsWidgetPrivate, 0), QGraphicsLayoutItem(0, false)
+    : QGraphicsObject(*new QGraphicsWidgetPrivate, nullptr), QGraphicsLayoutItem(nullptr, false)
 {
     Q_D(QGraphicsWidget);
     d->init(parent, wFlags);
@@ -184,7 +184,7 @@ QGraphicsWidget::QGraphicsWidget(QGraphicsItem *parent, Qt::WindowFlags wFlags)
     Constructs a new QGraphicsWidget, using \a dd as parent.
 */
 QGraphicsWidget::QGraphicsWidget(QGraphicsWidgetPrivate &dd, QGraphicsItem *parent, Qt::WindowFlags wFlags)
-    : QGraphicsObject(dd, 0), QGraphicsLayoutItem(0, false)
+    : QGraphicsObject(dd, nullptr), QGraphicsLayoutItem(nullptr, false)
 {
     Q_D(QGraphicsWidget);
     d->init(parent, wFlags);
@@ -241,7 +241,7 @@ QGraphicsWidget::~QGraphicsWidget()
     if (QGraphicsScene *scn = scene()) {
         QGraphicsScenePrivate *sceneD = scn->d_func();
         if (sceneD->tabFocusFirst == this)
-            sceneD->tabFocusFirst = (d->focusNext == this ? 0 : d->focusNext);
+            sceneD->tabFocusFirst = (d->focusNext == this ? nullptr : d->focusNext);
     }
     d->focusPrev->d_func()->focusNext = d->focusNext;
     d->focusNext->d_func()->focusPrev = d->focusPrev;
@@ -263,15 +263,15 @@ QGraphicsWidget::~QGraphicsWidget()
             if (item->isWidget()) {
                 QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
                 if (widget->parentLayoutItem() == d->layout)
-                    widget->setParentLayoutItem(0);
+                    widget->setParentLayoutItem(nullptr);
             }
         }
-        d->layout = 0;
+        d->layout = nullptr;
         delete temp;
     }
 
     // Remove this graphics widget from widgetStyles
-    widgetStyles()->setStyleForWidget(this, 0);
+    widgetStyles()->setStyleForWidget(this, nullptr);
 
     // Unset the parent here, when we're still a QGraphicsWidget.
     // It is otherwise done in ~QGraphicsItem() where we'd be
@@ -942,7 +942,7 @@ QStyle *QGraphicsWidget::style() const
 */
 void QGraphicsWidget::setStyle(QStyle *style)
 {
-    setAttribute(Qt::WA_SetStyle, style != 0);
+    setAttribute(Qt::WA_SetStyle, style != nullptr);
     widgetStyles()->setStyleForWidget(this, style);
 
     // Deliver StyleChange to the widget itself (doesn't propagate).
@@ -1557,7 +1557,7 @@ bool QGraphicsWidget::focusNextPrevChild(bool next)
 {
     Q_D(QGraphicsWidget);
     // Let the parent's focusNextPrevChild implementation decide what to do.
-    QGraphicsWidget *parent = 0;
+    QGraphicsWidget *parent = nullptr;
     if (!isWindow() && (parent = parentWidget()))
         return parent->focusNextPrevChild(next);
     if (!d->scene)
@@ -1995,7 +1995,7 @@ void QGraphicsWidget::setShortcutAutoRepeat(int id, bool enabled)
 */
 void QGraphicsWidget::addAction(QAction *action)
 {
-    insertAction(0, action);
+    insertAction(nullptr, action);
 }
 
 /*!
@@ -2012,7 +2012,7 @@ void QGraphicsWidget::addActions(QList<QAction *> actions)
 #endif
 {
     for (int i = 0; i < actions.count(); ++i)
-        insertAction(0, actions.at(i));
+        insertAction(nullptr, actions.at(i));
 }
 
 /*!
@@ -2041,7 +2041,7 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
 
     int pos = d->actions.indexOf(before);
     if (pos < 0) {
-        before = 0;
+        before = nullptr;
         pos = d->actions.size();
     }
     d->actions.insert(pos, action);
@@ -2346,7 +2346,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
 
     frameOptions.palette.setCurrentColorGroup(isActive ? QPalette::Active : QPalette::Normal);
     frameOptions.rect = windowFrameRect;
-    frameOptions.lineWidth = style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, 0, widget);
+    frameOptions.lineWidth = style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, nullptr, widget);
     frameOptions.midLineWidth = 1;
     style()->drawPrimitive(QStyle::PE_FrameWindow, &frameOptions, painter, widget);
 

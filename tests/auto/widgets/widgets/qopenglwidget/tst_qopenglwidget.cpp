@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QOpenGLWidget>
+#include <QtOpenGL/QOpenGLWidget>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>

@@ -174,13 +174,13 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
 {
     #include <X11/Xatom.h>
 
-    static XTextProperty tp = { 0, 0, 0, 0 };
+    static XTextProperty tp = { nullptr, 0, 0, 0 };
     static bool free_prop = true; // we can't free tp.value in case it references
                                   // the data of the static QByteArray below.
     if (tp.value) {
         if (free_prop)
             XFree(tp.value);
-        tp.value = 0;
+        tp.value = nullptr;
         free_prop = true;
     }
 
@@ -191,7 +191,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         QByteArray mapped = mapper->fromUnicode(s);
         char* tl[2];
         tl[0] = mapped.data();
-        tl[1] = 0;
+        tl[1] = nullptr;
         errCode = XmbTextListToTextProperty(dpy, tl, 1, XStdICCTextStyle, &tp);
         if (errCode < 0)
             qCDebug(lcQpaXcb, "XmbTextListToTextProperty result code %d", errCode);
@@ -280,7 +280,7 @@ void QXcbWindow::create()
         m_window = platformScreen->root();
         m_depth = platformScreen->screen()->root_depth;
         m_visualId = platformScreen->screen()->root_visual;
-        const xcb_visualtype_t *visual = 0;
+        const xcb_visualtype_t *visual = nullptr;
         if (connection()->hasDefaultVisualId()) {
             visual = platformScreen->visualForId(connection()->defaultVisualId());
             if (visual)
@@ -819,7 +819,7 @@ bool QXcbWindow::relayFocusToModalWindow() const
     while (w && w->parent())
         w = w->parent();
 
-    QWindow *modalWindow = 0;
+    QWindow *modalWindow = nullptr;
     const bool blocked = QGuiApplicationPrivate::instance()->isWindowBlocked(w, &modalWindow);
     if (blocked && modalWindow != w) {
         modalWindow->requestActivate();
@@ -876,7 +876,7 @@ enum {
 
 QXcbWindow::NetWmStates QXcbWindow::netWmStates()
 {
-    NetWmStates result(0);
+    NetWmStates result;
 
     auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
                                        0, m_window, atom(QXcbAtom::_NET_WM_STATE),
@@ -927,10 +927,10 @@ void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 
     xcb_change_window_attributes(xcb_connection(), xcb_window(), mask, values);
 
-    QXcbWindowFunctions::WmWindowTypes wmWindowTypes = 0;
+    QXcbWindowFunctions::WmWindowTypes wmWindowTypes;
     if (window()->dynamicPropertyNames().contains(wm_window_type_property_id)) {
         wmWindowTypes = static_cast<QXcbWindowFunctions::WmWindowTypes>(
-            window()->property(wm_window_type_property_id).value<int>());
+            qvariant_cast<int>(window()->property(wm_window_type_property_id)));
     }
 
     setWmWindowType(wmWindowTypes, flags);
@@ -1063,7 +1063,7 @@ void QXcbWindow::setNetWmStateOnUnmappedWindow()
     if (Q_UNLIKELY(m_mapped))
         qCWarning(lcQpaXcb()) << "internal error: " << Q_FUNC_INFO << "called on mapped window";
 
-    NetWmStates states(0);
+    NetWmStates states;
     const Qt::WindowFlags flags = window()->flags();
     if (flags & Qt::WindowStaysOnTopHint) {
         states |= NetWmStateAbove;
@@ -1193,7 +1193,7 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
                               XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
                               m_visualId,                      // visual
                               0,                               // value mask
-                              0);                              // value list
+                              nullptr);                              // value list
             wid = m_netWmUserTimeWindow;
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW),
                                 XCB_ATOM_WINDOW, 32, 1, &m_netWmUserTimeWindow);
@@ -1223,7 +1223,7 @@ void QXcbWindow::setTransparentForMouseEvents(bool transparent)
 
     xcb_rectangle_t rectangle;
 
-    xcb_rectangle_t *rect = 0;
+    xcb_rectangle_t *rect = nullptr;
     int nrect = 0;
 
     if (!transparent) {
@@ -1394,6 +1394,8 @@ void QXcbWindow::propagateSizeHints()
     }
 
     xcb_icccm_set_wm_normal_hints(xcb_connection(), m_window, &hints);
+
+    m_sizeHintsScaleFactor = QHighDpiScaling::scaleAndOrigin(screen()).factor;
 }
 
 void QXcbWindow::requestActivateWindow()
@@ -1477,7 +1479,7 @@ uint QXcbWindow::visualIdStatic(QWindow *window)
 
 QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const
 {
-    QXcbWindowFunctions::WmWindowTypes result(0);
+    QXcbWindowFunctions::WmWindowTypes result;
 
     auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
                                        0, m_window, atom(QXcbAtom::_NET_WM_WINDOW_TYPE),
@@ -1785,6 +1787,9 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     // will make the comparison later.
     QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
 
+    if (!qFuzzyCompare(QHighDpiScaling::scaleAndOrigin(newScreen).factor, m_sizeHintsScaleFactor))
+        propagateSizeHints();
+
     // Send the synthetic expose event on resize only when the window is shrinked,
     // because the "XCB_GRAVITY_NORTH_WEST" flag doesn't send it automatically.
     if (!m_oldWindowSize.isEmpty()
@@ -1882,7 +1887,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
     if (m_embedded && !m_trayIconWindow) {
         if (window() != QGuiApplication::focusWindow()) {
             const QXcbWindow *container = static_cast<const QXcbWindow *>(parent());
-            Q_ASSERT(container != 0);
+            Q_ASSERT(container != nullptr);
 
             sendXEmbedMessage(container->xcb_window(), XEMBED_REQUEST_FOCUS);
         }
@@ -2087,7 +2092,7 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
 
     const Qt::MouseButton button = conn->xiToQtMouseButton(ev->detail);
 
-    const char *sourceName = 0;
+    const char *sourceName = nullptr;
     if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled())) {
         const QMetaObject *metaObject = qt_getEnumMetaObject(source);
         const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(source)));

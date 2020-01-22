@@ -53,12 +53,14 @@
 #include <qmainwindow.h>
 #include <qdockwidget.h>
 #include <qrandom.h>
+#include <qstylehints.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
+#include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/qscreen.h>
 #include <qmenubar.h>
 #include <qcompleter.h>
@@ -198,6 +200,7 @@ private slots:
     void hideWhenFocusWidgetIsChild();
     void normalGeometry();
     void setGeometry();
+    void setGeometryHidden();
     void windowOpacity();
     void raise();
     void lower();
@@ -225,6 +228,7 @@ private slots:
     void setFixedSize();
 
     void ensureCreated();
+    void createAndDestroy();
     void winIdChangeEvent();
     void persistentWinId();
     void showNativeChild();
@@ -401,6 +405,7 @@ private slots:
     void tabletTracking();
 
     void closeEvent();
+    void closeWithChildWindow();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -2945,6 +2950,38 @@ void tst_QWidget::setGeometry()
     QCOMPARE(tlw.geometry(), tr);
 }
 
+void tst_QWidget::setGeometryHidden()
+{
+    if (QGuiApplication::styleHints()->showIsMaximized())
+        QSKIP("Platform does not support QWidget::setGeometry() - skipping");
+
+    QWidget tlw;
+    tlw.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    QWidget child(&tlw);
+
+    const QRect tr(m_availableTopLeft + QPoint(100, 100), 2 * m_testWidgetSize);
+    const QRect cr(QPoint(50, 50), m_testWidgetSize);
+    tlw.setGeometry(tr);
+    child.setGeometry(cr);
+    tlw.showNormal();
+
+    tlw.hide();
+    QTRY_VERIFY(tlw.isHidden());
+    tlw.setGeometry(cr);
+    QVERIFY(tlw.testAttribute(Qt::WA_PendingMoveEvent));
+    QVERIFY(tlw.testAttribute(Qt::WA_PendingResizeEvent));
+    QImage img(tlw.size(), QImage::Format_ARGB32);  // just needed to call QWidget::render()
+    tlw.render(&img);
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingMoveEvent));
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingResizeEvent));
+    tlw.setGeometry(cr);
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingMoveEvent));
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingResizeEvent));
+    tlw.resize(cr.size());
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingMoveEvent));
+    QVERIFY(!tlw.testAttribute(Qt::WA_PendingResizeEvent));
+}
+
 void tst_QWidget::windowOpacity()
 {
     QWidget widget;
@@ -4214,6 +4251,58 @@ public:
     QList<WId> m_winIdList;
     int winIdChangeEventCount() const { return m_winIdList.count(); }
 };
+
+class CreateDestroyWidget : public WinIdChangeWidget
+{
+public:
+    void create() { QWidget::create(); }
+    void destroy() { QWidget::destroy(); }
+};
+
+void tst_QWidget::createAndDestroy()
+{
+    CreateDestroyWidget widget;
+
+    // Create and destroy via QWidget
+    widget.create();
+    QVERIFY(widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 1);
+    QVERIFY(widget.internalWinId());
+
+    widget.destroy();
+    QVERIFY(!widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 2);
+    QVERIFY(!widget.internalWinId());
+
+    // Create via QWidget, destroy via QWindow
+    widget.create();
+    QVERIFY(widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 3);
+    QVERIFY(widget.internalWinId());
+
+    widget.windowHandle()->destroy();
+    QVERIFY(!widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 4);
+    QVERIFY(!widget.internalWinId());
+
+    // Create via QWidget again
+    widget.create();
+    QVERIFY(widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 5);
+    QVERIFY(widget.internalWinId());
+
+    // Destroy via QWindow, create via QWindow
+    widget.windowHandle()->destroy();
+    QVERIFY(widget.windowHandle());
+    QVERIFY(!widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 6);
+    QVERIFY(!widget.internalWinId());
+
+    widget.windowHandle()->create();
+    QVERIFY(widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 7);
+    QVERIFY(widget.internalWinId());
+}
 
 void tst_QWidget::winIdChangeEvent()
 {
@@ -8384,12 +8473,9 @@ void tst_QWidget::resizeInPaintEvent()
     widget.resizeInPaintEvent = true;
     // This will call resize in the paintEvent, which in turn will call
     // invalidateBackingStore() and a new update request should be posted.
-    widget.repaint();
-    QCOMPARE(widget.numPaintEvents, 1);
-    widget.numPaintEvents = 0;
-
-    // Make sure the resize triggers another update.
-    QTRY_COMPARE(widget.numPaintEvents, 1);
+    // the resize triggers another update.
+    widget.update();
+    QTRY_COMPARE(widget.numPaintEvents, 2);
 }
 
 void tst_QWidget::opaqueChildren()
@@ -8558,8 +8644,8 @@ void tst_QWidget::immediateRepaintAfterInvalidateBackingStore()
     // The entire widget is already dirty, but this time we want to update immediately
     // by calling repaint(), and thus we have to repaint the widget and not wait for
     // the UpdateRequest to be sent when we get back to the event loop.
-    widget->repaint();
-    QCOMPARE(widget->numPaintEvents, 1);
+    widget->update();
+    QTRY_COMPARE(widget->numPaintEvents, 1);
 }
 #endif
 
@@ -9831,7 +9917,7 @@ public:
         if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeRepaintManager()) {
             static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->repaintManager.reset(new QWidgetRepaintManager(this));
             static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBackingStore(this->rect());
-            repaint();
+            update();
         }
     }
 };
@@ -9854,7 +9940,7 @@ void tst_QWidget::scrollWithoutBackingStore()
     scrollable.scroll(-25,-25);
     QCOMPARE(child.pos(),QPoint(25,25));
     scrollable.enableBackingStore();
-    QCOMPARE(child.pos(),QPoint(25,25));
+    QTRY_COMPARE(child.pos(),QPoint(25,25));
 }
 #endif
 
@@ -11171,6 +11257,28 @@ void tst_QWidget::closeEvent()
     widget.windowHandle()->close();
     widget.windowHandle()->close();
     QCOMPARE(widget.closeCount, 1);
+}
+
+void tst_QWidget::closeWithChildWindow()
+{
+    QWidget widget;
+    auto childWidget = new QWidget(&widget);
+    childWidget->setAttribute(Qt::WA_NativeWindow);
+    childWidget->windowHandle()->create();
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    widget.windowHandle()->close();
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    // Check that the child window inside the window is now visible
+    QVERIFY(childWidget->isVisible());
+
+    // Now explicitly hide the childWidget
+    childWidget->hide();
+    widget.windowHandle()->close();
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QVERIFY(!childWidget->isVisible());
 }
 
 QTEST_MAIN(tst_QWidget)

@@ -111,13 +111,19 @@ public:
         BypassValidation
     };
 
-#if QT_CONFIG(binaryjson)
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use CBOR format instead")
     static QJsonDocument fromRawData(const char *data, int size, DataValidation validation = Validate);
+
+    QT_DEPRECATED_X("Use CBOR format instead")
     const char *rawData(int *size) const;
 
+    QT_DEPRECATED_X("Use CBOR format instead")
     static QJsonDocument fromBinaryData(const QByteArray &data, DataValidation validation  = Validate);
+
+    QT_DEPRECATED_X("Use CBOR format instead")
     QByteArray toBinaryData() const;
-#endif // QT_CONFIG(binaryjson)
+#endif // QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
 
     static QJsonDocument fromVariant(const QVariant &variant);
     QVariant toVariant() const;

@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
 
 QStyleOption::QStyleOption(int version, int type)
     : version(version), type(type), state(QStyle::State_None),
-      direction(QGuiApplication::layoutDirection()), fontMetrics(QFont()), styleObject(0)
+      direction(QGuiApplication::layoutDirection()), fontMetrics(QFont()), styleObject(nullptr)
 {
 }
 
@@ -1453,7 +1453,7 @@ QStyleOptionTab::QStyleOptionTab(int version)
     \value None A normal tab button.
     \value HasFrame The tab button is positioned on a tab frame
 
-    \sa features
+    \sa QStyleOptionToolBar::features
 */
 
 /*!
@@ -1469,6 +1469,22 @@ QStyleOptionTab::QStyleOptionTab(int version)
 
     The default value is QSize(-1, -1), i.e. an invalid size;
 */
+
+/*!
+    Constructs a QStyleOptionTabV4 object, initializing the members
+    variables to their default values.
+ */
+
+QStyleOptionTabV4::QStyleOptionTabV4() : QStyleOptionTab(QStyleOptionTabV4::Version)
+{
+}
+
+/*!
+    \variable QStyleOptionTabV4::tabIndex
+    \brief the index for the tab being represented.
+
+    The default value is -1, i.e. a tab not on a tabbar;
+ */
 
 #endif // QT_CONFIG(tabbar)
 
@@ -2909,7 +2925,7 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
 */
 
 QStyleOptionTitleBar::QStyleOptionTitleBar()
-    : QStyleOptionComplex(Version, SO_TitleBar), titleBarState(0), titleBarFlags(0)
+    : QStyleOptionComplex(Version, SO_TitleBar), titleBarState(0)
 {
 }
 
@@ -2954,7 +2970,7 @@ QStyleOptionTitleBar::QStyleOptionTitleBar()
     \internal
 */
 QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
-    : QStyleOptionComplex(version, SO_TitleBar), titleBarState(0), titleBarFlags(0)
+    : QStyleOptionComplex(version, SO_TitleBar), titleBarState(0)
 {
 }
 
@@ -3085,7 +3101,7 @@ QStyleOptionViewItem::QStyleOptionViewItem()
     : QStyleOption(Version, SO_ViewItem),
       displayAlignment(Qt::AlignLeft), decorationAlignment(Qt::AlignLeft),
       textElideMode(Qt::ElideMiddle), decorationPosition(Left),
-      showDecorationSelected(false), features(None), widget(0),
+      showDecorationSelected(false), features(None), widget(nullptr),
       checkState(Qt::Unchecked), viewItemPosition(QStyleOptionViewItem::Invalid)
 {
 }
@@ -3097,7 +3113,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
     : QStyleOption(version, SO_ViewItem),
       displayAlignment(Qt::AlignLeft), decorationAlignment(Qt::AlignLeft),
       textElideMode(Qt::ElideMiddle), decorationPosition(Left),
-      showDecorationSelected(false), features(None), widget(0),
+      showDecorationSelected(false), features(None), widget(nullptr),
       checkState(Qt::Unchecked), viewItemPosition(QStyleOptionViewItem::Invalid)
 {
 }

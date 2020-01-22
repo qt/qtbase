@@ -251,7 +251,7 @@ QFile::QFile(QFilePrivate &dd)
     Constructs a QFile object.
 */
 QFile::QFile()
-    : QFileDevice(*new QFilePrivate, 0)
+    : QFileDevice(*new QFilePrivate, nullptr)
 {
 }
 /*!
@@ -265,7 +265,7 @@ QFile::QFile(QObject *parent)
     Constructs a new file object to represent the file with the given \a name.
 */
 QFile::QFile(const QString &name)
-    : QFileDevice(*new QFilePrivate, 0)
+    : QFileDevice(*new QFilePrivate, nullptr)
 {
     Q_D(QFile);
     d->fileName = name;

@@ -137,7 +137,7 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
     m_format = q_glFormatFromConfig(m_eglDisplay, m_eglConfig, format);
     // m_format now has the renderableType() resolved (it cannot be Default anymore)
     // but does not yet contain version, profile, options.
-    m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
+    m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : nullptr;
 
     QVector<EGLint> contextAttrs;
     contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
@@ -194,8 +194,8 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
     eglBindAPI(m_api);
     m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, m_shareContext, contextAttrs.constData());
     if (m_eglContext == EGL_NO_CONTEXT && m_shareContext != EGL_NO_CONTEXT) {
-        m_shareContext = 0;
-        m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, 0, contextAttrs.constData());
+        m_shareContext = nullptr;
+        m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, nullptr, contextAttrs.constData());
     }
 
     if (m_eglContext == EGL_NO_CONTEXT) {
@@ -218,7 +218,7 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
         qWarning("QEGLPlatformContext: Requires a QEGLNativeContext");
         return;
     }
-    QEGLNativeContext handle = nativeHandle.value<QEGLNativeContext>();
+    QEGLNativeContext handle = qvariant_cast<QEGLNativeContext>(nativeHandle);
     EGLContext context = handle.context();
     if (!context) {
         qWarning("QEGLPlatformContext: No EGLContext given");
@@ -262,7 +262,7 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
     }
 
     m_eglContext = context;
-    m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
+    m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : nullptr;
     updateFormatFromGL();
 }
 
@@ -326,7 +326,7 @@ void QEGLPlatformContext::updateFormatFromGL()
     EGLBoolean ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, m_eglContext);
     if (!ok) {
         EGLConfig config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
-        tempContext = eglCreateContext(m_eglDisplay, config, 0, m_contextAttrs.constData());
+        tempContext = eglCreateContext(m_eglDisplay, config, nullptr, m_contextAttrs.constData());
         if (tempContext != EGL_NO_CONTEXT)
             ok = eglMakeCurrent(m_eglDisplay, tempSurface, tempSurface, tempContext);
     }

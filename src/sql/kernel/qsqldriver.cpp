@@ -51,11 +51,10 @@ QT_BEGIN_NAMESPACE
 static QString prepareIdentifier(const QString &identifier,
         QSqlDriver::IdentifierType type, const QSqlDriver *driver)
 {
-    Q_ASSERT( driver != NULL );
+    Q_ASSERT(driver != nullptr);
     QString ret = identifier;
-    if (!driver->isIdentifierEscaped(identifier, type)) {
+    if (!driver->isIdentifierEscaped(identifier, type))
         ret = driver->escapeIdentifier(identifier, type);
-    }
     return ret;
 }
 

@@ -3774,8 +3774,7 @@ int QWindowsXPStyle::styleHint(StyleHint hint, const QStyleOption *option, const
 /*! \reimp */
 QPalette QWindowsXPStyle::standardPalette() const
 {
-    return QWindowsXPStylePrivate::useXP() && QApplicationPrivate::sys_pal
-        ? *QApplicationPrivate::sys_pal : QWindowsStyle::standardPalette();
+    return QWindowsXPStylePrivate::useXP() ? QPalette() : QWindowsStyle::standardPalette();
 }
 
 /*!

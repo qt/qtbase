@@ -84,8 +84,8 @@
 
     \snippet widgets/styles/norwegianwoodstyle.cpp 0
 
-    The \c polish() function is reimplemented from QStyle. It takes a
-    QPalette as a reference and adapts the palette to fit the style.
+    The \c standardPalette() function is reimplemented from QStyle.
+    It returns a QPalette with the style's preferred colors and textures.
     Most styles don't need to reimplement that function. The
     Norwegian Wood style reimplements it to set a "wooden" palette.
 
@@ -380,7 +380,7 @@
     a certain \l{QPalette::ColorRole}{color role}, for all three
     \l{QPalette::ColorGroup}{color groups} (active, disabled,
     inactive). We used it to initialize the Norwegian Wood palette in
-    \c polish(QPalette &).
+    \c standardPalette.
 
     \snippet widgets/styles/norwegianwoodstyle.cpp 39
     \snippet widgets/styles/norwegianwoodstyle.cpp 40
@@ -442,10 +442,6 @@
     If the user turns the \uicontrol{Use style's standard palette} on, the
     current style's \l{QStyle::standardPalette()}{standard palette}
     is used; otherwise, the system's default palette is honored.
-
-    For the Norwegian Wood style, this makes no difference because we
-    always override the palette with our own palette in \c
-    NorwegianWoodStyle::polish().
 
     \snippet widgets/styles/widgetgallery.cpp 9
     \snippet widgets/styles/widgetgallery.cpp 10

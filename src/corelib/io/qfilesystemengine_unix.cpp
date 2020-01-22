@@ -55,7 +55,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#if QT_HAS_INCLUDE(<paths.h>)
+#if __has_include(<paths.h>)
 # include <paths.h>
 #endif
 #ifndef _PATH_TMP           // from <paths.h>
@@ -1076,14 +1076,14 @@ bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
     // sendfile(2) is limited in the kernel to 2G - 4k
     const size_t SendfileSize = 0x7ffff000;
 
-    ssize_t n = ::sendfile(dstfd, srcfd, NULL, SendfileSize);
+    ssize_t n = ::sendfile(dstfd, srcfd, nullptr, SendfileSize);
     if (n == -1) {
         // if we got an error here, give up and try at an upper layer
         return false;
     }
 
     while (n) {
-        n = ::sendfile(dstfd, srcfd, NULL, SendfileSize);
+        n = ::sendfile(dstfd, srcfd, nullptr, SendfileSize);
         if (n == -1) {
             // uh oh, this is probably a real error (like ENOSPC), but we have
             // no way to notify QFile of partial success, so just erase any work

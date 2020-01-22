@@ -212,7 +212,7 @@ void QFactoryLoader::update()
                     QStringList(QLatin1String("libplugins_%1_*.so").arg(d->suffix)),
 #endif
                     QDir::Files);
-        QLibraryPrivate *library = 0;
+        QLibraryPrivate *library = nullptr;
 
         for (int j = 0; j < plugins.count(); ++j) {
             QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
@@ -383,7 +383,7 @@ QObject *QFactoryLoader::instance(int index) const
 {
     Q_D(const QFactoryLoader);
     if (index < 0)
-        return 0;
+        return nullptr;
 
 #if QT_CONFIG(library)
     QMutexLocker lock(&d->mutex);
@@ -399,7 +399,7 @@ QObject *QFactoryLoader::instance(int index) const
                 return obj;
             }
         }
-        return 0;
+        return nullptr;
     }
     index -= d->libraryList.size();
     lock.unlock();
@@ -416,7 +416,7 @@ QObject *QFactoryLoader::instance(int index) const
         --index;
     }
 
-    return 0;
+    return nullptr;
 }
 
 QMultiMap<int, QString> QFactoryLoader::keyMap() const

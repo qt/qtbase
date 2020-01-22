@@ -278,6 +278,8 @@ protected:
 
     QXcbSyncWindowRequest *m_pendingSyncRequest = nullptr;
     int m_swapInterval = -1;
+
+    qreal m_sizeHintsScaleFactor = 1.0;
 };
 
 class QXcbForeignWindow : public QXcbWindow

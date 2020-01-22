@@ -1175,7 +1175,7 @@ QXpmHandler::QXpmHandler()
 bool QXpmHandler::readHeader()
 {
     state = Error;
-    if (!read_xpm_header(device(), 0, index, buffer, &cpp, &ncols, &width, &height))
+    if (!read_xpm_header(device(), nullptr, index, buffer, &cpp, &ncols, &width, &height))
         return false;
     state = ReadHeader;
     return true;
@@ -1191,7 +1191,7 @@ bool QXpmHandler::readImage(QImage *image)
         return false;
     }
 
-    if (!read_xpm_body(device(), 0, index, buffer, cpp, ncols, width, height, *image)) {
+    if (!read_xpm_body(device(), nullptr, index, buffer, cpp, ncols, width, height, *image)) {
         state = Error;
         return false;
     }

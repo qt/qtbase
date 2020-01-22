@@ -383,34 +383,13 @@ QHostInfo QHostInfo::fromName(const QString &name)
     return hostInfo;
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
-QHostInfo QHostInfoPrivate::fromName(const QString &name, QSharedPointer<QNetworkSession> session)
-{
-#if defined QHOSTINFO_DEBUG
-    qDebug("QHostInfoPrivate::fromName(\"%s\") with session %p",name.toLatin1().constData(), session.data());
-#endif
-
-    QHostInfo hostInfo = QHostInfoAgent::fromName(name, session);
-    QHostInfoLookupManager* manager = theHostInfoLookupManager();
-    manager->cache.put(name, hostInfo);
-    return hostInfo;
-}
-#endif
-
-#ifndef QT_NO_BEARERMANAGEMENT
-QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetworkSession>)
-{
-    return QHostInfoAgent::fromName(hostName);
-}
-#endif
-
 QHostInfo QHostInfoAgent::reverseLookup(const QHostAddress &address)
 {
     QHostInfo results;
     // Reverse lookup
     sockaddr_in sa4;
     sockaddr_in6 sa6;
-    sockaddr *sa = 0;
+    sockaddr *sa = nullptr;
     QT_SOCKLEN_T saSize;
     if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         sa = reinterpret_cast<sockaddr *>(&sa4);
@@ -455,7 +434,7 @@ QHostInfo QHostInfoAgent::lookup(const QString &hostName)
         return results;
     }
 
-    addrinfo *res = 0;
+    addrinfo *res = nullptr;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
@@ -595,7 +574,7 @@ QHostInfo::QHostInfo(const QHostInfo &other)
 }
 
 /*!
-    \fn QHostInfo(QHostInfo &&other)
+    \fn QHostInfo::QHostInfo(QHostInfo &&other)
 
     Move-constructs a new QHostInfo from \a other.
 

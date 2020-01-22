@@ -102,13 +102,18 @@ void QMimeDatabasePrivate::loadProviders()
     const auto fdoIterator = std::find_if(mimeDirs.constBegin(), mimeDirs.constEnd(), [](const QString &mimeDir) -> bool {
         return QFileInfo::exists(mimeDir + QStringLiteral("/packages/freedesktop.org.xml")); }
     );
-    if (fdoIterator == mimeDirs.constEnd())
-        mimeDirs.prepend(QLatin1String(":/qt-project.org/qmime"));
     //qDebug() << "mime dirs:" << mimeDirs;
 
     Providers currentProviders;
     std::swap(m_providers, currentProviders);
-    m_providers.reserve(mimeDirs.size());
+
+    if (QMimeXMLProvider::InternalDatabaseAvailable && fdoIterator == mimeDirs.constEnd()) {
+        m_providers.reserve(mimeDirs.size() + 1);
+        m_providers.push_back(Providers::value_type(new QMimeXMLProvider(this, QMimeXMLProvider::InternalDatabase)));
+    } else {
+        m_providers.reserve(mimeDirs.size());
+    }
+
     for (const QString &mimeDir : qAsConst(mimeDirs)) {
         const QString cacheFile = mimeDir + QStringLiteral("/mime.cache");
         QFileInfo fileInfo(cacheFile);
@@ -487,7 +492,7 @@ QMimeDatabase::QMimeDatabase() :
  */
 QMimeDatabase::~QMimeDatabase()
 {
-    d = 0;
+    d = nullptr;
 }
 
 /*!

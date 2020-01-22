@@ -745,7 +745,11 @@
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position offset:(NSInteger)offset
 {
     int p = static_cast<QUITextPosition *>(position).index;
-    return [QUITextPosition positionWithIndex:p + offset];
+    const int posWithIndex = p + offset;
+    const int textLength = [self currentImeState:Qt::ImSurroundingText].toString().length();
+    if (posWithIndex < 0 || posWithIndex > textLength)
+        return nil;
+    return [QUITextPosition positionWithIndex:posWithIndex];
 }
 
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset
@@ -781,12 +785,16 @@
 
 - (UIView *)textInputView
 {
+    auto *focusWindow = QGuiApplication::focusWindow();
+    if (!focusWindow)
+        return nil;
+
     // iOS expects rects we return from other UITextInput methods
     // to be relative to the view this method returns.
     // Since QInputMethod returns rects relative to the top level
     // QWindow, that is also the view we need to return.
-    Q_ASSERT(qApp->focusWindow()->handle());
-    QPlatformWindow *topLevel = qApp->focusWindow()->handle();
+    Q_ASSERT(focusWindow->handle());
+    QPlatformWindow *topLevel = focusWindow->handle();
     while (QPlatformWindow *p = topLevel->parent())
         topLevel = p;
     return reinterpret_cast<UIView *>(topLevel->winId());

@@ -36,7 +36,8 @@ namespace GrandParentGadget {
 struct BaseGadget { Q_GADGET };
 struct Derived : BaseGadget {};
 struct DerivedGadget : Derived { Q_GADGET };
-
+template<typename T> struct CRTP : BaseGadget {};
+struct CRTPDerivedGadget : CRTP<CRTPDerivedGadget> { Q_GADGET };
 }
 
 #endif // GRANDPARENTGADGETCLASS_H

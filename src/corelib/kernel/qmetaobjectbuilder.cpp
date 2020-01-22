@@ -210,7 +210,7 @@ public:
         : flags(0)
     {
         superClass = &QObject::staticMetaObject;
-        staticMetacallFunction = 0;
+        staticMetacallFunction = nullptr;
     }
 
     bool hasRevisionedProperties() const;
@@ -749,7 +749,7 @@ void QMetaObjectBuilder::addMetaObject
         Q_ASSERT(priv(prototype->d.data)->revision >= 2);
         const auto *objects = prototype->d.relatedMetaObjects;
         if (objects) {
-            while (*objects != 0) {
+            while (*objects != nullptr) {
                 addRelatedMetaObject(*objects);
                 ++objects;
             }
@@ -831,7 +831,7 @@ const QMetaObject *QMetaObjectBuilder::relatedMetaObject(int index) const
     if (index >= 0 && index < d->relatedMetaObjects.size())
         return d->relatedMetaObjects[index];
     else
-        return 0;
+        return nullptr;
 }
 
 /*!
@@ -1103,13 +1103,13 @@ int QMetaStringTable::enter(const QByteArray &value)
 
 int QMetaStringTable::preferredAlignment()
 {
-    return alignof(QByteArrayData);
+    return alignof(uint);
 }
 
 // Returns the size (in bytes) required for serializing this string table.
 int QMetaStringTable::blobSize() const
 {
-    int size = m_entries.size() * sizeof(QByteArrayData);
+    int size = m_entries.size() * 2*sizeof(uint);
     Entries::const_iterator it;
     for (it = m_entries.constBegin(); it != m_entries.constEnd(); ++it)
         size += it.key().size() + 1;
@@ -1120,14 +1120,12 @@ static void writeString(char *out, int i, const QByteArray &str,
                         const int offsetOfStringdataMember, int &stringdataOffset)
 {
     int size = str.size();
-    qptrdiff offset = offsetOfStringdataMember + stringdataOffset
-            - i * sizeof(QByteArrayData);
-    const QByteArrayData data =
-        Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset);
+    int offset = offsetOfStringdataMember + stringdataOffset;
+    uint offsetLen[2] = { uint(offset), uint(size) };
 
-    memcpy(out + i * sizeof(QByteArrayData), &data, sizeof(QByteArrayData));
+    memcpy(out + 2 * i * sizeof(uint), &offsetLen, 2*sizeof(uint));
 
-    memcpy(out + offsetOfStringdataMember + stringdataOffset, str.constData(), size);
+    memcpy(out + offset, str.constData(), size);
     out[offsetOfStringdataMember + stringdataOffset + size] = '\0';
 
     stringdataOffset += size + 1;
@@ -1141,7 +1139,7 @@ void QMetaStringTable::writeBlob(char *out) const
 {
     Q_ASSERT(!(reinterpret_cast<quintptr>(out) & (preferredAlignment()-1)));
 
-    int offsetOfStringdataMember = m_entries.size() * sizeof(QByteArrayData);
+    int offsetOfStringdataMember = m_entries.size() * 2*sizeof(uint);
     int stringdataOffset = 0;
 
     // qt_metacast expects the first string in the string table to be the class name.
@@ -1196,8 +1194,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     ALIGN(size, int);
     if (buf) {
         if (!relocatable) meta->d.superdata = d->superClass;
-        meta->d.relatedMetaObjects = 0;
-        meta->d.extradata = 0;
+        meta->d.relatedMetaObjects = nullptr;
+        meta->d.extradata = nullptr;
         meta->d.static_metacall = d->staticMetacallFunction;
     }
 
@@ -1282,10 +1280,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     char *str = reinterpret_cast<char *>(buf + size);
     if (buf) {
         if (relocatable) {
-            meta->d.stringdata = reinterpret_cast<const QByteArrayData *>((quintptr)size);
+            meta->d.stringdata = reinterpret_cast<const uint *>((quintptr)size);
             meta->d.data = reinterpret_cast<uint *>((quintptr)pmetaSize);
         } else {
-            meta->d.stringdata = reinterpret_cast<const QByteArrayData *>(str);
+            meta->d.stringdata = reinterpret_cast<const uint *>(str);
             meta->d.data = reinterpret_cast<uint *>(data);
         }
     }
@@ -1494,7 +1492,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 */
 QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
-    int size = buildMetaObject(d, 0, 0, false);
+    int size = buildMetaObject(d, nullptr, 0, false);
     char *buf = reinterpret_cast<char *>(malloc(size));
     memset(buf, 0, size);
     buildMetaObject(d, buf, size, false);
@@ -1517,7 +1515,7 @@ QMetaObject *QMetaObjectBuilder::toMetaObject() const
 */
 QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
 {
-    int size = buildMetaObject(d, 0, 0, true);
+    int size = buildMetaObject(d, nullptr, 0, true);
     if (size == -1) {
         if (ok) *ok = false;
         return QByteArray();
@@ -1553,11 +1551,11 @@ void QMetaObjectBuilder::fromRelocatableData(QMetaObject *output,
     quintptr dataOffset = (quintptr)dataMo->d.data;
 
     output->d.superdata = superclass;
-    output->d.stringdata = reinterpret_cast<const QByteArrayData *>(buf + stringdataOffset);
+    output->d.stringdata = reinterpret_cast<const uint *>(buf + stringdataOffset);
     output->d.data = reinterpret_cast<const uint *>(buf + dataOffset);
-    output->d.extradata = 0;
-    output->d.relatedMetaObjects = 0;
-    output->d.static_metacall = 0;
+    output->d.extradata = nullptr;
+    output->d.relatedMetaObjects = nullptr;
+    output->d.static_metacall = nullptr;
 }
 
 /*!
@@ -1720,14 +1718,14 @@ void QMetaObjectBuilder::deserialize
     d->enumerators.clear();
     d->constructors.clear();
     d->relatedMetaObjects.clear();
-    d->staticMetacallFunction = 0;
+    d->staticMetacallFunction = nullptr;
 
     // Read the class and super class names.
     stream >> d->className;
     stream >> name;
     if (name.isEmpty()) {
-        d->superClass = 0;
-    } else if ((cl = resolveClassName(references, name)) != 0) {
+        d->superClass = nullptr;
+    } else if ((cl = resolveClassName(references, name)) != nullptr) {
         d->superClass = cl;
     } else {
         stream.setStatus(QDataStream::ReadCorruptData);
@@ -1877,7 +1875,7 @@ QMetaMethodBuilderPrivate *QMetaMethodBuilder::d_func() const
     else if (_mobj && -_index >= 1 && -_index <= int(_mobj->d->constructors.size()))
         return &(_mobj->d->constructors[(-_index) - 1]);
     else
-        return 0;
+        return nullptr;
 }
 
 /*!
@@ -2116,7 +2114,7 @@ QMetaPropertyBuilderPrivate *QMetaPropertyBuilder::d_func() const
     if (_mobj && _index >= 0 && _index < int(_mobj->d->properties.size()))
         return &(_mobj->d->properties[_index]);
     else
-        return 0;
+        return nullptr;
 }
 
 /*!
@@ -2588,7 +2586,7 @@ QMetaEnumBuilderPrivate *QMetaEnumBuilder::d_func() const
     if (_mobj && _index >= 0 && _index < int(_mobj->d->enumerators.size()))
         return &(_mobj->d->enumerators[_index]);
     else
-        return 0;
+        return nullptr;
 }
 
 /*!

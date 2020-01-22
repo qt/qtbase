@@ -216,13 +216,11 @@ void QBasicTimer::stop()
 {
     if (id) {
         QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
-        if (eventDispatcher) {
-            if (Q_UNLIKELY(!eventDispatcher->unregisterTimer(id))) {
-                qWarning("QBasicTimer::stop: Failed. Possibly trying to stop from a different thread");
-                return;
-            }
-            QAbstractEventDispatcherPrivate::releaseTimerId(id);
+        if (eventDispatcher && !eventDispatcher->unregisterTimer(id)) {
+            qWarning("QBasicTimer::stop: Failed. Possibly trying to stop from a different thread");
+            return;
         }
+        QAbstractEventDispatcherPrivate::releaseTimerId(id);
     }
     id = 0;
 }

@@ -850,7 +850,7 @@ QDistanceFieldData::QDistanceFieldData(const QDistanceFieldData &other)
     if (nbytes && other.data)
         data = (uchar *)memcpy(malloc(nbytes), other.data, nbytes);
     else
-        data = 0;
+        data = nullptr;
 }
 
 QDistanceFieldData::~QDistanceFieldData()
@@ -952,7 +952,7 @@ void QDistanceField::setGlyph(QFontEngine *fontEngine, glyph_t glyph, bool doubl
 {
     QFixedPoint position;
     QPainterPath path;
-    fontEngine->addGlyphsToPath(&glyph, &position, 1, &path, 0);
+    fontEngine->addGlyphsToPath(&glyph, &position, 1, &path, { });
     path.translate(-path.boundingRect().topLeft());
     path.setFillRule(Qt::WindingFill);
 
@@ -1046,7 +1046,7 @@ const uchar *QDistanceField::constBits() const
 uchar *QDistanceField::scanLine(int i)
 {
     if (isNull())
-        return 0;
+        return nullptr;
 
     Q_ASSERT(i >= 0 && i < d->height);
     return d->data + i * d->width;
@@ -1055,7 +1055,7 @@ uchar *QDistanceField::scanLine(int i)
 const uchar *QDistanceField::scanLine(int i) const
 {
     if (isNull())
-        return 0;
+        return nullptr;
 
     Q_ASSERT(i >= 0 && i < d->height);
     return d->data + i * d->width;
@@ -1064,7 +1064,7 @@ const uchar *QDistanceField::scanLine(int i) const
 const uchar *QDistanceField::constScanLine(int i) const
 {
     if (isNull())
-        return 0;
+        return nullptr;
 
     Q_ASSERT(i >= 0 && i < d->height);
     return d->data + i * d->width;

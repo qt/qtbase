@@ -41,6 +41,7 @@
 #include "qxcbwindow.h"
 #include "qxcbcursor.h"
 #include "qxcbimage.h"
+#include "qxcbintegration.h"
 #include "qnamespace.h"
 #include "qxcbxsettings.h"
 
@@ -49,6 +50,7 @@
 #include <QDebug>
 #include <QtAlgorithms>
 
+#include <qpa/qplatformservices.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qmath_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -318,9 +320,19 @@ bool QXcbVirtualDesktop::xResource(const QByteArray &identifier,
 
 static bool parseXftInt(const QByteArray& stringValue, int *value)
 {
-    Q_ASSERT(value != 0);
+    Q_ASSERT(value);
     bool ok;
     *value = stringValue.toInt(&ok);
+    return ok;
+}
+
+static bool parseXftDpi(const QByteArray& stringValue, int *value)
+{
+    Q_ASSERT(value);
+    bool ok = parseXftInt(stringValue, value);
+    // Support GNOME 3 bug that wrote DPI with fraction:
+    if (!ok)
+        *value = qRound(stringValue.toDouble(&ok));
     return ok;
 }
 
@@ -356,6 +368,15 @@ static QFontEngine::SubpixelAntialiasingType parseXftRgba(const QByteArray& stri
 
 void QXcbVirtualDesktop::readXResources()
 {
+    const QPlatformServices *services = QXcbIntegration::instance()->services();
+    bool useXftConf = false;
+    if (services) {
+        const QList<QByteArray> desktopEnv = services->desktopEnvironment().split(':');
+        useXftConf = desktopEnv.contains("GNOME") || desktopEnv.contains("UNITY") || desktopEnv.contains("XFCE");
+    }
+    if (!useXftConf)
+        return;
+
     int offset = 0;
     QByteArray resources;
     while (true) {
@@ -380,7 +401,7 @@ void QXcbVirtualDesktop::readXResources()
         int value;
         QByteArray stringValue;
         if (xResource(r, "Xft.dpi:\t", stringValue)) {
-            if (parseXftInt(stringValue, &value))
+            if (parseXftDpi(stringValue, &value))
                 m_forcedDpi = value;
         } else if (xResource(r, "Xft.hintstyle:\t", stringValue)) {
             m_hintStyle = parseXftHintStyle(stringValue);
@@ -457,7 +478,7 @@ const xcb_visualtype_t *QXcbVirtualDesktop::visualForId(xcb_visualid_t visualid)
 {
     QMap<xcb_visualid_t, xcb_visualtype_t>::const_iterator it = m_visuals.find(visualid);
     if (it == m_visuals.constEnd())
-        return 0;
+        return nullptr;
     return &*it;
 }
 
@@ -577,7 +598,7 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
     do {
         auto translate_reply = Q_XCB_REPLY_UNCHECKED(xcb_translate_coordinates, xcb_connection(), parent, child, x, y);
         if (!translate_reply) {
-            return 0;
+            return nullptr;
         }
 
         parent = child;
@@ -586,14 +607,14 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
         y = translate_reply->dst_y;
 
         if (!child || child == root)
-            return 0;
+            return nullptr;
 
         QPlatformWindow *platformWindow = connection()->platformWindowFromId(child);
         if (platformWindow)
             return platformWindow->window();
     } while (parent != child);
 
-    return 0;
+    return nullptr;
 }
 
 void QXcbScreen::windowShown(QXcbWindow *window)

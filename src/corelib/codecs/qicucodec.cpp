@@ -381,7 +381,7 @@ static QTextCodec *loadQtCodec(const char *name)
         return QIsciiCodec::create(name);
 #endif
 
-    return 0;
+    return nullptr;
 }
 
 /// \threadsafe
@@ -438,7 +438,7 @@ QTextCodec *QIcuCodec::defaultCodecUnlocked()
 {
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
     if (!globalData)
-        return 0;
+        return nullptr;
     QTextCodec *c = globalData->codecForLocale.loadAcquire();
     if (c)
         return c;
@@ -523,13 +523,13 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
         return c;
 
     if (qt_only)
-        return 0;
+        return nullptr;
 
     // check whether there is really a converter for the name available.
     UConverter *conv = ucnv_open(standardName, &error);
     if (!conv) {
         qDebug("codecForName: ucnv_open failed %s %s", standardName, u_errorName(error));
-        return 0;
+        return nullptr;
     }
     //qDebug() << "QIcuCodec: Standard name for " << name << "is" << standardName;
     ucnv_close(conv);
@@ -552,7 +552,7 @@ QTextCodec *QIcuCodec::codecForMibUnlocked(int mib)
     if (mib == 2107)
         return codecForNameUnlocked("TSCII");
 
-    return 0;
+    return nullptr;
 }
 
 
@@ -567,7 +567,7 @@ QIcuCodec::~QIcuCodec()
 
 UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
 {
-    UConverter *conv = 0;
+    UConverter *conv = nullptr;
     if (state) {
         if (!state->d) {
             // first time
@@ -609,7 +609,7 @@ QString QIcuCodec::convertToUnicode(const char *chars, int length, QTextCodec::C
         ucnv_toUnicode(conv,
                        &uc, ucEnd,
                        &chars, end,
-                       0, false, &error);
+                       nullptr, false, &error);
         if (!U_SUCCESS(error) && error != U_BUFFER_OVERFLOW_ERROR) {
             qDebug("convertToUnicode failed: %s", u_errorName(error));
             break;
@@ -646,7 +646,7 @@ QByteArray QIcuCodec::convertFromUnicode(const QChar *unicode, int length, QText
         ucnv_fromUnicode(conv,
                          &ch, chEnd,
                          &uc, end,
-                         0, false, &error);
+                         nullptr, false, &error);
         if (!U_SUCCESS(error))
             qDebug("convertFromUnicode failed: %s", u_errorName(error));
         convertedChars = ch - string.data();

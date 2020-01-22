@@ -196,8 +196,7 @@ public:
         if (value.container)
             return replaceAt_complex(e, value, disp);
 
-        e.value = value.value_helper();
-        e.type = value.type();
+        e = { value.value_helper(), value.type() };
         if (value.isContainer())
             e.container = nullptr;
     }
@@ -235,6 +234,15 @@ public:
     {
         elements.append(QtCbor::Element(addByteData(data, len), type,
                                         QtCbor::Element::HasByteData | extraFlags));
+    }
+    void appendAsciiString(const QString &s);
+    void appendAsciiString(const char *str, qsizetype len)
+    {
+        appendByteData(str, len, QCborValue::String, QtCbor::Element::StringIsAscii);
+    }
+    void appendUtf8String(const char *str, qsizetype len)
+    {
+        appendByteData(str, len, QCborValue::String);
     }
     void append(QLatin1String s)
     {

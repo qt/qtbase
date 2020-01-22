@@ -50,6 +50,7 @@ private slots:
     void testWriteParagraph_data();
     void testWriteParagraph();
     void testWriteList();
+    void testWriteEmptyList();
     void testWriteNestedBulletLists_data();
     void testWriteNestedBulletLists();
     void testWriteNestedNumericLists();
@@ -122,6 +123,14 @@ void tst_QTextMarkdownWriter::testWriteList()
 
     QCOMPARE(documentToUnixMarkdown(), QString::fromLatin1(
         "- ListItem 1\n- ListItem 2\n"));
+}
+
+void tst_QTextMarkdownWriter::testWriteEmptyList()
+{
+    QTextCursor cursor(document);
+    cursor.createList(QTextListFormat::ListDisc);
+
+    QCOMPARE(documentToUnixMarkdown(), QString::fromLatin1("- \n"));
 }
 
 void tst_QTextMarkdownWriter::testWriteNestedBulletLists_data()

@@ -60,6 +60,10 @@ private slots:
     void removeTab_data();
     void removeTab();
 
+    void hideTab_data();
+    void hideTab();
+    void hideAllTabs();
+
     void setElideMode_data();
     void setElideMode();
     void sizeHints();
@@ -242,6 +246,73 @@ void tst_QTabBar::removeTab()
     tabbar.removeTab(deleteIndex);
     QTEST(spy.count(), "spyCount");
     QTEST(tabbar.currentIndex(), "finalIndex");
+}
+
+void tst_QTabBar::hideTab_data()
+{
+    QTest::addColumn<int>("currentIndex");
+    QTest::addColumn<int>("hideIndex");
+    QTest::addColumn<int>("spyCount");
+    QTest::addColumn<int>("finalIndex");
+
+    QTest::newRow("hideEnd") << 0 << 2 << 0 << 0;
+    QTest::newRow("hideEndWithIndexOnEnd") << 2 << 2 << 1 << 1;
+    QTest::newRow("hideMiddle") << 2 << 1 << 0 << 2;
+    QTest::newRow("hideMiddleOnMiddle") << 1 << 1 << 1 << 2;
+    QTest::newRow("hideFirst") << 2 << 0 << 0 << 2;
+    QTest::newRow("hideFirstOnFirst") << 0 << 0 << 1 << 1;
+}
+
+void tst_QTabBar::hideTab()
+{
+    QTabBar tabbar;
+
+    QFETCH(int, currentIndex);
+    QFETCH(int, hideIndex);
+    tabbar.addTab("foo");
+    tabbar.addTab("bar");
+    tabbar.addTab("baz");
+    tabbar.setCurrentIndex(currentIndex);
+    QSignalSpy spy(&tabbar, &QTabBar::currentChanged);
+    tabbar.setTabVisible(hideIndex, false);
+    QTEST(spy.count(), "spyCount");
+    QTEST(tabbar.currentIndex(), "finalIndex");
+}
+
+void tst_QTabBar::hideAllTabs()
+{
+    QTabBar tabbar;
+
+    tabbar.addTab("foo");
+    tabbar.addTab("bar");
+    tabbar.addTab("baz");
+    tabbar.setCurrentIndex(0);
+
+    // Check we don't crash trying to hide an unexistant tab
+    QSize prevSizeHint = tabbar.sizeHint();
+    tabbar.setTabVisible(3, false);
+    QCOMPARE(tabbar.currentIndex(), 0);
+    QSize sizeHint = tabbar.sizeHint();
+    QVERIFY(sizeHint.width() == prevSizeHint.width());
+    prevSizeHint = sizeHint;
+
+    tabbar.setTabVisible(1, false);
+    QCOMPARE(tabbar.currentIndex(), 0);
+    sizeHint = tabbar.sizeHint();
+    QVERIFY(sizeHint.width() < prevSizeHint.width());
+    prevSizeHint = sizeHint;
+
+    tabbar.setTabVisible(2, false);
+    QCOMPARE(tabbar.currentIndex(), 0);
+    sizeHint = tabbar.sizeHint();
+    QVERIFY(sizeHint.width() < prevSizeHint.width());
+    prevSizeHint = sizeHint;
+
+    tabbar.setTabVisible(0, false);
+    // We cannot set currentIndex < 0
+    QCOMPARE(tabbar.currentIndex(), 0);
+    sizeHint = tabbar.sizeHint();
+    QVERIFY(sizeHint.width() < prevSizeHint.width());
 }
 
 void tst_QTabBar::setElideMode_data()
@@ -605,7 +676,7 @@ void tst_QTabBar::changeTitleWhileDoubleClickingTab()
     QPoint tabPos = bar.tabRect(0).center();
 
     for(int i=0; i < 10; i++)
-        QTest::mouseDClick(&bar, Qt::LeftButton, 0, tabPos);
+        QTest::mouseDClick(&bar, Qt::LeftButton, {}, tabPos);
 }
 
 class Widget10052 : public QWidget
@@ -655,12 +726,12 @@ void tst_QTabBar::tabBarClicked()
     while (button <= Qt::MaxMouseButton) {
         const QPoint tabPos = tabBar.tabRect(0).center();
 
-        QTest::mouseClick(&tabBar, button, 0, tabPos);
+        QTest::mouseClick(&tabBar, button, {}, tabPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
         QCOMPARE(doubleClickSpy.count(), 0);
 
-        QTest::mouseDClick(&tabBar, button, 0, tabPos);
+        QTest::mouseDClick(&tabBar, button, {}, tabPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
         QCOMPARE(doubleClickSpy.count(), 1);
@@ -668,12 +739,12 @@ void tst_QTabBar::tabBarClicked()
 
         const QPoint barPos(tabBar.tabRect(0).right() + 5, tabBar.tabRect(0).center().y());
 
-        QTest::mouseClick(&tabBar, button, 0, barPos);
+        QTest::mouseClick(&tabBar, button, {}, barPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
         QCOMPARE(doubleClickSpy.count(), 0);
 
-        QTest::mouseDClick(&tabBar, button, 0, barPos);
+        QTest::mouseDClick(&tabBar, button, {}, barPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
         QCOMPARE(doubleClickSpy.count(), 1);

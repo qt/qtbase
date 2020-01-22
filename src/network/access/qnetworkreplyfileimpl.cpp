@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkReplyFileImplPrivate::QNetworkReplyFileImplPrivate()
-    : QNetworkReplyPrivate(), managerPrivate(0), realFile(0)
+    : QNetworkReplyPrivate(), managerPrivate(nullptr), realFile(nullptr)
 {
     qRegisterMetaType<QNetworkRequest::KnownHeaders>();
     qRegisterMetaType<QNetworkReply::NetworkError>();

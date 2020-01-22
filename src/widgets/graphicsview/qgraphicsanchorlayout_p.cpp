@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 const qreal g_offset = (sizeof(qreal) == sizeof(double)) ? QWIDGETSIZE_MAX : QWIDGETSIZE_MAX / 32;
 
 QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
-    : QObjectPrivate(version), layoutPrivate(0), data(0),
+    : QObjectPrivate(version), layoutPrivate(nullptr), data(nullptr),
       sizePolicy(QSizePolicy::Fixed), preferredSize(0),
       hasSize(true)
 {
@@ -72,7 +72,7 @@ QGraphicsAnchorPrivate::~QGraphicsAnchorPrivate()
     if (data) {
         // The QGraphicsAnchor was already deleted at this moment. We must clean
         // the dangling pointer to avoid double deletion in the AnchorData dtor.
-        data->graphicsAnchor = 0;
+        data->graphicsAnchor = nullptr;
 
         layoutPrivate->removeAnchor(data->from, data->to);
     }
@@ -631,9 +631,9 @@ QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
         spacings[i] = -1;
         graphHasConflicts[i] = false;
 
-        layoutFirstVertex[i] = 0;
-        layoutCentralVertex[i] = 0;
-        layoutLastVertex[i] = 0;
+        layoutFirstVertex[i] = nullptr;
+        layoutCentralVertex[i] = nullptr;
+        layoutLastVertex[i] = nullptr;
     }
 }
 
@@ -981,7 +981,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyVertices(Orientation orientation)
                 feasible &= replaceVertex(orientation, next, newV, newV->m_secondAnchors);
 
                 // Update the layout vertex information if one of the vertices is a layout vertex.
-                AnchorVertex *layoutVertex = 0;
+                AnchorVertex *layoutVertex = nullptr;
                 if (v->m_item == q)
                     layoutVertex = v;
                 else if (next->m_item == q)
@@ -1035,7 +1035,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
 
     QSet<AnchorVertex *> visited;
     QStack<QPair<AnchorVertex *, AnchorVertex *> > stack;
-    stack.push(qMakePair(static_cast<AnchorVertex *>(0), layoutFirstVertex[orientation]));
+    stack.push(qMakePair(static_cast<AnchorVertex *>(nullptr), layoutFirstVertex[orientation]));
     QVector<AnchorVertex*> candidates;
 
     // Walk depth-first, in the stack we store start of the candidate sequence (beforeSequence)
@@ -1384,7 +1384,7 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
 
     // Save a reference to layout vertices
     layoutFirstVertex[Horizontal] = internalVertex(layout, Qt::AnchorLeft);
-    layoutCentralVertex[Horizontal] = 0;
+    layoutCentralVertex[Horizontal] = nullptr;
     layoutLastVertex[Horizontal] = internalVertex(layout, Qt::AnchorRight);
 
     // Vertical
@@ -1395,7 +1395,7 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
 
     // Save a reference to layout vertices
     layoutFirstVertex[Vertical] = internalVertex(layout, Qt::AnchorTop);
-    layoutCentralVertex[Vertical] = 0;
+    layoutCentralVertex[Vertical] = nullptr;
     layoutLastVertex[Vertical] = internalVertex(layout, Qt::AnchorBottom);
 }
 
@@ -1581,7 +1581,7 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
     }
 
     if (item == q) {
-        layoutCentralVertex[orientation] = 0;
+        layoutCentralVertex[orientation] = nullptr;
     }
 }
 
@@ -1636,29 +1636,29 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
                                                          qreal *spacing)
 {
     Q_Q(QGraphicsAnchorLayout);
-    if ((firstItem == 0) || (secondItem == 0)) {
+    if ((firstItem == nullptr) || (secondItem == nullptr)) {
         qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor NULL items");
-        return 0;
+        return nullptr;
     }
 
     if (firstItem == secondItem) {
         qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor the item to itself");
-        return 0;
+        return nullptr;
     }
 
     if (edgeOrientation(secondEdge) != edgeOrientation(firstEdge)) {
         qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor edges of different orientations");
-        return 0;
+        return nullptr;
     }
 
     const QGraphicsLayoutItem *parentWidget = q->parentLayoutItem();
     if (firstItem == parentWidget || secondItem == parentWidget) {
         qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "You cannot add the parent of the layout to the layout.");
-        return 0;
+        return nullptr;
     }
 
     // In QGraphicsAnchorLayout, items are represented in its internal
@@ -1770,13 +1770,13 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *fi
 {
     // Do not expose internal anchors
     if (firstItem == secondItem)
-        return 0;
+        return nullptr;
 
     const Orientation orientation = edgeOrientation(firstEdge);
     AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
 
-    QGraphicsAnchor *graphicsAnchor = 0;
+    QGraphicsAnchor *graphicsAnchor = nullptr;
 
     AnchorData *data = graph[orientation].edgeData(v1, v2);
     if (data) {
@@ -1811,7 +1811,7 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor(AnchorVertex *firstVertex,
     removeAnchor_helper(firstVertex, secondVertex);
 
     // Ensure no dangling pointer is left behind
-    firstVertex = secondVertex = 0;
+    firstVertex = secondVertex = nullptr;
 
     // Checking if the item stays in the layout or not
     bool keepFirstItem = false;
@@ -2017,13 +2017,13 @@ QLayoutStyleInfo &QGraphicsAnchorLayoutPrivate::styleInfo() const
     if (styleInfoDirty) {
         Q_Q(const QGraphicsAnchorLayout);
         //### Fix this if QGV ever gets support for Metal style or different Aqua sizes.
-        QWidget *wid = 0;
+        QWidget *wid = nullptr;
 
         QGraphicsLayoutItem *parent = q->parentLayoutItem();
         while (parent && parent->isLayout()) {
             parent = parent->parentLayoutItem();
         }
-        QGraphicsWidget *w = 0;
+        QGraphicsWidget *w = nullptr;
         if (parent) {
             QGraphicsItem *parentItem = parent->graphicsItem();
             if (parentItem && parentItem->isWidget())
@@ -2404,7 +2404,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
     // Look for the layout edge. That can be either the first half in case the
     // layout is split in two, or the whole layout anchor.
     Orientation orient = Orientation(anchors.first()->orientation);
-    AnchorData *layoutEdge = 0;
+    AnchorData *layoutEdge = nullptr;
     if (layoutCentralVertex[orient]) {
         layoutEdge = graph[orient].edgeData(layoutFirstVertex[orient], layoutCentralVertex[orient]);
     } else {
@@ -2423,7 +2423,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
         actualMax = -layoutEdge->minSize;
     }
     if (actualMax != expectedMax) {
-        layoutEdge = 0;
+        layoutEdge = nullptr;
     }
 
     // For each variable, create constraints based on size hints
@@ -2496,8 +2496,8 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 
     Q_ASSERT(layoutFirstVertex[orientation] && layoutLastVertex[orientation]);
 
-    AnchorData *edgeL1 = 0;
-    AnchorData *edgeL2 = 0;
+    AnchorData *edgeL1 = nullptr;
+    AnchorData *edgeL2 = nullptr;
 
     // The layout may have a single anchor between Left and Right or two half anchors
     // passing through the center
@@ -2625,7 +2625,7 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
     qreal left;
     qreal right;
 
-    q->getContentsMargins(&left, &top, &right, 0);
+    q->getContentsMargins(&left, &top, &right, nullptr);
     const Qt::LayoutDirection visualDir = visualDirection();
     if (visualDir == Qt::RightToLeft)
         qSwap(left, right);

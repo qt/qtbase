@@ -48,8 +48,10 @@ QT_BEGIN_NAMESPACE
 class QIOSurfaceGraphicsBuffer : public QPlatformGraphicsBuffer
 {
 public:
-    QIOSurfaceGraphicsBuffer(const QSize &size, const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace);
+    QIOSurfaceGraphicsBuffer(const QSize &size, const QPixelFormat &format);
     ~QIOSurfaceGraphicsBuffer();
+
+    void setColorSpace(QCFType<CGColorSpaceRef> colorSpace);
 
     const uchar *data() const override;
     uchar *data() override;

@@ -39,6 +39,7 @@
 #ifndef QDOMHELPERS_P_H
 #define QDOMHELPERS_P_H
 
+#include <qcoreapplication.h>
 #include <qglobal.h>
 #include <qxml.h>
 
@@ -57,6 +58,115 @@ QT_BEGIN_NAMESPACE
 
 class QDomDocumentPrivate;
 class QDomNodePrivate;
+class QXmlStreamReader;
+class QXmlStreamAttributes;
+
+/**************************************************************
+ *
+ * QXmlDocumentLocators
+ *
+ **************************************************************/
+
+/* TODO: QXmlDocumentLocator can be removed when the SAX-based
+ * implementation is removed. Right now it is needed for QDomBuilder
+ * to work with both QXmlStreamReader and QXmlInputSource (SAX)
+ * based implementations.
+ */
+class QXmlDocumentLocator
+{
+public:
+    virtual ~QXmlDocumentLocator() = default;
+    virtual int column() const = 0;
+    virtual int line() const = 0;
+};
+
+class QDomDocumentLocator : public QXmlDocumentLocator
+{
+public:
+    QDomDocumentLocator(QXmlStreamReader *r) : reader(r) {}
+    ~QDomDocumentLocator() override = default;
+
+    int column() const override;
+    int line() const override;
+
+private:
+    QXmlStreamReader *reader;
+};
+
+#if QT_DEPRECATED_SINCE(5, 15)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
+class QSAXDocumentLocator : public QXmlDocumentLocator
+{
+public:
+    ~QSAXDocumentLocator() override = default;
+
+    int column() const override;
+    int line() const override;
+
+    void setLocator(QXmlLocator *l);
+
+private:
+    QXmlLocator *locator = nullptr;
+};
+
+QT_WARNING_POP
+
+#endif
+
+/**************************************************************
+ *
+ * QDomBuilder
+ *
+ **************************************************************/
+
+class QDomBuilder
+{
+public:
+    QDomBuilder(QDomDocumentPrivate *d, QXmlDocumentLocator *l, bool namespaceProcessing);
+    ~QDomBuilder();
+
+    bool endDocument();
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    bool startElement(const QString &nsURI, const QString &qName, const QXmlAttributes &atts);
+QT_WARNING_POP
+#endif
+    bool startElement(const QString &nsURI, const QString &qName, const QXmlStreamAttributes &atts);
+    bool endElement();
+    bool characters(const QString &characters, bool cdata = false);
+    bool processingInstruction(const QString &target, const QString &data);
+    bool skippedEntity(const QString &name);
+    bool startEntity(const QString &name);
+    bool endEntity();
+    bool startDTD(const QString &name, const QString &publicId, const QString &systemId);
+    bool comment(const QString &characters);
+    bool externalEntityDecl(const QString &name, const QString &publicId, const QString &systemId);
+    bool notationDecl(const QString &name, const QString &publicId, const QString &systemId);
+    bool unparsedEntityDecl(const QString &name, const QString &publicId, const QString &systemId,
+                            const QString &notationName);
+
+    void fatalError(const QString &message);
+
+    using ErrorInfo = std::tuple<QString, int, int>;
+    ErrorInfo error() const;
+
+    QString errorMsg;
+    int errorLine;
+    int errorColumn;
+
+private:
+    QDomDocumentPrivate *doc;
+    QDomNodePrivate *node;
+    QXmlDocumentLocator *locator;
+    QString entityName;
+    bool nsProcessing;
+};
+
+#if QT_DEPRECATED_SINCE(5, 15)
 
 /**************************************************************
  *
@@ -64,11 +174,14 @@ class QDomNodePrivate;
  *
  **************************************************************/
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 class QDomHandler : public QXmlDefaultHandler
 {
 public:
     QDomHandler(QDomDocumentPrivate *d, QXmlSimpleReader *reader, bool namespaceProcessing);
-    ~QDomHandler();
+    ~QDomHandler() override;
 
     // content handler
     bool endDocument() override;
@@ -102,18 +215,42 @@ public:
 
     void setDocumentLocator(QXmlLocator *locator) override;
 
-    QString errorMsg;
-    int errorLine;
-    int errorColumn;
+    QDomBuilder::ErrorInfo errorInfo() const;
 
 private:
-    QDomDocumentPrivate *doc;
-    QDomNodePrivate *node;
-    QString entityName;
     bool cdata;
-    bool nsProcessing;
-    QXmlLocator *locator;
     QXmlSimpleReader *reader;
+    QSAXDocumentLocator locator;
+    QDomBuilder domBuilder;
+};
+
+QT_WARNING_POP
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+/**************************************************************
+ *
+ * QDomParser
+ *
+ **************************************************************/
+
+class QDomParser
+{
+    Q_DECLARE_TR_FUNCTIONS(QDomParser)
+public:
+    QDomParser(QDomDocumentPrivate *d, QXmlStreamReader *r, bool namespaceProcessing);
+
+    bool parse();
+    QDomBuilder::ErrorInfo errorInfo() const;
+
+private:
+    bool parseProlog();
+    bool parseBody();
+    bool parseMarkupDecl();
+
+    QXmlStreamReader *reader;
+    QDomDocumentLocator locator;
+    QDomBuilder domBuilder;
 };
 
 QT_END_NAMESPACE

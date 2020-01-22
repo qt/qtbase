@@ -69,7 +69,7 @@ public Q_SLOTS:
 };
 
 
-static SmcConn smcConnection = 0;
+static SmcConn smcConnection = nullptr;
 static bool sm_interactionActive;
 static bool sm_smActive;
 static int sm_interactStyle;
@@ -81,7 +81,7 @@ static bool sm_phase2;
 static bool sm_in_phase2;
 bool qt_sm_blockUserInput = false;
 
-static QSmSocketReceiver* sm_receiver = 0;
+static QSmSocketReceiver* sm_receiver = nullptr;
 
 static void resetSmState();
 static void sm_setProperty(const char *name, const char *type,
@@ -191,7 +191,7 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
 
     // generate a new session key
     timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     sm->setSessionKey(QString::number(qulonglong(tv.tv_sec)) +
                       QLatin1Char('_') +
                       QString::number(qulonglong(tv.tv_usec)));
@@ -203,7 +203,7 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
     // tell the session manager about our program in best POSIX style
     sm_setProperty(QString::fromLatin1(SmProgram), argument0);
     // tell the session manager about our user as well.
-    struct passwd *entryPtr = 0;
+    struct passwd *entryPtr = nullptr;
 #if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
     QVarLengthArray<char, 1024> buf(qMax<long>(sysconf(_SC_GETPW_R_SIZE_MAX), 1024L));
     struct passwd entry;
@@ -329,7 +329,7 @@ static void sm_saveYourselfPhase2Callback(SmcConn smcConn, SmPointer clientData)
 
 void QSmSocketReceiver::socketActivated(int)
 {
-    IceProcessMessages(SmcGetIceConnection(smcConnection), 0, 0);
+    IceProcessMessages(SmcGetIceConnection(smcConnection), nullptr, nullptr);
 }
 
 
@@ -337,11 +337,11 @@ void QSmSocketReceiver::socketActivated(int)
 
 QXcbSessionManager::QXcbSessionManager(const QString &id, const QString &key)
     : QPlatformSessionManager(id, key)
-    , m_eventLoop(0)
+    , m_eventLoop(nullptr)
 {
     resetSmState();
     char cerror[256];
-    char* myId = 0;
+    char* myId = nullptr;
     QByteArray b_id = id.toLatin1();
     char* prevId = b_id.data();
 
@@ -359,7 +359,7 @@ QXcbSessionManager::QXcbSessionManager(const QString &id, const QString &key)
     if (!qEnvironmentVariableIsSet("SESSION_MANAGER"))
         return;
 
-    smcConnection = SmcOpenConnection(0, 0, 1, 0,
+    smcConnection = SmcOpenConnection(nullptr, nullptr, 1, 0,
                                       SmcSaveYourselfProcMask |
                                       SmcDieProcMask |
                                       SmcSaveCompleteProcMask |
@@ -382,8 +382,8 @@ QXcbSessionManager::QXcbSessionManager(const QString &id, const QString &key)
 QXcbSessionManager::~QXcbSessionManager()
 {
     if (smcConnection)
-        SmcCloseConnection(smcConnection, 0, 0);
-    smcConnection = 0;
+        SmcCloseConnection(smcConnection, 0, nullptr);
+    smcConnection = nullptr;
     delete sm_receiver;
 }
 
@@ -411,7 +411,7 @@ bool QXcbSessionManager::allowsInteraction()
         QEventLoop eventLoop;
         m_eventLoop = &eventLoop;
         eventLoop.exec();
-        m_eventLoop = 0;
+        m_eventLoop = nullptr;
 
         sm_waitingForInteraction = false;
         if (sm_smActive) { // not cancelled
@@ -441,7 +441,7 @@ bool QXcbSessionManager::allowsErrorInteraction()
         QEventLoop eventLoop;
         m_eventLoop = &eventLoop;
         eventLoop.exec();
-        m_eventLoop = 0;
+        m_eventLoop = nullptr;
 
         sm_waitingForInteraction = false;
         if (sm_smActive) { // not cancelled

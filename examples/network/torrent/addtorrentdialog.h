@@ -60,7 +60,7 @@ class AddTorrentDialog : public QDialog
     Q_OBJECT
 
 public:
-    AddTorrentDialog(QWidget *parent = 0);
+    AddTorrentDialog(QWidget *parent = nullptr);
 
     QString torrentFileName() const;
     QString destinationFolder() const;

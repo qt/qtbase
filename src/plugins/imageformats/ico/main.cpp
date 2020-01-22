@@ -46,9 +46,9 @@ QImageIOPlugin::Capabilities QICOPlugin::capabilities(QIODevice *device, const Q
     if (format == "ico" || format == "cur")
         return Capabilities(CanRead | CanWrite);
     if (!format.isEmpty())
-        return 0;
+        return { };
     if (!device->isOpen())
-        return 0;
+        return { };
 
     Capabilities cap;
     if (device->isReadable() && QtIcoHandler::canRead(device))

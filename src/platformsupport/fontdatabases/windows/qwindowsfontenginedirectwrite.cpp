@@ -62,6 +62,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// Clang does not consider __declspec(nothrow) as nothrow
+QT_WARNING_DISABLE_CLANG("-Wmicrosoft-exception-spec")
+
 // Convert from design units to logical pixels
 #define DESIGN_TO_LOGICAL(DESIGN_UNIT_VALUE) \
     QFixed::fromReal((qreal(DESIGN_UNIT_VALUE) / qreal(m_unitsPerEm)) * fontDef.pixelSize)
@@ -458,7 +461,7 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
     glyphs->numGlyphs = actualLength;
 
     if (!(flags & GlyphIndicesOnly))
-        recalcAdvances(glyphs, 0);
+        recalcAdvances(glyphs, {});
 
     return true;
 }
@@ -1012,8 +1015,8 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
 
         int margin = glyphMargin(QFontEngine::Format_A32);
 
-        return glyph_metrics_t(rect.left,
-                               rect.top,
+        return glyph_metrics_t(rect.left - margin,
+                               rect.top - margin,
                                rect.right - rect.left + margin * 2,
                                rect.bottom - rect.top + margin * 2,
                                bbox.xoff, bbox.yoff);

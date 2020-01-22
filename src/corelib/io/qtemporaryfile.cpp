@@ -631,6 +631,12 @@ QString QTemporaryFilePrivate::defaultTemplateName()
     case sensitive. If the template is not present in the filename,
     QTemporaryFile appends the generated part to the filename given.
 
+    \note On Linux, QTemporaryFile will attempt to create unnamed temporary
+    files. If that succeeds, open() will return true but exists() will be
+    false. If you call fileName() or any function that calls it,
+    QTemporaryFile will give the file a name, so most applications will
+    not see a difference.
+
     \sa QDir::tempPath(), QFile
 */
 

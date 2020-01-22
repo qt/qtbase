@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
     : m_dpy(dpy),
       m_surface(EGL_NO_SURFACE),
-      m_cursor(0)
+      m_cursor(nullptr)
 {
     m_cursor = qt_egl_device_integration()->createCursor(this);
 }
@@ -164,7 +164,7 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
         return;
     }
 
-    QWindow *enter = 0, *leave = 0;
+    QWindow *enter = nullptr, *leave = nullptr;
     for (int i = windows.count() - 1; i >= 0; --i) {
         QWindow *window = windows[i]->sourceWindow();
         const QRect geom = window->geometry();

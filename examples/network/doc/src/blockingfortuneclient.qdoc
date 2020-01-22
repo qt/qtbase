@@ -176,21 +176,20 @@
     but its implementation is slightly different:
 
     \snippet blockingfortuneclient/blockingclient.cpp 0
-    \snippet blockingfortuneclient/blockingclient.cpp 1
 
     We connect our FortuneThread's two signals newFortune() and error() (which
     are somewhat similar to QTcpSocket::readyRead() and QTcpSocket::error() in
     the previous example) to requestNewFortune() and displayError().
 
-    \snippet blockingfortuneclient/blockingclient.cpp 2
+    \snippet blockingfortuneclient/blockingclient.cpp 1
 
     The requestNewFortune() slot calls FortuneThread::requestNewFortune(),
     which \e shedules the request. When the thread has received a new fortune
     and emits newFortune(), our showFortune() slot is called:
 
-    \snippet blockingfortuneclient/blockingclient.cpp 3
+    \snippet blockingfortuneclient/blockingclient.cpp 2
     \codeline
-    \snippet blockingfortuneclient/blockingclient.cpp 4
+    \snippet blockingfortuneclient/blockingclient.cpp 3
 
     Here, we simply display the fortune we received as the argument.
 

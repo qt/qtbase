@@ -125,7 +125,7 @@ static QTextLine currentTextLine(const QTextCursor &cursor)
 }
 
 QWidgetTextControlPrivate::QWidgetTextControlPrivate()
-    : doc(0), cursorOn(false), cursorVisible(false), cursorIsFocusIndicator(false),
+    : doc(nullptr), cursorOn(false), cursorVisible(false), cursorIsFocusIndicator(false),
 #ifndef Q_OS_ANDROID
       interactionFlags(Qt::TextEditorInteraction),
 #else
@@ -683,7 +683,7 @@ void QWidgetTextControlPrivate::_q_contentsChanged(int from, int charsRemoved, i
         // always report the right number of removed chars, but in lack of the real string use spaces
         QString oldText = QString(charsRemoved, QLatin1Char(' '));
 
-        QAccessibleEvent *ev = 0;
+        QAccessibleEvent *ev = nullptr;
         if (charsRemoved == 0) {
             ev = new QAccessibleTextInsertEvent(q->parent(), from, newText);
         } else if (charsAdded == 0) {
@@ -906,12 +906,12 @@ void QWidgetTextControl::setDocument(QTextDocument *document)
 
     d->doc->disconnect(this);
     d->doc->documentLayout()->disconnect(this);
-    d->doc->documentLayout()->setPaintDevice(0);
+    d->doc->documentLayout()->setPaintDevice(nullptr);
 
     if (d->doc->parent() == this)
         delete d->doc;
 
-    d->doc = 0;
+    d->doc = nullptr;
     d->setContent(Qt::RichText, QString(), document);
 }
 
@@ -1283,6 +1283,8 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
         } else {
             QTextCursor localCursor = cursor;
             localCursor.deletePreviousChar();
+            if (cursor.d)
+                cursor.d->setX();
         }
         goto accept;
     }
@@ -1322,9 +1324,13 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
     else if (e == QKeySequence::Delete) {
         QTextCursor localCursor = cursor;
         localCursor.deleteChar();
+        if (cursor.d)
+            cursor.d->setX();
     } else if (e == QKeySequence::Backspace) {
         QTextCursor localCursor = cursor;
         localCursor.deletePreviousChar();
+        if (cursor.d)
+            cursor.d->setX();
     }else if (e == QKeySequence::DeleteEndOfWord) {
         if (!cursor.hasSelection())
             cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
@@ -2302,7 +2308,7 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
         d->linkToCopy = anchorAt(pos);
 
     if (d->linkToCopy.isEmpty() && !showTextSelectionActions)
-        return 0;
+        return nullptr;
 
     QMenu *menu = new QMenu(parent);
     QAction *a;
@@ -2656,7 +2662,7 @@ void QWidgetTextControl::print(QPagedPaintDevice *printer) const
     Q_D(const QWidgetTextControl);
     if (!printer)
         return;
-    QTextDocument *tempDoc = 0;
+    QTextDocument *tempDoc = nullptr;
     const QTextDocument *doc = d->doc;
     if (QPagedPaintDevicePrivate::get(printer)->printSelectionOnly) {
         if (!d->cursor.hasSelection())

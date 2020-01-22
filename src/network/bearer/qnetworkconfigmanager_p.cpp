@@ -59,7 +59,7 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-    : QObject(), pollTimer(0),
+    : QObject(), pollTimer(nullptr),
       loader(QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")),
       forcedPolling(0), firstUpdate(true)
 {
@@ -93,7 +93,7 @@ void QNetworkConfigurationManagerPrivate::cleanup()
 {
     QThread* thread = bearerThread;
     deleteLater();
-    if (thread->wait(5000))
+    if (thread->wait(QDeadlineTimer(5000)))
         delete thread;
 }
 
@@ -367,7 +367,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 
         bool envOK  = false;
         const int skipGeneric = qEnvironmentVariableIntValue("QT_EXCLUDE_GENERIC_BEARER", &envOK);
-        QBearerEngine *generic = 0;
+        QBearerEngine *generic = nullptr;
         QFactoryLoader *l = &loader;
         const PluginKeyMap keyMap = l->keyMap();
         const PluginKeyMapConstIterator cend = keyMap.constEnd();

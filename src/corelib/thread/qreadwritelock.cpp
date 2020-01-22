@@ -227,7 +227,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
         return true;
 
     while (true) {
-        if (d == 0) {
+        if (d == nullptr) {
             if (!d_ptr.testAndSetAcquire(nullptr, dummyLockedForRead, d))
                 continue;
             return true;
@@ -341,7 +341,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
         return true;
 
     while (true) {
-        if (d == 0) {
+        if (d == nullptr) {
             if (!d_ptr.testAndSetAcquire(d, dummyLockedForWrite, d))
                 continue;
             return true;
@@ -477,7 +477,7 @@ bool QReadWriteLockPrivate::lockForRead(int timeout)
             if (elapsed > timeout)
                 return false;
             waitingReaders++;
-            readerCond.wait(&mutex, timeout - elapsed);
+            readerCond.wait(&mutex, QDeadlineTimer(timeout - elapsed));
         } else {
             waitingReaders++;
             readerCond.wait(&mutex);
@@ -511,7 +511,7 @@ bool QReadWriteLockPrivate::lockForWrite(int timeout)
                 return false;
             }
             waitingWriters++;
-            writerCond.wait(&mutex, timeout - elapsed);
+            writerCond.wait(&mutex, QDeadlineTimer(timeout - elapsed));
         } else {
             waitingWriters++;
             writerCond.wait(&mutex);
@@ -581,7 +581,7 @@ void QReadWriteLockPrivate::recursiveUnlock()
     if (self == currentWriter) {
         if (--writerCount > 0)
             return;
-        currentWriter = 0;
+        currentWriter = nullptr;
     } else {
         auto it = currentReaders.find(self);
         if (it == currentReaders.end()) {

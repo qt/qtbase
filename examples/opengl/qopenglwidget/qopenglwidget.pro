@@ -1,4 +1,4 @@
-QT += widgets
+QT += widgets opengl
 
 SOURCES += main.cpp \
            glwidget.cpp \

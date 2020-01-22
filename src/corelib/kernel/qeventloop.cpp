@@ -106,7 +106,7 @@ QEventLoop::QEventLoop(QObject *parent)
     if (!QCoreApplication::instance() && QCoreApplicationPrivate::threadRequiresCoreApplication()) {
         qWarning("QEventLoop: Cannot be used without QApplication");
     } else {
-        d->threadData->ensureEventDispatcher();
+        d->threadData.loadRelaxed()->ensureEventDispatcher();
     }
 }
 
@@ -133,9 +133,10 @@ QEventLoop::~QEventLoop()
 bool QEventLoop::processEvents(ProcessEventsFlags flags)
 {
     Q_D(QEventLoop);
-    if (!d->threadData->hasEventDispatcher())
+    auto threadData = d->threadData.loadRelaxed();
+    if (!threadData->hasEventDispatcher())
         return false;
-    return d->threadData->eventDispatcher.loadRelaxed()->processEvents(flags);
+    return threadData->eventDispatcher.loadRelaxed()->processEvents(flags);
 }
 
 /*!
@@ -164,9 +165,11 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
 int QEventLoop::exec(ProcessEventsFlags flags)
 {
     Q_D(QEventLoop);
+    auto threadData = d->threadData.loadRelaxed();
+
     //we need to protect from race condition with QThread::exit
-    QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread.loadAcquire()))->mutex);
-    if (d->threadData->quitNow)
+    QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(threadData->thread.loadAcquire()))->mutex);
+    if (threadData->quitNow)
         return -1;
 
     if (d->inExec) {
@@ -183,8 +186,11 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         {
             d->inExec = true;
             d->exit.storeRelease(false);
-            ++d->threadData->loopLevel;
-            d->threadData->eventLoops.push(d->q_func());
+
+            auto threadData = d->threadData.loadRelaxed();
+            ++threadData->loopLevel;
+            threadData->eventLoops.push(d->q_func());
+
             locker.unlock();
         }
 
@@ -198,11 +204,12 @@ int QEventLoop::exec(ProcessEventsFlags flags)
                          "QCoreApplication::notify() and catch all exceptions there.\n");
             }
             locker.relock();
-            QEventLoop *eventLoop = d->threadData->eventLoops.pop();
+            auto threadData = d->threadData.loadRelaxed();
+            QEventLoop *eventLoop = threadData->eventLoops.pop();
             Q_ASSERT_X(eventLoop == d->q_func(), "QEventLoop::exec()", "internal error");
             Q_UNUSED(eventLoop); // --release warning
             d->inExec = false;
-            --d->threadData->loopLevel;
+            --threadData->loopLevel;
         }
     };
     LoopReference ref(d, locker);
@@ -217,7 +224,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     // exception, which returns control to the browser while preserving the C++ stack.
     // Event processing then continues as normal. The sleep call below never returns.
     // QTBUG-70185
-    if (d->threadData->loopLevel > 1)
+    if (threadData->loopLevel > 1)
         emscripten_sleep(1);
 #endif
 
@@ -247,7 +254,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
 void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 {
     Q_D(QEventLoop);
-    if (!d->threadData->hasEventDispatcher())
+    if (!d->threadData.loadRelaxed()->hasEventDispatcher())
         return;
 
     QElapsedTimer start;
@@ -276,21 +283,22 @@ void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 void QEventLoop::exit(int returnCode)
 {
     Q_D(QEventLoop);
-    if (!d->threadData->hasEventDispatcher())
+    auto threadData = d->threadData.loadAcquire();
+    if (!threadData->hasEventDispatcher())
         return;
 
     d->returnCode.storeRelaxed(returnCode);
     d->exit.storeRelease(true);
-    d->threadData->eventDispatcher.loadRelaxed()->interrupt();
+    threadData->eventDispatcher.loadRelaxed()->interrupt();
 
 #ifdef Q_OS_WASM
     // QEventLoop::exec() never returns in emscripten. We implement approximate behavior here.
     // QTBUG-70185
-    if (d->threadData->loopLevel == 1) {
+    if (threadData->loopLevel == 1) {
         emscripten_force_exit(returnCode);
     } else {
         d->inExec = false;
-        --d->threadData->loopLevel;
+        --threadData->loopLevel;
     }
 #endif
 }
@@ -316,9 +324,10 @@ bool QEventLoop::isRunning() const
 void QEventLoop::wakeUp()
 {
     Q_D(QEventLoop);
-    if (!d->threadData->hasEventDispatcher())
+    auto threadData = d->threadData.loadAcquire();
+    if (!threadData->hasEventDispatcher())
         return;
-    d->threadData->eventDispatcher.loadRelaxed()->wakeUp();
+    threadData->eventDispatcher.loadRelaxed()->wakeUp();
 }
 
 

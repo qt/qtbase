@@ -137,13 +137,12 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
 #endif
         return false;
     }
-    const SectionNode &node = sectionNodes.at(index);
 
-    const QDate date = v.date();
+    QCalendar::YearMonthDay date = calendar.partsFromDate(v.date());
+    if (!date.isValid())
+        return false;
+
     const QTime time = v.time();
-    int year = date.year(calendar);
-    int month = date.month(calendar);
-    int day = date.day(calendar);
     int hour = time.hour();
     int minute = time.minute();
     int second = time.second();
@@ -152,14 +151,15 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
     // Only offset from UTC is amenable to setting an int value:
     int offset = tspec == Qt::OffsetFromUTC ? v.offsetFromUtc() : 0;
 
+    const SectionNode &node = sectionNodes.at(index);
     switch (node.type) {
     case Hour24Section: case Hour12Section: hour = newVal; break;
     case MinuteSection: minute = newVal; break;
     case SecondSection: second = newVal; break;
     case MSecSection: msec = newVal; break;
     case YearSection2Digits:
-    case YearSection: year = newVal; break;
-    case MonthSection: month = newVal; break;
+    case YearSection: date.year = newVal; break;
+    case MonthSection: date.month = newVal; break;
     case DaySection:
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
@@ -169,7 +169,7 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
             // to 31 for february should return true
             return false;
         }
-        day = newVal;
+        date.day = newVal;
         break;
     case TimeZoneSection:
         if (newVal < absoluteMin(index) || newVal > absoluteMax(index))
@@ -185,15 +185,14 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
     }
 
     if (!(node.type & DaySectionMask)) {
-        if (day < cachedDay)
-            day = cachedDay;
-        const int max = calendar.daysInMonth(month, year);
-        if (day > max) {
-            day = max;
-        }
+        if (date.day < cachedDay)
+            date.day = cachedDay;
+        const int max = calendar.daysInMonth(date.month, date.year);
+        if (date.day > max)
+            date.day = max;
     }
 
-    const QDate newDate(year, month, day, calendar);
+    const QDate newDate = calendar.dateFromParts(date);
     const QTime newTime(hour, minute, second, msec);
     if (!newDate.isValid() || !newTime.isValid())
         return false;
@@ -369,13 +368,6 @@ static QString unquote(const QStringRef &str)
     }
     return ret;
 }
-/*!
-  \internal
-
-  Parses the format \a newFormat. If successful, returns \c true and
-  sets up the format. Else keeps the old format and returns \c false.
-
-*/
 
 static inline int countRepeat(const QString &str, int index, int maxCount)
 {
@@ -394,7 +386,12 @@ static inline void appendSeparator(QStringList *list, const QString &string, int
     list->append(lastQuote >= from ? unquote(separator) : separator.toString());
 }
 
+/*!
+    \internal
 
+    Parses the format \a newFormat. If successful, returns \c true and sets up
+    the format. Else keeps the old format and returns \c false.
+*/
 bool QDateTimeParser::parseFormat(const QString &newFormat)
 {
     const QLatin1Char quote('\'');
@@ -407,7 +404,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
     QDTPDEBUGN("parseFormat: %s", newFormat.toLatin1().constData());
 
     QVector<SectionNode> newSectionNodes;
-    Sections newDisplay = 0;
+    Sections newDisplay;
     QStringList newSeparators;
     int i, index = 0;
     int add = 0;
@@ -1154,7 +1151,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         }
         pos += separator.size();
         sectionNodes[index].pos = pos;
-        int *current = 0;
+        int *current = nullptr;
         const SectionNode sn = sectionNodes.at(index);
         ParsedSection sect;
 
@@ -1365,7 +1362,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
     // given date (which might be a spring-forward, skipping an hour).
     if (parserType == QVariant::DateTime && !(isSet & HourSectionMask) && !when.isValid()) {
         qint64 msecs = when.toMSecsSinceEpoch();
-        // Fortunately, that gets a useful answer ...
+        // Fortunately, that gets a useful answer, even though when is invalid ...
         const QDateTime replace =
 #if QT_CONFIG(timezone)
             tspec == Qt::TimeZone
@@ -1799,7 +1796,7 @@ int QDateTimeParser::SectionNode::maxChange() const
 
 QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
 {
-    FieldInfo ret = 0;
+    FieldInfo ret;
     const SectionNode &sn = sectionNode(index);
     switch (sn.type) {
     case MSecSection:

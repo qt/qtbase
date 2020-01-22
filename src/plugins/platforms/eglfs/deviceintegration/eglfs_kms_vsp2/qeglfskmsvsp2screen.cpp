@@ -99,7 +99,7 @@ QEglFSKmsVsp2Screen::DmaBuffer *QEglFSKmsVsp2Screen::dmaBufferForGbmBuffer(gbm_b
     return fb.take();
 }
 
-QEglFSKmsVsp2Screen::QEglFSKmsVsp2Screen(QKmsDevice *device, const QKmsOutput &output)
+QEglFSKmsVsp2Screen::QEglFSKmsVsp2Screen(QEglFSKmsDevice *device, const QKmsOutput &output)
     : QEglFSKmsScreen(device, output)
     , m_blender(new Blender(this))
 {

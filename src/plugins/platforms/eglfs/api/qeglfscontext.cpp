@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                              EGLConfig *config, const QVariant &nativeHandle)
     : QEGLPlatformContext(format, share, display, config, nativeHandle,
-                          qt_egl_device_integration()->supportsSurfacelessContexts() ? Flags(0) : QEGLPlatformContext::NoSurfaceless),
+                          qt_egl_device_integration()->supportsSurfacelessContexts() ? Flags() : QEGLPlatformContext::NoSurfaceless),
       m_tempWindow(0)
 {
 }
@@ -78,7 +78,7 @@ EGLSurface QEglFSContext::createTemporaryOffscreenSurface()
         }
     }
     EGLConfig config = q_configFromGLFormat(eglDisplay(), format());
-    return eglCreateWindowSurface(eglDisplay(), config, m_tempWindow, 0);
+    return eglCreateWindowSurface(eglDisplay(), config, m_tempWindow, nullptr);
 }
 
 void QEglFSContext::destroyTemporaryOffscreenSurface(EGLSurface surface)

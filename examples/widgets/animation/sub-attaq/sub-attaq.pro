@@ -1,5 +1,4 @@
 QT += widgets
-qtHaveModule(opengl): QT += opengl
 HEADERS += boat.h \
     bomb.h \
     mainwindow.h \

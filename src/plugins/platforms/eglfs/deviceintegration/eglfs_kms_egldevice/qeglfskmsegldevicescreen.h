@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 class QEglFSKmsEglDeviceScreen : public QEglFSKmsScreen
 {
 public:
-    QEglFSKmsEglDeviceScreen(QKmsDevice *device, const QKmsOutput &output);
+    QEglFSKmsEglDeviceScreen(QEglFSKmsDevice *device, const QKmsOutput &output);
     ~QEglFSKmsEglDeviceScreen();
 
     QPlatformCursor *cursor() const override;

@@ -74,10 +74,10 @@ public:
     QColor(Qt::GlobalColor color) noexcept;
     Q_DECL_CONSTEXPR QColor(int r, int g, int b, int a = 255) noexcept
         : cspec(isRgbaValid(r, g, b, a) ? Rgb : Invalid),
-          ct(cspec == Rgb ? a * 0x0101 : 0,
-             cspec == Rgb ? r * 0x0101 : 0,
-             cspec == Rgb ? g * 0x0101 : 0,
-             cspec == Rgb ? b * 0x0101 : 0,
+          ct(ushort(cspec == Rgb ? a * 0x0101 : 0),
+             ushort(cspec == Rgb ? r * 0x0101 : 0),
+             ushort(cspec == Rgb ? g * 0x0101 : 0),
+             ushort(cspec == Rgb ? b * 0x0101 : 0),
              0) {}
     QColor(QRgb rgb) noexcept;
     QColor(QRgba64 rgba64) noexcept;
@@ -89,24 +89,11 @@ public:
     inline QColor(QLatin1String name);
     QColor(Spec spec) noexcept;
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    // ### Qt 6: remove all of these, the trivial ones are fine.
-    Q_DECL_CONSTEXPR QColor(const QColor &color) noexcept
-        : cspec(color.cspec), ct(color.ct)
-    {}
-    Q_DECL_CONSTEXPR QColor(QColor &&other) noexcept : cspec(other.cspec), ct(other.ct) {}
-    QColor &operator=(QColor &&other) noexcept
-    { cspec = other.cspec; ct = other.ct; return *this; }
-    QColor &operator=(const QColor &) noexcept;
-#endif // Qt < 6
-
     QColor &operator=(Qt::GlobalColor color) noexcept;
 
     bool isValid() const noexcept;
 
-    // ### Qt 6: merge overloads
-    QString name() const;
-    QString name(NameFormat format) const;
+    QString name(NameFormat format = HexRgb) const;
 
 #if QT_STRINGVIEW_LEVEL < 2
     void setNamedColor(const QString& name);
@@ -182,11 +169,9 @@ public:
     qreal yellowF() const noexcept;
     qreal blackF() const noexcept;
 
-    void getCmyk(int *c, int *m, int *y, int *k, int *a = nullptr); // ### Qt 6: remove
     void getCmyk(int *c, int *m, int *y, int *k, int *a = nullptr) const;
     void setCmyk(int c, int m, int y, int k, int a = 255);
 
-    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = nullptr); // ### Qt 6: remove
     void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = nullptr) const;
     void setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
 

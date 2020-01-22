@@ -422,7 +422,20 @@ text.data();            // returns "Qt is great!"
 
 QByteArray::fromBase64("PHA+SGVsbG8/PC9wPg==", QByteArray::Base64Encoding); // returns "<p>Hello?</p>"
 QByteArray::fromBase64("PHA-SGVsbG8_PC9wPg==", QByteArray::Base64UrlEncoding); // returns "<p>Hello?</p>"
-//! [44]
+//! [44bis]
+
+//! [44ter]
+void process(const QByteArray &);
+
+if (auto result = QByteArray::fromBase64Encoding(encodedData))
+    process(*result);
+//! [44ter]
+
+//! [44quater]
+auto result = QByteArray::fromBase64Encoding(encodedData);
+if (result.decodingStatus == QByteArray::Base64DecodingStatus::Ok)
+    process(result.decoded);
+//! [44quater]
 
 //! [45]
 QByteArray text = QByteArray::fromHex("517420697320677265617421");

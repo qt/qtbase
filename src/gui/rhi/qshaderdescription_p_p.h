@@ -80,7 +80,9 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
     static const QShaderDescriptionPrivate *get(const QShaderDescription *desc) { return desc->d; }
 
     QJsonDocument makeDoc();
+    void writeToStream(QDataStream *stream);
     void loadDoc(const QJsonDocument &doc);
+    void loadFromStream(QDataStream *stream);
 
     QAtomicInt ref;
     QVector<QShaderDescription::InOutVariable> inVars;

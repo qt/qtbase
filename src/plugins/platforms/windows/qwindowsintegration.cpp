@@ -162,7 +162,7 @@ bool parseIntOption(const QString &parameter,const QLatin1String &option,
                     IntType minimumValue, IntType maximumValue, IntType *target)
 {
     const int valueLength = parameter.size() - option.size() - 1;
-    if (valueLength < 1 || !parameter.startsWith(option) || parameter.at(option.size()) != QLatin1Char('='))
+    if (valueLength < 1 || !parameter.startsWith(option) || parameter.at(option.size()) != u'=')
         return false;
     bool ok;
     const QStringRef valueRef = parameter.rightRef(valueLength);
@@ -186,38 +186,38 @@ static inline unsigned parseOptions(const QStringList &paramList,
 {
     unsigned options = 0;
     for (const QString &param : paramList) {
-        if (param.startsWith(QLatin1String("fontengine="))) {
-            if (param.endsWith(QLatin1String("freetype"))) {
+        if (param.startsWith(u"fontengine=")) {
+            if (param.endsWith(u"freetype")) {
                 options |= QWindowsIntegration::FontDatabaseFreeType;
-            } else if (param.endsWith(QLatin1String("native"))) {
+            } else if (param.endsWith(u"native")) {
                 options |= QWindowsIntegration::FontDatabaseNative;
             }
-        } else if (param.startsWith(QLatin1String("dialogs="))) {
-            if (param.endsWith(QLatin1String("xp"))) {
+        } else if (param.startsWith(u"dialogs=")) {
+            if (param.endsWith(u"xp")) {
                 options |= QWindowsIntegration::XpNativeDialogs;
-            } else if (param.endsWith(QLatin1String("none"))) {
+            } else if (param.endsWith(u"none")) {
                 options |= QWindowsIntegration::NoNativeDialogs;
             }
-        } else if (param == QLatin1String("altgr")) {
+        } else if (param == u"altgr") {
             options |= QWindowsIntegration::DetectAltGrModifier;
-        } else if (param == QLatin1String("gl=gdi")) {
+        } else if (param == u"gl=gdi") {
             options |= QWindowsIntegration::DisableArb;
-        } else if (param == QLatin1String("nodirectwrite")) {
+        } else if (param == u"nodirectwrite") {
             options |= QWindowsIntegration::DontUseDirectWriteFonts;
-        } else if (param == QLatin1String("nocolorfonts")) {
+        } else if (param == u"nocolorfonts") {
             options |= QWindowsIntegration::DontUseColorFonts;
-        } else if (param == QLatin1String("nomousefromtouch")) {
+        } else if (param == u"nomousefromtouch") {
             options |= QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch;
         } else if (parseIntOption(param, QLatin1String("verbose"), 0, INT_MAX, &QWindowsContext::verbose)
             || parseIntOption(param, QLatin1String("tabletabsoluterange"), 0, INT_MAX, tabletAbsoluteRange)
             || parseIntOption(param, QLatin1String("dpiawareness"), QtWindows::ProcessDpiUnaware, QtWindows::ProcessPerMonitorDpiAware, dpiAwareness)) {
-        } else if (param == QLatin1String("menus=native")) {
+        } else if (param == u"menus=native") {
             options |= QWindowsIntegration::AlwaysUseNativeMenus;
-        } else if (param == QLatin1String("menus=none")) {
+        } else if (param == u"menus=none") {
             options |= QWindowsIntegration::NoNativeMenus;
-        } else if (param == QLatin1String("nowmpointer")) {
+        } else if (param == u"nowmpointer") {
             options |= QWindowsIntegration::DontUseWMPointer;
-        } else if (param == QLatin1String("reverse")) {
+        } else if (param == u"reverse") {
             options |= QWindowsIntegration::RtlEnabled;
         } else {
             qWarning() << "Unknown option" << param;
@@ -258,6 +258,8 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
 
     m_context.initTouch(m_options);
     QPlatformCursor::setCapability(QPlatformCursor::OverrideCursor);
+
+    m_context.initPowerNotificationHandler();
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()

@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
     Constructs a new key mapper.
 */
 QKeyMapper::QKeyMapper()
-    : QObject(*new QKeyMapperPrivate, 0)
+    : QObject(*new QKeyMapperPrivate, nullptr)
 {
 }
 

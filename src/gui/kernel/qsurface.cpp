@@ -134,7 +134,7 @@ bool QSurface::supportsOpenGL() const
     Creates a surface with the given \a type.
 */
 QSurface::QSurface(SurfaceClass type)
-    : m_type(type), m_reserved(0)
+    : m_type(type), m_reserved(nullptr)
 {
 }
 

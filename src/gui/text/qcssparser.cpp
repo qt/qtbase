@@ -123,6 +123,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "font-variant", FontVariant },
     { "font-weight", FontWeight },
     { "height", Height },
+    { "icon", QtIcon },
     { "image", QtImage },
     { "image-position", QtImageAlignment },
     { "left", Left },
@@ -443,6 +444,7 @@ void ValueExtractor::lengthValues(const Declaration &decl, int *m)
 {
     if (decl.d->parsed.isValid()) {
         QList<QVariant> v = decl.d->parsed.toList();
+        Q_ASSERT(v.size() == 4);
         for (int i = 0; i < 4; i++)
             m[i] = lengthValueFromData(qvariant_cast<LengthData>(v.at(i)), f);
         return;
@@ -681,7 +683,7 @@ bool ValueExtractor::extractOutline(int *borders, QBrush *colors, BorderStyle *s
 
 static Qt::Alignment parseAlignment(const QCss::Value *values, int count)
 {
-    Qt::Alignment a[2] = { 0, 0 };
+    Qt::Alignment a[2] = { { }, { } };
     for (int i = 0; i < qMin(2, count); i++) {
         if (values[i].type != Value::KnownIdentifier)
             break;
@@ -1377,6 +1379,37 @@ bool ValueExtractor::extractImage(QIcon *icon, Qt::Alignment *a, QSize *size)
         hit = true;
     }
     return hit;
+}
+
+bool ValueExtractor::extractIcon(QIcon *icon, QSize *size)
+{
+    // Find last declaration that specifies an icon
+    const auto declaration = std::find_if(
+                declarations.rbegin(), declarations.rend(),
+                [](const Declaration &decl) { return decl.d->propertyId == QtIcon; });
+    if (declaration == declarations.rend())
+        return false;
+
+    *icon = declaration->iconValue();
+
+    // If the value contains a URI, try to get the size of the icon
+    if (declaration->d->values.isEmpty())
+        return true;
+
+    const auto &propertyValue = declaration->d->values.constFirst();
+    if (propertyValue.type != Value::Uri)
+        return true;
+
+    // First try to read just the size from the image without loading it
+    const QString url(propertyValue.variant.toString());
+    QImageReader imageReader(url);
+    *size = imageReader.size();
+    if (!size->isNull())
+        return true;
+
+    // Get the size by loading the image instead
+    *size = imageReader.read().size();
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

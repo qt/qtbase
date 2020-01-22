@@ -226,12 +226,6 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
         protocols = SP_PROT_TLS1_0 | SP_PROT_TLS1_1 | SP_PROT_TLS1_2;
         // @future Add TLS 1.3 when supported by Windows!
         break;
-    case QSsl::SslV2:
-    case QSsl::SslV3:
-        return DWORD(-1); // Not supported
-    case QSsl::TlsV1SslV3:
-        protocols = SP_PROT_TLS1_0;
-        break;
     case QSsl::TlsV1_0:
         protocols = SP_PROT_TLS1_0;
         break;
@@ -582,7 +576,7 @@ bool QSslSocketBackendPrivate::sendToken(void *token, unsigned long tokenLength,
     if (written != qint64(tokenLength)) {
         // Failed to write/buffer everything or an error occurred
         if (emitError)
-            setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
+            setErrorAndEmit(plainSocket->socketError(), plainSocket->errorString());
         return false;
     }
     return true;
@@ -1030,6 +1024,7 @@ bool QSslSocketBackendPrivate::performHandshake()
 bool QSslSocketBackendPrivate::verifyHandshake()
 {
     Q_Q(QSslSocket);
+    sslErrors.clear();
 
     const bool isClient = mode == QSslSocket::SslClientMode;
 #define CHECK_STATUS(status)                                                  \
@@ -1118,7 +1113,7 @@ bool QSslSocketBackendPrivate::verifyHandshake()
     }
 
     // verifyCertContext returns false if the user disconnected while it was checking errors.
-    if (certificateContext && sslErrors.isEmpty() && !verifyCertContext(certificateContext))
+    if (certificateContext && !verifyCertContext(certificateContext))
         return false;
 
     if (!checkSslErrors() || state != QAbstractSocket::ConnectedState) {
@@ -1291,7 +1286,7 @@ void QSslSocketBackendPrivate::transmit()
             if (bytesWritten >= 0) {
                 totalBytesWritten += bytesWritten;
             } else {
-                setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
+                setErrorAndEmit(plainSocket->socketError(), plainSocket->errorString());
                 return;
             }
         }

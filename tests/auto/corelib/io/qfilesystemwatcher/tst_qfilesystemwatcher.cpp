@@ -34,6 +34,9 @@
 #include <QElapsedTimer>
 #include <QTextStream>
 #include <QDir>
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#include <windows.h>
+#endif
 
 /* All tests need to run in temporary directories not used
  * by the application to avoid non-deterministic failures on Windows
@@ -79,6 +82,9 @@ private slots:
     void signalsEmittedAfterFileMoved();
 
     void watchUnicodeCharacters();
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    void watchDirectoryAttributeChanges();
+#endif
 
 private:
     QString m_tempDirPattern;
@@ -812,6 +818,28 @@ void tst_QFileSystemWatcher::watchUnicodeCharacters()
     QVERIFY(testDir.mkdir("creme"));
     QTRY_COMPARE(changedSpy.count(), 1);
 }
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+void tst_QFileSystemWatcher::watchDirectoryAttributeChanges()
+{
+    QTemporaryDir temporaryDirectory(m_tempDirPattern);
+    QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
+
+    QDir testDir(temporaryDirectory.path());
+    const QString subDir(QString::fromLatin1("attrib_test"));
+    QVERIFY(testDir.mkdir(subDir));
+    testDir = QDir(temporaryDirectory.path() + QDir::separator() + subDir);
+
+    QFileSystemWatcher watcher;
+    QVERIFY(watcher.addPath(temporaryDirectory.path()));
+    FileSystemWatcherSpy changedSpy(&watcher, FileSystemWatcherSpy::SpyOnDirectoryChanged);
+    QCOMPARE(changedSpy.count(), 0);
+    QVERIFY(SetFileAttributes(reinterpret_cast<LPCWSTR>(testDir.absolutePath().utf16()), FILE_ATTRIBUTE_HIDDEN) != 0);
+    QTRY_COMPARE(changedSpy.count(), 1);
+    QVERIFY(SetFileAttributes(reinterpret_cast<LPCWSTR>(testDir.absolutePath().utf16()), FILE_ATTRIBUTE_NORMAL) != 0);
+    QTRY_COMPARE(changedSpy.count(), 2);
+}
+#endif
 
 QTEST_MAIN(tst_QFileSystemWatcher)
 #include "tst_qfilesystemwatcher.moc"

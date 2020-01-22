@@ -78,7 +78,7 @@
 #include <QtGui/private/qrhid3d11_p.h>
 #endif
 
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include <QtGui/private/qrhimetal_p.h>
 #endif
 
@@ -148,7 +148,7 @@ void createRhi()
     }
 #endif
 
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
     if (graphicsApi == Metal) {
         QRhiMetalInitParams params;
         r.r = QRhi::create(QRhi::Metal, &params);
@@ -530,7 +530,7 @@ int main(int argc, char **argv)
 
 #if defined(Q_OS_WIN)
     graphicsApi = D3D11;
-#elif defined(Q_OS_DARWIN)
+#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
     graphicsApi = Metal;
 #elif QT_CONFIG(vulkan)
     graphicsApi = Vulkan;

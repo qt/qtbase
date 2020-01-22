@@ -1365,6 +1365,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             QWindowsStyle::drawControl(element, &copyOpt, painter, widget);
         }
         break;
+#if QT_CONFIG(dockwidget)
     case CE_DockWidgetTitle:
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
             const QDockWidget *dockWidget = qobject_cast<const QDockWidget *>(widget);
@@ -1431,6 +1432,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 }
             }
             break;
+#endif // QT_CONFIG(dockwidget)
 #if QT_CONFIG(itemviews)
     case CE_ItemViewItem:
         {
@@ -2110,7 +2112,7 @@ int QWindowsVistaStyle::styleHint(StyleHint hint, const QStyleOption *option, co
         break;
      case SH_Table_GridLineColor:
         if (option)
-            ret = int(option->palette.color(QPalette::Base).darker(118).rgb());
+            ret = int(option->palette.color(QPalette::Base).darker(118).rgba());
         else
             ret = -1;
         break;
@@ -2311,11 +2313,13 @@ void QWindowsVistaStyle::polish(QWidget *widget)
 #endif // QT_CONFIG(lineedit)
     if (qobject_cast<QGroupBox*>(widget))
         widget->setAttribute(Qt::WA_Hover);
+#if QT_CONFIG(commandlinkbutton)
     else if (qobject_cast<QCommandLinkButton*>(widget)) {
         QFont buttonFont = widget->font();
         buttonFont.setFamily(QLatin1String("Segoe UI"));
         widget->setFont(buttonFont);
     }
+#endif // QT_CONFIG(commandlinkbutton)
     else if (widget->inherits("QTipLabel")){
         //note that since tooltips are not reused
         //we do not have to care about unpolishing
@@ -2392,12 +2396,15 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
 #endif // QT_CONFIG(inputdialog)
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget)) {
         tree->viewport()->setAttribute(Qt::WA_Hover, false);
-    } else if (qobject_cast<QCommandLinkButton*>(widget)) {
+    }
+#if QT_CONFIG(commandlinkbutton)
+    else if (qobject_cast<QCommandLinkButton*>(widget)) {
         QFont font = QApplication::font("QCommandLinkButton");
         QFont widgetFont = widget->font();
         widgetFont.setFamily(font.family()); //Only family set by polish
         widget->setFont(widgetFont);
     }
+#endif // QT_CONFIG(commandlinkbutton)
 }
 
 

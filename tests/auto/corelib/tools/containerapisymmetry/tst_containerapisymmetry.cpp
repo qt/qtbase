@@ -51,7 +51,7 @@
 #ifdef Q_CC_MSVC
 #define COMPILER_HAS_STDLIB_INCLUDE(x) 1
 #else
-#define COMPILER_HAS_STDLIB_INCLUDE(x) QT_HAS_INCLUDE(x)
+#define COMPILER_HAS_STDLIB_INCLUDE(x) __has_include(x)
 #endif
 
 #if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)
@@ -795,8 +795,6 @@ template <> QStringView   make(int size) { return QStringView(s_string).left(siz
 template <> QLatin1String make(int size) { return QLatin1String("\1\2\3\4\5\6\7", size); }
 
 template <typename T> T clean(T &&t) { return std::forward<T>(t); }
-inline QChar clean(QCharRef ch) { return ch; }
-inline char clean(QByteRef ch) { return ch; }
 inline char clean(QLatin1Char ch) { return ch.toLatin1(); }
 
 template <typename Container>

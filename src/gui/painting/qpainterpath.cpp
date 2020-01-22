@@ -546,7 +546,7 @@ void QPainterPath::setElementPositionAt(int i, qreal x, qreal y)
     Constructs an empty QPainterPath object.
 */
 QPainterPath::QPainterPath() noexcept
-    : d_ptr(0)
+    : d_ptr(nullptr)
 {
 }
 
@@ -602,7 +602,7 @@ void QPainterPath::ensureData_helper()
     QPainterPath::Element e = { 0, 0, QPainterPath::MoveToElement };
     data->elements << e;
     d_ptr.reset(data);
-    Q_ASSERT(d_ptr != 0);
+    Q_ASSERT(d_ptr != nullptr);
 }
 
 /*!
@@ -1036,7 +1036,7 @@ void QPainterPath::arcMoveTo(const QRectF &rect, qreal angle)
         return;
 
     QPointF pt;
-    qt_find_ellipse_coords(rect, angle, 0, &pt, 0);
+    qt_find_ellipse_coords(rect, angle, 0, &pt, nullptr);
     moveTo(pt);
 }
 
@@ -1253,7 +1253,7 @@ void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &
             fe->addOutlineToPath(x, y, glyphs, this,
                                  si.analysis.bidiLevel % 2
                                  ? QTextItem::RenderFlags(QTextItem::RightToLeft)
-                                 : QTextItem::RenderFlags(0));
+                                 : QTextItem::RenderFlags{});
 
             const qreal lw = fe->lineThickness().toReal();
             if (f.d->underline) {

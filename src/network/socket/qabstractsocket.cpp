@@ -215,7 +215,7 @@
     connections, you will have to register it with Q_DECLARE_METATYPE() and
     qRegisterMetaType().
 
-    \sa error(), errorString(), {Creating Custom Qt Types}
+    \sa socketError(), errorString(), {Creating Custom Qt Types}
 */
 
 /*!
@@ -329,7 +329,7 @@
            is non-blocking).
 
     \value UnknownSocketError An unidentified error occurred.
-    \sa QAbstractSocket::error()
+    \sa QAbstractSocket::socketError()
 */
 
 /*!
@@ -564,12 +564,12 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       port(0),
       localPort(0),
       peerPort(0),
-      socketEngine(0),
+      socketEngine(nullptr),
       cachedSocketDescriptor(-1),
       readBufferMaxSize(0),
       isBuffered(false),
       hasPendingData(false),
-      connectTimer(0),
+      connectTimer(nullptr),
       hostLookupId(-1),
       socketType(QAbstractSocket::UnknownSocketType),
       state(QAbstractSocket::UnconnectedState),
@@ -603,7 +603,7 @@ void QAbstractSocketPrivate::resetSocketLayer()
         socketEngine->close();
         socketEngine->disconnect();
         delete socketEngine;
-        socketEngine = 0;
+        socketEngine = nullptr;
         cachedSocketDescriptor = -1;
     }
     if (connectTimer)
@@ -659,7 +659,7 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
 
     configureCreatedSocket();
 
-    if (threadData->hasEventDispatcher())
+    if (threadData.loadRelaxed()->hasEventDispatcher())
         socketEngine->setReceiver(this);
 
 #if defined (QABSTRACTSOCKET_DEBUG)
@@ -1138,7 +1138,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
         }
 
         // Start the connect timer.
-        if (threadData->hasEventDispatcher()) {
+        if (threadData.loadRelaxed()->hasEventDispatcher()) {
             if (!connectTimer) {
                 connectTimer = new QTimer(q);
                 QObject::connect(connectTimer, SIGNAL(timeout()),
@@ -1740,7 +1740,7 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
         return;
 #endif
     } else {
-        if (d->threadData->hasEventDispatcher()) {
+        if (d->threadData.loadRelaxed()->hasEventDispatcher()) {
             // this internal API for QHostInfo either immediately gives us the desired
             // QHostInfo from cache or later calls the _q_startConnecting slot.
             bool immediateResultValid = false;
@@ -1953,7 +1953,7 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
 
     // Sync up with error string, which open() shall clear.
     d->socketError = UnknownSocketError;
-    if (d->threadData->hasEventDispatcher())
+    if (d->threadData.loadRelaxed()->hasEventDispatcher())
         d->socketEngine->setReceiver(d);
 
     QIODevice::open(openMode);
@@ -2094,7 +2094,7 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
     Waits until the socket is connected, up to \a msecs
     milliseconds. If the connection has been established, this
     function returns \c true; otherwise it returns \c false. In the case
-    where it returns \c false, you can call error() to determine
+    where it returns \c false, you can call socketError() to determine
     the cause of the error.
 
     The following example waits up to one second for a connection
@@ -2144,20 +2144,13 @@ bool QAbstractSocket::waitForConnected(int msecs)
 #endif
         QHostInfo::abortHostLookup(d->hostLookupId);
         d->hostLookupId = -1;
-#ifndef QT_NO_BEARERMANAGEMENT
-        if (networkSession) {
-            d->_q_startConnecting(QHostInfoPrivate::fromName(d->hostName, networkSession));
-        } else
-#endif
-        {
-            QHostAddress temp;
-            if (temp.setAddress(d->hostName)) {
-                QHostInfo info;
-                info.setAddresses(QList<QHostAddress>() << temp);
-                d->_q_startConnecting(info);
-            } else {
-                d->_q_startConnecting(QHostInfo::fromName(d->hostName));
-            }
+        QHostAddress temp;
+        if (temp.setAddress(d->hostName)) {
+            QHostInfo info;
+            info.setAddresses(QList<QHostAddress>() << temp);
+            d->_q_startConnecting(info);
+        } else {
+            d->_q_startConnecting(QHostInfo::fromName(d->hostName));
         }
     }
     if (state() == UnconnectedState)
@@ -2359,11 +2352,12 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 }
 
 /*!
-    Waits until the socket has disconnected, up to \a msecs
-    milliseconds. If the connection has been disconnected, this
-    function returns \c true; otherwise it returns \c false. In the case
-    where it returns \c false, you can call error() to determine
-    the cause of the error.
+    Waits until the socket has disconnected, up to \a msecs milliseconds. If the
+    connection was successfully disconnected, this function returns \c true;
+    otherwise it returns \c false (if the operation timed out, if an error
+    occurred, or if this QAbstractSocket is already disconnected). In the case
+    where it returns \c false, you can call error() to determine the cause of
+    the error.
 
     The following example waits up to one second for a connection
     to be closed:
@@ -2872,7 +2866,7 @@ void QAbstractSocket::setReadBufferSize(qint64 size)
 /*!
     Returns the state of the socket.
 
-    \sa error()
+    \sa socketError()
 */
 QAbstractSocket::SocketState QAbstractSocket::state() const
 {
@@ -2899,15 +2893,34 @@ QAbstractSocket::SocketType QAbstractSocket::socketType() const
     return d_func()->socketType;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
+    \deprecated
+
+    Use socketError() instead.
+
+    Returns the type of error that last occurred.
+
+    \sa state(), errorString(), socketError()
+*/
+QAbstractSocket::SocketError QAbstractSocket::error() const
+{
+    return socketError();
+}
+#endif //  QT_DEPRECATED_SINCE(5, 15)
+
+/*!
+    \since 5.15
+
     Returns the type of error that last occurred.
 
     \sa state(), errorString()
 */
-QAbstractSocket::SocketError QAbstractSocket::error() const
+QAbstractSocket::SocketError QAbstractSocket::socketError() const
 {
     return d_func()->socketError;
 }
+
 
 /*!
     Sets the type of error that last occurred to \a socketError.

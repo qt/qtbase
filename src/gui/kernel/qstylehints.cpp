@@ -116,7 +116,7 @@ public:
     \sa QGuiApplication::styleHints()
  */
 QStyleHints::QStyleHints()
-    : QObject(*new QStyleHintsPrivate(), 0)
+    : QObject(*new QStyleHintsPrivate(), nullptr)
 {
 }
 

@@ -56,6 +56,9 @@ Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 
 #ifndef QT_NO_HIGHDPISCALING
 static const char legacyDevicePixelEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
+
+// Note: QT_AUTO_SCREEN_SCALE_FACTOR is Done on X11, and should be kept
+// working as-is. It's Deprecated on all other platforms.
 static const char legacyAutoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
 
 static const char enableHighDpiScalingEnvVar[] = "QT_ENABLE_HIGHDPI_SCALING";
@@ -103,12 +106,6 @@ static inline qreal initialGlobalScaleFactor()
             int dpr = qEnvironmentVariableIntValue(legacyDevicePixelEnvVar);
             if (dpr > 0)
                 result = dpr;
-        }
-
-        if (qEnvironmentVariableIsSet(legacyAutoScreenEnvVar)) {
-            qWarning("Warning: %s is deprecated. Instead use:\n"
-                     "   %s to enable platform plugin controlled per-screen factors.",
-                     legacyAutoScreenEnvVar, enableHighDpiScalingEnvVar);
         }
     }
     return result;
@@ -644,7 +641,7 @@ QPoint QHighDpiScaling::mapPositionFromGlobal(const QPoint &pos, const QPoint &w
 
 qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
 {
-    qreal factor = qreal(1.0);
+    auto factor = qreal(1.0);
     if (!screen)
         return factor;
 
@@ -657,14 +654,16 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
         // Check if there is a factor set on the screen object or associated
         // with the screen name. These are mutually exclusive, so checking
         // order is not significant.
-        QVariant byIndex = screen->screen()->property(scaleFactorProperty);
-        auto byNameIt = qNamedScreenScaleFactors()->constFind(screen->name());
-        if (byIndex.isValid()) {
-            screenPropertyUsed = true;
-            factor = byIndex.toReal();
-        } else if (byNameIt != qNamedScreenScaleFactors()->cend()) {
-            screenPropertyUsed = true;
-            factor = *byNameIt;
+        if (auto qScreen = screen->screen()) {
+            auto screenFactor = qScreen->property(scaleFactorProperty).toReal(&screenPropertyUsed);
+            if (screenPropertyUsed)
+                factor = screenFactor;
+        }
+
+        if (!screenPropertyUsed) {
+            auto byNameIt = qNamedScreenScaleFactors()->constFind(screen->name());
+            if ((screenPropertyUsed = byNameIt != qNamedScreenScaleFactors()->cend()))
+                factor = *byNameIt;
         }
     }
 

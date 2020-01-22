@@ -49,6 +49,7 @@ extern QString qtQualifier;
 extern QString qualifier;
 extern QString self;
 extern QString eol;
+extern QString emptyString;
 
 extern QString cppQualifier;
 extern QString cppTrue;

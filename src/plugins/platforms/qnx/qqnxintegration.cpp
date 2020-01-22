@@ -170,6 +170,9 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #if QT_CONFIG(draganddrop)
     , m_drag(new QSimpleDrag())
 #endif
+#if QT_CONFIG(opengl)
+    , m_eglDisplay(EGL_NO_DISPLAY)
+#endif
 {
     ms_instance = this;
     m_options = parseOptions(paramList);
@@ -195,9 +198,8 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     QMetaObject::invokeMethod(m_navigatorEventNotifier, "start", Qt::QueuedConnection);
 #endif
 
-#if !defined(QT_NO_OPENGL)
-    // Initialize global OpenGL resources
-    QQnxGLContext::initializeContext();
+#if QT_CONFIG(opengl)
+    createEglDisplay();
 #endif
 
     // Create/start event thread
@@ -284,9 +286,8 @@ QQnxIntegration::~QQnxIntegration()
     // Close connection to QNX composition manager
     screen_destroy_context(m_screenContext);
 
-#if !defined(QT_NO_OPENGL)
-    // Cleanup global OpenGL resources
-    QQnxGLContext::shutdownContext();
+#if QT_CONFIG(opengl)
+    destroyEglDisplay();
 #endif
 
 #if QT_CONFIG(qqnx_pps)
@@ -740,5 +741,29 @@ bool QQnxIntegration::supportsNavigatorEvents() const
     // If QQNX_PPS is defined then we have navigator
     return m_navigator != 0;
 }
+
+#if QT_CONFIG(opengl)
+void QQnxIntegration::createEglDisplay()
+{
+    qIntegrationDebug();
+
+    // Initialize connection to EGL
+    m_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (Q_UNLIKELY(m_eglDisplay == EGL_NO_DISPLAY))
+        qFatal("QQnxiIntegration: failed to obtain EGL display: %x", eglGetError());
+
+    EGLBoolean eglResult = eglInitialize(m_eglDisplay, 0, 0);
+    if (Q_UNLIKELY(eglResult != EGL_TRUE))
+        qFatal("QQnxIntegration: failed to initialize EGL display, err=%d", eglGetError());
+}
+
+void QQnxIntegration::destroyEglDisplay()
+{
+    qIntegrationDebug();
+
+    // Close connection to EGL
+    eglTerminate(m_eglDisplay);
+}
+#endif
 
 QT_END_NAMESPACE

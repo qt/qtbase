@@ -181,7 +181,7 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QS
 #elif QT_CONFIG(regularexpression)
     nameRegExps.reserve(nameFilters.size());
     for (const auto &filter : nameFilters) {
-        QString re = QRegularExpression::anchoredPattern(QRegularExpression::wildcardToRegularExpression(filter));
+        QString re = QRegularExpression::wildcardToRegularExpression(filter);
         nameRegExps.append(
             QRegularExpression(re, (filters & QDir::CaseSensitive) ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption));
     }

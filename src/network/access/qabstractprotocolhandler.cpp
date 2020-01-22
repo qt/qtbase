@@ -43,7 +43,7 @@
 QT_BEGIN_NAMESPACE
 
 QAbstractProtocolHandler::QAbstractProtocolHandler(QHttpNetworkConnectionChannel *channel)
-    : m_channel(channel), m_reply(0), m_socket(m_channel->socket), m_connection(m_channel->connection)
+    : m_channel(channel), m_reply(nullptr), m_socket(m_channel->socket), m_connection(m_channel->connection)
 {
     Q_ASSERT(m_channel);
     Q_ASSERT(m_socket);

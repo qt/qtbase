@@ -1013,7 +1013,7 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     Returns a pointer to a modifiable reference to the current item.
 */
 
-/*! \fn QJsonValueRef QJsonObject::iterator::operator[](int j) const
+/*! \fn const QJsonValueRef QJsonObject::iterator::operator[](int j)
 
     Returns a modifiable reference to the item at offset \a j from the
     item pointed to by this iterator (the item at position \c{*this + j}).
@@ -1264,7 +1264,7 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     Returns a pointer to the current item.
 */
 
-/*! \fn QJsonValue QJsonObject::const_iterator::operator[](int j) const
+/*! \fn const QJsonValue QJsonObject::const_iterator::operator[](int j)
 
     Returns the item at offset \a j from the item pointed to by this iterator (the item at
     position \c{*this + j}).

@@ -42,6 +42,7 @@
 #define QEGLFSKMSDEVICE_H
 
 #include "private/qeglfsglobal_p.h"
+#include "qeglfskmseventreader.h"
 #include <QtKmsSupport/private/qkmsdevice_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,6 +56,11 @@ public:
                         bool isPrimary,
                         const QPoint &virtualPos,
                         const QList<QPlatformScreen *> &virtualSiblings) override;
+
+    QEglFSKmsEventReader *eventReader() { return &m_eventReader; }
+
+protected:
+    QEglFSKmsEventReader m_eventReader;
 };
 
 QT_END_NAMESPACE

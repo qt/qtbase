@@ -86,6 +86,7 @@ public:
 
     QBinaryJsonValue(QBinaryJsonValue &&other) noexcept
         : ui(other.ui),
+          stringData(std::move(other.stringData)),
           d(other.d),
           t(other.t)
     {
@@ -96,6 +97,7 @@ public:
 
     QBinaryJsonValue &operator =(QBinaryJsonValue &&other) noexcept
     {
+        qSwap(stringData, other.stringData);
         qSwap(ui, other.ui);
         qSwap(d, other.d);
         qSwap(t, other.t);
@@ -122,9 +124,9 @@ private:
         quint64 ui;
         bool b;
         double dbl;
-        QStringData *stringData;
         const QBinaryJsonPrivate::Base *base;
     };
+    QString stringData;
     QBinaryJsonPrivate::MutableData *d = nullptr; // needed for Objects and Arrays
     QJsonValue::Type t = QJsonValue::Null;
 };

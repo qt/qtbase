@@ -124,12 +124,12 @@ public:
         QLibrarySettings *ls = qt_library_settings();
         if (ls) {
 #ifndef QT_BUILD_QMAKE
-            if (ls->reloadOnQAppAvailable && QCoreApplication::instance() != 0)
+            if (ls->reloadOnQAppAvailable && QCoreApplication::instance() != nullptr)
                 ls->load();
 #endif
             return ls->settings.data();
         } else {
-            return 0;
+            return nullptr;
         }
     }
 };
@@ -146,7 +146,7 @@ void QLibrarySettings::load()
     // If we get any settings here, those won't change when the application shows up.
     settings.reset(QLibraryInfoPrivate::findConfiguration());
 #ifndef QT_BUILD_QMAKE
-    reloadOnQAppAvailable = (settings.data() == 0 && QCoreApplication::instance() == 0);
+    reloadOnQAppAvailable = (settings.data() == nullptr && QCoreApplication::instance() == nullptr);
     bool haveDevicePaths;
     bool haveEffectivePaths;
     bool havePaths;
@@ -169,7 +169,7 @@ void QLibrarySettings::load()
                     || children.contains(QLatin1String("Paths"));
 #ifndef QT_BUILD_QMAKE
         if (!havePaths)
-            settings.reset(0);
+            settings.reset(nullptr);
 #else
     } else {
         haveDevicePaths = false;
@@ -212,7 +212,7 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
             return new QSettings(qtconfig, QSettings::IniFormat);
     }
 #endif
-    return 0;     //no luck
+    return nullptr;     //no luck
 }
 
 #endif // settings
@@ -561,9 +561,39 @@ static QString getRelocatablePrefix()
     HMODULE hModule = getWindowsModuleHandle();
     const int kBufferSize = 4096;
     wchar_t buffer[kBufferSize];
-    const int pathSize = GetModuleFileName(hModule, buffer, kBufferSize);
-    if (pathSize > 0)
-        prefixPath = prefixFromQtCoreLibraryHelper(QString::fromWCharArray(buffer, pathSize));
+    DWORD pathSize = GetModuleFileName(hModule, buffer, kBufferSize);
+    const QString qtCoreFilePath = QString::fromWCharArray(buffer, int(pathSize));
+    const QString qtCoreDirPath = QFileInfo(qtCoreFilePath).absolutePath();
+    pathSize = GetModuleFileName(NULL, buffer, kBufferSize);
+    const QString exeDirPath = QFileInfo(QString::fromWCharArray(buffer, int(pathSize))).absolutePath();
+    if (QFileInfo(exeDirPath) == QFileInfo(qtCoreDirPath)) {
+        // QtCore DLL is next to the executable. This is either a windeployqt'ed executable or an
+        // executable within the QT_HOST_BIN directory. We're detecting the latter case by checking
+        // whether there's an import library corresponding to our QtCore DLL in PREFIX/lib.
+        const QString libdir = QString::fromLatin1(
+            qt_configure_strs + qt_configure_str_offsets[QLibraryInfo::LibrariesPath - 1]);
+        const QLatin1Char slash('/');
+#if defined(Q_CC_MINGW)
+        const QString implibPrefix = QStringLiteral("lib");
+        const QString implibSuffix = QStringLiteral(".a");
+#else
+        const QString implibPrefix;
+        const QString implibSuffix = QStringLiteral(".lib");
+#endif
+        const QString qtCoreImpLibFileName = implibPrefix
+                + QFileInfo(qtCoreFilePath).completeBaseName() + implibSuffix;
+        const QString qtCoreImpLibPath = qtCoreDirPath
+                + slash + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH)
+                + slash + libdir
+                + slash + qtCoreImpLibFileName;
+        if (!QFileInfo::exists(qtCoreImpLibPath)) {
+            // We did not find a corresponding import library and conclude that this is a
+            // windeployqt'ed executable.
+            return exeDirPath;
+        }
+    }
+    if (!qtCoreFilePath.isEmpty())
+        prefixPath = prefixFromQtCoreLibraryHelper(qtCoreFilePath);
 #else
 #error "The chosen platform / config does not support querying for a dynamic prefix."
 #endif
@@ -751,7 +781,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         // will binary-patch the Qt installation paths -- in such scenarios, Qt
         // will be built with a dummy path, thus the compile-time result of
         // strlen is meaningless.
-        const char * volatile path = 0;
+        const char * volatile path = nullptr;
         if (loc == PrefixPath) {
             path = getPrefix(
 #ifdef QT_BUILD_QMAKE
@@ -892,10 +922,10 @@ void qt_core_boilerplate()
            "\n"
            "Installation prefix: %s\n"
            "Library path:        %s\n"
-           "Include path:        %s\n",
+           "Plugin path:         %s\n",
            qt_configure_prefix_path_str + 12,
            qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath - 1],
-           qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::HeadersPath - 1]);
+           qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::PluginsPath - 1]);
 
     QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 

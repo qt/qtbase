@@ -116,7 +116,7 @@ QSaveFile::QSaveFile(const QString &name)
     Constructs a new file object to represent the file with the given \a name.
 */
 QSaveFile::QSaveFile(const QString &name)
-    : QFileDevice(*new QSaveFilePrivate, 0)
+    : QFileDevice(*new QSaveFilePrivate, nullptr)
 {
     Q_D(QSaveFile);
     d->fileName = name;

@@ -176,7 +176,7 @@ QAbstractButtonPrivate::QAbstractButtonPrivate(QSizePolicy::ControlType type)
     checkable(false), checked(false), autoRepeat(false), autoExclusive(false),
     down(false), blockRefresh(false), pressed(false),
 #if QT_CONFIG(buttongroup)
-    group(0),
+    group(nullptr),
 #endif
     autoRepeatDelay(AUTO_REPEAT_DELAY),
     autoRepeatInterval(AUTO_REPEAT_INTERVAL),
@@ -216,14 +216,14 @@ QAbstractButton *QAbstractButtonPrivate::queryCheckedButton() const
     Q_Q(const QAbstractButton);
     QList<QAbstractButton *> buttonList = queryButtonList();
     if (!autoExclusive || buttonList.count() == 1) // no group
-        return 0;
+        return nullptr;
 
     for (int i = 0; i < buttonList.count(); ++i) {
         QAbstractButton *b = buttonList.at(i);
         if (b->d_func()->checked && b != q)
             return b;
     }
-    return checked  ? const_cast<QAbstractButton *>(q) : 0;
+    return checked  ? const_cast<QAbstractButton *>(q) : nullptr;
 }
 
 void QAbstractButtonPrivate::notifyChecked()
@@ -256,7 +256,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
     if (!fb || !buttonList.contains(fb))
         return;
 
-    QAbstractButton *candidate = 0;
+    QAbstractButton *candidate = nullptr;
     int bestScore = -1;
     QRect target = f->rect().translated(f->mapToGlobal(QPoint(0,0)));
     QPoint goal = target.center();
@@ -467,7 +467,7 @@ void QAbstractButtonPrivate::emitToggled(bool checked)
     Constructs an abstract button with a \a parent.
 */
 QAbstractButton::QAbstractButton(QWidget *parent)
-    : QWidget(*new QAbstractButtonPrivate, parent, 0)
+    : QWidget(*new QAbstractButtonPrivate, parent, { })
 {
     Q_D(QAbstractButton);
     d->init();
@@ -489,7 +489,7 @@ QAbstractButton::QAbstractButton(QWidget *parent)
 /*! \internal
  */
 QAbstractButton::QAbstractButton(QAbstractButtonPrivate &dd, QWidget *parent)
-    : QWidget(dd, parent, 0)
+    : QWidget(dd, parent, { })
 {
     Q_D(QAbstractButton);
     d->init();
@@ -1271,7 +1271,7 @@ QSize QAbstractButton::iconSize() const
     Q_D(const QAbstractButton);
     if (d->iconSize.isValid())
         return d->iconSize;
-    int e = style()->pixelMetric(QStyle::PM_ButtonIconSize, 0, this);
+    int e = style()->pixelMetric(QStyle::PM_ButtonIconSize, nullptr, this);
     return QSize(e, e);
 }
 

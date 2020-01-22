@@ -65,7 +65,7 @@ class QAlphaWidget: public QWidget, private QEffects
 {
     Q_OBJECT
 public:
-    QAlphaWidget(QWidget* w, Qt::WindowFlags f = 0);
+    QAlphaWidget(QWidget* w, Qt::WindowFlags f = { });
     ~QAlphaWidget();
 
     void run(int time);
@@ -93,7 +93,7 @@ private:
     QElapsedTimer checkTime;
 };
 
-static QAlphaWidget* q_blend = 0;
+static QAlphaWidget* q_blend = nullptr;
 
 /*
   Constructs a QAlphaWidget.
@@ -285,7 +285,7 @@ void QAlphaWidget::render()
                 lower();
             }
         }
-        q_blend = 0;
+        q_blend = nullptr;
         deleteLater();
     } else {
         alphaBlend();
@@ -377,13 +377,13 @@ private:
     QPixmap pm;
 };
 
-static QRollEffect* q_roll = 0;
+static QRollEffect* q_roll = nullptr;
 
 /*
   Construct a QRollEffect widget.
 */
 QRollEffect::QRollEffect(QWidget* w, Qt::WindowFlags f, DirFlags orient)
-    : QWidget(0, f), orientation(orient)
+    : QWidget(nullptr, f), orientation(orient)
 {
 #ifndef Q_OS_WIN
     setEnabled(false);
@@ -550,7 +550,7 @@ void QRollEffect::scroll()
                 lower();
             }
         }
-        q_roll = 0;
+        q_roll = nullptr;
         deleteLater();
     }
 }
@@ -563,7 +563,7 @@ void qScrollEffect(QWidget* w, QEffects::DirFlags orient, int time)
 {
     if (q_roll) {
         q_roll->deleteLater();
-        q_roll = 0;
+        q_roll = nullptr;
     }
 
     if (!w)
@@ -585,7 +585,7 @@ void qFadeEffect(QWidget* w, int time)
 {
     if (q_blend) {
         q_blend->deleteLater();
-        q_blend = 0;
+        q_blend = nullptr;
     }
 
     if (!w)

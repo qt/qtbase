@@ -283,9 +283,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return d->uiLanguages.isEmpty() ? QVariant() : QVariant(d->uiLanguages);
     }
     case StringToStandardQuotation:
-        return lc_messages.quoteString(in.value<QStringRef>());
+        return lc_messages.quoteString(qvariant_cast<QStringRef>(in));
     case StringToAlternateQuotation:
-        return lc_messages.quoteString(in.value<QStringRef>(), QLocale::AlternateQuotation);
+        return lc_messages.quoteString(qvariant_cast<QStringRef>(in), QLocale::AlternateQuotation);
     case ListToSeparatedString:
         return lc_messages.createSeparatedList(in.toStringList());
     case LocaleChanged:

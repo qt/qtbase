@@ -70,7 +70,7 @@ src_winmain.depends = sub-corelib  # just for the module .pri file
 
 src_corelib.subdir = $$PWD/corelib
 src_corelib.target = sub-corelib
-src_corelib.depends = src_tools_moc src_tools_rcc src_tools_tracegen
+src_corelib.depends = src_tools_moc src_tools_tracegen
 
 src_xml.subdir = $$PWD/xml
 src_xml.target = sub-xml
@@ -118,7 +118,7 @@ src_angle.target = sub-angle
 
 src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui
-src_gui.depends = src_corelib
+src_gui.depends = src_corelib src_tools_rcc
 
 src_platformheaders.subdir = $$PWD/platformheaders
 src_platformheaders.target = sub-platformheaders
@@ -134,7 +134,7 @@ src_widgets.depends = src_corelib src_gui src_tools_uic src_platformheaders
 
 src_opengl.subdir = $$PWD/opengl
 src_opengl.target = sub-opengl
-src_opengl.depends = src_gui src_widgets
+src_opengl.depends = src_gui
 
 src_openglextensions.subdir = $$PWD/openglextensions
 src_openglextensions.target = sub-openglextensions
@@ -217,7 +217,11 @@ qtConfig(gui) {
         TOOLS += src_tools_qvkgen
     }
     SUBDIRS += src_gui src_platformsupport src_platformheaders
-    qtConfig(opengl): SUBDIRS += src_openglextensions
+    qtConfig(opengl) {
+        SUBDIRS += src_openglextensions
+        SUBDIRS += src_opengl
+        src_plugins.depends += src_opengl
+    }
     src_plugins.depends += src_gui src_platformsupport src_platformheaders
     src_testlib.depends += src_gui      # if QtGui is enabled, QtTest requires QtGui's headers
     qtConfig(widgets) {
@@ -225,13 +229,10 @@ qtConfig(gui) {
         TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
         src_testlib.depends += src_widgets        # if QtWidgets is enabled, QtTest requires QtWidgets's headers
+        src_opengl.depends += src_widgets
         qtConfig(printer) {
             SUBDIRS += src_printsupport
             src_plugins.depends += src_printsupport
-        }
-        qtConfig(opengl) {
-            SUBDIRS += src_opengl
-            src_plugins.depends += src_opengl
         }
     }
 }

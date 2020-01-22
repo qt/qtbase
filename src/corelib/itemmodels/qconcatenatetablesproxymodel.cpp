@@ -497,7 +497,7 @@ void QConcatenateTablesProxyModel::removeSourceModel(QAbstractItemModel *sourceM
 {
     Q_D(QConcatenateTablesProxyModel);
     Q_ASSERT(d->m_models.contains(sourceModel));
-    disconnect(sourceModel, 0, this, 0);
+    disconnect(sourceModel, nullptr, this, nullptr);
 
     const int rowsRemoved = sourceModel->rowCount();
     const int rowsPrior = d->computeRowsPrior(sourceModel);   // location of removed section

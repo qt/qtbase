@@ -8,7 +8,7 @@ image_convertToFormat zebra_png zebra ARGB32_Premultiplied
 
 translate 75 100
 # standard draw
-begin_block row
+begin_block row1
 drawImage zebra -50 -50
 
 translate 90 0
@@ -136,12 +136,12 @@ save
 rotate_y 180
 drawImage zebra -50 -50
 restore
-end_block
+end_block row1
 
 resetMatrix
 translate 75 280
 setRenderHint SmoothPixmapTransform
-repeat_block row
+repeat_block row1
 
 resetMatrix
 setPen black
@@ -162,7 +162,7 @@ setRenderHint SmoothPixmapTransform false
 
 translate 75 100
 # standard draw
-begin_block row
+begin_block row2
 drawImage dome -50 -50
 
 translate 90 0
@@ -290,13 +290,13 @@ save
 rotate_y 180
 drawImage dome -50 -50
 restore
-end_block
+end_block row2
 
 resetMatrix
 translate 0 400
 translate 75 280
 setRenderHint SmoothPixmapTransform
-repeat_block row
+repeat_block row2
 
 resetMatrix
 setPen black

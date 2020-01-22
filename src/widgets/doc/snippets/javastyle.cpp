@@ -2589,7 +2589,7 @@ int JavaStyle::styleHint(StyleHint hint, const QStyleOption *option,
 
     switch (hint) {
         case SH_Table_GridLineColor: {
-            ret = static_cast<int>(option->palette.color(QPalette::Mid).rgb());
+            ret = static_cast<int>(option->palette.color(QPalette::Mid).rgba());
             break;
         }
         case QStyle::SH_Menu_Scrollable:

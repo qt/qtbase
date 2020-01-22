@@ -63,6 +63,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformScreen;
 class QPlatformWindowPrivate;
+class QScreen;
 class QWindow;
 class QIcon;
 class QRegion;
@@ -142,8 +143,9 @@ public:
 
     virtual void invalidateSurface();
 
-    static QRect initialGeometry(const QWindow *w,
-        const QRect &initialGeometry, int defaultWidth, int defaultHeight);
+    static QRect initialGeometry(const QWindow *w, const QRect &initialGeometry,
+                                 int defaultWidth, int defaultHeight,
+                                 const QScreen **resultingScreenReturn = nullptr);
 
     virtual void requestUpdate();
     bool hasPendingUpdateRequest() const;

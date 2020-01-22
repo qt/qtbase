@@ -69,7 +69,7 @@ public:
 
     QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                         EGLConfig *config = nullptr, const QVariant &nativeHandle = QVariant(),
-                        Flags flags = nullptr);
+                        Flags flags = { });
     ~QEGLPlatformContext();
 
     void initialize() override;

@@ -2,68 +2,6 @@
     {
         "classes": [
             {
-                "className": "MyBooooooostishClass",
-                "qualifiedClassName": "MyBooooooostishClass",
-                "signals": [
-                    {
-                        "access": "public",
-                        "name": "mySignal",
-                        "returnType": "void"
-                    }
-                ],
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "mySlot",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "no-keywords.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "Task87883",
-                "qualifiedClassName": "Task87883",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "task87883.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "IfdefedClass",
-                "qualifiedClassName": "IfdefedClass",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "c-comments.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
                 "className": "BackslashNewlines",
                 "qualifiedClassName": "BackslashNewlines",
                 "slots": [
@@ -87,50 +25,8 @@
     {
         "classes": [
             {
-                "className": "OldStyleCast",
-                "qualifiedClassName": "OldStyleCast",
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "foo",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "int"
-                            },
-                            {
-                                "type": "int*"
-                            },
-                            {
-                                "type": "const int*"
-                            },
-                            {
-                                "type": "volatile int*"
-                            },
-                            {
-                                "type": "const int*volatile*"
-                            }
-                        ],
-                        "name": "bar",
-                        "returnType": "int"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "int"
-                            },
-                            {
-                                "type": "QObject*const"
-                            }
-                        ],
-                        "name": "slot",
-                        "returnType": "void"
-                    }
-                ],
+                "className": "IfdefedClass",
+                "qualifiedClassName": "IfdefedClass",
                 "superClasses": [
                     {
                         "access": "public",
@@ -139,297 +35,7 @@
                 ]
             }
         ],
-        "inputFile": "oldstyle-casts.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "SlotsWithVoidTemplateTest",
-                "qualifiedClassName": "SlotsWithVoidTemplateTest",
-                "signals": [
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "TestTemplate<void>"
-                            }
-                        ],
-                        "name": "mySignal",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "myVoidSignal",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "myVoidSignal2",
-                        "returnType": "void"
-                    }
-                ],
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "dummySlot",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "dummySlot2",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "TestTemplate<void>"
-                            }
-                        ],
-                        "name": "anotherSlot",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "mySlot",
-                        "returnType": "TestTemplate<void>"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "slots-with-void-template.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "InvokableBeforeReturnType",
-                "methods": [
-                    {
-                        "access": "public",
-                        "name": "foo",
-                        "returnType": "const char*"
-                    }
-                ],
-                "qualifiedClassName": "InvokableBeforeReturnType",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "InvokableBeforeInline",
-                "methods": [
-                    {
-                        "access": "public",
-                        "name": "foo",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "bar",
-                        "returnType": "void"
-                    }
-                ],
-                "qualifiedClassName": "InvokableBeforeInline",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "qinvokable.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "Bar",
-                "enums": [
-                    {
-                        "alias": "Flag",
-                        "isClass": false,
-                        "isFlag": true,
-                        "name": "Flags",
-                        "values": [
-                            "Read",
-                            "Write"
-                        ]
-                    }
-                ],
-                "properties": [
-                    {
-                        "constant": false,
-                        "designable": true,
-                        "final": false,
-                        "name": "flags",
-                        "read": "flags",
-                        "scriptable": true,
-                        "stored": true,
-                        "type": "Flags",
-                        "user": false,
-                        "write": "setFlags"
-                    }
-                ],
-                "qualifiedClassName": "Foo::Bar",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "Baz",
-                "properties": [
-                    {
-                        "constant": false,
-                        "designable": true,
-                        "final": false,
-                        "name": "flags",
-                        "read": "flags",
-                        "scriptable": true,
-                        "stored": true,
-                        "type": "Foo::Bar::Flags",
-                        "user": false,
-                        "write": "setFlags"
-                    },
-                    {
-                        "constant": false,
-                        "designable": true,
-                        "final": false,
-                        "name": "flagsList",
-                        "read": "flagsList",
-                        "scriptable": true,
-                        "stored": true,
-                        "type": "QVector<Foo::Bar::Flags>",
-                        "user": false,
-                        "write": "setFlagsList"
-                    }
-                ],
-                "qualifiedClassName": "Foo::Baz",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "namespaced-flags.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "Foo",
-                "qualifiedClassName": "BBB::Foo",
-                "signals": [
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "QVector<QVector<int> >"
-                            }
-                        ],
-                        "name": "foo",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "QVector<QVector<int> >"
-                            }
-                        ],
-                        "name": "foo2",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "QVector< ::AAA::BaseA*>"
-                            }
-                        ],
-                        "name": "bar",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "QVector< ::AAA::BaseA*>"
-                            }
-                        ],
-                        "name": "bar2",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "QVector<const  ::AAA::BaseA*>"
-                            }
-                        ],
-                        "name": "bar3",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    },
-                    {
-                        "access": "public",
-                        "name": "::AAA::BaseA"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "trigraphs.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "classInfos": [
-                    {
-                        "name": "Test",
-                        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\x53"
-                    },
-                    {
-                        "name": "Test2",
-                        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\123"
-                    },
-                    {
-                        "name": "Test3",
-                        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\nb"
-                    }
-                ],
-                "className": "StringLiterals",
-                "qualifiedClassName": "StringLiterals",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "escapes-in-string-literals.h",
+        "inputFile": "c-comments.h",
         "outputRevision": 67
     },
     {
@@ -461,475 +67,6 @@
             }
         ],
         "inputFile": "cstyle-enums.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "TestQPrivateSlots",
-                "methods": [
-                    {
-                        "access": "private",
-                        "name": "method1",
-                        "returnType": "void"
-                    }
-                ],
-                "qualifiedClassName": "TestQPrivateSlots",
-                "slots": [
-                    {
-                        "access": "private",
-                        "name": "_q_privateslot",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "qprivateslots.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "GadgetWithNoEnums",
-                "gadget": true,
-                "qualifiedClassName": "GadgetWithNoEnums"
-            },
-            {
-                "className": "DerivedGadgetWithEnums",
-                "enums": [
-                    {
-                        "isClass": false,
-                        "isFlag": false,
-                        "name": "FooEnum",
-                        "values": [
-                            "FooValue"
-                        ]
-                    }
-                ],
-                "gadget": true,
-                "qualifiedClassName": "DerivedGadgetWithEnums",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "GadgetWithNoEnums"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "gadgetwithnoenums.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "DirInIncludePath",
-                "interfaces": [
-                    [
-                        {
-                            "className": "MyInterface",
-                            "id": "\"MyInterface\""
-                        }
-                    ]
-                ],
-                "qualifiedClassName": "DirInIncludePath",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    },
-                    {
-                        "access": "public",
-                        "name": "MyInterface"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "dir-in-include-path.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "SingleFunctionKeywordBeforeReturnType",
-                "qualifiedClassName": "SingleFunctionKeywordBeforeReturnType",
-                "signals": [
-                    {
-                        "access": "public",
-                        "name": "mySignal",
-                        "returnType": "void"
-                    }
-                ],
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "mySlot",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "SingleFunctionKeywordBeforeInline",
-                "qualifiedClassName": "SingleFunctionKeywordBeforeInline",
-                "signals": [
-                    {
-                        "access": "public",
-                        "name": "mySignal",
-                        "returnType": "void"
-                    }
-                ],
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "mySlot",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "SingleFunctionKeywordAfterInline",
-                "qualifiedClassName": "SingleFunctionKeywordAfterInline",
-                "signals": [
-                    {
-                        "access": "public",
-                        "name": "mySignal",
-                        "returnType": "void"
-                    }
-                ],
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "mySlot",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "single_function_keyword.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "Task192552",
-                "qualifiedClassName": "Task192552",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "task192552.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "InlineSlotsWithThrowDeclaration",
-                "qualifiedClassName": "InlineSlotsWithThrowDeclaration",
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "a",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "b",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "c",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "d",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "e",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "task189996.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "TestObject",
-                "qualifiedClassName": "NS_A::NS_B::TestObject",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "TestMain",
-                "qualifiedClassName": "NS_A::NS_Main::TestMain",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "task234909.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "TypenameWithUnsigned",
-                "qualifiedClassName": "TypenameWithUnsigned",
-                "slots": [
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "uint"
-                            }
-                        ],
-                        "name": "a",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "u",
-                                "type": "uint"
-                            }
-                        ],
-                        "name": "b",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "uint*"
-                            }
-                        ],
-                        "name": "c",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "p",
-                                "type": "uint*"
-                            }
-                        ],
-                        "name": "d",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "uint&"
-                            }
-                        ],
-                        "name": "e",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "r",
-                                "type": "uint&"
-                            }
-                        ],
-                        "name": "f",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "unsigned1"
-                            }
-                        ],
-                        "name": "g",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "u1",
-                                "type": "unsigned1"
-                            }
-                        ],
-                        "name": "h",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "uint"
-                            },
-                            {
-                                "type": "unsigned1"
-                            }
-                        ],
-                        "name": "i",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "unsigned1"
-                            },
-                            {
-                                "type": "uint"
-                            }
-                        ],
-                        "name": "j",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "type": "unsignedQImage"
-                            }
-                        ],
-                        "name": "k",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "uqi",
-                                "type": "unsignedQImage"
-                            }
-                        ],
-                        "name": "l",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "task240368.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "PureVirtualSignalsTest",
-                "qualifiedClassName": "PureVirtualSignalsTest",
-                "signals": [
-                    {
-                        "access": "public",
-                        "name": "mySignal",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "myOtherSignal",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "foo",
-                                "type": "int"
-                            }
-                        ],
-                        "name": "mySignal2",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "PureVirtualSignalsImpl",
-                "qualifiedClassName": "PureVirtualSignalsImpl",
-                "signals": [
-                    {
-                        "access": "public",
-                        "name": "mySignal",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "arguments": [
-                            {
-                                "name": "foo",
-                                "type": "int"
-                            }
-                        ],
-                        "name": "mySignal2",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "PureVirtualSignalsTest"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "pure-virtual-signals.h",
         "outputRevision": 67
     },
     {
@@ -1096,102 +233,6 @@
             }
         ],
         "inputFile": "cxx11-enums.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "FinalTestClassQt",
-                "qualifiedClassName": "FinalTestClassQt",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "ExportedFinalTestClassQt",
-                "qualifiedClassName": "ExportedFinalTestClassQt",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "ExportedFinalTestClassQtX",
-                "qualifiedClassName": "ExportedFinalTestClassQtX",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "FinalTestClassCpp11",
-                "qualifiedClassName": "FinalTestClassCpp11",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "ExportedFinalTestClassCpp11",
-                "qualifiedClassName": "ExportedFinalTestClassCpp11",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "ExportedFinalTestClassCpp11X",
-                "qualifiedClassName": "ExportedFinalTestClassCpp11X",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "SealedTestClass",
-                "qualifiedClassName": "SealedTestClass",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "ExportedSealedTestClass",
-                "qualifiedClassName": "ExportedSealedTestClass",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            },
-            {
-                "className": "ExportedSealedTestClassX",
-                "qualifiedClassName": "ExportedSealedTestClassX",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "cxx11-final-classes.h",
         "outputRevision": 67
     },
     {
@@ -1491,6 +532,196 @@
     {
         "classes": [
             {
+                "className": "FinalTestClassQt",
+                "qualifiedClassName": "FinalTestClassQt",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "ExportedFinalTestClassQt",
+                "qualifiedClassName": "ExportedFinalTestClassQt",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "ExportedFinalTestClassQtX",
+                "qualifiedClassName": "ExportedFinalTestClassQtX",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "FinalTestClassCpp11",
+                "qualifiedClassName": "FinalTestClassCpp11",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "ExportedFinalTestClassCpp11",
+                "qualifiedClassName": "ExportedFinalTestClassCpp11",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "ExportedFinalTestClassCpp11X",
+                "qualifiedClassName": "ExportedFinalTestClassCpp11X",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "SealedTestClass",
+                "qualifiedClassName": "SealedTestClass",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "ExportedSealedTestClass",
+                "qualifiedClassName": "ExportedSealedTestClass",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "ExportedSealedTestClassX",
+                "qualifiedClassName": "ExportedSealedTestClassX",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "cxx11-final-classes.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "ClassInNamespace",
+                "enums": [
+                    {
+                        "isClass": false,
+                        "isFlag": false,
+                        "name": "GadEn",
+                        "values": [
+                            "Value"
+                        ]
+                    }
+                ],
+                "gadget": true,
+                "qualifiedClassName": "CXX17Namespace::A::B::C::D::ClassInNamespace"
+            },
+            {
+                "className": "D",
+                "enums": [
+                    {
+                        "isClass": false,
+                        "isFlag": false,
+                        "name": "NamEn",
+                        "values": [
+                            "Value"
+                        ]
+                    }
+                ],
+                "gadget": true,
+                "qualifiedClassName": "CXX17Namespace::A::B::C::D"
+            }
+        ],
+        "inputFile": "cxx17-namespaces.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "DirInIncludePath",
+                "interfaces": [
+                    [
+                        {
+                            "className": "MyInterface",
+                            "id": "\"MyInterface\""
+                        }
+                    ]
+                ],
+                "qualifiedClassName": "DirInIncludePath",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    },
+                    {
+                        "access": "public",
+                        "name": "MyInterface"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "dir-in-include-path.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "classInfos": [
+                    {
+                        "name": "Test",
+                        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\x53"
+                    },
+                    {
+                        "name": "Test2",
+                        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\123"
+                    },
+                    {
+                        "name": "Test3",
+                        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\nb"
+                    }
+                ],
+                "className": "StringLiterals",
+                "qualifiedClassName": "StringLiterals",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "escapes-in-string-literals.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
                 "className": "ForwardDeclaredParamClass",
                 "qualifiedClassName": "ForwardDeclaredParamClass",
                 "signals": [
@@ -1686,6 +917,404 @@
             }
         ],
         "inputFile": "forward-declared-param.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "FunctionWithAttributes",
+                "qualifiedClassName": "FunctionWithAttributes",
+                "slots": [
+                    {
+                        "access": "public",
+                        "name": "test1",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "name": "test2",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "function-with-attributes.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "GadgetWithNoEnums",
+                "gadget": true,
+                "qualifiedClassName": "GadgetWithNoEnums"
+            },
+            {
+                "className": "DerivedGadgetWithEnums",
+                "enums": [
+                    {
+                        "isClass": false,
+                        "isFlag": false,
+                        "name": "FooEnum",
+                        "values": [
+                            "FooValue"
+                        ]
+                    }
+                ],
+                "gadget": true,
+                "qualifiedClassName": "DerivedGadgetWithEnums",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "GadgetWithNoEnums"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "gadgetwithnoenums.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "BaseGadget",
+                "gadget": true,
+                "qualifiedClassName": "GrandParentGadget::BaseGadget"
+            },
+            {
+                "className": "DerivedGadget",
+                "gadget": true,
+                "qualifiedClassName": "GrandParentGadget::DerivedGadget",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "Derived"
+                    }
+                ]
+            },
+            {
+                "className": "CRTPDerivedGadget",
+                "gadget": true,
+                "qualifiedClassName": "GrandParentGadget::CRTPDerivedGadget",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "CRTP<CRTPDerivedGadget>"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "grand-parent-gadget-class.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "TestFwdProperties",
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "prop1",
+                        "read": "getProp1",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "FwdClass1",
+                        "user": false,
+                        "write": "setProp1"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "prop2",
+                        "read": "getProp2",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "FwdClass2",
+                        "user": false,
+                        "write": "setProp2"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "prop3",
+                        "read": "getProp3",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "FwdClass3",
+                        "user": false,
+                        "write": "setProp3"
+                    }
+                ],
+                "qualifiedClassName": "TestFwdProperties",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "SomeRandomNamespace",
+                "gadget": true,
+                "qualifiedClassName": "SomeRandomNamespace"
+            }
+        ],
+        "inputFile": "moc_include.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "FooNamespace",
+                "enums": [
+                    {
+                        "isClass": true,
+                        "isFlag": false,
+                        "name": "Enum1",
+                        "values": [
+                            "Key1",
+                            "Key2"
+                        ]
+                    }
+                ],
+                "gadget": true,
+                "qualifiedClassName": "FooNamespace"
+            },
+            {
+                "className": "FooNestedNamespace",
+                "enums": [
+                    {
+                        "isClass": true,
+                        "isFlag": false,
+                        "name": "Enum2",
+                        "values": [
+                            "Key3",
+                            "Key4"
+                        ]
+                    },
+                    {
+                        "isClass": true,
+                        "isFlag": false,
+                        "name": "Enum3",
+                        "values": [
+                            "Key5",
+                            "Key6"
+                        ]
+                    }
+                ],
+                "gadget": true,
+                "qualifiedClassName": "FooNamespace::FooNestedNamespace"
+            },
+            {
+                "className": "FooMoreNestedNamespace",
+                "enums": [
+                    {
+                        "isClass": true,
+                        "isFlag": false,
+                        "name": "Enum4",
+                        "values": [
+                            "Key7",
+                            "Key8"
+                        ]
+                    }
+                ],
+                "gadget": true,
+                "qualifiedClassName": "FooNamespace::FooNestedNamespace::FooMoreNestedNamespace"
+            }
+        ],
+        "inputFile": "namespace.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "Bar",
+                "enums": [
+                    {
+                        "alias": "Flag",
+                        "isClass": false,
+                        "isFlag": true,
+                        "name": "Flags",
+                        "values": [
+                            "Read",
+                            "Write"
+                        ]
+                    }
+                ],
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "flags",
+                        "read": "flags",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "Flags",
+                        "user": false,
+                        "write": "setFlags"
+                    }
+                ],
+                "qualifiedClassName": "Foo::Bar",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "Baz",
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "flags",
+                        "read": "flags",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "Foo::Bar::Flags",
+                        "user": false,
+                        "write": "setFlags"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "flagsList",
+                        "read": "flagsList",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QVector<Foo::Bar::Flags>",
+                        "user": false,
+                        "write": "setFlagsList"
+                    }
+                ],
+                "qualifiedClassName": "Foo::Baz",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "namespaced-flags.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "MyBooooooostishClass",
+                "qualifiedClassName": "MyBooooooostishClass",
+                "signals": [
+                    {
+                        "access": "public",
+                        "name": "mySignal",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "public",
+                        "name": "mySlot",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "no-keywords.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "Derived",
+                "gadget": true,
+                "qualifiedClassName": "NonGadgetParent::Derived",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "Base"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "non-gadget-parent-class.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "OldStyleCast",
+                "qualifiedClassName": "OldStyleCast",
+                "slots": [
+                    {
+                        "access": "public",
+                        "name": "foo",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "int"
+                            },
+                            {
+                                "type": "int*"
+                            },
+                            {
+                                "type": "const int*"
+                            },
+                            {
+                                "type": "volatile int*"
+                            },
+                            {
+                                "type": "const int*volatile*"
+                            }
+                        ],
+                        "name": "bar",
+                        "returnType": "int"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "int"
+                            },
+                            {
+                                "type": "QObject*const"
+                            }
+                        ],
+                        "name": "slot",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "oldstyle-casts.h",
         "outputRevision": 67
     },
     {
@@ -1890,34 +1519,6 @@
     {
         "classes": [
             {
-                "className": "FunctionWithAttributes",
-                "qualifiedClassName": "FunctionWithAttributes",
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "test1",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "test2",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "function-with-attributes.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
                 "className": "TestPluginMetaData",
                 "qualifiedClassName": "TestPluginMetaData",
                 "superClasses": [
@@ -1934,18 +1535,104 @@
     {
         "classes": [
             {
-                "className": "KDAB",
-                "enums": [
+                "className": "PureVirtualSignalsTest",
+                "qualifiedClassName": "PureVirtualSignalsTest",
+                "signals": [
                     {
-                        "isClass": false,
-                        "isFlag": false,
-                        "name": "Salaries",
-                        "values": [
-                            "Steve"
-                        ]
+                        "access": "public",
+                        "name": "mySignal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "name": "myOtherSignal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "foo",
+                                "type": "int"
+                            }
+                        ],
+                        "name": "mySignal2",
+                        "returnType": "void"
                     }
                 ],
-                "qualifiedClassName": "KDAB",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "PureVirtualSignalsImpl",
+                "qualifiedClassName": "PureVirtualSignalsImpl",
+                "signals": [
+                    {
+                        "access": "public",
+                        "name": "mySignal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "foo",
+                                "type": "int"
+                            }
+                        ],
+                        "name": "mySignal2",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "PureVirtualSignalsTest"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "pure-virtual-signals.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "InvokableBeforeReturnType",
+                "methods": [
+                    {
+                        "access": "public",
+                        "name": "foo",
+                        "returnType": "const char*"
+                    }
+                ],
+                "qualifiedClassName": "InvokableBeforeReturnType",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "InvokableBeforeInline",
+                "methods": [
+                    {
+                        "access": "public",
+                        "name": "foo",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "name": "bar",
+                        "returnType": "void"
+                    }
+                ],
+                "qualifiedClassName": "InvokableBeforeInline",
                 "superClasses": [
                     {
                         "access": "public",
@@ -1954,7 +1641,87 @@
                 ]
             }
         ],
-        "inputFile": "single-quote-digit-separator-n3781.h",
+        "inputFile": "qinvokable.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "TestQPrivateSlots",
+                "methods": [
+                    {
+                        "access": "private",
+                        "name": "method1",
+                        "returnType": "void"
+                    }
+                ],
+                "qualifiedClassName": "TestQPrivateSlots",
+                "slots": [
+                    {
+                        "access": "private",
+                        "name": "_q_privateslot",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "qprivateslots.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "A",
+                "enums": [
+                    {
+                        "isClass": false,
+                        "isFlag": false,
+                        "name": "SomeEnum",
+                        "values": [
+                            "SomeEnumValue"
+                        ]
+                    }
+                ],
+                "gadget": true,
+                "qualifiedClassName": "QTBUG_35657::A"
+            }
+        ],
+        "inputFile": "qtbug-35657-gadget.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "B",
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "blah",
+                        "read": "blah",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "A::SomeEnum",
+                        "user": false
+                    }
+                ],
+                "qualifiedClassName": "QTBUG_35657::B",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "related-metaobjects-in-gadget.h",
         "outputRevision": 67
     },
     {
@@ -2004,95 +1771,6 @@
             }
         ],
         "inputFile": "related-metaobjects-in-namespaces.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "A",
-                "enums": [
-                    {
-                        "isClass": false,
-                        "isFlag": false,
-                        "name": "SomeEnum",
-                        "values": [
-                            "SomeEnumValue"
-                        ]
-                    }
-                ],
-                "gadget": true,
-                "qualifiedClassName": "QTBUG_35657::A"
-            }
-        ],
-        "inputFile": "qtbug-35657-gadget.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "Derived",
-                "gadget": true,
-                "qualifiedClassName": "NonGadgetParent::Derived",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "Base"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "non-gadget-parent-class.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "BaseGadget",
-                "gadget": true,
-                "qualifiedClassName": "GrandParentGadget::BaseGadget"
-            },
-            {
-                "className": "DerivedGadget",
-                "gadget": true,
-                "qualifiedClassName": "GrandParentGadget::DerivedGadget",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "Derived"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "grand-parent-gadget-class.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
-                "className": "B",
-                "properties": [
-                    {
-                        "constant": false,
-                        "designable": true,
-                        "final": false,
-                        "name": "blah",
-                        "read": "blah",
-                        "scriptable": true,
-                        "stored": true,
-                        "type": "A::SomeEnum",
-                        "user": false
-                    }
-                ],
-                "qualifiedClassName": "QTBUG_35657::B",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "related-metaobjects-in-gadget.h",
         "outputRevision": 67
     },
     {
@@ -2509,100 +2187,449 @@
     {
         "classes": [
             {
-                "className": "FooNamespace",
+                "className": "KDAB",
                 "enums": [
                     {
-                        "isClass": true,
+                        "isClass": false,
                         "isFlag": false,
-                        "name": "Enum1",
+                        "name": "Salaries",
                         "values": [
-                            "Key1",
-                            "Key2"
+                            "Steve"
                         ]
                     }
                 ],
-                "gadget": true,
-                "qualifiedClassName": "FooNamespace"
-            },
-            {
-                "className": "FooNestedNamespace",
-                "enums": [
+                "qualifiedClassName": "KDAB",
+                "superClasses": [
                     {
-                        "isClass": true,
-                        "isFlag": false,
-                        "name": "Enum2",
-                        "values": [
-                            "Key3",
-                            "Key4"
-                        ]
-                    },
-                    {
-                        "isClass": true,
-                        "isFlag": false,
-                        "name": "Enum3",
-                        "values": [
-                            "Key5",
-                            "Key6"
-                        ]
+                        "access": "public",
+                        "name": "QObject"
                     }
-                ],
-                "gadget": true,
-                "qualifiedClassName": "FooNamespace::FooNestedNamespace"
-            },
-            {
-                "className": "FooMoreNestedNamespace",
-                "enums": [
-                    {
-                        "isClass": true,
-                        "isFlag": false,
-                        "name": "Enum4",
-                        "values": [
-                            "Key7",
-                            "Key8"
-                        ]
-                    }
-                ],
-                "gadget": true,
-                "qualifiedClassName": "FooNamespace::FooNestedNamespace::FooMoreNestedNamespace"
+                ]
             }
         ],
-        "inputFile": "namespace.h",
+        "inputFile": "single-quote-digit-separator-n3781.h",
         "outputRevision": 67
     },
     {
         "classes": [
             {
-                "className": "ClassInNamespace",
-                "enums": [
+                "className": "SingleFunctionKeywordBeforeReturnType",
+                "qualifiedClassName": "SingleFunctionKeywordBeforeReturnType",
+                "signals": [
                     {
-                        "isClass": false,
-                        "isFlag": false,
-                        "name": "GadEn",
-                        "values": [
-                            "Value"
-                        ]
+                        "access": "public",
+                        "name": "mySignal",
+                        "returnType": "void"
                     }
                 ],
-                "gadget": true,
-                "qualifiedClassName": "CXX17Namespace::A::B::C::D::ClassInNamespace"
+                "slots": [
+                    {
+                        "access": "public",
+                        "name": "mySlot",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
             },
             {
-                "className": "D",
-                "enums": [
+                "className": "SingleFunctionKeywordBeforeInline",
+                "qualifiedClassName": "SingleFunctionKeywordBeforeInline",
+                "signals": [
                     {
-                        "isClass": false,
-                        "isFlag": false,
-                        "name": "NamEn",
-                        "values": [
-                            "Value"
-                        ]
+                        "access": "public",
+                        "name": "mySignal",
+                        "returnType": "void"
                     }
                 ],
-                "gadget": true,
-                "qualifiedClassName": "CXX17Namespace::A::B::C::D"
+                "slots": [
+                    {
+                        "access": "public",
+                        "name": "mySlot",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "SingleFunctionKeywordAfterInline",
+                "qualifiedClassName": "SingleFunctionKeywordAfterInline",
+                "signals": [
+                    {
+                        "access": "public",
+                        "name": "mySignal",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "public",
+                        "name": "mySlot",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
             }
         ],
-        "inputFile": "cxx17-namespaces.h",
+        "inputFile": "single_function_keyword.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "SlotsWithVoidTemplateTest",
+                "qualifiedClassName": "SlotsWithVoidTemplateTest",
+                "signals": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "TestTemplate<void>"
+                            }
+                        ],
+                        "name": "mySignal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "name": "myVoidSignal",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "name": "myVoidSignal2",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "public",
+                        "name": "dummySlot",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "name": "dummySlot2",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "TestTemplate<void>"
+                            }
+                        ],
+                        "name": "anotherSlot",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "name": "mySlot",
+                        "returnType": "TestTemplate<void>"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "slots-with-void-template.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "Task192552",
+                "qualifiedClassName": "Task192552",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "task192552.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "TestObject",
+                "qualifiedClassName": "NS_A::NS_B::TestObject",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "TestMain",
+                "qualifiedClassName": "NS_A::NS_Main::TestMain",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "task234909.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "TypenameWithUnsigned",
+                "qualifiedClassName": "TypenameWithUnsigned",
+                "slots": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "uint"
+                            }
+                        ],
+                        "name": "a",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "u",
+                                "type": "uint"
+                            }
+                        ],
+                        "name": "b",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "uint*"
+                            }
+                        ],
+                        "name": "c",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "p",
+                                "type": "uint*"
+                            }
+                        ],
+                        "name": "d",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "uint&"
+                            }
+                        ],
+                        "name": "e",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "r",
+                                "type": "uint&"
+                            }
+                        ],
+                        "name": "f",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "unsigned1"
+                            }
+                        ],
+                        "name": "g",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "u1",
+                                "type": "unsigned1"
+                            }
+                        ],
+                        "name": "h",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "uint"
+                            },
+                            {
+                                "type": "unsigned1"
+                            }
+                        ],
+                        "name": "i",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "unsigned1"
+                            },
+                            {
+                                "type": "uint"
+                            }
+                        ],
+                        "name": "j",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "unsignedQImage"
+                            }
+                        ],
+                        "name": "k",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "uqi",
+                                "type": "unsignedQImage"
+                            }
+                        ],
+                        "name": "l",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "task240368.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "Task87883",
+                "qualifiedClassName": "Task87883",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "task87883.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
+                "className": "Foo",
+                "qualifiedClassName": "BBB::Foo",
+                "signals": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "QVector<QVector<int> >"
+                            }
+                        ],
+                        "name": "foo",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "QVector<QVector<int> >"
+                            }
+                        ],
+                        "name": "foo2",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "QVector< ::AAA::BaseA*>"
+                            }
+                        ],
+                        "name": "bar",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "QVector< ::AAA::BaseA*>"
+                            }
+                        ],
+                        "name": "bar2",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "type": "QVector<const  ::AAA::BaseA*>"
+                            }
+                        ],
+                        "name": "bar3",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    },
+                    {
+                        "access": "public",
+                        "name": "::AAA::BaseA"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "trigraphs.h",
         "outputRevision": 67
     }
 ]

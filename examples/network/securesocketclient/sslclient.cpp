@@ -54,8 +54,6 @@
 #include "ui_sslclient.h"
 #include "ui_sslerrors.h"
 
-#include <QtCore>
-
 SslClient::SslClient(QWidget *parent)
     : QWidget(parent)
 {
@@ -185,16 +183,17 @@ void SslClient::setupUi()
     form->hostNameEdit->setSelection(0, form->hostNameEdit->text().size());
     form->sessionOutput->setHtml(tr("&lt;not connected&gt;"));
 
-    connect(form->hostNameEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(updateEnabledState()));
-    connect(form->connectButton, SIGNAL(clicked()),
-            this, SLOT(secureConnect()));
-    connect(form->sendButton, SIGNAL(clicked()),
-            this, SLOT(sendData()));
+    connect(form->hostNameEdit, &QLineEdit::textChanged,
+            this, &SslClient::updateEnabledState);
+    connect(form->connectButton, &QPushButton::clicked,
+            this, &SslClient::secureConnect);
+    connect(form->sendButton, &QPushButton::clicked,
+            this, &SslClient::sendData);
 
     padLock = new QToolButton;
     padLock->setIcon(QIcon(":/encrypted.png"));
-    connect(padLock, SIGNAL(clicked()), this, SLOT(displayCertificateInfo()));
+    connect(padLock, &QToolButton::clicked,
+            this, &SslClient::displayCertificateInfo);
 
 #if QT_CONFIG(cursor)
     padLock->setCursor(Qt::ArrowCursor);
@@ -223,16 +222,16 @@ void SslClient::setupSecureSocket()
 
     socket = new QSslSocket(this);
 
-    connect(socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
-            this, SLOT(socketStateChanged(QAbstractSocket::SocketState)));
-    connect(socket, SIGNAL(encrypted()),
-            this, SLOT(socketEncrypted()));
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(socketError(QAbstractSocket::SocketError)));
-    connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
-            this, SLOT(sslErrors(QList<QSslError>)));
-    connect(socket, SIGNAL(readyRead()),
-            this, SLOT(socketReadyRead()));
+    connect(socket, &QSslSocket::stateChanged,
+            this, &SslClient::socketStateChanged);
+    connect(socket, &QSslSocket::encrypted,
+            this, &SslClient::socketEncrypted);
+    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QSslSocket::error),
+            this, &SslClient::socketError);
+    connect(socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),
+            this, &SslClient::sslErrors);
+    connect(socket, &QSslSocket::readyRead,
+            this, &SslClient::socketReadyRead);
 
 }
 

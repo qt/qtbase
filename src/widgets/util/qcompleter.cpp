@@ -1262,7 +1262,7 @@ Qt::MatchFlags QCompleter::filterMode() const
 void QCompleter::setPopup(QAbstractItemView *popup)
 {
     Q_D(QCompleter);
-    Q_ASSERT(popup != 0);
+    Q_ASSERT(popup != nullptr);
     if (d->popup) {
         QObject::disconnect(d->popup->selectionModel(), nullptr, this, nullptr);
         QObject::disconnect(d->popup, nullptr, this, nullptr);

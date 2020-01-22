@@ -1724,7 +1724,7 @@ void QNetworkAccessManager::setAutoDeleteReplies(bool shouldAutoDelete)
     This timeout is zero if setTransferTimeout() hasn't been
     called, which means that the timeout is not used.
 */
-int QNetworkAccessManager::transferTimeout()
+int QNetworkAccessManager::transferTimeout() const
 {
     return d_func()->transferTimeout;
 }
@@ -1751,16 +1751,13 @@ void QNetworkAccessManager::setTransferTimeout(int timeout)
     d_func()->transferTimeout = timeout;
 }
 
-void QNetworkAccessManagerPrivate::_q_replyFinished()
+void QNetworkAccessManagerPrivate::_q_replyFinished(QNetworkReply *reply)
 {
     Q_Q(QNetworkAccessManager);
 
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
-    if (reply) {
-        emit q->finished(reply);
-        if (reply->request().attribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, false).toBool())
-            QMetaObject::invokeMethod(reply, [reply] { reply->deleteLater(); }, Qt::QueuedConnection);
-    }
+    emit q->finished(reply);
+    if (reply->request().attribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, false).toBool())
+        QMetaObject::invokeMethod(reply, [reply] { reply->deleteLater(); }, Qt::QueuedConnection);
 
 #ifndef QT_NO_BEARERMANAGEMENT
     // If there are no active requests, release our reference to the network session.
@@ -1772,13 +1769,11 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
 #endif
 }
 
-void QNetworkAccessManagerPrivate::_q_replyEncrypted()
+void QNetworkAccessManagerPrivate::_q_replyEncrypted(QNetworkReply *reply)
 {
 #ifndef QT_NO_SSL
     Q_Q(QNetworkAccessManager);
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
-    if (reply)
-        emit q->encrypted(reply);
+    emit q->encrypted(reply);
 #endif
 }
 
@@ -1810,11 +1805,13 @@ QNetworkReply *QNetworkAccessManagerPrivate::postProcess(QNetworkReply *reply)
 {
     Q_Q(QNetworkAccessManager);
     QNetworkReplyPrivate::setManager(reply, q);
-    q->connect(reply, SIGNAL(finished()), SLOT(_q_replyFinished()));
+    q->connect(reply, &QNetworkReply::finished, reply,
+               [this, reply]() { _q_replyFinished(reply); });
 #ifndef QT_NO_SSL
     /* In case we're compiled without SSL support, we don't have this signal and we need to
      * avoid getting a connection error. */
-    q->connect(reply, SIGNAL(encrypted()), SLOT(_q_replyEncrypted()));
+    q->connect(reply, &QNetworkReply::encrypted, reply,
+               [this, reply]() { _q_replyEncrypted(reply); });
     q->connect(reply, SIGNAL(sslErrors(QList<QSslError>)), SLOT(_q_replySslErrors(QList<QSslError>)));
     q->connect(reply, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), SLOT(_q_replyPreSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)));
 #endif
@@ -1979,7 +1976,7 @@ void QNetworkAccessManagerPrivate::destroyThread()
 {
     if (thread) {
         thread->quit();
-        thread->wait(5000);
+        thread->wait(QDeadlineTimer(5000));
         if (thread->isFinished())
             delete thread;
         else

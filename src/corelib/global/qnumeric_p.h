@@ -253,7 +253,8 @@ QT_WARNING_POP
 // size_t. Implementations for 8- and 16-bit types will work but may not be as
 // efficient. Implementations for 64-bit may be missing on 32-bit platforms.
 
-#if (defined(Q_CC_GNU) && (Q_CC_GNU >= 500) || (defined(Q_CC_INTEL) && !defined(Q_OS_WIN))) || QT_HAS_BUILTIN(__builtin_add_overflow)
+#if ((defined(Q_CC_INTEL) ? (Q_CC_INTEL >= 1800 && !defined(Q_OS_WIN)) : defined(Q_CC_GNU)) \
+     && Q_CC_GNU >= 500) || __has_builtin(__builtin_add_overflow)
 // GCC 5, ICC 18, and Clang 3.8 have builtins to detect overflows
 
 template <typename T> inline

@@ -55,7 +55,7 @@
 
 #include <QtCore/qobject_impl.h>
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
 #  include <chrono>
 #endif
 
@@ -154,7 +154,7 @@ public:
     void moveToThread(QThread *thread);
 
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
     Q_ALWAYS_INLINE
     int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)
     {
@@ -434,9 +434,6 @@ protected:
 protected:
     QScopedPointer<QObjectData> d_ptr;
 
-    static const QMetaObject staticQtMetaObject;
-    friend inline const QMetaObject *qt_getQtMetaObject() noexcept;
-
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
     friend class QMetaCallEvent;
@@ -466,9 +463,6 @@ private:
 inline QMetaObject::Connection QObject::connect(const QObject *asender, const char *asignal,
                                             const char *amember, Qt::ConnectionType atype) const
 { return connect(asender, asignal, this, amember, atype); }
-
-inline const QMetaObject *qt_getQtMetaObject() noexcept
-{ return &QObject::staticQtMetaObject; }
 
 #if QT_DEPRECATED_SINCE(5, 0)
 template<typename T>

@@ -128,7 +128,7 @@ QSizeGripPrivate::QSizeGripPrivate()
     : dxMax(0)
     , dyMax(0)
     , gotMousePress(false)
-    , tlw(0)
+    , tlw(nullptr)
     , m_platformSizeGrip(false)
 {
 }
@@ -195,7 +195,7 @@ Qt::Corner QSizeGripPrivate::corner() const
     parent.
 */
 QSizeGrip::QSizeGrip(QWidget * parent)
-    : QWidget(*new QSizeGripPrivate, parent, 0)
+    : QWidget(*new QSizeGripPrivate, parent, { })
 {
     Q_D(QSizeGrip);
     d->init();

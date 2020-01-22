@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -79,7 +79,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
-static QSystemLocale *_systemLocale = 0;
+static QSystemLocale *_systemLocale = nullptr;
 class QSystemLocaleSingleton: public QSystemLocale
 {
 public:
@@ -651,7 +651,6 @@ int qt_repeatCount(QStringView s)
 }
 
 static const QLocaleData *default_data = nullptr;
-static QLocale::NumberOptions default_number_options = QLocale::DefaultNumberOptions;
 
 static const QLocaleData *const c_data = locale_data;
 static QLocalePrivate *c_private()
@@ -695,7 +694,7 @@ QSystemLocale::QSystemLocale(bool)
 QSystemLocale::~QSystemLocale()
 {
     if (_systemLocale == this) {
-        _systemLocale = 0;
+        _systemLocale = nullptr;
 
         globalLocaleData.m_language_id = 0;
     }
@@ -834,7 +833,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
-                          (QLocalePrivate::create(defaultData(), default_number_options)))
+                          (QLocalePrivate::create(defaultData())))
 Q_GLOBAL_STATIC_WITH_ARGS(QExplicitlySharedDataPointer<QLocalePrivate>, systemLocalePrivate,
                           (QLocalePrivate::create(systemData())))
 
@@ -862,8 +861,9 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
     QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions;
 
     // If not found, should default to system
-    if (data->m_language_id == QLocale::C && language != QLocale::C) {
-        numberOptions = default_number_options;
+    if (data->m_language_id == QLocale::C) {
+        if (defaultLocalePrivate.exists())
+            numberOptions = defaultLocalePrivate->data()->m_numberOptions;
         data = defaultData();
     }
     return QLocalePrivate::create(data, offset, numberOptions);
@@ -1048,6 +1048,8 @@ uint qHash(const QLocale &key, uint seed) noexcept
 
     Sets the \a options related to number conversions for this
     QLocale instance.
+
+    \sa numberOptions()
 */
 void QLocale::setNumberOptions(NumberOptions options)
 {
@@ -1060,7 +1062,10 @@ void QLocale::setNumberOptions(NumberOptions options)
     Returns the options related to number conversions for this
     QLocale instance.
 
-    By default, no options are set for the standard locales.
+    By default, no options are set for the standard locales, except
+    for the "C" locale, which has OmitGroupSeparator set by default.
+
+    \sa setNumberOptions(), toString(), groupSeparator()
 */
 QLocale::NumberOptions QLocale::numberOptions() const
 {
@@ -1170,12 +1175,9 @@ QString QLocale::createSeparatedList(const QStringList &list) const
 void QLocale::setDefault(const QLocale &locale)
 {
     default_data = locale.d->m_data;
-    default_number_options = locale.numberOptions();
 
-    if (defaultLocalePrivate.exists()) {
-        // update the cached private
+    if (defaultLocalePrivate.exists()) // update the cached private
         *defaultLocalePrivate = locale.d;
-    }
 }
 
 /*!
@@ -1962,14 +1964,15 @@ double QLocale::toDouble(QStringView s, bool *ok) const
 /*!
     Returns a localized string representation of \a i.
 
-    \sa toLongLong()
+    \sa toLongLong(), numberOptions(), zeroDigit(), positiveSign()
 */
 
 QString QLocale::toString(qlonglong i) const
 {
     int flags = d->m_numberOptions & OmitGroupSeparator
                     ? 0
-                    : QLocaleData::ThousandsGroup;
+                    : (d->m_data->m_country_id == Country::India)
+                      ? QLocaleData::IndianNumberGrouping : QLocaleData::ThousandsGroup;
 
     return d->m_data->longLongToString(i, -1, 10, -1, flags);
 }
@@ -1977,14 +1980,15 @@ QString QLocale::toString(qlonglong i) const
 /*!
     \overload
 
-    \sa toULongLong()
+    \sa toULongLong(), numberOptions(), zeroDigit(), positiveSign()
 */
 
 QString QLocale::toString(qulonglong i) const
 {
     int flags = d->m_numberOptions & OmitGroupSeparator
                     ? 0
-                    : QLocaleData::ThousandsGroup;
+                    : (d->m_data->m_country_id == Country::India)
+                      ? QLocaleData::IndianNumberGrouping : QLocaleData::ThousandsGroup;
 
     return d->m_data->unsLongLongToString(i, -1, 10, -1, flags);
 }
@@ -2429,7 +2433,7 @@ QTime QLocale::toTime(const QString &string, const QString &format, QCalendar ca
     QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
-        dt.fromString(string, 0, &time);
+        dt.fromString(string, nullptr, &time);
 #else
     Q_UNUSED(cal);
     Q_UNUSED(string);
@@ -2468,7 +2472,7 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
     QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
-        dt.fromString(string, &date, 0);
+        dt.fromString(string, &date, nullptr);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
@@ -2523,6 +2527,12 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
     \since 4.1
 
     Returns the decimal point character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa groupSeparator(), toString()
 */
 QChar QLocale::decimalPoint() const
 {
@@ -2533,6 +2543,12 @@ QChar QLocale::decimalPoint() const
     \since 4.1
 
     Returns the group separator character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa decimalPoint(), toString()
 */
 QChar QLocale::groupSeparator() const
 {
@@ -2543,6 +2559,12 @@ QChar QLocale::groupSeparator() const
     \since 4.1
 
     Returns the percent character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa toString()
 */
 QChar QLocale::percent() const
 {
@@ -2553,6 +2575,12 @@ QChar QLocale::percent() const
     \since 4.1
 
     Returns the zero digit character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa toString()
 */
 QChar QLocale::zeroDigit() const
 {
@@ -2563,6 +2591,12 @@ QChar QLocale::zeroDigit() const
     \since 4.1
 
     Returns the negative sign character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa positiveSign(), toString()
 */
 QChar QLocale::negativeSign() const
 {
@@ -2573,6 +2607,12 @@ QChar QLocale::negativeSign() const
     \since 4.5
 
     Returns the positive sign character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa negativeSign(), toString()
 */
 QChar QLocale::positiveSign() const
 {
@@ -2582,7 +2622,14 @@ QChar QLocale::positiveSign() const
 /*!
     \since 4.1
 
-    Returns the exponential character of this locale.
+    Returns the exponential character of this locale, used to separate exponent
+    from mantissa in some floating-point numeric representations.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa toString(double, char, int)
 */
 QChar QLocale::exponential() const
 {
@@ -2607,7 +2654,7 @@ static char qToLower(char c)
 
     \a f and \a prec have the same meaning as in QString::number(double, char, int).
 
-    \sa toDouble()
+    \sa toDouble(), numberOptions(), exponential(), decimalPoint(), zeroDigit(), positiveSign(), percent()
 */
 
 QString QLocale::toString(double i, char f, int prec) const
@@ -3065,7 +3112,7 @@ QList<Qt::DayOfWeek> QLocale::weekdays() const
     if (d->m_data == systemData()) {
         QVariant res = systemLocale()->query(QSystemLocale::Weekdays, QVariant());
         if (!res.isNull())
-            return static_cast<QList<Qt::DayOfWeek> >(res.value<QList<Qt::DayOfWeek> >());
+            return static_cast<QList<Qt::DayOfWeek> >(qvariant_cast<QList<Qt::DayOfWeek> >(res));
     }
 #endif
     QList<Qt::DayOfWeek> weekdays;
@@ -3626,10 +3673,19 @@ QT_WARNING_DISABLE_MSVC(4146)
 QT_WARNING_POP
 
     uint cnt_thousand_sep = 0;
-    if (flags & ThousandsGroup && base == 10) {
-        for (int i = num_str.length() - 3; i > 0; i -= 3) {
-            num_str.insert(i, group);
-            ++cnt_thousand_sep;
+    if (base == 10){
+        if (flags & ThousandsGroup) {
+            for (int i = num_str.length() - 3; i > 0; i -= 3) {
+                num_str.insert(i, group);
+                ++cnt_thousand_sep;
+            }
+        } else if (flags & IndianNumberGrouping) {
+            if (num_str.length() > 3)
+                num_str.insert(num_str.length() - 3 , group);
+            for (int i = num_str.length() - 6; i > 0; i -= 2) {
+                num_str.insert(i, group);
+                ++cnt_thousand_sep;
+            }
         }
     }
 
@@ -3713,10 +3769,19 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
     }
 
     uint cnt_thousand_sep = 0;
-    if (flags & ThousandsGroup && base == 10) {
-        for (int i = num_str.length() - 3; i > 0; i -=3) {
-            num_str.insert(i, group);
-            ++cnt_thousand_sep;
+    if (base == 10) {
+        if (flags & ThousandsGroup) {
+            for (int i = num_str.length() - 3; i > 0; i -=3) {
+                num_str.insert(i, group);
+                ++cnt_thousand_sep;
+            }
+        } else if (flags & IndianNumberGrouping) {
+            if (num_str.length() > 3)
+                num_str.insert(num_str.length() - 3 , group);
+            for (int i = num_str.length() - 6; i > 0; i -= 2) {
+                num_str.insert(i, group);
+                ++cnt_thousand_sep;
+            }
         }
     }
 
@@ -3851,7 +3916,10 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
                 // check distance from the last separator or from the beginning of the digits
                 // ### FIXME: Some locales allow other groupings!
                 // See https://en.wikipedia.org/wiki/Thousands_separator
-                if (last_separator_idx != -1 && idx - last_separator_idx != 4)
+                if (m_country_id == QLocale::India) {
+                    if (last_separator_idx != -1 && idx - last_separator_idx != 3)
+                        return false;
+                } else if (last_separator_idx != -1 && idx - last_separator_idx != 4)
                     return false;
                 if (last_separator_idx == -1
                     && (start_of_digits_idx == -1 || idx - start_of_digits_idx > 3)) {

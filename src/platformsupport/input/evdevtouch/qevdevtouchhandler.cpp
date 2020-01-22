@@ -113,16 +113,13 @@ public:
     QList<QWindowSystemInterface::TouchPoint> m_lastTouchPoints;
 
     struct Contact {
-        int trackingId;
-        int x;
-        int y;
-        int maj;
-        int pressure;
-        Qt::TouchPointState state;
+        int trackingId = -1;
+        int x = 0;
+        int y = 0;
+        int maj = -1;
+        int pressure = 0;
+        Qt::TouchPointState state = Qt::TouchPointPressed;
         QTouchEvent::TouchPoint::InfoFlags flags;
-        Contact() : trackingId(-1),
-            x(0), y(0), maj(-1), pressure(0),
-            state(Qt::TouchPointPressed), flags(0) { }
     };
     QHash<int, Contact> m_contacts; // The key is a tracking id for type A, slot number for type B.
     QHash<int, Contact> m_lastContacts;

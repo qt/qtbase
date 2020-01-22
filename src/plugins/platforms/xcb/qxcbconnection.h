@@ -127,7 +127,7 @@ class Q_XCB_EXPORT QXcbConnection : public QXcbBasicConnection
 {
     Q_OBJECT
 public:
-    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName = 0);
+    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName = nullptr);
     ~QXcbConnection();
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
@@ -294,7 +294,7 @@ private:
         int deviceId = 0;
         QTabletEvent::PointerType pointerType = QTabletEvent::UnknownPointer;
         QTabletEvent::TabletDevice tool = QTabletEvent::Stylus;
-        Qt::MouseButtons buttons = 0;
+        Qt::MouseButtons buttons;
         qint64 serialId = 0;
         bool inProximity = false;
         struct ValuatorClassInfo {
@@ -318,8 +318,8 @@ private:
         int horizontalIndex = 0;
         double verticalIncrement = 0;
         double horizontalIncrement = 0;
-        Qt::Orientations orientations = 0;
-        Qt::Orientations legacyOrientations = 0;
+        Qt::Orientations orientations;
+        Qt::Orientations legacyOrientations;
         QPointF lastScrollPosition;
     };
     QHash<int, ScrollingDevice> m_scrollingDevices;
@@ -360,7 +360,7 @@ private:
 
     WindowMapper m_mapper;
 
-    Qt::MouseButtons m_buttonState = nullptr;
+    Qt::MouseButtons m_buttonState;
     Qt::MouseButton m_button = Qt::NoButton;
 
     QXcbWindow *m_focusWindow = nullptr;

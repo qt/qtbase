@@ -73,14 +73,14 @@ QPicturePaintEngine::QPicturePaintEngine()
     : QPaintEngine(*(new QPicturePaintEnginePrivate), AllFeatures)
 {
     Q_D(QPicturePaintEngine);
-    d->pt = 0;
+    d->pt = nullptr;
 }
 
 QPicturePaintEngine::QPicturePaintEngine(QPaintEnginePrivate &dptr)
     : QPaintEngine(dptr, AllFeatures)
 {
     Q_D(QPicturePaintEngine);
-    d->pt = 0;
+    d->pt = nullptr;
 }
 
 QPicturePaintEngine::~QPicturePaintEngine()
@@ -484,7 +484,7 @@ void QPicturePaintEngine::drawTextItem(const QPointF &p , const QTextItem &ti)
 #endif
 
     const QTextItemInt &si = static_cast<const QTextItemInt &>(ti);
-    if (si.chars == 0)
+    if (si.chars == nullptr)
         QPaintEngine::drawTextItem(p, ti); // Draw as path
 
     if (d->pic_d->formatMajor >= 9) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -767,18 +767,18 @@ void tst_qmessagehandler::qMessagePattern_data()
         QTest::qWait(10000);
     QTest::newRow("time") << "/%{time yyyy - MM - d}/%{message}"
         << true << (QList<QByteArray>()
-            << ('/' + QDateTime::currentDateTime().toString("yyyy - MM - d").toUtf8() + "/qDebug"));
+            << ('/' + QDateTime::currentDateTime().toString("yyyy - MM - d").toLocal8Bit() + "/qDebug"));
 
     QTest::newRow("time-time") << "/%{time yyyy - MM - d}/%{time dd-MM-yy}/%{message}"
         << true << (QList<QByteArray>()
-            << ('/' + QDateTime::currentDateTime().toString("yyyy - MM - d").toUtf8()
-                + '/' + QDateTime::currentDateTime().toString("dd-MM-yy").toUtf8()
+            << ('/' + QDateTime::currentDateTime().toString("yyyy - MM - d").toLocal8Bit()
+                + '/' + QDateTime::currentDateTime().toString("dd-MM-yy").toLocal8Bit()
                 + "/qDebug"));
 
     QTest::newRow("skipped-time-shown-time")
             << "/%{if-warning}%{time yyyy - MM - d}%{endif}%{if-debug}%{time dd-MM-yy}%{endif}/%{message}"
             << true << (QList<QByteArray>()
-            << ('/' + QDateTime::currentDateTime().toString("dd-MM-yy").toUtf8() + "/qDebug"));
+            << ('/' + QDateTime::currentDateTime().toString("dd-MM-yy").toLocal8Bit() + "/qDebug"));
 
     // %{time}  should have a padding of 6 so if it takes less than 10 seconds to show
     // the first message, there should be 5 spaces

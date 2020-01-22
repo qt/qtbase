@@ -89,11 +89,10 @@ dialog.setNameFilter("*.cpp *.cc *.C *.cxx *.c++");
 
 
 //! [7]
-QStringList filters;
-filters << "Image files (*.png *.xpm *.jpg)"
-        << "Text files (*.txt)"
-        << "Any files (*)";
-
+const QStringList filters({"Image files (*.png *.xpm *.jpg)",
+                           "Text files (*.txt)",
+                           "Any files (*)"
+                          });
 QFileDialog dialog(this);
 dialog.setNameFilters(filters);
 dialog.exec();
@@ -131,10 +130,10 @@ QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
 //! [12]
 
 //! [13]
-QStringList mimeTypeFilters;
-mimeTypeFilters << "image/jpeg" // will show "JPEG image (*.jpeg *.jpg *.jpe)
-            << "image/png"  // will show "PNG image (*.png)"
-            << "application/octet-stream"; // will show "All files (*)"
+QStringList mimeTypeFilters({"image/jpeg", // will show "JPEG image (*.jpeg *.jpg *.jpe)
+                             "image/png",  // will show "PNG image (*.png)"
+                             "application/octet-stream" // will show "All files (*)"
+                            });
 
 QFileDialog dialog(this);
 dialog.setMimeTypeFilters(mimeTypeFilters);
@@ -146,13 +145,13 @@ dialog.exec();
 //! [14]
 
 //! [15]
-auto fileOpenCompleted = [](const QString &fileName, const QByteArray &fileContent) {
+auto fileContentReady = [](const QString &fileName, const QByteArray &fileContent) {
     if (fileName.isEmpty()) {
         // No file was selected
     } else {
         // Use fileName and fileContent
     }
-}
+};
 QFileDialog::getOpenFileContent("Images (*.png *.xpm *.jpg)",  fileContentReady);
 //! [15]
 

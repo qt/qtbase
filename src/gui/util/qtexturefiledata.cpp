@@ -38,11 +38,7 @@
 ****************************************************************************/
 
 #include "qtexturefiledata_p.h"
-#include <QMetaEnum>
 #include <QSize>
-#if QT_CONFIG(opengl)
-#include <QOpenGLTexture>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -247,13 +243,7 @@ void QTextureFileData::setLogName(const QByteArray &name)
 
 static QByteArray glFormatName(quint32 fmt)
 {
-    const char *id = 0;
-#if QT_CONFIG(opengl)
-    id = QMetaEnum::fromType<QOpenGLTexture::TextureFormat>().valueToKey(fmt);
-#endif
-    QByteArray res(id ? id : "(?)");
-    res += " [0x" + QByteArray::number(fmt, 16).rightJustified(4, '0') + ']';
-    return res;
+    return QByteArray("0x" + QByteArray::number(fmt, 16).rightJustified(4, '0'));
 }
 
 QDebug operator<<(QDebug dbg, const QTextureFileData &d)

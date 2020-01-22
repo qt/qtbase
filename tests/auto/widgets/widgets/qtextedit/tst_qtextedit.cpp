@@ -760,7 +760,7 @@ void tst_QTextEdit::cursorPositionChanged()
     ed->setTextCursor(cursor);
     spy.clear();
     QVERIFY(!ed->textCursor().hasSelection());
-    QTest::mouseDClick(ed->viewport(), Qt::LeftButton, 0, ed->cursorRect().center());
+    QTest::mouseDClick(ed->viewport(), Qt::LeftButton, {}, ed->cursorRect().center());
     QVERIFY(ed->textCursor().hasSelection());
 
     QCOMPARE(spy.count(), 1);

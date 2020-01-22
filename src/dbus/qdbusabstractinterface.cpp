@@ -159,7 +159,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     const char *expectedSignature = "";
     if (int(mp.type()) != QMetaType::QVariant) {
         expectedSignature = QDBusMetaType::typeToSignature(type);
-        if (expectedSignature == 0) {
+        if (expectedSignature == nullptr) {
             qWarning("QDBusAbstractInterface: type %s must be registered with Qt D-Bus before it can be "
                      "used to read property %s.%s",
                      mp.typeName(), qPrintable(interface), mp.name());
@@ -190,7 +190,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     }
 
     QByteArray foundSignature;
-    const char *foundType = 0;
+    const char *foundType = nullptr;
     QVariant value = qvariant_cast<QDBusVariant>(reply.arguments().at(0)).variant();
 
     if (value.userType() == type || type == QMetaType::QVariant
@@ -597,7 +597,7 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
                                               QObject *receiver,
                                               const char *slot)
 {
-    return callWithCallback(method, args, receiver, slot, 0);
+    return callWithCallback(method, args, receiver, slot, nullptr);
 }
 
 /*!
@@ -696,7 +696,7 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
 */
 
 /*!
-    \fn QDBusAbstractInterface::call(const QString &message, Args&&...args)
+    \fn template <typename...Args> QDBusMessage QDBusAbstractInterface::call(const QString &method, Args&&...args)
 
     Calls the method \a method on this interface and passes \a args to the method.
     All \a args must be convertible to QVariant.
@@ -745,7 +745,7 @@ QDBusMessage QDBusAbstractInterface::call(const QString &method, const QVariant 
 */
 
 /*!
-    \fn QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &message, Args&&...args)
+    \fn template <typename...Args> QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &method, Args&&...args)
 
     \overload
 
@@ -827,7 +827,7 @@ QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &m
 */
 
 /*!
-    \fn QDBusAbstractInterface::asyncCall(const QString &message, Args&&...args)
+    \fn template <typename...Args> QDBusPendingCall QDBusAbstractInterface::asyncCall(const QString &method, Args&&...args)
 
     Calls the method \a method on this interface and passes \a args to the method.
     All \a args must be convertible to QVariant.

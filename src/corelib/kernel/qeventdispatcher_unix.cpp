@@ -463,13 +463,15 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     // we are awake, broadcast it
     emit awake();
-    QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+
+    auto threadData = d->threadData.loadRelaxed();
+    QCoreApplicationPrivate::sendPostedEvents(nullptr, 0, threadData);
 
     const bool include_timers = (flags & QEventLoop::X11ExcludeTimers) == 0;
     const bool include_notifiers = (flags & QEventLoop::ExcludeSocketNotifiers) == 0;
     const bool wait_for_events = flags & QEventLoop::WaitForMoreEvents;
 
-    const bool canWait = (d->threadData->canWaitLocked()
+    const bool canWait = (threadData->canWaitLocked()
                           && !d->interrupt.loadRelaxed()
                           && wait_for_events);
 

@@ -249,7 +249,7 @@ void HttpWindow::httpFinished()
         return;
     }
 
-    if (reply->error()) {
+    if (reply->networkError()) {
         QFile::remove(fi.absoluteFilePath());
         statusLabel->setText(tr("Download failed:\n%1.").arg(reply->errorString()));
         downloadButton->setEnabled(true);

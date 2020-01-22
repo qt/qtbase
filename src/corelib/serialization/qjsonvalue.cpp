@@ -149,7 +149,7 @@ QJsonValue::QJsonValue(bool b)
 }
 
 /*!
-    Creates a value of type Double, with value \a n.
+    Creates a value of type Double, with value \a v.
  */
 QJsonValue::QJsonValue(double v)
     : d(nullptr)
@@ -166,7 +166,7 @@ QJsonValue::QJsonValue(double v)
 
 /*!
     \overload
-    Creates a value of type Double, with value \a n.
+    Creates a value of type Double, with value \a v.
  */
 QJsonValue::QJsonValue(int v)
     : n(v), t(QCborValue::Integer)
@@ -175,7 +175,7 @@ QJsonValue::QJsonValue(int v)
 
 /*!
     \overload
-    Creates a value of type Double, with value \a n.
+    Creates a value of type Double, with value \a v.
     NOTE: the integer limits for IEEE 754 double precision data is 2^53 (-9007199254740992 to +9007199254740992).
     If you pass in values outside this range expect a loss of precision to occur.
  */
@@ -490,11 +490,11 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
         return doc.isArray() ? QJsonValue(doc.array()) : QJsonValue(doc.object());
     }
     case QMetaType::QCborValue:
-        return variant.value<QCborValue>().toJsonValue();
+        return qvariant_cast<QCborValue>(variant).toJsonValue();
     case QMetaType::QCborArray:
-        return variant.value<QCborArray>().toJsonArray();
+        return qvariant_cast<QCborArray>(variant).toJsonArray();
     case QMetaType::QCborMap:
-        return variant.value<QCborMap>().toJsonObject();
+        return qvariant_cast<QCborMap>(variant).toJsonObject();
 #endif
     default:
         break;

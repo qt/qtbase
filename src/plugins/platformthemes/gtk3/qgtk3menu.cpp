@@ -200,7 +200,7 @@ void QGtk3MenuItem::setMenu(QPlatformMenu *menu)
 {
     m_menu = qobject_cast<QGtk3Menu *>(menu);
     if (GTK_IS_MENU_ITEM(m_item))
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(m_item), m_menu ? m_menu->handle() : NULL);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(m_item), m_menu ? m_menu->handle() : nullptr);
 }
 
 bool QGtk3MenuItem::isVisible() const
@@ -436,7 +436,7 @@ void QGtk3Menu::showPopup(const QWindow *parentWindow, const QRect &targetRect, 
     if (pw)
         m_targetPos = pw->mapToGlobal(m_targetPos);
 
-    gtk_menu_popup(GTK_MENU(m_menu), NULL, NULL, qt_gtk_menu_position_func, this, 0, gtk_get_current_event_time());
+    gtk_menu_popup(GTK_MENU(m_menu), nullptr, nullptr, qt_gtk_menu_position_func, this, 0, gtk_get_current_event_time());
 }
 
 void QGtk3Menu::dismiss()

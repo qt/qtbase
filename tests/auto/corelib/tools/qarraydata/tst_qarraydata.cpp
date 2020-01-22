@@ -37,8 +37,8 @@ struct SharedNullVerifier
 {
     SharedNullVerifier()
     {
-        Q_ASSERT(QArrayData::shared_null[0].ref.isStatic());
-        Q_ASSERT(QArrayData::shared_null[0].ref.isShared());
+        Q_ASSERT(QArrayData::shared_null[0].isStatic());
+        Q_ASSERT(QArrayData::shared_null[0].isShared());
     }
 };
 
@@ -56,7 +56,6 @@ class tst_QArrayData : public QObject
 private slots:
     void referenceCounting();
     void sharedNullEmpty();
-    void staticData();
     void simpleVector();
     void simpleVectorReserve_data();
     void simpleVectorReserve();
@@ -84,43 +83,42 @@ void tst_QArrayData::referenceCounting()
 {
     {
         // Reference counting initialized to 1 (owned)
-        QArrayData array = { { Q_BASIC_ATOMIC_INITIALIZER(1) }, 0, 0, 0, 0 };
+        QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(1), QArrayData::DefaultRawFlags, 0 };
 
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 1);
+        QCOMPARE(array.ref_.loadRelaxed(), 1);
 
-        QVERIFY(!array.ref.isStatic());
+        QVERIFY(!array.isStatic());
 
-        QVERIFY(array.ref.ref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 2);
+        QVERIFY(array.ref());
+        QCOMPARE(array.ref_.loadRelaxed(), 2);
 
-        QVERIFY(array.ref.deref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 1);
+        QVERIFY(array.deref());
+        QCOMPARE(array.ref_.loadRelaxed(), 1);
 
-        QVERIFY(array.ref.ref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 2);
+        QVERIFY(array.ref());
+        QCOMPARE(array.ref_.loadRelaxed(), 2);
 
-        QVERIFY(array.ref.deref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 1);
+        QVERIFY(array.deref());
+        QCOMPARE(array.ref_.loadRelaxed(), 1);
 
-        QVERIFY(!array.ref.deref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), 0);
+        QVERIFY(!array.deref());
+        QCOMPARE(array.ref_.loadRelaxed(), 0);
 
         // Now would be a good time to free/release allocated data
     }
-
     {
         // Reference counting initialized to -1 (static read-only data)
-        QArrayData array = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
+        QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };
 
-        QCOMPARE(array.ref.atomic.loadRelaxed(), -1);
+        QCOMPARE(array.ref_.loadRelaxed(), -1);
 
-        QVERIFY(array.ref.isStatic());
+        QVERIFY(array.isStatic());
 
-        QVERIFY(array.ref.ref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), -1);
+        QVERIFY(array.ref());
+        QCOMPARE(array.ref_.loadRelaxed(), -1);
 
-        QVERIFY(array.ref.deref());
-        QCOMPARE(array.ref.atomic.loadRelaxed(), -1);
+        QVERIFY(array.deref());
+        QCOMPARE(array.ref_.loadRelaxed(), -1);
 
     }
 }
@@ -128,69 +126,39 @@ void tst_QArrayData::referenceCounting()
 void tst_QArrayData::sharedNullEmpty()
 {
     QArrayData *null = const_cast<QArrayData *>(QArrayData::shared_null);
-    QArrayData *empty = QArrayData::allocate(1, alignof(QArrayData), 0);
+    QArrayData *empty;
+    QArrayData::allocate(&empty, 1, alignof(QArrayData), 0);
 
-    QVERIFY(null->ref.isStatic());
-    QVERIFY(null->ref.isShared());
+    QVERIFY(null->isStatic());
+    QVERIFY(null->isShared());
 
-    QVERIFY(empty->ref.isStatic());
-    QVERIFY(empty->ref.isShared());
+    QVERIFY(empty->isStatic());
+    QVERIFY(empty->isShared());
 
-    QCOMPARE(null->ref.atomic.loadRelaxed(), -1);
-    QCOMPARE(empty->ref.atomic.loadRelaxed(), -1);
+    QCOMPARE(null->ref_.loadRelaxed(), -1);
+    QCOMPARE(empty->ref_.loadRelaxed(), -1);
 
-    QVERIFY(null->ref.ref());
-    QVERIFY(empty->ref.ref());
+    QCOMPARE(null->ref_.loadRelaxed(), -1);
+    QCOMPARE(empty->ref_.loadRelaxed(), -1);
 
-    QCOMPARE(null->ref.atomic.loadRelaxed(), -1);
-    QCOMPARE(empty->ref.atomic.loadRelaxed(), -1);
+    QVERIFY(null->deref());
+    QVERIFY(empty->deref());
 
-    QVERIFY(null->ref.deref());
-    QVERIFY(empty->ref.deref());
-
-    QCOMPARE(null->ref.atomic.loadRelaxed(), -1);
-    QCOMPARE(empty->ref.atomic.loadRelaxed(), -1);
+    QCOMPARE(null->ref_.loadRelaxed(), -1);
+    QCOMPARE(empty->ref_.loadRelaxed(), -1);
 
     QVERIFY(null != empty);
 
-    QCOMPARE(null->size, 0);
-    QCOMPARE(null->alloc, 0u);
-    QCOMPARE(null->capacityReserved, 0u);
+    QCOMPARE(null->allocatedCapacity(), size_t(0));
 
-    QCOMPARE(empty->size, 0);
-    QCOMPARE(empty->alloc, 0u);
-    QCOMPARE(empty->capacityReserved, 0u);
-}
-
-void tst_QArrayData::staticData()
-{
-    QStaticArrayData<char, 10> charArray = {
-        Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(char, 10),
-        { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' }
-    };
-    QStaticArrayData<int, 10> intArray = {
-        Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 10),
-        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
-    };
-    QStaticArrayData<double, 10> doubleArray = {
-        Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(double, 10),
-        { 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f }
-    };
-
-    QCOMPARE(charArray.header.size, 10);
-    QCOMPARE(intArray.header.size, 10);
-    QCOMPARE(doubleArray.header.size, 10);
-
-    QCOMPARE(charArray.header.data(), reinterpret_cast<void *>(&charArray.data));
-    QCOMPARE(intArray.header.data(), reinterpret_cast<void *>(&intArray.data));
-    QCOMPARE(doubleArray.header.data(), reinterpret_cast<void *>(&doubleArray.data));
+    QCOMPARE(empty->allocatedCapacity(), size_t(0));
 }
 
 void tst_QArrayData::simpleVector()
 {
-    QArrayData data0 = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
+    QArrayData data0 = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };
     QStaticArrayData<int, 7> data1 = {
-            Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 7),
+            { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 },
             { 0, 1, 2, 3, 4, 5, 6 }
         };
 
@@ -198,10 +166,10 @@ void tst_QArrayData::simpleVector()
 
     SimpleVector<int> v1;
     SimpleVector<int> v2(v1);
-    SimpleVector<int> v3(static_cast<QTypedArrayData<int> *>(&data0));
-    SimpleVector<int> v4(static_cast<QTypedArrayData<int> *>(&data1.header));
-    SimpleVector<int> v5(static_cast<QTypedArrayData<int> *>(&data0));
-    SimpleVector<int> v6(static_cast<QTypedArrayData<int> *>(&data1.header));
+    SimpleVector<int> v3(static_cast<QTypedArrayData<int> *>(&data0), 0, 0);
+    SimpleVector<int> v4(data1);
+    SimpleVector<int> v5(static_cast<QTypedArrayData<int> *>(&data0), 0, 0);
+    SimpleVector<int> v6(data1);
     SimpleVector<int> v7(10, 5);
     SimpleVector<int> v8(array, array + sizeof(array)/sizeof(*array));
 
@@ -461,11 +429,13 @@ void tst_QArrayData::simpleVectorReserve_data()
     QTest::newRow("non-empty") << SimpleVector<int>(5, 42) << size_t(5) << size_t(5);
 
     static const QStaticArrayData<int, 15> array = {
-        Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 15),
+        { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 },
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 } };
-    QArrayDataPointerRef<int> p = {
+    const QArrayDataPointerRef<int> p = {
          static_cast<QTypedArrayData<int> *>(
-            const_cast<QArrayData *>(&array.header)) };
+            const_cast<QArrayData *>(&array.header)),
+        const_cast<int *>(array.data),
+        sizeof(array.data) / sizeof(array.data[0]) };
 
     QTest::newRow("static") << SimpleVector<int>(p) << size_t(0) << size_t(15);
     QTest::newRow("raw-data") << SimpleVector<int>::fromRawData(array.data, 15) << size_t(0) << size_t(15);
@@ -528,13 +498,13 @@ struct Deallocator
 };
 
 Q_DECLARE_METATYPE(const QArrayData *)
-Q_DECLARE_METATYPE(QArrayData::AllocationOptions)
+Q_DECLARE_METATYPE(QArrayData::ArrayOptions)
 
 void tst_QArrayData::allocate_data()
 {
     QTest::addColumn<size_t>("objectSize");
     QTest::addColumn<size_t>("alignment");
-    QTest::addColumn<QArrayData::AllocationOptions>("allocateOptions");
+    QTest::addColumn<QArrayData::ArrayOptions>("allocateOptions");
     QTest::addColumn<bool>("isCapacityReserved");
     QTest::addColumn<const QArrayData *>("commonEmpty");
 
@@ -548,18 +518,19 @@ void tst_QArrayData::allocate_data()
         { "void *", sizeof(void *), alignof(void *) }
     };
 
-    QArrayData *shared_empty = QArrayData::allocate(0, alignof(QArrayData), 0);
+    QArrayData *shared_empty;
+    QArrayData::allocate(&shared_empty, 1, alignof(QArrayData), 0);
     QVERIFY(shared_empty);
 
     struct {
         char const *description;
-        QArrayData::AllocationOptions allocateOptions;
+        QArrayData::ArrayOptions allocateOptions;
         bool isCapacityReserved;
         const QArrayData *commonEmpty;
     } options[] = {
-        { "Default", QArrayData::Default, false, shared_empty },
+        { "Default", QArrayData::DefaultAllocationFlags, false, shared_empty },
         { "Reserved", QArrayData::CapacityReserved, true, shared_empty },
-        { "Grow", QArrayData::Grow, false, shared_empty }
+        { "Grow", QArrayData::GrowsForward, false, shared_empty }
     };
 
     for (size_t i = 0; i < sizeof(types)/sizeof(types[0]); ++i)
@@ -577,7 +548,7 @@ void tst_QArrayData::allocate()
 {
     QFETCH(size_t, objectSize);
     QFETCH(size_t, alignment);
-    QFETCH(QArrayData::AllocationOptions, allocateOptions);
+    QFETCH(QArrayData::ArrayOptions, allocateOptions);
     QFETCH(bool, isCapacityReserved);
     QFETCH(const QArrayData *, commonEmpty);
 
@@ -586,27 +557,29 @@ void tst_QArrayData::allocate()
     size_t minAlignment = qMax(alignment, alignof(QArrayData));
 
     // Shared Empty
-    QCOMPARE(QArrayData::allocate(objectSize, minAlignment, 0,
-                QArrayData::AllocationOptions(allocateOptions)), commonEmpty);
+    QArrayData *empty;
+    QCOMPARE((QArrayData::allocate(&empty, objectSize, minAlignment, 0,
+                QArrayData::ArrayOptions(allocateOptions)), empty), commonEmpty);
 
     Deallocator keeper(objectSize, minAlignment);
     keeper.headers.reserve(1024);
 
     for (int capacity = 1; capacity <= 1024; capacity <<= 1) {
-        QArrayData *data = QArrayData::allocate(objectSize, minAlignment,
-                capacity, QArrayData::AllocationOptions(allocateOptions));
+        QArrayData *data;
+        void *dataPointer = QArrayData::allocate(&data, objectSize, minAlignment,
+                capacity, QArrayData::ArrayOptions(allocateOptions));
+
         keeper.headers.append(data);
 
-        QCOMPARE(data->size, 0);
-        if (allocateOptions & QArrayData::Grow)
-            QVERIFY(data->alloc > uint(capacity));
+        if (allocateOptions & QArrayData::GrowsForward)
+            QVERIFY(data->allocatedCapacity() > uint(capacity));
         else
-            QCOMPARE(data->alloc, uint(capacity));
-        QCOMPARE(data->capacityReserved, uint(isCapacityReserved));
+            QCOMPARE(data->allocatedCapacity(), size_t(capacity));
+        QCOMPARE(bool(data->flags & QArrayData::CapacityReserved), isCapacityReserved);
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
-        ::memset(data->data(), 'A', objectSize * capacity);
+        ::memset(dataPointer, 'A', objectSize * capacity);
     }
 }
 
@@ -614,12 +587,8 @@ void tst_QArrayData::reallocate()
 {
     QFETCH(size_t, objectSize);
     QFETCH(size_t, alignment);
-    QFETCH(QArrayData::AllocationOptions, allocateOptions);
+    QFETCH(QArrayData::ArrayOptions, allocateOptions);
     QFETCH(bool, isCapacityReserved);
-
-    // Maximum alignment that can be requested is that of QArrayData,
-    // otherwise, we can't use reallocate().
-    Q_ASSERT(alignment <= alignof(QArrayData));
 
     // Minimum alignment that can be requested is that of QArrayData.
     // Typically, this alignment is sizeof(void *) and ensured by malloc.
@@ -627,30 +596,31 @@ void tst_QArrayData::reallocate()
 
     int capacity = 10;
     Deallocator keeper(objectSize, minAlignment);
-    QArrayData *data = QArrayData::allocate(objectSize, minAlignment, capacity,
-                                            QArrayData::AllocationOptions(allocateOptions) & ~QArrayData::Grow);
+    QArrayData *data;
+    void *dataPointer = QArrayData::allocate(&data, objectSize, minAlignment, capacity,
+                                             QArrayData::ArrayOptions(allocateOptions) & ~QArrayData::GrowsForward);
     keeper.headers.append(data);
 
-    memset(data->data(), 'A', objectSize * capacity);
-    data->size = capacity;
+    memset(dataPointer, 'A', objectSize * capacity);
 
     // now try to reallocate
     int newCapacity = 40;
-    data = QArrayData::reallocateUnaligned(data, objectSize, newCapacity,
-                                           QArrayData::AllocationOptions(allocateOptions));
+    auto pair = QArrayData::reallocateUnaligned(data, dataPointer, objectSize, newCapacity,
+                                                QArrayData::ArrayOptions(allocateOptions));
+    data = pair.first;
+    dataPointer = pair.second;
     QVERIFY(data);
     keeper.headers.clear();
     keeper.headers.append(data);
 
-    QCOMPARE(data->size, capacity);
-    if (allocateOptions & QArrayData::Grow)
-        QVERIFY(data->alloc > uint(newCapacity));
+    if (allocateOptions & QArrayData::GrowsForward)
+        QVERIFY(data->allocatedCapacity() > size_t(newCapacity));
     else
-        QCOMPARE(data->alloc, uint(newCapacity));
-    QCOMPARE(data->capacityReserved, uint(isCapacityReserved));
+        QCOMPARE(data->allocatedCapacity(), size_t(newCapacity));
+    QCOMPARE(!(data->flags & QArrayData::CapacityReserved), !isCapacityReserved);
 
     for (int i = 0; i < capacity; ++i)
-        QCOMPARE(static_cast<char *>(data->data())[i], 'A');
+        QCOMPARE(static_cast<char *>(dataPointer)[i], 'A');
 }
 
 class Unaligned
@@ -680,89 +650,46 @@ void tst_QArrayData::alignment()
     keeper.headers.reserve(100);
 
     for (int i = 0; i < 100; ++i) {
-        QArrayData *data = QArrayData::allocate(sizeof(Unaligned),
-                minAlignment, 8, QArrayData::Default);
+        QArrayData *data;
+        void *dataPointer = QArrayData::allocate(&data, sizeof(Unaligned),
+                minAlignment, 8, QArrayData::DefaultAllocationFlags);
         keeper.headers.append(data);
 
         QVERIFY(data);
-        QCOMPARE(data->size, 0);
-        QVERIFY(data->alloc >= uint(8));
+        QVERIFY(data->allocatedCapacity() >= uint(8));
 
         // These conditions should hold as long as header and array are
         // allocated together
-        QVERIFY(data->offset >= qptrdiff(sizeof(QArrayData)));
-        QVERIFY(data->offset <= qptrdiff(sizeof(QArrayData)
+        qptrdiff offset = reinterpret_cast<char *>(dataPointer) -
+                reinterpret_cast<char *>(data);
+        QVERIFY(offset >= qptrdiff(sizeof(QArrayData)));
+        QVERIFY(offset <= qptrdiff(sizeof(QArrayData)
                     + minAlignment - alignof(QArrayData)));
 
         // Data is aligned
-        QCOMPARE(quintptr(quintptr(data->data()) % alignment), quintptr(0u));
+        QCOMPARE(quintptr(quintptr(dataPointer) % alignment), quintptr(0u));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
-        ::memset(data->data(), 'A', sizeof(Unaligned) * 8);
+        ::memset(dataPointer, 'A', sizeof(Unaligned) * 8);
     }
 }
 
 void tst_QArrayData::typedData()
 {
-    QStaticArrayData<int, 10> data = {
-            Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 10),
-            { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
-        };
-    QCOMPARE(data.header.size, 10);
-
-    {
-        QTypedArrayData<int> *array =
-            static_cast<QTypedArrayData<int> *>(&data.header);
-        QCOMPARE(array->data(), data.data);
-
-        int j = 0;
-        for (QTypedArrayData<int>::iterator iter = array->begin();
-                iter != array->end(); ++iter, ++j)
-            QCOMPARE((const int *)iter, data.data + j);
-        QCOMPARE(j, 10);
-    }
-
-    {
-        const QTypedArrayData<int> *array =
-            static_cast<const QTypedArrayData<int> *>(&data.header);
-
-        QCOMPARE(array->data(), data.data);
-
-        int j = 0;
-        for (QTypedArrayData<int>::const_iterator iter = array->begin();
-                iter != array->end(); ++iter, ++j)
-            QCOMPARE((const int *)iter, data.data + j);
-        QCOMPARE(j, 10);
-    }
-
-    {
-        QTypedArrayData<int> *null = QTypedArrayData<int>::sharedNull();
-        QTypedArrayData<int> *empty = QTypedArrayData<int>::allocate(0);
-
-        QVERIFY(null != empty);
-
-        QCOMPARE(null->size, 0);
-        QCOMPARE(empty->size, 0);
-
-        QCOMPARE(null->begin(), null->end());
-        QCOMPARE(empty->begin(), empty->end());
-    }
-
-
     {
         Deallocator keeper(sizeof(char),
                 alignof(QTypedArrayData<char>::AlignmentDummy));
-        QArrayData *array = QTypedArrayData<char>::allocate(10);
+        QPair<QTypedArrayData<char> *, char *> pair = QTypedArrayData<char>::allocate(10);
+        QArrayData *array = pair.first;
         keeper.headers.append(array);
 
         QVERIFY(array);
-        QCOMPARE(array->size, 0);
-        QCOMPARE(array->alloc, 10u);
+        QCOMPARE(array->allocatedCapacity(), size_t(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
-        ::memset(array->data(), 0, 10 * sizeof(char));
+        ::memset(pair.second, 0, 10 * sizeof(char));
 
         keeper.headers.clear();
         QTypedArrayData<short>::deallocate(array);
@@ -773,16 +700,16 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(short),
                 alignof(QTypedArrayData<short>::AlignmentDummy));
-        QArrayData *array = QTypedArrayData<short>::allocate(10);
+        QPair<QTypedArrayData<short> *, short *> pair = QTypedArrayData<short>::allocate(10);
+        QArrayData *array = pair.first;
         keeper.headers.append(array);
 
         QVERIFY(array);
-        QCOMPARE(array->size, 0);
-        QCOMPARE(array->alloc, 10u);
+        QCOMPARE(array->allocatedCapacity(), size_t(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
-        ::memset(array->data(), 0, 10 * sizeof(short));
+        ::memset(pair.second, 0, 10 * sizeof(short));
 
         keeper.headers.clear();
         QTypedArrayData<short>::deallocate(array);
@@ -793,16 +720,16 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(double),
                 alignof(QTypedArrayData<double>::AlignmentDummy));
-        QArrayData *array = QTypedArrayData<double>::allocate(10);
+        QPair<QTypedArrayData<double> *, double *> pair = QTypedArrayData<double>::allocate(10);
+        QArrayData *array = pair.first;
         keeper.headers.append(array);
 
         QVERIFY(array);
-        QCOMPARE(array->size, 0);
-        QCOMPARE(array->alloc, 10u);
+        QCOMPARE(array->allocatedCapacity(), size_t(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
-        ::memset(array->data(), 0, 10 * sizeof(double));
+        ::memset(pair.second, 0, 10 * sizeof(double));
 
         keeper.headers.clear();
         QTypedArrayData<double>::deallocate(array);
@@ -1253,7 +1180,7 @@ void fromRawData_impl()
     {
         // Default: Immutable, sharable
         SimpleVector<T> raw = SimpleVector<T>::fromRawData(array,
-                sizeof(array)/sizeof(array[0]), QArrayData::Default);
+                sizeof(array)/sizeof(array[0]), QArrayData::DefaultRawFlags);
 
         QCOMPARE(raw.size(), size_t(11));
         QCOMPARE((const T *)raw.constBegin(), array);
@@ -1298,17 +1225,17 @@ void tst_QArrayData::literals()
 {
     {
         QArrayDataPointer<char> d = Q_ARRAY_LITERAL(char, "ABCDEFGHIJ");
-        QCOMPARE(d->size, 10 + 1);
+        QCOMPARE(d.size, 10u + 1u);
         for (int i = 0; i < 10; ++i)
-            QCOMPARE(d->data()[i], char('A' + i));
+            QCOMPARE(d.data()[i], char('A' + i));
     }
 
     {
         // wchar_t is not necessarily 2-bytes
         QArrayDataPointer<wchar_t> d = Q_ARRAY_LITERAL(wchar_t, L"ABCDEFGHIJ");
-        QCOMPARE(d->size, 10 + 1);
+        QCOMPARE(d.size, 10u + 1u);
         for (int i = 0; i < 10; ++i)
-            QCOMPARE(d->data()[i], wchar_t('A' + i));
+            QCOMPARE(d.data()[i], wchar_t('A' + i));
     }
 
     {
@@ -1346,26 +1273,26 @@ void tst_QArrayData::variadicLiterals()
     {
         QArrayDataPointer<int> d =
             Q_ARRAY_LITERAL(int, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        QCOMPARE(d->size, 10);
+        QCOMPARE(d.size, 10u);
         for (int i = 0; i < 10; ++i)
-            QCOMPARE(d->data()[i], i);
+            QCOMPARE(d.data()[i], i);
     }
 
     {
         QArrayDataPointer<char> d = Q_ARRAY_LITERAL(char,
                 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
-        QCOMPARE(d->size, 10);
+        QCOMPARE(d.size, 10u);
         for (int i = 0; i < 10; ++i)
-            QCOMPARE(d->data()[i], char('A' + i));
+            QCOMPARE(d.data()[i], char('A' + i));
     }
 
     {
         QArrayDataPointer<const char *> d = Q_ARRAY_LITERAL(const char *,
                 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J");
-        QCOMPARE(d->size, 10);
+        QCOMPARE(d.size, 10u);
         for (int i = 0; i < 10; ++i) {
-            QCOMPARE(d->data()[i][0], char('A' + i));
-            QCOMPARE(d->data()[i][1], '\0');
+            QCOMPARE(d.data()[i][0], char('A' + i));
+            QCOMPARE(d.data()[i][1], '\0');
         }
     }
 

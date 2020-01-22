@@ -50,6 +50,7 @@
 
 //! [0]
 label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+label->setAlignment({ });
 //! [0]
 
 

@@ -79,24 +79,22 @@ using namespace QTestPrivate;
 
 class StyleOptionTestStyle : public QCommonStyle
 {
-private:
-    bool readOnly;
-
 public:
-    inline StyleOptionTestStyle() : QCommonStyle(), readOnly(false)
-    {
-    }
+    bool readOnly = false;
+    mutable bool wasDrawn = false;
 
-    inline void setReadOnly(bool readOnly)
+    using QCommonStyle::QCommonStyle;
+    void setReadOnly(bool readOnly)
     {
         this->readOnly = readOnly;
     }
 
-    inline void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *,
-                                 const QWidget *) const
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *,
+                                 const QWidget *) const override
     {
         switch (pe) {
             case PE_PanelLineEdit:
+            wasDrawn = true;
             if (readOnly)
                 QVERIFY(opt->state & QStyle::State_ReadOnly);
             else
@@ -322,8 +320,8 @@ protected slots:
 
 private:
     // keyClicks(..) is moved to QtTestCase
-    void psKeyClick(QWidget *target, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
-    void psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
+    void psKeyClick(QWidget *target, Qt::Key key, Qt::KeyboardModifiers pressState = {});
+    void psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardModifiers pressState = {});
     bool unselectingWithLeftOrRightChangesCursorPosition();
 #if QT_CONFIG(shortcut)
     void addKeySequenceStandardKey(QTestEventList &keys, QKeySequence::StandardKey);
@@ -772,6 +770,14 @@ void tst_QLineEdit::keypress_inputMask_data()
     }
     {
         QTestEventList keys;
+        // inserting at end
+        addKeySequenceStandardKey(keys, QKeySequence::MoveToEndOfLine);
+        keys.addKeyClick(Qt::Key_Left);
+        keys.addKeyClick(Qt::Key_0);
+        QTest::newRow("insert at end") << QString("9-9-9") << keys << QString("--0") << QString(" - -0");
+    }
+    {
+        QTestEventList keys;
         // inserting '12.12' then two backspaces
         addKeySequenceStandardKey(keys, QKeySequence::MoveToStartOfLine);
         keys.addKeyClick(Qt::Key_1);
@@ -878,9 +884,6 @@ void tst_QLineEdit::hasAcceptableInputMask()
     testWidget->setText(invalid);
     qApp->sendEvent(testWidget, &lostFocus);
     QVERIFY(validInput);
-
-    // at the moment we don't strip the blank character if it is valid input, this makes the test between x vs X useless
-    QEXPECT_FAIL( "Any optional and required", "To eat blanks or not? Known issue. Task 43172", Abort);
 
     // test requiredMask
     testWidget->setInputMask(requiredMask);
@@ -2288,7 +2291,7 @@ void tst_QLineEdit::deleteSelectedText()
 
     edit.selectAll();
 
-    QTest::keyClick(&edit, Qt::Key_Delete, 0);
+    QTest::keyClick(&edit, Qt::Key_Delete, {});
     QVERIFY(edit.text().isEmpty());
 
     edit.setText(text);
@@ -3279,19 +3282,22 @@ void tst_QLineEdit::readOnlyStyleOption()
     QLineEdit *testWidget = ensureTestWidget();
     bool wasReadOnly = testWidget->isReadOnly();
     QStyle *oldStyle = testWidget->style();
+    testWidget->show();
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(testWidget));
 
     StyleOptionTestStyle myStyle;
     testWidget->setStyle(&myStyle);
 
     myStyle.setReadOnly(true);
     testWidget->setReadOnly(true);
-    testWidget->repaint();
-    qApp->processEvents();
+    testWidget->update();
+    QTRY_VERIFY(myStyle.wasDrawn);
+    myStyle.wasDrawn = false;
 
     testWidget->setReadOnly(false);
     myStyle.setReadOnly(false);
-    testWidget->repaint();
-    qApp->processEvents();
+    testWidget->update();
+    QTRY_VERIFY(myStyle.wasDrawn);
 
     testWidget->setReadOnly(wasReadOnly);
     testWidget->setStyle(oldStyle);
@@ -3588,7 +3594,7 @@ void tst_QLineEdit::textMargin()
     QCOMPARE(bottom, b);
 #endif
 
-    QTest::mouseClick(&testWidget, Qt::LeftButton, 0, mousePressPos);
+    QTest::mouseClick(&testWidget, Qt::LeftButton, {}, mousePressPos);
     QTRY_COMPARE(testWidget.cursorPosition(), cursorPosition);
 }
 
@@ -4502,7 +4508,7 @@ void tst_QLineEdit::clearButton()
     QTRY_COMPARE(filterModel->rowCount(), 1); // matches 'ab'
     QSignalSpy spyEdited(filterLineEdit, &QLineEdit::textEdited);
     const QPoint clearButtonCenterPos = QRect(QPoint(0, 0), clearButton->size()).center();
-    QTest::mouseClick(clearButton, Qt::LeftButton, 0, clearButtonCenterPos);
+    QTest::mouseClick(clearButton, Qt::LeftButton, {}, clearButtonCenterPos);
     QCOMPARE(spyEdited.count(), 1);
     QTRY_COMPARE(clearButton->cursor().shape(), filterLineEdit->cursor().shape());
     QTRY_COMPARE(filterModel->rowCount(), 3);
@@ -4547,7 +4553,7 @@ void tst_QLineEdit::clearButtonVisibleAfterSettingText_QTBUG_45518()
     QTRY_VERIFY(clearButton->opacity() > 0);
     QTRY_COMPARE(clearButton->cursor().shape(), Qt::ArrowCursor);
 
-    QTest::mouseClick(clearButton, Qt::LeftButton, nullptr, clearButton->rect().center());
+    QTest::mouseClick(clearButton, Qt::LeftButton, {}, clearButton->rect().center());
     QTRY_COMPARE(edit.text(), QString());
 
     QTRY_COMPARE(clearButton->opacity(), qreal(0));

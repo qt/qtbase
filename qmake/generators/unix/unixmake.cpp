@@ -208,15 +208,15 @@ UnixMakefileGenerator::init()
                                      escapeFilePath(pchBaseName + language + headerSuffix));
                     const ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
                     for (const ProString &arch : pchArchs) {
-                        QString suffix = headerSuffix;
-                        suffix.replace(QLatin1String("${QMAKE_PCH_ARCH}"), arch.toQString());
+                        QString file = pchBaseName + language + headerSuffix;
+                        file.replace(QLatin1String("${QMAKE_PCH_ARCH}"), arch.toQString());
                         if (project->isActiveConfig("clang_pch_style")
-                            && (suffix.endsWith(QLatin1String(".pch"))
-                                || suffix.endsWith(QLatin1String(".gch")))) {
-                            suffix.chop(4); // must omit header suffix for -include to recognize the PCH
+                            && (file.endsWith(QLatin1String(".pch"))
+                                || file.endsWith(QLatin1String(".gch")))) {
+                            file.chop(4); // must omit header suffix for -include to recognize the PCH
                         }
                         pchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT_") + arch + QLatin1Char('}'),
-                                         escapeFilePath(pchBaseName + language + suffix));
+                                         escapeFilePath(file));
                     }
                 }
             }
@@ -363,10 +363,11 @@ QStringList
                     if (pchArchs.isEmpty())
                         pchArchs << ProString(); // normal single-arch PCH
                     for (const ProString &arch : qAsConst(pchArchs)) {
-                        QString suffix = header_suffix;
-                        if (!arch.isEmpty())
-                            suffix.replace(QLatin1String("${QMAKE_PCH_ARCH}"), arch.toQString());
-                        QString precompiledHeader = header_prefix + language + suffix;
+                        QString precompiledHeader = header_prefix + language + header_suffix;
+                        if (!arch.isEmpty()) {
+                            precompiledHeader.replace(QLatin1String("${QMAKE_PCH_ARCH}"),
+                                                      arch.toQString());
+                        }
                         if (!ret.contains(precompiledHeader))
                             ret += precompiledHeader;
                     }

@@ -63,8 +63,8 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     if (!QSslSocket::supportsSsl()) {
-        QMessageBox::information(0, "Secure Socket Client",
-                                 "This system does not support SSL/TLS.");
+        QMessageBox::information(nullptr, "Secure Socket Client",
+                                 "This system does not support TLS.");
         return -1;
     }
 

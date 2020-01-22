@@ -142,7 +142,8 @@ void tst_QSocks5SocketEngine::initTestCase()
      QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
      QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 143));
 #else
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 #endif
 }
 
@@ -287,7 +288,7 @@ void tst_QSocks5SocketEngine::errorTest()
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(int(socket.error()), expectedError);
+    QCOMPARE(int(socket.socketError()), expectedError);
 }
 
 //---------------------------------------------------------------------------
@@ -1010,7 +1011,7 @@ void tst_QSocks5SocketEngine::incomplete()
     QTestEventLoop::instance().enterLoop(70);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(socket.error(), QAbstractSocket::ProxyConnectionClosedError);
+    QCOMPARE(socket.socketError(), QAbstractSocket::ProxyConnectionClosedError);
 }
 
 //----------------------------------------------------------------------------------

@@ -246,38 +246,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "####### Files\n\n";
     // This is used by the dist target.
     t << "SOURCES       = " << fileVarList("SOURCES") << ' ' << fileVarList("GENERATED_SOURCES") << Qt::endl;
-    if(do_incremental) {
-        const ProStringList &objs = project->values("OBJECTS");
-        const ProStringList &incrs = project->values("QMAKE_INCREMENTAL");
-        ProStringList incrs_out;
-        t << "OBJECTS       = ";
-        for (ProStringList::ConstIterator objit = objs.begin(); objit != objs.end(); ++objit) {
-            bool increment = false;
-            for (ProStringList::ConstIterator incrit = incrs.begin(); incrit != incrs.end(); ++incrit) {
-                if ((*objit).toQString().indexOf(QRegExp((*incrit).toQString(), Qt::CaseSensitive,
-                                                 QRegExp::Wildcard)) != -1) {
-                    increment = true;
-                    incrs_out.append((*objit));
-                    break;
-                }
-            }
-            if(!increment)
-                t << "\\\n\t\t" << (*objit);
-        }
-        if(incrs_out.count() == objs.count()) { //we just switched places, no real incrementals to be done!
-            t << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
-        } else if(!incrs_out.count()) {
-            t << Qt::endl;
-        } else {
-            src_incremental = true;
-            t << Qt::endl;
-            t << "INCREMENTAL_OBJECTS = "
-              << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
-        }
-    } else {
-        // Used all over the place in both deps and commands.
-        t << "OBJECTS       = " << valList(escapeDependencyPaths(project->values("OBJECTS"))) << Qt::endl;
-    }
+    auto objectParts = writeObjectsPart(t, do_incremental);
+    src_incremental = objectParts.first;
     if(do_incremental && !src_incremental)
         do_incremental = false;
     t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << " "
@@ -513,7 +483,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << mkdir_p_asstring(destdir) << "\n\t";
                 if (!project->isEmpty("QMAKE_PRE_LINK"))
                     t << var("QMAKE_PRE_LINK") << "\n\t";
-                t << "$(LINK) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)";
+                t << "$(LINK) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(TARGET) "
+                  << objectParts.second << " $(OBJCOMP) $(LIBS)";
                 if (!project->isEmpty("QMAKE_POST_LINK"))
                     t << "\n\t" << var("QMAKE_POST_LINK");
             }
@@ -1046,10 +1017,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (pchArchs.isEmpty())
                     pchArchs << ProString(); // normal single-arch PCH
                 for (const ProString &arch : qAsConst(pchArchs)) {
-                    auto suffix = header_suffix.toQString();
+                    QString file = precomph_out_dir + header_prefix + language + header_suffix;
                     if (!arch.isEmpty())
-                        suffix.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
-                    precomp_files += precomph_out_dir + header_prefix + language + suffix;
+                        file.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
+                    precomp_files += file;
                 }
             }
         }
@@ -1169,7 +1140,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << "\n\techo \"// Automatically generated, do not modify\" > " << sourceFile_f
                       << "\n\trm -f " << escapeFilePath(pchArchOutput);
                 } else {
-                    t << "\n\t" << mkdir_p_asstring(pchOutputDir);
+                    QString outDir = pchOutputDir;
+                    if (!arch.isEmpty())
+                        outDir.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
+                    t << "\n\t" << mkdir_p_asstring(outDir);
                 }
 
                 auto pchArchFlags = pchFlags;
@@ -1543,6 +1517,58 @@ UnixMakefileGenerator::writeLibtoolFile()
         install_dir = project->first("DESTDIR");
     t << "# Directory that this library needs to be installed in:\n"
         "libdir='" << Option::fixPathToTargetOS(install_dir.toQString(), false) << "'\n";
+}
+
+std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t, bool do_incremental)
+{
+    bool src_incremental = false;
+    QString objectsLinkLine;
+    const ProStringList &objs = project->values("OBJECTS");
+    if (do_incremental) {
+        const ProStringList &incrs = project->values("QMAKE_INCREMENTAL");
+        ProStringList incrs_out;
+        t << "OBJECTS       = ";
+        for (ProStringList::ConstIterator objit = objs.begin(); objit != objs.end(); ++objit) {
+            bool increment = false;
+            for (ProStringList::ConstIterator incrit = incrs.begin(); incrit != incrs.end(); ++incrit) {
+                if ((*objit).toQString().indexOf(QRegExp((*incrit).toQString(), Qt::CaseSensitive,
+                                                         QRegExp::Wildcard)) != -1) {
+                    increment = true;
+                    incrs_out.append((*objit));
+                    break;
+                }
+            }
+            if (!increment)
+                t << "\\\n\t\t" << (*objit);
+        }
+        if (incrs_out.count() == objs.count()) { //we just switched places, no real incrementals to be done!
+            t << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
+        } else if (!incrs_out.count()) {
+            t << Qt::endl;
+        } else {
+            src_incremental = true;
+            t << Qt::endl;
+            t << "INCREMENTAL_OBJECTS = "
+              << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
+        }
+    } else {
+        const ProString &objMax = project->first("QMAKE_LINK_OBJECT_MAX");
+        // Used all over the place in both deps and commands.
+        if (objMax.isEmpty() || project->values("OBJECTS").count() < objMax.toInt()) {
+            objectsLinkLine = "$(OBJECTS)";
+        } else {
+            QString ld_response_file = fileVar("OBJECTS_DIR");
+            ld_response_file += var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
+            if (!var("BUILD_NAME").isEmpty())
+                ld_response_file += "." + var("BUILD_NAME");
+            if (!var("MAKEFILE").isEmpty())
+                ld_response_file += "." + var("MAKEFILE");
+            createResponseFile(ld_response_file, objs);
+            objectsLinkLine = "@" + escapeFilePath(ld_response_file);
+        }
+        t << "OBJECTS       = " << valList(escapeDependencyPaths(objs)) << Qt::endl;
+    }
+    return std::make_pair(src_incremental, objectsLinkLine);
 }
 
 QT_END_NAMESPACE

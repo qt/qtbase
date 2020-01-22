@@ -83,10 +83,10 @@ QIBusEngineDesc QIBusProxy::getGlobalEngine()
     QVariant variant = reply.value().variant();
     if (!variant.isValid())
         return desc;
-    QVariant child = variant.value<QDBusVariant>().variant();
+    QVariant child = qvariant_cast<QDBusVariant>(variant).variant();
     if (!child.isValid())
         return desc;
-    const QDBusArgument argument = child.value<QDBusArgument>();
+    const QDBusArgument argument = qvariant_cast<QDBusArgument>(child);
     argument >> desc;
     return desc;
 }

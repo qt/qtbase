@@ -80,7 +80,7 @@ int main()
     printf("#include <QtCore/qfloat16.h>\n\n");
 
     printf("QT_BEGIN_NAMESPACE\n\n");
-    printf("#if !defined(__F16C__) && !defined(__ARM_FP16_FORMAT_IEEE)\n\n");
+    printf("#if !defined(__ARM_FP16_FORMAT_IEEE)\n\n");
 
     printf("const quint32 qfloat16::mantissatable[2048] = {\n");
     printf("0,\n");
@@ -157,7 +157,7 @@ int main()
 
     printf("};\n\n");
 
-    printf("#endif // !__F16C__ && !__ARM_FP16_FORMAT_IEEE\n\n");
+    printf("#endif // !__ARM_FP16_FORMAT_IEEE\n\n");
     printf("QT_END_NAMESPACE\n");
     return 0;
 }

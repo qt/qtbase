@@ -56,7 +56,7 @@
     \include module-use.qdocinc using qt module
     \quotefile overview/using-qt-core.cmake
 
-    See also the \l[QtDoc]{Building with CMake} overview.
+    See also the \l{Build with CMake} overview.
 
     \section2 Building with qmake
 

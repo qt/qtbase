@@ -73,7 +73,7 @@ static inline QDpi monitorDPI(HMONITOR hMonitor)
     return {0, 0};
 }
 
-using WindowsScreenDataList = QList<QWindowsScreenData>;
+using WindowsScreenDataList = QVector<QWindowsScreenData>;
 
 static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
 {
@@ -87,7 +87,7 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     data->geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     data->availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
     data->name = QString::fromWCharArray(info.szDevice);
-    if (data->name == QLatin1String("WinDisc")) {
+    if (data->name == u"WinDisc") {
         data->flags |= QWindowsScreenData::LockScreen;
     } else {
         if (const HDC hdc = CreateDC(info.szDevice, nullptr, nullptr, nullptr)) {
@@ -467,7 +467,7 @@ bool QWindowsScreenManager::handleDisplayChange(WPARAM wParam, LPARAM lParam)
     return false;
 }
 
-static inline int indexOfMonitor(const QList<QWindowsScreen *> &screens,
+static inline int indexOfMonitor(const QWindowsScreenManager::WindowsScreenList &screens,
                                  const QString &monitorName)
 {
     for (int i= 0; i < screens.size(); ++i)
@@ -476,7 +476,7 @@ static inline int indexOfMonitor(const QList<QWindowsScreen *> &screens,
     return -1;
 }
 
-static inline int indexOfMonitor(const QList<QWindowsScreenData> &screenData,
+static inline int indexOfMonitor(const WindowsScreenDataList &screenData,
                                  const QString &monitorName)
 {
     for (int i = 0; i < screenData.size(); ++i)

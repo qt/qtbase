@@ -151,17 +151,17 @@ static inline const uchar *verifyTag(const uchar *tagPtr, const uchar *endPtr)
 const QFontEngineQPF2::Glyph *QFontEngineQPF2::findGlyph(glyph_t g) const
 {
     if (!g || g >= glyphMapEntries)
-        return 0;
+        return nullptr;
     const quint32 *gmapPtr = reinterpret_cast<const quint32 *>(fontData + glyphMapOffset);
     quint32 glyphPos = qFromBigEndian<quint32>(gmapPtr[g]);
     if (glyphPos > glyphDataSize) {
         if (glyphPos == 0xffffffff)
-            return 0;
+            return nullptr;
 #if defined(DEBUG_FONTENGINE)
         qDebug() << "glyph" << g << "outside of glyphData, remapping font file";
 #endif
         if (glyphPos > glyphDataSize)
-            return 0;
+            return nullptr;
     }
     return reinterpret_cast<const Glyph *>(fontData + glyphDataOffset + glyphPos);
 }
@@ -230,7 +230,7 @@ QFontEngineQPF2::QFontEngineQPF2(const QFontDef &def, const QByteArray &data)
 {
     fontDef = def;
     cache_cost = 100;
-    cmap = 0;
+    cmap = nullptr;
     cmapOffset = 0;
     cmapSize = 0;
     glyphMapOffset = 0;
@@ -456,7 +456,7 @@ glyph_metrics_t QFontEngineQPF2::boundingBox(glyph_t glyph)
 
 QFixed QFontEngineQPF2::ascent() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_Ascent).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_Ascent)));
 }
 
 QFixed QFontEngineQPF2::capHeight() const
@@ -466,37 +466,37 @@ QFixed QFontEngineQPF2::capHeight() const
 
 QFixed QFontEngineQPF2::descent() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_Descent).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_Descent)));
 }
 
 QFixed QFontEngineQPF2::leading() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_Leading).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_Leading)));
 }
 
 qreal QFontEngineQPF2::maxCharWidth() const
 {
-    return extractHeaderField(fontData, Tag_MaxCharWidth).value<qreal>();
+    return qvariant_cast<qreal>(extractHeaderField(fontData, Tag_MaxCharWidth));
 }
 
 qreal QFontEngineQPF2::minLeftBearing() const
 {
-    return extractHeaderField(fontData, Tag_MinLeftBearing).value<qreal>();
+    return qvariant_cast<qreal>(extractHeaderField(fontData, Tag_MinLeftBearing));
 }
 
 qreal QFontEngineQPF2::minRightBearing() const
 {
-    return extractHeaderField(fontData, Tag_MinRightBearing).value<qreal>();
+    return qvariant_cast<qreal>(extractHeaderField(fontData, Tag_MinRightBearing));
 }
 
 QFixed QFontEngineQPF2::underlinePosition() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_UnderlinePosition).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_UnderlinePosition)));
 }
 
 QFixed QFontEngineQPF2::lineThickness() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_LineThickness).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_LineThickness)));
 }
 
 bool QFontEngineQPF2::isValid() const

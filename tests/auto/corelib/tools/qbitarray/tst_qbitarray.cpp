@@ -86,6 +86,9 @@ private slots:
     void resize();
     void fromBits_data();
     void fromBits();
+
+    void toUInt32_data();
+    void toUInt32();
 };
 
 void tst_QBitArray::size_data()
@@ -665,6 +668,96 @@ void tst_QBitArray::fromBits()
     QCOMPARE(fromBits, expected);
 
     QCOMPARE(QBitArray::fromBits(fromBits.bits(), fromBits.size()), expected);
+}
+
+void tst_QBitArray::toUInt32_data()
+{
+    QTest::addColumn<QBitArray>("data");
+    QTest::addColumn<int>("endianness");
+    QTest::addColumn<bool>("check");
+    QTest::addColumn<quint32>("result");
+
+    QTest::newRow("ctor")           << QBitArray()
+                                    << static_cast<int>(QSysInfo::Endian::LittleEndian)
+                                    << true
+                                    << quint32(0);
+
+    QTest::newRow("empty")          << QBitArray(0)
+                                    << static_cast<int>(QSysInfo::Endian::LittleEndian)
+                                    << true
+                                    << quint32(0);
+
+    QTest::newRow("LittleEndian4")  << QStringToQBitArray(QString("0111"))
+                                    << static_cast<int>(QSysInfo::Endian::LittleEndian)
+                                    << true
+                                    << quint32(14);
+
+    QTest::newRow("BigEndian4")     << QStringToQBitArray(QString("0111"))
+                                    << static_cast<int>(QSysInfo::Endian::BigEndian)
+                                    << true
+                                    << quint32(7);
+
+    QTest::newRow("LittleEndian8")  << QStringToQBitArray(QString("01111111"))
+                                    << static_cast<int>(QSysInfo::Endian::LittleEndian)
+                                    << true
+                                    << quint32(254);
+
+    QTest::newRow("BigEndian8")     << QStringToQBitArray(QString("01111111"))
+                                    << static_cast<int>(QSysInfo::Endian::BigEndian)
+                                    << true
+                                    << quint32(127);
+
+    QTest::newRow("LittleEndian16") << QStringToQBitArray(QString("0111111111111111"))
+                                    << static_cast<int>(QSysInfo::Endian::LittleEndian)
+                                    << true
+                                    << quint32(65534);
+
+    QTest::newRow("BigEndian16")    << QStringToQBitArray(QString("0111111111111111"))
+                                    << static_cast<int>(QSysInfo::Endian::BigEndian)
+                                    << true
+                                    << quint32(32767);
+
+    QTest::newRow("LittleEndian31") << QBitArray(31, true)
+                                    << static_cast<int>(QSysInfo::Endian::LittleEndian)
+                                    << true
+                                    << quint32(2147483647);
+
+    QTest::newRow("BigEndian31")    << QBitArray(31, true)
+                                    << static_cast<int>(QSysInfo::Endian::BigEndian)
+                                    << true
+                                    << quint32(2147483647);
+
+    QTest::newRow("LittleEndian32") << QBitArray(32, true)
+                                    << static_cast<int>(QSysInfo::Endian::LittleEndian)
+                                    << true
+                                    << quint32(4294967295);
+
+    QTest::newRow("BigEndian32")    << QBitArray(32, true)
+                                    << static_cast<int>(QSysInfo::Endian::BigEndian)
+                                    << true
+                                    << quint32(4294967295);
+
+    QTest::newRow("LittleEndian33") << QBitArray(33, true)
+                                    << static_cast<int>(QSysInfo::Endian::LittleEndian)
+                                    << false
+                                    << quint32(0);
+
+    QTest::newRow("BigEndian33")    << QBitArray(33, true)
+                                    << static_cast<int>(QSysInfo::Endian::BigEndian)
+                                    << false
+                                    << quint32(0);
+}
+
+void tst_QBitArray::toUInt32()
+{
+    QFETCH(QBitArray, data);
+    QFETCH(int, endianness);
+    QFETCH(bool, check);
+    QFETCH(quint32, result);
+    bool ok = false;
+
+    QCOMPARE(data.toUInt32(static_cast<QSysInfo::Endian>(endianness), &ok), result);
+    QCOMPARE(ok, check);
 }
 
 QTEST_APPLESS_MAIN(tst_QBitArray)

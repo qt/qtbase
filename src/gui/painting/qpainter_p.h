@@ -154,29 +154,29 @@ public:
     QFont deviceFont;
     QPen pen;
     QBrush brush;
-    QBrush bgBrush;             // background brush
+    QBrush bgBrush = Qt::white; // background brush
     QRegion clipRegion;
     QPainterPath clipPath;
-    Qt::ClipOperation clipOperation;
+    Qt::ClipOperation clipOperation = Qt::NoClip;
     QPainter::RenderHints renderHints;
     QVector<QPainterClipInfo> clipInfo; // ### Make me smaller and faster to copy around...
     QTransform worldMatrix;       // World transformation matrix, not window and viewport
     QTransform matrix;            // Complete transformation matrix,
     QTransform redirectionMatrix;
-    int wx, wy, ww, wh;         // window rectangle
-    int vx, vy, vw, vh;         // viewport rectangle
-    qreal opacity;
+    int wx = 0, wy = 0, ww = 0, wh = 0; // window rectangle
+    int vx = 0, vy = 0, vw = 0, vh = 0; // viewport rectangle
+    qreal opacity = 1;
 
     uint WxF:1;                 // World transformation
     uint VxF:1;                 // View transformation
     uint clipEnabled:1;
 
-    Qt::BGMode bgMode;
-    QPainter *painter;
+    Qt::BGMode bgMode = Qt::TransparentMode;
+    QPainter *painter = nullptr;
     Qt::LayoutDirection layoutDirection;
-    QPainter::CompositionMode composition_mode;
-    uint emulationSpecifier;
-    uint changeFlags;
+    QPainter::CompositionMode composition_mode = QPainter::CompositionMode_SourceOver;
+    uint emulationSpecifier = 0;
+    uint changeFlags = 0;
 };
 
 struct QPainterDummyState

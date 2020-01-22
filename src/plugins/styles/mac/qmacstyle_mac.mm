@@ -236,6 +236,18 @@ static QLinearGradient titlebarGradientInactive()
 }
 
 #if QT_CONFIG(tabwidget)
+/*
+    Since macOS 10.14 AppKit is using transparency more extensively, especially for the
+    dark theme. Inactive buttons, for example, are semi-transparent. And we use them to
+    draw tab widget's tab bar. The combination of NSBox (also a part of tab widget)
+    and these transparent buttons gives us an undesired side-effect: an outline of
+    NSBox is visible through transparent buttons. To avoid this, we have this hack below:
+    we clip the area where the line would be visible through the buttons. The area we
+    want to clip away can be described as an intersection of the option's rect and
+    the tab widget's tab bar rect. But some adjustments are required, since those rects
+    are anyway adjusted during the rendering and they are not exactly what you'll see on
+    the screen. Thus this switch-statement inside.
+*/
 static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, CGContextRef ctx)
 {
     Q_ASSERT(option);
@@ -246,7 +258,19 @@ static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, 
         QTabWidget *tabWidget = qobject_cast<QTabWidget *>(option->styleObject);
         Q_ASSERT(tabWidget);
 
-        const QRect tabBarRect = style->subElementRect(QStyle::SE_TabWidgetTabBar, option, tabWidget).adjusted(2, 2, -3, -2);
+        QRect tabBarRect = style->subElementRect(QStyle::SE_TabWidgetTabBar, option, tabWidget).adjusted(2, 0, -3, 0);
+        switch (tabWidget->tabPosition()) {
+        case QTabWidget::South:
+            tabBarRect.setY(tabBarRect.y() + tabBarRect.height() / 2);
+            break;
+        case QTabWidget::North:
+        case QTabWidget::West:
+            tabBarRect = tabBarRect.adjusted(0, 2, 0, -2);
+            break;
+        case QTabWidget::East:
+            tabBarRect = tabBarRect.adjusted(tabBarRect.width() / 2, 2, tabBarRect.width() / 2, -2);
+        }
+
         const QRegion clipPath = QRegion(option->rect) - tabBarRect;
         QVarLengthArray<CGRect, 3> cgRects;
         for (const QRect &qtRect : clipPath)
@@ -1388,13 +1412,21 @@ void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widg
         // High-dpi icons do not need adjustment; make sure tabIconSize is not larger than iconSize
         tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.height()));
 
-        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
-                    tabIconSize.width(), tabIconSize.height());
+        const int stylePadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2 - hpadding;
+
+        if (opt->documentMode) {
+            // documents show the icon as part of the the text
+            const int textWidth =
+                opt->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, opt->text).width();
+            *iconRect = QRect(tr.center().x() - textWidth / 2 - stylePadding - tabIconSize.width(),
+                              tr.center().y() - tabIconSize.height() / 2,
+                              tabIconSize.width(), tabIconSize.height());
+        } else {
+            *iconRect = QRect(tr.left() + stylePadding, tr.center().y() - tabIconSize.height() / 2,
+                        tabIconSize.width(), tabIconSize.height());
+        }
         if (!verticalTabs)
             *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
-
-        int stylePadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
-        stylePadding -= hpadding;
 
         tr.setLeft(tr.left() + stylePadding + tabIconSize.width() + 4);
         tr.setRight(tr.right() - stylePadding - tabIconSize.width() - 4);
@@ -1740,16 +1772,16 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outerBounds, const Coc
     if (cw.type == ComboBox) {
         switch (cw.size) {
         case QStyleHelper::SizeLarge:
-            ret = ret.adjusted(0, 0, -28, 0).translated(3, 4.5);
+            ret = ret.adjusted(0, 0, -25, 0).translated(2, 4.5);
             ret.setHeight(16);
             break;
         case QStyleHelper::SizeSmall:
-            ret = ret.adjusted(0, 0, -24, 0).translated(3, 2);
+            ret = ret.adjusted(0, 0, -22, 0).translated(2, 3);
             ret.setHeight(14);
             break;
         case QStyleHelper::SizeMini:
-            ret = ret.adjusted(0, 0, -21, 0).translated(2, 3);
-            ret.setHeight(11);
+            ret = ret.adjusted(0, 0, -19, 0).translated(2, 2.5);
+            ret.setHeight(10.5);
             break;
         default:
             break;
@@ -2553,7 +2585,7 @@ QPalette QMacStyle::standardPalette() const
     auto platformTheme = QGuiApplicationPrivate::platformTheme();
     auto styleNames = platformTheme->themeHint(QPlatformTheme::StyleNames);
     if (styleNames.toStringList().contains("macintosh"))
-        return *platformTheme->palette();
+        return QPalette(); // Inherit everything from theme
     else
         return QStyle::standardPalette();
 }
@@ -2873,7 +2905,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = false;
         break;
     case SH_Table_GridLineColor:
-        ret = int(qt_mac_toQColor(NSColor.gridColor).rgb());
+        ret = int(qt_mac_toQColor(NSColor.gridColor).rgba());
         break;
     default:
         ret = QCommonStyle::styleHint(sh, opt, w, hret);
@@ -5539,7 +5571,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     const auto ct = d->windowButtonCocoaControl(sc);
                     const auto cw = QMacStylePrivate::CocoaControl(ct, QStyleHelper::SizeLarge);
                     auto *wb = static_cast<NSButton *>(d->cocoaControl(cw));
-                    wb.enabled = (sc & titlebar->subControls);
+                    wb.enabled = (sc & titlebar->subControls) && isActive;
                     [wb highlight:(titlebar->state & State_Sunken) && (sc & titlebar->activeSubControls)];
                     Q_UNUSED(isHovered); // FIXME No public API for this
 

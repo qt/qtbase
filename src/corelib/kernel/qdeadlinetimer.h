@@ -52,7 +52,7 @@
 
 #include <limits>
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
 #  include <chrono>
 #endif
 
@@ -120,7 +120,7 @@ public:
     QDeadlineTimer &operator-=(qint64 msecs)
     { *this = *this + (-msecs); return *this; }
 
-#if QT_HAS_INCLUDE(<chrono>) || defined(Q_CLANG_QDOC)
+#if __has_include(<chrono>) || defined(Q_CLANG_QDOC)
     template <class Clock, class Duration>
     QDeadlineTimer(std::chrono::time_point<Clock, Duration> deadline_,
                    Qt::TimerType type_ = Qt::CoarseTimer) : t2(0)

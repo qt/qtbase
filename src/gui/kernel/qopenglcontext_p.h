@@ -240,6 +240,7 @@ public:
     QOpenGLFunctions *functions;
     mutable QSet<QByteArray> extensionNames;
     QOpenGLTextureHelper* textureFunctions;
+    std::function<void()> textureFunctionsDestroyCallback;
 
     GLint max_texture_size;
 

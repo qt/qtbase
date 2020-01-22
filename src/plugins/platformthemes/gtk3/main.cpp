@@ -57,7 +57,7 @@ QPlatformTheme *QGtk3ThemePlugin::create(const QString &key, const QStringList &
     if (!key.compare(QLatin1String(QGtk3Theme::name), Qt::CaseInsensitive))
         return new QGtk3Theme;
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

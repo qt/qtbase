@@ -116,7 +116,7 @@ void **QThreadStorageData::get() const
     QThreadData *data = QThreadData::current();
     if (!data) {
         qWarning("QThreadStorage::get: QThreadStorage can only be used with threads started with QThread");
-        return 0;
+        return nullptr;
     }
     QVector<void *> &tls = data->tls;
     if (tls.size() <= id)
@@ -128,7 +128,7 @@ void **QThreadStorageData::get() const
           *v,
           data->thread.loadRelaxed());
 
-    return *v ? v : 0;
+    return *v ? v : nullptr;
 }
 
 void **QThreadStorageData::set(void *p)
@@ -136,7 +136,7 @@ void **QThreadStorageData::set(void *p)
     QThreadData *data = QThreadData::current();
     if (!data) {
         qWarning("QThreadStorage::set: QThreadStorage can only be used with threads started with QThread");
-        return 0;
+        return nullptr;
     }
     QVector<void *> &tls = data->tls;
     if (tls.size() <= id)
@@ -144,7 +144,7 @@ void **QThreadStorageData::set(void *p)
 
     void *&value = tls[id];
     // delete any previous data
-    if (value != 0) {
+    if (value != nullptr) {
         DEBUG_MSG("QThreadStorageData: Deleting previous storage %d, data %p, for thread %p",
                 id,
                 value,
@@ -156,7 +156,7 @@ void **QThreadStorageData::set(void *p)
         locker.unlock();
 
         void *q = value;
-        value = 0;
+        value = nullptr;
 
         if (destructor)
             destructor(q);
@@ -178,7 +178,7 @@ void QThreadStorageData::finish(void **p)
     while (!tls->isEmpty()) {
         void *&value = tls->last();
         void *q = value;
-        value = 0;
+        value = nullptr;
         int i = tls->size() - 1;
         tls->resize(i);
 

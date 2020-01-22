@@ -136,7 +136,7 @@ QT_BEGIN_NAMESPACE
     Constructs a plugin loader with the given \a parent.
 */
 QPluginLoader::QPluginLoader(QObject *parent)
-    : QObject(parent), d(0), did_load(false)
+    : QObject(parent), d(nullptr), did_load(false)
 {
 }
 
@@ -152,7 +152,7 @@ QPluginLoader::QPluginLoader(QObject *parent)
     \sa setFileName()
 */
 QPluginLoader::QPluginLoader(const QString &fileName, QObject *parent)
-    : QObject(parent), d(0), did_load(false)
+    : QObject(parent), d(nullptr), did_load(false)
 {
     setFileName(fileName);
     setLoadHints(QLibrary::PreventUnloadHint);
@@ -195,7 +195,7 @@ QPluginLoader::~QPluginLoader()
 QObject *QPluginLoader::instance()
 {
     if (!isLoaded() && !load())
-        return 0;
+        return nullptr;
     if (!d->inst && d->instance)
         d->inst = d->instance();
     return d->inst.data();
@@ -305,7 +305,6 @@ static QString locatePlugin(const QString& fileName)
         paths.append(fileName.left(slash)); // don't include the '/'
     } else {
         paths = QCoreApplication::libraryPaths();
-        paths.prepend(QStringLiteral(".")); // search in current dir first
     }
 
     for (const QString &path : qAsConst(paths)) {
@@ -364,7 +363,7 @@ void QPluginLoader::setFileName(const QString &fileName)
     if (d) {
         lh = d->loadHints();
         d->release();
-        d = 0;
+        d = nullptr;
         did_load = false;
     }
 

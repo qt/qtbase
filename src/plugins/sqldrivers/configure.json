@@ -72,7 +72,9 @@
                 { "type": "mysqlConfig", "query": "--libs_r", "cleanlibs": false },
                 { "type": "mysqlConfig", "query": "--libs", "cleanlibs": false },
                 { "libs": "-lmysqlclient_r", "condition": "!config.win32" },
+                { "libs": "-llibmariadb", "condition": "config.win32" },
                 { "libs": "-llibmysql", "condition": "config.win32" },
+                { "libs": "-lmariadb", "condition": "!config.win32" },
                 { "libs": "-lmysqlclient", "condition": "!config.win32" }
             ]
         },

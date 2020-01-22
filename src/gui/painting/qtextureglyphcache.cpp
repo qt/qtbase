@@ -127,7 +127,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
         QFixed subPixelPosition;
         if (supportsSubPixelPositions) {
-            QFixed x = positions != 0 ? positions[i].x : QFixed();
+            QFixed x = positions != nullptr ? positions[i].x : QFixed();
             subPixelPosition = fontEngine->subPixelPositionForX(x);
         }
 
@@ -341,9 +341,10 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
     } else if (m_format == QFontEngine::Format_Mono) {
         if (mask.depth() > 1) {
             // TODO optimize this
-            mask = mask.alphaChannel();
+            mask.convertTo(QImage::Format_Alpha8);
+            mask.reinterpretAsFormat(QImage::Format_Grayscale8);
             mask.invertPixels();
-            mask = mask.convertToFormat(QImage::Format_Mono, Qt::ThresholdDither);
+            mask.convertTo(QImage::Format_Mono, Qt::ThresholdDither);
         }
 
         int mw = qMin(mask.width(), c.w);

@@ -71,7 +71,7 @@ QTimer *timer = qobject_cast<QTimer *>(obj);
 // timer == (QObject *)obj
 
 QAbstractButton *button = qobject_cast<QAbstractButton *>(obj);
-// button == 0
+// button == nullptr
 //! [3]
 
 
@@ -144,7 +144,7 @@ class MyObject : public QObject
     Q_OBJECT
 
 public:
-    MyObject(QObject *parent = 0);
+    MyObject(QObject *parent = nullptr);
 
 protected:
     void timerEvent(QTimerEvent *event) override;
@@ -322,7 +322,7 @@ QObject::connect: Cannot queue arguments of type 'MyType'
 
 
 //! [26]
-disconnect(myObject, 0, 0, 0);
+disconnect(myObject, nullptr, nullptr, nullptr);
 //! [26]
 
 
@@ -332,7 +332,7 @@ myObject->disconnect();
 
 
 //! [28]
-disconnect(myObject, SIGNAL(mySignal()), 0, 0);
+disconnect(myObject, SIGNAL(mySignal()), nullptr, nullptr);
 //! [28]
 
 
@@ -342,7 +342,7 @@ myObject->disconnect(SIGNAL(mySignal()));
 
 
 //! [30]
-disconnect(myObject, 0, myReceiver, 0);
+disconnect(myObject, nullptr, myReceiver, nullptr);
 //! [30]
 
 
@@ -391,7 +391,7 @@ class MyClass : public QObject
     Q_OBJECT
 
 public:
-    MyClass(QObject *parent = 0);
+    MyClass(QObject *parent = nullptr);
     ~MyClass();
 
     enum Priority { High, Low, VeryHigh, VeryLow };
@@ -467,7 +467,7 @@ QObject::connect(socket, &QTcpSocket::connected, [=] () {
 //! [46]
 
 //! [47]
-disconnect(myObject, &MyObject::mySignal(), 0, 0);
+disconnect(myObject, &MyObject::mySignal(), nullptr, nullptr);
 //! [47]
 
 //! [48]
@@ -505,7 +505,7 @@ class MyClass : public QWidget
     Q_OBJECT
 
 public:
-    MyClass(QWidget *parent = 0);
+    MyClass(QWidget *parent = nullptr);
     ~MyClass();
 
     bool event(QEvent* ev) override

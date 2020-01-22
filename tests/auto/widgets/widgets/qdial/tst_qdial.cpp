@@ -98,7 +98,7 @@ void tst_QDial::sliderMoved()
     QPoint init(dial.width()/4, dial.height()/2);
 
     QMouseEvent pressevent(QEvent::MouseButtonPress, init,
-        Qt::LeftButton, Qt::LeftButton, 0);
+                           Qt::LeftButton, Qt::LeftButton, {});
     qApp->sendEvent(&dial, &pressevent);
 
     QSignalSpy sliderspy(&dial, SIGNAL(sliderMoved(int)));
@@ -108,7 +108,7 @@ void tst_QDial::sliderMoved()
     { //move on top of the slider
         init = QPoint(dial.width()/2, dial.height()/4);
         QMouseEvent moveevent(QEvent::MouseMove, init,
-            Qt::LeftButton, Qt::LeftButton, 0);
+                              Qt::LeftButton, Qt::LeftButton, {});
         qApp->sendEvent(&dial, &moveevent);
         QCOMPARE( sliderspy.count(), 1);
         QCOMPARE( valuespy.count(), 0);
@@ -118,14 +118,14 @@ void tst_QDial::sliderMoved()
     { //move on the right of the slider
         init = QPoint(dial.width()*3/4, dial.height()/2);
         QMouseEvent moveevent(QEvent::MouseMove, init,
-            Qt::LeftButton, Qt::LeftButton, 0);
+                              Qt::LeftButton, Qt::LeftButton, {});
         qApp->sendEvent(&dial, &moveevent);
         QCOMPARE( sliderspy.count(), 2);
         QCOMPARE( valuespy.count(), 0);
     }
 
     QMouseEvent releaseevent(QEvent::MouseButtonRelease, init,
-        Qt::LeftButton, Qt::LeftButton, 0);
+                             Qt::LeftButton, Qt::LeftButton, {});
     qApp->sendEvent(&dial, &releaseevent);
     QCOMPARE( valuespy.count(), 1); // valuechanged signal should be called at this point
 

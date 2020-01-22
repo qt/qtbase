@@ -415,7 +415,7 @@ public:
     QSize minimumSize() const { return QSize(m_descr.minimumSize, 0); }
     QSize maximumSize() const { return QSize(m_descr.maximumSize, QLAYOUTSIZE_MAX); }
     Qt::Orientations expandingDirections() const
-        { return m_descr.expanding ? Qt::Horizontal :  Qt::Orientations(0); }
+    { return m_descr.expanding ? Qt::Horizontal :  Qt::Orientations{}; }
     void setGeometry(const QRect &r) { m_pos = r.x(); m_size = r.width();}
     QRect geometry() const { return QRect(m_pos, 0, m_size, 100); }
     bool isEmpty() const { return m_descr.empty; }

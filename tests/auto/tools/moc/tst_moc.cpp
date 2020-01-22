@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2020 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -26,8 +26,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-
 
 #include <QtTest/QtTest>
 #include <stdio.h>
@@ -73,6 +71,11 @@
 #include "namespace.h"
 #include "cxx17-namespaces.h"
 #include "cxx-attributes.h"
+
+#include "moc_include.h"
+#include "fwdclass1.h"
+#include "fwdclass2.h"
+#include "fwdclass3.h"
 
 #ifdef Q_MOC_RUN
 // check that moc can parse these constructs, they are being used in Windows winsock2.h header
@@ -630,7 +633,6 @@ public:
 private slots:
     void initTestCase();
 
-    void slotWithException() throw(MyStruct);
     void dontStripNamespaces();
     void oldStyleCasts();
     void warnOnExtraSignalSlotQualifiaction();
@@ -672,7 +674,6 @@ private slots:
     void templateGtGt();
     void qprivateslots();
     void qprivateproperties();
-    void inlineSlotsWithThrowDeclaration();
     void warnOnPropertyWithoutREAD();
     void constructors();
     void typenameWithUnsigned();
@@ -719,6 +720,7 @@ private slots:
     void cxx17Namespaces();
     void cxxAttributes();
     void mocJsonOutput();
+    void mocInclude();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -781,12 +783,6 @@ void tst_Moc::initTestCase()
 #endif
 }
 
-void tst_Moc::slotWithException() throw(MyStruct)
-{
-    // be happy
-    QVERIFY(true);
-}
-
 void tst_Moc::dontStripNamespaces()
 {
     Sender sender;
@@ -821,7 +817,7 @@ void tst_Moc::oldStyleCasts()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-Wold-style-cast" << "-I" << "."
-         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-std=c++11" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-std=c++1z" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -891,7 +887,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-I" << ".."
-         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-std=c++11" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-std=c++1z" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -1171,7 +1167,7 @@ void tst_Moc::ignoreOptionClashes()
     QStringList gccArgs;
     gccArgs << "-c" << "-x" << "c++" << "-I" << ".."
          << "-I" << qtIncludePath << "-I" << includeDir << "-o" << "/dev/null"
-         << "-fPIC" << "-std=c++11" <<  "-";
+         << "-fPIC" << "-std=c++1z" <<  "-";
     proc.start("gcc", gccArgs);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -1590,21 +1586,6 @@ void tst_Moc::qprivateproperties()
 
 }
 
-#include "task189996.h"
-
-void InlineSlotsWithThrowDeclaration::c() throw() {}
-
-void tst_Moc::inlineSlotsWithThrowDeclaration()
-{
-    InlineSlotsWithThrowDeclaration tst;
-    const QMetaObject *mobj = tst.metaObject();
-    QVERIFY(mobj->indexOfSlot("a()") != -1);
-    QVERIFY(mobj->indexOfSlot("b()") != -1);
-    QVERIFY(mobj->indexOfSlot("c()") != -1);
-    QVERIFY(mobj->indexOfSlot("d()") != -1);
-    QVERIFY(mobj->indexOfSlot("e()") != -1);
-}
-
 void tst_Moc::warnOnPropertyWithoutREAD()
 {
 #ifdef MOC_CROSS_COMPILED
@@ -1866,7 +1847,7 @@ void tst_Moc::notifyError()
 
     QStringList args;
     args << "-c" << "-x" << "c++" << "-I" << "."
-         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-std=c++11" << "-";
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-std=c++1z" << "-";
     proc.start("gcc", args);
     QVERIFY(proc.waitForStarted());
     proc.write(mocOut);
@@ -3836,6 +3817,7 @@ void tst_Moc::gadgetHierarchy()
 {
     QCOMPARE(NonGadgetParent::Derived::staticMetaObject.superClass(), static_cast<const QMetaObject*>(nullptr));
     QCOMPARE(GrandParentGadget::DerivedGadget::staticMetaObject.superClass(), &GrandParentGadget::BaseGadget::staticMetaObject);
+    QCOMPARE(GrandParentGadget::CRTPDerivedGadget::staticMetaObject.superClass(), &GrandParentGadget::BaseGadget::staticMetaObject);
 }
 
 void tst_Moc::optionsFileError_data()
@@ -4022,6 +4004,29 @@ void tst_Moc::mocJsonOutput()
     };
 
     QVERIFY2(actualOutput == expectedOutput, showPotentialDiff(actualOutput, expectedOutput).constData());
+}
+
+void TestFwdProperties::setProp1(const FwdClass1 &v)
+{
+    prop1.reset(new FwdClass1(v));
+}
+void TestFwdProperties::setProp2(const FwdClass2 &v)
+{
+    prop2.reset(new FwdClass2(v));
+}
+void TestFwdProperties::setProp3(const FwdClass3 &v)
+{
+    prop3.reset(new FwdClass3(v));
+}
+TestFwdProperties::~TestFwdProperties() {}
+
+Q_DECLARE_METATYPE(FwdClass1);
+
+void tst_Moc::mocInclude()
+{
+    TestFwdProperties obj;
+    obj.setProperty("prop1", QVariant::fromValue(FwdClass1 { 45 }));
+    QCOMPARE(obj.prop1->x, 45);
 }
 
 QTEST_MAIN(tst_Moc)

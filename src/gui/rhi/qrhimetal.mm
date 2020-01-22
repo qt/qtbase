@@ -41,6 +41,8 @@
 
 #ifdef Q_OS_MACOS
 #include <AppKit/AppKit.h>
+#else
+#include <UIKit/UIKit.h>
 #endif
 
 #include <Metal/Metal.h>
@@ -112,15 +114,6 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
-    \class QRhiMetalTextureNativeHandles
-    \inmodule QtRhi
-    \brief Holds the Metal texture object that is backing a QRhiTexture instance.
-
-    \note The class uses \c{void *} as the type since including the Objective C
-    headers is not acceptable here. The actual type is \c{id<MTLTexture>}.
- */
-
-/*!
     \class QRhiMetalCommandBufferNativeHandles
     \inmodule QtRhi
     \brief Holds the MTLCommandBuffer and MTLRenderCommandEncoder objects that are backing a QRhiCommandBuffer.
@@ -129,7 +122,7 @@ QT_BEGIN_NAMESPACE
     recording a frame, that is, between a \l{QRhi::beginFrame()}{beginFrame()}
     - \l{QRhi::endFrame()}{endFrame()} or
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
-    \l{QRhi::endOffsrceenFrame()}{endOffscreenFrame()} pair.
+    \l{QRhi::endOffscreenFrame()}{endOffsrceenFrame()} pair.
 
     \note The command encoder is only valid while recording a pass, that is,
     between \l{QRhiCommandBuffer::beginPass()} -
@@ -318,7 +311,13 @@ struct QMetalComputePipelineData
 
 struct QMetalSwapChainData
 {
+    // The iOS simulator's headers mark CAMetalLayer as iOS 13.0+ only.
+    // (for real device SDKs it is 8.0+)
+#ifdef TARGET_IPHONE_SIMULATOR
+    API_AVAILABLE(ios(13.0)) CAMetalLayer *layer = nullptr;
+#else
     CAMetalLayer *layer = nullptr;
+#endif
     id<CAMetalDrawable> curDrawable;
     dispatch_semaphore_t sem[QMTL_FRAMES_IN_FLIGHT];
     MTLRenderPassDescriptor *rp = nullptr;
@@ -665,12 +664,17 @@ static inline int mapBinding(int binding,
                              BindingType type)
 {
     const QShader::NativeResourceBindingMap *map = nativeResourceBindingMaps[stageIndex];
-    if (map) {
-        auto it = map->constFind(binding);
-        if (it != map->cend())
-            return type == BindingType::Sampler ? it->second : it->first;
-    }
-    return binding;
+    if (!map || map->isEmpty())
+        return binding; // old QShader versions do not have this map, assume 1:1 mapping then
+
+    auto it = map->constFind(binding);
+    if (it != map->cend())
+        return type == BindingType::Sampler ? it->second : it->first; // may be -1, if the resource is inactive
+
+    // Hitting this path is normal too. It is not given that the resource (for
+    // example, a uniform block) is present in the shaders for all the stages
+    // specified by the visibility mask in the QRhiShaderResourceBinding.
+    return -1;
 }
 
 void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD,
@@ -704,16 +708,25 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                 }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[VERTEX].buffers.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[VERTEX].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[VERTEX].buffers.feed(nativeBinding, mtlbuf);
+                    res[VERTEX].bufferOffsets.feed(b->binding, offset);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[FRAGMENT].buffers.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[FRAGMENT].buffers.feed(nativeBinding, mtlbuf);
+                    res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[COMPUTE].buffers.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[COMPUTE].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[COMPUTE].buffers.feed(nativeBinding, mtlbuf);
+                    res[COMPUTE].bufferOffsets.feed(b->binding, offset);
+                }
             }
         }
             break;
@@ -722,55 +735,81 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.tex);
             QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.sampler);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[VERTEX].textures.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
-                res[VERTEX].samplers.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
+                const int nativeBindingTexture = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
+                const int nativeBindingSampler = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler);
+                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                    res[VERTEX].textures.feed(nativeBindingTexture, texD->d->tex);
+                    res[VERTEX].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[FRAGMENT].textures.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
-                res[FRAGMENT].samplers.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
+                const int nativeBindingTexture = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
+                const int nativeBindingSampler = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler);
+                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                    res[FRAGMENT].textures.feed(nativeBindingTexture, texD->d->tex);
+                    res[FRAGMENT].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[COMPUTE].textures.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
-                res[COMPUTE].samplers.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
+                const int nativeBindingTexture = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
+                const int nativeBindingSampler = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler);
+                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                    res[COMPUTE].textures.feed(nativeBindingTexture, texD->d->tex);
+                    res[COMPUTE].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                }
             }
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
             id<MTLTexture> t = texD->d->viewForLevel(b->u.simage.level);
-            if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage))
-                res[VERTEX].textures.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture), t);
-            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage))
-                res[FRAGMENT].textures.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture), t);
-            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage))
-                res[COMPUTE].textures.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture), t);
+            if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
+                const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
+                if (nativeBinding >= 0)
+                    res[VERTEX].textures.feed(nativeBinding, t);
+            }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
+                const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
+                if (nativeBinding >= 0)
+                    res[FRAGMENT].textures.feed(nativeBinding, t);
+            }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
+                const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
+                if (nativeBinding >= 0)
+                    res[COMPUTE].textures.feed(nativeBinding, t);
+            }
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
             id<MTLBuffer> mtlbuf = bufD->d->buf[0];
             uint offset = uint(b->u.sbuf.offset);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[VERTEX].buffers.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[VERTEX].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[VERTEX].buffers.feed(nativeBinding, mtlbuf);
+                    res[VERTEX].bufferOffsets.feed(b->binding, offset);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[FRAGMENT].buffers.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[FRAGMENT].buffers.feed(nativeBinding, mtlbuf);
+                    res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[COMPUTE].buffers.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[COMPUTE].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[COMPUTE].buffers.feed(nativeBinding, mtlbuf);
+                    res[COMPUTE].bufferOffsets.feed(b->binding, offset);
+                }
             }
         }
             break;
@@ -953,9 +992,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
@@ -968,9 +1005,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
@@ -1763,8 +1798,10 @@ void QRhiMetal::executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD)
         if (changeEnd == -1 || u.offset + u.data.size() > changeEnd)
             changeEnd = u.offset + u.data.size();
     }
+#ifdef Q_OS_MACOS
     if (changeBegin >= 0 && bufD->d->managed)
         [bufD->d->buf[idx] didModifyRange: NSMakeRange(NSUInteger(changeBegin), NSUInteger(changeEnd - changeBegin))];
+#endif
 
     bufD->d->pendingUpdates[idx].clear();
 }
@@ -1798,8 +1835,12 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
             if (color0.needsDrawableForTex || color0.needsDrawableForResolveTex) {
                 Q_ASSERT(currentSwapChain);
                 QMetalSwapChain *swapChainD = QRHI_RES(QMetalSwapChain, currentSwapChain);
-                if (!swapChainD->d->curDrawable)
-                    swapChainD->d->curDrawable = [swapChainD->d->layer nextDrawable];
+                if (!swapChainD->d->curDrawable) {
+#ifdef TARGET_IPHONE_SIMULATOR
+                    if (@available(ios 13.0, *))
+#endif
+                        swapChainD->d->curDrawable = [swapChainD->d->layer nextDrawable];
+                }
                 if (!swapChainD->d->curDrawable) {
                     qWarning("No drawable");
                     return;
@@ -2170,12 +2211,13 @@ bool QMetalRenderBuffer::build()
     case DepthStencil:
 #ifdef Q_OS_MACOS
         desc.storageMode = MTLStorageModePrivate;
-#else
-        desc.storageMode = MTLResourceStorageModeMemoryless;
-        transientBacking = true;
-#endif
         d->format = rhiD->d->dev.depth24Stencil8PixelFormatSupported
                 ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
+#else
+        desc.storageMode = MTLStorageModeMemoryless;
+        transientBacking = true;
+        d->format = MTLPixelFormatDepth32Float_Stencil8;
+#endif
         desc.pixelFormat = d->format;
         break;
     case Color:
@@ -2237,7 +2279,6 @@ void QMetalTexture::release()
 
     e.texture.texture = d->owns ? d->tex : nil;
     d->tex = nil;
-    nativeHandlesStruct.texture = nullptr;
 
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
         e.texture.stagingBuffers[i] = d->stagingBuf[i];
@@ -2279,6 +2320,10 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
         return MTLPixelFormatRGBA16Float;
     case QRhiTexture::RGBA32F:
         return MTLPixelFormatRGBA32Float;
+    case QRhiTexture::R16F:
+        return MTLPixelFormatR16Float;
+    case QRhiTexture::R32F:
+        return MTLPixelFormatR32Float;
 
     case QRhiTexture::D16:
 #ifdef Q_OS_MACOS
@@ -2449,7 +2494,6 @@ bool QMetalTexture::build()
         d->tex.label = [NSString stringWithUTF8String: m_objectName.constData()];
 
     d->owns = true;
-    nativeHandlesStruct.texture = d->tex;
 
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, true, mipLevelCount, isCube ? 6 : 1, samples));
@@ -2460,19 +2504,18 @@ bool QMetalTexture::build()
     return true;
 }
 
-bool QMetalTexture::buildFrom(const QRhiNativeHandles *src)
+bool QMetalTexture::buildFrom(QRhiTexture::NativeTexture src)
 {
-    const QRhiMetalTextureNativeHandles *h = static_cast<const QRhiMetalTextureNativeHandles *>(src);
-    if (!h || !h->texture)
+    void * const * tex = (void * const *) src.object;
+    if (!tex || !*tex)
         return false;
 
     if (!prepareBuild())
         return false;
 
-    d->tex = (id<MTLTexture>) h->texture;
+    d->tex = (id<MTLTexture>) *tex;
 
     d->owns = false;
-    nativeHandlesStruct.texture = d->tex;
 
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, false, mipLevelCount, m_flags.testFlag(CubeMap) ? 6 : 1, samples));
@@ -2484,9 +2527,9 @@ bool QMetalTexture::buildFrom(const QRhiNativeHandles *src)
     return true;
 }
 
-const QRhiNativeHandles *QMetalTexture::nativeHandles()
+QRhiTexture::NativeTexture QMetalTexture::nativeTexture()
 {
-    return &nativeHandlesStruct;
+    return {&d->tex, 0};
 }
 
 id<MTLTexture> QMetalTextureData::viewForLevel(int level)
@@ -2569,12 +2612,8 @@ static inline MTLSamplerAddressMode toMetalAddressMode(QRhiSampler::AddressMode 
         return MTLSamplerAddressModeRepeat;
     case QRhiSampler::ClampToEdge:
         return MTLSamplerAddressModeClampToEdge;
-    case QRhiSampler::Border:
-        return MTLSamplerAddressModeClampToBorderColor;
     case QRhiSampler::Mirror:
         return MTLSamplerAddressModeMirrorRepeat;
-    case QRhiSampler::MirrorOnce:
-        return MTLSamplerAddressModeMirrorClampToEdge;
     default:
         Q_UNREACHABLE();
         return MTLSamplerAddressModeClampToEdge;
@@ -2645,6 +2684,32 @@ QMetalRenderPassDescriptor::~QMetalRenderPassDescriptor()
 void QMetalRenderPassDescriptor::release()
 {
     // nothing to do here
+}
+
+bool QMetalRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    if (!other)
+        return false;
+
+    const QMetalRenderPassDescriptor *o = QRHI_RES(const QMetalRenderPassDescriptor, other);
+
+    if (colorAttachmentCount != o->colorAttachmentCount)
+        return false;
+
+    if (hasDepthStencil != o->hasDepthStencil)
+         return false;
+
+    for (int i = 0; i < colorAttachmentCount; ++i) {
+        if (colorFormat[i] != o->colorFormat[i])
+            return false;
+    }
+
+    if (hasDepthStencil) {
+        if (dsFormat != o->dsFormat)
+            return false;
+    }
+
+    return true;
 }
 
 QMetalReferenceRenderTarget::QMetalReferenceRenderTarget(QRhiImplementation *rhi)
@@ -2859,9 +2924,7 @@ bool QMetalShaderResourceBindings::build()
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
@@ -2870,9 +2933,7 @@ bool QMetalShaderResourceBindings::build()
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
@@ -3149,7 +3210,10 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
     [opts release];
     // src is autoreleased
 
-    if (err) {
+    // if lib is null and err is non-null, we had errors (fail)
+    // if lib is non-null and err is non-null, we had warnings (success)
+    // if lib is non-null and err is null, there were no errors or warnings (success)
+    if (!lib) {
         const QString msg = QString::fromNSString(err.localizedDescription);
         *error = msg;
         return nil;
@@ -3311,7 +3375,11 @@ bool QMetalGraphicsPipeline::build()
         // validation blows up otherwise.
         MTLPixelFormat fmt = MTLPixelFormat(rpD->dsFormat);
         rpDesc.depthAttachmentPixelFormat = fmt;
+#ifdef Q_OS_MACOS
         if (fmt != MTLPixelFormatDepth16Unorm && fmt != MTLPixelFormatDepth32Float)
+#else
+        if (fmt != MTLPixelFormatDepth32Float)
+#endif
             rpDesc.stencilAttachmentPixelFormat = fmt;
     }
 
@@ -3528,6 +3596,10 @@ QMetalSwapChain::~QMetalSwapChain()
 
 void QMetalSwapChain::release()
 {
+#ifdef TARGET_IPHONE_SIMULATOR
+    if (@available(ios 13.0, *)) {
+#endif
+
     if (!d->layer)
         return;
 
@@ -3556,6 +3628,10 @@ void QMetalSwapChain::release()
     QRHI_PROF_F(releaseSwapChain(this));
 
     rhiD->unregisterResource(this);
+
+#ifdef TARGET_IPHONE_SIMULATOR
+    }
+#endif
 }
 
 QRhiCommandBuffer *QMetalSwapChain::currentFrameCommandBuffer()
@@ -3578,16 +3654,20 @@ QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
 {
     chooseFormats(); // ensure colorFormat and similar are filled out
 
-    QRHI_RES_RHI(QRhiMetal);
     QMetalRenderPassDescriptor *rpD = new QMetalRenderPassDescriptor(m_rhi);
     rpD->colorAttachmentCount = 1;
     rpD->hasDepthStencil = m_depthStencil != nullptr;
 
     rpD->colorFormat[0] = int(d->colorFormat);
 
+#ifdef Q_OS_MACOS
     // m_depthStencil may not be built yet so cannot rely on computed fields in it
+    QRHI_RES_RHI(QRhiMetal);
     rpD->dsFormat = rhiD->d->dev.depth24Stencil8PixelFormatSupported
             ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
+#else
+    rpD->dsFormat = MTLPixelFormatDepth32Float_Stencil8;
+#endif
 
     return rpD;
 }
@@ -3603,6 +3683,10 @@ void QMetalSwapChain::chooseFormats()
 
 bool QMetalSwapChain::buildOrResize()
 {
+#ifdef TARGET_IPHONE_SIMULATOR
+    if (@available(ios 13.0, *)) {
+#endif
+
     Q_ASSERT(m_window);
 
     const bool needsRegistration = !window || window != m_window;
@@ -3622,7 +3706,11 @@ bool QMetalSwapChain::buildOrResize()
         return false;
     }
 
+#ifdef Q_OS_MACOS
     NSView *view = reinterpret_cast<NSView *>(window->winId());
+#else
+    UIView *view = reinterpret_cast<UIView *>(window->winId());
+#endif
     Q_ASSERT(view);
     d->layer = static_cast<CAMetalLayer *>(view.layer);
     Q_ASSERT(d->layer);
@@ -3726,6 +3814,15 @@ bool QMetalSwapChain::buildOrResize()
         rhiD->registerResource(this);
 
     return true;
+
+#ifdef TARGET_IPHONE_SIMULATOR
+    } else {
+        // Won't ever get here in a normal app because MTLDevice creation would
+        // fail too. Print a warning, just in case.
+        qWarning("No CAMetalLayer support in this version of the iOS Simulator");
+        return false;
+    }
+#endif
 }
 
 QT_END_NAMESPACE

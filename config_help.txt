@@ -130,7 +130,7 @@ Build options:
                          Currently supported backends are 'etw' (Windows) and
                          'lttng' (Linux), or 'yes' for auto-detection. [no]
 
-  -sanitize {address|thread|memory|undefined}
+  -sanitize {address|thread|memory|fuzzer-no-link|undefined}
                          Instrument with the specified compiler sanitizer.
                          Note that some sanitizers cannot be combined;
                          for example, -sanitize address cannot be combined with
@@ -161,6 +161,8 @@ Build options:
 
   -reduce-exports ...... Reduce amount of exported symbols [auto]
   -reduce-relocations .. Reduce amount of relocations [auto] (Unix only)
+
+  -relocatable ......... Enable the Qt installation to be relocated [auto]
 
   -plugin-manifests .... Embed manifests into plugins [no] (Windows only)
   -static-runtime ...... With -static, use static runtime [no] (Windows only)
@@ -255,6 +257,7 @@ Network options:
   -no-openssl .......... Do not use OpenSSL [default on Apple and WinRT]
   -openssl-linked ...... Use OpenSSL and link to libssl [no]
   -openssl-runtime ..... Use OpenSSL and dynamically load libssl [auto]
+  -schannel ............ Use Secure Channel [no] (Windows only)
   -securetransport ..... Use SecureTransport [auto] (Apple only)
 
   -sctp ................ Enable SCTP support [no]

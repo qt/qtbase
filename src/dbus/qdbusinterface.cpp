@@ -60,15 +60,15 @@ static void copyArgument(void *to, int id, const QVariant &arg)
             return;
 
         case QMetaType::UChar:
-            *reinterpret_cast<uchar *>(to) = arg.value<uchar>();
+            *reinterpret_cast<uchar *>(to) = qvariant_cast<uchar>(arg);
             return;
 
         case QMetaType::Short:
-            *reinterpret_cast<short *>(to) = arg.value<short>();
+            *reinterpret_cast<short *>(to) = qvariant_cast<short>(arg);
             return;
 
         case QMetaType::UShort:
-            *reinterpret_cast<ushort *>(to) = arg.value<ushort>();
+            *reinterpret_cast<ushort *>(to) = qvariant_cast<ushort>(arg);
             return;
 
         case QVariant::Int:
@@ -105,13 +105,13 @@ static void copyArgument(void *to, int id, const QVariant &arg)
         }
 
         if (id == QDBusMetaTypeId::variant()) {
-            *reinterpret_cast<QDBusVariant *>(to) = arg.value<QDBusVariant>();
+            *reinterpret_cast<QDBusVariant *>(to) = qvariant_cast<QDBusVariant>(arg);
             return;
         } else if (id == QDBusMetaTypeId::objectpath()) {
-            *reinterpret_cast<QDBusObjectPath *>(to) = arg.value<QDBusObjectPath>();
+            *reinterpret_cast<QDBusObjectPath *>(to) = qvariant_cast<QDBusObjectPath>(arg);
             return;
         } else if (id == QDBusMetaTypeId::signature()) {
-            *reinterpret_cast<QDBusSignature *>(to) = arg.value<QDBusSignature>();
+            *reinterpret_cast<QDBusSignature *>(to) = qvariant_cast<QDBusSignature>(arg);
             return;
         }
 
@@ -136,7 +136,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
     }
 
     // is it the same signature?
-    QDBusArgument dbarg = arg.value<QDBusArgument>();
+    QDBusArgument dbarg = qvariant_cast<QDBusArgument>(arg);
     if (dbarg.currentSignature() != QLatin1String(userSignature)) {
         // not the same signature, another mismatch
         //qWarning?
@@ -149,7 +149,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
 
 QDBusInterfacePrivate::QDBusInterfacePrivate(const QString &serv, const QString &p,
                                              const QString &iface, const QDBusConnection &con)
-    : QDBusAbstractInterfacePrivate(serv, p, iface, con, true), metaObject(0)
+    : QDBusAbstractInterfacePrivate(serv, p, iface, con, true), metaObject(nullptr)
 {
     // QDBusAbstractInterfacePrivate's constructor checked the parameters for us
     if (connection.isConnected()) {
@@ -204,7 +204,9 @@ QDBusInterfacePrivate::~QDBusInterfacePrivate()
     interface \a interface on object at path \a path on service \a
     service, using the given \a connection. If \a interface is an
     empty string, the object created will refer to the merging of all
-    interfaces found in that object.
+    interfaces found by introspecting that object. Otherwise if
+    \a interface is not empty, the  QDBusInterface object will be cached
+    to speedup further creations of the same interface.
 
     \a parent is passed to the base class constructor.
 
@@ -243,7 +245,7 @@ const QMetaObject *QDBusInterface::metaObject() const
 */
 void *QDBusInterface::qt_metacast(const char *_clname)
 {
-    if (!_clname) return 0;
+    if (!_clname) return nullptr;
     if (!strcmp(_clname, "QDBusInterface"))
         return static_cast<void*>(const_cast<QDBusInterface*>(this));
     if (d_func()->interface.toLatin1() == _clname)

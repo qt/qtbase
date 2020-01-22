@@ -119,22 +119,6 @@ hash.insert("plenty", 2000);
 //! [9]
 
 
-//! [10]
-QList<int> values = hash.values("plenty");
-for (int i = 0; i < values.size(); ++i)
-    cout << values.at(i) << Qt::endl;
-//! [10]
-
-
-//! [11]
-QHash<QString, int>::iterator i = hash.find("plenty");
-while (i != hash.end() && i.key() == "plenty") {
-    cout << i.value() << Qt::endl;
-    ++i;
-}
-//! [11]
-
-
 //! [12]
 QHash<QString, int> hash;
 ...

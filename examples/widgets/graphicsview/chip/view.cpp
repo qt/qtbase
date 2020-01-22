@@ -57,11 +57,7 @@
 #include <QPrintDialog>
 #endif
 #endif
-#ifndef QT_NO_OPENGL
-#include <QtOpenGL>
-#else
 #include <QtWidgets>
-#endif
 #include <QtMath>
 
 #if QT_CONFIG(wheelevent)
@@ -156,14 +152,6 @@ View::View(const QString &name, QWidget *parent)
     antialiasButton->setText(tr("Antialiasing"));
     antialiasButton->setCheckable(true);
     antialiasButton->setChecked(false);
-    openGlButton = new QToolButton;
-    openGlButton->setText(tr("OpenGL"));
-    openGlButton->setCheckable(true);
-#ifndef QT_NO_OPENGL
-    openGlButton->setEnabled(QGLFormat::hasOpenGL());
-#else
-    openGlButton->setEnabled(false);
-#endif
     printButton = new QToolButton;
     printButton->setIcon(QIcon(QPixmap(":/fileprint.png")));
 
@@ -179,7 +167,6 @@ View::View(const QString &name, QWidget *parent)
     labelLayout->addWidget(dragModeButton);
     labelLayout->addStretch();
     labelLayout->addWidget(antialiasButton);
-    labelLayout->addWidget(openGlButton);
     labelLayout->addWidget(printButton);
 
     QGridLayout *topLayout = new QGridLayout;
@@ -200,7 +187,6 @@ View::View(const QString &name, QWidget *parent)
     connect(selectModeButton, &QAbstractButton::toggled, this, &View::togglePointerMode);
     connect(dragModeButton, &QAbstractButton::toggled, this, &View::togglePointerMode);
     connect(antialiasButton, &QAbstractButton::toggled, this, &View::toggleAntialiasing);
-    connect(openGlButton, &QAbstractButton::toggled, this, &View::toggleOpenGL);
     connect(rotateLeftIcon, &QAbstractButton::clicked, this, &View::rotateLeft);
     connect(rotateRightIcon, &QAbstractButton::clicked, this, &View::rotateRight);
     connect(zoomInIcon, &QAbstractButton::clicked, this, &View::zoomIn);
@@ -248,13 +234,6 @@ void View::togglePointerMode()
                               ? QGraphicsView::RubberBandDrag
                               : QGraphicsView::ScrollHandDrag);
     graphicsView->setInteractive(selectModeButton->isChecked());
-}
-
-void View::toggleOpenGL()
-{
-#ifndef QT_NO_OPENGL
-    graphicsView->setViewport(openGlButton->isChecked() ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
-#endif
 }
 
 void View::toggleAntialiasing()

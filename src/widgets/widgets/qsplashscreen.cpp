@@ -137,7 +137,7 @@ public:
     perhaps Qt::WindowStaysOnTopHint.
 */
 QSplashScreen::QSplashScreen(const QPixmap &pixmap, Qt::WindowFlags f)
-    : QWidget(*(new QSplashScreenPrivate()), 0, Qt::SplashScreen | Qt::FramelessWindowHint | f)
+    : QWidget(*(new QSplashScreenPrivate()), nullptr, Qt::SplashScreen | Qt::FramelessWindowHint | f)
 {
     setPixmap(pixmap);  // Does an implicit repaint
 }
@@ -271,14 +271,14 @@ inline static bool waitForWindowExposed(QWindow *window, int timeout = 1000)
         if (remaining <= 0)
             break;
         QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 #if defined(Q_OS_WINRT)
         WaitForSingleObjectEx(GetCurrentThread(), TimeOutMs, false);
 #elif defined(Q_OS_WIN)
         Sleep(uint(TimeOutMs));
 #else
         struct timespec ts = { TimeOutMs / 1000, (TimeOutMs % 1000) * 1000 * 1000 };
-        nanosleep(&ts, NULL);
+        nanosleep(&ts, nullptr);
 #endif
     }
     return window->isExposed();

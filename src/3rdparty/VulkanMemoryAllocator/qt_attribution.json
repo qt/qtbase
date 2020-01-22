@@ -2,7 +2,7 @@
     {
         "Id": "VulkanMemoryAllocator",
         "Name": "Vulkan Memory Allocator",
-        "QDocModule": "qtrhi",
+        "QDocModule": "qtgui",
         "Description": "Vulkan Memory Allocator",
         "QtUsage": "Memory management for the Vulkan backend of QRhi.",
 

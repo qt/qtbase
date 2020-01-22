@@ -29,7 +29,7 @@
 
 #include <QtTest/QtTest>
 
-#include <qstandarditemmodel.h>
+#include <QStandardItemModel>
 #include <QTreeView>
 #include <private/qtreeview_p.h>
 
@@ -131,30 +131,33 @@ private slots:
     void supportedDragDropActions();
 
     void taskQTBUG_45114_setItemData();
+    void setItemPersistentIndex();
 
 private:
-    QStandardItemModel *m_model;
+    QStandardItemModel *m_model = nullptr;
     QPersistentModelIndex persistent;
-    QVector<QModelIndex> rcParent;
-    QVector<int> rcFirst;
-    QVector<int> rcLast;
+    QVector<QModelIndex> rcParent = QVector<QModelIndex>(8);
+    QVector<int> rcFirst = QVector<int>(8, 0);
+    QVector<int> rcLast = QVector<int>(8, 0);
     QVector<int> currentRoles;
 
     //return true if models have the same structure, and all child have the same text
-    bool compareModels(QStandardItemModel *model1, QStandardItemModel *model2);
+    static bool compareModels(QStandardItemModel *model1, QStandardItemModel *model2);
     //return true if models have the same structure, and all child have the same text
-    bool compareItems(QStandardItem *item1, QStandardItem *item2);
+    static bool compareItems(QStandardItem *item1, QStandardItem *item2);
 };
 
-static const int defaultSize = 3;
+static constexpr int defaultSize = 3;
 
 Q_DECLARE_METATYPE(QStandardItem*)
 Q_DECLARE_METATYPE(Qt::Orientation)
 
-tst_QStandardItemModel::tst_QStandardItemModel() : m_model(0), rcParent(8), rcFirst(8,0), rcLast(8,0)
+tst_QStandardItemModel::tst_QStandardItemModel()
 {
     qRegisterMetaType<QStandardItem*>("QStandardItem*");
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
+    qRegisterMetaType<QAbstractItemModel::LayoutChangeHint>("QAbstractItemModel::LayoutChangeHint");
+    qRegisterMetaType<QList<QPersistentModelIndex>>("QList<QPersistentModelIndex>");
 }
 
 /*
@@ -170,23 +173,23 @@ tst_QStandardItemModel::tst_QStandardItemModel() : m_model(0), rcParent(8), rcFi
 void tst_QStandardItemModel::init()
 {
     m_model = new QStandardItemModel(defaultSize, defaultSize);
-    connect(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(rowsInserted(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-            this, SLOT(rowsRemoved(QModelIndex,int,int)));
+    connect(m_model, &QStandardItemModel::rowsAboutToBeInserted,
+            this, &tst_QStandardItemModel::rowsAboutToBeInserted);
+    connect(m_model, &QStandardItemModel::rowsInserted,
+            this, &tst_QStandardItemModel::rowsInserted);
+    connect(m_model, &QStandardItemModel::rowsAboutToBeRemoved,
+            this, &tst_QStandardItemModel::rowsAboutToBeRemoved);
+    connect(m_model, &QStandardItemModel::rowsRemoved,
+            this, &tst_QStandardItemModel::rowsRemoved);
 
-    connect(m_model, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(columnsAboutToBeInserted(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(columnsInserted(QModelIndex,int,int)),
-            this, SLOT(columnsInserted(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(columnsAboutToBeRemoved(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-            this, SLOT(columnsRemoved(QModelIndex,int,int)));
+    connect(m_model, &QStandardItemModel::columnsAboutToBeInserted,
+            this, &tst_QStandardItemModel::columnsAboutToBeInserted);
+    connect(m_model, &QStandardItemModel::columnsInserted,
+            this, &tst_QStandardItemModel::columnsInserted);
+    connect(m_model, &QStandardItemModel::columnsAboutToBeRemoved,
+            this, &tst_QStandardItemModel::columnsAboutToBeRemoved);
+    connect(m_model, &QStandardItemModel::columnsRemoved,
+            this, &tst_QStandardItemModel::columnsRemoved);
 
     connect(m_model, &QAbstractItemModel::dataChanged,
             this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &roles)
@@ -200,25 +203,9 @@ void tst_QStandardItemModel::init()
 
 void tst_QStandardItemModel::cleanup()
 {
-    disconnect(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-               this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)));
-    disconnect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-               this, SLOT(rowsInserted(QModelIndex,int,int)));
-    disconnect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-               this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    disconnect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-               this, SLOT(rowsRemoved(QModelIndex,int,int)));
-
-    disconnect(m_model, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
-               this, SLOT(columnsAboutToBeInserted(QModelIndex,int,int)));
-    disconnect(m_model, SIGNAL(columnsInserted(QModelIndex,int,int)),
-               this, SLOT(columnsInserted(QModelIndex,int,int)));
-    disconnect(m_model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-               this, SLOT(columnsAboutToBeRemoved(QModelIndex,int,int)));
-    disconnect(m_model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-               this, SLOT(columnsRemoved(QModelIndex,int,int)));
+    m_model->disconnect(this);
     delete m_model;
-    m_model = 0;
+    m_model = nullptr;
 }
 
 void tst_QStandardItemModel::insertRow_data()
@@ -240,9 +227,9 @@ void tst_QStandardItemModel::insertRow()
 
     QIcon icon;
     // default all initial items to DisplayRole: "initalitem"
-    for (int r=0; r < m_model->rowCount(); ++r) {
-        for (int c=0; c < m_model->columnCount(); ++c) {
-            m_model->setData(m_model->index(r,c), "initialitem", Qt::DisplayRole);
+    for (int  r = 0; r < m_model->rowCount(); ++r) {
+        for (int c = 0; c < m_model->columnCount(); ++c) {
+            m_model->setData(m_model->index(r, c), "initialitem", Qt::DisplayRole);
         }
     }
 
@@ -306,7 +293,7 @@ void tst_QStandardItemModel::insertRowsItems()
     int rowCount = m_model->rowCount();
 
     QList<QStandardItem *> items;
-    QStandardItemModel *m = qobject_cast<QStandardItemModel*>(m_model);
+    QStandardItemModel *m = m_model;
     QStandardItem *hiddenRoot = m->invisibleRootItem();
     for (int i = 0; i < 3; ++i)
         items.append(new QStandardItem(QString::number(i + 10)));
@@ -317,7 +304,7 @@ void tst_QStandardItemModel::insertRowsItems()
     QCOMPARE(m_model->index(rowCount + 2, 0).data().toInt(), 12);
     for (int i = rowCount; i < rowCount + 3; ++i) {
         QVERIFY(m->item(i));
-        QCOMPARE(static_cast<QAbstractItemModel *>(m->item(i)->model()), m_model);
+        QCOMPARE(m->item(i)->model(), m_model);
     }
 }
 
@@ -356,9 +343,9 @@ void tst_QStandardItemModel::insertColumn()
     QFETCH(int, expectedColumn);
 
     // default all initial items to DisplayRole: "initalitem"
-    for (int r=0; r < m_model->rowCount(); ++r) {
-        for (int c=0; c < m_model->columnCount(); ++c) {
-            m_model->setData(m_model->index(r,c), "initialitem", Qt::DisplayRole);
+    for (int r = 0; r < m_model->rowCount(); ++r) {
+        for (int c = 0; c < m_model->columnCount(); ++c) {
+            m_model->setData(m_model->index(r, c), "initialitem", Qt::DisplayRole);
         }
     }
 
@@ -474,9 +461,9 @@ void tst_QStandardItemModel::setHeaderData()
             QCOMPARE(m_model->headerData(i, orient).toString(), QString::number(i + 1));
 
         QSignalSpy headerDataChangedSpy(
-            m_model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
+            m_model, &QAbstractItemModel::headerDataChanged);
         QSignalSpy dataChangedSpy(
-            m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+            m_model, &QAbstractItemModel::dataChanged);
         // insert custom values and check
         for (int i = 0; i < count; ++i) {
             QString customString = QString("custom") + QString::number(i);
@@ -592,14 +579,14 @@ void tst_QStandardItemModel::removingPersistentIndexes()
     QVERIFY(m_model->insertRows(0, 10));
     QVERIFY(m_model->insertColumns(0, 10));
 
-    QObject::connect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                     this, SLOT(checkAboutToBeRemoved()));
-    QObject::connect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-                     this, SLOT(checkRemoved()));
-    QObject::connect(m_model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-                     this, SLOT(checkAboutToBeRemoved()));
-    QObject::connect(m_model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-                     this, SLOT(checkRemoved()));
+    connect(m_model, &QAbstractItemModel::rowsAboutToBeRemoved,
+            this, &tst_QStandardItemModel::checkAboutToBeRemoved);
+    connect(m_model, &QAbstractItemModel::rowsRemoved,
+            this, &tst_QStandardItemModel::checkRemoved);
+    connect(m_model, &QAbstractItemModel::columnsAboutToBeRemoved,
+            this, &tst_QStandardItemModel::checkAboutToBeRemoved);
+    connect(m_model, &QAbstractItemModel::columnsRemoved,
+            this, &tst_QStandardItemModel::checkRemoved);
 
 
     // test removeRow
@@ -634,14 +621,14 @@ void tst_QStandardItemModel::removingPersistentIndexes()
     QVERIFY(m_model->removeColumn(0));
 
 
-    QObject::disconnect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                        this, SLOT(checkAboutToBeRemoved()));
-    QObject::disconnect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-                        this, SLOT(checkRemoved()));
-    QObject::disconnect(m_model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-                        this, SLOT(checkAboutToBeRemoved()));
-    QObject::disconnect(m_model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-                        this, SLOT(checkRemoved()));
+    disconnect(m_model, &QAbstractItemModel::rowsAboutToBeRemoved,
+               this, &tst_QStandardItemModel::checkAboutToBeRemoved);
+    disconnect(m_model, &QAbstractItemModel::rowsRemoved,
+               this, &tst_QStandardItemModel::checkRemoved);
+    disconnect(m_model, &QAbstractItemModel::columnsAboutToBeRemoved,
+               this, &tst_QStandardItemModel::checkAboutToBeRemoved);
+    disconnect(m_model, &QAbstractItemModel::columnsRemoved,
+               this, &tst_QStandardItemModel::checkRemoved);
 }
 
 void tst_QStandardItemModel::updateRowAboutToBeRemoved()
@@ -653,8 +640,8 @@ void tst_QStandardItemModel::updateRowAboutToBeRemoved()
 
 void tst_QStandardItemModel::updatingPersistentIndexes()
 {
-    QObject::connect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                     this, SLOT(updateRowAboutToBeRemoved()));
+    connect(m_model, &QAbstractItemModel::rowsAboutToBeRemoved,
+            this, &tst_QStandardItemModel::updateRowAboutToBeRemoved);
 
     persistent = m_model->index(1, 0);
     QVERIFY(persistent.isValid());
@@ -663,8 +650,8 @@ void tst_QStandardItemModel::updatingPersistentIndexes()
     QPersistentModelIndex tmp = m_model->index(0, 0);
     QCOMPARE(persistent, tmp);
 
-    QObject::disconnect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                        this, SLOT(updateRowAboutToBeRemoved()));
+    disconnect(m_model, &QAbstractItemModel::rowsAboutToBeRemoved,
+               this, &tst_QStandardItemModel::updateRowAboutToBeRemoved);
 }
 
 void tst_QStandardItemModel::modelChanged(ModelChanged change, const QModelIndex &parent,
@@ -737,8 +724,8 @@ void tst_QStandardItemModel::data()
     QCOMPARE(currentRoles, QVector<int>{});
 
     QIcon icon;
-    for (int r=0; r < m_model->rowCount(); ++r) {
-        for (int c=0; c < m_model->columnCount(); ++c) {
+    for (int r = 0; r < m_model->rowCount(); ++r) {
+        for (int c = 0; c < m_model->columnCount(); ++c) {
             m_model->setData(m_model->index(r,c), "initialitem", Qt::DisplayRole);
             QCOMPARE(currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
             m_model->setData(m_model->index(r,c), "tooltip", Qt::ToolTipRole);
@@ -786,9 +773,9 @@ void tst_QStandardItemModel::clear()
     QCOMPARE(model.columnCount(), 10);
     QCOMPARE(model.rowCount(), 10);
 
-    QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
-    QSignalSpy layoutChangedSpy(&model, SIGNAL(layoutChanged()));
-    QSignalSpy rowsRemovedSpy(&model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy modelResetSpy(&model, &QStandardItemModel::modelReset);
+    QSignalSpy layoutChangedSpy(&model, &QStandardItemModel::layoutChanged);
+    QSignalSpy rowsRemovedSpy(&model, &QStandardItemModel::rowsRemoved);
 
     QAbstractItemModelTester mt(&model);
 
@@ -805,129 +792,35 @@ void tst_QStandardItemModel::clear()
 
 void tst_QStandardItemModel::sort_data()
 {
-    QTest::addColumn<int>("sortOrder");
+    QTest::addColumn<Qt::SortOrder>("sortOrder");
     QTest::addColumn<QStringList>("initial");
     QTest::addColumn<QStringList>("expected");
 
-    QTest::newRow("flat descending") << static_cast<int>(Qt::DescendingOrder)
-                                  << (QStringList()
-                                      << "delta"
-                                      << "yankee"
-                                      << "bravo"
-                                      << "lima"
-                                      << "charlie"
-                                      << "juliet"
-                                      << "tango"
-                                      << "hotel"
-                                      << "uniform"
-                                      << "alpha"
-                                      << "echo"
-                                      << "golf"
-                                      << "quebec"
-                                      << "foxtrot"
-                                      << "india"
-                                      << "romeo"
-                                      << "november"
-                                      << "oskar"
-                                      << "zulu"
-                                      << "kilo"
-                                      << "whiskey"
-                                      << "mike"
-                                      << "papa"
-                                      << "sierra"
-                                      << "xray"
-                                      << "viktor")
-                                  << (QStringList()
-                                      << "zulu"
-                                      << "yankee"
-                                      << "xray"
-                                      << "whiskey"
-                                      << "viktor"
-                                      << "uniform"
-                                      << "tango"
-                                      << "sierra"
-                                      << "romeo"
-                                      << "quebec"
-                                      << "papa"
-                                      << "oskar"
-                                      << "november"
-                                      << "mike"
-                                      << "lima"
-                                      << "kilo"
-                                      << "juliet"
-                                      << "india"
-                                      << "hotel"
-                                      << "golf"
-                                      << "foxtrot"
-                                      << "echo"
-                                      << "delta"
-                                      << "charlie"
-                                      << "bravo"
-                                      << "alpha");
-    QTest::newRow("flat ascending") <<  static_cast<int>(Qt::AscendingOrder)
-                                 << (QStringList()
-                                     << "delta"
-                                     << "yankee"
-                                     << "bravo"
-                                     << "lima"
-                                     << "charlie"
-                                     << "juliet"
-                                     << "tango"
-                                     << "hotel"
-                                     << "uniform"
-                                     << "alpha"
-                                     << "echo"
-                                     << "golf"
-                                     << "quebec"
-                                     << "foxtrot"
-                                     << "india"
-                                     << "romeo"
-                                     << "november"
-                                     << "oskar"
-                                     << "zulu"
-                                     << "kilo"
-                                     << "whiskey"
-                                     << "mike"
-                                     << "papa"
-                                     << "sierra"
-                                     << "xray"
-                                     << "viktor")
-                                 << (QStringList()
-                                     << "alpha"
-                                     << "bravo"
-                                     << "charlie"
-                                     << "delta"
-                                     << "echo"
-                                     << "foxtrot"
-                                     << "golf"
-                                     << "hotel"
-                                     << "india"
-                                     << "juliet"
-                                     << "kilo"
-                                     << "lima"
-                                     << "mike"
-                                     << "november"
-                                     << "oskar"
-                                     << "papa"
-                                     << "quebec"
-                                     << "romeo"
-                                     << "sierra"
-                                     << "tango"
-                                     << "uniform"
-                                     << "viktor"
-                                     << "whiskey"
-                                     << "xray"
-                                     << "yankee"
-                                     << "zulu");
+    const QStringList unsorted(
+        {"delta", "yankee", "bravo", "lima", "charlie", "juliet",
+         "tango", "hotel", "uniform", "alpha", "echo", "golf",
+         "quebec", "foxtrot", "india", "romeo", "november",
+         "oskar", "zulu", "kilo", "whiskey", "mike", "papa",
+         "sierra", "xray" , "viktor"});
+    QStringList sorted = unsorted;
+
+    std::sort(sorted.begin(), sorted.end());
+    QTest::newRow("flat ascending") <<  Qt::AscendingOrder
+                                 << unsorted
+                                 << sorted;
+    std::reverse(sorted.begin(), sorted.end());
+    QTest::newRow("flat descending") << Qt::DescendingOrder
+                                  << unsorted
+                                  << sorted;
     QStringList list;
-    for (int i=1000; i < 2000; ++i)
+    for (int i = 1000; i < 2000; ++i)
         list.append(QStringLiteral("Number: ") + QString::number(i));
-    QTest::newRow("large set ascending") <<  static_cast<int>(Qt::AscendingOrder) << list << list;
+    QTest::newRow("large set ascending") <<  Qt::AscendingOrder << list << list;
 }
 
 void tst_QStandardItemModel::sort()
 {
-    QFETCH(int, sortOrder);
+    QFETCH(Qt::SortOrder, sortOrder);
     QFETCH(QStringList, initial);
     QFETCH(QStringList, expected);
     // prepare model
@@ -942,12 +835,12 @@ void tst_QStandardItemModel::sort()
     }
 
     QSignalSpy layoutAboutToBeChangedSpy(
-        &model, SIGNAL(layoutAboutToBeChanged()));
+        &model, &QStandardItemModel::layoutAboutToBeChanged);
     QSignalSpy layoutChangedSpy(
-        &model, SIGNAL(layoutChanged()));
+        &model, &QStandardItemModel::layoutChanged);
 
     // sort
-    model.sort(0, static_cast<Qt::SortOrder>(sortOrder));
+    model.sort(0, sortOrder);
 
     QCOMPARE(layoutAboutToBeChangedSpy.count(), 1);
     QCOMPARE(layoutChangedSpy.count(), 1);
@@ -963,23 +856,23 @@ void tst_QStandardItemModel::sortRole_data()
 {
     QTest::addColumn<QStringList>("initialText");
     QTest::addColumn<QVariantList>("initialData");
-    QTest::addColumn<int>("sortRole");
-    QTest::addColumn<int>("sortOrder");
+    QTest::addColumn<Qt::ItemDataRole>("sortRole");
+    QTest::addColumn<Qt::SortOrder>("sortOrder");
     QTest::addColumn<QStringList>("expectedText");
     QTest::addColumn<QVariantList>("expectedData");
 
     QTest::newRow("sort ascending with Qt::DisplayRole")
         << (QStringList() << "b" << "a" << "c")
         << (QVariantList() << 2 << 3 << 1)
-        << static_cast<int>(Qt::DisplayRole)
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::DisplayRole
+        << Qt::AscendingOrder
         << (QStringList() << "a" << "b" << "c")
         << (QVariantList() << 3 << 2 << 1);
     QTest::newRow("sort ascending with Qt::UserRole")
         << (QStringList() << "a" << "b" << "c")
         << (QVariantList() << 3 << 2 << 1)
-        << static_cast<int>(Qt::UserRole)
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::UserRole
+        << Qt::AscendingOrder
         << (QStringList() << "c" << "b" << "a")
         << (QVariantList() << 1 << 2 << 3);
 }
@@ -988,8 +881,8 @@ void tst_QStandardItemModel::sortRole()
 {
     QFETCH(QStringList, initialText);
     QFETCH(QVariantList, initialData);
-    QFETCH(int, sortRole);
-    QFETCH(int, sortOrder);
+    QFETCH(Qt::ItemDataRole, sortRole);
+    QFETCH(Qt::SortOrder, sortOrder);
     QFETCH(QStringList, expectedText);
     QFETCH(QVariantList, expectedData);
 
@@ -1001,7 +894,7 @@ void tst_QStandardItemModel::sortRole()
         model.appendRow(item);
     }
     model.setSortRole(sortRole);
-    model.sort(0, static_cast<Qt::SortOrder>(sortOrder));
+    model.sort(0, sortOrder);
     for (int i = 0; i < expectedText.count(); ++i) {
         QStandardItem *item = model.item(i);
         QCOMPARE(item->text(), expectedText.at(i));
@@ -1032,23 +925,23 @@ void tst_QStandardItemModel::getSetHeaderItem()
 {
     QStandardItemModel model;
 
-    QCOMPARE(model.horizontalHeaderItem(0), static_cast<QStandardItem*>(0));
+    QCOMPARE(model.horizontalHeaderItem(0), nullptr);
     QStandardItem *hheader = new QStandardItem();
     model.setHorizontalHeaderItem(0, hheader);
     QCOMPARE(model.columnCount(), 1);
     QCOMPARE(model.horizontalHeaderItem(0), hheader);
     QCOMPARE(hheader->model(), &model);
-    model.setHorizontalHeaderItem(0, 0);
-    QCOMPARE(model.horizontalHeaderItem(0), static_cast<QStandardItem*>(0));
+    model.setHorizontalHeaderItem(0, nullptr);
+    QCOMPARE(model.horizontalHeaderItem(0), nullptr);
 
-    QCOMPARE(model.verticalHeaderItem(0), static_cast<QStandardItem*>(0));
+    QCOMPARE(model.verticalHeaderItem(0), nullptr);
     QStandardItem *vheader = new QStandardItem();
     model.setVerticalHeaderItem(0, vheader);
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.verticalHeaderItem(0), vheader);
     QCOMPARE(vheader->model(), &model);
-    model.setVerticalHeaderItem(0, 0);
-    QCOMPARE(model.verticalHeaderItem(0), static_cast<QStandardItem*>(0));
+    model.setVerticalHeaderItem(0, nullptr);
+    QCOMPARE(model.verticalHeaderItem(0), nullptr);
 }
 
 void tst_QStandardItemModel::indexFromItem()
@@ -1065,7 +958,7 @@ void tst_QStandardItemModel::indexFromItem()
     QCOMPARE(itemIndex.row(), 10);
     QCOMPARE(itemIndex.column(), 20);
     QCOMPARE(itemIndex.parent(), QModelIndex());
-    QCOMPARE(itemIndex.model(), (const QAbstractItemModel*)(&model));
+    QCOMPARE(itemIndex.model(), &model);
 
     QStandardItem *child = new QStandardItem;
     item->setChild(4, 2, child);
@@ -1080,7 +973,7 @@ void tst_QStandardItemModel::indexFromItem()
     QVERIFY(!noSuchIndex.isValid());
     delete dummy;
 
-    noSuchIndex = model.indexFromItem(0);
+    noSuchIndex = model.indexFromItem(nullptr);
     QVERIFY(!noSuchIndex.isValid());
 }
 
@@ -1088,7 +981,7 @@ void tst_QStandardItemModel::itemFromIndex()
 {
     QStandardItemModel model;
 
-    QCOMPARE(model.itemFromIndex(QModelIndex()), (QStandardItem*)0);
+    QCOMPARE(model.itemFromIndex(QModelIndex()), nullptr);
 
     QStandardItem *item = new QStandardItem;
     model.setItem(10, 20, item);
@@ -1109,35 +1002,31 @@ void tst_QStandardItemModel::itemFromIndex()
 class CustomItem : public QStandardItem
 {
 public:
-    CustomItem() : QStandardItem() { }
-    ~CustomItem() { }
-    int type() const {
-        return UserType;
-    }
-    QStandardItem *clone() const {
-        return new CustomItem;
-    }
+    using QStandardItem::QStandardItem;
+
+    int type() const override { return UserType; }
+    QStandardItem *clone() const override { return new CustomItem; }
 };
 
 void tst_QStandardItemModel::getSetItemPrototype()
 {
     QStandardItemModel model;
-    QCOMPARE(model.itemPrototype(), static_cast<const QStandardItem*>(0));
+    QCOMPARE(model.itemPrototype(), nullptr);
 
     const CustomItem *proto = new CustomItem;
     model.setItemPrototype(proto);
-    QCOMPARE(model.itemPrototype(), (const QStandardItem*)proto);
+    QCOMPARE(model.itemPrototype(), proto);
 
     model.setRowCount(1);
     model.setColumnCount(1);
     QModelIndex index = model.index(0, 0, QModelIndex());
     model.setData(index, "foo");
     QStandardItem *item = model.itemFromIndex(index);
-    QVERIFY(item != 0);
+    QVERIFY(item != nullptr);
     QCOMPARE(item->type(), static_cast<int>(QStandardItem::UserType));
 
-    model.setItemPrototype(0);
-    QCOMPARE(model.itemPrototype(), static_cast<const QStandardItem*>(0));
+    model.setItemPrototype(nullptr);
+    QCOMPARE(model.itemPrototype(), nullptr);
 }
 
 void tst_QStandardItemModel::getSetItemData()
@@ -1174,7 +1063,7 @@ void tst_QStandardItemModel::getSetItemData()
     QModelIndex idx = model.index(0, 0, QModelIndex());
 
     QSignalSpy modelDataChangedSpy(
-         &model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+         &model, &QStandardItemModel::dataChanged);
     QVERIFY(model.setItemData(idx, roles));
     QCOMPARE(modelDataChangedSpy.count(), 1);
     QVERIFY(model.setItemData(idx, roles));
@@ -1186,44 +1075,44 @@ void tst_QStandardItemModel::setHeaderLabels_data()
 {
     QTest::addColumn<int>("rows");
     QTest::addColumn<int>("columns");
-    QTest::addColumn<int>("orientation");
+    QTest::addColumn<Qt::Orientation>("orientation");
     QTest::addColumn<QStringList>("labels");
     QTest::addColumn<QStringList>("expectedLabels");
 
     QTest::newRow("horizontal labels")
         << 1
         << 4
-        << int(Qt::Horizontal)
+        << Qt::Horizontal
         << (QStringList() << "a" << "b" << "c" << "d")
         << (QStringList() << "a" << "b" << "c" << "d");
     QTest::newRow("vertical labels")
         << 4
         << 1
-        << int(Qt::Vertical)
+        << Qt::Vertical
         << (QStringList() << "a" << "b" << "c" << "d")
         << (QStringList() << "a" << "b" << "c" << "d");
     QTest::newRow("too few (horizontal)")
         << 1
         << 4
-        << int(Qt::Horizontal)
+        << Qt::Horizontal
         << (QStringList() << "a" << "b")
         << (QStringList() << "a" << "b" << "3" << "4");
     QTest::newRow("too few (vertical)")
         << 4
         << 1
-        << int(Qt::Vertical)
+        << Qt::Vertical
         << (QStringList() << "a" << "b")
         << (QStringList() << "a" << "b" << "3" << "4");
     QTest::newRow("too many (horizontal)")
         << 1
         << 2
-        << int(Qt::Horizontal)
+        << Qt::Horizontal
         << (QStringList() << "a" << "b" << "c" << "d")
         << (QStringList() << "a" << "b" << "c" << "d");
     QTest::newRow("too many (vertical)")
         << 2
         << 1
-        << int(Qt::Vertical)
+        << Qt::Vertical
         << (QStringList() << "a" << "b" << "c" << "d")
         << (QStringList() << "a" << "b" << "c" << "d");
 }
@@ -1232,20 +1121,18 @@ void tst_QStandardItemModel::setHeaderLabels()
 {
     QFETCH(int, rows);
     QFETCH(int, columns);
-    QFETCH(int, orientation);
+    QFETCH(Qt::Orientation, orientation);
     QFETCH(QStringList, labels);
     QFETCH(QStringList, expectedLabels);
     QStandardItemModel model(rows, columns);
-    QSignalSpy columnsInsertedSpy(
-        &model, SIGNAL(columnsInserted(QModelIndex,int,int)));
-    QSignalSpy rowsInsertedSpy(
-        &model, SIGNAL(rowsInserted(QModelIndex,int,int)));
+    QSignalSpy columnsInsertedSpy(&model, &QAbstractItemModel::columnsInserted);
+    QSignalSpy rowsInsertedSpy(&model, &QAbstractItemModel::rowsInserted);
     if (orientation == Qt::Horizontal)
         model.setHorizontalHeaderLabels(labels);
     else
         model.setVerticalHeaderLabels(labels);
     for (int i = 0; i < expectedLabels.count(); ++i)
-        QCOMPARE(model.headerData(i, Qt::Orientation(orientation)).toString(), expectedLabels.at(i));
+        QCOMPARE(model.headerData(i, orientation).toString(), expectedLabels.at(i));
     QCOMPARE(columnsInsertedSpy.count(),
              (orientation == Qt::Vertical) ? 0 : labels.count() > columns);
     QCOMPARE(rowsInsertedSpy.count(),
@@ -1256,10 +1143,8 @@ void tst_QStandardItemModel::itemDataChanged()
 {
     QStandardItemModel model(6, 4);
     QStandardItem item;
-    QSignalSpy dataChangedSpy(
-        &model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
-    QSignalSpy itemChangedSpy(
-        &model, SIGNAL(itemChanged(QStandardItem*)));
+    QSignalSpy dataChangedSpy(&model, &QStandardItemModel::dataChanged);
+    QSignalSpy itemChangedSpy(&model, &QStandardItemModel::itemChanged);
 
     model.setItem(0, &item);
     QCOMPARE(dataChangedSpy.count(), 1);
@@ -1303,19 +1188,17 @@ void tst_QStandardItemModel::takeHeaderItem()
 {
     QStandardItemModel model;
     // set header items
-    QStandardItem *hheader = new QStandardItem();
-    model.setHorizontalHeaderItem(0, hheader);
-    QStandardItem *vheader = new QStandardItem();
-    model.setVerticalHeaderItem(0, vheader);
+    QScopedPointer<QStandardItem> hheader(new QStandardItem());
+    model.setHorizontalHeaderItem(0, hheader.get());
+    QScopedPointer<QStandardItem> vheader(new QStandardItem());
+    model.setVerticalHeaderItem(0, vheader.get());
     // take header items
-    QCOMPARE(model.takeHorizontalHeaderItem(0), hheader);
-    QCOMPARE(model.takeVerticalHeaderItem(0), vheader);
-    QCOMPARE(hheader->model(), static_cast<QStandardItemModel*>(0));
-    QCOMPARE(vheader->model(), static_cast<QStandardItemModel*>(0));
-    QCOMPARE(model.takeHorizontalHeaderItem(0), static_cast<QStandardItem*>(0));
-    QCOMPARE(model.takeVerticalHeaderItem(0), static_cast<QStandardItem*>(0));
-    delete hheader;
-    delete vheader;
+    QCOMPARE(model.takeHorizontalHeaderItem(0), hheader.get());
+    QCOMPARE(model.takeVerticalHeaderItem(0), vheader.get());
+    QCOMPARE(hheader->model(), nullptr);
+    QCOMPARE(vheader->model(), nullptr);
+    QCOMPARE(model.takeHorizontalHeaderItem(0), nullptr);
+    QCOMPARE(model.takeVerticalHeaderItem(0), nullptr);
 }
 
 void tst_QStandardItemModel::useCase1()
@@ -1325,7 +1208,7 @@ void tst_QStandardItemModel::useCase1()
     QStandardItemModel model(rows, columns);
     for (int i = 0; i < model.rowCount(); ++i) {
         for (int j = 0; j < model.columnCount(); ++j) {
-            QCOMPARE(model.item(i, j), static_cast<QStandardItem*>(0));
+            QCOMPARE(model.item(i, j), nullptr);
 
             QStandardItem *item = new QStandardItem();
             model.setItem(i, j, item);
@@ -1360,7 +1243,7 @@ static void createChildren(QStandardItemModel *model, QStandardItem *parent, int
             QStandardItem *theItem = model->itemFromIndex(index);
             QCOMPARE(theItem, item);
             QStandardItem *theParent = model->itemFromIndex(parentIndex);
-            QCOMPARE(theParent, (level == 0) ? (QStandardItem*)0 : parent);
+            QCOMPARE(theParent, (level == 0) ? static_cast<QStandardItem *>(nullptr) : parent);
         }
 
         {
@@ -1381,7 +1264,7 @@ void tst_QStandardItemModel::useCase2()
 void tst_QStandardItemModel::useCase3()
 {
     // create the tree structure first
-    QStandardItem *childItem = 0;
+    QStandardItem *childItem = nullptr;
     for (int i = 0; i < 100; ++i) {
         QStandardItem *item = new QStandardItem(QStringLiteral("item ") + QString::number(i));
         if (childItem)
@@ -1394,7 +1277,7 @@ void tst_QStandardItemModel::useCase3()
     model.appendRow(childItem);
 
     // make sure each item has the correct model and parent
-    QStandardItem *parentItem = 0;
+    QStandardItem *parentItem = nullptr;
     while (childItem) {
         QCOMPARE(childItem->model(), &model);
         QCOMPARE(childItem->parent(), parentItem);
@@ -1405,10 +1288,10 @@ void tst_QStandardItemModel::useCase3()
     // take the item, make sure model is set to 0, but that parents are the same
     childItem = model.takeItem(0);
     {
-        parentItem = 0;
+        parentItem = nullptr;
         QStandardItem *item = childItem;
         while (item) {
-            QCOMPARE(item->model(), static_cast<QStandardItemModel*>(0));
+            QCOMPARE(item->model(), nullptr);
             QCOMPARE(item->parent(), parentItem);
             parentItem = item;
             item = item->child(0);
@@ -1423,7 +1306,7 @@ void tst_QStandardItemModel::setNullChild()
     model.setColumnCount(2);
     createChildren(&model, model.invisibleRootItem(), 0);
     QStandardItem *item = model.item(0);
-    QSignalSpy spy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+    QSignalSpy spy(&model, &QAbstractItemModel::dataChanged);
     item->setChild(0, nullptr);
     QCOMPARE(item->child(0), nullptr);
     QCOMPARE(spy.count(), 1);
@@ -1435,7 +1318,7 @@ void tst_QStandardItemModel::deleteChild()
     model.setColumnCount(2);
     createChildren(&model, model.invisibleRootItem(), 0);
     QStandardItem *item = model.item(0);
-    QSignalSpy spy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+    QSignalSpy spy(&model, &QAbstractItemModel::dataChanged);
     delete item->child(0);
     QCOMPARE(item->child(0), nullptr);
     QCOMPARE(spy.count(), 1);
@@ -1470,7 +1353,7 @@ bool tst_QStandardItemModel::compareItems(QStandardItem *item1, QStandardItem *i
         return true;
     if (!item1 || !item2)
         return false;
-    if (item1->text() != item2->text()){
+    if (item1->text() != item2->text()) {
         qDebug() << item1->text() << item2->text();
         return false;
     }
@@ -1482,39 +1365,36 @@ bool tst_QStandardItemModel::compareItems(QStandardItem *item1, QStandardItem *i
   //     qDebug() << "ColumnCount" << item1->text() << item1->columnCount() << item2->columnCount();
         return false;
     }
-    for (int row = 0; row < item1->columnCount(); row++)
+    for (int row = 0; row < item1->columnCount(); row++) {
         for (int col = 0; col < item1->columnCount(); col++) {
-
-        if (!compareItems(item1->child(row, col), item2->child(row, col)))
-            return false;
+            if (!compareItems(item1->child(row, col), item2->child(row, col)))
+                return false;
+        }
     }
     return true;
 }
 
 static QStandardItem *itemFromText(QStandardItem *parent, const QString &text)
 {
-    QStandardItem *item = 0;
-    for(int i = 0; i < parent->columnCount(); i++)
-        for(int j = 0; j < parent->rowCount(); j++) {
+    QStandardItem *item = nullptr;
+    for (int i = 0; i < parent->columnCount(); i++) {
+        for (int j = 0; j < parent->rowCount(); j++) {
+            QStandardItem *child = parent->child(j, i);
+            if (!child)
+                continue;
 
-        QStandardItem *child = parent->child(j, i);
-
-        if(!child)
-            continue;
-
-        if (child->text() == text) {
-            if (item) {
-                return 0;
+            if (child->text() == text) {
+                if (item)
+                    return nullptr;
+                item = child;
             }
-            item = child;
-        }
 
-        QStandardItem *candidate = itemFromText(child, text);
-        if(candidate) {
-            if (item) {
-                return 0;
+            QStandardItem *candidate = itemFromText(child, text);
+            if (candidate) {
+                if (item)
+                    return nullptr;
+                item = candidate;
             }
-            item = candidate;
         }
     }
     return item;
@@ -1809,6 +1689,27 @@ void tst_QStandardItemModel::taskQTBUG_45114_setItemData()
     itemRoles = model.itemData(index);
     QCOMPARE(itemRoles.size(), 3);
     QVERIFY(!itemRoles.keys().contains(Qt::UserRole + 3));
+}
+
+void tst_QStandardItemModel::setItemPersistentIndex()
+{
+    QPersistentModelIndex persistentIndex;
+    // setItem on an already existing item should not destroy the persistent index
+    QStandardItemModel m;
+    persistentIndex = m.index(0, 0);
+    QVERIFY(!persistentIndex.isValid());
+
+    m.setItem(0, 0, new QStandardItem);
+    persistentIndex = m.index(0, 0);
+    QVERIFY(persistentIndex.isValid());
+    QCOMPARE(persistentIndex.row(), 0);
+    QCOMPARE(persistentIndex.column(), 0);
+
+    m.setItem(0, 0, new QStandardItem);
+    QVERIFY(persistentIndex.isValid());
+
+    m.setItem(0, 0, nullptr);
+    QVERIFY(!persistentIndex.isValid());
 }
 
 QTEST_MAIN(tst_QStandardItemModel)

@@ -865,6 +865,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn bool QStringView::isValidUtf16() const
+    \since 5.15
+
+    Returns \c true if the string contains valid UTF-16 encoded data,
+    or \c false otherwise.
+
+    Note that this function does not perform any special validation of the
+    data; it merely checks if it can be successfully decoded from UTF-16.
+    The data is assumed to be in host byte order; the presence of a BOM
+    is meaningless.
+
+    \sa QString::isValidUtf16()
+*/
+
+/*!
     \fn QStringView::toWCharArray(wchar_t *array) const
     \since 5.14
 

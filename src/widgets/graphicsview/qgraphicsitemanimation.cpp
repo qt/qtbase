@@ -106,7 +106,7 @@ class QGraphicsItemAnimationPrivate
 {
 public:
     inline QGraphicsItemAnimationPrivate()
-        : q(0), timeLine(0), item(0), step(0)
+        : q(nullptr), timeLine(nullptr), item(nullptr), step(0)
     { }
 
     QGraphicsItemAnimation *q;

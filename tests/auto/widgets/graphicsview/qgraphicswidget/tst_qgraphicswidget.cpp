@@ -174,7 +174,7 @@ private slots:
 // Subclass that exposes the protected functions.
 class SubQGraphicsWidget : public QGraphicsWidget {
 public:
-    SubQGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags windowFlags = 0)
+    SubQGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags windowFlags = { })
         : QGraphicsWidget(parent, windowFlags), eventCount(0)
         { }
 
@@ -254,7 +254,7 @@ protected:
 class SizeHinter : public QGraphicsWidget
 {
 public:
-    SizeHinter(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0,
+    SizeHinter(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = { },
                 const QSizeF &min = QSizeF(5,5),
                 const QSizeF &pref = QSizeF(50, 50),
                 const QSizeF &max = QSizeF(500, 500))
@@ -1186,7 +1186,7 @@ void tst_QGraphicsWidget::layoutDirection()
     for (int i = 0; i < children.count(); ++i) {
         QTRY_COMPARE(children[i]->layoutDirection(), layoutDirection);
         QTRY_COMPARE(children[i]->testAttribute(Qt::WA_SetLayoutDirection), false);
-        view->repaint();
+        view->update();
         QTRY_COMPARE(children[i]->m_painterLayoutDirection, layoutDirection);
     }
 }
@@ -2580,7 +2580,7 @@ void tst_QGraphicsWidget::shortcutsDeletion()
 class MessUpPainterWidget : public QGraphicsWidget
 {
 public:
-    MessUpPainterWidget(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0)
+    MessUpPainterWidget(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = { })
     : QGraphicsWidget(parent, wFlags)
     {}
 

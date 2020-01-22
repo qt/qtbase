@@ -130,7 +130,7 @@ QXcbIntegration *QXcbIntegration::m_instance = nullptr;
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : m_services(new QGenericUnixServices)
-    , m_instanceName(0)
+    , m_instanceName(nullptr)
     , m_canGrab(true)
     , m_defaultVisualId(UINT_MAX)
 {
@@ -146,7 +146,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     m_nativeInterface.reset(new QXcbNativeInterface);
 
     // Parse arguments
-    const char *displayName = 0;
+    const char *displayName = nullptr;
     bool noGrabArg = false;
     bool doGrabArg = false;
     if (argc) {
@@ -317,8 +317,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case OpenGL:
     case ThreadedOpenGL:
     {
-        const auto *connection = qAsConst(m_connections).first();
-        if (const auto *integration = connection->glIntegration())
+        if (const auto *integration = defaultConnection()->glIntegration())
             return cap != ThreadedOpenGL || integration->supportsThreadedOpenGL();
         return false;
     }

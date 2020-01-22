@@ -214,6 +214,22 @@ void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const
         for (const QByteArray &ext : extraExts)
             m_enabledExtensions.append(ext);
 
+        QByteArray envExts = qgetenv("QT_VULKAN_INSTANCE_EXTENSIONS");
+        if (!envExts.isEmpty()) {
+            QByteArrayList envExtList =  envExts.split(';');
+            for (auto ext : m_enabledExtensions)
+                envExtList.removeAll(ext);
+            m_enabledExtensions.append(envExtList);
+        }
+
+        QByteArray envLayers = qgetenv("QT_VULKAN_INSTANCE_LAYERS");
+        if (!envLayers.isEmpty()) {
+            QByteArrayList envLayerList = envLayers.split(';');
+            for (auto ext : m_enabledLayers)
+                envLayerList.removeAll(ext);
+            m_enabledLayers.append(envLayerList);
+        }
+
         // No clever stuff with QSet and friends: the order for layers matters
         // and the user-provided order must be kept.
         for (int i = 0; i < m_enabledLayers.count(); ++i) {

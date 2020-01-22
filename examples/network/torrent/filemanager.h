@@ -70,7 +70,7 @@ class FileManager : public QThread
     Q_OBJECT
 
 public:
-    FileManager(QObject *parent = 0);
+    FileManager(QObject *parent = nullptr);
     virtual ~FileManager();
 
     inline void setMetaInfo(const MetaInfo &info) { metaInfo = info; }

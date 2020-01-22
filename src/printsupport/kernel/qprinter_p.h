@@ -76,12 +76,12 @@ class Q_PRINTSUPPORT_EXPORT QPrinterPrivate
 public:
     QPrinterPrivate(QPrinter *printer)
         : pdfVersion(QPrinter::PdfVersion_1_4),
-          printEngine(0),
-          paintEngine(0),
-          realPrintEngine(0),
-          realPaintEngine(0),
+          printEngine(nullptr),
+          paintEngine(nullptr),
+          realPrintEngine(nullptr),
+          realPaintEngine(nullptr),
 #if QT_CONFIG(printpreviewwidget)
-          previewEngine(0),
+          previewEngine(nullptr),
 #endif
           q_ptr(printer),
           printRange(QPrinter::AllPages),

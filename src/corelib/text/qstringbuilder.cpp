@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 
     \list
     \li QString, QStringRef, (since 5.10:) QStringView
-    \li QChar, QCharRef, QLatin1Char, (since 5.10:) \c char16_t,
+    \li QChar, QLatin1Char, (since 5.10:) \c char16_t,
     \li QLatin1String,
     \li (since 5.10:) \c{const char16_t[]} (\c{u"foo"}),
     \li QByteArray, \c char, \c{const char[]}.
@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
 
     This function is usable with arguments of type \c QString,
     \c QLatin1String, \c QStringRef,
-    \c QChar, \c QCharRef, \c QLatin1Char, and \c char.
+    \c QChar, \c QLatin1Char, and \c char.
 */
 
 /* \fn template <typename A, typename B> QByteArray QStringBuilder<A, B>::toLatin1() const

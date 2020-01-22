@@ -11,6 +11,7 @@ SUBDIRS=\
     qcryptographichash \
     qeasingcurve \
     qexplicitlyshareddatapointer \
+    qflatmap \
     qfreelist \
     qhash \
     qhashfunctions \

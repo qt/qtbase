@@ -78,7 +78,7 @@ void TexturedCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
     m_ubuf->build();
 
     m_image = QImage(QLatin1String(":/qt256.png")).convertToFormat(QImage::Format_RGBA8888);
-    QRhiTexture::Flags texFlags = 0;
+    QRhiTexture::Flags texFlags;
     if (MIPMAP)
         texFlags |= QRhiTexture::MipMapped;
     if (AUTOGENMIPMAP)

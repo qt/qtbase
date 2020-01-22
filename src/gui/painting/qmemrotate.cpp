@@ -406,9 +406,9 @@ void qt_memrotate270_64(const uchar *srcPixels, int w, int h, int sbpl, uchar *d
 MemRotateFunc qMemRotateFunctions[QPixelLayout::BPPCount][3] =
 // 90, 180, 270
 {
-    { 0, 0, 0 },      // BPPNone,
-    { 0, 0, 0 },      // BPP1MSB,
-    { 0, 0, 0 },      // BPP1LSB,
+    { nullptr, nullptr, nullptr },      // BPPNone,
+    { nullptr, nullptr, nullptr },      // BPP1MSB,
+    { nullptr, nullptr, nullptr },      // BPP1LSB,
     { qt_memrotate90_8, qt_memrotate180_8, qt_memrotate270_8 },         // BPP8,
     { qt_memrotate90_16, qt_memrotate180_16, qt_memrotate270_16 },      // BPP16,
     { qt_memrotate90_24, qt_memrotate180_24, qt_memrotate270_24 },      // BPP24

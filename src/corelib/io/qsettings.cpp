@@ -76,10 +76,6 @@
 #  include <ioLib.h>
 #endif
 
-#ifdef Q_OS_WASM
-#include <emscripten.h>
-#endif
-
 #include <algorithm>
 #include <stdlib.h>
 
@@ -210,7 +206,7 @@ QConfFile *QConfFile::fromName(const QString &fileName, bool _userPerms)
     ConfFileHash *usedHash = usedHashFunc();
     ConfFileCache *unusedCache = unusedCacheFunc();
 
-    QConfFile *confFile = 0;
+    QConfFile *confFile = nullptr;
     const auto locker = qt_scoped_lock(settingsGlobalMutex);
 
     if (!(confFile = usedHash->value(absPath))) {
@@ -234,7 +230,7 @@ void QConfFile::clearCache()
 // QSettingsPrivate
 
 QSettingsPrivate::QSettingsPrivate(QSettings::Format format)
-    : format(format), scope(QSettings::UserScope /* nothing better to put */), iniCodec(0), fallbacks(true),
+    : format(format), scope(QSettings::UserScope /* nothing better to put */), iniCodec(nullptr), fallbacks(true),
       pendingChanges(false), status(QSettings::NoError)
 {
 }
@@ -242,7 +238,7 @@ QSettingsPrivate::QSettingsPrivate(QSettings::Format format)
 QSettingsPrivate::QSettingsPrivate(QSettings::Format format, QSettings::Scope scope,
                                    const QString &organization, const QString &application)
     : format(format), scope(scope), organizationName(organization), applicationName(application),
-      iniCodec(0), fallbacks(true), pendingChanges(false), status(QSettings::NoError)
+      iniCodec(nullptr), fallbacks(true), pendingChanges(false), status(QSettings::NoError)
 {
 }
 
@@ -295,7 +291,7 @@ after_loop:
 
 // see also qsettings_win.cpp, qsettings_winrt.cpp and qsettings_mac.cpp
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC) && !defined(Q_OS_WASM)
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
                                            const QString &organization, const QString &application)
 {
@@ -931,8 +927,8 @@ QStringList QSettingsPrivate::splitArgs(const QString &s, int idx)
 void QConfFileSettingsPrivate::initFormat()
 {
     extension = (format == QSettings::NativeFormat) ? QLatin1String(".conf") : QLatin1String(".ini");
-    readFunc = 0;
-    writeFunc = 0;
+    readFunc = nullptr;
+    writeFunc = nullptr;
 #if defined(Q_OS_MAC)
     caseSensitivity = (format == QSettings::NativeFormat) ? Qt::CaseSensitive : IniCaseSensitivity;
 #else
@@ -1188,7 +1184,9 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
         confFiles.append(QConfFile::fromName(systemPath.path + orgFile, false));
     }
 
+#ifndef Q_OS_WASM // wasm needs to delay access until after file sync
     initAccess();
+#endif
 }
 
 QConfFileSettingsPrivate::QConfFileSettingsPrivate(const QString &fileName,
@@ -1551,13 +1549,6 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
                     perms |= QFile::ReadGroup | QFile::ReadOther;
                 QFile(confFile->name).setPermissions(perms);
             }
-#ifdef Q_OS_WASM
-        EM_ASM(
-            // Sync sandbox filesystem to persistent database filesystem. See QTBUG-70002
-            FS.syncfs(false, function(err) {
-            });
-        );
-#endif
         } else {
             setStatus(QSettings::AccessError);
         }
@@ -3350,7 +3341,7 @@ bool QSettings::contains(const QString &key) const
 {
     Q_D(const QSettings);
     QString k = d->actualKey(key);
-    return d->get(k, 0);
+    return d->get(k, nullptr);
 }
 
 /*!

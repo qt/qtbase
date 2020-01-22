@@ -94,9 +94,6 @@ extern QClipboard *qt_clipboard;
 typedef QHash<QByteArray, QFont> FontHash;
 Q_WIDGETS_EXPORT FontHash *qt_app_fonts_hash();
 
-typedef QHash<QByteArray, QPalette> PaletteHash;
-PaletteHash *qt_app_palettes_hash();
-
 #define QApplicationPrivateBase QGuiApplicationPrivate
 
 class Q_WIDGETS_EXPORT QApplicationPrivate : public QApplicationPrivateBase
@@ -161,13 +158,12 @@ public:
     static QSize app_strut;
     static QWidgetList *popupWidgets;
     static QStyle *app_style;
-    static QPalette *sys_pal;
-    static QPalette *set_pal;
 
 protected:
     void notifyThemeChanged() override;
-    void sendApplicationPaletteChange(bool toAllWidgets = false,
-                                      const char *className = nullptr) override;
+
+    QPalette basePalette() const override;
+    void handlePaletteChanged(const char *className = nullptr) override;
 
 #if QT_CONFIG(draganddrop)
     void notifyDragStarted(const QDrag *) override;
@@ -188,11 +184,12 @@ public:
     static int enabledAnimations; // Combination of QPlatformTheme::UiEffect
     static bool widgetCount; // Coupled with -widgetcount switch
 
-    static void setSystemPalette(const QPalette &pal);
-    static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
-    static void initializeWidgetPaletteHash();
+    static void initializeWidgetPalettesFromTheme();
     static void initializeWidgetFontHash();
     static void setSystemFont(const QFont &font);
+
+    using PaletteHash = QHash<QByteArray, QPalette>;
+    static PaletteHash widgetPalettes;
 
     static QApplicationPrivate *instance() { return self; }
 

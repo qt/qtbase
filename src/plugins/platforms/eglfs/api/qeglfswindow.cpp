@@ -61,13 +61,12 @@ QT_BEGIN_NAMESPACE
 QEglFSWindow::QEglFSWindow(QWindow *w)
     : QPlatformWindow(w),
 #ifndef QT_NO_OPENGL
-      m_backingStore(0),
-      m_rasterCompositingContext(0),
+      m_backingStore(nullptr),
+      m_rasterCompositingContext(nullptr),
 #endif
       m_winId(0),
       m_surface(EGL_NO_SURFACE),
-      m_window(0),
-      m_flags(0)
+      m_window(0)
 {
 }
 
@@ -186,7 +185,7 @@ void QEglFSWindow::destroy()
 #endif
     }
 
-    m_flags = 0;
+    m_flags = { };
 }
 
 void QEglFSWindow::invalidateSurface()
@@ -208,7 +207,7 @@ void QEglFSWindow::resetSurface()
     m_format = q_glFormatFromConfig(display, m_config, platformFormat);
     const QSize surfaceSize = screen()->rawGeometry().size();
     m_window = qt_egl_device_integration()->createNativeWindow(this, surfaceSize, m_format);
-    m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);
+    m_surface = eglCreateWindowSurface(display, m_config, m_window, nullptr);
 }
 
 void QEglFSWindow::setVisible(bool visible)
@@ -338,7 +337,7 @@ const QPlatformTextureList *QEglFSWindow::textures() const
     if (m_backingStore)
         return m_backingStore->textures();
 
-    return 0;
+    return nullptr;
 }
 
 void QEglFSWindow::endCompositing()

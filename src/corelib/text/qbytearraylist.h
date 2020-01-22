@@ -80,9 +80,6 @@ public:
     inline QByteArray join(char sep) const
     { return QtPrivate::QByteArrayList_join(self(), &sep, 1); }
 
-    inline int indexOf(const char *needle, int from = 0) const
-    { return QtPrivate::QByteArrayList_indexOf(self(), needle, from); }
-
 private:
     typedef QVector<QByteArray> Self;
     Self *self() { return static_cast<Self *>(this); }

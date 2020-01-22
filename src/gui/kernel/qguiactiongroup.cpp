@@ -222,7 +222,8 @@ QList<QGuiAction*> QGuiActionGroup::guiActions() const
     \brief Enable or disable the group exclusion checking
 
     This is a convenience method that calls
-    setExclusionPolicy(ExclusionPolicy::Exclusive).
+    setExclusionPolicy(ExclusionPolicy::Exclusive) when \a b is true,
+    else setExclusionPolicy(QActionGroup::ExclusionPolicy::None).
 
     \sa QGuiActionGroup::exclusionPolicy
 */
@@ -233,7 +234,7 @@ void QGuiActionGroup::setExclusive(bool b)
 }
 
 /*!
-    \brief Returs true if the group is exclusive
+    \brief Returns true if the group is exclusive
 
     The group is exclusive if the ExclusionPolicy is either Exclusive
     or ExclusionOptional.

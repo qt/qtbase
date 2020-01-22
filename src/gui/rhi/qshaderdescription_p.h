@@ -56,6 +56,7 @@
 QT_BEGIN_NAMESPACE
 
 struct QShaderDescriptionPrivate;
+class QDataStream;
 
 class Q_GUI_EXPORT QShaderDescription
 {
@@ -68,12 +69,16 @@ public:
 
     bool isValid() const;
 
-    QByteArray toBinaryJson() const;
     QByteArray toCbor() const;
+    void serialize(QDataStream *stream) const;
     QByteArray toJson() const;
 
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use CBOR format instead")
     static QShaderDescription fromBinaryJson(const QByteArray &data);
+#endif
     static QShaderDescription fromCbor(const QByteArray &data);
+    static QShaderDescription deserialize(QDataStream *stream);
 
     enum VariableType {
         Unknown = 0,

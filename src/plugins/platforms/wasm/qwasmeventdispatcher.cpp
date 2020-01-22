@@ -33,6 +33,14 @@
 
 #include <emscripten.h>
 
+#if (__EMSCRIPTEN_major__ > 1 || __EMSCRIPTEN_minor__ > 38 || __EMSCRIPTEN_minor__ == 38 && __EMSCRIPTEN_tiny__ >= 22)
+#  define EMSCRIPTEN_HAS_ASYNC_RUN_IN_MAIN_RUNTIME_THREAD
+#endif
+
+#ifdef EMSCRIPTEN_HAS_ASYNC_RUN_IN_MAIN_RUNTIME_THREAD
+#include <emscripten/threading.h>
+#endif
+
 class QWasmEventDispatcherPrivate : public QEventDispatcherUNIXPrivate
 {
 
@@ -178,4 +186,19 @@ void QWasmEventDispatcher::doMaintainTimers()
     };
     emscripten_async_call(callback, this, toWaitDuration);
     m_currentTargetTime = newTargetTime;
+}
+
+void QWasmEventDispatcher::wakeUp()
+{
+#ifdef EMSCRIPTEN_HAS_ASYNC_RUN_IN_MAIN_RUNTIME_THREAD
+    if (!emscripten_is_main_runtime_thread())
+        emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, (void*)(&QWasmEventDispatcher::mainThreadWakeUp), this);
+#endif
+    QEventDispatcherUNIX::wakeUp();
+}
+
+void QWasmEventDispatcher::mainThreadWakeUp(void *eventDispatcher)
+{
+    emscripten_resume_main_loop(); // Service possible requestUpdate Calls
+    static_cast<QWasmEventDispatcher *>(eventDispatcher)->processEvents(QEventLoop::AllEvents);
 }

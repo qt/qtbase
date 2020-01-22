@@ -463,7 +463,7 @@ static const QTextHtmlElement *lookupElementHelper(const QString &element)
     const QTextHtmlElement *end = &elements[Html_NumElements];
     const QTextHtmlElement *e = std::lower_bound(start, end, element);
     if ((e == end) || (element < *e))
-        return 0;
+        return nullptr;
     return e;
 }
 
@@ -519,7 +519,7 @@ void QTextHtmlParser::dumpHtml()
 QTextHtmlParserNode *QTextHtmlParser::newNode(int parent)
 {
     QTextHtmlParserNode *lastNode = &nodes.last();
-    QTextHtmlParserNode *newNode = 0;
+    QTextHtmlParserNode *newNode = nullptr;
 
     bool reuseLastNode = true;
 
@@ -1209,8 +1209,11 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
             if (decl.styleValue() != QCss::BorderStyle_Unknown && decl.styleValue() != QCss::BorderStyle_Native)
                 borderStyle = static_cast<QTextFrameFormat::BorderStyle>(decl.styleValue() - 1);
             break;
-        case QCss::BorderWidth:
-            tableBorder = extractor.lengthValue(decl);
+        case QCss::BorderWidth: {
+            int borders[4];
+            extractor.lengthValues(decl, borders);
+            tableBorder = borders[0];
+            }
             break;
         case QCss::BorderCollapse:
             borderCollapse = decl.borderCollapseValue();
@@ -2120,7 +2123,7 @@ QVector<QCss::Declaration> QTextHtmlParser::declarationsForNode(int node) const
     QCss::StyleSelector::NodePtr n;
     n.id = node;
 
-    const char *extraPseudo = 0;
+    const char *extraPseudo = nullptr;
     if (nodes.at(node).id == Html_a && nodes.at(node).hasHref)
         extraPseudo = "link";
     // Ensure that our own style is taken into consideration

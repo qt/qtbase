@@ -9,6 +9,9 @@ testcase_exceptions: CONFIG += exceptions
 # Set in qt_build_config.prf
 testcase_no_bundle: CONFIG -= app_bundle
 
+# cmdline may have been specified and not processed yet
+cmdline: CONFIG -= app_bundle
+
 # Allow testcases to mark themselves as not supporting high-DPI
 testcase_lowdpi {
     macos {

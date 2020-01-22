@@ -478,15 +478,15 @@ Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins)
 Q_GLOBAL_STATIC(QList<QAccessible::InterfaceFactory>, qAccessibleFactories)
 Q_GLOBAL_STATIC(QList<QAccessible::ActivationObserver *>, qAccessibleActivationObservers)
 
-QAccessible::UpdateHandler QAccessible::updateHandler = 0;
-QAccessible::RootObjectHandler QAccessible::rootObjectHandler = 0;
+QAccessible::UpdateHandler QAccessible::updateHandler = nullptr;
+QAccessible::RootObjectHandler QAccessible::rootObjectHandler = nullptr;
 
 static bool cleanupAdded = false;
 
 static QPlatformAccessibility *platformAccessibility()
 {
     QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
-    return pfIntegration ? pfIntegration->accessibility() : 0;
+    return pfIntegration ? pfIntegration->accessibility() : nullptr;
 }
 
 /*!
@@ -673,7 +673,7 @@ void QAccessible::removeActivationObserver(ActivationObserver *observer)
 QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
 {
     if (!object)
-        return 0;
+        return nullptr;
 
     if (Id id = QAccessibleCache::instance()->objectToId.value(object))
         return QAccessibleCache::instance()->interfaceForId(id);
@@ -696,7 +696,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         // Find a QAccessiblePlugin (factory) for the class name. If there's
         // no entry in the cache try to create it using the plugin loader.
         if (!qAccessiblePlugins()->contains(cn)) {
-            QAccessiblePlugin *factory = 0; // 0 means "no plugin found". This is cached as well.
+            QAccessiblePlugin *factory = nullptr; // 0 means "no plugin found". This is cached as well.
             const int index = loader()->indexOf(cn);
             if (index != -1)
                 factory = qobject_cast<QAccessiblePlugin *>(loader()->instance(index));
@@ -724,7 +724,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         return appInterface;
     }
 
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -1113,7 +1113,7 @@ QAccessibleInterface::relations(QAccessible::Relation /*match = QAccessible::All
 */
 QAccessibleInterface *QAccessibleInterface::focusChild() const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -1758,12 +1758,12 @@ QAccessibleTextSelectionEvent::~QAccessibleTextSelectionEvent()
 */
 QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 {
-    if (m_object == 0)
+    if (m_object == nullptr)
         return QAccessible::accessibleInterface(m_uniqueId);
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
     if (!iface || !iface->isValid())
-        return 0;
+        return nullptr;
 
     if (m_child >= 0) {
         QAccessibleInterface *child = iface->child(m_child);
@@ -1791,7 +1791,7 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
   */
 QWindow *QAccessibleInterface::window() const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!

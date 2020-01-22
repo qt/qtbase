@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 class QDBusCustomTypeInfo
 {
 public:
-    QDBusCustomTypeInfo() : signature(), marshall(0), demarshall(0)
+    QDBusCustomTypeInfo() : signature(), marshall(nullptr), demarshall(nullptr)
     { }
 
     // Suggestion:
@@ -78,7 +78,7 @@ public:
 };
 
 template<typename T>
-inline static void registerHelper(T * = 0)
+inline static void registerHelper(T * = nullptr)
 {
     void (*mf)(QDBusArgument &, const T *) = qDBusMarshallHelper<T>;
     void (*df)(const QDBusArgument &, T *) = qDBusDemarshallHelper<T>;
@@ -259,7 +259,7 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
 
         const QDBusCustomTypeInfo &info = (*ct).at(id);
         if (!info.marshall) {
-            mf = 0;             // make gcc happy
+            mf = nullptr;       // make gcc happy
             return false;
         } else
             mf = info.marshall;
@@ -288,7 +288,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
 
         const QDBusCustomTypeInfo &info = (*ct).at(id);
         if (!info.demarshall) {
-            df = 0;             // make gcc happy
+            df = nullptr;       // make gcc happy
             return false;
         } else
             df = info.demarshall;
@@ -460,7 +460,7 @@ const char *QDBusMetaType::typeToSignature(int type)
     {
         QReadLocker locker(customTypesLock());
         if (type >= ct->size())
-            return 0;           // type not registered with us
+            return nullptr;           // type not registered with us
 
         const QDBusCustomTypeInfo &info = (*ct).at(type);
 
@@ -468,7 +468,7 @@ const char *QDBusMetaType::typeToSignature(int type)
             return info.signature;
 
         if (!info.marshall)
-            return 0;           // type not registered with us
+            return nullptr;           // type not registered with us
     }
 
     // call to user code to construct the signature type

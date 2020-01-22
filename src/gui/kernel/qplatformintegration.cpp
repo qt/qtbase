@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 */
 QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
 {
-    static QPlatformFontDatabase *db = 0;
+    static QPlatformFontDatabase *db = nullptr;
     if (!db) {
         db = new QPlatformFontDatabase;
     }
@@ -86,7 +86,7 @@ QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
 
 QPlatformClipboard *QPlatformIntegration::clipboard() const
 {
-    static QPlatformClipboard *clipboard = 0;
+    static QPlatformClipboard *clipboard = nullptr;
     if (!clipboard) {
         clipboard = new QPlatformClipboard;
     }
@@ -104,7 +104,7 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
 */
 QPlatformDrag *QPlatformIntegration::drag() const
 {
-    static QSimpleDrag *drag = 0;
+    static QSimpleDrag *drag = nullptr;
     if (!drag) {
         drag = new QSimpleDrag;
     }
@@ -114,12 +114,12 @@ QPlatformDrag *QPlatformIntegration::drag() const
 
 QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 {
-    return 0;
+    return nullptr;
 }
 
 QPlatformServices *QPlatformIntegration::services() const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -303,7 +303,7 @@ QPlatformOpenGLContext *QPlatformIntegration::createPlatformOpenGLContext(QOpenG
 {
     Q_UNUSED(context);
     qWarning("This plugin does not support createPlatformOpenGLContext!");
-    return 0;
+    return nullptr;
 }
 #endif // QT_NO_OPENGL
 
@@ -315,7 +315,7 @@ QPlatformSharedGraphicsCache *QPlatformIntegration::createPlatformSharedGraphics
 {
     qWarning("This plugin does not support createPlatformSharedGraphicsBuffer for cacheId: %s!",
              cacheId);
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -325,7 +325,7 @@ QPlatformSharedGraphicsCache *QPlatformIntegration::createPlatformSharedGraphics
 QPaintEngine *QPlatformIntegration::createImagePaintEngine(QPaintDevice *paintDevice) const
 {
     Q_UNUSED(paintDevice)
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -357,7 +357,7 @@ void QPlatformIntegration::destroy()
 */
 QPlatformInputContext *QPlatformIntegration::inputContext() const
 {
-    return 0;
+    return nullptr;
 }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -370,7 +370,7 @@ QPlatformInputContext *QPlatformIntegration::inputContext() const
 */
 QPlatformAccessibility *QPlatformIntegration::accessibility() const
 {
-    static QPlatformAccessibility *accessibility = 0;
+    static QPlatformAccessibility *accessibility = nullptr;
     if (Q_UNLIKELY(!accessibility)) {
         accessibility = new QPlatformAccessibility;
     }
@@ -484,7 +484,7 @@ class QPlatformTheme *QPlatformIntegration::createPlatformTheme(const QString &n
 QPlatformOffscreenSurface *QPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
     Q_UNUSED(surface)
-    return 0;
+    return nullptr;
 }
 
 #ifndef QT_NO_SESSIONMANAGER

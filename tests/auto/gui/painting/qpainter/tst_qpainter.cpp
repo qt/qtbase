@@ -715,7 +715,7 @@ void tst_QPainter::drawBorderPixmap()
     QPainter p(&pm);
     p.setTransform(QTransform(-1,0,0,-1,173.5,153.5));
     qDrawBorderPixmap(&p, QRect(0,0,75,105), QMargins(39,39,39,39), src, QRect(0,0,79,79), QMargins(39,39,39,39),
-                       QTileRules(Qt::StretchTile,Qt::StretchTile), 0);
+                       QTileRules(Qt::StretchTile,Qt::StretchTile), { });
 }
 #endif
 
@@ -1739,7 +1739,7 @@ void tst_QPainter::renderHints()
 
     // Turn off all...
     p.setRenderHints(QPainter::RenderHints(0xffffffff), false);
-    QCOMPARE(p.renderHints(), QPainter::RenderHints(0));
+    QCOMPARE(p.renderHints(), QPainter::RenderHints{});
 
     // Single set/get
     p.setRenderHint(QPainter::Antialiasing);

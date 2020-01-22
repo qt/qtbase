@@ -689,6 +689,15 @@ void QVulkanWindowPrivate::init()
     QVulkanInfoVector<QVulkanExtension> supportedExtensions = q->supportedDeviceExtensions();
     QByteArrayList reqExts = requestedDevExtensions;
     reqExts.append("VK_KHR_swapchain");
+
+    QByteArray envExts = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS");
+    if (!envExts.isEmpty()) {
+        QByteArrayList envExtList =  envExts.split(';');
+        for (auto ext : reqExts)
+            envExtList.removeAll(ext);
+        reqExts.append(envExtList);
+    }
+
     for (const QByteArray &ext : reqExts) {
         if (supportedExtensions.contains(ext))
             devExts.append(ext.constData());
@@ -1866,7 +1875,7 @@ void QVulkanWindowPrivate::beginFrame()
     // build new draw command buffer
     if (image.cmdBuf) {
         devFuncs->vkFreeCommandBuffers(dev, cmdPool, 1, &image.cmdBuf);
-        image.cmdBuf = 0;
+        image.cmdBuf = nullptr;
     }
 
     VkCommandBufferAllocateInfo cmdBufInfo = {

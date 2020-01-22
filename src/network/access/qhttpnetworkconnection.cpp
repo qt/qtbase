@@ -379,9 +379,9 @@ void QHttpNetworkConnectionPrivate::emitReplyError(QAbstractSocket *socket,
 
         // Clean the channel
         channels[i].close();
-        channels[i].reply = 0;
+        channels[i].reply = nullptr;
         if (channels[i].protocolHandler)
-            channels[i].protocolHandler->setReply(0);
+            channels[i].protocolHandler->setReply(nullptr);
         channels[i].request = QHttpNetworkRequest();
         if (socket)
             channels[i].requeueCurrentlyPipelinedRequests();
@@ -405,7 +405,7 @@ void QHttpNetworkConnectionPrivate::copyCredentials(int fromChannel, QAuthentica
     }
 
     // select another channel
-    QAuthenticator* otherAuth = 0;
+    QAuthenticator* otherAuth = nullptr;
     for (int i = 0; i < activeChannelCount; ++i) {
         if (i == fromChannel)
             continue;
@@ -438,7 +438,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
     if (authMethod != QAuthenticatorPrivate::None) {
         int i = indexOf(socket);
         //Use a single authenticator for all domains. ### change later to use domain/realm
-        QAuthenticator* auth = 0;
+        QAuthenticator* auth = nullptr;
         if (isProxy) {
             auth = &channels[i].proxyAuthenticator;
             channels[i].proxyAuthMethod = authMethod;
@@ -493,7 +493,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         //   we need to bail out if authentication is required.
         if (priv->phase == QAuthenticatorPrivate::Done || !reply->request().withCredentials()) {
             // Reset authenticator so the next request on that channel does not get messed up
-            auth = 0;
+            auth = nullptr;
             if (isProxy)
                 channels[i].proxyAuthenticator = QAuthenticator();
             else
@@ -763,7 +763,7 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
     int i = indexOf(socket);
 
     // return fast if there was no reply right now processed
-    if (channels[i].reply == 0)
+    if (channels[i].reply == nullptr)
         return;
 
     if (! (defaultPipelineLength - channels[i].alreadyPipelinedRequests.length() >= defaultRePipelineLength)) {
@@ -934,9 +934,9 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
     for (int i = 0; i < activeChannelCount; ++i) {
         // is the reply associated the currently processing of this channel?
         if (channels[i].reply == reply) {
-            channels[i].reply = 0;
+            channels[i].reply = nullptr;
             if (channels[i].protocolHandler)
-                channels[i].protocolHandler->setReply(0);
+                channels[i].protocolHandler->setReply(nullptr);
             channels[i].request = QHttpNetworkRequest();
             channels[i].resendCurrent = false;
 

@@ -75,13 +75,12 @@ static const int MinimumTimeBeforeRevisit = 30;
 static const int MaxUploads = 4;
 static const int UploadScheduleInterval = 10000;
 
-class TorrentPiece {
-public:
-    int index;
-    int length;
+struct TorrentPiece {
     QBitArray completedBlocks;
     QBitArray requestedBlocks;
-    bool inProgress;
+    int index = 0;
+    int length = 0;
+    bool inProgress = false;
 };
 
 class TorrentClientPrivate
@@ -227,7 +226,7 @@ void TorrentClientPrivate::callPeerConnector()
 {
     if (!connectingToClients) {
         connectingToClients = true;
-        QTimer::singleShot(10000, q, SLOT(connectToPeers()));
+        QTimer::singleShot(10000, q, &TorrentClient::connectToPeers);
     }
 }
 
@@ -235,22 +234,22 @@ TorrentClient::TorrentClient(QObject *parent)
     : QObject(parent), d(new TorrentClientPrivate(this))
 {
     // Connect the file manager
-    connect(&d->fileManager, SIGNAL(dataRead(int,int,int,QByteArray)),
-            this, SLOT(sendToPeer(int,int,int,QByteArray)));
-    connect(&d->fileManager, SIGNAL(verificationProgress(int)),
-            this, SLOT(updateProgress(int)));
-    connect(&d->fileManager, SIGNAL(verificationDone()),
-            this, SLOT(fullVerificationDone()));
-    connect(&d->fileManager, SIGNAL(pieceVerified(int,bool)),
-            this, SLOT(pieceVerified(int,bool)));
-    connect(&d->fileManager, SIGNAL(error()),
-            this, SLOT(handleFileError()));
+    connect(&d->fileManager, &FileManager::dataRead,
+            this, &TorrentClient::sendToPeer);
+    connect(&d->fileManager, &FileManager::verificationProgress,
+            this, &TorrentClient::updateProgress);
+    connect(&d->fileManager, &FileManager::verificationDone,
+            this, &TorrentClient::fullVerificationDone);
+    connect(&d->fileManager, &FileManager::pieceVerified,
+            this, &TorrentClient::pieceVerified);
+    connect(&d->fileManager, &FileManager::error,
+            this, &TorrentClient::handleFileError);
 
     // Connect the tracker client
-    connect(&d->trackerClient, SIGNAL(peerListUpdated(QList<TorrentPeer>)),
-            this, SLOT(addToPeerList(QList<TorrentPeer>)));
-    connect(&d->trackerClient, SIGNAL(stopped()),
-            this, SIGNAL(stopped()));
+    connect(&d->trackerClient, &TrackerClient::peerListUpdated,
+            this, &TorrentClient::addToPeerList);
+    connect(&d->trackerClient, &TrackerClient::stopped,
+            this, &TorrentClient::stopped);
 }
 
 TorrentClient::~TorrentClient()
@@ -840,26 +839,26 @@ void TorrentClient::setupOutgoingConnection()
 
 void TorrentClient::initializeConnection(PeerWireClient *client)
 {
-    connect(client, SIGNAL(connected()),
-            this, SLOT(setupOutgoingConnection()));
-    connect(client, SIGNAL(disconnected()),
-            this, SLOT(removeClient()));
-    connect(client, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(removeClient()));
-    connect(client, SIGNAL(piecesAvailable(QBitArray)),
-            this, SLOT(peerPiecesAvailable(QBitArray)));
-    connect(client, SIGNAL(blockRequested(int,int,int)),
-            this, SLOT(peerRequestsBlock(int,int,int)));
-    connect(client, SIGNAL(blockReceived(int,int,QByteArray)),
-            this, SLOT(blockReceived(int,int,QByteArray)));
-    connect(client, SIGNAL(choked()),
-            this, SLOT(peerChoked()));
-    connect(client, SIGNAL(unchoked()),
-            this, SLOT(peerUnchoked()));
-    connect(client, SIGNAL(bytesWritten(qint64)),
-            this, SLOT(peerWireBytesWritten(qint64)));
-    connect(client, SIGNAL(bytesReceived(qint64)),
-            this, SLOT(peerWireBytesReceived(qint64)));
+    connect(client, &PeerWireClient::connected,
+            this, &TorrentClient::setupOutgoingConnection);
+    connect(client, &PeerWireClient::disconnected,
+            this, &TorrentClient::removeClient);
+    connect(client, QOverload<QAbstractSocket::SocketError>::of(&PeerWireClient::error),
+            this, &TorrentClient::removeClient);
+    connect(client, &PeerWireClient::piecesAvailable,
+            this, &TorrentClient::peerPiecesAvailable);
+    connect(client, &PeerWireClient::blockRequested,
+            this, &TorrentClient::peerRequestsBlock);
+    connect(client, &PeerWireClient::blockReceived,
+            this, &TorrentClient::blockReceived);
+    connect(client, &PeerWireClient::choked,
+            this, &TorrentClient::peerChoked);
+    connect(client, &PeerWireClient::unchoked,
+            this, &TorrentClient::peerUnchoked);
+    connect(client, &PeerWireClient::bytesWritten,
+            this, &TorrentClient::peerWireBytesWritten);
+    connect(client, &PeerWireClient::bytesReceived,
+            this, &TorrentClient::peerWireBytesReceived);
 }
 
 void TorrentClient::removeClient()
@@ -868,7 +867,7 @@ void TorrentClient::removeClient()
 
     // Remove the host from our list of known peers if the connection
     // failed.
-    if (client->peer() && client->error() == QAbstractSocket::ConnectionRefusedError)
+    if (client->peer() && client->socketError() == QAbstractSocket::ConnectionRefusedError)
         d->peers.removeAll(client->peer());
 
     // Remove the client from RateController and all structures.
@@ -890,7 +889,8 @@ void TorrentClient::removeClient()
     }
 
     // Delete the client later.
-    disconnect(client, SIGNAL(disconnected()), this, SLOT(removeClient()));
+    disconnect(client, &PeerWireClient::disconnected,
+               this, &TorrentClient::removeClient);
     client->deleteLater();
     ConnectionManager::instance()->removeConnection(client);
 
@@ -905,7 +905,7 @@ void TorrentClient::peerPiecesAvailable(const QBitArray &pieces)
     // Find the peer in our list of announced peers. If it's there,
     // then we can use the piece list into to gather statistics that
     // help us decide what peers to connect to.
-    TorrentPeer *peer = 0;
+    TorrentPeer *peer = nullptr;
     QList<TorrentPeer *>::Iterator it = d->peers.begin();
     while (it != d->peers.end()) {
         if ((*it)->address == client->peerAddress() && (*it)->port == client->peerPort()) {
@@ -1163,7 +1163,7 @@ void TorrentClient::schedulePieceForClient(PeerWireClient *client)
     // many blocks have been requested.
     QList<int> currentPieces;
     bool somePiecesAreNotInProgress = false;
-    TorrentPiece *lastPendingPiece = 0;
+    TorrentPiece *lastPendingPiece = nullptr;
     QMultiMap<PeerWireClient *, TorrentPiece *>::Iterator it = d->payloads.find(client);
     while (it != d->payloads.end() && it.key() == client) {
         lastPendingPiece = it.value();
@@ -1183,7 +1183,7 @@ void TorrentClient::schedulePieceForClient(PeerWireClient *client)
     // If all pieces are in progress, but we haven't filled up our
     // block requesting quota, then we need to schedule another piece.
     if (!somePiecesAreNotInProgress || client->incomingBlocks().size() > 0)
-        lastPendingPiece = 0;
+        lastPendingPiece = nullptr;
     TorrentPiece *piece = lastPendingPiece;
 
     // In warmup state, all clients request blocks from the same pieces.

@@ -90,7 +90,7 @@ void QProxyStylePrivate::ensureBaseStyle() const
             if (qstrcmp(baseStyle->metaObject()->className(),
                         q->metaObject()->className()) == 0) {
                 delete baseStyle;
-                baseStyle = 0;
+                baseStyle = nullptr;
             }
         }
     }

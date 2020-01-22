@@ -40,15 +40,12 @@
 #ifndef QWAITCONDITION_H
 #define QWAITCONDITION_H
 
-#include <QtCore/qglobal.h>
-
-#include <limits.h>
+#include <QtCore/QDeadlineTimer>
 
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread)
 
-class QDeadlineTimer;
 class QWaitConditionPrivate;
 class QMutex;
 class QReadWriteLock;
@@ -59,11 +56,13 @@ public:
     QWaitCondition();
     ~QWaitCondition();
 
-    // ### Qt 6: remove unsigned long overloads
-    bool wait(QMutex *lockedMutex, unsigned long time = ULONG_MAX);
-    bool wait(QMutex *lockedMutex, QDeadlineTimer deadline);
-    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time = ULONG_MAX);
-    bool wait(QReadWriteLock *lockedReadWriteLock, QDeadlineTimer deadline);
+    bool wait(QMutex *lockedMutex,
+              QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+    bool wait(QMutex *lockedMutex, unsigned long time);
+
+    bool wait(QReadWriteLock *lockedReadWriteLock,
+              QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time);
 
     void wakeOne();
     void wakeAll();
@@ -80,21 +79,26 @@ private:
 #else
 
 class QMutex;
+class QReadWriteLock;
+
 class Q_CORE_EXPORT QWaitCondition
 {
 public:
     QWaitCondition() {}
     ~QWaitCondition() {}
 
-    bool wait(QMutex *mutex, unsigned long time = ULONG_MAX)
-    {
-        Q_UNUSED(mutex);
-        Q_UNUSED(time);
-        return true;
-    }
+    bool wait(QMutex *, QDeadlineTimer = QDeadlineTimer(QDeadlineTimer::Forever))
+    { return true; }
+    bool wait(QReadWriteLock *, QDeadlineTimer = QDeadlineTimer(QDeadlineTimer::Forever))
+    { return true; }
+    bool wait(QMutex *, unsigned long) { return true; }
+    bool wait(QReadWriteLock *, unsigned long) { return true; }
 
     void wakeOne() {}
     void wakeAll() {}
+
+    void notify_one() { wakeOne(); }
+    void notify_all() { wakeAll(); }
 };
 
 #endif // QT_CONFIG(thread)

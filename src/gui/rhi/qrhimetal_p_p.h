@@ -100,13 +100,12 @@ struct QMetalTexture : public QRhiTexture
     ~QMetalTexture();
     void release() override;
     bool build() override;
-    bool buildFrom(const QRhiNativeHandles *src) override;
-    const QRhiNativeHandles *nativeHandles() override;
+    bool buildFrom(NativeTexture src) override;
+    NativeTexture nativeTexture() override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
 
     QMetalTextureData *d;
-    QRhiMetalTextureNativeHandles nativeHandlesStruct;
     int mipLevelCount = 0;
     int samples = 1;
     uint generation = 0;
@@ -138,6 +137,7 @@ struct QMetalRenderPassDescriptor : public QRhiRenderPassDescriptor
     QMetalRenderPassDescriptor(QRhiImplementation *rhi);
     ~QMetalRenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 
     // there is no MTLRenderPassDescriptor here as one will be created for each pass in beginPass()
 

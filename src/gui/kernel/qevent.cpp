@@ -667,9 +667,9 @@ QHoverEvent::~QHoverEvent()
     if that widget does not handle the event they are sent to the
     focus widget. Wheel events are generated for both mouse wheels
     and trackpad scroll gestures. There are two ways to read the
-    wheel event delta: angleDelta() returns the delta in wheel
-    degrees. This value is always provided. pixelDelta() returns
-    the delta in screen pixels and is available on platforms that
+    wheel event delta: angleDelta() returns the deltas in wheel
+    degrees. These values are always provided. pixelDelta() returns
+    the deltas in screen pixels, and is available on platforms that
     have high-resolution trackpads, such as \macos. If that is the
     case, source() will return Qt::MouseEventSynthesizedBySystem.
 
@@ -846,12 +846,13 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 /*!
     Constructs a wheel event object.
 
+    \since 5.12
     The \a pos provides the location of the mouse cursor
     within the window. The position in global coordinates is specified
     by \a globalPos.
 
     \a pixelDelta contains the scrolling distance in pixels on screen, while
-    \a angleDelta contains the wheel rotation distance. \a pixelDelta is
+    \a angleDelta contains the wheel rotation angle. \a pixelDelta is
     optional and can be null.
 
     The mouse and keyboard states at the time of the event are specified by
@@ -913,10 +914,16 @@ QWheelEvent::~QWheelEvent()
 /*!
     \fn QPoint QWheelEvent::angleDelta() const
 
-    Returns the distance that the wheel is rotated, in eighths of a
-    degree. A positive value indicates that the wheel was rotated
-    forwards away from the user; a negative value indicates that the
-    wheel was rotated backwards toward the user.
+    Returns the relative amount that the wheel was rotated, in eighths of a
+    degree. A positive value indicates that the wheel was rotated forwards away
+    from the user; a negative value indicates that the wheel was rotated
+    backwards toward the user. \c angleDelta().y() provides the angle through
+    which the common vertical mouse wheel was rotated since the previous event.
+    \c angleDelta().x() provides the angle through which the horizontal mouse
+    wheel was rotated, if the mouse has a horizontal wheel; otherwise it stays
+    at zero. Some mice allow the user to tilt the wheel to perform horizontal
+    scrolling, and some touchpads support a horizontal scrolling gesture; that
+    will also appear in \c angleDelta().x().
 
     Most mouse types work in steps of 15 degrees, in which case the
     delta value is a multiple of 120; i.e., 120 units * 1/8 = 15 degrees.
@@ -925,7 +932,9 @@ QWheelEvent::~QWheelEvent()
     that are less than 120 units (less than 15 degrees). To support this
     possibility, you can either cumulatively add the delta values from events
     until the value of 120 is reached, then scroll the widget, or you can
-    partially scroll the widget in response to each wheel event.
+    partially scroll the widget in response to each wheel event.  But to
+    provide a more native feel, you should prefer \l pixelDelta() on platforms
+    where it's available.
 
     Example:
 
@@ -936,6 +945,8 @@ QWheelEvent::~QWheelEvent()
     \li scrolling is about to begin, but the distance did not yet change (Qt::ScrollBegin),
     \li or scrolling has ended and the distance did not change anymore (Qt::ScrollEnd).
     \endlist
+
+    \see pixelDelta()
 */
 
 /*!
@@ -2938,7 +2949,7 @@ QObject* QDropEvent::source() const
 {
     if (const QDragManager *manager = QDragManager::self())
         return manager->source();
-    return 0;
+    return nullptr;
 }
 
 
@@ -4303,8 +4314,8 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
                          Qt::TouchPointStates touchPointStates,
                          const QList<QTouchEvent::TouchPoint> &touchPoints)
     : QInputEvent(eventType, modifiers),
-      _window(0),
-      _target(0),
+      _window(nullptr),
+      _target(nullptr),
       _device(device),
       _touchPointStates(touchPointStates),
       _touchPoints(touchPoints)
@@ -4996,7 +5007,7 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     The \a startPos is the position of a touch or mouse event that started the scrolling.
 */
 QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
-    : QEvent(QEvent::ScrollPrepare), m_target(0), m_startPos(startPos)
+    : QEvent(QEvent::ScrollPrepare), m_target(nullptr), m_startPos(startPos)
 {
     Q_UNUSED(m_target);
 }

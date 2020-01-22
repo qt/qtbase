@@ -69,12 +69,6 @@ struct Q_GUI_EXPORT QRhiVulkanNativeHandles : public QRhiNativeHandles
     void *vmemAllocator = nullptr;
 };
 
-struct Q_GUI_EXPORT QRhiVulkanTextureNativeHandles : public QRhiNativeHandles
-{
-    VkImage image = VK_NULL_HANDLE;
-    VkImageLayout layout = VK_IMAGE_LAYOUT_GENERAL;
-};
-
 struct Q_GUI_EXPORT QRhiVulkanCommandBufferNativeHandles : public QRhiNativeHandles
 {
     VkCommandBuffer commandBuffer = VK_NULL_HANDLE;

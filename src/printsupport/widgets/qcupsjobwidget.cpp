@@ -150,7 +150,7 @@ void QCupsJobWidget::setJobHold(QCUPSSupport::JobHoldUntil jobHold, const QTime 
 
 QCUPSSupport::JobHoldUntil QCupsJobWidget::jobHold() const
 {
-    return m_ui.jobHoldComboBox->itemData(m_ui.jobHoldComboBox->currentIndex()).value<QCUPSSupport::JobHoldUntil>();
+    return qvariant_cast<QCUPSSupport::JobHoldUntil>(m_ui.jobHoldComboBox->itemData(m_ui.jobHoldComboBox->currentIndex()));
 }
 
 void QCupsJobWidget::toggleJobHoldTime()
@@ -247,7 +247,7 @@ void QCupsJobWidget::setStartBannerPage(const QCUPSSupport::BannerPage bannerPag
 
 QCUPSSupport::BannerPage QCupsJobWidget::startBannerPage() const
 {
-    return m_ui.startBannerPageCombo->itemData(m_ui.startBannerPageCombo->currentIndex()).value<QCUPSSupport::BannerPage>();
+    return qvariant_cast<QCUPSSupport::BannerPage>(m_ui.startBannerPageCombo->itemData(m_ui.startBannerPageCombo->currentIndex()));
 }
 
 void QCupsJobWidget::setEndBannerPage(const QCUPSSupport::BannerPage bannerPage)
@@ -257,7 +257,7 @@ void QCupsJobWidget::setEndBannerPage(const QCUPSSupport::BannerPage bannerPage)
 
 QCUPSSupport::BannerPage QCupsJobWidget::endBannerPage() const
 {
-    return m_ui.endBannerPageCombo->itemData(m_ui.endBannerPageCombo->currentIndex()).value<QCUPSSupport::BannerPage>();
+    return qvariant_cast<QCUPSSupport::BannerPage>(m_ui.endBannerPageCombo->itemData(m_ui.endBannerPageCombo->currentIndex()));
 }
 
 QT_END_NAMESPACE

@@ -230,13 +230,7 @@ void QSslSocketBackendPrivate::startClientEncryption()
 
     QSsl::SslProtocol protocol = q->protocol();
     switch (q->protocol()) {
-    case QSsl::SslV2:
-    case QSsl::SslV3:
-        setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
-                        QStringLiteral("unsupported protocol"));
-        return;
     case QSsl::AnyProtocol:
-    case QSsl::TlsV1SslV3:
         protectionLevel = SocketProtectionLevel_Tls10;
         break;
     case QSsl::TlsV1_0:

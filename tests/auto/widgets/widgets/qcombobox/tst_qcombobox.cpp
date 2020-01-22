@@ -397,6 +397,31 @@ void tst_QComboBox::getSetCheck()
     QCOMPARE(4, obj1.currentIndex()); // Valid
     obj1.setCurrentIndex(INT_MAX);
     QCOMPARE(-1, obj1.currentIndex()); // Invalid => -1
+
+    obj1.setIconSize(QSize(64, 32));
+    QCOMPARE(obj1.iconSize(), QSize(64, 32));
+    obj1.setIconSize(QSize());
+    const int iconWidth = obj1.style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, &obj1);
+    QCOMPARE(obj1.iconSize(), QSize(iconWidth, iconWidth));
+
+    const QString placeholderText("Please select");
+    obj1.setCurrentIndex(1);
+    obj1.setPlaceholderText(placeholderText);
+    QCOMPARE(obj1.placeholderText(), placeholderText);
+    QCOMPARE(obj1.currentText(), "2");
+    QCOMPARE(obj1.currentIndex(), 1);
+    obj1.setPlaceholderText(QString()); // should not change anything
+    QCOMPARE(obj1.placeholderText(), QString());
+    QCOMPARE(obj1.currentText(), "2");
+
+    obj1.clear();
+    obj1.setPlaceholderText(placeholderText);
+    obj1.addItems({"1", "2", "3", "4", "5"});
+    QCOMPARE(obj1.currentText(), placeholderText);
+    QCOMPARE(obj1.currentIndex(), -1);
+    obj1.setPlaceholderText(QString()); // should not change anything
+    QCOMPARE(obj1.currentText(), "1");
+    QCOMPARE(obj1.currentIndex(), 0);
 }
 
 typedef QList<QVariant> VariantList;
@@ -812,16 +837,16 @@ void tst_QComboBox::virtualAutocompletion()
     // well, and send a keypress & keyrelease right after each other.
     // This provokes the actual error, as there's no events in between to do
     // the text completion.
-    QKeyEvent kp1(QEvent::KeyPress, Qt::Key_B, 0, "b");
-    QKeyEvent kr1(QEvent::KeyRelease, Qt::Key_B, 0, "b");
+    QKeyEvent kp1(QEvent::KeyPress, Qt::Key_B, {}, "b");
+    QKeyEvent kr1(QEvent::KeyRelease, Qt::Key_B, {}, "b");
     QApplication::sendEvent(testWidget, &kp1);
     QApplication::sendEvent(testWidget, &kr1);
 
     qApp->processEvents(); // Process events to trigger autocompletion
     QTRY_COMPARE(testWidget->currentIndex(), 1);
 
-    QKeyEvent kp2(QEvent::KeyPress, Qt::Key_O, 0, "o");
-    QKeyEvent kr2(QEvent::KeyRelease, Qt::Key_O, 0, "o");
+    QKeyEvent kp2(QEvent::KeyPress, Qt::Key_O, {}, "o");
+    QKeyEvent kr2(QEvent::KeyRelease, Qt::Key_O, {}, "o");
 
     QApplication::sendEvent(testWidget, &kp2);
     QApplication::sendEvent(testWidget, &kr2);
@@ -1697,7 +1722,7 @@ void tst_QComboBox::setCustomModelAndView()
     // why this happens.
     QTest::qWait(QApplication::doubleClickInterval());
 
-    QTest::mouseClick(window->windowHandle(), Qt::LeftButton, 0, view->mapTo(window, subItemRect.center()));
+    QTest::mouseClick(window->windowHandle(), Qt::LeftButton, {}, view->mapTo(window, subItemRect.center()));
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
 #endif

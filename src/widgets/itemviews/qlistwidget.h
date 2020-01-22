@@ -127,7 +127,7 @@ public:
     inline QBrush background() const
         { return qvariant_cast<QBrush>(data(Qt::BackgroundRole)); }
     inline void setBackground(const QBrush &brush)
-        { setData(Qt::BackgroundRole, brush); }
+        { setData(Qt::BackgroundRole, brush.style() != Qt::NoBrush ? QVariant(brush) : QVariant()); }
 
 #if QT_DEPRECATED_SINCE(5, 13)
     QT_DEPRECATED_X ("Use QListWidgetItem::foreground() instead")
@@ -141,7 +141,7 @@ public:
     inline QBrush foreground() const
         { return qvariant_cast<QBrush>(data(Qt::ForegroundRole)); }
     inline void setForeground(const QBrush &brush)
-        { setData(Qt::ForegroundRole, brush); }
+        { setData(Qt::ForegroundRole, brush.style() != Qt::NoBrush ? QVariant(brush) : QVariant()); }
 
     inline Qt::CheckState checkState() const
         { return static_cast<Qt::CheckState>(data(Qt::CheckStateRole).toInt()); }
@@ -151,7 +151,7 @@ public:
     inline QSize sizeHint() const
         { return qvariant_cast<QSize>(data(Qt::SizeHintRole)); }
     inline void setSizeHint(const QSize &size)
-        { setData(Qt::SizeHintRole, size); }
+        { setData(Qt::SizeHintRole, size.isValid() ? QVariant(size) : QVariant()); }
 
     virtual QVariant data(int role) const;
     virtual void setData(int role, const QVariant &value);

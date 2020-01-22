@@ -65,6 +65,7 @@
 #include <QRadioButton>
 #include <QScrollBar>
 #include <QSpinBox>
+#include <QStyle>
 #include <QStyleFactory>
 #include <QTableWidget>
 #include <QTextEdit>
@@ -74,11 +75,17 @@
 WidgetGallery::WidgetGallery(QWidget *parent)
     : QDialog(parent)
 {
-    originalPalette = QApplication::palette();
-
     styleComboBox = new QComboBox;
-    styleComboBox->addItem("NorwegianWood");
-    styleComboBox->addItems(QStyleFactory::keys());
+    const QString defaultStyleName = QApplication::style()->objectName();
+    QStringList styleNames = QStyleFactory::keys();
+    styleNames.append("NorwegianWood");
+    for (int i = 1, size = styleNames.size(); i < size; ++i) {
+        if (defaultStyleName.compare(styleNames.at(i), Qt::CaseInsensitive) == 0) {
+            styleNames.swapItemsAt(0, i);
+            break;
+        }
+    }
+    styleComboBox->addItems(styleNames);
 
     styleLabel = new QLabel(tr("&Style:"));
     styleLabel->setBuddy(styleComboBox);
@@ -134,7 +141,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     setLayout(mainLayout);
 
     setWindowTitle(tr("Styles"));
-    changeStyle("NorwegianWood");
+    styleChanged();
 }
 //! [4]
 
@@ -142,12 +149,10 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 void WidgetGallery::changeStyle(const QString &styleName)
 //! [5] //! [6]
 {
-    if (styleName == "NorwegianWood") {
+    if (styleName == "NorwegianWood")
         QApplication::setStyle(new NorwegianWoodStyle);
-    } else {
+    else
         QApplication::setStyle(QStyleFactory::create(styleName));
-    }
-    changePalette();
 }
 //! [6]
 
@@ -155,12 +160,29 @@ void WidgetGallery::changeStyle(const QString &styleName)
 void WidgetGallery::changePalette()
 //! [7] //! [8]
 {
-    if (useStylePaletteCheckBox->isChecked())
-        QApplication::setPalette(QApplication::style()->standardPalette());
-    else
-        QApplication::setPalette(originalPalette);
+    QApplication::setPalette(useStylePaletteCheckBox->isChecked() ?
+        QApplication::style()->standardPalette() : QPalette());
 }
 //! [8]
+
+void WidgetGallery::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::StyleChange)
+        styleChanged();
+}
+
+void WidgetGallery::styleChanged()
+{
+    auto styleName = QApplication::style()->objectName();
+    for (int i = 0; i < styleComboBox->count(); ++i) {
+        if (QString::compare(styleComboBox->itemText(i), styleName, Qt::CaseInsensitive) == 0) {
+            styleComboBox->setCurrentIndex(i);
+            break;
+        }
+    }
+
+    changePalette();
+}
 
 //! [9]
 void WidgetGallery::advanceProgressBar()

@@ -331,7 +331,7 @@ void tst_QMdiArea::subWindowActivated()
     int i;
 
     for ( i = 0; i < count; ++i ) {
-        QWidget *widget = new QWidget(workspace, 0);
+        QWidget *widget = new QWidget(workspace, {});
         widget->setAttribute(Qt::WA_DeleteOnClose);
         widget->setFocus();
         workspace->addSubWindow(widget)->show();
@@ -2694,30 +2694,6 @@ void tst_QMdiArea::nativeSubWindows()
     foreach (QMdiSubWindow *subWindow, mdiArea.subWindowList())
             QVERIFY(subWindow->internalWinId());
     }
-
-#ifndef QT_NO_OPENGL
-    {
-    if (!QGLFormat::hasOpenGL())
-        QSKIP("QGL not supported on this platform");
-
-    QMdiArea mdiArea;
-    QGLWidget *glViewport = new QGLWidget;
-    mdiArea.setViewport(glViewport);
-    mdiArea.addSubWindow(new QWidget);
-    mdiArea.addSubWindow(new QWidget);
-    mdiArea.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
-
-    const QGLContext *context = glViewport->context();
-    if (!context || !context->isValid())
-        QSKIP("QGL is broken, cannot continue test");
-
-    // The viewport and all the sub-windows must be native.
-    QVERIFY(mdiArea.viewport()->internalWinId());
-    foreach (QMdiSubWindow *subWindow, mdiArea.subWindowList())
-        QVERIFY(subWindow->internalWinId());
-    }
-#endif
 }
 
 void tst_QMdiArea::task_209615()

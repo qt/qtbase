@@ -175,6 +175,8 @@ QT_BEGIN_NAMESPACE
   \fn void QCursor::swap(QCursor &other)
 
   Swaps this cursor with the \a other cursor.
+
+  \since 5.7
  */
 
 /*!
@@ -384,7 +386,7 @@ QDataStream &operator>>(QDataStream &s, QCursor &c)
 */
 
 QCursor::QCursor(const QPixmap &pixmap, int hotX, int hotY)
-    : d(0)
+    : d(nullptr)
 {
     QImage img = pixmap.toImage().convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither|Qt::AvoidDither);
     QBitmap bm = QBitmap::fromImage(img, Qt::ThresholdDither|Qt::AvoidDither);
@@ -440,7 +442,7 @@ QCursor::QCursor(const QPixmap &pixmap, int hotX, int hotY)
 */
 
 QCursor::QCursor(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY)
-    : d(0)
+    : d(nullptr)
 {
     d = QCursorData::setBitmap(bitmap, mask, hotX, hotY, 1.0);
 }
@@ -452,7 +454,7 @@ QCursor::QCursor()
 {
     if (!QCursorData::initialized) {
         if (QCoreApplication::startingUp()) {
-            d = 0;
+            d = nullptr;
             return;
         }
         QCursorData::initialize();
@@ -470,7 +472,7 @@ QCursor::QCursor()
     \sa setShape()
 */
 QCursor::QCursor(Qt::CursorShape shape)
-    : d(0)
+    : d(nullptr)
 {
     if (!QCursorData::initialized)
         QCursorData::initialize();
@@ -550,7 +552,7 @@ void QCursor::setShape(Qt::CursorShape shape)
 {
     if (!QCursorData::initialized)
         QCursorData::initialize();
-    QCursorData *c = uint(shape) <= Qt::LastCursor ? qt_cursorTable[shape] : 0;
+    QCursorData *c = uint(shape) <= Qt::LastCursor ? qt_cursorTable[shape] : nullptr;
     if (!c)
         c = qt_cursorTable[0];
     c->ref.ref();
@@ -675,7 +677,7 @@ QCursorData *qt_cursorTable[Qt::LastCursor + 1];
 bool QCursorData::initialized = false;
 
 QCursorData::QCursorData(Qt::CursorShape s)
-    : ref(1), cshape(s), bm(0), bmm(0), hx(0), hy(0)
+    : ref(1), cshape(s), bm(nullptr), bmm(nullptr), hx(0), hy(0)
 {
 }
 
@@ -695,7 +697,7 @@ void QCursorData::cleanup()
         // In case someone has a static QCursor defined with this shape
         if (!qt_cursorTable[shape]->ref.deref())
             delete qt_cursorTable[shape];
-        qt_cursorTable[shape] = 0;
+        qt_cursorTable[shape] = nullptr;
     }
     QCursorData::initialized = false;
 }

@@ -295,7 +295,7 @@ QT_BEGIN_NAMESPACE
     Contructs an event object of type \a type.
 */
 QEvent::QEvent(Type type)
-    : d(0), t(type), posted(false), spont(false), m_accept(true)
+    : d(nullptr), t(type), posted(false), spont(false), m_accept(true)
 {
     Q_TRACE(QEvent_ctor, this, t);
 }

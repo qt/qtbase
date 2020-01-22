@@ -276,7 +276,7 @@ class Q_GUI_EXPORT QGridLayoutItem
 {
 public:
     QGridLayoutItem(int row, int column, int rowSpan = 1, int columnSpan = 1,
-                    Qt::Alignment alignment = nullptr);
+                    Qt::Alignment alignment = { });
     virtual ~QGridLayoutItem() {}
 
     inline int firstRow() const { return q_firstRows[Ver]; }
@@ -339,7 +339,7 @@ private:
 class Q_GUI_EXPORT QGridLayoutEngine
 {
 public:
-    QGridLayoutEngine(Qt::Alignment defaultAlignment = Qt::Alignment(nullptr), bool snapToPixelGrid = false);
+    QGridLayoutEngine(Qt::Alignment defaultAlignment = { }, bool snapToPixelGrid = false);
     inline ~QGridLayoutEngine() { qDeleteAll(q_items); }
 
     int rowCount(Qt::Orientation orientation) const;

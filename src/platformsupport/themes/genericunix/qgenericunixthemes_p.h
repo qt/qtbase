@@ -109,7 +109,7 @@ public:
     QVariant themeHint(ThemeHint hint) const override;
 
     QIcon fileIcon(const QFileInfo &fileInfo,
-                   QPlatformTheme::IconOptions iconOptions = nullptr) const override;
+                   QPlatformTheme::IconOptions iconOptions = { }) const override;
 
     const QPalette *palette(Palette type = SystemPalette) const override;
 
@@ -134,7 +134,7 @@ public:
     QGnomeTheme();
     QVariant themeHint(ThemeHint hint) const override;
     QIcon fileIcon(const QFileInfo &fileInfo,
-                   QPlatformTheme::IconOptions = nullptr) const override;
+                   QPlatformTheme::IconOptions = { }) const override;
     const QFont *font(Font type) const override;
     QString standardButtonText(int button) const override;
 

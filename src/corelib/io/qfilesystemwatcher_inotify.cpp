@@ -242,7 +242,7 @@ QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create(QObject
     if (fd == -1) {
         fd = inotify_init();
         if (fd == -1)
-            return 0;
+            return nullptr;
     }
     return new QInotifyFileSystemWatcherEngine(fd, parent);
 }

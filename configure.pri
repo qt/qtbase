@@ -53,6 +53,8 @@ defineTest(qtConfCommandline_sanitize) {
             qtConfCommandlineSetInput("sanitize_thread", "yes")
         } else: equals(val, "memory") {
             qtConfCommandlineSetInput("sanitize_memory", "yes")
+        } else: equals(val, "fuzzer-no-link") {
+            qtConfCommandlineSetInput("sanitize_fuzzer_no_link", "yes")
         } else: equals(val, "undefined") {
             qtConfCommandlineSetInput("sanitize_undefined", "yes")
         } else {
@@ -92,7 +94,7 @@ defineReplace(qtConfFunc_licenseCheck) {
         hasOpenSource = true
     else: \
         hasOpenSource = false
-    exists($$QT_SOURCE_TREE/LICENSE.QT-LICENSE-AGREEMENT-4.0): \
+    exists($$QT_SOURCE_TREE/LICENSE.QT-LICENSE-AGREEMENT): \
         hasCommercial = true
     else: \
         hasCommercial = false
@@ -222,7 +224,7 @@ defineReplace(qtConfFunc_licenseCheck) {
             affix = either
         }
     } else {
-        theLicense = $$cat($$QT_SOURCE_TREE/LICENSE.QT-LICENSE-AGREEMENT-4.0, lines)
+        theLicense = $$cat($$QT_SOURCE_TREE/LICENSE.QT-LICENSE-AGREEMENT, lines)
         theLicense = $$first(theLicense)
         showWhat = "Type '?' to view the $${theLicense}."
     }
@@ -249,7 +251,7 @@ defineReplace(qtConfFunc_licenseCheck) {
             } else: equals(val, n)|equals(val, no) {
                 return(false)
             } else: equals(commercial, yes):equals(val, ?) {
-                licenseFile = $$QT_SOURCE_TREE/LICENSE.QT-LICENSE-AGREEMENT-4.0
+                licenseFile = $$QT_SOURCE_TREE/LICENSE.QT-LICENSE-AGREEMENT
             } else: equals(commercial, no):equals(val, l) {
                 licenseFile = $$QT_SOURCE_TREE/LICENSE.LGPL3
             } else: equals(commercial, no):equals(val, g):$$gpl2Ok {
@@ -607,8 +609,11 @@ defineTest(qtConfOutput_prepareOptions) {
                 qtConfAddNote("Available Android host does not match host architecture.")
             }
         } else {
-            !exists($$ndk_tc_pfx/$$ndk_host/*): \
-                qtConfFatalError("Specified Android NDK host is invalid.")
+            !exists($$ndk_tc_pfx/$$ndk_host/*) {
+                err = "Specified Android NDK host '$$ndk_host' is invalid. Expected files in the following directory to exist:"
+                err += '$${ndk_tc_pfx}/$${ndk_host}/'
+                qtConfFatalError($$err)
+            }
         }
 
         android_abis = $$eval(config.input.android-abis)
@@ -818,6 +823,8 @@ defineTest(qtConfOutput_preparePaths) {
         libloc_absolute_path = $$absolute_path($$config.rel_input.libdir, $$config.input.prefix)
     }
     config.input.liblocation_to_prefix = $$relative_path($$config.input.prefix, $$libloc_absolute_path)
+    config.qtbase.features.shared.available =
+    export(config.qtbase.features.shared.available)
 
     hostbindir_absolute_path = $$absolute_path($$config.rel_input.hostbindir, $$config.input.hostprefix)
     config.input.hostbindir_to_hostprefix = $$relative_path($$config.input.hostprefix, $$hostbindir_absolute_path)
@@ -1218,6 +1225,12 @@ defineReplace(qtConfOutputPostProcess_publicPro) {
             "QT_RELEASE_DATE = $$config.input.qt_release_date"
     }
 
+    wasm: {
+        qt_emcc_version = $$qtSystemEmccVersion()
+        output += \
+           "QT_EMCC_VERSION = $$qt_emcc_version"
+    }
+
     return($$output)
 }
 
@@ -1249,6 +1262,12 @@ defineReplace(qtConfOutputPostProcess_publicHeader) {
 
     !isEmpty(config.input.qt_libinfix): \
         output += "$${LITERAL_HASH}define QT_LIBINFIX \"$$eval(config.input.qt_libinfix)\""
+
+    wasm: {
+        qt_emcc_version = $$qtSystemEmccVersion()
+output += \
+           "$${LITERAL_HASH}define QT_EMCC_VERSION \"$$qt_emcc_version\""
+    }
 
     return($$output)
 }
@@ -1330,6 +1349,14 @@ defineTest(qtConfReport_buildMode) {
         build_mode = "$$build_mode; optimized tools"
 
     qtConfReportPadded($$1, $$build_mode)
+}
+
+defineTest(qtConfReport_emccVersion) {
+    EMCC_VERSION = $$qtSystemEmccVersion()
+    REQ_VERSION = $$qtEmccRecommendedVersion()
+    !equals(EMCC_VERSION, $$REQ_VERSION) {
+        qtConfAddReport("You should use the recommended Emscripten version $$REQ_VERSION with this Qt. You have $$EMCC_VERSION $$QT_EMCC_VERSION")
+    }
 }
 
 # ensure pristine environment for configuration

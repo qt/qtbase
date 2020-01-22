@@ -192,7 +192,7 @@ int ResultStoreBase::addResults(int index, const void *results, int vectorSize, 
             ResultItem filteredIn(results, vectorSize);
             insertResultItem(index, filteredIn);
         }
-        ResultItem filteredAway(0, totalCount - vectorSize);
+        ResultItem filteredAway(nullptr, totalCount - vectorSize);
         return insertResultItem(index + vectorSize, filteredAway);
     }
 }

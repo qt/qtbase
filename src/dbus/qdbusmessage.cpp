@@ -64,11 +64,11 @@ Q_STATIC_ASSERT(QDBusMessage::SignalMessage == DBUS_MESSAGE_TYPE_SIGNAL);
 
 static inline const char *data(const QByteArray &arr)
 {
-    return arr.isEmpty() ? 0 : arr.constData();
+    return arr.isEmpty() ? nullptr : arr.constData();
 }
 
 QDBusMessagePrivate::QDBusMessagePrivate()
-    : msg(0), reply(0), localReply(0), ref(1), type(QDBusMessage::InvalidMessage),
+    : msg(nullptr), reply(nullptr), localReply(nullptr), ref(1), type(QDBusMessage::InvalidMessage),
       delayedReply(false), localMessage(false),
       parametersValidated(false), autoStartService(true),
       interactiveAuthorizationAllowed(false)
@@ -113,10 +113,10 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 {
     if (!qdbus_loadLibDBus()) {
         *error = QDBusError(QDBusError::Failed, QLatin1String("Could not open lidbus-1 library"));
-        return 0;
+        return nullptr;
     }
 
-    DBusMessage *msg = 0;
+    DBusMessage *msg = nullptr;
     const QDBusMessagePrivate *d_ptr = message.d_ptr;
 
     switch (d_ptr->type) {
@@ -127,13 +127,13 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
         // only service and interface can be empty -> path and name must not be empty
         if (!d_ptr->parametersValidated) {
             if (!QDBusUtil::checkBusName(d_ptr->service, QDBusUtil::EmptyAllowed, error))
-                return 0;
+                return nullptr;
             if (!QDBusUtil::checkObjectPath(d_ptr->path, QDBusUtil::EmptyNotAllowed, error))
-                return 0;
+                return nullptr;
             if (!QDBusUtil::checkInterfaceName(d_ptr->interface, QDBusUtil::EmptyAllowed, error))
-                return 0;
+                return nullptr;
             if (!QDBusUtil::checkMemberName(d_ptr->name, QDBusUtil::EmptyNotAllowed, error, "method"))
-                return 0;
+                return nullptr;
         }
 
         msg = q_dbus_message_new_method_call(data(d_ptr->service.toUtf8()), d_ptr->path.toUtf8(),
@@ -153,7 +153,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
         // error name can't be empty
         if (!d_ptr->parametersValidated
             && !QDBusUtil::checkErrorName(d_ptr->name, QDBusUtil::EmptyNotAllowed, error))
-            return 0;
+            return nullptr;
 
         msg = q_dbus_message_new(DBUS_MESSAGE_TYPE_ERROR);
         q_dbus_message_set_error_name(msg, d_ptr->name.toUtf8());
@@ -166,13 +166,13 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
         // only the service name can be empty here
         if (!d_ptr->parametersValidated) {
             if (!QDBusUtil::checkBusName(d_ptr->service, QDBusUtil::EmptyAllowed, error))
-                return 0;
+                return nullptr;
             if (!QDBusUtil::checkObjectPath(d_ptr->path, QDBusUtil::EmptyNotAllowed, error))
-                return 0;
+                return nullptr;
             if (!QDBusUtil::checkInterfaceName(d_ptr->interface, QDBusUtil::EmptyAllowed, error))
-                return 0;
+                return nullptr;
             if (!QDBusUtil::checkMemberName(d_ptr->name, QDBusUtil::EmptyNotAllowed, error, "method"))
-                return 0;
+                return nullptr;
         }
 
         msg = q_dbus_message_new_signal(d_ptr->path.toUtf8(), d_ptr->interface.toUtf8(),
@@ -203,7 +203,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
     // not ok;
     q_dbus_message_unref(msg);
     *error = QDBusError(QDBusError::Failed, QLatin1String("Marshalling failed: ") + marshaller.errorString);
-    return 0;
+    return nullptr;
 }
 
 /*

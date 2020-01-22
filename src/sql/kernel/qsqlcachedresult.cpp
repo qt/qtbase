@@ -60,14 +60,6 @@ QT_BEGIN_NAMESPACE
 
 static const uint initial_cache_size = 128;
 
-QSqlCachedResultPrivate::QSqlCachedResultPrivate(QSqlCachedResult *q, const QSqlDriver *drv)
-    : QSqlResultPrivate(q, drv),
-      rowCacheEnd(0),
-      colCount(0),
-      atEnd(false)
-{
-}
-
 void QSqlCachedResultPrivate::cleanup()
 {
     cache.clear();

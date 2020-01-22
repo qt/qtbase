@@ -64,11 +64,6 @@ struct Q_GUI_EXPORT QRhiMetalNativeHandles : public QRhiNativeHandles
     void *cmdQueue = nullptr; // id<MTLCommandQueue>
 };
 
-struct Q_GUI_EXPORT QRhiMetalTextureNativeHandles : public QRhiNativeHandles
-{
-    void *texture = nullptr; // id<MTLTexture>
-};
-
 struct Q_GUI_EXPORT QRhiMetalCommandBufferNativeHandles : public QRhiNativeHandles
 {
     void *commandBuffer = nullptr; // id<MTLCommandBuffer>

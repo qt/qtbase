@@ -9,8 +9,6 @@ msvc:equals(QT_ARCH, i386): QMAKE_LFLAGS += /BASE:0x65000000
 TRACEPOINT_PROVIDER = $$PWD/qtwidgets.tracepoints
 CONFIG += qt_tracepoints
 
-CONFIG += metatypes install_metatypes
-
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
 
 #platforms
@@ -47,3 +45,5 @@ testcocoon {
 MODULE_PLUGIN_TYPES += \
     styles
 load(qt_module)
+
+CONFIG += metatypes install_metatypes

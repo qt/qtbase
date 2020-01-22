@@ -299,7 +299,7 @@ QSyntaxHighlighter::QSyntaxHighlighter(QObject *parent)
     : QObject(*new QSyntaxHighlighterPrivate, parent)
 {
     if (parent && parent->inherits("QTextEdit")) {
-        QTextDocument *doc = parent->property("document").value<QTextDocument *>();
+        QTextDocument *doc = qvariant_cast<QTextDocument *>(parent->property("document"));
         if (doc)
             setDocument(doc);
     }
@@ -321,7 +321,7 @@ QSyntaxHighlighter::QSyntaxHighlighter(QTextDocument *parent)
 */
 QSyntaxHighlighter::~QSyntaxHighlighter()
 {
-    setDocument(0);
+    setDocument(nullptr);
 }
 
 /*!
@@ -601,7 +601,7 @@ QTextBlockUserData *QSyntaxHighlighter::currentBlockUserData() const
 {
     Q_D(const QSyntaxHighlighter);
     if (!d->currentBlock.isValid())
-        return 0;
+        return nullptr;
 
     return d->currentBlock.userData();
 }

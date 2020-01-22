@@ -127,7 +127,7 @@ static const char qt_shortMonthNames[][4] = {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-static int qt_monthNumberFromShortName(QStringRef shortName)
+static int qt_monthNumberFromShortName(QStringView shortName)
 {
     for (unsigned int i = 0; i < sizeof(qt_shortMonthNames) / sizeof(qt_shortMonthNames[0]); ++i) {
         if (shortName == QLatin1String(qt_shortMonthNames[i], 3))
@@ -136,9 +136,9 @@ static int qt_monthNumberFromShortName(QStringRef shortName)
     return -1;
 }
 static int qt_monthNumberFromShortName(const QString &shortName)
-{ return qt_monthNumberFromShortName(QStringRef(&shortName)); }
+{ return qt_monthNumberFromShortName(QStringView(shortName)); }
 
-static int fromShortMonthName(const QStringRef &monthName, int year)
+static int fromShortMonthName(QStringView monthName, int year)
 {
     // Assume that English monthnames are the default
     int month = qt_monthNumberFromShortName(monthName);
@@ -164,8 +164,8 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
 {
     ParsedRfcDateTime result;
 
-    // Matches "Wdy, dd Mon yyyy HH:mm:ss ±hhmm" (Wdy, being optional)
-    QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
+    // Matches "[ddd,] dd MMM yyyy[ hh:mm[:ss]] [±hhmm]" - correct RFC 822, 2822, 5322 format
+    QRegExp rex(QStringLiteral("^[ \\t]*(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
     if (s.indexOf(rex) == 0) {
         const QStringList cap = rex.capturedTexts();
         result.date = QDate(cap[3].toInt(), qt_monthNumberFromShortName(cap[2]), cap[1].toInt());
@@ -176,8 +176,8 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
         const int minOffset = cap[9].toInt();
         result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
     } else {
-        // Matches "Wdy Mon dd HH:mm:ss yyyy"
-        QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
+        // Matches "ddd MMM dd[ hh:mm:ss] yyyy [±hhmm]" - permissive RFC 850, 1036 (read only)
+        QRegExp rex(QStringLiteral("^[ \\t]*[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
         if (s.indexOf(rex) == 0) {
             const QStringList cap = rex.capturedTexts();
             result.date = QDate(cap[6].toInt(), qt_monthNumberFromShortName(cap[1]), cap[2].toInt());
@@ -207,7 +207,7 @@ static QString toOffsetString(Qt::DateFormat format, int offset)
 
 #if QT_CONFIG(datestring)
 // Parse offset in [+-]HH[[:]mm] format
-static int fromOffsetString(const QStringRef &offsetString, bool *valid) noexcept
+static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
 {
     *valid = false;
 
@@ -228,22 +228,23 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) noexcep
         return 0;
 
     // Split the hour and minute parts
-    const QStringRef time = offsetString.mid(1);
-    int hhLen = time.indexOf(QLatin1Char(':'));
-    int mmIndex;
+    const QStringView time = offsetString.mid(1);
+    qsizetype hhLen = time.indexOf(QLatin1Char(':'));
+    qsizetype mmIndex;
     if (hhLen == -1)
         mmIndex = hhLen = 2; // [+-]HHmm or [+-]HH format
     else
         mmIndex = hhLen + 1;
 
-    const QStringRef hhRef = time.left(hhLen);
+    const QLocale C = QLocale::c();
+    const QStringView hhRef = time.left(qMin(hhLen, time.size()));
     bool ok = false;
-    const int hour = hhRef.toInt(&ok);
+    const int hour = C.toInt(hhRef, &ok);
     if (!ok)
         return 0;
 
-    const QStringRef mmRef = time.mid(mmIndex);
-    const int minute = mmRef.isEmpty() ? 0 : mmRef.toInt(&ok);
+    const QStringView mmRef = time.mid(qMin(mmIndex, time.size()));
+    const int minute = mmRef.isEmpty() ? 0 : C.toInt(mmRef, &ok);
     if (!ok || minute < 0 || minute > 59)
         return 0;
 
@@ -1213,25 +1214,25 @@ QString QDate::toString(Qt::DateFormat format) const
 
     \table
     \header \li Expression \li Output
-    \row \li d \li the day as number without a leading zero (1 to 31)
-    \row \li dd \li the day as number with a leading zero (01 to 31)
+    \row \li d \li The day as a number without a leading zero (1 to 31)
+    \row \li dd \li The day as a number with a leading zero (01 to 31)
     \row \li ddd
-         \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
+         \li The abbreviated localized day name (e.g. 'Mon' to 'Sun').
              Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li dddd
-         \li the long localized day name (e.g. 'Monday' to 'Sunday').
+         \li The long localized day name (e.g. 'Monday' to 'Sunday').
              Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li M \li the month as number without a leading zero (1 to 12)
-    \row \li MM \li the month as number with a leading zero (01 to 12)
+    \row \li M \li The month as a number without a leading zero (1 to 12)
+    \row \li MM \li The month as a number with a leading zero (01 to 12)
     \row \li MMM
-         \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
+         \li The abbreviated localized month name (e.g. 'Jan' to 'Dec').
              Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li MMMM
-         \li the long localized month name (e.g. 'January' to 'December').
+         \li The long localized month name (e.g. 'January' to 'December').
              Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li yy \li the year as two digit number (00 to 99)
-    \row \li yyyy \li the year as four digit number. If the year is negative,
-            a minus sign is prepended in addition.
+    \row \li yy \li The year as a two digit number (00 to 99)
+    \row \li yyyy \li The year as a four digit number. If the year is negative,
+            a minus sign is prepended, making five characters.
     \endtable
 
     Any sequence of characters enclosed in single quotes will be included
@@ -1625,6 +1626,29 @@ qint64 QDate::daysTo(const QDate &d) const
 */
 
 #if QT_CONFIG(datestring)
+namespace {
+
+struct ParsedInt { int value = 0; bool ok = false; };
+
+/*
+    /internal
+
+    Read an int that must be the whole text.  QStringRef::toInt() will ignore
+    spaces happily; but ISO date format should not.
+*/
+ParsedInt readInt(QStringView text)
+{
+    ParsedInt result;
+    for (const auto &ch : text) {
+        if (ch.isSpace())
+            return result;
+    }
+    result.value = QLocale::c().toInt(text, &result.ok);
+    return result;
+}
+
+}
+
 /*!
     Returns the QDate represented by the \a string, using the
     \a format given, or an invalid date if the string cannot be
@@ -1676,17 +1700,18 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return QDate(year, month, day);
         }
 #endif // textdate
-    case Qt::ISODate: {
-        // Semi-strict parsing, must be long enough and have non-numeric separators
-        if (string.size() < 10 || string.at(4).isDigit() || string.at(7).isDigit()
-            || (string.size() > 10 && string.at(10).isDigit())) {
-            return QDate();
+    case Qt::ISODate:
+        // Semi-strict parsing, must be long enough and have punctuators as separators
+        if (string.size() >= 10 && string.at(4).isPunct() && string.at(7).isPunct()
+                && (string.size() == 10 || !string.at(10).isDigit())) {
+            QStringView view(string);
+            const ParsedInt year = readInt(view.mid(0, 4));
+            const ParsedInt month = readInt(view.mid(5, 2));
+            const ParsedInt day = readInt(view.mid(8, 2));
+            if (year.ok && year.value > 0 && year.value <= 9999 && month.ok && day.ok)
+                return QDate(year.value, month.value, day.value);
         }
-        const int year = string.midRef(0, 4).toInt();
-        if (year <= 0 || year > 9999)
-            return QDate();
-        return QDate(year, string.midRef(5, 2).toInt(), string.midRef(8, 2).toInt());
-        }
+        break;
     }
     return QDate();
 }
@@ -1719,10 +1744,14 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
     \row \li MMMM
          \li The long localized month name (e.g. 'January' to 'December').
              Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li yy \li The year as two digit number (00 to 99)
-    \row \li yyyy \li The year as four digit number. If the year is negative,
-            a minus sign is prepended in addition.
+    \row \li yy \li The year as a two digit number (00 to 99)
+    \row \li yyyy \li The year as a four digit number, possibly plus a leading
+             minus sign for negative years.
     \endtable
+
+    \note Unlike the other version of this function, day and month names must
+    be given in the user's local language. It is only possible to use the English
+    names if the user's language is English.
 
     All other input characters will be treated as text. Any sequence
     of characters that are enclosed in single quotes will also be
@@ -1765,7 +1794,7 @@ QDate QDate::fromString(const QString &string, const QString &format, QCalendar 
     QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
-        dt.fromString(string, &date, 0);
+        dt.fromString(string, &date, nullptr);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
@@ -2063,30 +2092,30 @@ QString QTime::toString(Qt::DateFormat format) const
     \table
     \header \li Expression \li Output
     \row \li h
-         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+         \li The hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
     \row \li hh
-         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+         \li The hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
     \row \li H
-         \li the hour without a leading zero (0 to 23, even with AM/PM display)
+         \li The hour without a leading zero (0 to 23, even with AM/PM display)
     \row \li HH
-         \li the hour with a leading zero (00 to 23, even with AM/PM display)
-    \row \li m \li the minute without a leading zero (0 to 59)
-    \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the whole second, without any leading zero (0 to 59)
-    \row \li ss \li the whole second, with a leading zero where applicable (00 to 59)
-    \row \li z \li the fractional part of the second, to go after a decimal
+         \li The hour with a leading zero (00 to 23, even with AM/PM display)
+    \row \li m \li The minute without a leading zero (0 to 59)
+    \row \li mm \li The minute with a leading zero (00 to 59)
+    \row \li s \li The whole second, without any leading zero (0 to 59)
+    \row \li ss \li The whole second, with a leading zero where applicable (00 to 59)
+    \row \li z \li The fractional part of the second, to go after a decimal
                 point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
                 reports the seconds to full available (millisecond) precision
                 without trailing zeroes.
-    \row \li zzz \li the fractional part of the second, to millisecond
+    \row \li zzz \li The fractional part of the second, to millisecond
                 precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
-         \li use AM/PM display. \e A/AP will be replaced by either
-             QLocale::amText() or QLocale::pmText().
+         \li Use AM/PM display. \e A/AP will be replaced by an upper-case
+             version of either QLocale::amText() or QLocale::pmText().
     \row \li ap or a
-         \li use am/pm display. \e a/ap will be replaced by a lower-case version of
-             QLocale::amText() or QLocale::pmText().
-    \row \li t \li the timezone (for example "CEST")
+         \li Use am/pm display. \e a/ap will be replaced by a lower-case version
+             of either QLocale::amText() or QLocale::pmText().
+    \row \li t \li The timezone (for example "CEST")
     \endtable
 
     Any sequence of characters enclosed in single quotes will be included
@@ -2320,22 +2349,21 @@ int QTime::msecsTo(const QTime &t) const
 
 #if QT_CONFIG(datestring)
 
-static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, bool *isMidnight24)
+static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *isMidnight24)
 {
     if (isMidnight24)
         *isMidnight24 = false;
 
     const int size = string.size();
-    if (size < 5)
+    if (size < 5 || string.at(2) != QLatin1Char(':'))
         return QTime();
 
-    bool ok = false;
-    int hour = string.mid(0, 2).toInt(&ok);
-    if (!ok)
+    ParsedInt hour = readInt(string.mid(0, 2));
+    ParsedInt minute = readInt(string.mid(3, 2));
+    if (!hour.ok || !minute.ok)
         return QTime();
-    const int minute = string.mid(3, 2).toInt(&ok);
-    if (!ok)
-        return QTime();
+    // FIXME: ISO 8601 allows [,.]\d+ after hour, just as it does after minute
+
     int second = 0;
     int msec = 0;
 
@@ -2354,40 +2382,57 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
         // seconds is 4. E.g. 12:34,99999 will expand to 12:34:59.9994. The milliseconds
         // will then be rounded up AND clamped to 999.
 
-        const QStringRef minuteFractionStr = string.mid(6, 5);
-        const long minuteFractionInt = minuteFractionStr.toLong(&ok);
-        if (!ok)
+        const QStringView minuteFractionStr = string.mid(6, qMin(qsizetype(5), string.size() - 6));
+        const ParsedInt parsed = readInt(minuteFractionStr);
+        if (!parsed.ok)
             return QTime();
-        const float minuteFraction = double(minuteFractionInt) / (std::pow(double(10), minuteFractionStr.count()));
+        const float secondWithMs
+            = double(parsed.value) * 60 / (std::pow(double(10), minuteFractionStr.size()));
 
-        const float secondWithMs = minuteFraction * 60;
-        const float secondNoMs = std::floor(secondWithMs);
-        const float secondFraction = secondWithMs - secondNoMs;
-        second = secondNoMs;
+        second = std::floor(secondWithMs);
+        const float secondFraction = secondWithMs - second;
         msec = qMin(qRound(secondFraction * 1000.0), 999);
-    } else {
+    } else if (string.at(5) == QLatin1Char(':')) {
         // HH:mm:ss or HH:mm:ss.zzz
-        second = string.mid(6, 2).toInt(&ok);
-        if (!ok)
+        const ParsedInt parsed = readInt(string.mid(6, qMin(qsizetype(2), string.size() - 6)));
+        if (!parsed.ok)
             return QTime();
-        if (size > 8 && (string.at(8) == QLatin1Char(',') || string.at(8) == QLatin1Char('.'))) {
-            const QStringRef msecStr(string.mid(9, 4));
-            int msecInt = msecStr.isEmpty() ? 0 : msecStr.toInt(&ok);
+        second = parsed.value;
+        if (size <= 8) {
+            // No fractional part to read
+        } else if (string.at(8) == QLatin1Char(',') || string.at(8) == QLatin1Char('.')) {
+            QStringView msecStr(string.mid(9, qMin(qsizetype(4), string.size() - 9)));
+            bool ok = true;
+            // Can't use readInt() here, as we *do* allow trailing space - but not leading:
+            if (!msecStr.isEmpty() && !msecStr.at(0).isDigit())
+                return QTime();
+            msecStr = msecStr.trimmed();
+            int msecInt = msecStr.isEmpty() ? 0 : QLocale::c().toInt(msecStr, &ok);
             if (!ok)
                 return QTime();
-            const double secondFraction(msecInt / (std::pow(double(10), msecStr.count())));
+            const double secondFraction(msecInt / (std::pow(double(10), msecStr.size())));
             msec = qMin(qRound(secondFraction * 1000.0), 999);
+        } else {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0) // behavior change
+            // Stray cruft after date-time: tolerate trailing space, but nothing else.
+            for (const auto &ch : string.mid(8)) {
+                if (!ch.isSpace())
+                    return QTime();
+            }
+#endif
         }
+    } else {
+        return QTime();
     }
 
     const bool isISODate = format == Qt::ISODate || format == Qt::ISODateWithMs;
-    if (isISODate && hour == 24 && minute == 0 && second == 0 && msec == 0) {
+    if (isISODate && hour.value == 24 && minute.value == 0 && second == 0 && msec == 0) {
         if (isMidnight24)
             *isMidnight24 = true;
-        hour = 0;
+        hour.value = 0;
     }
 
-    return QTime(hour, minute, second, msec);
+    return QTime(hour.value, minute.value, second, msec);
 }
 
 /*!
@@ -2424,7 +2469,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     case Qt::ISODateWithMs:
     case Qt::TextDate:
     default:
-        return fromIsoTimeString(QStringRef(&string), format, nullptr);
+        return fromIsoTimeString(QStringView(string), format, nullptr);
     }
 }
 
@@ -2437,23 +2482,30 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     \table
     \header \li Expression \li Output
     \row \li h
-         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+         \li The hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
     \row \li hh
-         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \li m \li the minute without a leading zero (0 to 59)
-    \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the whole second, without any leading zero (0 to 59)
-    \row \li ss \li the whole second, with a leading zero where applicable (00 to 59)
-    \row \li z \li the fractional part of the second, to go after a decimal
+         \li The hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \li H
+         \li The hour without a leading zero (0 to 23, even with AM/PM display)
+    \row \li HH
+         \li The hour with a leading zero (00 to 23, even with AM/PM display)
+    \row \li m \li The minute without a leading zero (0 to 59)
+    \row \li mm \li The minute with a leading zero (00 to 59)
+    \row \li s \li The whole second, without any leading zero (0 to 59)
+    \row \li ss \li The whole second, with a leading zero where applicable (00 to 59)
+    \row \li z \li The fractional part of the second, to go after a decimal
                 point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
                 reports the seconds to full available (millisecond) precision
                 without trailing zeroes.
-    \row \li zzz \li the fractional part of the second, to millisecond
+    \row \li zzz \li The fractional part of the second, to millisecond
                 precision, including trailing zeroes where applicable (000 to 999).
-    \row \li AP
-         \li interpret as an AM/PM time. \e AP must be either "AM" or "PM".
-    \row \li ap
-         \li Interpret as an AM/PM time. \e ap must be either "am" or "pm".
+    \row \li AP or A
+         \li Interpret as an AM/PM time. \e A/AP will match an upper-case
+             version of either QLocale::amText() or QLocale::pmText().
+    \row \li ap or a
+         \li Interpret as an am/pm time. \e a/ap will match a lower-case version
+             of either QLocale::amText() or QLocale::pmText().
+    \row \li t \li the timezone (for example "CEST")
     \endtable
 
     All other input characters will be treated as text. Any sequence
@@ -2488,7 +2540,7 @@ QTime QTime::fromString(const QString &string, const QString &format)
     QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, QCalendar());
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
-        dt.fromString(string, 0, &time);
+        dt.fromString(string, nullptr, &time);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
@@ -3255,7 +3307,7 @@ inline QDateTime::Data::Data(Qt::TimeSpec spec)
         // the structure is too small, we need to detach
         d = new QDateTimePrivate;
         d->ref.ref();
-        d->m_status = mergeSpec(nullptr, spec);
+        d->m_status = mergeSpec({}, spec);
     }
 }
 
@@ -3399,6 +3451,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
                                                       DaylightStatus hint,
                                                       QDate *zoneDate, QTime *zoneTime)
 {
+    Q_ASSERT(zone.isValid());
     // Get the effective data from QTimeZone
     QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs, int(hint));
     // Docs state any time before 1970-01-01 will *not* have any DST applied
@@ -3788,8 +3841,9 @@ QTimeZone QDateTime::timeZone() const
     case Qt::OffsetFromUTC:
         return QTimeZone(d->m_offsetFromUtc);
     case Qt::TimeZone:
-        Q_ASSERT(d->m_timeZone.isValid());
-        return d->m_timeZone;
+        if (d->m_timeZone.isValid())
+            return d->m_timeZone;
+        break;
     case Qt::LocalTime:
         return QTimeZone::systemTimeZone();
     }
@@ -3873,6 +3927,7 @@ QString QDateTime::timeZoneAbbreviation() const
 #if !QT_CONFIG(timezone)
         break;
 #else
+        Q_ASSERT(d->m_timeZone.isValid());
         return d->m_timeZone.d->abbreviation(toMSecsSinceEpoch());
 #endif // timezone
     case Qt::LocalTime:  {
@@ -3909,6 +3964,7 @@ bool QDateTime::isDaylightTime() const
 #if !QT_CONFIG(timezone)
         break;
 #else
+        Q_ASSERT(d->m_timeZone.isValid());
         return d->m_timeZone.d->isDaylightTime(toMSecsSinceEpoch());
 #endif // timezone
     case Qt::LocalTime: {
@@ -4033,6 +4089,10 @@ void QDateTime::setTimeZone(const QTimeZone &toZone)
 */
 qint64 QDateTime::toMSecsSinceEpoch() const
 {
+    // Note: QDateTimeParser relies on this producing a useful result, even when
+    // !isValid(), at least when the invalidity is a time in a fall-back (that
+    // we'll have adjusted to lie outside it, but marked invalid because it's
+    // not what was asked for). Other things may be doing similar.
     switch (getSpec(d)) {
     case Qt::UTC:
         return getMSecs(d);
@@ -4047,12 +4107,13 @@ qint64 QDateTime::toMSecsSinceEpoch() const
     }
 
     case Qt::TimeZone:
-#if !QT_CONFIG(timezone)
-        return 0;
-#else
-        return QDateTimePrivate::zoneMSecsToEpochMSecs(d->m_msecs, d->m_timeZone,
-                                                       extractDaylightStatus(getStatus(d)));
+#if QT_CONFIG(timezone)
+        if (d->m_timeZone.isValid()) {
+            return QDateTimePrivate::zoneMSecsToEpochMSecs(d->m_msecs, d->m_timeZone,
+                                                           extractDaylightStatus(getStatus(d)));
+        }
 #endif
+        return 0;
     }
     Q_UNREACHABLE();
     return 0;
@@ -4147,9 +4208,11 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
     case Qt::TimeZone:
         Q_ASSERT(!d.isShort());
 #if QT_CONFIG(timezone)
+        d.detach();
+        if (!d->m_timeZone.isValid())
+            break;
         // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
         // but all affected times afterwards will have DST applied.
-        d.detach();
         if (msecs >= 0) {
             status = mergeDaylightStatus(status,
                                          d->m_timeZone.d->isDaylightTime(msecs)
@@ -4358,61 +4421,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
     \fn QString QDateTime::toString(const QString &format) const
     \fn QString QDateTime::toString(QStringView format) const
 
-    Returns the datetime as a string. The \a format parameter
-    determines the format of the result string.
-
-    These expressions may be used for the date:
-
-    \table
-    \header \li Expression \li Output
-    \row \li d \li the day as number without a leading zero (1 to 31)
-    \row \li dd \li the day as number with a leading zero (01 to 31)
-    \row \li ddd
-            \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
-            Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li dddd
-            \li the long localized day name (e.g. 'Monday' to 'Sunday').
-            Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li M \li the month as number without a leading zero (1-12)
-    \row \li MM \li the month as number with a leading zero (01-12)
-    \row \li MMM
-            \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
-            Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li MMMM
-            \li the long localized month name (e.g. 'January' to 'December').
-            Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li yy \li the year as two digit number (00-99)
-    \row \li yyyy \li the year as four digit number
-    \endtable
-
-    These expressions may be used for the time:
-
-    \table
-    \header \li Expression \li Output
-    \row \li h
-         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
-    \row \li hh
-         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \li H
-         \li the hour without a leading zero (0 to 23, even with AM/PM display)
-    \row \li HH
-         \li the hour with a leading zero (00 to 23, even with AM/PM display)
-    \row \li m \li the minute without a leading zero (0 to 59)
-    \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the whole second without a leading zero (0 to 59)
-    \row \li ss \li the whole second with a leading zero where applicable (00 to 59)
-    \row \li z \li the fractional part of the second, to go after a decimal
-                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
-                reports the seconds to full available (millisecond) precision
-                without trailing zeroes.
-    \row \li zzz \li the fractional part of the second, to millisecond
-                precision, including trailing zeroes where applicable (000 to 999).
-    \row \li AP or A
-         \li use AM/PM display. \e A/AP will be replaced by either "AM" or "PM".
-    \row \li ap or a
-         \li use am/pm display. \e a/ap will be replaced by either "am" or "pm".
-    \row \li t \li the timezone (for example "CEST")
-    \endtable
+    Returns the datetime as a string. The \a format parameter determines the
+    format of the result string. See QTime::toString() and QDate::toString() for
+    the supported specifiers for time and date, respectively.
 
     Any sequence of characters enclosed in single quotes will be included
     verbatim in the output string (stripped of the quotes), even if it contains
@@ -4474,7 +4485,7 @@ static inline void massageAdjustedDateTime(const QDateTimeData &d, QDate *date, 
         QDateTimePrivate::DaylightStatus status = QDateTimePrivate::UnknownDaylightTime;
         localMSecsToEpochMSecs(timeToMSecs(*date, *time), &status, date, time);
 #if QT_CONFIG(timezone)
-    } else if (spec == Qt::TimeZone) {
+    } else if (spec == Qt::TimeZone && d->m_timeZone.isValid()) {
         QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(*date, *time),
                                                 d->m_timeZone,
                                                 QDateTimePrivate::UnknownDaylightTime,
@@ -5135,7 +5146,8 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
 {
     QDateTime dt;
     dt.setTimeZone(timeZone);
-    dt.setMSecsSinceEpoch(msecs);
+    if (timeZone.isValid())
+        dt.setMSecsSinceEpoch(msecs);
     return dt;
 }
 
@@ -5238,16 +5250,17 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         if (!date.isValid())
             return QDateTime();
         if (size == 10)
-            return QDateTime(date);
+            return date.startOfDay();
 
         Qt::TimeSpec spec = Qt::LocalTime;
-        QStringRef isoString(&string);
-        isoString = isoString.mid(10); // trim "yyyy-MM-dd"
+        QStringView isoString = QStringView(string).mid(10); // trim "yyyy-MM-dd"
 
-        // Must be left with T and at least one digit for the hour:
+        // Must be left with T (or space) and at least one digit for the hour:
         if (isoString.size() < 2
-            || !(isoString.startsWith(QLatin1Char('T'))
-                 // FIXME: QSql relies on QVariant::toDateTime() accepting a space here:
+            || !(isoString.startsWith(QLatin1Char('T'), Qt::CaseInsensitive)
+                 // RFC 3339 (section 5.6) allows a space here.  (It actually
+                 // allows any separator one considers more readable, merely
+                 // giving space as an example - but let's not go wild !)
                  || isoString.startsWith(QLatin1Char(' ')))) {
             return QDateTime();
         }
@@ -5255,7 +5268,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 
         int offset = 0;
         // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:mm for Offset
-        if (isoString.endsWith(QLatin1Char('Z'))) {
+        if (isoString.endsWith(QLatin1Char('Z'), Qt::CaseInsensitive)) {
             spec = Qt::UTC;
             isoString.chop(1); // trim 'Z'
         } else {
@@ -5386,7 +5399,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         if (parts.count() == 5)
             return QDateTime(date, time, Qt::LocalTime);
 
-        QStringRef tz = parts.at(5);
+        QStringView tz = parts.at(5);
         if (!tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive))
             return QDateTime();
         tz = tz.mid(3);
@@ -5409,65 +5422,13 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.
 
-    Uses the calendar \a cal if supplied, else Gregorian. The illustrative
-    values and ranges below are given for the latter; other calendars may have
-    different ranges or values.
+    Uses the calendar \a cal if supplied, else Gregorian.
 
-    These expressions may be used for the date part of the format string:
-
-    \table
-    \header \li Expression \li Output
-    \row \li d \li the day as number without a leading zero (1 to 31)
-    \row \li dd \li the day as number with a leading zero (01 to 31)
-    \row \li ddd
-            \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
-    \row \li dddd
-            \li the long localized day name (e.g. 'Monday' to 'Sunday').
-    \row \li M \li the month as number without a leading zero (1-12)
-    \row \li MM \li the month as number with a leading zero (01-12)
-    \row \li MMM
-            \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
-    \row \li MMMM
-            \li the long localized month name (e.g. 'January' to 'December').
-    \row \li yy \li the year as two digit number (00-99)
-    \row \li yyyy \li the year as four digit number
-    \endtable
-
-    \note Unlike the other version of this function, day and month names must
-    be given in the user's local language. It is only possible to use the English
-    names if the user's language is English.
-
-    These expressions may be used for the time part of the format string:
-
-    \table
-    \header \li Expression \li Output
-    \row \li h
-            \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
-    \row \li hh
-            \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \li H
-            \li the hour without a leading zero (0 to 23, even with AM/PM display)
-    \row \li HH
-            \li the hour with a leading zero (00 to 23, even with AM/PM display)
-    \row \li m \li the minute without a leading zero (0 to 59)
-    \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the whole second without a leading zero (0 to 59)
-    \row \li ss \li the whole second with a leading zero where applicable (00 to 59)
-    \row \li z \li the fractional part of the second, to go after a decimal
-                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
-                reports the seconds to full available (millisecond) precision
-                without trailing zeroes.
-    \row \li zzz \li the fractional part of the second, to millisecond
-                precision, including trailing zeroes where applicable (000 to 999).
-    \row \li AP or A
-         \li interpret as an AM/PM time. \e AP must be either "AM" or "PM".
-    \row \li ap or a
-         \li Interpret as an AM/PM time. \e ap must be either "am" or "pm".
-    \endtable
-
-    All other input characters will be treated as text. Any sequence
-    of characters that are enclosed in single quotes will also be
-    treated as text and not be used as an expression.
+    See QDate::fromString() and QTime::fromString() for the expressions
+    recognized in the format string to represent parts of the date and time.
+    All other input characters will be treated as text. Any sequence of
+    characters that are enclosed in single quotes will also be treated as text
+    and not be used as an expression.
 
     \snippet code/src_corelib_tools_qdatetime.cpp 12
 

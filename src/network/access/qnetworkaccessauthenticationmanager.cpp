@@ -71,7 +71,7 @@ public:
         if (it == end() && !isEmpty())
             --it;
         if (it == end() || !domain.startsWith(it->domain))
-            return 0;
+            return nullptr;
         return &*it;
     }
 

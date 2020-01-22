@@ -130,7 +130,7 @@ QLayout::QLayout(QWidget *parent)
     management will work.
 */
 QLayout::QLayout()
-    : QObject(*new QLayoutPrivate, 0)
+    : QObject(*new QLayoutPrivate, nullptr)
 {
 }
 
@@ -149,14 +149,14 @@ QLayout::QLayout(QLayoutPrivate &dd, QLayout *lay, QWidget *w)
                      " already has a layout",
                      qUtf16Printable(QObject::objectName()), w->metaObject()->className(),
                      qUtf16Printable(w->objectName()));
-            setParent(0);
+            setParent(nullptr);
         } else {
             d->topLevel = true;
             w->d_func()->layout = this;
             QT_TRY {
                 invalidate();
             } QT_CATCH(...) {
-                w->d_func()->layout = 0;
+                w->d_func()->layout = nullptr;
                 QT_RETHROW;
             }
         }
@@ -166,7 +166,7 @@ QLayout::QLayout(QLayoutPrivate &dd, QLayout *lay, QWidget *w)
 QLayoutPrivate::QLayoutPrivate()
     : QObjectPrivate(), insideSpacing(-1), userLeftMargin(-1), userTopMargin(-1), userRightMargin(-1),
       userBottomMargin(-1), topLevel(false), enabled(true), activated(true), autoNewChild(false),
-      constraint(QLayout::SetDefaultConstraint), menubar(0)
+      constraint(QLayout::SetDefaultConstraint), menubar(nullptr)
 {
 }
 
@@ -181,7 +181,7 @@ void QLayoutPrivate::getMargin(int *result, int userMargin, QStyle::PixelMetric 
     } else if (!topLevel) {
         *result = 0;
     } else if (QWidget *pw = q->parentWidget()) {
-        *result = pw->style()->pixelMetric(pm, 0, pw);
+        *result = pw->style()->pixelMetric(pm, nullptr, pw);
     } else {
         *result = 0;
     }
@@ -189,8 +189,8 @@ void QLayoutPrivate::getMargin(int *result, int userMargin, QStyle::PixelMetric 
 
 // Static item factory functions that allow for hooking things in Designer
 
-QLayoutPrivate::QWidgetItemFactoryMethod QLayoutPrivate::widgetItemFactoryMethod = 0;
-QLayoutPrivate::QSpacerItemFactoryMethod QLayoutPrivate::spacerItemFactoryMethod = 0;
+QLayoutPrivate::QWidgetItemFactoryMethod QLayoutPrivate::widgetItemFactoryMethod = nullptr;
+QLayoutPrivate::QSpacerItemFactoryMethod QLayoutPrivate::spacerItemFactoryMethod = nullptr;
 
 QWidgetItem *QLayoutPrivate::createWidgetItem(const QLayout *layout, QWidget *widget)
 {
@@ -583,18 +583,18 @@ static bool removeWidgetRecursively(QLayoutItem *li, QObject *w)
 }
 
 
-void QLayoutPrivate::doResize(const QSize &r)
+void QLayoutPrivate::doResize()
 {
     Q_Q(QLayout);
-    int mbh = menuBarHeightForWidth(menubar, r.width());
     QWidget *mw = q->parentWidget();
     QRect rect = mw->testAttribute(Qt::WA_LayoutOnEntireRect) ? mw->rect() : mw->contentsRect();
+    const int mbh = menuBarHeightForWidth(menubar, rect.width());
     const int mbTop = rect.top();
     rect.setTop(mbTop + mbh);
     q->setGeometry(rect);
 #if QT_CONFIG(menubar)
     if (menubar)
-        menubar->setGeometry(rect.left(), mbTop, r.width(), mbh);
+        menubar->setGeometry(rect.left(), mbTop, rect.width(), mbh);
 #endif
 }
 
@@ -613,12 +613,10 @@ void QLayout::widgetEvent(QEvent *e)
 
     switch (e->type()) {
     case QEvent::Resize:
-        if (d->activated) {
-            QResizeEvent *r = (QResizeEvent *)e;
-            d->doResize(r->size());
-        } else {
+        if (d->activated)
+            d->doResize();
+        else
             activate();
-        }
         break;
     case QEvent::ChildRemoved:
         {
@@ -626,7 +624,7 @@ void QLayout::widgetEvent(QEvent *e)
             if (c->child()->isWidgetType()) {
 #if QT_CONFIG(menubar)
                 if (c->child() == d->menubar)
-                    d->menubar = 0;
+                    d->menubar = nullptr;
 #endif
                 removeWidgetRecursively(this, c->child());
             }
@@ -766,7 +764,7 @@ QLayout::~QLayout()
 {
     Q_D(QLayout);
     if (d->topLevel && parent() && parent()->isWidgetType() && parentWidget()->layout() == this)
-        parentWidget()->d_func()->layout = 0;
+        parentWidget()->d_func()->layout = nullptr;
     else if (QLayout *parentLayout = qobject_cast<QLayout *>(parent()))
         parentLayout->removeItem(this);
 }
@@ -921,7 +919,7 @@ void QLayout::addChildWidget(QWidget *w)
                 qWarning("QLayout::addChildWidget: %s \"%ls\" in wrong parent; moved to correct parent",
                          w->metaObject()->className(), qUtf16Printable(w->objectName()));
 #endif
-        pw = 0;
+        pw = nullptr;
     }
     bool needShow = mw && mw->isVisible() && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
     if (!pw && mw)
@@ -1116,7 +1114,7 @@ bool QLayout::activate()
         break;
     }
 
-    d->doResize(mw->size());
+    d->doResize();
 
     if (md->extra) {
         md->extra->explicitMinSize = explMin;
@@ -1155,12 +1153,12 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
 {
     Q_D(QLayout);
     if (!from || !to)
-        return 0;
+        return nullptr;
     if (from == to)     // Do not return a QLayoutItem for \a from, since ownership still
         return nullptr; // belongs to the layout (since nothing was changed)
 
     int index = -1;
-    QLayoutItem *item = 0;
+    QLayoutItem *item = nullptr;
     for (int u = 0; u < count(); ++u) {
         item = itemAt(u);
         if (!item)
@@ -1178,7 +1176,7 @@ QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOpt
         }
     }
     if (index == -1)
-        return 0;
+        return nullptr;
 
     addChildWidget(to);
     QLayoutItem *newitem = new QWidgetItem(to);
@@ -1339,7 +1337,7 @@ QRect QLayout::alignmentRect(const QRect &r) const
       returned by QLayoutItems that have an alignment.
     */
     QLayout *that = const_cast<QLayout *>(this);
-    that->setAlignment(0);
+    that->setAlignment({ });
     QSize ms = that->maximumSize();
     that->setAlignment(a);
 

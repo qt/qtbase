@@ -232,7 +232,7 @@ void QFileInfoGatherer::watchPaths(const QStringList &paths)
 void QFileInfoGatherer::unwatchPaths(const QStringList &paths)
 {
 #if QT_CONFIG(filesystemwatcher)
-    if (m_watcher)
+    if (m_watcher && !paths.isEmpty())
         m_watcher->removePaths(paths);
 #else
     Q_UNUSED(paths);

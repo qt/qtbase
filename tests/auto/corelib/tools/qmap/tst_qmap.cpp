@@ -70,6 +70,7 @@ private slots:
     void equal_range();
 
     void insert();
+    void insertMap();
     void checkMostLeftNode();
     void initializerList();
     void testInsertWithHint();
@@ -1199,6 +1200,101 @@ void tst_QMap::insert()
         QCOMPARE(pos.value(), pos.key().id); // key fits to value it was inserted with
         ++pos;
         QCOMPARE(pos.value(), pos.key().id); // key fits to value it was inserted with
+    }
+}
+
+void tst_QMap::insertMap()
+{
+    {
+        QMap<int, int> map;
+        map.insert(1, 1);
+        map.insert(2, 2);
+        map.insert(0, -1);
+
+        QMap<int, int> map2;
+        map2.insert(0, 0);
+        map2.insert(3, 3);
+        map2.insert(4, 4);
+
+        map.insert(map2);
+
+        QCOMPARE(map.count(), 5);
+        for (int i = 0; i < 5; ++i)
+            QCOMPARE(map[i], i);
+    }
+    {
+        QMap<int, int> map;
+        for (int i = 0; i < 10; ++i)
+            map.insert(i * 3, i);
+
+        QMap<int, int> map2;
+        for (int i = 0; i < 10; ++i)
+            map2.insert(i * 4, i);
+
+        map.insert(map2);
+
+        QCOMPARE(map.count(), 17);
+        for (int i = 0; i < 10; ++i) {
+            // i * 3 == i except for i = 4, 8
+            QCOMPARE(map[i * 3], (i && i % 4 == 0) ? i - (i / 4) : i);
+            QCOMPARE(map[i * 4], i);
+        }
+
+        auto it = map.cbegin();
+        int prev = it.key();
+        ++it;
+        for (auto end = map.cend(); it != end; ++it) {
+            QVERIFY(prev < it.key());
+            prev = it.key();
+        }
+    }
+    {
+        QMap<int, int> map;
+        map.insert(1, 1);
+
+        QMap<int, int> map2;
+
+        map.insert(map2);
+        QCOMPARE(map.count(), 1);
+        QCOMPARE(map[1], 1);
+    }
+    {
+        QMap<int, int> map;
+        QMap<int, int> map2;
+        map2.insert(1, 1);
+
+        map.insert(map2);
+        QCOMPARE(map.count(), 1);
+        QCOMPARE(map[1], 1);
+    }
+    {
+        QMap<int, int> map;
+        map.insert(0, 0);
+        map.insert(1, 1);
+        map.insert(2, 2);
+
+        // Test inserting into self, nothing should happen
+        map.insert(map);
+
+        QCOMPARE(map.count(), 3);
+        for (int i = 0; i < 3; ++i)
+            QCOMPARE(map[i], i);
+    }
+    {
+        // Here we use a QMultiMap and insert that into QMap,
+        // since it has multiple values with the same key the
+        // ordering is undefined so we won't test that, but
+        // make sure this isn't adding multiple entries with the
+        // same key to the QMap.
+        QMap<int, int> map;
+        QMultiMap<int, int> map2;
+        map2.insert(0, 0);
+        map2.insert(0, 1);
+        map2.insert(0, 2);
+
+        map.insert(map2);
+
+        QCOMPARE(map.count(), 1);
     }
 }
 

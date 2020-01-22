@@ -74,7 +74,7 @@ class Window;
 
 class SlowWidget : public QGraphicsWidget {
 public:
-    SlowWidget(QGraphicsWidget *w = 0, Qt::WindowFlags wFlags = 0) : QGraphicsWidget(w, wFlags)
+    SlowWidget(QGraphicsWidget *w = nullptr, Qt::WindowFlags wFlags = {}) : QGraphicsWidget(w, wFlags)
     {
         m_window = 0;
     }

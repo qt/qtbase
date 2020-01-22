@@ -299,7 +299,7 @@ public:
 
     void setPalette_helper(const QPalette &);
     void resolvePalette();
-    QPalette naturalWidgetPalette(uint inheritedMask) const;
+    QPalette naturalWidgetPalette(QPalette::ResolveMask inheritedMask) const;
 
     void setMask_sys(const QRegion &);
 
@@ -420,7 +420,7 @@ public:
     void setVisible(bool);
 
     void setEnabled_helper(bool);
-    static void adjustFlags(Qt::WindowFlags &flags, QWidget *w = 0);
+    static void adjustFlags(Qt::WindowFlags &flags, QWidget *w = nullptr);
 
     void updateFrameStrut();
     QRect frameStrut() const;
@@ -592,7 +592,7 @@ public:
         Q_Q(QWidget);
         return q->testAttribute(Qt::WA_AlwaysStackOnTop)
             ? QPlatformTextureList::StacksOnTop
-            : QPlatformTextureList::Flags(nullptr);
+            : QPlatformTextureList::Flags();
     }
     virtual QImage grabFramebuffer() { return QImage(); }
     virtual void beginBackingStorePainting() { }
@@ -672,7 +672,7 @@ public:
     // Other variables.
     uint directFontResolveMask;
     uint inheritedFontResolveMask;
-    uint inheritedPaletteResolveMask;
+    QPalette::ResolveMask inheritedPaletteResolveMask;
     short leftmargin;
     short topmargin;
     short rightmargin;

@@ -36,7 +36,7 @@
 #  define FFD_ATOMIC_ACQUIRE        std::memory_order_acquire
 #  define FFD_ATOMIC_RELEASE        std::memory_order_release
 // acq_rel & cst not necessary
-typedef std::atomic_int ffd_atomic_int;
+typedef std::atomic<int> ffd_atomic_int;
 #else
 #  include <stdatomic.h>
 #  define ffd_atomic_pointer(type)  _Atomic(type*)

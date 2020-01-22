@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -179,7 +180,7 @@ struct QTexturedBrushData : public QBrushData
 {
     QTexturedBrushData() {
         m_has_pixmap_texture = false;
-        m_pixmap = 0;
+        m_pixmap = nullptr;
     }
     ~QTexturedBrushData() {
         delete m_pixmap;
@@ -189,7 +190,7 @@ struct QTexturedBrushData : public QBrushData
         delete m_pixmap;
 
         if (pm.isNull()) {
-            m_pixmap = 0;
+            m_pixmap = nullptr;
             m_has_pixmap_texture = false;
         } else {
             m_pixmap = new QPixmap(pm);
@@ -202,7 +203,7 @@ struct QTexturedBrushData : public QBrushData
     void setImage(const QImage &image) {
         m_image = image;
         delete m_pixmap;
-        m_pixmap = 0;
+        m_pixmap = nullptr;
         m_has_pixmap_texture = false;
     }
 
@@ -360,7 +361,7 @@ public:
     {
         if (!brush->ref.deref())
             delete brush;
-        brush = 0;
+        brush = nullptr;
     }
 };
 
@@ -831,7 +832,7 @@ const QGradient *QBrush::gradient() const
         || d->style == Qt::ConicalGradientPattern) {
         return &static_cast<const QGradientBrushData *>(d.data())->gradient;
     }
-    return 0;
+    return nullptr;
 }
 
 Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush)
@@ -968,7 +969,7 @@ bool QBrush::operator==(const QBrush &b) const
             // but does not share the same data in memory. Since equality is likely to
             // be used to avoid iterating over the data for a texture update, this should
             // still be better than doing an accurate comparison.
-            const QPixmap *us = 0, *them = 0;
+            const QPixmap *us = nullptr, *them = nullptr;
             qint64 cacheKey1, cacheKey2;
             if (qHasPixmapTexture(*this)) {
                 us = (static_cast<QTexturedBrushData *>(d.data()))->m_pixmap;
@@ -1335,7 +1336,7 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     \internal
 */
 QGradient::QGradient()
-    : m_type(NoGradient), dummy(0)
+    : m_type(NoGradient), dummy(nullptr)
 {
 }
 
@@ -1346,6 +1347,8 @@ QGradient::QGradient()
     This enum specifies a set of predefined presets for QGradient,
     based on the gradients from https://webgradients.com/.
 */
+
+#include "webgradients.cpp"
 
 /*!
     \fn QGradient::QGradient(QGradient::Preset preset)
@@ -1358,47 +1361,12 @@ QGradient::QGradient()
     to be applied to arbitrary object sizes.
 */
 QGradient::QGradient(Preset preset)
-    : QGradient()
+    : m_type(LinearGradient)
+    , m_spread(PadSpread)
+    , m_stops(qt_preset_gradient_stops(preset))
+    , m_data(qt_preset_gradient_data[preset - 1])
+    , dummy(qt_preset_gradient_dummy())
 {
-    static QHash<int, QGradient> cachedPresets;
-    static QMutex cacheMutex;
-    QMutexLocker locker(&cacheMutex);
-    if (cachedPresets.contains(preset)) {
-        const QGradient &cachedPreset = cachedPresets.value(preset);
-        m_type = cachedPreset.m_type;
-        m_data = cachedPreset.m_data;
-        m_stops = cachedPreset.m_stops;
-        m_spread = cachedPreset.m_spread;
-        dummy = cachedPreset.dummy;
-    } else {
-        static QJsonDocument jsonPresets = []() {
-            QFile webGradients(QLatin1String(":/qgradient/webgradients.binaryjson"));
-            webGradients.open(QFile::ReadOnly);
-            return QJsonDocument::fromBinaryData(webGradients.readAll());
-        }();
-
-        const QJsonValue presetData = jsonPresets[preset - 1];
-        if (!presetData.isObject())
-            return;
-
-        m_type = LinearGradient;
-        setCoordinateMode(ObjectMode);
-        setSpread(PadSpread);
-
-        const QJsonValue start = presetData[QLatin1String("start")];
-        const QJsonValue end = presetData[QLatin1String("end")];
-        m_data.linear.x1 = start[QLatin1String("x")].toDouble();
-        m_data.linear.y1 = start[QLatin1String("y")].toDouble();
-        m_data.linear.x2 = end[QLatin1String("x")].toDouble();
-        m_data.linear.y2 = end[QLatin1String("y")].toDouble();
-
-        for (const QJsonValue &stop : presetData[QLatin1String("stops")].toArray()) {
-            setColorAt(stop[QLatin1String("position")].toDouble(),
-                QColor(QRgb(stop[QLatin1String("color")].toInt())));
-        }
-
-        cachedPresets.insert(preset, *this);
-    }
 }
 
 /*!
@@ -1407,11 +1375,6 @@ QGradient::QGradient(Preset preset)
 QGradient::~QGradient()
 {
 }
-
-QT_END_NAMESPACE
-static void initGradientPresets() { Q_INIT_RESOURCE(qmake_webgradients); }
-Q_CONSTRUCTOR_FUNCTION(initGradientPresets);
-QT_BEGIN_NAMESPACE
 
 /*!
     \enum QGradient::Type

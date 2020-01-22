@@ -56,6 +56,9 @@ public:
     void changeCursor(QCursor *cursor, QWindow *window) override;
     QPoint pos() const override;
     void setPos(const QPoint &position) override;
+
+    QSize size() const override;
+
 private:
     QHash<Qt::CursorShape, NSCursor *> m_cursors;
     NSCursor *convertCursor(QCursor *cursor);

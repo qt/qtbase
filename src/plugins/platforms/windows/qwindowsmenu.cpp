@@ -445,7 +445,7 @@ QString QWindowsMenuItem::nativeText() const
     QString result = m_text;
 #if QT_CONFIG(shortcut)
     if (!m_shortcut.isEmpty()) {
-        result += QLatin1Char('\t');
+        result += u'\t';
         result += m_shortcut.toString(QKeySequence::NativeText);
     }
 #endif

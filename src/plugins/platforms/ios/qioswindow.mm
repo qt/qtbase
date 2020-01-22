@@ -51,6 +51,9 @@
 #include <qpa/qplatformintegration.h>
 
 #import <QuartzCore/CAEAGLLayer.h>
+#ifdef Q_OS_IOS
+#import <QuartzCore/CAMetalLayer.h>
+#endif
 
 #include <QtDebug>
 
@@ -58,9 +61,15 @@ QT_BEGIN_NAMESPACE
 
 QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
-    , m_view([[QUIView alloc] initWithQIOSWindow:this])
     , m_windowLevel(0)
 {
+#ifdef Q_OS_IOS
+    if (window->surfaceType() == QSurface::MetalSurface)
+        m_view = [[QUIMetalView alloc] initWithQIOSWindow:this];
+    else
+#endif
+        m_view = [[QUIView alloc] initWithQIOSWindow:this];
+
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QIOSWindow::applicationStateChanged);
 
     setParent(QPlatformWindow::parent());

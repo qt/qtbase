@@ -65,8 +65,7 @@ class QGlyphRunPrivate: public QSharedData
 {
 public:
     QGlyphRunPrivate()
-        : flags(nullptr)
-        , glyphIndexData(glyphIndexes.constData())
+        : glyphIndexData(glyphIndexes.constData())
         , glyphIndexDataSize(0)
         , glyphPositionData(glyphPositions.constData())
         , glyphPositionDataSize(0)

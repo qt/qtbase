@@ -737,7 +737,7 @@ void tst_QDBusAbstractAdaptor::sameObjectDifferentPaths()
     MyObject obj(2);
 
     con.registerObject("/p1",&obj);
-    con.registerObject("/p2",&obj, 0); // don't export anything
+    con.registerObject("/p2",&obj, { }); // don't export anything
 
     QDBusSignalSpy spy;
     con.connect(con.baseService(), "/p1", "local.Interface2", "signal", &spy, SLOT(slot(QDBusMessage)));
@@ -759,7 +759,7 @@ void tst_QDBusAbstractAdaptor::scriptableSignalOrNot()
         MyObject obj(0);
 
         con.registerObject("/p1",&obj, QDBusConnection::ExportScriptableSignals);
-        con.registerObject("/p2",&obj, 0); // don't export anything
+        con.registerObject("/p2",&obj, { }); // don't export anything
 
         QDBusSignalSpy spy;
         con.connect(con.baseService(), "/p1", "local.MyObject", "scriptableSignalVoid", &spy, SLOT(slot(QDBusMessage)));
@@ -1270,7 +1270,7 @@ void tst_QDBusAbstractAdaptor::sameObjectDifferentPathsPeer()
     newMyObjectPeer(2);
 
     registerMyObjectPeer("/p1");
-    registerMyObjectPeer("/p2", 0); // don't export anything
+    registerMyObjectPeer("/p2", { }); // don't export anything
 
     syncPeer();
     QDBusSignalSpy spy;
@@ -1294,7 +1294,7 @@ void tst_QDBusAbstractAdaptor::scriptableSignalOrNotPeer()
         newMyObjectPeer(0);
 
         registerMyObjectPeer("/p1", QDBusConnection::ExportScriptableSignals);
-        registerMyObjectPeer("/p2", 0); // don't export anything
+        registerMyObjectPeer("/p2", { }); // don't export anything
 
         syncPeer();
         QDBusSignalSpy spy;

@@ -217,19 +217,19 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         break;
     }
     case PPK_QPageSize: {
-        QPageSize pageSize = value.value<QPageSize>();
+        QPageSize pageSize = qvariant_cast<QPageSize>(value);
         if (pageSize.isValid())
             d->m_pageLayout.setPageSize(pageSize);
         break;
     }
     case PPK_QPageMargins: {
-        QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
+        QPair<QMarginsF, QPageLayout::Unit> pair = qvariant_cast<QPair<QMarginsF, QPageLayout::Unit> >(value);
         d->m_pageLayout.setUnits(pair.second);
         d->m_pageLayout.setMargins(pair.first);
         break;
     }
     case PPK_QPageLayout: {
-        QPageLayout pageLayout = value.value<QPageLayout>();
+        QPageLayout pageLayout = qvariant_cast<QPageLayout>(value);
         if (pageLayout.isValid())
             d->m_pageLayout = pageLayout;
         break;

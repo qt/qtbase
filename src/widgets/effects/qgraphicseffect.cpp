@@ -415,7 +415,7 @@ QGraphicsEffect::QGraphicsEffect(QGraphicsEffectPrivate &dd, QObject *parent)
 QGraphicsEffect::~QGraphicsEffect()
 {
     Q_D(QGraphicsEffect);
-    d->setGraphicsEffectSource(0);
+    d->setGraphicsEffectSource(nullptr);
 }
 
 /*!

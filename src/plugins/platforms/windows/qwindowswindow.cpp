@@ -253,7 +253,7 @@ QDebug operator<<(QDebug d, const GUID &guid)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << '{' << Qt::hex << Qt::uppercasedigits << qSetPadChar(QLatin1Char('0'))
+    d << '{' << Qt::hex << Qt::uppercasedigits << qSetPadChar(u'0')
       << qSetFieldWidth(8) << guid.Data1
       << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)
       << guid.Data2 << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)
@@ -592,7 +592,7 @@ static QPoint calcPosition(const QWindow *w, const QWindowCreationContextPtr &co
         return posFrame;
 
     // Find the original screen containing the coordinates.
-    const QList<QScreen *> screens = screenForGL->virtualSiblings();
+    const auto screens = screenForGL->virtualSiblings();
     const QScreen *orgScreen = nullptr;
     for (QScreen *screen : screens) {
         if (screen->handle()->availableGeometry().contains(posFrame)) {
@@ -759,7 +759,10 @@ QWindowsWindowData
 
     const QString windowClassName = QWindowsContext::instance()->registerWindowClass(w);
 
-    const QRect rect = QPlatformWindow::initialGeometry(w, data.geometry, defaultWindowWidth, defaultWindowHeight);
+    const QScreen *screen{};
+    const QRect rect = QPlatformWindow::initialGeometry(w, data.geometry,
+                                                        defaultWindowWidth, defaultWindowHeight,
+                                                        &screen);
 
     if (title.isEmpty() && (result.flags & Qt::WindowTitleHint))
         title = topLevel ? qAppName() : w->objectName();
@@ -769,7 +772,9 @@ QWindowsWindowData
 
     // Capture events before CreateWindowEx() returns. The context is cleared in
     // the QWindowsWindow constructor.
-    const QWindowCreationContextPtr context(new QWindowCreationContext(w, data.geometry, rect, data.customMargins, style, exStyle));
+    const QWindowCreationContextPtr context(new QWindowCreationContext(w, screen, data.geometry,
+                                                                       rect, data.customMargins,
+                                                                       style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
     const bool hasFrame = (style & (WS_DLGFRAME | WS_THICKFRAME));
@@ -879,10 +884,10 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
 
 
 // Scaling helpers for size constraints.
-static QSize toNativeSizeConstrained(QSize dip, const QWindow *w)
+static QSize toNativeSizeConstrained(QSize dip, const QScreen *s)
 {
     if (QHighDpiScaling::isActive()) {
-        const qreal factor = QHighDpiScaling::factor(w);
+        const qreal factor = QHighDpiScaling::factor(s);
         if (!qFuzzyCompare(factor, qreal(1))) {
             if (dip.width() > 0 && dip.width() < QWINDOWSIZE_MAX)
                 dip.setWidth(qRound(qreal(dip.width()) * factor));
@@ -995,11 +1000,12 @@ bool QWindowsGeometryHint::handleCalculateSize(const QMargins &customMargins, co
     return true;
 }
 
-void QWindowsGeometryHint::frameSizeConstraints(const QWindow *w, const QMargins &margins,
+void QWindowsGeometryHint::frameSizeConstraints(const QWindow *w, const QScreen *screen,
+                                                const QMargins &margins,
                                                 QSize *minimumSize, QSize *maximumSize)
 {
-    *minimumSize = toNativeSizeConstrained(w->minimumSize(), w);
-    *maximumSize = toNativeSizeConstrained(w->maximumSize(), w);
+    *minimumSize = toNativeSizeConstrained(w->minimumSize(), screen);
+    *maximumSize = toNativeSizeConstrained(w->maximumSize(), screen);
 
     const int maximumWidth = qMax(maximumSize->width(), minimumSize->width());
     const int maximumHeight = qMax(maximumSize->height(), minimumSize->height());
@@ -1017,12 +1023,13 @@ void QWindowsGeometryHint::frameSizeConstraints(const QWindow *w, const QMargins
 }
 
 void QWindowsGeometryHint::applyToMinMaxInfo(const QWindow *w,
+                                             const QScreen *screen,
                                              const QMargins &margins,
                                              MINMAXINFO *mmi)
 {
     QSize minimumSize;
     QSize maximumSize;
-    frameSizeConstraints(w, margins, &minimumSize, &maximumSize);
+    frameSizeConstraints(w, screen, margins, &minimumSize, &maximumSize);
     qCDebug(lcQpaWindows).nospace() << '>' << __FUNCTION__ << '<' << " min="
         << minimumSize.width() << ',' << minimumSize.height()
         << " max=" << maximumSize.width() << ',' << maximumSize.height()
@@ -1039,6 +1046,13 @@ void QWindowsGeometryHint::applyToMinMaxInfo(const QWindow *w,
     if (maximumSize.height() < QWINDOWSIZE_MAX)
         mmi->ptMaxTrackSize.y = maximumSize.height();
     qCDebug(lcQpaWindows).nospace() << '<' << __FUNCTION__ << " out " << *mmi;
+}
+
+void QWindowsGeometryHint::applyToMinMaxInfo(const QWindow *w,
+                                             const QMargins &margins,
+                                             MINMAXINFO *mmi)
+{
+    applyToMinMaxInfo(w, w->screen(), margins, mmi);
 }
 
 bool QWindowsGeometryHint::positionIncludesFrame(const QWindow *w)
@@ -1226,11 +1240,12 @@ void QWindowsForeignWindow::setVisible(bool visible)
     \ingroup qt-lighthouse-win
 */
 
-QWindowCreationContext::QWindowCreationContext(const QWindow *w,
+QWindowCreationContext::QWindowCreationContext(const QWindow *w, const QScreen *s,
                                                const QRect &geometryIn, const QRect &geometry,
                                                const QMargins &cm,
                                                DWORD style, DWORD exStyle) :
     window(w),
+    screen(s),
     requestedGeometryIn(geometryIn),
     requestedGeometry(geometry),
     obtainedPos(geometryIn.topLeft()),
@@ -1270,7 +1285,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
 
 void QWindowCreationContext::applyToMinMaxInfo(MINMAXINFO *mmi) const
 {
-    QWindowsGeometryHint::applyToMinMaxInfo(window, margins + customMargins, mmi);
+    QWindowsGeometryHint::applyToMinMaxInfo(window, screen, margins + customMargins, mmi);
 }
 
 /*!

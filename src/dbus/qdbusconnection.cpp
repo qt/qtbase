@@ -101,7 +101,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::B
     Q_ASSERT(type == QDBusConnection::SessionBus || type == QDBusConnection::SystemBus);
 
     if (!qdbus_loadLibDBus())
-        return 0;
+        return nullptr;
 
     // we'll start in suspended delivery mode if we're in the main thread
     // (the event loop will resume delivery)
@@ -124,7 +124,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::connection(const QString &name) 
 
 void QDBusConnectionManager::removeConnection(const QString &name)
 {
-    QDBusConnectionPrivate *d = 0;
+    QDBusConnectionPrivate *d = nullptr;
     d = connectionHash.take(name);
     if (d && !d->ref.deref())
         d->deleteLater();
@@ -251,7 +251,7 @@ void QDBusConnectionManager::executeConnectionRequest(QDBusConnectionManager::Co
         return;
 
     d = new QDBusConnectionPrivate;
-    DBusConnection *c = 0;
+    DBusConnection *c = nullptr;
     QDBusErrorInternal error;
     switch (data->type) {
     case ConnectionRequestData::ConnectToStandardBus:
@@ -275,7 +275,7 @@ void QDBusConnectionManager::executeConnectionRequest(QDBusConnectionManager::Co
             // register on the bus
             if (!q_dbus_bus_register(c, error)) {
                 q_dbus_connection_unref(c);
-                c = 0;
+                c = nullptr;
             }
         }
         break;
@@ -427,7 +427,7 @@ void QDBusConnectionManager::createServer(const QString &address, void *server)
 QDBusConnection::QDBusConnection(const QString &name)
 {
     if (name.isEmpty() || _q_manager.isDestroyed()) {
-        d = 0;
+        d = nullptr;
     } else {
         const auto locker = qt_scoped_lock(_q_manager()->mutex);
         d = _q_manager()->connection(name);
@@ -492,7 +492,7 @@ QDBusConnection &QDBusConnection::operator=(const QDBusConnection &other)
 QDBusConnection QDBusConnection::connectToBus(BusType type, const QString &name)
 {
     if (_q_manager.isDestroyed() || !qdbus_loadLibDBus()) {
-        QDBusConnectionPrivate *d = 0;
+        QDBusConnectionPrivate *d = nullptr;
         return QDBusConnection(d);
     }
     return QDBusConnection(_q_manager()->connectToBus(type, name, false));
@@ -506,7 +506,7 @@ QDBusConnection QDBusConnection::connectToBus(const QString &address,
                                               const QString &name)
 {
     if (_q_manager.isDestroyed() || !qdbus_loadLibDBus()) {
-        QDBusConnectionPrivate *d = 0;
+        QDBusConnectionPrivate *d = nullptr;
         return QDBusConnection(d);
     }
     return QDBusConnection(_q_manager()->connectToBus(address, name));
@@ -521,7 +521,7 @@ QDBusConnection QDBusConnection::connectToPeer(const QString &address,
                                                const QString &name)
 {
     if (_q_manager.isDestroyed() || !qdbus_loadLibDBus()) {
-        QDBusConnectionPrivate *d = 0;
+        QDBusConnectionPrivate *d = nullptr;
         return QDBusConnection(d);
     }
     return QDBusConnection(_q_manager()->connectToPeer(address, name));
@@ -616,7 +616,7 @@ bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *rec
             d->lastError = err;
         return false;
     }
-    return d->sendWithReplyAsync(message, receiver, returnMethod, errorMethod, timeout) != 0;
+    return d->sendWithReplyAsync(message, receiver, returnMethod, errorMethod, timeout) != nullptr;
 }
 
 /*!
@@ -639,7 +639,7 @@ bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *rec
 bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *receiver,
                                        const char *returnMethod, int timeout) const
 {
-    return callWithCallback(message, receiver, returnMethod, 0, timeout);
+    return callWithCallback(message, receiver, returnMethod, nullptr, timeout);
 }
 
 /*!
@@ -705,10 +705,10 @@ QDBusMessage QDBusConnection::call(const QDBusMessage &message, QDBus::CallMode 
 QDBusPendingCall QDBusConnection::asyncCall(const QDBusMessage &message, int timeout) const
 {
     if (!d || !d->connection) {
-        return QDBusPendingCall(0); // null pointer -> disconnected
+        return QDBusPendingCall(nullptr); // null pointer -> disconnected
     }
 
-    QDBusPendingCallPrivate *priv = d->sendWithReplyAsync(message, 0, 0, 0, timeout);
+    QDBusPendingCallPrivate *priv = d->sendWithReplyAsync(message, nullptr, nullptr, nullptr, timeout);
     return QDBusPendingCall(priv);
 }
 
@@ -1015,7 +1015,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
     Q_ASSERT_X(QDBusUtil::isValidObjectPath(path), "QDBusConnection::registeredObject",
                "Invalid object path given");
     if (!d || !d->connection || !QDBusUtil::isValidObjectPath(path))
-        return 0;
+        return nullptr;
 
     auto pathComponents = path.splitRef(QLatin1Char('/'));
     if (pathComponents.constLast().isEmpty())
@@ -1040,7 +1040,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
         node = it;
         ++i;
     }
-    return 0;
+    return nullptr;
 }
 
 
@@ -1052,7 +1052,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
 QDBusConnectionInterface *QDBusConnection::interface() const
 {
     if (!d || d->mode != QDBusConnectionPrivate::ClientMode)
-        return 0;
+        return nullptr;
     return d->busService;
 }
 
@@ -1068,7 +1068,7 @@ QDBusConnectionInterface *QDBusConnection::interface() const
 */
 void *QDBusConnection::internalPointer() const
 {
-    return d ? d->connection : 0;
+    return d ? d->connection : nullptr;
 }
 
 /*!
@@ -1139,7 +1139,7 @@ QString QDBusConnection::name() const
 */
 QDBusConnection::ConnectionCapabilities QDBusConnection::connectionCapabilities() const
 {
-    return d ? d->capabilities : ConnectionCapabilities(0);
+    return d ? d->capabilities : ConnectionCapabilities();
 }
 
 /*!

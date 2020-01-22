@@ -173,7 +173,7 @@ public:
 QWaitCondition::QWaitCondition()
 {
     d = new QWaitConditionPrivate;
-    report_error(pthread_mutex_init(&d->mutex, NULL), "QWaitCondition", "mutex init");
+    report_error(pthread_mutex_init(&d->mutex, nullptr), "QWaitCondition", "mutex init");
     qt_initialize_pthread_cond(&d->cond, "QWaitCondition");
     d->waiters = d->wakeups = 0;
 }

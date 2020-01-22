@@ -80,10 +80,8 @@ struct QNullTexture : public QRhiTexture
     ~QNullTexture();
     void release() override;
     bool build() override;
-    bool buildFrom(const QRhiNativeHandles *src) override;
-    const QRhiNativeHandles *nativeHandles() override;
+    bool buildFrom(NativeTexture src) override;
 
-    QRhiNullTextureNativeHandles nativeHandlesStruct;
     QImage image[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
 };
 
@@ -101,6 +99,7 @@ struct QNullRenderPassDescriptor : public QRhiRenderPassDescriptor
     QNullRenderPassDescriptor(QRhiImplementation *rhi);
     ~QNullRenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 };
 
 struct QNullRenderTargetData

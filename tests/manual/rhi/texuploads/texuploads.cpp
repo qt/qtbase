@@ -237,11 +237,11 @@ void Window::customRender()
 
         // Exercise texture object export/import.
         if (d.testStage == 6) {
-            const QRhiNativeHandles *h = d.tex->nativeHandles();
-            if (h) {
-#ifdef Q_OS_DARWIN
+            const QRhiTexture::NativeTexture nativeTexture = d.tex->nativeTexture();
+            if (nativeTexture.object) {
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
                 if (graphicsApi == Metal) {
-                    qDebug() << "Metal texture: " << static_cast<const QRhiMetalTextureNativeHandles *>(h)->texture;
+                    qDebug() << "Metal texture: " << *(void**)nativeTexture.object;
                     // Now could cast to id<MTLTexture> and do something with
                     // it, keeping in mind that copy operations are only done
                     // in beginPass, while rendering into a texture may only
@@ -253,7 +253,7 @@ void Window::customRender()
 
                 d.importedTex = m_r->newTexture(QRhiTexture::RGBA8, d.tex->pixelSize());
                 d.releasePool << d.importedTex;
-                if (!d.importedTex->buildFrom(h))
+                if (!d.importedTex->buildFrom(nativeTexture))
                     qWarning("Texture import failed");
 
                 // now d.tex and d.importedTex use the same MTLTexture

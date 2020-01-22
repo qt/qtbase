@@ -71,6 +71,7 @@ class Q_WIDGETS_EXPORT QComboBox : public QWidget
     Q_PROPERTY(SizeAdjustPolicy sizeAdjustPolicy READ sizeAdjustPolicy WRITE setSizeAdjustPolicy)
     Q_PROPERTY(int minimumContentsLength READ minimumContentsLength WRITE setMinimumContentsLength)
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
+    Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
 
 #if QT_CONFIG(completer)
 #if QT_DEPRECATED_SINCE(5, 13)
@@ -148,6 +149,9 @@ public:
     QSize iconSize() const;
     void setIconSize(const QSize &size);
 
+    void setPlaceholderText(const QString &placeholderText);
+    QString placeholderText() const;
+
     bool isEditable() const;
     void setEditable(bool editable);
     void setLineEdit(QLineEdit *edit);
@@ -166,7 +170,7 @@ public:
     void setItemDelegate(QAbstractItemDelegate *delegate);
 
     QAbstractItemModel *model() const;
-    void setModel(QAbstractItemModel *model);
+    virtual void setModel(QAbstractItemModel *model);
 
     QModelIndex rootModelIndex() const;
     void setRootModelIndex(const QModelIndex &index);

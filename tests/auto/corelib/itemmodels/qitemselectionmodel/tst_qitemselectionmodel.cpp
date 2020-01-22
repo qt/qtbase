@@ -2037,12 +2037,16 @@ void tst_QItemSelectionModel::rowIntersectsSelection3()
 
     QModelIndex parent;
     QVERIFY(!selectionModel.rowIntersectsSelection(0, parent));
+    QVERIFY(!selectionModel.columnIntersectsSelection(0, parent));
     parent = model.index(0, 0, parent);
     QVERIFY(selectionModel.rowIntersectsSelection(0, parent));
+    QVERIFY(selectionModel.columnIntersectsSelection(0, parent));
     parent = model.index(0, 0, parent);
     QVERIFY(!selectionModel.rowIntersectsSelection(0, parent));
+    QVERIFY(!selectionModel.columnIntersectsSelection(0, parent));
     parent = model.index(0, 0, parent);
     QVERIFY(!selectionModel.rowIntersectsSelection(0, parent));
+    QVERIFY(!selectionModel.columnIntersectsSelection(0, parent));
 }
 
 void tst_QItemSelectionModel::unselectable()
@@ -2059,7 +2063,7 @@ void tst_QItemSelectionModel::unselectable()
     QCOMPARE(selectionModel.selectedIndexes().count(), 10);
     QCOMPARE(selectionModel.selectedRows().count(), 10);
     for (int j = 0; j < 10; ++j)
-        model.item(j)->setFlags(0);
+        model.item(j)->setFlags({ });
     QCOMPARE(selectionModel.selectedIndexes().count(), 0);
     QCOMPARE(selectionModel.selectedRows().count(), 0);
 }

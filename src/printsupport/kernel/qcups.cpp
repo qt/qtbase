@@ -149,7 +149,7 @@ QCUPSSupport::JobHoldUntilWithTime QCUPSSupport::parseJobHoldUntil(const QString
 
 ppd_option_t *QCUPSSupport::findPpdOption(const char *optionName, QPrintDevice *printDevice)
 {
-    ppd_file_t *ppd = printDevice->property(PDPK_PpdFile).value<ppd_file_t*>();
+    ppd_file_t *ppd = qvariant_cast<ppd_file_t*>(printDevice->property(PDPK_PpdFile));
 
     if (ppd) {
         for (int i = 0; i < ppd->num_groups; ++i) {

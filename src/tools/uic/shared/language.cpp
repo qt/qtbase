@@ -49,6 +49,7 @@ void setLanguage(Language l)
         qualifier = QLatin1String("::");
         self = QLatin1String("");  // for testing: change to "this->";
         eol = QLatin1String(";\n");
+        emptyString = QLatin1String("QString()");
         encoding = Encoding::Utf8;
         break;
     case Language::Python:
@@ -59,6 +60,7 @@ void setLanguage(Language l)
         qualifier = QLatin1String(".");
         self = QLatin1String("self.");
         eol = QLatin1String("\n");
+        emptyString = QLatin1String("\"\"");
         encoding = Encoding::Unicode;
         break;
     }
@@ -71,6 +73,7 @@ QString qtQualifier;
 QString qualifier;
 QString self;
 QString eol;
+QString emptyString;
 
 QString cppQualifier = QLatin1String("::");
 QString cppTrue = QLatin1String("true");

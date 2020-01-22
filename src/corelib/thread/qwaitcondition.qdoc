@@ -121,8 +121,18 @@
 
 /*!
     \fn bool QWaitCondition::wait(QMutex *lockedMutex, unsigned long time)
+    \overload
+*/
+/*!
+    \fn bool QWaitCondition::wait(QReadWriteLock *lockedReadWriteLock, unsigned long time)
+    \overload
+*/
 
-    Releases the \a lockedMutex and waits on the wait condition.  The
+/*!
+    \fn bool QWaitCondition::wait(QMutex *lockedMutex, QDeadlineTimer deadline)
+    \since 5.12
+
+    Releases the \a lockedMutex and waits on the wait condition. The
     \a lockedMutex must be initially locked by the calling thread. If \a
     lockedMutex is not in a locked state, the behavior is undefined. If
     \a lockedMutex is a recursive mutex, this function
@@ -132,10 +142,10 @@
     \list
     \li Another thread signals it using wakeOne() or wakeAll(). This
        function will return true in this case.
-    \li \a time milliseconds has elapsed. If \a time is \c ULONG_MAX
-       (the default), then the wait will never timeout (the event
-       must be signalled). This function will return false if the
-       wait timed out.
+    \li the deadline given by \a deadline is reached. If \a deadline is
+       \c QDeadlineTimer::Forever (the default), then the wait will never
+       timeout (the event must be signalled). This function will return
+       false if the wait timed out.
     \endlist
 
     The \a lockedMutex will be returned to the same locked state. This
@@ -146,8 +156,8 @@
 */
 
 /*!
-    \fn bool QWaitCondition::wait(QReadWriteLock *lockedReadWriteLock, unsigned long time)
-    \since 4.4
+    \fn bool QWaitCondition::wait(QReadWriteLock *lockedReadWriteLock, QDeadlineTimer deadline)
+    \since 5.12
 
     Releases the \a lockedReadWriteLock and waits on the wait
     condition.  The \a lockedReadWriteLock must be initially locked by the
@@ -160,10 +170,10 @@
     \list
     \li Another thread signals it using wakeOne() or wakeAll(). This
        function will return true in this case.
-    \li \a time milliseconds has elapsed. If \a time is \c ULONG_MAX
-       (the default), then the wait will never timeout (the event
-       must be signalled). This function will return false if the
-       wait timed out.
+    \li the deadline given by \a deadline is reached. If \a deadline is
+       \c QDeadlineTimer::Forever (the default), then the wait will never
+       timeout (the event must be signalled). This function will return
+       false if the wait timed out.
     \endlist
 
     The \a lockedReadWriteLock will be returned to the same locked

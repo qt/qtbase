@@ -150,7 +150,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
     m_cos_theta = qFastCos(Q_PI / m_roundness);
 
     const qreal *endPts = pts + (count<<1);
-    const qreal *startPts = 0;
+    const qreal *startPts = nullptr;
 
     Qt::PenCapStyle cap = m_cap_style;
 
@@ -510,7 +510,7 @@ static void qdashprocessor_cubicTo(qreal, qreal, qreal, qreal, qreal, qreal, voi
 
 QDashedStrokeProcessor::QDashedStrokeProcessor()
     : m_points(0), m_types(0),
-      m_dash_stroker(0), m_inv_scale(1)
+      m_dash_stroker(nullptr), m_inv_scale(1)
 {
     m_dash_stroker.setMoveToHook(qdashprocessor_moveTo);
     m_dash_stroker.setLineToHook(qdashprocessor_lineTo);

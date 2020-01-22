@@ -187,7 +187,7 @@ QWindow *QDialogPrivate::transientParentWindow() const
         return parent->windowHandle();
     else if (q->windowHandle())
         return q->windowHandle()->transientParent();
-    return 0;
+    return nullptr;
 }
 
 bool QDialogPrivate::setNativeDialogVisible(bool visible)
@@ -214,7 +214,7 @@ QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
 void QDialogPrivate::deletePlatformHelper()
 {
     delete m_platformHelper;
-    m_platformHelper = 0;
+    m_platformHelper = nullptr;
     m_platformHelperCreated = false;
     nativeDialogInUse = false;
 }
@@ -460,7 +460,7 @@ void QDialogPrivate::setDefault(QPushButton *pushButton)
 */
 void QDialogPrivate::setMainDefault(QPushButton *pushButton)
 {
-    mainDef = 0;
+    mainDef = nullptr;
     setDefault(pushButton);
 }
 
@@ -602,7 +602,7 @@ int QDialog::exec()
     }
     if (guard.isNull())
         return QDialog::Rejected;
-    d->eventLoop = 0;
+    d->eventLoop = nullptr;
 
     setAttribute(Qt::WA_ShowModal, wasShowModal);
 
@@ -679,12 +679,12 @@ void QDialog::contextMenuEvent(QContextMenuEvent *e)
 #else
     QWidget *w = childAt(e->pos());
     if (!w) {
-        w = rect().contains(e->pos()) ? this : 0;
+        w = rect().contains(e->pos()) ? this : nullptr;
         if (!w)
             return;
     }
     while (w && w->whatsThis().size() == 0 && !w->testAttribute(Qt::WA_CustomWhatsThis))
-        w = w->isWindow() ? 0 : w->parentWidget();
+        w = w->isWindow() ? nullptr : w->parentWidget();
     if (w) {
         QPointer<QMenu> p = new QMenu(this);
         QAction *wt = p.data()->addAction(tr("What's This?"));
@@ -920,7 +920,7 @@ void QDialog::adjustPosition(QWidget* w)
     if (w) {
         // Use pos() if the widget is embedded into a native window
         QPoint pp;
-        if (w->windowHandle() && w->windowHandle()->property("_q_embedded_native_parent_handle").value<WId>())
+        if (w->windowHandle() && qvariant_cast<WId>(w->windowHandle()->property("_q_embedded_native_parent_handle")))
             pp = w->pos();
         else
             pp = w->mapToGlobal(QPoint(0,0));
@@ -1191,7 +1191,7 @@ void QDialog::setSizeGripEnabled(bool enabled)
             d->resizer->show();
         } else {
             delete d->resizer;
-            d->resizer = 0;
+            d->resizer = nullptr;
         }
     }
 #endif // QT_CONFIG(sizegrip)

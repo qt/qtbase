@@ -187,10 +187,6 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
 #define QT_FOR_EACH_STATIC_WIDGETS_CLASS(F)\
     F(QSizePolicy, 121, QSizePolicy) \
 
-// ### FIXME kill that set
-#define QT_FOR_EACH_STATIC_HACKS_TYPE(F)\
-    F(QMetaTypeId2<qreal>::MetaType, -1, qreal)
-
 // F is a tuple: (QMetaType::TypeName, QMetaType::TypeNameID, AliasingType, "RealType")
 #define QT_FOR_EACH_STATIC_ALIAS_TYPE(F)\
     F(ULong, -1, ulong, "unsigned long") \
@@ -579,7 +575,7 @@ public:
     static bool load(QDataStream &stream, int type, void *data);
 #endif
 
-    explicit QMetaType(const int type); // ### Qt6: drop const
+    explicit QMetaType(const int type = QMetaType::UnknownType); // ### Qt6: drop const
     inline ~QMetaType();
 
     inline bool isValid() const;
@@ -588,11 +584,23 @@ public:
     inline int sizeOf() const;
     inline TypeFlags flags() const;
     inline const QMetaObject *metaObject() const;
+    QT_PREPEND_NAMESPACE(QByteArray) name() const;
 
     inline void *create(const void *copy = nullptr) const;
     inline void destroy(void *data) const;
     inline void *construct(void *where, const void *copy = nullptr) const;
     inline void destruct(void *data) const;
+
+    template<typename T>
+    static QMetaType fromType()
+    { return QMetaType(qMetaTypeId<T>()); }
+
+    friend bool operator==(const QMetaType &a, const QMetaType &b)
+    { return a.m_typeId == b.m_typeId; }
+
+    friend bool operator!=(const QMetaType &a, const QMetaType &b)
+    { return a.m_typeId != b.m_typeId; }
+
 
 public:
     template<typename T>
@@ -743,8 +751,6 @@ private:
     static bool registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f, int type);
 #endif
 
-// ### Qt6: FIXME: Remove the special Q_CC_MSVC handling, it was introduced to maintain BC.
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
 #ifndef Q_CLANG_QDOC
     template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
     template<typename, typename> friend struct QtPrivate::ConverterMemberFunction;
@@ -753,9 +759,6 @@ private:
     template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::IsMetaTypePair;
     template<typename, typename> friend struct QtPrivate::MetaTypeSmartPointerHelper;
-#endif
-#else
-public:
 #endif
     static bool registerConverterFunction(const QtPrivate::AbstractConverterFunction *f, int from, int to);
     static void unregisterConverterFunction(int from, int to);
@@ -1215,9 +1218,12 @@ public:
     { IteratorOwner<typename T::const_iterator>::assign(iterator,
                                                         static_cast<const T*>(container)->find(*static_cast<const typename T::key_type*>(p))); }
 
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED // Hits on the deprecated QHash::iterator::operator--()
     template<class T>
     static void advanceImpl(void **p, int step)
     { std::advance(*static_cast<typename T::const_iterator*>(*p), step); }
+    QT_WARNING_POP
 
     template<class T>
     static void beginImpl(const void *container, void **iterator)

@@ -186,7 +186,7 @@ QVariant  QPlatformDialogHelper::defaultStyleHint(QPlatformDialogHelper::StyleHi
 class QFontDialogOptionsPrivate : public QSharedData
 {
 public:
-    QFontDialogOptionsPrivate() : options(0) {}
+    QFontDialogOptionsPrivate() = default;
 
     QFontDialogOptions::FontDialogOptions options;
     QString windowTitle;
@@ -328,7 +328,7 @@ Q_GLOBAL_STATIC(QColorDialogStaticData, qColorDialogStaticData)
 class QColorDialogOptionsPrivate : public QSharedData
 {
 public:
-    QColorDialogOptionsPrivate() : options(0) {}
+    QColorDialogOptionsPrivate() = default;
     // Write out settings around destruction of dialogs
     ~QColorDialogOptionsPrivate() { qColorDialogStaticData()->writeSettings(); }
 
@@ -465,24 +465,16 @@ void QPlatformColorDialogHelper::setOptions(const QSharedPointer<QColorDialogOpt
 class QFileDialogOptionsPrivate : public QSharedData
 {
 public:
-    QFileDialogOptionsPrivate() : options(0),
-        viewMode(QFileDialogOptions::Detail),
-        fileMode(QFileDialogOptions::AnyFile),
-        acceptMode(QFileDialogOptions::AcceptOpen),
-        filters(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs),
-        useDefaultNameFilters(true)
-    {}
-
     QFileDialogOptions::FileDialogOptions options;
     QString windowTitle;
 
-    QFileDialogOptions::ViewMode viewMode;
-    QFileDialogOptions::FileMode fileMode;
-    QFileDialogOptions::AcceptMode acceptMode;
+    QFileDialogOptions::ViewMode viewMode = QFileDialogOptions::Detail;
+    QFileDialogOptions::FileMode fileMode = QFileDialogOptions::AnyFile;
+    QFileDialogOptions::AcceptMode acceptMode = QFileDialogOptions::AcceptOpen;
     QString labels[QFileDialogOptions::DialogLabelCount];
-    QDir::Filters filters;
+    QDir::Filters filters = QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs;
     QList<QUrl> sidebarUrls;
-    bool useDefaultNameFilters;
+    bool useDefaultNameFilters = true;
     QStringList nameFilters;
     QStringList mimeTypeFilters;
     QString defaultSuffix;

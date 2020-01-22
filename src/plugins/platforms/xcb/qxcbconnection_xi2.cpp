@@ -166,7 +166,7 @@ void QXcbConnection::xi2SetupDevice(void *info, bool removeExisting)
         }
         case XCB_INPUT_DEVICE_CLASS_TYPE_BUTTON: {
             auto *bci = reinterpret_cast<xcb_input_button_class_t *>(classinfo);
-            xcb_atom_t *labels = 0;
+            xcb_atom_t *labels = nullptr;
             if (bci->num_buttons >= 5) {
                 labels = xcb_input_button_class_labels(bci);
                 xcb_atom_t label4 = labels[3];
@@ -424,7 +424,7 @@ QXcbConnection::TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
 QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info)
 {
     auto *deviceinfo = reinterpret_cast<xcb_input_xi_device_info_t *>(info);
-    QTouchDevice::Capabilities caps = 0;
+    QTouchDevice::Capabilities caps;
     int type = -1;
     int maxTouchPoints = 1;
     bool isTouchDevice = false;
@@ -527,7 +527,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     int sourceDeviceId = xiEvent->deviceid; // may be the master id
     qt_xcb_input_device_event_t *xiDeviceEvent = nullptr;
     xcb_input_enter_event_t *xiEnterEvent = nullptr;
-    QXcbWindowEventListener *eventListener = 0;
+    QXcbWindowEventListener *eventListener = nullptr;
 
     switch (xiEvent->event_type) {
     case XCB_INPUT_BUTTON_PRESS:
@@ -1252,14 +1252,16 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
             if (Q_LIKELY(useValuators)) {
                 const qreal value = scaleOneValuator(normalizedValue, physicalScreenArea.x(), physicalScreenArea.width());
                 global.setX(value);
-                local.setX(value - window->handle()->geometry().x());
+                // mapFromGlobal is ok for nested/embedded windows, but works only with whole-number QPoint;
+                // so map it first, then add back the sub-pixel position
+                local.setX(window->mapFromGlobal(QPoint(int(value), 0)).x() + (value - int(value)));
             }
             break;
         case QXcbAtom::AbsY:
             if (Q_LIKELY(useValuators)) {
                 qreal value = scaleOneValuator(normalizedValue, physicalScreenArea.y(), physicalScreenArea.height());
                 global.setY(value);
-                local.setY(value - window->handle()->geometry().y());
+                local.setY(window->mapFromGlobal(QPoint(0, int(value))).y() + (value - int(value)));
             }
             break;
         case QXcbAtom::AbsPressure:

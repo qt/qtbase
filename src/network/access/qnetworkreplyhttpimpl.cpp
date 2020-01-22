@@ -693,7 +693,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     auto redirectPolicy = QNetworkRequest::ManualRedirectPolicy;
     const QVariant value = newHttpRequest.attribute(QNetworkRequest::RedirectPolicyAttribute);
     if (value.isValid())
-        redirectPolicy = value.value<QNetworkRequest::RedirectPolicy>();
+        redirectPolicy = qvariant_cast<QNetworkRequest::RedirectPolicy>(value);
     else if (newHttpRequest.attribute(QNetworkRequest::FollowRedirectsAttribute).toBool())
         redirectPolicy = QNetworkRequest::NoLessSafeRedirectPolicy;
 
@@ -983,7 +983,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         }
 
         thread->quit();
-        thread->wait(5000);
+        thread->wait(QDeadlineTimer(5000));
         if (thread->isFinished())
             delete thread;
         else

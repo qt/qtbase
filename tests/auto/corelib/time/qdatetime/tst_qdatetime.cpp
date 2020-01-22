@@ -150,6 +150,7 @@ private slots:
     void timeZones() const;
     void systemTimeZoneChange() const;
 
+    void invalid_data() const;
     void invalid() const;
     void range() const;
 
@@ -1003,8 +1004,9 @@ void tst_QDateTime::toString_rfcDate()
     // Set to non-English locale to confirm still uses English
     QLocale oldLocale;
     QLocale::setDefault(QLocale("de_DE"));
-    QCOMPARE(dt.toString(Qt::RFC2822Date), formatted);
+    QString actual(dt.toString(Qt::RFC2822Date));
     QLocale::setDefault(oldLocale);
+    QCOMPARE(actual, formatted);
 }
 
 void tst_QDateTime::toString_enumformat()
@@ -2208,6 +2210,55 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 456));
 
     // Test Qt::ISODate format.
+    QTest::newRow("trailing space") // QTBUG-80445
+        << QString("2000-01-02 03:04:05.678 ")
+        << Qt::ISODate << QDateTime(QDate(2000, 1, 2), QTime(3, 4, 5, 678));
+
+    // Invalid spaces (but keeping field widths correct):
+    QTest::newRow("space before millis")
+        << QString("2000-01-02 03:04:05. 678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after seconds")
+        << QString("2000-01-02 03:04:5 .678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before seconds")
+        << QString("2000-01-02 03:04: 5.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after minutes")
+        << QString("2000-01-02 03:4 :05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before minutes")
+        << QString("2000-01-02 03: 4:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after hour")
+        << QString("2000-01-02 3 :04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before hour")
+        << QString("2000-01-02  3:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after day")
+        << QString("2000-01-2  03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before day")
+        << QString("2000-01- 2 03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after month")
+        << QString("2000-1 -02 03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before month")
+        << QString("2000- 1-02 03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after year")
+        << QString("200 -01-02 03:04:05.678") << Qt::ISODate << QDateTime();
+
+    // Spaces as separators:
+    QTest::newRow("sec-milli space")
+        << QString("2000-01-02 03:04:05 678") << Qt::ISODate
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        << invalidDateTime();
+#else
+        // Should be invalid, but we ignore trailing cruft (in some cases)
+        << QDateTime(QDate(2000, 1, 2), QTime(3, 4, 5));
+#endif
+    QTest::newRow("min-sec space")
+        << QString("2000-01-02 03:04 05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("hour-min space")
+        << QString("2000-01-02 03 04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("mon-day space")
+        << QString("2000-01 02 03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("year-mon space")
+        << QString("2000 01-02 03:04:05.678") << Qt::ISODate << QDateTime();
+
+    // Normal usage:
     QTest::newRow("ISO +01:00") << QString::fromLatin1("1987-02-13T13:24:51+01:00")
         << Qt::ISODate << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
     QTest::newRow("ISO +00:01") << QString::fromLatin1("1987-02-13T13:24:51+00:01")
@@ -2228,11 +2279,17 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2014, 12, 15), QTime(15, 37, 9), Qt::UTC);
     QTest::newRow("ISO zzz-3") << QString::fromLatin1("2014-12-15T12:37:09.745-3")
         << Qt::ISODate << QDateTime(QDate(2014, 12, 15), QTime(15, 37, 9, 745), Qt::UTC);
+    QTest::newRow("ISO lower-case") << QString::fromLatin1("2005-06-28T07:57:30.002z")
+        << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 2), Qt::UTC);
     // No time specified - defaults to Qt::LocalTime.
     QTest::newRow("ISO data3") << QString::fromLatin1("2002-10-01")
         << Qt::ISODate << QDateTime(QDate(2002, 10, 1), QTime(0, 0, 0, 0), Qt::LocalTime);
+    // Excess digits in milliseconds, round correctly:
     QTest::newRow("ISO") << QString::fromLatin1("2005-06-28T07:57:30.0010000000Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);
+    QTest::newRow("ISO rounding") << QString::fromLatin1("2005-06-28T07:57:30.0015Z")
+        << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 2), Qt::UTC);
+    // ... and accept comma as separator:
     QTest::newRow("ISO with comma 1") << QString::fromLatin1("2005-06-28T07:57:30,0040000000Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 4), Qt::UTC);
     QTest::newRow("ISO with comma 2") << QString::fromLatin1("2005-06-28T07:57:30,0015Z")
@@ -2279,7 +2336,11 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
     // Test invalid characters (should ignore invalid characters at end of string).
     QTest::newRow("ISO invalid character at end") << QString::fromLatin1("2012-01-01T08:00:00!")
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        << Qt::ISODate << invalidDateTime();
+#else
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
+#endif
     QTest::newRow("ISO invalid character at front") << QString::fromLatin1("!2012-01-01T08:00:00")
         << Qt::ISODate << invalidDateTime();
     QTest::newRow("ISO invalid character both ends") << QString::fromLatin1("!2012-01-01T08:00:00!")
@@ -2310,7 +2371,13 @@ void tst_QDateTime::fromStringDateFormat_data()
     // Test Qt::RFC2822Date format (RFC 2822).
     QTest::newRow("RFC 2822 +0100") << QString::fromLatin1("13 Feb 1987 13:24:51 +0100")
         << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
+    QTest::newRow("RFC 2822 after space +0100")
+        << QString::fromLatin1(" 13 Feb 1987 13:24:51 +0100")
+        << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
     QTest::newRow("RFC 2822 with day +0100") << QString::fromLatin1("Fri, 13 Feb 1987 13:24:51 +0100")
+        << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
+    QTest::newRow("RFC 2822 with day after space +0100")
+        << QString::fromLatin1(" Fri, 13 Feb 1987 13:24:51 +0100")
         << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
     QTest::newRow("RFC 2822 -0100") << QString::fromLatin1("13 Feb 1987 13:24:51 -0100")
         << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(14, 24, 51), Qt::UTC);
@@ -2324,6 +2391,11 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     QTest::newRow("RFC 2822 with day +0000") << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34 +0000")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
+    // Should be invalid, but current implementation would just ignore the
+    // offset as trailing junk if we insist on the space:
+    QTest::newRow("RFC 2822 missing space before +0100")
+        << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34+0100") << Qt::RFC2822Date
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::OffsetFromUTC, 3600);
     // No timezone assume UTC
     QTest::newRow("RFC 2822 no timezone") << QString::fromLatin1("01 Jan 1970 00:12:34")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
@@ -2339,20 +2411,33 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << invalidDateTime();
     QTest::newRow("RFC 2822 invalid year") << QString::fromLatin1("13 Fev 0000 13:24:51 +0100")
         << Qt::RFC2822Date << invalidDateTime();
-    // Test invalid characters (should ignore invalid characters at end of string).
-    QTest::newRow("RFC 2822 invalid character at end") << QString::fromLatin1("01 Jan 2012 08:00:00 +0100!")
+    // Test invalid characters (currently ignoring trailing junk, but see QTBUG-80038).
+    QTest::newRow("RFC 2822 invalid character at end")
+        << QString::fromLatin1("01 Jan 2012 08:00:00 +0100!")
         << Qt::RFC2822Date << QDateTime(QDate(2012, 1, 1), QTime(7, 0, 0, 0), Qt::UTC);
-    QTest::newRow("RFC 2822 invalid character at front") << QString::fromLatin1("!01 Jan 2012 08:00:00 +0000")
+    QTest::newRow("RFC 2822 invalid character at front")
+        << QString::fromLatin1("!01 Jan 2012 08:00:00 +0100")
         << Qt::RFC2822Date << invalidDateTime();
-    QTest::newRow("RFC 2822 invalid character both ends") << QString::fromLatin1("!01 Jan 2012 08:00:00 +0000!")
+    QTest::newRow("RFC 2822 invalid character both ends")
+        << QString::fromLatin1("!01 Jan 2012 08:00:00 +0100!")
         << Qt::RFC2822Date << invalidDateTime();
-    QTest::newRow("RFC 2822 invalid character at front, 2 at back") << QString::fromLatin1("!01 Jan 2012 08:00:00 +0000..")
+    QTest::newRow("RFC 2822 invalid character at front, 2 at back")
+        << QString::fromLatin1("!01 Jan 2012 08:00:00 +0100..")
         << Qt::RFC2822Date << invalidDateTime();
-    QTest::newRow("RFC 2822 invalid character 2 at front") << QString::fromLatin1("!!01 Jan 2012 08:00:00 +0000")
+    QTest::newRow("RFC 2822 invalid character 2 at front")
+        << QString::fromLatin1("!!01 Jan 2012 08:00:00 +0100")
         << Qt::RFC2822Date << invalidDateTime();
+    // The common date text used by the "invalid character" tests, just to be
+    // sure *it's* not what's invalid:
+    QTest::newRow("RFC 2822 (not invalid)")
+        << QString::fromLatin1("01 Jan 2012 08:00:00 +0100")
+        << Qt::RFC2822Date << QDateTime(QDate(2012, 1, 1), QTime(7, 0, 0, 0), Qt::UTC);
 
-    // Test Qt::RFC2822Date format (RFC 850 and 1036).
+    // Test Qt::RFC2822Date format (RFC 850 and 1036, permissive).
     QTest::newRow("RFC 850 and 1036 +0100") << QString::fromLatin1("Fri Feb 13 13:24:51 1987 +0100")
+        << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
+    QTest::newRow("RFC 1036 after space +0100")
+        << QString::fromLatin1(" Fri Feb 13 13:24:51 1987 +0100")
         << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
     QTest::newRow("RFC 850 and 1036 -0100") << QString::fromLatin1("Fri Feb 13 13:24:51 1987 -0100")
         << Qt::RFC2822Date << QDateTime(QDate(1987, 2, 13), QTime(14, 24, 51), Qt::UTC);
@@ -2364,19 +2449,29 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::newRow("RFC 850 and 1036 no timezone") << QString::fromLatin1("Thu Jan 01 00:12:34 1970")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     // No time specified
-    QTest::newRow("RFC 850 and 1036 date only") << QString::fromLatin1("Fri Nov 01 2002")
+    QTest::newRow("RFC 850 and 1036 date only")
+        << QString::fromLatin1("Fri Nov 01 2002")
         << Qt::RFC2822Date << invalidDateTime();
-    // Test invalid characters (should ignore invalid characters at end of string).
-    QTest::newRow("RFC 850 and 1036 invalid character at end") << QString::fromLatin1("Sun Jan 01 08:00:00 2012 +0100!")
+    // Test invalid characters (currently ignoring trailing junk, but see QTBUG-80038).
+    QTest::newRow("RFC 850 and 1036 invalid character at end")
+        << QString::fromLatin1("Sun Jan 01 08:00:00 2012 +0100!")
         << Qt::RFC2822Date << QDateTime(QDate(2012, 1, 1), QTime(7, 0, 0, 0), Qt::UTC);
-    QTest::newRow("RFC 850 and 1036 invalid character at front") << QString::fromLatin1("!Sun Jan 01 08:00:00 2012 +0000")
+    QTest::newRow("RFC 850 and 1036 invalid character at front")
+        << QString::fromLatin1("!Sun Jan 01 08:00:00 2012 +0100")
         << Qt::RFC2822Date << invalidDateTime();
-    QTest::newRow("RFC 850 and 1036 invalid character both ends") << QString::fromLatin1("!Sun Jan 01 08:00:00 2012 +0000!")
+    QTest::newRow("RFC 850 and 1036 invalid character both ends")
+        << QString::fromLatin1("!Sun Jan 01 08:00:00 2012 +0100!")
         << Qt::RFC2822Date << invalidDateTime();
-    QTest::newRow("RFC 850 and 1036 invalid character at front, 2 at back") << QString::fromLatin1("!Sun Jan 01 08:00:00 2012 +0000..")
+    QTest::newRow("RFC 850 and 1036 invalid character at front, 2 at back")
+        << QString::fromLatin1("!Sun Jan 01 08:00:00 2012 +0100..")
         << Qt::RFC2822Date << invalidDateTime();
-    QTest::newRow("RFC 850 and 1036 invalid character 2 at front") << QString::fromLatin1("!!Sun Jan 01 08:00:00 2012 +0000")
+    QTest::newRow("RFC 850 and 1036 invalid character 2 at front")
+        << QString::fromLatin1("!!Sun Jan 01 08:00:00 2012 +0100")
         << Qt::RFC2822Date << invalidDateTime();
+    // Again, check the text in the "invalid character" tests isn't the source of invalidity:
+    QTest::newRow("RFC 850 and 1036 (not invalid)")
+        << QString::fromLatin1("Sun Jan 01 08:00:00 2012 +0100")
+        << Qt::RFC2822Date << QDateTime(QDate(2012, 1, 1), QTime(7, 0, 0, 0), Qt::UTC);
 
     QTest::newRow("RFC empty") << QString::fromLatin1("") << Qt::RFC2822Date << invalidDateTime();
 }
@@ -2423,6 +2518,7 @@ void tst_QDateTime::fromStringStringFormat_data()
     if (southBrazil.isValid()) {
         QTest::newRow("spring-forward-midnight")
             << QString("2008-10-19 23:45.678 America/Sao_Paulo") << QString("yyyy-MM-dd mm:ss.zzz t")
+            // That's in the hour skipped - expect the matching time after the spring-forward, in DST:
             << QDateTime(QDate(2008, 10, 19), QTime(1, 23, 45, 678), southBrazil);
     }
 #endif
@@ -3324,6 +3420,9 @@ void tst_QDateTime::timeZones() const
     QCOMPARE(utc.date(), utcDst.date());
     QCOMPARE(utc.time(), utcDst.time());
 
+    // Crash test, QTBUG-80146:
+    QVERIFY(!nzStd.toTimeZone(QTimeZone()).isValid());
+
     // Sydney is 2 hours behind New Zealand
     QTimeZone ausTz = QTimeZone("Australia/Sydney");
     QDateTime aus = nzStd.toTimeZone(ausTz);
@@ -3493,23 +3592,42 @@ void tst_QDateTime::systemTimeZoneChange() const
     QCOMPARE(tzDate.toMSecsSinceEpoch(), tzMsecs);
 }
 
+void tst_QDateTime::invalid_data() const
+{
+    QTest::addColumn<QDateTime>("when");
+    QTest::addColumn<Qt::TimeSpec>("spec");
+    QTest::addColumn<bool>("goodZone");
+    QTest::newRow("default") << QDateTime() << Qt::LocalTime << true;
+
+    QDateTime invalidDate = QDateTime(QDate(0, 0, 0), QTime(-1, -1, -1));
+    QTest::newRow("simple") << invalidDate << Qt::LocalTime << true;
+    QTest::newRow("UTC") << invalidDate.toUTC() << Qt::UTC << true;
+    QTest::newRow("offset")
+        << invalidDate.toOffsetFromUtc(3600) << Qt::OffsetFromUTC << true;
+    QTest::newRow("CET")
+        << invalidDate.toTimeZone(QTimeZone("Europe/Oslo")) << Qt::TimeZone << true;
+
+    // Crash tests, QTBUG-80146:
+    QTest::newRow("nozone+construct")
+        << QDateTime(QDate(1970, 1, 1), QTime(12, 0), QTimeZone()) << Qt::TimeZone << false;
+    QTest::newRow("nozone+fromMSecs")
+        << QDateTime::fromMSecsSinceEpoch(42, QTimeZone()) << Qt::TimeZone << false;
+    QDateTime valid(QDate(1970, 1, 1), QTime(12, 0), Qt::UTC);
+    QTest::newRow("tonozone") << valid.toTimeZone(QTimeZone()) << Qt::TimeZone << false;
+}
+
 void tst_QDateTime::invalid() const
 {
-    QDateTime invalidDate = QDateTime(QDate(0, 0, 0), QTime(-1, -1, -1));
-    QCOMPARE(invalidDate.isValid(), false);
-    QCOMPARE(invalidDate.timeSpec(), Qt::LocalTime);
-
-    QDateTime utcDate = invalidDate.toUTC();
-    QCOMPARE(utcDate.isValid(), false);
-    QCOMPARE(utcDate.timeSpec(), Qt::UTC);
-
-    QDateTime offsetDate = invalidDate.toOffsetFromUtc(3600);
-    QCOMPARE(offsetDate.isValid(), false);
-    QCOMPARE(offsetDate.timeSpec(), Qt::OffsetFromUTC);
-
-    QDateTime tzDate = invalidDate.toTimeZone(QTimeZone("Europe/Oslo"));
-    QCOMPARE(tzDate.isValid(), false);
-    QCOMPARE(tzDate.timeSpec(), Qt::TimeZone);
+    QFETCH(QDateTime, when);
+    QFETCH(Qt::TimeSpec, spec);
+    QFETCH(bool, goodZone);
+    QVERIFY(!when.isValid());
+    QCOMPARE(when.timeSpec(), spec);
+    QCOMPARE(when.timeZoneAbbreviation(), QString());
+    if (!goodZone)
+        QCOMPARE(when.toMSecsSinceEpoch(), 0);
+    QVERIFY(!when.isDaylightTime());
+    QCOMPARE(when.timeZone().isValid(), goodZone);
 }
 
 void tst_QDateTime::range() const

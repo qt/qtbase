@@ -68,11 +68,6 @@ qtConfig(action) {
                kernel/qwidgetaction.cpp
 }
 
-qtConfig(opengl) {
-    HEADERS += kernel/qopenglwidget.h
-    SOURCES += kernel/qopenglwidget.cpp
-}
-
 qtConfig(formlayout) {
     HEADERS += kernel/qformlayout.h
     SOURCES += kernel/qformlayout.cpp

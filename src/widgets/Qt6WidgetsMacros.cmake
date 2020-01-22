@@ -41,7 +41,7 @@ include(CMakeParseArguments)
 
 # qt5_wrap_ui(outfiles inputfile ... )
 
-function(QT5_WRAP_UI outfiles )
+function(qt5_wrap_ui outfiles )
     set(options)
     set(oneValueArgs)
     set(multiValueArgs OPTIONS)

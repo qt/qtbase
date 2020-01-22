@@ -193,9 +193,9 @@ enum Direction {
     DirLRI = QChar::DirLRI,
     DirRLI = QChar::DirRLI,
     DirFSI = QChar::DirFSI,
-    DirPDI = QChar::DirPDI
+    DirPDI = QChar::DirPDI,
 
-    , Dir_Unassigned
+    Dir_Unassigned
 };
 
 static QHash<QByteArray, Direction> directionMap;
@@ -245,9 +245,9 @@ enum JoiningType {
     Joining_Dual,
     Joining_Right,
     Joining_Left,
-    Joining_Transparent
+    Joining_Transparent,
 
-    , Joining_Unassigned
+    Joining_Unassigned
 };
 
 static QHash<QByteArray, JoiningType> joining_map;
@@ -294,7 +294,8 @@ static const char *grapheme_break_class_string =
     "    Graphemebreak_E_Modifier,\n"
     "    Graphemebreak_Glue_After_Zwj,\n"
     "    Graphemebreak_E_Base_GAZ,\n"
-    "    NumGraphemeBreakClasses,\n"
+    "\n"
+    "    NumGraphemeBreakClasses\n"
     "};\n\n";
 
 enum GraphemeBreakClass {
@@ -381,7 +382,8 @@ static const char *word_break_class_string =
     "    WordBreak_Glue_After_Zwj,\n"
     "    WordBreak_E_Base_GAZ,\n"
     "    WordBreak_WSegSpace,\n"
-    "    NumWordBreakClasses,\n"
+    "\n"
+    "    NumWordBreakClasses\n"
     "};\n\n";
 
 enum WordBreakClass {
@@ -469,6 +471,7 @@ static const char *sentence_break_class_string =
     "    SentenceBreak_SContinue,\n"
     "    SentenceBreak_STerm,\n"
     "    SentenceBreak_Close,\n"
+    "\n"
     "    NumSentenceBreakClasses\n"
     "};\n\n";
 
@@ -486,9 +489,9 @@ enum SentenceBreakClass {
     SentenceBreak_ATerm,
     SentenceBreak_SContinue,
     SentenceBreak_STerm,
-    SentenceBreak_Close
+    SentenceBreak_Close,
 
-    , SentenceBreak_Unassigned
+    SentenceBreak_Unassigned
 };
 
 static QHash<QByteArray, SentenceBreakClass> sentence_break_map;
@@ -537,6 +540,7 @@ static const char *line_break_class_string =
     "    LineBreak_EB, LineBreak_EM, LineBreak_ZWJ,\n"
     "    LineBreak_SA, LineBreak_SG, LineBreak_SP,\n"
     "    LineBreak_CR, LineBreak_LF, LineBreak_BK,\n"
+    "\n"
     "    NumLineBreakClasses\n"
     "};\n\n";
 

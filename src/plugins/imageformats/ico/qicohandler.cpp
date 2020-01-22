@@ -535,8 +535,6 @@ QImage ICOReader::iconAt(int index)
                                     if (!mask.isNull()) {
                                         img = image;
                                         img.setAlphaChannel(mask);
-                                        // (Luckily, it seems that setAlphaChannel() does not ruin the alpha values
-                                        // of partially transparent pixels in those icons that have that)
                                     }
                                 }
                             }
@@ -615,13 +613,7 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
             }
             QImage maskImage(image.width(), image.height(), QImage::Format_Mono);
             image = image.convertToFormat(QImage::Format_ARGB32);
-
-            if (image.hasAlphaChannel()) {
-                maskImage = image.createAlphaMask();
-            } else {
-                maskImage.fill(0xff);
-            }
-            maskImage = maskImage.convertToFormat(QImage::Format_Mono);
+            maskImage.fill(Qt::color1);
 
             int    nbits = 32;
             int    bpl_bmp = ((image.width()*nbits+31)/32)*4;
@@ -671,7 +663,7 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
                     *b++ = qRed(*p);
                     *b++ = qAlpha(*p);
                     if (qAlpha(*p) > 0)   // Even mostly transparent pixels must not be masked away
-                        maskImage.setPixel(x, y, Qt::color1);  // (i.e. createAlphaMask() takes away too much)
+                        maskImage.setPixel(x, y, 0);
                     p++;
                     x++;
                 }
@@ -679,7 +671,6 @@ bool ICOReader::write(QIODevice *device, const QVector<QImage> &images)
             }
             delete[] buf;
 
-            maskImage.invertPixels();   // seems as though it needs this
             // NOTE! !! The mask is only flipped vertically - not horizontally !!
             for (y = maskImage.height() - 1; y >= 0; y--)
                 buffer.write((char*)maskImage.scanLine(y), maskImage.bytesPerLine());

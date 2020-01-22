@@ -59,7 +59,7 @@
 #  undef False
 #endif
 
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
 #  include <compare>
 #endif
 
@@ -90,7 +90,9 @@ public:
     enum EncodingOption {
         SortKeysInMaps = 0x01,
         UseFloat = 0x02,
+#ifndef QT_BOOTSTRAPPED
         UseFloat16 = UseFloat | 0x04,
+#endif
         UseIntegers = 0x08,
 
         NoTransformation = 0
@@ -265,7 +267,7 @@ public:
     QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const;
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
     std::strong_ordering operator<=>(const QCborValue &other) const
     {
         int c = compare(other);
@@ -287,13 +289,15 @@ public:
     static QCborValue fromJsonValue(const QJsonValue &v);
     QJsonValue toJsonValue() const;
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamreader)
     static QCborValue fromCbor(QCborStreamReader &reader);
     static QCborValue fromCbor(const QByteArray &ba, QCborParserError *error = nullptr);
     static QCborValue fromCbor(const char *data, qsizetype len, QCborParserError *error = nullptr)
     { return fromCbor(QByteArray(data, int(len)), error); }
     static QCborValue fromCbor(const quint8 *data, qsizetype len, QCborParserError *error = nullptr)
     { return fromCbor(QByteArray(reinterpret_cast<const char *>(data), int(len)), error); }
+#endif // QT_CONFIG(cborstreamreader)
+#if QT_CONFIG(cborstreamwriter)
     QByteArray toCbor(EncodingOptions opt = NoTransformation);
     void toCbor(QCborStreamWriter &writer, EncodingOptions opt = NoTransformation);
 #endif
@@ -328,9 +332,9 @@ private:
         return Type(quint8(st) | SimpleType);
     }
 
-    Q_DECL_CONSTEXPR static bool isTag_helper(Type t)
+    Q_DECL_CONSTEXPR static bool isTag_helper(Type tt)
     {
-        return t == Tag || t >= 0x10000;
+        return tt == Tag || tt >= 0x10000;
     }
 };
 Q_DECLARE_SHARED(QCborValue)
@@ -421,7 +425,7 @@ public:
 
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
     std::strong_ordering operator<=>(const QCborValue &other) const
     {
         int c = compare(other);
@@ -441,7 +445,7 @@ public:
     QVariant toVariant() const                  { return concrete().toVariant(); }
     QJsonValue toJsonValue() const;
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamwriter)
     QByteArray toCbor(QCborValue::EncodingOptions opt = QCborValue::NoTransformation)
     { return concrete().toCbor(opt); }
     void toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt = QCborValue::NoTransformation);

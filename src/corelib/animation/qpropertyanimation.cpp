@@ -259,7 +259,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
 
     QVariantAnimation::updateState(newState, oldState);
 
-    QPropertyAnimation *animToStop = 0;
+    QPropertyAnimation *animToStop = nullptr;
     {
         static QBasicMutex mutex;
         auto locker = qt_unique_lock(mutex);

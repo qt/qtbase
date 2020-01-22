@@ -48,8 +48,7 @@
 #ifdef Q_OS_WIN
 #include "qrhid3d11_p_p.h"
 #endif
-//#ifdef Q_OS_DARWIN
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include "qrhimetal_p_p.h"
 #endif
 
@@ -2161,6 +2160,32 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
  */
 
 /*!
+    \class QRhiTexture::NativeTexture
+    \brief Contains information about the underlying native resources of a texture.
+ */
+
+/*!
+    \variable QRhiTexture::NativeTexture::object
+    \brief a pointer to the native object handle.
+
+    With OpenGL, the native handle is a GLuint value, so \c object is then a
+    pointer to a GLuint. With Vulkan, the native handle is a VkImage, so \c
+    object is a pointer to a VkImage. With Direct3D 11 and Metal \c
+    object is a pointer to a ID3D11Texture2D or MTLTexture pointer, respectively.
+
+    \note Pay attention to the fact that \a object is always a pointer
+    to the native texture handle type, even if the native type itself is a
+    pointer.
+ */
+
+/*!
+    \variable QRhiTexture::NativeTexture::layout
+    \brief Specifies the current image layout for APIs like Vulkan.
+
+    For Vulkan, \c layout contains a \c VkImageLayout value.
+ */
+
+/*!
     \internal
  */
 QRhiTexture::QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_,
@@ -2190,21 +2215,20 @@ QRhiResource::Type QRhiTexture::resourceType() const
  */
 
 /*!
-    \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
-    QRhiVulkanTextureNativeHandles. The returned value is null when exposing
-    the underlying native resources is not supported by the backend.
+    \return the underlying native resources for this texture. The returned value
+    will be empty if exposing the underlying native resources is not supported by
+    the backend.
 
-    \sa QRhiVulkanTextureNativeHandles, QRhiD3D11TextureNativeHandles,
-    QRhiMetalTextureNativeHandles, QRhiGles2TextureNativeHandles
+    \sa buildFrom()
  */
-const QRhiNativeHandles *QRhiTexture::nativeHandles()
+QRhiTexture::NativeTexture QRhiTexture::nativeTexture()
 {
-    return nullptr;
+    return {};
 }
 
 /*!
     Similar to build() except that no new native textures are created. Instead,
-    the texture from \a src is used.
+    the native texture resources specified by \a src is used.
 
     This allows importing an existing native texture object (which must belong
     to the same device or sharing context, depending on the graphics API) from
@@ -2220,12 +2244,10 @@ const QRhiNativeHandles *QRhiTexture::nativeHandles()
     does not free the object or any associated memory.
 
     The opposite of this operation, exposing a QRhiTexture-created native
-    texture object to a foreign engine, is possible via nativeHandles().
+    texture object to a foreign engine, is possible via nativeTexture().
 
-    \sa QRhiVulkanTextureNativeHandles, QRhiD3D11TextureNativeHandles,
-    QRhiMetalTextureNativeHandles, QRhiGles2TextureNativeHandles
- */
-bool QRhiTexture::buildFrom(const QRhiNativeHandles *src)
+*/
+bool QRhiTexture::buildFrom(QRhiTexture::NativeTexture src)
 {
     Q_UNUSED(src);
     return false;
@@ -2253,9 +2275,7 @@ bool QRhiTexture::buildFrom(const QRhiNativeHandles *src)
 
     \value Repeat
     \value ClampToEdge
-    \value Border
     \value Mirror
-    \value MirrorOnce
  */
 
 /*!
@@ -2320,6 +2340,24 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
 {
     return RenderPassDescriptor;
 }
+
+/*!
+    \fn bool QRhiRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const;
+
+    \return true if the \a other QRhiRenderPassDescriptor is compatible with
+    this one, meaning \c this and \a other can be used interchangebly in
+    QRhiGraphicsPipeline::setRenderPassDescriptor().
+
+    The concept of the compatibility of renderpass descriptors is similar to
+    the \l{QRhiShaderResourceBindings::isLayoutCompatible}{layout
+    compatibility} of QRhiShaderResourceBindings instances. They allow better
+    reuse of QRhiGraphicsPipeline instances: for example, a
+    QRhiGraphicsPipeline instance cache is expected to use these functions to
+    look for a matching pipeline, instead of just comparing pointers, thus
+    allowing a different QRhiRenderPassDescriptor and
+    QRhiShaderResourceBindings to be used in combination with the pipeline, as
+    long as they are compatible.
+ */
 
 /*!
     \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
@@ -3901,6 +3939,12 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
     case QRhiTexture::RGBA32F:
         bpc = 16;
         break;
+    case QRhiTexture::R16F:
+        bpc = 2;
+        break;
+    case QRhiTexture::R32F:
+        bpc = 4;
+        break;
 
     case QRhiTexture::D16:
         bpc = 2;
@@ -4049,8 +4093,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         break;
 #endif
     case Metal:
-//#ifdef Q_OS_DARWIN
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
         r->d = new QRhiMetal(static_cast<QRhiMetalInitParams *>(params),
                              static_cast<QRhiMetalNativeHandles *>(importDevice));
         break;

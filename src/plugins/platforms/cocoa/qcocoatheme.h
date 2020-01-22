@@ -70,7 +70,7 @@ public:
     const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type = SystemFont) const override;
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
-    QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions options = 0) const override;
+    QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions options = {}) const override;
 
     QVariant themeHint(ThemeHint hint) const override;
     QString standardButtonText(int button) const override;

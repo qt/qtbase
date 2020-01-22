@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
 
 static QNetworkInterface::InterfaceFlags convertFlags(uint rawFlags)
 {
-    QNetworkInterface::InterfaceFlags flags = nullptr;
+    QNetworkInterface::InterfaceFlags flags;
     flags |= (rawFlags & IFF_UP) ? QNetworkInterface::IsUp : QNetworkInterface::InterfaceFlag(0);
     flags |= (rawFlags & IFF_RUNNING) ? QNetworkInterface::IsRunning : QNetworkInterface::InterfaceFlag(0);
     flags |= (rawFlags & IFF_BROADCAST) ? QNetworkInterface::CanBroadcast : QNetworkInterface::InterfaceFlag(0);

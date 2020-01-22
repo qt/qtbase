@@ -212,6 +212,7 @@ Qt::ItemFlags QStringListModel::flags(const QModelIndex &index) const
     \a index in the model, to the provided \a value.
 
     The dataChanged() signal is emitted if the item is changed.
+    Returns \c true after emitting the dataChanged() signal.
 
     \sa Qt::ItemDataRole, data()
 */
@@ -249,6 +250,8 @@ bool QStringListModel::clearItemData(const QModelIndex &index)
     specified, indicating that the rows are inserted in the top level of
     the model.
 
+    Returns \c true if the insertion was successful.
+
     \sa QAbstractItemModel::insertRows()
 */
 
@@ -274,6 +277,8 @@ bool QStringListModel::insertRows(int row, int count, const QModelIndex &parent)
     consistency with QAbstractItemModel. By default, a null index is
     specified, indicating that the rows are removed in the top level of
     the model.
+
+    Returns \c true if the row removal was successful.
 
     \sa QAbstractItemModel::removeRows()
 */
@@ -301,24 +306,23 @@ bool QStringListModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
 {
     if (sourceRow < 0
         || sourceRow + count - 1 >= rowCount(sourceParent)
-        || destinationChild <= 0
+        || destinationChild < 0
         || destinationChild > rowCount(destinationParent)
+        || sourceRow == destinationChild
         || sourceRow == destinationChild - 1
-        || count <= 0) {
+        || count <= 0
+        || sourceParent.isValid()
+        || destinationParent.isValid()) {
         return false;
     }
     if (!beginMoveRows(QModelIndex(), sourceRow, sourceRow + count - 1, QModelIndex(), destinationChild))
         return false;
-    /*
-    QList::move assumes that the second argument is the index where the item will end up to
-    i.e. the valid range for that argument is from 0 to QList::size()-1
-    QAbstractItemModel::moveRows when source and destinations have the same parent assumes that
-    the item will end up being in the row BEFORE the one indicated by destinationChild
-    i.e. the valid range for that argument is from 1 to QList::size()
-    For this reason we remove 1 from destinationChild when using it inside QList
-    */
-    destinationChild--;
-    const int fromRow = destinationChild < sourceRow ? (sourceRow + count - 1) : sourceRow;
+
+    int fromRow = sourceRow;
+    if (destinationChild < sourceRow)
+        fromRow += count - 1;
+    else
+        destinationChild--;
     while (count--)
         lst.move(fromRow, destinationChild);
     endMoveRows();

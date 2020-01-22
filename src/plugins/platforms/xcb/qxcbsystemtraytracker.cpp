@@ -64,11 +64,11 @@ QXcbSystemTrayTracker *QXcbSystemTrayTracker::create(QXcbConnection *connection)
     // Selection, tray atoms for GNOME, NET WM Specification
     const xcb_atom_t trayAtom = connection->atom(QXcbAtom::_NET_SYSTEM_TRAY_OPCODE);
     if (!trayAtom)
-        return 0;
+        return nullptr;
     const QByteArray netSysTray = QByteArrayLiteral("_NET_SYSTEM_TRAY_S") + QByteArray::number(connection->primaryScreenNumber());
     const xcb_atom_t selection = connection->internAtom(netSysTray.constData());
     if (!selection)
-        return 0;
+        return nullptr;
 
     return new QXcbSystemTrayTracker(connection, trayAtom, selection);
 }

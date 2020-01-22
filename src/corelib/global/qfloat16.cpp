@@ -109,7 +109,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     \since 5.14
-    bool qfloat16::isInf() const noexcept
+    \fn bool qfloat16::isInf() const noexcept
 
     Tests whether this \c qfloat16 value is an infinity.
 
@@ -119,7 +119,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     \since 5.14
-    bool qfloat16::isNaN() const noexcept
+    \fn bool qfloat16::isNaN() const noexcept
 
     Tests whether this \c qfloat16 value is "not a number".
 
@@ -128,7 +128,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \since 5.14
-    bool qfloat16::isNormal() const noexcept
+    \fn bool qfloat16::isNormal() const noexcept
 
     Tests whether this \c qfloat16 value is finite and in normal form.
 
@@ -138,11 +138,19 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     \since 5.14
-    bool qfloat16::isFinite() const noexcept
+    \fn bool qfloat16::isFinite() const noexcept
 
     Tests whether this \c qfloat16 value is finite.
 
     \sa qIsFinite()
+*/
+
+/*!
+    \since 5.15
+    \fn qfloat16::copySign(qfloat16 sign) const noexcept
+
+    Returns a qfloat16 with the sign of \a sign but the rest of its value taken
+    from this qfloat16. Serves as qfloat16's equivalent of std::copysign().
 */
 
 /*!

@@ -79,11 +79,14 @@
 #include "qcocoamenuitem.h"
 #include "qcocoansmenu.h"
 
+#if QT_CONFIG(sessionmanager)
+#  include "qcocoasessionmanager.h"
+#endif
+
 #include <qevent.h>
 #include <qurl.h>
 #include <qdebug.h>
 #include <qguiapplication.h>
-#include <private/qguiapplication_p.h>
 #include "qt_mac_p.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <qwindowdefs.h>
@@ -149,13 +152,24 @@ QT_USE_NAMESPACE
     if ([reflectionDelegate respondsToSelector:_cmd])
         return [reflectionDelegate applicationShouldTerminate:sender];
 
-    if (QGuiApplicationPrivate::instance()->threadData->eventLoops.isEmpty()) {
+    if (QGuiApplicationPrivate::instance()->threadData.loadRelaxed()->eventLoops.isEmpty()) {
         // No event loop is executing. This probably means that Qt is used as a plugin,
         // or as a part of a native Cocoa application. In any case it should be fine to
         // terminate now.
         qCDebug(lcQpaApplication) << "No running event loops, terminating now";
         return NSTerminateNow;
     }
+
+#if QT_CONFIG(sessionmanager)
+    QCocoaSessionManager *cocoaSessionManager = QCocoaSessionManager::instance();
+    cocoaSessionManager->resetCancellation();
+    cocoaSessionManager->appCommitData();
+
+    if (cocoaSessionManager->wasCanceled()) {
+        qCDebug(lcQpaApplication) << "Session management canceled application termination";
+        return NSTerminateCancel;
+    }
+#endif
 
     if (!QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>()) {
         qCDebug(lcQpaApplication) << "Application termination canceled";
@@ -359,7 +373,7 @@ QT_USE_NAMESPACE
     if (!platformItem || platformItem->menu())
         return;
 
-    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
+    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData.loadRelaxed());
     QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
 
     static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);

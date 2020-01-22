@@ -78,7 +78,7 @@
 #include <QtGui/private/qrhid3d11_p.h>
 #endif
 
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include <QtGui/private/qrhimetal_p.h>
 #endif
 
@@ -123,9 +123,9 @@ QString graphicsApiName()
 
 QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers;
 int sampleCount = 1;
-QRhiSwapChain::Flags scFlags = 0;
-QRhi::BeginFrameFlags beginFrameFlags = 0;
-QRhi::EndFrameFlags endFrameFlags = 0;
+QRhiSwapChain::Flags scFlags;
+QRhi::BeginFrameFlags beginFrameFlags;
+QRhi::EndFrameFlags endFrameFlags;
 int framesUntilTdr = -1;
 bool transparentBackground = false;
 
@@ -148,6 +148,9 @@ protected:
 
     void exposeEvent(QExposeEvent *) override;
     bool event(QEvent *) override;
+#ifdef EXAMPLEFW_KEYPRESS_EVENTS
+    void keyPressEvent(QKeyEvent *e) override;
+#endif
 
     bool m_running = false;
     bool m_notExposed = false;
@@ -292,7 +295,7 @@ void Window::init()
     }
 #endif
 
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
     if (graphicsApi == Metal) {
         QRhiMetalInitParams params;
         m_r = QRhi::create(QRhi::Metal, &params, rhiFlags);
@@ -445,7 +448,7 @@ int main(int argc, char **argv)
     // Defaults.
 #if defined(Q_OS_WIN)
     graphicsApi = D3D11;
-#elif defined(Q_OS_DARWIN)
+#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
     graphicsApi = Metal;
 #elif QT_CONFIG(vulkan)
     graphicsApi = Vulkan;

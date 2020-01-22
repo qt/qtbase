@@ -93,7 +93,7 @@ void QXcbEglWindow::create()
 {
     QXcbWindow::create();
 
-    m_surface = eglCreateWindowSurface(m_glIntegration->eglDisplay(), m_config, m_window, 0);
+    m_surface = eglCreateWindowSurface(m_glIntegration->eglDisplay(), m_config, m_window, nullptr);
 }
 
 QT_END_NAMESPACE

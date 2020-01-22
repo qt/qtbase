@@ -211,7 +211,7 @@ QGraphicsLinearLayout::~QGraphicsLinearLayout()
         // ~QGraphicsLayoutItem.
         removeAt(i);
         if (item) {
-            item->setParentLayoutItem(0);
+            item->setParentLayoutItem(nullptr);
             if (item->ownedByLayout())
                 delete item;
         }
@@ -280,7 +280,7 @@ void QGraphicsLinearLayout::insertItem(int index, QGraphicsLayoutItem *item)
     Q_ASSERT(item);
     d->fixIndex(&index);
     d->engine.insertRow(index, d->orientation);
-    QGraphicsGridLayoutEngineItem *gridEngineItem = new QGraphicsGridLayoutEngineItem(item, d->gridRow(index), d->gridColumn(index), 1, 1, 0);
+    QGraphicsGridLayoutEngineItem *gridEngineItem = new QGraphicsGridLayoutEngineItem(item, d->gridRow(index), d->gridColumn(index), 1, 1, { });
     d->engine.insertItem(gridEngineItem, index);
     invalidate();
 }
@@ -310,7 +310,7 @@ void QGraphicsLinearLayout::removeItem(QGraphicsLayoutItem *item)
 {
     Q_D(QGraphicsLinearLayout);
     if (QGraphicsGridLayoutEngineItem *gridItem = d->engine.findLayoutItem(item)) {
-        item->setParentLayoutItem(0);
+        item->setParentLayoutItem(nullptr);
         d->removeGridItem(gridItem);
         delete gridItem;
         invalidate();
@@ -333,7 +333,7 @@ void QGraphicsLinearLayout::removeAt(int index)
 
     if (QGraphicsGridLayoutEngineItem *gridItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index))) {
         if (QGraphicsLayoutItem *layoutItem = gridItem->layoutItem())
-            layoutItem->setParentLayoutItem(0);
+            layoutItem->setParentLayoutItem(nullptr);
         d->removeGridItem(gridItem);
         delete gridItem;
         invalidate();
@@ -483,9 +483,9 @@ QGraphicsLayoutItem *QGraphicsLinearLayout::itemAt(int index) const
     Q_D(const QGraphicsLinearLayout);
     if (index < 0 || index >= d->engine.itemCount()) {
         qWarning("QGraphicsLinearLayout::itemAt: invalid index %d", index);
-        return 0;
+        return nullptr;
     }
-    QGraphicsLayoutItem *item = 0;
+    QGraphicsLayoutItem *item = nullptr;
     if (QGraphicsGridLayoutEngineItem *gridItem = static_cast<QGraphicsGridLayoutEngineItem *>(d->engine.itemAt(index)))
         item = gridItem->layoutItem();
     return item;

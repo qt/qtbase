@@ -70,7 +70,7 @@
 #if QT_CONFIG(slog2)
 #include <sys/slog2.h>
 #endif
-#if QT_HAS_INCLUDE(<paths.h>)
+#if __has_include(<paths.h>)
 #include <paths.h>
 #endif
 
@@ -106,7 +106,7 @@
 #    if __UCLIBC_HAS_BACKTRACE__
 #      define QLOGGING_HAVE_BACKTRACE
 #    endif
-#  elif (defined(__GLIBC__) && defined(__GLIBCXX__)) || (QT_HAS_INCLUDE(<cxxabi.h>) && QT_HAS_INCLUDE(<execinfo.h>))
+#  elif (defined(__GLIBC__) && defined(__GLIBCXX__)) || (__has_include(<cxxabi.h>) && __has_include(<execinfo.h>))
 #    define QLOGGING_HAVE_BACKTRACE
 #  endif
 #endif
@@ -116,7 +116,7 @@ extern char *__progname;
 #endif
 
 #ifndef QT_BOOTSTRAPPED
-#if defined(Q_OS_LINUX) && (defined(__GLIBC__) || QT_HAS_INCLUDE(<sys/syscall.h>))
+#if defined(Q_OS_LINUX) && (defined(__GLIBC__) || __has_include(<sys/syscall.h>))
 #  include <sys/syscall.h>
 
 # if defined(Q_OS_ANDROID) && !defined(SYS_gettid)
@@ -1276,7 +1276,7 @@ void QMessagePattern::setPattern(const QString &pattern)
 #if defined(QLOGGING_HAVE_BACKTRACE) && !defined(QT_BOOTSTRAPPED)
 // make sure the function has "Message" in the name so the function is removed
 
-#if ((defined(Q_CC_GNU) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)) || QT_HAS_ATTRIBUTE(optimize)) \
+#if ((defined(Q_CC_GNU) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)) || __has_attribute(optimize)) \
     && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 // force skipping the frame pointer, to save the backtrace() function some work
 __attribute__((optimize("omit-frame-pointer")))
@@ -1315,7 +1315,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
 
                 if (function.startsWith(QLatin1String("_Z"))) {
                     QScopedPointer<char, QScopedPointerPodDeleter> demangled(
-                                abi::__cxa_demangle(function.toUtf8(), 0, 0, 0));
+                                abi::__cxa_demangle(function.toUtf8(), nullptr, nullptr, nullptr));
                     if (demangled)
                         function = QString::fromUtf8(qCleanupFuncinfo(demangled.data()));
                 }

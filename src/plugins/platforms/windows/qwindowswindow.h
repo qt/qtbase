@@ -66,9 +66,12 @@ struct QWindowsGeometryHint
     static QMargins frame(const QWindow *w, const QRect &geometry,
                           DWORD style, DWORD exStyle);
     static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
+    static void applyToMinMaxInfo(const QWindow *w, const QScreen *screen,
+                                  const QMargins &margins, MINMAXINFO *mmi);
     static void applyToMinMaxInfo(const QWindow *w, const QMargins &margins,
                                   MINMAXINFO *mmi);
-    static void frameSizeConstraints(const QWindow *w, const QMargins &margins,
+    static void frameSizeConstraints(const QWindow *w, const QScreen *screen,
+                                     const QMargins &margins,
                                      QSize *minimumSize, QSize *maximumSize);
     static inline QPoint mapToGlobal(HWND hwnd, const QPoint &);
     static inline QPoint mapToGlobal(const QWindow *w, const QPoint &);
@@ -80,13 +83,16 @@ struct QWindowsGeometryHint
 
 struct QWindowCreationContext
 {
-    explicit QWindowCreationContext(const QWindow *w,
+    explicit QWindowCreationContext(const QWindow *w, const QScreen *s,
                                     const QRect &geometryIn, const QRect &geometry,
                                     const QMargins &customMargins,
                                     DWORD style, DWORD exStyle);
     void applyToMinMaxInfo(MINMAXINFO *mmi) const;
 
     const QWindow *window;
+    // The screen to use to scale size constraints, etc. Might differ from the
+    // screen of the window after QPlatformWindow::initialGeometry() (QTBUG-77307).
+    const QScreen *screen;
     QRect requestedGeometryIn; // QWindow scaled
     QRect requestedGeometry; // after QPlatformWindow::initialGeometry()
     QPoint obtainedPos;

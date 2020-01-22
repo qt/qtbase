@@ -54,7 +54,7 @@
 
 // GLES build without having included gl32.h -> GLDEBUGPROC is still need for the protos, define it here
 #if defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_ES_3_2)
-typedef void (QOPENGLF_APIENTRYP  *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+typedef void (QOPENGLF_APIENTRY  *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 #endif
 
 QT_BEGIN_NAMESPACE

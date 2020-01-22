@@ -90,6 +90,6 @@ void LocaleSelector::emitLocaleSelected(int index)
     QVariant v = itemData(index);
     if (!v.isValid())
         return;
-    const QLocale l = v.value<QLocale>();
+    const QLocale l = qvariant_cast<QLocale>(v);
     emit localeSelected(l);
 }

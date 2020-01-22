@@ -101,7 +101,7 @@ public:
     QOpenGLVertexArrayObjectPrivate()
         : vao(0)
         , vaoFuncsType(NotSupported)
-        , context(0)
+        , context(nullptr)
     {
     }
 
@@ -167,7 +167,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
             vaoFuncs.helper->glGenVertexArrays(1, &vao);
         }
     } else {
-        vaoFuncs.core_3_0 = 0;
+        vaoFuncs.core_3_0 = nullptr;
         vaoFuncsType = NotSupported;
         QSurfaceFormat format = ctx->format();
 #ifndef QT_OPENGL_ES_2
@@ -200,17 +200,17 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
     Q_Q(QOpenGLVertexArrayObject);
 
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    QOpenGLContext *oldContext = 0;
-    QSurface *oldContextSurface = 0;
+    QOpenGLContext *oldContext = nullptr;
+    QSurface *oldContextSurface = nullptr;
     QScopedPointer<QOffscreenSurface> offscreenSurface;
     if (context && context != ctx) {
         oldContext = ctx;
-        oldContextSurface = ctx ? ctx->surface() : 0;
+        oldContextSurface = ctx ? ctx->surface() : nullptr;
         // Before going through the effort of creating an offscreen surface
         // check that we are on the GUI thread because otherwise many platforms
         // will not able to create that offscreen surface.
         if (QThread::currentThread() != qGuiApp->thread()) {
-            ctx = 0;
+            ctx = nullptr;
         } else {
             // Cannot just make the current surface current again with another context.
             // The format may be incompatible and some platforms (iOS) may impose
@@ -223,14 +223,14 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
                 ctx = context;
             } else {
                 qWarning("QOpenGLVertexArrayObject::destroy() failed to make VAO's context current");
-                ctx = 0;
+                ctx = nullptr;
             }
         }
     }
 
     if (context) {
         QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
-        context = 0;
+        context = nullptr;
     }
 
     if (vao && ctx) {

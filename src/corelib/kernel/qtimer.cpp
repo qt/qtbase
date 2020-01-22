@@ -84,10 +84,10 @@ QT_BEGIN_NAMESPACE
     must start and stop the timer in its thread; it is not possible to
     start a timer from another thread.
 
-    As a special case, a QTimer with a timeout of 0 will time out as
-    soon as all the events in the window system's event queue have
-    been processed. This can be used to do heavy work while providing
-    a snappy user interface:
+    As a special case, a QTimer with a timeout of 0 will time out as soon as
+    possible, though the ordering between zero timers and other sources of
+    events is unspecified. Zero timers can be used to do some work while still
+    providing a snappy user interface:
 
     \snippet timers/timers.cpp 4
     \snippet timers/timers.cpp 5
@@ -277,7 +277,7 @@ protected:
 };
 
 QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char *member)
-    : QObject(QAbstractEventDispatcher::instance()), hasValidReceiver(true), slotObj(0)
+    : QObject(QAbstractEventDispatcher::instance()), hasValidReceiver(true), slotObj(nullptr)
 {
     timerId = startTimer(msec, timerType);
     connect(this, SIGNAL(timeout()), r, member);
@@ -290,7 +290,7 @@ QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObj
     if (r && thread() != r->thread()) {
         // Avoid leaking the QSingleShotTimer instance in case the application exits before the timer fires
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
-        setParent(0);
+        setParent(nullptr);
         moveToThread(r->thread());
     }
 }
@@ -316,7 +316,7 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
         if (Q_LIKELY(!receiver.isNull() || !hasValidReceiver)) {
             // We allocate only the return type - we previously checked the function had
             // no arguments.
-            void *args[1] = { 0 };
+            void *args[1] = { nullptr };
             slotObj->call(const_cast<QObject*>(receiver.data()), args);
         }
     } else {

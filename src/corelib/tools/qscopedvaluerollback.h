@@ -45,7 +45,11 @@
 QT_BEGIN_NAMESPACE
 
 template <typename T>
-class QScopedValueRollback
+class
+#if QT_HAS_CPP_ATTRIBUTE(nodiscard) && __cplusplus >= 201703L
+[[nodiscard]]
+#endif
+QScopedValueRollback
 {
 public:
     explicit QScopedValueRollback(T &var)

@@ -535,7 +535,7 @@ QT_DEPRECATED_X("Use std::binary_search") Q_OUTOFLINE_TEMPLATE RandomAccessItera
 #  define QT_HAS_BUILTIN_CTZS
 Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_ctzs(quint16 v) noexcept
 {
-#  if QT_HAS_BUILTIN(__builtin_ctzs)
+#  if __has_builtin(__builtin_ctzs)
     return __builtin_ctzs(v);
 #  else
     return __builtin_ctz(v);
@@ -544,7 +544,7 @@ Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_ctzs(quint16 v) noexcept
 #define QT_HAS_BUILTIN_CLZS
 Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_builtin_clzs(quint16 v) noexcept
 {
-#  if QT_HAS_BUILTIN(__builtin_clzs)
+#  if __has_builtin(__builtin_clzs)
     return __builtin_clzs(v);
 #  else
     return __builtin_clz(v) - 16U;

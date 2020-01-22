@@ -65,8 +65,8 @@ bool runServer(int numberOfConnections)
             return false;
         }
         printf("server: data written\n");
-        if (socket->error() != QLocalSocket::UnknownSocketError) {
-            fprintf(stderr, "server: socket error %d\n", socket->error());
+        if (socket->socketError() != QLocalSocket::UnknownSocketError) {
+            fprintf(stderr, "server: socket error %d\n", socket->socketError());
             return false;
         }
     }
@@ -83,8 +83,8 @@ bool runClient()
         socket.connectToServer(serverName, QLocalSocket::ReadWrite);
         if (socket.waitForConnected())
             break;
-        if (socket.error() == QLocalSocket::ServerNotFoundError
-            || socket.error() == QLocalSocket::ConnectionRefusedError) {
+        if (socket.socketError() == QLocalSocket::ServerNotFoundError
+            || socket.socketError() == QLocalSocket::ConnectionRefusedError) {
             if (connectTimer.elapsed() > 5000) {
                 fprintf(stderr, "client: server not found or connection refused. Giving up.\n");
                 return false;

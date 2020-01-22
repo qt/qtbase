@@ -303,7 +303,9 @@ SUBDIRS = kernel \
 
 
 #! [51]
-CONFIG += ordered
+SUBDIRS += my_executable my_library tests doc
+my_executable.depends = my_library
+tests.depends = my_executable
 #! [51]
 
 

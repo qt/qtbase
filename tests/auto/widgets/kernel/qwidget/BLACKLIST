@@ -22,7 +22,7 @@ opensuse-leap
 # QTBUG-68175
 opensuse-42.3
 [childEvents]
-osx ci
+macos
 [renderInvisible]
 osx-10.12
 osx-10.11
@@ -34,8 +34,7 @@ osx
 [render_systemClip]
 osx
 [showMinimizedKeepsFocus]
-osx-10.12 ci
-osx-10.13 ci
+macos
 [maskedUpdate]
 opensuse
 opensuse-leap
@@ -49,3 +48,7 @@ ubuntu
 # QTBUG-75270
 winrt
 
+[syntheticEnterLeave]
+macos # Can't move cursor (QTBUG-76312)
+[taskQTBUG_4055_sendSyntheticEnterLeave]
+macos # Can't move cursor (QTBUG-76312)

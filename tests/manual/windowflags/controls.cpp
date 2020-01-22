@@ -95,7 +95,7 @@ HintControl::HintControl(QWidget *parent)
 
 Qt::WindowFlags HintControl::hints() const
 {
-    Qt::WindowFlags flags = 0;
+    Qt::WindowFlags flags;
     if (msWindowsFixedSizeDialogCheckBox->isChecked())
         flags |= Qt::MSWindowsFixedSizeDialogHint;
     if (x11BypassWindowManagerCheckBox->isChecked())

@@ -91,7 +91,7 @@ static inline QString guidToString(const GUID &g)
     str << '{' << g.Data1 << ", " << g.Data2 << ", " << g.Data3;
     str.setFieldWidth(2);
     str.setFieldAlignment(QTextStream::AlignRight);
-    str.setPadChar(QLatin1Char('0'));
+    str.setPadChar(u'0');
     str << ",{" << g.Data4[0] << ", " << g.Data4[1]  << ", " << g.Data4[2]  << ", " << g.Data4[3]
         << ", " << g.Data4[4] << ", " << g.Data4[5]  << ", " << g.Data4[6]  << ", " << g.Data4[7]
         << "}};";
@@ -466,14 +466,14 @@ inline void QWindowsFileDialogSharedData::setSelectedNameFilter(const QString &f
 inline QList<QUrl> QWindowsFileDialogSharedData::selectedFiles() const
 {
     m_data->mutex.lock();
-    const QList<QUrl> result = m_data->selectedFiles;
+    const auto result = m_data->selectedFiles;
     m_data->mutex.unlock();
     return result;
 }
 
 inline QString QWindowsFileDialogSharedData::selectedFile() const
 {
-    const QList<QUrl> files = selectedFiles();
+    const auto files = selectedFiles();
     return files.isEmpty() ? QString() : files.front().toLocalFile();
 }
 
@@ -915,7 +915,7 @@ IShellItem *QWindowsNativeFileDialogBase::shellItem(const QUrl &url)
             return nullptr;
         }
         return result;
-    } else if (url.scheme() == QLatin1String("clsid")) {
+    } else if (url.scheme() == u"clsid") {
         // Support for virtual folders via GUID
         // (see https://msdn.microsoft.com/en-us/library/windows/desktop/dd378457(v=vs.85).aspx)
         // specified as "clsid:<GUID>" (without '{', '}').
@@ -1040,20 +1040,20 @@ static QList<FilterSpec> filterSpecs(const QStringList &filters,
     // Split filter specification as 'Texts (*.txt[;] *.doc)', '*.txt[;] *.doc'
     // into description and filters specification as '*.txt;*.doc'
     for (const QString &filterString : filters) {
-        const int openingParenPos = filterString.lastIndexOf(QLatin1Char('('));
+        const int openingParenPos = filterString.lastIndexOf(u'(');
         const int closingParenPos = openingParenPos != -1 ?
-            filterString.indexOf(QLatin1Char(')'), openingParenPos + 1) : -1;
+            filterString.indexOf(u')', openingParenPos + 1) : -1;
         FilterSpec filterSpec;
         filterSpec.filter = closingParenPos == -1 ?
             filterString :
             filterString.mid(openingParenPos + 1, closingParenPos - openingParenPos - 1).trimmed();
         if (filterSpec.filter.isEmpty())
-            filterSpec.filter += QLatin1Char('*');
+            filterSpec.filter += u'*';
         filterSpec.filter.replace(filterSeparatorRE, separator);
         filterSpec.description = filterString;
         if (hideFilterDetails && openingParenPos != -1) { // Do not show pattern in description
             filterSpec.description.truncate(openingParenPos);
-            while (filterSpec.description.endsWith(QLatin1Char(' ')))
+            while (filterSpec.description.endsWith(u' '))
                 filterSpec.description.truncate(filterSpec.description.size() - 1);
         }
         *totalStringLength += filterSpec.filter.size() + filterSpec.description.size();
@@ -1084,8 +1084,8 @@ void QWindowsNativeFileDialogBase::setNameFilters(const QStringList &filters)
         // 'AAA files (a.*) (a.*)'
         QString description = specs[i].description;
         const QString &filter = specs[i].filter;
-        if (!m_hideFiltersDetails && !filter.startsWith(QLatin1String("*."))) {
-            const int pos = description.lastIndexOf(QLatin1Char('('));
+        if (!m_hideFiltersDetails && !filter.startsWith(u"*.")) {
+            const int pos = description.lastIndexOf(u'(');
             if (pos > 0)
                 description.truncate(pos);
         }
@@ -1151,8 +1151,8 @@ static bool isHexRange(const QString& s, int start, int end)
     for (;start < end; ++start) {
         QChar ch = s.at(start);
         if (!(ch.isDigit()
-              || (ch >= QLatin1Char('a') && ch <= QLatin1Char('f'))
-              || (ch >= QLatin1Char('A') && ch <= QLatin1Char('F'))))
+              || (ch >= u'a' && ch <= u'f')
+              || (ch >= u'A' && ch <= u'F')))
             return false;
     }
     return true;
@@ -1161,7 +1161,7 @@ static bool isHexRange(const QString& s, int start, int end)
 static inline bool isClsid(const QString &s)
 {
     // detect "374DE290-123F-4565-9164-39C4925E467B".
-    const QChar dash(QLatin1Char('-'));
+    const QChar dash(u'-');
     return s.size() == 36
             && isHexRange(s, 0, 8)
             && s.at(8) == dash
@@ -1204,7 +1204,7 @@ void QWindowsNativeFileDialogBase::selectNameFilter(const QString &filter)
     if (index < 0) {
         qWarning("%s: Invalid parameter '%s' not found in '%s'.",
                  __FUNCTION__, qPrintable(filter),
-                 qPrintable(m_nameFilters.join(QLatin1String(", "))));
+                 qPrintable(m_nameFilters.join(u", ")));
         return;
     }
     m_fileDialog->SetFileTypeIndex(index + 1); // one-based.
@@ -1313,15 +1313,15 @@ public:
 // Also handles the simple name filter case "*.txt" -> "txt"
 static inline QString suffixFromFilter(const QString &filter)
 {
-    int suffixPos = filter.indexOf(QLatin1String("*."));
+    int suffixPos = filter.indexOf(u"*.");
     if (suffixPos < 0)
         return QString();
     suffixPos += 2;
-    int endPos = filter.indexOf(QLatin1Char(' '), suffixPos + 1);
+    int endPos = filter.indexOf(u' ', suffixPos + 1);
     if (endPos < 0)
-        endPos = filter.indexOf(QLatin1Char(';'), suffixPos + 1);
+        endPos = filter.indexOf(u';', suffixPos + 1);
     if (endPos < 0)
-        endPos = filter.indexOf(QLatin1Char(')'), suffixPos + 1);
+        endPos = filter.indexOf(u')', suffixPos + 1);
     if (endPos < 0)
         endPos = filter.size();
     return filter.mid(suffixPos, endPos - suffixPos);
@@ -1406,27 +1406,27 @@ static void cleanupTemporaryItemCopies()
 
 static bool validFileNameCharacter(QChar c)
 {
-    return c.isLetterOrNumber() || c == QLatin1Char('_') || c == QLatin1Char('-');
+    return c.isLetterOrNumber() || c == u'_' || c == u'-';
 }
 
 QString tempFilePattern(QString name)
 {
-    const int lastSlash = qMax(name.lastIndexOf(QLatin1Char('/')),
-                               name.lastIndexOf(QLatin1Char('\\')));
+    const int lastSlash = qMax(name.lastIndexOf(u'/'),
+                               name.lastIndexOf(u'\\'));
     if (lastSlash != -1)
         name.remove(0, lastSlash + 1);
 
-    int lastDot = name.lastIndexOf(QLatin1Char('.'));
+    int lastDot = name.lastIndexOf(u'.');
     if (lastDot < 0)
         lastDot = name.size();
     name.insert(lastDot, QStringLiteral("_XXXXXX"));
 
     for (int i = lastDot - 1; i >= 0; --i) {
         if (!validFileNameCharacter(name.at(i)))
-            name[i] = QLatin1Char('_');
+            name[i] = u'_';
     }
 
-    name.prepend(QDir::tempPath() + QLatin1Char('/'));
+    name.prepend(QDir::tempPath() + u'/');
     return name;
 }
 
@@ -1456,7 +1456,7 @@ static QString createTemporaryItemCopy(QWindowsShellItem &qItem, QString *errorM
 static QUrl itemToDialogUrl(QWindowsShellItem &qItem, QString *errorMessage)
 {
     QUrl url = qItem.url();
-    if (url.isLocalFile() || url.scheme().startsWith(QLatin1String("http")))
+    if (url.isLocalFile() || url.scheme().startsWith(u"http"))
         return url;
     const QString path = qItem.path();
     if (path.isEmpty() && !qItem.isDir() && qItem.canStream()) {
@@ -1859,10 +1859,12 @@ void QWindowsXpNativeFileDialog::populateOpenFileName(OPENFILENAME *ofn, HWND ow
     // for the target. If it contains any invalid character, the dialog
     // will not show.
     ofn->nMaxFile = 65535;
-    const QString initiallySelectedFile =
-        QDir::toNativeSeparators(m_data.selectedFile()).remove(QLatin1Char('<')).
-            remove(QLatin1Char('>')).remove(QLatin1Char('"')).remove(QLatin1Char('|'));
-    ofn->lpstrFile = qStringToWCharArray(initiallySelectedFile, ofn->nMaxFile);
+    QString initiallySelectedFile = m_data.selectedFile();
+    initiallySelectedFile.remove(u'<');
+    initiallySelectedFile.remove(u'>');
+    initiallySelectedFile.remove(u'"');
+    initiallySelectedFile.remove(u'|');
+    ofn->lpstrFile = qStringToWCharArray(QDir::toNativeSeparators(initiallySelectedFile), ofn->nMaxFile);
     ofn->lpstrInitialDir = qStringToWCharArray(QDir::toNativeSeparators(m_data.directory().toLocalFile()));
     ofn->lpstrTitle = (wchar_t*)m_title.utf16();
     // Determine lpstrDefExt. Note that the current MSDN docs document this
@@ -1872,7 +1874,7 @@ void QWindowsXpNativeFileDialog::populateOpenFileName(OPENFILENAME *ofn, HWND ow
     // the extension of the current filter".
     if (m_options->acceptMode() == QFileDialogOptions::AcceptSave) {
         QString defaultSuffix = m_options->defaultSuffix();
-        if (defaultSuffix.startsWith(QLatin1Char('.')))
+        if (defaultSuffix.startsWith(u'.'))
             defaultSuffix.remove(0, 1);
         // QTBUG-33156, also create empty strings to trigger the appending mechanism.
         ofn->lpstrDefExt = qStringToWCharArray(defaultSuffix);
@@ -1905,7 +1907,7 @@ QList<QUrl> QWindowsXpNativeFileDialog::execFileNames(HWND owner, int *selectedF
             wchar_t *ptr = ofn.lpstrFile + dir.size() + 1;
             if (*ptr) {
                 result.pop_front();
-                const QString path = dir + QLatin1Char('/');
+                const QString path = dir + u'/';
                 while (*ptr) {
                     const QString fileName = QString::fromWCharArray(ptr);
                     result.push_back(QUrl::fromLocalFile(path + fileName));

@@ -456,7 +456,7 @@ const QStateMachinePrivate::Handler qt_gui_statemachine_handler = {
     cloneEvent
 };
 
-static const QStateMachinePrivate::Handler *qt_guistatemachine_last_handler = 0;
+static const QStateMachinePrivate::Handler *qt_guistatemachine_last_handler = nullptr;
 void qRegisterGuiStateMachine()
 {
     qt_guistatemachine_last_handler = QStateMachinePrivate::handler;

@@ -354,7 +354,7 @@ const uint QPlatformThemePrivate::numberOfKeyBindings = sizeof(QPlatformThemePri
 #endif
 
 QPlatformThemePrivate::QPlatformThemePrivate()
-        : systemPalette(0)
+        : systemPalette(nullptr)
 { }
 
 QPlatformThemePrivate::~QPlatformThemePrivate()
@@ -394,7 +394,7 @@ bool QPlatformTheme::usePlatformNativeDialog(DialogType type) const
 QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(DialogType type) const
 {
     Q_UNUSED(type);
-    return 0;
+    return nullptr;
 }
 
 const QPalette *QPlatformTheme::palette(Palette type) const
@@ -405,13 +405,13 @@ const QPalette *QPlatformTheme::palette(Palette type) const
             const_cast<QPlatformTheme *>(this)->d_ptr->initializeSystemPalette();
         return d->systemPalette;
     }
-    return 0;
+    return nullptr;
 }
 
 const QFont *QPlatformTheme::font(Font type) const
 {
     Q_UNUSED(type)
-    return 0;
+    return nullptr;
 }
 
 QPixmap QPlatformTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
@@ -569,17 +569,17 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
 
 QPlatformMenuItem *QPlatformTheme::createPlatformMenuItem() const
 {
-    return 0;
+    return nullptr;
 }
 
 QPlatformMenu *QPlatformTheme::createPlatformMenu() const
 {
-    return 0;
+    return nullptr;
 }
 
 QPlatformMenuBar *QPlatformTheme::createPlatformMenuBar() const
 {
-    return 0;
+    return nullptr;
 }
 
 #ifndef QT_NO_SYSTEMTRAYICON
@@ -589,7 +589,7 @@ QPlatformMenuBar *QPlatformTheme::createPlatformMenuBar() const
 */
 QPlatformSystemTrayIcon *QPlatformTheme::createPlatformSystemTrayIcon() const
 {
-    return 0;
+    return nullptr;
 }
 #endif
 

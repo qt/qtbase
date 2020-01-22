@@ -120,8 +120,8 @@ struct QVkTexture : public QRhiTexture
     ~QVkTexture();
     void release() override;
     bool build() override;
-    bool buildFrom(const QRhiNativeHandles *src) override;
-    const QRhiNativeHandles *nativeHandles() override;
+    bool buildFrom(NativeTexture src) override;
+    NativeTexture nativeTexture() override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
     bool finishBuild();
@@ -134,7 +134,6 @@ struct QVkTexture : public QRhiTexture
     QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
     VkImageView perLevelImageViews[QRhi::MAX_LEVELS];
     bool owns = true;
-    QRhiVulkanTextureNativeHandles nativeHandlesStruct;
     struct UsageState {
         // no tracking of subresource layouts (some operations can keep
         // subresources in different layouts for some time, but that does not
@@ -171,10 +170,16 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     QVkRenderPassDescriptor(QRhiImplementation *rhi);
     ~QVkRenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
     const QRhiNativeHandles *nativeHandles() override;
 
     VkRenderPass rp = VK_NULL_HANDLE;
     bool ownsRp = false;
+    QVarLengthArray<VkAttachmentDescription, 8> attDescs;
+    QVarLengthArray<VkAttachmentReference, 8> colorRefs;
+    QVarLengthArray<VkAttachmentReference, 8> resolveRefs;
+    bool hasDepthStencil = false;
+    VkAttachmentReference dsRef;
     QRhiVulkanRenderPassNativeHandles nativeHandlesStruct;
     int lastActiveFrameSlot = -1;
 };
@@ -365,6 +370,13 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     QVarLengthArray<VkCommandBuffer, 4> secondaryCbs;
     bool inExternal;
 
+    struct {
+        QHash<QRhiResource *, QPair<VkAccessFlags, bool> > writtenResources;
+        void reset() {
+            writtenResources.clear();
+        }
+    } computePassState;
+
     struct Command {
         enum Cmd {
             CopyBuffer,
@@ -424,12 +436,14 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             struct {
                 VkPipelineStageFlags srcStageMask;
                 VkPipelineStageFlags dstStageMask;
-                VkImageMemoryBarrier desc;
+                int count;
+                int index;
             } imageBarrier;
             struct {
                 VkPipelineStageFlags srcStageMask;
                 VkPipelineStageFlags dstStageMask;
-                VkBufferMemoryBarrier desc;
+                int count;
+                int index;
             } bufferBarrier;
             struct {
                 VkImage src;
@@ -532,6 +546,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         pools.vertexBuffer.clear();
         pools.vertexBufferOffset.clear();
         pools.debugMarkerData.clear();
+        pools.imageBarrier.clear();
+        pools.bufferBarrier.clear();
     }
 
     struct {
@@ -541,6 +557,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         QVarLengthArray<VkBuffer, 4> vertexBuffer;
         QVarLengthArray<VkDeviceSize, 4> vertexBufferOffset;
         QVarLengthArray<QByteArray, 4> debugMarkerData;
+        QVarLengthArray<VkImageMemoryBarrier, 8> imageBarrier;
+        QVarLengthArray<VkBufferMemoryBarrier, 8> bufferBarrier;
     } pools;
 
     friend class QRhiVulkan;
@@ -727,11 +745,11 @@ public:
 
     VkFormat optimalDepthStencilFormat();
     VkSampleCountFlagBits effectiveSampleCount(int sampleCount);
-    bool createDefaultRenderPass(VkRenderPass *rp,
+    bool createDefaultRenderPass(QVkRenderPassDescriptor *rpD,
                                  bool hasDepthStencil,
                                  VkSampleCountFlagBits samples,
                                  VkFormat colorFormat);
-    bool createOffscreenRenderPass(VkRenderPass *rp,
+    bool createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                    const QRhiColorAttachment *firstColorAttachment,
                                    const QRhiColorAttachment *lastColorAttachment,
                                    bool preserveColor,

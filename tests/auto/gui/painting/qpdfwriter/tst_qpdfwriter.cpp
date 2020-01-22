@@ -112,6 +112,29 @@ void tst_QPdfWriter::basics()
 
     QCOMPARE(writer.pageLayout().fullRect(QPageLayout::Millimeter), QRectF(0, 0, 297, 210));
     QCOMPARE(writer.pageLayout().paintRect(QPageLayout::Millimeter), QRectF(50, 50, 197, 110));
+
+    QByteArray metadata (
+            "<?xpacket begin='' id='W5M0MpCehiHzreSzNTczkc9d'?>\n"
+            "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\">\n"
+            "  <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\"\n"
+            "    <rdf:Description xmlns:dc=\"http://purl.org/dc/elements/1.1/\" rdf:about=\"\">\n"
+            "      <dc:title>\n"
+            "        <rdf:Alt>\n"
+            "          <rdf:li xml:lang=\"x-default\">TITLE</rdf:li>\n"
+            "        </rdf:Alt>\n"
+            "      </dc:title>\n"
+            "    </rdf:Description>\n"
+            "    <rdf:Description xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\" rdf:about="" xmp:CreatorTool=\"OUR_OWN_XMP\" xmp:CreateDate=\"2019-12-16T00:00:00+01:00\" xmp:ModifyDate=\"2019-12-16T00:00:00+01:00\"/>\n"
+            "    <rdf:Description xmlns:pdf=\"http://ns.adobe.com/pdf/1.3/\" rdf:about="" pdf:Producer=\"MetaType Info Producer\"/>\n"
+            "    <rdf:Description xmlns:pdfaid=\"http://www.aiim.org/pdfa/ns/id/\" rdf:about=\"THI IS ALL ABOUT\" pdfaid:part=\"1\" pdfaid:conformance=\"B\"/>\n"
+            "  </rdf:RDF>\n"
+            "</x:xmpmeta>\n"
+            "<?xpacket end='w'?>\n"
+    );
+
+    QCOMPARE(writer.documentXmpMetadata(), QByteArray());
+    writer.setDocumentXmpMetadata(metadata);
+    QCOMPARE(writer.documentXmpMetadata(), metadata);
 }
 
 // Test the old page metrics methods, see also QPrinter tests for the same.

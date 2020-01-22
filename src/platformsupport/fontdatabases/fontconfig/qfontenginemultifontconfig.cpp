@@ -60,7 +60,7 @@ bool QFontEngineMultiFontConfig::shouldLoadFontEngineForCharacter(int at, uint u
 {
     bool charSetHasChar = true;
     FcPattern *matchPattern = getMatchPatternForFallback(at - 1);
-    if (matchPattern != 0) {
+    if (matchPattern != nullptr) {
         FcCharSet *charSet;
         FcPatternGetCharSet(matchPattern, FC_CHARSET, 0, &charSet);
         charSetHasChar = FcCharSetHasChar(charSet, ucs4);
@@ -85,7 +85,7 @@ FcPattern * QFontEngineMultiFontConfig::getMatchPatternForFallback(int fallBackI
     value.u.s = reinterpret_cast<const FcChar8 *>(cs.data());
     FcPatternAdd(requestPattern, FC_FAMILY, value, true);
     FcResult result;
-    ret = FcFontMatch(0, requestPattern, &result);
+    ret = FcFontMatch(nullptr, requestPattern, &result);
     cachedMatchPatterns.insert(fallBackIndex, ret);
     FcPatternDestroy(requestPattern);
     return ret;

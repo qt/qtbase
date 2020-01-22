@@ -73,7 +73,7 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
 
     default:
         // no, we can't handle this operation
-        return 0;
+        return nullptr;
     }
 
     QUrl url = request.url();
@@ -95,7 +95,7 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
             return new QNetworkAccessFileBackend;
     }
 
-    return 0;
+    return nullptr;
 }
 
 QNetworkAccessFileBackend::QNetworkAccessFileBackend()
@@ -198,7 +198,7 @@ void QNetworkAccessFileBackend::uploadReadyReadSlot()
             file.close();
             finished();
             break;
-        } else if (haveRead == 0 || readPointer == 0) {
+        } else if (haveRead == 0 || readPointer == nullptr) {
             // nothing to read right now, we will be called again later
             break;
         } else {

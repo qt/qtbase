@@ -44,6 +44,7 @@
 #include <QtGui/qguiapplication.h>
 #include <private/qhighdpiscaling_p.h>
 
+using namespace emscripten;
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +55,8 @@ QWasmScreen::QWasmScreen(const QString &canvasId)
     m_compositor = new QWasmCompositor(this);
     m_eventTranslator = new QWasmEventTranslator(this);
     updateQScreenAndCanvasRenderSize();
+    emscripten::val canvas = emscripten::val::global(m_canvasId.toUtf8().constData());
+    canvas.call<void>("focus");
 }
 
 QWasmScreen::~QWasmScreen()
@@ -182,12 +185,18 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     QSizeF cssSize(css_width, css_height);
 
     QSizeF canvasSize = cssSize * devicePixelRatio();
-    emscripten::val canvas = emscripten::val::global(canvasId.constData());
+    val document = val::global("document");
+    val canvas = document.call<val>("getElementById", val(canvasId.constData()));
+
     canvas.set("width", canvasSize.width());
     canvas.set("height", canvasSize.height());
 
+    QPoint offset;
+    offset.setX(canvas["offsetTop"].as<int>());
+    offset.setY(canvas["offsetLeft"].as<int>());
+
     emscripten::val rect = canvas.call<emscripten::val>("getBoundingClientRect");
-    QPoint position(rect["left"].as<int>(), rect["top"].as<int>());
+    QPoint position(rect["left"].as<int>() - offset.x(), rect["top"].as<int>() - offset.y());
 
     setGeometry(QRect(position, cssSize.toSize()));
     m_compositor->redrawWindowContent();

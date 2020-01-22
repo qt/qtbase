@@ -224,6 +224,7 @@ public:
     QHash<QByteArray, QByteArray> knownQObjectClasses;
     QHash<QByteArray, QByteArray> knownGadgets;
     QMap<QString, QJsonArray> metaArgs;
+    QVector<QString> parsedPluginMetadataFiles;
 
     void parse();
     void generate(FILE *out, FILE *jsonOutput);
@@ -255,6 +256,7 @@ public:
     void parseInterfaces(ClassDef *def);
     void parseDeclareInterface();
     void parseDeclareMetatype();
+    void parseMocInclude();
     void parseSlotInPrivate(ClassDef *def, FunctionDef::Access access);
     void parsePrivateProperty(ClassDef *def);
 

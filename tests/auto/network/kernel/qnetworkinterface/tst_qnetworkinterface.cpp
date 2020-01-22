@@ -215,31 +215,45 @@ void tst_QNetworkInterface::loopbackIPv6()
 }
 void tst_QNetworkInterface::localAddress_data()
 {
+    bool ipv6 = isIPv6Working();
     QTest::addColumn<QHostAddress>("target");
 
     QTest::newRow("localhost-ipv4") << QHostAddress(QHostAddress::LocalHost);
-    if (isIPv6Working())
+    if (ipv6)
         QTest::newRow("localhost-ipv6") << QHostAddress(QHostAddress::LocalHostIPv6);
 
     QTest::newRow("test-server") << QtNetworkSettings::serverIP();
 
-    // Since we don't actually transmit anything, we can list any IPv4 address
-    // and it should work. But we're using a linklocal address so that this
-    // test can pass even machines that failed to reach a DHCP server.
-    QTest::newRow("linklocal-ipv4") << QHostAddress("169.254.0.1");
+    QSet<QHostAddress> added;
+    const QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+    for (const QNetworkInterface &iface : ifaces) {
+        if ((iface.flags() & QNetworkInterface::IsUp) == 0)
+            continue;
+        const QList<QNetworkAddressEntry> addrs = iface.addressEntries();
+        for (const QNetworkAddressEntry &entry : addrs) {
+            QHostAddress addr = entry.ip();
+            if (addr.isLoopback())
+                continue;       // added above
 
-    if (isIPv6Working()) {
-        // On the other hand, we can't list just any IPv6 here. It's very
-        // likely that this machine has not received a route via ICMPv6-RA or
-        // DHCPv6, so it won't have a global route. On some OSes, IPv6 may be
-        // enabled per interface, so we need to know which ones work.
-        const QList<QHostAddress> addrs = QNetworkInterface::allAddresses();
-        for (const QHostAddress &addr : addrs) {
-            QString scope = addr.scopeId();
-            if (scope.isEmpty())
+            if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
+                // add an IPv4 address with bits in the host portion of the address flipped
+                quint32 ip4 = entry.ip().toIPv4Address();
+                addr.setAddress(ip4 ^ ~entry.netmask().toIPv4Address());
+            } else if (!ipv6 || entry.prefixLength() != 64) {
                 continue;
-            QTest::addRow("linklocal-ipv6-%s", qPrintable(scope))
-                    << QHostAddress("fe80::1234%" + scope);
+            } else {
+                // add a random node in this IPv6 network
+                quint64 randomid = qFromBigEndian(Q_UINT64_C(0x8f41f072e5733caa));
+                QIPv6Address ip6 = addr.toIPv6Address();
+                memcpy(&ip6[8], &randomid, sizeof(randomid));
+                addr.setAddress(ip6);
+            }
+
+            if (added.contains(addr))
+                continue;
+            added.insert(addr);
+
+            QTest::addRow("%s-%s", qPrintable(iface.name()), qPrintable(addr.toString())) << addr;
         }
     }
 }

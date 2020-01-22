@@ -61,10 +61,9 @@
 QT_BEGIN_NAMESPACE
 
 QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
-        delayConnect(0),
-        connectTimer(0),
+        delayConnect(nullptr),
+        connectTimer(nullptr),
         connectingSocket(-1),
-        connectingOpenMode(0),
         state(QLocalSocket::UnconnectedState)
 {
 }
@@ -341,7 +340,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
     }
     connectingSocket = -1;
     connectingName.clear();
-    connectingOpenMode = 0;
+    connectingOpenMode = { };
 }
 
 bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
@@ -380,10 +379,10 @@ void QLocalSocketPrivate::cancelDelayedConnect()
     if (delayConnect) {
         delayConnect->setEnabled(false);
         delete delayConnect;
-        delayConnect = 0;
+        delayConnect = nullptr;
         connectTimer->stop();
         delete connectTimer;
-        connectTimer = 0;
+        connectTimer = nullptr;
     }
 }
 
@@ -438,7 +437,7 @@ void QLocalSocket::close()
         ::close(d->connectingSocket);
     d->connectingSocket = -1;
     d->connectingName.clear();
-    d->connectingOpenMode = 0;
+    d->connectingOpenMode = { };
     d->serverName.clear();
     d->fullServerName.clear();
     QIODevice::close();
@@ -462,10 +461,17 @@ void QLocalSocket::disconnectFromServer()
     d->unixSocket.disconnectFromHost();
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 QLocalSocket::LocalSocketError QLocalSocket::error() const
 {
+    return socketError();
+}
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+QLocalSocket::LocalSocketError QLocalSocket::socketError() const
+{
     Q_D(const QLocalSocket);
-    switch (d->unixSocket.error()) {
+    switch (d->unixSocket.socketError()) {
     case QAbstractSocket::ConnectionRefusedError:
         return QLocalSocket::ConnectionRefusedError;
     case QAbstractSocket::RemoteHostClosedError:

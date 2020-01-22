@@ -74,11 +74,11 @@ QByteArray QDBusArgumentPrivate::createSignature(int id)
     marshaller->ba = &signature;
 
     // run it
-    void *null = 0;
+    void *null = nullptr;
     QVariant v(id, null);
     QDBusArgument arg(marshaller);
     QDBusMetaType::marshall(arg, v.userType(), v.constData());
-    arg.d = 0;
+    arg.d = nullptr;
 
     // delete it
     bool ok = marshaller->ok;
@@ -290,7 +290,7 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
 QDBusArgument::QDBusArgument()
 {
     if (!qdbus_loadLibDBus()) {
-        d = 0;
+        d = nullptr;
         return;
     }
 

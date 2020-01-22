@@ -12,6 +12,7 @@ HEADERS +=  \
         tools/qcontainerfwd.h \
         tools/qcontainertools_impl.h \
         tools/qcryptographichash.h \
+        tools/qflatmap_p.h \
         tools/qfreelist_p.h \
         tools/qhash.h \
         tools/qhashfunctions.h \
@@ -46,7 +47,6 @@ HEADERS +=  \
         tools/qvarlengtharray.h \
         tools/qvector.h \
         tools/qversionnumber.h
-
 
 SOURCES += \
         tools/qarraydata.cpp \

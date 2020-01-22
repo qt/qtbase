@@ -345,10 +345,10 @@ void QShader::removeShader(const QShaderKey &key)
 
 static void writeShaderKey(QDataStream *ds, const QShaderKey &k)
 {
-    *ds << k.source();
+    *ds << int(k.source());
     *ds << k.sourceVersion().version();
     *ds << k.sourceVersion().flags();
-    *ds << k.sourceVariant();
+    *ds << int(k.sourceVariant());
 }
 
 /*!
@@ -366,8 +366,8 @@ QByteArray QShader::serialized() const
         return QByteArray();
 
     ds << QShaderPrivate::QSB_VERSION;
-    ds << d->stage;
-    ds << d->desc.toCbor();
+    ds << int(d->stage);
+    d->desc.serialize(&ds);
     ds << d->shaders.count();
     for (auto it = d->shaders.cbegin(), itEnd = d->shaders.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
@@ -428,6 +428,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
     ds >> intVal;
     d->qsbVersion = intVal;
     if (d->qsbVersion != QShaderPrivate::QSB_VERSION
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_CBOR
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_BINDINGS)
     {
@@ -437,12 +438,25 @@ QShader QShader::fromSerialized(const QByteArray &data)
 
     ds >> intVal;
     d->stage = Stage(intVal);
-    QByteArray descBin;
-    ds >> descBin;
-    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON)
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_CBOR) {
+        d->desc = QShaderDescription::deserialize(&ds);
+    } else if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON) {
+        QByteArray descBin;
+        ds >> descBin;
         d->desc = QShaderDescription::fromCbor(descBin);
-    else
+    } else {
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
+        QByteArray descBin;
+        ds >> descBin;
         d->desc = QShaderDescription::fromBinaryJson(descBin);
+        QT_WARNING_POP
+#else
+        qWarning("Cannot load QShaderDescription from binary JSON due to disabled binaryjson feature");
+        d->desc = QShaderDescription();
+#endif
+    }
     int count;
     ds >> count;
     for (int i = 0; i < count; ++i) {
@@ -660,6 +674,13 @@ QDebug operator<<(QDebug dbg, const QShaderVersion &v)
     pair, because combined image samplers may map to two native resources (a
     texture and a sampler) in some shading languages. In that case the second
     value refers to the sampler.
+
+    \note The native binding may be -1, in case there is no active binding for
+    the resource in the shader. (for example, there is a uniform block
+    declared, but it is not used in the shader code) The map is always
+    complete, meaning there is an entry for all declared uniform blocks,
+    storage blocks, image objects, and combined samplers, but the value will be
+    -1 for those that are not actually referenced in the shader functions.
 */
 
 /*!

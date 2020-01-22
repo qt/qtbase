@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
 class QPlatformOpenGLContextPrivate
 {
 public:
-    QPlatformOpenGLContextPrivate() : context(0) {}
+    QPlatformOpenGLContextPrivate() : context(nullptr) {}
 
     QOpenGLContext *context;
 };

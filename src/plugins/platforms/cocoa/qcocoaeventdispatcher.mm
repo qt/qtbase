@@ -84,12 +84,11 @@
 #include "private/qthread_p.h"
 #include "private/qguiapplication_p.h"
 #include <qdebug.h>
+#include <qscopeguard.h>
 
 #include <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
-
-QT_USE_NAMESPACE
 
 static inline CFRunLoopRef mainRunLoop()
 {
@@ -348,6 +347,16 @@ static inline void qt_mac_waitForMoreEvents(NSString *runLoopMode = NSDefaultRun
 bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QCocoaEventDispatcher);
+
+    // In rare rather corner cases a user's application messes with
+    // QEventLoop::exec()/exit() and QCoreApplication::processEvents(),
+    // we have to undo what bool blocker normally does.
+    d->propagateInterrupt = false;
+    const auto boolBlockerUndo = qScopeGuard([d](){
+        if (d->propagateInterrupt)
+            d->interrupt = true;
+        d->propagateInterrupt = false;
+    });
     QBoolBlocker interruptBlocker(d->interrupt, false);
 
     bool interruptLater = false;
@@ -496,7 +505,16 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 
             if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
                 // When called "manually", always process posted events and timers
+                bool oldInterrupt = d->interrupt;
                 d->processPostedEvents();
+                if (!oldInterrupt && d->interrupt && !d->currentModalSession()) {
+                    // We had direct processEvent call, coming not from QEventLoop::exec().
+                    // One of the posted events triggered an application to interrupt the loop.
+                    // But bool blocker will reset d->interrupt to false, so the real event
+                    // loop will never notice it was interrupted. Now we'll have to fix it by
+                    // enforcing the value of d->interrupt.
+                    d->propagateInterrupt = true;
+                }
                 retVal = d->processTimers() || retVal;
             }
 
@@ -511,7 +529,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             if (hadModalSession && !d->currentModalSessionCached)
                 interruptLater = true;
         }
-        bool canWait = (d->threadData->canWait
+        bool canWait = (d->threadData.loadRelaxed()->canWait
                 && !retVal
                 && !d->interrupt
                 && (d->processEventsFlags & QEventLoop::WaitForMoreEvents));
@@ -878,7 +896,7 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
     }
 
     int serial = serialNumber.loadRelaxed();
-    if (!threadData->canWait || (serial != lastSerial)) {
+    if (!threadData.loadRelaxed()->canWait || (serial != lastSerial)) {
         lastSerial = serial;
         QCoreApplication::sendPostedEvents();
         QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);

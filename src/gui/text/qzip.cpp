@@ -141,8 +141,8 @@ static int inflate(Bytef *dest, ulong *destLen, const Bytef *source, ulong sourc
     if ((uLong)stream.avail_out != *destLen)
         return Z_BUF_ERROR;
 
-    stream.zalloc = (alloc_func)0;
-    stream.zfree = (free_func)0;
+    stream.zalloc = (alloc_func)nullptr;
+    stream.zfree = (free_func)nullptr;
 
     err = inflateInit2(&stream, -MAX_WBITS);
     if (err != Z_OK)
@@ -172,9 +172,9 @@ static int deflate (Bytef *dest, ulong *destLen, const Bytef *source, ulong sour
     stream.avail_out = (uInt)*destLen;
     if ((uLong)stream.avail_out != *destLen) return Z_BUF_ERROR;
 
-    stream.zalloc = (alloc_func)0;
-    stream.zfree = (free_func)0;
-    stream.opaque = (voidpf)0;
+    stream.zalloc = (alloc_func)nullptr;
+    stream.zfree = (free_func)nullptr;
+    stream.opaque = (voidpf)nullptr;
 
     err = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY);
     if (err != Z_OK) return err;
@@ -705,7 +705,7 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     }
 // TODO add a check if data.length() > contents.length().  Then try to store the original and revert the compression method to be uncompressed
     writeUInt(header.h.compressed_size, data.length());
-    uint crc_32 = ::crc32(0, 0, 0);
+    uint crc_32 = ::crc32(0, nullptr, 0);
     crc_32 = ::crc32(crc_32, (const uchar *)contents.constData(), contents.length());
     writeUInt(header.h.crc_32, crc_32);
 
@@ -886,7 +886,7 @@ bool QZipReader::isReadable() const
 bool QZipReader::exists() const
 {
     QFile *f = qobject_cast<QFile*> (d->device);
-    if (f == 0)
+    if (f == nullptr)
         return true;
     return f->exists();
 }
@@ -1178,7 +1178,7 @@ bool QZipWriter::isWritable() const
 bool QZipWriter::exists() const
 {
     QFile *f = qobject_cast<QFile*> (d->device);
-    if (f == 0)
+    if (f == nullptr)
         return true;
     return f->exists();
 }

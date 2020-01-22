@@ -93,31 +93,31 @@ void tst_Mouse::stateHandlingPart1()
     // verify that we have a clean state after the previous data set
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::NoButton);
 
-    QTest::mousePress(&w, Qt::LeftButton, 0, point);
+    QTest::mousePress(&w, Qt::LeftButton, { }, point);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::LeftButton);
-    QTest::mousePress(&w, Qt::RightButton, 0, point);
+    QTest::mousePress(&w, Qt::RightButton, { }, point);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::LeftButton | Qt::RightButton);
     QTest::mouseMove(&w, point += step);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::LeftButton | Qt::RightButton);
-    QTest::mouseRelease(&w, Qt::LeftButton, 0, point);
+    QTest::mouseRelease(&w, Qt::LeftButton, { }, point);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::RightButton);
     QTest::mouseMove(&w, point += step);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::RightButton);
     // test invalid input - left button was already released
-    QTest::mouseRelease(&w, Qt::LeftButton, 0, point += point);
+    QTest::mouseRelease(&w, Qt::LeftButton, { }, point += point);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::RightButton);
     // test invalid input - right button is already pressed
-    QTest::mousePress(&w, Qt::RightButton, 0, point);
+    QTest::mousePress(&w, Qt::RightButton, { }, point);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::RightButton);
     // now continue with valid input
-    QTest::mouseRelease(&w, Qt::RightButton, 0, point += point);
+    QTest::mouseRelease(&w, Qt::RightButton, { }, point += point);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::NoButton);
     QTest::mouseMove(&w, point += step);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::NoButton);
 
     // exit this test function with some button in a pressed state
-    QTest::mousePress(&w, Qt::LeftButton, 0, point);
-    QTest::mousePress(&w, Qt::RightButton, 0, point);
+    QTest::mousePress(&w, Qt::LeftButton, { }, point);
+    QTest::mousePress(&w, Qt::RightButton, { }, point);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::LeftButton | Qt::RightButton);
 }
 
@@ -144,8 +144,8 @@ void tst_Mouse::stateHandlingPart2()
     QSKIP("Not implemented beyond this point!");
 
     QPoint point(40, 40);
-    QTest::mousePress(&w, Qt::LeftButton, 0, point);
-    QTest::mousePress(&w, Qt::RightButton, 0, point);
+    QTest::mousePress(&w, Qt::LeftButton, { }, point);
+    QTest::mousePress(&w, Qt::RightButton, { }, point);
     QCOMPARE(QTestPrivate::qtestMouseButtons, Qt::LeftButton | Qt::RightButton);
     w.moveCount = 0;
     // The windowing system will send mouse events with no buttons set
@@ -201,11 +201,11 @@ void tst_Mouse::deterministicEvents()
     QCOMPARE(w.moveCount, 0);
     static QPoint m_cachedLastCursorPosition;
     if (firstRun) {
-        QTest::mousePress(&w, Qt::LeftButton, 0, QPoint(40, 40));
+        QTest::mousePress(&w, Qt::LeftButton, { }, QPoint(40, 40));
         m_cachedLastCursorPosition = QGuiApplicationPrivate::lastCursorPosition.toPoint();
     } else {
         QPoint point = w.mapFromGlobal(m_cachedLastCursorPosition);
-        QTest::mousePress(&w, Qt::LeftButton, 0, point);
+        QTest::mousePress(&w, Qt::LeftButton, { }, point);
     }
     QCOMPARE(w.pressCount, 1);
     QCOMPARE(w.moveCount, 1);

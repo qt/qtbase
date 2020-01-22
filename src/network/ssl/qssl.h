@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -77,17 +77,11 @@ namespace QSsl {
 #endif
 
     enum SslProtocol {
-        SslV3,
-        SslV2,
-        TlsV1_0,
-#if QT_DEPRECATED_SINCE(5,0)
-        TlsV1 = TlsV1_0,
-#endif
+        TlsV1_0 = 2,
         TlsV1_1,
         TlsV1_2,
         AnyProtocol,
-        TlsV1SslV3,
-        SecureProtocols,
+        SecureProtocols = AnyProtocol + 2,
 
         TlsV1_0OrLater,
         TlsV1_1OrLater,

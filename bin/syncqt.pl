@@ -209,6 +209,7 @@ sub classNames {
     $$clean = 1;
     $$requires = "";
 
+    my $suspended = 0;
     my $ihdrbase = basename($iheader);
 
     my $parsable = "";
@@ -221,9 +222,11 @@ sub classNames {
                 $$clean = 0 if ($line =~ m/^#pragma qt_sync_skip_header_check/);
                 return @ret if($line =~ m/^#pragma qt_sync_stop_processing/);
                 push(@ret, $1) if($line =~ m/^#pragma qt_class\(([^)]*)\)[\r\n]*$/);
+                $suspended = 1 if ($line =~ m/^#pragma qt_sync_suspend_processing/);
+                $suspended = 0 if ($line =~ m/^#pragma qt_sync_resume_processing/);
                 $line = 0;
             }
-            if($line) {
+            if ($line && !$suspended) {
                 $line =~ s,//.*$,,; #remove c++ comments
                 $line .= ";" if($line =~ m/^Q_[A-Z_0-9]*\(.*\)[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_(BEGIN|END)_HEADER[\r\n]*$/); #qt macro

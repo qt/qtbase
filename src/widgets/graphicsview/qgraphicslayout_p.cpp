@@ -97,7 +97,7 @@ void QGraphicsLayoutPrivate::getMargin(qreal *result, qreal userMargin, QStyle::
         *result = 0.0;
         if (QGraphicsItem *layoutParentItem = parentItem()) {
             if (layoutParentItem->isWidget())
-                *result = (qreal)static_cast<QGraphicsWidget*>(layoutParentItem)->style()->pixelMetric(pm, 0);
+                *result = (qreal)static_cast<QGraphicsWidget*>(layoutParentItem)->style()->pixelMetric(pm, nullptr);
         }
     }
 }

@@ -58,8 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-EGLDisplay QQnxGLContext::ms_eglDisplay = EGL_NO_DISPLAY;
-
 static QEGLPlatformContext::Flags makeFlags()
 {
     QEGLPlatformContext::Flags result = 0;
@@ -71,34 +69,13 @@ static QEGLPlatformContext::Flags makeFlags()
 }
 
 QQnxGLContext::QQnxGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
-    : QEGLPlatformContext(format, share, ms_eglDisplay, 0, QVariant(), makeFlags())
+    : QEGLPlatformContext(format, share, QQnxIntegration::instance()->eglDisplay(), 0, QVariant(),
+                          makeFlags())
 {
 }
 
 QQnxGLContext::~QQnxGLContext()
 {
-}
-
-void QQnxGLContext::initializeContext()
-{
-    qGLContextDebug();
-
-    // Initialize connection to EGL
-    ms_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (Q_UNLIKELY(ms_eglDisplay == EGL_NO_DISPLAY))
-        qFatal("QQnxGLContext: failed to obtain EGL display: %x", eglGetError());
-
-    EGLBoolean eglResult = eglInitialize(ms_eglDisplay, 0, 0);
-    if (Q_UNLIKELY(eglResult != EGL_TRUE))
-        qFatal("QQnxGLContext: failed to initialize EGL display, err=%d", eglGetError());
-}
-
-void QQnxGLContext::shutdownContext()
-{
-    qGLContextDebug();
-
-    // Close connection to EGL
-    eglTerminate(ms_eglDisplay);
 }
 
 EGLSurface QQnxGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)

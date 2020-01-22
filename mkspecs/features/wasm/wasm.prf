@@ -1,8 +1,11 @@
 
+
 # DESTDIR will be empty if not set in the app .pro file; make sure it has a value
 isEmpty(DESTDIR): DESTDIR = $$OUT_PWD
 
 exists($$QMAKE_QT_CONFIG) {
+## this may be subject to change
+
     qtConfig(thread) {
 
         EMCC_THREAD_LFLAGS += -s USE_PTHREADS=1
@@ -71,7 +74,7 @@ contains(TEMPLATE, .*app) {
     # replacing the app name placeholder with the actual app name.
     apphtml.name = application main html file
     apphtml.output = $$DESTDIR/$$TARGET_HTML
-    apphtml.commands = sed -e s/@APPNAME@/$$TARGET_BASE/g $$WASM_PLUGIN_PATH/wasm_shell.html > $$DESTDIR/$$TARGET_HTML
+    apphtml.commands = $$QMAKE_STREAM_EDITOR -e s/@APPNAME@/$$TARGET_BASE/g $$WASM_PLUGIN_PATH/wasm_shell.html > $$DESTDIR/$$TARGET_HTML
     apphtml.input = $$WASM_PLUGIN_PATH/wasm_shell.html
     apphtml.depends = $$apphtml.input
     QMAKE_EXTRA_COMPILERS += apphtml
@@ -108,6 +111,8 @@ contains(TEMPLATE, .*app) {
             $$QMAKE_LIBS_FREETYPE $$QMAKE_LIBS_LIBPNG
     }
 }
+
+qtConfTest_emccVersion()
 
 # Pass --source-map-base on the linker line. This informs the
 # browser where to find the source files when debugging.

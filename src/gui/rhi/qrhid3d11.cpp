@@ -108,17 +108,6 @@ QT_BEGIN_NAMESPACE
     \c{ID3D11Device *} and \c{ID3D11DeviceContext *}.
  */
 
-/*!
-    \class QRhiD3D11TextureNativeHandles
-    \internal
-    \inmodule QtGui
-    \brief Holds the D3D texture object that is backing a QRhiTexture instance.
-
-    \note The class uses \c{void *} as the type since including the COM-based
-    \c{d3d11.h} headers is not acceptable here. The actual type is
-    \c{ID3D11Texture2D *}.
- */
-
 // help mingw with its ancient sdk headers
 #ifndef DXGI_ADAPTER_FLAG_SOFTWARE
 #define DXGI_ADAPTER_FLAG_SOFTWARE 2
@@ -641,9 +630,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.simage.tex);
@@ -655,9 +642,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.sbuf.buf);
@@ -1117,6 +1102,10 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case QRhiTexture::RGBA32F:
         return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    case QRhiTexture::R16F:
+        return DXGI_FORMAT_R16_FLOAT;
+    case QRhiTexture::R32F:
+        return DXGI_FORMAT_R32_FLOAT;
 
     case QRhiTexture::D16:
         return DXGI_FORMAT_R16_TYPELESS;
@@ -1139,39 +1128,24 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
         return srgb ? DXGI_FORMAT_BC7_UNORM_SRGB : DXGI_FORMAT_BC7_UNORM;
 
     case QRhiTexture::ETC2_RGB8:
-        Q_FALLTHROUGH();
     case QRhiTexture::ETC2_RGB8A1:
-        Q_FALLTHROUGH();
     case QRhiTexture::ETC2_RGBA8:
         qWarning("QRhiD3D11 does not support ETC2 textures");
         return DXGI_FORMAT_R8G8B8A8_UNORM;
 
     case QRhiTexture::ASTC_4x4:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_5x4:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_5x5:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_6x5:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_6x6:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_8x5:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_8x6:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_8x8:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_10x5:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_10x6:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_10x8:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_10x10:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_12x10:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_12x12:
         qWarning("QRhiD3D11 does not support ASTC textures");
         return DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -1212,7 +1186,6 @@ static inline bool isDepthTextureFormat(QRhiTexture::Format format)
 {
     switch (format) {
     case QRhiTexture::Format::D16:
-        Q_FALLTHROUGH();
     case QRhiTexture::Format::D32F:
         return true;
 
@@ -1878,9 +1851,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD)
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.simage.tex);
@@ -1896,9 +1867,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD)
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.sbuf.buf);
@@ -2674,8 +2643,6 @@ bool QD3D11Texture::finishBuild()
         return false;
     }
 
-    nativeHandlesStruct.texture = tex;
-
     generation += 1;
     return true;
 }
@@ -2741,16 +2708,16 @@ bool QD3D11Texture::build()
     return true;
 }
 
-bool QD3D11Texture::buildFrom(const QRhiNativeHandles *src)
+bool QD3D11Texture::buildFrom(QRhiTexture::NativeTexture src)
 {
-    const QRhiD3D11TextureNativeHandles *h = static_cast<const QRhiD3D11TextureNativeHandles *>(src);
-    if (!h || !h->texture)
+    auto *srcTex = static_cast<ID3D11Texture2D * const *>(src.object);
+    if (!srcTex || !*srcTex)
         return false;
 
     if (!prepareBuild())
         return false;
 
-    tex = static_cast<ID3D11Texture2D *>(h->texture);
+    tex = *srcTex;
 
     if (!finishBuild())
         return false;
@@ -2764,9 +2731,9 @@ bool QD3D11Texture::buildFrom(const QRhiNativeHandles *src)
     return true;
 }
 
-const QRhiNativeHandles *QD3D11Texture::nativeHandles()
+QRhiTexture::NativeTexture QD3D11Texture::nativeTexture()
 {
-    return &nativeHandlesStruct;
+    return {&tex, 0};
 }
 
 ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
@@ -2862,12 +2829,8 @@ static inline D3D11_TEXTURE_ADDRESS_MODE toD3DAddressMode(QRhiSampler::AddressMo
         return D3D11_TEXTURE_ADDRESS_WRAP;
     case QRhiSampler::ClampToEdge:
         return D3D11_TEXTURE_ADDRESS_CLAMP;
-    case QRhiSampler::Border:
-        return D3D11_TEXTURE_ADDRESS_BORDER;
     case QRhiSampler::Mirror:
         return D3D11_TEXTURE_ADDRESS_MIRROR;
-    case QRhiSampler::MirrorOnce:
-        return D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
     default:
         Q_UNREACHABLE();
         return D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -2942,6 +2905,12 @@ QD3D11RenderPassDescriptor::~QD3D11RenderPassDescriptor()
 void QD3D11RenderPassDescriptor::release()
 {
     // nothing to do here
+}
+
+bool QD3D11RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    Q_UNUSED(other);
+    return true;
 }
 
 QD3D11ReferenceRenderTarget::QD3D11ReferenceRenderTarget(QRhiImplementation *rhi)
@@ -3367,11 +3336,9 @@ static inline D3D11_BLEND toD3DBlendFactor(QRhiGraphicsPipeline::BlendFactor f)
     case QRhiGraphicsPipeline::OneMinusDstAlpha:
         return D3D11_BLEND_INV_DEST_ALPHA;
     case QRhiGraphicsPipeline::ConstantColor:
-        Q_FALLTHROUGH();
     case QRhiGraphicsPipeline::ConstantAlpha:
         return D3D11_BLEND_BLEND_FACTOR;
     case QRhiGraphicsPipeline::OneMinusConstantColor:
-        Q_FALLTHROUGH();
     case QRhiGraphicsPipeline::OneMinusConstantAlpha:
         return D3D11_BLEND_INV_BLEND_FACTOR;
     case QRhiGraphicsPipeline::SrcAlphaSaturate:
@@ -3922,7 +3889,7 @@ bool QD3D11SwapChain::buildOrResize()
             desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
             desc.BufferCount = BUFFER_COUNT;
             desc.Scaling = DXGI_SCALING_STRETCH;
-            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            desc.SwapEffect = DXGI_SWAP_EFFECT(4); // DXGI_SWAP_EFFECT_FLIP_DISCARD
             // Do not bother with AlphaMode, if won't work unless we go through
             // DirectComposition. Instead, we just take the other (DISCARD)
             // path for now when alpha is requested.

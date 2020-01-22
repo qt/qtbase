@@ -106,7 +106,7 @@ static inline QMutexData *dummyFutexValue()
 }
 
 template <bool IsTimed> static inline
-bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -1, QElapsedTimer *elapsedTimer = 0) noexcept
+bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -1, QElapsedTimer *elapsedTimer = nullptr) noexcept
 {
     if (!IsTimed)
         timeout = -1;
@@ -175,7 +175,7 @@ void QBasicMutex::unlockInternal() noexcept
     Q_UNUSED(d);
     Q_ASSERT(!isRecursive());
 
-    d_ptr.storeRelease(0);
+    d_ptr.storeRelease(nullptr);
     futexWakeOne(d_ptr);
 }
 

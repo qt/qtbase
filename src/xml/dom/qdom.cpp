@@ -59,6 +59,7 @@
 #include <qvariant.h>
 #include <qshareddata.h>
 #include <qdebug.h>
+#include <qxmlstream.h>
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE
@@ -2572,8 +2573,8 @@ void QDomNamedNodeMapPrivate::clearMap()
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItem(const QString& name) const
 {
-    QDomNodePrivate* p = map[name];
-    return p;
+    auto it = map.constFind(name);
+    return it == map.cend() ? nullptr : *it;
 }
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItemNS(const QString& nsURI, const QString& localName) const
@@ -2602,7 +2603,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::setNamedItem(QDomNodePrivate* arg)
     QDomNodePrivate *n = map.value(arg->nodeName());
     // We take a reference
     arg->ref.ref();
-    map.insertMulti(arg->nodeName(), arg);
+    map.insert(arg->nodeName(), arg);
     return n;
 }
 
@@ -2619,7 +2620,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::setNamedItemNS(QDomNodePrivate* arg)
         QDomNodePrivate *n = namedItemNS(arg->namespaceURI, arg->name);
         // We take a reference
         arg->ref.ref();
-        map.insertMulti(arg->nodeName(), arg);
+        map.insert(arg->nodeName(), arg);
         return n;
     } else {
         // ### check the following code if it is ok
@@ -2648,7 +2649,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::item(int index) const
 {
     if (index >= length() || index < 0)
         return nullptr;
-    return *(map.constBegin() + index);
+    return *std::next(map.cbegin(), index);
 }
 
 int QDomNamedNodeMapPrivate::length() const
@@ -2962,10 +2963,10 @@ QDomDocumentTypePrivate::QDomDocumentTypePrivate(QDomDocumentTypePrivate* n, boo
     while (p) {
         if (p->isEntity())
             // Don't use normal insert function since we would create infinite recursion
-            entities->map.insertMulti(p->nodeName(), p);
+            entities->map.insert(p->nodeName(), p);
         if (p->isNotation())
             // Don't use normal insert function since we would create infinite recursion
-            notations->map.insertMulti(p->nodeName(), p);
+            notations->map.insert(p->nodeName(), p);
         p = p->next;
     }
 }
@@ -3009,9 +3010,9 @@ QDomNodePrivate* QDomDocumentTypePrivate::insertBefore(QDomNodePrivate* newChild
     QDomNodePrivate* p = QDomNodePrivate::insertBefore(newChild, refChild);
     // Update the maps
     if (p && p->isEntity())
-        entities->map.insertMulti(p->nodeName(), p);
+        entities->map.insert(p->nodeName(), p);
     else if (p && p->isNotation())
-        notations->map.insertMulti(p->nodeName(), p);
+        notations->map.insert(p->nodeName(), p);
 
     return p;
 }
@@ -3022,9 +3023,9 @@ QDomNodePrivate* QDomDocumentTypePrivate::insertAfter(QDomNodePrivate* newChild,
     QDomNodePrivate* p = QDomNodePrivate::insertAfter(newChild, refChild);
     // Update the maps
     if (p && p->isEntity())
-        entities->map.insertMulti(p->nodeName(), p);
+        entities->map.insert(p->nodeName(), p);
     else if (p && p->isNotation())
-        notations->map.insertMulti(p->nodeName(), p);
+        notations->map.insert(p->nodeName(), p);
 
     return p;
 }
@@ -3041,9 +3042,9 @@ QDomNodePrivate* QDomDocumentTypePrivate::replaceChild(QDomNodePrivate* newChild
             notations->map.remove(oldChild->nodeName());
 
         if (p->isEntity())
-            entities->map.insertMulti(p->nodeName(), p);
+            entities->map.insert(p->nodeName(), p);
         else if (p->isNotation())
-            notations->map.insertMulti(p->nodeName(), p);
+            notations->map.insert(p->nodeName(), p);
     }
 
     return p;
@@ -4312,20 +4313,20 @@ void QDomElement::setAttribute(const QString& name, const QString& value)
   \fn void QDomElement::setAttribute(const QString& name, int value)
 
     \overload
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 
 /*!
   \fn void QDomElement::setAttribute(const QString& name, uint value)
 
     \overload
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, qlonglong value)
 {
@@ -4339,7 +4340,7 @@ void QDomElement::setAttribute(const QString& name, qlonglong value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, qulonglong value)
 {
@@ -4353,7 +4354,7 @@ void QDomElement::setAttribute(const QString& name, qulonglong value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, float value)
 {
@@ -4367,19 +4368,14 @@ void QDomElement::setAttribute(const QString& name, float value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, double value)
 {
     if (!impl)
         return;
     QString x;
-    char buf[256];
-    int count = qsnprintf(buf, sizeof(buf), "%.16g", value);
-    if (count > 0)
-        x = QString::fromLatin1(buf, count);
-    else
-        x.setNum(value); // Fallback
+    x.setNum(value);
     IMPL->setAttribute(name, x);
 }
 
@@ -5695,6 +5691,10 @@ void QDomDocumentPrivate::clear()
     QDomNodePrivate::clear();
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 static void initializeReader(QXmlSimpleReader &reader, bool namespaceProcessing)
 {
     reader.setFeature(QLatin1String("http://xml.org/sax/features/namespaces"), namespaceProcessing);
@@ -5728,11 +5728,42 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader
 
     if (!reader->parse(source)) {
         if (errorMsg)
-            *errorMsg = hnd.errorMsg;
+            *errorMsg = std::get<0>(hnd.errorInfo());
         if (errorLine)
-            *errorLine = hnd.errorLine;
+            *errorLine = std::get<1>(hnd.errorInfo());
         if (errorColumn)
-            *errorColumn = hnd.errorColumn;
+            *errorColumn = std::get<2>(hnd.errorInfo());
+        return false;
+    }
+
+    return true;
+}
+QT_WARNING_POP
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+bool QDomDocumentPrivate::setContent(QXmlStreamReader *reader, bool namespaceProcessing,
+                                     QString *errorMsg, int *errorLine, int *errorColumn)
+{
+    clear();
+    impl = new QDomImplementationPrivate;
+    type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
+
+    if (!reader) {
+        qWarning("Failed to set content, XML reader is not initialized");
+        return false;
+    }
+
+    QDomParser domParser(this, reader, namespaceProcessing);
+
+    if (!domParser.parse()) {
+        if (errorMsg)
+            *errorMsg = std::get<0>(domParser.errorInfo());
+        if (errorLine)
+            *errorLine = std::get<1>(domParser.errorInfo());
+        if (errorColumn)
+            *errorColumn = std::get<2>(domParser.errorInfo());
         return false;
     }
 
@@ -6158,9 +6189,19 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QXmlInputSource source;
+QT_WARNING_POP
     source.setData(text);
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#else
+    QXmlStreamReader streamReader(text);
+    streamReader.setNamespaceProcessing(namespaceProcessing);
+    return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#endif
 }
 
 /*!
@@ -6220,10 +6261,20 @@ bool QDomDocument::setContent(const QByteArray &data, bool namespaceProcessing, 
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
     QBuffer buf;
     buf.setData(data);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QXmlInputSource source(&buf);
+QT_WARNING_POP
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#else
+    QXmlStreamReader streamReader(data);
+    streamReader.setNamespaceProcessing(namespaceProcessing);
+    return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#endif
 }
 
 /*!
@@ -6236,18 +6287,32 @@ bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString 
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QXmlInputSource source(dev);
+QT_WARNING_POP
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#else
+    QXmlStreamReader streamReader(dev);
+    streamReader.setNamespaceProcessing(namespaceProcessing);
+    return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#endif
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
+    \obsolete
     \since 4.5
 
     This function reads the XML document from the QXmlInputSource \a source,
     returning true if the content was successfully parsed; otherwise returns \c false.
 
 */
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 bool QDomDocument::setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn )
 {
     if (!impl)
@@ -6256,6 +6321,9 @@ bool QDomDocument::setContent(QXmlInputSource *source, bool namespaceProcessing,
     initializeReader(reader, namespaceProcessing);
     return IMPL->setContent(source, &reader, &reader, errorMsg, errorLine, errorColumn);
 }
+QT_WARNING_POP
+
+#endif
 
 /*!
     \overload
@@ -6288,6 +6356,7 @@ bool QDomDocument::setContent(const QByteArray& buffer, QString *errorMsg, int *
 
 /*!
     \overload
+    \obsolete
 
     This function reads the XML document from the IO device \a dev, returning
     true if the content was successfully parsed; otherwise returns \c false.
@@ -6299,8 +6368,10 @@ bool QDomDocument::setContent(QIODevice* dev, QString *errorMsg, int *errorLine,
     return setContent(dev, false, errorMsg, errorLine, errorColumn);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
+    \obsolete
 
     This function reads the XML document from the QXmlInputSource \a source and
     parses it with the QXmlReader \a reader, returning true if the content was
@@ -6312,11 +6383,43 @@ bool QDomDocument::setContent(QIODevice* dev, QString *errorMsg, int *errorLine,
 
     \sa QXmlSimpleReader
 */
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 bool QDomDocument::setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn )
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
     return IMPL->setContent(source, reader, nullptr, errorMsg, errorLine, errorColumn);
+}
+QT_WARNING_POP
+
+#endif
+
+/*!
+    \overload
+    \since 5.15
+
+    This function reads the XML document from the QXmlStreamReader \a reader
+    and parses it. Returns \c true if the content was successfully parsed;
+    otherwise returns \c false.
+
+    If \a namespaceProcessing is \c true, the parser recognizes namespaces in the XML
+    file and sets the prefix name, local name and namespace URI to appropriate values.
+    If \a namespaceProcessing is \c false, the parser does no namespace processing when
+    it reads the XML file.
+
+    If a parse error occurs, the error message is placed in \c{*}\a{errorMsg}, the line
+    number in \c{*}\a{errorLine} and the column number in \c{*}\a{errorColumn} (unless
+    the associated pointer is set to 0).
+
+    \sa QXmlStreamReader
+*/
+bool QDomDocument::setContent(QXmlStreamReader *reader, bool namespaceProcessing, QString *errorMsg,
+                              int *errorLine, int *errorColumn)
+{
+    if (!impl)
+        impl = new QDomDocumentPrivate();
+    return IMPL->setContent(reader, namespaceProcessing, errorMsg, errorLine, errorColumn);
 }
 
 /*!

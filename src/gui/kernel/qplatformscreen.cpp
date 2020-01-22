@@ -54,7 +54,7 @@ QPlatformScreen::QPlatformScreen()
     : d_ptr(new QPlatformScreenPrivate)
 {
     Q_D(QPlatformScreen);
-    d->screen = 0;
+    d->screen = nullptr;
 }
 
 QPlatformScreen::~QPlatformScreen()
@@ -99,7 +99,7 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
             return w;
     }
 
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -310,7 +310,7 @@ QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window
     // QTBUG 32681: It can happen during the transition between screens
     // when one screen is disconnected that the window doesn't have a screen.
     if (!window->screen())
-        return 0;
+        return nullptr;
     return window->screen()->handle();
 }
 
@@ -395,7 +395,7 @@ QString QPlatformScreen::serialNumber() const
 */
 QPlatformCursor *QPlatformScreen::cursor() const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -410,15 +410,22 @@ void QPlatformScreen::resizeMaximizedWindows()
     const QRect newGeometry = deviceIndependentGeometry();
     const QRect newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
 
+    const bool supportsMaximizeUsingFullscreen = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MaximizeUsingFullscreenGeometry);
+
     for (QWindow *w : windows()) {
         // Skip non-platform windows, e.g., offscreen windows.
         if (!w->handle())
             continue;
 
-        if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry)
-            w->setGeometry(newAvailableGeometry);
-        else if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry)
+        if (supportsMaximizeUsingFullscreen
+                && w->windowState() & Qt::WindowMaximized
+                && w->flags() & Qt::MaximizeUsingFullscreenGeometryHint) {
             w->setGeometry(newGeometry);
+        } else if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry) {
+            w->setGeometry(newAvailableGeometry);
+        } else if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry) {
+            w->setGeometry(newGeometry);
+        }
     }
 }
 
@@ -607,6 +614,20 @@ int QPlatformScreen::currentMode() const
 int QPlatformScreen::preferredMode() const
 {
     return 0;
+}
+
+QList<QPlatformScreen *> QPlatformPlaceholderScreen::virtualSiblings() const
+{
+    QList<QPlatformScreen *> siblings;
+
+    if (!m_virtualSibling)
+        return siblings;
+
+    for (QScreen *screen : QGuiApplication::screens()) {
+        if (screen->handle() && screen->handle() != this)
+            siblings << screen->handle();
+    }
+    return siblings;
 }
 
 QT_END_NAMESPACE

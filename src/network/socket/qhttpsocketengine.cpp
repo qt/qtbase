@@ -216,7 +216,7 @@ void QHttpSocketEngine::close()
     if (d->socket) {
         d->socket->close();
         delete d->socket;
-        d->socket = 0;
+        d->socket = nullptr;
     }
 }
 
@@ -370,8 +370,8 @@ bool QHttpSocketEngine::waitForRead(int msecs, bool *timedOut)
         if (!d->socket->waitForReadyRead(qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
             if (d->socket->state() == QAbstractSocket::UnconnectedState)
                 return true;
-            setError(d->socket->error(), d->socket->errorString());
-            if (timedOut && d->socket->error() == QAbstractSocket::SocketTimeoutError)
+            setError(d->socket->socketError(), d->socket->errorString());
+            if (timedOut && d->socket->socketError() == QAbstractSocket::SocketTimeoutError)
                 *timedOut = true;
             return false;
         }
@@ -385,8 +385,8 @@ bool QHttpSocketEngine::waitForRead(int msecs, bool *timedOut)
 
     // Report any error that may occur.
     if (d->state != Connected) {
-        setError(d->socket->error(), d->socket->errorString());
-        if (timedOut && d->socket->error() == QAbstractSocket::SocketTimeoutError)
+        setError(d->socket->socketError(), d->socket->errorString());
+        if (timedOut && d->socket->socketError() == QAbstractSocket::SocketTimeoutError)
             *timedOut = true;
         return false;
     }
@@ -401,7 +401,7 @@ bool QHttpSocketEngine::waitForWrite(int msecs, bool *timedOut)
     if (d->state == Connected) {
         if (d->socket->bytesToWrite()) {
             if (!d->socket->waitForBytesWritten(msecs)) {
-                if (d->socket->error() == QAbstractSocket::SocketTimeoutError && timedOut)
+                if (d->socket->socketError() == QAbstractSocket::SocketTimeoutError && timedOut)
                     *timedOut = true;
                 return false;
             }
@@ -421,8 +421,7 @@ bool QHttpSocketEngine::waitForWrite(int msecs, bool *timedOut)
 
     // Report any error that may occur.
     if (d->state != Connected) {
-//        setError(d->socket->error(), d->socket->errorString());
-        if (timedOut && d->socket->error() == QAbstractSocket::SocketTimeoutError)
+        if (timedOut && d->socket->socketError() == QAbstractSocket::SocketTimeoutError)
             *timedOut = true;
     }
 
@@ -586,7 +585,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
     }
 
     int statusCode = d->reply->statusCode();
-    QAuthenticatorPrivate *priv = 0;
+    QAuthenticatorPrivate *priv = nullptr;
     if (statusCode == 200) {
         d->state = Connected;
         setLocalAddress(d->socket->localAddress());
@@ -829,8 +828,8 @@ QHttpSocketEnginePrivate::QHttpSocketEnginePrivate()
     , credentialsSent(false)
     , pendingResponseData(0)
 {
-    socket = 0;
-    reply = 0;
+    socket = nullptr;
+    reply = nullptr;
     state = QHttpSocketEngine::None;
 }
 
@@ -843,15 +842,15 @@ QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(QAbstractSoc
                                                                     QObject *parent)
 {
     if (socketType != QAbstractSocket::TcpSocket)
-        return 0;
+        return nullptr;
 
     // proxy type must have been resolved by now
     if (proxy.type() != QNetworkProxy::HttpProxy)
-        return 0;
+        return nullptr;
 
     // we only accept active sockets
     if (!qobject_cast<QAbstractSocket *>(parent))
-        return 0;
+        return nullptr;
 
     QHttpSocketEngine *engine = new QHttpSocketEngine(parent);
     engine->setProxy(proxy);
@@ -860,7 +859,7 @@ QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(QAbstractSoc
 
 QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(qintptr, QObject *)
 {
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

@@ -1,0 +1,533 @@
+/****************************************************************************
+**
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qttest-best-practices.qdoc
+
+    \title Qt Test Best Practices
+
+    \brief Guidelines for creating Qt tests.
+
+    We recommend that you add Qt tests for bug fixes and new features. Before
+    you try to fix a bug, add a \e {regression test} (ideally automatic) that
+    fails before the fix, exhibiting the bug, and passes after the fix. While
+    you're developing new features, add tests to verify that they work as
+    intended.
+
+    Conforming to a set of coding standards will make it more likely for
+    Qt autotests to work reliably in all environments. For example, some
+    tests need to read data from disk. If no standards are set for how this
+    is done, some tests won't be portable. For example, a test that assumes
+    its test-data files are in the current working directory only works for
+    an in-source build. In a shadow build (outside the source directory), the
+    test will fail to find its data.
+
+    The following sections contain guidelines for writing Qt tests:
+
+    \list
+        \li \l {General Principles}
+        \li \l {Writing Reliable Tests}
+        \li \l {Improving Test Output}
+        \li \l {Writing Testable Code}
+        \li \l {Setting up Test Machines}
+    \endlist
+
+    \section1 General Principles
+
+    The following sections provide general guidelines for writing unit tests:
+
+    \list
+        \li \l {Verify Tests}
+        \li \l {Give Test Functions Descriptive Names}
+        \li \l {Write Self-contained Test Functions}
+        \li \l {Test the Full Stack}
+        \li \l {Make Tests Complete Quickly}
+        \li \l {Use Data-driven Testing}
+        \li \l {Use Coverage Tools}
+        \li \l {Select Appropriate Mechanisms to Exclude Tests}
+        \li \l {Avoid Q_ASSERT}
+    \endlist
+
+    \section2 Verify Tests
+
+    Write and commit your tests along with your fix or new feature on a new
+    branch. Once you're done, you can check out the branch on which your work
+    is based, and then check out into this branch the test-files for your new
+    tests. This enables you to verify that the tests do fail on the prior
+    branch, and therefore actually do catch a bug or test a new feature.
+
+    For example, the workflow to fix a bug in the \c QDateTime class could be
+    like this if you use the Git version control system:
+
+    \list 1
+        \li Create a branch for your fix and test:
+            \c {git checkout -b fix-branch 5.14}
+        \li Write a test and fix the bug.
+        \li Build and test with both the fix and the new test, to verify that
+            the new test passes with the fix.
+        \li Add the fix and test to your branch:
+            \c {git add tests/auto/corelib/time/qdatetime/tst_qdatetime.cpp src/corelib/time/qdatetime.cpp}
+        \li Commit the fix and test to your branch:
+            \c {git commit -m 'Fix bug in QDateTime'}
+        \li To verify that the test actually catches something for which you
+            needed the fix, checkout the branch you based your own branch on:
+            \c {git checkout 5.14}
+        \li Checkout only the test file to the 5.14 branch:
+            \c {git checkout fix-branch -- tests/auto/corelib/time/qdatetime/tst_qdatetime.cpp}
+
+            Only the test is now on the fix-branch. The rest of the source tree
+            is still on 5.14.
+        \li Build and run the test to verify that it fails on 5.14, and
+            therefore does indeed catch a bug.
+        \li You can now return to the fix branch:
+            \c {git checkout fix-branch}
+        \li Alternatively, you can restore your work tree to a clean state on
+            5.14:
+            \c{git checkout HEAD -- tests/auto/corelib/time/qdatetime/tst_qdatetime.cpp}
+    \endlist
+
+    When you're reviewing a change, you can adapt this workflow to check that
+    the change does indeed come with a test for a problem it does fix.
+
+    \section2 Give Test Functions Descriptive Names
+
+    Naming test cases is important. The test name appears in the failure report
+    for a test run. For data-driven tests, the name of the data row also appears
+    in the failure report. The names give those reading the report a first
+    indication of what has gone wrong.
+
+    Test function names should make it obvious what the function is trying to
+    test. Do not simply use the bug-tracking identifier, because the identifiers
+    become obsolete if the bug-tracker is replaced. Also, some bug-trackers may
+    not be accessible to all users. When the bug report may be of interest to
+    later readers of the test code, you can mention it in a comment alongside a
+    relevant part of the test.
+
+    Likewise, when writing data-driven tests, give descriptive names to the
+    test-cases, that indicate what aspect of the functionality each focuses on.
+    Do not simply number the test-case, or use bug-tracking identifiers. Someone
+    reading the test output will have no idea what the numbers or identifiers
+    mean. You can add a comment on the test-row that mentions the bug-tracking
+    identifier, when relevant.
+
+    \section2 Write Self-contained Test Functions
+
+    Within a test program, test functions should be independent of each other
+    and they should not rely upon previous test functions having been run. You
+    can check this by running the test function on its own with
+    \c {tst_foo testname}.
+
+    Do not re-use instances of the class under test in several tests. Test
+    instances (for example widgets) should not be member variables of the
+    tests, but preferably be instantiated on the stack to ensure proper
+    cleanup even if a test fails, so that tests do not interfere with
+    each other.
+
+    \section2 Test the Full Stack
+
+    If an API is implemented in terms of pluggable or platform-specific backends
+    that do the heavy-lifting, make sure to write tests that cover the
+    code-paths all the way down into the backends. Testing the upper layer API
+    parts using a mock backend is a nice way to isolate errors in the API layer
+    from the backends, but it is complementary to tests that run the actual
+    implementation with real-world data.
+
+    \section2 Make Tests Complete Quickly
+
+    Tests should not waste time by being unnecessarily repetitious, by using
+    inappropriately large volumes of test data, or by introducing needless
+    idle time.
+
+    This is particularly true for unit testing, where every second of extra
+    unit test execution time makes CI testing of a branch across multiple
+    targets take longer. Remember that unit testing is separate from load and
+    reliability testing, where larger volumes of test data and longer test
+    runs are expected.
+
+    Benchmark tests, which typically execute the same test multiple times,
+    should be located in a separate \c tests/benchmarks directory and they
+    should not be mixed with functional unit tests.
+
+    \section2 Use Data-driven Testing
+
+    Data-driven tests make it easier to add new tests for boundary conditions
+    found in later bug reports.
+
+    Using a data-driven test rather than testing several items in sequence in
+    a test saves repetition of very similar code and ensures later cases are
+    tested even when earlier ones fail. It also encourages systematic and
+    uniform testing, because the same tests are applied to each data sample.
+
+    \section2 Use Coverage Tools
+
+    Use a coverage tool such as \l {Froglogic Coco Code Coverage} or \l {gcov}
+    to help write tests that cover as many statements, branches, and conditions
+    as possible in the function or class being tested. The earlier this is done
+    in the development cycle for a new feature, the easier it will be to catch
+    regressions later when the code is refactored.
+
+    \section2 Select Appropriate Mechanisms to Exclude Tests
+
+    It is important to select the appropriate mechanism to exclude inapplicable
+    tests: \l QSKIP(), using conditional statements to exclude parts of a test
+    function, or not building the test for a particular platform.
+
+    Use QSKIP() to handle cases where a whole test function is found at run-time
+    to be inapplicable in the current test environment. When just a part of a
+    test function is to be skipped, a conditional statement can be used,
+    optionally with a \c qDebug() call to report the reason for skipping the
+    inapplicable part.
+
+    Test functions or data rows of a data-driven test can be limited to
+    particular platforms, or to particular features being enabled using
+    \c{#if}. However, beware of \l moc limitations when using \c{#if} to
+    skip test functions. The \c moc preprocessor does not have access to
+    all the \c builtin macros of the compiler that are often used for
+    feature detection of the compiler. Therefore, \c moc might get a different
+    result for a preprocessor condition from that seen by the rest of your
+    code. This may result in \c moc generating meta-data for a test slot that
+    the actual compiler skips, or omitting the meta-data for a test slot that
+    is actually compiled into the class. In the first case, the test will
+    attempt to run a slot that is not implemented. In the second case, the
+    test will not attempt to run a test slot even though it should.
+
+    If an entire test program is inapplicable for a specific platform or
+    unless a particular feature is enabled, the best approach is to use the
+    parent directory's \c .pro file to avoid building the test. For example,
+    if the \c tests/auto/gui/someclass test is not valid for \macOS, add the
+    following line to \c tests/auto/gui.pro:
+
+    \badcode
+    mac*: SUBDIRS -= someclass
+    \endcode
+
+    \section2 Avoid Q_ASSERT
+
+    The \l Q_ASSERT macro causes a program to abort whenever the asserted
+    condition is \c false, but only if the software was built in debug mode.
+    In both release and debug-and-release builds, \c Q_ASSERT does nothing.
+
+    \c Q_ASSERT should be avoided because it makes tests behave differently
+    depending on whether a debug build is being tested, and because it causes
+    a test to abort immediately, skipping all remaining test functions and
+    returning incomplete or malformed test results.
+
+    It also skips any tear-down or tidy-up that was supposed to happen at the
+    end of the test, and might therefore leave the workspace in an untidy state,
+    which might cause complications for further tests.
+
+    Instead of \c Q_ASSERT, the \l QCOMPARE() or \l QVERIFY() macro variants
+    should be used. They cause the current test to report a failure and
+    terminate, but allow the remaining test functions to be executed and the
+    entire test program to terminate normally. \l QVERIFY2() even allows a
+    descriptive error message to be recorded in the test log.
+
+    \section1 Writing Reliable Tests
+
+    The following sections provide guidelines for writing reliable tests:
+
+    \list
+        \li \l {Avoid Side-effects in Verification Steps}
+        \li \l {Avoid Fixed Timeouts}
+        \li \l {Beware of Timing-dependent Behavior}
+        \li \l {Avoid Bitmap Capture and Comparison}
+    \endlist
+
+    \section2 Avoid Side-effects in Verification Steps
+
+    When performing verification steps in an autotest using \l QCOMPARE(),
+    \l QVERIFY(), and so on, side-effects should be avoided. Side-effects
+    in verification steps can make a test difficult to understand. Also,
+    they can easily break a test in ways that are difficult to diagnose
+    when the test is changed to use \l QTRY_VERIFY(), \l QTRY_COMPARE() or
+    \l QBENCHMARK(). These can execute the passed expression multiple times,
+    thus repeating any side-effects.
+
+    When side-effects are unavoidable, ensure that the prior state is restored
+    at the end of the test function, even if the test fails. This commonly
+    requires use of an RAII (resource acquisition is initialization) class
+    that restores state when the function returns, or a \c cleanup() method.
+    Do not simply put the restoration code at the end of the test. If part of
+    the test fails, such code will be skipped and the prior state will not be
+    restored.
+
+    \section2 Avoid Fixed Timeouts
+
+    Avoid using hard-coded timeouts, such as QTest::qWait() to wait for some
+    conditions to become true. Consider using the \l QSignalSpy class,
+    the \l QTRY_VERIFY() or \l QTRY_COMPARE() macros, or the \c QSignalSpy
+    class in conjunction with the \c QTRY_ macro variants.
+
+    The \c qWait() function can be used to set a delay for a fixed period
+    between performing some action and waiting for some asynchronous behavior
+    triggered by that action to be completed. For example, changing the state
+    of a widget and then waiting for the widget to be repainted. However,
+    such timeouts often cause failures when a test written on a workstation is
+    executed on a device, where the expected behavior might take longer to
+    complete. Increasing the fixed timeout to a value several times larger
+    than needed on the slowest test platform is not a good solution, because
+    it slows down the test run on all platforms, particularly for table-driven
+    tests.
+
+    If the code under test issues Qt signals on completion of the asynchronous
+    behavior, a better approach is to use the \l QSignalSpy class to notify
+    the test function that the verification step can now be performed.
+
+    If there are no Qt signals, use the \c QTRY_COMPARE() and \c QTRY_VERIFY()
+    macros, which periodically test a specified condition until it becomes true
+    or some maximum timeout is reached. These macros prevent the test from
+    taking longer than necessary, while avoiding breakages when tests are
+    written on workstations and later executed on embedded platforms.
+
+    If there are no Qt signals, and you are writing the test as part of
+    developing a new API, consider whether the API could benefit from the
+    addition of a signal that reports the completion of the asynchronous
+    behavior.
+
+    \section2 Beware of Timing-dependent Behavior
+
+    Some test strategies are vulnerable to timing-dependent behavior of certain
+    classes, which can lead to tests that fail only on certain platforms or that
+    do not return consistent results.
+
+    One example of this is text-entry widgets, which often have a blinking
+    cursor that can make comparisons of captured bitmaps succeed or fail
+    depending on the state of the cursor when the bitmap is captured. This,
+    in turn, may depend on the speed of the machine executing the test.
+
+    When testing classes that change their state based on timer events, the
+    timer-based behavior needs to be taken into account when performing
+    verification steps. Due to the variety of timing-dependent behavior, there
+    is no single generic solution to this testing problem.
+
+    For text-entry widgets, potential solutions include disabling the cursor
+    blinking behavior (if the API provides that feature), waiting for the
+    cursor to be in a known state before capturing a bitmap (for example, by
+    subscribing to an appropriate signal if the API provides one), or
+    excluding the area containing the cursor from the bitmap comparison.
+
+    \section2 Avoid Bitmap Capture and Comparison
+
+    While verifying test results by capturing and comparing bitmaps is sometimes
+    necessary, it can be quite fragile and labor-intensive.
+
+    For example, a particular widget may have different appearance on different
+    platforms or with different widget styles, so reference bitmaps may need to
+    be created multiple times and then maintained in the future as Qt's set of
+    supported platforms evolves. Making changes that affect the bitmap thus
+    means having to recreate the expected bitmaps on each supported platform,
+    which would require access to each platform.
+
+    Bitmap comparisons can also be influenced by factors such as the test
+    machine's screen resolution, bit depth, active theme, color scheme,
+    widget style, active locale (currency symbols, text direction, and so
+    on), font size, transparency effects, and choice of window manager.
+
+    Where possible, use programmatic means, such as verifying properties of
+    objects and variables, instead of capturing and comparing bitmaps.
+
+    \section1 Improving Test Output
+
+    The following sections provide guidelines for producing readable and
+    helpful test output:
+
+    \list
+        \li \l {Explicitly Ignore Expected Warnings}
+        \li \l {Avoid Printing Debug Messages from Autotests}
+        \li \l {Write Well-structured Diagnostic Code}
+    \endlist
+
+    \section2 Explicitly Ignore Expected Warnings
+
+    If a test is expected to cause Qt to output a warning or debug message
+    on the console, it should call \l QTest::ignoreMessage() to filter that
+    message out of the test output and to fail the test if the message is
+    not output.
+
+    If such a message is only output when Qt is built in debug mode, use
+    \l QLibraryInfo::isDebugBuild() to determine whether the Qt libraries
+    were built in debug mode. Using \c{#ifdef QT_DEBUG} is not enough, as
+    it will only tell you whether the test was built in debug mode, and
+    that does not guarantee that the Qt libraries were also built in debug
+    mode.
+
+    \section2 Avoid Printing Debug Messages from Autotests
+
+    Autotests should not produce any unhandled warning or debug messages.
+    This will allow the CI Gate to treat new warning or debug messages as
+    test failures.
+
+    Adding debug messages during development is fine, but these should be
+    either disabled or removed before a test is checked in.
+
+    \section2 Write Well-structured Diagnostic Code
+
+    Any diagnostic output that would be useful if a test fails should be part
+    of the regular test output rather than being commented-out, disabled by
+    preprocessor directives, or enabled only in debug builds. If a test fails
+    during continuous integration, having all of the relevant diagnostic output
+    in the CI logs could save you a lot of time compared to enabling the
+    diagnostic code and testing again. Epecially, if the failure was on a
+    platform that you don't have on your desktop.
+
+    Diagnostic messages in tests should use Qt's output mechanisms, such as
+    \c qDebug() and \c qWarning(), rather than \c stdio.h or \c iostream.h output
+    mechanisms. The latter bypass Qt's message handling and prevent the
+    \c -silent command-line option from suppressing the diagnostic messages.
+    This could result in important failure messages being hidden in a large
+    volume of debugging output.
+
+    \section1 Writing Testable Code
+
+    The following sections provide guidelines for writing code that is easy to
+    test:
+
+    \list
+        \li \l {Break Dependencies}
+        \li \l {Compile All Classes into Libraries}
+    \endlist
+
+    \section2 Break Dependencies
+
+    The idea of unit testing is to use every class in isolation. Since many
+    classes instantiate other classes, it is not possible to instantiate one
+    class separately. Therefore, you should use a technique called
+    \e {dependency injection} that separates object creation from object use.
+    A factory is responsible for building object trees. Other objects manipulate
+    these objects through abstract interfaces.
+
+    This technique works well for data-driven applications. For GUI
+    applications, this approach can be difficult as objects are frequently
+    created and destructed. To verify the correct behavior of classes that
+    depend on abstract interfaces, \e mocking can be used. For example, see
+    \l {Googletest Mocking (gMock) Framework}.
+
+    \section2 Compile All Classes into Libraries
+
+    In small to medium sized projects, a build script typically lists all
+    source files and then compiles the executable in one go. This means that
+    the build scripts for the tests must list the needed source files again.
+
+    It is easier to list the source files and the headers only once in a
+    script to build a static library. Then the \c main() function will be
+    linked against the static library to build the executable and the tests
+    will be linked against the static libraries.
+
+    For projects where the same source files are used in building several
+    programs, it may be more appropriate to build the shared classes into
+    a dynamically-linked (or shared object) library that each program,
+    including the test programs, can load at run-time. Again, having the
+    compiled code in a library helps to avoid duplication in the description
+    of which components to combine to make the various programs.
+
+    \section1 Setting up Test Machines
+
+    The following sections discuss common problems caused by test machine setup:
+
+    \list
+        \li \l {Screen Savers}
+        \li \l {System Dialogs}
+        \li \l {Display Usage}
+        \li \l {Window Managers}
+    \endlist
+
+    All of these problems can typically be solved by the judicious use of
+    virtualisation.
+
+    \section2 Screen Savers
+
+    Screen savers can interfere with some of the tests for GUI classes, causing
+    unreliable test results. Screen savers should be disabled to ensure that
+    test results are consistent and reliable.
+
+    \section2 System Dialogs
+
+    Dialogs displayed unexpectedly by the operating system or other running
+    applications can steal input focus from widgets involved in an autotest,
+    causing unreproducible failures.
+
+    Examples of typical problems include online update notification dialogs
+    on macOS, false alarms from virus scanners, scheduled tasks such as virus
+    signature updates, software updates pushed out to workstations, and chat
+    programs popping up windows on top of the stack.
+
+    \section2 Display Usage
+
+    Some tests use the test machine's display, mouse, and keyboard, and can
+    thus fail if the machine is being used for something else at the same
+    time or if multiple tests are run in parallel.
+
+    The CI system uses dedicated test machines to avoid this problem, but if
+    you don't have a dedicated test machine, you may be able to solve this
+    problem by running the tests on a second display.
+
+    On Unix, one can also run the tests on a nested or virtual X-server, such as
+    Xephyr. For example, to run the entire set of tests on Xephyr, execute the
+    following commands:
+
+    \code
+    Xephyr :1 -ac -screen 1920x1200 >/dev/null 2>&1 &
+    sleep 5
+    DISPLAY=:1 icewm >/dev/null 2>&1 &
+    cd tests/auto
+    make
+    DISPLAY=:1 make -k -j1 check
+    \endcode
+
+    Users of NVIDIA binary drivers should note that Xephyr might not be able to
+    provide GLX extensions. Forcing Mesa libGL might help:
+
+    \code
+    export LD_PRELOAD=/usr/lib/mesa-diverted/x86_64-linux-gnu/libGL.so.1
+    \endcode
+
+    However, when tests are run on Xephyr and the real X-server with different
+    libGL versions, the QML disk cache can make the tests crash. To avoid this,
+    use \c QML_DISABLE_DISK_CACHE=1.
+
+    Alternatively, use the offscreen plugin:
+
+    \code
+    TESTARGS="-platform offscreen" make check -k -j1
+    \endcode
+
+    \section2 Window Managers
+
+    On Unix, at least two autotests (\c tst_examples and \c tst_gestures)
+    require a window manager to be running. Therefore, if running these
+    tests under a nested X-server, you must also run a window manager
+    in that X-server.
+
+    Your window manager must be configured to position all windows on the
+    display automatically. Some windows managers, such as Tab Window Manager
+    (twm), have a mode for manually positioning new windows, and this prevents
+    the test suite from running without user interaction.
+
+    \note Tab Window Manager is not suitable for running the full suite of
+    Qt autotests, as the \c tst_gestures autotest causes it to forget its
+    configuration and revert to manual window placement.
+*/

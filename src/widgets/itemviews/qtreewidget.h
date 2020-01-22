@@ -146,7 +146,7 @@ public:
     inline QBrush background(int column) const
         { return qvariant_cast<QBrush>(data(column, Qt::BackgroundRole)); }
     inline void setBackground(int column, const QBrush &brush)
-        { setData(column, Qt::BackgroundRole, brush); }
+        { setData(column, Qt::BackgroundRole, brush.style() != Qt::NoBrush ? QVariant(brush) : QVariant()); }
 
 #if QT_DEPRECATED_SINCE(5, 13)
     QT_DEPRECATED_X ("Use QTreeWidgetItem::foreground() instead")
@@ -160,7 +160,7 @@ public:
     inline QBrush foreground(int column) const
         { return qvariant_cast<QBrush>(data(column, Qt::ForegroundRole)); }
     inline void setForeground(int column, const QBrush &brush)
-        { setData(column, Qt::ForegroundRole, brush); }
+        { setData(column, Qt::ForegroundRole, brush.style() != Qt::NoBrush ? QVariant(brush) : QVariant()); }
 
     inline Qt::CheckState checkState(int column) const
         { return static_cast<Qt::CheckState>(data(column, Qt::CheckStateRole).toInt()); }
@@ -170,7 +170,7 @@ public:
     inline QSize sizeHint(int column) const
         { return qvariant_cast<QSize>(data(column, Qt::SizeHintRole)); }
     inline void setSizeHint(int column, const QSize &size)
-        { setData(column, Qt::SizeHintRole, size); }
+        { setData(column, Qt::SizeHintRole, size.isValid() ? QVariant(size) : QVariant()); }
 
     virtual QVariant data(int column, int role) const;
     virtual void setData(int column, int role, const QVariant &value);

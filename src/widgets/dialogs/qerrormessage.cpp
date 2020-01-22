@@ -149,13 +149,13 @@ QSize QErrorMessageTextView::sizeHint() const
     \sa QMessageBox, QStatusBar::showMessage(), {Standard Dialogs Example}
 */
 
-static QErrorMessage * qtMessageHandler = 0;
+static QErrorMessage * qtMessageHandler = nullptr;
 
 static void deleteStaticcQErrorMessage() // post-routine
 {
     if (qtMessageHandler) {
         delete qtMessageHandler;
-        qtMessageHandler = 0;
+        qtMessageHandler = nullptr;
     }
 }
 
@@ -252,8 +252,8 @@ QErrorMessage::QErrorMessage(QWidget * parent)
 QErrorMessage::~QErrorMessage()
 {
     if (this == qtMessageHandler) {
-        qtMessageHandler = 0;
-        QtMessageHandler tmp = qInstallMessageHandler(0);
+        qtMessageHandler = nullptr;
+        QtMessageHandler tmp = qInstallMessageHandler(nullptr);
         // in case someone else has later stuck in another...
         if (tmp != jump)
             qInstallMessageHandler(tmp);
@@ -293,7 +293,7 @@ void QErrorMessage::done(int a)
 QErrorMessage * QErrorMessage::qtHandler()
 {
     if (!qtMessageHandler) {
-        qtMessageHandler = new QErrorMessage(0);
+        qtMessageHandler = new QErrorMessage(nullptr);
         qAddPostRoutine(deleteStaticcQErrorMessage); // clean up
         qtMessageHandler->setWindowTitle(QCoreApplication::applicationName());
         qInstallMessageHandler(jump);

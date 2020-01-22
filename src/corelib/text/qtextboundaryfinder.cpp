@@ -71,7 +71,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
         }
     }
 
-    QUnicodeTools::CharAttributeOptions options = 0;
+    QUnicodeTools::CharAttributeOptions options;
     switch (type) {
     case QTextBoundaryFinder::Grapheme: options |= QUnicodeTools::GraphemeBreaks; break;
     case QTextBoundaryFinder::Word: options |= QUnicodeTools::WordBreaks; break;
@@ -161,10 +161,10 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
 */
 QTextBoundaryFinder::QTextBoundaryFinder()
     : t(Grapheme)
-    , chars(0)
+    , chars(nullptr)
     , length(0)
     , freePrivate(true)
-    , d(0)
+    , d(nullptr)
 {
 }
 
@@ -178,7 +178,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(const QTextBoundaryFinder &other)
     , length(other.length)
     , pos(other.pos)
     , freePrivate(true)
-    , d(0)
+    , d(nullptr)
 {
     if (other.d) {
         Q_ASSERT(length > 0);
@@ -199,7 +199,7 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
     if (other.d) {
         Q_ASSERT(other.length > 0);
         uint newCapacity = (other.length + 1) * sizeof(QCharAttributes);
-        QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *) realloc(freePrivate ? d : 0, newCapacity);
+        QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *) realloc(freePrivate ? d : nullptr, newCapacity);
         Q_CHECK_PTR(newD);
         freePrivate = true;
         d = newD;
@@ -216,7 +216,7 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
     } else {
         if (freePrivate)
             free(d);
-        d = 0;
+        d = nullptr;
     }
 
     return *this;
@@ -242,7 +242,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
     , length(string.length())
     , pos(0)
     , freePrivate(true)
-    , d(0)
+    , d(nullptr)
 {
     if (length > 0) {
         d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
@@ -271,7 +271,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QChar *chars, 
     , length(length)
     , pos(0)
     , freePrivate(true)
-    , d(0)
+    , d(nullptr)
 {
     if (!chars) {
         length = 0;

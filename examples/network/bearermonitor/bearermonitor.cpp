@@ -80,34 +80,37 @@ BearerMonitor::BearerMonitor(QWidget *parent)
             break;
         }
     }
-    connect(&manager, SIGNAL(onlineStateChanged(bool)), this ,SLOT(onlineStateChanged(bool)));
-    connect(&manager, SIGNAL(configurationAdded(const QNetworkConfiguration&)),
-            this, SLOT(configurationAdded(const QNetworkConfiguration&)));
-    connect(&manager, SIGNAL(configurationRemoved(const QNetworkConfiguration&)),
-            this, SLOT(configurationRemoved(const QNetworkConfiguration&)));
-    connect(&manager, SIGNAL(configurationChanged(const QNetworkConfiguration&)),
-            this, SLOT(configurationChanged(const QNetworkConfiguration)));
-    connect(&manager, SIGNAL(updateCompleted()), this, SLOT(updateConfigurations()));
+    connect(&manager, &QNetworkConfigurationManager::onlineStateChanged,
+            this, &BearerMonitor::onlineStateChanged);
+    connect(&manager, &QNetworkConfigurationManager::configurationAdded,
+            this, [this](const QNetworkConfiguration &config) { configurationAdded(config); });
+    connect(&manager, &QNetworkConfigurationManager::configurationRemoved,
+            this, &BearerMonitor::configurationRemoved);
+    connect(&manager, &QNetworkConfigurationManager::configurationChanged,
+            this, &BearerMonitor::configurationChanged);
+    connect(&manager, &QNetworkConfigurationManager::updateCompleted,
+            this, &BearerMonitor::updateConfigurations);
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    connect(registerButton, SIGNAL(clicked()), this, SLOT(registerNetwork()));
-    connect(unregisterButton, SIGNAL(clicked()), this, SLOT(unregisterNetwork()));
+    connect(registerButton, &QPushButton::clicked,
+            this, &BearerMonitor::registerNetwork);
+    connect(unregisterButton, &QPushButton::clicked,
+            this, &BearerMonitor::unregisterNetwork);
 #else // Q_OS_WIN && !Q_OS_WINRT
     nlaGroup->hide();
 #endif
 
-    connect(treeWidget, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
-            this, SLOT(createSessionFor(QTreeWidgetItem*)));
+    connect(treeWidget, &QTreeWidget::itemActivated,
+            this, &BearerMonitor::createSessionFor);
+    connect(treeWidget, &QTreeWidget::currentItemChanged,
+            this, &BearerMonitor::showConfigurationFor);
 
-    connect(treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
-            this, SLOT(showConfigurationFor(QTreeWidgetItem*)));
-
-    connect(newSessionButton, SIGNAL(clicked()),
-            this, SLOT(createNewSession()));
-    connect(deleteSessionButton, SIGNAL(clicked()),
-            this, SLOT(deleteSession()));
-    connect(scanButton, SIGNAL(clicked()),
-            this, SLOT(performScan()));
+    connect(newSessionButton, &QPushButton::clicked,
+            this, &BearerMonitor::createNewSession);
+    connect(deleteSessionButton, &QPushButton::clicked,
+            this, &BearerMonitor::deleteSession);
+    connect(scanButton, &QPushButton::clicked,
+            this, &BearerMonitor::performScan);
 
     // Just in case update all configurations so that all
     // configurations are up to date.
@@ -124,7 +127,7 @@ static void updateItem(QTreeWidgetItem *item, const QNetworkConfiguration &confi
     item->setData(0, Qt::UserRole, config.identifier());
 
     QFont font = item->font(1);
-    font.setBold((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active);
+    font.setBold(config.state().testFlag(QNetworkConfiguration::Active));
     item->setFont(0, font);
 }
 
@@ -333,8 +336,6 @@ void BearerMonitor::showConfigurationFor(QTreeWidgetItem *item)
     case QNetworkConfiguration::Undefined:
         configurationState->setText(tr("Undefined"));
         break;
-    default:
-        configurationState->setText(QString());
     }
 
     switch (conf.type()) {
@@ -350,8 +351,6 @@ void BearerMonitor::showConfigurationFor(QTreeWidgetItem *item)
     case QNetworkConfiguration::Invalid:
         configurationType->setText(tr("Invalid"));
         break;
-    default:
-        configurationType->setText(QString());
     }
 
     switch (conf.purpose()) {
@@ -367,8 +366,6 @@ void BearerMonitor::showConfigurationFor(QTreeWidgetItem *item)
     case QNetworkConfiguration::ServiceSpecificPurpose:
         configurationPurpose->setText(tr("Service Specific"));
         break;
-    default:
-        configurationPurpose->setText(QString());
     }
 
     configurationIdentifier->setText(conf.identifier());

@@ -149,6 +149,14 @@ public:
     const bool ocspStaplingEnabled = false;
 #endif
 
+#if QT_CONFIG(openssl)
+    bool reportFromCallback = false;
+    bool missingCertIsFatal = false;
+#else
+    const bool reportFromCallback = false;
+    const bool missingCertIsFatal = false;
+#endif // openssl
+
     // in qsslsocket.cpp:
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);

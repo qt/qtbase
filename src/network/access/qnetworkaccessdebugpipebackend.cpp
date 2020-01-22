@@ -70,13 +70,13 @@ QNetworkAccessDebugPipeBackendFactory::create(QNetworkAccessManager::Operation o
 
     default:
         // no, we can't handle this operation
-        return 0;
+        return nullptr;
     }
 
     QUrl url = request.url();
     if (url.scheme() == QLatin1String("debugpipe"))
         return new QNetworkAccessDebugPipeBackend;
-    return 0;
+    return nullptr;
 }
 
 QNetworkAccessDebugPipeBackend::QNetworkAccessDebugPipeBackend()
@@ -188,7 +188,7 @@ void QNetworkAccessDebugPipeBackend::pushFromUpstreamToSocket()
                 emitReplyUploadProgress(bytesUploaded, bytesUploaded);
                 possiblyFinish();
                 break;
-            } else if (haveRead == 0 || readPointer == 0) {
+            } else if (haveRead == 0 || readPointer == nullptr) {
                 // nothing to read right now, we will be called again later
                 break;
             } else {
@@ -242,9 +242,9 @@ void QNetworkAccessDebugPipeBackend::closeDownstreamChannel()
 
 void QNetworkAccessDebugPipeBackend::socketError()
 {
-    qWarning("QNetworkAccessDebugPipeBackend::socketError() %d",socket.error());
+    qWarning("QNetworkAccessDebugPipeBackend::socketError() %d",socket.socketError());
     QNetworkReply::NetworkError code;
-    switch (socket.error()) {
+    switch (socket.socketError()) {
     case QAbstractSocket::RemoteHostClosedError:
         return;                 // socketDisconnected will be called
 

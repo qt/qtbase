@@ -131,6 +131,10 @@ public:
     SSL_SESSION *session;
     QVector<QSslErrorEntry> errorList;
     static int s_indexForSSLExtraData; // index used in SSL_get_ex_data to get the matching QSslSocketBackendPrivate
+    enum ExDataOffset {
+        errorOffsetInExData = 1,
+        socketOffsetInExData = 2
+    };
 
     bool inSetAndEmitError = false;
 
@@ -156,6 +160,15 @@ public:
 #if QT_CONFIG(ocsp)
     bool checkOcspStatus();
 #endif
+
+    void alertMessageSent(int encoded);
+    void alertMessageReceived(int encoded);
+
+    int emitErrorFromCallback(X509_STORE_CTX *ctx);
+    void trySendFatalAlert();
+
+    bool pendingFatalAlert = false;
+    bool errorsReportedFromCallback = false;
 
     // This decription will go to setErrorAndEmit(SslHandshakeError, ocspErrorDescription)
     QString ocspErrorDescription;

@@ -158,7 +158,7 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx,
   Constructs an empty authentication object.
 */
 QAuthenticator::QAuthenticator()
-    : d(0)
+    : d(nullptr)
 {
 }
 
@@ -175,7 +175,7 @@ QAuthenticator::~QAuthenticator()
     Constructs a copy of \a other.
 */
 QAuthenticator::QAuthenticator(const QAuthenticator &other)
-    : d(0)
+    : d(nullptr)
 {
     if (other.d)
         *this = other;
@@ -1227,7 +1227,7 @@ QByteArray qEncodeHmacMd5(QByteArray &key, const QByteArray &message)
 static QByteArray qCreatev2Hash(const QAuthenticatorPrivate *ctx,
                                 QNtlmPhase3Block *phase3)
 {
-    Q_ASSERT(phase3 != 0);
+    Q_ASSERT(phase3 != nullptr);
     // since v2 Hash is need for both NTLMv2 and LMv2 it is calculated
     // only once and stored and reused
     if(phase3->v2Hash.size() == 0) {
@@ -1284,7 +1284,7 @@ static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
                                         const QNtlmPhase2Block& ch,
                                         QNtlmPhase3Block *phase3)
 {
-    Q_ASSERT(phase3 != 0);
+    Q_ASSERT(phase3 != nullptr);
     // return value stored in phase3
     qCreatev2Hash(ctx, phase3);
 
@@ -1351,7 +1351,7 @@ static QByteArray qEncodeLmv2Response(const QAuthenticatorPrivate *ctx,
                                       const QNtlmPhase2Block& ch,
                                       QNtlmPhase3Block *phase3)
 {
-    Q_ASSERT(phase3 != 0);
+    Q_ASSERT(phase3 != nullptr);
     // return value stored in phase3
     qCreatev2Hash(ctx, phase3);
 

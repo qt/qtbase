@@ -77,7 +77,7 @@ static const char *metaTypeEnumValueString(int type)
 QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
     }
 #undef RETURN_METATYPENAME_STRING
-    return 0;
+    return nullptr;
  }
 
 Generator::Generator(ClassDef *classDef, const QVector<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile)
@@ -194,7 +194,6 @@ static bool qualifiedNameEquals(const QByteArray &qualifiedName, const QByteArra
 
 void Generator::generateCode()
 {
-    bool isQt = (cdef->classname == "Qt");
     bool isQObject = (cdef->classname == "QObject");
     bool isConstructible = !cdef->constructorList.isEmpty();
 
@@ -237,7 +236,7 @@ void Generator::generateCode()
 //
     const int constCharArraySizeLimit = 65535;
     fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
-    fprintf(out, "    QByteArrayData data[%d];\n", strings.size());
+    fprintf(out, "    const uint offsetsAndSize[%d];\n", strings.size()*2);
     {
         int stringDataLength = 0;
         int stringDataCounter = 0;
@@ -260,11 +259,8 @@ void Generator::generateCode()
     // stringdata.stringdata member, and 2) the stringdata.data index of the
     // QByteArrayData being defined. This calculation relies on the
     // QByteArrayData::data() implementation returning simply "this + offset".
-    fprintf(out, "#define QT_MOC_LITERAL(idx, ofs, len) \\\n"
-            "    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \\\n"
-            "    qptrdiff(offsetof(qt_meta_stringdata_%s_t, stringdata0) + ofs \\\n"
-            "        - idx * sizeof(QByteArrayData)) \\\n"
-            "    )\n",
+    fprintf(out, "#define QT_MOC_LITERAL(ofs, len) \\\n"
+            "    uint(offsetof(qt_meta_stringdata_%s_t, stringdata0) + ofs), len \n",
             qualifiedClassNameIdentifier.constData());
 
     fprintf(out, "static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",
@@ -274,7 +270,7 @@ void Generator::generateCode()
         int idx = 0;
         for (int i = 0; i < strings.size(); ++i) {
             const QByteArray &str = strings.at(i);
-            fprintf(out, "QT_MOC_LITERAL(%d, %d, %d)", i, idx, str.length());
+            fprintf(out, "QT_MOC_LITERAL(%d, %d)", idx, str.length());
             if (i != strings.size() - 1)
                 fputc(',', out);
             const QByteArray comment = str.length() > 32 ? str.left(29) + "..." : str;
@@ -452,7 +448,7 @@ void Generator::generateCode()
 //
 // Generate internal qt_static_metacall() function
 //
-    const bool hasStaticMetaCall = !isQt &&
+    const bool hasStaticMetaCall =
             (cdef->hasQObject || !cdef->methodList.isEmpty()
              || !cdef->propertyList.isEmpty() || !cdef->constructorList.isEmpty());
     if (hasStaticMetaCall)
@@ -462,7 +458,7 @@ void Generator::generateCode()
 // Build extra array
 //
     QVector<QByteArray> extraList;
-    QHash<QByteArray, QByteArray> knownExtraMetaObject = knownGadgets;
+    QMultiHash<QByteArray, QByteArray> knownExtraMetaObject = knownGadgets;
     knownExtraMetaObject.unite(knownQObjectClasses);
 
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
@@ -534,18 +530,17 @@ void Generator::generateCode()
 //
 // Finally create and initialize the static meta object
 //
-    if (isQt)
-        fprintf(out, "QT_INIT_METAOBJECT const QMetaObject QObject::staticQtMetaObject = { {\n");
-    else
-        fprintf(out, "QT_INIT_METAOBJECT const QMetaObject %s::staticMetaObject = { {\n", cdef->qualified.constData());
+    fprintf(out, "QT_INIT_METAOBJECT const QMetaObject %s::staticMetaObject = { {\n", cdef->qualified.constData());
 
     if (isQObject)
         fprintf(out, "    nullptr,\n");
-    else if (cdef->superclassList.size() && (!cdef->hasQGadget || knownGadgets.contains(purestSuperClass)))
+    else if (cdef->superclassList.size() && !cdef->hasQGadget) // for qobject, we know the super class must have a static metaobject
         fprintf(out, "    QMetaObject::SuperData::link<%s::staticMetaObject>(),\n", purestSuperClass.constData());
+    else if (cdef->superclassList.size()) // for gadgets we need to query at compile time for it
+        fprintf(out, "    QtPrivate::MetaObjectForType<%s>::value(),\n", purestSuperClass.constData());
     else
         fprintf(out, "    nullptr,\n");
-    fprintf(out, "    qt_meta_stringdata_%s.data,\n"
+    fprintf(out, "    qt_meta_stringdata_%s.offsetsAndSize,\n"
             "    qt_meta_data_%s,\n", qualifiedClassNameIdentifier.constData(),
             qualifiedClassNameIdentifier.constData());
     if (hasStaticMetaCall)
@@ -558,9 +553,6 @@ void Generator::generateCode()
     else
         fprintf(out, "    qt_meta_extradata_%s,\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "    nullptr\n} };\n\n");
-
-    if(isQt)
-        return;
 
     if (!cdef->hasQObject)
         return;

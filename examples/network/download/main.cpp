@@ -80,8 +80,8 @@ public slots:
 
 DownloadManager::DownloadManager()
 {
-    connect(&manager, SIGNAL(finished(QNetworkReply*)),
-            SLOT(downloadFinished(QNetworkReply*)));
+    connect(&manager, &QNetworkAccessManager::finished,
+            this, &DownloadManager::downloadFinished);
 }
 
 void DownloadManager::doDownload(const QUrl &url)
@@ -90,8 +90,8 @@ void DownloadManager::doDownload(const QUrl &url)
     QNetworkReply *reply = manager.get(request);
 
 #if QT_CONFIG(ssl)
-    connect(reply, SIGNAL(sslErrors(QList<QSslError>)),
-            SLOT(sslErrors(QList<QSslError>)));
+    connect(reply, &QNetworkReply::sslErrors,
+            this, &DownloadManager::sslErrors);
 #endif
 
     currentDownloads.append(reply);
@@ -175,7 +175,7 @@ void DownloadManager::sslErrors(const QList<QSslError> &sslErrors)
 void DownloadManager::downloadFinished(QNetworkReply *reply)
 {
     QUrl url = reply->url();
-    if (reply->error()) {
+    if (reply->networkError()) {
         fprintf(stderr, "Download of %s failed: %s\n",
                 url.toEncoded().constData(),
                 qPrintable(reply->errorString()));

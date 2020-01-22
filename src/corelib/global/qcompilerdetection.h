@@ -358,7 +358,6 @@
 #        define Q_COMPILER_ATTRIBUTES
 #        define Q_COMPILER_AUTO_FUNCTION
 #        define Q_COMPILER_CLASS_ENUM
-#        define Q_COMPILER_CONSTEXPR
 #        define Q_COMPILER_DECLTYPE
 #        define Q_COMPILER_DEFAULT_MEMBERS
 #        define Q_COMPILER_DELETE_MEMBERS
@@ -492,6 +491,39 @@
 #else
 #  error "Qt has not been tested with this compiler - see http://www.qt-project.org/"
 #endif
+
+/*
+ * SG10's SD-6 feature detection and some useful extensions from Clang and GCC
+ * https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations
+ * http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
+ * Not using wrapper macros, per http://eel.is/c++draft/cpp.cond#7.sentence-2
+ */
+#ifndef __has_builtin
+#  define __has_builtin(x)             0
+#endif
+#ifndef __has_feature
+#  define __has_feature(x)             0
+#endif
+#ifndef __has_attribute
+#  define __has_attribute(x)           0
+#endif
+#ifndef __has_cpp_attribute
+#  define __has_cpp_attribute(x)       0
+#endif
+#ifndef __has_include
+#  define __has_include(x)             0
+#endif
+#ifndef __has_include_next
+#  define __has_include_next(x)        0
+#endif
+
+// Kept around until all submodules have transitioned
+#define QT_HAS_BUILTIN(x)        __has_builtin(x)
+#define QT_HAS_FEATURE(x)        __has_feature(x)
+#define QT_HAS_ATTRIBUTE(x)      __has_attribute(x)
+#define QT_HAS_CPP_ATTRIBUTE(x)  __has_cpp_attribute(x)
+#define QT_HAS_INCLUDE(x)        __has_include(x)
+#define QT_HAS_INCLUDE_NEXT(x)   __has_include_next(x)
 
 /*
  * C++11 support
@@ -783,13 +815,14 @@
 #    endif
 #  endif
 
-#  if defined(__has_warning)
-#    if __has_warning("-Wunused-private-field")
-#      define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
-#    endif
-#  endif
+#endif // Q_CC_CLANG &&  !Q_CC_INTEL && !Q_CC_MSVC
 
-#endif // Q_CC_CLANG
+#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#  ifndef Q_DECL_UNUSED
+#    define Q_DECL_UNUSED __attribute__((__unused__))
+#  endif
+#  define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
+#endif
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  define Q_COMPILER_RESTRICTED_VLA
@@ -837,7 +870,6 @@
 #      define Q_COMPILER_DEFAULT_MEMBERS
 #      define Q_COMPILER_DELETE_MEMBERS
        /* C++11 features supported in GCC 4.6: */
-#      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #      define Q_COMPILER_RANGE_FOR
@@ -868,7 +900,11 @@
 #         define Q_COMPILER_REF_QUALIFIERS
 #      endif
 #    endif
-     /* C++11 features are complete as of GCC 4.8.1 */
+#    if Q_CC_GNU >= 500
+       /* GCC 4.6 introduces constexpr, but it's bugged (at least) in the whole
+        * 4.x series, see e.g. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57694 */
+#      define Q_COMPILER_CONSTEXPR
+#    endif
 #  endif
 #  if __cplusplus > 201103L
 #    if Q_CC_GNU >= 409
@@ -1020,37 +1056,6 @@
 #endif
 
 /*
- * SG10's SD-6 feature detection and some useful extensions from Clang and GCC
- * https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations
- * http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
- */
-#ifdef __has_builtin
-#  define QT_HAS_BUILTIN(x)             __has_builtin(x)
-#else
-#  define QT_HAS_BUILTIN(x)             0
-#endif
-#ifdef __has_attribute
-#  define QT_HAS_ATTRIBUTE(x)           __has_attribute(x)
-#else
-#  define QT_HAS_ATTRIBUTE(x)           0
-#endif
-#ifdef __has_cpp_attribute
-#  define QT_HAS_CPP_ATTRIBUTE(x)       __has_cpp_attribute(x)
-#else
-#  define QT_HAS_CPP_ATTRIBUTE(x)       0
-#endif
-#ifdef __has_include
-#  define QT_HAS_INCLUDE(x)             __has_include(x)
-#else
-#  define QT_HAS_INCLUDE(x)             0
-#endif
-#ifdef __has_include_next
-#  define QT_HAS_INCLUDE_NEXT(x)        __has_include_next(x)
-#else
-#  define QT_HAS_INCLUDE_NEXT(x)        0
-#endif
-
-/*
  * C++11 keywords and expressions
  */
 #ifdef Q_COMPILER_NULLPTR
@@ -1124,7 +1129,7 @@
 # define Q_DECL_ALIGN(n)   alignas(n)
 #endif
 
-#if QT_HAS_CPP_ATTRIBUTE(nodiscard) && !defined(Q_CC_CLANG)         // P0188R1
+#if __has_cpp_attribute(nodiscard) && !defined(Q_CC_CLANG)         // P0188R1
 // Can't use [[nodiscard]] with Clang, see https://bugs.llvm.org/show_bug.cgi?id=33518
 #  undef Q_REQUIRED_RESULT
 #  define Q_REQUIRED_RESULT [[nodiscard]]
@@ -1226,11 +1231,6 @@
 #ifndef QT_MAKE_CHECKED_ARRAY_ITERATOR
 #  define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) (x)
 #endif
-#ifdef __has_feature
-#  define QT_HAS_FEATURE(x)             __has_feature(x)
-#else
-#  define QT_HAS_FEATURE(x)             0
-#endif
 
 /*
  * Warning/diagnostic handling
@@ -1321,11 +1321,11 @@
     } while (false)
 
 #if defined(__cplusplus)
-#if QT_HAS_CPP_ATTRIBUTE(clang::fallthrough)
+#if __has_cpp_attribute(clang::fallthrough)
 #    define Q_FALLTHROUGH() [[clang::fallthrough]]
-#elif QT_HAS_CPP_ATTRIBUTE(gnu::fallthrough)
+#elif __has_cpp_attribute(gnu::fallthrough)
 #    define Q_FALLTHROUGH() [[gnu::fallthrough]]
-#elif QT_HAS_CPP_ATTRIBUTE(fallthrough)
+#elif __has_cpp_attribute(fallthrough)
 #  define Q_FALLTHROUGH() [[fallthrough]]
 #endif
 #endif

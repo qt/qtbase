@@ -533,10 +533,10 @@ void QPageSetupWidget::setupPrinter() const
 {
     m_printer->setPageLayout(m_pageLayout);
 #if QT_CONFIG(cups)
-    QCUPSSupport::PagesPerSheet pagesPerSheet = m_ui.pagesPerSheetCombo->currentData()
-                                                    .value<QCUPSSupport::PagesPerSheet>();
-    QCUPSSupport::PagesPerSheetLayout pagesPerSheetLayout = m_ui.pagesPerSheetLayoutCombo->currentData()
-                                                                .value<QCUPSSupport::PagesPerSheetLayout>();
+    QCUPSSupport::PagesPerSheet pagesPerSheet = qvariant_cast<QCUPSSupport::PagesPerSheet>(m_ui.pagesPerSheetCombo->currentData()
+);
+    QCUPSSupport::PagesPerSheetLayout pagesPerSheetLayout = qvariant_cast<QCUPSSupport::PagesPerSheetLayout>(m_ui.pagesPerSheetLayoutCombo->currentData()
+);
     QCUPSSupport::setPagesPerSheetLayout(m_printer, pagesPerSheet, pagesPerSheetLayout);
 #endif
 #ifdef PSD_ENABLE_PAPERSOURCE
@@ -587,11 +587,11 @@ void QPageSetupWidget::pageSizeChanged()
 {
     QPageSize pageSize;
     if (m_ui.pageSizeCombo->currentIndex() != m_realCustomPageSizeIndex) {
-        pageSize = m_ui.pageSizeCombo->currentData().value<QPageSize>();
+        pageSize = qvariant_cast<QPageSize>(m_ui.pageSizeCombo->currentData());
 
 #if QT_CONFIG(cups)
         if (m_pageSizePpdOption) {
-            ppd_file_t *ppd = m_printDevice->property(PDPK_PpdFile).value<ppd_file_t*>();
+            ppd_file_t *ppd = qvariant_cast<ppd_file_t*>(m_printDevice->property(PDPK_PpdFile));
             QTextCodec *cupsCodec = QTextCodec::codecForName(ppd->lang_encoding);
             for (int i = 0; i < m_pageSizePpdOption->num_choices; ++i) {
                 const ppd_choice_t *choice = &m_pageSizePpdOption->choices[i];
@@ -676,7 +676,7 @@ void QPageSetupWidget::unitChanged()
 {
     if (m_blockSignals)
         return;
-    m_units = m_ui.unitCombo->currentData().value<QPageLayout::Unit>();
+    m_units = qvariant_cast<QPageLayout::Unit>(m_ui.unitCombo->currentData());
     m_pageLayout.setUnits(m_units);
     updateWidget();
 }
@@ -725,7 +725,7 @@ QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
 }
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
-    : QDialog(*(new QUnixPageSetupDialogPrivate(0)), parent)
+    : QDialog(*(new QUnixPageSetupDialogPrivate(nullptr)), parent)
 {
     Q_D(QPageSetupDialog);
     setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));

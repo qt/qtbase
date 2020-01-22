@@ -53,7 +53,7 @@
 #include <QtCore/qbytearraylist.h>
 #endif
 
-#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>) && __cplusplus >= 201703L
 #include <variant>
 #elif defined(Q_CLANG_QDOC)
 namespace std { template<typename...> struct variant; }
@@ -372,7 +372,7 @@ class Q_CORE_EXPORT QVariant
     static inline QVariant fromValue(const T &value)
     { return QVariant(qMetaTypeId<T>(), &value, QTypeInfo<T>::isPointer); }
 
-#if (QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L) || defined(Q_CLANG_QDOC)
+#if (__has_include(<variant>) && __cplusplus >= 201703L) || defined(Q_CLANG_QDOC)
     template<typename... Types>
     static inline QVariant fromStdVariant(const std::variant<Types...> &value)
     {
@@ -396,7 +396,7 @@ class Q_CORE_EXPORT QVariant
     struct Private
     {
         inline Private() noexcept : type(Invalid), is_shared(false), is_null(true)
-        { data.ptr = nullptr; }
+        {}
 
         // Internal constructor for initialized variants.
         explicit inline Private(uint variantType) noexcept
@@ -412,6 +412,7 @@ class Q_CORE_EXPORT QVariant
 #endif
         union Data
         {
+            void *threeptr[3] = { nullptr, nullptr, nullptr };
             char c;
             uchar uc;
             short s;
@@ -465,14 +466,6 @@ class Q_CORE_EXPORT QVariant
     { return cmp(v); }
     inline bool operator!=(const QVariant &v) const
     { return !cmp(v); }
-    inline bool operator<(const QVariant &v) const
-    { return compare(v) < 0; }
-    inline bool operator<=(const QVariant &v) const
-    { return compare(v) <= 0; }
-    inline bool operator>(const QVariant &v) const
-    { return compare(v) > 0; }
-    inline bool operator>=(const QVariant &v) const
-    { return compare(v) >= 0; }
 
 protected:
     friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
@@ -491,7 +484,6 @@ public:
     Private d;
     void create(int type, const void *copy);
     bool cmp(const QVariant &other) const;
-    int compare(const QVariant &other) const;
     bool convert(const int t, void *ptr) const; // ### Qt6: drop const
 
 private:
@@ -546,7 +538,7 @@ inline QVariant QVariant::fromValue(const QVariant &value)
     return value;
 }
 
-#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>) && __cplusplus >= 201703L
 template<>
 inline QVariant QVariant::fromValue(const std::monostate &)
 {
@@ -779,7 +771,7 @@ namespace QtPrivate {
                 return QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl(reinterpret_cast<const QByteArrayList*>(v.constData())));
             }
 #endif
-            return QSequentialIterable(v.value<QtMetaTypePrivate::QSequentialIterableImpl>());
+            return QSequentialIterable(qvariant_cast<QtMetaTypePrivate::QSequentialIterableImpl>(v));
         }
     };
     template<>
@@ -794,7 +786,7 @@ namespace QtPrivate {
             if (typeId == qMetaTypeId<QVariantHash>()) {
                 return QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl(reinterpret_cast<const QVariantHash*>(v.constData())));
             }
-            return QAssociativeIterable(v.value<QtMetaTypePrivate::QAssociativeIterableImpl>());
+            return QAssociativeIterable(qvariant_cast<QtMetaTypePrivate::QAssociativeIterableImpl>(v));
         }
     };
     template<>
@@ -803,7 +795,8 @@ namespace QtPrivate {
         static QVariantList invoke(const QVariant &v)
         {
             const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QStringList>() || typeId == qMetaTypeId<QByteArrayList>() || QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>())) {
+            if (typeId == qMetaTypeId<QStringList>() || typeId == qMetaTypeId<QByteArrayList>() ||
+                (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()) && !QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QVariantList>()))) {
                 QSequentialIterable iter = QVariantValueHelperInterface<QSequentialIterable>::invoke(v);
                 QVariantList l;
                 l.reserve(iter.size());
@@ -820,12 +813,12 @@ namespace QtPrivate {
         static QVariantHash invoke(const QVariant &v)
         {
             const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QVariantMap>() || QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) {
+            if (typeId == qMetaTypeId<QVariantMap>() || ((QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) && !QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QVariantHash>()))) {
                 QAssociativeIterable iter = QVariantValueHelperInterface<QAssociativeIterable>::invoke(v);
                 QVariantHash l;
                 l.reserve(iter.size());
                 for (QAssociativeIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)
-                    l.insertMulti(it.key().toString(), it.value());
+                    static_cast<QMultiHash<QString, QVariant> &>(l).insert(it.key().toString(), it.value());
                 return l;
             }
             return QVariantValueHelper<QVariantHash>::invoke(v);
@@ -837,11 +830,11 @@ namespace QtPrivate {
         static QVariantMap invoke(const QVariant &v)
         {
             const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QVariantHash>() || QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>())) {
+            if (typeId == qMetaTypeId<QVariantHash>() || (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()) && !QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QVariantMap>()))) {
                 QAssociativeIterable iter = QVariantValueHelperInterface<QAssociativeIterable>::invoke(v);
                 QVariantMap l;
                 for (QAssociativeIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)
-                    l.insertMulti(it.key().toString(), it.value());
+                    static_cast<QMultiMap<QString, QVariant> &>(l).insert(it.key().toString(), it.value());
                 return l;
             }
             return QVariantValueHelper<QVariantMap>::invoke(v);
@@ -853,12 +846,9 @@ namespace QtPrivate {
         static QPair<QVariant, QVariant> invoke(const QVariant &v)
         {
             const int typeId = v.userType();
-            if (typeId == qMetaTypeId<QPair<QVariant, QVariant> >())
-                return QVariantValueHelper<QPair<QVariant, QVariant> >::invoke(v);
 
-            if (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>())) {
+            if (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()) && !(typeId == qMetaTypeId<QPair<QVariant, QVariant> >())) {
                 QtMetaTypePrivate::QPairVariantInterfaceImpl pi = v.value<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-
                 const QtMetaTypePrivate::VariantData d1 = pi.first();
                 QVariant v1(d1.metaTypeId, d1.data, d1.flags);
                 if (d1.metaTypeId == qMetaTypeId<QVariant>())

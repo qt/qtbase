@@ -94,7 +94,7 @@ QObjectCleanupHandler::~QObjectCleanupHandler()
 QObject *QObjectCleanupHandler::add(QObject* object)
 {
     if (!object)
-        return 0;
+        return nullptr;
 
     connect(object, SIGNAL(destroyed(QObject*)), this, SLOT(objectDestroyed(QObject*)));
     cleanupObjects.insert(0, object);

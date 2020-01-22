@@ -94,7 +94,6 @@ private slots:
     void setResetButtonEnabled();
     void setupMatrix();
     void togglePointerMode();
-    void toggleOpenGL();
     void toggleAntialiasing();
     void print();
     void rotateLeft();
@@ -106,7 +105,6 @@ private:
     QLabel *label2;
     QToolButton *selectModeButton;
     QToolButton *dragModeButton;
-    QToolButton *openGlButton;
     QToolButton *antialiasButton;
     QToolButton *printButton;
     QToolButton *resetButton;

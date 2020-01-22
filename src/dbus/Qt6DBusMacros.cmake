@@ -34,7 +34,7 @@ include(MacroAddFileDependencies)
 
 include(CMakeParseArguments)
 
-function(QT6_ADD_DBUS_INTERFACE _sources _interface _basename)
+function(qt6_add_dbus_interface _sources _interface _basename)
     get_filename_component(_infile ${_interface} ABSOLUTE)
     set(_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h")
     set(_impl   "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cpp")
@@ -71,7 +71,7 @@ function(QT6_ADD_DBUS_INTERFACE _sources _interface _basename)
 endfunction()
 
 
-function(QT6_ADD_DBUS_INTERFACES _sources)
+function(qt6_add_dbus_interfaces _sources)
     foreach(_current_FILE ${ARGN})
         get_filename_component(_infile ${_current_FILE} ABSOLUTE)
         get_filename_component(_basename ${_current_FILE} NAME)
@@ -84,7 +84,7 @@ function(QT6_ADD_DBUS_INTERFACES _sources)
 endfunction()
 
 
-function(QT6_GENERATE_DBUS_INTERFACE _header) # _customName OPTIONS -some -options )
+function(qt6_generate_dbus_interface _header) # _customName OPTIONS -some -options )
     set(options)
     set(oneValueArgs)
     set(multiValueArgs OPTIONS)
@@ -117,7 +117,7 @@ function(QT6_GENERATE_DBUS_INTERFACE _header) # _customName OPTIONS -some -optio
 endfunction()
 
 
-function(QT6_ADD_DBUS_ADAPTOR _sources _xml_file _include _parentClass) # _optionalBasename _optionalClassName)
+function(qt6_add_dbus_adaptor _sources _xml_file _include _parentClass) # _optionalBasename _optionalClassName)
     get_filename_component(_infile ${_xml_file} ABSOLUTE)
 
     set(_optionalBasename "${ARGV4}")

@@ -1520,7 +1520,7 @@ MakefileGenerator::createObjectList(const ProStringList &sources)
             if (!noIO()) {
                 // Ensure that the final output directory of each object exists
                 QString outRelativePath = fileFixify(dir, FileFixifyBackwards);
-                if (!mkdir(outRelativePath))
+                if (!outRelativePath.isEmpty() && !mkdir(outRelativePath))
                     warn_msg(WarnLogic, "Cannot create directory '%s'", outRelativePath.toLatin1().constData());
             }
         } else {
@@ -1857,10 +1857,13 @@ void MakefileGenerator::callExtraCompilerDependCommand(const ProString &extraCom
                                                        const QString &tmp_out,
                                                        bool dep_lines,
                                                        QStringList *deps,
-                                                       bool existingDepsOnly)
+                                                       bool existingDepsOnly,
+                                                       bool checkCommandAvailability)
 {
     char buff[256];
     QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, tmp_out, LocalShell);
+    if (checkCommandAvailability && !canExecute(dep_cmd))
+        return;
     dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
     if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
         QByteArray depData;
@@ -3453,6 +3456,30 @@ QString MakefileGenerator::shellQuote(const QString &str)
 ProKey MakefileGenerator::fullTargetVariable() const
 {
     return "TARGET";
+}
+
+void MakefileGenerator::createResponseFile(const QString &fileName, const ProStringList &objList)
+{
+    QString filePath = Option::output_dir + QDir::separator() + fileName;
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream t(&file);
+        for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
+            QString path = (*it).toQString();
+            // In response files, whitespace and special characters are
+            // escaped with a backslash; backslashes themselves can either
+            // be escaped into double backslashes, or, as this is a list of
+            // path names, converted to forward slashes.
+            path.replace(QLatin1Char('\\'), QLatin1String("/"))
+                .replace(QLatin1Char(' '), QLatin1String("\\ "))
+                .replace(QLatin1Char('\t'), QLatin1String("\\\t"))
+                .replace(QLatin1Char('"'), QLatin1String("\\\""))
+                .replace(QLatin1Char('\''), QLatin1String("\\'"));
+            t << path << Qt::endl;
+        }
+        t.flush();
+        file.close();
+    }
 }
 
 QT_END_NAMESPACE

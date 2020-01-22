@@ -67,13 +67,6 @@ QT_BEGIN_NAMESPACE
     \brief Empty.
  */
 
-/*!
-    \class QRhiNullTextureNativeHandles
-    \internal
-    \inmodule QtGui
-    \brief Empty.
- */
-
 QRhiNull::QRhiNull(QRhiNullInitParams *params)
     : offscreenCommandBuffer(this)
 {
@@ -638,9 +631,9 @@ bool QNullTexture::build()
     return true;
 }
 
-bool QNullTexture::buildFrom(const QRhiNativeHandles *src)
+bool QNullTexture::buildFrom(QRhiTexture::NativeTexture src)
 {
-    Q_UNUSED(src);
+    Q_UNUSED(src)
     QRHI_RES_RHI(QRhiNull);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
@@ -649,11 +642,6 @@ bool QNullTexture::buildFrom(const QRhiNativeHandles *src)
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, false, mipLevelCount, isCube ? 6 : 1, 1));
     return true;
-}
-
-const QRhiNativeHandles *QNullTexture::nativeHandles()
-{
-    return &nativeHandlesStruct;
 }
 
 QNullSampler::QNullSampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
@@ -688,6 +676,12 @@ QNullRenderPassDescriptor::~QNullRenderPassDescriptor()
 
 void QNullRenderPassDescriptor::release()
 {
+}
+
+bool QNullRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    Q_UNUSED(other);
+    return true;
 }
 
 QNullReferenceRenderTarget::QNullReferenceRenderTarget(QRhiImplementation *rhi)

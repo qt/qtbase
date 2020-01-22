@@ -610,7 +610,7 @@ void QThread::terminate()
     QThreadPrivate::finish(this, false);
 }
 
-bool QThread::wait(unsigned long time)
+bool QThread::wait(QDeadlineTimer deadline)
 {
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
@@ -627,9 +627,9 @@ bool QThread::wait(unsigned long time)
 
     bool ret = false;
 #ifndef Q_OS_WINRT
-    switch (WaitForSingleObject(d->handle, time)) {
+    switch (WaitForSingleObject(d->handle, deadline.remainingTime())) {
 #else
-    switch (WaitForSingleObjectEx(d->handle, time, false)) {
+    switch (WaitForSingleObjectEx(d->handle, deadline.remainingTime(), false)) {
 #endif
     case WAIT_OBJECT_0:
         ret = true;

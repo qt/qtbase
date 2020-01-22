@@ -251,7 +251,6 @@ public:
     QVulkanInstancePrivate(QVulkanInstance *q)
         : q_ptr(q),
           vkInst(VK_NULL_HANDLE),
-          flags(0),
           errorCode(VK_SUCCESS)
     { }
     ~QVulkanInstancePrivate() { reset(); }
@@ -759,7 +758,7 @@ VkSurfaceKHR QVulkanInstance::surfaceForWindow(QWindow *window)
     // VkSurfaceKHR is non-dispatchable and maps to a pointer on x64 and a uint64 on x86.
     // Therefore a pointer is returned from the platform plugin, not the value itself.
     void *p = nativeInterface->nativeResourceForWindow(QByteArrayLiteral("vkSurface"), window);
-    return p ? *static_cast<VkSurfaceKHR *>(p) : 0;
+    return p ? *static_cast<VkSurfaceKHR *>(p) : VK_NULL_HANDLE;
 }
 
 /*!

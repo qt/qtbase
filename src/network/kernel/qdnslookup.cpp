@@ -481,7 +481,7 @@ void QDnsLookup::abort()
 {
     Q_D(QDnsLookup);
     if (d->runnable) {
-        d->runnable = 0;
+        d->runnable = nullptr;
         d->reply = QDnsLookupReply();
         d->reply.error = QDnsLookup::OperationCancelledError;
         d->reply.errorString = tr("Operation cancelled");
@@ -992,7 +992,7 @@ void QDnsLookupPrivate::_q_lookupFinished(const QDnsLookupReply &_reply)
         qDebug("DNS reply for %s: %i (%s)", qPrintable(name), _reply.error, qPrintable(_reply.errorString));
 #endif
         reply = _reply;
-        runnable = 0;
+        runnable = nullptr;
         isFinished = true;
         emit q->finished();
     }

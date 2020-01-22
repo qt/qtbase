@@ -688,7 +688,7 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
         return QValidator::Invalid;
 
     bool ok = false;
-    double i = buff.toDouble(&ok); // returns 0.0 if !ok
+    double i = locale.toDouble(input, &ok); // returns 0.0 if !ok
     if (i == qt_qnan())
         return QValidator::Invalid;
     if (!ok)

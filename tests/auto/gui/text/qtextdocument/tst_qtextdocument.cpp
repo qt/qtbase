@@ -125,6 +125,7 @@ private slots:
     void clonePreservesResources();
     void clonePreservesUserStates();
     void clonePreservesIndentWidth();
+    void clonePreservesFormatsWhenEmpty();
     void blockCount();
     void defaultStyleSheet();
 
@@ -193,6 +194,8 @@ private slots:
     void fontTagFace();
 
     void clearUndoRedoStacks();
+    void mergeFontFamilies();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -1793,6 +1796,12 @@ void tst_QTextDocument::toHtml()
     QCOMPARE(output, expectedOutput);
 
     QDomDocument document;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QEXPECT_FAIL("charfmt-for-list-item",
+                 "The attribute \"style\" is redefined in the generated HTML, which is not valid "
+                 "according to XML standard. The new QDomDocument implementation follows the XML "
+                 "standard.", Continue);
+#endif
     QVERIFY2(document.setContent(output), "Output was not valid XML");
 }
 
@@ -2340,6 +2349,32 @@ void tst_QTextDocument::clonePreservesIndentWidth()
     QTextDocument *clone = doc->clone();
     QCOMPARE(clone->indentWidth(), qreal(42));
     delete clone;
+}
+
+void tst_QTextDocument::clonePreservesFormatsWhenEmpty()
+{
+    QTextDocument document;
+    QTextCursor cursor(&document);
+
+    // Change a few char format attributes
+    QTextCharFormat charFormat;
+    charFormat.setFontPointSize(charFormat.fontPointSize() + 1);
+    charFormat.setFontWeight(charFormat.fontWeight() + 1);
+    cursor.setBlockCharFormat(charFormat);
+
+    // Change a few block format attributes
+    QTextBlockFormat blockFormat;
+    blockFormat.setAlignment(Qt::AlignRight); // The default is Qt::AlignLeft
+    blockFormat.setIndent(blockFormat.indent() + 1);
+    cursor.setBlockFormat(blockFormat);
+
+    auto clone = document.clone();
+    QTextCursor cloneCursor(clone);
+
+    QCOMPARE(cloneCursor.blockCharFormat().fontPointSize(), charFormat.fontPointSize());
+    QCOMPARE(cloneCursor.blockCharFormat().fontWeight(), charFormat.fontWeight());
+    QCOMPARE(cloneCursor.blockFormat().alignment(), blockFormat.alignment());
+    QCOMPARE(cloneCursor.blockFormat().indent(), blockFormat.indent());
 }
 
 void tst_QTextDocument::blockCount()
@@ -3550,6 +3585,36 @@ void tst_QTextDocument::fontTagFace()
         QStringList expectedFamilies = { QLatin1String("Times"), QLatin1String("serif") };
         QCOMPARE(format.fontFamilies().toStringList(), expectedFamilies);
     }
+}
+
+void tst_QTextDocument::mergeFontFamilies()
+{
+    QTextDocument td;
+    td.setHtml(QLatin1String(
+                   "<html><body>"
+                   "<span style=\" font-family:'MS Shell Dlg 2';\">Hello world</span>"
+                   "</body></html>"));
+
+    QTextCharFormat newFormat;
+    newFormat.setFontFamily(QLatin1String("Jokerman"));
+
+    QTextCursor cursor = QTextCursor(&td);
+    cursor.setPosition(0);
+    cursor.setPosition(QByteArray("Hello World").length(), QTextCursor::KeepAnchor);
+    cursor.mergeCharFormat(newFormat);
+
+    QVERIFY(td.toHtml().contains(QLatin1String("font-family:'MS Shell Dlg 2','Jokerman';")));
+
+    QTextCharFormat newFormatFamilies;
+    newFormatFamilies.setFontFamilies({ QLatin1String("Arial"), QLatin1String("Helvetica") });
+    cursor.mergeCharFormat(newFormatFamilies);
+
+    QVERIFY(td.toHtml().contains(QLatin1String("font-family:'Arial','Helvetica','Jokerman'")));
+
+    newFormatFamilies.setFontFamilies({ QLatin1String("Arial"), QLatin1String("Jokerman"), QLatin1String("Helvetica") });
+    cursor.mergeCharFormat(newFormatFamilies);
+
+    QVERIFY(td.toHtml().contains(QLatin1String("font-family:'Arial','Jokerman','Helvetica'")));
 }
 
 void tst_QTextDocument::clearUndoRedoStacks()

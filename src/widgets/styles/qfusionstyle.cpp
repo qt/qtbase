@@ -1590,7 +1590,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
                 ignoreCheckMark = true; //ignore the checkmarks provided by the QComboMenuDelegate
 
-            if (!ignoreCheckMark) {
+            if (!ignoreCheckMark || menuItem->state & (State_On | State_Off)) {
                 // Check, using qreal and QRectF to avoid error accumulation
                 const qreal boxMargin = dpiScaled(3.5, option);
                 const qreal boxWidth = checkcol - 2 * boxMargin;
@@ -1601,7 +1601,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 if (checkable) {
                     if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) {
                         // Radio button
-                        if (checked || sunken) {
+                        if (menuItem->state & State_On || checked || sunken) {
                             painter->setRenderHint(QPainter::Antialiasing);
                             painter->setPen(Qt::NoPen);
 
@@ -1617,8 +1617,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                             QStyleOptionButton box;
                             box.QStyleOption::operator=(*option);
                             box.rect = checkRect;
-                            if (checked)
+                            if (checked || menuItem->state & State_On)
                                 box.state |= State_On;
+                            else
+                                box.state |= State_Off;
                             proxy()->drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
                         }
                     }
@@ -1770,59 +1772,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         break;
     case CE_PushButtonLabel:
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QRect ir = button->rect;
-            uint tf = Qt::AlignVCenter;
-            if (styleHint(SH_UnderlineShortcut, button, widget))
-                tf |= Qt::TextShowMnemonic;
-            else
-                tf |= Qt::TextHideMnemonic;
-
-            if (!button->icon.isNull()) {
-                //Center both icon and text
-                QPoint point;
-
-                QIcon::Mode mode = button->state & State_Enabled ? QIcon::Normal
-                                                                 : QIcon::Disabled;
-                if (mode == QIcon::Normal && button->state & State_HasFocus)
-                    mode = QIcon::Active;
-                QIcon::State state = QIcon::Off;
-                if (button->state & State_On)
-                    state = QIcon::On;
-
-                QPixmap pixmap = button->icon.pixmap(qt_getWindow(widget), button->iconSize, mode, state);
-                int w = pixmap.width() / pixmap.devicePixelRatio();
-                int h = pixmap.height() / pixmap.devicePixelRatio();
-
-                if (!button->text.isEmpty())
-                    w += button->fontMetrics.boundingRect(option->rect, tf, button->text).width() + 2;
-
-                point = QPoint(ir.x() + ir.width() / 2 - w / 2,
-                               ir.y() + ir.height() / 2 - h / 2);
-
-                w = pixmap.width() / pixmap.devicePixelRatio();
-
-                if (button->direction == Qt::RightToLeft)
-                    point.rx() += w;
-
-                painter->drawPixmap(visualPos(button->direction, button->rect, point), pixmap);
-
-                if (button->direction == Qt::RightToLeft)
-                    ir.translate(-point.x() - 2, 0);
-                else
-                    ir.translate(point.x() + w, 0);
-
-                // left-align text if there is
-                if (!button->text.isEmpty())
-                    tf |= Qt::AlignLeft;
-
-            } else {
-                tf |= Qt::AlignHCenter;
-            }
-
-            if (button->features & QStyleOptionButton::HasMenu)
-                ir = ir.adjusted(0, 0, -proxy()->pixelMetric(PM_MenuButtonIndicator, button, widget), 0);
-            proxy()->drawItemText(painter, ir, tf, button->palette, (button->state & State_Enabled),
-                                  button->text, QPalette::ButtonText);
+            QStyleOptionButton b(*button);
+            // no PM_ButtonShiftHorizontal and PM_ButtonShiftVertical for fusion style
+            b.state &= ~(State_On | State_Sunken);
+            QCommonStyle::drawControl(element, &b, painter, widget);
         }
         break;
     case CE_MenuBarEmptyArea:
@@ -2460,7 +2413,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 int oldMin = styleObject->property("_q_stylemin").toInt();
                 int oldMax = styleObject->property("_q_stylemax").toInt();
                 QRect oldRect = styleObject->property("_q_stylerect").toRect();
-                QStyle::State oldState = static_cast<QStyle::State>(styleObject->property("_q_stylestate").value<QStyle::State::Int>());
+                QStyle::State oldState = static_cast<QStyle::State>(qvariant_cast<QStyle::State::Int>(styleObject->property("_q_stylestate")));
                 uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
                 // a scrollbar is transient when the the scrollbar itself and
@@ -3733,7 +3686,7 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
         return 0;
 
     case SH_Table_GridLineColor:
-        return option ? option->palette.window().color().darker(120).rgb() : 0;
+        return option ? option->palette.window().color().darker(120).rgba() : 0;
 
     case SH_MessageBox_TextInteractionFlags:
         return Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse;

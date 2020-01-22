@@ -132,8 +132,8 @@ struct QGles2Texture : public QRhiTexture
     ~QGles2Texture();
     void release() override;
     bool build() override;
-    bool buildFrom(const QRhiNativeHandles *src) override;
-    const QRhiNativeHandles *nativeHandles() override;
+    bool buildFrom(NativeTexture src) override;
+    NativeTexture nativeTexture() override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
 
@@ -147,7 +147,7 @@ struct QGles2Texture : public QRhiTexture
     QGles2SamplerData samplerState;
     bool specified = false;
     int mipLevelCount = 0;
-    QRhiGles2TextureNativeHandles nativeHandlesStruct;
+
     enum Access {
         AccessNone,
         AccessSample,
@@ -185,6 +185,7 @@ struct QGles2RenderPassDescriptor : public QRhiRenderPassDescriptor
     QGles2RenderPassDescriptor(QRhiImplementation *rhi);
     ~QGles2RenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 };
 
 struct QGles2RenderTargetData
@@ -249,6 +250,7 @@ struct QGles2UniformDescription
     int binding;
     uint offset;
     int size;
+    int arrayDim;
 };
 
 Q_DECLARE_TYPEINFO(QGles2UniformDescription, Q_MOVABLE_TYPE);
@@ -519,6 +521,17 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     QRhiShaderResourceBindings *currentComputeSrb;
     uint currentSrbGeneration;
 
+    struct ComputePassState {
+        enum Access {
+            Read = 0x01,
+            Write = 0x02
+        };
+        QHash<QRhiResource *, QPair<int, bool> > writtenResources;
+        void reset() {
+            writtenResources.clear();
+        }
+    } computePassState;
+
     QVector<QByteArray> dataRetainPool;
     QVector<QImage> imageRetainPool;
 
@@ -703,7 +716,14 @@ public:
     QByteArray shaderSource(const QRhiShaderStage &shaderStage, int *glslVersion);
     bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, int *glslVersion);
     bool linkProgram(GLuint program);
-    void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
+    void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
+                                 const QByteArray &namePrefix,
+                                 int binding,
+                                 int baseOffset,
+                                 GLuint program,
+                                 QVector<QGles2UniformDescription> *dst);
+    void gatherUniforms(GLuint program,
+                        const QShaderDescription::UniformBlock &ub,
                         QVector<QGles2UniformDescription> *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QVector<QGles2SamplerDescription> *dst);

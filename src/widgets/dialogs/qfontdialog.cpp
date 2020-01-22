@@ -276,7 +276,7 @@ void QFontDialogPrivate::init()
        mainGrid->setColumnMinimumWidth(3, spacing);
 
        int margin = 0;
-       mainGrid->getContentsMargins(0, 0, 0, &margin);
+       mainGrid->getContentsMargins(nullptr, nullptr, nullptr, &margin);
 
        mainGrid->setRowMinimumHeight(3, margin);
        mainGrid->setRowMinimumHeight(6, 2);
@@ -391,7 +391,7 @@ QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, cons
 QFont QFontDialog::getFont(bool *ok, QWidget *parent)
 {
     QFont initial;
-    return QFontDialogPrivate::getFont(ok, initial, parent, QString(), 0);
+    return QFontDialogPrivate::getFont(ok, initial, parent, QString(), { });
 }
 
 QFont QFontDialogPrivate::getFont(bool *ok, const QFont &initial, QWidget *parent,
@@ -435,7 +435,7 @@ bool QFontDialog::eventFilter(QObject *o , QEvent *e)
             QCoreApplication::sendEvent(d->sizeList, k);
 
             if (ci != d->sizeList->currentItem()
-                    && style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, this))
+                    && style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, nullptr, this))
                 d->sizeEdit->selectAll();
             return true;
         } else if ((o == d->familyList || o == d->styleList) &&
@@ -445,7 +445,7 @@ bool QFontDialog::eventFilter(QObject *o , QEvent *e)
             return true;
         }
     } else if (e->type() == QEvent::FocusIn
-               && style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, this)) {
+               && style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, nullptr, this)) {
         if (o == d->familyList)
             d->familyEdit->selectAll();
         else if (o == d->styleList)
@@ -550,7 +550,7 @@ void QFontDialogPrivate::updateFamilies()
     else
         familyList->setCurrentItem(0);
     familyEdit->setText(familyList->currentText());
-    if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, q)
+    if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, nullptr, q)
             && familyList->hasFocus())
         familyEdit->selectAll();
 
@@ -602,7 +602,7 @@ void QFontDialogPrivate::updateStyles()
         }
 
         styleEdit->setText(styleList->currentText());
-        if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, q)
+        if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, nullptr, q)
                 && styleList->hasFocus())
             styleEdit->selectAll();
 
@@ -641,7 +641,7 @@ void QFontDialogPrivate::updateSizes()
 
         const QSignalBlocker blocker(sizeEdit);
         sizeEdit->setText((smoothScalable ? QString::number(size) : sizeList->currentText()));
-        if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, q)
+        if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, nullptr, q)
                 && sizeList->hasFocus())
             sizeEdit->selectAll();
     } else {
@@ -692,7 +692,7 @@ void QFontDialogPrivate::_q_familyHighlighted(int i)
     Q_Q(QFontDialog);
     family = familyList->text(i);
     familyEdit->setText(family);
-    if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, q)
+    if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, nullptr, q)
             && familyList->hasFocus())
         familyEdit->selectAll();
 
@@ -709,7 +709,7 @@ void QFontDialogPrivate::_q_styleHighlighted(int index)
     Q_Q(QFontDialog);
     QString s = styleList->text(index);
     styleEdit->setText(s);
-    if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, q)
+    if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, nullptr, q)
             && styleList->hasFocus())
         styleEdit->selectAll();
 
@@ -728,7 +728,7 @@ void QFontDialogPrivate::_q_sizeHighlighted(int index)
     Q_Q(QFontDialog);
     QString s = sizeList->text(index);
     sizeEdit->setText(s);
-    if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, q)
+    if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, nullptr, q)
             && sizeEdit->hasFocus())
         sizeEdit->selectAll();
 
@@ -1019,7 +1019,7 @@ void QFontDialog::done(int result)
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, SIGNAL(fontSelected(QFont)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
-        d->receiverToDisconnectOnClose = 0;
+        d->receiverToDisconnectOnClose = nullptr;
     }
     d->memberToDisconnectOnClose.clear();
 }

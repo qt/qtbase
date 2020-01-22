@@ -41,6 +41,7 @@
 #define QNAMESPACE_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qtmetamacros.h>
 
 #if defined(__OBJC__) && !defined(__cplusplus)
 #  warning "File built in Objective-C mode (.m), but using Qt requires Objective-C++ (.mm)"
@@ -48,29 +49,10 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(Q_QDOC) && !defined(Q_MOC_RUN)
 struct QMetaObject;
-const QMetaObject *qt_getQtMetaObject() noexcept; // defined in qobject.h (which can't be included here)
-#define QT_Q_ENUM(ENUM) \
-    inline const QMetaObject *qt_getEnumMetaObject(ENUM) noexcept { return qt_getQtMetaObject(); } \
-    inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) noexcept { return #ENUM; }
-#define QT_Q_FLAG(ENUM) QT_Q_ENUM(ENUM)
-#else
-#define QT_Q_ENUM Q_ENUM
-#define QT_Q_FLAG Q_FLAG
-#endif
 
-#ifndef Q_MOC_RUN
-namespace
-#else
-class Q_CORE_EXPORT
-#endif
-Qt {
-
-#if defined(Q_MOC_RUN)
-    Q_OBJECT
-public:
-#endif
+namespace Qt {
+    Q_NAMESPACE_EXPORT(Q_CORE_EXPORT)
 
     enum GlobalColor {
         color0,
@@ -523,6 +505,7 @@ public:
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
+        AA_MSWindowsDisableVirtualKeyboard = 9,
 #if QT_DEPRECATED_SINCE(5, 14)
         AA_X11InitThreads Q_DECL_ENUMERATOR_DEPRECATED = 10,
 #endif
@@ -1767,102 +1750,96 @@ public:
     };
 
 #ifndef Q_QDOC
-    // NOTE: Generally, do not add QT_Q_ENUM if a corresponding Q_Q_FLAG exists.
-    QT_Q_ENUM(ScrollBarPolicy)
-    QT_Q_ENUM(FocusPolicy)
-    QT_Q_ENUM(ContextMenuPolicy)
-    QT_Q_ENUM(ArrowType)
-    QT_Q_ENUM(ToolButtonStyle)
-    QT_Q_ENUM(PenStyle)
-    QT_Q_ENUM(PenCapStyle)
-    QT_Q_ENUM(PenJoinStyle)
-    QT_Q_ENUM(BrushStyle)
-    QT_Q_ENUM(FillRule)
-    QT_Q_ENUM(MaskMode)
-    QT_Q_ENUM(BGMode)
-    QT_Q_ENUM(ClipOperation)
-    QT_Q_ENUM(SizeMode)
-    QT_Q_ENUM(Axis)
-    QT_Q_ENUM(Corner)
-    QT_Q_ENUM(Edge)
-    QT_Q_ENUM(LayoutDirection)
-    QT_Q_ENUM(SizeHint)
-    QT_Q_ENUM(Orientation)
-    QT_Q_ENUM(DropAction)
-    QT_Q_FLAG(Alignment)
-    QT_Q_ENUM(TextFlag)
-    QT_Q_FLAG(Orientations)
-    QT_Q_FLAG(SplitBehavior)
-    QT_Q_FLAG(DropActions)
-    QT_Q_FLAG(Edges)
-    QT_Q_FLAG(DockWidgetAreas)
-    QT_Q_FLAG(ToolBarAreas)
-    QT_Q_ENUM(DockWidgetArea)
-    QT_Q_ENUM(ToolBarArea)
-    QT_Q_ENUM(TextFormat)
-    QT_Q_ENUM(TextElideMode)
-    QT_Q_ENUM(DateFormat)
-    QT_Q_ENUM(TimeSpec)
-    QT_Q_ENUM(DayOfWeek)
-    QT_Q_ENUM(CursorShape)
-    QT_Q_ENUM(GlobalColor)
-    QT_Q_ENUM(AspectRatioMode)
-    QT_Q_ENUM(TransformationMode)
-    QT_Q_FLAG(ImageConversionFlags)
-    QT_Q_ENUM(Key)
-    QT_Q_ENUM(ShortcutContext)
-    QT_Q_ENUM(TextInteractionFlag)
-    QT_Q_FLAG(TextInteractionFlags)
-    QT_Q_ENUM(ItemSelectionMode)
-    QT_Q_ENUM(ItemSelectionOperation)
-    QT_Q_FLAG(ItemFlags)
-    QT_Q_ENUM(CheckState)
-    QT_Q_ENUM(ItemDataRole)
-    QT_Q_ENUM(SortOrder)
-    QT_Q_ENUM(CaseSensitivity)
-    QT_Q_FLAG(MatchFlags)
-    QT_Q_FLAG(KeyboardModifiers)
-    QT_Q_FLAG(MouseButtons)
-    QT_Q_ENUM(WindowType)
-    QT_Q_ENUM(WindowState)
-    QT_Q_ENUM(WindowModality)
-    QT_Q_ENUM(WidgetAttribute)
-    QT_Q_ENUM(ApplicationAttribute)
-    QT_Q_FLAG(WindowFlags)
-    QT_Q_FLAG(WindowStates)
-    QT_Q_ENUM(FocusReason)
-    QT_Q_ENUM(InputMethodHint)
-    QT_Q_ENUM(InputMethodQuery)
-    QT_Q_FLAG(InputMethodHints)
-    QT_Q_ENUM(EnterKeyType)
-    QT_Q_FLAG(InputMethodQueries)
-    QT_Q_FLAG(TouchPointStates)
-    QT_Q_ENUM(ScreenOrientation)
-    QT_Q_FLAG(ScreenOrientations)
-    QT_Q_ENUM(ConnectionType)
-    QT_Q_ENUM(ApplicationState)
+    // NOTE: Generally, do not add Q_ENUM_NS if a corresponding Q_FLAG_NS exists.
+    Q_ENUM_NS(ScrollBarPolicy)
+    Q_ENUM_NS(FocusPolicy)
+    Q_ENUM_NS(ContextMenuPolicy)
+    Q_ENUM_NS(ArrowType)
+    Q_ENUM_NS(ToolButtonStyle)
+    Q_ENUM_NS(PenStyle)
+    Q_ENUM_NS(PenCapStyle)
+    Q_ENUM_NS(PenJoinStyle)
+    Q_ENUM_NS(BrushStyle)
+    Q_ENUM_NS(FillRule)
+    Q_ENUM_NS(MaskMode)
+    Q_ENUM_NS(BGMode)
+    Q_ENUM_NS(ClipOperation)
+    Q_ENUM_NS(SizeMode)
+    Q_ENUM_NS(Axis)
+    Q_ENUM_NS(Corner)
+    Q_ENUM_NS(Edge)
+    Q_ENUM_NS(LayoutDirection)
+    Q_ENUM_NS(SizeHint)
+    Q_ENUM_NS(Orientation)
+    Q_ENUM_NS(DropAction)
+    Q_FLAG_NS(Alignment)
+    Q_ENUM_NS(TextFlag)
+    Q_FLAG_NS(Orientations)
+    Q_FLAG_NS(SplitBehavior)
+    Q_FLAG_NS(DropActions)
+    Q_FLAG_NS(Edges)
+    Q_FLAG_NS(DockWidgetAreas)
+    Q_FLAG_NS(ToolBarAreas)
+    Q_ENUM_NS(DockWidgetArea)
+    Q_ENUM_NS(ToolBarArea)
+    Q_ENUM_NS(TextFormat)
+    Q_ENUM_NS(TextElideMode)
+    Q_ENUM_NS(DateFormat)
+    Q_ENUM_NS(TimeSpec)
+    Q_ENUM_NS(DayOfWeek)
+    Q_ENUM_NS(CursorShape)
+    Q_ENUM_NS(GlobalColor)
+    Q_ENUM_NS(AspectRatioMode)
+    Q_ENUM_NS(TransformationMode)
+    Q_FLAG_NS(ImageConversionFlags)
+    Q_ENUM_NS(Key)
+    Q_ENUM_NS(ShortcutContext)
+    Q_ENUM_NS(TextInteractionFlag)
+    Q_FLAG_NS(TextInteractionFlags)
+    Q_ENUM_NS(ItemSelectionMode)
+    Q_ENUM_NS(ItemSelectionOperation)
+    Q_FLAG_NS(ItemFlags)
+    Q_ENUM_NS(CheckState)
+    Q_ENUM_NS(ItemDataRole)
+    Q_ENUM_NS(SortOrder)
+    Q_ENUM_NS(CaseSensitivity)
+    Q_FLAG_NS(MatchFlags)
+    Q_FLAG_NS(KeyboardModifiers)
+    Q_FLAG_NS(MouseButtons)
+    Q_ENUM_NS(WindowType)
+    Q_ENUM_NS(WindowState)
+    Q_ENUM_NS(WindowModality)
+    Q_ENUM_NS(WidgetAttribute)
+    Q_ENUM_NS(ApplicationAttribute)
+    Q_FLAG_NS(WindowFlags)
+    Q_FLAG_NS(WindowStates)
+    Q_ENUM_NS(FocusReason)
+    Q_ENUM_NS(InputMethodHint)
+    Q_ENUM_NS(InputMethodQuery)
+    Q_FLAG_NS(InputMethodHints)
+    Q_ENUM_NS(EnterKeyType)
+    Q_FLAG_NS(InputMethodQueries)
+    Q_FLAG_NS(TouchPointStates)
+    Q_ENUM_NS(ScreenOrientation)
+    Q_FLAG_NS(ScreenOrientations)
+    Q_ENUM_NS(ConnectionType)
+    Q_ENUM_NS(ApplicationState)
 #ifndef QT_NO_GESTURES
-    QT_Q_ENUM(GestureState)
-    QT_Q_ENUM(GestureType)
-    QT_Q_ENUM(NativeGestureType)
+    Q_ENUM_NS(GestureState)
+    Q_ENUM_NS(GestureType)
+    Q_ENUM_NS(NativeGestureType)
 #endif
-    QT_Q_ENUM(CursorMoveStyle)
-    QT_Q_ENUM(TimerType)
-    QT_Q_ENUM(ScrollPhase)
-    QT_Q_ENUM(MouseEventSource)
-    QT_Q_FLAG(MouseEventFlag)
-    QT_Q_ENUM(ChecksumType)
-    QT_Q_ENUM(HighDpiScaleFactorRoundingPolicy)
-    QT_Q_ENUM(TabFocusBehavior)
+    Q_ENUM_NS(CursorMoveStyle)
+    Q_ENUM_NS(TimerType)
+    Q_ENUM_NS(ScrollPhase)
+    Q_ENUM_NS(MouseEventSource)
+    Q_FLAG_NS(MouseEventFlag)
+    Q_ENUM_NS(ChecksumType)
+    Q_ENUM_NS(HighDpiScaleFactorRoundingPolicy)
+    Q_ENUM_NS(TabFocusBehavior)
 #endif // Q_DOC
 
 }
-#ifdef Q_MOC_RUN
- ;
-#endif
-
-#undef QT_Q_ENUM
-#undef QT_Q_FLAG
 
 typedef bool (*qInternalCallback)(void **);
 

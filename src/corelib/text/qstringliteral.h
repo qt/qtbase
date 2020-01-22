@@ -42,14 +42,13 @@
 #define QSTRINGLITERAL_H
 
 #include <QtCore/qarraydata.h>
+#include <QtCore/qarraydatapointer.h>
 
 #if 0
 #pragma qt_class(QStringLiteral)
 #endif
 
 QT_BEGIN_NAMESPACE
-
-typedef QTypedArrayData<ushort> QStringData;
 
 // all our supported compilers support Unicode string literals,
 // even if their Q_COMPILER_UNICODE_STRING has been revoked due
@@ -65,44 +64,23 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 #define QStringLiteral(str) \
     ([]() noexcept -> QString { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QStaticStringData<Size> qstring_literal = { \
-            Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
-            QT_UNICODE_LITERAL(str) }; \
-        QStringDataPtr holder = { qstring_literal.data_ptr() }; \
-        const QString qstring_literal_temp(holder); \
-        return qstring_literal_temp; \
+        static const QArrayData qstring_literal = { \
+            Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 \
+        }; \
+        QStringPrivate holder = {  \
+            static_cast<QTypedArrayData<ushort> *>(const_cast<QArrayData *>(&qstring_literal)), \
+            reinterpret_cast<ushort *>(const_cast<qunicodechar *>(QT_UNICODE_LITERAL(str))), \
+            Size \
+        }; \
+        return QString(holder); \
     }()) \
-    /**/
-
-#define Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
-    { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset } \
-    /**/
-
-#define Q_STATIC_STRING_DATA_HEADER_INITIALIZER(size) \
-    Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, sizeof(QStringData)) \
     /**/
 
 #if QT_DEPRECATED_SINCE(5, 14)
 # define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str), QtPrivate::Deprecated)
 #endif
 
-template <int N>
-struct QStaticStringData
-{
-    QArrayData str;
-    qunicodechar data[N + 1];
-
-    QStringData *data_ptr() const
-    {
-        Q_ASSERT(str.ref.isStatic());
-        return const_cast<QStringData *>(static_cast<const QStringData*>(&str));
-    }
-};
-
-struct QStringDataPtr
-{
-    QStringData *ptr;
-};
+using QStringPrivate = QArrayDataPointer<ushort>;
 
 QT_END_NAMESPACE
 

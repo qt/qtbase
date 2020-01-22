@@ -191,9 +191,9 @@ QT_BEGIN_NAMESPACE
 */
 QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
     socketDescriptor(-1),
-    readNotifier(0),
-    writeNotifier(0),
-    exceptNotifier(0)
+    readNotifier(nullptr),
+    writeNotifier(nullptr),
+    exceptNotifier(nullptr)
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QSysInfo::machineHostName();        // this initializes ws2_32.dll
@@ -985,15 +985,15 @@ void QNativeSocketEngine::close()
     d->inboundStreamCount = d->outboundStreamCount = 0;
     if (d->readNotifier) {
         qDeleteInEventHandler(d->readNotifier);
-        d->readNotifier = 0;
+        d->readNotifier = nullptr;
     }
     if (d->writeNotifier) {
         qDeleteInEventHandler(d->writeNotifier);
-        d->writeNotifier = 0;
+        d->writeNotifier = nullptr;
     }
     if (d->exceptNotifier) {
         qDeleteInEventHandler(d->exceptNotifier);
-        d->exceptNotifier = 0;
+        d->exceptNotifier = nullptr;
     }
 }
 
@@ -1341,7 +1341,7 @@ void QNativeSocketEngine::setReadNotificationEnabled(bool enable)
     Q_D(QNativeSocketEngine);
     if (d->readNotifier) {
         d->readNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->hasEventDispatcher()) {
+    } else if (enable && d->threadData.loadRelaxed()->hasEventDispatcher()) {
         d->readNotifier = new QReadNotifier(d->socketDescriptor, this);
         d->readNotifier->setEnabled(true);
     }
@@ -1358,7 +1358,7 @@ void QNativeSocketEngine::setWriteNotificationEnabled(bool enable)
     Q_D(QNativeSocketEngine);
     if (d->writeNotifier) {
         d->writeNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->hasEventDispatcher()) {
+    } else if (enable && d->threadData.loadRelaxed()->hasEventDispatcher()) {
         d->writeNotifier = new QWriteNotifier(d->socketDescriptor, this);
         d->writeNotifier->setEnabled(true);
     }
@@ -1375,7 +1375,7 @@ void QNativeSocketEngine::setExceptionNotificationEnabled(bool enable)
     Q_D(QNativeSocketEngine);
     if (d->exceptNotifier) {
         d->exceptNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->hasEventDispatcher()) {
+    } else if (enable && d->threadData.loadRelaxed()->hasEventDispatcher()) {
         d->exceptNotifier = new QExceptionNotifier(d->socketDescriptor, this);
         d->exceptNotifier->setEnabled(true);
     }

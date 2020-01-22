@@ -148,6 +148,8 @@ inline uint qHash(QCborTag tag, uint seed = 0)
     return qHash(quint64(tag), seed);
 }
 
+enum class QCborNegativeInteger : quint64 {};
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QCborTag)

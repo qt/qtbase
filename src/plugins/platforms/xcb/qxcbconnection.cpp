@@ -184,7 +184,7 @@ QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
     QXcbWindowEventListener *listener = m_mapper.value(id, 0);
     if (listener)
         return listener->toWindow();
-    return 0;
+    return nullptr;
 }
 
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
@@ -455,7 +455,7 @@ void QXcbConnection::printXcbError(const char *message, xcb_generic_error_t *err
 
 static Qt::MouseButtons translateMouseButtons(int s)
 {
-    Qt::MouseButtons ret = 0;
+    Qt::MouseButtons ret;
     if (s & XCB_BUTTON_MASK_1)
         ret |= Qt::LeftButton;
     if (s & XCB_BUTTON_MASK_2)
@@ -803,7 +803,7 @@ xcb_window_t QXcbConnection::getQtSelectionOwner()
                           XCB_WINDOW_CLASS_INPUT_OUTPUT,      // window class
                           xcbScreen->root_visual,             // visual
                           0,                                  // value mask
-                          0);                                 // value list
+                          nullptr);                                 // value list
 
         QXcbWindow::setWindowTitle(connection(), m_qtSelectionOwner,
                                    QLatin1String("Qt Selection Owner for ") + QCoreApplication::applicationName());
@@ -830,7 +830,7 @@ xcb_window_t QXcbConnection::clientLeader()
                           0,
                           XCB_WINDOW_CLASS_INPUT_OUTPUT,
                           screen->screen()->root_visual,
-                          0, 0);
+                          0, nullptr);
 
 
         QXcbWindow::setWindowTitle(connection(), m_clientLeader,
@@ -1031,7 +1031,7 @@ void QXcbConnection::sync()
 {
     // from xcb_aux_sync
     xcb_get_input_focus_cookie_t cookie = xcb_get_input_focus(xcb_connection());
-    free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
+    free(xcb_get_input_focus_reply(xcb_connection(), cookie, nullptr));
 }
 
 QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker() const
@@ -1049,14 +1049,14 @@ QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker() const
 Qt::MouseButtons QXcbConnection::queryMouseButtons() const
 {
     int stateMask = 0;
-    QXcbCursor::queryPointer(connection(), 0, 0, &stateMask);
+    QXcbCursor::queryPointer(connection(), nullptr, nullptr, &stateMask);
     return translateMouseButtons(stateMask);
 }
 
 Qt::KeyboardModifiers QXcbConnection::queryKeyboardModifiers() const
 {
     int stateMask = 0;
-    QXcbCursor::queryPointer(connection(), 0, 0, &stateMask);
+    QXcbCursor::queryPointer(connection(), nullptr, nullptr, &stateMask);
     return keyboard()->translateModifiers(stateMask);
 }
 
@@ -1114,7 +1114,7 @@ void QXcbSyncWindowRequest::invalidate()
 {
     if (m_window) {
         m_window->clearSyncWindowRequest();
-        m_window = 0;
+        m_window = nullptr;
     }
 }
 
@@ -1134,7 +1134,7 @@ void QXcbConnectionGrabber::release()
 {
     if (m_connection) {
         m_connection->ungrabServer();
-        m_connection = 0;
+        m_connection = nullptr;
     }
 }
 

@@ -1032,6 +1032,15 @@ void tst_QColor::setRgbF()
             QCOMPARE(qfloat16(b2), qfloat16(b));
         }
     }
+    QVERIFY(color.isValid());
+    QColor invalidRgb = color;
+    QColor invalidRgbF = color;
+    QTest::ignoreMessage(QtWarningMsg, "QColor::setRgb: RGB parameters out of range");
+    invalidRgb.setRgb(-1, -1, -1);
+    QTest::ignoreMessage(QtWarningMsg, "QColor::setRgb: RGB parameters out of range");
+    invalidRgbF.setRgb(-1, -1, -1, -1);
+    QVERIFY(!invalidRgb.isValid());
+    QVERIFY(!invalidRgbF.isValid());
 }
 
 void tst_QColor::setRgba()
@@ -1146,6 +1155,16 @@ void tst_QColor::setHsv()
             QCOMPARE(v2, v);
         }
     }
+    QVERIFY(color.isValid());
+    QVERIFY(color.isValid());
+    QColor invalidHsv = color;
+    QColor invalidHsvF = color;
+    QTest::ignoreMessage(QtWarningMsg, "QColor::setHsv: HSV parameters out of range");
+    invalidHsv.setHsv(-1, -1, -1);
+    QTest::ignoreMessage(QtWarningMsg, "QColor::setHsvF: HSV parameters out of range");
+    invalidHsvF.setHsvF(-1, -1, -1);
+    QVERIFY(!invalidHsv.isValid());
+    QVERIFY(!invalidHsvF.isValid());
 }
 
 void tst_QColor::setCmyk()
@@ -1271,6 +1290,15 @@ void tst_QColor::setCmyk()
             QCOMPARE(k2, k);
         }
     }
+    QVERIFY(color.isValid());
+    QColor invalidCmyk = color;
+    QColor invalidCmykF = color;
+    QTest::ignoreMessage(QtWarningMsg, "QColor::setCmyk: CMYK parameters out of range");
+    invalidCmyk.setCmyk(-1, -1, -1, -1, -1);
+    QTest::ignoreMessage(QtWarningMsg, "QColor::setCmykF: CMYK parameters out of range");
+    invalidCmykF.setCmykF(-1, -1, -1, -1, -1);
+    QVERIFY(!invalidCmyk.isValid());
+    QVERIFY(!invalidCmykF.isValid());
 }
 
 void tst_QColor::setHsl()
@@ -1372,6 +1400,15 @@ void tst_QColor::setHsl()
             QCOMPARE(l2, l);
         }
     }
+    QVERIFY(color.isValid());
+    QColor invalidHsl = color;
+    QColor invalidHslF = color;
+    QTest::ignoreMessage(QtWarningMsg, "QColor::setHsl: HSL parameters out of range");
+    invalidHsl.setHsl(-1, -1, -1, -1);
+    QTest::ignoreMessage(QtWarningMsg, "QColor::setHslF: HSL parameters out of range");
+    invalidHslF.setHslF(-1, -1, -1, -1);
+    QVERIFY(!invalidHsl.isValid());
+    QVERIFY(!invalidHslF.isValid());
 }
 
 void tst_QColor::toRgb_data()

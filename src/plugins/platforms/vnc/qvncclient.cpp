@@ -65,7 +65,6 @@ QVncClient::QVncClient(QTcpSocket *clientSocket, QVncServer *server)
     , m_cutTextPending(0)
     , m_supportHextile(false)
     , m_wantUpdate(false)
-    , m_keymod(0)
     , m_dirtyCursor(false)
     , m_updatePending(false)
     , m_protocolVersion(V3_3)
@@ -618,7 +617,7 @@ void QVncClient::keyEvent()
             m_keymod = ev.down ? m_keymod | Qt::AltModifier :
                                  m_keymod & ~Qt::AltModifier;
         if (ev.unicode || ev.keycode)
-            QWindowSystemInterface::handleKeyEvent(0, ev.down ? QEvent::KeyPress : QEvent::KeyRelease, ev.keycode, m_keymod, QString(ev.unicode));
+            QWindowSystemInterface::handleKeyEvent(nullptr, ev.down ? QEvent::KeyPress : QEvent::KeyRelease, ev.keycode, m_keymod, QString(ev.unicode));
         m_handleMsg = false;
     }
 }

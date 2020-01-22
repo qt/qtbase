@@ -855,18 +855,6 @@ QColor::QColor(Spec spec) noexcept
 */
 
 /*!
-    Returns the name of the color in the format "#RRGGBB"; i.e. a "#"
-    character followed by three two-digit hexadecimal numbers.
-
-    \sa setNamedColor()
-*/
-
-QString QColor::name() const
-{
-    return name(HexRgb);
-}
-
-/*!
     \since 5.2
 
     Returns the name of the color in the specified \a format.
@@ -1086,6 +1074,7 @@ void QColor::setHsvF(qreal h, qreal s, qreal v, qreal a)
         || (v < qreal(0.0) || v > qreal(1.0))
         || (a < qreal(0.0) || a > qreal(1.0))) {
         qWarning("QColor::setHsvF: HSV parameters out of range");
+        invalidate();
         return;
     }
 
@@ -1198,7 +1187,8 @@ void QColor::setHslF(qreal h, qreal s, qreal l, qreal a)
         || (s < qreal(0.0) || s > qreal(1.0))
         || (l < qreal(0.0) || l > qreal(1.0))
         || (a < qreal(0.0) || a > qreal(1.0))) {
-        qWarning("QColor::setHsvF: HSV parameters out of range");
+        qWarning("QColor::setHslF: HSL parameters out of range");
+        invalidate();
         return;
     }
 
@@ -1224,7 +1214,7 @@ void QColor::setHslF(qreal h, qreal s, qreal l, qreal a)
 void QColor::setHsl(int h, int s, int l, int a)
 {
     if (h < -1 || (uint)s > 255 || (uint)l > 255 || (uint)a > 255) {
-        qWarning("QColor::setHsv: HSV parameters out of range");
+        qWarning("QColor::setHsl: HSL parameters out of range");
         invalidate();
         return;
     }
@@ -2626,16 +2616,6 @@ QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
 }
 
 /*!
-   \obsolete
-
-   Use the \c const overload instead.
-*/
-void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a)
-{
-    const_cast<const QColor *>(this)->getCmyk(c, m, y, k, a);
-}
-
-/*!
     Sets the contents pointed to by \a c, \a m, \a y, \a k, and \a a, to the
     cyan, magenta, yellow, black, and alpha-channel (transparency) components
     of the color's CMYK value.
@@ -2662,16 +2642,6 @@ void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a) const
 
     if (a)
         *a = ct.acmyk.alpha >> 8;
-}
-
-/*!
-   \obsolete
-
-   Use the \c const overload instead.
-*/
-void QColor::getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a)
-{
-    const_cast<const QColor *>(this)->getCmykF(c, m, y, k, a);
 }
 
 /*!
@@ -2719,6 +2689,7 @@ void QColor::setCmyk(int c, int m, int y, int k, int a)
         || k < 0 || k > 255
         || a < 0 || a > 255) {
         qWarning("QColor::setCmyk: CMYK parameters out of range");
+        invalidate();
         return;
     }
 
@@ -2748,6 +2719,7 @@ void QColor::setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a)
         || k < qreal(0.0) || k > qreal(1.0)
         || a < qreal(0.0) || a > qreal(1.0)) {
         qWarning("QColor::setCmykF: CMYK parameters out of range");
+        invalidate();
         return;
     }
 
@@ -2917,18 +2889,6 @@ QColor QColor::light(int factor) const noexcept
 QColor QColor::dark(int factor) const noexcept
 {
     return darker(factor);
-}
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-/*!
-    Assigns a copy of \a color to this color, and returns a reference to it.
-*/
-QColor &QColor::operator=(const QColor &color) noexcept
-{
-    cspec = color.cspec;
-    ct.argb = color.ct.argb;
-    return *this;
 }
 #endif
 

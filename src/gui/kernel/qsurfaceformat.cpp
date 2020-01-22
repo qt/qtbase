@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QSurfaceFormatPrivate
 {
 public:
-    explicit QSurfaceFormatPrivate(QSurfaceFormat::FormatOptions _opts = 0)
+    explicit QSurfaceFormatPrivate(QSurfaceFormat::FormatOptions _opts = { })
         : ref(1)
         , opts(_opts)
         , redBufferSize(-1)

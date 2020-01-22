@@ -98,7 +98,7 @@ static QString dumpVariant(const QVariant &v, const QString &indent = QLatin1Str
     int type = v.userType();
     if (type == qMetaTypeId<VariantOrderedMap>() || type == QVariant::Map) {
         const auto map = (type == QVariant::Map) ?
-                    VariantOrderedMap(v.toMap()) : v.value<VariantOrderedMap>();
+                    VariantOrderedMap(v.toMap()) : qvariant_cast<VariantOrderedMap>(v);
 
         result = QLatin1String("Map {");
         for (const auto &pair : map) {

@@ -77,6 +77,30 @@ static void initStandardTreeModel(QStandardItemModel *model)
     model->insertRow(2, item);
 }
 
+class TreeView : public QTreeView
+{
+    Q_OBJECT
+public:
+    using QTreeView::QTreeView;
+    using QTreeView::selectedIndexes;
+
+    void paintEvent(QPaintEvent *event) override
+    {
+        QTreeView::paintEvent(event);
+        wasPainted = true;
+    }
+    bool wasPainted = false;
+public slots:
+    void handleSelectionChanged()
+    {
+        //let's select the last item
+        QModelIndex idx = model()->index(0, 0);
+        selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
+        disconnect(selectionModel(), &QItemSelectionModel::selectionChanged,
+                   this, &TreeView::handleSelectionChanged);
+    }
+};
+
 class tst_QTreeView : public QObject
 {
     Q_OBJECT
@@ -2868,12 +2892,18 @@ public:
     };
 
     Node *root;
+    bool crash = false;
 
     EvilModel(QObject *parent = nullptr): QAbstractItemModel(parent), root(new Node)
     {}
     ~EvilModel()
     {
         delete root;
+    }
+
+    void setCrash()
+    {
+        crash = true;
     }
 
     void change()
@@ -2944,6 +2974,10 @@ public:
 
     QVariant data(const QModelIndex &idx, int role) const override
     {
+        if (crash) {
+            QTest::qFail("Should not get here...", __FILE__, __LINE__);
+            return QVariant();
+        }
         if (idx.isValid() && role == Qt::DisplayRole) {
             Node *parentNode = root;
             if (idx.isValid()) {
@@ -2963,13 +2997,14 @@ void tst_QTreeView::evilModel_data()
 {
     QTest::addColumn<bool>("visible");
     QTest::newRow("visible") << false;
+    QTest::newRow("visible") << true;
 }
 
 void tst_QTreeView::evilModel()
 {
     QFETCH(bool, visible);
     // init
-    QTreeView view;
+    TreeView view;
     EvilModel model;
     view.setModel(&model);
     view.setVisible(visible);
@@ -3007,7 +3042,7 @@ void tst_QTreeView::evilModel()
     view.scrollTo(thirdLevel);
     model.change();
 
-    view.repaint();
+    view.update();  // will not do anything since view is not visible
     model.change();
 
     QTest::mouseDClick(view.viewport(), Qt::LeftButton);
@@ -3132,6 +3167,9 @@ void tst_QTreeView::evilModel()
     model.change();
 
     view.setRootIndex(secondLevel);
+
+    model.setCrash();
+    view.setModel(nullptr);
 }
 
 void tst_QTreeView::indexRowSizeHint()
@@ -3161,7 +3199,7 @@ void tst_QTreeView::filterProxyModelCrash()
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
 
-    QTreeView view;
+    TreeView view;
     view.setModel(&proxy);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -3170,7 +3208,8 @@ void tst_QTreeView::filterProxyModelCrash()
     QTest::qWait(20);
 
     proxy.invalidate();
-    view.repaint(); //used to crash
+    view.update(); //used to crash
+    QTRY_VERIFY(view.wasPainted);
 }
 
 void tst_QTreeView::renderToPixmap_data()
@@ -3638,10 +3677,7 @@ void tst_QTreeView::task220298_selectColumns()
             }
     };
 
-    class TreeView : public QTreeView {
-        public:
-            using QTreeView::selectedIndexes;
-    } view;
+    TreeView view;
     Model model;
     view.setModel(&model);
     view.show();
@@ -3989,20 +4025,6 @@ void tst_QTreeView::task254234_proxySort()
     QCOMPARE(view.model()->data(view.model()->index(0, 1)).toString(), QString::fromLatin1("h"));
     QCOMPARE(view.model()->data(view.model()->index(1, 1)).toString(), QString::fromLatin1("g"));
 }
-
-class TreeView : public QTreeView
-{
-    Q_OBJECT
-public slots:
-    void handleSelectionChanged()
-    {
-        //let's select the last item
-        QModelIndex idx = model()->index(0, 0);
-        selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
-        disconnect(selectionModel(), &QItemSelectionModel::selectionChanged,
-                   this, &TreeView::handleSelectionChanged);
-    }
-};
 
 void tst_QTreeView::task248022_changeSelection()
 {
@@ -4900,10 +4922,24 @@ void tst_QTreeView::taskQTBUG_61476()
     const QPoint pos = rect.center();
 
     QTest::mousePress(tv.viewport(), Qt::LeftButton, {}, pos);
-    if (tv.style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, nullptr, &tv) ==
-        QEvent::MouseButtonPress)
+    const bool expandsOnPress =
+        (tv.style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, nullptr, &tv) == QEvent::MouseButtonPress);
+    if (expandsOnPress)
         QTRY_VERIFY(!tv.isExpanded(mi));
 
+    QTest::mouseRelease(tv.viewport(), Qt::LeftButton, {}, pos);
+    QTRY_VERIFY(!tv.isExpanded(mi));
+    QCOMPARE(lastTopLevel->checkState(), Qt::Checked);
+
+    // Test that it does not toggle the check state of a previously selected item when collapsing an
+    // item causes it to position the item under the mouse to be the decoration for the selected item
+    tv.expandAll();
+    tv.verticalScrollBar()->setValue(tv.verticalScrollBar()->maximum());
+    // It is not enough to programmatically select the item, we need to have it clicked on
+    QTest::mouseClick(tv.viewport(), Qt::LeftButton, {}, tv.visualRect(lastTopLevel->index()).center());
+    QTest::mousePress(tv.viewport(), Qt::LeftButton, {}, pos);
+    if (expandsOnPress)
+        QTRY_VERIFY(!tv.isExpanded(mi));
     QTest::mouseRelease(tv.viewport(), Qt::LeftButton, nullptr, pos);
     QTRY_VERIFY(!tv.isExpanded(mi));
     QCOMPARE(lastTopLevel->checkState(), Qt::Checked);

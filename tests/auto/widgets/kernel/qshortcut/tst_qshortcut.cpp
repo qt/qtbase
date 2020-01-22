@@ -103,6 +103,7 @@ public slots:
 
 private slots:
     void cleanup();
+    void pmf_connect();
     void number_data();
     void number();
     void text_data();
@@ -202,6 +203,45 @@ void tst_QShortcut::cleanup()
 {
     QVERIFY(QApplication::topLevelWidgets().size() <= 1);  // The data driven tests keep a widget around
 }
+
+void tst_QShortcut::pmf_connect()
+{
+    class MyObject : public QObject
+    {
+    public:
+        using QObject::QObject;
+        void onActivated() { ++activated; }
+        void onAmbiguous() { ++ambiguous; }
+        void reset() { activated = 0; ambiguous = 0; }
+        int activated = 0;
+        int ambiguous = 0;
+    } myObject;
+    QWidget parent;
+
+    auto runCheck = [&myObject](QShortcut *sc, int activated, int ambiguous)
+    {
+        myObject.reset();
+        sc->activated();
+        sc->activatedAmbiguously();
+        delete sc;
+        QCOMPARE(myObject.activated, activated);
+        QCOMPARE(myObject.ambiguous, ambiguous);
+    };
+
+    runCheck(new QShortcut(QKeySequence(), &parent,
+                           [&myObject]() { ++myObject.activated; }),
+             1, 0);
+    runCheck(new QShortcut(QKeySequence(), &parent,
+                           &myObject, &MyObject::onActivated),
+             1, 0);
+    runCheck(new QShortcut(QKeySequence(), &parent,
+                           &myObject, &MyObject::onActivated, &MyObject::onAmbiguous),
+             1, 1);
+    runCheck(new QShortcut(QKeySequence(), &parent, &myObject,
+                           &MyObject::onActivated, &myObject, &MyObject::onAmbiguous),
+             1, 1);
+}
+
 
 Qt::KeyboardModifiers tst_QShortcut::toButtons( int key )
 {

@@ -944,7 +944,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             const QVariantHash *hash = v_cast<QVariantHash>(d);
             const auto end = hash->end();
             for (auto it = hash->begin(); it != end; ++it)
-                map->insertMulti(it.key(), it.value());
+                static_cast<QMultiMap<QString, QVariant> *>(map)->insert(it.key(), it.value());
 #ifndef QT_BOOTSTRAPPED
         } else if (d->type == QMetaType::QCborValue) {
             if (!v_cast<QCborValue>(d)->isMap())
@@ -972,7 +972,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             const QVariantMap *map = v_cast<QVariantMap>(d);
             const auto end = map->end();
             for (auto it = map->begin(); it != end; ++it)
-                hash->insertMulti(it.key(), it.value());
+                static_cast<QMultiHash<QString, QVariant> *>(hash)->insert(it.key(), it.value());
 #ifndef QT_BOOTSTRAPPED
         } else if (d->type == QMetaType::QCborValue) {
             if (!v_cast<QCborValue>(d)->isMap())
@@ -1544,7 +1544,7 @@ static void customStreamDebug(QDebug dbg, const QVariant &variant) {
 #ifndef QT_BOOTSTRAPPED
     QMetaType::TypeFlags flags = QMetaType::typeFlags(variant.userType());
     if (flags & QMetaType::PointerToQObject)
-        dbg.nospace() << variant.value<QObject*>();
+        dbg.nospace() << qvariant_cast<QObject*>(variant);
 #else
     Q_UNUSED(dbg);
     Q_UNUSED(variant);
@@ -2525,7 +2525,7 @@ void QVariant::load(QDataStream &s)
             return;
         }
     }
-    create(typeId, 0);
+    create(typeId, nullptr);
     d.is_null = is_null;
 
     if (!isValid()) {
@@ -2583,8 +2583,8 @@ void QVariant::save(QDataStream &s) const
 #endif
             // and as a result these types received lower ids too
             typeId +=1;
-        } else if (typeId == QMetaType::QPolygonF) {
-            // This existed in Qt 4 only as a custom type
+        } else if (typeId == QMetaType::QPolygonF || typeId == QMetaType::QUuid) {
+            // These existed in Qt 4 only as a custom type
             typeId = 127;
             fakeUserType = true;
         }
@@ -3840,58 +3840,6 @@ bool QVariant::convert(const int type, void *ptr) const
     QMetaType::registerComparators().
 */
 
-/*!
-    \fn bool QVariant::operator<(const QVariant &v) const
-
-    Compares this QVariant with \a v and returns \c true if this is less than \a v.
-
-    \note Comparability might not be availabe for the type stored in this QVariant
-    or in \a v.
-
-    \warning To make this function work with a custom type registered with
-    qRegisterMetaType(), its comparison operator must be registered using
-    QMetaType::registerComparators().
-*/
-
-/*!
-    \fn bool QVariant::operator<=(const QVariant &v) const
-
-    Compares this QVariant with \a v and returns \c true if this is less or equal than \a v.
-
-    \note Comparability might not be available for the type stored in this QVariant
-    or in \a v.
-
-    \warning To make this function work with a custom type registered with
-    qRegisterMetaType(), its comparison operator must be registered using
-    QMetaType::registerComparators().
-*/
-
-/*!
-    \fn bool QVariant::operator>(const QVariant &v) const
-
-    Compares this QVariant with \a v and returns \c true if this is larger than \a v.
-
-    \note Comparability might not be available for the type stored in this QVariant
-    or in \a v.
-
-    \warning To make this function work with a custom type registered with
-    qRegisterMetaType(), its comparison operator must be registered using
-    QMetaType::registerComparators().
-*/
-
-/*!
-    \fn bool QVariant::operator>=(const QVariant &v) const
-
-    Compares this QVariant with \a v and returns \c true if this is larger or equal than \a v.
-
-    \note Comparability might not be available for the type stored in this QVariant
-    or in \a v.
-
-    \warning To make this function work with a custom type registered with
-    qRegisterMetaType(), its comparison operator must be registered using
-    QMetaType::registerComparators().
-*/
-
 static bool qIsNumericType(uint tp)
 {
     static const qulonglong numericTypeBits =
@@ -4067,73 +4015,6 @@ bool QVariant::cmp(const QVariant &v) const
             return false;
     }
     return cmp_helper(v1.d, v2.d);
-}
-
-/*!
-    \internal
- */
-int QVariant::compare(const QVariant &v) const
-{
-    // try numerics first, with C++ type promotion rules (no conversion)
-    if (qIsNumericType(d.type) && qIsNumericType(v.d.type))
-        return numericCompare(&d, &v.d);
-
-    // check for equality next, as more types implement operator== than operator<
-    if (cmp(v))
-        return 0;
-
-    const QVariant *v1 = this;
-    const QVariant *v2 = &v;
-    QVariant converted1;
-    QVariant converted2;
-
-    if (d.type != v.d.type) {
-        // if both types differ, try to convert
-        if (v2->canConvert(v1->d.type)) {
-            converted2 = *v2;
-            if (converted2.convert(v1->d.type))
-                v2 = &converted2;
-        }
-        if (v1->d.type != v2->d.type && v1->canConvert(v2->d.type)) {
-            converted1 = *v1;
-            if (converted1.convert(v2->d.type))
-                v1 = &converted1;
-        }
-        if (v1->d.type != v2->d.type) {
-            // if conversion fails, default to toString
-            int r = v1->toString().compare(v2->toString(), Qt::CaseInsensitive);
-            if (r == 0) {
-                // cmp(v) returned false, so we should try to agree with it.
-                return (v1->d.type < v2->d.type) ? -1 : 1;
-            }
-            return r;
-        }
-
-        // did we end up with two numerics? If so, restart
-        if (qIsNumericType(v1->d.type) && qIsNumericType(v2->d.type))
-            return v1->compare(*v2);
-    }
-    if (v1->d.type >= QMetaType::User) {
-        int result;
-        if (QMetaType::compare(QT_PREPEND_NAMESPACE(constData(d)), QT_PREPEND_NAMESPACE(constData(v2->d)), d.type, &result))
-            return result;
-    }
-    switch (v1->d.type) {
-    case QVariant::Date:
-        return v1->toDate() < v2->toDate() ? -1 : 1;
-    case QVariant::Time:
-        return v1->toTime() < v2->toTime() ? -1 : 1;
-    case QVariant::DateTime:
-        return v1->toDateTime() < v2->toDateTime() ? -1 : 1;
-    case QVariant::StringList:
-        return v1->toStringList() < v2->toStringList() ? -1 : 1;
-    }
-    int r = v1->toString().compare(v2->toString(), Qt::CaseInsensitive);
-    if (r == 0) {
-        // cmp(v) returned false, so we should try to agree with it.
-        return (d.type < v.d.type) ? -1 : 1;
-    }
-    return r;
 }
 
 /*!
@@ -4533,15 +4414,24 @@ QSequentialIterable::const_iterator QSequentialIterable::end() const
     return it;
 }
 
+static const QVariant variantFromVariantDataHelper(const QtMetaTypePrivate::VariantData &d) {
+    QVariant v;
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        v =  *reinterpret_cast<const QVariant*>(d.data);
+    else
+        v = QVariant(d.metaTypeId, d.data, d.flags & ~QVariantConstructionFlags::ShouldDeleteVariantData);
+    if (d.flags & QVariantConstructionFlags::ShouldDeleteVariantData)
+        QMetaType::destroy(d.metaTypeId, const_cast<void *>(d.data));
+    return v;
+}
+
 /*!
     Returns the element at position \a idx in the container.
 */
 QVariant QSequentialIterable::at(int idx) const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.at(idx);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return QVariant(d.metaTypeId, d.data, d.flags);
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4618,9 +4508,7 @@ QSequentialIterable::const_iterator::operator=(const const_iterator &other)
 const QVariant QSequentialIterable::const_iterator::operator*() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrent();
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return QVariant(d.metaTypeId, d.data, d.flags);
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4952,10 +4840,7 @@ QAssociativeIterable::const_iterator::operator=(const const_iterator &other)
 const QVariant QAssociativeIterable::const_iterator::operator*() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4964,10 +4849,7 @@ const QVariant QAssociativeIterable::const_iterator::operator*() const
 const QVariant QAssociativeIterable::const_iterator::key() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrentKey();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4975,11 +4857,7 @@ const QVariant QAssociativeIterable::const_iterator::key() const
 */
 const QVariant QAssociativeIterable::const_iterator::value() const
 {
-    const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return operator*();
 }
 
 /*!

@@ -194,7 +194,7 @@ public:
     template <typename T>
     struct Tampered {
         T oldWidgetValue;
-        uint resolveMask;
+        decltype(std::declval<T>().resolve()) resolveMask;
 
         // only call this function on an rvalue *this (it mangles oldWidgetValue)
         T reverted(T current)

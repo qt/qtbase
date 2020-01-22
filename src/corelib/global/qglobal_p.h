@@ -74,7 +74,7 @@ Q_CORE_EXPORT time_t qMkTime(struct tm *when);
 
 QT_END_NAMESPACE
 
-#if !QT_HAS_BUILTIN(__builtin_available)
+#if !__has_builtin(__builtin_available)
 #include <initializer_list>
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qversionnumber.h>
@@ -142,7 +142,7 @@ QT_END_NAMESPACE
     QT_BUILTIN_AVAILABLE1, \
     QT_BUILTIN_AVAILABLE0, )
 #define __builtin_available(...) QT_BUILTIN_AVAILABLE_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
-#endif // !QT_HAS_BUILTIN(__builtin_available)
+#endif // !__has_builtin(__builtin_available)
 #endif // defined(__cplusplus)
 
 #endif // QGLOBAL_P_H

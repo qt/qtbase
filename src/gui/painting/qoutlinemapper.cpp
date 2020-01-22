@@ -209,7 +209,7 @@ void QOutlineMapper::endOutline()
             elements[i] = m_transform.map(elements[i]);
     } else {
         const QVectorPath vp((qreal *)elements, m_elements.size(),
-                             m_element_types.size() ? m_element_types.data() : 0);
+                             m_element_types.size() ? m_element_types.data() : nullptr);
         QPainterPath path = vp.convertToPainterPath();
         path = m_transform.map(path);
         if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))

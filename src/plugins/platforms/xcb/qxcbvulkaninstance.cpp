@@ -93,7 +93,7 @@ bool QXcbVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice,
 
 VkSurfaceKHR QXcbVulkanInstance::createSurface(QXcbWindow *window)
 {
-    VkSurfaceKHR surface = 0;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
 
     if (!m_createSurface) {
         m_createSurface = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(

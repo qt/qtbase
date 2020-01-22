@@ -52,7 +52,7 @@ class QXcbEglContext : public QEGLPlatformContext
 public:
     QXcbEglContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share,
                            EGLDisplay display, const QVariant &nativeHandle)
-        : QEGLPlatformContext(glFormat, share, display, 0, nativeHandle)
+        : QEGLPlatformContext(glFormat, share, display, nullptr, nativeHandle)
     {
     }
 

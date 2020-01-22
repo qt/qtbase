@@ -1,7 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2015 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author David Faure <david.faure@kdab.com>
+** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2018 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author David Faure <david.faure@kdab.com>
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -45,6 +46,7 @@
 #include "qmimemagicrulematcher_p.h"
 
 #include <QXmlStreamReader>
+#include <QBuffer>
 #include <QDir>
 #include <QFile>
 #include <QByteArrayMatcher>
@@ -52,12 +54,33 @@
 #include <QDateTime>
 #include <QtEndian>
 
-static void initResources()
-{
 #if QT_CONFIG(mimetype_database)
-    Q_INIT_RESOURCE(mimetypes);
+#  if defined(Q_CC_MSVC)
+#    pragma section(".qtmimedatabase", read, shared)
+__declspec(allocate(".qtmimedatabase")) __declspec(align(4096))
+#  elif defined(Q_OS_DARWIN)
+__attribute__((section("__TEXT,.qtmimedatabase"), aligned(4096)))
+#  elif (defined(Q_OF_ELF) || defined(Q_OS_WIN)) && defined(Q_CC_GNU)
+__attribute__((section(".qtmimedatabase"), aligned(4096)))
+#  endif
+
+#  include "qmimeprovider_database.cpp"
+
+#  ifdef MIME_DATABASE_IS_ZSTD
+#    if !QT_CONFIG(zstd)
+#      error "MIME database is zstd but no support compiled in!"
+#    endif
+#    include <zstd.h>
+#  endif
+#  ifdef MIME_DATABASE_IS_GZIP
+#    ifdef QT_NO_COMPRESS
+#      error "MIME database is zlib but no support compiled in!"
+#    endif
+#    define ZLIB_CONST
+#    include <zconf.h>
+#    include <zlib.h>
+#  endif
 #endif
-}
 
 QT_BEGIN_NAMESPACE
 
@@ -130,7 +153,7 @@ bool QMimeBinaryProvider::CacheFile::reload()
     if (file.isOpen()) {
         file.close();
     }
-    data = 0;
+    data = nullptr;
     return load();
 }
 
@@ -306,7 +329,7 @@ bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFi
         const int valueLength = cacheFile->getUint32(off + 12);
         const int valueOffset = cacheFile->getUint32(off + 16);
         const int maskOffset = cacheFile->getUint32(off + 20);
-        const char *mask = maskOffset ? cacheFile->getCharStar(maskOffset) : NULL;
+        const char *mask = maskOffset ? cacheFile->getCharStar(maskOffset) : nullptr;
 
         if (!QMimeMagicRule::matchSubstring(dataPtr, dataSize, rangeStart, rangeLength, valueLength, cacheFile->getCharStar(valueOffset), mask))
             continue;
@@ -597,10 +620,55 @@ void QMimeBinaryProvider::loadGenericIcon(QMimeTypePrivate &data)
 
 ////
 
+#if QT_CONFIG(mimetype_database)
+static QString internalMimeFileName()
+{
+    return QStringLiteral("<internal MIME data>");
+}
+
+QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db, InternalDatabaseEnum)
+    : QMimeProviderBase(db, internalMimeFileName())
+{
+    Q_STATIC_ASSERT_X(sizeof(mimetype_database), "Bundled MIME database is empty");
+    Q_STATIC_ASSERT_X(sizeof(mimetype_database) <= MimeTypeDatabaseOriginalSize,
+                      "Compressed MIME database is larger than the original size");
+    Q_STATIC_ASSERT_X(MimeTypeDatabaseOriginalSize <= 16*1024*1024,
+                      "Bundled MIME database is too big");
+    const char *data = reinterpret_cast<const char *>(mimetype_database);
+    qsizetype size = MimeTypeDatabaseOriginalSize;
+
+#ifdef MIME_DATABASE_IS_ZSTD
+    // uncompress with libzstd
+    std::unique_ptr<char []> uncompressed(new char[size]);
+    size = ZSTD_decompress(uncompressed.get(), size, mimetype_database, sizeof(mimetype_database));
+    Q_ASSERT(!ZSTD_isError(size));
+    data = uncompressed.get();
+#elif defined(MIME_DATABASE_IS_GZIP)
+    std::unique_ptr<char []> uncompressed(new char[size]);
+    z_stream zs = {};
+    zs.next_in = mimetype_database;
+    zs.avail_in = sizeof(mimetype_database);
+    zs.next_out = reinterpret_cast<Bytef *>(uncompressed.get());
+    zs.avail_out = size;
+
+    int res = inflateInit2(&zs, MAX_WBITS | 32);
+    Q_ASSERT(res == Z_OK);
+    res = inflate(&zs, Z_FINISH);
+    Q_ASSERT(res == Z_STREAM_END);
+    res = inflateEnd(&zs);
+    Q_ASSERT(res == Z_OK);
+
+    data = uncompressed.get();
+    size = zs.total_out;
+#endif
+
+    load(data, size);
+}
+#endif
+
 QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db, const QString &directory)
     : QMimeProviderBase(db, directory)
 {
-    initResources();
     ensureLoaded();
 }
 
@@ -691,6 +759,19 @@ bool QMimeXMLProvider::load(const QString &fileName, QString *errorMessage)
     QMimeTypeParser parser(*this);
     return parser.parse(&file, fileName, errorMessage);
 }
+
+#if QT_CONFIG(mimetype_database)
+void QMimeXMLProvider::load(const char *data, qsizetype len)
+{
+    QBuffer buffer;
+    buffer.setData(QByteArray::fromRawData(data, len));
+    buffer.open(QIODevice::ReadOnly);
+    QString errorMessage;
+    QMimeTypeParser parser(*this);
+    if (!parser.parse(&buffer, internalMimeFileName(), &errorMessage))
+        qWarning("QMimeDatabase: Error loading internal MIME data\n%s", qPrintable(errorMessage));
+}
+#endif
 
 void QMimeXMLProvider::addGlobPattern(const QMimeGlobPattern &glob)
 {

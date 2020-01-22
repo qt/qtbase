@@ -53,12 +53,12 @@ void wrapInFunction()
 {
 
 //! [0]
-QVERIFY(1 + 1 == 2);
+ QVERIFY(spy.isValid())
 //! [0]
 
 
 //! [1]
-QVERIFY2(1 + 1 == 2, "A breach in basic arithmetic occurred.");
+QVERIFY2(qIsNaN(0.0 / 0.0), "Ill-defined division produced unambiguous result.");
 //! [1]
 
 
@@ -324,3 +324,28 @@ void TestQLocale::roundTripInt()
     QVERIFY(ok);
 }
 //! [31]
+
+
+//! [32]
+bool opened = file.open(QIODevice::WriteOnly);
+QVERIFY(opened);
+//! [32]
+
+
+//! [33]
+QVERIFY2(file.open(QIODevice::WriteOnly),
+         qPrintable(QString("open %1: %2").arg(file.fileName()).arg(file.errorString()));
+//! [33]
+
+//! [34]
+QT_BEGIN_NAMESPACE
+namespace QTest {
+    template <> char *toString<MyType>(const MyType &t)
+    {
+        char *repr = new char[t.reprSize()];
+        t.writeRepr(repr);
+        return repr;
+    }
+}
+QT_END_NAMESPACE
+//! [34]

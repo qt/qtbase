@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Giuseppe D'Angelo <dangelog@gmail.com>.
-** Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+** Copyright (C) 2020 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -443,6 +443,38 @@ QT_BEGIN_NAMESPACE
 
     Other differences are outlined below.
 
+    \section2 Different pattern syntax
+
+    Porting a regular expression from QRegExp to QRegularExpression may require
+    changes to the pattern itself.
+
+    In certain scenarios, QRegExp was too lenient and accepted patterns that
+    are simply invalid when using QRegularExpression. These are somehow easy
+    to detect, because the QRegularExpression objects built with these patterns
+    are not valid (cf. isValid()).
+
+    In other cases, a pattern ported from QRegExp to QRegularExpression may
+    silently change semantics. Therefore, it is necessary to review the
+    patterns used. The most notable cases of silent incompatibility are:
+
+    \list
+
+    \li Curly braces are needed in order to use a hexadecimal escape like
+    \c{\xHHHH} with more than 2 digits. A pattern like \c{\x2022} neeeds to
+    be ported to \c{\x{2022}}, or it will match a space (\c{0x20}) followed
+    by the string \c{"22"}. In general, it is highly recommended to always use
+    curly braces with the \c{\x} escape, no matter the amount of digits
+    specified.
+
+    \li A 0-to-n quantification like \c{{,n}} needs to be ported to \c{{0,n}} to
+    preserve semantics. Otherwise, a pattern such as \c{\d{,3}} would
+    actually match a digit followed by the exact string \c{"{,3}"}.
+
+    \li QRegExp by default does Unicode-aware matching, while
+    QRegularExpression requires a separate option; see below for more details.
+
+    \endlist
+
     \section2 Porting from QRegExp::exactMatch()
 
     QRegExp::exactMatch() in Qt 4 served two purposes: it exactly matched
@@ -831,7 +863,7 @@ struct QRegularExpressionPrivate : QSharedData
                                             QRegularExpression::MatchType matchType,
                                             QRegularExpression::MatchOptions matchOptions,
                                             CheckSubjectStringOption checkSubjectStringOption = CheckSubjectString,
-                                            const QRegularExpressionMatchPrivate *previous = 0) const;
+                                            const QRegularExpressionMatchPrivate *previous = nullptr) const;
 
     int captureIndexForName(QStringView name) const;
 
@@ -912,7 +944,7 @@ QRegularExpression::QRegularExpression(QRegularExpressionPrivate &dd)
 */
 QRegularExpressionPrivate::QRegularExpressionPrivate()
     : QSharedData(),
-      patternOptions(0),
+      patternOptions(),
       pattern(),
       mutex(),
       compiledPattern(nullptr),
@@ -990,7 +1022,7 @@ void QRegularExpressionPrivate::compilePattern()
                                        options,
                                        &errorCode,
                                        &patternErrorOffset,
-                                       NULL);
+                                       nullptr);
 
     if (!compiledPattern) {
         errorOffset = static_cast<int>(patternErrorOffset);
@@ -1049,7 +1081,7 @@ public:
     {
         // The default JIT stack size in PCRE is 32K,
         // we allocate from 32K up to 512K.
-        stack = pcre2_jit_stack_create_16(32 * 1024, 512 * 1024, NULL);
+        stack = pcre2_jit_stack_create_16(32 * 1024, 512 * 1024, nullptr);
     }
     /*!
         \internal
@@ -1073,7 +1105,7 @@ static pcre2_jit_stack_16 *qtPcreCallback(void *)
     if (jitStacks()->hasLocalData())
         return jitStacks()->localData()->stack;
 
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -1240,9 +1272,9 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
         previousMatchWasEmpty = true;
     }
 
-    pcre2_match_context_16 *matchContext = pcre2_match_context_create_16(NULL);
-    pcre2_jit_stack_assign_16(matchContext, &qtPcreCallback, NULL);
-    pcre2_match_data_16 *matchData = pcre2_match_data_create_from_pattern_16(compiledPattern, NULL);
+    pcre2_match_context_16 *matchContext = pcre2_match_context_create_16(nullptr);
+    pcre2_jit_stack_assign_16(matchContext, &qtPcreCallback, nullptr);
+    pcre2_match_data_16 *matchData = pcre2_match_data_create_from_pattern_16(compiledPattern, nullptr);
 
     const unsigned short * const subjectUtf16 = subject.utf16() + subjectStart;
 
@@ -1797,7 +1829,19 @@ uint qHash(const QRegularExpression &key, uint seed) noexcept
     return seed;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
+    \overload
+*/
+QString QRegularExpression::escape(const QString &str)
+{
+    return escape(QStringView(str));
+}
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \since 5.15
+
     Escapes all characters of \a str so that they no longer have any special
     meaning when used as a regular expression pattern string, and returns
     the escaped string. For instance:
@@ -1815,7 +1859,7 @@ uint qHash(const QRegularExpression &key, uint seed) noexcept
     inside \a str is escaped with the sequence \c{"\\0"} (backslash +
     \c{'0'}), instead of \c{"\\\0"} (backslash + \c{NUL}).
 */
-QString QRegularExpression::escape(const QString &str)
+QString QRegularExpression::escape(QStringView str)
 {
     QString result;
     const int count = str.size();
@@ -1850,8 +1894,19 @@ QString QRegularExpression::escape(const QString &str)
     return result;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 5.12
+    \overload
+*/
+QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
+{
+    return wildcardToRegularExpression(QStringView(pattern));
+}
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \since 5.15
 
     Returns a regular expression representation of the given glob \a pattern.
     The transformation is targeting file path globbing, which means in particular
@@ -1859,6 +1914,10 @@ QString QRegularExpression::escape(const QString &str)
     just a basic translation from "*" to ".*".
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 31
+
+    The returned regular expression is already fully anchored. In other
+    words, there is no need of calling anchoredPattern() again on the
+    result.
 
     \warning Unlike QRegExp, this implementation follows closely the definition
     of wildcard for glob patterns:
@@ -1886,23 +1945,23 @@ QString QRegularExpression::escape(const QString &str)
 
     \note The backslash (\\) character is \e not an escape char in this context.
     In order to match one of the special characters, place it in square brackets
-    (for example, "[?]").
+    (for example, \c{[?]}).
 
     More information about the implementation can be found in:
     \list
     \li \l {https://en.wikipedia.org/wiki/Glob_(programming)} {The Wikipedia Glob article}
-    \li \c man 7 glob
+    \li \c {man 7 glob}
     \endlist
 
     \sa escape()
 */
-QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
+QString QRegularExpression::wildcardToRegularExpression(QStringView pattern)
 {
     const int wclen = pattern.length();
     QString rx;
     rx.reserve(wclen + wclen / 16);
     int i = 0;
-    const QChar *wc = pattern.unicode();
+    const QChar *wc = pattern.data();
 
 #ifdef Q_OS_WIN
     const QLatin1Char nativePathSeparator('\\');
@@ -1974,16 +2033,31 @@ QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
     return anchoredPattern(rx);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QRegularExpression::anchoredPattern(const QString &expression)
 
     \since 5.12
+
+    \overload
+*/
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \since 5.15
 
     Returns the \a expression wrapped between the \c{\A} and \c{\z} anchors to
     be used for exact matching.
 
     \sa {Porting from QRegExp's Exact Matching}
 */
+QString QRegularExpression::anchoredPattern(QStringView expression)
+{
+    return QString()
+           + QLatin1String("\\A(?:")
+           + expression
+           + QLatin1String(")\\z");
+}
 
 /*!
     \since 5.1
@@ -2835,7 +2909,7 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "numbers out of order in {} quantifier"),
     QT_TRANSLATE_NOOP("QRegularExpression", "number too big in {} quantifier"),
     QT_TRANSLATE_NOOP("QRegularExpression", "missing terminating ] for character class"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "invalid escape sequence in character class"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "escape sequence is invalid in character class"),
     QT_TRANSLATE_NOOP("QRegularExpression", "range out of order in character class"),
     QT_TRANSLATE_NOOP("QRegularExpression", "quantifier does not follow a repeatable item"),
     QT_TRANSLATE_NOOP("QRegularExpression", "internal error: unexpected repeat"),
@@ -2852,46 +2926,46 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "failed to allocate heap memory"),
     QT_TRANSLATE_NOOP("QRegularExpression", "unmatched closing parenthesis"),
     QT_TRANSLATE_NOOP("QRegularExpression", "internal error: code overflow"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "letter or underscore expected after (?< or (?'"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "missing closing parenthesis for condition"),
     QT_TRANSLATE_NOOP("QRegularExpression", "lookbehind assertion is not fixed length"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "malformed number or name after (?("),
-    QT_TRANSLATE_NOOP("QRegularExpression", "conditional group contains more than two branches"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "a relative value of zero is not allowed"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "conditional subpattern contains more than two branches"),
     QT_TRANSLATE_NOOP("QRegularExpression", "assertion expected after (?( or (?(?C)"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "(?R or (?[+-]digits must be followed by )"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "digit expected after (?+ or (?-"),
     QT_TRANSLATE_NOOP("QRegularExpression", "unknown POSIX class name"),
     QT_TRANSLATE_NOOP("QRegularExpression", "internal error in pcre2_study(): should not occur"),
     QT_TRANSLATE_NOOP("QRegularExpression", "this version of PCRE2 does not have Unicode support"),
     QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested (stack check)"),
     QT_TRANSLATE_NOOP("QRegularExpression", "character code point value in \\x{} or \\o{} is too large"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "invalid condition (?(0)"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "\\C is not allowed in a lookbehind assertion"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "PCRE does not support \\L, \\l, \\N{name}, \\U, or \\u"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "lookbehind is too complicated"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "\\C is not allowed in a lookbehind assertion in UTF-" "16" " mode"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "PCRE2 does not support \\F, \\L, \\l, \\N{name}, \\U, or \\u"),
     QT_TRANSLATE_NOOP("QRegularExpression", "number after (?C is greater than 255"),
     QT_TRANSLATE_NOOP("QRegularExpression", "closing parenthesis for (?C expected"),
     QT_TRANSLATE_NOOP("QRegularExpression", "invalid escape sequence in (*VERB) name"),
     QT_TRANSLATE_NOOP("QRegularExpression", "unrecognized character after (?P"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "syntax error in subpattern name (missing terminator)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "syntax error in subpattern name (missing terminator?)"),
     QT_TRANSLATE_NOOP("QRegularExpression", "two named subpatterns have the same name (PCRE2_DUPNAMES not set)"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "group name must start with a non-digit"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "subpattern name must start with a non-digit"),
     QT_TRANSLATE_NOOP("QRegularExpression", "this version of PCRE2 does not have support for \\P, \\p, or \\X"),
     QT_TRANSLATE_NOOP("QRegularExpression", "malformed \\P or \\p sequence"),
     QT_TRANSLATE_NOOP("QRegularExpression", "unknown property name after \\P or \\p"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "subpattern name is too long (maximum " "10000" " characters)"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "too many named subpatterns (maximum " "256" ")"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "subpattern name is too long (maximum " "32" " code units)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "too many named subpatterns (maximum " "10000" ")"),
     QT_TRANSLATE_NOOP("QRegularExpression", "invalid range in character class"),
     QT_TRANSLATE_NOOP("QRegularExpression", "octal value is greater than \\377 in 8-bit non-UTF-8 mode"),
     QT_TRANSLATE_NOOP("QRegularExpression", "internal error: overran compiling workspace"),
     QT_TRANSLATE_NOOP("QRegularExpression", "internal error: previously-checked referenced subpattern not found"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "DEFINE group contains more than one branch"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "DEFINE subpattern contains more than one branch"),
     QT_TRANSLATE_NOOP("QRegularExpression", "missing opening brace after \\o"),
     QT_TRANSLATE_NOOP("QRegularExpression", "internal error: unknown newline setting"),
     QT_TRANSLATE_NOOP("QRegularExpression", "\\g is not followed by a braced, angle-bracketed, or quoted name/number or by a plain number"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "a numbered reference must not be zero"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "(?R (recursive pattern call) must be followed by a closing parenthesis"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "obsolete error (should not occur)"),
     QT_TRANSLATE_NOOP("QRegularExpression", "(*VERB) not recognized or malformed"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "number is too big"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "subpattern number is too big"),
     QT_TRANSLATE_NOOP("QRegularExpression", "subpattern name expected"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "digit expected after (?+"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "internal error: parsed pattern overflow"),
     QT_TRANSLATE_NOOP("QRegularExpression", "non-octal character in \\o{} (closing brace missing?)"),
     QT_TRANSLATE_NOOP("QRegularExpression", "different names for subpatterns of the same number are not allowed"),
     QT_TRANSLATE_NOOP("QRegularExpression", "(*MARK) must have an argument"),
@@ -2899,16 +2973,16 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "\\c must be followed by a printable ASCII character"),
     QT_TRANSLATE_NOOP("QRegularExpression", "\\c must be followed by a letter or one of [\\]^_?"),
     QT_TRANSLATE_NOOP("QRegularExpression", "\\k is not followed by a braced, angle-bracketed, or quoted name"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "internal error: unknown opcode in find_fixedlength()"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "internal error: unknown meta code in check_lookbehinds()"),
     QT_TRANSLATE_NOOP("QRegularExpression", "\\N is not supported in a class"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "SPARE ERROR"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "callout string is too long"),
     QT_TRANSLATE_NOOP("QRegularExpression", "disallowed Unicode code point (>= 0xd800 && <= 0xdfff)"),
     QT_TRANSLATE_NOOP("QRegularExpression", "using UTF is disabled by the application"),
     QT_TRANSLATE_NOOP("QRegularExpression", "using UCP is disabled by the application"),
     QT_TRANSLATE_NOOP("QRegularExpression", "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)"),
     QT_TRANSLATE_NOOP("QRegularExpression", "character code point value in \\u.... sequence is too large"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "digits missing in \\x{} or \\o{}"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "syntax error in (?(VERSION condition"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "digits missing in \\x{} or \\o{} or \\N{U+}"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "syntax error or number too big in (?(VERSION condition"),
     QT_TRANSLATE_NOOP("QRegularExpression", "internal error: unknown opcode in auto_possessify()"),
     QT_TRANSLATE_NOOP("QRegularExpression", "missing terminating delimiter for callout with string argument"),
     QT_TRANSLATE_NOOP("QRegularExpression", "unrecognized string delimiter follows (?C"),
@@ -2918,6 +2992,16 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "regular expression is too complicated"),
     QT_TRANSLATE_NOOP("QRegularExpression", "lookbehind assertion is too long"),
     QT_TRANSLATE_NOOP("QRegularExpression", "pattern string is longer than the limit set by the application"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "internal error: unknown code in parsed pattern"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "internal error: bad code value in parsed_skip()"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES is not allowed in UTF-16 mode"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "invalid option bits with PCRE2_LITERAL"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "\\N{U+dddd} is supported only in Unicode (UTF) mode"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "invalid hyphen in option setting"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "(*alpha_assertion) not recognized"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "script runs require Unicode support, which this version of PCRE2 does not have"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "too many capturing groups (maximum 65535)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "atomic assertion expected after (?( or (?(?C)"),
     QT_TRANSLATE_NOOP("QRegularExpression", "no error"),
     QT_TRANSLATE_NOOP("QRegularExpression", "no match"),
     QT_TRANSLATE_NOOP("QRegularExpression", "partial match"),
@@ -2955,7 +3039,7 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "bad option value"),
     QT_TRANSLATE_NOOP("QRegularExpression", "invalid replacement string"),
     QT_TRANSLATE_NOOP("QRegularExpression", "bad offset into UTF string"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "callout error code"),              /* Never returned by PCRE2 itself */
+    QT_TRANSLATE_NOOP("QRegularExpression", "callout error code"),
     QT_TRANSLATE_NOOP("QRegularExpression", "invalid data in workspace for DFA restart"),
     QT_TRANSLATE_NOOP("QRegularExpression", "too much recursion for DFA matching"),
     QT_TRANSLATE_NOOP("QRegularExpression", "backreference condition or recursion test is not supported for DFA matching"),
@@ -2971,15 +3055,20 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "non-unique substring name"),
     QT_TRANSLATE_NOOP("QRegularExpression", "NULL argument passed"),
     QT_TRANSLATE_NOOP("QRegularExpression", "nested recursion at the same subject position"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "recursion limit exceeded"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "matching depth limit exceeded"),
     QT_TRANSLATE_NOOP("QRegularExpression", "requested value is not available"),
     QT_TRANSLATE_NOOP("QRegularExpression", "requested value is not set"),
     QT_TRANSLATE_NOOP("QRegularExpression", "offset limit set without PCRE2_USE_OFFSET_LIMIT"),
     QT_TRANSLATE_NOOP("QRegularExpression", "bad escape sequence in replacement string"),
     QT_TRANSLATE_NOOP("QRegularExpression", "expected closing curly bracket in replacement string"),
     QT_TRANSLATE_NOOP("QRegularExpression", "bad substitution in replacement string"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "match with end before start is not supported"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "too many replacements (more than INT_MAX)")
+    QT_TRANSLATE_NOOP("QRegularExpression", "match with end before start or start moved backwards is not supported"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "too many replacements (more than INT_MAX)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "bad serialized data"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "heap limit exceeded"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "invalid syntax"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "internal error - duplicate substitution match"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "PCRE2_MATCH_INVALID_UTF is not supported for DFA matching")
 };
 #endif // #if 0
 

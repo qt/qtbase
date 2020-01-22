@@ -468,10 +468,9 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \snippet code/src_corelib_tools_qmap.cpp 9
 
     However, you can store multiple values per key by using
-    insertMulti() instead of insert() (or using the convenience
-    subclass QMultiMap). If you want to retrieve all the values for a
-    single key, you can use values(const Key &key), which returns a
-    QList<T>:
+    using the subclass QMultiMap. If you want
+    to retrieve all the values for a single key, you can use
+    values(const Key &key), which returns a QList<T>:
 
     \snippet code/src_corelib_tools_qmap.cpp 10
 
@@ -676,9 +675,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*! \fn template <class Key, class T> int QMap<Key, T>::remove(const Key &key)
 
     Removes all the items that have the key \a key from the map.
-    Returns the number of items removed which is usually 1 but will be
-    0 if the key isn't in the map, or \> 1 if insertMulti() has been
-    used with the \a key.
+    Returns the number of items removed which will be 1 if the key
+    exists in the map, and 0 otherwise.
 
     \sa clear(), take(), QMultiMap::remove()
 */
@@ -742,28 +740,26 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn template <class Key, class T> QList<Key> QMap<Key, T>::uniqueKeys() const
     \since 4.2
+    \obsolete
 
     Returns a list containing all the keys in the map in ascending
     order. Keys that occur multiple times in the map (because items
     were inserted with insertMulti(), or unite() was used) occur only
     once in the returned list.
 
-    \sa keys(), values()
+    \sa QMultiMap::uniqueKeys()
 */
 
 /*! \fn template <class Key, class T> QList<Key> QMap<Key, T>::keys() const
 
     Returns a list containing all the keys in the map in ascending
-    order. Keys that occur multiple times in the map (because items
-    were inserted with insertMulti(), or unite() was used) also
-    occur multiple times in the list.
-
-    To obtain a list of unique keys, where each key from the map only
-    occurs once, use uniqueKeys().
+    order. Keys that occur multiple times in the map (because the
+    method is operating on a QMultiMap) also occur multiple times
+    in the list.
 
     The order is guaranteed to be the same as that used by values().
 
-    \sa uniqueKeys(), values(), key()
+    \sa QMultiMap::uniqueKeys(), values(), key()
 */
 
 /*! \fn template <class Key, class T> QList<Key> QMap<Key, T>::keys(const T &value) const
@@ -806,6 +802,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn template <class Key, class T> QList<T> QMap<Key, T>::values(const Key &key) const
+    \obsolete
 
     \overload
 
@@ -813,14 +810,15 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \a key, from the most recently inserted to the least recently
     inserted one.
 
-    \sa count(), insertMulti()
+    \sa QMultiMap::values()
 */
 
 /*! \fn template <class Key, class T> int QMap<Key, T>::count(const Key &key) const
+    \obsolete
 
     Returns the number of items associated with key \a key.
 
-    \sa contains(), insertMulti(), QMultiMap::count()
+    \sa QMultiMap::count()
 */
 
 /*! \fn template <class Key, class T> int QMap<Key, T>::count() const
@@ -1118,7 +1116,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     If there are multiple items with the key \a key, the most
     recently inserted item's value is replaced with \a value.
 
-    \sa insertMulti()
+    \sa QMultiMap::insert()
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insert(const_iterator pos, const Key &key, const T &value)
@@ -1147,10 +1145,25 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \b {Note:} Be careful with the hint. Providing an iterator from an older shared instance might
     crash but there is also a risk that it will silently corrupt both the map and the \a pos map.
 
-    \sa insertMulti()
+    \sa QMultiMap::insert()
+*/
+
+/*! \fn template <class Key, class T> void QMap<Key, T>::insert(const QMap<Key, T> &map)
+    \since 5.15
+
+    Inserts all the items in \a map into this map.
+
+    If a key is common to both maps, its value will be replaced with
+    the value stored in \a map.
+
+    \note If \a map contains multiple entries with the same key then the
+    final value of the key is undefined.
+
+    \sa QMultiMap::insert()
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const Key &key, const T &value)
+    \obsolete
 
     Inserts a new item with the key \a key and a value of \a value.
 
@@ -1159,12 +1172,13 @@ void QMapDataBase::freeData(QMapDataBase *d)
     different from insert(), which overwrites the value of an
     existing item.)
 
-    \sa insert(), values()
+    \sa QMultiMap::insert()
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const_iterator pos, const Key &key, const T &value)
     \overload
     \since 5.1
+    \obsolete
     Inserts a new item with the key \a key and value \a value and with hint \a pos
     suggesting where to do the insert.
 
@@ -1178,17 +1192,18 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \b {Note:} Be careful with the hint. Providing an iterator from an older shared instance might
     crash but there is also a risk that it will silently corrupt both the map and the \a pos map.
 
-    \sa insert()
+    \sa QMultiMap::insert()
 */
 
 
 /*! \fn template <class Key, class T> QMap<Key, T> &QMap<Key, T>::unite(const QMap<Key, T> &other)
+    \obsolete
 
     Inserts all the items in the \a other map into this map. If a
     key is common to both maps, the resulting map will contain the
     key multiple times.
 
-    \sa insertMulti()
+    \sa QMultiMap::unite()
 */
 
 /*! \typedef QMap::Iterator
@@ -1271,9 +1286,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     Unlike QHash, which stores its items in an arbitrary order, QMap
     stores its items ordered by key. Items that share the same key
-    (because they were inserted using QMap::insertMulti(), or due to a
-    unite()) will appear consecutively, from the most recently to the
-    least recently inserted value.
+    (because the map is a QMultiMap) will appear consecutively,
+    from the most recently to the least recently inserted value.
 
     Let's see a few examples of things we can do with a
     QMap::iterator that we cannot do with a QMap::const_iterator.
@@ -1519,9 +1533,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     Unlike QHash, which stores its items in an arbitrary order, QMap
     stores its items ordered by key. Items that share the same key
-    (because they were inserted using QMap::insertMulti()) will
-    appear consecutively, from the most recently to the least
-    recently inserted value.
+    (because the map is a QMultiMap) will appear consecutively,
+    from the most recently to the least recently inserted value.
 
     Multiple iterators can be used on the same map. If you add items
     to the map, existing iterators will remain valid. If you remove
@@ -1893,20 +1906,20 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \reentrant
 
     QMultiMap\<Key, T\> is one of Qt's generic \l{container classes}.
-    It inherits QMap and extends it with a few convenience functions
-    that make it more suitable than QMap for storing multi-valued
-    maps. A multi-valued map is a map that allows multiple values
-    with the same key; QMap normally doesn't allow that, unless you
-    call QMap::insertMulti().
+    It inherits QMap and extends it with a few functions
+    that make it able to store multi-valued maps. A multi-valued map
+    is a map that allows multiple values with the same key; QMap
+    doesn't allow that.
 
     Because QMultiMap inherits QMap, all of QMap's functionality also
     applies to QMultiMap. For example, you can use isEmpty() to test
     whether the map is empty, and you can traverse a QMultiMap using
     QMap's iterator classes (for example, QMapIterator). But in
-    addition, it provides an insert() function that corresponds to
-    QMap::insertMulti(), and a replace() function that corresponds to
-    QMap::insert(). It also provides convenient operator+() and
-    operator+=().
+    addition, it provides an insert() function that inserts but does
+    not overwrite any previous value if the key already exists,
+    and a replace() function that corresponds which does overwite
+    an existing value if they key is already in the map.
+    It also provides convenient operator+() and operator+=().
 
     Example:
     \snippet code/src_corelib_tools_qmap.cpp 25
@@ -2093,6 +2106,26 @@ void QMapDataBase::freeData(QMapDataBase *d)
     constEnd().
 
     \sa QMap::constFind()
+*/
+
+/*! \fn template <class Key, class T> QList<T> QMultiMap<Key, T>::values(const Key &key) const
+
+    Returns a list containing all the values associated with key
+    \a key, from the most recently inserted to the least recently
+    inserted one.
+*/
+
+/*! \fn template <class Key, class T> int QMultiMap<Key, T>::count(const Key &key) const
+
+    Returns the number of items associated with key \a key.
+*/
+
+/*! \fn template <class Key, class T> QList<Key> QMultiMap<Key, T>::uniqueKeys() const
+    \since 4.2
+
+    Returns a list containing all the keys in the map in ascending
+    order. Keys that occur multiple times in the map occur only
+    once in the returned list.
 */
 
 QT_END_NAMESPACE

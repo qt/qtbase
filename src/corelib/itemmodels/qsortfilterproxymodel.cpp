@@ -2682,6 +2682,7 @@ void QSortFilterProxyModel::setFilterCaseSensitivity(Qt::CaseSensitivity cs)
     d->filter_about_to_be_changed();
     d->filter_data.setCaseSensitivity(cs);
     d->filter_changed();
+    emit filterCaseSensitivityChanged(cs);
 }
 
 /*!
@@ -2707,6 +2708,7 @@ void QSortFilterProxyModel::setSortCaseSensitivity(Qt::CaseSensitivity cs)
 
     d->sort_casesensitivity = cs;
     d->sort();
+    emit sortCaseSensitivityChanged(cs);
 }
 
 /*!
@@ -2732,6 +2734,7 @@ void QSortFilterProxyModel::setSortLocaleAware(bool on)
 
     d->sort_localeaware = on;
     d->sort();
+    emit sortLocaleAwareChanged(on);
 }
 
 /*!
@@ -2856,6 +2859,7 @@ void QSortFilterProxyModel::setSortRole(int role)
         return;
     d->sort_role = role;
     d->sort();
+    emit sortRoleChanged(role);
 }
 
 /*!
@@ -2881,6 +2885,7 @@ void QSortFilterProxyModel::setFilterRole(int role)
     d->filter_about_to_be_changed();
     d->filter_role = role;
     d->filter_changed();
+    emit filterRoleChanged(role);
 }
 
 /*!
@@ -2907,6 +2912,7 @@ void QSortFilterProxyModel::setRecursiveFilteringEnabled(bool recursive)
     d->filter_about_to_be_changed();
     d->filter_recursive = recursive;
     d->filter_changed();
+    emit recursiveFilteringEnabledChanged(recursive);
 }
 
 #if QT_DEPRECATED_SINCE(5, 11)

@@ -139,7 +139,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
 {
     QByteArray form = format.toLower();
     QByteArray suffix;
-    QImageIOHandler *handler = 0;
+    QImageIOHandler *handler = nullptr;
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
     typedef QMultiMap<int, QString> PluginKeyMap;
@@ -226,7 +226,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
     if (!handler)
-        return 0;
+        return nullptr;
 
     handler->setDevice(device);
     if (!testFormat.isEmpty())
@@ -270,9 +270,9 @@ public:
 */
 QImageWriterPrivate::QImageWriterPrivate(QImageWriter *qq)
 {
-    device = 0;
+    device = nullptr;
     deleteDevice = false;
-    handler = 0;
+    handler = nullptr;
     quality = -1;
     compression = -1;
     gamma = 0.0;
@@ -304,7 +304,7 @@ bool QImageWriterPrivate::canWriteHelper()
         errorString = QImageWriter::tr("Device not writable");
         return false;
     }
-    if (!handler && (handler = createWriteHandlerHelper(device, format)) == 0) {
+    if (!handler && (handler = createWriteHandlerHelper(device, format)) == nullptr) {
         imageWriterError = QImageWriter::UnsupportedFormatError;
         errorString = QImageWriter::tr("Unsupported image format");
         return false;
@@ -403,7 +403,7 @@ void QImageWriter::setDevice(QIODevice *device)
     d->device = device;
     d->deleteDevice = false;
     delete d->handler;
-    d->handler = 0;
+    d->handler = nullptr;
 }
 
 /*!
@@ -561,7 +561,7 @@ QList<QByteArray> QImageWriter::supportedSubTypes() const
 {
     if (!supportsOption(QImageIOHandler::SupportedSubTypes))
         return QList<QByteArray>();
-    return d->handler->option(QImageIOHandler::SupportedSubTypes).value< QList<QByteArray> >();
+    return qvariant_cast<QList<QByteArray> >(d->handler->option(QImageIOHandler::SupportedSubTypes));
 }
 
 /*!
@@ -823,7 +823,7 @@ QString QImageWriter::errorString() const
 */
 bool QImageWriter::supportsOption(QImageIOHandler::ImageOption option) const
 {
-    if (!d->handler && (d->handler = createWriteHandlerHelper(d->device, d->format)) == 0) {
+    if (!d->handler && (d->handler = createWriteHandlerHelper(d->device, d->format)) == nullptr) {
         d->imageWriterError = QImageWriter::UnsupportedFormatError;
         d->errorString = QImageWriter::tr("Unsupported image format");
         return false;

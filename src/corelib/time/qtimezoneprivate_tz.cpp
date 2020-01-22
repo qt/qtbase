@@ -512,7 +512,7 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     if (zoneEnd < end && (zoneEnd[0] == '+' || zoneEnd[0] == '-'))
         ++zoneEnd;
     while (zoneEnd < end) {
-        if (strchr(offsetChars, char(*zoneEnd)) == NULL)
+        if (strchr(offsetChars, char(*zoneEnd)) == nullptr)
             break;
         ++zoneEnd;
     }

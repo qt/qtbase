@@ -58,8 +58,7 @@
 class MetaInfo;
 class PeerWireClient;
 class TorrentClientPrivate;
-class TorrentPeer;
-class TorrentPiece;
+struct TorrentPiece;
 QT_BEGIN_NAMESPACE
 class QTimerEvent;
 QT_END_NAMESPACE
@@ -110,7 +109,7 @@ public:
         ServerError
     };
 
-    TorrentClient(QObject *parent = 0);
+    TorrentClient(QObject *parent = nullptr);
     ~TorrentClient();
 
     bool setTorrent(const QString &fileName);

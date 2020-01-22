@@ -321,7 +321,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, QMap<Key, T> &m
         T value;
         arg.beginMapEntry();
         arg >> key >> value;
-        map.insertMulti(key, value);
+        static_cast<QMultiMap<Key, T> &>(map).insert(key, value);
         arg.endMapEntry();
     }
     arg.endMap();
@@ -370,7 +370,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, QHash<Key, T> &
         T value;
         arg.beginMapEntry();
         arg >> key >> value;
-        map.insertMulti(key, value);
+        static_cast<QMultiHash<Key, T> &>(map).insert(key, value);
         arg.endMapEntry();
     }
     arg.endMap();

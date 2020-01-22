@@ -545,7 +545,7 @@ bool BaselineProtocol::receiveBlock(Command *cmd, QByteArray *block)
 QString BaselineProtocol::errorMessage()
 {
     QString ret = errMsg;
-    if (socket.error() >= 0)
+    if (socket.socketError() >= 0)
         ret += QLS(" Socket state: ") + socket.errorString();
     return ret;
 }

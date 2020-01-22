@@ -159,12 +159,7 @@ public:
 struct ItemDesc
 {
     ItemDesc(int row, int col)
-    : m_pos(qMakePair(row, col)),
-      m_rowSpan(1),
-      m_colSpan(1),
-      m_sizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred)),
-      m_align(0),
-      m_fnConstraint(0)
+    : m_pos(qMakePair(row, col))
     {
     }
 
@@ -278,17 +273,17 @@ struct ItemDesc
 
 //private:
     QPair<int,int> m_pos; // row,col
-    int m_rowSpan;
-    int m_colSpan;
-    QSizePolicy m_sizePolicy;
+    int m_rowSpan = 1;
+    int m_colSpan = 1;
+    QSizePolicy m_sizePolicy{QSizePolicy::Preferred, QSizePolicy::Preferred};
 
     // Initializer {} is a workaround for gcc bug 68949
     QSizeF m_sizeHints[Qt::NSizeHints] {};
     QSizeF m_sizes[Qt::NSizeHints] {};
     Qt::Alignment m_align;
 
-    Qt::Orientation m_constraintOrientation;
-    QSizeF (*m_fnConstraint)(Qt::SizeHint, const QSizeF &);
+    Qt::Orientation m_constraintOrientation = Qt::Horizontal;
+    QSizeF (*m_fnConstraint)(Qt::SizeHint, const QSizeF &) = nullptr;
 };
 
 typedef QList<ItemDesc> ItemList;
@@ -340,7 +335,7 @@ void tst_QGraphicsGridLayout::qgraphicsgridlayout()
     layout.setColumnStretchFactor(0, 0);
     layout.setGeometry(QRectF());
     layout.setHorizontalSpacing(0);
-    layout.setRowAlignment(0, 0);
+    layout.setRowAlignment(0, { });
     layout.setRowFixedHeight(0, 0);
     layout.setRowMaximumHeight(0, 0);
     layout.setRowMinimumHeight(0, 0);

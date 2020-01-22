@@ -97,7 +97,7 @@ private:
 };
 
 QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn)
-    : QWidget(0, Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint)
+    : QWidget(nullptr, Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint)
     , q(qIn)
 {
     setObjectName(QStringLiteral("QSystemTrayIconSys"));
@@ -218,7 +218,7 @@ private:
 ////////////////////////////////////////////////////////////////////////////
 
 QSystemTrayIconPrivate::QSystemTrayIconPrivate()
-    : sys(0),
+    : sys(nullptr),
       qpa_sys(QGuiApplicationPrivate::platformTheme()->createPlatformSystemTrayIcon()),
       visible(false),
       trayWatcher(nullptr)

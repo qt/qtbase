@@ -61,7 +61,7 @@ public:
     explicit QIBusFilterEventWatcher(const QDBusPendingCall &call,
                                      QObject *parent = nullptr,
                                      QWindow *window = nullptr,
-                                     const Qt::KeyboardModifiers modifiers = nullptr,
+                                     const Qt::KeyboardModifiers modifiers = { },
                                      const QVariantList arguments = QVariantList())
     : QDBusPendingCallWatcher(call, parent)
     , m_window(window)

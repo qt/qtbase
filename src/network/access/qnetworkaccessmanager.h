@@ -169,7 +169,7 @@ public:
     bool autoDeleteReplies() const;
     void setAutoDeleteReplies(bool autoDelete);
 
-    int transferTimeout();
+    int transferTimeout() const;
     void setTransferTimeout(int timeout = QNetworkRequest::TransferTimeoutPreset);
 
 Q_SIGNALS:
@@ -207,8 +207,6 @@ private:
     friend class QNetworkReplyWasmImpl;
 #endif
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
-    Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
-    Q_PRIVATE_SLOT(d_func(), void _q_replyEncrypted())
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
     Q_PRIVATE_SLOT(d_func(), void _q_replyPreSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*))
 #ifndef QT_NO_BEARERMANAGEMENT

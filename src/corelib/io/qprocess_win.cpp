@@ -49,7 +49,6 @@
 #include <qelapsedtimer.h>
 #include <qfileinfo.h>
 #include <qrandom.h>
-#include <qregexp.h>
 #include <qwineventnotifier.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qthread_p.h>
@@ -398,7 +397,17 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     for (int i=0; i<arguments.size(); ++i) {
         QString tmp = arguments.at(i);
         // Quotes are escaped and their preceding backslashes are doubled.
-        tmp.replace(QRegExp(QLatin1String("(\\\\*)\"")), QLatin1String("\\1\\1\\\""));
+        int index = tmp.indexOf(QLatin1Char('"'));
+        while (index >= 0) {
+            // Escape quote
+            tmp.insert(index++, QLatin1Char('\\'));
+            // Double preceding backslashes (ignoring the one we just inserted)
+            for (int i = index - 2 ; i >= 0 && tmp.at(i) == QLatin1Char('\\') ; --i) {
+                tmp.insert(i, QLatin1Char('\\'));
+                index++;
+            }
+            index = tmp.indexOf(QLatin1Char('"'), index + 1);
+        }
         if (tmp.isEmpty() || tmp.contains(QLatin1Char(' ')) || tmp.contains(QLatin1Char('\t'))) {
             // The argument must not end with a \ since this would be interpreted
             // as escaping the quote -- rather put the \ behind the quote: e.g.
@@ -590,7 +599,7 @@ void QProcessPrivate::startProcess()
     if (!pid)
         return;
 
-    if (threadData->hasEventDispatcher()) {
+    if (threadData.loadRelaxed()->hasEventDispatcher()) {
         processFinishedNotifier = new QWinEventNotifier(pid->hProcess, q);
         QObject::connect(processFinishedNotifier, SIGNAL(activated(HANDLE)), q, SLOT(_q_processDied()));
         processFinishedNotifier->setEnabled(true);

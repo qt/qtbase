@@ -894,9 +894,10 @@ bool Parser::parseString()
 
     // no escape sequences, we are done
     if (isUtf8) {
-        container->appendByteData(start, json - start - 1, QCborValue::String,
-                                  isAscii ? QtCbor::Element::StringIsAscii
-                                          : QtCbor::Element::ValueFlags {});
+        if (isAscii)
+            container->appendAsciiString(start, json - start - 1);
+        else
+            container->appendUtf8String(start, json - start - 1);
         END;
         return true;
     }

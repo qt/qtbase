@@ -1649,7 +1649,7 @@ namespace {
     struct LineBreakHelper
     {
         LineBreakHelper()
-            : glyphCount(0), maxGlyphs(0), currentPosition(0), fontEngine(0), logClusters(0),
+            : glyphCount(0), maxGlyphs(0), currentPosition(0), fontEngine(nullptr), logClusters(nullptr),
               manualWrap(false), whiteSpaceOrObject(true)
         {
         }
@@ -1705,7 +1705,7 @@ namespace {
         inline void calculateRightBearing(QFontEngine *engine, glyph_t glyph)
         {
             qreal rb;
-            engine->getGlyphBearings(glyph, 0, &rb);
+            engine->getGlyphBearings(glyph, nullptr, &rb);
 
             // We only care about negative right bearings, so we limit the range
             // of the bearing here so that we can assume it's negative in the rest
@@ -2212,7 +2212,7 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine,
                                   int textPosition,
                                   int textLength)
 {
-    Q_ASSERT(logClusters != 0);
+    Q_ASSERT(logClusters != nullptr);
 
     QGlyphRun glyphRun;
 
@@ -2593,7 +2593,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                 } else { // si.isTab
                     QFont f = eng->font(si);
                     QTextItemInt gf(si, &f, format);
-                    gf.chars = 0;
+                    gf.chars = nullptr;
                     gf.num_chars = 0;
                     gf.width = iterator.itemWidth;
                     QPainterPrivate::get(p)->drawTextItem(QPointF(iterator.x.toReal(), y.toReal()), gf, eng);

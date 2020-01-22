@@ -92,10 +92,128 @@
 #endif
 
 #include <algorithm>
+#include <memory>
 
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
+
+namespace {
+
+QAlertLevel tlsAlertLevel(int value)
+{
+    if (const char *typeString = q_SSL_alert_type_string(value)) {
+        // Documented to return 'W' for warning, 'F' for fatal,
+        // 'U' for unknown.
+        switch (typeString[0]) {
+        case 'W':
+            return QAlertLevel::Warning;
+        case 'F':
+            return QAlertLevel::Fatal;
+        default:;
+        }
+    }
+
+    return QAlertLevel::Unknown;
+}
+
+QString tlsAlertDescription(int value)
+{
+    QString description = QLatin1String(q_SSL_alert_desc_string_long(value));
+    if (!description.size())
+        description = QLatin1String("no description provided");
+    return description;
+}
+
+QAlertType tlsAlertType(int value)
+{
+    // In case for some reason openssl gives us a value,
+    // which is not in our enum actually, we leave it to
+    // an application to handle (supposedly they have
+    // if or switch-statements).
+    return QAlertType(value & 0xff);
+}
+
+} // Unnamed namespace
+
+extern "C"
+{
+
+void qt_AlertInfoCallback(const SSL *connection, int from, int value)
+{
+    // Passed to SSL_set_info_callback()
+    // https://www.openssl.org/docs/man1.1.1/man3/SSL_set_info_callback.html
+
+    if (!connection) {
+#ifdef QSSLSOCKET_DEBUG
+        qCWarning(lcSsl, "Invalid 'connection' parameter (nullptr)");
+#endif // QSSLSOCKET_DEBUG
+        return;
+    }
+
+    const auto offset = QSslSocketBackendPrivate::s_indexForSSLExtraData
+                        + QSslSocketBackendPrivate::socketOffsetInExData;
+    auto privateSocket =
+            static_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(connection, offset));
+    if (!privateSocket) {
+        // SSL_set_ex_data can fail:
+#ifdef QSSLSOCKET_DEBUG
+        qCWarning(lcSsl, "No external data (socket backend) found for parameter 'connection'");
+#endif // QSSLSOCKET_DEBUG
+        return;
+    }
+
+    if (!(from & SSL_CB_ALERT)) {
+        // We only want to know about alerts (at least for now).
+        return;
+    }
+
+    if (from & SSL_CB_WRITE)
+        privateSocket->alertMessageSent(value);
+    else
+        privateSocket->alertMessageReceived(value);
+}
+
+int q_X509CallbackDirect(int ok, X509_STORE_CTX *ctx)
+{
+    // Passed to SSL_CTX_set_verify()
+    // https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_verify.html
+    // Returns 0 to abort verification, 1 to continue.
+
+    // This is a new, experimental verification callback, reporting
+    // errors immediately and returning 0 or 1 depending on an application
+    // either ignoring or not ignoring verification errors as they come.
+    if (!ctx) {
+        qCWarning(lcSsl, "Invalid store context (nullptr)");
+        return 0;
+    }
+
+    if (!ok) {
+        // "Whenever a X509_STORE_CTX object is created for the verification of the
+        // peer's certificate during a handshake, a pointer to the SSL object is
+        // stored into the X509_STORE_CTX object to identify the connection affected.
+        // To retrieve this pointer the X509_STORE_CTX_get_ex_data() function can be
+        // used with the correct index."
+        SSL *ssl = static_cast<SSL *>(q_X509_STORE_CTX_get_ex_data(ctx, q_SSL_get_ex_data_X509_STORE_CTX_idx()));
+        if (!ssl) {
+            qCWarning(lcSsl, "No external data (SSL) found in X509 store object");
+            return 0;
+        }
+
+        const auto offset = QSslSocketBackendPrivate::s_indexForSSLExtraData
+                            + QSslSocketBackendPrivate::socketOffsetInExData;
+        auto privateSocket = static_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl, offset));
+        if (!privateSocket) {
+            qCWarning(lcSsl, "No external data (QSslSocketBackendPrivate) found in SSL object");
+            return 0;
+        }
+
+        return privateSocket->emitErrorFromCallback(ctx);
+    }
+    return 1;
+}
+
+} // extern "C"
 
 Q_GLOBAL_STATIC(QRecursiveMutex, qt_opensslInitMutex)
 
@@ -249,11 +367,7 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(const SSL_CIPHER
         QString protoString = descriptionList.at(1).toString();
         ciph.d->protocolString = protoString;
         ciph.d->protocol = QSsl::UnknownProtocol;
-        if (protoString == QLatin1String("SSLv3"))
-            ciph.d->protocol = QSsl::SslV3;
-        else if (protoString == QLatin1String("SSLv2"))
-            ciph.d->protocol = QSsl::SslV2;
-        else if (protoString == QLatin1String("TLSv1"))
+        if (protoString == QLatin1String("TLSv1"))
             ciph.d->protocol = QSsl::TlsV1_0;
         else if (protoString == QLatin1String("TLSv1.1"))
             ciph.d->protocol = QSsl::TlsV1_1;
@@ -408,12 +522,15 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
             // Not found on store? Try SSL and its external data then. According to the OpenSSL's
             // documentation:
             //
-            // "Whenever a X509_STORE_CTX object is created for the verification of the peers certificate
-            // during a handshake, a pointer to the SSL object is stored into the X509_STORE_CTX object
-            // to identify the connection affected. To retrieve this pointer the X509_STORE_CTX_get_ex_data()
-            // function can be used with the correct index."
+            // "Whenever a X509_STORE_CTX object is created for the verification of the
+            // peer's certificate during a handshake, a pointer to the SSL object is
+            // stored into the X509_STORE_CTX object to identify the connection affected.
+            // To retrieve this pointer the X509_STORE_CTX_get_ex_data() function can be
+            // used with the correct index."
+            const auto offset = QSslSocketBackendPrivate::s_indexForSSLExtraData
+                                + QSslSocketBackendPrivate::errorOffsetInExData;
             if (SSL *ssl = static_cast<SSL *>(q_X509_STORE_CTX_get_ex_data(ctx, q_SSL_get_ex_data_X509_STORE_CTX_idx())))
-                errors = ErrorListPtr(q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData + 1));
+                errors = ErrorListPtr(q_SSL_get_ex_data(ssl, offset));
         }
 
         if (!errors) {
@@ -459,20 +576,23 @@ void q_setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers);
 long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
 {
     long options;
-    if (protocol == QSsl::TlsV1SslV3)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
-    else if (protocol == QSsl::SecureProtocols)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
-    else if (protocol == QSsl::TlsV1_0OrLater)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
-    else if (protocol == QSsl::TlsV1_1OrLater)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1;
-    else if (protocol == QSsl::TlsV1_2OrLater)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1;
-    else if (protocol == QSsl::TlsV1_3OrLater)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1|SSL_OP_NO_TLSv1_2;
-    else
+    switch (protocol) {
+    case QSsl::SecureProtocols:
+    case QSsl::TlsV1_0OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
+        break;
+    case QSsl::TlsV1_1OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1;
+        break;
+    case QSsl::TlsV1_2OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1;
+        break;
+    case QSsl::TlsV1_3OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_TLSv1_2;
+        break;
+    default:
         options = SSL_OP_ALL;
+    }
 
     // This option is disabled by default, so we need to be able to clear it
     if (sslOptions & QSsl::SslOptionDisableEmptyFragments)
@@ -530,10 +650,7 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
-    if (configuration.protocol != QSsl::SslV2 &&
-        configuration.protocol != QSsl::SslV3 &&
-        configuration.protocol != QSsl::UnknownProtocol &&
-        mode == QSslSocket::SslClientMode) {
+    if (configuration.protocol != QSsl::UnknownProtocol && mode == QSslSocket::SslClientMode) {
         // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.
         QString tlsHostName = verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName;
         if (tlsHostName.isEmpty())
@@ -992,7 +1109,7 @@ void QSslSocketBackendPrivate::transmit()
             if (actualWritten < 0) {
                 //plain socket write fails if it was in the pending close state.
                 const ScopedBool bg(inSetAndEmitError, true);
-                setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
+                setErrorAndEmit(plainSocket->socketError(), plainSocket->errorString());
                 return;
             }
             transmitting = true;
@@ -1199,18 +1316,32 @@ bool QSslSocketBackendPrivate::startHandshake()
     if (inSetAndEmitError)
         return false;
 
+    pendingFatalAlert = false;
+    errorsReportedFromCallback = false;
     QVector<QSslErrorEntry> lastErrors;
-    q_SSL_set_ex_data(ssl, s_indexForSSLExtraData + 1, &lastErrors);
-    int result = (mode == QSslSocket::SslClientMode) ? q_SSL_connect(ssl) : q_SSL_accept(ssl);
-    q_SSL_set_ex_data(ssl, s_indexForSSLExtraData + 1, nullptr);
+    q_SSL_set_ex_data(ssl, s_indexForSSLExtraData + errorOffsetInExData, &lastErrors);
 
-    if (!lastErrors.isEmpty())
+    // SSL_set_ex_data can fail, but see the callback's code - we handle this there.
+    q_SSL_set_ex_data(ssl, s_indexForSSLExtraData + socketOffsetInExData, this);
+    q_SSL_set_info_callback(ssl, qt_AlertInfoCallback);
+
+    int result = (mode == QSslSocket::SslClientMode) ? q_SSL_connect(ssl) : q_SSL_accept(ssl);
+    q_SSL_set_ex_data(ssl, s_indexForSSLExtraData + errorOffsetInExData, nullptr);
+    // Note, unlike errors as external data on SSL object, we do not unset
+    // a callback/ex-data if alert notifications are enabled: an alert can
+    // arrive after the handshake, for example, this happens when the server
+    // does not find a ClientCert or does not like it.
+
+    if (!lastErrors.isEmpty() || errorsReportedFromCallback)
         storePeerCertificates();
-    for (const auto &currentError : qAsConst(lastErrors)) {
-        emit q->peerVerifyError(_q_OpenSSL_to_QSslError(currentError.code,
-                                configuration.peerCertificateChain.value(currentError.depth)));
-        if (q->state() != QAbstractSocket::ConnectedState)
-            break;
+
+    if (!errorsReportedFromCallback) {
+        for (const auto &currentError : qAsConst(lastErrors)) {
+            emit q->peerVerifyError(_q_OpenSSL_to_QSslError(currentError.code,
+                                    configuration.peerCertificateChain.value(currentError.depth)));
+            if (q->state() != QAbstractSocket::ConnectedState)
+                break;
+        }
     }
 
     errorList << lastErrors;
@@ -1234,6 +1365,10 @@ bool QSslSocketBackendPrivate::startHandshake()
             {
                 const ScopedBool bg(inSetAndEmitError, true);
                 setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, errorString);
+                if (pendingFatalAlert) {
+                    trySendFatalAlert();
+                    pendingFatalAlert = false;
+                }
             }
             q->abort();
         }
@@ -1703,6 +1838,88 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
 
 #endif // ocsp
 
+void QSslSocketBackendPrivate::alertMessageSent(int value)
+{
+    Q_Q(QSslSocket);
+
+    const auto level = tlsAlertLevel(value);
+    if (level == QAlertLevel::Fatal && !connectionEncrypted) {
+        // Note, this logic is handshake-time only:
+        pendingFatalAlert = true;
+    }
+
+    emit q->alertSent(level, tlsAlertType(value), tlsAlertDescription(value));
+}
+
+void QSslSocketBackendPrivate::alertMessageReceived(int value)
+{
+    Q_Q(QSslSocket);
+
+    emit q->alertReceived(tlsAlertLevel(value), tlsAlertType(value), tlsAlertDescription(value));
+}
+
+int QSslSocketBackendPrivate::emitErrorFromCallback(X509_STORE_CTX *ctx)
+{
+    // Returns 0 to abort verification, 1 to continue despite error (as
+    // OpenSSL expects from the verification callback).
+    Q_Q(QSslSocket);
+
+    Q_ASSERT(ctx);
+
+    using ScopedBool = QScopedValueRollback<bool>;
+    // While we are not setting, we are emitting and in general -
+    // we want to prevent accidental recursive startHandshake()
+    // calls:
+    const ScopedBool bg(inSetAndEmitError, true);
+
+    X509 *x509 = q_X509_STORE_CTX_get_current_cert(ctx);
+    if (!x509) {
+        qCWarning(lcSsl, "Could not obtain the certificate (that failed to verify)");
+        return 0;
+    }
+    const QSslCertificate certificate = QSslCertificatePrivate::QSslCertificate_from_X509(x509);
+
+    const auto errorAndDepth = QSslErrorEntry::fromStoreContext(ctx);
+    const QSslError tlsError = _q_OpenSSL_to_QSslError(errorAndDepth.code, certificate);
+
+    errorsReportedFromCallback = true;
+    handshakeInterrupted = true;
+    emit q->handshakeInterruptedOnError(tlsError);
+
+    // Conveniently so, we also can access 'lastErrors' external data set
+    // in startHandshake, we store it for the case an application later
+    // wants to check errors (ignored or not):
+    const auto offset = QSslSocketBackendPrivate::s_indexForSSLExtraData
+                        + QSslSocketBackendPrivate::errorOffsetInExData;
+    if (auto errorList = static_cast<QVector<QSslErrorEntry>*>(q_SSL_get_ex_data(ssl, offset)))
+        errorList->append(errorAndDepth);
+
+    // An application is expected to ignore this error (by calling ignoreSslErrors)
+    // in its directly connected slot:
+    return !handshakeInterrupted;
+}
+
+void QSslSocketBackendPrivate::trySendFatalAlert()
+{
+    Q_ASSERT(pendingFatalAlert);
+
+    pendingFatalAlert = false;
+    QVarLengthArray<char, 4096> data;
+    int pendingBytes = 0;
+    while (plainSocket->isValid() && (pendingBytes = q_BIO_pending(writeBio)) > 0
+           && plainSocket->openMode() != QIODevice::NotOpen) {
+        // Read encrypted data from the write BIO into a buffer.
+        data.resize(pendingBytes);
+        const int bioReadBytes = q_BIO_read(writeBio, data.data(), pendingBytes);
+
+        // Write encrypted data from the buffer to the socket.
+        qint64 actualWritten = plainSocket->write(data.constData(), bioReadBytes);
+        if (actualWritten < 0)
+            return;
+        plainSocket->flush();
+    }
+}
+
 void QSslSocketBackendPrivate::disconnectFromHost()
 {
     if (ssl) {
@@ -1746,10 +1963,6 @@ QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
     int ver = q_SSL_version(ssl);
 
     switch (ver) {
-    case 0x2:
-        return QSsl::SslV2;
-    case 0x300:
-        return QSsl::SslV3;
     case 0x301:
         return QSsl::TlsV1_0;
     case 0x302:
@@ -1957,6 +2170,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         errors << QSslError(QSslError::UnspecifiedError);
         return errors;
     }
+    const std::unique_ptr<X509_STORE, decltype(&q_X509_STORE_free)> storeGuard(certStore, q_X509_STORE_free);
 
     if (s_loadRootCertsOnDemand) {
         setDefaultCaCertificates(defaultCaCertificates() + systemCaCertificates());
@@ -1997,7 +2211,6 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         intermediates = (STACK_OF(X509) *) q_OPENSSL_sk_new_null();
 
         if (!intermediates) {
-            q_X509_STORE_free(certStore);
             errors << QSslError(QSslError::UnspecifiedError);
             return errors;
         }
@@ -2015,14 +2228,12 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
 
     X509_STORE_CTX *storeContext = q_X509_STORE_CTX_new();
     if (!storeContext) {
-        q_X509_STORE_free(certStore);
         errors << QSslError(QSslError::UnspecifiedError);
         return errors;
     }
+    std::unique_ptr<X509_STORE_CTX, decltype(&q_X509_STORE_CTX_free)> ctxGuard(storeContext, q_X509_STORE_CTX_free);
 
     if (!q_X509_STORE_CTX_init(storeContext, certStore, reinterpret_cast<X509 *>(certificateChain[0].handle()), intermediates)) {
-        q_X509_STORE_CTX_free(storeContext);
-        q_X509_STORE_free(certStore);
         errors << QSslError(QSslError::UnspecifiedError);
         return errors;
     }
@@ -2031,8 +2242,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     // We ignore the result of this function since we process errors via the
     // callback.
     (void) q_X509_verify_cert(storeContext);
-
-    q_X509_STORE_CTX_free(storeContext);
+    ctxGuard.reset();
     q_OPENSSL_sk_free((OPENSSL_STACK *)intermediates);
 
     // Now process the errors
@@ -2053,8 +2263,6 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     errors.reserve(errors.size() + lastErrors.size());
     for (const auto &error : qAsConst(lastErrors))
         errors << _q_OpenSSL_to_QSslError(error.code, certificateChain.value(error.depth));
-
-    q_X509_STORE_free(certStore);
 
     return errors;
 }

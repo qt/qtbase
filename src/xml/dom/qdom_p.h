@@ -235,7 +235,7 @@ public:
 
     // Variables
     QAtomicInt ref;
-    QHash<QString, QDomNodePrivate *> map;
+    QMultiHash<QString, QDomNodePrivate *> map;
     QDomNodePrivate *parent;
     bool readonly;
     bool appendToParent;
@@ -461,10 +461,17 @@ public:
     QDomDocumentPrivate(QDomDocumentPrivate *n, bool deep);
     ~QDomDocumentPrivate();
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     bool setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg,
                     int *errorLine, int *errorColumn);
     bool setContent(QXmlInputSource *source, QXmlReader *reader, QXmlSimpleReader *simpleReader,
                     QString *errorMsg, int *errorLine, int *errorColumn);
+QT_WARNING_POP
+#endif
+    bool setContent(QXmlStreamReader *reader, bool namespaceProcessing, QString *errorMsg,
+                    int *errorLine, int *errorColumn);
 
     // Attributes
     QDomDocumentTypePrivate *doctype() { return type.data(); }

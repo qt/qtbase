@@ -136,7 +136,7 @@ void tst_QAbstractProxyModel::flags_data()
 {
     QTest::addColumn<QModelIndex>("index");
     QTest::addColumn<Qt::ItemFlags>("flags");
-    QTest::newRow("null") << QModelIndex() << (Qt::ItemFlags)0;
+    QTest::newRow("null") << QModelIndex() << Qt::ItemFlags{};
 }
 
 // public Qt::ItemFlags flags(QModelIndex const& index) const

@@ -88,7 +88,7 @@ class Q_WIDGETS_EXPORT QTabBarPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QTabBar)
 public:
     QTabBarPrivate()
-        :currentIndex(-1), pressedIndex(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
+        :currentIndex(-1), pressedIndex(-1), firstVisible(0), lastVisible(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
         drawBase(true), scrollOffset(0), hoverIndex(-1), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
         dragInProgress(false), documentMode(false), autoHide(false), changeCurrentOnDrag(false),
@@ -97,6 +97,8 @@ public:
 
     int currentIndex;
     int pressedIndex;
+    int firstVisible;
+    int lastVisible;
     QTabBar::Shape shape;
     bool layoutDirty;
     bool drawBase;
@@ -104,14 +106,15 @@ public:
 
     struct Tab {
         inline Tab(const QIcon &ico, const QString &txt)
-            : enabled(true) , shortcutId(0), text(txt), icon(ico),
-            leftWidget(0), rightWidget(0), lastTab(-1), dragOffset(0)
+            : enabled(true) , visible(true), shortcutId(0), text(txt), icon(ico),
+            leftWidget(nullptr), rightWidget(nullptr), lastTab(-1), dragOffset(0)
 #if QT_CONFIG(animation)
-            , animation(0)
+            , animation(nullptr)
 #endif // animation
         {}
         bool operator==(const Tab &other) const { return &other == this; }
         bool enabled;
+        bool visible;
         int shortcutId;
         QString text;
 #ifndef QT_NO_TOOLTIP
@@ -170,6 +173,8 @@ public:
     QList<Tab> tabList;
     mutable QHash<QString, QSize> textSizes;
 
+    void calculateFirstLastVisible(int index, bool visible, bool remove);
+    int selectNewCurrentIndexFrom(int currentIndex);
     int calculateNewPosition(int from, int to, int index) const;
     void slide(int from, int to);
     void init();

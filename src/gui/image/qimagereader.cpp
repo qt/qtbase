@@ -179,10 +179,10 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
                                                 bool ignoresFormatAndExtension)
 {
     if (!autoDetectImageFormat && format.isEmpty())
-        return 0;
+        return nullptr;
 
     QByteArray form = format.toLower();
-    QImageIOHandler *handler = 0;
+    QImageIOHandler *handler = nullptr;
     QByteArray suffix;
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
@@ -450,7 +450,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         qDebug("QImageReader::createReadHandler: no handlers found. giving up.");
 #endif
         // no handler: give up.
-        return 0;
+        return nullptr;
     }
 
     handler->setDevice(device);
@@ -500,9 +500,9 @@ public:
 QImageReaderPrivate::QImageReaderPrivate(QImageReader *qq)
     : autoDetectImageFormat(true), ignoresFormatAndExtension(false)
 {
-    device = 0;
+    device = nullptr;
     deleteDevice = false;
-    handler = 0;
+    handler = nullptr;
     quality = -1;
     imageReaderError = QImageReader::UnknownError;
     autoTransform = UsePluginDefault;
@@ -571,7 +571,7 @@ bool QImageReaderPrivate::initHandler()
     }
 
     // assign a handler
-    if (!handler && (handler = createReadHandlerHelper(device, format, autoDetectImageFormat, ignoresFormatAndExtension)) == 0) {
+    if (!handler && (handler = createReadHandlerHelper(device, format, autoDetectImageFormat, ignoresFormatAndExtension)) == nullptr) {
         imageReaderError = QImageReader::UnsupportedFormatError;
         errorString = QImageReader::tr("Unsupported image format");
         return false;
@@ -1089,7 +1089,7 @@ QList<QByteArray> QImageReader::supportedSubTypes() const
         return QList<QByteArray>();
 
     if (d->handler->supportsOption(QImageIOHandler::SupportedSubTypes))
-        return d->handler->option(QImageIOHandler::SupportedSubTypes).value< QList<QByteArray> >();
+        return qvariant_cast<QList<QByteArray> >(d->handler->option(QImageIOHandler::SupportedSubTypes));
     return QList<QByteArray>();
 }
 

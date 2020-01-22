@@ -119,7 +119,7 @@ QSplitterPrivate::~QSplitterPrivate()
     \a parent.
 */
 QSplitterHandle::QSplitterHandle(Qt::Orientation orientation, QSplitter *parent)
-    : QWidget(*new QSplitterHandlePrivate, parent, 0)
+    : QWidget(*new QSplitterHandlePrivate, parent, { })
 {
     Q_D(QSplitterHandle);
     d->s = parent;
@@ -1494,7 +1494,7 @@ int QSplitter::closestLegalPosition(int pos, int index)
 bool QSplitter::opaqueResize() const
 {
     Q_D(const QSplitter);
-    return d->opaqueResizeSet ? d->opaque : style()->styleHint(QStyle::SH_Splitter_OpaqueResize, 0, this);
+    return d->opaqueResizeSet ? d->opaque : style()->styleHint(QStyle::SH_Splitter_OpaqueResize, nullptr, this);
 }
 
 
@@ -1639,7 +1639,7 @@ int QSplitter::handleWidth() const
     if (d->handleWidth >= 0) {
         return d->handleWidth;
     } else {
-        return style()->pixelMetric(QStyle::PM_SplitterWidth, 0, this);
+        return style()->pixelMetric(QStyle::PM_SplitterWidth, nullptr, this);
     }
 }
 

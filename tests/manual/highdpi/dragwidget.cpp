@@ -42,7 +42,7 @@ public:
 };
 
 DragWidget::DragWidget(QString text, QWidget *parent)
-    : QWidget(parent), otherWindow(nullptr)
+    : QWidget(parent)
 {
     int x = 5;
     int y = 5;
@@ -52,9 +52,9 @@ DragWidget::DragWidget(QString text, QWidget *parent)
         text = "You can drag from this window and drop text here";
 
     QStringList words = text.split(' ');
-    foreach (QString word, words) {
+    for (const QString &word : words) {
         if (!word.isEmpty()) {
-            FramedLabel *wordLabel = new FramedLabel(word, this);
+            auto wordLabel = new FramedLabel(word, this);
             wordLabel->move(x, y);
             wordLabel->show();
             x += wordLabel->width() + 2;
@@ -105,7 +105,6 @@ void DragWidget::dragLeaveEvent(QDragLeaveEvent *)
     update();
 }
 
-
 void DragWidget::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasText()) {
@@ -141,9 +140,9 @@ void DragWidget::dropEvent(QDropEvent *event)
     } else {
         event->ignore();
     }
-    foreach (QObject *child, children()) {
-        if (child->inherits("QWidget")) {
-            QWidget *widget = static_cast<QWidget *>(child);
+    for (QObject *child : children()) {
+        if (child->isWidgetType()) {
+            auto widget = static_cast<QWidget *>(child);
             if (!widget->isVisible())
                 widget->deleteLater();
         }
@@ -170,7 +169,7 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
     pixmap.setDevicePixelRatio(dpr);
     child->render(&pixmap);
 
-    QDrag *drag = new QDrag(this);
+    auto drag = new QDrag(this);
     drag->setMimeData(mimeData);
     drag->setPixmap(pixmap);
     drag->setHotSpot(hotSpot);

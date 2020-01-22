@@ -64,6 +64,7 @@ public:
     {
         *this = reply;
     }
+    inline QDBusReply(const QDBusReply &) = default;
     inline QDBusReply& operator=(const QDBusMessage &reply)
     {
         QVariant data(qMetaTypeId<Type>(), nullptr);

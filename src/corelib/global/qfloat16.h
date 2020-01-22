@@ -84,6 +84,9 @@ public:
     bool isNaN() const noexcept { return ((b16 >> 8) & 0x7e) == 0x7e; }
     bool isFinite() const noexcept { return ((b16 >> 8) & 0x7c) != 0x7c; }
     Q_CORE_EXPORT int fpClassify() const noexcept;
+    // Can't specialize std::copysign() for qfloat16
+    qfloat16 copySign(qfloat16 sign) const noexcept
+    { return qfloat16(Wrap((sign.b16 & 0x8000) | (b16 & 0x7fff))); }
     // Support for std::numeric_limits<qfloat16>
     static constexpr qfloat16 _limit_epsilon()    noexcept { return qfloat16(Wrap(0x1400)); }
     static constexpr qfloat16 _limit_min()        noexcept { return qfloat16(Wrap(0x400)); }
@@ -92,7 +95,9 @@ public:
     static constexpr qfloat16 _limit_lowest()     noexcept { return qfloat16(Wrap(0xfbff)); }
     static constexpr qfloat16 _limit_infinity()   noexcept { return qfloat16(Wrap(0x7c00)); }
     static constexpr qfloat16 _limit_quiet_NaN()  noexcept { return qfloat16(Wrap(0x7e00)); }
-    // Signalling NaN is 0x7f00
+#if QT_CONFIG(signaling_nan)
+    static constexpr qfloat16 _limit_signaling_NaN() noexcept { return qfloat16(Wrap(0x7f00)); }
+#endif
     inline constexpr bool isNormal() const noexcept
     { return (b16 & 0x7fff) == 0 || ((b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00); }
 private:
@@ -239,6 +244,7 @@ QF16_MAKE_ARITH_OP_INT(/)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+QT_WARNING_DISABLE_INTEL(1572)
 
 inline bool operator>(qfloat16 a, qfloat16 b)  noexcept { return static_cast<float>(a) >  static_cast<float>(b); }
 inline bool operator<(qfloat16 a, qfloat16 b)  noexcept { return static_cast<float>(a) <  static_cast<float>(b); }
@@ -327,6 +333,12 @@ public:
     { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_infinity(); }
     static constexpr QT_PREPEND_NAMESPACE(qfloat16) quiet_NaN()
     { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_quiet_NaN(); }
+#if QT_CONFIG(signaling_nan)
+    static constexpr QT_PREPEND_NAMESPACE(qfloat16) signaling_NaN()
+    { return QT_PREPEND_NAMESPACE(qfloat16)::_limit_signaling_NaN(); }
+#else
+    static constexpr bool has_signaling_NaN = false;
+#endif
 };
 
 template<> class numeric_limits<const QT_PREPEND_NAMESPACE(qfloat16)>

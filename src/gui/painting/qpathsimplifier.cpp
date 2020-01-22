@@ -378,8 +378,8 @@ private:
 };
 
 inline PathSimplifier::BoundingVolumeHierarchy::BoundingVolumeHierarchy()
-    : root(0)
-    , nodeBlock(0)
+    : root(nullptr)
+    , nodeBlock(nullptr)
     , blockSize(0)
     , firstFree(0)
 {
@@ -392,7 +392,7 @@ inline PathSimplifier::BoundingVolumeHierarchy::~BoundingVolumeHierarchy()
 
 inline void PathSimplifier::BoundingVolumeHierarchy::allocate(int nodeCount)
 {
-    Q_ASSERT(nodeBlock == 0);
+    Q_ASSERT(nodeBlock == nullptr);
     Q_ASSERT(firstFree == 0);
     nodeBlock = new Node[blockSize = nodeCount];
 }
@@ -401,9 +401,9 @@ inline void PathSimplifier::BoundingVolumeHierarchy::free()
 {
     freeNode(root);
     delete[] nodeBlock;
-    nodeBlock = 0;
+    nodeBlock = nullptr;
     firstFree = blockSize = 0;
-    root = 0;
+    root = nullptr;
 }
 
 inline PathSimplifier::BVHNode *PathSimplifier::BoundingVolumeHierarchy::newNode()
@@ -427,7 +427,7 @@ inline void PathSimplifier::BoundingVolumeHierarchy::freeNode(Node *n)
 }
 
 inline PathSimplifier::ElementAllocator::ElementAllocator()
-    : blocks(0)
+    : blocks(nullptr)
 {
 }
 
@@ -442,11 +442,11 @@ inline PathSimplifier::ElementAllocator::~ElementAllocator()
 
 inline void PathSimplifier::ElementAllocator::allocate(int count)
 {
-    Q_ASSERT(blocks == 0);
+    Q_ASSERT(blocks == nullptr);
     Q_ASSERT(count > 0);
     blocks = (ElementBlock *)malloc(sizeof(ElementBlock) + (count - 1) * sizeof(Element));
     blocks->blockSize = count;
-    blocks->next = 0;
+    blocks->next = nullptr;
     blocks->firstFree = 0;
 }
 
@@ -479,7 +479,7 @@ inline void PathSimplifier::Element::flip()
         qSwap(indices[i], indices[degree - i]);
     }
     pointingUp = !pointingUp;
-    Q_ASSERT(next == 0 && previous == 0);
+    Q_ASSERT(next == nullptr && previous == nullptr);
 }
 
 PathSimplifier::PathSimplifier(const QVectorPath &path, QDataBuffer<QPoint> &vertices,
@@ -685,9 +685,9 @@ void PathSimplifier::connectElements()
     QDataBuffer<Event> events(m_elements.size() * 2);
     for (int i = 0; i < m_elements.size(); ++i) {
         Element *element = m_elements.at(i);
-        element->next = element->previous = 0;
+        element->next = element->previous = nullptr;
         element->winding = 0;
-        element->edgeNode = 0;
+        element->edgeNode = nullptr;
         const QPoint &u = m_points->at(element->indices[0]);
         const QPoint &v = m_points->at(element->indices[element->degree]);
         if (u != v) {
@@ -730,7 +730,7 @@ void PathSimplifier::connectElements()
                 Element *element2 = event2->element;
                 element->edgeNode->data = event2->element;
                 element2->edgeNode = element->edgeNode;
-                element->edgeNode = 0;
+                element->edgeNode = nullptr;
 
                 events.pop_back();
                 events.pop_back();
@@ -783,8 +783,8 @@ void PathSimplifier::connectElements()
                     Element *upperElement = m_elementAllocator.newElement();
                     *upperElement = *element;
                     upperElement->lowerIndex() = element->upperIndex() = pointIndex;
-                    upperElement->edgeNode = 0;
-                    element->next = element->previous = 0;
+                    upperElement->edgeNode = nullptr;
+                    element->next = element->previous = nullptr;
                     if (upperElement->next)
                         upperElement->next->previous = upperElement;
                     else if (upperElement->previous)
@@ -805,7 +805,7 @@ void PathSimplifier::connectElements()
                 RBNode *left = findElementLeftOf(event->element, bounds);
                 RBNode *node = m_elementList.newNode();
                 node->data = event->element;
-                Q_ASSERT(event->element->edgeNode == 0);
+                Q_ASSERT(event->element->edgeNode == nullptr);
                 event->element->edgeNode = node;
                 m_elementList.attachAfter(left, node);
             } else {
@@ -814,7 +814,7 @@ void PathSimplifier::connectElements()
                 Element *element = event->element;
                 Q_ASSERT(element->edgeNode);
                 m_elementList.deleteNode(element->edgeNode);
-                Q_ASSERT(element->edgeNode == 0);
+                Q_ASSERT(element->edgeNode == nullptr);
             }
             events.pop_back();
         }
@@ -870,8 +870,8 @@ void PathSimplifier::connectElements()
                 Q_ASSERT(i + 1 < orderedElements.size());
                 Element *next = orderedElements.at(i);
                 Element *previous = orderedElements.at(i + 1);
-                Q_ASSERT(next->previous == 0);
-                Q_ASSERT(previous->next == 0);
+                Q_ASSERT(next->previous == nullptr);
+                Q_ASSERT(previous->next == nullptr);
                 next->previous = previous;
                 previous->next = next;
             }
@@ -893,7 +893,7 @@ void PathSimplifier::fillIndices()
         m_elements.at(i)->processed = false;
     for (int i = 0; i < m_elements.size(); ++i) {
         Element *element = m_elements.at(i);
-        if (element->processed || element->next == 0)
+        if (element->processed || element->next == nullptr)
             continue;
         do {
             m_indices->add(element->indices[0]);
@@ -1395,13 +1395,13 @@ PathSimplifier::RBNode *PathSimplifier::findElementLeftOf(const Element *element
                                                           const QPair<RBNode *, RBNode *> &bounds)
 {
     if (!m_elementList.root)
-        return 0;
+        return nullptr;
     RBNode *current = bounds.first;
     Q_ASSERT(!current || !elementIsLeftOf(element, current->data));
     if (!current)
         current = m_elementList.front(m_elementList.root);
     Q_ASSERT(current);
-    RBNode *result = 0;
+    RBNode *result = nullptr;
     while (current != bounds.second && !elementIsLeftOf(element, current->data)) {
         result = current;
         current = m_elementList.next(current);

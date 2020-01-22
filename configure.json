@@ -775,12 +775,12 @@
         },
         "debug": {
             "label": "Build for debugging",
-            "autoDetect": "features.developer-build || config.win32 || config.darwin"
+            "autoDetect": "features.developer-build || (config.win32 && !config.gcc) || config.darwin"
         },
         "debug_and_release": {
             "label": "Compile libs in debug and release mode",
-            "autoDetect": "input.debug == ''",
-            "condition": "config.darwin || (config.win32 && !config.gcc)",
+            "autoDetect": "input.debug == '' && !(config.win32 && config.gcc)",
+            "condition": "config.darwin || config.win32",
             "output": [ "publicFeature", "publicQtConfig", "debugAndRelease" ]
         },
         "force_debug_info": {
@@ -894,6 +894,12 @@
             "autoDetect": false,
             "output": [ "publicConfig" ]
         },
+        "sanitize_fuzzer_no_link": {
+            "label": "Fuzzer (instrumentation only)",
+            "autoDetect": false,
+            "output": [ "publicConfig" ],
+            "purpose": [ "Adds instrumentation for fuzzing to the binaries but links to the usual main function instead of a fuzzer's." ]
+        },
         "sanitize_undefined": {
             "label": "Undefined",
             "autoDetect": false,
@@ -901,7 +907,7 @@
         },
         "sanitizer": {
             "label": "Sanitizers",
-            "condition": "features.sanitize_address || features.sanitize_thread || features.sanitize_memory || features.sanitize_undefined",
+            "condition": "features.sanitize_address || features.sanitize_thread || features.sanitize_memory || features.sanitize_fuzzer_no_link || features.sanitize_undefined",
             "output": [ "sanitizer", "publicConfig" ]
         },
         "coverage_trace_pc_guard": {
@@ -1441,6 +1447,11 @@
             "type": "error",
             "condition": "features.coverage && !config.clang",
             "message": "Command line option -coverage is only supported with clang compilers."
+        },
+        {
+            "type": "error",
+            "condition": "features.sanitize_fuzzer_no_link && !config.clang",
+            "message": "Command line option -sanitize fuzzer-no-link is only supported with clang compilers."
         }
     ],
 
@@ -1464,6 +1475,15 @@
             "type": "error",
             "condition": "!features.stl",
             "message": "Qt requires a compliant STL library."
+        },
+        {
+            "type": "emccVersion",
+            "condition": "config.wasm"
+        },
+        {
+            "type": "error",
+            "condition": "config.ios && features.debug && !features.debug_and_release",
+            "message": "Debug build wihtout Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
         }
     ],
 
@@ -1575,7 +1595,13 @@
                 {
                     "section": "Sanitizers",
                     "condition": "features.sanitizer",
-                    "entries": [ "sanitize_address", "sanitize_thread", "sanitize_memory", "sanitize_undefined" ]
+                    "entries": [
+                        "sanitize_address",
+                        "sanitize_thread",
+                        "sanitize_memory",
+                        "sanitize_fuzzer_no_link",
+                        "sanitize_undefined"
+                    ]
                 },
                 {
                     "message": "Code Coverage Instrumentation",

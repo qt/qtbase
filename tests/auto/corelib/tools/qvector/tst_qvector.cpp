@@ -104,7 +104,7 @@ private:
 
     static void check(const State state1, const State state2)
     {
-        QCOMPARE(state1, state2);
+        QCOMPARE(int(state1), int(state2));
     }
 };
 
@@ -174,7 +174,7 @@ private:
     {
         // check if c object has been moved
         QCOMPARE(c, c->that);
-        QCOMPARE(c->state, Constructed);
+        QCOMPARE(int(c->state), int(Constructed));
     }
 };
 QAtomicInt Custom::counter = 0;
@@ -307,8 +307,6 @@ private slots:
 
     void reserve();
     void reserveZero();
-    void reallocAfterCopy_data();
-    void reallocAfterCopy();
     void initializeListInt();
     void initializeListMovable();
     void initializeListCustom();
@@ -726,16 +724,12 @@ void tst_QVector::capacity() const
     myvec.remove(3);
     myvec.remove(3);
     myvec.remove(3);
-    // TODO: is this a safe assumption? presumably it won't release memory until shrink(), but can we asser that is true?
-    QVERIFY(myvec.capacity() >= 6);
     myvec.squeeze();
     QVERIFY(myvec.capacity() >= 3);
 
     myvec.remove(0);
     myvec.remove(0);
     myvec.remove(0);
-    // TODO: as above note
-    QVERIFY(myvec.capacity() >= 3);
     myvec.squeeze();
     QVERIFY(myvec.capacity() == 0);
 }
@@ -2339,87 +2333,6 @@ void tst_QVector::reserveZero()
     vec.append(42);
     QCOMPARE(vec.size(), 1);
     QVERIFY(vec.capacity() >= 1);
-}
-
-// This is a regression test for QTBUG-11763, where memory would be reallocated
-// soon after copying a QVector.
-void tst_QVector::reallocAfterCopy_data()
-{
-    QTest::addColumn<int>("capacity");
-    QTest::addColumn<int>("fill_size");
-    QTest::addColumn<int>("func_id");
-    QTest::addColumn<int>("result1");
-    QTest::addColumn<int>("result2");
-    QTest::addColumn<int>("result3");
-    QTest::addColumn<int>("result4");
-
-    int result1, result2, result3, result4;
-    int fill_size;
-    for (int i = 70; i <= 100; i += 10) {
-        const QByteArray prefix = "reallocAfterCopy:" + QByteArray::number(i) + ',';
-        fill_size = i - 20;
-        for (int j = 0; j <= 3; j++) {
-            if (j == 0) { // append
-                result1 = i;
-                result2 = i;
-                result3 = i - 19;
-                result4 = i - 20;
-            } else if (j == 1) { // insert(0)
-                result1 = i;
-                result2 = i;
-                result3 = i - 19;
-                result4 = i - 20;
-            } else if (j == 2) { // insert(20)
-                result1 = i;
-                result2 = i;
-                result3 = i - 19;
-                result4 = i - 20;
-            } else if (j == 3) { // insert(0, 10)
-                result1 = i;
-                result2 = i;
-                result3 = i - 10;
-                result4 = i - 20;
-            }
-            QTest::newRow((prefix + QByteArray::number(j)).constData())
-                    << i << fill_size << j << result1 << result2 << result3 << result4;
-        }
-    }
-}
-
-void tst_QVector::reallocAfterCopy()
-{
-    QFETCH(int, capacity);
-    QFETCH(int, fill_size);
-    QFETCH(int, func_id);
-    QFETCH(int, result1);
-    QFETCH(int, result2);
-    QFETCH(int, result3);
-    QFETCH(int, result4);
-
-    QVector<qreal> v1;
-    QVector<qreal> v2;
-
-    v1.reserve(capacity);
-    v1.resize(0);
-    v1.fill(qreal(1.0), fill_size);
-
-    v2 = v1;
-
-    // no need to test begin() and end(), there is a detach() in them
-    if (func_id == 0) {
-        v1.append(qreal(1.0)); //push_back is same as append
-    } else if (func_id == 1) {
-        v1.insert(0, qreal(1.0)); //push_front is same as prepend, insert(0)
-    } else if (func_id == 2) {
-        v1.insert(20, qreal(1.0));
-    } else if (func_id == 3) {
-        v1.insert(0, 10, qreal(1.0));
-    }
-
-    QCOMPARE(v1.capacity(), result1);
-    QCOMPARE(v2.capacity(), result2);
-    QCOMPARE(v1.size(), result3);
-    QCOMPARE(v2.size(), result4);
 }
 
 template<typename T>

@@ -62,14 +62,14 @@ ChatDialog::ChatDialog(QWidget *parent)
     textEdit->setReadOnly(true);
     listWidget->setFocusPolicy(Qt::NoFocus);
 
-    connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(returnPressed()));
-    connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(returnPressed()));
-    connect(&client, SIGNAL(newMessage(QString,QString)),
-            this, SLOT(appendMessage(QString,QString)));
-    connect(&client, SIGNAL(newParticipant(QString)),
-            this, SLOT(newParticipant(QString)));
-    connect(&client, SIGNAL(participantLeft(QString)),
-            this, SLOT(participantLeft(QString)));
+    connect(lineEdit, &QLineEdit::returnPressed,
+            this, &ChatDialog::returnPressed);
+    connect(&client, &Client::newMessage,
+            this, &ChatDialog::appendMessage);
+    connect(&client, &Client::newParticipant,
+            this, &ChatDialog::newParticipant);
+    connect(&client, &Client::participantLeft,
+            this, &ChatDialog::participantLeft);
 
     myNickName = client.nickName();
     newParticipant(myNickName);

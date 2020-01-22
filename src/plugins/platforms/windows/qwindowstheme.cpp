@@ -96,7 +96,7 @@ static inline QTextStream& operator<<(QTextStream &str, const QColor &c)
 {
     str.setIntegerBase(16);
     str.setFieldWidth(2);
-    str.setPadChar(QLatin1Char('0'));
+    str.setPadChar(u'0');
     str << " rgb: #" << c.red()  << c.green() << c.blue();
     str.setIntegerBase(10);
     str.setFieldWidth(0);
@@ -164,7 +164,7 @@ public:
         QMutexLocker readyLocker(&m_readyMutex);
         while (!m_cancelled.loadRelaxed()) {
             if (!m_params && !m_cancelled.loadRelaxed()
-                && !m_readyCondition.wait(&m_readyMutex, 1000))
+                && !m_readyCondition.wait(&m_readyMutex, QDeadlineTimer(1000ll)))
                 continue;
 
             if (m_params) {
@@ -189,7 +189,7 @@ public:
             CoUninitialize();
     }
 
-    bool runWithParams(QShGetFileInfoParams *params, unsigned long timeOutMSecs)
+    bool runWithParams(QShGetFileInfoParams *params, qint64 timeOutMSecs)
     {
         QMutexLocker doneLocker(&m_doneMutex);
 
@@ -198,7 +198,7 @@ public:
         m_readyCondition.wakeAll();
         m_readyMutex.unlock();
 
-        return m_doneCondition.wait(&m_doneMutex, timeOutMSecs);
+        return m_doneCondition.wait(&m_doneMutex, QDeadlineTimer(timeOutMSecs));
     }
 
     void cancel()
@@ -220,7 +220,7 @@ private:
 
 static bool shGetFileInfoBackground(const QString &fileName, DWORD attributes,
                                     SHFILEINFO *info, UINT flags,
-                                    unsigned long  timeOutMSecs = 5000)
+                                    qint64 timeOutMSecs = 5000)
 {
     static QShGetFileInfoThread *getFileInfoThread = nullptr;
     if (!getFileInfoThread) {
@@ -731,13 +731,13 @@ static QString dirIconPixmapCacheKey(int iIcon, int iconSize, int imageListSize)
 {
     QString key = QLatin1String("qt_dir_") + QString::number(iIcon);
     if (iconSize == SHGFI_LARGEICON)
-        key += QLatin1Char('l');
+        key += u'l';
     switch (imageListSize) {
     case sHIL_EXTRALARGE:
-        key += QLatin1Char('e');
+        key += u'e';
         break;
     case sHIL_JUMBO:
-        key += QLatin1Char('j');
+        key += u'j';
         break;
     }
     return key;
@@ -815,9 +815,9 @@ QString QWindowsFileIconEngine::cacheKey() const
     // It is faster to just look at the file extensions;
     // avoiding slow QFileInfo::isExecutable() (QTBUG-13182)
     QString suffix = fileInfo().suffix();
-    if (!suffix.compare(QLatin1String("exe"), Qt::CaseInsensitive)
-        || !suffix.compare(QLatin1String("lnk"), Qt::CaseInsensitive)
-        || !suffix.compare(QLatin1String("ico"), Qt::CaseInsensitive)) {
+    if (!suffix.compare(u"exe", Qt::CaseInsensitive)
+        || !suffix.compare(u"lnk", Qt::CaseInsensitive)
+        || !suffix.compare(u"ico", Qt::CaseInsensitive)) {
         return QString();
     }
     return QLatin1String("qt_.")

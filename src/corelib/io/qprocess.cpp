@@ -100,7 +100,7 @@ QT_END_NAMESPACE
 #include <private/qcore_unix_p.h>
 #endif
 
-#if QT_HAS_INCLUDE(<paths.h>)
+#if __has_include(<paths.h>)
 #include <paths.h>
 #endif
 
@@ -216,7 +216,7 @@ void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
     environment variables to be removed.
 */
 QProcessEnvironment::QProcessEnvironment()
-    : d(0)
+    : d(nullptr)
 {
 }
 
@@ -436,18 +436,18 @@ void QProcessPrivate::Channel::clear()
     case PipeSource:
         Q_ASSERT(process);
         process->stdinChannel.type = Normal;
-        process->stdinChannel.process = 0;
+        process->stdinChannel.process = nullptr;
         break;
     case PipeSink:
         Q_ASSERT(process);
         process->stdoutChannel.type = Normal;
-        process->stdoutChannel.process = 0;
+        process->stdoutChannel.process = nullptr;
         break;
     }
 
     type = Normal;
     file.clear();
-    process = 0;
+    process = nullptr;
 }
 
 /*!
@@ -869,8 +869,8 @@ QProcessPrivate::QProcessPrivate()
     sequenceNumber = 0;
     exitCode = 0;
     exitStatus = QProcess::NormalExit;
-    startupSocketNotifier = 0;
-    deathNotifier = 0;
+    startupSocketNotifier = nullptr;
+    deathNotifier = nullptr;
     childStartedPipe[0] = INVALID_Q_PIPE;
     childStartedPipe[1] = INVALID_Q_PIPE;
     forkfd = -1;
@@ -924,23 +924,23 @@ void QProcessPrivate::cleanup()
 
     if (stdoutChannel.notifier) {
         delete stdoutChannel.notifier;
-        stdoutChannel.notifier = 0;
+        stdoutChannel.notifier = nullptr;
     }
     if (stderrChannel.notifier) {
         delete stderrChannel.notifier;
-        stderrChannel.notifier = 0;
+        stderrChannel.notifier = nullptr;
     }
     if (stdinChannel.notifier) {
         delete stdinChannel.notifier;
-        stdinChannel.notifier = 0;
+        stdinChannel.notifier = nullptr;
     }
     if (startupSocketNotifier) {
         delete startupSocketNotifier;
-        startupSocketNotifier = 0;
+        startupSocketNotifier = nullptr;
     }
     if (deathNotifier) {
         delete deathNotifier;
-        deathNotifier = 0;
+        deathNotifier = nullptr;
     }
     closeChannel(&stdoutChannel);
     closeChannel(&stderrChannel);
@@ -1004,7 +1004,7 @@ QT_WARNING_POP
 
 /*!
     \internal
-    Returns true if we emitted readyRead().
+    Returns \c true if we emitted readyRead().
 */
 bool QProcessPrivate::tryReadFromChannel(Channel *channel)
 {
@@ -1229,7 +1229,7 @@ void QProcessPrivate::closeWriteChannel()
 #endif
     if (stdinChannel.notifier) {
         delete stdinChannel.notifier;
-        stdinChannel.notifier = 0;
+        stdinChannel.notifier = nullptr;
     }
 #ifdef Q_OS_WIN
     // ### Find a better fix, feeding the process little by little
@@ -2187,6 +2187,8 @@ bool QProcess::startDetached(qint64 *pid)
     This method is an alias for start(), and exists only to fully implement
     the interface defined by QIODevice.
 
+    Returns \c true if the program has been started.
+
     \sa start(), setProgram(), setArguments()
 */
 bool QProcess::open(OpenMode mode)
@@ -2615,7 +2617,7 @@ QT_END_INCLUDE_NAMESPACE
 QStringList QProcess::systemEnvironment()
 {
     QStringList tmp;
-    char *entry = 0;
+    char *entry = nullptr;
     int count = 0;
     while ((entry = environ[count++]))
         tmp << QString::fromLocal8Bit(entry);

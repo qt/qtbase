@@ -83,6 +83,10 @@
          \li Custom types can easily be added to the test data and test output.
     \endtable
 
+    You can use a Qt Creator wizard to create a project that contains Qt tests
+    and build and run them directly from Qt Creator. For more information, see
+    \l {Qt Creator: Running Autotests}{Running Autotests}.
+
     \section1 Creating a Test
 
     To create a test, subclass QObject and add one or more private slots to it. Each
@@ -102,6 +106,20 @@
     \li \c{cleanup()} will be called after every test function.
     \endlist
 
+    Use \c initTestCase() for preparing the test. Every test should leave the
+    system in a usable state, so it can be run repeatedly. Cleanup operations
+    should be handled in \c cleanupTestCase(), so they get run even if the test
+    fails.
+
+    Use \c init() for preparing a test function. Every test function should
+    leave the system in a usable state, so it can be run repeatedly. Cleanup
+    operations should be handled in \c cleanup(), so they get run even if the
+    test function fails and exits early.
+
+    Alternatively, you can use RAII (resource acquisition is initialization),
+    with cleanup operations called in destructors, to ensure they happen when
+    the test function returns and the object moves out of scope.
+
     If \c{initTestCase()} fails, no test function will be executed. If \c{init()} fails,
     the following test function will not be executed, the test will proceed to the next
     test function.
@@ -119,6 +137,41 @@
     \if !defined(qtforpython)
     \section1 Building a Test
 
+    You can build an executable that contains one test class that typically
+    tests one class of production code. However, usually you would want to
+    test several classes in a project by running one command.
+
+    See \l {Chapter 1: Writing a Unit Test}{Writing a Unit Test} for a step by
+    step explanation.
+
+    \section2 Building with CMake and CTest
+
+    You can use \l {Building with CMake and CTest} to create a test.
+    \l{https://cmake.org/cmake/help/latest/manual/ctest.1.html}{CTest} enables
+    you to include or exclude tests based on a regular expression that is
+    matched against the test name. You can further apply the \c LABELS property
+    to a test and CTest can then include or exclude tests based on those labels.
+    All labeled targets will be run when \c {test} target is called on the
+    command line.
+
+    There are several other advantages with CMake. For example, the result of
+    a test run can be published on a web server using CDash with virtually no
+    effort.
+
+    CTest scales to very different unit test frameworks, and works out of the
+    box with QTest.
+
+    The following is an example of a CMakeLists.txt file that specifies the
+    project name and the language used (here, \e mytest and C++), the Qt
+    modules required for building the test (Qt5Test), and the files that are
+    included in the test (\e tst_mytest.cpp).
+
+    \quotefile code/doc_src_cmakelists.txt
+
+    For more information about the options you have, see \l {Build with CMake}.
+
+    \section2 Building with qmake
+
     If you are using \c qmake as your build tool, just add the
     following to your project file:
 
@@ -132,14 +185,14 @@
     See the \l{Building a Testcase}{qmake manual} for
     more information about \c{make check}.
 
+    \section2 Building with Other Tools
+
     If you are using other build tools, make sure that you add the location
     of the Qt Test header files to your include path (usually \c{include/QtTest}
     under your Qt installation directory). If you are using a release build
     of Qt, link your test to the \c QtTest library. For debug builds, use
     \c{QtTest_debug}.
 
-    See \l {Chapter 1: Writing a Unit Test}{Writing a Unit Test} for a step by
-    step explanation.
     \endif
 
     \section1 Qt Test Command Line Arguments
@@ -308,9 +361,34 @@
     \section1 Creating a Benchmark
 
     To create a benchmark, follow the instructions for creating a test and then add a
-    QBENCHMARK macro to the test function that you want to benchmark.
+    \l QBENCHMARK macro or \l QTest::setBenchmarkResult() to the test function that
+    you want to benchmark. In the following code snippet, the macro is used:
 
     \snippet code/doc_src_qtestlib.cpp 12
+
+    A test function that measures performance should contain either a single
+    \c QBENCHMARK macro or a single call to \c setBenchmarkResult(). Multiple
+    occurrences make no sense, because only one performance result can be
+    reported per test function, or per data tag in a data-driven setup.
+
+    Avoid changing the test code that forms (or influences) the body of a
+    \c QBENCHMARK macro, or the test code that computes the value passed to
+    \c setBenchmarkResult(). Differences in successive performance results
+    should ideally be caused only by changes to the product you are testing.
+    Changes to the test code can potentially result in misleading report of
+    a change in performance. If you do need to change the test code, make
+    that clear in the commit message.
+
+    In a performance test function, the \c QBENCHMARK or \c setBenchmarkResult()
+    should be followed by a verification step using \l QCOMPARE(), \l QVERIFY(),
+    and so on. You can then flag a performance result as \e invalid if another
+    code path than the intended one was measured. A performance analysis tool
+    can use this information to filter out invalid results.
+    For example, an unexpected error condition will typically cause the program
+    to bail out prematurely from the normal program execution, and thus falsely
+    show a dramatic performance increase.
+
+    \section2 Selecting the Measurement Back-end
 
     The code inside the QBENCHMARK macro will be measured, and possibly also repeated
     several times in order to get an accurate measurement. This depends on the selected

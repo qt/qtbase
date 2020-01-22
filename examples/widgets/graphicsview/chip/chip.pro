@@ -6,7 +6,6 @@ SOURCES += mainwindow.cpp view.cpp chip.cpp
 
 QT += widgets
 qtHaveModule(printsupport): QT += printsupport
-qtHaveModule(opengl): QT += opengl
 
 build_all:!build_pass {
     CONFIG -= build_all

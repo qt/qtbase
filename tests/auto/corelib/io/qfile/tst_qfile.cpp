@@ -499,7 +499,7 @@ void tst_QFile::initTestCase()
     file.write("b", 1);
     file.close();
 #ifndef Q_OS_WIN // Not supported on Windows.
-    QVERIFY2(file.setPermissions(0), qPrintable(file.errorString()));
+    QVERIFY2(file.setPermissions({ }), qPrintable(file.errorString()));
 #else
     QVERIFY2(file.open(QFile::WriteOnly), msgOpenFailed(file).constData());
 #endif
@@ -2211,7 +2211,7 @@ public:
     QStringList entryList(QDir::Filters, const QStringList &) const { return QStringList(); }
     bool caseSensitive() const { return false; }
     bool isRelativePath() const { return false; }
-    FileFlags fileFlags(FileFlags) const { return 0; }
+    FileFlags fileFlags(FileFlags) const { return { }; }
     bool chmod(uint) { return false; }
     QString fileName(FileName) const { return name; }
     uint ownerId(FileOwner) const { return 0; }

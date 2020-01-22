@@ -1,6 +1,2 @@
-TEMPLATE=subdirs
-SUBDIRS=\
-    qgl \
-    qglbuffer \
-    qglfunctions \
-    qglthreads \
+TEMPLATE = subdirs
+#SUBDIRS =

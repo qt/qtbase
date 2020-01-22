@@ -277,8 +277,9 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         }
         break;
     case UIA_ValuePatternId:
-        // All accessible controls return text(QAccessible::Value) (which may be empty).
-        *pRetVal = new QWindowsUiaValueProvider(id());
+        // All non-static controls support the Value pattern.
+        if (accessible->role() != QAccessible::StaticText)
+            *pRetVal = new QWindowsUiaValueProvider(id());
         break;
     case UIA_RangeValuePatternId:
         // Controls providing a numeric value within a range (e.g., sliders, scroll bars, dials).
@@ -288,7 +289,8 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         break;
     case UIA_TogglePatternId:
         // Checkbox controls.
-        if (accessible->role() == QAccessible::CheckBox) {
+        if (accessible->role() == QAccessible::CheckBox
+                || (accessible->role() == QAccessible::MenuItem && accessible->state().checkable)) {
             *pRetVal = new QWindowsUiaToggleProvider(id());
         }
         break;
@@ -389,7 +391,19 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             setVariantI4(UIA_WindowControlTypeId, pRetVal);
         } else {
             // Control type converted from role.
-            setVariantI4(roleToControlTypeId(accessible->role()), pRetVal);
+            auto controlType = roleToControlTypeId(accessible->role());
+
+            // The native OSK should be disbled if the Qt OSK is in use,
+            // or if disabled via application attribute.
+            static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
+            bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_MSWindowsDisableVirtualKeyboard);
+
+            // If we want to disable the native OSK auto-showing
+            // we have to report text fields as non-editable.
+            if (controlType == UIA_EditControlTypeId && (!imModuleEmpty || nativeVKDisabled))
+                controlType = UIA_TextControlTypeId;
+
+            setVariantI4(controlType, pRetVal);
         }
         break;
     case UIA_HelpTextPropertyId:
@@ -461,7 +475,7 @@ QString QWindowsUiaMainProvider::automationIdForAccessible(const QAccessibleInte
             if (name.isEmpty())
                 return QString();
             if (!result.isEmpty())
-                result.prepend(QLatin1Char('.'));
+                result.prepend(u'.');
             result.prepend(name);
             obj = obj->parent();
         }

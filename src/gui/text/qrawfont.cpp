@@ -303,7 +303,7 @@ QPainterPath QRawFont::pathForGlyph(quint32 glyphIndex) const
 
     QFixedPoint position;
     QPainterPath path;
-    d->fontEngine->addGlyphsToPath(&glyphIndex, &position, 1, &path, 0);
+    d->fontEngine->addGlyphsToPath(&glyphIndex, &position, 1, &path, { });
     return path;
 }
 
@@ -750,7 +750,7 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
     int script = qt_script_for_writing_system(writingSystem);
     QFontEngine *fe = font_d->engineForScript(script);
 
-    if (fe != 0 && fe->type() == QFontEngine::Multi) {
+    if (fe != nullptr && fe->type() == QFontEngine::Multi) {
         QFontEngineMulti *multiEngine = static_cast<QFontEngineMulti *>(fe);
         fe = multiEngine->engine(0);
 
@@ -770,7 +770,7 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
         Q_ASSERT(fe);
     }
 
-    if (fe != 0) {
+    if (fe != nullptr) {
         rawFont.d.data()->setFontEngine(fe);
         rawFont.d.data()->hintingPreference = font.hintingPreference();
     }
@@ -795,7 +795,7 @@ void QRawFont::setPixelSize(qreal pixelSize)
 void QRawFontPrivate::loadFromData(const QByteArray &fontData, qreal pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
-    Q_ASSERT(fontEngine == 0);
+    Q_ASSERT(fontEngine == nullptr);
 
     QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
     setFontEngine(pfdb->fontEngine(fontData, pixelSize, hintingPreference));

@@ -79,7 +79,6 @@ QT_REQUIRE_CONFIG(combobox);
 
 QT_BEGIN_NAMESPACE
 
-class QAction;
 class QPlatformMenu;
 
 class QComboBoxListView : public QListView
@@ -130,9 +129,6 @@ protected:
 private:
     QComboBox *combo;
 };
-
-
-class QStandardItemModel;
 
 class Q_AUTOTEST_EXPORT QComboBoxPrivateScroller : public QWidget
 {
@@ -212,7 +208,7 @@ Q_SIGNALS:
 private:
     QAbstractSlider::SliderAction sliderAction;
     QBasicTimer timer;
-    bool fast;
+    bool fast = false;
 };
 
 class Q_WIDGETS_EXPORT QComboBoxPrivateContainer : public QFrame
@@ -246,7 +242,6 @@ protected:
     void showEvent(QShowEvent *e) override;
     void hideEvent(QHideEvent *e) override;
     void timerEvent(QTimerEvent *timerEvent) override;
-    void leaveEvent(QEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     QStyleOptionComboBox comboStyleOption() const;
@@ -257,20 +252,23 @@ Q_SIGNALS:
 
 private:
     QComboBox *combo;
-    QAbstractItemView *view;
-    QComboBoxPrivateScroller *top;
-    QComboBoxPrivateScroller *bottom;
-    bool maybeIgnoreMouseButtonRelease;
+    QAbstractItemView *view = nullptr;
+    QComboBoxPrivateScroller *top = nullptr;
+    QComboBoxPrivateScroller *bottom = nullptr;
     QElapsedTimer popupTimer;
+    bool maybeIgnoreMouseButtonRelease = false;
 
     friend class QComboBox;
     friend class QComboBoxPrivate;
 };
 
 class Q_AUTOTEST_EXPORT QComboMenuDelegate : public QAbstractItemDelegate
-{ Q_OBJECT
+{
+    Q_OBJECT
 public:
-    QComboMenuDelegate(QObject *parent, QComboBox *cmb) : QAbstractItemDelegate(parent), mCombo(cmb) {}
+    QComboMenuDelegate(QObject *parent, QComboBox *cmb)
+    : QAbstractItemDelegate(parent), mCombo(cmb), pressedIndex(-1)
+    {}
 
 protected:
     void paint(QPainter *painter,
@@ -286,11 +284,14 @@ protected:
         return mCombo->style()->sizeFromContents(
             QStyle::CT_MenuItem, &opt, option.rect.size(), mCombo);
     }
+    bool editorEvent(QEvent *event, QAbstractItemModel *model,
+                     const QStyleOptionViewItem &option, const QModelIndex &index) override;
 
 private:
     QStyleOptionMenuItem getStyleOption(const QStyleOptionViewItem &option,
                                         const QModelIndex &index) const;
     QComboBox *mCombo;
+    int pressedIndex;
 };
 
 // ### Qt6: QStyledItemDelegate ?
@@ -355,8 +356,8 @@ public:
     void _q_complete();
     void _q_itemSelected(const QModelIndex &item);
     bool contains(const QString &text, int role);
-    void emitActivated(const QModelIndex&);
-    void _q_emitHighlighted(const QModelIndex&);
+    void emitActivated(const QModelIndex &index);
+    void _q_emitHighlighted(const QModelIndex &index);
     void _q_emitCurrentIndexChanged(const QModelIndex &index);
     void _q_modelDestroyed();
     void _q_modelReset();
@@ -366,8 +367,8 @@ public:
     void _q_resetButton();
     void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void _q_updateIndexBeforeChange();
-    void _q_rowsInserted(const QModelIndex & parent, int start, int end);
-    void _q_rowsRemoved(const QModelIndex & parent, int start, int end);
+    void _q_rowsInserted(const QModelIndex &parent, int start, int end);
+    void _q_rowsRemoved(const QModelIndex &parent, int start, int end);
     void updateArrow(QStyle::StateFlag state);
     bool updateHoverControl(const QPoint &pos);
     QRect popupGeometry(int screen = -1) const;
@@ -402,39 +403,38 @@ public:
     };
 #endif
 
-    QAbstractItemModel *model;
-    QLineEdit *lineEdit;
-    QComboBoxPrivateContainer *container;
-    QComboBox::InsertPolicy insertPolicy;
-    QComboBox::SizeAdjustPolicy sizeAdjustPolicy;
-    int minimumContentsLength;
-    QSize iconSize;
-    uint shownOnce : 1;
-    uint autoCompletion : 1;
-    uint duplicatesEnabled : 1;
-    uint frame : 1;
-    uint padding : 26;
-    int maxVisibleItems;
-    int maxCount;
-    int modelColumn;
-    bool inserting;
-    mutable QSize minimumSizeHint;
-    mutable QSize sizeHint;
-    QStyle::StateFlag arrowState;
-    QStyle::SubControl hoverControl;
-    QRect hoverRect;
-    QPersistentModelIndex currentIndex;
-    QPersistentModelIndex root;
-    Qt::CaseSensitivity autoCompletionCaseSensitivity;
-    int indexBeforeChange;
+    QAbstractItemModel *model = nullptr;
+    QLineEdit *lineEdit = nullptr;
+    QComboBoxPrivateContainer *container = nullptr;
 #ifdef Q_OS_MAC
-    QPlatformMenu *m_platformMenu;
+    QPlatformMenu *m_platformMenu = nullptr;
 #endif
 #if QT_CONFIG(completer)
     QPointer<QCompleter> completer;
 #endif
-    static QPalette viewContainerPalette(QComboBox *cmb)
-    { return cmb->d_func()->viewContainer()->palette(); }
+    QPersistentModelIndex currentIndex;
+    QPersistentModelIndex root;
+    QString placeholderText;
+    QRect hoverRect;
+    QSize iconSize;
+    mutable QSize minimumSizeHint;
+    mutable QSize sizeHint;
+    QComboBox::InsertPolicy insertPolicy = QComboBox::InsertAtBottom;
+    QComboBox::SizeAdjustPolicy sizeAdjustPolicy = QComboBox::AdjustToContentsOnFirstShow;
+    QStyle::StateFlag arrowState = QStyle::State_None;
+    QStyle::SubControl hoverControl = QStyle::SC_None;
+    Qt::CaseSensitivity autoCompletionCaseSensitivity = Qt::CaseInsensitive;
+    int minimumContentsLength = 0;
+    int indexBeforeChange = -1;
+    int maxVisibleItems = 10;
+    int maxCount = std::numeric_limits<int>::max();
+    int modelColumn = 0;
+    int placeholderIndex = -1;
+    bool shownOnce : 1;
+    bool autoCompletion : 1;
+    bool duplicatesEnabled : 1;
+    bool frame : 1;
+    bool inserting : 1;
 };
 
 QT_END_NAMESPACE

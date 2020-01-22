@@ -67,12 +67,12 @@ QT_BEGIN_NAMESPACE
 
 QOpenGLFunctions_1_2::QOpenGLFunctions_1_2()
  : QAbstractOpenGLFunctions()
- , d_1_0_Core(0)
- , d_1_1_Core(0)
- , d_1_2_Core(0)
- , d_1_0_Deprecated(0)
- , d_1_1_Deprecated(0)
- , d_1_2_Deprecated(0)
+ , d_1_0_Core(nullptr)
+ , d_1_1_Core(nullptr)
+ , d_1_2_Core(nullptr)
+ , d_1_0_Deprecated(nullptr)
+ , d_1_1_Deprecated(nullptr)
+ , d_1_2_Deprecated(nullptr)
 {
 }
 
@@ -118,7 +118,7 @@ bool QOpenGLFunctions_1_2::initializeOpenGLFunctions()
     {
         // Associate with private implementation, creating if necessary
         // Function pointers in the backends are resolved at creation time
-        QOpenGLVersionFunctionsBackend* d = 0;
+        QOpenGLVersionFunctionsBackend* d = nullptr;
         d = QAbstractOpenGLFunctionsPrivate::functionsBackend(context, QOpenGLFunctions_1_0_CoreBackend::versionStatus());
         d_1_0_Core = static_cast<QOpenGLFunctions_1_0_CoreBackend*>(d);
         d->refs.ref();

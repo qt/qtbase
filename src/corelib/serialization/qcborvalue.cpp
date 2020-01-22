@@ -43,8 +43,12 @@
 #include "qcborarray.h"
 #include "qcbormap.h"
 
-#if QT_CONFIG(cborstream)
-#include "qcborstream.h"
+#if QT_CONFIG(cborstreamreader)
+#include "qcborstreamreader.h"
+#endif
+
+#if QT_CONFIG(cborstreamwriter)
+#include "qcborstreamwriter.h"
 #endif
 
 #include <qendian.h>
@@ -761,16 +765,99 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtCbor;
 
-#if QT_CONFIG(cborstream)
+static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
+{
+    qint64 tag = d->elements.at(0).value;
+    auto &e = d->elements[1];
+    const ByteData *b = d->byteData(e);
+
+    auto replaceByteData = [&](const char *buf, qsizetype len, Element::ValueFlags f) {
+        d->data.clear();
+        d->usedData = 0;
+        e.flags = Element::HasByteData | f;
+        e.value = d->addByteData(buf, len);
+    };
+
+    switch (tag) {
+    case qint64(QCborKnownTags::DateTimeString):
+    case qint64(QCborKnownTags::UnixTime_t): {
+        QDateTime dt;
+        if (tag == qint64(QCborKnownTags::DateTimeString) && b &&
+            e.type == QCborValue::String && (e.flags & Element::StringIsUtf16) == 0) {
+            // The data is supposed to be US-ASCII. If it isn't (contains UTF-8),
+            // QDateTime::fromString will fail anyway.
+            dt = QDateTime::fromString(b->asLatin1(), Qt::ISODateWithMs);
+        } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Integer) {
+            dt = QDateTime::fromSecsSinceEpoch(e.value, Qt::UTC);
+        } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Double) {
+            dt = QDateTime::fromMSecsSinceEpoch(qint64(e.fpvalue() * 1000), Qt::UTC);
+        }
+        if (dt.isValid()) {
+            QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
+            replaceByteData(text, text.size(), Element::StringIsAscii);
+            e.type = QCborValue::String;
+            d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
+            return QCborValue::DateTime;
+        }
+        break;
+    }
+
+#ifndef QT_BOOTSTRAPPED
+    case qint64(QCborKnownTags::Url):
+        if (e.type == QCborValue::String) {
+            if (b) {
+                // normalize to a short (decoded) form, so as to save space
+                QUrl url(e.flags & Element::StringIsUtf16 ?
+                             b->asQStringRaw() :
+                             b->toUtf8String());
+                QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
+                replaceByteData(encoded, encoded.size(), {});
+            }
+            return QCborValue::Url;
+        }
+        break;
+#endif // QT_BOOTSTRAPPED
+
+#if QT_CONFIG(regularexpression)
+    case quint64(QCborKnownTags::RegularExpression):
+        if (e.type == QCborValue::String) {
+            // no normalization is necessary
+            return QCborValue::RegularExpression;
+        }
+        break;
+#endif // QT_CONFIG(regularexpression)
+
+    case qint64(QCborKnownTags::Uuid):
+        if (e.type == QCborValue::ByteArray) {
+            // force the size to 16
+            char buf[sizeof(QUuid)] = {};
+            if (b)
+                memcpy(buf, b->byte(), qMin(sizeof(buf), size_t(b->len)));
+            replaceByteData(buf, sizeof(buf), {});
+
+            return QCborValue::Uuid;
+        }
+        break;
+    }
+
+    // no enriching happened
+    return QCborValue::Tag;
+}
+
+#if QT_CONFIG(cborstreamreader)
 // in qcborstream.cpp
 extern void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error);
+#endif
 
+#if QT_CONFIG(cborstreamwriter)
 static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::EncodingOptions opt)
 {
     if (qt_is_nan(d)) {
-        if (opt & QCborValue::UseFloat16) {
+        if (opt & QCborValue::UseFloat) {
+#ifndef QT_BOOTSTRAPPED
             if ((opt & QCborValue::UseFloat16) == QCborValue::UseFloat16)
                 return writer.append(std::numeric_limits<qfloat16>::quiet_NaN());
+#endif
             return writer.append(std::numeric_limits<float>::quiet_NaN());
         }
         return writer.append(qt_qnan());
@@ -787,15 +874,17 @@ static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::E
         }
     }
 
-    if (opt & QCborValue::UseFloat16) {
+    if (opt & QCborValue::UseFloat) {
         float f = float(d);
         if (f == d) {
             // no data loss, we could use float
+#ifndef QT_BOOTSTRAPPED
             if ((opt & QCborValue::UseFloat16) == QCborValue::UseFloat16) {
                 qfloat16 f16 = f;
                 if (f16 == f)
                     return writer.append(f16);
             }
+#endif
 
             return writer.append(f);
         }
@@ -803,7 +892,7 @@ static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::E
 
     writer.append(d);
 }
-#endif // QT_CONFIG(cborstream)
+#endif // QT_CONFIG(cborstreamwriter)
 
 static inline int typeOrder(Element e1, Element e2)
 {
@@ -1226,7 +1315,7 @@ int QCborMap::compare(const QCborMap &other) const noexcept
     return compareContainer(d.data(), other.d.data());
 }
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamwriter)
 static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate *d, qsizetype idx,
                          QCborValue::EncodingOptions opt)
 {
@@ -1314,7 +1403,9 @@ static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate 
         qWarning("QCborValue: found unknown type 0x%x", e.type);
     }
 }
+#endif // QT_CONFIG(cborstreamwriter)
 
+#if QT_CONFIG(cborstreamreader)
 static inline double integerOutOfRange(const QCborStreamReader &reader)
 {
     Q_ASSERT(reader.isInteger());
@@ -1390,77 +1481,10 @@ static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
         d->decodeValueFromCbor(reader);
     }
 
-    QCborValue::Type type = QCborValue::Tag;
+    QCborValue::Type type;
     if (reader.lastError() == QCborError::NoError) {
         // post-process to create our extended types
-        qint64 tag = d->elements.at(0).value;
-        auto &e = d->elements[1];
-        const ByteData *b = d->byteData(e);
-
-        auto replaceByteData = [&](const char *buf, qsizetype len) {
-            d->data.clear();
-            d->usedData = 0;
-            e.flags = Element::HasByteData | Element::StringIsAscii;
-            e.value = d->addByteData(buf, len);
-        };
-
-        switch (tag) {
-        case qint64(QCborKnownTags::DateTimeString):
-        case qint64(QCborKnownTags::UnixTime_t): {
-            QDateTime dt;
-            if (tag == qint64(QCborKnownTags::DateTimeString) && b &&
-                e.type == QCborValue::String && (e.flags & Element::StringIsUtf16) == 0) {
-                // The data is supposed to be US-ASCII. If it isn't,
-                // QDateTime::fromString will fail anyway.
-                dt = QDateTime::fromString(b->asLatin1(), Qt::ISODateWithMs);
-            } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Integer) {
-                dt = QDateTime::fromSecsSinceEpoch(e.value, Qt::UTC);
-            } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Double) {
-                dt = QDateTime::fromMSecsSinceEpoch(qint64(e.fpvalue() * 1000), Qt::UTC);
-            }
-            if (dt.isValid()) {
-                QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
-                replaceByteData(text, text.size());
-                e.type = QCborValue::String;
-                d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
-                type = QCborValue::DateTime;
-            }
-            break;
-        }
-
-        case qint64(QCborKnownTags::Url):
-            if (e.type == QCborValue::String) {
-                if (b) {
-                    // normalize to a short (decoded) form, so as to save space
-                    QUrl url(e.flags & Element::StringIsUtf16 ?
-                                 b->asQStringRaw() :
-                                 b->toUtf8String());
-                    QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
-                    replaceByteData(encoded, encoded.size());
-                }
-                type = QCborValue::Url;
-            }
-            break;
-
-        case quint64(QCborKnownTags::RegularExpression):
-            if (e.type == QCborValue::String) {
-                // no normalization is necessary
-                type = QCborValue::RegularExpression;
-            }
-            break;
-
-        case qint64(QCborKnownTags::Uuid):
-            if (e.type == QCborValue::ByteArray) {
-                // force the size to 16
-                char buf[sizeof(QUuid)] = {};
-                if (b)
-                    memcpy(buf, b->byte(), qMin(sizeof(buf), size_t(b->len)));
-                replaceByteData(buf, sizeof(buf));
-
-                type = QCborValue::Uuid;
-            }
-            break;
-        }
+        type = convertToExtendedType(d);
     } else {
         // decoding error
         type = QCborValue::Invalid;
@@ -1638,7 +1662,7 @@ void QCborContainerPrivate::decodeFromCbor(QCborStreamReader &reader)
     if (reader.lastError() == QCborError::NoError)
         reader.leaveContainer();
 }
-#endif // QT_CONFIG(cborstream)
+#endif // QT_CONFIG(cborstreamreader)
 
 /*!
     Creates a QCborValue with byte array value \a ba. The value can later be
@@ -1724,21 +1748,22 @@ QCborValue::QCborValue(const QCborMap &m)
 }
 
 /*!
-    \fn QCborValue::QCborValue(QCborTag t, const QCborValue &tv)
-    \fn QCborValue::QCborValue(QCborKnownTags t, const QCborValue &tv)
+    \fn QCborValue::QCborValue(QCborTag tag, const QCborValue &tv)
+    \fn QCborValue::QCborValue(QCborKnownTags tag, const QCborValue &tv)
 
     Creates a QCborValue for the extended type represented by the tag value \a
-    t, tagging value \a tv. The tag can later be retrieved using tag() and
+    tag, tagging value \a tv. The tag can later be retrieved using tag() and
     the tagged value using taggedValue().
 
     \sa isTag(), tag(), taggedValue(), QCborKnownTags
  */
-QCborValue::QCborValue(QCborTag t, const QCborValue &tv)
+QCborValue::QCborValue(QCborTag tag, const QCborValue &tv)
     : n(-1), container(new QCborContainerPrivate), t(Tag)
 {
     container->ref.storeRelaxed(1);
-    container->append(t);
+    container->append(tag);
     container->append(tv);
+    t = convertToExtendedType(container);
 }
 
 /*!
@@ -2337,7 +2362,7 @@ QCborValueRef QCborValue::operator[](qint64 key)
     return { container, index };
 }
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamreader)
 /*!
     Decodes one item from the CBOR stream found in \a reader and returns the
     equivalent representation. This function is recursive: if the item is a map
@@ -2452,7 +2477,9 @@ QCborValue QCborValue::fromCbor(const QByteArray &ba, QCborParserError *error)
     overload of this function that accepts a QByteArray, also passing \a error,
     if provided.
 */
+#endif // QT_CONFIG(cborstreamreader)
 
+#if QT_CONFIG(cborstreamwriter)
 /*!
     Encodes this QCborValue object to its CBOR representation, using the
     options specified in \a opt, and return the byte array containing that
@@ -2575,7 +2602,7 @@ void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOption
 {
     concrete().toCbor(writer, opt);
 }
-#endif // QT_CONFIG(cborstream)
+#endif // QT_CONFIG(cborstreamwriter)
 
 void QCborValueRef::assign(QCborValueRef that, const QCborValue &other)
 {

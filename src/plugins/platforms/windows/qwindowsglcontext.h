@@ -89,7 +89,7 @@ struct QWindowsOpenGLContextFormat
 
     QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
     int version = 0; //! majorVersion<<8 + minorVersion
-    QSurfaceFormat::FormatOptions options = nullptr;
+    QSurfaceFormat::FormatOptions options;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

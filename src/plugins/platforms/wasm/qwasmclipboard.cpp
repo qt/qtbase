@@ -198,7 +198,9 @@ void QWasmClipboard::installEventHandlers(const QString &canvasId)
         return;
 
     // Fallback path for browsers which do not support direct clipboard access
-    val canvas = val::global(canvasId.toUtf8().constData());
+    val document = val::global("document");
+    val canvas = document.call<val>("getElementById", val(canvasId.toUtf8().constData()));
+
     canvas.call<void>("addEventListener", std::string("cut"),
                       val::module_property("qtClipboardCutTo"));
     canvas.call<void>("addEventListener", std::string("copy"),

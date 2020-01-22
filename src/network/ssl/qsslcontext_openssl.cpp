@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 // defined in qsslsocket_openssl.cpp:
 extern int q_X509Callback(int ok, X509_STORE_CTX *ctx);
+extern "C" int q_X509CallbackDirect(int ok, X509_STORE_CTX *ctx);
 extern QString getErrorsFromOpenSsl();
 
 #if QT_CONFIG(dtls)
@@ -286,42 +287,31 @@ void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mo
     bool unsupportedProtocol = false;
     bool isDtls = false;
 init_context:
-    if (sslContext->sslConfiguration.protocol() == QSsl::SslV2) {
-        // SSL 2 is no longer supported, but chosen deliberately -> error
-        sslContext->ctx = nullptr;
-        unsupportedProtocol = true;
-    } else if (sslContext->sslConfiguration.protocol() == QSsl::SslV3) {
-        // SSL 3 is no longer supported, but chosen deliberately -> error
-        sslContext->ctx = nullptr;
-        unsupportedProtocol = true;
-    } else {
-        switch (sslContext->sslConfiguration.protocol()) {
-        case QSsl::DtlsV1_0:
-        case QSsl::DtlsV1_0OrLater:
-        case QSsl::DtlsV1_2:
-        case QSsl::DtlsV1_2OrLater:
+    switch (sslContext->sslConfiguration.protocol()) {
+    case QSsl::DtlsV1_0:
+    case QSsl::DtlsV1_0OrLater:
+    case QSsl::DtlsV1_2:
+    case QSsl::DtlsV1_2OrLater:
 #if QT_CONFIG(dtls)
-            isDtls = true;
-            sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
+        isDtls = true;
+        sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
 #else // dtls
-            sslContext->ctx = nullptr;
-            unsupportedProtocol = true;
-            qCWarning(lcSsl, "DTLS protocol requested, but feature 'dtls' is disabled");
-
+        sslContext->ctx = nullptr;
+        unsupportedProtocol = true;
+        qCWarning(lcSsl, "DTLS protocol requested, but feature 'dtls' is disabled");
 #endif // dtls
-            break;
-        case QSsl::TlsV1_3:
-        case QSsl::TlsV1_3OrLater:
+        break;
+    case QSsl::TlsV1_3:
+    case QSsl::TlsV1_3OrLater:
 #if !defined(TLS1_3_VERSION)
-            qCWarning(lcSsl, "TLS 1.3 is not supported");
-            sslContext->ctx = nullptr;
-            unsupportedProtocol = true;
-            break;
+        qCWarning(lcSsl, "TLS 1.3 is not supported");
+        sslContext->ctx = nullptr;
+        unsupportedProtocol = true;
+        break;
 #endif // TLS1_3_VERSION
-        default:
-            // The ssl options will actually control the supported methods
-            sslContext->ctx = q_SSL_CTX_new(client ? q_TLS_client_method() : q_TLS_server_method());
-        }
+    default:
+        // The ssl options will actually control the supported methods
+        sslContext->ctx = q_SSL_CTX_new(client ? q_TLS_client_method() : q_TLS_server_method());
     }
 
     if (!sslContext->ctx) {
@@ -373,7 +363,6 @@ init_context:
 #endif // TLS1_3_VERSION
         break;
     // Ranges:
-    case QSsl::TlsV1SslV3:
     case QSsl::AnyProtocol:
     case QSsl::SecureProtocols:
     case QSsl::TlsV1_0OrLater:
@@ -415,12 +404,6 @@ init_context:
         Q_UNREACHABLE();
         break;
 #endif // TLS1_3_VERSION
-    case QSsl::SslV2:
-    case QSsl::SslV3:
-        // These protocols are not supported, and we handle
-        // them as an error (see the code above).
-        Q_UNREACHABLE();
-        break;
     case QSsl::UnknownProtocol:
         break;
     }
@@ -589,11 +572,20 @@ init_context:
     if (sslContext->sslConfiguration.peerVerifyMode() == QSslSocket::VerifyNone) {
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_NONE, nullptr);
     } else {
-        q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_PEER,
-#if QT_CONFIG(dtls)
-                             isDtls ? dtlscallbacks::q_X509DtlsCallback :
-#endif // dtls
-                             q_X509Callback);
+        auto verificationCallback =
+        #if QT_CONFIG(dtls)
+                                            isDtls ? dtlscallbacks::q_X509DtlsCallback :
+        #endif // dtls
+                                            q_X509Callback;
+
+        if (!isDtls && configuration.handshakeMustInterruptOnError())
+            verificationCallback = q_X509CallbackDirect;
+
+        auto verificationMode = SSL_VERIFY_PEER;
+        if (!isDtls && sslContext->sslConfiguration.missingCertificateIsFatal())
+            verificationMode |= SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+
+        q_SSL_CTX_set_verify(sslContext->ctx, verificationMode, verificationCallback);
     }
 
 #if QT_CONFIG(dtls)

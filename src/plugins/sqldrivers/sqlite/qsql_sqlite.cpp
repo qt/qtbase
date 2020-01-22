@@ -1043,15 +1043,8 @@ QStringList QSQLiteDriver::subscribedToNotifications() const
 void QSQLiteDriver::handleNotification(const QString &tableName, qint64 rowid)
 {
     Q_D(const QSQLiteDriver);
-    if (d->notificationid.contains(tableName)) {
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit notification(tableName);
-QT_WARNING_POP
-#endif
+    if (d->notificationid.contains(tableName))
         emit notification(tableName, QSqlDriver::UnknownSource, QVariant(rowid));
-    }
 }
 
 QT_END_NAMESPACE
