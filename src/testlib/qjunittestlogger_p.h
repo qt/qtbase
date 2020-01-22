@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QXUNITTESTLOGGER_P_H
-#define QXUNITTESTLOGGER_P_H
+#ifndef QJUNITTESTLOGGER_P_H
+#define QJUNITTESTLOGGER_P_H
 
 //
 //  W A R N I N G
@@ -55,14 +55,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTestXunitStreamer;
+class QTestJUnitStreamer;
 class QTestElement;
 
-class QXunitTestLogger : public QAbstractTestLogger
+class QJUnitTestLogger : public QAbstractTestLogger
 {
     public:
-        QXunitTestLogger(const char *filename);
-        ~QXunitTestLogger();
+        QJUnitTestLogger(const char *filename);
+        ~QJUnitTestLogger();
 
         void startLogging() override;
         void stopLogging() override;
@@ -82,7 +82,7 @@ class QXunitTestLogger : public QAbstractTestLogger
         QTestElement *listOfTestcases = nullptr;
         QTestElement *currentLogElement = nullptr;
         QTestElement *errorLogElement = nullptr;
-        QTestXunitStreamer *logFormatter = nullptr;
+        QTestJUnitStreamer *logFormatter = nullptr;
 
         int testCounter = 0;
         int failureCounter = 0;
@@ -91,4 +91,4 @@ class QXunitTestLogger : public QAbstractTestLogger
 
 QT_END_NAMESPACE
 
-#endif // QXUNITTESTLOGGER_P_H
+#endif // QJUNITTESTLOGGER_P_H

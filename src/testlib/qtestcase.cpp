@@ -541,7 +541,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          "                       Valid formats are:\n"
          "                         txt      : Plain text\n"
          "                         csv      : CSV format (suitable for benchmarks)\n"
-         "                         xunitxml : XML XUnit document\n"
+         "                         junitxml : XML JUnit document\n"
          "                         xml      : XML document\n"
          "                         lightxml : A stream of XML tags\n"
          "                         teamcity : TeamCity format\n"
@@ -553,7 +553,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          " -o filename         : Write the output into file\n"
          " -txt                : Output results in Plain Text\n"
          " -csv                : Output results in a CSV format (suitable for benchmarks)\n"
-         " -xunitxml           : Output results as XML XUnit document\n"
+         " -junitxml           : Output results as XML JUnit document\n"
          " -xml                : Output results as XML document\n"
          " -lightxml           : Output results as stream of XML tags\n"
          " -teamcity           : Output results in TeamCity format\n"
@@ -637,8 +637,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             logFormat = QTestLog::Plain;
         } else if (strcmp(argv[i], "-csv") == 0) {
             logFormat = QTestLog::CSV;
-        } else if (strcmp(argv[i], "-xunitxml") == 0) {
-            logFormat = QTestLog::XunitXML;
+        } else if (strcmp(argv[i], "-junitxml") == 0 || strcmp(argv[i], "-xunitxml") == 0)  {
+            logFormat = QTestLog::JUnitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
             logFormat = QTestLog::XML;
         } else if (strcmp(argv[i], "-lightxml") == 0) {
@@ -677,14 +677,14 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                     logFormat = QTestLog::LightXML;
                 else if (strcmp(format, "xml") == 0)
                     logFormat = QTestLog::XML;
-                else if (strcmp(format, "xunitxml") == 0)
-                    logFormat = QTestLog::XunitXML;
+                else if (strcmp(format, "junitxml") == 0 || strcmp(format, "xunitxml") == 0)
+                    logFormat = QTestLog::JUnitXML;
                 else if (strcmp(format, "teamcity") == 0)
                     logFormat = QTestLog::TeamCity;
                 else if (strcmp(format, "tap") == 0)
                     logFormat = QTestLog::TAP;
                 else {
-                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml, tap, teamcity or xunitxml\n");
+                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml, tap, teamcity or junitxml\n");
                     exit(1);
                 }
                 if (strcmp(filename, "-") == 0 && QTestLog::loggerUsingStdout()) {

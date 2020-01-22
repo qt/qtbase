@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/private/qtestxunitstreamer_p.h>
-#include <QtTest/private/qxunittestlogger_p.h>
+#include <QtTest/private/qtestjunitstreamer_p.h>
+#include <QtTest/private/qjunittestlogger_p.h>
 #include <QtTest/private/qtestelement_p.h>
 #include <QtTest/private/qtestelementattribute_p.h>
 #include <QtTest/qtestassert.h>
@@ -48,15 +48,15 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestXunitStreamer::QTestXunitStreamer(QXunitTestLogger *logger)
+QTestJUnitStreamer::QTestJUnitStreamer(QJUnitTestLogger *logger)
     : testLogger(logger)
 {
     QTEST_ASSERT(testLogger);
 }
 
-QTestXunitStreamer::~QTestXunitStreamer() = default;
+QTestJUnitStreamer::~QTestJUnitStreamer() = default;
 
-void QTestXunitStreamer::indentForElement(const QTestElement* element, char* buf, int size)
+void QTestJUnitStreamer::indentForElement(const QTestElement* element, char* buf, int size)
 {
     if (size == 0) return;
 
@@ -74,7 +74,7 @@ void QTestXunitStreamer::indentForElement(const QTestElement* element, char* buf
     }
 }
 
-void QTestXunitStreamer::formatStart(const QTestElement *element, QTestCharBuffer *formatted) const
+void QTestJUnitStreamer::formatStart(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if (!element || !formatted )
         return;
@@ -95,7 +95,7 @@ void QTestXunitStreamer::formatStart(const QTestElement *element, QTestCharBuffe
     QTest::qt_asprintf(formatted, "%s<%s", indent, element->elementName());
 }
 
-void QTestXunitStreamer::formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const
+void QTestJUnitStreamer::formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if (!element || !formatted )
         return;
@@ -111,7 +111,7 @@ void QTestXunitStreamer::formatEnd(const QTestElement *element, QTestCharBuffer 
     QTest::qt_asprintf(formatted, "%s</%s>\n", indent, element->elementName());
 }
 
-void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const
+void QTestJUnitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const
 {
     if (!attribute || !formatted )
         return;
@@ -143,7 +143,7 @@ void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTe
     }
 }
 
-void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
+void QTestJUnitStreamer::formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if (!element || !formatted )
         return;
@@ -164,7 +164,7 @@ void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, QTes
         QTest::qt_asprintf(formatted, ">\n");
 }
 
-void QTestXunitStreamer::output(QTestElement *element) const
+void QTestJUnitStreamer::output(QTestElement *element) const
 {
     QTEST_ASSERT(element);
 
@@ -172,7 +172,7 @@ void QTestXunitStreamer::output(QTestElement *element) const
     outputElements(element);
 }
 
-void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
+void QTestJUnitStreamer::outputElements(QTestElement *element, bool) const
 {
     QTestCharBuffer buf;
     bool hasChildren;
@@ -205,7 +205,7 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
     }
 }
 
-void QTestXunitStreamer::outputElementAttributes(const QTestElement* element, QTestElementAttribute *attribute) const
+void QTestJUnitStreamer::outputElementAttributes(const QTestElement* element, QTestElementAttribute *attribute) const
 {
     QTestCharBuffer buf;
     while (attribute) {
@@ -215,7 +215,7 @@ void QTestXunitStreamer::outputElementAttributes(const QTestElement* element, QT
     }
 }
 
-void QTestXunitStreamer::outputString(const char *msg) const
+void QTestJUnitStreamer::outputString(const char *msg) const
 {
     testLogger->outputString(msg);
 }

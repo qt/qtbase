@@ -280,13 +280,17 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "xml",
                      QStringList() << "-xml" << "-o" << logName("xml")
                     )
-        << LoggerSet("old stdout xunitxml",
-                     QStringList() << "stdout xunitxml",
-                     QStringList() << "-xunitxml"
+        << LoggerSet("old stdout junitxml",
+                     QStringList() << "stdout junitxml",
+                     QStringList() << "-junitxml"
                     )
-        << LoggerSet("old xunitxml",
-                     QStringList() << "xunitxml",
-                     QStringList() << "-xunitxml" << "-o" << logName("xunitxml")
+        << LoggerSet("old junitxml",
+                     QStringList() << "junitxml",
+                     QStringList() << "-junitxml" << "-o" << logName("junitxml")
+                    )
+        << LoggerSet("old xunitxml compatibility",
+                     QStringList() << "junitxml",
+                     QStringList() << "-xunitxml" << "-o" << logName("junitxml")
                     )
         << LoggerSet("old stdout lightxml",
                      QStringList() << "stdout lightxml",
@@ -335,13 +339,17 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "xml",
                      QStringList() << "-o" << logName("xml")+",xml"
                     )
-        << LoggerSet("new stdout xunitxml",
-                     QStringList() << "stdout xunitxml",
+        << LoggerSet("new stdout junitxml",
+                     QStringList() << "stdout junitxml",
+                     QStringList() << "-o" << "-,junitxml"
+                    )
+        << LoggerSet("new stdout xunitxml compatibility",
+                     QStringList() << "stdout junitxml",
                      QStringList() << "-o" << "-,xunitxml"
                     )
-        << LoggerSet("new xunitxml",
-                     QStringList() << "xunitxml",
-                     QStringList() << "-o" << logName("xunitxml")+",xunitxml"
+        << LoggerSet("new junitxml",
+                     QStringList() << "junitxml",
+                     QStringList() << "-o" << logName("junitxml")+",junitxml"
                     )
         << LoggerSet("new stdout lightxml",
                      QStringList() << "stdout lightxml",
@@ -384,24 +392,24 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "-o" << logName("xml")+",xml"
                                    << "-o" << "-,txt"
                     )
-        << LoggerSet("txt + xunitxml",
-                     QStringList() << "txt" << "xunitxml",
+        << LoggerSet("txt + junitxml",
+                     QStringList() << "txt" << "junitxml",
                      QStringList() << "-o" << logName("txt")+",txt"
-                                   << "-o" << logName("xunitxml")+",xunitxml"
+                                   << "-o" << logName("junitxml")+",junitxml"
                     )
-        << LoggerSet("lightxml + stdout xunitxml",
-                     QStringList() << "lightxml" << "stdout xunitxml",
+        << LoggerSet("lightxml + stdout junitxml",
+                     QStringList() << "lightxml" << "stdout junitxml",
                      QStringList() << "-o" << logName("lightxml")+",lightxml"
-                                   << "-o" << "-,xunitxml"
+                                   << "-o" << "-,junitxml"
                     )
         // All loggers at the same time (except csv)
         << LoggerSet("all loggers",
-                     QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "xunitxml" << "tap",
+                     QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "junitxml" << "tap",
                      QStringList() << "-o" << logName("txt")+",txt"
                                    << "-o" << logName("xml")+",xml"
                                    << "-o" << logName("lightxml")+",lightxml"
                                    << "-o" << "-,txt"
-                                   << "-o" << logName("xunitxml")+",xunitxml"
+                                   << "-o" << logName("junitxml")+",junitxml"
                                    << "-o" << logName("teamcity")+",teamcity"
                                    << "-o" << logName("tap")+",tap"
                     )

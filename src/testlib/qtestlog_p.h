@@ -71,7 +71,7 @@ public:
     Q_DISABLE_COPY_MOVE(QTestLog)
 
     enum LogMode {
-        Plain = 0, XML, LightXML, XunitXML, CSV, TeamCity, TAP
+        Plain = 0, XML, LightXML, JUnitXML, CSV, TeamCity, TAP
 #if defined(QT_USE_APPLE_UNIFIED_LOGGING)
         , Apple
 #endif

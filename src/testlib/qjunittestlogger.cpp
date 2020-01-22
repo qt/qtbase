@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/private/qxunittestlogger_p.h>
+#include <QtTest/private/qjunittestlogger_p.h>
 #include <QtTest/private/qtestelement_p.h>
-#include <QtTest/private/qtestxunitstreamer_p.h>
+#include <QtTest/private/qtestjunitstreamer_p.h>
 #include <QtTest/qtestcase.h>
 #include <QtTest/private/qtestresult_p.h>
 #include <QtTest/private/qbenchmark_p.h>
@@ -57,27 +57,27 @@
 
 QT_BEGIN_NAMESPACE
 
-QXunitTestLogger::QXunitTestLogger(const char *filename)
+QJUnitTestLogger::QJUnitTestLogger(const char *filename)
     : QAbstractTestLogger(filename)
 {
 }
 
-QXunitTestLogger::~QXunitTestLogger()
+QJUnitTestLogger::~QJUnitTestLogger()
 {
     delete currentLogElement;
     delete logFormatter;
 }
 
-void QXunitTestLogger::startLogging()
+void QJUnitTestLogger::startLogging()
 {
     QAbstractTestLogger::startLogging();
 
-    logFormatter = new QTestXunitStreamer(this);
+    logFormatter = new QTestJUnitStreamer(this);
     delete errorLogElement;
     errorLogElement = new QTestElement(QTest::LET_SystemError);
 }
 
-void QXunitTestLogger::stopLogging()
+void QJUnitTestLogger::stopLogging()
 {
     QTestElement *iterator = listOfTestcases;
 
@@ -132,7 +132,7 @@ void QXunitTestLogger::stopLogging()
     QAbstractTestLogger::stopLogging();
 }
 
-void QXunitTestLogger::enterTestFunction(const char *function)
+void QJUnitTestLogger::enterTestFunction(const char *function)
 {
     currentLogElement = new QTestElement(QTest::LET_TestCase);
     currentLogElement->addAttribute(QTest::AI_Name, function);
@@ -141,11 +141,11 @@ void QXunitTestLogger::enterTestFunction(const char *function)
     ++testCounter;
 }
 
-void QXunitTestLogger::leaveTestFunction()
+void QJUnitTestLogger::leaveTestFunction()
 {
 }
 
-void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
+void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
     const char *typeBuf = nullptr;
@@ -242,15 +242,15 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
     currentLogElement->addAttribute(QTest::AI_Line, buf);
 
     /*
-        Since XFAIL does not add a failure to the testlog in xunitxml, add a message, so we still
+        Since XFAIL does not add a failure to the testlog in junitxml, add a message, so we still
         have some information about the expected failure.
     */
     if (type == QAbstractTestLogger::XFail) {
-        QXunitTestLogger::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
+        QJUnitTestLogger::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
     }
 }
 
-void QXunitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
+void QJUnitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
     QTestElement *benchmarkElement = new QTestElement(QTest::LET_Benchmark);
 
@@ -268,7 +268,7 @@ void QXunitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     currentLogElement->addLogElement(benchmarkElement);
 }
 
-void QXunitTestLogger::addTag(QTestElement* element)
+void QJUnitTestLogger::addTag(QTestElement* element)
 {
     const char *tag = QTestResult::currentDataTag();
     const char *gtag = QTestResult::currentGlobalDataTag();
@@ -289,7 +289,7 @@ void QXunitTestLogger::addTag(QTestElement* element)
     element->addAttribute(QTest::AI_Tag, buf.constData());
 }
 
-void QXunitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
+void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
 {
     QTestElement *errorElement = new QTestElement(QTest::LET_Error);
     const char *typeBuf = nullptr;

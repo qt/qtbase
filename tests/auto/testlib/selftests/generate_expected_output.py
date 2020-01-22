@@ -86,7 +86,7 @@ class Cleaner (object):
             # Build details:
             (r'(Config: Using QtTest library).*', r'\1'), # txt
             (r'( *<QtBuild)>[^<]+</QtBuild>', r'\1/>'), # xml, lightxml
-            (r'(<property value=")[^"]+(" name="QtBuild"/>)', r'\1\2'), # xunitxml
+            (r'(<property value=")[^"]+(" name="QtBuild"/>)', r'\1\2'), # junitxml
             # Line numbers in source files:
             (r'(ASSERT: ".*" in file .*, line) \d+', r'\1 0'), # lightxml
             (r'(Loc: \[[^[\]()]+)\(\d+\)', r'\1(0)'), # txt
@@ -295,7 +295,7 @@ def testEnv(testname,
     return data
 
 def generateTestData(testname, clean,
-                     formats = ('xml', 'txt', 'xunitxml', 'lightxml', 'teamcity', 'tap'),
+                     formats = ('xml', 'txt', 'junitxml', 'lightxml', 'teamcity', 'tap'),
                      # Make sure this matches tst_Selftests::runSubTest_data():
                      extraArgs = {
         "commandlinedata": "fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2",

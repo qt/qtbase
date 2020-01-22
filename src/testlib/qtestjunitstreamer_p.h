@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTXUNITSTREAMER_P_H
-#define QTESTXUNITSTREAMER_P_H
+#ifndef QTESTJUNITSTREAMER_P_H
+#define QTESTJUNITSTREAMER_P_H
 
 //
 //  W A R N I N G
@@ -58,14 +58,14 @@ QT_BEGIN_NAMESPACE
 
 class QTestElement;
 class QTestElementAttribute;
-class QXunitTestLogger;
+class QJUnitTestLogger;
 struct QTestCharBuffer;
 
-class QTestXunitStreamer
+class QTestJUnitStreamer
 {
     public:
-        QTestXunitStreamer(QXunitTestLogger *logger);
-        ~QTestXunitStreamer();
+        QTestJUnitStreamer(QJUnitTestLogger *logger);
+        ~QTestJUnitStreamer();
 
         void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
         void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
@@ -78,10 +78,9 @@ class QTestXunitStreamer
         void outputString(const char *msg) const;
 
     private:
-        void displayXunitXmlHeader() const;
         static void indentForElement(const QTestElement* element, char* buf, int size);
 
-        QXunitTestLogger *testLogger;
+        QJUnitTestLogger *testLogger;
 };
 
 QT_END_NAMESPACE

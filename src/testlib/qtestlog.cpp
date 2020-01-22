@@ -44,7 +44,7 @@
 #include <QtTest/private/qabstracttestlogger_p.h>
 #include <QtTest/private/qplaintestlogger_p.h>
 #include <QtTest/private/qcsvbenchmarklogger_p.h>
-#include <QtTest/private/qxunittestlogger_p.h>
+#include <QtTest/private/qjunittestlogger_p.h>
 #include <QtTest/private/qxmltestlogger_p.h>
 #include <QtTest/private/qteamcitylogger_p.h>
 #include <QtTest/private/qtaptestlogger_p.h>
@@ -456,8 +456,8 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
     case QTestLog::LightXML:
         logger = new QXmlTestLogger(QXmlTestLogger::Light, filename);
         break;
-    case QTestLog::XunitXML:
-        logger = new QXunitTestLogger(filename);
+    case QTestLog::JUnitXML:
+        logger = new QJUnitTestLogger(filename);
         break;
     case QTestLog::TeamCity:
         logger = new QTeamCityLogger(filename);
