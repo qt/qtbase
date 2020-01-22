@@ -120,7 +120,7 @@ private slots:
     void fromStringStringFormat();
     void fromStringStringFormatLocale_data();
     void fromStringStringFormatLocale();
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && QT_CONFIG(textdate)
     void fromString_LOCALE_ILDATE();
 #endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -140,7 +140,9 @@ private slots:
 
     void fewDigitsInYear() const;
     void printNegativeYear() const;
-    void roundtripGermanLocale() const;
+#if QT_CONFIG(textdate)
+    void roundtripTextDate() const;
+#endif
     void utcOffsetLessThan() const;
 
     void isDaylightTime() const;
@@ -881,7 +883,7 @@ void tst_QDateTime::toString_isoDate_extra()
 #endif // timezone
 }
 
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring) // depends on textdate
 void tst_QDateTime::toString_textDate_data()
 {
     QTest::addColumn<QDateTime>("datetime");
@@ -1015,8 +1017,10 @@ void tst_QDateTime::toString_enumformat()
 {
     QDateTime dt1(QDate(1995, 5, 20), QTime(12, 34, 56));
 
+#if QT_CONFIG(textdate)
     QString str1 = dt1.toString(Qt::TextDate);
-    QVERIFY(!str1.isEmpty()); // It's locale dependent everywhere
+    QVERIFY(!str1.isEmpty()); // It's locale-dependent everywhere
+#endif
 
     QString str2 = dt1.toString(Qt::ISODate);
     QCOMPARE(str2, QString("1995-05-20T12:34:56"));
@@ -2104,6 +2108,7 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::addColumn<Qt::DateFormat>("dateFormat");
     QTest::addColumn<QDateTime>("expected");
 
+#if QT_CONFIG(textdate)
     // Test Qt::TextDate format.
     QTest::newRow("text date") << QString::fromLatin1("Tue Jun 17 08:00:10 2003")
         << Qt::TextDate << QDateTime(QDate(2003, 6, 17), QTime(8, 0, 10, 0), Qt::LocalTime);
@@ -2177,6 +2182,7 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << invalidDateTime();
     QTest::newRow("text second fraction") << QString::fromLatin1("Mon 6. May 2013 01:02:03.456")
         << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 456));
+#endif // textdate
 
     // Test Qt::ISODate format.
     QTest::newRow("trailing space") // QTBUG-80445
@@ -2570,7 +2576,7 @@ void tst_QDateTime::fromStringStringFormatLocale()
     QCOMPARE(parsed, expected);
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && QT_CONFIG(textdate)
 // Windows only
 void tst_QDateTime::fromString_LOCALE_ILDATE()
 {
@@ -2935,12 +2941,16 @@ void tst_QDateTime::printNegativeYear() const
     }
 }
 
-void tst_QDateTime::roundtripGermanLocale() const
+#if QT_CONFIG(textdate)
+void tst_QDateTime::roundtripTextDate() const
 {
     /* This code path should not result in warnings. */
-    const QDateTime theDateTime(QDateTime::currentDateTime());
-    theDateTime.fromString(theDateTime.toString(Qt::TextDate), Qt::TextDate);
+    const QDateTime now(QDateTime::currentDateTime());
+    // TextDate drops millis:
+    const QDateTime theDateTime(now.addMSecs(-now.time().msec()));
+    QCOMPARE(QDateTime::fromString(theDateTime.toString(Qt::TextDate), Qt::TextDate), theDateTime);
 }
+#endif
 
 void tst_QDateTime::utcOffsetLessThan() const
 {
