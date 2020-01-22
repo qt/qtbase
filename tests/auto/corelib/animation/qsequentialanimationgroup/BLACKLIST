@@ -1,6 +1,6 @@
 [finishWithUncontrolledAnimation]
 windows-10 msvc-2015
-osx-10.13
+macos
 [groupWithZeroDurationAnimations]
-osx-10.13
+macos
 
