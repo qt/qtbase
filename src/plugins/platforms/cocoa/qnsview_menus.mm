@@ -84,7 +84,8 @@ static bool selectorIsCutCopyPaste(SEL selector)
             menuParent = menuObject->menuParent();
         }
 
-        if (menubar && menubar->cocoaWindow() != self.platformWindow)
+        // we have no menubar parent for the application menu items, e.g About and Preferences
+        if (!menubar || menubar->cocoaWindow() != self.platformWindow)
             return NO;
     }
 
