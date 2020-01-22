@@ -107,6 +107,31 @@ struct Node
     {
         return std::move(value);
     }
+    bool valuesEqual(const Node *other) const { return value == other->value; }
+};
+
+template <typename Key>
+struct Node<Key, QHashDummyValue> {
+    using KeyType = Key;
+    using ValueType = QHashDummyValue;
+
+    Key key;
+    static Node create(Key &&k, ValueType &&)
+    {
+        return Node{ std::move(k) };
+    }
+    static Node create(const Key &k, const ValueType &)
+    {
+        return Node{ k };
+    }
+    void replace(const ValueType &)
+    {
+    }
+    void replace(ValueType &&)
+    {
+    }
+    ValueType takeValue() { return QHashDummyValue(); }
+    bool valuesEqual(const Node *) const { return true; }
 };
 
 template <typename T>
@@ -844,7 +869,7 @@ public:
 
         for (const_iterator it = other.begin(); it != other.end(); ++it) {
             const_iterator i = find(it.key());
-            if (i == end() || !(i.value() == it.value()))
+            if (i == end() || !i.i.node()->valuesEqual(it.i.node()))
                 return false;
         }
         // all values must be the same as size is the same
@@ -1156,7 +1181,7 @@ public:
     {
         detach();
 
-        auto i = d->insert(Node{key, value});
+        auto i = d->insert(Node::create(key, value));
         return iterator(i);
     }
     void insert(const QHash &hash)
