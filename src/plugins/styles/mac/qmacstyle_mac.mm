@@ -4613,6 +4613,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_ToolBoxTabContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
         break;
+    case SE_PushButtonBevel:
     case SE_PushButtonContents:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             // Comment from the old HITheme days:
@@ -4626,9 +4627,20 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             const auto ct = cocoaControlType(btn, widget);
             const auto cs = d->effectiveAquaSizeConstrain(btn, widget);
             const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
-            const auto frameRect = cw.adjustedControlFrame(btn->rect);
-            const auto titleMargins = cw.titleMargins();
-            rect = (frameRect - titleMargins).toRect();
+            auto frameRect = cw.adjustedControlFrame(btn->rect);
+            if (sr == SE_PushButtonContents) {
+                frameRect -= cw.titleMargins();
+            } else {
+                auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
+                if (cw.type != QMacStylePrivate::Button_SquareButton) {
+                    frameRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
+                    if (cw.type == QMacStylePrivate::Button_PushButton)
+                        frameRect -= pushButtonShadowMargins[cw.size];
+                    else if (cw.type == QMacStylePrivate::Button_PullDown)
+                        frameRect -= pullDownButtonShadowMargins[cw.size];
+                }
+            }
+            rect = frameRect.toRect();
         }
         break;
     case SE_HeaderLabel: {

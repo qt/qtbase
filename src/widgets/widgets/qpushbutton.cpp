@@ -509,6 +509,17 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
 #endif
 }
 
+/*!
+    \reimp
+*/
+bool QPushButton::hitButton(const QPoint &pos) const
+{
+    QStyleOptionButton option;
+    initStyleOption(&option);
+    const QRect bevel = style()->subElementRect(QStyle::SE_PushButtonBevel, &option, this);
+    return bevel.contains(pos);
+}
+
 #if QT_CONFIG(menu)
 /*!
     Associates the popup menu \a menu with this push button. This

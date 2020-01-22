@@ -152,6 +152,22 @@ Q_DECLARE_METATYPE(Qt::WindowType);
 Q_DECLARE_METATYPE(Qt::WindowFlags);
 Q_DECLARE_METATYPE(QMdiSubWindow*);
 
+class TestPushButton : public QPushButton
+{
+public:
+    TestPushButton(const QString &title, QWidget *parent = nullptr)
+    : QPushButton(title, parent)
+    {
+    }
+
+protected:
+    // don't rely on style-specific button behavior in test
+    bool hitButton(const QPoint &point) const override
+    {
+        return rect().contains(point);
+    }
+};
+
 class tst_QMdiSubWindow : public QObject
 {
     Q_OBJECT
@@ -390,7 +406,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
     // the maximized subwindow's title is imposed onto the main window's titlebar.
     if (!nativeMenuBar) {
         QCOMPARE(mainWindow.windowTitle(), QString());
-        QMdiSubWindow *window = workspace->addSubWindow(new QPushButton(QLatin1String("Test")));
+        QMdiSubWindow *window = workspace->addSubWindow(new TestPushButton(QLatin1String("Test")));
         QString expectedTitle = QLatin1String("MainWindow's title is empty");
         window->setWindowTitle(expectedTitle);
         QCOMPARE(window->windowTitle(), expectedTitle);
@@ -1298,7 +1314,7 @@ void tst_QMdiSubWindow::changeFocusWithTab()
     QTest::keyPress(widget, Qt::Key_Backtab);
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(firstLineEdit));
 
-    QMdiSubWindow *window = mdiArea.addSubWindow(new QPushButton);
+    QMdiSubWindow *window = mdiArea.addSubWindow(new TestPushButton(QLatin1String("test")));
     window->show();
     QCOMPARE(mdiArea.activeSubWindow(), window);
 
@@ -1907,7 +1923,7 @@ void tst_QMdiSubWindow::setFont()
     QSKIP("This test function is unstable in CI, please see QTBUG-22544");
     QMdiArea mdiArea;
     mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QPushButton(QLatin1String("test")));
+    QMdiSubWindow *subWindow = mdiArea.addSubWindow(new TestPushButton(QLatin1String("test")));
     subWindow->resize(300, 100);
     subWindow->setWindowTitle(QLatin1String("Window title"));
     mdiArea.show();
@@ -2057,19 +2073,19 @@ void tst_QMdiSubWindow::task_233197()
     QMenuBar *menuBar = mainWindow->menuBar(); // force creation of a menubar
     Q_UNUSED(menuBar);
 
-    QPushButton *focus1 = new QPushButton(QLatin1String("Focus 1"), mainWindow);
+    QPushButton *focus1 = new TestPushButton(QLatin1String("Focus 1"), mainWindow);
     QObject::connect(focus1, &QAbstractButton::clicked, subWindow1,
                      QOverload<>::of(&QWidget::setFocus));
     focus1->move(5, 30);
     focus1->show();
 
-    QPushButton *focus2 = new QPushButton(QLatin1String("Focus 2"), mainWindow);
+    QPushButton *focus2 = new TestPushButton(QLatin1String("Focus 2"), mainWindow);
     QObject::connect(focus2, &QAbstractButton::clicked, subWindow2,
                      QOverload<>::of(&QWidget::setFocus));
     focus2->move(5, 60);
     focus2->show();
 
-    QPushButton *close = new QPushButton(QLatin1String("Close"), mainWindow);
+    QPushButton *close = new TestPushButton(QLatin1String("Close"), mainWindow);
     QObject::connect(close, &QAbstractButton::clicked, mainWindow, &QWidget::close);
     close->move(5, 90);
     close->show();

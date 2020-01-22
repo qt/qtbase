@@ -2465,6 +2465,12 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = visualRect(opt->direction, opt->rect, r);
         }
         break;
+    case SE_PushButtonBevel:
+        {
+            r = opt->rect;
+            r = visualRect(opt->direction, opt->rect, r);
+        }
+        break;
     case SE_CheckBoxIndicator:
         {
             int h = proxy()->pixelMetric(PM_IndicatorHeight, opt, widget);
