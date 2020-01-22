@@ -1312,9 +1312,9 @@ tst_QNetworkReply::tst_QNetworkReply()
                              "+socksauth", true);
     } else {
 #endif // !QT_NO_NETWORKPROXY
-        printf("==================================================================\n");
-        printf("Proxy could not be looked up. No proxy will be used while testing!\n");
-        printf("==================================================================\n");
+        fprintf(stderr, "==================================================================\n");
+        fprintf(stderr, "Proxy could not be looked up. No proxy will be used while testing!\n");
+        fprintf(stderr, "==================================================================\n");
 #ifndef QT_NO_NETWORKPROXY
     }
 #endif // !QT_NO_NETWORKPROXY
