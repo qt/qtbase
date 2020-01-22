@@ -1,12 +1,12 @@
 # Generated from sqlite.pro.
 
 #####################################################################
-## qsqlite Plugin:
+## QSQLiteDriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qsqlite
+qt_add_plugin(QSQLiteDriverPlugin
+    OUTPUT_NAME qsqlite
     TYPE sqldrivers
-    CLASS_NAME QSQLiteDriverPlugin
     SOURCES
         qsql_sqlite.cpp qsql_sqlite_p.h
         smain.cpp

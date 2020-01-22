@@ -1,12 +1,12 @@
 # Generated from xdgdesktopportal.pro.
 
 #####################################################################
-## qxdgdesktopportal Plugin:
+## QXdgDesktopPortalThemePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qxdgdesktopportal
+qt_add_plugin(QXdgDesktopPortalThemePlugin
+    OUTPUT_NAME qxdgdesktopportal
     TYPE platformthemes
-    CLASS_NAME QXdgDesktopPortalThemePlugin
     SOURCES
         main.cpp
         qxdgdesktopportalfiledialog.cpp qxdgdesktopportalfiledialog_p.h

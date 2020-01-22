@@ -1,12 +1,13 @@
 # Generated from networkmanager.pro.
 
 #####################################################################
-## qnmbearer Plugin:
+## QNetworkManagerEnginePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qnmbearer
-    TYPE bearer
+qt_add_plugin(QNetworkManagerEnginePlugin
+    OUTPUT_NAME qnmbearer
     CLASS_NAME QNetworkManagerEnginePlugin
+    TYPE bearer
     SOURCES
         main.cpp
         qnetworkmanagerengine.cpp qnetworkmanagerengine.h

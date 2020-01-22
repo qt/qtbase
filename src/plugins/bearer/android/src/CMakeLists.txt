@@ -1,12 +1,12 @@
 # Generated from src.pro.
 
 #####################################################################
-## qandroidbearer Plugin:
+## QAndroidBearerEnginePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qandroidbearer
+qt_add_plugin(QAndroidBearerEnginePlugin
+    OUTPUT_NAME qandroidbearer
     TYPE bearer
-    CLASS_NAME QAndroidBearerEnginePlugin
     SOURCES
         main.cpp
         qandroidbearerengine.cpp qandroidbearerengine.h

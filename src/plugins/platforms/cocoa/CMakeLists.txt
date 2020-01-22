@@ -4,13 +4,13 @@
 qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
 
 #####################################################################
-## qcocoa Plugin:
+## QCocoaIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qcocoa
-    TYPE platforms
+qt_add_plugin(QCocoaIntegrationPlugin
+    OUTPUT_NAME qcocoa
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES cocoa # special case
-    CLASS_NAME QCocoaIntegrationPlugin
+    TYPE platforms
     SOURCES
         main.mm
         messages.cpp messages.h
@@ -77,7 +77,7 @@ set(qcocoaresources_resource_files
     "images/waitcursor.png"
 )
 
-qt_add_resource(qcocoa "qcocoaresources"
+qt_add_resource(QCocoaIntegrationPlugin "qcocoaresources"
     PREFIX
         "/qt-project.org/mac/cursors"
     FILES
@@ -91,12 +91,12 @@ qt_add_resource(qcocoa "qcocoaresources"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qcocoa CONDITION QT_FEATURE_opengl
+qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
         qcocoaglcontext.h qcocoaglcontext.mm
 )
 
-qt_extend_target(qcocoa CONDITION QT_FEATURE_vulkan
+qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qcocoavulkaninstance.h qcocoavulkaninstance.mm
     LIBRARIES
@@ -105,7 +105,7 @@ qt_extend_target(qcocoa CONDITION QT_FEATURE_vulkan
         Qt::VulkanSupport
 )
 
-qt_extend_target(qcocoa CONDITION QT_FEATURE_accessibility
+qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
         qcocoaaccessibility.h qcocoaaccessibility.mm
         qcocoaaccessibilityelement.h qcocoaaccessibilityelement.mm
@@ -115,12 +115,12 @@ qt_extend_target(qcocoa CONDITION QT_FEATURE_accessibility
         Qt::AccessibilitySupport
 )
 
-qt_extend_target(qcocoa CONDITION QT_FEATURE_sessionmanager
+qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
     SOURCES
         qcocoasessionmanager.cpp qcocoasessionmanager.h
 )
 
-qt_extend_target(qcocoa CONDITION TARGET Qt::Widgets
+qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::Widgets
     SOURCES
         qpaintengine_mac.mm qpaintengine_mac_p.h
     LIBRARIES
@@ -132,7 +132,7 @@ qt_extend_target(qcocoa CONDITION TARGET Qt::Widgets
 #### Keys ignored in scope 7:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
 
-qt_extend_target(qcocoa CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
+qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
     SOURCES
         qcocoaprintdevice.h qcocoaprintdevice.mm
         qcocoaprintersupport.h qcocoaprintersupport.mm
@@ -143,17 +143,17 @@ qt_extend_target(qcocoa CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
         Qt::PrintSupport
 )
 
-qt_extend_target(qcocoa CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets
+qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets
     SOURCES
         qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
 )
 
-qt_extend_target(qcocoa CONDITION QT_FEATURE_filedialog AND TARGET Qt::Widgets
+qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_filedialog AND TARGET Qt::Widgets
     SOURCES
         qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
 )
 
-qt_extend_target(qcocoa CONDITION QT_FEATURE_fontdialog AND TARGET Qt::Widgets
+qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_fontdialog AND TARGET Qt::Widgets
     SOURCES
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )

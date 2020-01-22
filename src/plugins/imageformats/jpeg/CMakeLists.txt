@@ -3,12 +3,12 @@
 qt_find_package(JPEG) # special case
 
 #####################################################################
-## qjpeg Plugin:
+## QJpegPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qjpeg
+qt_add_plugin(QJpegPlugin
+    OUTPUT_NAME qjpeg
     TYPE imageformats
-    CLASS_NAME QJpegPlugin
     SOURCES
         main.cpp main.h
         qjpeghandler.cpp qjpeghandler_p.h

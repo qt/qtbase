@@ -1,12 +1,12 @@
 # Generated from ico.pro.
 
 #####################################################################
-## qico Plugin:
+## QICOPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qico
+qt_add_plugin(QICOPlugin
+    OUTPUT_NAME qico
     TYPE imageformats
-    CLASS_NAME QICOPlugin
     SOURCES
         main.cpp main.h
         qicohandler.cpp qicohandler.h

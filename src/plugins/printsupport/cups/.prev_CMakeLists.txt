@@ -1,12 +1,12 @@
 # Generated from cups.pro.
 
 #####################################################################
-## cupsprintersupport Plugin:
+## QCupsPrinterSupportPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(cupsprintersupport
+qt_add_plugin(QCupsPrinterSupportPlugin
+    OUTPUT_NAME cupsprintersupport
     TYPE printsupport
-    CLASS_NAME QCupsPrinterSupportPlugin
     SOURCES
         main.cpp
         qcupsprintengine.cpp qcupsprintengine_p.h

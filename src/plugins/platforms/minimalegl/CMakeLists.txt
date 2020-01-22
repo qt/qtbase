@@ -1,12 +1,12 @@
 # Generated from minimalegl.pro.
 
 #####################################################################
-## qminimalegl Plugin:
+## QMinimalEglIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qminimalegl
+qt_add_plugin(QMinimalEglIntegrationPlugin
+    OUTPUT_NAME qminimalegl
     TYPE platforms
-    CLASS_NAME QMinimalEglIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimalegl # special case
     SOURCES
         main.cpp
@@ -35,7 +35,7 @@ qt_add_plugin(qminimalegl
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qminimalegl CONDITION QT_FEATURE_opengl
+qt_extend_target(QMinimalEglIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
         qminimaleglbackingstore.cpp qminimaleglbackingstore.h
 )

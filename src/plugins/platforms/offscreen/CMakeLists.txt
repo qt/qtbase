@@ -1,12 +1,12 @@
 # Generated from offscreen.pro.
 
 #####################################################################
-## qoffscreen Plugin:
+## QOffscreenIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qoffscreen
+qt_add_plugin(QOffscreenIntegrationPlugin
+    OUTPUT_NAME qoffscreen
     TYPE platforms
-    CLASS_NAME QOffscreenIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES offscreen # special case
     SOURCES
         main.cpp
@@ -33,7 +33,7 @@ qt_add_plugin(qoffscreen
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qoffscreen CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
+qt_extend_target(QOffscreenIntegrationPlugin CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
     SOURCES
         qoffscreenintegration_x11.cpp qoffscreenintegration_x11.h
     LIBRARIES

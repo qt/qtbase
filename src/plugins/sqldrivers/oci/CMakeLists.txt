@@ -1,12 +1,12 @@
 # Generated from oci.pro.
 
 #####################################################################
-## qsqloci Plugin:
+## QOCIDriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qsqloci
+qt_add_plugin(QOCIDriverPlugin
+    OUTPUT_NAME qsqloci
     TYPE sqldrivers
-    CLASS_NAME QOCIDriverPlugin
     SOURCES
         main.cpp
         qsql_oci.cpp qsql_oci_p.h
@@ -28,7 +28,7 @@ qt_add_plugin(qsqloci
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qsqloci CONDITION APPLE
+qt_extend_target(QOCIDriverPlugin CONDITION APPLE
     LINK_OPTIONS
         "-Wl,-flat_namespace,-U,_environ"
 )

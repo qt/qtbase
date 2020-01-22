@@ -1,12 +1,12 @@
 # Generated from tuiotouch.pro.
 
 #####################################################################
-## qtuiotouchplugin Plugin:
+## QTuioTouchPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qtuiotouchplugin
+qt_add_plugin(QTuioTouchPlugin
+    OUTPUT_NAME qtuiotouchplugin
     TYPE generic
-    CLASS_NAME QTuioTouchPlugin
     SOURCES
         main.cpp
         qoscbundle.cpp qoscbundle_p.h

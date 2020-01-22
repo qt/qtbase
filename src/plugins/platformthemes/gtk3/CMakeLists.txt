@@ -4,12 +4,12 @@ qt_find_package(GTK3) # special case
 qt_find_package(X11) # special case
 
 #####################################################################
-## qgtk3 Plugin:
+## QGtk3ThemePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qgtk3
+qt_add_plugin(QGtk3ThemePlugin
+    OUTPUT_NAME qgtk3
     TYPE platformthemes
-    CLASS_NAME QGtk3ThemePlugin
     SOURCES
         main.cpp
         qgtk3dialoghelpers.cpp qgtk3dialoghelpers.h

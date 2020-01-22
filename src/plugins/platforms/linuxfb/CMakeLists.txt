@@ -1,12 +1,12 @@
 # Generated from linuxfb.pro.
 
 #####################################################################
-## qlinuxfb Plugin:
+## QLinuxFbIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qlinuxfb
+qt_add_plugin(QLinuxFbIntegrationPlugin
+    OUTPUT_NAME qlinuxfb
     TYPE platforms
-    CLASS_NAME QLinuxFbIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES linuxfb # special case
     SOURCES
         main.cpp
@@ -36,14 +36,14 @@ qt_add_plugin(qlinuxfb
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qlinuxfb CONDITION TARGET Qt::InputSupportPrivate
+qt_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
     LIBRARIES
         Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::InputSupport
 )
 
-qt_extend_target(qlinuxfb CONDITION TARGET Qt::KmsSupportPrivate
+qt_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::KmsSupportPrivate
     SOURCES
         qlinuxfbdrmscreen.cpp qlinuxfbdrmscreen.h
     LIBRARIES

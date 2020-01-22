@@ -1,12 +1,12 @@
 # Generated from corewlan.pro.
 
 #####################################################################
-## qcorewlanbearer Plugin:
+## QCoreWlanEnginePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qcorewlanbearer
+qt_add_plugin(QCoreWlanEnginePlugin
+    OUTPUT_NAME qcorewlanbearer
     TYPE bearer
-    CLASS_NAME QCoreWlanEnginePlugin
     SOURCES
         main.cpp
         qcorewlanengine.h qcorewlanengine.mm
@@ -26,7 +26,7 @@ qt_add_plugin(qcorewlanbearer
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qcorewlanbearer CONDITION QT_FEATURE_corewlan
+qt_extend_target(QCoreWlanEnginePlugin CONDITION QT_FEATURE_corewlan
     PUBLIC_LIBRARIES
         ${FWCoreWLAN}
         ${FWSecurity}

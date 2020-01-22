@@ -1,12 +1,12 @@
 # Generated from evdevkeyboard.pro.
 
 #####################################################################
-## qevdevkeyboardplugin Plugin:
+## QEvdevKeyboardPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qevdevkeyboardplugin
+qt_add_plugin(QEvdevKeyboardPlugin
+    OUTPUT_NAME qevdevkeyboardplugin
     TYPE generic
-    CLASS_NAME QEvdevKeyboardPlugin
     SOURCES
         main.cpp
     LIBRARIES

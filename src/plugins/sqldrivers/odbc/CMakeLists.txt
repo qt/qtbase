@@ -1,14 +1,13 @@
 # Generated from odbc.pro.
 
 #####################################################################
-## qsqlodbc Plugin:
+## QODBCDriverPlugin Plugin:
 #####################################################################
 
 qt_find_package(ODBC) # special case
-
-qt_add_plugin(qsqlodbc
+qt_add_plugin(QODBCDriverPlugin
+    OUTPUT_NAME qsqlodbc
     TYPE sqldrivers
-    CLASS_NAME QODBCDriverPlugin
     SOURCES
         main.cpp
         qsql_odbc.cpp qsql_odbc_p.h
@@ -30,7 +29,7 @@ qt_add_plugin(qsqlodbc
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qsqlodbc CONDITION UNIX
+qt_extend_target(QODBCDriverPlugin CONDITION UNIX
     DEFINES
         UNICODE
 )

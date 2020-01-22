@@ -1,12 +1,12 @@
 # Generated from minimal.pro.
 
 #####################################################################
-## qminimal Plugin:
+## QMinimalIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qminimal
+qt_add_plugin(QMinimalIntegrationPlugin
+    OUTPUT_NAME qminimal
     TYPE platforms
-    CLASS_NAME QMinimalIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimal # special case
     SOURCES
         main.cpp
@@ -32,7 +32,7 @@ qt_add_plugin(qminimal
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qminimal CONDITION QT_FEATURE_freetype
+qt_extend_target(QMinimalIntegrationPlugin CONDITION QT_FEATURE_freetype
     LIBRARIES
         WrapFreetype::WrapFreetype
 )

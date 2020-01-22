@@ -1,12 +1,12 @@
 # Generated from nsphotolibrarysupport.pro.
 
 #####################################################################
-## qiosnsphotolibrarysupport Plugin:
+## QIosOptionalPlugin_NSPhotoLibrary Plugin:
 #####################################################################
 
-add_qt_plugin(qiosnsphotolibrarysupport
+add_qt_plugin(QIosOptionalPlugin_NSPhotoLibrary
+    OUTPUT_NAME qiosnsphotolibrarysupport
     TYPE platforms/darwin
-    CLASS_NAME QIosOptionalPlugin_NSPhotoLibrary
     SOURCES
         plugin.mm
         qiosfileengineassetslibrary.h qiosfileengineassetslibrary.mm

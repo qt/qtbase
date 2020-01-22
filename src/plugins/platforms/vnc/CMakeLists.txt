@@ -1,12 +1,12 @@
 # Generated from vnc.pro.
 
 #####################################################################
-## qvnc Plugin:
+## QVncIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qvnc
+qt_add_plugin(QVncIntegrationPlugin
+    OUTPUT_NAME qvnc
     TYPE platforms
-    CLASS_NAME QVncIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES vnc # special case
     SOURCES
         main.cpp
@@ -41,7 +41,7 @@ qt_add_plugin(qvnc
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qvnc CONDITION TARGET Qt::InputSupportPrivate
+qt_extend_target(QVncIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
     LIBRARIES
         Qt::InputSupportPrivate
     PUBLIC_LIBRARIES

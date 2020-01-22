@@ -1,12 +1,12 @@
 # Generated from evdevmouse.pro.
 
 #####################################################################
-## qevdevmouseplugin Plugin:
+## QEvdevMousePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qevdevmouseplugin
+qt_add_plugin(QEvdevMousePlugin
+    OUTPUT_NAME qevdevmouseplugin
     TYPE generic
-    CLASS_NAME QEvdevMousePlugin
     SOURCES
         main.cpp
     LIBRARIES

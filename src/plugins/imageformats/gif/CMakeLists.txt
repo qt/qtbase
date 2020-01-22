@@ -1,12 +1,12 @@
 # Generated from gif.pro.
 
 #####################################################################
-## qgif Plugin:
+## QGifPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qgif
+qt_add_plugin(QGifPlugin
+    OUTPUT_NAME qgif
     TYPE imageformats
-    CLASS_NAME QGifPlugin
     SOURCES
         main.cpp main.h
         qgifhandler.cpp qgifhandler_p.h

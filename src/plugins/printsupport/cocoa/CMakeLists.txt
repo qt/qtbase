@@ -1,12 +1,12 @@
 # Generated from cocoa.pro.
 
 #####################################################################
-## cocoaprintersupport Plugin:
+## QCocoaPrinterSupportPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(cocoaprintersupport
+qt_add_plugin(QCocoaPrinterSupportPlugin
+    OUTPUT_NAME cocoaprintersupport
     TYPE printsupport
-    CLASS_NAME QCocoaPrinterSupportPlugin
     SOURCES
         main.cpp
     LIBRARIES

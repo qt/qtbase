@@ -1,12 +1,12 @@
 # Generated from db2.pro.
 
 #####################################################################
-## qsqldb2 Plugin:
+## QDB2DriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qsqldb2
+qt_add_plugin(QDB2DriverPlugin
+    OUTPUT_NAME qsqldb2
     TYPE sqldrivers
-    CLASS_NAME QDB2DriverPlugin
     SOURCES
         main.cpp
         qsql_db2.cpp qsql_db2_p.h
@@ -28,7 +28,7 @@ qt_add_plugin(qsqldb2
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qsqldb2 CONDITION (TEST_architecture_arch STREQUAL "x86_64")
+qt_extend_target(QDB2DriverPlugin CONDITION (TEST_architecture_arch STREQUAL "x86_64")
     DEFINES
         ODBC64
 )

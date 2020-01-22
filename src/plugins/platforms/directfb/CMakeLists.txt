@@ -5,12 +5,12 @@ qt_find_package(DirectFB)
 # end special case:
 
 #####################################################################
-## qdirectfb Plugin:
+## QDirectFbIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qdirectfb
+qt_add_plugin(QDirectFbIntegrationPlugin
+    OUTPUT_NAME qdirectfb
     TYPE platforms
-    CLASS_NAME QDirectFbIntegrationPlugin
     SOURCES
         main.cpp
         qdirectfbbackingstore.cpp qdirectfbbackingstore.h
@@ -43,7 +43,7 @@ qt_add_plugin(qdirectfb
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qdirectfb CONDITION QT_CONFIG___contains___directfb_egl
+qt_extend_target(QDirectFbIntegrationPlugin CONDITION QT_CONFIG___contains___directfb_egl
     SOURCES
         qdirectfb_egl.cpp qdirectfb_egl.h
     DEFINES
@@ -54,7 +54,7 @@ qt_extend_target(qdirectfb CONDITION QT_CONFIG___contains___directfb_egl
         Qt::EglSupport
 )
 
-qt_extend_target(qdirectfb CONDITION NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
+qt_extend_target(QDirectFbIntegrationPlugin CONDITION NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
     DEFINES
         DIRECTFB_PLATFORM_HOOKS
 )
@@ -62,7 +62,7 @@ qt_extend_target(qdirectfb CONDITION NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
 #### Keys ignored in scope 3:.:.:directfb.pro:NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY:
 # QMAKE_LIBDIR = "$$DIRECTFB_PLATFORM_HOOKS_LIBDIR"
 
-qt_extend_target(qdirectfb CONDITION DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
+qt_extend_target(QDirectFbIntegrationPlugin CONDITION DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
     SOURCES
         qdirectfbeglhooks_stub.cpp
 )

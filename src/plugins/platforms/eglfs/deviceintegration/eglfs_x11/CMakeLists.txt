@@ -1,12 +1,12 @@
 # Generated from eglfs_x11.pro.
 
 #####################################################################
-## qeglfs-x11-integration Plugin:
+## QEglFSX11IntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qeglfs-x11-integration
+qt_add_plugin(QEglFSX11IntegrationPlugin
+    OUTPUT_NAME qeglfs-x11-integration
     TYPE egldeviceintegrations
-    CLASS_NAME QEglFSX11IntegrationPlugin
     SOURCES
         qeglfsx11integration.cpp qeglfsx11integration.h
         qeglfsx11main.cpp

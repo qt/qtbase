@@ -1,12 +1,12 @@
 # Generated from libinput.pro.
 
 #####################################################################
-## qlibinputplugin Plugin:
+## QLibInputPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qlibinputplugin
+qt_add_plugin(QLibInputPlugin
+    OUTPUT_NAME qlibinputplugin
     TYPE generic
-    CLASS_NAME QLibInputPlugin
     SOURCES
         main.cpp
     LIBRARIES

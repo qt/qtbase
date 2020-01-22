@@ -1,12 +1,12 @@
 # Generated from xcb_egl.pro.
 
 #####################################################################
-## qxcb-egl-integration Plugin:
+## QXcbEglIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qxcb-egl-integration
+qt_add_plugin(QXcbEglIntegrationPlugin
+    OUTPUT_NAME qxcb-egl-integration
     TYPE xcbglintegrations
-    CLASS_NAME QXcbEglIntegrationPlugin
     SOURCES
         qxcbeglcontext.h
         qxcbeglintegration.cpp qxcbeglintegration.h

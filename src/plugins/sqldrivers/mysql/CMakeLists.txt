@@ -1,12 +1,12 @@
 # Generated from mysql.pro.
 
 #####################################################################
-## qsqlmysql Plugin:
+## QMYSQLDriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qsqlmysql
+qt_add_plugin(QMYSQLDriverPlugin
+    OUTPUT_NAME qsqlmysql
     TYPE sqldrivers
-    CLASS_NAME QMYSQLDriverPlugin
     SOURCES
         main.cpp
         qsql_mysql.cpp qsql_mysql_p.h

@@ -1,12 +1,12 @@
 # Generated from windows.pro.
 
 #####################################################################
-## qwindows Plugin:
+## QWindowsIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qwindows
+qt_add_plugin(QWindowsIntegrationPlugin
+    OUTPUT_NAME qwindows
     TYPE platforms
-    CLASS_NAME QWindowsIntegrationPlugin
     SOURCES
         main.cpp
         qtwindowsglobal.h
@@ -75,7 +75,7 @@ set(openglblacklists_resource_files
     "openglblacklists/default.json"
 )
 
-qt_add_resource(qwindows "openglblacklists"
+qt_add_resource(QWindowsIntegrationPlugin "openglblacklists"
     PREFIX
         "/qt-project.org/windows/openglblacklists"
     FILES
@@ -89,7 +89,7 @@ qt_add_resource(qwindows "openglblacklists"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_accessibility
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
         uiautomation/qwindowsuiaaccessibility.cpp uiautomation/qwindowsuiaaccessibility.h
         uiautomation/qwindowsuiabaseprovider.cpp uiautomation/qwindowsuiabaseprovider.h
@@ -115,7 +115,7 @@ qt_extend_target(qwindows CONDITION QT_FEATURE_accessibility
         Qt::AccessibilitySupport
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_vulkan
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qwindowsvulkaninstance.cpp qwindowsvulkaninstance.h
     LIBRARIES
@@ -127,59 +127,59 @@ qt_extend_target(qwindows CONDITION QT_FEATURE_vulkan
 #### Keys ignored in scope 4:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl AND NOT QT_FEATURE_opengles2
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl AND NOT QT_FEATURE_opengles2
     PUBLIC_LIBRARIES
         opengl32
 )
 
-qt_extend_target(qwindows CONDITION mingw
+qt_extend_target(QWindowsIntegrationPlugin CONDITION mingw
     PUBLIC_LIBRARIES
         uuid
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_opengl
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
         qwindowsopenglcontext.h
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_opengles2
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengles2
     SOURCES
         qwindowseglcontext.cpp qwindowseglcontext.h
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
     SOURCES
         qwindowsglcontext.cpp qwindowsglcontext.h
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_dynamicgl
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_dynamicgl
     SOURCES
         qwindowseglcontext.cpp qwindowseglcontext.h
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_systemtrayicon
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_systemtrayicon
     SOURCES
         qwindowssystemtrayicon.cpp qwindowssystemtrayicon.h
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_clipboard
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_clipboard
     SOURCES
         qwindowsclipboard.cpp qwindowsclipboard.h
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_clipboard AND QT_FEATURE_draganddrop
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_clipboard AND QT_FEATURE_draganddrop
     SOURCES
         qwindowsdrag.cpp qwindowsdrag.h
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_tabletevent
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_tabletevent
     SOURCES
         qwindowstabletsupport.cpp qwindowstabletsupport.h
     INCLUDE_DIRECTORIES
         ${QT_SOURCE_TREE}/src/3rdparty/wintab
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_sessionmanager
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
     SOURCES
         qwindowssessionmanager.cpp qwindowssessionmanager.h
 )
@@ -210,7 +210,7 @@ if(QT_FEATURE_imageformat_png)
         "images/splitvcursor_64.png"
     )
 
-    qt_add_resource(qwindows "cursors"
+    qt_add_resource(QWindowsIntegrationPlugin "cursors"
         PREFIX
             "/qt-project.org/windows/cursors"
         FILES
@@ -218,25 +218,25 @@ if(QT_FEATURE_imageformat_png)
     )
 endif()
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_accessibility AND TARGET Qt::WindowsUIAutomationSupportPrivate
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility AND TARGET Qt::WindowsUIAutomationSupportPrivate
     LIBRARIES
         Qt::WindowsUIAutomationSupportPrivate
     PUBLIC_LIBRARIES
         Qt::WindowsUIAutomationSupport
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_accessibility AND mingw
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility AND mingw
     PUBLIC_LIBRARIES
         uuid
 )
 
-qt_extend_target(qwindows CONDITION QT_FEATURE_combined_angle_lib
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_combined_angle_lib
     DEFINES
         LIBEGL_NAME=
         LIBGLESV2_NAME=
 )
 
-qt_extend_target(qwindows CONDITION NOT QT_FEATURE_combined_angle_lib
+qt_extend_target(QWindowsIntegrationPlugin CONDITION NOT QT_FEATURE_combined_angle_lib
     DEFINES
         LIBEGL_NAME=
         LIBGLESV2_NAME=

@@ -1,12 +1,12 @@
 # Generated from eglfs_emu.pro.
 
 #####################################################################
-## qeglfs-emu-integration Plugin:
+## QEglFSEmulatorIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qeglfs-emu-integration
+qt_add_plugin(QEglFSEmulatorIntegrationPlugin
+    OUTPUT_NAME qeglfs-emu-integration
     TYPE egldeviceintegrations
-    CLASS_NAME QEglFSEmulatorIntegrationPlugin
     SOURCES
         qeglfsemulatorintegration.cpp qeglfsemulatorintegration.h
         qeglfsemulatorscreen.cpp qeglfsemulatorscreen.h

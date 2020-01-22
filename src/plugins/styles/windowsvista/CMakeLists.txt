@@ -1,12 +1,12 @@
 # Generated from windowsvista.pro.
 
 #####################################################################
-## qwindowsvistastyle Plugin:
+## QWindowsVistaStylePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qwindowsvistastyle
+qt_add_plugin(QWindowsVistaStylePlugin
+    OUTPUT_NAME qwindowsvistastyle
     TYPE styles
-    CLASS_NAME QWindowsVistaStylePlugin
     SOURCES
         main.cpp
         qwindowsvistastyle.cpp qwindowsvistastyle_p.h

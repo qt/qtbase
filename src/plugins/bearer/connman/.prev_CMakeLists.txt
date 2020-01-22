@@ -1,12 +1,13 @@
 # Generated from connman.pro.
 
 #####################################################################
-## qconnmanbearer Plugin:
+## QConnmanEnginePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qconnmanbearer
-    TYPE bearer
+qt_add_plugin(QConnmanEnginePlugin
+    OUTPUT_NAME qconnmanbearer
     CLASS_NAME QConnmanEnginePlugin
+    TYPE bearer
     SOURCES
         main.cpp
         qconnmanengine.cpp qconnmanengine.h

@@ -6,12 +6,12 @@
 qt_find_package(PostgreSQL) # special case
 
 #####################################################################
-## qsqlpsql Plugin:
+## QPSQLDriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qsqlpsql
+qt_add_plugin(QPSQLDriverPlugin
+    OUTPUT_NAME qsqlpsql
     TYPE sqldrivers
-    CLASS_NAME QPSQLDriverPlugin
     SOURCES
         main.cpp
         qsql_psql.cpp qsql_psql_p.h

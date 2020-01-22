@@ -1,12 +1,12 @@
 # Generated from mac.pro.
 
 #####################################################################
-## qmacstyle Plugin:
+## QMacStylePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qmacstyle
+qt_add_plugin(QMacStylePlugin
+    OUTPUT_NAME qmacstyle
     TYPE styles
-    CLASS_NAME QMacStylePlugin
     SOURCES
         main.mm
         qmacstyle_mac.mm qmacstyle_mac_p.h

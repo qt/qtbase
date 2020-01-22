@@ -1,12 +1,12 @@
 # Generated from generic.pro.
 
 #####################################################################
-## qgenericbearer Plugin:
+## QGenericEnginePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qgenericbearer
+qt_add_plugin(QGenericEnginePlugin
+    OUTPUT_NAME qgenericbearer
     TYPE bearer
-    CLASS_NAME QGenericEnginePlugin
     SOURCES
         ../platformdefs_win.h
         main.cpp
@@ -25,7 +25,7 @@ qt_add_plugin(qgenericbearer
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qgenericbearer CONDITION WIN32 AND NOT WINRT
+qt_extend_target(QGenericEnginePlugin CONDITION WIN32 AND NOT WINRT
     PUBLIC_LIBRARIES
         iphlpapi
 )

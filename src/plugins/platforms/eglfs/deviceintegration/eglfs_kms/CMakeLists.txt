@@ -1,12 +1,12 @@
 # Generated from eglfs_kms.pro.
 
 #####################################################################
-## qeglfs-kms-integration Plugin:
+## QEglFSKmsGbmIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qeglfs-kms-integration
+qt_add_plugin(QEglFSKmsGbmIntegrationPlugin
+    OUTPUT_NAME qeglfs-kms-integration
     TYPE egldeviceintegrations
-    CLASS_NAME QEglFSKmsGbmIntegrationPlugin
     SOURCES
         qeglfskmsgbmcursor.cpp qeglfskmsgbmcursor.h
         qeglfskmsgbmdevice.cpp qeglfskmsgbmdevice.h

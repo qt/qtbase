@@ -1,12 +1,12 @@
 # Generated from evdevtouch.pro.
 
 #####################################################################
-## qevdevtouchplugin Plugin:
+## QEvdevTouchScreenPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qevdevtouchplugin
+qt_add_plugin(QEvdevTouchScreenPlugin
+    OUTPUT_NAME qevdevtouchplugin
     TYPE generic
-    CLASS_NAME QEvdevTouchScreenPlugin
     SOURCES
         main.cpp
     LIBRARIES

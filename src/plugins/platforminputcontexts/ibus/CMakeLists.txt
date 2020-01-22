@@ -1,12 +1,12 @@
 # Generated from ibus.pro.
 
 #####################################################################
-## ibusplatforminputcontextplugin Plugin:
+## QIbusPlatformInputContextPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(ibusplatforminputcontextplugin
+qt_add_plugin(QIbusPlatformInputContextPlugin
+    OUTPUT_NAME ibusplatforminputcontextplugin
     TYPE platforminputcontexts
-    CLASS_NAME QIbusPlatformInputContextPlugin
     SOURCES
         main.cpp
         qibusinputcontextproxy.cpp qibusinputcontextproxy.h

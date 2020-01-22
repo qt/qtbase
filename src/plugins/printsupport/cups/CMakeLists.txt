@@ -3,12 +3,12 @@
 qt_find_package(Cups PROVIDED_TARGETS Cups::Cups) # special case
 
 #####################################################################
-## cupsprintersupport Plugin:
+## QCupsPrinterSupportPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(cupsprintersupport
+qt_add_plugin(QCupsPrinterSupportPlugin
+    OUTPUT_NAME cupsprintersupport
     TYPE printsupport
-    CLASS_NAME QCupsPrinterSupportPlugin
     SOURCES
         main.cpp
         qcupsprintengine.cpp qcupsprintengine_p.h
