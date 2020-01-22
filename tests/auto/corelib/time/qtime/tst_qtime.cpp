@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -77,7 +77,9 @@ private slots:
     void toStringDateFormat();
     void toStringFormat_data();
     void toStringFormat();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void toStringLocale();
+#endif // ### Qt 6: remove
     void msecsSinceStartOfDay_data();
     void msecsSinceStartOfDay();
 
@@ -770,6 +772,7 @@ void tst_QTime::toStringFormat()
     QCOMPARE( t.toString( format ), str );
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void tst_QTime::toStringLocale()
 {
     QTime time(18, 30);
@@ -791,6 +794,7 @@ void tst_QTime::toStringLocale()
     QCOMPARE(time.toString(Qt::DefaultLocaleLongDate),
                 QLocale().toString(time, QLocale::LongFormat));
 }
+#endif // ### Qt 6: remove
 
 void tst_QTime::msecsSinceStartOfDay_data()
 {

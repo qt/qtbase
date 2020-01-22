@@ -2025,6 +2025,9 @@ QString QLocale::toString(const QDate &date, QStringView format) const
 /*!
     Returns a localized string representation of the given \a date according
     to the specified \a format.
+
+    \note Some locales may use formats that limit the range of years they can
+    represent.
 */
 
 QString QLocale::toString(const QDate &date, FormatType format) const
@@ -2179,6 +2182,9 @@ QString QLocale::toString(const QDateTime &dateTime, QStringView format, QCalend
 
     Returns a localized string representation of the given \a dateTime according
     to the specified \a format.
+
+    \note Some locales may use formats that limit the range of years they can
+    represent.
 */
 
 QString QLocale::toString(const QDateTime &dateTime, FormatType format) const

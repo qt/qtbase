@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1150,18 +1150,16 @@ static QString toStringIsoDate(const QDate &date)
     year, MM is the month of the year (between 01 and 12), and dd is
     the day of the month between 01 and 31.
 
-    If the \a format is Qt::SystemLocaleShortDate or
-    Qt::SystemLocaleLongDate, the string format depends on the locale
-    settings of the system. Identical to calling
-    QLocale::system().toString(date, QLocale::ShortFormat) or
-    QLocale::system().toString(date, QLocale::LongFormat).
+    The \a format options Qt::SystemLocaleDate, Qt::SystemLocaleShortDate and
+    Qt::SystemLocaleLongDate shall be removed in Qt 6. Their use should be
+    replaced with
+    \l {QLocale::toString()}{QLocale::system().toString(date, QLocale::ShortFormat)} or
+    \l {QLocale::toString()}{QLocale::system().toString(date, QLocale::LongFormat)}.
 
-    If the \a format is Qt::DefaultLocaleShortDate or
-    Qt::DefaultLocaleLongDate, the string format depends on the
-    default application locale. This is the locale set with
-    QLocale::setDefault(), or the system locale if no default locale
-    has been set. Identical to calling
-    \l {QLocale::toString()}{QLocale().toString(date, QLocale::ShortFormat) } or
+    The \a format options Qt::LocaleDate, Qt::DefaultLocaleShortDate and
+    Qt::DefaultLocaleLongDate shall be removed in Qt 6. Their use should be
+    replaced with
+    \l {QLocale::toString()}{QLocale().toString(date, QLocale::ShortFormat)} or
     \l {QLocale::toString()}{QLocale().toString(date, QLocale::LongFormat)}.
 
     If the \a format is Qt::RFC2822Date, the string is formatted in
@@ -1171,8 +1169,7 @@ static QString toStringIsoDate(const QDate &date)
     If the date is invalid, an empty string will be returned.
 
     \warning The Qt::ISODate format is only valid for years in the
-    range 0 to 9999. This restriction may apply to locale-aware
-    formats as well, depending on the locale settings.
+    range 0 to 9999.
 
     \sa fromString(), QLocale::toString()
 */
@@ -1182,6 +1179,7 @@ QString QDate::toString(Qt::DateFormat format) const
         return QString();
 
     switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat);
@@ -1192,6 +1190,7 @@ QString QDate::toString(Qt::DateFormat format) const
         return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
+#endif // 5.15
     case Qt::RFC2822Date:
         return QLocale::c().toString(*this, u"dd MMM yyyy");
     default:
@@ -1284,6 +1283,7 @@ QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
         return QString();
 
     switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
@@ -1294,6 +1294,7 @@ QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
         return QLocale().toString(*this, QLocale::ShortFormat, cal);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat, cal);
+#endif // 5.15
     case Qt::RFC2822Date:
         return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"), cal);
     default:
@@ -1659,9 +1660,14 @@ ParsedInt readInt(QStringView text)
     \a format given, or an invalid date if the string cannot be
     parsed.
 
-    Note for Qt::TextDate: It is recommended that you use the
-    English short month names (e.g. "Jan"). Although localized month
-    names can also be used, they depend on the user's locale settings.
+    Note for Qt::TextDate: It is recommended that you use the English short
+    month names (e.g. "Jan"). Although localized month names can also be used in
+    Qt 5, they depend on the user's locale settings.
+
+    \note Support for localized dates, including the format options
+    Qt::SystemLocaleDate, Qt::SystemLocaleShortDate, Qt::SystemLocaleLongDate,
+    Qt::LocaleDate, Qt::DefaultLocaleShortDate, and Qt::DefaultLocaleLongDate,
+    shall be removed in Qt 6. Use QLocale::toDate() instead.
 
     \sa toString(), QLocale::toDate()
 */
@@ -1672,6 +1678,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return QDate();
 
     switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toDate(string, QLocale::ShortFormat);
@@ -1682,6 +1689,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toDate(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDate(string, QLocale::LongFormat);
+#endif // 5.15
     case Qt::RFC2822Date:
         return rfcDateImpl(string).date;
     default:
@@ -2035,18 +2043,15 @@ int QTime::msec() const
     date, use the \a format Qt::ISODateWithMs, which corresponds to
     HH:mm:ss.zzz.
 
-    If the \a format is Qt::SystemLocaleShortDate or
-    Qt::SystemLocaleLongDate, the string format depends on the locale
-    settings of the system. Identical to calling
-    QLocale::system().toString(time, QLocale::ShortFormat) or
-    QLocale::system().toString(time, QLocale::LongFormat).
+    The \a format options Qt::SystemLocaleDate:, Qt::SystemLocaleShortDate and
+    Qt::SystemLocaleLongDate shall be removed in Qt 6. Their use should be
+    replaced with:
+    \l {QLocale::toString()}{QLocale::system().toString(time, QLocale::ShortFormat)} or
+    \l {QLocale::toString()}{QLocale::system().toString(time, QLocale::LongFormat)}.
 
-    If the \a format is Qt::DefaultLocaleShortDate or
-    Qt::DefaultLocaleLongDate, the string format depends on the
-    default application locale. This is the locale set with
-    QLocale::setDefault(), or the system locale if no default locale
-    has been set. Identical to calling
-
+    The \a format options Qt::LocaleDate, Qt::DefaultLocaleShortDate and
+    Qt::DefaultLocaleLongDate shall be removed in Qt 6. Their use should be
+    replaced with:
     \l {QLocale::toString()}{QLocale().toString(time, QLocale::ShortFormat)} or
     \l {QLocale::toString()}{QLocale().toString(time, QLocale::LongFormat)}.
 
@@ -2065,6 +2070,7 @@ QString QTime::toString(Qt::DateFormat format) const
         return QString();
 
     switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat);
@@ -2075,6 +2081,7 @@ QString QTime::toString(Qt::DateFormat format) const
         return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
+#endif // 5.15
     case Qt::ISODateWithMs:
         return QString::asprintf("%02d:%02d:%02d.%03d", hour(), minute(), second(), msec());
     case Qt::RFC2822Date:
@@ -2450,6 +2457,12 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     fails for the default locale). This should be considered an
     implementation detail.
 
+
+    \note Support for localized dates, including the format options
+    Qt::SystemLocaleDate, Qt::SystemLocaleShortDate, Qt::SystemLocaleLongDate,
+    Qt::LocaleDate, Qt::DefaultLocaleShortDate, and Qt::DefaultLocaleLongDate,
+    shall be removed in Qt 6. Use QLocale::toTime() instead.
+
     \sa toString(), QLocale::toTime()
 */
 QTime QTime::fromString(const QString &string, Qt::DateFormat format)
@@ -2458,6 +2471,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
         return QTime();
 
     switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toTime(string, QLocale::ShortFormat);
@@ -2468,6 +2482,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toTime(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toTime(string, QLocale::LongFormat);
+#endif // 5.15
     case Qt::RFC2822Date:
         return rfcDateImpl(string).time;
     case Qt::ISODate:
@@ -4326,19 +4341,17 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     date, use the \a format Qt::ISODateWithMs, which corresponds to
     yyyy-MM-ddTHH:mm:ss.zzz[Z|[+|-]HH:mm].
 
-    If the \a format is Qt::SystemLocaleShortDate or
-    Qt::SystemLocaleLongDate, the string format depends on the locale
-    settings of the system. Identical to calling
-    QLocale::system().toString(datetime, QLocale::ShortFormat) or
-    QLocale::system().toString(datetime, QLocale::LongFormat).
+    The \a format options Qt::SystemLocaleDate, Qt::SystemLocaleShortDate and
+    Qt::SystemLocaleLongDate shall be removed in Qt 6. Their use should be
+    replaced with
+    \l {QLocale::toString()}{QLocale::system().toString(datetime, QLocale::ShortFormat)} or
+    \l {QLocale::toString()}{QLocale::system().toString(datetime, QLocale::LongFormat)}.
 
-    If the \a format is Qt::DefaultLocaleShortDate or
-    Qt::DefaultLocaleLongDate, the string format depends on the
-    default application locale. This is the locale set with
-    QLocale::setDefault(), or the system locale if no default locale
-    has been set. Identical to calling QLocale().toString(datetime,
-    QLocale::ShortFormat) or QLocale().toString(datetime,
-    QLocale::LongFormat).
+    The \a format options Qt::LocaleDate, Qt::DefaultLocaleShortDate and
+    Qt::DefaultLocaleLongDate shall be removed in Qt 6. Their use should be
+    replaced with
+    \l {QLocale::toString()}{QLocale().toString(datetime, QLocale::ShortFormat)} or
+    \l {QLocale::toString()}{QLocale().toString(datetime, QLocale::LongFormat)}.
 
     If the \a format is Qt::RFC2822Date, the string is formatted
     following \l{RFC 2822}.
@@ -4346,8 +4359,7 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     If the datetime is invalid, an empty string will be returned.
 
     \warning The Qt::ISODate format is only valid for years in the
-    range 0 to 9999. This restriction may apply to locale-aware
-    formats as well, depending on the locale settings.
+    range 0 to 9999.
 
     \sa fromString(), QDate::toString(), QTime::toString(),
     QLocale::toString()
@@ -4365,6 +4377,7 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
         return buf;
 
     switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
@@ -4375,6 +4388,7 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
         return QLocale().toString(*this, QLocale::ShortFormat, cal);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat, cal);
+#endif // 5.15
     case Qt::RFC2822Date: {
         buf = QLocale::c().toString(*this, u"dd MMM yyyy hh:mm:ss ", cal);
         buf += toOffsetString(Qt::TextDate, offsetFromUtc());
@@ -5239,9 +5253,14 @@ int QDateTime::utcOffset() const
     Returns the QDateTime represented by the \a string, using the
     \a format given, or an invalid datetime if this is not possible.
 
-    Note for Qt::TextDate: It is recommended that you use the
-    English short month names (e.g. "Jan"). Although localized month
-    names can also be used, they depend on the user's locale settings.
+    Note for Qt::TextDate: It is recommended that you use the English short
+    month names (e.g. "Jan"). Although localized month names can also be used in
+    Qt 5, they depend on the user's locale settings.
+
+    \note Support for localized dates, including the format options
+    Qt::SystemLocaleDate, Qt::SystemLocaleShortDate, Qt::SystemLocaleLongDate,
+    Qt::LocaleDate, Qt::DefaultLocaleShortDate, and Qt::DefaultLocaleLongDate,
+    shall be removed in Qt 6. Use QLocale::toDateTime() instead.
 
     \sa toString(), QLocale::toDateTime()
 */
@@ -5251,6 +5270,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         return QDateTime();
 
     switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toDateTime(string, QLocale::ShortFormat);
@@ -5261,6 +5281,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toDateTime(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDateTime(string, QLocale::LongFormat);
+#endif // 5.15
     case Qt::RFC2822Date: {
         const ParsedRfcDateTime rfc = rfcDateImpl(string);
 
