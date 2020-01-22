@@ -2526,6 +2526,18 @@
 
            See also \l{#height-prop}{height}.
 
+    \row
+        \li \b -qt-background-role
+        \li \l{#paletterole}{PaletteRole}
+        \li The \c{background-color} for the subcontrol or widget based on the
+            chosen role.
+
+    \row
+        \li \b -qt-style-features
+        \li \c list
+        \li The list of CSS properties that you want to apply Qt-specific styles on.
+
+            \note The \c list can only include properties that are not pixmap-based.
     \endtable
 
     \target list of icons
