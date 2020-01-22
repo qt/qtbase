@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Sean Harmer <sean.harmer@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,7 +40,7 @@
 #ifndef QOPENGLVERTEXARRAYOBJECT_H
 #define QOPENGLVERTEXARRAYOBJECT_H
 
-#include <QtGui/qtguiglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 #ifndef QT_NO_OPENGL
 
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLVertexArrayObjectPrivate;
 
-class Q_GUI_EXPORT QOpenGLVertexArrayObject : public QObject
+class Q_OPENGL_EXPORT QOpenGLVertexArrayObject : public QObject
 {
     Q_OBJECT
 
@@ -66,7 +66,7 @@ public:
     void bind();
     void release();
 
-    class Q_GUI_EXPORT Binder
+    class Q_OPENGL_EXPORT Binder
     {
     public:
         inline Binder(QOpenGLVertexArrayObject *v)

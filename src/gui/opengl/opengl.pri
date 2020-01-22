@@ -12,7 +12,6 @@ qtConfig(opengl) {
                opengl/qopenglextensions_p.h \
                opengl/qopenglversionfunctions.h \
                opengl/qopenglversionfunctionsfactory_p.h \
-               opengl/qopenglvertexarrayobject.h \
                opengl/qopenglextrafunctions.h \
                opengl/qopenglprogrambinarycache_p.h
 
@@ -21,7 +20,6 @@ qtConfig(opengl) {
                opengl/qopenglbuffer.cpp \
                opengl/qopenglversionfunctions.cpp \
                opengl/qopenglversionfunctionsfactory.cpp \
-               opengl/qopenglvertexarrayobject.cpp \
                opengl/qopenglprogrambinarycache.cpp
 
     !qtConfig(opengles2) {

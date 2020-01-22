@@ -30,6 +30,7 @@ HEADERS += \
     qopengltexturecache_p.h \
     qopengltextureglyphcache_p.h \
     qopengltextureuploader_p.h \
+    qopenglvertexarrayobject.h \
     qopenglwindow.h \
     qtopenglglobal.h
 
@@ -49,6 +50,7 @@ SOURCES += \
     qopengltexturecache.cpp \
     qopengltextureglyphcache.cpp \
     qopengltextureuploader.cpp \
+    qopenglvertexarrayobject.cpp \
     qopenglwindow.cpp \
     qopengldebug.cpp
 

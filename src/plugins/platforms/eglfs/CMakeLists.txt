@@ -80,6 +80,8 @@ qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
     SOURCES
         api/qeglfscontext.cpp api/qeglfscontext_p.h
         api/qeglfscursor.cpp api/qeglfscursor_p.h
+    PUBLIC_LIBRARIES
+        Qt::OpenGLPrivate
 )
 #####################################################################
 ## QEglFSIntegrationPlugin Plugin:

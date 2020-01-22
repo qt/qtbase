@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Sean Harmer <sean.harmer@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,9 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
-
-#ifndef QT_NO_OPENGL
+#include <QtOpenGL/qtopenglglobal.h>
 
 #include <QtGui/qopengl.h>
 
@@ -62,7 +60,7 @@ QT_BEGIN_NAMESPACE
 class QOpenGLVertexArrayObjectHelper;
 class QOpenGLContext;
 
-void Q_GUI_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
+void Q_OPENGL_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
 
 class QOpenGLVertexArrayObjectHelper
 {
@@ -104,7 +102,7 @@ public:
     }
 
 private:
-    friend void Q_GUI_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
+    friend void Q_OPENGL_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
 
     // Function signatures are equivalent between desktop core, ARB, APPLE, ES 3 and ES 2 extensions
     typedef void (QOPENGLF_APIENTRYP qt_GenVertexArrays_t)(GLsizei n, GLuint *arrays);
@@ -119,7 +117,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_OPENGL
 
 #endif // QOPENGLVERTEXARRAYOBJECT_P_H

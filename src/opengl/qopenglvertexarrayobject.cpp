@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Sean Harmer <sean.harmer@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -315,7 +315,7 @@ void QOpenGLVertexArrayObjectPrivate::release()
 /*!
     \class QOpenGLVertexArrayObject
     \brief The QOpenGLVertexArrayObject class wraps an OpenGL Vertex Array Object.
-    \inmodule QtGui
+    \inmodule QtOpenGL
     \since 5.1
     \ingroup painting-3D
 
@@ -473,7 +473,7 @@ void QOpenGLVertexArrayObject::release()
     \class QOpenGLVertexArrayObject::Binder
     \brief The QOpenGLVertexArrayObject::Binder class is a convenience class to help
     with the binding and releasing of OpenGL Vertex Array Objects.
-    \inmodule QtGui
+    \inmodule QtOpenGL
     \reentrant
     \since 5.1
     \ingroup painting-3D

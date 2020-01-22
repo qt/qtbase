@@ -40,8 +40,8 @@
 #include "qopengltextureblitter.h"
 
 #include <QtOpenGL/QOpenGLShaderProgram>
+#include <QtOpenGL/QOpenGLVertexArrayObject>
 #include <QtGui/QOpenGLBuffer>
-#include <QtGui/QOpenGLVertexArrayObject>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFunctions>
 

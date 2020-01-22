@@ -50,7 +50,7 @@
 #include <QtCore/QJsonObject>
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/private/qopenglvertexarrayobject_p.h>
+#include <QtOpenGL/private/qopenglvertexarrayobject_p.h>
 
 #ifndef GL_VERTEX_ARRAY_BINDING
 #define GL_VERTEX_ARRAY_BINDING 0x85B5

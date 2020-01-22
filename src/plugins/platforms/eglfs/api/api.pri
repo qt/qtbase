@@ -15,6 +15,7 @@ HEADERS +=  $$PWD/qeglfswindow_p.h \
             $$PWD/qeglfsglobal_p.h
 
 qtConfig(opengl) {
+    QT += opengl-private
     SOURCES += \
         $$PWD/qeglfscursor.cpp \
         $$PWD/qeglfscontext.cpp

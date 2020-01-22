@@ -24,6 +24,7 @@ qt_add_module(OpenGL
         qopengltextureglyphcache.cpp qopengltextureglyphcache_p.h
         qopengltexturehelper.cpp qopengltexturehelper_p.h
         qopengltextureuploader.cpp qopengltextureuploader_p.h
+        qopenglvertexarrayobject.cpp qopenglvertexarrayobject.h
         qopenglwindow.cpp qopenglwindow.h
         qtopenglglobal.h
     DEFINES
