@@ -478,10 +478,33 @@ function(add_qt_gui_executable target)
     endif()
 endfunction()
 
+function(_qt_get_plugin_name_with_version target out_var)
+    string(REGEX REPLACE "^Qt::(.+)" "Qt${QT_DEFAULT_MAJOR_VERSION}::\\1"
+           qt_plugin_with_version "${target}")
+    if(TARGET "${qt_plugin_with_version}")
+        set("${out_var}" "${qt_plugin_with_version}" PARENT_SCOPE)
+    else()
+        set("${out_var}" "" PARENT_SCOPE)
+    endif()
+endfunction()
+
 macro(_qt_import_plugin target plugin)
-    get_target_property(plugin_class_name "${plugin}" QT_PLUGIN_CLASS_NAME)
-    if(plugin_class_name)
-        set_property(TARGET "${target}" APPEND PROPERTY QT_PLUGINS "${plugin}")
+    set(_final_plugin_name "${plugin}")
+    if(NOT TARGET "${plugin}")
+        _qt_get_plugin_name_with_version("${plugin}" _qt_plugin_with_version_name)
+        if(TARGET "${_qt_plugin_with_version_name}")
+            set(_final_plugin_name "${_qt_plugin_with_version_name}")
+        endif()
+    endif()
+
+    if(NOT TARGET "${_final_plugin_name}")
+        message(
+            "Warning: plug-in ${_final_plugin_name} is not known to the current Qt installation.")
+    else()
+        get_target_property(_plugin_class_name "${_final_plugin_name}" QT_PLUGIN_CLASS_NAME)
+        if(_plugin_class_name)
+            set_property(TARGET "${target}" APPEND PROPERTY QT_PLUGINS "${plugin}")
+        endif()
     endif()
 endmacro()
 
@@ -535,7 +558,10 @@ function(qt6_import_plugins target)
                 message(FATAL_ERROR "qt_import_plugins: invalid syntax for INCLUDE_BY_TYPE")
             endif()
 
-            if(TARGET "${_arg}")
+            # Check if passed plugin target name is a version-less one, and make a version-full
+            # one.
+            _qt_get_plugin_name_with_version("${_arg}" qt_plugin_with_version)
+            if(TARGET "${_arg}" OR TARGET "${qt_plugin_with_version}")
                 set_property(TARGET "${target}" APPEND PROPERTY "QT_PLUGINS_${_current_type}" "${_arg}")
             else()
                 message("Warning: plug-in ${_arg} is not known to the current Qt installation.")

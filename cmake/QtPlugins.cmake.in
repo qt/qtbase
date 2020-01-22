@@ -34,6 +34,7 @@ if(NOT @BUILD_SHARED_LIBS@)
     # The code in here uses the properties defined in qt_import_plugins (Qt6CoreMacros.cmake)
     foreach(target @qt_plugins@)
         set(_plugin_target "@INSTALL_CMAKE_NAMESPACE@::${target}")
+        set(_plugin_target_versionless "Qt::${target}")
         get_target_property(_classname "${_plugin_target}" QT_PLUGIN_CLASS_NAME)
         if(NOT _classname)
           message("Warning: plugin ${_plugin_target} has no class name, skipping.")
@@ -52,6 +53,8 @@ if(NOT @BUILD_SHARED_LIBS@)
 
         # INCLUDE
         set(_plugin_is_whitelisted "$<IN_LIST:${_plugin_target},${_manual_plugins_genex}>")
+        set(_plugin_versionless_is_whitelisted
+            "$<IN_LIST:${_plugin_target_versionless},${_manual_plugins_genex}>")
 
         # Note: qt_import_plugins sets the QT_PLUGINS_${_plugin_type} to "-"
         # when excluding it with EXCLUDE_BY_TYPE,
@@ -61,7 +64,11 @@ if(NOT @BUILD_SHARED_LIBS@)
                 "$<NOT:" # EXCLUDE
                     "$<IN_LIST:${_plugin_target},${_no_plugins_genex}>"
                 ">,"
-                # excludes both plugins targeted by EXCLUDE_BY_TYPE and not included in INCLUDE_BY_TYPE
+                "$<NOT:"
+                    "$<IN_LIST:${_plugin_target_versionless},${_no_plugins_genex}>"
+                ">,"
+                # Excludes both plugins targeted by EXCLUDE_BY_TYPE and not included in
+                # INCLUDE_BY_TYPE.
                 "$<STREQUAL:,$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS_${_plugin_type}>>>"
             ">"
         )
@@ -75,6 +82,14 @@ if(NOT @BUILD_SHARED_LIBS@)
                 ">"
             ">"
         )
+        string(CONCAT _plugin_versionless_is_in_type_whitelist
+            "$<IN_LIST:"
+                "${_plugin_target_versionless},"
+                "$<GENEX_EVAL:"
+                    "$<TARGET_PROPERTY:QT_PLUGINS_${_plugin_type}>"
+                ">"
+            ">"
+        )
 
         # Complete condition that defines whether a static plugin is linked
         string(CONCAT _plugin_condition
@@ -82,7 +97,9 @@ if(NOT @BUILD_SHARED_LIBS@)
                 "${_build_allow_plugin_link_rules_genex},"
                 "$<OR:"
                     "${_plugin_is_whitelisted},"
+                    "${_plugin_versionless_is_whitelisted},"
                     "${_plugin_is_in_type_whitelist},"
+                    "${_plugin_versionless_is_in_type_whitelist},"
                     "$<AND:"
                         "${_default_plugins_are_enabled_wrapped},"
                         "${_plugin_is_default},"
