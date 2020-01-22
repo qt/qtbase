@@ -3259,10 +3259,30 @@ def write_example(
 
 
 def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
-    plugin_name = scope.TARGET
+    extra = []
+    qmake_target_name = scope.TARGET
+
+    # Forward the original Qt5 plugin target name, to correctly name the
+    # final library file name, and also for .prl generation.
+    if qmake_target_name:
+        extra.append(f"OUTPUT_NAME {qmake_target_name}")
+
+    # In Qt 6 CMake, the CMake target name for a plugin should be the
+    # same as it is in Qt5. qmake in Qt 5 derived the CMake target name
+    # from the "plugin class name", so use that.
+    # If the class name isn't empty, use that as the target name.
+    # Otherwise use the of value qmake TARGET
+    plugin_class_name = scope.get_string("PLUGIN_CLASS_NAME")
+    if plugin_class_name:
+        plugin_name = plugin_class_name
+    else:
+        plugin_name = qmake_target_name
     assert plugin_name
 
-    extra = []
+    # If the target name is derived from the class name, no need to
+    # forward the class name.
+    if plugin_class_name and plugin_class_name != plugin_name:
+        extra.append(f"CLASS_NAME {plugin_class_name}")
 
     qmldir = None
     plugin_type = scope.get_string("PLUGIN_TYPE")
@@ -3282,10 +3302,6 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
             extra.append("SKIP_INSTALL")
     if "qmltypes" in scope.get("CONFIG"):
         extra.append("GENERATE_QMLTYPES")
-
-    plugin_class_name = scope.get_string("PLUGIN_CLASS_NAME")
-    if plugin_class_name:
-        extra.append(f"CLASS_NAME {plugin_class_name}")
 
     if "static" in scope.get("CONFIG"):
         extra.append("STATIC")

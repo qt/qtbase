@@ -2145,7 +2145,7 @@ set(__qt_add_plugin_optional_args
     "STATIC;EXCEPTIONS;ALLOW_UNDEFINED_SYMBOLS"
 )
 set(__qt_add_plugin_single_args
-    "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH"
+    "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH;OUTPUT_NAME"
 )
 set(__qt_add_plugin_multi_args
     "${__default_private_args};${__default_public_args};DEFAULT_IF"
@@ -2178,8 +2178,11 @@ function(qt_add_plugin target)
         set(archive_install_directory_default "${INSTALL_QMLDIR}/${target_path}")
     endif()
 
-    if ("x${arg_CLASS_NAME}" STREQUAL "x" AND NOT "${arg_TYPE}" STREQUAL "qml_plugin")
-        message(AUTHOR_WARNING "qt_add_plugin called without setting CLASS_NAME.")
+    # Derive the class name from the target name if it's not explicitly specified.
+    # Don't set it for qml plugins though.
+    set(plugin_class_name "")
+    if (NOT arg_CLASS_NAME AND NOT "${arg_TYPE}" STREQUAL "qml_plugin")
+        set(plugin_class_name "${target}")
     endif()
 
     qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"
@@ -2203,11 +2206,25 @@ function(qt_add_plugin target)
         endif()
     endif()
 
+    # Make sure the Qt6 plugin library names are like they were in Qt5 qmake land.
+    # Whereas the Qt6 CMake target names are like the Qt5 CMake target names.
+    set(output_name "${target}")
+    if(arg_OUTPUT_NAME)
+        set(output_name "${arg_OUTPUT_NAME}")
+    endif()
+    set_property(TARGET "${target}" PROPERTY OUTPUT_NAME "${output_name}")
+
+    # Add a custom target with the Qt5 qmake name for a more user friendly ninja experience.
+    if(arg_OUTPUT_NAME)
+        add_custom_target("${output_name}")
+        add_dependencies("${output_name}" "${target}")
+    endif()
+
     if (ANDROID)
         qt_android_apply_arch_suffix("${target}")
         set_target_properties(${target}
             PROPERTIES
-            LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${target}"
+            LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${output_name}"
         )
     endif()
     qt_internal_add_target_aliases("${target}")
@@ -2221,7 +2238,7 @@ function(qt_add_plugin target)
         LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
         RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
         ARCHIVE_OUTPUT_DIRECTORY "${output_directory}"
-        QT_PLUGIN_CLASS_NAME "${arg_CLASS_NAME}")
+        QT_PLUGIN_CLASS_NAME "${plugin_class_name}")
         qt_handle_multi_config_output_dirs("${target}")
 
     qt_internal_library_deprecation_level(deprecation_define)
