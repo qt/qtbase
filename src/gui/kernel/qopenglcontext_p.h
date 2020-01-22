@@ -222,10 +222,6 @@ public:
         //QWidgetPrivate::deleteTLSysExtra()
     }
 
-    mutable QHash<QOpenGLVersionProfile, QAbstractOpenGLFunctions *> versionFunctions;
-    mutable QOpenGLVersionFunctionsStorage versionFunctionsStorage;
-    mutable QSet<QAbstractOpenGLFunctions *> externalVersionFunctions;
-
     QSurfaceFormat requestedFormat;
     QPlatformOpenGLContext *platformGLContext;
     QOpenGLContext *shareContext;

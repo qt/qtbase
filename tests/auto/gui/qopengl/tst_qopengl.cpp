@@ -32,9 +32,10 @@
 #include <QtOpenGL/qopengltextureblitter.h>
 #include <QtOpenGL/QOpenGLVertexArrayObject>
 #include <QtOpenGL/QOpenGLBuffer>
+#include <QtOpenGL/QOpenGLFunctions_4_2_Core>
+#include <QtOpenGL/QOpenGLVersionFunctionsFactory>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFunctions>
-#include <QtGui/QOpenGLFunctions_4_2_Core>
 #include <QtGui/QPainter>
 #include <QtGui/QPainterPath>
 #include <QtGui/QScreen>
@@ -635,7 +636,7 @@ static bool supportsInternalFboFormat(QOpenGLContext *ctx, int glFormat)
 #ifndef QT_OPENGL_ES_2
     if (!ctx->isOpenGLES() && ctx->format().majorVersion() >= 4) {
         GLint value = -1;
-        QOpenGLFunctions_4_2_Core* vFuncs = ctx->versionFunctions<QOpenGLFunctions_4_2_Core>();
+        auto *vFuncs = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_4_2_Core>(ctx);
         if (vFuncs && vFuncs->initializeOpenGLFunctions()) {
             vFuncs->glGetInternalformativ(GL_TEXTURE_2D, glFormat, GL_FRAMEBUFFER_RENDERABLE, 1, &value);
             if (value != GL_FULL_SUPPORT)

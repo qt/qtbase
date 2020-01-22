@@ -40,6 +40,7 @@
 #include "qopenglshaderprogram.h"
 #include "qopenglextrafunctions.h"
 #include "private/qopenglcontext_p.h"
+#include <QtOpenGL/QOpenGLVersionFunctionsFactory>
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
@@ -52,7 +53,7 @@
 #include <QtGui/QSurfaceFormat>
 
 #if !defined(QT_OPENGL_ES_2)
-#include <QtGui/qopenglfunctions_4_0_core.h>
+#include <QtOpenGL/qopenglfunctions_4_0_core.h>
 #endif
 
 #include <algorithm>
@@ -896,7 +897,7 @@ bool QOpenGLShaderProgram::init()
 
 #ifndef QT_OPENGL_ES_2
     if (!context->isOpenGLES() && context->format().version() >= qMakePair(4, 0)) {
-        d->tessellationFuncs = context->versionFunctions<QOpenGLFunctions_4_0_Core>();
+        d->tessellationFuncs = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_4_0_Core>(context);
         d->tessellationFuncs->initializeOpenGLFunctions();
     }
 #endif

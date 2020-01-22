@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB)
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -37,24 +37,70 @@
 **
 ****************************************************************************/
 
-#ifndef QTOPENGLGLOBAL_H
-#define QTOPENGLGLOBAL_H
-
-#include <QtCore/qglobal.h>
-#include <QtGui/qtguiglobal.h>
+#include "qopenglfunctions_es2.h"
+#include "qopenglcontext.h"
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_OPENGL_LIB)
-#    define Q_OPENGL_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_OPENGL_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_OPENGL_EXPORT
-#endif
+/*!
+    \class QOpenGLFunctions_ES2
+    \inmodule QtOpenGL
+    \since 5.1
+    \wrapper
+    \brief The QOpenGLFunctions_ES2 class provides all functions for OpenGL ES 2.
+
+    This class is a wrapper for OpenGL ES 2 functions. See reference pages on
+    \l {http://www.khronos.org/opengles/sdk/docs/man/}{khronos.org} for
+    function documentation.
+
+    \sa QAbstractOpenGLFunctions
+*/
+
+QOpenGLFunctions_ES2::QOpenGLFunctions_ES2()
+ : QAbstractOpenGLFunctions()
+ , d_es2(0)
+{
+}
+
+QOpenGLFunctions_ES2::~QOpenGLFunctions_ES2()
+{
+}
+
+bool QOpenGLFunctions_ES2::initializeOpenGLFunctions()
+{
+    if ( isInitialized() )
+        return true;
+
+    QOpenGLContext* context = QOpenGLContext::currentContext();
+
+    // If owned by a context object make sure it is current.
+    // Also check that current context is compatible
+    if (((owningContext() && owningContext() == context) || !owningContext())
+        && QOpenGLFunctions_ES2::isContextCompatible(context))
+    {
+        // Nothing to do, just flag that we are initialized
+        QAbstractOpenGLFunctions::initializeOpenGLFunctions();
+    }
+    return isInitialized();
+}
+
+bool QOpenGLFunctions_ES2::isContextCompatible(QOpenGLContext *context)
+{
+    Q_ASSERT(context);
+    QSurfaceFormat f = context->format();
+    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());
+    if (v < qMakePair(2, 0))
+        return false;
+    if (f.renderableType() != QSurfaceFormat::OpenGLES)
+        return false;
+
+    return true;
+}
+
+QOpenGLVersionProfile QOpenGLFunctions_ES2::versionProfile()
+{
+    QOpenGLVersionProfile v;
+    return v;
+}
 
 QT_END_NAMESPACE
-
-#endif // QTOPENGLGLOBAL_H

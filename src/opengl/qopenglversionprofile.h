@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -37,24 +37,70 @@
 **
 ****************************************************************************/
 
-#ifndef QTOPENGLGLOBAL_H
-#define QTOPENGLGLOBAL_H
+#ifndef QOPENGLVERSIONPROFILE_H
+#define QOPENGLVERSIONPROFILE_H
 
-#include <QtCore/qglobal.h>
-#include <QtGui/qtguiglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
+
+#include <QtGui/QSurfaceFormat>
+
+#include <QtCore/QPair>
+#if QT_DEPRECATED_SINCE(5, 6)
+#include <QtCore/qhash.h>
+#endif
+#include <QtCore/qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_OPENGL_LIB)
-#    define Q_OPENGL_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_OPENGL_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_OPENGL_EXPORT
-#endif
+class QOpenGLVersionProfilePrivate;
+class QDebug;
+
+class Q_OPENGL_EXPORT QOpenGLVersionProfile
+{
+public:
+    QOpenGLVersionProfile();
+    explicit QOpenGLVersionProfile(const QSurfaceFormat &format);
+    QOpenGLVersionProfile(const QOpenGLVersionProfile &other);
+    ~QOpenGLVersionProfile();
+
+    QOpenGLVersionProfile &operator=(const QOpenGLVersionProfile &rhs);
+
+    QPair<int, int> version() const;
+    void setVersion(int majorVersion, int minorVersion);
+
+    QSurfaceFormat::OpenGLContextProfile profile() const;
+    void setProfile(QSurfaceFormat::OpenGLContextProfile profile);
+
+    bool hasProfiles() const;
+    bool isLegacyVersion() const;
+    bool isValid() const;
+
+private:
+    QOpenGLVersionProfilePrivate* d;
+};
+
+inline size_t qHash(const QOpenGLVersionProfile &v, size_t seed = 0)
+{
+    return qHash(static_cast<int>(v.profile() * 1000)
+               + v.version().first * 100 + v.version().second * 10, seed);
+}
+
+inline bool operator==(const QOpenGLVersionProfile &lhs, const QOpenGLVersionProfile &rhs)
+{
+    if (lhs.profile() != rhs.profile())
+        return false;
+    return lhs.version() == rhs.version();
+}
+
+inline bool operator!=(const QOpenGLVersionProfile &lhs, const QOpenGLVersionProfile &rhs)
+{
+    return !operator==(lhs, rhs);
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_OPENGL_EXPORT QDebug operator<<(QDebug debug, const QOpenGLVersionProfile &vp);
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
 
-#endif // QTOPENGLGLOBAL_H
+#endif // QOPENGLVERSIONPROFILE_H

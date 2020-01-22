@@ -45,8 +45,9 @@
 #include <QtGui/qoffscreensurface.h>
 #include <QtGui/qguiapplication.h>
 
-#include <QtGui/qopenglfunctions_3_0.h>
-#include <QtGui/qopenglfunctions_3_2_core.h>
+#include <QtOpenGL/QOpenGLVersionFunctionsFactory>
+#include <QtOpenGL/qopenglfunctions_3_0.h>
+#include <QtOpenGL/qopenglfunctions_3_2_core.h>
 
 #include <private/qopenglextensions_p.h>
 #include <private/qopenglvertexarrayobject_p.h>
@@ -172,11 +173,11 @@ bool QOpenGLVertexArrayObjectPrivate::create()
         QSurfaceFormat format = ctx->format();
 #ifndef QT_OPENGL_ES_2
         if (format.version() >= qMakePair<int, int>(3,2)) {
-            vaoFuncs.core_3_2 = ctx->versionFunctions<QOpenGLFunctions_3_2_Core>();
+            vaoFuncs.core_3_2 = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_2_Core>(ctx);
             vaoFuncsType = Core_3_2;
             vaoFuncs.core_3_2->glGenVertexArrays(1, &vao);
         } else if (format.majorVersion() >= 3) {
-            vaoFuncs.core_3_0 = ctx->versionFunctions<QOpenGLFunctions_3_0>();
+            vaoFuncs.core_3_0 = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_0>(ctx);
             vaoFuncsType = Core_3_0;
             vaoFuncs.core_3_0->glGenVertexArrays(1, &vao);
         } else

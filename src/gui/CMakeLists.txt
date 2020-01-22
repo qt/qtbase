@@ -353,9 +353,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglextrafunctions.h
         opengl/qopenglfunctions.cpp opengl/qopenglfunctions.h
         opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
-        opengl/qopenglversionfunctions.cpp opengl/qopenglversionfunctions.h
-        opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
-        opengl/qopenglversionprofile.cpp opengl/qopenglversionprofile.h
         rhi/qrhigles2.cpp rhi/qrhigles2_p.h
         rhi/qrhigles2_p_p.h
 )
@@ -681,41 +678,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_undogroup
         util/qundogroup.cpp util/qundogroup.h
 )
 
-qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
-    SOURCES
-        opengl/qopenglfunctions_1_0.cpp opengl/qopenglfunctions_1_0.h
-        opengl/qopenglfunctions_1_1.cpp opengl/qopenglfunctions_1_1.h
-        opengl/qopenglfunctions_1_2.cpp opengl/qopenglfunctions_1_2.h
-        opengl/qopenglfunctions_1_3.cpp opengl/qopenglfunctions_1_3.h
-        opengl/qopenglfunctions_1_4.cpp opengl/qopenglfunctions_1_4.h
-        opengl/qopenglfunctions_1_5.cpp opengl/qopenglfunctions_1_5.h
-        opengl/qopenglfunctions_2_0.cpp opengl/qopenglfunctions_2_0.h
-        opengl/qopenglfunctions_2_1.cpp opengl/qopenglfunctions_2_1.h
-        opengl/qopenglfunctions_3_0.cpp opengl/qopenglfunctions_3_0.h
-        opengl/qopenglfunctions_3_1.cpp opengl/qopenglfunctions_3_1.h
-        opengl/qopenglfunctions_3_2_compatibility.cpp opengl/qopenglfunctions_3_2_compatibility.h
-        opengl/qopenglfunctions_3_2_core.cpp opengl/qopenglfunctions_3_2_core.h
-        opengl/qopenglfunctions_3_3_compatibility.cpp opengl/qopenglfunctions_3_3_compatibility.h
-        opengl/qopenglfunctions_3_3_core.cpp opengl/qopenglfunctions_3_3_core.h
-        opengl/qopenglfunctions_4_0_compatibility.cpp opengl/qopenglfunctions_4_0_compatibility.h
-        opengl/qopenglfunctions_4_0_core.cpp opengl/qopenglfunctions_4_0_core.h
-        opengl/qopenglfunctions_4_1_compatibility.cpp opengl/qopenglfunctions_4_1_compatibility.h
-        opengl/qopenglfunctions_4_1_core.cpp opengl/qopenglfunctions_4_1_core.h
-        opengl/qopenglfunctions_4_2_compatibility.cpp opengl/qopenglfunctions_4_2_compatibility.h
-        opengl/qopenglfunctions_4_2_core.cpp opengl/qopenglfunctions_4_2_core.h
-        opengl/qopenglfunctions_4_3_compatibility.cpp opengl/qopenglfunctions_4_3_compatibility.h
-        opengl/qopenglfunctions_4_3_core.cpp opengl/qopenglfunctions_4_3_core.h
-        opengl/qopenglfunctions_4_4_compatibility.cpp opengl/qopenglfunctions_4_4_compatibility.h
-        opengl/qopenglfunctions_4_4_core.cpp opengl/qopenglfunctions_4_4_core.h
-        opengl/qopenglfunctions_4_5_compatibility.cpp opengl/qopenglfunctions_4_5_compatibility.h
-        opengl/qopenglfunctions_4_5_core.cpp opengl/qopenglfunctions_4_5_core.h
-)
-
-qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2
-    SOURCES
-        opengl/qopenglfunctions_es2.cpp opengl/qopenglfunctions_es2.h
-)
-
 qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
@@ -728,7 +690,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
+#### Keys ignored in scope 82:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # special case begin
 # We must always generate syncqt-injected header files,
 # because we added a custom command earlier for those for framework builds.
@@ -784,10 +746,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 85:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 83:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 86:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM

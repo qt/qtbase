@@ -28,36 +28,6 @@
 /*!
   \dontdocument (QTypeInfo QScreenOrientationChangeEvent QApplicationStateChangeEvent
                  QMetaTypeId QAbstractUndoItem
-                 QOpenGLVersionStatus
-                 QOpenGLVersionFunctionsBackend
-                 QOpenGLVersionFunctionsStorage
-                 QOpenGLFunctions_1_0_CoreBackend
-                 QOpenGLFunctions_1_1_CoreBackend
-                 QOpenGLFunctions_1_2_CoreBackend
-                 QOpenGLFunctions_1_3_CoreBackend
-                 QOpenGLFunctions_1_4_CoreBackend
-                 QOpenGLFunctions_1_5_CoreBackend
-                 QOpenGLFunctions_2_0_CoreBackend
-                 QOpenGLFunctions_2_1_CoreBackend
-                 QOpenGLFunctions_3_0_CoreBackend
-                 QOpenGLFunctions_3_1_CoreBackend
-                 QOpenGLFunctions_3_2_CoreBackend
-                 QOpenGLFunctions_3_3_CoreBackend
-                 QOpenGLFunctions_4_0_CoreBackend
-                 QOpenGLFunctions_4_1_CoreBackend
-                 QOpenGLFunctions_4_2_CoreBackend
-                 QOpenGLFunctions_4_3_CoreBackend
-                 QOpenGLFunctions_4_4_CoreBackend
-                 QOpenGLFunctions_4_5_CoreBackend
-                 QOpenGLFunctions_1_0_DeprecatedBackend
-                 QOpenGLFunctions_1_1_DeprecatedBackend
-                 QOpenGLFunctions_1_2_DeprecatedBackend
-                 QOpenGLFunctions_1_3_DeprecatedBackend
-                 QOpenGLFunctions_1_4_DeprecatedBackend
-                 QOpenGLFunctions_2_0_DeprecatedBackend
-                 QOpenGLFunctions_3_0_DeprecatedBackend
-                 QOpenGLFunctions_3_3_DeprecatedBackend
-                 QOpenGLFunctions_4_5_DeprecatedBackend
                  QTextFrameLayoutData QPlatformDropQtResponse QPlatformDragQtResponse
                  QPlatformOffscreenSurface QColorDialogOptions QFontDialogOptions
                  QFileDialogOptions QMessageDialogOptions QMessageDialogOptions::CustomButton

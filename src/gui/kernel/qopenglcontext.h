@@ -58,9 +58,6 @@
 #endif
 
 #include <QtGui/qopengl.h>
-#include <QtGui/qopenglversionfunctions.h>
-// TODO: ideally get rid of this include
-#include <QtGui/qopenglversionprofile.h>
 
 #include <QtCore/qvariant.h>
 
@@ -141,15 +138,6 @@ public:
     QOpenGLFunctions *functions() const;
     QOpenGLExtraFunctions *extraFunctions() const;
 
-    QAbstractOpenGLFunctions *versionFunctions(const QOpenGLVersionProfile &versionProfile = QOpenGLVersionProfile()) const;
-
-    template<class TYPE>
-    TYPE *versionFunctions() const
-    {
-        QOpenGLVersionProfile v = TYPE::versionProfile();
-        return static_cast<TYPE*>(versionFunctions(v));
-    }
-
     QSet<QByteArray> extensions() const;
     bool hasExtension(const QByteArray &extension) const;
 
@@ -184,10 +172,6 @@ private:
     friend class QWidgetPrivate;
     friend class QAbstractOpenGLFunctionsPrivate;
     friend class QOpenGLTexturePrivate;
-
-    QOpenGLVersionFunctionsStorage* functionsBackendStorage() const;
-    void insertExternalFunctions(QAbstractOpenGLFunctions *f);
-    void removeExternalFunctions(QAbstractOpenGLFunctions *f);
 
     QOpenGLTextureHelper* textureFunctions() const;
     void setTextureFunctions(QOpenGLTextureHelper* textureFuncs, std::function<void()> destroyCallback);

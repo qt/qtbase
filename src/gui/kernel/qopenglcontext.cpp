@@ -54,14 +54,8 @@
 #include <qpa/qplatformnativeinterface.h>
 
 #include <private/qopenglextensions_p.h>
-#include <private/qopenglversionfunctionsfactory_p.h>
 
 #include <QDebug>
-
-#ifndef QT_OPENGL_ES_2
-#include <QOpenGLFunctions_1_0>
-#include <QOpenGLFunctions_3_2_Core>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -484,15 +478,6 @@ void QOpenGLContext::destroy()
     delete d->functions;
     d->functions = nullptr;
 
-    for (QAbstractOpenGLFunctions *func : qAsConst(d->externalVersionFunctions)) {
-        QAbstractOpenGLFunctionsPrivate *func_d = QAbstractOpenGLFunctionsPrivate::get(func);
-        func_d->owningContext = nullptr;
-        func_d->initialized = false;
-    }
-    d->externalVersionFunctions.clear();
-    qDeleteAll(d->versionFunctions);
-    d->versionFunctions.clear();
-
     if (d->textureFunctionsDestroyCallback) {
         d->textureFunctionsDestroyCallback();
         d->textureFunctionsDestroyCallback = nullptr;
@@ -586,115 +571,6 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 QOpenGLExtraFunctions *QOpenGLContext::extraFunctions() const
 {
     return static_cast<QOpenGLExtraFunctions *>(functions());
-}
-
-/*!
-    \fn T *QOpenGLContext::versionFunctions() const
-
-    \overload versionFunctions()
-
-    Returns a pointer to an object that provides access to all functions for
-    the version and profile of this context. There is no need to call
-    QAbstractOpenGLFunctions::initializeOpenGLFunctions() as long as this context
-    is current. It is also possible to call this function when the context is not
-    current, but in that case it is the caller's responsibility to ensure proper
-    initialization by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
-    afterwards.
-
-    Usually one would use the template version of this function to automatically
-    have the result cast to the correct type.
-
-    \code
-        QOpenGLFunctions_3_3_Core* funcs = 0;
-        funcs = context->versionFunctions<QOpenGLFunctions_3_3_Core>();
-        if (!funcs) {
-            qWarning() << "Could not obtain required OpenGL context version";
-            exit(1);
-        }
-    \endcode
-
-    It is possible to request a functions object for a different version and profile
-    than that for which the context was created. To do this either use the template
-    version of this function specifying the desired functions object type as the
-    template parameter or by passing in a QOpenGLVersionProfile object as an argument
-    to the non-template function.
-
-    Note that requests for function objects of other versions or profiles can fail and
-    in doing so will return \nullptr. Situations in which creation of the functions
-    object can fail are if the request cannot be satisfied due to asking for functions
-    that are not in the version or profile of this context. For example:
-
-    \list
-        \li Requesting a 3.3 core profile functions object would succeed.
-        \li Requesting a 3.3 compatibility profile functions object would fail. We would fail
-            to resolve the deprecated functions.
-        \li Requesting a 4.3 core profile functions object would fail. We would fail to resolve
-            the new core functions introduced in versions 4.0-4.3.
-        \li Requesting a 3.1 functions object would succeed. There is nothing in 3.1 that is not
-            also in 3.3 core.
-    \endlist
-
-    Note that if creating a functions object via this method that the QOpenGLContext
-    retains ownership of the object. This is to allow the object to be cached and shared.
-*/
-
-/*!
-    Returns a pointer to an object that provides access to all functions for the
-    \a versionProfile of this context. There is no need to call
-    QAbstractOpenGLFunctions::initializeOpenGLFunctions() as long as this context
-    is current. It is also possible to call this function when the context is not
-    current, but in that case it is the caller's responsibility to ensure proper
-    initialization by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
-    afterwards.
-
-    Usually one would use the template version of this function to automatically
-    have the result cast to the correct type.
-*/
-QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionProfile &versionProfile) const
-{
-#ifndef QT_OPENGL_ES_2
-    if (isOpenGLES()) {
-        qWarning("versionFunctions: Not supported on OpenGL ES");
-        return nullptr;
-    }
-#endif // QT_OPENGL_ES_2
-
-    Q_D(const QOpenGLContext);
-    const QSurfaceFormat f = format();
-
-    // Ensure we have a valid version and profile. Default to context's if none specified
-    QOpenGLVersionProfile vp = versionProfile;
-    if (!vp.isValid())
-        vp = QOpenGLVersionProfile(f);
-
-    // Check that context is compatible with requested version
-    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());
-    if (v < vp.version())
-        return nullptr;
-
-    // If this context only offers core profile functions then we can't create
-    // function objects for legacy or compatibility profile requests
-    if (((vp.hasProfiles() && vp.profile() != QSurfaceFormat::CoreProfile) || vp.isLegacyVersion())
-        && f.profile() == QSurfaceFormat::CoreProfile)
-        return nullptr;
-
-    // Create object if suitable one not cached
-    QAbstractOpenGLFunctions* funcs = nullptr;
-    auto it = d->versionFunctions.constFind(vp);
-    if (it == d->versionFunctions.constEnd()) {
-        funcs = QOpenGLVersionFunctionsFactory::create(vp);
-        if (funcs) {
-            funcs->setOwningContext(this);
-            d->versionFunctions.insert(vp, funcs);
-        }
-    } else {
-        funcs = it.value();
-    }
-
-    if (funcs && QOpenGLContext::currentContext() == this)
-        funcs->initializeOpenGLFunctions();
-
-    return funcs;
 }
 
 /*!
@@ -1141,33 +1017,6 @@ QOpenGLContext *QOpenGLContext::globalShareContext()
 {
     Q_ASSERT(qGuiApp);
     return qt_gl_global_share_context();
-}
-
-/*!
-    \internal
-*/
-QOpenGLVersionFunctionsStorage *QOpenGLContext::functionsBackendStorage() const
-{
-    Q_D(const QOpenGLContext);
-    return &d->versionFunctionsStorage;
-}
-
-/*!
-    \internal
- */
-void QOpenGLContext::insertExternalFunctions(QAbstractOpenGLFunctions *f)
-{
-    Q_D(QOpenGLContext);
-    d->externalVersionFunctions.insert(f);
-}
-
-/*!
-    \internal
- */
-void QOpenGLContext::removeExternalFunctions(QAbstractOpenGLFunctions *f)
-{
-    Q_D(QOpenGLContext);
-    d->externalVersionFunctions.remove(f);
 }
 
 /*!
