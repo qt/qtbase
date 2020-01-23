@@ -63,6 +63,8 @@ public:
 
     virtual bool isEmpty() const;
 
+    QString filePath() const;
+
     bool load(const QString & filename,
               const QString & directory = QString(),
               const QString & search_delimiters = QString(),

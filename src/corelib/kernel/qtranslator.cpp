@@ -316,6 +316,8 @@ public:
     uint contextLength;
     uint numerusRulesLength;
 
+    QString filePath;
+
     bool do_load(const QString &filename, const QString &directory);
     bool do_load(const uchar *data, qsizetype len, const QString &directory);
     QString do_translate(const char *context, const char *sourceText, const char *comment,
@@ -597,8 +599,10 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         }
     }
 
-    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength, directory))
+    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength, directory)) {
+        d->filePath = realname;
         return true;
+    }
 
 #if defined(QT_USE_MMAP)
     if (used_mmap) {
@@ -1091,6 +1095,8 @@ void QTranslatorPrivate::clear()
     qDeleteAll(subTranslators);
     subTranslators.clear();
 
+    filePath.clear();
+
     if (QCoreApplicationPrivate::isTranslatorInstalled(q))
         QCoreApplication::postEvent(QCoreApplication::instance(),
                                     new QEvent(QEvent::LanguageChange));
@@ -1130,6 +1136,21 @@ bool QTranslator::isEmpty() const
     Q_D(const QTranslator);
     return !d->messageArray && !d->offsetArray && !d->contextArray
             && d->subTranslators.isEmpty();
+}
+
+/*!
+    \since 5.15
+
+    Returns the path of the loaded translation file.
+
+    The file path is empty if no translation was loaded yet,
+    the loading failed, or if the translation was not loaded
+    from a file.
+ */
+QString QTranslator::filePath() const
+{
+    Q_D(const QTranslator);
+    return d->filePath;
 }
 
 QT_END_NAMESPACE

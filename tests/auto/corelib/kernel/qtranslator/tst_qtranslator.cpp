@@ -126,6 +126,7 @@ void tst_QTranslator::load()
         QVERIFY(tor.load(QFileInfo(filepath).baseName()));
         QCOMPARE(tor.isEmpty(), isEmpty);
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+        QCOMPARE(tor.filePath(), filepath);
     }
 
     {
@@ -136,13 +137,16 @@ void tst_QTranslator::load()
         QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
         QCOMPARE(tor.isEmpty(), isEmpty);
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+        QCOMPARE(tor.filePath(), "");
     }
 
     {
         QTranslator tor;
-        QVERIFY(tor.load(QString(":/tst_qtranslator/%1").arg(filepath)));
+        QString path = QString(":/tst_qtranslator/%1").arg(filepath);
+        QVERIFY(tor.load(path));
         QCOMPARE(tor.isEmpty(), isEmpty);
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+        QCOMPARE(tor.filePath(), path);
     }
 }
 
