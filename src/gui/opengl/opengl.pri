@@ -11,6 +11,7 @@ qtConfig(opengl) {
                opengl/qopenglextensions_p.h \
                opengl/qopenglversionfunctions.h \
                opengl/qopenglversionfunctionsfactory_p.h \
+               opengl/qopenglversionprofile.h \
                opengl/qopenglextrafunctions.h \
                opengl/qopenglprogrambinarycache_p.h
 
@@ -18,6 +19,7 @@ qtConfig(opengl) {
                opengl/qopenglfunctions.cpp \
                opengl/qopenglversionfunctions.cpp \
                opengl/qopenglversionfunctionsfactory.cpp \
+               opengl/qopenglversionprofile.cpp \
                opengl/qopenglprogrambinarycache.cpp
 
     !qtConfig(opengles2) {

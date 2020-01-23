@@ -59,12 +59,9 @@
 
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglversionfunctions.h>
+// TODO: ideally get rid of this include
+#include <QtGui/qopenglversionprofile.h>
 
-#if QT_DEPRECATED_SINCE(5, 6)
-#include <QtCore/qhash.h>
-#endif
-#include <QtCore/qhashfunctions.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -78,50 +75,6 @@ class QPlatformOpenGLContext;
 
 class QScreen;
 class QSurface;
-
-class QOpenGLVersionProfilePrivate;
-
-class Q_GUI_EXPORT QOpenGLVersionProfile
-{
-public:
-    QOpenGLVersionProfile();
-    explicit QOpenGLVersionProfile(const QSurfaceFormat &format);
-    QOpenGLVersionProfile(const QOpenGLVersionProfile &other);
-    ~QOpenGLVersionProfile();
-
-    QOpenGLVersionProfile &operator=(const QOpenGLVersionProfile &rhs);
-
-    QPair<int, int> version() const;
-    void setVersion(int majorVersion, int minorVersion);
-
-    QSurfaceFormat::OpenGLContextProfile profile() const;
-    void setProfile(QSurfaceFormat::OpenGLContextProfile profile);
-
-    bool hasProfiles() const;
-    bool isLegacyVersion() const;
-    bool isValid() const;
-
-private:
-    QOpenGLVersionProfilePrivate* d;
-};
-
-inline uint qHash(const QOpenGLVersionProfile &v, uint seed = 0)
-{
-    return qHash(static_cast<int>(v.profile() * 1000)
-               + v.version().first * 100 + v.version().second * 10, seed);
-}
-
-inline bool operator==(const QOpenGLVersionProfile &lhs, const QOpenGLVersionProfile &rhs)
-{
-    if (lhs.profile() != rhs.profile())
-        return false;
-    return lhs.version() == rhs.version();
-}
-
-inline bool operator!=(const QOpenGLVersionProfile &lhs, const QOpenGLVersionProfile &rhs)
-{
-    return !operator==(lhs, rhs);
-}
 
 class Q_GUI_EXPORT QOpenGLContextGroup : public QObject
 {
@@ -245,7 +198,6 @@ private:
 };
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLVersionProfile &vp);
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLContext *ctx);
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLContextGroup *cg);
 #endif // !QT_NO_DEBUG_STREAM
