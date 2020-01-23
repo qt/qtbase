@@ -13,7 +13,7 @@ defineReplace(qtPlatformTargetSuffix) {
             }
         }
     }
-    macos {
+    darwin {
         CONFIG(debug, debug|release) {
             !debug_and_release|build_pass: \
                 return($${suffix}_debug)
