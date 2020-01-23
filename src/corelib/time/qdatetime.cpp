@@ -356,20 +356,6 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
  *****************************************************************************/
 
 /*!
-    \since 4.5
-
-    \enum QDate::MonthNameType
-
-    This enum describes the types of the string representation used
-    for the month name.
-
-    \value DateFormat This type of name can be used for date-to-string formatting.
-    \value StandaloneFormat This type is used when you need to enumerate months or weekdays.
-           Usually standalone names are represented in singular forms with
-           capitalized first letter.
-*/
-
-/*!
     \class QDate
     \inmodule QtCore
     \reentrant
@@ -1028,175 +1014,6 @@ QDateTime QDate::endOfDay(const QTimeZone &zone) const
 }
 #endif // timezone
 
-#if QT_DEPRECATED_SINCE(5, 11) && QT_CONFIG(textdate)
-
-/*!
-    \since 4.5
-    \deprecated
-
-    Returns the short name of the \a month for the representation specified
-    by \a type.
-
-    The months are enumerated using the following convention:
-
-    \list
-    \li 1 = "Jan"
-    \li 2 = "Feb"
-    \li 3 = "Mar"
-    \li 4 = "Apr"
-    \li 5 = "May"
-    \li 6 = "Jun"
-    \li 7 = "Jul"
-    \li 8 = "Aug"
-    \li 9 = "Sep"
-    \li 10 = "Oct"
-    \li 11 = "Nov"
-    \li 12 = "Dec"
-    \endlist
-
-    The month names will be localized according to the system's
-    locale settings, i.e. using QLocale::system().
-
-    Returns an empty string if the date is invalid.
-
-    \sa toString(), longMonthName(), shortDayName(), longDayName()
-*/
-
-QString QDate::shortMonthName(int month, QDate::MonthNameType type)
-{
-    switch (type) {
-    case QDate::DateFormat:
-        return QCalendar().monthName(QLocale::system(), month,
-                                     QCalendar::Unspecified, QLocale::ShortFormat);
-    case QDate::StandaloneFormat:
-        return QCalendar().standaloneMonthName(QLocale::system(), month,
-                                               QCalendar::Unspecified, QLocale::ShortFormat);
-    }
-    return QString();
-}
-
-/*!
-    \since 4.5
-    \deprecated
-
-    Returns the long name of the \a month for the representation specified
-    by \a type.
-
-    The months are enumerated using the following convention:
-
-    \list
-    \li 1 = "January"
-    \li 2 = "February"
-    \li 3 = "March"
-    \li 4 = "April"
-    \li 5 = "May"
-    \li 6 = "June"
-    \li 7 = "July"
-    \li 8 = "August"
-    \li 9 = "September"
-    \li 10 = "October"
-    \li 11 = "November"
-    \li 12 = "December"
-    \endlist
-
-    The month names will be localized according to the system's
-    locale settings, i.e. using QLocale::system().
-
-    Returns an empty string if the date is invalid.
-
-    \sa toString(), shortMonthName(), shortDayName(), longDayName()
-*/
-
-QString QDate::longMonthName(int month, MonthNameType type)
-{
-    switch (type) {
-    case QDate::DateFormat:
-        return QCalendar().monthName(QLocale::system(), month,
-                                     QCalendar::Unspecified, QLocale::LongFormat);
-    case QDate::StandaloneFormat:
-        return QCalendar().standaloneMonthName(QLocale::system(), month,
-                                               QCalendar::Unspecified, QLocale::LongFormat);
-    }
-    return QString();
-}
-
-/*!
-    \since 4.5
-    \deprecated
-
-    Returns the short name of the \a weekday for the representation specified
-    by \a type.
-
-    The days are enumerated using the following convention:
-
-    \list
-    \li 1 = "Mon"
-    \li 2 = "Tue"
-    \li 3 = "Wed"
-    \li 4 = "Thu"
-    \li 5 = "Fri"
-    \li 6 = "Sat"
-    \li 7 = "Sun"
-    \endlist
-
-    The day names will be localized according to the system's
-    locale settings, i.e. using QLocale::system().
-
-    Returns an empty string if the date is invalid.
-
-    \sa toString(), shortMonthName(), longMonthName(), longDayName()
-*/
-
-QString QDate::shortDayName(int weekday, MonthNameType type)
-{
-    switch (type) {
-    case QDate::DateFormat:
-        return QLocale::system().dayName(weekday, QLocale::ShortFormat);
-    case QDate::StandaloneFormat:
-        return QLocale::system().standaloneDayName(weekday, QLocale::ShortFormat);
-    }
-    return QString();
-}
-
-/*!
-    \since 4.5
-    \deprecated
-
-    Returns the long name of the \a weekday for the representation specified
-    by \a type.
-
-    The days are enumerated using the following convention:
-
-    \list
-    \li 1 = "Monday"
-    \li 2 = "Tuesday"
-    \li 3 = "Wednesday"
-    \li 4 = "Thursday"
-    \li 5 = "Friday"
-    \li 6 = "Saturday"
-    \li 7 = "Sunday"
-    \endlist
-
-    The day names will be localized according to the system's
-    locale settings, i.e. using QLocale::system().
-
-    Returns an empty string if the date is invalid.
-
-    \sa toString(), shortDayName(), shortMonthName(), longMonthName()
-*/
-
-QString QDate::longDayName(int weekday, MonthNameType type)
-{
-    switch (type) {
-    case QDate::DateFormat:
-        return QLocale::system().dayName(weekday, QLocale::LongFormat);
-    case QDate::StandaloneFormat:
-        return QLocale::system().standaloneDayName(weekday, QLocale::LongFormat);
-    }
-    return QString();
-}
-#endif // textdate && deprecated
-
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 
 static QString toStringTextDate(QDate date)
@@ -1416,20 +1233,6 @@ QString QDate::toString(const QString &format, QCalendar cal) const
 #endif // datestring
 
 /*!
-    \fn bool QDate::setYMD(int y, int m, int d)
-
-    \deprecated in 5.0, use setDate() instead.
-
-    Sets the date's year \a y, month \a m, and day \a d.
-
-    If \a y is in the range 0 to 99, it is interpreted as 1900 to
-    1999.
-    Returns \c false if the date is invalid.
-
-    Use setDate() instead.
-*/
-
-/*!
     \since 4.2
 
     Sets this to represent the date, in the Gregorian calendar, with the given
@@ -1491,17 +1294,6 @@ void QDate::getDate(int *year, int *month, int *day) const
     if (day)
         *day = ok ? parts.day : 0;
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \overload
-    \internal
-*/
-void QDate::getDate(int *year, int *month, int *day)
-{
-    qAsConst(*this).getDate(year, month, day);
-}
-#endif // < Qt 6
 
 /*!
     Returns a QDate object containing a date \a ndays later than the
@@ -2699,77 +2491,6 @@ bool QTime::isValid(int h, int m, int s, int ms)
     return (uint)h < 24 && (uint)m < 60 && (uint)s < 60 && (uint)ms < 1000;
 }
 
-#if QT_DEPRECATED_SINCE(5, 14) // ### Qt 6: remove
-/*!
-    Sets this time to the current time. This is practical for timing:
-
-    \snippet code/src_corelib_tools_qdatetime.cpp 10
-
-    \sa restart(), elapsed(), currentTime()
-*/
-
-void QTime::start()
-{
-    *this = currentTime();
-}
-
-/*!
-    Sets this time to the current time and returns the number of
-    milliseconds that have elapsed since the last time start() or
-    restart() was called.
-
-    This function is guaranteed to be atomic and is thus very handy
-    for repeated measurements. Call start() to start the first
-    measurement, and restart() for each later measurement.
-
-    Note that the counter wraps to zero 24 hours after the last call
-    to start() or restart().
-
-    \warning If the system's clock setting has been changed since the
-    last time start() or restart() was called, the result is
-    undefined. This can happen when daylight-saving time is turned on
-    or off.
-
-    \sa start(), elapsed(), currentTime()
-*/
-
-int QTime::restart()
-{
-    QTime t = currentTime();
-    int n = msecsTo(t);
-    if (n < 0)                                // passed midnight
-        n += 86400*1000;
-    *this = t;
-    return n;
-}
-
-/*!
-    Returns the number of milliseconds that have elapsed since the
-    last time start() or restart() was called.
-
-    Note that the counter wraps to zero 24 hours after the last call
-    to start() or restart.
-
-    Note that the accuracy depends on the accuracy of the underlying
-    operating system; not all systems provide 1-millisecond accuracy.
-
-    \warning If the system's clock setting has been changed since the
-    last time start() or restart() was called, the result is
-    undefined. This can happen when daylight-saving time is turned on
-    or off.
-
-    \sa start(), restart()
-*/
-
-int QTime::elapsed() const
-{
-    int n = msecsTo(currentTime());
-    if (n < 0)                                // passed midnight
-        n += 86400 * 1000;
-    return n;
-}
-#endif // Use QElapsedTimer instead !
-
 /*****************************************************************************
   QDateTime static helper functions
  *****************************************************************************/
@@ -3759,20 +3480,6 @@ QDateTime::QDateTime() noexcept(Data::CanBeSmall)
 {
 }
 
-
-#if QT_DEPRECATED_SINCE(5, 17) // ### Qt 6: remove
-/*!
-    Constructs a datetime with the given \a date, using Qt::LocalTime as the
-    timeSpec() and the time at the start of that date.
-
-    \sa QDate::startOfDay()
-*/
-QDateTime::QDateTime(QDate date)
-    : QDateTime(date.startOfDay(Qt::LocalTime, 0))
-{
-}
-#endif
-
 /*!
     Constructs a datetime with the given \a date and \a time, using
     the time specification defined by \a spec and \a offsetSeconds seconds.
@@ -4249,38 +3956,6 @@ qint64 QDateTime::toSecsSinceEpoch() const
     return toMSecsSinceEpoch() / 1000;
 }
 
-#if QT_DEPRECATED_SINCE(5, 8)
-/*!
-    \deprecated
-
-    Returns the datetime as the number of seconds that have passed
-    since 1970-01-01T00:00:00, Coordinated Universal Time (Qt::UTC).
-
-    On systems that do not support time zones, this function will
-    behave as if local time were Qt::UTC.
-
-    \note This function returns a 32-bit unsigned integer and is deprecated.
-
-    If the date is outside the range 1970-01-01T00:00:00 to
-    2106-02-07T06:28:14, this function returns -1 cast to an unsigned integer
-    (i.e., 0xFFFFFFFF).
-
-    To get an extended range, use toMSecsSinceEpoch() or toSecsSinceEpoch().
-
-    \sa toSecsSinceEpoch(), toMSecsSinceEpoch(), setTime_t()
-*/
-
-uint QDateTime::toTime_t() const
-{
-    if (!isValid())
-        return uint(-1);
-    qint64 retval = toMSecsSinceEpoch() / 1000;
-    if (quint64(retval) >= Q_UINT64_C(0xFFFFFFFF))
-        return uint(-1);
-    return uint(retval);
-}
-#endif
-
 /*!
     \since 4.7
 
@@ -4380,27 +4055,6 @@ void QDateTime::setSecsSinceEpoch(qint64 secs)
 {
     setMSecsSinceEpoch(secs * 1000);
 }
-
-#if QT_DEPRECATED_SINCE(5, 8)
-/*!
-    \fn void QDateTime::setTime_t(uint seconds)
-    \deprecated
-
-    Sets the date and time given the number of \a seconds that have
-    passed since 1970-01-01T00:00:00, Coordinated Universal Time
-    (Qt::UTC). On systems that do not support time zones this function
-    will behave as if local time were Qt::UTC.
-
-    \note This function is deprecated. For new code, use setSecsSinceEpoch().
-
-    \sa toTime_t()
-*/
-
-void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
-{
-    setMSecsSinceEpoch((qint64)secsSince1Jan1970UTC * 1000);
-}
-#endif
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 /*!
@@ -4998,7 +4652,7 @@ bool QDateTime::operator<(const QDateTime &other) const
     Coordinated Time. This number is like the POSIX time_t variable, but
     expressed in milliseconds instead.
 
-    \sa currentDateTime(), currentDateTimeUtc(), toTime_t(), toTimeSpec()
+    \sa currentDateTime(), currentDateTimeUtc(), toTimeSpec()
 */
 
 /*!
@@ -5119,69 +4773,6 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
 #error "What system is this?"
 #endif
 
-#if QT_DEPRECATED_SINCE(5, 8)
-/*!
-  \since 4.2
-  \deprecated
-
-  Returns a datetime whose date and time are the number of \a seconds
-  that have passed since 1970-01-01T00:00:00, Coordinated Universal
-  Time (Qt::UTC) and converted to Qt::LocalTime.  On systems that do not
-  support time zones, the time will be set as if local time were Qt::UTC.
-
-  \note This function is deprecated. Please use fromSecsSinceEpoch() in new
-  code.
-
-  \sa toTime_t(), setTime_t()
-*/
-QDateTime QDateTime::fromTime_t(uint seconds)
-{
-    return fromMSecsSinceEpoch((qint64)seconds * 1000, Qt::LocalTime);
-}
-
-/*!
-  \since 5.2
-  \deprecated
-
-  Returns a datetime whose date and time are the number of \a seconds
-  that have passed since 1970-01-01T00:00:00, Coordinated Universal
-  Time (Qt::UTC) and converted to the given \a spec.
-
-  If the \a spec is not Qt::OffsetFromUTC then the \a offsetSeconds will be
-  ignored.  If the \a spec is Qt::OffsetFromUTC and the \a offsetSeconds is 0
-  then the spec will be set to Qt::UTC, i.e. an offset of 0 seconds.
-
-  \note This function is deprecated. Please use fromSecsSinceEpoch() in new
-  code.
-
-  \sa toTime_t(), setTime_t()
-*/
-QDateTime QDateTime::fromTime_t(uint seconds, Qt::TimeSpec spec, int offsetSeconds)
-{
-    return fromMSecsSinceEpoch((qint64)seconds * 1000, spec, offsetSeconds);
-}
-
-#if QT_CONFIG(timezone)
-/*!
-    \since 5.2
-    \deprecated
-
-    Returns a datetime whose date and time are the number of \a seconds
-    that have passed since 1970-01-01T00:00:00, Coordinated Universal
-    Time (Qt::UTC) and with the given \a timeZone.
-
-    \note This function is deprecated. Please use fromSecsSinceEpoch() in new
-    code.
-
-    \sa toTime_t(), setTime_t()
-*/
-QDateTime QDateTime::fromTime_t(uint seconds, const QTimeZone &timeZone)
-{
-    return fromMSecsSinceEpoch((qint64)seconds * 1000, timeZone);
-}
-#endif
-#endif // QT_DEPRECATED_SINCE(5, 8)
-
 /*!
   \since 4.7
 
@@ -5287,42 +4878,6 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
     return fromMSecsSinceEpoch(secs * 1000, timeZone);
 }
 #endif
-
-#if QT_DEPRECATED_SINCE(5, 2)
-/*!
-    \since 4.4
-    \internal
-    \obsolete
-
-    This method was added in 4.4 but never documented as public. It was replaced
-    in 5.2 with public method setOffsetFromUtc() for consistency with QTimeZone.
-
-    This method should never be made public.
-
-    \sa setOffsetFromUtc()
- */
-void QDateTime::setUtcOffset(int seconds)
-{
-    setOffsetFromUtc(seconds);
-}
-
-/*!
-    \since 4.4
-    \internal
-    \obsolete
-
-    This method was added in 4.4 but never documented as public. It was replaced
-    in 5.1 with public method offsetFromUTC() for consistency with QTimeZone.
-
-    This method should never be made public.
-
-    \sa offsetFromUTC()
-*/
-int QDateTime::utcOffset() const
-{
-    return offsetFromUtc();
-}
-#endif // QT_DEPRECATED_SINCE
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 

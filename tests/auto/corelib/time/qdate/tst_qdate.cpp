@@ -91,16 +91,6 @@ private slots:
     void printNegativeYear_data() const;
     void printNegativeYear() const;
     void roundtripGermanLocale() const;
-#if QT_CONFIG(textdate) && QT_DEPRECATED_SINCE(5, 10)
-    void shortDayName() const;
-    void standaloneShortDayName() const;
-    void longDayName() const;
-    void standaloneLongDayName() const;
-    void shortMonthName() const;
-    void standaloneShortMonthName() const;
-    void longMonthName() const;
-    void standaloneLongMonthName() const;
-#endif // textdate
     void roundtrip() const;
     void qdebug() const;
 private:
@@ -1436,16 +1426,6 @@ void tst_QDate::yearsZeroToNinetyNine()
     QVERIFY(QDate::isValid(1, 2, 3));
     QVERIFY(QDate::isValid(-1, 2, 3));
 
-#if QT_DEPRECATED_SINCE(5,0)
-    {
-        QDate dt;
-        dt.setYMD(1, 2, 3);
-        QCOMPARE(dt.year(), 1901);
-        QCOMPARE(dt.month(), 2);
-        QCOMPARE(dt.day(), 3);
-    }
-#endif
-
     {
         QDate dt;
         dt.setDate(1, 2, 3);
@@ -1491,140 +1471,6 @@ void tst_QDate::roundtripGermanLocale() const
     const QDateTime theDateTime(QDateTime::currentDateTime());
     theDateTime.fromString(theDateTime.toString(Qt::TextDate), Qt::TextDate);
 }
-
-#if QT_CONFIG(textdate) && QT_DEPRECATED_SINCE(5, 10)
-QT_WARNING_PUSH // the methods tested here are all deprecated
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-
-void tst_QDate::shortDayName() const
-{
-    QCOMPARE(QDate::shortDayName(0), QString());
-    QCOMPARE(QDate::shortDayName(8), QString());
-
-    if (QLocale::system().language() == QLocale::C) {
-        QCOMPARE(QDate::shortDayName(1), QLatin1String("Mon"));
-        QCOMPARE(QDate::shortDayName(7), QLatin1String("Sun"));
-    }
-
-    QLocale locale = QLocale::system();
-    for(int i = 1; i <= 7; ++i) {
-        QCOMPARE(QDate::shortDayName(i), locale.dayName(i, QLocale::ShortFormat));
-    }
-}
-
-void tst_QDate::standaloneShortDayName() const
-{
-    QCOMPARE(QDate::shortDayName(0, QDate::StandaloneFormat), QString());
-    QCOMPARE(QDate::shortDayName(8, QDate::StandaloneFormat), QString());
-
-    if (QLocale::system().language() == QLocale::C) {
-        QCOMPARE(QDate::shortDayName(1, QDate::StandaloneFormat), QLatin1String("Mon"));
-        QCOMPARE(QDate::shortDayName(7, QDate::StandaloneFormat), QLatin1String("Sun"));
-    }
-
-    QLocale locale = QLocale::system();
-    for(int i = 1; i <= 7; ++i) {
-        QCOMPARE(QDate::shortDayName(i, QDate::StandaloneFormat), locale.standaloneDayName(i, QLocale::ShortFormat));
-    }
-}
-
-void tst_QDate::longDayName() const
-{
-    QCOMPARE(QDate::longDayName(0), QString());
-    QCOMPARE(QDate::longDayName(8), QString());
-
-    if (QLocale::system().language() == QLocale::C) {
-        QCOMPARE(QDate::longDayName(1), QLatin1String("Monday"));
-        QCOMPARE(QDate::longDayName(7), QLatin1String("Sunday"));
-    }
-
-    QLocale locale = QLocale::system();
-    for(int i = 1; i <= 7; ++i) {
-        QCOMPARE(QDate::longDayName(i), locale.dayName(i, QLocale::LongFormat));
-    }
-}
-
-void tst_QDate::standaloneLongDayName() const
-{
-    QCOMPARE(QDate::longDayName(0, QDate::StandaloneFormat), QString());
-    QCOMPARE(QDate::longDayName(8, QDate::StandaloneFormat), QString());
-
-    if (QLocale::system().language() == QLocale::C) {
-        QCOMPARE(QDate::longDayName(1, QDate::StandaloneFormat), QLatin1String("Monday"));
-        QCOMPARE(QDate::longDayName(7, QDate::StandaloneFormat), QLatin1String("Sunday"));
-    }
-
-    QLocale locale = QLocale::system();
-    for(int i = 1; i <= 7; ++i) {
-        QCOMPARE(QDate::longDayName(i, QDate::StandaloneFormat), locale.standaloneDayName(i, QLocale::LongFormat));
-    }
-}
-
-void tst_QDate::shortMonthName() const
-{
-    QCOMPARE(QDate::shortMonthName(0), QString());
-    QCOMPARE(QDate::shortMonthName(13), QString());
-
-    if (QLocale::system().language() == QLocale::C) {
-        QCOMPARE(QDate::shortMonthName(1), QLatin1String("Jan"));
-        QCOMPARE(QDate::shortMonthName(8), QLatin1String("Aug"));
-    }
-
-    QLocale locale = QLocale::system();
-    for(int i = 1; i <= 12; ++i) {
-        QCOMPARE(QDate::shortMonthName(i), locale.monthName(i, QLocale::ShortFormat));
-    }
-}
-
-void tst_QDate::standaloneShortMonthName() const
-{
-    QCOMPARE(QDate::shortMonthName(0, QDate::StandaloneFormat), QString());
-    QCOMPARE(QDate::shortMonthName(13, QDate::StandaloneFormat), QString());
-
-    if (QLocale::system().language() == QLocale::C) {
-        QCOMPARE(QDate::shortMonthName(1, QDate::StandaloneFormat), QLatin1String("Jan"));
-        QCOMPARE(QDate::shortMonthName(8, QDate::StandaloneFormat), QLatin1String("Aug"));
-    }
-
-    QLocale locale = QLocale::system();
-    for(int i = 1; i <= 12; ++i) {
-        QCOMPARE(QDate::shortMonthName(i, QDate::StandaloneFormat), locale.standaloneMonthName(i, QLocale::ShortFormat));
-    }
-}
-
-void tst_QDate::longMonthName() const
-{
-    QCOMPARE(QDate::longMonthName(0), QString());
-    QCOMPARE(QDate::longMonthName(13), QString());
-
-    if (QLocale::system().language() == QLocale::C) {
-        QCOMPARE(QDate::longMonthName(1), QLatin1String("January"));
-        QCOMPARE(QDate::longMonthName(8), QLatin1String("August"));
-    }
-
-    QLocale locale = QLocale::system();
-    for(int i = 1; i <= 12; ++i) {
-        QCOMPARE(QDate::longMonthName(i), locale.monthName(i, QLocale::LongFormat));
-    }
-}
-
-void tst_QDate::standaloneLongMonthName() const
-{
-    QCOMPARE(QDate::longMonthName(0, QDate::StandaloneFormat), QString());
-    QCOMPARE(QDate::longMonthName(13, QDate::StandaloneFormat), QString());
-
-    if (QLocale::system().language() == QLocale::C) {
-        QCOMPARE(QDate::longMonthName(1, QDate::StandaloneFormat), QLatin1String("January"));
-        QCOMPARE(QDate::longMonthName(8, QDate::StandaloneFormat), QLatin1String("August"));
-    }
-
-    QLocale locale = QLocale::system();
-    for(int i = 1; i <= 12; ++i) {
-        QCOMPARE(QDate::longMonthName(i, QDate::StandaloneFormat), locale.standaloneMonthName(i, QLocale::LongFormat));
-    }
-}
-QT_WARNING_POP
-#endif // textdate
 
 void tst_QDate::roundtrip() const
 {

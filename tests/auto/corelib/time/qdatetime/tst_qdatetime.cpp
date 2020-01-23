@@ -61,10 +61,6 @@ private slots:
     void timeSpec();
     void toSecsSinceEpoch_data();
     void toSecsSinceEpoch();
-#if QT_DEPRECATED_SINCE(5, 8)
-    void toTime_t_data();
-    void toTime_t();
-#endif
     void daylightSavingsTimeChange_data();
     void daylightSavingsTimeChange();
     void springForward_data();
@@ -1709,39 +1705,6 @@ void tst_QDateTime::toSecsSinceEpoch()
         QCOMPARE(QDateTime::fromSecsSinceEpoch(asSecsSinceEpoch), datetime);
     }
 }
-
-#if QT_DEPRECATED_SINCE(5, 8)
-void tst_QDateTime::toTime_t_data()
-{
-    QTest::addColumn<QString>("dateTimeStr");
-    QTest::addColumn<bool>("res");
-
-    QTest::newRow( "data1" ) << str( 1800, 1, 1, 12, 0, 0 ) << false;
-    QTest::newRow( "data2" ) << str( 1969, 1, 1, 12, 0, 0 ) << false;
-    QTest::newRow( "data3" ) << str( 2002, 1, 1, 12, 0, 0 ) << true;
-    QTest::newRow( "data4" ) << str( 2002, 6, 1, 12, 0, 0 ) << true;
-    QTest::newRow( "data5" ) << QString("INVALID") << false;
-    QTest::newRow( "data6" ) << str( 2038, 1, 1, 12, 0, 0 ) << true;
-    QTest::newRow( "data7" ) << str( 2063, 4, 5, 12, 0, 0 ) << true; // the day of First Contact
-    QTest::newRow( "data8" ) << str( 2107, 1, 1, 12, 0, 0 )
-                             << bool( sizeof(uint) > 32 && sizeof(time_t) > 32 );
-}
-
-void tst_QDateTime::toTime_t()
-{
-    QFETCH( QString, dateTimeStr );
-    QDateTime datetime = dt( dateTimeStr );
-
-    uint asTime_t = datetime.toTime_t();
-    QFETCH( bool, res );
-    if (res) {
-        QVERIFY(asTime_t != uint(-1));
-        QCOMPARE(QDateTime::fromTime_t(asTime_t), datetime);
-    } else {
-        QCOMPARE(asTime_t, uint(-1));
-    }
-}
-#endif
 
 void tst_QDateTime::daylightSavingsTimeChange_data()
 {

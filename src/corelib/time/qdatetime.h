@@ -60,12 +60,6 @@ class QDateTime;
 
 class Q_CORE_EXPORT QDate // ### Qt 6: change to be used by value, not const &
 {
-public:
-    enum MonthNameType { // ### Qt 6: remove, along with methods using it
-        DateFormat = 0,
-        StandaloneFormat
-    };
-private:
     explicit Q_DECL_CONSTEXPR QDate(qint64 julianDay) : jd(julianDay) {}
 public:
     Q_DECL_CONSTEXPR QDate() : jd(nullJd()) {}
@@ -99,16 +93,6 @@ public:
     QDateTime endOfDay(const QTimeZone &zone) const;
 #endif
 
-#if QT_DEPRECATED_SINCE(5, 10) && QT_CONFIG(textdate)
-    QT_DEPRECATED_X("Use QLocale::monthName or QLocale::standaloneMonthName")
-        static QString shortMonthName(int month, MonthNameType type = DateFormat);
-    QT_DEPRECATED_X("Use QLocale::dayName or QLocale::standaloneDayName")
-        static QString shortDayName(int weekday, MonthNameType type = DateFormat);
-    QT_DEPRECATED_X("Use QLocale::monthName or QLocale::standaloneMonthName")
-        static QString longMonthName(int month, MonthNameType type = DateFormat);
-    QT_DEPRECATED_X("Use QLocale::dayName or QLocale::standaloneDayName")
-        static QString longDayName(int weekday, MonthNameType type = DateFormat);
-#endif // textdate && deprecated
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
 #if QT_DEPRECATED_SINCE(5, 15)
@@ -125,17 +109,9 @@ public:
     QString toString(QStringView format) const;
     QString toString(QStringView format, QCalendar cal) const;
 #endif
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED_X("Use setDate() instead") inline bool setYMD(int y, int m, int d)
-    { if (uint(y) <= 99) y += 1900; return setDate(y, m, d); }
-#endif
-
     bool setDate(int year, int month, int day);
     bool setDate(int year, int month, int day, QCalendar cal);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void getDate(int *year, int *month, int *day); // ### Qt 6: remove
-#endif // < Qt 6
     void getDate(int *year, int *month, int *day) const;
 
     Q_REQUIRED_RESULT QDate addDays(qint64 days) const;
@@ -229,11 +205,6 @@ public:
 #endif
     static bool isValid(int h, int m, int s, int ms = 0);
 
-#if QT_DEPRECATED_SINCE(5, 14) // ### Qt 6: remove
-    QT_DEPRECATED_X("Use QElapsedTimer instead") void start();
-    QT_DEPRECATED_X("Use QElapsedTimer instead") int restart();
-    QT_DEPRECATED_X("Use QElapsedTimer instead") int elapsed() const;
-#endif
 private:
     enum TimeFlag { NullTime = -1 };
     Q_DECL_CONSTEXPR inline int ds() const { return mds == -1 ? 0 : mds; }
@@ -292,9 +263,6 @@ class Q_CORE_EXPORT QDateTime
 
 public:
     QDateTime() noexcept(Data::CanBeSmall);
-#if QT_DEPRECATED_SINCE(5, 15) // ### Qt 6: remove
-    QT_DEPRECATED_X("Use QDate::startOfDay()") explicit QDateTime(QDate);
-#endif
     QDateTime(QDate date, QTime time, Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0);
 #if QT_CONFIG(timezone)
     QDateTime(QDate date, QTime time, const QTimeZone &timeZone);
@@ -368,26 +336,12 @@ public:
     inline bool operator>(const QDateTime &other) const { return other < *this; }
     inline bool operator>=(const QDateTime &other) const { return !(*this < other); }
 
-#if QT_DEPRECATED_SINCE(5, 2) // ### Qt 6: remove
-    QT_DEPRECATED_X("Use setOffsetFromUtc() instead") void setUtcOffset(int seconds);
-    QT_DEPRECATED_X("Use offsetFromUtc() instead") int utcOffset() const;
-#endif // QT_DEPRECATED_SINCE
-
     static QDateTime currentDateTime();
     static QDateTime currentDateTimeUtc();
 #if QT_CONFIG(datestring)
     static QDateTime fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
     static QDateTime fromString(const QString &s, const QString &format);
     static QDateTime fromString(const QString &s, const QString &format, QCalendar cal);
-#endif
-
-#if QT_DEPRECATED_SINCE(5, 8)
-    uint toTime_t() const;
-    void setTime_t(uint secsSince1Jan1970UTC);
-    static QDateTime fromTime_t(uint secsSince1Jan1970UTC);
-    static QDateTime fromTime_t(uint secsSince1Jan1970UTC, Qt::TimeSpec spec,
-                                int offsetFromUtc = 0);
-    static QDateTime fromTime_t(uint secsSince1Jan1970UTC, const QTimeZone &timeZone);
 #endif
 
     static QDateTime fromMSecsSinceEpoch(qint64 msecs);
