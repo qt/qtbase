@@ -44,6 +44,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qshareddata.h>
+#include <QtCore/qcalendar.h>
 
 #include <limits>
 
@@ -54,7 +55,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
 
 QT_BEGIN_NAMESPACE
 
-class QCalendar;
 class QTimeZone;
 class QDateTime;
 
@@ -69,6 +69,7 @@ public:
     Q_DECL_CONSTEXPR bool isNull() const { return !isValid(); }
     Q_DECL_CONSTEXPR bool isValid() const { return jd >= minJd() && jd <= maxJd(); }
 
+    // Gregorian-optimized:
     int year() const;
     int month() const;
     int day() const;
@@ -76,7 +77,7 @@ public:
     int dayOfYear() const;
     int daysInMonth() const;
     int daysInYear() const;
-    int weekNumber(int *yearNum = nullptr) const;
+    int weekNumber(int *yearNum = nullptr) const; // ISO 8601, always Gregorian
 
     int year(QCalendar cal) const;
     int month(QCalendar cal) const;
@@ -95,21 +96,18 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-
-#if QT_STRINGVIEW_LEVEL < 2
-    QString toString(const QString &format) const;
-    QString toString(const QString &format, QCalendar cal) const;
+# if QT_STRINGVIEW_LEVEL < 2
+    QString toString(const QString &format, QCalendar cal = QCalendar()) const;
+# endif
+    QString toString(QStringView format, QCalendar cal = QCalendar()) const;
 #endif
-
-    QString toString(QStringView format) const;
-    QString toString(QStringView format, QCalendar cal) const;
-#endif
-    bool setDate(int year, int month, int day);
+    bool setDate(int year, int month, int day); // Gregorian-optimized
     bool setDate(int year, int month, int day, QCalendar cal);
 
     void getDate(int *year, int *month, int *day) const;
 
     Q_REQUIRED_RESULT QDate addDays(qint64 days) const;
+    // Gregorian-optimized:
     Q_REQUIRED_RESULT QDate addMonths(int months) const;
     Q_REQUIRED_RESULT QDate addYears(int years) const;
     Q_REQUIRED_RESULT QDate addMonths(int months, QCalendar cal) const;
@@ -125,9 +123,12 @@ public:
 
     static QDate currentDate();
 #if QT_CONFIG(datestring)
+    static QDate fromString(QStringView s, Qt::DateFormat f = Qt::TextDate);
+    static QDate fromString(QStringView s, QStringView format, QCalendar cal = QCalendar());
+# if QT_STRINGVIEW_LEVEL < 2
     static QDate fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
-    static QDate fromString(const QString &s, const QString &format);
-    static QDate fromString(const QString &s, const QString &format, QCalendar cal);
+    static QDate fromString(const QString &s, const QString &format, QCalendar cal = QCalendar());
+# endif
 #endif
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
@@ -299,12 +300,10 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-#if QT_STRINGVIEW_LEVEL < 2
-    QString toString(const QString &format) const;
-    QString toString(const QString &format, QCalendar cal) const;
-#endif
-    QString toString(QStringView format) const;
-    QString toString(QStringView format, QCalendar cal) const;
+# if QT_STRINGVIEW_LEVEL < 2
+    QString toString(const QString &format, QCalendar cal = QCalendar()) const;
+# endif
+    QString toString(QStringView format, QCalendar cal = QCalendar()) const;
 #endif
     Q_REQUIRED_RESULT QDateTime addDays(qint64 days) const;
     Q_REQUIRED_RESULT QDateTime addMonths(int months) const;
@@ -335,14 +334,14 @@ public:
     static QDateTime currentDateTimeUtc();
 #if QT_CONFIG(datestring)
     static QDateTime fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
-    static QDateTime fromString(const QString &s, const QString &format);
-    static QDateTime fromString(const QString &s, const QString &format, QCalendar cal);
+    static QDateTime fromString(const QString &s, const QString &format,
+                                QCalendar cal = QCalendar());
 #endif
 
-    static QDateTime fromMSecsSinceEpoch(qint64 msecs);
-    // ### Qt 6: Merge with above with default spec = Qt::LocalTime
-    static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetFromUtc = 0);
-    static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spe = Qt::LocalTime, int offsetFromUtc = 0);
+    static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec = Qt::LocalTime,
+                                         int offsetFromUtc = 0);
+    static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spe = Qt::LocalTime,
+                                        int offsetFromUtc = 0);
 
 #if QT_CONFIG(timezone)
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone);

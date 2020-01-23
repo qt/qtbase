@@ -1062,7 +1062,7 @@ QString QDate::toString(Qt::DateFormat format) const
 
     switch (format) {
     case Qt::RFC2822Date:
-        return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"));
+        return QLocale::c().toString(*this, u"dd MMM yyyy");
     default:
     case Qt::TextDate:
         return toStringTextDate(*this);
@@ -1074,9 +1074,7 @@ QString QDate::toString(Qt::DateFormat format) const
 }
 
 /*!
-    \fn QString QDate::toString(const QString &format) const
     \fn QString QDate::toString(const QString &format, QCalendar cal) const
-    \fn QString QDate::toString(QStringView format) const
     \fn QString QDate::toString(QStringView format, QCalendar cal) const
 
     Returns the date as a string. The \a format parameter determines the format
@@ -1130,22 +1128,12 @@ QString QDate::toString(Qt::DateFormat format) const
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
 
 */
-QString QDate::toString(QStringView format) const
-{
-    return toString(format, QCalendar());
-}
-
 QString QDate::toString(QStringView format, QCalendar cal) const
 {
     return QLocale::c().toString(*this, format, cal);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
-QString QDate::toString(const QString &format) const
-{
-    return toString(qToStringViewIgnoringNull(format), QCalendar());
-}
-
 QString QDate::toString(const QString &format, QCalendar cal) const
 {
     return toString(qToStringViewIgnoringNull(format), cal);
@@ -1518,6 +1506,8 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
 }
 
 /*!
+    \fn QDate QDate::fromString(const QString &string, const QString &format, QCalendar cal)
+
     Returns the QDate represented by the \a string, using the \a
     format given, or an invalid date if the string cannot be parsed.
 
@@ -1598,15 +1588,6 @@ QDate QDate::fromString(const QString &string, const QString &format, QCalendar 
     Q_UNUSED(cal);
 #endif
     return date;
-}
-
-/*!
-  \overload
-*/
-
-QDate QDate::fromString(const QString &string, const QString &format)
-{
-    return fromString(string, format, QCalendar());
 }
 #endif // datestring
 
@@ -3935,7 +3916,6 @@ void QDateTime::setSecsSinceEpoch(qint64 secs)
     \sa fromString(), QDate::toString(), QTime::toString(),
     QLocale::toString()
 */
-
 QString QDateTime::toString(Qt::DateFormat format) const
 {
     QString buf;
@@ -3943,11 +3923,10 @@ QString QDateTime::toString(Qt::DateFormat format) const
         return buf;
 
     switch (format) {
-    case Qt::RFC2822Date: {
+    case Qt::RFC2822Date:
         buf = QLocale::c().toString(*this, u"dd MMM yyyy hh:mm:ss ");
         buf += toOffsetString(Qt::TextDate, offsetFromUtc());
         return buf;
-    }
     default:
     case Qt::TextDate: {
         const QPair<QDate, QTime> p = getDateTime(d);
@@ -3997,9 +3976,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
 }
 
 /*!
-    \fn QString QDateTime::toString(const QString &format) const
     \fn QString QDateTime::toString(const QString &format, QCalendar cal) const
-    \fn QString QDateTime::toString(QStringView format) const
     \fn QString QDateTime::toString(QStringView format, QCalendar cal) const
 
     Returns the datetime as a string. The \a format parameter determines the
@@ -4039,28 +4016,17 @@ QString QDateTime::toString(Qt::DateFormat format) const
 
     \sa fromString(), QDate::toString(), QTime::toString(), QLocale::toString()
 */
-QString QDateTime::toString(QStringView format) const
-{
-    return toString(format, QCalendar());
-}
-
 QString QDateTime::toString(QStringView format, QCalendar cal) const
 {
     return QLocale::c().toString(*this, format, cal);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
-QString QDateTime::toString(const QString &format) const
-{
-    return toString(qToStringViewIgnoringNull(format), QCalendar());
-}
-
+# if QT_STRINGVIEW_LEVEL < 2
 QString QDateTime::toString(const QString &format, QCalendar cal) const
 {
     return toString(qToStringViewIgnoringNull(format), cal);
 }
-#endif
-
+# endif
 #endif // datestring
 
 static inline void massageAdjustedDateTime(const QDateTimeData &d, QDate *date, QTime *time)
@@ -4595,27 +4561,6 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
 #endif
 
 /*!
-  \since 4.7
-
-  Returns a datetime whose date and time are the number of milliseconds, \a msecs,
-  that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
-  Time (Qt::UTC), and converted to Qt::LocalTime.  On systems that do not
-  support time zones, the time will be set as if local time were Qt::UTC.
-
-  Note that there are possible values for \a msecs that lie outside the valid
-  range of QDateTime, both negative and positive. The behavior of this
-  function is undefined for those values.
-
-  \sa toMSecsSinceEpoch(), setMSecsSinceEpoch()
-*/
-QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
-{
-    return fromMSecsSinceEpoch(msecs, Qt::LocalTime);
-}
-
-/*!
-  \since 5.2
-
   Returns a datetime whose date and time are the number of milliseconds \a msecs
   that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
   Time (Qt::UTC) and converted to the given \a spec.
@@ -4987,15 +4932,6 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format, QC
     Q_UNUSED(cal);
 #endif
     return QDateTime();
-}
-
-/*
-  \overload
-*/
-
-QDateTime QDateTime::fromString(const QString &string, const QString &format)
-{
-    return fromString(string, format, QCalendar());
 }
 
 #endif // datestring
