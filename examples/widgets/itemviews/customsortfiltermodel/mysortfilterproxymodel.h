@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -63,17 +63,17 @@ public:
     MySortFilterProxyModel(QObject *parent = 0);
 
     QDate filterMinimumDate() const { return minDate; }
-    void setFilterMinimumDate(const QDate &date);
+    void setFilterMinimumDate(QDate date);
 
     QDate filterMaximumDate() const { return maxDate; }
-    void setFilterMaximumDate(const QDate &date);
+    void setFilterMaximumDate(QDate date);
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
-    bool dateInRange(const QDate &date) const;
+    bool dateInRange(QDate date) const;
 
     QDate minDate;
     QDate maxDate;

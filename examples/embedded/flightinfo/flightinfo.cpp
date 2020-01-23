@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
@@ -198,7 +198,7 @@ private slots:
 
 public slots:
 
-    void request(const QString &flightCode, const QDate &date) {
+    void request(const QString &flightCode, QDate date) {
 
         setWindowTitle("Loading...");
 

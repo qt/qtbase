@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -151,7 +151,7 @@ class Employee
 {
 public:
     Employee() {}
-    Employee(const QString &name, const QDate &dateOfBirth);
+    Employee(const QString &name, QDate dateOfBirth);
     ...
 
 private:
