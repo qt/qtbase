@@ -1203,7 +1203,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     key is common to both maps, the resulting map will contain the
     key multiple times.
 
-    \sa QMultiMap::unite()
+    \sa QMap::unite()
 */
 
 /*! \typedef QMap::Iterator

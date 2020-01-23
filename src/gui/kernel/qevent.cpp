@@ -946,7 +946,7 @@ QWheelEvent::~QWheelEvent()
     \li or scrolling has ended and the distance did not change anymore (Qt::ScrollEnd).
     \endlist
 
-    \see pixelDelta()
+    \sa pixelDelta()
 */
 
 /*!
