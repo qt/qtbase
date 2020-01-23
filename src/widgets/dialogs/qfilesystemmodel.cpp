@@ -797,7 +797,7 @@ QString QFileSystemModelPrivate::time(const QModelIndex &index) const
     if (!index.isValid())
         return QString();
 #if QT_CONFIG(datestring)
-    return node(index)->lastModified().toString(Qt::SystemLocaleDate);
+    return QLocale::system().toString(node(index)->lastModified(), QLocale::ShortFormat);
 #else
     Q_UNUSED(index);
     return QString();

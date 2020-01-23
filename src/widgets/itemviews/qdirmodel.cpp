@@ -1319,7 +1319,7 @@ QString QDirModelPrivate::type(const QModelIndex &index) const
 QString QDirModelPrivate::time(const QModelIndex &index) const
 {
 #if QT_CONFIG(datestring)
-    return node(index)->info.lastModified().toString(Qt::LocalDate);
+    return QLocale::system().toString(node(index)->info.lastModified(), QLocale::ShortFormat);
 #else
     Q_UNUSED(index);
     return QString();
