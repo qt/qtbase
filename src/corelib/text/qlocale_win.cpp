@@ -216,9 +216,17 @@ inline int QSystemLocalePrivate::getLocaleInfo(LCTYPE type, LPWSTR data, int siz
 template<typename T>
 T QSystemLocalePrivate::getLocaleInfo(LCTYPE type, int maxlen)
 {
+    // https://docs.microsoft.com/en-us/windows/win32/intl/locale-spositivesign
+    // says empty for LOCALE_SPOSITIVESIGN means "+", although GetLocaleInfo()
+    // is documented to return 0 only on failure, so it's not clear how it
+    // returns empty to mean this; hence the two checks for it below.
+    const QString plus = QStringLiteral("+");
     QVarLengthArray<wchar_t, 64> buf(maxlen ? maxlen : 64);
     if (!getLocaleInfo(type, buf.data(), buf.size())) {
-        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        const auto lastError = GetLastError();
+        if (type == LOCALE_SPOSITIVESIGN && lastError == ERROR_SUCCESS)
+            return plus;
+        if (lastError != ERROR_INSUFFICIENT_BUFFER)
             return {};
         int cnt = getLocaleInfo(type, 0, 0);
         if (cnt == 0)
@@ -227,6 +235,8 @@ T QSystemLocalePrivate::getLocaleInfo(LCTYPE type, int maxlen)
         if (!getLocaleInfo(type, buf.data(), buf.size()))
             return {};
     }
+    if (type == LOCALE_SPOSITIVESIGN && !buf[0])
+        return plus;
     return QString::fromWCharArray(buf.data());
 }
 
