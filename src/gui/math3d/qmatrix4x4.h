@@ -59,7 +59,7 @@ class Q_GUI_EXPORT QMatrix4x4
 {
 public:
     inline QMatrix4x4() { setToIdentity(); }
-    explicit QMatrix4x4(Qt::Initialization) : flagBits(General) {}
+    explicit QMatrix4x4(Qt::Initialization) {}
     explicit QMatrix4x4(const float *values);
     inline QMatrix4x4(float m11, float m12, float m13, float m14,
                       float m21, float m22, float m23, float m24,
@@ -186,19 +186,9 @@ public:
 
     void projectedRotate(float angle, float x, float y, float z);
 private:
-    float m[4][4];          // Column-major order to match OpenGL.
-    int flagBits;           // Flag bits from the enum below.
 
-    // When matrices are multiplied, the flag bits are or-ed together.
-    enum {
-        Identity        = 0x0000, // Identity matrix
-        Translation     = 0x0001, // Contains a translation
-        Scale           = 0x0002, // Contains a scale
-        Rotation2D      = 0x0004, // Contains a rotation about the Z axis
-        Rotation        = 0x0008, // Contains an arbitrary rotation
-        Perspective     = 0x0010, // Last row is different from (0, 0, 0, 1)
-        General         = 0x001f  // General matrix, unknown contents
-    };
+    // No other members are allowed in order to ensure a size of 16 * sizeof(float)
+    float m[4][4]; // Column-major order to match OpenGL.
 
     // Construct without initializing identity matrix.
     explicit QMatrix4x4(int) { }
@@ -222,7 +212,6 @@ inline QMatrix4x4::QMatrix4x4
     m[1][0] = m12; m[1][1] = m22; m[1][2] = m32; m[1][3] = m42;
     m[2][0] = m13; m[2][1] = m23; m[2][2] = m33; m[2][3] = m43;
     m[3][0] = m14; m[3][1] = m24; m[3][2] = m34; m[3][3] = m44;
-    flagBits = General;
 }
 
 template <int N, int M>
@@ -240,7 +229,6 @@ Q_INLINE_TEMPLATE QMatrix4x4::QMatrix4x4
                 m[matrixCol][matrixRow] = 0.0f;
         }
     }
-    flagBits = General;
 }
 
 template <int N, int M>
@@ -270,7 +258,6 @@ inline const float& QMatrix4x4::operator()(int aRow, int aColumn) const
 inline float& QMatrix4x4::operator()(int aRow, int aColumn)
 {
     Q_ASSERT(aRow >= 0 && aRow < 4 && aColumn >= 0 && aColumn < 4);
-    flagBits = General;
     return m[aColumn][aRow];
 }
 
@@ -288,7 +275,6 @@ inline void QMatrix4x4::setColumn(int index, const QVector4D& value)
     m[index][1] = value.y();
     m[index][2] = value.z();
     m[index][3] = value.w();
-    flagBits = General;
 }
 
 inline QVector4D QMatrix4x4::row(int index) const
@@ -304,7 +290,6 @@ inline void QMatrix4x4::setRow(int index, const QVector4D& value)
     m[1][index] = value.y();
     m[2][index] = value.z();
     m[3][index] = value.w();
-    flagBits = General;
 }
 #endif
 
@@ -317,8 +302,6 @@ inline bool QMatrix4x4::isAffine() const
 
 inline bool QMatrix4x4::isIdentity() const
 {
-    if (flagBits == Identity)
-        return true;
     if (m[0][0] != 1.0f || m[0][1] != 0.0f || m[0][2] != 0.0f)
         return false;
     if (m[0][3] != 0.0f || m[1][0] != 0.0f || m[1][1] != 1.0f)
@@ -350,7 +333,6 @@ inline void QMatrix4x4::setToIdentity()
     m[3][1] = 0.0f;
     m[3][2] = 0.0f;
     m[3][3] = 1.0f;
-    flagBits = Identity;
 }
 
 inline void QMatrix4x4::fill(float value)
@@ -371,7 +353,6 @@ inline void QMatrix4x4::fill(float value)
     m[3][1] = value;
     m[3][2] = value;
     m[3][3] = value;
-    flagBits = General;
 }
 
 inline QMatrix4x4& QMatrix4x4::operator+=(const QMatrix4x4& other)
@@ -392,7 +373,6 @@ inline QMatrix4x4& QMatrix4x4::operator+=(const QMatrix4x4& other)
     m[3][1] += other.m[3][1];
     m[3][2] += other.m[3][2];
     m[3][3] += other.m[3][3];
-    flagBits = General;
     return *this;
 }
 
@@ -414,25 +394,12 @@ inline QMatrix4x4& QMatrix4x4::operator-=(const QMatrix4x4& other)
     m[3][1] -= other.m[3][1];
     m[3][2] -= other.m[3][2];
     m[3][3] -= other.m[3][3];
-    flagBits = General;
     return *this;
 }
 
 inline QMatrix4x4& QMatrix4x4::operator*=(const QMatrix4x4& o)
 {
     const QMatrix4x4 other = o; // prevent aliasing when &o == this ### Qt 6: take o by value
-    flagBits |= other.flagBits;
-
-    if (flagBits < Rotation2D) {
-        m[3][0] += m[0][0] * other.m[3][0];
-        m[3][1] += m[1][1] * other.m[3][1];
-        m[3][2] += m[2][2] * other.m[3][2];
-
-        m[0][0] *= other.m[0][0];
-        m[1][1] *= other.m[1][1];
-        m[2][2] *= other.m[2][2];
-        return *this;
-    }
 
     float m0, m1, m2;
     m0 = m[0][0] * other.m[0][0]
@@ -535,7 +502,6 @@ inline QMatrix4x4& QMatrix4x4::operator*=(float factor)
     m[3][1] *= factor;
     m[3][2] *= factor;
     m[3][3] *= factor;
-    flagBits = General;
     return *this;
 }
 
@@ -598,7 +564,6 @@ inline QMatrix4x4 operator+(const QMatrix4x4& m1, const QMatrix4x4& m2)
     m.m[3][1] = m1.m[3][1] + m2.m[3][1];
     m.m[3][2] = m1.m[3][2] + m2.m[3][2];
     m.m[3][3] = m1.m[3][3] + m2.m[3][3];
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
@@ -621,26 +586,11 @@ inline QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2)
     m.m[3][1] = m1.m[3][1] - m2.m[3][1];
     m.m[3][2] = m1.m[3][2] - m2.m[3][2];
     m.m[3][3] = m1.m[3][3] - m2.m[3][3];
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
 inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
-    int flagBits = m1.flagBits | m2.flagBits;
-    if (flagBits < QMatrix4x4::Rotation2D) {
-        QMatrix4x4 m = m1;
-        m.m[3][0] += m.m[0][0] * m2.m[3][0];
-        m.m[3][1] += m.m[1][1] * m2.m[3][1];
-        m.m[3][2] += m.m[2][2] * m2.m[3][2];
-
-        m.m[0][0] *= m2.m[0][0];
-        m.m[1][1] *= m2.m[1][1];
-        m.m[2][2] *= m2.m[2][2];
-        m.flagBits = flagBits;
-        return m;
-    }
-
     QMatrix4x4 m(1);
     m.m[0][0] = m1.m[0][0] * m2.m[0][0]
               + m1.m[1][0] * m2.m[0][1]
@@ -709,7 +659,6 @@ inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
               + m1.m[1][3] * m2.m[3][1]
               + m1.m[2][3] * m2.m[3][2]
               + m1.m[3][3] * m2.m[3][3];
-    m.flagBits = flagBits;
     return m;
 }
 
@@ -717,20 +666,19 @@ inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
 
 inline QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
 {
-    float x, y, z, w;
-    x = vector.x() * matrix.m[0][0] +
+    const float x = vector.x() * matrix.m[0][0] +
         vector.y() * matrix.m[0][1] +
         vector.z() * matrix.m[0][2] +
         matrix.m[0][3];
-    y = vector.x() * matrix.m[1][0] +
+    const float y = vector.x() * matrix.m[1][0] +
         vector.y() * matrix.m[1][1] +
         vector.z() * matrix.m[1][2] +
         matrix.m[1][3];
-    z = vector.x() * matrix.m[2][0] +
+    const float z = vector.x() * matrix.m[2][0] +
         vector.y() * matrix.m[2][1] +
         vector.z() * matrix.m[2][2] +
         matrix.m[2][3];
-    w = vector.x() * matrix.m[3][0] +
+    const float w = vector.x() * matrix.m[3][0] +
         vector.y() * matrix.m[3][1] +
         vector.z() * matrix.m[3][2] +
         matrix.m[3][3];
@@ -742,41 +690,29 @@ inline QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
 
 inline QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
 {
-    float x, y, z, w;
-    if (matrix.flagBits == QMatrix4x4::Identity) {
+    if (matrix.isIdentity())
         return vector;
-    } else if (matrix.flagBits < QMatrix4x4::Rotation2D) {
-        // Translation | Scale
-        return QVector3D(vector.x() * matrix.m[0][0] + matrix.m[3][0],
-                         vector.y() * matrix.m[1][1] + matrix.m[3][1],
-                         vector.z() * matrix.m[2][2] + matrix.m[3][2]);
-    } else if (matrix.flagBits < QMatrix4x4::Rotation) {
-        // Translation | Scale | Rotation2D
-        return QVector3D(vector.x() * matrix.m[0][0] + vector.y() * matrix.m[1][0] + matrix.m[3][0],
-                         vector.x() * matrix.m[0][1] + vector.y() * matrix.m[1][1] + matrix.m[3][1],
-                         vector.z() * matrix.m[2][2] + matrix.m[3][2]);
-    } else {
-        x = vector.x() * matrix.m[0][0] +
-            vector.y() * matrix.m[1][0] +
-            vector.z() * matrix.m[2][0] +
-            matrix.m[3][0];
-        y = vector.x() * matrix.m[0][1] +
-            vector.y() * matrix.m[1][1] +
-            vector.z() * matrix.m[2][1] +
-            matrix.m[3][1];
-        z = vector.x() * matrix.m[0][2] +
-            vector.y() * matrix.m[1][2] +
-            vector.z() * matrix.m[2][2] +
-            matrix.m[3][2];
-        w = vector.x() * matrix.m[0][3] +
-            vector.y() * matrix.m[1][3] +
-            vector.z() * matrix.m[2][3] +
-            matrix.m[3][3];
-        if (w == 1.0f)
-            return QVector3D(x, y, z);
-        else
-            return QVector3D(x / w, y / w, z / w);
-    }
+
+    const float x = vector.x() * matrix.m[0][0] +
+        vector.y() * matrix.m[1][0] +
+        vector.z() * matrix.m[2][0] +
+        matrix.m[3][0];
+    const float y = vector.x() * matrix.m[0][1] +
+        vector.y() * matrix.m[1][1] +
+        vector.z() * matrix.m[2][1] +
+        matrix.m[3][1];
+    const float z = vector.x() * matrix.m[0][2] +
+        vector.y() * matrix.m[1][2] +
+        vector.z() * matrix.m[2][2] +
+        matrix.m[3][2];
+    const float w = vector.x() * matrix.m[0][3] +
+        vector.y() * matrix.m[1][3] +
+        vector.z() * matrix.m[2][3] +
+        matrix.m[3][3];
+    if (w == 1.0f)
+        return QVector3D(x, y, z);
+    else
+        return QVector3D(x / w, y / w, z / w);
 }
 
 #endif
@@ -785,20 +721,19 @@ inline QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
 
 inline QVector4D operator*(const QVector4D& vector, const QMatrix4x4& matrix)
 {
-    float x, y, z, w;
-    x = vector.x() * matrix.m[0][0] +
+    const float x = vector.x() * matrix.m[0][0] +
         vector.y() * matrix.m[0][1] +
         vector.z() * matrix.m[0][2] +
         vector.w() * matrix.m[0][3];
-    y = vector.x() * matrix.m[1][0] +
+    const float y = vector.x() * matrix.m[1][0] +
         vector.y() * matrix.m[1][1] +
         vector.z() * matrix.m[1][2] +
         vector.w() * matrix.m[1][3];
-    z = vector.x() * matrix.m[2][0] +
+    const float z = vector.x() * matrix.m[2][0] +
         vector.y() * matrix.m[2][1] +
         vector.z() * matrix.m[2][2] +
         vector.w() * matrix.m[2][3];
-    w = vector.x() * matrix.m[3][0] +
+    const float w = vector.x() * matrix.m[3][0] +
         vector.y() * matrix.m[3][1] +
         vector.z() * matrix.m[3][2] +
         vector.w() * matrix.m[3][3];
@@ -807,20 +742,19 @@ inline QVector4D operator*(const QVector4D& vector, const QMatrix4x4& matrix)
 
 inline QVector4D operator*(const QMatrix4x4& matrix, const QVector4D& vector)
 {
-    float x, y, z, w;
-    x = vector.x() * matrix.m[0][0] +
+    const float x = vector.x() * matrix.m[0][0] +
         vector.y() * matrix.m[1][0] +
         vector.z() * matrix.m[2][0] +
         vector.w() * matrix.m[3][0];
-    y = vector.x() * matrix.m[0][1] +
+    const float y = vector.x() * matrix.m[0][1] +
         vector.y() * matrix.m[1][1] +
         vector.z() * matrix.m[2][1] +
         vector.w() * matrix.m[3][1];
-    z = vector.x() * matrix.m[0][2] +
+    const float z = vector.x() * matrix.m[0][2] +
         vector.y() * matrix.m[1][2] +
         vector.z() * matrix.m[2][2] +
         vector.w() * matrix.m[3][2];
-    w = vector.x() * matrix.m[0][3] +
+    const float w = vector.x() * matrix.m[0][3] +
         vector.y() * matrix.m[1][3] +
         vector.z() * matrix.m[2][3] +
         vector.w() * matrix.m[3][3];
@@ -831,17 +765,15 @@ inline QVector4D operator*(const QMatrix4x4& matrix, const QVector4D& vector)
 
 inline QPoint operator*(const QPoint& point, const QMatrix4x4& matrix)
 {
-    float xin, yin;
-    float x, y, w;
-    xin = point.x();
-    yin = point.y();
-    x = xin * matrix.m[0][0] +
+    const float xin = point.x();
+    const float yin = point.y();
+    const float x = xin * matrix.m[0][0] +
         yin * matrix.m[0][1] +
         matrix.m[0][3];
-    y = xin * matrix.m[1][0] +
+    const float y = xin * matrix.m[1][0] +
         yin * matrix.m[1][1] +
         matrix.m[1][3];
-    w = xin * matrix.m[3][0] +
+    const float w = xin * matrix.m[3][0] +
         yin * matrix.m[3][1] +
         matrix.m[3][3];
     if (w == 1.0f)
@@ -852,17 +784,15 @@ inline QPoint operator*(const QPoint& point, const QMatrix4x4& matrix)
 
 inline QPointF operator*(const QPointF& point, const QMatrix4x4& matrix)
 {
-    float xin, yin;
-    float x, y, w;
-    xin = float(point.x());
-    yin = float(point.y());
-    x = xin * matrix.m[0][0] +
+    const float xin = float(point.x());
+    const float yin = float(point.y());
+    const float x = xin * matrix.m[0][0] +
         yin * matrix.m[0][1] +
         matrix.m[0][3];
-    y = xin * matrix.m[1][0] +
+    const float y = xin * matrix.m[1][0] +
         yin * matrix.m[1][1] +
         matrix.m[1][3];
-    w = xin * matrix.m[3][0] +
+    const float w = xin * matrix.m[3][0] +
         yin * matrix.m[3][1] +
         matrix.m[3][3];
     if (w == 1.0f) {
@@ -874,69 +804,46 @@ inline QPointF operator*(const QPointF& point, const QMatrix4x4& matrix)
 
 inline QPoint operator*(const QMatrix4x4& matrix, const QPoint& point)
 {
-    float xin, yin;
-    float x, y, w;
-    xin = point.x();
-    yin = point.y();
-    if (matrix.flagBits == QMatrix4x4::Identity) {
+    if (matrix.isIdentity())
         return point;
-    } else if (matrix.flagBits < QMatrix4x4::Rotation2D) {
-        // Translation | Scale
-        return QPoint(qRound(xin * matrix.m[0][0] + matrix.m[3][0]),
-                      qRound(yin * matrix.m[1][1] + matrix.m[3][1]));
-    } else if (matrix.flagBits < QMatrix4x4::Perspective) {
-        return QPoint(qRound(xin * matrix.m[0][0] + yin * matrix.m[1][0] + matrix.m[3][0]),
-                      qRound(xin * matrix.m[0][1] + yin * matrix.m[1][1] + matrix.m[3][1]));
-    } else {
-        x = xin * matrix.m[0][0] +
-            yin * matrix.m[1][0] +
-            matrix.m[3][0];
-        y = xin * matrix.m[0][1] +
-            yin * matrix.m[1][1] +
-            matrix.m[3][1];
-        w = xin * matrix.m[0][3] +
-            yin * matrix.m[1][3] +
-            matrix.m[3][3];
-        if (w == 1.0f)
-            return QPoint(qRound(x), qRound(y));
-        else
-            return QPoint(qRound(x / w), qRound(y / w));
-    }
+
+    const float xin = point.x();
+    const float yin = point.y();
+    const float x = xin * matrix.m[0][0] +
+                    yin * matrix.m[1][0] +
+                    matrix.m[3][0];
+    const float y = xin * matrix.m[0][1] +
+                    yin * matrix.m[1][1] +
+                    matrix.m[3][1];
+    const float w = xin * matrix.m[0][3] +
+                    yin * matrix.m[1][3] +
+                    matrix.m[3][3];
+    if (w == 1.0f)
+        return QPoint(qRound(x), qRound(y));
+
+    return QPoint(qRound(x / w), qRound(y / w));
 }
 
 inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
 {
-    qreal xin, yin;
-    qreal x, y, w;
-    xin = point.x();
-    yin = point.y();
-    if (matrix.flagBits == QMatrix4x4::Identity) {
+    if (matrix.isIdentity())
         return point;
-    } else if (matrix.flagBits < QMatrix4x4::Rotation2D) {
-        // Translation | Scale
-        return QPointF(xin * qreal(matrix.m[0][0]) + qreal(matrix.m[3][0]),
-                       yin * qreal(matrix.m[1][1]) + qreal(matrix.m[3][1]));
-    } else if (matrix.flagBits < QMatrix4x4::Perspective) {
-        return QPointF(xin * qreal(matrix.m[0][0]) + yin * qreal(matrix.m[1][0]) +
-                       qreal(matrix.m[3][0]),
-                       xin * qreal(matrix.m[0][1]) + yin * qreal(matrix.m[1][1]) +
-                       qreal(matrix.m[3][1]));
-    } else {
-        x = xin * qreal(matrix.m[0][0]) +
+
+    const qreal xin = point.x();
+    const qreal yin = point.y();
+    const qreal x = xin * qreal(matrix.m[0][0]) +
             yin * qreal(matrix.m[1][0]) +
             qreal(matrix.m[3][0]);
-        y = xin * qreal(matrix.m[0][1]) +
+    const qreal y = xin * qreal(matrix.m[0][1]) +
             yin * qreal(matrix.m[1][1]) +
             qreal(matrix.m[3][1]);
-        w = xin * qreal(matrix.m[0][3]) +
+    const qreal w = xin * qreal(matrix.m[0][3]) +
             yin * qreal(matrix.m[1][3]) +
             qreal(matrix.m[3][3]);
-        if (w == 1.0) {
-            return QPointF(qreal(x), qreal(y));
-        } else {
-            return QPointF(qreal(x / w), qreal(y / w));
-        }
-    }
+    if (w == 1.0)
+        return QPointF(qreal(x), qreal(y));
+
+    return QPointF(qreal(x / w), qreal(y / w));
 }
 
 inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
@@ -958,7 +865,6 @@ inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
     m.m[3][1] = -matrix.m[3][1];
     m.m[3][2] = -matrix.m[3][2];
     m.m[3][3] = -matrix.m[3][3];
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
@@ -981,7 +887,6 @@ inline QMatrix4x4 operator*(float factor, const QMatrix4x4& matrix)
     m.m[3][1] = matrix.m[3][1] * factor;
     m.m[3][2] = matrix.m[3][2] * factor;
     m.m[3][3] = matrix.m[3][3] * factor;
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
@@ -1004,7 +909,6 @@ inline QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor)
     m.m[3][1] = matrix.m[3][1] * factor;
     m.m[3][2] = matrix.m[3][2] * factor;
     m.m[3][3] = matrix.m[3][3] * factor;
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
@@ -1047,25 +951,9 @@ inline QVector3D QMatrix4x4::map(const QVector3D& point) const
 
 inline QVector3D QMatrix4x4::mapVector(const QVector3D& vector) const
 {
-    if (flagBits < Scale) {
-        // Translation
-        return vector;
-    } else if (flagBits < Rotation2D) {
-        // Translation | Scale
-        return QVector3D(vector.x() * m[0][0],
-                         vector.y() * m[1][1],
-                         vector.z() * m[2][2]);
-    } else {
-        return QVector3D(vector.x() * m[0][0] +
-                         vector.y() * m[1][0] +
-                         vector.z() * m[2][0],
-                         vector.x() * m[0][1] +
-                         vector.y() * m[1][1] +
-                         vector.z() * m[2][1],
-                         vector.x() * m[0][2] +
-                         vector.y() * m[1][2] +
-                         vector.z() * m[2][2]);
-    }
+    return QVector3D(vector.x() * m[0][0] + vector.y() * m[1][0] + vector.z() * m[2][0],
+                     vector.x() * m[0][1] + vector.y() * m[1][1] + vector.z() * m[2][1],
+                     vector.x() * m[0][2] + vector.y() * m[1][2] + vector.z() * m[2][2]);
 }
 
 #endif
@@ -1083,7 +971,6 @@ inline float *QMatrix4x4::data()
 {
     // We have to assume that the caller will modify the matrix elements,
     // so we flip it over to "General" mode.
-    flagBits = General;
     return *m;
 }
 

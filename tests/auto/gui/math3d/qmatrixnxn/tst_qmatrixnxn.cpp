@@ -139,8 +139,8 @@ private slots:
 
     void convertGeneric();
 
-    void optimize_data();
-    void optimize();
+//    void optimize_data();
+//    void optimize();
 
     void columnsAndRows();
 
@@ -2881,6 +2881,7 @@ void tst_QMatrixNxN::convertGeneric()
 #endif
 }
 
+/*
 // Copy of "flagBits" in qmatrix4x4.h.
 enum {
     Identity        = 0x0000, // Identity matrix
@@ -3014,7 +3015,7 @@ void tst_QMatrixNxN::optimize()
 
     QCOMPARE(reinterpret_cast<Matrix4x4 *>(&m)->flagBits, flagBits);
 }
-
+*/
 void tst_QMatrixNxN::columnsAndRows()
 {
     QMatrix4x4 m1(uniqueValues4);
