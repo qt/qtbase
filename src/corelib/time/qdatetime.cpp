@@ -682,7 +682,7 @@ static bool inDateTimeRange(qint64 jd, bool start)
     return jd >= minDay && jd < maxDay;
 }
 
-static QDateTime toEarliest(const QDate &day, const QDateTime &form)
+static QDateTime toEarliest(QDate day, const QDateTime &form)
 {
     const Qt::TimeSpec spec = form.timeSpec();
     const int offset = (spec == Qt::OffsetFromUTC) ? form.offsetFromUtc() : 0;
@@ -806,7 +806,7 @@ QDateTime QDate::startOfDay(const QTimeZone &zone) const
 }
 #endif // timezone
 
-static QDateTime toLatest(const QDate &day, const QDateTime &form)
+static QDateTime toLatest(QDate day, const QDateTime &form)
 {
     const Qt::TimeSpec spec = form.timeSpec();
     const int offset = (spec == Qt::OffsetFromUTC) ? form.offsetFromUtc() : 0;
@@ -1119,7 +1119,7 @@ static QString toStringTextDate(QDate date)
     return toStringTextDate(date, QCalendar());
 }
 
-static QString toStringIsoDate(const QDate &date)
+static QString toStringIsoDate(QDate date)
 {
     const auto parts = QCalendar().partsFromDate(date);
     if (parts.isValid() && parts.year >= 0 && parts.year <= 9999)
@@ -2869,7 +2869,7 @@ static void msecsToTime(qint64 msecs, QDate *date, QTime *time)
 }
 
 // Converts a date/time value into msecs
-static qint64 timeToMSecs(const QDate &date, const QTime &time)
+static qint64 timeToMSecs(QDate date, QTime time)
 {
     return ((date.toJulianDay() - JULIAN_DAY_FOR_EPOCH) * MSECS_PER_DAY)
            + time.msecsSinceStartOfDay();
@@ -3214,7 +3214,7 @@ static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
     }
 }
 
-static void setDateTime(QDateTimeData &d, const QDate &date, const QTime &time)
+static void setDateTime(QDateTimeData &d, QDate date, QTime time)
 {
     // If the date is valid and the time is not we set time to 00:00:00
     QTime useTime = time;

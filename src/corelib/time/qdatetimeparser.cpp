@@ -903,7 +903,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
   by \a weekDay.
 */
 
-static int weekDayWithinMonth(const QCalendar &calendar, const QDate &rough, int weekDay)
+static int weekDayWithinMonth(QCalendar calendar, QDate rough, int weekDay)
 {
     // TODO: can we adapt this to cope gracefully with intercallary days (day of
     // week > 7) without making it slower for more widely-used calendars ?
