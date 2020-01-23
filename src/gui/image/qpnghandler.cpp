@@ -915,7 +915,10 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
         return false;
     }
 
-    png_set_error_fn(png_ptr, 0, 0, qt_png_warning);
+    png_set_error_fn(png_ptr, nullptr, nullptr, qt_png_warning);
+#ifdef PNG_BENIGN_ERRORS_SUPPORTED
+    png_set_benign_errors(png_ptr, 1);
+#endif
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
