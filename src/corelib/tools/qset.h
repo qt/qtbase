@@ -165,11 +165,10 @@ public:
     inline const_iterator cend() const noexcept { return q_hash.end(); }
     inline const_iterator constEnd() const noexcept { return q_hash.constEnd(); }
 
-    iterator erase(iterator i)
-    { return erase(m2c(i)); }
     iterator erase(const_iterator i)
     {
-        return q_hash.erase(reinterpret_cast<typename Hash::const_iterator &>(i));
+        Q_ASSERT(i != constEnd());
+        return q_hash.erase(i.i);
     }
 
     // more Qt
@@ -221,9 +220,6 @@ public:
 
 private:
     Hash q_hash;
-
-    static const_iterator m2c(iterator it) noexcept
-    { return const_iterator(typename Hash::const_iterator(it.i.i)); }
 };
 
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606

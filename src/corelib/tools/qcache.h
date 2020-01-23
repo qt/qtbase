@@ -48,151 +48,234 @@ QT_BEGIN_NAMESPACE
 template <class Key, class T>
 class QCache
 {
-    struct Node {
-        inline Node() : keyPtr(0) {}
-        inline Node(T *data, int cost)
-            : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
-        const Key *keyPtr; T *t; int c; Node *p,*n;
+    struct Value {
+        T *t = nullptr;
+        int cost = 0;
+        Value() noexcept = default;
+        Value(T *tt, int c) noexcept
+            : t(tt), cost(c)
+        {}
+        Value(Value &&other) noexcept
+            : t(other.t),
+              cost(other.cost)
+        {
+            other.t = nullptr;
+        }
+        Value &operator=(Value &&other) noexcept
+        {
+            qSwap(t, other.t);
+            qSwap(cost, other.cost);
+            return *this;
+        }
+        ~Value() { delete t; }
+    private:
+        Q_DISABLE_COPY(Value)
     };
-    Node *f, *l;
-    QHash<Key, Node> hash;
-    int mx, total;
 
-    inline void unlink(Node &n) {
-        if (n.p) n.p->n = n.n;
-        if (n.n) n.n->p = n.p;
-        if (l == &n) l = n.p;
-        if (f == &n) f = n.n;
-        total -= n.c;
-        T *obj = n.t;
-        hash.remove(*n.keyPtr);
-        delete obj;
+    struct Chain {
+        Chain() noexcept
+            : prev(this), next(this)
+        {}
+        Chain *prev;
+        Chain *next;
+    };
+
+    struct Node : public Chain {
+        using KeyType = Key;
+        using ValueType = Value;
+
+        Key key;
+        Value value;
+
+        Node(const Key &k, Value &&t) noexcept(std::is_nothrow_move_assignable_v<Key>)
+            : Chain(),
+              key(k),
+              value(std::move(t))
+        {
+        }
+        Node(Key &&k, Value &&t) noexcept(std::is_nothrow_move_assignable_v<Key>)
+            : Chain(),
+              key(std::move(k)),
+              value(std::move(t))
+        {
+        }
+        static Node create(Key &&k, Value &&t) noexcept(std::is_nothrow_move_assignable_v<Key> && std::is_nothrow_move_assignable_v<T>)
+        {
+            return Node(std::move(k), std::move(t));
+        }
+        static Node create(const Key &k, Value &&t) noexcept(std::is_nothrow_move_assignable_v<Key> && std::is_nothrow_move_assignable_v<T>)
+        {
+            return Node(k, std::move(t));
+        }
+        void replace(const Value &t) noexcept(std::is_nothrow_assignable_v<T>)
+        {
+            value = t;
+        }
+        void replace(Value &&t) noexcept(std::is_nothrow_move_assignable_v<T>)
+        {
+            value = std::move(t);
+        }
+        Value takeValue() noexcept(std::is_nothrow_move_constructible_v<T>)
+        {
+            return std::move(value);
+        }
+        bool valuesEqual(const Node *other) const { return value == other->value; }
+
+        Node(Node &&other)
+            : Chain(other),
+              key(std::move(other.key)),
+              value(std::move(other.value))
+        {
+            Q_ASSERT(this->prev);
+            Q_ASSERT(this->next);
+            this->prev->next = this;
+            this->next->prev = this;
+        }
+    private:
+        Q_DISABLE_COPY(Node)
+    };
+
+    using Data = QHashPrivate::Data<Node>;
+
+    mutable Chain chain;
+    Data d;
+    int mx = 0;
+    int total = 0;
+
+    void unlink(Node *n) noexcept(std::is_nothrow_destructible_v<Node>)
+    {
+        Q_ASSERT(n->prev);
+        Q_ASSERT(n->next);
+        n->prev->next = n->next;
+        n->next->prev = n->prev;
+        total -= n->value.cost;
+        auto it = d.find(n->key);
+        d.erase(it);
     }
-    inline T *relink(const Key &key) {
-        typename QHash<Key, Node>::iterator i = hash.find(key);
-        if (typename QHash<Key, Node>::const_iterator(i) == hash.constEnd())
+    T *relink(const Key &key) const noexcept
+    {
+        Node *n = d.findNode(key);
+        if (!n)
             return nullptr;
 
-        Node &n = *i;
-        if (f != &n) {
-            if (n.p) n.p->n = n.n;
-            if (n.n) n.n->p = n.p;
-            if (l == &n) l = n.p;
-            n.p = nullptr;
-            n.n = f;
-            f->p = &n;
-            f = &n;
+        if (chain.next != n) {
+            Q_ASSERT(n->prev);
+            Q_ASSERT(n->next);
+            n->prev->next = n->next;
+            n->next->prev = n->prev;
+            n->next = chain.next;
+            chain.next->prev = n;
+            n->prev = &chain;
+            chain.next = n;
         }
-        return n.t;
+        return n->value.t;
     }
+
+    void trim(int m) noexcept(std::is_nothrow_destructible_v<Node>)
+    {
+        Chain *n = chain.prev;
+        while (n != &chain && total > m) {
+            Node *u = static_cast<Node *>(n);
+            n = n->prev;
+            unlink(u);
+        }
+    }
+
 
     Q_DISABLE_COPY(QCache)
 
 public:
-    inline explicit QCache(int maxCost = 100) noexcept;
+    inline explicit QCache(int maxCost = 100) noexcept
+        : mx(maxCost)
+    {}
     inline ~QCache() { clear(); }
 
-    inline int maxCost() const { return mx; }
-    void setMaxCost(int m);
-    inline int totalCost() const { return total; }
+    inline int maxCost() const noexcept { return mx; }
+    void setMaxCost(int m) noexcept(std::is_nothrow_destructible_v<Node>)
+    {
+        mx = m;
+        trim(mx);
+    }
+    inline int totalCost() const noexcept { return total; }
 
-    inline int size() const { return hash.size(); }
-    inline int count() const { return hash.size(); }
-    inline bool isEmpty() const { return hash.isEmpty(); }
-    inline QList<Key> keys() const { return hash.keys(); }
+    inline int size() const noexcept { return d.size; }
+    inline int count() const noexcept { return d.size; }
+    inline bool isEmpty() const noexcept { return !d.size; }
+    inline QVector<Key> keys() const
+    {
+        QVector<Key> k;
+        if (d.size) {
+            k.reserve(d.size);
+            for (auto it = d.begin(); it != d.end(); ++it)
+                k << it.node()->key;
+        }
+        Q_ASSERT(k.size() == qsizetype(d.size));
+        return k;
+    }
 
-    void clear();
+    void clear() noexcept(std::is_nothrow_destructible_v<Node>)
+    {
+        d.clear();
+        total = 0;
+        chain.next = &chain;
+        chain.prev = &chain;
+    }
 
-    bool insert(const Key &key, T *object, int cost = 1);
-    T *object(const Key &key) const;
-    inline bool contains(const Key &key) const { return hash.contains(key); }
-    T *operator[](const Key &key) const;
+    bool insert(const Key &key, T *object, int cost = 1)
+    {
+        remove(key);
 
-    bool remove(const Key &key);
-    T *take(const Key &key);
-
-private:
-    void trim(int m);
-};
-
-template <class Key, class T>
-inline QCache<Key, T>::QCache(int amaxCost) noexcept
-    : f(nullptr), l(nullptr), mx(amaxCost), total(0) {}
-
-template <class Key, class T>
-inline void QCache<Key,T>::clear()
-{ while (f) { delete f->t; f = f->n; }
- hash.clear(); l = nullptr; total = 0; }
-
-template <class Key, class T>
-inline void QCache<Key,T>::setMaxCost(int m)
-{ mx = m; trim(mx); }
-
-template <class Key, class T>
-inline T *QCache<Key,T>::object(const Key &key) const
-{ return const_cast<QCache<Key,T>*>(this)->relink(key); }
-
-template <class Key, class T>
-inline T *QCache<Key,T>::operator[](const Key &key) const
-{ return object(key); }
-
-template <class Key, class T>
-inline bool QCache<Key,T>::remove(const Key &key)
-{
-    typename QHash<Key, Node>::iterator i = hash.find(key);
-    if (typename QHash<Key, Node>::const_iterator(i) == hash.constEnd()) {
-        return false;
-    } else {
-        unlink(*i);
+        if (cost > mx) {
+            delete object;
+            return false;
+        }
+        trim(mx - cost);
+        auto it = d.insert(Node::create(Key(key), Value(object, cost)));
+        total += cost;
+        Node *n = it.node();
+        n->prev = &chain;
+        n->next = chain.next;
+        chain.next->prev = n;
+        chain.next = n;
         return true;
     }
-}
-
-template <class Key, class T>
-inline T *QCache<Key,T>::take(const Key &key)
-{
-    typename QHash<Key, Node>::iterator i = hash.find(key);
-    if (i == hash.end())
-        return nullptr;
-
-    Node &n = *i;
-    T *t = n.t;
-    n.t = nullptr;
-    unlink(n);
-    return t;
-}
-
-template <class Key, class T>
-bool QCache<Key,T>::insert(const Key &akey, T *aobject, int acost)
-{
-    remove(akey);
-    if (acost > mx) {
-        delete aobject;
-        return false;
+    T *object(const Key &key) const noexcept
+    {
+        return relink(key);
     }
-    trim(mx - acost);
-    Node sn(aobject, acost);
-    typename QHash<Key, Node>::iterator i = hash.insert(akey, sn);
-    total += acost;
-    Node *n = &i.value();
-    n->keyPtr = &i.key();
-    if (f) f->p = n;
-    n->n = f;
-    f = n;
-    if (!l) l = f;
-    return true;
-}
-
-template <class Key, class T>
-void QCache<Key,T>::trim(int m)
-{
-    Node *n = l;
-    while (n && total > m) {
-        Node *u = n;
-        n = n->p;
-        unlink(*u);
+    T *operator[](const Key &key) const noexcept
+    {
+        return relink(key);
     }
-}
+    inline bool contains(const Key &key) const noexcept
+    {
+        return d.findNode(key) != nullptr;
+    }
+
+    bool remove(const Key &key) noexcept(std::is_nothrow_destructible_v<Node>)
+    {
+        Node *n = d.findNode(key);
+        if (!n) {
+            return false;
+        } else {
+            unlink(n);
+            return true;
+        }
+    }
+
+    T *take(const Key &key) noexcept(std::is_nothrow_destructible_v<Key>)
+    {
+        Node *n = d.findNode(key);
+        if (!n)
+            return nullptr;
+
+        T *t = n->value.t;
+        n->value.t = nullptr;
+        unlink(n);
+        return t;
+    }
+
+};
 
 QT_END_NAMESPACE
 

@@ -47,6 +47,7 @@ private slots:
     void remove();
     void take();
     void axioms_on_key_type();
+    void largeCache();
 };
 
 
@@ -396,6 +397,21 @@ void tst_QCache::axioms_on_key_type()
     foo.take(KeyType(789));
 // If this fails, contact the maintaner
     QVERIFY(sizeof(QHash<int, int>) == sizeof(void *));
+}
+
+void tst_QCache::largeCache()
+{
+    QCache<int, int> cache;
+    cache.setMaxCost(500);
+    for (int i = 0; i < 1000; ++i) {
+        for (int j = 0; j < qMax(0, i - 500); ++j)
+            QVERIFY(!cache.contains(j));
+        for (int j = qMax(0, i - 500); j < i; ++j)
+            QVERIFY(cache.contains(j));
+        cache.insert(i, new int);
+    }
+    cache.clear();
+    QVERIFY(cache.size() == 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QCache)

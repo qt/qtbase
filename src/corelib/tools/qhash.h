@@ -491,6 +491,14 @@ struct Data
     }
 
 
+    void clear()
+    {
+        delete [] spans;
+        spans = nullptr;
+        size = 0;
+        numBuckets = 0;
+    }
+
     iterator detachedIterator(iterator other) const noexcept
     {
         return iterator{this, other.bucket};
