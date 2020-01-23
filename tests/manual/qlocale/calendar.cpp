@@ -94,13 +94,13 @@ void CalendarWidget::selectedDateChanged()
     currentDateEdit->setDate(calendar->selectedDate());
 }
 
-void CalendarWidget::minimumDateChanged(const QDate &date)
+void CalendarWidget::minimumDateChanged(QDate date)
 {
     calendar->setMinimumDate(date);
     maximumDateEdit->setDate(calendar->maximumDate());
 }
 
-void CalendarWidget::maximumDateChanged(const QDate &date)
+void CalendarWidget::maximumDateChanged(QDate date)
 {
     calendar->setMaximumDate(date);
     minimumDateEdit->setDate(calendar->minimumDate());
