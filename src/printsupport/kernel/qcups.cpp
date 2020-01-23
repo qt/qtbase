@@ -167,7 +167,7 @@ ppd_option_t *QCUPSSupport::findPpdOption(const char *optionName, QPrintDevice *
     return nullptr;
 }
 
-void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, const QTime &holdUntilTime)
+void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, QTime holdUntilTime)
 {
     const QString jobHoldUntilArgument = jobHoldToString(jobHold, holdUntilTime);
     if (!jobHoldUntilArgument.isEmpty()) {

@@ -1007,22 +1007,22 @@ public:
     inline QString toString(float i, char f = 'g', int prec = 6) const;
 
 #if QT_STRINGVIEW_LEVEL < 2
-    QString toString(const QDate &date, const QString &formatStr) const;
-    QString toString(const QTime &time, const QString &formatStr) const;
+    QString toString(QDate date, const QString &formatStr) const;
+    QString toString(QTime time, const QString &formatStr) const;
     QString toString(const QDateTime &dateTime, const QString &format) const;
 #endif
-    QString toString(const QDate &date, QStringView formatStr) const;
-    QString toString(const QTime &time, QStringView formatStr) const;
+    QString toString(QDate date, QStringView formatStr) const;
+    QString toString(QTime time, QStringView formatStr) const;
     QString toString(const QDateTime &dateTime, QStringView format) const;
-    QString toString(const QDate &date, FormatType format = LongFormat) const;
-    QString toString(const QTime &time, FormatType format = LongFormat) const;
+    QString toString(QDate date, FormatType format = LongFormat) const;
+    QString toString(QTime time, FormatType format = LongFormat) const;
     QString toString(const QDateTime &dateTime, FormatType format = LongFormat) const;
     /* Removing default value for `format' is done intentionally,
      * after all tests we will remove non-calendar-aware version of these functions,
      * and add a default value for both calendar instance, and format
      */
-    QString toString(const QDate &date, QStringView formatStr, QCalendar cal) const;
-    QString toString(const QDate &date, FormatType format, QCalendar cal) const;
+    QString toString(QDate date, QStringView formatStr, QCalendar cal) const;
+    QString toString(QDate date, FormatType format, QCalendar cal) const;
     QString toString(const QDateTime &dateTime, FormatType format, QCalendar cal) const;
     QString toString(const QDateTime &dateTime, QStringView formatStr, QCalendar cal) const;
 

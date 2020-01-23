@@ -83,7 +83,7 @@ private Q_SLOTS:
 
 private:
 
-    void setJobHold(QCUPSSupport::JobHoldUntil jobHold = QCUPSSupport::NoHold, const QTime &holdUntilTime = QTime());
+    void setJobHold(QCUPSSupport::JobHoldUntil jobHold = QCUPSSupport::NoHold, QTime holdUntilTime = QTime());
     QCUPSSupport::JobHoldUntil jobHold() const;
     QTime jobHoldTime() const;
 

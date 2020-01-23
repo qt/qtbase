@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -87,7 +87,7 @@ QTime QStyleAnimation::startTime() const
     return _startTime;
 }
 
-void QStyleAnimation::setStartTime(const QTime &time)
+void QStyleAnimation::setStartTime(QTime time)
 {
     _startTime = time;
 }

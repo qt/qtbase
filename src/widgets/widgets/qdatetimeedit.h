@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -95,8 +95,8 @@ public:
 
     explicit QDateTimeEdit(QWidget *parent = nullptr);
     explicit QDateTimeEdit(const QDateTime &dt, QWidget *parent = nullptr);
-    explicit QDateTimeEdit(const QDate &d, QWidget *parent = nullptr);
-    explicit QDateTimeEdit(const QTime &t, QWidget *parent = nullptr);
+    explicit QDateTimeEdit(QDate d, QWidget *parent = nullptr);
+    explicit QDateTimeEdit(QTime t, QWidget *parent = nullptr);
     ~QDateTimeEdit();
 
     QDateTime dateTime() const;
@@ -117,24 +117,24 @@ public:
     void setDateTimeRange(const QDateTime &min, const QDateTime &max);
 
     QDate minimumDate() const;
-    void setMinimumDate(const QDate &min);
+    void setMinimumDate(QDate min);
     void clearMinimumDate();
 
     QDate maximumDate() const;
-    void setMaximumDate(const QDate &max);
+    void setMaximumDate(QDate max);
     void clearMaximumDate();
 
-    void setDateRange(const QDate &min, const QDate &max);
+    void setDateRange(QDate min, QDate max);
 
     QTime minimumTime() const;
-    void setMinimumTime(const QTime &min);
+    void setMinimumTime(QTime min);
     void clearMinimumTime();
 
     QTime maximumTime() const;
-    void setMaximumTime(const QTime &max);
+    void setMaximumTime(QTime max);
     void clearMaximumTime();
 
-    void setTimeRange(const QTime &min, const QTime &max);
+    void setTimeRange(QTime min, QTime max);
 
     Sections displayedSections() const;
     Section currentSection() const;
@@ -170,13 +170,13 @@ public:
     bool event(QEvent *event) override;
 Q_SIGNALS:
     void dateTimeChanged(const QDateTime &dateTime);
-    void timeChanged(const QTime &time);
-    void dateChanged(const QDate &date);
+    void timeChanged(QTime time);
+    void dateChanged(QDate date);
 
 public Q_SLOTS:
     void setDateTime(const QDateTime &dateTime);
-    void setDate(const QDate &date);
-    void setTime(const QTime &time);
+    void setDate(QDate date);
+    void setTime(QTime time);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -212,11 +212,11 @@ class Q_WIDGETS_EXPORT QTimeEdit : public QDateTimeEdit
     Q_PROPERTY(QTime time READ time WRITE setTime NOTIFY userTimeChanged USER true)
 public:
     explicit QTimeEdit(QWidget *parent = nullptr);
-    explicit QTimeEdit(const QTime &time, QWidget *parent = nullptr);
+    explicit QTimeEdit(QTime time, QWidget *parent = nullptr);
     ~QTimeEdit();
 
 Q_SIGNALS:
-    void userTimeChanged(const QTime &time);
+    void userTimeChanged(QTime time);
 };
 
 class Q_WIDGETS_EXPORT QDateEdit : public QDateTimeEdit
@@ -225,11 +225,11 @@ class Q_WIDGETS_EXPORT QDateEdit : public QDateTimeEdit
     Q_PROPERTY(QDate date READ date WRITE setDate NOTIFY userDateChanged USER true)
 public:
     explicit QDateEdit(QWidget *parent = nullptr);
-    explicit QDateEdit(const QDate &date, QWidget *parent = nullptr);
+    explicit QDateEdit(QDate date, QWidget *parent = nullptr);
     ~QDateEdit();
 
 Q_SIGNALS:
-    void userDateChanged(const QDate &date);
+    void userDateChanged(QDate date);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeEdit::Sections)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -133,14 +133,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \fn void QDateTimeEdit::timeChanged(const QTime &time)
+  \fn void QDateTimeEdit::timeChanged(QTime time)
 
   This signal is emitted whenever the time is changed. The new time
   is passed in \a time.
 */
 
 /*!
-  \fn void QDateTimeEdit::dateChanged(const QDate &date)
+  \fn void QDateTimeEdit::dateChanged(QDate date)
 
   This signal is emitted whenever the date is changed. The new date
   is passed in \a date.
@@ -171,13 +171,13 @@ QDateTimeEdit::QDateTimeEdit(const QDateTime &datetime, QWidget *parent)
 }
 
 /*!
-  \fn QDateTimeEdit::QDateTimeEdit(const QDate &date, QWidget *parent)
+  \fn QDateTimeEdit::QDateTimeEdit(QDate date, QWidget *parent)
 
   Constructs an empty date time editor with a \a parent.
   The value is set to \a date.
 */
 
-QDateTimeEdit::QDateTimeEdit(const QDate &date, QWidget *parent)
+QDateTimeEdit::QDateTimeEdit(QDate date, QWidget *parent)
     : QAbstractSpinBox(*new QDateTimeEditPrivate, parent)
 {
     Q_D(QDateTimeEdit);
@@ -185,13 +185,13 @@ QDateTimeEdit::QDateTimeEdit(const QDate &date, QWidget *parent)
 }
 
 /*!
-  \fn QDateTimeEdit::QDateTimeEdit(const QTime &time, QWidget *parent)
+  \fn QDateTimeEdit::QDateTimeEdit(QTime time, QWidget *parent)
 
   Constructs an empty date time editor with a \a parent.
   The value is set to \a time.
 */
 
-QDateTimeEdit::QDateTimeEdit(const QTime &time, QWidget *parent)
+QDateTimeEdit::QDateTimeEdit(QTime time, QWidget *parent)
     : QAbstractSpinBox(*new QDateTimeEditPrivate, parent)
 {
     Q_D(QDateTimeEdit);
@@ -283,7 +283,7 @@ QDate QDateTimeEdit::date() const
     return d->value.toDate();
 }
 
-void QDateTimeEdit::setDate(const QDate &date)
+void QDateTimeEdit::setDate(QDate date)
 {
     Q_D(QDateTimeEdit);
     if (date.isValid()) {
@@ -320,7 +320,7 @@ QTime QDateTimeEdit::time() const
     return d->value.toTime();
 }
 
-void QDateTimeEdit::setTime(const QTime &time)
+void QDateTimeEdit::setTime(QTime time)
 {
     Q_D(QDateTimeEdit);
     if (time.isValid()) {
@@ -483,7 +483,7 @@ QDate QDateTimeEdit::minimumDate() const
     return d->minimum.toDate();
 }
 
-void QDateTimeEdit::setMinimumDate(const QDate &min)
+void QDateTimeEdit::setMinimumDate(QDate min)
 {
     Q_D(QDateTimeEdit);
     if (min.isValid() && min >= QDATETIMEEDIT_DATE_MIN) {
@@ -523,7 +523,7 @@ QDate QDateTimeEdit::maximumDate() const
     return d->maximum.toDate();
 }
 
-void QDateTimeEdit::setMaximumDate(const QDate &max)
+void QDateTimeEdit::setMaximumDate(QDate max)
 {
     Q_D(QDateTimeEdit);
     if (max.isValid())
@@ -560,7 +560,7 @@ QTime QDateTimeEdit::minimumTime() const
     return d->minimum.toTime();
 }
 
-void QDateTimeEdit::setMinimumTime(const QTime &min)
+void QDateTimeEdit::setMinimumTime(QTime min)
 {
     Q_D(QDateTimeEdit);
     if (min.isValid()) {
@@ -598,7 +598,7 @@ QTime QDateTimeEdit::maximumTime() const
     return d->maximum.toTime();
 }
 
-void QDateTimeEdit::setMaximumTime(const QTime &max)
+void QDateTimeEdit::setMaximumTime(QTime max)
 {
     Q_D(QDateTimeEdit);
     if (max.isValid()) {
@@ -634,7 +634,7 @@ void QDateTimeEdit::clearMaximumTime()
   \sa minimumDate, maximumDate, setDateTimeRange(), QDate::isValid()
 */
 
-void QDateTimeEdit::setDateRange(const QDate &min, const QDate &max)
+void QDateTimeEdit::setDateRange(QDate min, QDate max)
 {
     Q_D(QDateTimeEdit);
     if (min.isValid() && max.isValid()) {
@@ -668,7 +668,7 @@ void QDateTimeEdit::setDateRange(const QDate &min, const QDate &max)
   \sa minimumTime, maximumTime, setDateTimeRange(), QTime::isValid()
 */
 
-void QDateTimeEdit::setTimeRange(const QTime &min, const QTime &max)
+void QDateTimeEdit::setTimeRange(QTime min, QTime max)
 {
     Q_D(QDateTimeEdit);
     if (min.isValid() && max.isValid()) {
@@ -1588,7 +1588,7 @@ QTimeEdit::QTimeEdit(QWidget *parent)
   to \a time.
 */
 
-QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
+QTimeEdit::QTimeEdit(QTime time, QWidget *parent)
     : QDateTimeEdit(time, QMetaType::QTime, parent)
 {
     connect(this, &QTimeEdit::timeChanged, this, &QTimeEdit::userTimeChanged);
@@ -1608,7 +1608,7 @@ QTimeEdit::~QTimeEdit()
 */
 
 /*!
-  \fn void QTimeEdit::userTimeChanged(const QTime &time)
+  \fn void QTimeEdit::userTimeChanged(QTime time)
 
   This signal only exists to fully implement the time Q_PROPERTY on the class.
   Normally timeChanged should be used instead.
@@ -1658,7 +1658,7 @@ QDateEdit::QDateEdit(QWidget *parent)
   to \a date.
 */
 
-QDateEdit::QDateEdit(const QDate &date, QWidget *parent)
+QDateEdit::QDateEdit(QDate date, QWidget *parent)
     : QDateTimeEdit(date, QMetaType::QDate, parent)
 {
     connect(this, &QDateEdit::dateChanged, this, &QDateEdit::userDateChanged);
@@ -1678,7 +1678,7 @@ QDateEdit::~QDateEdit()
 */
 
 /*!
-  \fn void QDateEdit::userDateChanged(const QDate &date)
+  \fn void QDateEdit::userDateChanged(QDate date)
 
   This signal only exists to fully implement the date Q_PROPERTY on the class.
   Normally dateChanged should be used instead.

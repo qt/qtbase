@@ -235,8 +235,8 @@ class Q_CORE_EXPORT QVariant
     QVariant(QLatin1String string);
     QVariant(const QStringList &stringlist);
     QVariant(QChar qchar);
-    QVariant(const QDate &date);
-    QVariant(const QTime &time);
+    QVariant(QDate date);
+    QVariant(QTime time);
     QVariant(const QDateTime &datetime);
     QVariant(const QList<QVariant> &list);
     QVariant(const QMap<QString,QVariant> &map);

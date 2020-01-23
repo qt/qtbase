@@ -126,7 +126,7 @@ public:
 
     // Formatting of date-times (implemented in qlocale.cpp):
     virtual QString dateTimeToString(QStringView format, const QDateTime &datetime,
-                                     const QDate &dateOnly, const QTime &timeOnly,
+                                     QDate dateOnly, QTime timeOnly,
                                      const QLocale &locale) const;
 
     // Calendar enumeration by name:

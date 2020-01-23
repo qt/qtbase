@@ -2054,7 +2054,7 @@ QString QLocale::toString(qulonglong i) const
     \sa QDate::toString()
 */
 
-QString QLocale::toString(const QDate &date, const QString &format) const
+QString QLocale::toString(QDate date, const QString &format) const
 {
     return QCalendar().dateTimeToString(format, QDateTime(), date, QTime(), *this);
 }
@@ -2069,7 +2069,7 @@ QString QLocale::toString(const QDate &date, const QString &format) const
 
     \sa QDate::toString()
 */
-QString QLocale::toString(const QDate &date, QStringView format) const
+QString QLocale::toString(QDate date, QStringView format) const
 {
     return QCalendar().dateTimeToString(format, QDateTime(), date, QTime(), *this);
 }
@@ -2082,7 +2082,7 @@ QString QLocale::toString(const QDate &date, QStringView format) const
     represent.
 */
 
-QString QLocale::toString(const QDate &date, FormatType format) const
+QString QLocale::toString(QDate date, FormatType format) const
 {
     if (!date.isValid())
         return QString();
@@ -2127,7 +2127,7 @@ static bool timeFormatContainsAP(QStringView format)
 
     \sa QTime::toString()
 */
-QString QLocale::toString(const QTime &time, const QString &format) const
+QString QLocale::toString(QTime time, const QString &format) const
 {
     return QCalendar().dateTimeToString(format, QDateTime(), QDate(), time, *this);
 }
@@ -2142,7 +2142,7 @@ QString QLocale::toString(const QTime &time, const QString &format) const
 
     \sa QTime::toString()
 */
-QString QLocale::toString(const QTime &time, QStringView format) const
+QString QLocale::toString(QTime time, QStringView format) const
 {
     return QCalendar().dateTimeToString(format, QDateTime(), QDate(), time, *this);
 }
@@ -2178,12 +2178,12 @@ QString QLocale::toString(const QDateTime &dateTime, QStringView format) const
     return QCalendar().dateTimeToString(format, dateTime, QDate(), QTime(), *this);
 }
 
-QString QLocale::toString(const QDate &date, QStringView format, QCalendar cal) const
+QString QLocale::toString(QDate date, QStringView format, QCalendar cal) const
 {
     return cal.dateTimeToString(format, QDateTime(), date, QTime(), *this);
 }
 
-QString QLocale::toString(const QDate &date, QLocale::FormatType format, QCalendar cal) const
+QString QLocale::toString(QDate date, QLocale::FormatType format, QCalendar cal) const
 {
     if (!date.isValid())
         return QString();
@@ -2265,7 +2265,7 @@ QString QLocale::toString(const QDateTime &dateTime, FormatType format) const
     specified \a format.
 */
 
-QString QLocale::toString(const QTime &time, FormatType format) const
+QString QLocale::toString(QTime time, FormatType format) const
 {
     if (!time.isValid())
         return QString();
@@ -3299,7 +3299,7 @@ QString QLocale::pmText() const
 // Another intrusion from QCalendar, using some of the tools above:
 
 QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &datetime,
-                                           const QDate &dateOnly, const QTime &timeOnly,
+                                           QDate dateOnly, QTime timeOnly,
                                            const QLocale &locale) const
 {
     QDate date;

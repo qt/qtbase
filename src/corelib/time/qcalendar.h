@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -178,7 +178,7 @@ public:
 
     // Formatting of date-times:
     QString dateTimeToString(QStringView format, const QDateTime &datetime,
-                             const QDate &dateOnly, const QTime &timeOnly,
+                             QDate dateOnly, QTime timeOnly,
                              const QLocale &locale) const;
 
     // What's available ?

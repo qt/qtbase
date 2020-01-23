@@ -1561,7 +1561,7 @@ QDate QDate::addYears(int nyears) const
     \sa addDays()
 */
 
-qint64 QDate::daysTo(const QDate &d) const
+qint64 QDate::daysTo(QDate d) const
 {
     if (isNull() || d.isNull())
         return 0;
@@ -1572,7 +1572,7 @@ qint64 QDate::daysTo(const QDate &d) const
 
 
 /*!
-    \fn bool QDate::operator==(const QDate &d) const
+    \fn bool QDate::operator==(QDate d) const
 
     Returns \c true if this date is equal to \a d; otherwise returns
     false.
@@ -1580,35 +1580,35 @@ qint64 QDate::daysTo(const QDate &d) const
 */
 
 /*!
-    \fn bool QDate::operator!=(const QDate &d) const
+    \fn bool QDate::operator!=(QDate d) const
 
     Returns \c true if this date is different from \a d; otherwise
     returns \c false.
 */
 
 /*!
-    \fn bool QDate::operator<(const QDate &d) const
+    \fn bool QDate::operator<(QDate d) const
 
     Returns \c true if this date is earlier than \a d; otherwise returns
     false.
 */
 
 /*!
-    \fn bool QDate::operator<=(const QDate &d) const
+    \fn bool QDate::operator<=(QDate d) const
 
     Returns \c true if this date is earlier than or equal to \a d;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QDate::operator>(const QDate &d) const
+    \fn bool QDate::operator>(QDate d) const
 
     Returns \c true if this date is later than \a d; otherwise returns
     false.
 */
 
 /*!
-    \fn bool QDate::operator>=(const QDate &d) const
+    \fn bool QDate::operator>=(QDate d) const
 
     Returns \c true if this date is later than or equal to \a d;
     otherwise returns \c false.
@@ -2219,7 +2219,7 @@ QTime QTime::addSecs(int s) const
     \sa addSecs(), QDateTime::secsTo()
 */
 
-int QTime::secsTo(const QTime &t) const
+int QTime::secsTo(QTime t) const
 {
     if (!isValid() || !t.isValid())
         return 0;
@@ -2271,7 +2271,7 @@ QTime QTime::addMSecs(int ms) const
     \sa secsTo(), addMSecs(), QDateTime::msecsTo()
 */
 
-int QTime::msecsTo(const QTime &t) const
+int QTime::msecsTo(QTime t) const
 {
     if (!isValid() || !t.isValid())
         return 0;
@@ -2280,38 +2280,38 @@ int QTime::msecsTo(const QTime &t) const
 
 
 /*!
-    \fn bool QTime::operator==(const QTime &t) const
+    \fn bool QTime::operator==(QTime t) const
 
     Returns \c true if this time is equal to \a t; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator!=(const QTime &t) const
+    \fn bool QTime::operator!=(QTime t) const
 
     Returns \c true if this time is different from \a t; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator<(const QTime &t) const
+    \fn bool QTime::operator<(QTime t) const
 
     Returns \c true if this time is earlier than \a t; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator<=(const QTime &t) const
+    \fn bool QTime::operator<=(QTime t) const
 
     Returns \c true if this time is earlier than or equal to \a t;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator>(const QTime &t) const
+    \fn bool QTime::operator>(QTime t) const
 
     Returns \c true if this time is later than \a t; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator>=(const QTime &t) const
+    \fn bool QTime::operator>=(QTime t) const
 
     Returns \c true if this time is later than or equal to \a t;
     otherwise returns \c false.
@@ -3437,7 +3437,7 @@ inline QDateTimePrivate *QDateTime::Data::operator->()
  *****************************************************************************/
 
 Q_NEVER_INLINE
-QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
+QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, Qt::TimeSpec toSpec,
                                          int offsetSeconds)
 {
     QDateTime::Data result(toSpec);
@@ -3447,7 +3447,7 @@ QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime &toTim
 }
 
 #if QT_CONFIG(timezone)
-inline QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime &toTime,
+inline QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime,
                                                 const QTimeZone &toTimeZone)
 {
     QDateTime::Data result(Qt::TimeZone);
@@ -3652,35 +3652,13 @@ QDateTime::QDateTime() noexcept(Data::CanBeSmall)
 
     \sa QDate::startOfDay()
 */
-QDateTime::QDateTime(const QDate &date)
+QDateTime::QDateTime(QDate date)
     : QDateTime(date.startOfDay(Qt::LocalTime, 0))
 {
 }
 #endif
 
 /*!
-    Constructs a datetime with the given \a date and \a time, using
-    the time specification defined by \a spec.
-
-    If \a date is valid and \a time is not, the time will be set to midnight.
-
-    If \a spec is Qt::OffsetFromUTC then it will be set to Qt::UTC, i.e. an
-    offset of 0 seconds. To create a Qt::OffsetFromUTC datetime use the
-    correct constructor.
-
-    If \a spec is Qt::TimeZone then the spec will be set to Qt::LocalTime,
-    i.e. the current system time zone.  To create a Qt::TimeZone datetime
-    use the correct constructor.
-*/
-
-QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec)
-    : d(QDateTimePrivate::create(date, time, spec, 0))
-{
-}
-
-/*!
-    \since 5.2
-
     Constructs a datetime with the given \a date and \a time, using
     the time specification defined by \a spec and \a offsetSeconds seconds.
 
@@ -3696,7 +3674,7 @@ QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec)
     use the correct constructor.
 */
 
-QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, int offsetSeconds)
+QDateTime::QDateTime(QDate date, QTime time, Qt::TimeSpec spec, int offsetSeconds)
          : d(QDateTimePrivate::create(date, time, spec, offsetSeconds))
 {
 }
@@ -3713,7 +3691,7 @@ QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, in
     If \a timeZone is invalid then the datetime will be invalid.
 */
 
-QDateTime::QDateTime(const QDate &date, const QTime &time, const QTimeZone &timeZone)
+QDateTime::QDateTime(QDate date, QTime time, const QTimeZone &timeZone)
     : d(QDateTimePrivate::create(date, time, timeZone))
 {
 }
@@ -4001,7 +3979,7 @@ bool QDateTime::isDaylightTime() const
     \sa date(), setTime(), setTimeSpec()
 */
 
-void QDateTime::setDate(const QDate &date)
+void QDateTime::setDate(QDate date)
 {
     setDateTime(d, date, time());
 }
@@ -4019,7 +3997,7 @@ void QDateTime::setDate(const QDate &date)
     \sa time(), setDate(), setTimeSpec()
 */
 
-void QDateTime::setTime(const QTime &time)
+void QDateTime::setTime(QTime time)
 {
     setDateTime(d, date(), time);
 }
@@ -5575,7 +5553,7 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
     \sa {Serializing Qt Data Types}
 */
 
-QDataStream &operator<<(QDataStream &out, const QDate &date)
+QDataStream &operator<<(QDataStream &out, QDate date)
 {
     if (out.version() < QDataStream::Qt_5_0)
         return out << quint32(date.jd);
@@ -5615,7 +5593,7 @@ QDataStream &operator>>(QDataStream &in, QDate &date)
     \sa {Serializing Qt Data Types}
 */
 
-QDataStream &operator<<(QDataStream &out, const QTime &time)
+QDataStream &operator<<(QDataStream &out, QTime time)
 {
     if (out.version() >= QDataStream::Qt_4_0) {
         return out << quint32(time.mds);
@@ -5795,7 +5773,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 *****************************************************************************/
 
 #if !defined(QT_NO_DEBUG_STREAM) && QT_CONFIG(datestring)
-QDebug operator<<(QDebug dbg, const QDate &date)
+QDebug operator<<(QDebug dbg, QDate date)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QDate(";
@@ -5807,7 +5785,7 @@ QDebug operator<<(QDebug dbg, const QDate &date)
     return dbg;
 }
 
-QDebug operator<<(QDebug dbg, const QTime &time)
+QDebug operator<<(QDebug dbg, QTime time)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QTime(";
@@ -5863,24 +5841,24 @@ uint qHash(const QDateTime &key, uint seed)
     return key.isValid() ? qHash(key.toMSecsSinceEpoch(), seed) : seed;
 }
 
-/*! \fn uint qHash(const QDate &key, uint seed = 0)
+/*! \fn uint qHash(QDate key, uint seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QDate &key, uint seed) noexcept
+uint qHash(QDate key, uint seed) noexcept
 {
     return qHash(key.toJulianDay(), seed);
 }
 
-/*! \fn uint qHash(const QTime &key, uint seed = 0)
+/*! \fn uint qHash(QTime key, uint seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QTime &key, uint seed) noexcept
+uint qHash(QTime key, uint seed) noexcept
 {
     return qHash(key.msecsSinceStartOfDay(), seed);
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -2311,7 +2311,7 @@ QSize QCalendarWidget::minimumSizeHint() const
     Paints the cell specified by the given \a date, using the given \a painter and \a rect.
 */
 
-void QCalendarWidget::paintCell(QPainter *painter, const QRect &rect, const QDate &date) const
+void QCalendarWidget::paintCell(QPainter *painter, QRect rect, QDate date) const
 {
     Q_D(const QCalendarWidget);
     d->m_delegate->paintCell(painter, rect, date);
@@ -2334,7 +2334,7 @@ QDate QCalendarWidget::selectedDate() const
     return d->m_model->m_date;
 }
 
-void QCalendarWidget::setSelectedDate(const QDate &date)
+void QCalendarWidget::setSelectedDate(QDate date)
 {
     Q_D(QCalendarWidget);
     if (d->m_model->m_date == date && date == d->getCurrentDate())
@@ -2543,7 +2543,7 @@ QDate QCalendarWidget::minimumDate() const
     return d->m_model->m_minimumDate;
 }
 
-void QCalendarWidget::setMinimumDate(const QDate &date)
+void QCalendarWidget::setMinimumDate(QDate date)
 {
     Q_D(QCalendarWidget);
     if (!date.isValid() || d->m_model->m_minimumDate == date)
@@ -2594,7 +2594,7 @@ QDate QCalendarWidget::maximumDate() const
     return d->m_model->m_maximumDate;
 }
 
-void QCalendarWidget::setMaximumDate(const QDate &date)
+void QCalendarWidget::setMaximumDate(QDate date)
 {
     Q_D(QCalendarWidget);
     if (!date.isValid() || d->m_model->m_maximumDate == date)
@@ -2632,7 +2632,7 @@ void QCalendarWidget::setMaximumDate(const QDate &date)
     \sa setMinimumDate(), setMaximumDate()
 */
 
-void QCalendarWidget::setDateRange(const QDate &min, const QDate &max)
+void QCalendarWidget::setDateRange(QDate min, QDate max)
 {
     Q_D(QCalendarWidget);
     if (d->m_model->m_minimumDate == min && d->m_model->m_maximumDate == max)
@@ -2900,7 +2900,7 @@ QMap<QDate, QTextCharFormat> QCalendarWidget::dateTextFormat() const
     Returns a QTextCharFormat for \a date. The char format can be be
     empty if the date is not renderd specially.
 */
-QTextCharFormat QCalendarWidget::dateTextFormat(const QDate &date) const
+QTextCharFormat QCalendarWidget::dateTextFormat(QDate date) const
 {
     Q_D(const QCalendarWidget);
     return d->m_model->m_dateFormats.value(date);
@@ -2911,7 +2911,7 @@ QTextCharFormat QCalendarWidget::dateTextFormat(const QDate &date) const
 
     If \a date is null, all date formats are cleared.
 */
-void QCalendarWidget::setDateTextFormat(const QDate &date, const QTextCharFormat &format)
+void QCalendarWidget::setDateTextFormat(QDate date, const QTextCharFormat &format)
 {
     Q_D(QCalendarWidget);
     if (date.isNull())
@@ -2989,7 +2989,7 @@ void QCalendarWidget::setDateEditAcceptDelay(int delay)
 
     \sa updateCells(), yearShown(), monthShown()
 */
-void QCalendarWidget::updateCell(const QDate &date)
+void QCalendarWidget::updateCell(QDate date)
 {
     if (Q_UNLIKELY(!date.isValid())) {
         qWarning("QCalendarWidget::updateCell: Invalid date");
@@ -3048,7 +3048,7 @@ void QCalendarWidget::updateCells()
 */
 
 /*!
-    \fn void QCalendarWidget::activated(const QDate &date)
+    \fn void QCalendarWidget::activated(QDate date)
 
     This signal is emitted whenever the user presses the Return or
     Enter key or double-clicks a \a date in the calendar
@@ -3056,7 +3056,7 @@ void QCalendarWidget::updateCells()
 */
 
 /*!
-    \fn void QCalendarWidget::clicked(const QDate &date)
+    \fn void QCalendarWidget::clicked(QDate date)
 
     This signal is emitted when a mouse button is clicked. The date
     the mouse was clicked on is specified by \a date. The signal is

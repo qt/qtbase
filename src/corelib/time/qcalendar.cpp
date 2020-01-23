@@ -518,7 +518,7 @@ int QCalendarBackend::dayOfWeek(qint64 jd) const
 
 /*!
     \fn QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &datetime,
-                                                   const QDate &dateOnly, const QTime &timeOnly,
+                                                   QDate dateOnly, QTime timeOnly,
                                                    const QLocale &locale) const
 
     Returns a string representing a given date, time or date-time.
@@ -1095,7 +1095,7 @@ QString QCalendar::standaloneWeekDayName(const QLocale &locale, int day,
     \sa monthName(), weekDayName(), QDate::toString(), QTime::toString()
 */
 QString QCalendar::dateTimeToString(QStringView format, const QDateTime &datetime,
-                                    const QDate &dateOnly, const QTime &timeOnly,
+                                    QDate dateOnly, QTime timeOnly,
                                     const QLocale &locale) const
 {
     return d ? d->dateTimeToString(format, datetime, dateOnly, timeOnly, locale) : QString();

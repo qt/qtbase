@@ -137,7 +137,7 @@ public:
     static void clearCupsOption(QPrinter *printer, const QString &option);
     static void clearCupsOptions(QPrinter *printer);
 
-    static void setJobHold(QPrinter *printer, const JobHoldUntil jobHold = NoHold, const QTime &holdUntilTime = QTime());
+    static void setJobHold(QPrinter *printer, const JobHoldUntil jobHold = NoHold, QTime holdUntilTime = QTime());
     static void setJobBilling(QPrinter *printer, const QString &jobBilling = QString());
     static void setJobPriority(QPrinter *printer, int priority = 50);
     static void setBannerPages(QPrinter *printer, const BannerPage startBannerPage, const BannerPage endBannerPage);
@@ -159,7 +159,7 @@ public:
 
     struct JobHoldUntilWithTime
     {
-        JobHoldUntilWithTime(JobHoldUntil jh = NoHold, const QTime &t = QTime())
+        JobHoldUntilWithTime(JobHoldUntil jh = NoHold, QTime t = QTime())
             : jobHold(jh), time(t) {}
 
         JobHoldUntil jobHold;

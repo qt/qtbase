@@ -138,7 +138,7 @@ void QCupsJobWidget::initJobHold()
     toggleJobHoldTime();
 }
 
-void QCupsJobWidget::setJobHold(QCUPSSupport::JobHoldUntil jobHold, const QTime &holdUntilTime)
+void QCupsJobWidget::setJobHold(QCUPSSupport::JobHoldUntil jobHold, QTime holdUntilTime)
 {
     if (jobHold == QCUPSSupport::SpecificTime && holdUntilTime.isNull()) {
         jobHold = QCUPSSupport::NoHold;

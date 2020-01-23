@@ -110,11 +110,11 @@ public:
         DaylightMask        = SetToStandardTime | SetToDaylightTime
     };
 
-    static QDateTime::Data create(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
+    static QDateTime::Data create(QDate toDate, QTime toTime, Qt::TimeSpec toSpec,
                                   int offsetSeconds);
 
 #if QT_CONFIG(timezone)
-    static QDateTime::Data create(const QDate &toDate, const QTime &toTime, const QTimeZone & timeZone);
+    static QDateTime::Data create(QDate toDate, QTime toTime, const QTimeZone & timeZone);
 #endif // timezone
 
     StatusFlags m_status = StatusFlag(Qt::LocalTime << TimeSpecShift);

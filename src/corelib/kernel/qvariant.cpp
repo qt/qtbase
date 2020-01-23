@@ -1876,13 +1876,13 @@ QVariant::QVariant(const char *val)
 */
 
 /*!
-  \fn QVariant::QVariant(const QDate &val)
+  \fn QVariant::QVariant(QDate val)
 
     Constructs a new variant with a date value, \a val.
 */
 
 /*!
-  \fn QVariant::QVariant(const QTime &val)
+  \fn QVariant::QVariant(QTime val)
 
     Constructs a new variant with a time value, \a val.
 */
@@ -2160,10 +2160,10 @@ QVariant::QVariant(const QStringList &val)
     : d(StringList)
 { v_construct<QStringList>(&d, val); }
 
-QVariant::QVariant(const QDate &val)
+QVariant::QVariant(QDate val)
     : d(Date)
 { v_construct<QDate>(&d, val); }
-QVariant::QVariant(const QTime &val)
+QVariant::QVariant(QTime val)
     : d(Time)
 { v_construct<QTime>(&d, val); }
 QVariant::QVariant(const QDateTime &val)
