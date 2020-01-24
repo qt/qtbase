@@ -2512,7 +2512,7 @@ void QWidgetTextControl::setExtraSelections(const QList<QTextEdit::ExtraSelectio
         emit updateRequest(r);
     }
 
-    for (QHash<int, int>::iterator it = hash.begin(); it != hash.end(); ++it) {
+    for (auto it = hash.cbegin(); it != hash.cend(); ++it) {
         const QAbstractTextDocumentLayout::Selection &esel = d->extraSelections.at(it.value());
         QRectF r = selectionRect(esel.cursor);
         if (esel.format.boolProperty(QTextFormat::FullWidthSelection)) {
