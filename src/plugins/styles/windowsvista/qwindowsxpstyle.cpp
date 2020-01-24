@@ -3584,19 +3584,20 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
         sz = QWindowsStyle::sizeFromContents(ct, option, sz, widget);
         break;
 
-    case CT_MdiControls:
+    case CT_MdiControls: {
+        sz.setHeight(int(QStyleHelper::dpiScaled(19, option)));
+        int width = 54;
         if (const QStyleOptionComplex *styleOpt = qstyleoption_cast<const QStyleOptionComplex *>(option)) {
-            int width = 0;
+            width = 0;
             if (styleOpt->subControls & SC_MdiMinButton)
                 width += 17 + 1;
             if (styleOpt->subControls & SC_MdiNormalButton)
                 width += 17 + 1;
             if (styleOpt->subControls & SC_MdiCloseButton)
                 width += 17 + 1;
-            sz = QSize(width, 19);
-        } else {
-            sz = QSize(54, 19);
         }
+        sz.setWidth(int(QStyleHelper::dpiScaled(width, option)));
+    }
         break;
 
     default:
