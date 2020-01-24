@@ -3519,35 +3519,33 @@ def handle_app_or_lib(
     # Generate qmltypes instruction for anything that may have CONFIG += qmltypes
     # that is not a qml plugin
     if "qmltypes" in scope.get("CONFIG") and not "qml_plugin" in scope.get("_LOADED"):
-            cm_fh.write(f"\n{spaces(indent)}set_target_properties({target} PROPERTIES\n")
-            cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_INSTALL_QMLTYPES TRUE\n")
+        cm_fh.write(f"\n{spaces(indent)}set_target_properties({target} PROPERTIES\n")
+        cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_INSTALL_QMLTYPES TRUE\n")
 
-            import_version = scope.get_string("IMPORT_VERSION")
-            if not import_version:
-                import_version = scope.get_string("QML_IMPORT_VERSION")
-            if import_version:
-                import_version = import_version.replace(
-                    "$$QT_MINOR_VERSION", "${CMAKE_PROJECT_VERSION_MINOR}"
-                )
-                cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_VERSION {import_version}\n")
+        import_version = scope.get_string("IMPORT_VERSION")
+        if not import_version:
+            import_version = scope.get_string("QML_IMPORT_VERSION")
+        if import_version:
+            import_version = import_version.replace(
+                "$$QT_MINOR_VERSION", "${CMAKE_PROJECT_VERSION_MINOR}"
+            )
+            cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_VERSION {import_version}\n")
 
-            import_name = scope.expandString("QML_IMPORT_NAME")
-            if import_name:
-                cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_URI {import_name}\n")
+        import_name = scope.expandString("QML_IMPORT_NAME")
+        if import_name:
+            cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_URI {import_name}\n")
 
-            target_path = scope.get("TARGETPATH")
-            if target_path:
-                cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_TARGET_PATH {target_path}\n")
+        target_path = scope.get("TARGETPATH")
+        if target_path:
+            cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_TARGET_PATH {target_path}\n")
 
-            install_dir = scope.expandString("QMLTYPES_INSTALL_DIR")
-            if install_dir:
-                install_dir = install_dir.replace(
-                        "$$[QT_INSTALL_QML]","${Qt6_DIR}/../../../qml"
-                )
-                cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_INSTALL_DIR \"{install_dir}\"\n")
+        install_dir = scope.expandString("QMLTYPES_INSTALL_DIR")
+        if install_dir:
+            install_dir = install_dir.replace("$$[QT_INSTALL_QML]", "${Qt6_DIR}/../../../qml")
+            cm_fh.write(f'{spaces(indent+1)}QT_QML_MODULE_INSTALL_DIR "{install_dir}"\n')
 
-            cm_fh.write(f"{spaces(indent)})\n\n")
-            cm_fh.write(f"qt6_qml_type_registration({target})\n")
+        cm_fh.write(f"{spaces(indent)})\n\n")
+        cm_fh.write(f"qt6_qml_type_registration({target})\n")
 
 
 def handle_top_level_repo_project(scope: Scope, cm_fh: IO[str]):
