@@ -187,6 +187,7 @@ public:
     friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QMatrix4x4 &m);
 #endif
 
+    void projectedRotate(float angle, float x, float y, float z);
 private:
     float m[4][4];          // Column-major order to match OpenGL.
     int flagBits;           // Flag bits from the enum below.
@@ -206,10 +207,6 @@ private:
     explicit QMatrix4x4(int) { }
 
     QMatrix4x4 orthonormalInverse() const;
-
-    void projectedRotate(float angle, float x, float y, float z);
-
-    friend class QGraphicsRotation;
 };
 
 QT_WARNING_PUSH
