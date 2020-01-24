@@ -2463,6 +2463,47 @@ QRect QWindowsXPStylePrivate::scrollBarGripperBounds(QStyle::State flags, const 
     return sufficientSpace ? QRect(theme->rect.topLeft() + QPoint(hSpace, vSpace) / 2, size) : QRect();
 }
 
+#if QT_CONFIG(mdiarea)
+// Helper for drawing MDI buttons into the corner widget of QMenuBar in case a
+// QMdiSubWindow is maximized.
+static void populateMdiButtonTheme(const QStyle *proxy, const QWidget *widget,
+                                   const QStyleOptionComplex *option,
+                                   QStyle::SubControl subControl, int part,
+                                   XPThemeData *theme)
+{
+        theme->partId = part;
+        theme->rect = proxy->subControlRect(QStyle::CC_MdiControls, option, subControl, widget);
+        if (!option->state.testFlag(QStyle::State_Enabled))
+            theme->stateId = CBS_INACTIVE;
+        else if (option->state.testFlag(QStyle::State_Sunken) && option->activeSubControls.testFlag(subControl))
+            theme->stateId = CBS_PUSHED;
+        else if (option->state.testFlag(QStyle::State_MouseOver) && option->activeSubControls.testFlag(subControl))
+            theme->stateId = CBS_HOT;
+        else
+            theme->stateId = CBS_NORMAL;
+}
+#endif // QT_CONFIG(mdiarea)
+
+static void populateTitleBarButtonTheme(const QStyle *proxy, const QWidget *widget,
+                                        const QStyleOptionComplex *option,
+                                        QStyle::SubControl subControl,
+                                        bool isTitleBarActive, int part,
+                                        XPThemeData *theme)
+{
+    theme->rect = proxy->subControlRect(QStyle::CC_TitleBar, option, subControl, widget);
+    theme->partId = part;
+    if (widget && !widget->isEnabled())
+        theme->stateId = RBS_DISABLED;
+    else if (option->activeSubControls == subControl && option->state.testFlag(QStyle::State_Sunken))
+        theme->stateId = RBS_PUSHED;
+    else if (option->activeSubControls == subControl && option->state.testFlag(QStyle::State_MouseOver))
+        theme->stateId = RBS_HOT;
+    else if (!isTitleBarActive)
+        theme->stateId = RBS_INACTIVE;
+    else
+        theme->stateId = RBS_NORMAL;
+}
+
 /*!
     \reimp
 */
@@ -3024,56 +3065,17 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
                 if (sub & SC_TitleBarMinButton && tb->titleBarFlags & Qt::WindowMinimizeButtonHint
                         && !(tb->titleBarState & Qt::WindowMinimized)) {
-                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarMinButton, widget);
-                    partId = WP_MINBUTTON;
-                    if (widget && !widget->isEnabled())
-                        stateId = MINBS_DISABLED;
-                    else if (option->activeSubControls == SC_TitleBarMinButton && (option->state & State_Sunken))
-                        stateId = MINBS_PUSHED;
-                    else if (option->activeSubControls == SC_TitleBarMinButton && (option->state & State_MouseOver))
-                        stateId = MINBS_HOT;
-                    else if (!isActive)
-                        stateId = MINBS_INACTIVE;
-                    else
-                        stateId = MINBS_NORMAL;
-                    theme.partId = partId;
-                    theme.stateId = stateId;
+                    populateTitleBarButtonTheme(proxy(), widget, option, SC_TitleBarMinButton, isActive, WP_MINBUTTON, &theme);
                     d->drawBackground(theme);
                 }
                 if (sub & SC_TitleBarMaxButton && tb->titleBarFlags & Qt::WindowMaximizeButtonHint
                         && !(tb->titleBarState & Qt::WindowMaximized)) {
-                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarMaxButton, widget);
-                    partId = WP_MAXBUTTON;
-                    if (widget && !widget->isEnabled())
-                        stateId = MAXBS_DISABLED;
-                    else if (option->activeSubControls == SC_TitleBarMaxButton && (option->state & State_Sunken))
-                        stateId = MAXBS_PUSHED;
-                    else if (option->activeSubControls == SC_TitleBarMaxButton && (option->state & State_MouseOver))
-                        stateId = MAXBS_HOT;
-                    else if (!isActive)
-                        stateId = MAXBS_INACTIVE;
-                    else
-                        stateId = MAXBS_NORMAL;
-                    theme.partId = partId;
-                    theme.stateId = stateId;
+                    populateTitleBarButtonTheme(proxy(), widget, option, SC_TitleBarMaxButton, isActive, WP_MAXBUTTON, &theme);
                     d->drawBackground(theme);
                 }
                 if (sub & SC_TitleBarContextHelpButton
                     && tb->titleBarFlags & Qt::WindowContextHelpButtonHint) {
-                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarContextHelpButton, widget);
-                    partId = WP_HELPBUTTON;
-                    if (widget && !widget->isEnabled())
-                        stateId = MINBS_DISABLED;
-                    else if (option->activeSubControls == SC_TitleBarContextHelpButton && (option->state & State_Sunken))
-                        stateId = MINBS_PUSHED;
-                    else if (option->activeSubControls == SC_TitleBarContextHelpButton && (option->state & State_MouseOver))
-                        stateId = MINBS_HOT;
-                    else if (!isActive)
-                        stateId = MINBS_INACTIVE;
-                    else
-                        stateId = MINBS_NORMAL;
-                    theme.partId = partId;
-                    theme.stateId = stateId;
+                    populateTitleBarButtonTheme(proxy(), widget, option, SC_TitleBarContextHelpButton, isActive, WP_HELPBUTTON, &theme);
                     d->drawBackground(theme);
                 }
                 bool drawNormalButton = (sub & SC_TitleBarNormalButton)
@@ -3082,74 +3084,21 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                                         || ((tb->titleBarFlags & Qt::WindowMaximizeButtonHint)
                                         && (tb->titleBarState & Qt::WindowMaximized)));
                 if (drawNormalButton) {
-                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarNormalButton, widget);
-                    partId = WP_RESTOREBUTTON;
-                    if (widget && !widget->isEnabled())
-                        stateId = RBS_DISABLED;
-                    else if (option->activeSubControls == SC_TitleBarNormalButton && (option->state & State_Sunken))
-                        stateId = RBS_PUSHED;
-                    else if (option->activeSubControls == SC_TitleBarNormalButton && (option->state & State_MouseOver))
-                        stateId = RBS_HOT;
-                    else if (!isActive)
-                        stateId = RBS_INACTIVE;
-                    else
-                        stateId = RBS_NORMAL;
-                    theme.partId = partId;
-                    theme.stateId = stateId;
+                    populateTitleBarButtonTheme(proxy(), widget, option, SC_TitleBarNormalButton, isActive, WP_RESTOREBUTTON, &theme);
                     d->drawBackground(theme);
                 }
                 if (sub & SC_TitleBarShadeButton && tb->titleBarFlags & Qt::WindowShadeButtonHint
                         && !(tb->titleBarState & Qt::WindowMinimized)) {
-                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarShadeButton, widget);
-                    partId = WP_MINBUTTON;
-                    if (widget && !widget->isEnabled())
-                        stateId = MINBS_DISABLED;
-                    else if (option->activeSubControls == SC_TitleBarShadeButton && (option->state & State_Sunken))
-                        stateId = MINBS_PUSHED;
-                    else if (option->activeSubControls == SC_TitleBarShadeButton && (option->state & State_MouseOver))
-                        stateId = MINBS_HOT;
-                    else if (!isActive)
-                        stateId = MINBS_INACTIVE;
-                    else
-                        stateId = MINBS_NORMAL;
-                    theme.partId = partId;
-                    theme.stateId = stateId;
+                    populateTitleBarButtonTheme(proxy(), widget, option, SC_TitleBarShadeButton, isActive, WP_MINBUTTON, &theme);
                     d->drawBackground(theme);
                 }
                 if (sub & SC_TitleBarUnshadeButton && tb->titleBarFlags & Qt::WindowShadeButtonHint
                         && tb->titleBarState & Qt::WindowMinimized) {
-                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarUnshadeButton, widget);
-                    partId = WP_RESTOREBUTTON;
-                    if (widget && !widget->isEnabled())
-                        stateId = RBS_DISABLED;
-                    else if (option->activeSubControls == SC_TitleBarUnshadeButton && (option->state & State_Sunken))
-                        stateId = RBS_PUSHED;
-                    else if (option->activeSubControls == SC_TitleBarUnshadeButton && (option->state & State_MouseOver))
-                        stateId = RBS_HOT;
-                    else if (!isActive)
-                        stateId = RBS_INACTIVE;
-                    else
-                        stateId = RBS_NORMAL;
-                    theme.partId = partId;
-                    theme.stateId = stateId;
+                    populateTitleBarButtonTheme(proxy(), widget, option, SC_TitleBarUnshadeButton, isActive, WP_RESTOREBUTTON, &theme);
                     d->drawBackground(theme);
                 }
                 if (sub & SC_TitleBarCloseButton && tb->titleBarFlags & Qt::WindowSystemMenuHint) {
-                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarCloseButton, widget);
-                    //partId = titlebar->testWFlags(Qt::WA_WState_Tool) ? WP_SMALLCLOSEBUTTON : WP_CLOSEBUTTON;
-                    partId = WP_CLOSEBUTTON;
-                    if (widget && !widget->isEnabled())
-                        stateId = CBS_DISABLED;
-                    else if (option->activeSubControls == SC_TitleBarCloseButton && (option->state & State_Sunken))
-                        stateId = CBS_PUSHED;
-                    else if (option->activeSubControls == SC_TitleBarCloseButton && (option->state & State_MouseOver))
-                        stateId = CBS_HOT;
-                    else if (!isActive)
-                        stateId = CBS_INACTIVE;
-                    else
-                        stateId = CBS_NORMAL;
-                    theme.partId = partId;
-                    theme.stateId = stateId;
+                    populateTitleBarButtonTheme(proxy(), widget, option, SC_TitleBarCloseButton, isActive, WP_CLOSEBUTTON, &theme);
                     d->drawBackground(theme);
                 }
             }
@@ -3159,56 +3108,21 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 #if QT_CONFIG(mdiarea)
     case CC_MdiControls:
         {
-            QRect buttonRect;
             XPThemeData theme(widget, p, QWindowsXPStylePrivate::WindowTheme, WP_MDICLOSEBUTTON, CBS_NORMAL);
+            if (Q_UNLIKELY(!theme.isValid()))
+                return;
 
-            if (option->subControls & SC_MdiCloseButton) {
-                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiCloseButton, widget);
-                if (theme.isValid()) {
-                    theme.partId = WP_MDICLOSEBUTTON;
-                    theme.rect = buttonRect;
-                    if (!(flags & State_Enabled))
-                        theme.stateId = CBS_INACTIVE;
-                    else if (flags & State_Sunken && (option->activeSubControls & SC_MdiCloseButton))
-                        theme.stateId = CBS_PUSHED;
-                    else if (flags & State_MouseOver && (option->activeSubControls & SC_MdiCloseButton))
-                        theme.stateId = CBS_HOT;
-                    else
-                        theme.stateId = CBS_NORMAL;
-                    d->drawBackground(theme);
-                }
+            if (option->subControls.testFlag(SC_MdiCloseButton)) {
+                populateMdiButtonTheme(proxy(), widget, option, SC_MdiCloseButton, WP_MDICLOSEBUTTON, &theme);
+                d->drawBackground(theme);
             }
-            if (option->subControls & SC_MdiNormalButton) {
-                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiNormalButton, widget);
-                if (theme.isValid()) {
-                    theme.partId = WP_MDIRESTOREBUTTON;
-                    theme.rect = buttonRect;
-                    if (!(flags & State_Enabled))
-                        theme.stateId = CBS_INACTIVE;
-                    else if (flags & State_Sunken && (option->activeSubControls & SC_MdiNormalButton))
-                        theme.stateId = CBS_PUSHED;
-                    else if (flags & State_MouseOver && (option->activeSubControls & SC_MdiNormalButton))
-                        theme.stateId = CBS_HOT;
-                    else
-                        theme.stateId = CBS_NORMAL;
-                    d->drawBackground(theme);
-                }
+            if (option->subControls.testFlag(SC_MdiNormalButton)) {
+                populateMdiButtonTheme(proxy(), widget, option, SC_MdiNormalButton, WP_MDIRESTOREBUTTON, &theme);
+                d->drawBackground(theme);
             }
-            if (option->subControls & QStyle::SC_MdiMinButton) {
-                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiMinButton, widget);
-                if (theme.isValid()) {
-                    theme.partId = WP_MDIMINBUTTON;
-                    theme.rect = buttonRect;
-                    if (!(flags & State_Enabled))
-                        theme.stateId = CBS_INACTIVE;
-                    else if (flags & State_Sunken && (option->activeSubControls & SC_MdiMinButton))
-                        theme.stateId = CBS_PUSHED;
-                    else if (flags & State_MouseOver && (option->activeSubControls & SC_MdiMinButton))
-                        theme.stateId = CBS_HOT;
-                    else
-                        theme.stateId = CBS_NORMAL;
-                    d->drawBackground(theme);
-                }
+            if (option->subControls.testFlag(QStyle::SC_MdiMinButton)) {
+                populateMdiButtonTheme(proxy(), widget, option, SC_MdiMinButton, WP_MDIMINBUTTON, &theme);
+                d->drawBackground(theme);
             }
         }
         break;
