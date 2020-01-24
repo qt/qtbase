@@ -1080,7 +1080,15 @@ void tst_QHash::keyIterator()
     QVERIFY(key_it != hash.keyEnd());
     QCOMPARE(*key_it, it.key());
     QCOMPARE(*(key_it++), (it++).key());
-    QCOMPARE(*(++key_it), (++it).key());
+    if (key_it != hash.keyEnd()) {
+        QVERIFY(it != hash.end());
+        ++key_it;
+        ++it;
+        if (key_it != hash.keyEnd())
+            QCOMPARE(*key_it, it.key());
+        else
+            QVERIFY(it == hash.end());
+    }
 
     QCOMPARE(std::count(hash.keyBegin(), hash.keyEnd(), 99), 1);
 
@@ -1125,7 +1133,10 @@ void tst_QHash::keyValueIterator()
 
     ++it;
     ++key_value_it;
-    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+    if (it != hash.end())
+        QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+    else
+        QVERIFY(key_value_it == hash.constKeyValueEnd());
 
     key = 99;
     value = 99 * 100;
