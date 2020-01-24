@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB).
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -2126,6 +2127,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 /*!
     \enum QOpenGLTexture::Target
     This enum defines the texture target of a QOpenGLTexture object.
+    For more information on creating array textures, see \l{Array Texture}.
 
     \value Target1D A 1-dimensional texture.
            Equivalent to GL_TEXTURE_1D.
@@ -2133,7 +2135,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
            Equivalent to GL_TEXTURE_1D_ARRAY
     \value Target2D A 2-dimensional texture.
            Equivalent to GL_TEXTURE_2D
-    \value Target2DArray An array of 1-dimensional textures.
+    \value Target2DArray An array of 2-dimensional textures.
            Equivalent to GL_TEXTURE_2D_ARRAY
     \value Target3D A 3-dimensional texture.
            Equivalent to GL_TEXTURE_3D
