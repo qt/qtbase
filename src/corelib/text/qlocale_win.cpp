@@ -214,9 +214,9 @@ inline int QSystemLocalePrivate::getLocaleInfo(LCTYPE type, LPWSTR data, int siz
 QString QSystemLocalePrivate::getLocaleInfo(LCTYPE type, int maxlen)
 {
     QVarLengthArray<wchar_t, 64> buf(maxlen ? maxlen : 64);
-    if (!getLocaleInfo(type, buf.data(), buf.size()))
-        return QString();
-    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+    if (!getLocaleInfo(type, buf.data(), buf.size())) {
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+            return QString();
         int cnt = getLocaleInfo(type, 0, 0);
         if (cnt == 0)
             return QString();
