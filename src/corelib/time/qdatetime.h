@@ -110,14 +110,15 @@ public:
         static QString longDayName(int weekday, MonthNameType type = DateFormat);
 #endif // textdate && deprecated
 #if QT_CONFIG(datestring)
-    QString toString(Qt::DateFormat f = Qt::TextDate) const;
+    QString toString(Qt::DateFormat format = Qt::TextDate) const;
+    QString toString(Qt::DateFormat format, QCalendar cal) const;
+
 #if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const;
     QString toString(const QString &format, QCalendar cal) const;
 #endif
 
     QString toString(QStringView format) const;
-    QString toString(Qt::DateFormat f, QCalendar cal) const;
     QString toString(QStringView format, QCalendar cal) const;
 #endif
 #if QT_DEPRECATED_SINCE(5,0)
@@ -332,11 +333,14 @@ public:
     void setSecsSinceEpoch(qint64 secs);
 
 #if QT_CONFIG(datestring)
-    QString toString(Qt::DateFormat f = Qt::TextDate) const;
+    QString toString(Qt::DateFormat format = Qt::TextDate) const;
+    QString toString(Qt::DateFormat format, QCalendar cal) const;
 #if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const;
+    QString toString(const QString &format, QCalendar cal) const;
 #endif
     QString toString(QStringView format) const;
+    QString toString(QStringView format, QCalendar cal) const;
 #endif
     Q_REQUIRED_RESULT QDateTime addDays(qint64 days) const;
     Q_REQUIRED_RESULT QDateTime addMonths(int months) const;
