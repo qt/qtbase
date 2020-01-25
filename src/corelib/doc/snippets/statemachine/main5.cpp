@@ -98,7 +98,7 @@ int main(int argv, char **args)
     s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
     s2->assignProperty(button, "geometry", QRectF(0, 0, 100, 100));
 
-    s1->addTransition(button, SIGNAL(clicked()), s2);
+    s1->addTransition(button, &QPushButton::clicked, s2);
 //![3]
 
   }
@@ -111,7 +111,7 @@ int main(int argv, char **args)
     s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
     s2->assignProperty(button, "geometry", QRectF(0, 0, 100, 100));
 
-    QSignalTransition *transition = s1->addTransition(button, SIGNAL(clicked()), s2);
+    QSignalTransition *transition = s1->addTransition(button, &QPushButton::clicked, s2);
     transition->addAnimation(new QPropertyAnimation(button, "geometry"));
 //![4]
 
@@ -130,9 +130,9 @@ int main(int argv, char **args)
 
     QState *s2 = new QState();
     s2->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
-    connect(s2, SIGNAL(entered()), messageBox, SLOT(exec()));
+    connect(s2, &QState::entered, messageBox, SLOT(exec()));
 
-    s1->addTransition(button, SIGNAL(clicked()), s2);
+    s1->addTransition(button, &QPushButton::clicked, s2);
 //![5]
   }
 
@@ -151,10 +151,10 @@ int main(int argv, char **args)
     s2->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
 
     QState *s3 = new QState();
-    connect(s3, SIGNAL(entered()), messageBox, SLOT(exec()));
+    connect(s3, &QState::entered, messageBox, SLOT(exec()));
 
-    s1->addTransition(button, SIGNAL(clicked()), s2);
-    s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3);
+    s1->addTransition(button, &QPushButton::clicked, s2);
+    s2->addTransition(s2, &QState::propertiesAssigned, s3);
 //![6]
 
   }
