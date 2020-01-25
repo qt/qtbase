@@ -403,7 +403,7 @@ QIcon QProxyStyle::standardIcon(StandardPixmap standardIcon,
   orientation specifies whether the controls are laid out side by side
   or stacked vertically. The \a option parameter can be used to pass
   extra information about the parent widget.  The \a widget parameter
-  is optional and can also be used if \a option is 0.
+  is optional and can also be used if \a option is \nullptr.
 
   The default implementation returns -1.
 

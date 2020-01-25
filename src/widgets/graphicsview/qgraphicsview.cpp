@@ -963,7 +963,7 @@ static inline void QRect_unite(QRect *rect, const QRect &other)
 /*
    Calling this function results in update rects being clipped to the item's
    bounding rect. Note that updates prior to this function call is not clipped.
-   The clip is removed by passing 0.
+   The clip is removed by passing \nullptr.
 */
 void QGraphicsViewPrivate::setUpdateClip(QGraphicsItem *item)
 {

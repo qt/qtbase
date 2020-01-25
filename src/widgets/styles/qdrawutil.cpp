@@ -214,7 +214,7 @@ void qDrawShadeLine(QPainter *p, int x1, int y1, int x2, int y2,
     specifies the line width for each of the lines; it is not the
     total line width.  The \a midLineWidth specifies the width of a
     middle line drawn in the QPalette::mid() color.  The rectangle's
-    interior is filled with the \a fill brush unless \a fill is 0.
+    interior is filled with the \a fill brush unless \a fill is \nullptr.
 
     The rectangle appears sunken if \a sunken is true, otherwise
     raised.
@@ -331,7 +331,7 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
     The given \a palette specifies the shading colors (\l
     {QPalette::light()}{light}, \l {QPalette::dark()}{dark} and \l
     {QPalette::mid()}{middle} colors).  The panel's interior is filled
-    with the \a fill brush unless \a fill is 0.
+    with the \a fill brush unless \a fill is \nullptr.
 
     The panel appears sunken if \a sunken is true, otherwise raised.
 
@@ -490,7 +490,7 @@ static void qDrawWinShades(QPainter *p,
     Draws the Windows-style button specified by the given point (\a x,
     \a y}, \a width and \a height using the provided \a painter with a
     line width of 2 pixels. The button's interior is filled with the
-    \a{fill} brush unless \a fill is 0.
+    \a{fill} brush unless \a fill is \nullptr.
 
     The given \a palette specifies the shading colors (\l
     {QPalette::light()}{light}, \l {QPalette::dark()}{dark} and \l
@@ -528,7 +528,7 @@ void qDrawWinButton(QPainter *p, int x, int y, int w, int h,
     Draws the Windows-style panel specified by the given point(\a x,
     \a y), \a width and \a height using the provided \a painter with a
     line width of 2 pixels. The button's interior is filled with the
-    \a fill brush unless \a fill is 0.
+    \a fill brush unless \a fill is \nullptr.
 
     The given \a palette specifies the shading colors.  The panel
     appears sunken if \a sunken is true, otherwise raised.
@@ -567,7 +567,7 @@ void qDrawWinPanel(QPainter *p, int x, int y, int w, int h,
     Draws the plain rectangle beginning at (\a x, \a y) with the given
     \a width and \a height, using the specified \a painter, \a lineColor
     and \a lineWidth. The rectangle's interior is filled with the \a
-    fill brush unless \a fill is 0.
+    fill brush unless \a fill is \nullptr.
 
     \warning This function does not look at QWidget::style() or
     QApplication::style(). Use the drawing functions in QStyle to make
@@ -676,7 +676,7 @@ void qDrawShadeLine(QPainter *p, const QPoint &p1, const QPoint &p2,
     specifies the line width for each of the lines; it is not the
     total line width.  The \a midLineWidth specifies the width of a
     middle line drawn in the QPalette::mid() color.  The rectangle's
-    interior is filled with the \a fill brush unless \a fill is 0.
+    interior is filled with the \a fill brush unless \a fill is \nullptr.
 
     The rectangle appears sunken if \a sunken is true, otherwise
     raised.
@@ -714,7 +714,7 @@ void qDrawShadeRect(QPainter *p, const QRect &r,
     The given \a palette specifies the shading colors (\l
     {QPalette::light()}{light}, \l {QPalette::dark()}{dark} and \l
     {QPalette::mid()}{middle} colors).  The panel's interior is filled
-    with the \a fill brush unless \a fill is 0.
+    with the \a fill brush unless \a fill is \nullptr.
 
     The panel appears sunken if \a sunken is true, otherwise raised.
 
@@ -746,7 +746,7 @@ void qDrawShadePanel(QPainter *p, const QRect &r,
 
     Draws the Windows-style button at the rectangle specified by \a rect using
     the given \a painter with a line width of 2 pixels. The button's interior
-    is filled with the \a{fill} brush unless \a fill is 0.
+    is filled with the \a{fill} brush unless \a fill is \nullptr.
 
     The given \a palette specifies the shading colors (\l
     {QPalette::light()}{light}, \l {QPalette::dark()}{dark} and \l
@@ -774,7 +774,7 @@ void qDrawWinButton(QPainter *p, const QRect &r,
 
     Draws the Windows-style panel at the rectangle specified by \a rect using
     the given \a painter with a line width of 2 pixels. The button's interior
-    is filled with the \a fill brush unless \a fill is 0.
+    is filled with the \a fill brush unless \a fill is \nullptr.
 
     The given \a palette specifies the shading colors.  The panel
     appears sunken if \a sunken is true, otherwise raised.
@@ -804,7 +804,7 @@ void qDrawWinPanel(QPainter *p, const QRect &r,
 
     Draws the plain rectangle specified by \a rect using the given \a painter,
     \a lineColor and \a lineWidth. The rectangle's interior is filled with the
-    \a fill brush unless \a fill is 0.
+    \a fill brush unless \a fill is \nullptr.
 
     \warning This function does not look at QWidget::style() or
     QApplication::style(). Use the drawing functions in QStyle to make

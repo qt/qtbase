@@ -2044,7 +2044,7 @@ const QValidator *QComboBox::validator() const
     \since 4.2
 
     Sets the \a completer to use instead of the current completer.
-    If \a completer is 0, auto completion is disabled.
+    If \a completer is \nullptr, auto completion is disabled.
 
     By default, for an editable combo box, a QCompleter that
     performs case insensitive inline completion is automatically created.

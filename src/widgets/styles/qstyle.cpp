@@ -2362,14 +2362,14 @@ QPalette QStyle::standardPalette() const
 
     \fn int QStyle::layoutSpacing(QSizePolicy::ControlType control1,
                                   QSizePolicy::ControlType control2, Qt::Orientation orientation,
-                                  const QStyleOption *option = 0, const QWidget *widget = 0) const
+                                  const QStyleOption *option = nullptr, const QWidget *widget = nullptr) const
 
     Returns the spacing that should be used between \a control1 and
     \a control2 in a layout. \a orientation specifies whether the
     controls are laid out side by side or stacked vertically. The \a
     option parameter can be used to pass extra information about the
     parent widget. The \a widget parameter is optional and can also
-    be used if \a option is 0.
+    be used if \a option is \nullptr.
 
     This function is called by the layout system. It is used only if
     PM_LayoutHorizontalSpacing or PM_LayoutVerticalSpacing returns a
@@ -2386,7 +2386,7 @@ QPalette QStyle::standardPalette() const
     controls are laid out side by side or stacked vertically. The \a
     option parameter can be used to pass extra information about the
     parent widget. The \a widget parameter is optional and can also
-    be used if \a option is 0.
+    be used if \a option is \nullptr.
 
     \a controls1 and \a controls2 are OR-combination of zero or more
     \l{QSizePolicy::ControlTypes}{control types}.
