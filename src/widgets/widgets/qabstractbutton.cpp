@@ -415,8 +415,13 @@ void QAbstractButtonPrivate::emitClicked()
     emit q->clicked(checked);
 #if QT_CONFIG(buttongroup)
     if (guard && group) {
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit group->buttonClicked(group->id(q));
         if (guard && group)
+QT_WARNING_POP
+#endif
             emit group->buttonClicked(q);
     }
 #endif
@@ -429,8 +434,13 @@ void QAbstractButtonPrivate::emitPressed()
     emit q->pressed();
 #if QT_CONFIG(buttongroup)
     if (guard && group) {
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit group->buttonPressed(group->id(q));
         if (guard && group)
+QT_WARNING_POP
+#endif
             emit group->buttonPressed(q);
     }
 #endif
@@ -443,8 +453,13 @@ void QAbstractButtonPrivate::emitReleased()
     emit q->released();
 #if QT_CONFIG(buttongroup)
     if (guard && group) {
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit group->buttonReleased(group->id(q));
         if (guard && group)
+QT_WARNING_POP
+#endif
             emit group->buttonReleased(q);
     }
 #endif
@@ -457,8 +472,13 @@ void QAbstractButtonPrivate::emitToggled(bool checked)
     emit q->toggled(checked);
 #if QT_CONFIG(buttongroup)
     if (guard && group) {
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         emit group->buttonToggled(group->id(q), checked);
         if (guard && group)
+QT_WARNING_POP
+#endif
             emit group->buttonToggled(q, checked);
     }
 #endif
