@@ -2279,16 +2279,6 @@ void tst_QVariant::variantMap()
     QCOMPARE(qvariant_cast<QVariantMap>(v3).value("test").toInt(), 42);
 
     QCOMPARE(v, QVariant(v.toHash()));
-
-    // multi-keys
-    map.insertMulti("test", 47);
-    v = map;
-    map2 = qvariant_cast<QVariantMap>(v);
-    QCOMPARE(map2, map);
-    map2 = v.toMap();
-    QCOMPARE(map2, map);
-
-    QCOMPARE(v, QVariant(v.toHash()));
 }
 
 void tst_QVariant::variantHash()
@@ -2310,16 +2300,6 @@ void tst_QVariant::variantHash()
 
     QVariant v3 = QVariant(QMetaType::type("QHash<QString, QVariant>"), &hash);
     QCOMPARE(qvariant_cast<QVariantHash>(v3).value("test").toInt(), 42);
-
-    QCOMPARE(v, QVariant(v.toMap()));
-
-    // multi-keys
-    hash.insertMulti("test", 47);
-    v = hash;
-    hash2 = qvariant_cast<QVariantHash>(v);
-    QCOMPARE(hash2, hash);
-    hash2 = v.toHash();
-    QCOMPARE(hash2, hash);
 
     QCOMPARE(v, QVariant(v.toMap()));
 }
@@ -3063,7 +3043,7 @@ void tst_QVariant::convertIterables() const
         QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
         QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
 
-        map.insertMulti("3", 5);
+        map.insert("4", 5);
         QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
         QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
     }
@@ -3073,7 +3053,7 @@ void tst_QVariant::convertIterables() const
         QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
         QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
 
-        map.insertMulti("3", 5);
+        map.insert("4", 5);
         QCOMPARE(QVariant::fromValue(map).value<QVariantHash>().count(), map.count());
         QCOMPARE(QVariant::fromValue(map).value<QVariantMap>().count(), map.count());
     }
@@ -3083,7 +3063,7 @@ void tst_QVariant::convertIterables() const
         QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
         QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
 
-        hash.insertMulti("3", 5);
+        hash.insert("4", 5);
         QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
         QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
     }
@@ -3093,7 +3073,7 @@ void tst_QVariant::convertIterables() const
         QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
         QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
 
-        hash.insertMulti("3", 5);
+        hash.insert("4", 5);
         QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
         QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
     }
