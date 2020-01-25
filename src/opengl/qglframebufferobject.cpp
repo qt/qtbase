@@ -1395,7 +1395,7 @@ bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
     Blits from the \a sourceRect rectangle in the \a source framebuffer
     object to the \a targetRect rectangle in the \a target framebuffer object.
 
-    If \a source or \a target is 0, the default framebuffer will be used
+    If \a source or \a target is \nullptr, the default framebuffer will be used
     instead of a framebuffer object as source or target respectively.
 
     The \a buffers parameter should be a mask consisting of any combination of

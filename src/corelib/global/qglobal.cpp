@@ -702,7 +702,7 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     64-bit integer literals in a platform-independent way. The
     Q_CHECK_PTR() macro prints a warning containing the source code's
     file name and line number, saying that the program ran out of
-    memory, if the pointer is 0. The qPrintable() and qUtf8Printable()
+    memory, if the pointer is \nullptr. The qPrintable() and qUtf8Printable()
     macros represent an easy way of printing text.
 
     The QT_POINTER_SIZE macro expands to the size of a pointer in bytes.
@@ -3263,7 +3263,7 @@ QByteArray QSysInfo::bootUniqueId()
     \macro void Q_CHECK_PTR(void *pointer)
     \relates <QtGlobal>
 
-    If \a pointer is 0, prints a message containing the source
+    If \a pointer is \nullptr, prints a message containing the source
     code's file name and line number, saying that the program ran out
     of memory and aborts program execution. It throws \c std::bad_alloc instead
     if exceptions are enabled.

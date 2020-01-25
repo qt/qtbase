@@ -1681,7 +1681,7 @@ QString QTextStream::readLine(qint64 maxlen)
     \since 5.5
 
     Reads one line of text from the stream into \a line.
-    If \a line is 0, the read line is not stored.
+    If \a line is \nullptr, the read line is not stored.
 
     The maximum allowed line length is set to \a maxlen. If
     the stream contains lines longer than this, then the lines will be

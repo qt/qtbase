@@ -457,7 +457,7 @@ struct DefinedTypesFilter {
     \deprecated
 
     Constructs a value of the given type which is a copy of \a copy.
-    The default value for \a copy is 0.
+    The default value for \a copy is \nullptr.
 
     Deprecated, use the static function QMetaType::create(int type,
     const void *copy) instead.
