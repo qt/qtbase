@@ -941,7 +941,7 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
     The latter may happen if the surface is not exposed, or the graphics
     hardware is not available due to e.g. the application being suspended.
 
-    If \a surface is 0 this is equivalent to calling doneCurrent().
+    If \a surface is \nullptr this is equivalent to calling doneCurrent().
 
     Avoid calling this function from a different thread than the one the
     QOpenGLContext instance lives in. If you wish to use QOpenGLContext from a

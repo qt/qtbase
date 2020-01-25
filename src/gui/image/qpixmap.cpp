@@ -813,8 +813,8 @@ bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::I
     0 to obtain small compressed files, 100 for large uncompressed
     files, and -1 to use the default settings.
 
-    If \a format is 0, an image format will be chosen from \a fileName's
-    suffix.
+    If \a format is \nullptr, an image format will be chosen from
+    \a fileName's suffix.
 
     \sa {QPixmap#Reading and Writing Image Files}{Reading and Writing
     Image Files}

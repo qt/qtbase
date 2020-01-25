@@ -3366,7 +3366,7 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
 
     \a action is the action that is changed, added, or removed. If \a
     type is ActionAdded, the action is to be inserted before the
-    action \a before. If \a before is 0, the action is appended.
+    action \a before. If \a before is \nullptr, the action is appended.
 */
 QActionEvent::QActionEvent(int type, QAction *action, QAction *before)
     : QEvent(static_cast<QEvent::Type>(type)), act(action), bef(before)

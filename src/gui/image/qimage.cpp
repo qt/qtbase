@@ -4058,7 +4058,7 @@ void QImage::setText(const QString &key, const QString &value)
     \obsolete
 
     Returns the text recorded for the given \a key in the given \a
-    language, or in a default language if \a language is 0.
+    language, or in a default language if \a language is \nullptr.
 
     Use text() instead.
 
@@ -4085,7 +4085,7 @@ void QImage::setText(const QString &key, const QString &value)
 
     Sets the image text to the given \a text and associate it with the
     given \a key. The text is recorded in the specified \a language,
-    or in a default language if \a language is 0.
+    or in a default language if \a language is \nullptr.
 
     Use setText() instead.
 
