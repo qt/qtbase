@@ -931,8 +931,8 @@ function(qt_internal_module_info result target)
     string(REPLACE "." "_" define "${define}")
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
-    set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)
-    set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
+    set("${result}_repo_include_dir" "${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}" PARENT_SCOPE)
+    set("${result}_include_dir" "${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}/${module}" PARENT_SCOPE)
     set("${result}_define" "${define}" PARENT_SCOPE)
 endfunction()
 
@@ -1715,7 +1715,7 @@ function(qt_add_module target)
 
     if(NOT arg_NO_MODULE_HEADERS AND NOT arg_NO_SYNC_QT)
         # For the syncqt headers
-        list(APPEND ${public_headers_list} "$<INSTALL_INTERFACE:include/${module}>")
+        list(APPEND ${public_headers_list} "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}>")
     endif()
     list(APPEND ${public_headers_list} ${arg_PUBLIC_INCLUDE_DIRECTORIES})
 
@@ -1947,8 +1947,8 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
                             "$<INSTALL_INTERFACE:${fw_headers_dir}${PROJECT_VERSION}/${module}>")
             else()
                 list(APPEND interface_includes
-                            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>"
-                            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>")
+                            "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}>"
+                            "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}>")
             endif()
         endif()
     endif()
@@ -2796,7 +2796,7 @@ function(qt_add_test name)
         set(private_includes
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
-            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/include>"
+            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}>"
              ${arg_INCLUDE_DIRECTORIES}
         )
 
