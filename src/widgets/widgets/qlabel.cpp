@@ -227,7 +227,7 @@ const QPicture *QLabel::picture() const
     \endcode
 */
 
-QPicture QLabel::picture(Qt::ReturnByValue_t) const
+QPicture QLabel::picture(Qt::ReturnByValueConstant) const
 {
     Q_D(const QLabel);
     if (d->picture)
@@ -443,7 +443,7 @@ const QPixmap *QLabel::pixmap() const
 /*!
     \since 5.15
 */
-QPixmap QLabel::pixmap(Qt::ReturnByValue_t) const
+QPixmap QLabel::pixmap(Qt::ReturnByValueConstant) const
 {
     Q_D(const QLabel);
     if (d->pixmap)

@@ -3334,7 +3334,7 @@
 */
 
 /*!
-  \enum Qt::ReturnByValue_t
+  \enum Qt::ReturnByValueConstant
   \since 5.15
 
   This is a dummy type, designed to help users transition from certain deprecated APIs to their replacement APIs.

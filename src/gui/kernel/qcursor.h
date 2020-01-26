@@ -104,11 +104,11 @@ public:
     QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QBitmap by-value")
     const QBitmap *mask() const; // ### Qt 7: Remove function
 
-    QBitmap bitmap(Qt::ReturnByValue_t) const;
-    QBitmap mask(Qt::ReturnByValue_t) const;
+    QBitmap bitmap(Qt::ReturnByValueConstant) const;
+    QBitmap mask(Qt::ReturnByValueConstant) const;
 #else
-    QBitmap bitmap(Qt::ReturnByValue_t = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
-    QBitmap mask(Qt::ReturnByValue_t = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+    QBitmap bitmap(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+    QBitmap mask(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
 #endif // QT_DEPRECATED_SINCE(5, 15)
     QPixmap pixmap() const;
     QPoint hotSpot() const;

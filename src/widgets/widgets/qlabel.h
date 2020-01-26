@@ -77,9 +77,9 @@ public:
     QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QPixmap by-value")
     const QPixmap *pixmap() const; // ### Qt 7: Remove function
 
-    QPixmap pixmap(Qt::ReturnByValue_t) const;
+    QPixmap pixmap(Qt::ReturnByValueConstant) const;
 #else
-    QPixmap pixmap(Qt::ReturnByValue_t = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+    QPixmap pixmap(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
 #endif // QT_DEPRECATED_SINCE(5,15)
 
 #ifndef QT_NO_PICTURE
@@ -87,9 +87,9 @@ public:
     QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QPicture by-value")
     const QPicture *picture() const; // ### Qt 7: Remove function
 
-    QPicture picture(Qt::ReturnByValue_t) const;
+    QPicture picture(Qt::ReturnByValueConstant) const;
 #  else
-    QPicture picture(Qt::ReturnByValue_t = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+    QPicture picture(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
 #  endif // QT_DEPRECATED_SINCE(5,15)
 #endif
 #if QT_CONFIG(movie)
