@@ -79,14 +79,7 @@ class Q_SQL_EXPORT QSqlResultPrivate
 public:
     QSqlResultPrivate(QSqlResult *q, const QSqlDriver *drv)
       : q_ptr(q),
-        sqldriver(const_cast<QSqlDriver*>(drv)),
-        idx(QSql::BeforeFirstRow),
-        active(false),
-        isSel(false),
-        forwardOnly(false),
-        precisionPolicy(QSql::LowPrecisionDouble),
-        bindCount(0),
-        binds(QSqlResult::PositionalBinding)
+        sqldriver(const_cast<QSqlDriver*>(drv))
     { }
     virtual ~QSqlResultPrivate() { }
 
@@ -119,18 +112,17 @@ public:
     QString namedToPositionalBinding(const QString &query);
     QString holderAt(int index) const;
 
-    QSqlResult *q_ptr;
+    QSqlResult *q_ptr = nullptr;
     QPointer<QSqlDriver> sqldriver;
-    int idx;
     QString sql;
-    bool active;
-    bool isSel;
     QSqlError error;
-    bool forwardOnly;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
-
-    int bindCount;
-    QSqlResult::BindingSyntax binds;
+    QSql::NumericalPrecisionPolicy precisionPolicy = QSql::LowPrecisionDouble;
+    QSqlResult::BindingSyntax binds = QSqlResult::PositionalBinding;
+    int idx = QSql::BeforeFirstRow;
+    int bindCount = 0;
+    bool active = false;
+    bool isSel = false;
+    bool forwardOnly = false;
 
     QString executedQuery;
     QHash<int, QSql::ParamType> types;
