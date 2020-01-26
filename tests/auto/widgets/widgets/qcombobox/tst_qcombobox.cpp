@@ -47,6 +47,7 @@
 #include <qtablewidget.h>
 #include <qscrollbar.h>
 #include <qboxlayout.h>
+#include <qstackedwidget.h>
 
 #include <qstandarditemmodel.h>
 #include <qstringlistmodel.h>
@@ -164,6 +165,7 @@ private slots:
     void task_QTBUG_56693_itemFontFromModel();
     void inputMethodUpdate();
     void task_QTBUG_52027_mapCompleterIndex();
+    void checkMenuItemPosWhenStyleSheetIsSet();
 
 private:
     PlatformInputContext m_platformInputContext;
@@ -3464,6 +3466,47 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     QApplication::processEvents();
     arguments = spy.takeLast();
     QCOMPARE(arguments.at(0).toInt(), 1);
+}
+
+void tst_QComboBox::checkMenuItemPosWhenStyleSheetIsSet()
+{
+    QString newCss = "QComboBox {font-size: 18pt;}";
+    QString oldCss = qApp->styleSheet();
+    qApp->setStyleSheet(newCss);
+
+    QWidget topLevel;
+    QVBoxLayout *layout = new QVBoxLayout(&topLevel);
+    QStackedWidget *stack = new QStackedWidget(&topLevel);
+    layout->addWidget(stack);
+    QWidget *container = new QWidget(&topLevel);
+    QHBoxLayout *cLayout = new QHBoxLayout(container);
+    QComboBox *cBox = new QComboBox;
+
+    QStandardItemModel *model = new QStandardItemModel(cBox);
+    QStandardItem *item = new QStandardItem(QStringLiteral("Item1"));
+    model->appendRow(item);
+    item = new QStandardItem(QStringLiteral("Item2"));
+    model->appendRow(item);
+    item = new QStandardItem(QStringLiteral("Item3"));
+    model->appendRow(item);
+    item = new QStandardItem(QStringLiteral("Item4"));
+    model->appendRow(item);
+    cBox->setModel(model);
+
+    cLayout->addWidget(cBox);
+    stack->addWidget(container);
+    topLevel.show();
+    cBox->showPopup();
+
+    QTRY_VERIFY(cBox->view());
+    QTRY_VERIFY(cBox->view()->isVisible());
+
+    int menuHeight = cBox->view()->geometry().height();
+    QRect menuItemRect = cBox->view()->visualRect(model->indexFromItem(item));
+
+    QCOMPARE(menuHeight, menuItemRect.y() + menuItemRect.height());
+
+    qApp->setStyleSheet(oldCss);
 }
 
 QTEST_MAIN(tst_QComboBox)

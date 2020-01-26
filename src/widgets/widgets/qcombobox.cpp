@@ -3045,12 +3045,14 @@ void QComboBox::changeEvent(QEvent *e)
         d->updateViewContainerPaletteAndOpacity();
         break;
     }
-    case QEvent::FontChange:
+    case QEvent::FontChange: {
         d->sizeHint = QSize(); // invalidate size hint
         d->viewContainer()->setFont(font());
+        d->viewContainer()->itemView()->doItemsLayout();
         if (d->lineEdit)
             d->updateLineEditGeometry();
         break;
+    }
     default:
         break;
     }
