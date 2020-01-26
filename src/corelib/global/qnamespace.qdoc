@@ -3326,6 +3326,8 @@
 
   This is a dummy type, designed to help users transition from certain deprecated APIs to their replacement APIs.
 
+  \sa QCursor::bitmap()
+  \sa QCursor::mask()
   \sa QLabel::picture()
   \sa QLabel::pixmap()
 */

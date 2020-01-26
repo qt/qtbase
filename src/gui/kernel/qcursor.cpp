@@ -614,8 +614,8 @@ const QBitmap *QCursor::mask() const
     QBitmap bmpVal = cursor->bitmap(Qt::ReturnByValue);
     \endcode
 
-    If you disable the deprecated version, then you can omit \c Qt::ReturnByValue
-    as shown below:
+    If you disable the deprecated version using the QT_DISABLE_DEPRECATED_BEFORE
+    macro, then you can omit \c Qt::ReturnByValue as shown below:
 
     \code
     QBitmap bmpVal = cursor->bitmap();
@@ -646,8 +646,8 @@ QBitmap QCursor::bitmap(Qt::ReturnByValue_t) const
     QBitmap bmpVal = cursor->mask(Qt::ReturnByValue);
     \endcode
 
-    If you disable the deprecated version, then you can omit \c Qt::ReturnByValue
-    as shown below:
+    If you disable the deprecated version using the QT_DISABLE_DEPRECATED_BEFORE
+    macro, then you can omit \c Qt::ReturnByValue as shown below:
 
     \code
     QBitmap bmpVal = cursor->mask();
