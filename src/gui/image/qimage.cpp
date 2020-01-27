@@ -3683,8 +3683,8 @@ QImage QImage::fromData(const uchar *data, int size, const char *format)
 /*!
     Saves the image to the file with the given \a fileName, using the
     given image file \a format and \a quality factor. If \a format is
-    0, QImage will attempt to guess the format by looking at \a fileName's
-    suffix.
+    \nullptr, QImage will attempt to guess the format by looking at
+    \a fileName's suffix.
 
     The \a quality factor must be in the range 0 to 100 or -1. Specify
     0 to obtain small compressed files, 100 for large uncompressed
@@ -4099,7 +4099,7 @@ void QImage::setText(const QString &key, const QString &value)
     \l{http://www.libpng.org/pub/png/spec/1.2/png-1.2-pdg.html#C.Anc-text}
     {the PNG specification}. \a s can be any text. \a lang should
     specify the language code (see
-    \l{http://www.rfc-editor.org/rfc/rfc1766.txt}{RFC 1766}) or 0.
+    \l{http://www.rfc-editor.org/rfc/rfc1766.txt}{RFC 1766}) or \nullptr.
     \endomit
 */
 

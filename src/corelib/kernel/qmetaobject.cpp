@@ -599,7 +599,7 @@ static bool methodMatch(const QMetaObject *m, int handle,
 * \internal
 * helper function for indexOf{Method,Slot,Signal}, returns the relative index of the method within
 * the baseObject
-* \a MethodType might be MethodSignal or MethodSlot, or 0 to match everything.
+* \a MethodType might be MethodSignal or MethodSlot, or \nullptr to match everything.
 */
 template<int MethodType>
 static inline int indexOfMethodRelative(const QMetaObject **baseObject,
@@ -731,7 +731,7 @@ int QMetaObject::indexOfSignal(const char *signal) const
     \internal
     Same as QMetaObject::indexOfSignal, but the result is the local offset to the base object.
 
-    \a baseObject will be adjusted to the enclosing QMetaObject, or 0 if the signal is not found
+    \a baseObject will be adjusted to the enclosing QMetaObject, or \nullptr if the signal is not found
 */
 int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
                                               const QByteArray &name, int argc,

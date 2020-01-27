@@ -2361,7 +2361,7 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
 
 /*!
     \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
-    QRhiVulkanRenderPassNativeHandles. The returned value is null when exposing
+    QRhiVulkanRenderPassNativeHandles. The returned value is \nullptr when exposing
     the underlying native resources is not supported by the backend.
 
     \sa QRhiVulkanRenderPassNativeHandles
@@ -4933,7 +4933,7 @@ void QRhiCommandBuffer::dispatch(int x, int y, int z)
 
 /*!
     \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
-    QRhiVulkanCommandBufferNativeHandles. The returned value is null when
+    QRhiVulkanCommandBufferNativeHandles. The returned value is \nullptr when
     exposing the underlying native resources is not supported by, or not
     applicable to, the backend.
 

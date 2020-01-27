@@ -162,7 +162,7 @@ QStyle *QProxyStyle::baseStyle() const
 
     Ownership of \a style is transferred to QProxyStyle.
 
-    If style is zero, a desktop-dependant style will be
+    If style is \nullptr, a desktop-dependent style will be
     assigned automatically.
 */
 void QProxyStyle::setBaseStyle(QStyle *style)
