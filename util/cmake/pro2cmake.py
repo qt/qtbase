@@ -3260,11 +3260,12 @@ def write_example(
 
 def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     extra = []
+    is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
     qmake_target_name = scope.TARGET
 
     # Forward the original Qt5 plugin target name, to correctly name the
     # final library file name, and also for .prl generation.
-    if qmake_target_name:
+    if qmake_target_name and not is_qml_plugin:
         extra.append(f"OUTPUT_NAME {qmake_target_name}")
 
     # In Qt 6 CMake, the CMake target name for a plugin should be the
@@ -3286,7 +3287,6 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
 
     qmldir = None
     plugin_type = scope.get_string("PLUGIN_TYPE")
-    is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
     plugin_function_name = get_cmake_api_call("qt_add_plugin")
     if plugin_type:
         extra.append(f"TYPE {plugin_type}")
