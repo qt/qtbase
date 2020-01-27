@@ -27,6 +27,7 @@
 
 /*!
     \example hellovulkantriangle
+    \meta installpath vulkan
     \ingroup examples-vulkan
     \title Hello Vulkan Triangle Example
     \brief Shows the basics of rendering with QVulkanWindow and the Vulkan API.

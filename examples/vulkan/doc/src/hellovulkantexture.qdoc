@@ -27,6 +27,7 @@
 
 /*!
     \example hellovulkantexture
+    \meta installpath vulkan
     \ingroup examples-vulkan
     \title Hello Vulkan Texture Vulkan Example
     \brief Shows the basics of rendering with textures in a QVulkanWindow.
