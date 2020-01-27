@@ -2215,7 +2215,7 @@ function(qt_add_plugin target)
     set_property(TARGET "${target}" PROPERTY OUTPUT_NAME "${output_name}")
 
     # Add a custom target with the Qt5 qmake name for a more user friendly ninja experience.
-    if(arg_OUTPUT_NAME)
+    if(arg_OUTPUT_NAME AND NOT TARGET "${output_name}")
         add_custom_target("${output_name}")
         add_dependencies("${output_name}" "${target}")
     endif()
