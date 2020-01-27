@@ -101,7 +101,7 @@ public:
         ConnectionTypeHTTP2Direct
     };
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
                                     ConnectionType connectionType = ConnectionTypeHTTP,
                                     QObject *parent = nullptr, QSharedPointer<QNetworkSession> networkSession
@@ -292,7 +292,7 @@ public:
     QSharedPointer<QSslContext> sslContext;
 #endif
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     QSharedPointer<QNetworkSession> networkSession;
 #endif
 

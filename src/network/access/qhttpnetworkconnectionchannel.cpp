@@ -57,7 +57,7 @@
 #    include <QtNetwork/qsslcipher.h>
 #endif
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
 #include "private/qnetworksession_p.h"
 #endif
 
@@ -124,7 +124,7 @@ void QHttpNetworkConnectionChannel::init()
 #else
     socket = new QTcpSocket;
 #endif
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     //push session down to socket
     if (networkSession)
         socket->setProperty("_q_networksession", QVariant::fromValue(networkSession));

@@ -139,7 +139,7 @@ public:
 #endif
     // to emit the signal for all in-flight replies:
     void emitFinishedWithError(QNetworkReply::NetworkError error, const char *message);
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     QSharedPointer<QNetworkSession> networkSession;
 #endif
 
