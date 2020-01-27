@@ -1,7 +1,7 @@
-# Generated from paintedwindow.pro.
+# Generated from openglwindow.pro.
 
 cmake_minimum_required(VERSION 3.14)
-project(paintedwindow LANGUAGES CXX)
+project(openglwindow LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -9,23 +9,27 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples/opengl/paintedwindow")
+set(INSTALL_EXAMPLEDIR "examples/opengl/openglwindow")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS OpenGL)
 
-add_qt_gui_executable(paintedwindow
+add_qt_gui_executable(openglwindow
     main.cpp
-    paintedwindow.cpp paintedwindow.h
+    openglwindow.cpp openglwindow.h
 )
-target_link_libraries(paintedwindow PUBLIC
+target_include_directories(openglwindow PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(openglwindow PUBLIC
     Qt::Core
     Qt::Gui
     Qt::OpenGL
 )
 
-install(TARGETS paintedwindow
+install(TARGETS openglwindow
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"

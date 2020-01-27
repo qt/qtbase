@@ -2,6 +2,7 @@
 
 add_subdirectory(hellowindow)
 add_subdirectory(paintedwindow)
+add_subdirectory(openglwindow)
 add_subdirectory(qopenglwindow)
 if(TARGET Qt::Widgets)
     add_subdirectory(contextinfo)

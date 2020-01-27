@@ -26,3 +26,11 @@ qt_add_module(VulkanSupport
 
 #### Keys ignored in scope 1:.:.:vkconvenience.pro:<TRUE>:
 # MODULE = "vulkan_support"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(VulkanSupport CONDITION QT_FEATURE_opengl
+    PUBLIC_LIBRARIES
+        Qt::OpenGL
+)

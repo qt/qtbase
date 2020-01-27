@@ -6,7 +6,21 @@
 
 qt_add_module(OpenGL
     SOURCES
+        qopengl2pexvertexarray.cpp qopengl2pexvertexarray_p.h
+        qopenglcustomshaderstage.cpp qopenglcustomshaderstage_p.h
         qopengldebug.cpp qopengldebug.h
+        qopenglengineshadermanager.cpp qopenglengineshadermanager_p.h
+        qopenglengineshadersource_p.h
+        qopenglgradientcache.cpp qopenglgradientcache_p.h
+        qopenglpaintdevice.cpp qopenglpaintdevice.h qopenglpaintdevice_p.h
+        qopenglpaintengine.cpp qopenglpaintengine_p.h
+        qopenglpixeltransferoptions.cpp qopenglpixeltransferoptions.h
+        qopenglshadercache_p.h
+        qopengltexture.cpp qopengltexture.h qopengltexture_p.h
+        qopengltexturecache.cpp qopengltexturecache_p.h
+        qopengltextureglyphcache.cpp qopengltextureglyphcache_p.h
+        qopengltexturehelper.cpp qopengltexturehelper_p.h
+        qopengltextureuploader.cpp qopengltextureuploader_p.h
         qopenglwindow.cpp qopenglwindow.h
         qtopenglglobal.h
     DEFINES

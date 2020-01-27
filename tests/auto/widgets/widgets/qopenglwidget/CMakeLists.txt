@@ -10,6 +10,7 @@ add_qt_test(tst_qopenglwidget
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
+        Qt::OpenGLPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::OpenGL

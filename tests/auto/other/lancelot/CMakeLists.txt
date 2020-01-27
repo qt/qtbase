@@ -73,8 +73,13 @@ add_qt_resource(tst_lancelot "images"
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 3:.:../../../baselineserver/shared:../../../baselineserver/shared/qbaselinetest.pri:WIN32:
+extend_target(tst_lancelot CONDITION QT_FEATURE_opengl
+    PUBLIC_LIBRARIES
+        Qt::OpenGL
+)
+
+#### Keys ignored in scope 4:.:../../../baselineserver/shared:../../../baselineserver/shared/qbaselinetest.pri:WIN32:
 # MKSPEC = "$$replace(QMAKESPEC, \\\\, /)"
 
-#### Keys ignored in scope 4:.:../../../baselineserver/shared:../../../baselineserver/shared/qbaselinetest.pri:else:
+#### Keys ignored in scope 5:.:../../../baselineserver/shared:../../../baselineserver/shared/qbaselinetest.pri:else:
 # MKSPEC = "$$QMAKESPEC"

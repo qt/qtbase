@@ -253,28 +253,14 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
         kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h
         kernel/qplatformopenglcontext.cpp kernel/qplatformopenglcontext.h
         opengl/qopengl.cpp opengl/qopengl.h opengl/qopengl_p.h
-        opengl/qopengl2pexvertexarray.cpp opengl/qopengl2pexvertexarray_p.h
         opengl/qopenglbuffer.cpp opengl/qopenglbuffer.h
-        opengl/qopenglcustomshaderstage.cpp opengl/qopenglcustomshaderstage_p.h
-        opengl/qopenglengineshadermanager.cpp opengl/qopenglengineshadermanager_p.h
-        opengl/qopenglengineshadersource_p.h
         opengl/qopenglextensions_p.h
         opengl/qopenglextrafunctions.h
         opengl/qopenglframebufferobject.cpp opengl/qopenglframebufferobject.h opengl/qopenglframebufferobject_p.h
         opengl/qopenglfunctions.cpp opengl/qopenglfunctions.h
-        opengl/qopenglgradientcache.cpp opengl/qopenglgradientcache_p.h
-        opengl/qopenglpaintdevice.cpp opengl/qopenglpaintdevice.h opengl/qopenglpaintdevice_p.h
-        opengl/qopenglpaintengine.cpp opengl/qopenglpaintengine_p.h
-        opengl/qopenglpixeltransferoptions.cpp opengl/qopenglpixeltransferoptions.h
         opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
-        opengl/qopenglshadercache_p.h
         opengl/qopenglshaderprogram.cpp opengl/qopenglshaderprogram.h
-        opengl/qopengltexture.cpp opengl/qopengltexture.h opengl/qopengltexture_p.h
         opengl/qopengltextureblitter.cpp opengl/qopengltextureblitter.h
-        opengl/qopengltexturecache.cpp opengl/qopengltexturecache_p.h
-        opengl/qopengltextureglyphcache.cpp opengl/qopengltextureglyphcache_p.h
-        opengl/qopengltexturehelper.cpp opengl/qopengltexturehelper_p.h
-        opengl/qopengltextureuploader.cpp opengl/qopengltextureuploader_p.h
         opengl/qopenglversionfunctions.cpp opengl/qopenglversionfunctions.h
         opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
         opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h

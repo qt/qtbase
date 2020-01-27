@@ -12,6 +12,7 @@ add_qt_test(tst_qopengl
         Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::OpenGL
 )
 
 ## Scopes:

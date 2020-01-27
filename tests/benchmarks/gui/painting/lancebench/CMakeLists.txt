@@ -148,3 +148,11 @@ add_qt_resource(tst_bench_lancebench "images"
 #### Keys ignored in scope 1:.:.:lancebench.pro:<TRUE>:
 # TEMPLATE = "app"
 # TESTDATA = "../../../../auto/other/lancelot/scripts/*"
+
+## Scopes:
+#####################################################################
+
+extend_target(tst_bench_lancebench CONDITION QT_FEATURE_opengl
+    PUBLIC_LIBRARIES
+        Qt::OpenGL
+)

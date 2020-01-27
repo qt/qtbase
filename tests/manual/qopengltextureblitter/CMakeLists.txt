@@ -15,6 +15,7 @@ add_qt_manual_test(qopengltextureblitter
         Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::OpenGL # special case
 )
 
 #### Keys ignored in scope 1:.:.:qopengltextureblitter.pro:<TRUE>:

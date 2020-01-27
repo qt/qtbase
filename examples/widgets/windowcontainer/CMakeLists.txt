@@ -9,18 +9,25 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/windowcontainer")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS OpenGL)
 
 add_qt_gui_executable(windowcontainer
-    ../../gui/openglwindow/openglwindow.cpp ../../gui/openglwindow/openglwindow.h
+    ../../opengl/openglwindow/openglwindow.cpp ../../opengl/openglwindow/openglwindow.h
     windowcontainer.cpp
 )
 target_include_directories(windowcontainer PUBLIC
-    ../../gui/openglwindow
+    ../../opengl/openglwindow
 )
+
 target_link_libraries(windowcontainer PUBLIC
+    Qt::Core
+    Qt::Gui
+    Qt::OpenGL
     Qt::Widgets
 )
 

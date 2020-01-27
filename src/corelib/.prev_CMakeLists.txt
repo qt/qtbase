@@ -194,6 +194,7 @@ qt_add_module(Core
         tools/qcontainertools_impl.h
         tools/qcontiguouscache.cpp tools/qcontiguouscache.h
         tools/qcryptographichash.cpp tools/qcryptographichash.h
+        tools/qduplicatetracker_p.h
         tools/qflatmap_p.h
         tools/qfreelist.cpp tools/qfreelist_p.h
         tools/qhash.cpp tools/qhash.h
@@ -612,17 +613,18 @@ qt_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXW
         m
 )
 
-qt_extend_target(Core CONDITION APPLE_OSX AND NOT NACL
+qt_extend_target(Core CONDITION APPLE AND NOT NACL
     SOURCES
+        kernel/qelapsedtimer_mac.cpp
         text/qlocale_mac.mm
 )
 
-qt_extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE_OSX)
+qt_extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE)
     SOURCES
         text/qlocale_unix.cpp
 )
 
-qt_extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE_OSX)
+qt_extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE)
     SOURCES
         text/qlocale_win.cpp
 )
@@ -892,11 +894,6 @@ qt_extend_target(Core CONDITION QT_FEATURE_library AND WIN32
 qt_extend_target(Core CONDITION QT_FEATURE_dlopen AND QT_FEATURE_library
     LIBRARIES
         ${CMAKE_DL_LIBS}
-)
-
-qt_extend_target(Core CONDITION APPLE AND NOT NACL
-    SOURCES
-        kernel/qelapsedtimer_mac.cpp
 )
 
 qt_extend_target(Core CONDITION APPLE AND (APPLE_IOS OR APPLE_TVOS)

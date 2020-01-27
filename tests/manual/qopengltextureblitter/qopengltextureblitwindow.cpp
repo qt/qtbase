@@ -29,7 +29,7 @@
 #include "qopengltextureblitwindow.h"
 
 #include <QtGui/QPainter>
-#include <QtGui/QOpenGLTexture>
+#include <QtOpenGL/QOpenGLTexture>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QMatrix4x4>
 
