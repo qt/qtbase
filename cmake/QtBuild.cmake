@@ -1827,6 +1827,21 @@ function(qt_add_module target)
 set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
 
+    # Generate metatypes
+    set(QT_MODULE_HAS_META_TYPES_FILE FALSE)
+    if (${arg_GENERATE_METATYPES})
+        set(QT_MODULE_HAS_META_TYPES_FILE TRUE)
+        set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
+        set(args)
+        if (NOT QT_WILL_INSTALL)
+            set(args COPY_OVER_INSTALL INSTALL_DIR "${QT_BUILD_DIR}/${metatypes_install_dir}")
+        else()
+            set(args INSTALL_DIR "${metatypes_install_dir}")
+        endif()
+        qt6_generate_meta_types_json_file(${target} ${args})
+        get_target_property(QT_MODULE_META_TYPES_FILE ${target} INTERFACE_QT_META_TYPES_INSTALL_FILE)
+        get_target_property(QT_MODULE_META_TYPES_DEP_FILE ${target} INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE)
+    endif()
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
@@ -1933,26 +1948,6 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 
     qt_describe_module(${target})
 
-    # Generate metatypes
-    if (${arg_GENERATE_METATYPES})
-        qt6_generate_meta_types_json_file(${target})
-        get_target_property(target_metatypes_file ${target} QT_MODULE_META_TYPES_FILE)
-        if (target_metatypes_file)
-            set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
-            qt_install(FILES ${target_metatypes_file}
-                DESTINATION ${metatypes_install_dir}
-            )
-            # For non prefix builds
-            if(NOT QT_WILL_INSTALL)
-                get_filename_component(file_name ${target_metatypes_file} NAME)
-                set(copy_destination ${QT_BUILD_DIR}/${metatypes_install_dir}/${file_name})
-                add_custom_command(TARGET ${target} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND}
-                    -E copy_if_different ${target_metatypes_file} ${copy_destination}
-                )
-            endif()
-        endif()
-    endif()
 endfunction()
 
 function(qt_export_tools module_name)

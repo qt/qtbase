@@ -44,3 +44,25 @@ if(NOT _qt_module_target_type STREQUAL "INTERFACE_LIBRARY")
         list(APPEND QT_ALL_PLUGIN_TYPES_FOUND_VIA_FIND_PACKAGE "${_qt_module_plugin_types}")
     endif()
 endif()
+
+# Apply meta types properties
+if (@QT_MODULE_HAS_META_TYPES_FILE@)
+    if (NOT QT_NO_CREATE_TARGETS)
+        set_target_properties("@INSTALL_CMAKE_NAMESPACE@::@target@" PROPERTIES
+            INTERFACE_QT_MODULE_HAS_META_TYPES TRUE
+            INTERFACE_QT_META_TYPES_INSTALL_FILE "@QT_MODULE_META_TYPES_FILE@"
+            INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE "@QT_MODULE_META_TYPES_DEP_FILE@"
+        )
+    endif()
+
+    if (NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
+        get_target_property(is_alias_target "Qt::@target@" ALIASED_TARGET)
+        if (NOT is_alias_target)
+            set_target_properties("Qt::@target@" PROPERTIES
+                INTERFACE_QT_MODULE_HAS_META_TYPES TRUE
+                INTERFACE_QT_META_TYPES_INSTALL_FILE "@QT_MODULE_META_TYPES_FILE@"
+                INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE "@QT_MODULE_META_TYPES_DEP_FILE@"
+            )
+        endif()
+    endif()
+endif()

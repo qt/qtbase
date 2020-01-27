@@ -586,8 +586,122 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+# Generate metatypes dependency file. This function extracts the list of
+# metatypes files as well as the dependency file from the direct library
+# dependencies of a target via generator expressions.
+# Parameters:
+#   dep_file: Location where to generate the dependency file for build time
+#   dependencies.
+#   dep_file_install: Location where to generate the dependency file which
+#   is expected to be installed.
+function(qt6_generate_meta_types_dep_file target dep_file dep_file_install)
+    # Due to generator expressions it is not possible to recursively evaluate
+    # the LINK_LIBRARIES of target. Therefore we generate a dependency file for
+    # every module with metatypes which can be evaluated at build time.
+    # When generating this file we need to take into account that there are two
+    # levels at which dependencies can be expressed: build and install.
+    # Build dependencies refer to targets which are being built along side the
+    # original target. These targets' install dependencies are not available
+    # at this point in time. We set a special property on these targets that's
+    # only available at build time.
+    # Install dependencies refer to targets which are found via a find_package()
+    # call.
+    # Both install and build targets have the
+    # INTERFACE_QT_META_TYPES_INSTALL_[DEP_FILE|FILE]. When building the target,
+    # INTERFACE_QT_META_TYPES_INSTALL_... refer to the expected install
+    # directory to be appended to CMAKE_INSTALL_PREFIX.
+    # Only build target have the INTERFACE_QT_META_TYPES_[DEP_FILE|FILE] which
+    # point to the files that have been produced during build time.
+    # Finally, to make sure the targets actually have a metatypes files, we
+    # check if they have the INTERFACE_QT_MODULE_HAS_META_TYPES property.
+    #
+    # Note: All properties start with INTERFACE_ since it is the only way to
+    # set properties on interface targets that get generated in the
+    # QtModuleConfig.in
+    #
+    get_target_property(link_dependencies ${target} LINK_LIBRARIES)
+    set(prop_dep "INTERFACE_QT_META_TYPES_BUILD_DEP_FILE")
+    set(prop_file "INTERFACE_QT_META_TYPES_BUILD_FILE")
+    set(prop_file_install "INTERFACE_QT_META_TYPES_INSTALL_FILE")
+    set(prop_dep_install "INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE")
+    set(prop_is_local "INTERFACE_QT_MODULE_META_TYPES_FROM_BUILD")
+    set(prop_has_metatypes "INTERFACE_QT_MODULE_HAS_META_TYPES")
 
+    set(gen_exp "")
+    set(gen_exp_install "")
+    foreach(dep IN LISTS link_dependencies)
+        # replace LINK_ONLY with true, or we will get an error evaluating that
+        # generator expression
+        string(REPLACE "$<LINK_ONLY:" "$<1:" genex_target "$<GENEX_EVAL:${dep}>")
+        string(REPLACE "$<TARGET_OBJECTS:" "$<1:" genex_target "${genex_target}")
+        set(genex_check_is_local
+            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_is_local}>>"
+        )
+        set(genex_is_target "$<TARGET_EXISTS:$<IF:$<BOOL:${genex_target}>,${genex_target},-NOTFOUND>>")
+        set(genex_has_metatypes
+            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_has_metatypes}>>"
+        )
+        set(genex_get_metatypes
+            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_file}>>"
+        )
+        set(genex_get_metatypes_dep
+            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_dep}>>"
+        )
+        set(genex_get_metatypes_install
+            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_file_install}>>"
+        )
+        set(genex_get_metatypes_install_dep
+            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_dep_install}>>"
+        )
+        set(get_local_or_install
+            "$<IF:$<BOOL:${genex_check_is_local}>,${genex_get_metatypes}=${genex_get_metatypes_dep},${genex_get_metatypes_install}=${genex_get_metatypes_install_dep}>"
+        )
+
+        list(APPEND gen_exp
+            "$<$<AND:$<BOOL:${genex_target}>,$<BOOL:${genex_has_metatypes}>>:${get_local_or_install}>"
+        )
+
+        list(APPEND gen_exp_install
+            "$<$<AND:$<BOOL:${genex_target}>,$<BOOL:${genex_get_metatypes_install}>>:${genex_get_metatypes_install}=${genex_get_metatypes_install_dep}>"
+        )
+    endforeach()
+
+    file(GENERATE
+        OUTPUT "${dep_file}"
+        CONTENT "$<JOIN:$<GENEX_EVAL:${gen_exp}>,\n>"
+    )
+
+    file(GENERATE
+        OUTPUT "${dep_file_install}"
+        CONTENT "$<JOIN:$<GENEX_EVAL:${gen_exp_install}>,\n>"
+    )
+endfunction()
+
+#
+# Generate Qt metatypes.json for a target
+# Params:
+#   INSTALL_DIR: Location where to install the metatypes file (Optional)
+#   COPY_OVER_INSTALL: When present will install the file via a post build step
+#   copy rather than using install
 function(qt6_generate_meta_types_json_file target)
+
+    cmake_parse_arguments(arg "COPY_OVER_INSTALL" "INSTALL_DIR" "" ${ARGN})
+
+    if (NOT QT_BUILDING_QT)
+        if (NOT arg_INSTALL_DIR)
+            message(FATAL_ERROR "Please specify an install directory using INSTALL_DIR")
+        endif()
+    else()
+        # Automatically fill install args when building qt
+        set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
+        set(args)
+        if (NOT QT_WILL_INSTALL)
+            set(arg_COPY_OVER_INSTALL TRUE)
+        endif()
+        if (NOT arg_INSTALL_DIR)
+            set(arg_INSTALL_DIR "${metatypes_install_dir}")
+        endif()
+    endif()
 
     get_target_property(target_type ${target} TYPE)
     if (target_type STREQUAL "INTERFACE_LIBRARY" OR CMAKE_VERSION VERSION_LESS "3.16.0")
@@ -596,7 +710,7 @@ function(qt6_generate_meta_types_json_file target)
         return()
     endif()
 
-    get_target_property(existing_meta_types_file ${target} QT_MODULE_META_TYPES_FILE)
+    get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
     if (existing_meta_types_file)
         return()
     endif()
@@ -640,7 +754,13 @@ function(qt6_generate_meta_types_json_file target)
     else()
         string(TOLOWER ${target} target_lowercase)
     endif()
-    set(metatypes_file "${target_binary_dir}/meta_types/qt6${target_lowercase}_metatypes.json")
+
+    set(metatypes_file_name "qt6${target_lowercase}_metatypes.json")
+    set(metatypes_file "${target_binary_dir}/meta_types/${metatypes_file_name}")
+
+    set(metatypes_dep_file_name "qt6${target_lowercase}_metatypes_dep.txt")
+    set(metatypes_dep_file "${target_binary_dir}/meta_types/${metatypes_dep_file_name}")
+
     add_custom_command(OUTPUT ${metatypes_file}
         DEPENDS ${type_list_file}
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc
@@ -652,9 +772,40 @@ function(qt6_generate_meta_types_json_file target)
     target_sources(${target} PRIVATE ${metatypes_file})
     set_source_files_properties(${metatypes_file} PROPERTIES HEADER_FILE_ONLY TRUE)
 
+    # Set the required properties. See documentation of
+    # qt6_generate_meta_types_dep_file()
     set_target_properties(${target} PROPERTIES
-        QT_MODULE_META_TYPES_FILE ${metatypes_file}
-     )
+        INTERFACE_QT_MODULE_HAS_META_TYPES YES
+        INTERFACE_QT_MODULE_META_TYPES_FROM_BUILD YES
+        INTERFACE_QT_META_TYPES_BUILD_FILE ${metatypes_file}
+        INTERFACE_QT_META_TYPES_BUILD_DEP_FILE ${metatypes_dep_file}
+        INTERFACE_QT_META_TYPES_INSTALL_FILE "${arg_INSTALL_DIR}/${metatypes_file_name}"
+        INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE "${arg_INSTALL_DIR}/${metatypes_dep_file_name}"
+    )
+
+    qt6_generate_meta_types_dep_file(${target}
+        "${metatypes_dep_file}"
+        "${metatypes_dep_file}.install"
+   )
+
+    if (arg_COPY_OVER_INSTALL)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${metatypes_file}"
+                "${arg_INSTALL_DIR}/${metatypes_file_name}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${metatypes_dep_file}.install"
+                "${arg_INSTALL_DIR}/${metatypes_dep_file_name}"
+           )
+    else()
+        install(FILES "${metatypes_file}"
+            DESTINATION "${arg_INSTALL_DIR}"
+        )
+        install(FILES "${metatypes_dep_file}.install"
+            DESTINATION "${arg_INSTALL_DIR}"
+            RENAME "${metatypes_dep_file_name}"
+        )
+    endif()
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
