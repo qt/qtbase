@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -105,6 +105,8 @@ void tst_QCollator::compare_data()
     QTest::newRow("english6") << QString("en_US") << QString("test 9") << QString("test_19") << -1 << -1 << true << true << -1;
     QTest::newRow("english7") << QString("en_US") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
     QTest::newRow("english8") << QString("en_US") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
+    QTest::newRow("en-empty-word") << QString("en_US") << QString() << QString("non-empty") << -1 << -1 << false << true << -1;
+    QTest::newRow("en-empty-number") << QString("en_US") << QString() << QString("42") << -1 << -1 << true << true << -1;
 
     /*
         In Swedish, a with ring above (E5) comes before a with
@@ -119,6 +121,8 @@ void tst_QCollator::compare_data()
     QTest::newRow("swedish6") << QString("sv_SE") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
     QTest::newRow("swedish7") << QString("sv_SE") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
     QTest::newRow("swedish8") << QString("sv_SE") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
+    QTest::newRow("sv-empty-word") << QString("sv_SE") << QString() << QString("mett") << -1 << -1 << false << true << -1;
+    QTest::newRow("sv-empty-number") << QString("sv_SE") << QString() << QString("42") << -1 << -1 << true << true << -1;
 
 
     /*
@@ -133,6 +137,8 @@ void tst_QCollator::compare_data()
     QTest::newRow("norwegian6") << QString("no_NO") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
     QTest::newRow("norwegian7") << QString("no_NO") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
     QTest::newRow("norwegian8") << QString("no_NO") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
+    QTest::newRow("nb-empty-word") << QString("nb_NO") << QString() << QString("mett") << -1 << -1 << false << true << -1;
+    QTest::newRow("nb-empty-number") << QString("nb_NO") << QString() << QString("42") << -1 << -1 << true << true << -1;
 
     /*
         In German, z comes *after* a with diaresis (E4),
@@ -151,6 +157,8 @@ void tst_QCollator::compare_data()
     QTest::newRow("german11") << QString("de_DE") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
     QTest::newRow("german12") << QString("de_DE") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
     QTest::newRow("german13") << QString("de_DE") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
+    QTest::newRow("de-empty-word") << QString("de_DE") << QString() << QString("satt") << -1 << -1 << false << true << -1;
+    QTest::newRow("de-empty-number") << QString("de_DE") << QString() << QString("42") << -1 << -1 << true << true << -1;
 
     /*
         French sorting of e and e with acute accent
@@ -163,11 +171,15 @@ void tst_QCollator::compare_data()
     QTest::newRow("french6") << QString("fr_FR") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
     QTest::newRow("french7") << QString("fr_FR") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
     QTest::newRow("french8") << QString("fr_FR") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
+    QTest::newRow("fr-empty-word") << QString("fr_FR") << QString() << QString("plein") << -1 << -1 << false << true << -1;
+    QTest::newRow("fr-empty-number") << QString("fr_FR") << QString() << QString("42") << -1 << -1 << true << true << -1;
 
     // C locale: case sensitive [A-Z] < [a-z] but case insensitive [Aa] < [Bb] <...< [Zz]
     const QString C = QStringLiteral("C");
     QTest::newRow("C:ABBA:AaaA") << C << QStringLiteral("ABBA") << QStringLiteral("AaaA") << -1 << 1 << false << false << 1;
     QTest::newRow("C:AZa:aAZ") << C << QStringLiteral("AZa") << QStringLiteral("aAZ") << -1 << 1 << false << false << 1;
+    QTest::newRow("C-empty-word") << QString(C) << QString() << QString("non-empty") << -1 << -1 << false << true << -1;
+    QTest::newRow("C-empty-number") << QString(C) << QString() << QString("42") << -1 << -1 << true << true << -1;
 }
 
 void tst_QCollator::compare()
