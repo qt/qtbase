@@ -2119,7 +2119,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
-            QBrush editBrush = cmb->palette.brush(QPalette::Base);
+            QBrush editBrush = cmb->palette.brush(QPalette::Button);
             if ((cmb->subControls & SC_ComboBoxFrame)) {
                 if (cmb->frame) {
                     QPalette shadePal = opt->palette;
