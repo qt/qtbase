@@ -614,7 +614,7 @@ void QThread::run()
     priority.
 
     The \a priority argument can be any value in the \c
-    QThread::Priority enum except for \c InheritPriorty.
+    QThread::Priority enum except for \c InheritPriority.
 
     The effect of the \a priority parameter is dependent on the
     operating system's scheduling policy. In particular, the \a priority
@@ -626,6 +626,10 @@ void QThread::run()
 */
 void QThread::setPriority(Priority priority)
 {
+    if (priority == QThread::InheritPriority) {
+        qWarning("QThread::setPriority: Argument cannot be InheritPriority");
+        return;
+    }
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
     if (!d->running) {
