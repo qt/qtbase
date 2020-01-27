@@ -665,7 +665,7 @@ static inline bool isFullyOpaque(const XPThemeData &themeData)
     \note drawBackgroundThruNativeBuffer() can return false for large
     sizes due to buffer()/CreateDIBSection() failing.
 */
-bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
+bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData, qreal correctionFactor)
 {
     if (themeData.rect.isEmpty())
         return true;
@@ -710,9 +710,9 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     }
 
     const HDC dc = canDrawDirectly ? hdcForWidgetBackingStore(themeData.widget) : nullptr;
-    const bool result = dc
+    const bool result = dc && qFuzzyCompare(correctionFactor, qreal(1))
         ? drawBackgroundDirectly(dc, themeData, aditionalDevicePixelRatio)
-        : drawBackgroundThruNativeBuffer(themeData, aditionalDevicePixelRatio);
+        : drawBackgroundThruNativeBuffer(themeData, aditionalDevicePixelRatio, correctionFactor);
     painter->restore();
     return result;
 }
@@ -786,9 +786,14 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(HDC dc, XPThemeData &themeDa
     other pixmaps etc), or when special transformations are needed (e.g.
     flips (horizonal mirroring only, vertical are handled by the theme
     engine).
+
+    \a correctionFactor is an additional factor used to scale up controls
+    that are too small on High DPI screens, as has been observed for
+    WP_MDICLOSEBUTTON, WP_MDIRESTOREBUTTON, WP_MDIMINBUTTON (QTBUG-75927).
 */
 bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeData,
-                                                            qreal additionalDevicePixelRatio)
+                                                            qreal additionalDevicePixelRatio,
+                                                            qreal correctionFactor)
 {
     QPainter *painter = themeData.painter;
     QRectF rectF = scaleRect(QRectF(themeData.rect), additionalDevicePixelRatio);
@@ -797,7 +802,11 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         rectF = QRectF(0, 0, rectF.height(), rectF.width());
     }
     rectF.moveTo(0, 0);
+
+    const bool hasCorrectionFactor = !qFuzzyCompare(correctionFactor, qreal(1));
     QRect rect = rectF.toRect();
+    QRect drawRect = hasCorrectionFactor
+        ? QRectF(rectF.topLeft() / correctionFactor, rectF.size() / correctionFactor).toRect() : rect;
     int partId = themeData.partId;
     int stateId = themeData.stateId;
     int w = rect.width();
@@ -826,6 +835,10 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     pixmapCacheKey.append(QLatin1Char('h'));
     pixmapCacheKey.append(QString::number(additionalDevicePixelRatio));
     pixmapCacheKey.append(QLatin1Char('d'));
+    if (hasCorrectionFactor) {
+        pixmapCacheKey.append(QLatin1Char('c'));
+        pixmapCacheKey.append(QString::number(correctionFactor));
+    }
 
     QPixmap cachedPixmap;
     ThemeMapKey key(themeData);
@@ -884,7 +897,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     // and DTGB_OMITCONTENT
     bool addBorderContentClipping = false;
     QRegion extraClip;
-    QRect area = rect;
+    QRect area = drawRect;
     if (themeData.noBorder || themeData.noContent) {
         extraClip = area;
         // We are running on a system where the uxtheme.dll does not have
@@ -915,19 +928,19 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
 
     QImage img;
     if (!haveCachedPixmap) { // If the pixmap is not cached, generate it! -------------------------
-        if (!buffer(w, h)) // Ensure a buffer of at least (w, h) in size
+        if (!buffer(drawRect.width(), drawRect.height())) // Ensure a buffer of at least (w, h) in size
             return false;
         HDC dc = bufferHDC();
 
         // Clear the buffer
         if (alphaType != NoAlpha) {
             // Consider have separate "memset" function for small chunks for more speedup
-            memset(bufferPixels, 0x00, bufferW * h * 4);
+            memset(bufferPixels, 0x00, bufferW * drawRect.height() * 4);
         }
 
         // Difference between area and rect
-        int dx = area.x() - rect.x();
-        int dy = area.y() - rect.y();
+        int dx = area.x() - drawRect.x();
+        int dy = area.y() - drawRect.y();
 
         // Adjust so painting rect starts from Origo
         rect.moveTo(0,0);
@@ -957,7 +970,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
             if (!hasAlpha && partIsTransparent)
                 potentialInvalidAlpha = true;
 #if defined(DEBUG_XP_STYLE) && 1
-            dumpNativeDIB(w, h);
+            dumpNativeDIB(drawRect.width(), drawRect.height());
 #endif
         }
 
@@ -985,6 +998,8 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         printf("Image format is: %s\n", alphaType == RealAlpha ? "Real Alpha" : alphaType == MaskAlpha ? "Masked Alpha" : "No Alpha");
 #endif
         img = QImage(bufferPixels, bufferW, bufferH, format);
+        if (hasCorrectionFactor)
+            img = img.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         img.setDevicePixelRatio(additionalDevicePixelRatio);
     }
 
@@ -2482,6 +2497,20 @@ static void populateMdiButtonTheme(const QStyle *proxy, const QWidget *widget,
         else
             theme->stateId = CBS_NORMAL;
 }
+
+// Calculate an small (max 2), empirical correction factor for scaling up
+// WP_MDICLOSEBUTTON, WP_MDIRESTOREBUTTON, WP_MDIMINBUTTON, which are too
+// small on High DPI screens (QTBUG-75927).
+qreal mdiButtonCorrectionFactor(XPThemeData &theme, const QPaintDevice *pd = nullptr)
+{
+    const auto dpr = pd ? pd->devicePixelRatioF() : qApp->devicePixelRatio();
+    const QSizeF nativeSize = QSizeF(theme.size()) / dpr;
+    const QSizeF requestedSize(theme.rect.size());
+    const auto rawFactor = qMin(requestedSize.width() / nativeSize.width(),
+                                requestedSize.height() / nativeSize.height());
+    const auto factor = rawFactor >= qreal(2) ? qreal(2) : qreal(1);
+    return factor;
+}
 #endif // QT_CONFIG(mdiarea)
 
 static void populateTitleBarButtonTheme(const QStyle *proxy, const QWidget *widget,
@@ -3114,15 +3143,15 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
             if (option->subControls.testFlag(SC_MdiCloseButton)) {
                 populateMdiButtonTheme(proxy(), widget, option, SC_MdiCloseButton, WP_MDICLOSEBUTTON, &theme);
-                d->drawBackground(theme);
+                d->drawBackground(theme, mdiButtonCorrectionFactor(theme, widget));
             }
             if (option->subControls.testFlag(SC_MdiNormalButton)) {
                 populateMdiButtonTheme(proxy(), widget, option, SC_MdiNormalButton, WP_MDIRESTOREBUTTON, &theme);
-                d->drawBackground(theme);
+                d->drawBackground(theme, mdiButtonCorrectionFactor(theme, widget));
             }
             if (option->subControls.testFlag(QStyle::SC_MdiMinButton)) {
                 populateMdiButtonTheme(proxy(), widget, option, SC_MdiMinButton, WP_MDIMINBUTTON, &theme);
-                d->drawBackground(theme);
+                d->drawBackground(theme, mdiButtonCorrectionFactor(theme, widget));
             }
         }
         break;

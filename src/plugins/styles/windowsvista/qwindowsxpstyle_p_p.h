@@ -241,8 +241,8 @@ public:
     bool isTransparent(XPThemeData &themeData);
     QRegion region(XPThemeData &themeData);
 
-    bool drawBackground(XPThemeData &themeData);
-    bool drawBackgroundThruNativeBuffer(XPThemeData &themeData, qreal aditionalDevicePixelRatio);
+    bool drawBackground(XPThemeData &themeData, qreal correctionFactor = 1);
+    bool drawBackgroundThruNativeBuffer(XPThemeData &themeData, qreal aditionalDevicePixelRatio, qreal correctionFactor);
     bool drawBackgroundDirectly(HDC dc, XPThemeData &themeData, qreal aditionalDevicePixelRatio);
 
     bool hasAlphaChannel(const QRect &rect);
