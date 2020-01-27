@@ -42,8 +42,6 @@
 #include <QtNetwork/QHostInfo>
 #include <stdlib.h>
 
-typedef void (QProcess::*QProcessFinishedSignal1)(int);
-typedef void (QProcess::*QProcessFinishedSignal2)(int, QProcess::ExitStatus);
 typedef void (QProcess::*QProcessErrorSignal)(QProcess::ProcessError);
 
 class tst_QProcess : public QObject
@@ -152,7 +150,6 @@ private slots:
     void failToStartEmptyArgs();
 
 #if QT_DEPRECATED_SINCE(5, 13)
-    void crashTest2_deprecated();
     void restartProcessDeadlock_deprecated();
     void waitForReadyReadInAReadyReadSlot_deprecated();
     void finishProcessBeforeReadingDone_deprecated();
@@ -350,7 +347,7 @@ void tst_QProcess::crashTest()
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
     QSignalSpy spy(process.data(), &QProcess::errorOccurred);
-    QSignalSpy spy2(process.data(), static_cast<QProcessFinishedSignal2>(&QProcess::finished));
+    QSignalSpy spy2(process.data(), &QProcess::finished);
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
 
@@ -393,13 +390,12 @@ void tst_QProcess::crashTest2()
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
     QSignalSpy spy(&process, static_cast<QProcessErrorSignal>(&QProcess::errorOccurred));
-    QSignalSpy spy2(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
+    QSignalSpy spy2(&process, &QProcess::finished);
 
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
 
-    QObject::connect(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished),
-                     this, &tst_QProcess::exitLoopSlot);
+    QObject::connect(&process, &QProcess::finished, this, &tst_QProcess::exitLoopSlot);
 
     QTestEventLoop::instance().enterLoop(30);
     if (QTestEventLoop::instance().timeout())
@@ -724,15 +720,14 @@ void tst_QProcess::restartProcessDeadlock()
     // process in the finished() connected slot causes a deadlock
     // because of the way QProcessManager uses its locks.
     QProcess process;
-    connect(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished),
-            this, &tst_QProcess::restartProcess);
+    connect(&process, &QProcess::finished, this, &tst_QProcess::restartProcess);
 
     process.start("testProcessEcho/testProcessEcho");
 
     QCOMPARE(process.write("", 1), qlonglong(1));
     QVERIFY(process.waitForFinished(5000));
 
-    QObject::disconnect(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished), nullptr, nullptr);
+    QObject::disconnect(&process, &QProcess::finished, nullptr, nullptr);
 
     QCOMPARE(process.write("", 1), qlonglong(1));
     QVERIFY(process.waitForFinished(5000));
@@ -931,8 +926,7 @@ public:
 
     SoftExitProcess(int n) : waitedForFinished(false), n(n), killing(false)
     {
-        connect(this, static_cast<QProcessFinishedSignal2>(&QProcess::finished),
-                this, &SoftExitProcess::finishedSlot);
+        connect(this, &QProcess::finished, this, &SoftExitProcess::finishedSlot);
 
         switch (n) {
         case 0:
@@ -1177,8 +1171,7 @@ protected:
         exitCode = 90210;
 
         QProcess process;
-        connect(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished),
-                this, &TestThread::catchExitCode, Qt::DirectConnection);
+        connect(&process, &QProcess::finished, this, &TestThread::catchExitCode, Qt::DirectConnection);
 
         process.start("testProcessEcho/testProcessEcho");
 
@@ -1251,8 +1244,7 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
 {
     QProcess process;
     connect(&process, &QIODevice::readyRead, this, &tst_QProcess::waitForReadyReadInAReadyReadSlotSlot);
-    connect(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished),
-            this, &tst_QProcess::exitLoopSlot);
+    connect(&process, &QProcess::finished, this, &tst_QProcess::exitLoopSlot);
     bytesAvailable = 0;
 
     process.start("testProcessEcho/testProcessEcho");
@@ -1490,7 +1482,7 @@ void tst_QProcess::failToStart()
     QProcess process;
     QSignalSpy stateSpy(&process, &QProcess::stateChanged);
     QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
-    QSignalSpy finishedSpy(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
+    QSignalSpy finishedSpy(&process, &QProcess::finished);
     QVERIFY(stateSpy.isValid());
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy.isValid());
@@ -1498,10 +1490,6 @@ void tst_QProcess::failToStart()
 #if QT_DEPRECATED_SINCE(5, 6)
     QSignalSpy errorSpy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
     QVERIFY(errorSpy2.isValid());
-#endif
-#if QT_DEPRECATED_SINCE(5, 13)
-    QSignalSpy finishedSpy2(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished));
-    QVERIFY(finishedSpy2.isValid());
 #endif
 
 // OS X and HP-UX have a really low default process limit (~100), so spawning
@@ -1548,9 +1536,6 @@ void tst_QProcess::failToStart()
 #if QT_DEPRECATED_SINCE(5, 6)
             QCOMPARE(errorSpy2.count(), j * attempts + i + 1);
 #endif
-#if QT_DEPRECATED_SINCE(5, 13)
-            QCOMPARE(finishedSpy2.count(), 0);
-#endif
 
             int it = j * attempts + i + 1;
 
@@ -1569,17 +1554,13 @@ void tst_QProcess::failToStartWithWait()
     QProcess process;
     QEventLoop loop;
     QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
-    QSignalSpy finishedSpy(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
+    QSignalSpy finishedSpy(&process, &QProcess::finished);
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy.isValid());
 
 #if QT_DEPRECATED_SINCE(5, 6)
     QSignalSpy errorSpy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
     QVERIFY(errorSpy2.isValid());
-#endif
-#if QT_DEPRECATED_SINCE(5, 13)
-    QSignalSpy finishedSpy2(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished));
-    QVERIFY(finishedSpy2.isValid());
 #endif
 
     for (int i = 0; i < 50; ++i) {
@@ -1592,10 +1573,6 @@ void tst_QProcess::failToStartWithWait()
 #if QT_DEPRECATED_SINCE(5, 6)
         QCOMPARE(errorSpy2.count(), i + 1);
 #endif
-#if QT_DEPRECATED_SINCE(5, 13)
-        QCOMPARE(finishedSpy2.count(), 0);
-#endif
-
     }
 }
 
@@ -1607,17 +1584,13 @@ void tst_QProcess::failToStartWithEventLoop()
     QProcess process;
     QEventLoop loop;
     QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
-    QSignalSpy finishedSpy(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
+    QSignalSpy finishedSpy(&process, &QProcess::finished);
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy.isValid());
 
 #if QT_DEPRECATED_SINCE(5, 6)
     QSignalSpy errorSpy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
     QVERIFY(errorSpy2.isValid());
-#endif
-#if QT_DEPRECATED_SINCE(5, 13)
-    QSignalSpy finishedSpy2(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished));
-    QVERIFY(finishedSpy2.isValid());
 #endif
 
     // The error signal may be emitted before start() returns
@@ -1634,9 +1607,6 @@ void tst_QProcess::failToStartWithEventLoop()
         QCOMPARE(finishedSpy.count(), 0);
 #if QT_DEPRECATED_SINCE(5, 6)
         QCOMPARE(errorSpy2.count(), i + 1);
-#endif
-#if QT_DEPRECATED_SINCE(5, 13)
-        QCOMPARE(finishedSpy2.count(), 0);
 #endif
     }
 }
@@ -1912,17 +1882,13 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
 
     QProcess process;
     QSignalSpy errorSpy(&process, &QProcess::errorOccurred);
-    QSignalSpy finishedSpy(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
+    QSignalSpy finishedSpy(&process, &QProcess::finished);
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy.isValid());
 
 #if QT_DEPRECATED_SINCE(5, 6)
     QSignalSpy errorSpy2(&process, static_cast<QProcessErrorSignal>(&QProcess::error));
         QVERIFY(errorSpy2.isValid());
-#endif
-#if QT_DEPRECATED_SINCE(5, 13)
-    QSignalSpy finishedSpy1(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished));
-    QVERIFY(finishedSpy1.isValid());
 #endif
 
     QVERIFY(!process.waitForReadyRead()); // used to crash
@@ -1934,9 +1900,6 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
 #if QT_DEPRECATED_SINCE(5, 6)
     QCOMPARE(errorSpy2.count(), 1);
     QCOMPARE(errorSpy2.at(0).at(0).toInt(), 0);
-#endif
-#if QT_DEPRECATED_SINCE(5, 13)
-    QCOMPARE(finishedSpy1.count(), 0);
 #endif
 }
 
@@ -2390,7 +2353,7 @@ void tst_QProcess::onlyOneStartedSignal()
     QProcess process;
 
     QSignalSpy spyStarted(&process,  &QProcess::started);
-    QSignalSpy spyFinished(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
+    QSignalSpy spyFinished(&process, &QProcess::finished);
 
     QVERIFY(spyStarted.isValid());
     QVERIFY(spyFinished.isValid());
@@ -2433,8 +2396,7 @@ void tst_QProcess::finishProcessBeforeReadingDone()
     QProcess process;
     BlockOnReadStdOut blocker(&process);
     QEventLoop loop;
-    connect(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished),
-            &loop, &QEventLoop::quit);
+    connect(&process, &QProcess::finished, &loop, &QEventLoop::quit);
     process.start("testProcessOutput/testProcessOutput");
     QVERIFY(process.waitForStarted());
     loop.exec();
@@ -2581,52 +2543,20 @@ void tst_QProcess::processEventsInAReadyReadSlot()
 
 #if QT_DEPRECATED_SINCE(5, 13)
 
-void tst_QProcess::crashTest2_deprecated()
-{
-    QProcess process;
-    process.start("testProcessCrash/testProcessCrash");
-    QVERIFY(process.waitForStarted(5000));
-
-    qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
-    qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
-
-    QSignalSpy spy(&process, static_cast<QProcessErrorSignal>(&QProcess::errorOccurred));
-    QSignalSpy spy2(&process, static_cast<QProcessFinishedSignal2>(&QProcess::finished));
-
-    QVERIFY(spy.isValid());
-    QVERIFY(spy2.isValid());
-
-    QObject::connect(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
-                     this, &tst_QProcess::exitLoopSlot);
-
-    QTestEventLoop::instance().enterLoop(30);
-    if (QTestEventLoop::instance().timeout())
-        QFAIL("Failed to detect crash : operation timed out");
-
-    QCOMPARE(spy.count(), 1);
-    QCOMPARE(*static_cast<const QProcess::ProcessError *>(spy.at(0).at(0).constData()), QProcess::Crashed);
-
-    QCOMPARE(spy2.count(), 1);
-    QCOMPARE(*static_cast<const QProcess::ExitStatus *>(spy2.at(0).at(1).constData()), QProcess::CrashExit);
-
-    QCOMPARE(process.exitStatus(), QProcess::CrashExit);
-}
-
 void tst_QProcess::restartProcessDeadlock_deprecated()
 {
     // The purpose of this test is to detect whether restarting a
     // process in the finished() connected slot causes a deadlock
     // because of the way QProcessManager uses its locks.
     QProcess process;
-    connect(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
-            this, &tst_QProcess::restartProcess);
+    connect(&process, &QProcess::finished, this, &tst_QProcess::restartProcess);
 
     process.start("testProcessEcho/testProcessEcho");
 
     QCOMPARE(process.write("", 1), qlonglong(1));
     QVERIFY(process.waitForFinished(5000));
 
-    QObject::disconnect(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished), nullptr, nullptr);
+    QObject::disconnect(&process, &QProcess::finished, nullptr, nullptr);
 
     QCOMPARE(process.write("", 1), qlonglong(1));
     QVERIFY(process.waitForFinished(5000));
@@ -2638,8 +2568,7 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot_deprecated()
 {
     QProcess process;
     connect(&process, &QIODevice::readyRead, this, &tst_QProcess::waitForReadyReadInAReadyReadSlotSlot);
-    connect(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
-            this, &tst_QProcess::exitLoopSlot);
+    connect(&process, &QProcess::finished, this, &tst_QProcess::exitLoopSlot);
     bytesAvailable = 0;
 
     process.start("testProcessEcho/testProcessEcho");
@@ -2665,8 +2594,7 @@ void tst_QProcess::finishProcessBeforeReadingDone_deprecated()
     QProcess process;
     BlockOnReadStdOut blocker(&process);
     QEventLoop loop;
-    connect(&process, static_cast<QProcessFinishedSignal1>(&QProcess::finished),
-            &loop, &QEventLoop::quit);
+    connect(&process, &QProcess::finished, &loop, &QEventLoop::quit);
     process.start("testProcessOutput/testProcessOutput");
     QVERIFY(process.waitForStarted());
     loop.exec();

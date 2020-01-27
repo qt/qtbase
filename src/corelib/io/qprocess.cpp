@@ -810,16 +810,6 @@ void QProcessPrivate::Channel::clear()
     \a newState argument is the state QProcess changed to.
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn void QProcess::finished(int exitCode)
-    \obsolete
-    \overload
-
-    Use finished(int exitCode, QProcess::ExitStatus status) instead.
-*/
-#endif
-
 /*!
     \fn void QProcess::finished(int exitCode, QProcess::ExitStatus exitStatus)
 
@@ -1175,12 +1165,6 @@ bool QProcessPrivate::_q_processDied()
         //emit q->standardOutputClosed();
         //emit q->standardErrorClosed();
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit q->finished(exitCode);
-QT_WARNING_POP
-#endif
         emit q->finished(exitCode, exitStatus);
     }
 #if defined QPROCESS_DEBUG

@@ -273,11 +273,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void started(QPrivateSignal);
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QProcess::finished(int, QProcess::ExitStatus) instead")
-    void finished(int exitCode); // ### Qt 6: merge the two signals with a default value
-#endif
-    void finished(int exitCode, QProcess::ExitStatus exitStatus);
+    void finished(int exitCode, QProcess::ExitStatus exitStatus = NormalExit);
 #if QT_DEPRECATED_SINCE(5, 6)
     QT_DEPRECATED_X("Use QProcess::errorOccurred(QProcess::ProcessError) instead")
     void error(QProcess::ProcessError error);
