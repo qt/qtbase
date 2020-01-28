@@ -241,8 +241,12 @@ public:
                  Qt::TransformationMode mode = Qt::FastTransformation) const;
     QImage scaledToWidth(int w, Qt::TransformationMode mode = Qt::FastTransformation) const;
     QImage scaledToHeight(int h, Qt::TransformationMode mode = Qt::FastTransformation) const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use transformed(const QTransform &matrix, Qt::TransformationMode mode)")
     QImage transformed(const QMatrix &matrix, Qt::TransformationMode mode = Qt::FastTransformation) const;
+    QT_DEPRECATED_X("trueMatrix(const QTransform &, int w, int h)")
     static QMatrix trueMatrix(const QMatrix &, int w, int h);
+#endif // QT_DEPRECATED_SINCE(5, 15)
     QImage transformed(const QTransform &matrix, Qt::TransformationMode mode = Qt::FastTransformation) const;
     static QTransform trueMatrix(const QTransform &, int w, int h);
     QImage mirrored(bool horizontally = false, bool vertically = true) const &

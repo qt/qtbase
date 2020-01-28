@@ -32,7 +32,6 @@
 #include <qbitmap.h>
 #include <qimage.h>
 #include <qimagereader.h>
-#include <qmatrix.h>
 #ifndef QT_NO_WIDGETS
 #include <qdesktopwidget.h>
 #include <qsplashscreen.h>

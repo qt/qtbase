@@ -45,6 +45,7 @@
 #include "qregion.h"
 #include "qpainterpath.h"
 #include "qpainterpath_p.h"
+#include "qtransform.h"
 #include "qvariant.h"
 #include <qmath.h>
 
@@ -680,7 +681,7 @@ QRegion QMatrix::map(const QRegion &r) const
     }
 
     QPainterPath p = map(qt_regionToPath(r));
-    return p.toFillPolygon().toPolygon();
+    return p.toFillPolygon(QTransform()).toPolygon();
 }
 
 /*!

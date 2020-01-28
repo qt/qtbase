@@ -3061,6 +3061,9 @@ void tst_QMatrixNxN::columnsAndRows()
     QVERIFY(m1.row(3) == QVector4D(4, 8, 12, 16));
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 // Test converting QMatrix objects into QMatrix4x4 and then
 // checking that transformations in the original perform the
 // equivalent transformations in the new matrix.
@@ -3107,6 +3110,8 @@ void tst_QMatrixNxN::convertQMatrix()
     QVERIFY(qFuzzyCompare(float(m5.dx()), float(m7.dx())));
     QVERIFY(qFuzzyCompare(float(m5.dy()), float(m7.dy())));
 }
+QT_WARNING_POP
+#endif
 
 // Test converting QTransform objects into QMatrix4x4 and then
 // checking that transformations in the original perform the

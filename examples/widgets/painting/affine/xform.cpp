@@ -223,7 +223,7 @@ void XFormView::setRotation(qreal r)
     m_rotation = r;
 
     QPointF center(pts->points().at(0));
-    QMatrix m;
+    QTransform m;
     m.translate(center.x(), center.y());
     m.rotate(m_rotation - old_rot);
     m.translate(-center.x(), -center.y());
@@ -236,7 +236,7 @@ void XFormView::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == timer.timerId()) {
         QPointF center(pts->points().at(0));
-        QMatrix m;
+        QTransform m;
         m.translate(center.x(), center.y());
         m.rotate(0.2);
         m.translate(-center.x(), -center.y());

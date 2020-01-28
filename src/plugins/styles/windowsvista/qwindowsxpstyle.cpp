@@ -1025,7 +1025,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
             imgCopy = cachedPixmap.toImage();
 
         if (themeData.rotate) {
-            QMatrix rotMatrix;
+            QTransform rotMatrix;
             rotMatrix.rotate(themeData.rotate);
             imgCopy = imgCopy.transformed(rotMatrix);
         }

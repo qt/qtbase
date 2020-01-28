@@ -508,7 +508,7 @@ void QPaintEngine::drawEllipse(const QRectF &rect)
     if (hasFeature(PainterPaths)) {
         drawPath(path);
     } else {
-        QPolygonF polygon = path.toFillPolygon();
+        QPolygonF polygon = path.toFillPolygon(QTransform());
         drawPolygon(polygon.data(), polygon.size(), ConvexMode);
     }
 }

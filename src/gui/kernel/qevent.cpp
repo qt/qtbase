@@ -1150,8 +1150,8 @@ QKeyEvent::~QKeyEvent()
   Note: The native scan code may be 0, even if the key event contains
   extended information.
 
-  Note: On Mac OS/X, this function is not useful, because there is no
-  way to get the scan code from Carbon or Cocoa. The function always
+  Note: On \macos, this function is not useful, because there is no
+  way to get the scan code from the system APIs. The function always
   returns 1 (or 0 in the case explained above).
 */
 

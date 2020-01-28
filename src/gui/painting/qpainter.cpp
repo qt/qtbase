@@ -2555,19 +2555,19 @@ QRegion QPainter::clipRegion() const
         case QPainterClipInfo::PathClip: {
             QTransform matrix = (info.matrix * d->invMatrix);
             if (lastWasNothing) {
-                region = QRegion((info.path * matrix).toFillPolygon().toPolygon(),
+                region = QRegion((info.path * matrix).toFillPolygon(QTransform()).toPolygon(),
                                  info.path.fillRule());
                 lastWasNothing = false;
                 continue;
             }
             if (info.operation == Qt::IntersectClip) {
-                region &= QRegion((info.path * matrix).toFillPolygon().toPolygon(),
+                region &= QRegion((info.path * matrix).toFillPolygon(QTransform()).toPolygon(),
                                   info.path.fillRule());
             } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
             } else {
-                region = QRegion((info.path * matrix).toFillPolygon().toPolygon(),
+                region = QRegion((info.path * matrix).toFillPolygon(QTransform()).toPolygon(),
                                  info.path.fillRule());
             }
             break;
@@ -8088,6 +8088,8 @@ QFont QPaintEngineState::font() const
 /*!
     \since 4.2
     \obsolete
+
+    Use transform() instead.
 
     Returns the matrix in the current paint engine
     state.

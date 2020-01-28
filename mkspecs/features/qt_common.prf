@@ -23,7 +23,6 @@ qtConfig(c11): CONFIG += c11
 qtConfig(stack-protector-strong): CONFIG += stack_protector_strong
 contains(TEMPLATE, .*lib) {
     # module and plugins
-    if(!host_build|!cross_compile):qtConfig(reduce_exports): CONFIG += hide_symbols
     unix:qtConfig(reduce_relocations): CONFIG += bsymbolic_functions
     qtConfig(separate_debug_info): CONFIG += separate_debug_info
 
@@ -57,6 +56,9 @@ contains(TEMPLATE, .*lib) {
         qtlibdir_replace.CONFIG = path
         QMAKE_PRL_INSTALL_REPLACE += qtlibdir_replace
     }
+}
+contains(TEMPLATE, .*lib)|darwin {
+    if(!host_build|!cross_compile):qtConfig(reduce_exports): CONFIG += hide_symbols
 }
 
 # The remainder of this file must not apply to host tools/libraries,

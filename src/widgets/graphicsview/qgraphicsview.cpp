@@ -1795,7 +1795,13 @@ void QGraphicsView::setSceneRect(const QRectF &rect)
     d->recalculateContentSize();
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
 /*!
+    \obsolete
+
+    Use transform() instead.
+
     Returns the current transformation matrix for the view. If no current
     transformation is set, the identity matrix is returned.
 
@@ -1808,6 +1814,10 @@ QMatrix QGraphicsView::matrix() const
 }
 
 /*!
+    \obsolete
+
+    Use setTransform() instead.
+
     Sets the view's current transformation matrix to \a matrix.
 
     If \a combine is true, then \a matrix is combined with the current matrix;
@@ -1839,6 +1849,10 @@ void QGraphicsView::setMatrix(const QMatrix &matrix, bool combine)
 }
 
 /*!
+    \obsolete
+
+    Use resetTransform() instead.
+
     Resets the view transformation matrix to the identity matrix.
 
     \sa resetTransform()
@@ -1847,6 +1861,8 @@ void QGraphicsView::resetMatrix()
 {
     resetTransform();
 }
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Rotates the current view transformation \a angle degrees clockwise.

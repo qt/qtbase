@@ -1556,7 +1556,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             qint64 maximum = qint64(pb->maximum);
             qint64 progress = qint64(pb->progress);
 
-            QMatrix m;
+            QTransform m;
 
             if (vertical) {
                 rect = QRect(rect.y(), rect.x(), rect.height(), rect.width()); // flip width and height

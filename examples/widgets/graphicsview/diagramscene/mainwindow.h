@@ -82,9 +82,9 @@ public:
 
 private slots:
     void backgroundButtonGroupClicked(QAbstractButton *button);
-    void buttonGroupClicked(int id);
+    void buttonGroupClicked(QAbstractButton *button);
     void deleteItem();
-    void pointerGroupClicked(int id);
+    void pointerGroupClicked();
     void bringToFront();
     void sendToBack();
     void itemInserted(DiagramItem *item);

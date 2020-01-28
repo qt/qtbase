@@ -55,7 +55,6 @@
 
 #ifndef QT_NO_PRINTER
 #include "QtCore/qmap.h"
-#include "QtGui/qmatrix.h"
 #include "QtCore/qstring.h"
 #include "QtCore/qvector.h"
 #include "QtGui/qpaintengine.h"

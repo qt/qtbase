@@ -1168,7 +1168,7 @@
     \section1 DEFINES_DEBUG
 
     Specifies preprocessor defines for the debug configuration. The values of
-    this variable get added to \l{DEFINES} before the project is loaded. This
+    this variable get added to \l{DEFINES} after the project is loaded. This
     variable is typically set in \l{#QMAKESPEC}{qmake.conf} and rarely needs
     to be modified.
 
@@ -1178,9 +1178,12 @@
     \section1 DEFINES_RELEASE
 
     Specifies preprocessor defines for the release configuration. The values of
-    this variable get added to \l{DEFINES} before the project is loaded. This
+    this variable get added to \l{DEFINES} after the project is loaded. This
     variable is typically set in \l{#QMAKESPEC}{qmake.conf} and rarely needs
     to be modified.
+
+    \note For MSVC mkspecs, this variable contains the value \c NDEBUG by
+    default.
 
     This variable was introduced in Qt 5.13.2.
 

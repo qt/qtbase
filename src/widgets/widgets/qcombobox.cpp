@@ -293,8 +293,7 @@ void QComboBoxPrivate::_q_modelReset()
         lineEdit->setText(QString());
         updateLineEditGeometry();
     }
-    if (currentIndex.row() != indexBeforeChange)
-        _q_emitCurrentIndexChanged(currentIndex);
+    trySetValidIndex();
     modelChanged();
     q->update();
 }
@@ -302,6 +301,25 @@ void QComboBoxPrivate::_q_modelReset()
 void QComboBoxPrivate::_q_modelDestroyed()
 {
     model = QAbstractItemModelPrivate::staticEmptyModel();
+}
+
+void QComboBoxPrivate::trySetValidIndex()
+{
+    Q_Q(QComboBox);
+    bool currentReset = false;
+
+    const int rowCount = q->count();
+    for (int pos = 0; pos < rowCount; ++pos) {
+        const QModelIndex idx(model->index(pos, modelColumn, root));
+        if (idx.flags() & Qt::ItemIsEnabled) {
+            setCurrentIndex(idx);
+            currentReset = true;
+            break;
+        }
+    }
+
+    if (!currentReset)
+        setCurrentIndex(QModelIndex());
 }
 
 QRect QComboBoxPrivate::popupGeometry(int screen) const
@@ -2202,20 +2220,7 @@ void QComboBox::setModel(QAbstractItemModel *model)
 
     setRootModelIndex(QModelIndex());
 
-    bool currentReset = false;
-
-    const int rowCount = count();
-    for (int pos=0; pos < rowCount; pos++) {
-        if (d->model->index(pos, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled) {
-            setCurrentIndex(pos);
-            currentReset = true;
-            break;
-        }
-    }
-
-    if (!currentReset)
-        setCurrentIndex(-1);
-
+    d->trySetValidIndex();
     d->modelChanged();
 }
 

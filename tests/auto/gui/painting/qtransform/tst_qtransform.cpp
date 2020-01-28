@@ -331,17 +331,13 @@ void tst_QTransform::mapToPolygon()
 
 void tst_QTransform::qhash()
 {
-    QMatrix m1;
-    m1.shear(3.0, 2.0);
-    m1.rotate(44);
+    QTransform t1;
+    t1.shear(3.0, 2.0);
+    t1.rotate(44);
 
-    QMatrix m2 = m1;
-
-    QTransform t1(m1);
-    QTransform t2(m2);
+    QTransform t2 = t1;
 
     // not really much to test here, so just the bare minimum:
-    QCOMPARE(qHash(m1), qHash(m2));
     QCOMPARE(qHash(t1), qHash(t2));
 }
 
@@ -376,6 +372,9 @@ void tst_QTransform::scale()
     QVERIFY( QTransform::fromScale( 1, 1 ) == QTransform());
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QTransform::matrix()
 {
     QMatrix mat1;
@@ -414,7 +413,7 @@ void tst_QTransform::matrix()
 
     QRect rect(43, 70, 200, 200);
     QPoint pt(43, 66);
-    QCOMPARE(tranInv.map(pt), matInv.map(pt));
+    QCOMPARE(tranInv.mapRect(rect), matInv.mapRect(rect));
     QCOMPARE(tranInv.map(pt), matInv.map(pt));
 
     QPainterPath path;
@@ -431,6 +430,8 @@ void tst_QTransform::testOffset()
     const QMatrix &aff = trans.toAffine();
     QCOMPARE((void*)(&aff), (void*)(&trans));
 }
+QT_WARNING_POP
+#endif
 
 void tst_QTransform::types()
 {

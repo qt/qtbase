@@ -59,7 +59,6 @@
 #include "QtGui/qfont.h"
 #include "QtGui/qpen.h"
 #include "QtGui/qregion.h"
-#include "QtGui/qmatrix.h"
 #include "QtGui/qpainter.h"
 #include "QtGui/qpainterpath.h"
 #include "QtGui/qpaintengine.h"

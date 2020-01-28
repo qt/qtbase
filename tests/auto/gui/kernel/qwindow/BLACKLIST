@@ -2,10 +2,10 @@
 opensuse-leap
 [positioning:default]
 linux
-osx-10.12 ci
+macos ci
 winrt
 [positioning:fake]
-osx-10.12 ci
+macos ci
 [modalWithChildWindow]
 # QTBUG-66851
 # QTBUG-69160

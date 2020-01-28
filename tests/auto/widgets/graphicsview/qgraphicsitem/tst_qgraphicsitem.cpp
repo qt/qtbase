@@ -8016,11 +8016,21 @@ public:
             //Doesn't use the extended style option so the exposed rect is the boundingRect
             if (!(flags() & QGraphicsItem::ItemUsesExtendedStyleOption)) {
                 QCOMPARE(option->exposedRect, boundingRect());
+#if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
                 QCOMPARE(option->matrix, QMatrix());
+QT_WARNING_POP
+#endif
             } else {
                 QVERIFY(option->exposedRect != QRect());
                 QVERIFY(option->exposedRect != boundingRect());
+#if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
                 QCOMPARE(option->matrix, sceneTransform().toAffine());
+QT_WARNING_POP
+#endif
             }
         }
         QGraphicsRectItem::paint(painter, option, widget);

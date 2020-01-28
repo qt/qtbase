@@ -231,7 +231,6 @@
 #include <QtWidgets/qgraphicslayout.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicswidget.h>
-#include <QtGui/qmatrix.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpixmapcache.h>

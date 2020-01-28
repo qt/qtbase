@@ -371,6 +371,7 @@ public:
     void _q_rowsRemoved(const QModelIndex &parent, int start, int end);
     void updateArrow(QStyle::StateFlag state);
     bool updateHoverControl(const QPoint &pos);
+    void trySetValidIndex();
     QRect popupGeometry(int screen = -1) const;
     QStyle::SubControl newHoverControl(const QPoint &pos);
     int computeWidthHint() const;

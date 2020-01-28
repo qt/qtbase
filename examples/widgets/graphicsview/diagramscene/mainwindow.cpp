@@ -113,13 +113,14 @@ void MainWindow::backgroundButtonGroupClicked(QAbstractButton *button)
 //! [1]
 
 //! [2]
-void MainWindow::buttonGroupClicked(int id)
+void MainWindow::buttonGroupClicked(QAbstractButton *button)
 {
     const QList<QAbstractButton *> buttons = buttonGroup->buttons();
-    for (QAbstractButton *button : buttons) {
-        if (buttonGroup->button(id) != button)
+    for (QAbstractButton *myButton : buttons) {
+        if (myButton != button)
             button->setChecked(false);
     }
+    const int id = buttonGroup->id(button);
     if (id == InsertTextButton) {
         scene->setMode(DiagramScene::InsertText);
     } else {
@@ -154,7 +155,7 @@ void MainWindow::deleteItem()
 //! [3]
 
 //! [4]
-void MainWindow::pointerGroupClicked(int)
+void MainWindow::pointerGroupClicked()
 {
     scene->setMode(DiagramScene::Mode(pointerTypeGroup->checkedId()));
 }
@@ -231,8 +232,8 @@ void MainWindow::fontSizeChanged(const QString &)
 void MainWindow::sceneScaleChanged(const QString &scale)
 {
     double newScale = scale.left(scale.indexOf(tr("%"))).toDouble() / 100.0;
-    QMatrix oldMatrix = view->matrix();
-    view->resetMatrix();
+    QTransform oldMatrix = view->transform();
+    view->resetTransform();
     view->translate(oldMatrix.dx(), oldMatrix.dy());
     view->scale(newScale, newScale);
 }
@@ -334,7 +335,7 @@ void MainWindow::createToolBox()
 {
     buttonGroup = new QButtonGroup(this);
     buttonGroup->setExclusive(false);
-    connect(buttonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
+    connect(buttonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
             this, &MainWindow::buttonGroupClicked);
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(createCellWidget(tr("Conditional"), DiagramItem::Conditional), 0, 0);
@@ -528,7 +529,7 @@ void MainWindow::createToolbars()
     pointerTypeGroup = new QButtonGroup(this);
     pointerTypeGroup->addButton(pointerButton, int(DiagramScene::MoveItem));
     pointerTypeGroup->addButton(linePointerButton, int(DiagramScene::InsertLine));
-    connect(pointerTypeGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
+    connect(pointerTypeGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
             this, &MainWindow::pointerGroupClicked);
 
     sceneScaleCombo = new QComboBox;
