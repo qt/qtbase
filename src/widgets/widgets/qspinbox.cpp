@@ -1081,7 +1081,7 @@ QSpinBoxPrivate::QSpinBoxPrivate()
     value = minimum;
     displayIntegerBase = 10;
     singleStep = QVariant((int)1);
-    type = QVariant::Int;
+    type = QMetaType::Int;
 }
 
 /*!
@@ -1238,7 +1238,7 @@ QDoubleSpinBoxPrivate::QDoubleSpinBoxPrivate()
     value = minimum;
     singleStep = QVariant(1.0);
     decimals = 2;
-    type = QVariant::Double;
+    type = QMetaType::Double;
 }
 
 /*!

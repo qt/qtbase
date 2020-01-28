@@ -854,6 +854,8 @@ void Generator::generateProperties()
             flags |= Constant;
         if (p.final)
             flags |= Final;
+        if (p.required)
+            flags |= Required;
 
         fprintf(out, "    %4d, ", stridx(p.name));
         generateTypeInfo(p.type);

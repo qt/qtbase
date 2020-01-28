@@ -144,11 +144,11 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         menuOption.menuItemType = QStyleOptionMenuItem::Normal;
 
     QVariant variant = index.model()->data(index, Qt::DecorationRole);
-    switch (variant.type()) {
-    case QVariant::Icon:
+    switch (variant.userType()) {
+    case QMetaType::QIcon:
         menuOption.icon = qvariant_cast<QIcon>(variant);
         break;
-    case QVariant::Color: {
+    case QMetaType::QColor: {
         static QPixmap pixmap(option.decorationSize);
         pixmap.fill(qvariant_cast<QColor>(variant));
         menuOption.icon = pixmap;
@@ -1888,7 +1888,7 @@ void QComboBoxPrivate::updateDelegate(bool force)
 QIcon QComboBoxPrivate::itemIcon(const QModelIndex &index) const
 {
     QVariant decoration = model->data(index, Qt::DecorationRole);
-    if (decoration.type() == QVariant::Pixmap)
+    if (decoration.userType() == QMetaType::QPixmap)
         return QIcon(qvariant_cast<QPixmap>(decoration));
     else
         return qvariant_cast<QIcon>(decoration);
@@ -2044,7 +2044,7 @@ const QValidator *QComboBox::validator() const
     \since 4.2
 
     Sets the \a completer to use instead of the current completer.
-    If \a completer is 0, auto completion is disabled.
+    If \a completer is \nullptr, auto completion is disabled.
 
     By default, for an editable combo box, a QCompleter that
     performs case insensitive inline completion is automatically created.

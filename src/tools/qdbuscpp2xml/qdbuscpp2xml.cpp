@@ -115,7 +115,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
                         .arg(typeNameToXml(typeName));
 
                     // do we need to describe this argument?
-                    if (QDBusMetaType::signatureToType(typeName) == QVariant::Invalid)
+                    if (QDBusMetaType::signatureToType(typeName) == QMetaType::UnknownType)
                         xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
                             .arg(typeNameToXml(mm.normalizedType.constData()));
             } else {
@@ -159,7 +159,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
                      isOutput ? QLatin1String("out") : QLatin1String("in"));
 
         // do we need to describe this argument?
-        if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
+        if (QDBusMetaType::signatureToType(signature) == QMetaType::UnknownType) {
             const char *typeName = QMetaType::typeName(types.at(j));
             xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                     .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
@@ -225,7 +225,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
                            QLatin1String(signature),
                            QLatin1String(accessvalues[access]));
 
-            if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
+            if (QDBusMetaType::signatureToType(signature) == QMetaType::UnknownType) {
                 retval += QString::fromLatin1(">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
                           .arg(typeNameToXml(mp.type.constData()));
             } else {

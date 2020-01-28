@@ -124,7 +124,9 @@
 #if QT_CONFIG(schannel)
 #include "qsslsocket_schannel_p.h"
 #endif
-
+#if QT_CONFIG(regularexpression)
+#include "qregularexpression.h"
+#endif
 #include "qssl_p.h"
 #include "qsslcertificate.h"
 #include "qsslcertificate_p.h"
@@ -462,7 +464,10 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
     \since 5.0
 */
 
+#if QT_DEPRECATED_SINCE(5,15)
 /*!
+    \obsolete
+
     Searches all files in the \a path for certificates encoded in the
     specified \a format and returns them in a list. \a path must be a file
     or a pattern matching one or more files, as specified by \a syntax.
@@ -527,6 +532,106 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
         QString filePath = startIndex == 0 ? it.next() : it.next().mid(startIndex);
         if (!pattern.exactMatch(filePath))
             continue;
+
+        QFile file(filePath);
+        QIODevice::OpenMode openMode = QIODevice::ReadOnly;
+        if (format == QSsl::Pem)
+            openMode |= QIODevice::Text;
+        if (file.open(openMode))
+            certs += QSslCertificate::fromData(file.readAll(), format);
+    }
+    return certs;
+}
+#endif // QT_DEPRECATED_SINCE(5,15)
+
+/*!
+    \since 5.15
+
+    Searches all files in the \a path for certificates encoded in the
+    specified \a format and returns them in a list. \a path must be a file
+    or a pattern matching one or more files, as specified by \a syntax.
+
+    Example:
+
+    \snippet code/src_network_ssl_qsslcertificate.cpp 1
+
+    \sa fromData()
+*/
+QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
+                                                 QSsl::EncodingFormat format,
+                                                 PatternSyntax syntax)
+{
+    // $, (,), *, +, ., ?, [, ,], ^, {, | and }.
+
+    // make sure to use the same path separators on Windows and Unix like systems.
+    QString sourcePath = QDir::fromNativeSeparators(path);
+
+    // Find the path without the filename
+    QString pathPrefix = sourcePath.left(sourcePath.lastIndexOf(QLatin1Char('/')));
+
+    // Check if the path contains any special chars
+    int pos = -1;
+
+#if QT_CONFIG(regularexpression)
+    if (syntax == Wildcard)
+        pos = pathPrefix.indexOf(QRegularExpression(QLatin1String("[*?[]")));
+    else if (syntax == RegExp)
+        pos = sourcePath.indexOf(QRegularExpression(QLatin1String("[\\$\\(\\)\\*\\+\\.\\?\\[\\]\\^\\{\\}\\|]")));
+#else
+    if (syntax == Wildcard || syntax == RegExp)
+        qWarning("Regular expression support is disabled in this build. Only fixed string can be searched");
+        return QList<QSslCertificate>();
+#endif
+
+    if (pos != -1) {
+        // there was a special char in the path so cut of the part containing that char.
+        pathPrefix = pathPrefix.left(pos);
+        const int lastIndexOfSlash = pathPrefix.lastIndexOf(QLatin1Char('/'));
+        if (lastIndexOfSlash != -1)
+            pathPrefix = pathPrefix.left(lastIndexOfSlash);
+        else
+            pathPrefix.clear();
+    } else {
+        // Check if the path is a file.
+        if (QFileInfo(sourcePath).isFile()) {
+            QFile file(sourcePath);
+            QIODevice::OpenMode openMode = QIODevice::ReadOnly;
+            if (format == QSsl::Pem)
+                openMode |= QIODevice::Text;
+            if (file.open(openMode))
+                return QSslCertificate::fromData(file.readAll(), format);
+            return QList<QSslCertificate>();
+        }
+    }
+
+    // Special case - if the prefix ends up being nothing, use "." instead.
+    int startIndex = 0;
+    if (pathPrefix.isEmpty()) {
+        pathPrefix = QLatin1String(".");
+        startIndex = 2;
+    }
+
+    // The path can be a file or directory.
+    QList<QSslCertificate> certs;
+
+#if QT_CONFIG(regularexpression)
+    if (syntax == Wildcard)
+        sourcePath = QRegularExpression::wildcardToRegularExpression(sourcePath);
+
+    QRegularExpression pattern(QRegularExpression::anchoredPattern(sourcePath));
+#endif
+
+    QDirIterator it(pathPrefix, QDir::Files, QDirIterator::FollowSymlinks | QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QString filePath = startIndex == 0 ? it.next() : it.next().mid(startIndex);
+
+#if QT_CONFIG(regularexpression)
+        if (!pattern.match(filePath).hasMatch())
+            continue;
+#else
+        if (sourcePath != filePath)
+            continue;
+#endif
 
         QFile file(filePath);
         QIODevice::OpenMode openMode = QIODevice::ReadOnly;

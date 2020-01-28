@@ -60,6 +60,9 @@
 #include <qshareddata.h>
 #include <qdebug.h>
 #include <qxmlstream.h>
+#include <private/qduplicatetracker_p.h>
+
+
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE
@@ -4081,10 +4084,10 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
     }
     s << '<' << qName << nsDecl;
 
-    QSet<QString> outputtedPrefixes;
 
     /* Write out attributes. */
     if (!m_attr->map.isEmpty()) {
+        QDuplicateTracker<QString> outputtedPrefixes;
         QHash<QString, QDomNodePrivate *>::const_iterator it = m_attr->map.constBegin();
         for (; it != m_attr->map.constEnd(); ++it) {
             s << ' ';
@@ -4105,9 +4108,8 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
                  * arrive in those situations. */
                 if((!it.value()->ownerNode ||
                    it.value()->ownerNode->prefix != it.value()->prefix) &&
-                   !outputtedPrefixes.contains(it.value()->prefix)) {
+                   !outputtedPrefixes.hasSeen(it.value()->prefix)) {
                     s << " xmlns:" << it.value()->prefix << "=\"" << encodeText(it.value()->namespaceURI, s, true, true) << '\"';
-                    outputtedPrefixes.insert(it.value()->prefix);
                 }
             }
         }

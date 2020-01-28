@@ -2339,7 +2339,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         QVariant variant;
         if (d->model)
             variant = d->model->data(currentIndex(), Qt::DisplayRole);
-        if (variant.type() == QVariant::String)
+        if (variant.userType() == QMetaType::QString)
             QGuiApplication::clipboard()->setText(variant.toString());
         event->accept();
     }

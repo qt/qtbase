@@ -2029,7 +2029,7 @@ QAccessibleTextInterface::~QAccessibleTextInterface()
     \fn void QAccessibleTextInterface::selection(int selectionIndex, int *startOffset, int *endOffset) const
 
     Returns a selection. The size of the selection is returned in \a startOffset and \a endOffset.
-    If there is no selection both \a startOffset and \a endOffset are 0.
+    If there is no selection both \a startOffset and \a endOffset are \nullptr.
 
     The accessibility APIs support multiple selections. For most widgets though, only one selection
     is supported with \a selectionIndex equal to 0.

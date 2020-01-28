@@ -48,7 +48,7 @@ class QSqlFieldPrivate
 public:
     QSqlFieldPrivate(const QString &name,
                      QVariant::Type type, const QString &tableName) :
-        ref(1), nm(name), table(tableName), def(QVariant()), type(type),
+        ref(1), nm(name), table(tableName), def(QVariant()), type(QMetaType::Type(type)),
         req(QSqlField::Unknown), len(-1), prec(-1), tp(-1),
         ro(false), gen(true), autoval(false)
     {}
@@ -86,7 +86,7 @@ public:
     QString nm;
     QString table;
     QVariant def;
-    QVariant::Type type;
+    QMetaType::Type type;
     QSqlField::RequiredStatus req;
     int len;
     int prec;
@@ -399,7 +399,7 @@ QString QSqlField::name() const
 */
 QVariant::Type QSqlField::type() const
 {
-    return d->type;
+    return QVariant::Type(d->type);
 }
 
 /*!
@@ -411,11 +411,10 @@ QVariant::Type QSqlField::type() const
 void QSqlField::setType(QVariant::Type type)
 {
     detach();
-    d->type = type;
+    d->type = QMetaType::Type(type);
     if (!val.isValid())
         val = QVariant(type);
 }
-
 
 /*!
     Returns \c true if the field's value is read-only; otherwise returns
@@ -526,7 +525,7 @@ bool QSqlField::isGenerated() const
 */
 bool QSqlField::isValid() const
 {
-    return d->type != QVariant::Invalid;
+    return d->type != QMetaType::UnknownType;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

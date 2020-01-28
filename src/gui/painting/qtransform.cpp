@@ -2155,7 +2155,7 @@ QTransform::TransformationType QTransform::type() const
 */
 QTransform::operator QVariant() const
 {
-    return QVariant(QVariant::Transform, this);
+    return QVariant(QMetaType::QTransform, this);
 }
 
 

@@ -190,7 +190,7 @@ void QWindowsClipboard::releaseIData()
 void QWindowsClipboard::registerViewer()
 {
     m_clipboardViewer = QWindowsContext::instance()->
-        createDummyWindow(QStringLiteral("Qt5ClipboardView"), L"Qt5ClipboardView",
+        createDummyWindow(QStringLiteral("ClipboardView"), L"QtClipboardView",
                           qClipboardViewerWndProc, WS_OVERLAPPED);
 
     // Try format listener API (Vista onwards) first.

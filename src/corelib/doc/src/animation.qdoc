@@ -356,11 +356,11 @@
         state2->assignProperty(button, "geometry", QRect(250, 250, 100, 30));
 
         QSignalTransition *transition1 = state1->addTransition(button,
-            SIGNAL(clicked()), state2);
+            &QPushButton::clicked, state2);
         transition1->addAnimation(new QPropertyAnimation(button, "geometry"));
 
         QSignalTransition *transition2 = state2->addTransition(button,
-            SIGNAL(clicked()), state1);
+            &QPushButton::clicked, state1);
         transition2->addAnimation(new QPropertyAnimation(button, "geometry"));
 
         machine->start();

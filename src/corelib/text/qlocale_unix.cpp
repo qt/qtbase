@@ -234,16 +234,16 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case CurrencySymbol:
         return lc_monetary.currencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
     case CurrencyToString: {
-        switch (in.type()) {
-        case QVariant::Int:
+        switch (in.userType()) {
+        case QMetaType::Int:
             return lc_monetary.toCurrencyString(in.toInt());
-        case QVariant::UInt:
+        case QMetaType::UInt:
             return lc_monetary.toCurrencyString(in.toUInt());
-        case QVariant::Double:
+        case QMetaType::Double:
             return lc_monetary.toCurrencyString(in.toDouble());
-        case QVariant::LongLong:
+        case QMetaType::LongLong:
             return lc_monetary.toCurrencyString(in.toLongLong());
-        case QVariant::ULongLong:
+        case QMetaType::ULongLong:
             return lc_monetary.toCurrencyString(in.toULongLong());
         default:
             break;

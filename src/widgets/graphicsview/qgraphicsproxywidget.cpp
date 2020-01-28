@@ -570,8 +570,8 @@ QGraphicsProxyWidget::~QGraphicsProxyWidget()
     After this function returns, QGraphicsProxyWidget will keep its state
     synchronized with that of \a widget whenever possible.
 
-    If a widget is already embedded by this proxy when this function is
-    called, that widget will first be automatically unembedded. Passing 0 for
+    If a widget is already embedded by this proxy when this function is called,
+    that widget will first be automatically unembedded. Passing \nullptr for
     the \a widget argument will only unembed the widget, and the ownership of
     the currently embedded widget will be passed on to the caller.
     Every child widget that are embedded will also be embedded and their proxy
@@ -1441,17 +1441,17 @@ QVariant QGraphicsProxyWidget::inputMethodQuery(Qt::InputMethodQuery query) cons
         focusWidget = d->widget;
     QVariant v = focusWidget->inputMethodQuery(query);
     QPointF focusWidgetPos = subWidgetRect(focusWidget).topLeft();
-    switch (v.type()) {
-    case QVariant::RectF:
+    switch (v.userType()) {
+    case QMetaType::QRectF:
         v = v.toRectF().translated(focusWidgetPos);
         break;
-    case QVariant::PointF:
+    case QMetaType::QPointF:
         v = v.toPointF() + focusWidgetPos;
         break;
-    case QVariant::Rect:
+    case QMetaType::QRect:
         v = v.toRect().translated(focusWidgetPos.toPoint());
         break;
-    case QVariant::Point:
+    case QMetaType::QPoint:
         v = v.toPoint() + focusWidgetPos.toPoint();
         break;
     default:

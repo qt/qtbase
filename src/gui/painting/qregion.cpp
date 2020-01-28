@@ -599,7 +599,7 @@ QRegion& QRegion::operator^=(const QRegion &r)
 */
 QRegion::operator QVariant() const
 {
-    return QVariant(QVariant::Region, this);
+    return QVariant(QMetaType::QRegion, this);
 }
 
 /*!

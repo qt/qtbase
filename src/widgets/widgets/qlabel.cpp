@@ -187,8 +187,13 @@ QLabelPrivate::~QLabelPrivate()
 */
 
 #ifndef QT_NO_PICTURE
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
-    Returns the label's picture or nullptr if the label doesn't have a
+    \deprecated
+
+    New code should use the other overload which returns QPicture by-value.
+
+    This function returns the label's picture or \c nullptr if the label doesn't have a
     picture.
 */
 
@@ -196,6 +201,37 @@ const QPicture *QLabel::picture() const
 {
     Q_D(const QLabel);
     return d->picture;
+}
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+/*!
+    \since 5.15
+    Returns the label's picture.
+
+    Previously, Qt provided a version of \c picture() which returned the picture
+    by-pointer. That version is now deprecated. To maintain compatibility
+    with old code, you can explicitly differentiate between the by-pointer
+    function and the by-value function:
+
+    \code
+    const QPicture *picPtr = label->picture();
+    QPicture picVal = label->picture(Qt::ReturnByValue);
+    \endcode
+
+    If you disable the deprecated version using the QT_DISABLE_DEPRECATED_BEFORE
+    macro, then you can omit \c Qt::ReturnByValue as shown below:
+
+    \code
+    QPicture picVal = label->picture();
+    \endcode
+*/
+
+QPicture QLabel::picture(Qt::ReturnByValue_t) const
+{
+    Q_D(const QLabel);
+    if (d->picture)
+        return *(d->picture);
+    return QPicture();
 }
 #endif
 
@@ -351,9 +387,27 @@ void QLabel::clear()
 
 /*!
     \property QLabel::pixmap
-    \brief the label's pixmap
+    \brief the label's pixmap.
 
-    If no pixmap has been set this will return nullptr.
+    Previously, Qt provided a version of \c pixmap() which returned the pixmap
+    by-pointer. That version is now deprecated. To maintain compatibility
+    with old code, you can explicitly differentiate between the by-pointer
+    function and the by-value function:
+
+    \code
+    const QPixmap *pixmapPtr = label->pixmap();
+    QPixmap pixmapVal = label->pixmap(Qt::ReturnByValue);
+    \endcode
+
+    If you disable the deprecated version using the QT_DISABLE_DEPRECATED_BEFORE
+    macro, then you can omit \c Qt::ReturnByValue as shown below:
+
+    \code
+    QPixmap pixmapVal = label->pixmap();
+    \endcode
+
+    If no pixmap has been set, the deprecated getter function will return
+    \c nullptr.
 
     Setting the pixmap clears any previous content. The buddy
     shortcut, if any, is disabled.
@@ -372,10 +426,28 @@ void QLabel::setPixmap(const QPixmap &pixmap)
     d->updateLabel();
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+/*!
+    \deprecated
+
+    New code should use the other overload which returns QPixmap by-value.
+*/
 const QPixmap *QLabel::pixmap() const
 {
     Q_D(const QLabel);
     return d->pixmap;
+}
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+/*!
+    \since 5.15
+*/
+QPixmap QLabel::pixmap(Qt::ReturnByValue_t) const
+{
+    Q_D(const QLabel);
+    if (d->pixmap)
+        return *(d->pixmap);
+    return QPixmap();
 }
 
 #ifndef QT_NO_PICTURE

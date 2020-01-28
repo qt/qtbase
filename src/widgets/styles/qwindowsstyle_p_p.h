@@ -74,6 +74,7 @@ public:
     static qreal devicePixelRatio(const QWidget *widget = nullptr)
         { return widget ? widget->devicePixelRatioF() : QWindowsStylePrivate::appDevicePixelRatio(); }
     static qreal nativeMetricScaleFactor(const QWidget *widget = nullptr);
+    static bool isDarkMode();
 
     bool hasSeenAlt(const QWidget *widget) const;
     bool altDown() const { return alt_down; }

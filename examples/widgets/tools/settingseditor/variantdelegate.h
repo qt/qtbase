@@ -69,7 +69,7 @@ public:
     void setModelData(QWidget *editor, QAbstractItemModel *model,
                       const QModelIndex &index) const override;
 
-    static bool isSupportedType(QVariant::Type type);
+    static bool isSupportedType(int type);
     static QString displayText(const QVariant &value);
 
 private:

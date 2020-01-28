@@ -40,6 +40,7 @@
 #include <QWidgetAction>
 #include <QDesktopWidget>
 #include <QScreen>
+#include <QSpinBox>
 #include <qdialog.h>
 
 #include <qmenu.h>
@@ -114,6 +115,7 @@ private slots:
     void QTBUG30595_rtl_submenu();
     void QTBUG20403_nested_popup_on_shortcut_trigger();
     void QTBUG47515_widgetActionEnterLeave();
+    void QTBUG8122_widgetActionCrashOnClose();
 
     void QTBUG_10735_crashWithDialog();
 #ifdef Q_OS_MAC
@@ -1351,6 +1353,60 @@ void tst_QMenu::QTBUG47515_widgetActionEnterLeave()
         QTRY_COMPARE(w2->enter, 1);
     }
 }
+
+void tst_QMenu::QTBUG8122_widgetActionCrashOnClose()
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+    if (QGuiApplication::platformName() == QLatin1String("cocoa"))
+        QSKIP("See QTBUG-63031");
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not support QTest::mouseMove");
+#endif
+
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    QRect geometry(QPoint(), availableGeometry.size() / 3);
+    geometry.moveCenter(availableGeometry.center());
+    QPoint pointOutsideMenu = geometry.bottomRight() - QPoint(5, 5);
+
+    QMainWindow topLevel;
+    topLevel.setGeometry(geometry);
+
+    auto menuBar = topLevel.menuBar();
+    auto menu = menuBar->addMenu("Menu");
+    auto wAct = new QWidgetAction(menu);
+    auto spinBox1 = new QSpinBox(menu);
+    wAct->setDefaultWidget(spinBox1);
+    menu->addAction(wAct);
+    auto subMenu = menu->addMenu("Submenu");
+    auto nextMenuAct = menu->addMenu(subMenu);
+    auto wAct2 = new QWidgetAction(menu);
+    auto spinBox2 = new QSpinBox(menu);
+    wAct2->setDefaultWidget(spinBox2);
+    subMenu->addAction(wAct2);
+    QObject::connect(spinBox2, &QSpinBox::editingFinished, menu, &QMenu::hide);
+
+    topLevel.show();
+    topLevel.setWindowTitle(QTest::currentTestFunction());
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+    QWindow *topLevelWindow = topLevel.windowHandle();
+    QVERIFY(topLevelWindow);
+
+    const QPoint menuActionPos = menuBar->mapTo(&topLevel, menuBar->actionGeometry(menu->menuAction()).center());
+    QTest::mouseClick(topLevelWindow, Qt::LeftButton, Qt::KeyboardModifiers(), menuActionPos);
+    QVERIFY(QTest::qWaitForWindowExposed(menu));
+
+    QPoint w1Center = topLevel.mapFromGlobal(spinBox1->mapToGlobal(spinBox1->rect().center()));
+    QTest::mouseClick(topLevelWindow, Qt::LeftButton, Qt::KeyboardModifiers(), w1Center);
+    menu->setActiveAction(nextMenuAct);
+    QVERIFY(QTest::qWaitForWindowExposed(subMenu));
+
+    QPoint w2Center = topLevel.mapFromGlobal(spinBox2->mapToGlobal(spinBox2->rect().center()));
+    QTest::mouseClick(topLevelWindow, Qt::LeftButton, Qt::KeyboardModifiers(), w2Center);
+    QTest::mouseMove(topLevelWindow, topLevel.mapFromGlobal(pointOutsideMenu));
+    QTRY_VERIFY(menu->isHidden());
+}
+
 
 class MyMenu : public QMenu
 {

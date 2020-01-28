@@ -134,7 +134,7 @@ static QVariant convertCborValue(const QCborValue &value)
 enum TrimFloatingPoint { Double, Float, Float16 };
 static QCborValue convertFromVariant(const QVariant &v, TrimFloatingPoint fpTrimming)
 {
-    if (v.userType() == QVariant::List) {
+    if (v.userType() == QMetaType::QVariantList) {
         const QVariantList list = v.toList();
         QCborArray array;
         for (const QVariant &v : list)
@@ -152,7 +152,7 @@ static QCborValue convertFromVariant(const QVariant &v, TrimFloatingPoint fpTrim
         return map;
     }
 
-    if (v.userType() == QVariant::Double && fpTrimming != Double) {
+    if (v.userType() == QMetaType::Double && fpTrimming != Double) {
         float f = float(v.toDouble());
         if (fpTrimming == Float16)
             return float(qfloat16(f));

@@ -715,9 +715,7 @@ void QThreadPrivate::setPriority(QThread::Priority threadPriority)
         prio = THREAD_PRIORITY_TIME_CRITICAL;
         break;
 
-    case QThread::InheritPriority:
     default:
-        qWarning("QThread::setPriority: Argument cannot be InheritPriority");
         return;
     }
 

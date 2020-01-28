@@ -81,7 +81,7 @@ void VariantDelegate::paint(QPainter *painter,
 {
     if (index.column() == 2) {
         QVariant value = index.model()->data(index, Qt::UserRole);
-        if (!isSupportedType(value.type())) {
+        if (!isSupportedType(value.userType())) {
             QStyleOptionViewItem myOption = option;
             myOption.state &= ~QStyle::State_Enabled;
             QStyledItemDelegate::paint(painter, myOption, index);
@@ -100,7 +100,7 @@ QWidget *VariantDelegate::createEditor(QWidget *parent,
         return nullptr;
 
     QVariant originalValue = index.model()->data(index, Qt::UserRole);
-    if (!isSupportedType(originalValue.type()))
+    if (!isSupportedType(originalValue.userType()))
         return nullptr;
 
     QLineEdit *lineEdit = new QLineEdit(parent);
@@ -108,46 +108,46 @@ QWidget *VariantDelegate::createEditor(QWidget *parent,
 
     QRegularExpression regExp;
 
-    switch (originalValue.type()) {
-    case QVariant::Bool:
+    switch (originalValue.userType()) {
+    case QMetaType::Bool:
         regExp = boolExp;
         break;
-    case QVariant::ByteArray:
+    case QMetaType::QByteArray:
         regExp = byteArrayExp;
         break;
-    case QVariant::Char:
+    case QMetaType::QChar:
         regExp = charExp;
         break;
-    case QVariant::Color:
+    case QMetaType::QColor:
         regExp = colorExp;
         break;
-    case QVariant::Date:
+    case QMetaType::QDate:
         regExp = dateExp;
         break;
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         regExp = dateTimeExp;
         break;
-    case QVariant::Double:
+    case QMetaType::Double:
         regExp = doubleExp;
         break;
-    case QVariant::Int:
-    case QVariant::LongLong:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
         regExp = signedIntegerExp;
         break;
-    case QVariant::Point:
+    case QMetaType::QPoint:
         regExp = pointExp;
         break;
-    case QVariant::Rect:
+    case QMetaType::QRect:
         regExp = rectExp;
         break;
-    case QVariant::Size:
+    case QMetaType::QSize:
         regExp = sizeExp;
         break;
-    case QVariant::Time:
+    case QMetaType::QTime:
         regExp = timeExp;
         break;
-    case QVariant::UInt:
-    case QVariant::ULongLong:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
         regExp = unsignedIntegerExp;
         break;
     default:
@@ -189,18 +189,18 @@ void VariantDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     QVariant value;
     QRegularExpressionMatch match;
 
-    switch (originalValue.type()) {
-    case QVariant::Char:
+    switch (originalValue.userType()) {
+    case QMetaType::QChar:
         value = text.at(0);
         break;
-    case QVariant::Color:
+    case QMetaType::QColor:
         match = colorExp.match(text);
         value = QColor(qMin(match.captured(1).toInt(), 255),
                        qMin(match.captured(2).toInt(), 255),
                        qMin(match.captured(3).toInt(), 255),
                        qMin(match.captured(4).toInt(), 255));
         break;
-    case QVariant::Date:
+    case QMetaType::QDate:
         {
             QDate date = QDate::fromString(text, Qt::ISODate);
             if (!date.isValid())
@@ -208,7 +208,7 @@ void VariantDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
             value = date;
         }
         break;
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         {
             QDateTime dateTime = QDateTime::fromString(text, Qt::ISODate);
             if (!dateTime.isValid())
@@ -216,23 +216,23 @@ void VariantDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
             value = dateTime;
         }
         break;
-    case QVariant::Point:
+    case QMetaType::QPoint:
         match = pointExp.match(text);
         value = QPoint(match.captured(1).toInt(), match.captured(2).toInt());
         break;
-    case QVariant::Rect:
+    case QMetaType::QRect:
         match = rectExp.match(text);
         value = QRect(match.captured(1).toInt(), match.captured(2).toInt(),
                       match.captured(3).toInt(), match.captured(4).toInt());
         break;
-    case QVariant::Size:
+    case QMetaType::QSize:
         match = sizeExp.match(text);
         value = QSize(match.captured(1).toInt(), match.captured(2).toInt());
         break;
-    case QVariant::StringList:
+    case QMetaType::QStringList:
         value = text.split(',');
         break;
-    case QVariant::Time:
+    case QMetaType::QTime:
         {
             QTime time = QTime::fromString(text, Qt::ISODate);
             if (!time.isValid())
@@ -242,33 +242,33 @@ void VariantDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
         break;
     default:
         value = text;
-        value.convert(originalValue.type());
+        value.convert(originalValue.userType());
     }
 
     model->setData(index, displayText(value), Qt::DisplayRole);
     model->setData(index, value, Qt::UserRole);
 }
 
-bool VariantDelegate::isSupportedType(QVariant::Type type)
+bool VariantDelegate::isSupportedType(int type)
 {
     switch (type) {
-    case QVariant::Bool:
-    case QVariant::ByteArray:
-    case QVariant::Char:
-    case QVariant::Color:
-    case QVariant::Date:
-    case QVariant::DateTime:
-    case QVariant::Double:
-    case QVariant::Int:
-    case QVariant::LongLong:
-    case QVariant::Point:
-    case QVariant::Rect:
-    case QVariant::Size:
-    case QVariant::String:
-    case QVariant::StringList:
-    case QVariant::Time:
-    case QVariant::UInt:
-    case QVariant::ULongLong:
+    case QMetaType::Bool:
+    case QMetaType::QByteArray:
+    case QMetaType::QChar:
+    case QMetaType::QColor:
+    case QMetaType::QDate:
+    case QMetaType::QDateTime:
+    case QMetaType::Double:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
+    case QMetaType::QPoint:
+    case QMetaType::QRect:
+    case QMetaType::QSize:
+    case QMetaType::QString:
+    case QMetaType::QStringList:
+    case QMetaType::QTime:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
         return true;
     default:
         return false;
@@ -277,50 +277,50 @@ bool VariantDelegate::isSupportedType(QVariant::Type type)
 
 QString VariantDelegate::displayText(const QVariant &value)
 {
-    switch (value.type()) {
-    case QVariant::Bool:
-    case QVariant::ByteArray:
-    case QVariant::Char:
-    case QVariant::Double:
-    case QVariant::Int:
-    case QVariant::LongLong:
-    case QVariant::String:
-    case QVariant::UInt:
-    case QVariant::ULongLong:
+    switch (value.userType()) {
+    case QMetaType::Bool:
+    case QMetaType::QByteArray:
+    case QMetaType::QChar:
+    case QMetaType::Double:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
+    case QMetaType::QString:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
         return value.toString();
-    case QVariant::Color:
+    case QMetaType::QColor:
         {
             QColor color = qvariant_cast<QColor>(value);
             return QString("(%1,%2,%3,%4)")
                    .arg(color.red()).arg(color.green())
                    .arg(color.blue()).arg(color.alpha());
         }
-    case QVariant::Date:
+    case QMetaType::QDate:
         return value.toDate().toString(Qt::ISODate);
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return value.toDateTime().toString(Qt::ISODate);
-    case QVariant::Invalid:
+    case QMetaType::UnknownType:
         return "<Invalid>";
-    case QVariant::Point:
+    case QMetaType::QPoint:
         {
             QPoint point = value.toPoint();
             return QString("(%1,%2)").arg(point.x()).arg(point.y());
         }
-    case QVariant::Rect:
+    case QMetaType::QRect:
         {
             QRect rect = value.toRect();
             return QString("(%1,%2,%3,%4)")
                    .arg(rect.x()).arg(rect.y())
                    .arg(rect.width()).arg(rect.height());
         }
-    case QVariant::Size:
+    case QMetaType::QSize:
         {
             QSize size = value.toSize();
             return QString("(%1,%2)").arg(size.width()).arg(size.height());
         }
-    case QVariant::StringList:
+    case QMetaType::QStringList:
         return value.toStringList().join(',');
-    case QVariant::Time:
+    case QMetaType::QTime:
         return value.toTime().toString(Qt::ISODate);
     default:
         break;

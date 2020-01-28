@@ -487,7 +487,7 @@ QRecursiveMutex::~QRecursiveMutex()
     \fn QMutexLocker::QMutexLocker(QMutex *mutex)
 
     Constructs a QMutexLocker and locks \a mutex. The mutex will be
-    unlocked when the QMutexLocker is destroyed. If \a mutex is zero,
+    unlocked when the QMutexLocker is destroyed. If \a mutex is \nullptr,
     QMutexLocker does nothing.
 
     \sa QMutex::lock()

@@ -570,7 +570,7 @@ void QAbstractSpinBox::clear()
 QAbstractSpinBox::StepEnabled QAbstractSpinBox::stepEnabled() const
 {
     Q_D(const QAbstractSpinBox);
-    if (d->readOnly || d->type == QVariant::Invalid)
+    if (d->readOnly || d->type == QMetaType::UnknownType)
         return StepNone;
     if (d->wrapping)
         return StepEnabled(StepUpEnabled | StepDownEnabled);
@@ -723,7 +723,7 @@ void QAbstractSpinBox::setLineEdit(QLineEdit *lineEdit)
     d->edit->setFocusProxy(this);
     d->edit->setAcceptDrops(false);
 
-    if (d->type != QVariant::Invalid) {
+    if (d->type != QMetaType::UnknownType) {
         connect(d->edit, SIGNAL(textChanged(QString)),
                 this, SLOT(_q_editorTextChanged(QString)));
         connect(d->edit, SIGNAL(cursorPositionChanged(int,int)),
@@ -1421,7 +1421,7 @@ void QAbstractSpinBox::mouseReleaseEvent(QMouseEvent *event)
 */
 
 QAbstractSpinBoxPrivate::QAbstractSpinBoxPrivate()
-    : edit(nullptr), type(QVariant::Invalid), spinClickTimerId(-1),
+    : edit(nullptr), type(QMetaType::UnknownType), spinClickTimerId(-1),
       spinClickTimerInterval(100), spinClickThresholdTimerId(-1), spinClickThresholdTimerInterval(-1),
       effectiveSpinRepeatRate(1), buttonState(None), cachedText(QLatin1String("\x01")),
       cachedState(QValidator::Invalid), pendingEmit(false), readOnly(false), wrapping(false),
@@ -1805,7 +1805,7 @@ void QAbstractSpinBoxPrivate::setValue(const QVariant &val, EmitPolicy ep,
 void QAbstractSpinBoxPrivate::updateEdit()
 {
     Q_Q(QAbstractSpinBox);
-    if (type == QVariant::Invalid)
+    if (type == QMetaType::UnknownType)
         return;
     const QString newText = specialValue() ? specialValueText : prefix + textFromValue(value) + suffix;
     if (newText == edit->displayText() || cleared)
@@ -1865,8 +1865,8 @@ QVariant QAbstractSpinBoxPrivate::getZeroVariant() const
 {
     QVariant ret;
     switch (type) {
-    case QVariant::Int: ret = QVariant((int)0); break;
-    case QVariant::Double: ret = QVariant((double)0.0); break;
+    case QMetaType::Int: ret = QVariant(0); break;
+    case QMetaType::Double: ret = QVariant(0.0); break;
     default: break;
     }
     return ret;
@@ -1913,7 +1913,7 @@ QVariant QAbstractSpinBoxPrivate::valueFromText(const QString &) const
 void QAbstractSpinBoxPrivate::interpret(EmitPolicy ep)
 {
     Q_Q(QAbstractSpinBox);
-    if (type == QVariant::Invalid || cleared)
+    if (type == QMetaType::UnknownType || cleared)
         return;
 
     QVariant v = getZeroVariant();
@@ -2013,11 +2013,11 @@ void QSpinBoxValidator::fixup(QString &input) const
 QVariant operator+(const QVariant &arg1, const QVariant &arg2)
 {
     QVariant ret;
-    if (Q_UNLIKELY(arg1.type() != arg2.type()))
+    if (Q_UNLIKELY(arg1.userType() != arg2.userType()))
         qWarning("QAbstractSpinBox: Internal error: Different types (%s vs %s) (%s:%d)",
                  arg1.typeName(), arg2.typeName(), __FILE__, __LINE__);
-    switch (arg1.type()) {
-    case QVariant::Int: {
+    switch (arg1.userType()) {
+    case QMetaType::Int: {
         const int int1 = arg1.toInt();
         const int int2 = arg2.toInt();
         if (int1 > 0 && (int2 >= INT_MAX - int1)) {
@@ -2031,9 +2031,9 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
         }
         break;
     }
-    case QVariant::Double: ret = QVariant(arg1.toDouble() + arg2.toDouble()); break;
+    case QMetaType::Double: ret = QVariant(arg1.toDouble() + arg2.toDouble()); break;
 #if QT_CONFIG(datetimeparser)
-    case QVariant::DateTime: {
+    case QMetaType::QDateTime: {
         QDateTime a2 = arg2.toDateTime();
         QDateTime a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATE_MIN.daysTo(a2.date()));
         a1.setTime(a1.time().addMSecs(a2.time().msecsSinceStartOfDay()));
@@ -2055,13 +2055,13 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
 QVariant operator-(const QVariant &arg1, const QVariant &arg2)
 {
     QVariant ret;
-    if (Q_UNLIKELY(arg1.type() != arg2.type()))
+    if (Q_UNLIKELY(arg1.userType() != arg2.userType()))
         qWarning("QAbstractSpinBox: Internal error: Different types (%s vs %s) (%s:%d)",
                  arg1.typeName(), arg2.typeName(), __FILE__, __LINE__);
-    switch (arg1.type()) {
-    case QVariant::Int: ret = QVariant(arg1.toInt() - arg2.toInt()); break;
-    case QVariant::Double: ret = QVariant(arg1.toDouble() - arg2.toDouble()); break;
-    case QVariant::DateTime: {
+    switch (arg1.userType()) {
+    case QMetaType::Int: ret = QVariant(arg1.toInt() - arg2.toInt()); break;
+    case QMetaType::Double: ret = QVariant(arg1.toDouble() - arg2.toDouble()); break;
+    case QMetaType::QDateTime: {
         QDateTime a1 = arg1.toDateTime();
         QDateTime a2 = arg2.toDateTime();
         int days = a2.daysTo(a1);
@@ -2090,13 +2090,13 @@ QVariant operator*(const QVariant &arg1, double multiplier)
 {
     QVariant ret;
 
-    switch (arg1.type()) {
-    case QVariant::Int:
+    switch (arg1.userType()) {
+    case QMetaType::Int:
         ret = static_cast<int>(qBound<double>(INT_MIN, arg1.toInt() * multiplier, INT_MAX));
         break;
-    case QVariant::Double: ret = QVariant(arg1.toDouble() * multiplier); break;
+    case QMetaType::Double: ret = QVariant(arg1.toDouble() * multiplier); break;
 #if QT_CONFIG(datetimeparser)
-    case QVariant::DateTime: {
+    case QMetaType::QDateTime: {
         double days = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDateTime().date()) * multiplier;
         const qint64 daysInt = qint64(days);
         days -= daysInt;
@@ -2119,17 +2119,17 @@ double operator/(const QVariant &arg1, const QVariant &arg2)
     double a1 = 0;
     double a2 = 0;
 
-    switch (arg1.type()) {
-    case QVariant::Int:
+    switch (arg1.userType()) {
+    case QMetaType::Int:
         a1 = (double)arg1.toInt();
         a2 = (double)arg2.toInt();
         break;
-    case QVariant::Double:
+    case QMetaType::Double:
         a1 = arg1.toDouble();
         a2 = arg2.toDouble();
         break;
 #if QT_CONFIG(datetimeparser)
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         a1 = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDate());
         a2 = QDATETIMEEDIT_DATE_MIN.daysTo(arg2.toDate());
         a1 += arg1.toDateTime().time().msecsSinceStartOfDay() / (36e5 * 24);
@@ -2144,9 +2144,9 @@ double operator/(const QVariant &arg1, const QVariant &arg2)
 
 int QAbstractSpinBoxPrivate::variantCompare(const QVariant &arg1, const QVariant &arg2)
 {
-    switch (arg2.type()) {
-    case QVariant::Date:
-        Q_ASSERT_X(arg1.type() == QVariant::Date, "QAbstractSpinBoxPrivate::variantCompare",
+    switch (arg2.userType()) {
+    case QMetaType::QDate:
+        Q_ASSERT_X(arg1.userType() == QMetaType::QDate, "QAbstractSpinBoxPrivate::variantCompare",
                    qPrintable(QString::fromLatin1("Internal error 1 (%1)").
                               arg(QString::fromLatin1(arg1.typeName()))));
         if (arg1.toDate() == arg2.toDate()) {
@@ -2156,8 +2156,8 @@ int QAbstractSpinBoxPrivate::variantCompare(const QVariant &arg1, const QVariant
         } else {
             return 1;
         }
-    case QVariant::Time:
-        Q_ASSERT_X(arg1.type() == QVariant::Time, "QAbstractSpinBoxPrivate::variantCompare",
+    case QMetaType::QTime:
+        Q_ASSERT_X(arg1.userType() == QMetaType::QTime, "QAbstractSpinBoxPrivate::variantCompare",
                    qPrintable(QString::fromLatin1("Internal error 2 (%1)").
                               arg(QString::fromLatin1(arg1.typeName()))));
         if (arg1.toTime() == arg2.toTime()) {
@@ -2169,7 +2169,7 @@ int QAbstractSpinBoxPrivate::variantCompare(const QVariant &arg1, const QVariant
         }
 
 
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         if (arg1.toDateTime() == arg2.toDateTime()) {
             return 0;
         } else if (arg1.toDateTime() < arg2.toDateTime()) {
@@ -2177,7 +2177,7 @@ int QAbstractSpinBoxPrivate::variantCompare(const QVariant &arg1, const QVariant
         } else {
             return 1;
         }
-    case QVariant::Int:
+    case QMetaType::Int:
         if (arg1.toInt() == arg2.toInt()) {
             return 0;
         } else if (arg1.toInt() < arg2.toInt()) {
@@ -2185,7 +2185,7 @@ int QAbstractSpinBoxPrivate::variantCompare(const QVariant &arg1, const QVariant
         } else {
             return 1;
         }
-    case QVariant::Double:
+    case QMetaType::Double:
         if (arg1.toDouble() == arg2.toDouble()) {
             return 0;
         } else if (arg1.toDouble() < arg2.toDouble()) {
@@ -2193,8 +2193,8 @@ int QAbstractSpinBoxPrivate::variantCompare(const QVariant &arg1, const QVariant
         } else {
             return 1;
         }
-    case QVariant::Invalid:
-        if (arg2.type() == QVariant::Invalid)
+    case QMetaType::UnknownType:
+        if (arg2.userType() == QMetaType::UnknownType)
             return 0;
         Q_FALLTHROUGH();
     default:

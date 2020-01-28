@@ -96,8 +96,8 @@ static QString dumpVariant(const QVariant &v, const QString &indent = QLatin1Str
     QString indented = indent + QLatin1String("  ");
 
     int type = v.userType();
-    if (type == qMetaTypeId<VariantOrderedMap>() || type == QVariant::Map) {
-        const auto map = (type == QVariant::Map) ?
+    if (type == qMetaTypeId<VariantOrderedMap>() || type == QMetaType::QVariantMap) {
+        const auto map = (type == QMetaType::QVariantMap) ?
                     VariantOrderedMap(v.toMap()) : qvariant_cast<VariantOrderedMap>(v);
 
         result = QLatin1String("Map {");
@@ -109,7 +109,7 @@ static QString dumpVariant(const QVariant &v, const QString &indent = QLatin1Str
         }
         result.chop(1);             // remove comma
         result += indent + QLatin1String("},");
-    } else if (type == QVariant::List) {
+    } else if (type == QMetaType::QVariantList) {
         const QVariantList list = v.toList();
 
         result = QLatin1String("List [");

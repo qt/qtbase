@@ -716,7 +716,7 @@ QPolygon QPolygonF::toPolygon() const
 */
 QPolygon::operator QVariant() const
 {
-    return QVariant(QVariant::Polygon, this);
+    return QVariant(QMetaType::QPolygon, this);
 }
 
 /*****************************************************************************

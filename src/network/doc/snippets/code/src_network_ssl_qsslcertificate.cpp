@@ -55,3 +55,11 @@ for (const QSslCertificate &cert : certs) {
     qDebug() << cert.issuerInfo(QSslCertificate::Organization);
 }
 //! [0]
+
+//! [1]
+const auto certs = QSslCertificate::fromPath("C:/ssl/certificate.*.pem",
+                                             QSsl::Pem, QSslCertificate::Wildcard);
+for (const QSslCertificate &cert : certs) {
+    qDebug() << cert.issuerInfo(QSslCertificate::Organization);
+}
+//! [1]

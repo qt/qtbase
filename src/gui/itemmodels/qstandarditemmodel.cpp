@@ -926,7 +926,7 @@ void QStandardItem::setData(const QVariant &value, int role)
     for (it = d->values.begin(); it != d->values.end(); ++it) {
         if ((*it).role == role) {
             if (value.isValid()) {
-                if ((*it).value.type() == value.type() && (*it).value == value)
+                if ((*it).value.userType() == value.userType() && (*it).value == value)
                     return;
                 (*it).value = value;
             } else {

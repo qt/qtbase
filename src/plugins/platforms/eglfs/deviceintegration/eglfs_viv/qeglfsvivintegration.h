@@ -53,6 +53,12 @@ public:
     void destroyNativeWindow(EGLNativeWindowType window) override;
     EGLNativeDisplayType platformDisplay() const override;
 
+    // Vulkan support with VK_KHR_display
+#if QT_CONFIG(vulkan)
+    QEglFSWindow *createWindow(QWindow *window) const override;
+    QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) override;
+#endif
+
 private:
     QSize mScreenSize;
     EGLNativeDisplayType mNativeDisplay;

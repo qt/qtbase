@@ -51,7 +51,7 @@
 #ifndef BUTTONWIDGET_H
 #define BUTTONWIDGET_H
 
-#include <qwidget.h>
+#include <QWidget>
 
 class QSignalMapper;
 class QString;
@@ -63,7 +63,7 @@ class ButtonWidget : public QWidget
     Q_OBJECT
 
 public:
-    ButtonWidget(const QStringList &texts, QWidget *parent = 0);
+    ButtonWidget(const QStringList &texts, QWidget *parent = nullptr);
 
 signals:
     void clicked(const QString &text);

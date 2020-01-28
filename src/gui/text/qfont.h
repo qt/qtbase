@@ -80,8 +80,10 @@ public:
         PreferQuality       = 0x0040,
         PreferAntialias     = 0x0080,
         NoAntialias         = 0x0100,
-        OpenGLCompatible    = 0x0200,
-        ForceIntegerMetrics = 0x0400,
+#if QT_DEPRECATED_SINCE(5, 15)
+        OpenGLCompatible Q_DECL_ENUMERATOR_DEPRECATED = 0x0200,
+        ForceIntegerMetrics Q_DECL_ENUMERATOR_DEPRECATED = 0x0400,
+#endif
         NoSubpixelAntialias = 0x0800,
         PreferNoShaping     = 0x1000,
         NoFontMerging       = 0x8000

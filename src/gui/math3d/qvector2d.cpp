@@ -531,7 +531,7 @@ QVector4D QVector2D::toVector4D() const
 */
 QVector2D::operator QVariant() const
 {
-    return QVariant(QVariant::Vector2D, this);
+    return QVariant(QMetaType::QVector2D, this);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

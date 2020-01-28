@@ -302,8 +302,8 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
     value = index.data(Qt::DecorationRole);
     if (value.isValid() && !value.isNull()) {
         option->features |= QStyleOptionViewItem::HasDecoration;
-        switch (value.type()) {
-        case QVariant::Icon: {
+        switch (value.userType()) {
+        case QMetaType::QIcon: {
             option->icon = qvariant_cast<QIcon>(value);
             QIcon::Mode mode;
             if (!(option->state & QStyle::State_Enabled))
@@ -319,19 +319,19 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
                                            qMin(option->decorationSize.height(), actualSize.height()));
             break;
         }
-        case QVariant::Color: {
+        case QMetaType::QColor: {
             QPixmap pixmap(option->decorationSize);
             pixmap.fill(qvariant_cast<QColor>(value));
             option->icon = QIcon(pixmap);
             break;
         }
-        case QVariant::Image: {
+        case QMetaType::QImage: {
             QImage image = qvariant_cast<QImage>(value);
             option->icon = QIcon(QPixmap::fromImage(image));
             option->decorationSize = image.size() / image.devicePixelRatio();
             break;
         }
-        case QVariant::Pixmap: {
+        case QMetaType::QPixmap: {
             QPixmap pixmap = qvariant_cast<QPixmap>(value);
             option->icon = QIcon(pixmap);
             option->decorationSize = pixmap.size() / pixmap.devicePixelRatio();

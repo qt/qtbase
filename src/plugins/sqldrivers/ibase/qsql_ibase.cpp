@@ -730,7 +730,7 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
     if (curDim != dim) {
         for(i = 0; i < list.size(); ++i) {
 
-          if (list.at(i).type() != QVariant::List) { // dimensions mismatch
+          if (list.at(i).userType() != QVariant::List) { // dimensions mismatch
               error = QLatin1String("Array dimensons mismatch. Fieldname: %1");
               return 0;
           }
@@ -1162,7 +1162,7 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             // null value
             QVariant v;
             v.convert(qIBaseTypeName2(d->sqlda->sqlvar[i].sqltype, d->sqlda->sqlvar[i].sqlscale < 0));
-            if(v.type() == QVariant::Double) {
+            if (v.userType() == QVariant::Double) {
                 switch(numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
                     v.convert(QVariant::Int);

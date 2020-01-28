@@ -75,19 +75,30 @@ endif()
 set(_user_specified_genex
     \"$<IN_LIST:Qt5::$$CMAKE_PLUGIN_NAME,${_manual_plugins_genex};${_plugin_type_genex}>\"
 )
+set(_user_specified_genex_versionless
+    \"$<IN_LIST:Qt::$$CMAKE_PLUGIN_NAME,${_manual_plugins_genex};${_plugin_type_genex}>\"
+)
 string(CONCAT _plugin_genex
     \"$<$<OR:\"
-        # Add this plugin if it\'s in the list of manual plugins or plugins for the type
+        # Add this plugin if it\'s in the list of manually specified plugins or in the list of
+        # explicitly included plugin types.
         \"${_user_specified_genex},\"
-        # Add this plugin if the list of plugins for the type is empty, the PLUGIN_EXTENDS
-        # is either empty or equal to the module name, and the user hasn\'t blacklisted it
+        \"${_user_specified_genex_versionless},\"
+        # Add this plugin if all of the following are true:
+        # 1) the list of explicitly included plugin types is empty
+        # 2) the QT_PLUGIN_EXTENDS property for the plugin is empty or equal to the current
+        #    module name
+        # 3) the user hasn\'t explicitly excluded the plugin.
         \"$<AND:\"
             \"$<STREQUAL:${_plugin_type_genex},>,\"
             \"$<OR:\"
-                \"$<STREQUAL:$<TARGET_PROPERTY:Qt5::$${CMAKE_PLUGIN_NAME},QT_PLUGIN_EXTENDS>,Qt5::$${CMAKE_MODULE_NAME}>,\"
+                # FIXME: The value of CMAKE_MODULE_NAME seems to be wrong (e.g for Svg plugin
+                # it should be Qt::Svg instead of Qt::Gui).
+                \"$<STREQUAL:$<TARGET_PROPERTY:Qt5::$${CMAKE_PLUGIN_NAME},QT_PLUGIN_EXTENDS>,Qt::$${CMAKE_MODULE_NAME}>,\"
                 \"$<STREQUAL:$<TARGET_PROPERTY:Qt5::$${CMAKE_PLUGIN_NAME},QT_PLUGIN_EXTENDS>,>\"
             \">,\"
-            \"$<NOT:$<IN_LIST:Qt5::$${CMAKE_PLUGIN_NAME},${_no_plugins_genex}>>\"
+            \"$<NOT:$<IN_LIST:Qt5::$${CMAKE_PLUGIN_NAME},${_no_plugins_genex}>>,\"
+            \"$<NOT:$<IN_LIST:Qt::$${CMAKE_PLUGIN_NAME},${_no_plugins_genex}>>\"
         \">\"
     \">:Qt5::$$CMAKE_PLUGIN_NAME>\"
 )
@@ -100,3 +111,4 @@ set_property(TARGET Qt5::$${CMAKE_PLUGIN_NAME} APPEND PROPERTY INTERFACE_LINK_LI
 !!ENDIF
 set_property(TARGET Qt5::$${CMAKE_PLUGIN_NAME} PROPERTY QT_PLUGIN_TYPE \"$$CMAKE_PLUGIN_TYPE\")
 set_property(TARGET Qt5::$${CMAKE_PLUGIN_NAME} PROPERTY QT_PLUGIN_EXTENDS \"$$CMAKE_PLUGIN_EXTENDS\")
+set_property(TARGET Qt5::$${CMAKE_PLUGIN_NAME} PROPERTY QT_PLUGIN_CLASS_NAME \"$$CMAKE_PLUGIN_NAME\")

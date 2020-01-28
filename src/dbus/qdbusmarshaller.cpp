@@ -190,7 +190,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
 
     const QVariant &value = arg.variant();
     int id = value.userType();
-    if (id == QVariant::Invalid) {
+    if (id == QMetaType::UnknownType) {
         qWarning("QDBusMarshaller: cannot add a null QDBusVariant");
         error(QLatin1String("Variant containing QVariant::Invalid passed in arguments"));
         return false;
@@ -384,7 +384,7 @@ void QDBusMarshaller::error(const QString &msg)
 bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
 {
     int id = arg.userType();
-    if (id == QVariant::Invalid) {
+    if (id == QMetaType::UnknownType) {
         qWarning("QDBusMarshaller: cannot add an invalid QVariant");
         error(QLatin1String("Variant containing QVariant::Invalid passed in arguments"));
         return false;
@@ -485,12 +485,12 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     case DBUS_TYPE_ARRAY:
         // could be many things
         // find out what kind of array it is
-        switch (arg.type()) {
-        case QVariant::StringList:
+        switch (arg.userType()) {
+        case QMetaType::QStringList:
             append( arg.toStringList() );
             return true;
 
-        case QVariant::ByteArray:
+        case QMetaType::QByteArray:
             append( arg.toByteArray() );
             return true;
 

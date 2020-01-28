@@ -3190,13 +3190,13 @@ QVariant QGraphicsScene::inputMethodQuery(Qt::InputMethodQuery query) const
         return QVariant();
     const QTransform matrix = d->focusItem->sceneTransform();
     QVariant value = d->focusItem->inputMethodQuery(query);
-    if (value.type() == QVariant::RectF)
+    if (value.userType() == QMetaType::QRectF)
         value = matrix.mapRect(value.toRectF());
-    else if (value.type() == QVariant::PointF)
+    else if (value.userType() == QMetaType::QPointF)
         value = matrix.map(value.toPointF());
-    else if (value.type() == QVariant::Rect)
+    else if (value.userType() == QMetaType::QRect)
         value = matrix.mapRect(value.toRect());
-    else if (value.type() == QVariant::Point)
+    else if (value.userType() == QMetaType::QPoint)
         value = matrix.map(value.toPoint());
     return value;
 }

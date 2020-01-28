@@ -512,8 +512,8 @@ QAbstractScrollArea::~QAbstractScrollArea()
   Sets the viewport to be the given \a widget.
   The QAbstractScrollArea will take ownership of the given \a widget.
 
-  If \a widget is 0, QAbstractScrollArea will assign a new QWidget instance
-  for the viewport.
+  If \a widget is \nullptr, QAbstractScrollArea will assign a new QWidget
+  instance for the viewport.
 
   \sa viewport()
 */
@@ -720,7 +720,7 @@ QWidget *QAbstractScrollArea::cornerWidget() const
     You will probably also want to set at least one of the scroll bar
     modes to \c AlwaysOn.
 
-    Passing 0 shows no widget in the corner.
+    Passing \nullptr shows no widget in the corner.
 
     Any previous corner widget is hidden.
 

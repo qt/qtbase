@@ -23,4 +23,13 @@ qtConfig(opengl) {
         $$PWD/qeglfscontext_p.h
 }
 
+qtConfig(vulkan) {
+    SOURCES += \
+        $$PWD/vulkan/qeglfsvulkaninstance.cpp \
+        $$PWD/vulkan/qeglfsvulkanwindow.cpp
+    HEADERS += \
+        $$PWD/vulkan/qeglfsvulkaninstance_p.h \
+        $$PWD/vulkan/qeglfsvulkanwindow_p.h
+}
+
 INCLUDEPATH += $$PWD

@@ -219,6 +219,10 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::DontUseWMPointer;
         } else if (param == u"reverse") {
             options |= QWindowsIntegration::RtlEnabled;
+        } else if (param == u"darkmode=1") {
+            options |= QWindowsIntegration::DarkModeWindowFrames;
+        } else if (param == u"darkmode=2") {
+            options |= QWindowsIntegration::DarkModeWindowFrames | QWindowsIntegration::DarkModeStyle;
         } else {
             qWarning() << "Unknown option" << param;
         }

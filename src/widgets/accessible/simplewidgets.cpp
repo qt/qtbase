@@ -76,6 +76,9 @@
 #include <qlineedit.h>
 #include <private/qlineedit_p.h>
 #endif
+#ifndef QT_NO_PICTURE
+#include <QtGui/qpicture.h>
+#endif
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qtextdocument.h>
@@ -431,10 +434,10 @@ QAccessible::Role QAccessibleDisplay::role() const
 #if QT_CONFIG(label)
     QLabel *l = qobject_cast<QLabel*>(object());
     if (l) {
-        if (l->pixmap())
+        if (!l->pixmap(Qt::ReturnByValue).isNull())
             return QAccessible::Graphic;
 #ifndef QT_NO_PICTURE
-        if (l->picture())
+        if (!l->picture(Qt::ReturnByValue).isNull())
             return QAccessible::Graphic;
 #endif
 #if QT_CONFIG(movie)
@@ -558,10 +561,7 @@ QSize QAccessibleDisplay::imageSize() const
 #endif
         return QSize();
 #if QT_CONFIG(label)
-    const QPixmap *pixmap = label->pixmap();
-    if (!pixmap)
-        return QSize();
-    return pixmap->size();
+    return label->pixmap(Qt::ReturnByValue).size();
 #endif
 }
 
@@ -574,8 +574,7 @@ QPoint QAccessibleDisplay::imagePosition() const
 #endif
         return QPoint();
 #if QT_CONFIG(label)
-    const QPixmap *pixmap = label->pixmap();
-    if (!pixmap)
+    if (label->pixmap(Qt::ReturnByValue).isNull())
         return QPoint();
 
     return QPoint(label->mapToGlobal(label->pos()));

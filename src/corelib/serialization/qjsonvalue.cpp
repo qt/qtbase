@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -449,35 +449,35 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
     switch (variant.userType()) {
     case QMetaType::Nullptr:
         return QJsonValue(Null);
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return QJsonValue(variant.toBool());
     case QMetaType::Short:
     case QMetaType::UShort:
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
         return QJsonValue(variant.toLongLong());
-    case QVariant::ULongLong:
+    case QMetaType::ULongLong:
         if (variant.toULongLong() <= static_cast<uint64_t>(std::numeric_limits<qint64>::max()))
             return QJsonValue(variant.toLongLong());
         Q_FALLTHROUGH();
     case QMetaType::Float:
-    case QVariant::Double:
+    case QMetaType::Double:
         return QJsonValue(variant.toDouble());
-    case QVariant::String:
+    case QMetaType::QString:
         return QJsonValue(variant.toString());
-    case QVariant::StringList:
+    case QMetaType::QStringList:
         return QJsonValue(QJsonArray::fromStringList(variant.toStringList()));
-    case QVariant::List:
+    case QMetaType::QVariantList:
         return QJsonValue(QJsonArray::fromVariantList(variant.toList()));
-    case QVariant::Map:
+    case QMetaType::QVariantMap:
         return QJsonValue(QJsonObject::fromVariantMap(variant.toMap()));
-    case QVariant::Hash:
+    case QMetaType::QVariantHash:
         return QJsonValue(QJsonObject::fromVariantHash(variant.toHash()));
 #ifndef QT_BOOTSTRAPPED
-    case QVariant::Url:
+    case QMetaType::QUrl:
         return QJsonValue(variant.toUrl().toString(QUrl::FullyEncoded));
-    case QVariant::Uuid:
+    case QMetaType::QUuid:
         return variant.toUuid().toString(QUuid::WithoutBraces);
     case QMetaType::QJsonValue:
         return variant.toJsonValue();
