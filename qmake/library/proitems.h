@@ -35,6 +35,7 @@
 #include <qstring.h>
 #include <qvector.h>
 #include <qhash.h>
+#include <qmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -316,7 +317,7 @@ Q_DECLARE_TYPEINFO(ProStringList, Q_MOVABLE_TYPE);
 inline ProStringList operator+(const ProStringList &one, const ProStringList &two)
     { ProStringList ret = one; ret += two; return ret; }
 
-typedef QHash<ProKey, ProStringList> ProValueMap;
+typedef QMap<ProKey, ProStringList> ProValueMap;
 
 // These token definitions affect both ProFileEvaluator and ProWriter
 enum ProToken {
