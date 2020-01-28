@@ -3097,13 +3097,11 @@ def write_example(
             qmldir_file_path = qmldir_file_path_list[0] if qmldir_file_path_list else "qmldir"
             qmldir_file_path = os.path.join(os.getcwd(), qmldir_file_path[0])
 
+            dynamic_qmldir = scope.get("DYNAMIC_QMLDIR")
             if os.path.exists(qmldir_file_path):
                 qml_dir = QmlDir()
                 qml_dir.from_file(qmldir_file_path)
-            else:
-                dynamic_qmldir = scope.get("DYNAMIC_QMLDIR")
-                if not dynamic_qmldir:
-                    return None
+            elif dynamic_qmldir:
                 qml_dir = QmlDir()
                 qml_dir.from_lines(dynamic_qmldir)
                 qml_dir_dynamic_imports = True
