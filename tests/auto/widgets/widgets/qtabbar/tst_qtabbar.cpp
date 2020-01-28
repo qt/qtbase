@@ -33,6 +33,7 @@
 
 #include <qpushbutton.h>
 #include <qstyle.h>
+#include <qstyleoption.h>
 
 class tst_QTabBar : public QObject
 {
@@ -279,30 +280,53 @@ void tst_QTabBar::hideTab()
     QTEST(tabbar.currentIndex(), "finalIndex");
 }
 
+class TabBar : public QTabBar
+{
+public:
+    using QTabBar::QTabBar;
+    using QTabBar::initStyleOption;
+    using QTabBar::moveTab;
+};
+
 void tst_QTabBar::hideAllTabs()
 {
-    QTabBar tabbar;
+    TabBar tabbar;
+    auto checkPositions = [&tabbar](const QVector<int> &positions)
+    {
+        QStyleOptionTab option;
+        int iPos = 0;
+        for (int i = 0; i < tabbar.count(); ++i) {
+            if (!tabbar.isTabVisible(i))
+                continue;
+            tabbar.initStyleOption(&option, i);
+            QCOMPARE(option.position, positions.at(iPos++));
+        }
+    };
 
     tabbar.addTab("foo");
     tabbar.addTab("bar");
     tabbar.addTab("baz");
     tabbar.setCurrentIndex(0);
+    checkPositions({QStyleOptionTab::Beginning, QStyleOptionTab::Middle, QStyleOptionTab::End});
 
     // Check we don't crash trying to hide an unexistant tab
     QSize prevSizeHint = tabbar.sizeHint();
     tabbar.setTabVisible(3, false);
+    checkPositions({QStyleOptionTab::Beginning, QStyleOptionTab::Middle, QStyleOptionTab::End});
     QCOMPARE(tabbar.currentIndex(), 0);
     QSize sizeHint = tabbar.sizeHint();
     QVERIFY(sizeHint.width() == prevSizeHint.width());
     prevSizeHint = sizeHint;
 
     tabbar.setTabVisible(1, false);
+    checkPositions({QStyleOptionTab::Beginning, QStyleOptionTab::End});
     QCOMPARE(tabbar.currentIndex(), 0);
     sizeHint = tabbar.sizeHint();
     QVERIFY(sizeHint.width() < prevSizeHint.width());
     prevSizeHint = sizeHint;
 
     tabbar.setTabVisible(2, false);
+    checkPositions({QStyleOptionTab::OnlyOneTab});
     QCOMPARE(tabbar.currentIndex(), 0);
     sizeHint = tabbar.sizeHint();
     QVERIFY(sizeHint.width() < prevSizeHint.width());
@@ -571,14 +595,6 @@ void tst_QTabBar::selectionBehaviorOnRemove()
     QCOMPARE(tabbar.currentIndex(), expected);
 }
 
-class TabBar : public QTabBar
-{
-    Q_OBJECT
-public:
-    void callMoveTab(int from, int to){ moveTab(from, to); }
-};
-
-
 Q_DECLARE_METATYPE(QTabBar::Shape)
 void tst_QTabBar::moveTab_data()
 {
@@ -613,7 +629,7 @@ void tst_QTabBar::moveTab()
     bar.setShape(shape);
     while(--tabs >= 0)
         bar.addTab(QString::number(tabs));
-    bar.callMoveTab(from, to);
+    bar.moveTab(from, to);
 }
 
 

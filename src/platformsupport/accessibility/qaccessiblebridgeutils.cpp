@@ -93,7 +93,7 @@ bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionNa
         if (!success)
             return false;
         stepSize = (max - min) / 10;  // this is pretty arbitrary, we just need to provide something
-        const int typ = currentVariant.type();
+        const int typ = currentVariant.userType();
         if (typ != QMetaType::Float && typ != QMetaType::Double) {
             // currentValue is an integer. Round it up to ensure stepping in case it was below 1
             stepSize = qCeil(stepSize);

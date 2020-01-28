@@ -963,7 +963,7 @@ static inline void QRect_unite(QRect *rect, const QRect &other)
 /*
    Calling this function results in update rects being clipped to the item's
    bounding rect. Note that updates prior to this function call is not clipped.
-   The clip is removed by passing 0.
+   The clip is removed by passing \nullptr.
 */
 void QGraphicsViewPrivate::setUpdateClip(QGraphicsItem *item)
 {
@@ -2589,13 +2589,13 @@ QVariant QGraphicsView::inputMethodQuery(Qt::InputMethodQuery query) const
         return QVariant();
 
     QVariant value = d->scene->inputMethodQuery(query);
-    if (value.type() == QVariant::RectF)
+    if (value.userType() == QMetaType::QRectF)
         value = d->mapRectFromScene(value.toRectF());
-    else if (value.type() == QVariant::PointF)
+    else if (value.userType() == QMetaType::QPointF)
         value = mapFromScene(value.toPointF());
-    else if (value.type() == QVariant::Rect)
+    else if (value.userType() == QMetaType::QRect)
         value = d->mapRectFromScene(value.toRect()).toRect();
-    else if (value.type() == QVariant::Point)
+    else if (value.userType() == QMetaType::QPoint)
         value = mapFromScene(value.toPoint());
     return value;
 }

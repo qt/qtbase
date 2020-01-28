@@ -112,22 +112,23 @@ QVariant QInternalMimeData::retrieveData(const QString &mimeType, QVariant::Type
 {
     QVariant data = retrieveData_sys(mimeType, type);
     if (mimeType == QLatin1String("application/x-qt-image")) {
-        if (data.isNull() || (data.type() == QVariant::ByteArray && data.toByteArray().isEmpty())) {
+        if (data.isNull() || (data.userType() == QMetaType::QByteArray && data.toByteArray().isEmpty())) {
             // try to find an image
             QStringList imageFormats = imageReadMimeFormats();
             for (int i = 0; i < imageFormats.size(); ++i) {
                 data = retrieveData_sys(imageFormats.at(i), type);
-                if (data.isNull() || (data.type() == QVariant::ByteArray && data.toByteArray().isEmpty()))
+                if (data.isNull() || (data.userType() == QMetaType::QByteArray && data.toByteArray().isEmpty()))
                     continue;
                 break;
             }
         }
+        int typeId = type;
         // we wanted some image type, but all we got was a byte array. Convert it to an image.
-        if (data.type() == QVariant::ByteArray
-            && (type == QVariant::Image || type == QVariant::Pixmap || type == QVariant::Bitmap))
+        if (data.userType() == QMetaType::QByteArray
+            && (typeId == QMetaType::QImage || typeId == QMetaType::QPixmap || typeId == QMetaType::QBitmap))
             data = QImage::fromData(data.toByteArray());
 
-    } else if (mimeType == QLatin1String("application/x-color") && data.type() == QVariant::ByteArray) {
+    } else if (mimeType == QLatin1String("application/x-color") && data.userType() == QMetaType::QByteArray) {
         QColor c;
         QByteArray ba = data.toByteArray();
         if (ba.size() == 8) {
@@ -140,7 +141,7 @@ QVariant QInternalMimeData::retrieveData(const QString &mimeType, QVariant::Type
         } else {
             qWarning("Qt: Invalid color format");
         }
-    } else if (data.type() != type && data.type() == QVariant::ByteArray) {
+    } else if (data.userType() != int(type) && data.userType() == QMetaType::QByteArray) {
         // try to use mime data's internal conversion stuf.
         QInternalMimeData *that = const_cast<QInternalMimeData *>(this);
         that->setData(mimeType, data.toByteArray());

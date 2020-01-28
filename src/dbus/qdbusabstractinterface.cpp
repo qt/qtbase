@@ -157,7 +157,7 @@ bool QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, void *retu
     const int type = mp.userType();
     // is this metatype registered?
     const char *expectedSignature = "";
-    if (int(mp.type()) != QMetaType::QVariant) {
+    if (int(mp.userType()) != QMetaType::QVariant) {
         expectedSignature = QDBusMetaType::typeToSignature(type);
         if (expectedSignature == nullptr) {
             qWarning("QDBusAbstractInterface: type %s must be registered with Qt D-Bus before it can be "

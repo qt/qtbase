@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
     if (!target || propertyName.isEmpty()) {
-        propertyType = QVariant::Invalid;
+        propertyType = QMetaType::UnknownType;
         propertyIndex = -1;
         return;
     }
@@ -102,11 +102,11 @@ void QPropertyAnimationPrivate::updateMetaProperty()
     propertyType = targetValue->property(propertyName).userType();
     propertyIndex = targetValue->metaObject()->indexOfProperty(propertyName);
 
-    if (propertyType != QVariant::Invalid)
+    if (propertyType != QMetaType::UnknownType)
         convertValues(propertyType);
     if (propertyIndex == -1) {
         //there is no Q_PROPERTY on the object
-        propertyType = QVariant::Invalid;
+        propertyType = QMetaType::UnknownType;
         if (!targetValue->dynamicPropertyNames().contains(propertyName))
             qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
     } else if (!targetValue->metaObject()->property(propertyIndex).isWritable()) {

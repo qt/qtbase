@@ -180,6 +180,7 @@ public:
 
     int defaultDPI() const;
 
+    static QString classNamePrefix();
     QString registerWindowClass(const QWindow *w);
     QString registerWindowClass(QString cname, WNDPROC proc,
                                 unsigned style = 0, HBRUSH brush = nullptr,
@@ -224,6 +225,8 @@ public:
     void setTabletAbsoluteRange(int a);
     void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
     static int processDpiAwareness();
+
+    static bool isDarkMode();
 
     void setDetectAltGrModifier(bool a);
 

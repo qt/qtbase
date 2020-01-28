@@ -479,7 +479,7 @@ QNetworkDatagram QUdpSocket::receiveDatagram(qint64 maxSize)
 /*!
     Receives a datagram no larger than \a maxSize bytes and stores
     it in \a data. The sender's host address and port is stored in
-    *\a address and *\a port (unless the pointers are 0).
+    *\a address and *\a port (unless the pointers are \nullptr).
 
     Returns the size of the datagram on success; otherwise returns
     -1.

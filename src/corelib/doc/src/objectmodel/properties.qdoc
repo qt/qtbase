@@ -144,6 +144,12 @@
     optimizations in some cases, but is not enforced by moc.  Care must be taken
     never to override a \c FINAL property.
 
+    \li The presence of the \c REQUIRED attribute indicates that the property
+    should be set by a user of the class. This is not enforced by moc, and is
+    mostly useful for classes exposed to QML. In QML, classes with REQUIRED
+    properties cannot be instantiated unless all REQUIRED properties have
+    been set.
+
     \endlist
 
     The \c READ, \c WRITE, and \c RESET functions can be inherited.

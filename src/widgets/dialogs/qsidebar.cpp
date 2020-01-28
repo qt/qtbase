@@ -163,7 +163,7 @@ bool QUrlModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
 */
 bool QUrlModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (value.type() == QVariant::Url) {
+    if (value.userType() == QMetaType::QUrl) {
         QUrl url = value.toUrl();
         QModelIndex dirIndex = fileSystemModel->index(url.toLocalFile());
         //On windows the popup display the "C:\", convert to nativeSeparators

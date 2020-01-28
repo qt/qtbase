@@ -61,6 +61,7 @@ Q_PROPERTY(type name
            [USER bool]
            [CONSTANT]
            [FINAL])
+           [REQUIRED]
 //! [0]
 
 

@@ -334,7 +334,7 @@ void QCocoaMenu::setEnabled(bool enabled)
 
 bool QCocoaMenu::isEnabled() const
 {
-    return m_attachedItem ? m_attachedItem.enabled : m_enabled && m_parentEnabled;
+    return m_enabled && m_parentEnabled;
 }
 
 void QCocoaMenu::setVisible(bool visible)

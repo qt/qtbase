@@ -51,12 +51,12 @@ namespace {
 static void construct(QVariant::Private *x, const void *copy)
 {
     switch (x->type) {
-    case QVariant::SizePolicy:
+    case QMetaType::QSizePolicy:
         v_construct<QSizePolicy>(x, copy);
         break;
     default:
         qWarning("Trying to construct an instance of an invalid type, type id: %i", x->type);
-        x->type = QVariant::Invalid;
+        x->type = QMetaType::UnknownType;
         return;
     }
     x->is_null = !copy;
@@ -65,7 +65,7 @@ static void construct(QVariant::Private *x, const void *copy)
 static void clear(QVariant::Private *d)
 {
     switch (d->type) {
-    case QVariant::SizePolicy:
+    case QMetaType::QSizePolicy:
         v_clear<QSizePolicy>(d);
         break;
     default:
@@ -73,7 +73,7 @@ static void clear(QVariant::Private *d)
         return;
     }
 
-    d->type = QVariant::Invalid;
+    d->type = QMetaType::UnknownType;
     d->is_null = true;
     d->is_shared = false;
 }
@@ -88,7 +88,7 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
     Q_ASSERT(a->type == b->type);
     switch(a->type) {
-    case QVariant::SizePolicy:
+    case QMetaType::QSizePolicy:
         return *v_cast<QSizePolicy>(a) == *v_cast<QSizePolicy>(b);
     default:
         Q_ASSERT(false);
@@ -111,7 +111,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
     switch (d->type) {
-    case QVariant::SizePolicy:
+    case QMetaType::QSizePolicy:
         dbg.nospace() << *v_cast<QSizePolicy>(d);
         break;
     default:

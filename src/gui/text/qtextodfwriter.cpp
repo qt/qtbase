@@ -455,9 +455,9 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
             name.prepend(QLatin1String("qrc"));
         QUrl url = QUrl(name);
         const QVariant variant = m_document->resource(QTextDocument::ImageResource, url);
-        if (variant.type() == QVariant::Image) {
+        if (variant.userType() == QMetaType::QImage) {
             image = qvariant_cast<QImage>(variant);
-        } else if (variant.type() == QVariant::ByteArray) {
+        } else if (variant.userType() == QMetaType::QByteArray) {
             data = variant.toByteArray();
 
             QBuffer buffer(&data);

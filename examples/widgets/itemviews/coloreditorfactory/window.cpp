@@ -61,7 +61,7 @@ Window::Window()
     QItemEditorCreatorBase *colorListCreator =
         new QStandardItemEditorCreator<ColorListEditor>();
 
-    factory->registerEditor(QVariant::Color, colorListCreator);
+    factory->registerEditor(QMetaType::QColor, colorListCreator);
 
     QItemEditorFactory::setDefaultFactory(factory);
 

@@ -1829,7 +1829,7 @@ QByteArray QIODevicePrivate::peek(qint64 maxSize)
 /*! \fn bool QIODevice::getChar(char *c)
 
     Reads one character from the device and stores it in \a c. If \a c
-    is 0, the character is discarded. Returns \c true on success;
+    is \nullptr, the character is discarded. Returns \c true on success;
     otherwise returns \c false.
 
     \sa read(), putChar(), ungetChar()

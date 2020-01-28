@@ -107,7 +107,10 @@ Q_SIGNALS:
     void historyChanged();
     void sourceChanged(const QUrl &);
     void highlighted(const QUrl &);
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use QTextBrowser::highlighted(QUrl) instead")
     void highlighted(const QString &);
+#endif
     void anchorClicked(const QUrl &);
 
 protected:

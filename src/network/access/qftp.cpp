@@ -1820,7 +1820,7 @@ int QFtp::cd(const QString &dir)
     \internal
     Downloads the file \a file from the server.
 
-    If \a dev is 0, then the readyRead() signal is emitted when there
+    If \a dev is \nullptr, then the readyRead() signal is emitted when there
     is data available to read. You can then read the data with the
     read() or readAll() functions.
 

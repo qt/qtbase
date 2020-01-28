@@ -223,13 +223,13 @@ public:
     {
         QMyField()
             : outField(0), nullIndicator(false), bufLength(0ul),
-              myField(0), type(QVariant::Invalid)
+              myField(0), type(QMetaType::UnknownType)
         {}
         char *outField;
         my_bool nullIndicator;
         ulong bufLength;
         MYSQL_FIELD *myField;
-        QVariant::Type type;
+        QMetaType::Type type;
     };
 
     QVector<QMyField> fields;
@@ -263,25 +263,25 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 }
 
 
-static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
+static QMetaType::Type qDecodeMYSQLType(int mysqltype, uint flags)
 {
-    QVariant::Type type;
+    QMetaType::Type type;
     switch (mysqltype) {
     case FIELD_TYPE_TINY :
-        type = static_cast<QVariant::Type>((flags & UNSIGNED_FLAG) ? QMetaType::UChar : QMetaType::Char);
+        type = (flags & UNSIGNED_FLAG) ? QMetaType::UChar : QMetaType::Char;
         break;
     case FIELD_TYPE_SHORT :
-        type = static_cast<QVariant::Type>((flags & UNSIGNED_FLAG) ? QMetaType::UShort : QMetaType::Short);
+        type = (flags & UNSIGNED_FLAG) ? QMetaType::UShort : QMetaType::Short;
         break;
     case FIELD_TYPE_LONG :
     case FIELD_TYPE_INT24 :
-        type = (flags & UNSIGNED_FLAG) ? QVariant::UInt : QVariant::Int;
+        type = (flags & UNSIGNED_FLAG) ? QMetaType::UInt : QMetaType::Int;
         break;
     case FIELD_TYPE_YEAR :
-        type = QVariant::Int;
+        type = QMetaType::Int;
         break;
     case FIELD_TYPE_LONGLONG :
-        type = (flags & UNSIGNED_FLAG) ? QVariant::ULongLong : QVariant::LongLong;
+        type = (flags & UNSIGNED_FLAG) ? QMetaType::ULongLong : QMetaType::LongLong;
         break;
     case FIELD_TYPE_FLOAT :
     case FIELD_TYPE_DOUBLE :
@@ -289,19 +289,19 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
 #if defined(FIELD_TYPE_NEWDECIMAL)
     case FIELD_TYPE_NEWDECIMAL:
 #endif
-        type = QVariant::Double;
+        type = QMetaType::Double;
         break;
     case FIELD_TYPE_DATE :
-        type = QVariant::Date;
+        type = QMetaType::QDate;
         break;
     case FIELD_TYPE_TIME :
         // A time field can be within the range '-838:59:59' to '838:59:59' so
         // use QString instead of QTime since QTime is limited to 24 hour clock
-        type = QVariant::String;
+        type = QMetaType::QString;
         break;
     case FIELD_TYPE_DATETIME :
     case FIELD_TYPE_TIMESTAMP :
-        type = QVariant::DateTime;
+        type = QMetaType::QDateTime;
         break;
     case FIELD_TYPE_STRING :
     case FIELD_TYPE_VAR_STRING :
@@ -309,12 +309,12 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
     case FIELD_TYPE_TINY_BLOB :
     case FIELD_TYPE_MEDIUM_BLOB :
     case FIELD_TYPE_LONG_BLOB :
-        type = (flags & BINARY_FLAG) ? QVariant::ByteArray : QVariant::String;
+        type = (flags & BINARY_FLAG) ? QMetaType::QByteArray : QMetaType::QString;
         break;
     default:
     case FIELD_TYPE_ENUM :
     case FIELD_TYPE_SET :
-        type = QVariant::String;
+        type = QMetaType::QString;
         break;
     }
     return type;
@@ -323,7 +323,7 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
 static QSqlField qToField(MYSQL_FIELD *field, QTextCodec *tc)
 {
     QSqlField f(toUnicode(tc, field->name),
-                qDecodeMYSQLType(int(field->type), field->flags),
+                QVariant::Type(qDecodeMYSQLType(int(field->type), field->flags)),
                 toUnicode(tc, field->table));
     f.setRequired(IS_NOT_NULL(field->flags));
     f.setLength(field->length);
@@ -610,7 +610,7 @@ QVariant QMYSQLResult::data(int field)
     QString val;
     if (d->preparedQuery) {
         if (f.nullIndicator)
-            return QVariant(f.type);
+            return QVariant(QVariant::Type(f.type));
 
         if (qIsInteger(f.type)) {
             QVariant variant(f.type, f.outField);
@@ -622,34 +622,34 @@ QVariant QMYSQLResult::data(int field)
             return variant;
         }
 
-        if (f.type != QVariant::ByteArray)
+        if (f.type != QMetaType::QByteArray)
             val = toUnicode(d->drv_d_func()->tc, f.outField, f.bufLength);
     } else {
         if (d->row[field] == NULL) {
             // NULL value
-            return QVariant(f.type);
+            return QVariant(QVariant::Type(f.type));
         }
 
         fieldLength = mysql_fetch_lengths(d->result)[field];
 
-        if (f.type != QVariant::ByteArray)
+        if (f.type != QMetaType::QByteArray)
             val = toUnicode(d->drv_d_func()->tc, d->row[field], fieldLength);
     }
 
     switch (static_cast<int>(f.type)) {
-    case QVariant::LongLong:
+    case QMetaType::LongLong:
         return QVariant(val.toLongLong());
-    case QVariant::ULongLong:
+    case QMetaType::ULongLong:
         return QVariant(val.toULongLong());
     case QMetaType::Char:
     case QMetaType::Short:
-    case QVariant::Int:
+    case QMetaType::Int:
         return QVariant(val.toInt());
     case QMetaType::UChar:
     case QMetaType::UShort:
-    case QVariant::UInt:
+    case QMetaType::UInt:
         return QVariant(val.toUInt());
-    case QVariant::Double: {
+    case QMetaType::Double: {
         QVariant v;
         bool ok=false;
         double dbl = val.toDouble(&ok);
@@ -673,13 +673,13 @@ QVariant QMYSQLResult::data(int field)
             return v;
         return QVariant();
     }
-    case QVariant::Date:
+    case QMetaType::QDate:
         return qDateFromString(val);
-    case QVariant::Time:
+    case QMetaType::QTime:
         return qTimeFromString(val);
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return qDateTimeFromString(val);
-    case QVariant::ByteArray: {
+    case QMetaType::QByteArray: {
 
         QByteArray ba;
         if (d->preparedQuery) {
@@ -689,7 +689,7 @@ QVariant QMYSQLResult::data(int field)
         }
         return QVariant(ba);
     }
-    case QVariant::String:
+    case QMetaType::QString:
     default:
         return QVariant(val);
     }
@@ -867,21 +867,21 @@ void QMYSQLResult::virtual_hook(int id, void *data)
     QSqlResult::virtual_hook(id, data);
 }
 
-static MYSQL_TIME *toMySqlDate(QDate date, QTime time, QVariant::Type type)
+static MYSQL_TIME *toMySqlDate(QDate date, QTime time, int type)
 {
-    Q_ASSERT(type == QVariant::Time || type == QVariant::Date
-             || type == QVariant::DateTime);
+    Q_ASSERT(type == QMetaType::QTime || type == QMetaType::QDate
+             || type == QMetaType::QDateTime);
 
     MYSQL_TIME *myTime = new MYSQL_TIME;
     memset(myTime, 0, sizeof(MYSQL_TIME));
 
-    if (type == QVariant::Time || type == QVariant::DateTime) {
+    if (type == QMetaType::QTime || type == QMetaType::QDateTime) {
         myTime->hour = time.hour();
         myTime->minute = time.minute();
         myTime->second = time.second();
         myTime->second_part = time.msec() * 1000;
     }
-    if (type == QVariant::Date || type == QVariant::DateTime) {
+    if (type == QMetaType::QDate || type == QMetaType::QDateTime) {
         myTime->year = date.year();
         myTime->month = date.month();
         myTime->day = date.day();
@@ -971,30 +971,30 @@ bool QMYSQLResult::exec()
             currBind->length = 0;
             currBind->is_unsigned = 0;
 
-            switch (val.type()) {
-                case QVariant::ByteArray:
+            switch (val.userType()) {
+                case QMetaType::QByteArray:
                     currBind->buffer_type = MYSQL_TYPE_BLOB;
                     currBind->buffer = const_cast<char *>(val.toByteArray().constData());
                     currBind->buffer_length = val.toByteArray().size();
                     break;
 
-                case QVariant::Time:
-                case QVariant::Date:
-                case QVariant::DateTime: {
-                    MYSQL_TIME *myTime = toMySqlDate(val.toDate(), val.toTime(), val.type());
+                case QMetaType::QTime:
+                case QMetaType::QDate:
+                case QMetaType::QDateTime: {
+                    MYSQL_TIME *myTime = toMySqlDate(val.toDate(), val.toTime(), val.userType());
                     timeVector.append(myTime);
 
                     currBind->buffer = myTime;
-                    switch(val.type()) {
-                    case QVariant::Time:
+                    switch (val.userType()) {
+                    case QMetaType::QTime:
                         currBind->buffer_type = MYSQL_TYPE_TIME;
                         myTime->time_type = MYSQL_TIMESTAMP_TIME;
                         break;
-                    case QVariant::Date:
+                    case QMetaType::QDate:
                         currBind->buffer_type = MYSQL_TYPE_DATE;
                         myTime->time_type = MYSQL_TIMESTAMP_DATE;
                         break;
-                    case QVariant::DateTime:
+                    case QMetaType::QDateTime:
                         currBind->buffer_type = MYSQL_TYPE_DATETIME;
                         myTime->time_type = MYSQL_TIMESTAMP_DATETIME;
                         break;
@@ -1004,32 +1004,32 @@ bool QMYSQLResult::exec()
                     currBind->buffer_length = sizeof(MYSQL_TIME);
                     currBind->length = 0;
                     break; }
-                case QVariant::UInt:
-                case QVariant::Int:
+                case QMetaType::UInt:
+                case QMetaType::Int:
                     currBind->buffer_type = MYSQL_TYPE_LONG;
                     currBind->buffer = data;
                     currBind->buffer_length = sizeof(int);
-                    currBind->is_unsigned = (val.type() != QVariant::Int);
+                    currBind->is_unsigned = (val.userType() != QMetaType::Int);
                 break;
-                case QVariant::Bool:
+                case QMetaType::Bool:
                     currBind->buffer_type = MYSQL_TYPE_TINY;
                     currBind->buffer = data;
                     currBind->buffer_length = sizeof(bool);
                     currBind->is_unsigned = false;
                     break;
-                case QVariant::Double:
+                case QMetaType::Double:
                     currBind->buffer_type = MYSQL_TYPE_DOUBLE;
                     currBind->buffer = data;
                     currBind->buffer_length = sizeof(double);
                     break;
-                case QVariant::LongLong:
-                case QVariant::ULongLong:
+                case QMetaType::LongLong:
+                case QMetaType::ULongLong:
                     currBind->buffer_type = MYSQL_TYPE_LONGLONG;
                     currBind->buffer = data;
                     currBind->buffer_length = sizeof(qint64);
-                    currBind->is_unsigned = (val.type() == QVariant::ULongLong);
+                    currBind->is_unsigned = (val.userType() == QMetaType::ULongLong);
                     break;
-                case QVariant::String:
+                case QMetaType::QString:
                 default: {
                     QByteArray ba = fromUnicode(d->drv_d_func()->tc, val.toString());
                     stringVector.append(ba);
@@ -1548,16 +1548,16 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
     if (field.isNull()) {
         r = QStringLiteral("NULL");
     } else {
-        switch(field.type()) {
-        case QVariant::Double:
+        switch (+field.type()) {
+        case QMetaType::Double:
             r = QString::number(field.value().toDouble(), 'g', field.precision());
             break;
-        case QVariant::String:
+        case QMetaType::QString:
             // Escape '\' characters
             r = QSqlDriver::formatValue(field, trimStrings);
             r.replace(QLatin1String("\\"), QLatin1String("\\\\"));
             break;
-        case QVariant::ByteArray:
+        case QMetaType::QByteArray:
             if (isOpen()) {
                 const QByteArray ba = field.value().toByteArray();
                 // buffer has to be at least length*2+1 bytes

@@ -152,7 +152,7 @@ namespace QTest {
         inline bool matches(QtMsgType tp, const QString &message) const
         {
             return tp == type
-                   && (pattern.type() == QVariant::String ?
+                   && (pattern.userType() == QMetaType::QString ?
                        stringsMatch(pattern.toString(), message) :
 #if QT_CONFIG(regularexpression)
                        pattern.toRegularExpression().match(message).hasMatch());
@@ -292,7 +292,7 @@ void QTestLog::printUnhandledIgnoreMessages()
     QString message;
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
-        if (list->pattern.type() == QVariant::String) {
+        if (list->pattern.userType() == QMetaType::QString) {
             message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + QLatin1Char('"');
         } else {
 #if QT_CONFIG(regularexpression)

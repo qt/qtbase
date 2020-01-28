@@ -612,7 +612,7 @@ void QTabWidget::setTabVisible(int index, bool visible)
 
   Only the horizontal element of the \a corner will be used.
 
-  Passing 0 shows no widget in the corner.
+  Passing \nullptr shows no widget in the corner.
 
   Any previously set corner widget is hidden.
 

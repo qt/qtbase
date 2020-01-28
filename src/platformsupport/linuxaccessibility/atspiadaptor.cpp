@@ -2250,7 +2250,7 @@ bool AtSpiAdaptor::valueInterface(QAccessibleInterface *interface, const QString
             qCDebug(lcAccessibilityAtspi) << "WARNING: AtSpiAdaptor::valueInterface does not implement " << function << message.path();
             return false;
         }
-        if (!value.canConvert(QVariant::Double)) {
+        if (!value.canConvert(QMetaType::Double)) {
             qCDebug(lcAccessibilityAtspi) << "AtSpiAdaptor::valueInterface: Could not convert to double: " << function;
         }
 

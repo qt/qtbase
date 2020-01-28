@@ -330,7 +330,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, QMap<Key, T> &m
 
 inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantMap &map)
 {
-    arg.beginMap(QVariant::String, qMetaTypeId<QDBusVariant>());
+    arg.beginMap(QMetaType::QString, qMetaTypeId<QDBusVariant>());
     QVariantMap::ConstIterator it = map.constBegin();
     QVariantMap::ConstIterator end = map.constEnd();
     for ( ; it != end; ++it) {
@@ -379,7 +379,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &arg, QHash<Key, T> &
 
 inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
 {
-    arg.beginMap(QVariant::String, qMetaTypeId<QDBusVariant>());
+    arg.beginMap(QMetaType::QString, qMetaTypeId<QDBusVariant>());
     QVariantHash::ConstIterator it = map.constBegin();
     QVariantHash::ConstIterator end = map.constEnd();
     for ( ; it != end; ++it) {

@@ -84,6 +84,13 @@ public:
         EmailAddress
     };
 
+    enum PatternSyntax {
+        RegExp,
+        Wildcard,
+        FixedString
+    };
+
+
     explicit QSslCertificate(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
     explicit QSslCertificate(const QByteArray &data = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
     QSslCertificate(const QSslCertificate &other);
@@ -139,9 +146,20 @@ public:
     QByteArray toDer() const;
     QString toText() const;
 
-    static QList<QSslCertificate> fromPath(
+#if QT_DEPRECATED_SINCE(5,15)
+    QT_DEPRECATED_X("Use the overload not using QRegExp") static QList<QSslCertificate> fromPath(
         const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
         QRegExp::PatternSyntax syntax = QRegExp::FixedString);
+
+    static QList<QSslCertificate> fromPath(
+        const QString &path, QSsl::EncodingFormat format,
+        PatternSyntax syntax);
+#else
+    static QList<QSslCertificate> fromPath(
+        const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
+        PatternSyntax syntax = FixedString);
+#endif
+
     static QList<QSslCertificate> fromDevice(
         QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
     static QList<QSslCertificate> fromData(

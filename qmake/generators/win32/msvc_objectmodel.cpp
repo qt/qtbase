@@ -2351,10 +2351,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         if (!tmp_dep.isEmpty())
             deps = tmp_dep;
         if (!tmp_dep_cmd.isEmpty()) {
-            const QString dep_cd_cmd = QLatin1String("cd ")
-                    + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
-                    + QLatin1String(" && ");
-            Project->callExtraCompilerDependCommand(extraCompilerName, dep_cd_cmd, tmp_dep_cmd,
+            Project->callExtraCompilerDependCommand(extraCompilerName, tmp_dep_cmd,
                                                     inFile, out,
                                                     true, // dep_lines
                                                     &deps,

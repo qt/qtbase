@@ -48,11 +48,11 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 int main(int argv, char **args)
 {
-  QApplication app(argv, args);
+    QApplication app(argv, args);
 
     QStateMachine machine;
 
@@ -66,16 +66,17 @@ int main(int argv, char **args)
 //![0]
 
 //![2]
-    s12->addTransition(quitButton, SIGNAL(clicked()), s12);
+    s12->addTransition(quitButton, &QPushButton::clicked, s12);
 //![2]
 
 //![1]
     QFinalState *s2 = new QFinalState();
-    s1->addTransition(quitButton, SIGNAL(clicked()), s2);
+    s1->addTransition(quitButton, &QPushButton::clicked, s2);
     machine.addState(s2);
     machine.setInitialState(s1);
 
-    QObject::connect(&machine, SIGNAL(finished()), QApplication::instance(), SLOT(quit()));
+    QObject::connect(&machine, &QStateMachine::finished,
+                     QCoreApplication::instance(), &QCoreApplication::quit);
 //![1]
 
   QButton *interruptButton = new QPushButton("Interrupt Button");
@@ -90,11 +91,11 @@ int main(int argv, char **args)
     mbox->addButton(QMessageBox::Ok);
     mbox->setText("Interrupted!");
     mbox->setIcon(QMessageBox::Information);
-    QObject::connect(s3, SIGNAL(entered()), mbox, SLOT(exec()));
+    QObject::connect(s3, &QState::entered, mbox, &QMessageBox::exec);
     s3->addTransition(s1h);
     machine.addState(s3);
 
-    s1->addTransition(interruptButton, SIGNAL(clicked()), s3);
+    s1->addTransition(interruptButton, &QPushButton::clicked, s3);
 //![3]
 
   return app.exec();

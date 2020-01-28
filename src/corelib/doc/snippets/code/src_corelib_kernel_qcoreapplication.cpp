@@ -56,7 +56,7 @@ QApplication::sendEvent(mainWindow, &event);
 
 //! [1]
 QPushButton *quitButton = new QPushButton("Quit");
-connect(quitButton, SIGNAL(clicked()), &app, SLOT(quit()), Qt::QueuedConnection);
+connect(quitButton, &QPushButton::clicked, &app, &QCoreApplication::quit, Qt::QueuedConnection);
 //! [1]
 
 
@@ -79,12 +79,12 @@ Q_COREAPP_STARTUP_FUNCTION(preRoutineMyDebugTool)
 
 
 //! [4]
-static int *global_ptr = 0;
+static int *global_ptr = nullptr;
 
 static void cleanup_ptr()
 {
     delete [] global_ptr;
-    global_ptr = 0;
+    global_ptr = nullptr;
 }
 
 void init_ptr()
@@ -125,9 +125,9 @@ private:
 
 //! [6]
 static inline QString tr(const char *sourceText,
-                         const char *comment = 0);
+                         const char *comment = nullptr);
 static inline QString trUtf8(const char *sourceText,
-                             const char *comment = 0);
+                             const char *comment = nullptr);
 //! [6]
 
 

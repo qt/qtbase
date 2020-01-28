@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/gallery
+    \example gallery
     \title Widgets Gallery Example
     \ingroup examples-widgets
     \brief The Widgets Gallery example shows widgets relevant for designing UIs.

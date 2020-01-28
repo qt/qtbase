@@ -2007,7 +2007,7 @@ void QMatrix4x4::optimize()
 */
 QMatrix4x4::operator QVariant() const
 {
-    return QVariant(QVariant::Matrix4x4, this);
+    return QVariant(QMetaType::QMatrix4x4, this);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

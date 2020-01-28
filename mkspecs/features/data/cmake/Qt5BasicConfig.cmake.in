@@ -406,6 +406,15 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
     add_library(Qt5::$${CMAKE_MODULE_NAME} SHARED IMPORTED)
 !!ENDIF
 !!ENDIF
+
+    # Add a versionless target, for compatibility with Qt6.
+    if(NOT \"${QT_NO_CREATE_VERSIONLESS_TARGETS}\" AND NOT TARGET Qt::$${CMAKE_MODULE_NAME})
+        add_library(Qt::$${CMAKE_MODULE_NAME} INTERFACE IMPORTED)
+        set_target_properties(Qt::$${CMAKE_MODULE_NAME} PROPERTIES
+            INTERFACE_LINK_LIBRARIES \"Qt5::$${CMAKE_MODULE_NAME}\"
+        )
+    endif()
+
 !!IF !equals(TEMPLATE, aux)
 !!IF !isEmpty(CMAKE_BUILD_IS_FRAMEWORK)
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY FRAMEWORK 1)
@@ -419,6 +428,20 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY INTERFACE_QT_ENABLED_FEATURES $$join(QT.$${MODULE}.enabled_features, ";"))
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY INTERFACE_QT_DISABLED_FEATURES $$join(QT.$${MODULE}.disabled_features, ";"))
+
+    # Qt 6 forward compatible properties.
+    set_property(TARGET Qt5::$${CMAKE_MODULE_NAME}
+                 PROPERTY $${CMAKE_FEATURE_PROPERTY_PREFIX}QT_ENABLED_PUBLIC_FEATURES
+                 $$join(QT.$${MODULE}.enabled_features, ";"))
+    set_property(TARGET Qt5::$${CMAKE_MODULE_NAME}
+                 PROPERTY $${CMAKE_FEATURE_PROPERTY_PREFIX}QT_DISABLED_PUBLIC_FEATURES
+                 $$join(QT.$${MODULE}.disabled_features, ";"))
+    set_property(TARGET Qt5::$${CMAKE_MODULE_NAME}
+                 PROPERTY $${CMAKE_FEATURE_PROPERTY_PREFIX}QT_ENABLED_PRIVATE_FEATURES
+                 $$join(QT.$${MODULE}_private.enabled_features, ";"))
+    set_property(TARGET Qt5::$${CMAKE_MODULE_NAME}
+                 PROPERTY $${CMAKE_FEATURE_PROPERTY_PREFIX}QT_DISABLED_PRIVATE_FEATURES
+                 $$join(QT.$${MODULE}_private.disabled_features, ";"))
 
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY INTERFACE_QT_PLUGIN_TYPES \"$${CMAKE_MODULE_PLUGIN_TYPES}\")
 
@@ -443,6 +466,14 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
         set_property(TARGET Qt5::$${CMAKE_MODULE_NAME}Private PROPERTY
             INTERFACE_LINK_LIBRARIES Qt5::$${CMAKE_MODULE_NAME} ${_Qt5$${CMAKE_MODULE_NAME}_PRIVATEDEPS}
         )
+
+        # Add a versionless target, for compatibility with Qt6.
+        if(NOT \"${QT_NO_CREATE_VERSIONLESS_TARGETS}\" AND NOT TARGET Qt::$${CMAKE_MODULE_NAME}Private)
+            add_library(Qt::$${CMAKE_MODULE_NAME}Private INTERFACE IMPORTED)
+            set_target_properties(Qt::$${CMAKE_MODULE_NAME}Private PROPERTIES
+                INTERFACE_LINK_LIBRARIES \"Qt5::$${CMAKE_MODULE_NAME}Private\"
+            )
+        endif()
     endif()
 
 !!IF !equals(TEMPLATE, aux)

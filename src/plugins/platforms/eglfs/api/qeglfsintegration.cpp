@@ -247,6 +247,13 @@ QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOf
 }
 #endif // QT_NO_OPENGL
 
+#if QT_CONFIG(vulkan)
+QPlatformVulkanInstance *QEglFSIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
+{
+    return qt_egl_device_integration()->createPlatformVulkanInstance(instance);
+}
+#endif
+
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     // We assume that devices will have more and not less capabilities
@@ -283,7 +290,8 @@ enum ResourceType {
     NativeDisplay,
     XlibDisplay,
     WaylandDisplay,
-    EglSurface
+    EglSurface,
+    VkSurface
 };
 
 static int resourceType(const QByteArray &key)
@@ -296,7 +304,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("nativedisplay"),
         QByteArrayLiteral("display"),
         QByteArrayLiteral("server_wl_display"),
-        QByteArrayLiteral("eglsurface")
+        QByteArrayLiteral("eglsurface"),
+        QByteArrayLiteral("vksurface")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -364,6 +373,12 @@ void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWi
         if (window && window->handle())
             result = reinterpret_cast<void*>(static_cast<QEglFSWindow *>(window->handle())->surface());
         break;
+#if QT_CONFIG(vulkan)
+    case VkSurface:
+        if (window && window->handle() && window->surfaceType() == QSurface::VulkanSurface)
+            result = static_cast<QEglFSWindow *>(window->handle())->vulkanSurfacePtr();
+        break;
+#endif
     default:
         break;
     }

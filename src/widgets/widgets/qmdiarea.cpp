@@ -103,8 +103,8 @@
     \fn void QMdiArea::subWindowActivated(QMdiSubWindow *window)
 
     QMdiArea emits this signal after \a window has been activated. When \a
-    window is 0, QMdiArea has just deactivated its last active window, and
-    there are no active windows on the workspace.
+    window is \nullptr, QMdiArea has just deactivated its last active window,
+    and there are no active windows on the workspace.
 
     \sa QMdiArea::activeSubWindow()
 */

@@ -603,7 +603,7 @@ static bool methodMatch(const QMetaObject *m, int handle,
 * \internal
 * helper function for indexOf{Method,Slot,Signal}, returns the relative index of the method within
 * the baseObject
-* \a MethodType might be MethodSignal or MethodSlot, or 0 to match everything.
+* \a MethodType might be MethodSignal or MethodSlot, or \nullptr to match everything.
 */
 template<int MethodType>
 static inline int indexOfMethodRelative(const QMetaObject **baseObject,
@@ -737,7 +737,7 @@ int QMetaObject::indexOfSignal(const char *signal) const
     \internal
     Same as QMetaObject::indexOfSignal, but the result is the local offset to the base object.
 
-    \a baseObject will be adjusted to the enclosing QMetaObject, or 0 if the signal is not found
+    \a baseObject will be adjusted to the enclosing QMetaObject, or \nullptr if the signal is not found
 */
 int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
                                               const QByteArray &name, int argc,
@@ -2988,7 +2988,7 @@ int QMetaProperty::userType() const
         if (type == QMetaType::UnknownType) {
             type = registerPropertyType();
             if (type == QMetaType::UnknownType)
-                return QVariant::Int; // Match behavior of QMetaType::type()
+                return QMetaType::Int; // Match behavior of QMetaType::type()
         }
         return type;
     }
@@ -3106,7 +3106,7 @@ QVariant QMetaProperty::read(const QObject *object) const
     if (!object || !mobj)
         return QVariant();
 
-    uint t = QVariant::Int;
+    uint t = QMetaType::Int;
     if (isEnumType()) {
         /*
           try to create a QVariant that can be converted to this enum
@@ -3183,9 +3183,9 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         return false;
 
     QVariant v = value;
-    uint t = QVariant::Invalid;
+    uint t = QMetaType::UnknownType;
     if (isEnumType()) {
-        if (v.type() == QVariant::String) {
+        if (v.userType() == QMetaType::QString) {
             bool ok;
             if (isFlagType())
                 v = QVariant(menum.keysToValue(value.toByteArray(), &ok));
@@ -3193,13 +3193,13 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
                 v = QVariant(menum.keyToValue(value.toByteArray(), &ok));
             if (!ok)
                 return false;
-        } else if (v.type() != QVariant::Int && v.type() != QVariant::UInt) {
+        } else if (v.userType() != QMetaType::Int && v.userType() != QMetaType::UInt) {
             int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
             if ((enumMetaTypeId == QMetaType::UnknownType) || (v.userType() != enumMetaTypeId) || !v.constData())
                 return false;
             v = QVariant(*reinterpret_cast<const int *>(v.constData()));
         }
-        v.convert(QVariant::Int);
+        v.convert(QMetaType::Int);
     } else {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
         const char *typeName = nullptr;
@@ -3576,6 +3576,21 @@ bool QMetaProperty::isFinal() const
         return false;
     int flags = mobj->d.data[handle + 2];
     return flags & Final;
+}
+
+/*!
+  \since 5.15
+  Returns \c true if the property is required; otherwise returns \c false.
+
+  A property is final if the \c{Q_PROPERTY()}'s \c REQUIRED attribute
+  is set.
+*/
+bool QMetaProperty::isRequired() const
+{
+    if (!mobj)
+        return false;
+    int flags = mobj->d.data[handle + 2];
+    return flags & Required;
 }
 
 /*!

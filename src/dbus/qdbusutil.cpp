@@ -82,7 +82,7 @@ static bool variantToString(const QVariant &arg, QString &out)
 {
     int argType = arg.userType();
 
-    if (argType == QVariant::StringList) {
+    if (argType == QMetaType::QStringList) {
         out += QLatin1Char('{');
         const QStringList list = arg.toStringList();
         for (const QString &item : list)
@@ -90,7 +90,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         if (!list.isEmpty())
             out.chop(2);
         out += QLatin1Char('}');
-    } else if (argType == QVariant::ByteArray) {
+    } else if (argType == QMetaType::QByteArray) {
         out += QLatin1Char('{');
         QByteArray list = arg.toByteArray();
         for (int i = 0; i < list.count(); ++i) {
@@ -100,7 +100,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         if (!list.isEmpty())
             out.chop(2);
         out += QLatin1Char('}');
-    } else if (argType == QVariant::List) {
+    } else if (argType == QMetaType::QVariantList) {
         out += QLatin1Char('{');
         const QList<QVariant> list = arg.toList();
         for (const QVariant &item : list) {
@@ -148,7 +148,7 @@ static bool variantToString(const QVariant &arg, QString &out)
         if (!variantToString(v, out))
             return false;
         out += QLatin1Char(']');
-    } else if (arg.canConvert(QVariant::String)) {
+    } else if (arg.canConvert(QMetaType::QString)) {
         out += QLatin1Char('\"') + arg.toString() + QLatin1Char('\"');
     } else {
         out += QLatin1Char('[');

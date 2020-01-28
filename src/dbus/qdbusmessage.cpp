@@ -276,7 +276,7 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
     for ( ; it != end; ++it) {
         int id = it->userType();
         const char *signature = QDBusMetaType::typeToSignature(id);
-        if ((id != QVariant::StringList && id != QVariant::ByteArray &&
+        if ((id != QMetaType::QStringList && id != QMetaType::QByteArray &&
              qstrlen(signature) != 1) || id == qMetaTypeId<QDBusVariant>()) {
             // yes, we are
             // we must marshall and demarshall again so as to create QDBusArgument

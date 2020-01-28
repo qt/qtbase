@@ -55,7 +55,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
 {
     if (id == arg.userType()) {
         switch (id) {
-        case QVariant::Bool:
+        case QMetaType::Bool:
             *reinterpret_cast<bool *>(to) = arg.toBool();
             return;
 
@@ -71,35 +71,35 @@ static void copyArgument(void *to, int id, const QVariant &arg)
             *reinterpret_cast<ushort *>(to) = qvariant_cast<ushort>(arg);
             return;
 
-        case QVariant::Int:
+        case QMetaType::Int:
             *reinterpret_cast<int *>(to) = arg.toInt();
             return;
 
-        case QVariant::UInt:
+        case QMetaType::UInt:
             *reinterpret_cast<uint *>(to) = arg.toUInt();
             return;
 
-        case QVariant::LongLong:
+        case QMetaType::LongLong:
             *reinterpret_cast<qlonglong *>(to) = arg.toLongLong();
             return;
 
-        case QVariant::ULongLong:
+        case QMetaType::ULongLong:
             *reinterpret_cast<qulonglong *>(to) = arg.toULongLong();
             return;
 
-        case QVariant::Double:
+        case QMetaType::Double:
             *reinterpret_cast<double *>(to) = arg.toDouble();
             return;
 
-        case QVariant::String:
+        case QMetaType::QString:
             *reinterpret_cast<QString *>(to) = arg.toString();
             return;
 
-        case QVariant::ByteArray:
+        case QMetaType::QByteArray:
             *reinterpret_cast<QByteArray *>(to) = arg.toByteArray();
             return;
 
-        case QVariant::StringList:
+        case QMetaType::QStringList:
             *reinterpret_cast<QStringList *>(to) = arg.toStringList();
             return;
         }

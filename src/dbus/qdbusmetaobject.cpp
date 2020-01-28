@@ -158,10 +158,10 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
                                    const char *direction, int id)
 {
     Type result;
-    result.id = QVariant::Invalid;
+    result.id = QMetaType::UnknownType;
 
     int type = QDBusMetaType::signatureToType(signature);
-    if (type == QVariant::Invalid && !qt_dbus_metaobject_skip_annotations) {
+    if (type == QMetaType::UnknownType && !qt_dbus_metaobject_skip_annotations) {
         // it's not a type normally handled by our meta type system
         // it must contain an annotation
         QString annotationName = QString::fromLatin1("org.qtproject.QtDBus.QtTypeName");
@@ -189,7 +189,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             type = QMetaType::type(typeName);
         }
 
-        if (type == QVariant::Invalid || signature != QDBusMetaType::typeToSignature(type)) {
+        if (type == QMetaType::UnknownType || signature != QDBusMetaType::typeToSignature(type)) {
             // type is still unknown or doesn't match back to the signature that it
             // was expected to, so synthesize a fake type
             typeName = "QDBusRawType<0x" + signature.toHex() + ">*";
@@ -197,16 +197,16 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         }
 
         result.name = typeName;
-    } else if (type == QVariant::Invalid) {
+    } else if (type == QMetaType::UnknownType) {
         // this case is used only by the qdbus command-line tool
         // invalid, let's create an impossible type that contains the signature
 
         if (signature == "av") {
             result.name = "QVariantList";
-            type = QVariant::List;
+            type = QMetaType::QVariantList;
         } else if (signature == "a{sv}") {
             result.name = "QVariantMap";
-            type = QVariant::Map;
+            type = QMetaType::QVariantMap;
         } else if (signature == "a{ss}") {
             result.name = "QMap<QString,QString>";
             type = qMetaTypeId<QMap<QString, QString> >();
@@ -246,7 +246,7 @@ void QDBusMetaObjectGenerator::parseMethods()
             const QDBusIntrospection::Argument &arg = m.inputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), m.annotations, "In", i);
-            if (type.id == QVariant::Invalid) {
+            if (type.id == QMetaType::UnknownType) {
                 ok = false;
                 break;
             }
@@ -265,7 +265,7 @@ void QDBusMetaObjectGenerator::parseMethods()
             const QDBusIntrospection::Argument &arg = m.outputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), m.annotations, "Out", i);
-            if (type.id == QVariant::Invalid) {
+            if (type.id == QMetaType::UnknownType) {
                 ok = false;
                 break;
             }
@@ -322,7 +322,7 @@ void QDBusMetaObjectGenerator::parseSignals()
             const QDBusIntrospection::Argument &arg = s.outputArgs.at(i);
 
             Type type = findType(arg.type.toLatin1(), s.annotations, "Out", i);
-            if (type.id == QVariant::Invalid) {
+            if (type.id == QMetaType::UnknownType) {
                 ok = false;
                 break;
             }
@@ -358,7 +358,7 @@ void QDBusMetaObjectGenerator::parseProperties()
         const QDBusIntrospection::Property &p = *prop_it;
         Property mp;
         Type type = findType(p.type.toLatin1(), p.annotations);
-        if (type.id == QVariant::Invalid)
+        if (type.id == QMetaType::UnknownType)
             continue;
 
         QByteArray name = p.name.toLatin1();

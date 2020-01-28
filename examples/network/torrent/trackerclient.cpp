@@ -209,7 +209,7 @@ void TrackerClient::httpRequestDone(QNetworkReply *reply)
         // store it
         peers.clear();
         QVariant peerEntry = dict.value("peers");
-        if (peerEntry.type() == QVariant::List) {
+        if (peerEntry.userType() == QMetaType::QVariantList) {
             QList<QVariant> peerTmp = peerEntry.toList();
             for (int i = 0; i < peerTmp.size(); ++i) {
                 TorrentPeer tmp;

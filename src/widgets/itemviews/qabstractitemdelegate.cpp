@@ -585,27 +585,27 @@ QString QAbstractItemDelegatePrivate::textForRole(Qt::ItemDataRole role, const Q
     case QMetaType::Float:
         text = locale.toString(value.toFloat());
         break;
-    case QVariant::Double:
+    case QMetaType::Double:
         text = locale.toString(value.toDouble(), 'g', precision);
         break;
-    case QVariant::Int:
-    case QVariant::LongLong:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
         text = locale.toString(value.toLongLong());
         break;
-    case QVariant::UInt:
-    case QVariant::ULongLong:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
         text = locale.toString(value.toULongLong());
         break;
-    case QVariant::Date:
+    case QMetaType::QDate:
         text = locale.toString(value.toDate(), formatType);
         break;
-    case QVariant::Time:
+    case QMetaType::QTime:
         text = locale.toString(value.toTime(), formatType);
         break;
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         text = locale.toString(value.toDateTime(), formatType);
         break;
-    case QVariant::Type(QMetaType::QJsonValue): {
+    case QMetaType::QJsonValue: {
         const QJsonValue val = value.toJsonValue();
         if (val.isBool()) {
             text = QVariant(val.toBool()).toString();

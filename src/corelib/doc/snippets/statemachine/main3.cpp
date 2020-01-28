@@ -62,7 +62,7 @@ int main(int argv, char **args)
 //![0]
 
 //![1]
-  s1->addTransition(s1, SIGNAL(finished()), s2);
+  s1->addTransition(s1, &QState::finished, s2);
 //![1]
 
     return app.exec();

@@ -84,6 +84,7 @@
 #include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <private/qwidget_p.h>
 
 #include <private/qstylehelper_p.h>
@@ -125,6 +126,22 @@ QWindowsStylePrivate::QWindowsStylePrivate() = default;
 qreal QWindowsStylePrivate::appDevicePixelRatio()
 {
     return qApp->devicePixelRatio();
+}
+
+bool QWindowsStylePrivate::isDarkMode()
+{
+    bool result = false;
+#ifdef Q_OS_WIN
+    // Windows only: Return whether dark mode style support is desired and
+    // dark mode is in effect.
+    if (auto ni = QGuiApplication::platformNativeInterface()) {
+        const QVariant darkModeStyleP = ni->property("darkModeStyle");
+        result = darkModeStyleP.type() == QVariant::Bool
+                 && darkModeStyleP.value<bool>()
+                 && ni->property("darkMode").value<bool>();
+    }
+#endif
+    return result;
 }
 
 // Returns \c true if the toplevel parent of \a widget has seen the Alt-key

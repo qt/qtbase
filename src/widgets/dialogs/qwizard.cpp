@@ -452,8 +452,8 @@ public:
     }
 
     QSize minimumSizeHint() const override {
-        if (pixmap() && !pixmap()->isNull())
-            return pixmap()->size() / pixmap()->devicePixelRatio();
+        if (!pixmap(Qt::ReturnByValue).isNull())
+            return pixmap(Qt::ReturnByValue).size() / pixmap(Qt::ReturnByValue).devicePixelRatio();
         return QFrame::minimumSizeHint();
     }
 
@@ -2924,7 +2924,7 @@ void QWizard::setDefaultProperty(const char *className, const char *property,
     or when the watermark is not provided the side widget is displayed
     on the left side of the wizard.
 
-    Passing 0 shows no side widget.
+    Passing \nullptr shows no side widget.
 
     When the \a widget is not \nullptr the wizard reparents it.
 

@@ -127,7 +127,7 @@ public:
     QLineEdit *edit;
     QString prefix, suffix, specialValueText;
     QVariant value, minimum, maximum, singleStep;
-    QVariant::Type type;
+    QMetaType::Type type;
     int spinClickTimerId, spinClickTimerInterval, spinClickThresholdTimerId, spinClickThresholdTimerInterval;
     int effectiveSpinRepeatRate;
     uint buttonState;

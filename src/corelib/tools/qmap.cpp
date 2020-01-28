@@ -2128,4 +2128,11 @@ void QMapDataBase::freeData(QMapDataBase *d)
     once in the returned list.
 */
 
+/*! \fn template <class Key, class T> QMultiMap<Key, T> &QMultiMap<Key, T>::unite(const QMultiMap<Key, T> &other)
+
+    Inserts all the items in the \a other map into this map. If a
+    key is common to both maps, the resulting map will contain the
+    key multiple times.
+*/
+
 QT_END_NAMESPACE

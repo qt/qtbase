@@ -342,7 +342,7 @@ QRasterPaintEnginePrivate::QRasterPaintEnginePrivate() :
 */
 
 /*!
-    \fn Type QRasterPaintEngine::type() const
+    \fn QPaintEngine::Type QRasterPaintEngine::type() const
     \reimp
 */
 
