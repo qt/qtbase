@@ -41,7 +41,6 @@
 #include "qxcbwindow.h"
 #include "qxcbcursor.h"
 #include "qxcbimage.h"
-#include "qxcbintegration.h"
 #include "qnamespace.h"
 #include "qxcbxsettings.h"
 
@@ -50,7 +49,6 @@
 #include <QDebug>
 #include <QtAlgorithms>
 
-#include <qpa/qplatformservices.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qmath_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -368,15 +366,6 @@ static QFontEngine::SubpixelAntialiasingType parseXftRgba(const QByteArray& stri
 
 void QXcbVirtualDesktop::readXResources()
 {
-    const QPlatformServices *services = QXcbIntegration::instance()->services();
-    bool useXftConf = false;
-    if (services) {
-        const QList<QByteArray> desktopEnv = services->desktopEnvironment().split(':');
-        useXftConf = desktopEnv.contains("GNOME") || desktopEnv.contains("UNITY") || desktopEnv.contains("XFCE");
-    }
-    if (!useXftConf)
-        return;
-
     int offset = 0;
     QByteArray resources;
     while (true) {

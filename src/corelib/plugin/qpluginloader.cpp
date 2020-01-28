@@ -342,7 +342,7 @@ static QString locatePlugin(const QString& fileName)
     QPluginLoader will automatically look for the file with the appropriate
     suffix (see QLibrary::isLibrary()).
 
-    When loading the plugin, QPluginLoader searches in the current directory and
+    When loading the plugin, QPluginLoader searches
     in all plugin locations specified by QCoreApplication::libraryPaths(),
     unless the file name has an absolute path. After loading the plugin
     successfully, fileName() returns the fully-qualified file name of
