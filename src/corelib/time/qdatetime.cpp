@@ -1114,11 +1114,6 @@ static QString toStringTextDate(QDate date, QCalendar cal)
     }
     return QString();
 }
-
-static QString toStringTextDate(QDate date)
-{
-    return toStringTextDate(date, QCalendar());
-}
 #endif // textdate
 
 static QString toStringIsoDate(const QDate &date)
@@ -1175,6 +1170,11 @@ static QString toStringIsoDate(const QDate &date)
 */
 QString QDate::toString(Qt::DateFormat format) const
 {
+    return toString(format, QCalendar());
+}
+
+QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
+{
     if (!isValid())
         return QString();
 
@@ -1182,24 +1182,25 @@ QString QDate::toString(Qt::DateFormat format) const
 #if QT_DEPRECATED_SINCE(5, 15)
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
-        return QLocale::system().toString(*this, QLocale::ShortFormat);
+        return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
     case Qt::SystemLocaleLongDate:
-        return QLocale::system().toString(*this, QLocale::LongFormat);
+        return QLocale::system().toString(*this, QLocale::LongFormat, cal);
     case Qt::LocaleDate:
     case Qt::DefaultLocaleShortDate:
-        return QLocale().toString(*this, QLocale::ShortFormat);
+        return QLocale().toString(*this, QLocale::ShortFormat, cal);
     case Qt::DefaultLocaleLongDate:
-        return QLocale().toString(*this, QLocale::LongFormat);
+        return QLocale().toString(*this, QLocale::LongFormat, cal);
 #endif // 5.15
     case Qt::RFC2822Date:
-        return QLocale::c().toString(*this, u"dd MMM yyyy");
+        return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"), cal);
     default:
-#if QT_CONFIG(textdate)
+#ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
-        return toStringTextDate(*this);
+        return toStringTextDate(*this, cal);
 #endif
     case Qt::ISODate:
     case Qt::ISODateWithMs:
+        // No calendar dependence
         return toStringIsoDate(*this);
     }
 }
@@ -1267,45 +1268,7 @@ QString QDate::toString(Qt::DateFormat format) const
 */
 QString QDate::toString(QStringView format) const
 {
-    return QLocale::system().toString(*this, format); // QLocale::c() ### Qt6
-}
-
-#if QT_STRINGVIEW_LEVEL < 2
-QString QDate::toString(const QString &format) const
-{
-    return toString(qToStringViewIgnoringNull(format));
-}
-#endif
-
-QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
-{
-    if (!isValid())
-        return QString();
-
-    switch (format) {
-#if QT_DEPRECATED_SINCE(5, 15)
-    case Qt::SystemLocaleDate:
-    case Qt::SystemLocaleShortDate:
-        return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
-    case Qt::SystemLocaleLongDate:
-        return QLocale::system().toString(*this, QLocale::LongFormat, cal);
-    case Qt::LocaleDate:
-    case Qt::DefaultLocaleShortDate:
-        return QLocale().toString(*this, QLocale::ShortFormat, cal);
-    case Qt::DefaultLocaleLongDate:
-        return QLocale().toString(*this, QLocale::LongFormat, cal);
-#endif // 5.15
-    case Qt::RFC2822Date:
-        return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"), cal);
-    default:
-#ifndef QT_NO_TEXTDATE
-    case Qt::TextDate:
-        return toStringTextDate(*this, cal);
-#endif
-    case Qt::ISODate:
-    case Qt::ISODateWithMs:
-        return toStringIsoDate(*this);
-    }
+    return toString(format, QCalendar());
 }
 
 QString QDate::toString(QStringView format, QCalendar cal) const
@@ -1314,6 +1277,11 @@ QString QDate::toString(QStringView format, QCalendar cal) const
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
+QString QDate::toString(const QString &format) const
+{
+    return toString(qToStringViewIgnoringNull(format), QCalendar());
+}
+
 QString QDate::toString(const QString &format, QCalendar cal) const
 {
     return toString(qToStringViewIgnoringNull(format), cal);
@@ -4398,7 +4366,7 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
 #if QT_CONFIG(textdate)
     case Qt::TextDate: {
         const QPair<QDate, QTime> p = getDateTime(d);
-        buf = p.first.toString(Qt::TextDate, cal);
+        buf = toStringTextDate(p.first, cal);
         // Insert time between date's day and year:
         buf.insert(buf.lastIndexOf(QLatin1Char(' ')),
                    QLatin1Char(' ') + p.second.toString(Qt::TextDate));
@@ -4423,13 +4391,10 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
     case Qt::ISODateWithMs: {
         // No calendar dependence
         const QPair<QDate, QTime> p = getDateTime(d);
-        const QDate &dt = p.first;
-        const QTime &tm = p.second;
-        buf = dt.toString(Qt::ISODate);
+        buf = toStringIsoDate(p.first);
         if (buf.isEmpty())
             return QString();   // failed to convert
-        buf += QLatin1Char('T');
-        buf += tm.toString(format);
+        buf += QLatin1Char('T') + p.second.toString(format);
         switch (getSpec(d)) {
         case Qt::UTC:
             buf += QLatin1Char('Z');
@@ -4489,7 +4454,7 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
 */
 QString QDateTime::toString(QStringView format) const
 {
-    return QLocale::system().toString(*this, format); // QLocale::c() ### Qt6
+    return toString(format, QCalendar());
 }
 
 QString QDateTime::toString(QStringView format, QCalendar cal) const
@@ -4500,7 +4465,7 @@ QString QDateTime::toString(QStringView format, QCalendar cal) const
 #if QT_STRINGVIEW_LEVEL < 2
 QString QDateTime::toString(const QString &format) const
 {
-    return toString(qToStringViewIgnoringNull(format));
+    return toString(qToStringViewIgnoringNull(format), QCalendar());
 }
 
 QString QDateTime::toString(const QString &format, QCalendar cal) const
