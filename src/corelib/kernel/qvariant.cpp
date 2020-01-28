@@ -2471,6 +2471,8 @@ static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
     QMetaType::QBitArray,
 #if QT_CONFIG(shortcut)
     QMetaType::QKeySequence,
+#else
+    0, // QKeySequence
 #endif
     QMetaType::QPen,
     QMetaType::LongLong,
