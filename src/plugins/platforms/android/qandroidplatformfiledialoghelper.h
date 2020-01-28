@@ -44,6 +44,8 @@
 #include <QEventLoop>
 #include <qpa/qplatformdialoghelper.h>
 #include <QtCore/private/qjnihelpers_p.h>
+#include <private/qjni_p.h>
+#include <QEventLoop>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,26 +57,34 @@ class QAndroidPlatformFileDialogHelper: public QPlatformFileDialogHelper, public
 
 public:
     QAndroidPlatformFileDialogHelper();
-    void exec() override;
 
-    bool show(Qt::WindowFlags windowFlags,
-              Qt::WindowModality windowModality,
-              QWindow *parent) override;
+    void exec() override;
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) override;
     void hide() override;
 
-    QString selectedNameFilter() const override;
-    void selectNameFilter(const QString &filter) override;
-    void setFilter() override;
-    QList<QUrl> selectedFiles() const override;
-    void selectFile(const QUrl &file) override;
-    QUrl directory() const override;
-    void setDirectory(const QUrl &directory) override;
-    bool defaultNameFilterDisables() const override;
+    QString selectedNameFilter() const override { return QString(); };
+    void selectNameFilter(const QString &filter) override { Q_UNUSED(filter) };
+    void setFilter() override {};
+    QList<QUrl> selectedFiles() const override { return m_selectedFile; };
+    void selectFile(const QUrl &file) override { Q_UNUSED(file) };
+    QUrl directory() const override { return QUrl(); };
+    void setDirectory(const QUrl &directory) override { Q_UNUSED(directory) };
+    bool defaultNameFilterDisables() const override { return false; };
     bool handleActivityResult(jint requestCode, jint resultCode, jobject data) override;
 
 private:
+    QJNIObjectPrivate getFileDialogIntent(const QString &intentType);
+    void takePersistableUriPermission(const QJNIObjectPrivate &uri);
+    void setLocalFilesOnly(bool localOnly);
+    void setIntentTitle(const QString &title);
+    void setOpenableCategory();
+    void setAllowMultipleSelections(bool allowMultiple);
+    void setMimeTypes();
+
     QEventLoop m_eventLoop;
-    QUrl m_selectedFile;
+    QList<QUrl> m_selectedFile;
+    QJNIObjectPrivate m_intent;
+    const QJNIObjectPrivate m_activity;
 };
 
 }
