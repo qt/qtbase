@@ -113,7 +113,7 @@ int QSqlQueryModelPrivate::columnInQuery(int modelColumn) const
     the lower-level QSqlQuery and can be used to provide data to
     view classes such as QTableView. For example:
 
-    \snippet sqldatabase/sqldatabase.cpp 16
+    \snippet sqldatabase/sqldatabase_snippet.cpp 16
 
     We set the model's query, then we set up the labels displayed in
     the view header.

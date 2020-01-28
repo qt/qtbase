@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -48,182 +48,21 @@
 **
 ****************************************************************************/
 
-#include <QCoreApplication>
-#include <QtSql>
-#include <QMap>
-#include <iostream>
-
-using namespace std;
-
-void QSqlDatabase_snippets()
-{
-    {
-//! [0]
-    QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL");
-    db.setHostName("acidalia");
-    db.setDatabaseName("customdb");
-    db.setUserName("mojito");
-    db.setPassword("J0a1m8");
-    bool ok = db.open();
-//! [0]
-    Q_UNUSED(ok);
+//! [16]
+    QSqlQueryModel *model = new QSqlQueryModel;
+    model->setQuery("SELECT name, salary FROM employee");
+    model->setHeaderData(0, Qt::Horizontal, tr("Name"));
+    model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
+//! [17]
+    QTableView *view = new QTableView;
+//! [17] //! [18]
+    view->setModel(model);
+//! [18] //! [19]
+    view->show();
+//! [16] //! [19] //! [20]
+    view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+//! [20]
     }
-
-    {
-//! [1]
-    QSqlDatabase db = QSqlDatabase::database();
-//! [1]
-    }
-}
-
-void QSqlField_snippets()
-{
-#if 0
-    {
-//! [2]
-    QSqlField field("age", QVariant::Int);
-    field.setValue(QPixmap());  // WRONG
-//! [2]
-    }
-#endif
-
-    {
-//! [3]
-    QSqlField field("age", QVariant::Int);
-    field.setValue(QString("123"));  // casts QString to int
-//! [3]
-    }
-
-    {
-//! [4]
-    QSqlQuery query;
-//! [4] //! [5]
-    QSqlRecord record = query.record();
-//! [5] //! [6]
-    QSqlField field = record.field("country");
-//! [6]
-    }
-}
-
-void doSomething(const QString &)
-{
-}
-
-void QSqlQuery_snippets()
-{
-    {
-    // typical loop
-//! [7]
-    QSqlQuery query("SELECT country FROM artist");
-    while (query.next()) {
-        QString country = query.value(0).toString();
-        doSomething(country);
-    }
-//! [7]
-    }
-
-    {
-    // field index lookup
-//! [8]
-    QSqlQuery query("SELECT * FROM artist");
-    int fieldNo = query.record().indexOf("country");
-    while (query.next()) {
-        QString country = query.value(fieldNo).toString();
-        doSomething(country);
-    }
-//! [8]
-    }
-
-    {
-    // named with named
-//! [9]
-    QSqlQuery query;
-    query.prepare("INSERT INTO person (id, forename, surname) "
-                  "VALUES (:id, :forename, :surname)");
-    query.bindValue(":id", 1001);
-    query.bindValue(":forename", "Bart");
-    query.bindValue(":surname", "Simpson");
-    query.exec();
-//! [9]
-    }
-
-    {
-    // positional with named
-//! [10]
-    QSqlQuery query;
-    query.prepare("INSERT INTO person (id, forename, surname) "
-                  "VALUES (:id, :forename, :surname)");
-    query.bindValue(0, 1001);
-    query.bindValue(1, "Bart");
-    query.bindValue(2, "Simpson");
-    query.exec();
-//! [10]
-    }
-
-    {
-    // positional 1
-//! [11]
-    QSqlQuery query;
-    query.prepare("INSERT INTO person (id, forename, surname) "
-                  "VALUES (?, ?, ?)");
-    query.bindValue(0, 1001);
-    query.bindValue(1, "Bart");
-    query.bindValue(2, "Simpson");
-    query.exec();
-//! [11]
-    }
-
-    {
-    // positional 2
-//! [12]
-    QSqlQuery query;
-    query.prepare("INSERT INTO person (id, forename, surname) "
-                  "VALUES (?, ?, ?)");
-    query.addBindValue(1001);
-    query.addBindValue("Bart");
-    query.addBindValue("Simpson");
-    query.exec();
-//! [12]
-    }
-
-    {
-    // stored
-//! [13]
-    QSqlQuery query;
-    query.prepare("CALL AsciiToInt(?, ?)");
-    query.bindValue(0, "A");
-    query.bindValue(1, 0, QSql::Out);
-    query.exec();
-    int i = query.boundValue(1).toInt(); // i is 65
-//! [13]
-    Q_UNUSED(i);
-    }
-
-    QSqlQuery query;
-
-    {
-    // examine with named binding
-//! [14]
-    QMap<QString, QVariant> sqlIterator(query.boundValues());
-    for (auto i = sqlIterator.begin(); i != sqlIterator.end(); ++i) {
-        cout << i.key().toUtf8().data() << ": "
-             << i.value().toString().toUtf8().data() << Qt::endl;
-    }
-//! [14]
-    }
-
-    {
-    // examine with positional binding
-//! [15]
-    QList<QVariant> list = query.boundValues().values();
-    for (int i = 0; i < list.size(); ++i)
-        cout << i << ": " << list.at(i).toString().toUtf8().data() << Qt::endl;
-//! [15]
-    }
-}
-
-void QSqlQueryModel_snippets()
-{
 
 //! [21]
     QSqlQueryModel model;
@@ -267,6 +106,20 @@ QVariant MyModel::data(const QModelIndex &item, int role) const
 
 void QSqlTableModel_snippets()
 {
+//! [24]
+    QSqlTableModel *model = new QSqlTableModel;
+    model->setTable("employee");
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model->select();
+    model->setHeaderData(0, Qt::Horizontal, tr("Name"));
+    model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
+
+    QTableView *view = new QTableView;
+    view->setModel(model);
+    view->hideColumn(0); // don't show the ID
+    view->show();
+//! [24]
+
     {
 //! [25]
     QSqlTableModel model;

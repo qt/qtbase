@@ -211,7 +211,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
     lower-level QSqlQuery and can be used to provide data to view
     classes such as QTableView. For example:
 
-    \snippet sqldatabase/sqldatabase.cpp 24
+    \snippet sqldatabase/sqldatabase_snippet.cpp 24
 
     We set the SQL table's name and the edit strategy, then we set up
     the labels displayed in the view header. The edit strategy

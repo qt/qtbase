@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -47,104 +47,19 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlDriver>
-#include <QSqlResult>
-#include <QVariant>
-#include <QDebug>
 
-void testProc()
-{
 //! [2]
-QSqlQuery q;
-q.exec("call qtestproc (@outval1, @outval2)");
-q.exec("select @outval1, @outval2");
-q.next();
-qDebug() << q.value(0) << q.value(1); // outputs "42" and "43"
+if (qstrcmp(v.typeName(), "PGresult*") == 0) {
+    PGresult *handle = *static_cast<PGresult **>(v.data());
+    if (handle) {
+        // ...
+        }
+}
+
+if (qstrcmp(v.typeName(), "MYSQL_STMT*") == 0) {
+    MYSQL_STMT *handle = *static_cast<MYSQL_STMT **>(v.data());
+    if (handle) {
+        // ...
+        }
+    }
 //! [2]
-}
-
-void callStoredProc()
-{
-//! [10]
-// STORED_PROC uses the return statement or returns multiple result sets
-QSqlQuery query;
-query.setForwardOnly(true);
-query.exec("{call STORED_PROC}");
-//! [10]
-}
-
-void setHost()
-{
-//! [24]
-QSqlDatabase db;
-db.setHostName("MyServer");
-db.setDatabaseName("C:\\test.gdb");
-//! [24]
-
-
-//! [25]
-// connect to database using the Latin-1 character set
-db.setConnectOptions("ISC_DPB_LC_CTYPE=Latin1");
-db.open();
-//! [25]
-}
-
-void exProc()
-{
-//! [26]
-QSqlQuery q;
-q.exec("execute procedure my_procedure");
-q.next();
-qDebug() << q.value(0); // outputs the first RETURN/OUT value
-//! [26]
-
-qDebug( \
-//! [31]
-"QSqlDatabase: QMYSQL driver not loaded \
-QSqlDatabase: available drivers: QMYSQL" \
-//! [31]
-);
-
-/* Commented because the following line is not compilable
-//! [34]
-column.contains(QRegularExpression("pattern"));
-//! [34]
-*/
-}
-
-
-
-void updTable2()
-{
-QSqlDatabase db;
-//! [37]
-int value;
-QSqlQuery query1;
-query1.setForwardOnly(true);
-query1.exec("select * FROM table1");
-while (query1.next()) {
-    value = query1.value(0).toInt();
-    if (value == 1) {
-        QSqlQuery query2;
-        query2.exec("update table2 set col=2");  // WRONG: This will discard all results of
-    }                                            // query1, and cause the loop to quit
-}
-//! [37]
-}
-
-
-void setConnString()
-{
-//! [39]
-QSqlDatabase db = QSqlDatabase::addDatabase("QODBC3");
-QString connectString = QStringLiteral(
-    "DRIVER=/path/to/installation/libodbcHDB.so;"
-    "SERVERNODE=hostname:port;"
-    "UID=USER;"
-    "PWD=PASSWORD;"
-    "SCROLLABLERESULT=true");
-db.setDatabaseName(connectString);
-//! [39]
-}

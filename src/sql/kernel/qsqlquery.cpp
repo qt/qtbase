@@ -414,7 +414,7 @@ bool QSqlQuery::exec(const QString& query)
     The fields are numbered from left to right using the text of the
     \c SELECT statement, e.g. in
 
-    \snippet code/src_sql_kernel_qsqlquery.cpp 0
+    \snippet code/src_sql_kernel_qsqlquery_snippet.cpp 0
 
     field 0 is \c forename and field 1 is \c
     surname. Using \c{SELECT *} is not recommended because the order
@@ -1044,7 +1044,7 @@ bool QSqlQuery::exec()
 
   The example above inserts four new rows into \c myTable:
 
-  \snippet code/src_sql_kernel_qsqlquery.cpp 3
+  \snippet code/src_sql_kernel_qsqlquery_snippet.cpp 3
 
   To bind NULL values, a null QVariant of the relevant type has to be
   added to the bound QVariantList; for example, \c

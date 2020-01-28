@@ -561,7 +561,7 @@ QStringList QSqlDatabase::drivers()
     and don't want to compile it as a plugin.
 
     Example:
-    \snippet code/src_sql_kernel_qsqldatabase.cpp 2
+    \snippet code/src_sql_kernel_qsqldatabase_snippet.cpp 2
 
     QSqlDatabase takes ownership of the \a creator pointer, so you
     mustn't delete it yourself.
@@ -1271,9 +1271,7 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
     application. For example, you can create a PostgreSQL connection
     with your own QPSQL driver like this:
 
-    \snippet code/src_sql_kernel_qsqldatabase.cpp 5
-    \codeline
-    \snippet code/src_sql_kernel_qsqldatabase.cpp 6
+    \snippet code/src_sql_kernel_qsqldatabase_snippet.cpp 6
 
     The above code sets up a PostgreSQL connection and instantiates a
     QPSQLDriver object. Next, addDatabase() is called to add the
@@ -1292,7 +1290,7 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
     client library. Make sure the client library is in your linker's
     search path, and add lines like these to your \c{.pro} file:
 
-    \snippet code/src_sql_kernel_qsqldatabase.cpp 7
+    \snippet code/src_sql_kernel_qsqldatabase_snippet.cpp 7
 
     The method described works for all the supplied drivers.  The only
     difference will be in the driver constructor arguments.  Here is a

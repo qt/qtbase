@@ -1022,7 +1022,7 @@ bool QSqlResult::nextResult()
 
     This snippet returns the handle for PostgreSQL or MySQL:
 
-    \snippet code/src_sql_kernel_qsqlresult.cpp 2
+    \snippet code/src_sql_kernel_qsqlresult_snippet.cpp 2
 
     \sa QSqlDriver::handle()
 */
