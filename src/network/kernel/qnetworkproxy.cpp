@@ -241,7 +241,7 @@
 #include "qstringlist.h"
 #include "qurl.h"
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
 #include <QtNetwork/QNetworkConfiguration>
 #endif
 
@@ -983,11 +983,6 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
     this information is provided in case a better choice can be made,
     like choosing an caching HTTP proxy for HTTP-based connections,
     but a more powerful SOCKSv5 proxy for all others.
-
-    The network configuration specifies which configuration to use,
-    when bearer management is used. For example on a mobile phone
-    the proxy settings are likely to be different for the cellular
-    network vs WLAN.
 
     Some of the criteria may not make sense in all of the types of
     query. The following table lists the criteria that are most
