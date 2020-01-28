@@ -31,7 +31,6 @@
 
 #include <qgraphicsitemanimation.h>
 #include <QtCore/qtimeline.h>
-#include <QtGui/qmatrix.h>
 
 class tst_QGraphicsItemAnimation : public QObject
 {

@@ -164,6 +164,7 @@ void QButtonGroup::setExclusive(bool exclusive)
 
 /*!
     \fn void QButtonGroup::buttonClicked(int id)
+    \obsolete
 
     This signal is emitted when a button with the given \a id is
     clicked.
@@ -183,6 +184,7 @@ void QButtonGroup::setExclusive(bool exclusive)
 /*!
     \fn void QButtonGroup::buttonPressed(int id)
     \since 4.2
+    \obsolete
 
     This signal is emitted when a button with the given \a id is
     pressed down.
@@ -202,6 +204,7 @@ void QButtonGroup::setExclusive(bool exclusive)
 /*!
     \fn void QButtonGroup::buttonReleased(int id)
     \since 4.2
+    \obsolete
 
     This signal is emitted when a button with the given \a id is
     released.
@@ -222,6 +225,7 @@ void QButtonGroup::setExclusive(bool exclusive)
 /*!
     \fn void QButtonGroup::buttonToggled(int id, bool checked)
     \since 5.2
+    \obsolete
 
     This signal is emitted when a button with the given \a id is toggled.
     \a checked is true if the button is checked, or false if the button is unchecked.

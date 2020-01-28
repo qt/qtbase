@@ -72,7 +72,6 @@ class QPen;
 class QPolygon;
 class QTextItem;
 class QTextEngine;
-class QMatrix;
 class QTransform;
 class QStaticText;
 class QGlyphRun;

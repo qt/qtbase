@@ -2756,10 +2756,7 @@ void tst_QComboBox::resetModel()
     class StringListModel : public QStringListModel
     {
     public:
-        StringListModel(const QStringList &list) : QStringListModel(list)
-        {
-        }
-
+        using QStringListModel::QStringListModel;
         void reset()
         {
             QStringListModel::beginResetModel();
@@ -2767,8 +2764,8 @@ void tst_QComboBox::resetModel()
         }
     };
     QComboBox cb;
-    StringListModel model( QStringList() << "1" << "2");
-    QSignalSpy spy(&cb, SIGNAL(currentIndexChanged(int)));
+    StringListModel model({"1", "2"});
+    QSignalSpy spy(&cb, QOverload<int>::of(&QComboBox::currentIndexChanged));
     QCOMPARE(spy.count(), 0);
     QCOMPARE(cb.currentIndex(), -1); //no selection
 
@@ -2779,7 +2776,7 @@ void tst_QComboBox::resetModel()
 
     model.reset();
     QCOMPARE(spy.count(), 2);
-    QCOMPARE(cb.currentIndex(), -1); //no selection
+    QCOMPARE(cb.currentIndex(), 0); //first item selected
 
 }
 

@@ -402,6 +402,9 @@ void tst_QGuiVariant::toString()
     QCOMPARE( str, result );
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QGuiVariant::matrix()
 {
     QVariant variant;
@@ -414,6 +417,8 @@ void tst_QGuiVariant::matrix()
     QVERIFY(mmatrix);
     QMetaType::destroy(QVariant::Matrix, mmatrix);
 }
+QT_WARNING_POP
+#endif
 
 void tst_QGuiVariant::matrix4x4()
 {

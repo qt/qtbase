@@ -32,6 +32,9 @@
 #include <qmath.h>
 #include <qpolygon.h>
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
 class tst_QWMatrix : public QObject
 {
@@ -323,6 +326,9 @@ void tst_QWMatrix::mapPolygon()
             QCOMPARE(mapped.at(i), m.map(poly.at(i)));
     }
 }
+
+QT_WARNING_POP
+#endif
 
 QTEST_APPLESS_MAIN(tst_QWMatrix)
 #include "tst_qwmatrix.moc"

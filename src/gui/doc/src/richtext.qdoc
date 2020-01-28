@@ -1269,6 +1269,55 @@
     \row    \li \c word-spacing
             \li <width>px
             \li Specifies an alternate spacing between each word.
+    \row    \li \c line-height
+            \li <number>[% | px | pt | cm]
+            \li Specifies the height of a line. It can be one of the
+                following:
+                \list
+                 \li fixed line height in pixels, points, or centimeters.
+                 \li a percentage of the current font size.
+                \endlist
+    \endtable
+
+    \section1 Qt-specific CSS properties
+
+    Besides the standard CSS properties listed earlier, the following
+    Qt-specific properties can also be used to style a text block:
+
+    \table
+    \header \li Property
+            \li Values
+            \li Description
+    \row
+            \li \c -qt-block-indent
+            \li \c <number>
+            \li Indents the text block by the specified no. spaces.
+    \row
+            \li \c -qt-list-indent
+            \li \c <number>
+            \li Indents the list items by the specified no. of spaces.
+    \row
+            \li \c -qt-list-number-prefix
+            \li \c <string>
+            \li Prefixes the given string to list number in an HTML ordered list.
+    \row
+            \li \c -qt-list-number-suffix
+            \li <string>
+            \li Suffixes the given string to list number in an HTML ordered list.
+    \row
+            \li \c -qt-paragraph-type
+            \li \c empty
+            \li Hides the text block.
+    \row
+            \li \c -qt-table-type
+            \li \c{root | frame}
+            \li \c root renders the text blocks inline without borders and
+                indentation, whereas \c frame renders them on a new line
+                with a frame around.
+    \row
+            \li \c -qt-user-state
+            \li \c <number>
+            \li Adds it as user data for the text block.
     \endtable
 
     \section1 Supported CSS Selectors

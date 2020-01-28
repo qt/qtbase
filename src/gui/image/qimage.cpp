@@ -2847,7 +2847,13 @@ QImage QImage::scaledToHeight(int h, Qt::TransformationMode mode) const
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
 /*!
+    \obsolete
+
+    Use trueMatrix(const QTransform &matrix, int w, int h) instead.
+
     \fn QMatrix QImage::trueMatrix(const QMatrix &matrix, int width, int height)
 
     Returns the actual matrix used for transforming an image with the
@@ -2869,6 +2875,10 @@ QMatrix QImage::trueMatrix(const QMatrix &matrix, int w, int h)
 }
 
 /*!
+    \obsolete
+
+    Use transformed(const QTransform &matrix, Qt::TransformationMode mode) instead.
+
     Returns a copy of the image that is transformed using the given
     transformation \a matrix and transformation \a mode.
 
@@ -2892,6 +2902,8 @@ QImage QImage::transformed(const QMatrix &matrix, Qt::TransformationMode mode) c
 {
     return transformed(QTransform(matrix), mode);
 }
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Builds and returns a 1-bpp mask from the alpha buffer in this

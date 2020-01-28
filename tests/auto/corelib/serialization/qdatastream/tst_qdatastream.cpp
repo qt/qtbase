@@ -3298,7 +3298,10 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(col, color);
         stream >> rGrad;
         QCOMPARE(rGrad.style(), radialBrush.style());
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         QCOMPARE(rGrad.matrix(), radialBrush.matrix());
+QT_WARNING_POP
         QCOMPARE(rGrad.gradient()->type(), radialBrush.gradient()->type());
         QCOMPARE(rGrad.gradient()->stops(), radialBrush.gradient()->stops());
         QCOMPARE(rGrad.gradient()->spread(), radialBrush.gradient()->spread());
@@ -3307,7 +3310,10 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(((QRadialGradient *)rGrad.gradient())->radius(), ((QRadialGradient *)radialBrush.gradient())->radius());
         stream >> cGrad;
         QCOMPARE(cGrad.style(), conicalBrush.style());
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         QCOMPARE(cGrad.matrix(), conicalBrush.matrix());
+QT_WARNING_POP
         QCOMPARE(cGrad.gradient()->type(), conicalBrush.gradient()->type());
         QCOMPARE(cGrad.gradient()->stops(), conicalBrush.gradient()->stops());
         QCOMPARE(cGrad.gradient()->spread(), conicalBrush.gradient()->spread());
