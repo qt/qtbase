@@ -660,6 +660,8 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
 }
 
 /*!
+  \since 5.15
+
   Searches all files in the \a path for certificates encoded in the
   specified \a format and adds them to this socket's CA certificate
   database. \a path must be a file or a pattern matching one or more
@@ -675,7 +677,7 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
   \sa addCaCertificate(), QSslCertificate::fromPath()
 */
 bool QSslConfiguration::addCaCertificates(const QString &path, QSsl::EncodingFormat format,
-                                          QRegExp::PatternSyntax syntax)
+                                          QSslCertificate::PatternSyntax syntax)
 {
     QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
     if (certs.isEmpty())

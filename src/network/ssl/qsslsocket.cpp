@@ -1417,7 +1417,10 @@ bool QSslSocket::addCaCertificates(const QString &path, QSsl::EncodingFormat for
                                    QRegExp::PatternSyntax syntax)
 {
     Q_D(QSslSocket);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
+QT_WARNING_POP
     if (certs.isEmpty())
         return false;
 
@@ -2361,7 +2364,10 @@ bool QSslSocketPrivate::addDefaultCaCertificates(const QString &path, QSsl::Enco
                                                  QRegExp::PatternSyntax syntax)
 {
     QSslSocketPrivate::ensureInitialized();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
+QT_WARNING_POP
     if (certs.isEmpty())
         return false;
 
