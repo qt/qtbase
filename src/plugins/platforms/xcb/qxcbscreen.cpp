@@ -665,7 +665,9 @@ QImage::Format QXcbScreen::format() const
     bool needsRgbSwap;
     qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual), &format, &needsRgbSwap);
     // We are ignoring needsRgbSwap here and just assumes the backing-store will handle it.
-    return format;
+    if (format != QImage::Format_Invalid)
+        return format;
+    return QImage::Format_RGB32;
 }
 
 int QXcbScreen::forcedDpi() const
