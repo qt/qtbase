@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -27,21 +27,19 @@
 **
 ****************************************************************************/
 
-#include "qwasmservices.h"
-#include "qwasmstring.h"
+#pragma once
 
-#include <QtCore/QUrl>
-#include <QtCore/QDebug>
+#include <qstring.h>
 
 #include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
 
-bool QWasmServices::openUrl(const QUrl &url)
+class QWasmString
 {
-    emscripten::val jsUrl = QWasmString::fromQString(url.toString());
-    emscripten::val::global("window").call<void>("open", jsUrl, emscripten::val("_blank"));
-    return true;
-}
-
+public:
+    static emscripten::val fromQString(const QString &str);
+    static QString toQString(const emscripten::val &v);
+};
 QT_END_NAMESPACE
+

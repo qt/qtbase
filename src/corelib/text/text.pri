@@ -48,7 +48,7 @@ SOURCES += \
 NO_PCH_SOURCES += text/qstring_compat.cpp
 false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
 
-!nacl:macos: {
+!nacl:darwin: {
     SOURCES += text/qlocale_mac.mm
 }
 else:unix {
