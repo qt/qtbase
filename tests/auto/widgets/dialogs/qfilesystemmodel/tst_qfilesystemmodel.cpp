@@ -1063,7 +1063,7 @@ void tst_QFileSystemModel::roleNames()
     QVERIFY(roles.contains(role));
 
     QFETCH(QByteArray, roleName);
-    QCOMPARE(roles.values(role).count(), 1);
+    QCOMPARE(roles.contains(role), true);
     QCOMPARE(roles.value(role), roleName);
 }
 
