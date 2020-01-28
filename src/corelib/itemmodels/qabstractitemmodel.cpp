@@ -852,7 +852,9 @@ void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
     for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_invalidated.constBegin();
          it != persistent_invalidated.constEnd(); ++it) {
         QPersistentModelIndexData *data = *it;
-        persistent.indexes.erase(persistent.indexes.constFind(data->index));
+        auto pit = persistent.indexes.constFind(data->index);
+        if (pit != persistent.indexes.cend())
+            persistent.indexes.erase(pit);
         data->index = QModelIndex();
     }
 }
