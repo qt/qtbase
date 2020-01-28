@@ -2353,14 +2353,19 @@ QTime QLocale::toTime(const QString &string, FormatType format) const
     return toTime(string, timeFormat(format));
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \since 5.14
     \overload
+    \deprecated
 */
 QTime QLocale::toTime(const QString &string, FormatType format, QCalendar cal) const
 {
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     return toTime(string, timeFormat(format), cal);
+QT_WARNING_POP
 }
+#endif
 
 /*!
     \since 4.4
@@ -2425,12 +2430,24 @@ QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalenda
 */
 QTime QLocale::toTime(const QString &string, const QString &format) const
 {
-    return toTime(string, format, QCalendar());
+    QTime time;
+#if QT_CONFIG(datetimeparser)
+    QDateTimeParser dt(QMetaType::QTime, QDateTimeParser::FromString, QCalendar());
+    dt.setDefaultLocale(*this);
+    if (dt.parseFormat(format))
+        dt.fromString(string, nullptr, &time);
+#else
+    Q_UNUSED(string);
+    Q_UNUSED(format);
+#endif
+    return time;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \since 5.14
     \overload
+    \deprecated
 */
 QTime QLocale::toTime(const QString &string, const QString &format, QCalendar cal) const
 {
@@ -2447,6 +2464,7 @@ QTime QLocale::toTime(const QString &string, const QString &format, QCalendar ca
 #endif
     return time;
 }
+#endif
 
 /*!
     \since 4.4

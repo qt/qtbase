@@ -1037,11 +1037,15 @@ public:
     QDateTime toDateTime(const QString &string, const QString &format) const;
     // Calendar-aware API
     QDate toDate(const QString &string, FormatType format, QCalendar cal) const;
-    QTime toTime(const QString &string, FormatType format, QCalendar cal) const;
     QDateTime toDateTime(const QString &string, FormatType format, QCalendar cal) const;
     QDate toDate(const QString &string, const QString &format, QCalendar cal) const;
-    QTime toTime(const QString &string, const QString &format, QCalendar cal) const;
     QDateTime toDateTime(const QString &string, const QString &format, QCalendar cal) const;
+# if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Calendar is ignored when parsing times")
+    QTime toTime(const QString &string, FormatType format, QCalendar cal) const;
+    QT_DEPRECATED_X("Calendar is ignored when parsing times")
+    QTime toTime(const QString &string, const QString &format, QCalendar cal) const;
+# endif // 5.15
 #endif
 
     // ### Qt 6: We need to return QString from these function since
