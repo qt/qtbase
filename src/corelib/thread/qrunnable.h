@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QRunnable
 {
-    int ref;
+    int ref; // Qt6: Make this a bool, or make autoDelete() virtual.
 
     friend class QThreadPool;
     friend class QThreadPoolPrivate;
