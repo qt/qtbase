@@ -86,14 +86,14 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
     formatWidgetClass(str, w);
     str << ' ' << (w->isVisible() ? "[visible] " : "[hidden] ");
     if (const WId nativeWinId = w->internalWinId())
-        str << "[native: " << hex << showbase << nativeWinId << dec << noshowbase << "] ";
+        str << "[native: " << Qt::hex << Qt::showbase << nativeWinId << Qt::dec << Qt::noshowbase << "] ";
     if (w->isWindow())
         str << "[top] ";
     str << (w->testAttribute(Qt::WA_Mapped) ? "[mapped] " : "[not mapped] ");
     if (w->testAttribute(Qt::WA_DontCreateNativeAncestors))
         str << "[NoNativeAncestors] ";
     if (const int states = w->windowState())
-        str << "windowState=" << hex << showbase << states << dec << noshowbase << ' ';
+        str << "windowState=" << Qt::hex << Qt::showbase << states << Qt::dec << Qt::noshowbase << ' ';
     formatRect(str, w->geometry());
     if (w->isWindow()) {
         str << ' ' << w->logicalDpiX() << "DPI";
@@ -135,7 +135,7 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
         str << '\n';
     }
 #endif // Qt 5
-    foreach (const QObject *co, w->children()) {
+    for (const QObject *co : w->children()) {
         if (co->isWidgetType())
             dumpWidgetRecursion(str, static_cast<const QWidget *>(co), options, depth + 1);
     }
@@ -151,11 +151,11 @@ void dumpAllWidgets(FormatWindowOptions options, const QWidget *root)
         topLevels.append(const_cast<QWidget *>(root));
     else
         topLevels = QApplication::topLevelWidgets();
-    foreach (QWidget *tw, topLevels)
+    for (QWidget *tw : qAsConst(topLevels))
         dumpWidgetRecursion(str, tw, options);
 #if QT_VERSION >= 0x050400
     {
-        foreach (const QString &line, d.split(QLatin1Char('\n')))
+        for (const QString &line : d.split(QLatin1Char('\n')))
             qDebug().noquote() << line;
     }
 #else

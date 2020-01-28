@@ -69,7 +69,7 @@ static QTextStream &operator<<(QTextStream &str, const QSize &s)
 
 static QTextStream &operator<<(QTextStream &str, const QRect &rect)
 {
-    str << rect.size() << forcesign << rect.x() << rect.y() << noforcesign;
+    str << rect.size() << Qt::forcesign << rect.x() << rect.y() << Qt::noforcesign;
     return str;
 }
 
@@ -110,7 +110,7 @@ static bool isTopLevel(HWND hwnd)
 
 static void formatNativeWindow(HWND hwnd, QTextStream &str)
 {
-    str << hex << showbase << quintptr(hwnd) << noshowbase << dec;
+    str << Qt::hex << Qt::showbase << quintptr(hwnd) << Qt::noshowbase << Qt::dec;
 
     const bool topLevel = isTopLevel(hwnd);
     if (topLevel)
@@ -136,7 +136,7 @@ static void formatNativeWindow(HWND hwnd, QTextStream &str)
     if (GetClassName(hwnd, buf, sizeof(buf)/sizeof(buf[0])))
         str << '"' << QString::fromWCharArray(buf) << '"';
 
-    str << hex << showbase;
+    str << Qt::hex << Qt::showbase;
     if (const LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE)) {
         str << " style=" << style;
         debugWinStyle(str, style, WS_OVERLAPPED)
@@ -208,7 +208,7 @@ static void formatNativeWindow(HWND hwnd, QTextStream &str)
     if (const ULONG_PTR wndProc = GetClassLongPtr(hwnd, GCLP_WNDPROC))
         str << " wndProc=" << wndProc;
 
-    str << noshowbase << dec;
+    str << Qt::noshowbase << Qt::dec;
 
     if (GetWindowModuleFileName(hwnd, buf, sizeof(buf)/sizeof(buf[0])))
         str << " module=\"" << QString::fromWCharArray(buf) << '"';
@@ -258,7 +258,7 @@ static void dumpNativeWindows(const WIdVector& wins)
     DumpContext dc;
     QString s;
     dc.stream = QSharedPointer<QTextStream>(new QTextStream(&s));
-    foreach (WId win, wins)
+    for (WId win : wins)
         dumpNativeWindowRecursion(reinterpret_cast<HWND>(win), &dc);
 #if QT_VERSION >= 0x050400
     qDebug().noquote() << s;

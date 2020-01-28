@@ -62,7 +62,7 @@ void formatObject(QTextStream &str, const QObject *o)
 void formatRect(QTextStream &str, const QRect &geom)
 {
     str << geom.width() << 'x' << geom.height()
-        << forcesign << geom.x() << geom.y() << noforcesign;
+        << Qt::forcesign << geom.x() << geom.y() << Qt::noforcesign;
 }
 
 #define debugType(s, type, typeConstant) \
@@ -75,7 +75,7 @@ if (flags & flagConstant) \
 
 void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
 {
-    str << showbase << hex << unsigned(flags) << dec << noshowbase;
+    str << Qt::showbase << Qt::hex << unsigned(flags) << Qt::dec << Qt::noshowbase;
     const Qt::WindowFlags windowType = flags & Qt::WindowType_Mask;
     debugFlag(str, flags, Qt::Window)
     debugType(str, windowType, Qt::Dialog)
@@ -123,7 +123,7 @@ void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions option
     formatObject(str, w);
     str << ' ' << (w->isVisible() ? "[visible] " : "[hidden] ");
     if (const WId nativeWinId = pw ? pw->winId() : WId(0))
-        str << "[native: " << hex << showbase << nativeWinId << dec << noshowbase << "] ";
+        str << "[native: " << Qt::hex << Qt::showbase << nativeWinId << Qt::dec << Qt::noshowbase << "] ";
     if (w->isTopLevel())
         str << "[top] ";
     if (w->isExposed())
@@ -162,7 +162,7 @@ static void dumpWindowRecursion(QTextStream &str, const QWindow *w,
 {
     indentStream(str, 2 * depth);
     formatWindow(str, w, options);
-    foreach (const QObject *co, w->children()) {
+    for (const QObject *co : w->children()) {
         if (co->isWindowType())
             dumpWindowRecursion(str, static_cast<const QWindow *>(co), options, depth + 1);
     }
@@ -173,7 +173,7 @@ void dumpAllWindows(FormatWindowOptions options)
     QString d;
     QTextStream str(&d);
     str << "### QWindows:\n";
-    foreach (QWindow *w, QGuiApplication::topLevelWindows())
+    for (QWindow *w : QGuiApplication::topLevelWindows())
         dumpWindowRecursion(str, w, options);
 #if QT_VERSION >= 0x050400
     qDebug().noquote() << d;
