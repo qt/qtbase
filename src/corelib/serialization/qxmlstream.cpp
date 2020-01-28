@@ -50,6 +50,7 @@
 #endif
 #include <qstack.h>
 #include <qbuffer.h>
+#include <qscopeguard.h>
 #ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
 #else
@@ -68,6 +69,8 @@ public: \
         { return QString::fromLatin1(sourceText); } \
 private:
 #endif
+#include <private/qmemory_p.h>
+
 QT_BEGIN_NAMESPACE
 
 #include "qxmlstream_p.h"
@@ -847,7 +850,7 @@ void QXmlStreamReaderPrivate::init()
 #endif
     attributeStack.clear();
     attributeStack.reserve(16);
-    entityParser = nullptr;
+    entityParser.reset();
     hasCheckedStartDocument = false;
     normalizeLiterals = false;
     hasSeenTag = false;
@@ -880,7 +883,7 @@ void QXmlStreamReaderPrivate::parseEntity(const QString &value)
 
 
     if (!entityParser)
-        entityParser = new QXmlStreamReaderPrivate(q);
+        entityParser = qt_make_unique<QXmlStreamReaderPrivate>(q);
     else
         entityParser->init();
     entityParser->inParseEntity = true;
@@ -910,7 +913,6 @@ QXmlStreamReaderPrivate::~QXmlStreamReaderPrivate()
 #endif
     free(sym_stack);
     free(state_stack);
-    delete entityParser;
 }
 
 
@@ -1582,6 +1584,7 @@ QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(const QStringRef &prefix)
  */
 void QXmlStreamReaderPrivate::resolveTag()
 {
+    const auto attributeStackCleaner = qScopeGuard([this](){ attributeStack.clear(); });
     int n = attributeStack.size();
 
     if (namespaceProcessing) {
@@ -1649,7 +1652,10 @@ void QXmlStreamReaderPrivate::resolveTag()
             if (attributes[j].name() == attribute.name()
                 && attributes[j].namespaceUri() == attribute.namespaceUri()
                 && (namespaceProcessing || attributes[j].qualifiedName() == attribute.qualifiedName()))
+            {
                 raiseWellFormedError(QXmlStream::tr("Attribute '%1' redefined.").arg(attribute.qualifiedName()));
+                return;
+            }
         }
     }
 
@@ -1680,8 +1686,6 @@ void QXmlStreamReaderPrivate::resolveTag()
         attribute.m_isDefault = true;
         attributes.append(attribute);
     }
-
-    attributeStack.clear();
 }
 
 void QXmlStreamReaderPrivate::resolvePublicNamespaces()

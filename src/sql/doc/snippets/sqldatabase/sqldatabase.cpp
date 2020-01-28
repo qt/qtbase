@@ -249,16 +249,15 @@ void QSqlQueryModel_snippets()
     }
 
 //! [21]
-    QSqlTableModel model;
-    model.setTable("employee");
-    model.select();
+    QSqlQueryModel model;
+    model.setQuery("SELECT name, salary FROM employee");
     int salary = model.record(4).value("salary").toInt();
 //! [21]
     Q_UNUSED(salary);
 
     {
 //! [22]
-    int salary = model.data(model.index(4, 2)).toInt();
+    int salary = model.data(model.index(4, 1)).toInt();
 //! [22]
     Q_UNUSED(salary);
     }
@@ -308,7 +307,8 @@ void QSqlTableModel_snippets()
 //! [25]
     QSqlTableModel model;
     model.setTable("employee");
-    QString name = model.record(4).value("name").toString();
+    model.select();
+    int salary = model.record(4).value("salary").toInt();
 //! [25]
     }
 }

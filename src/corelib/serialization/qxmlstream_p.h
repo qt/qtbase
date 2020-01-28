@@ -981,7 +981,7 @@ public:
 
     QString resolveUndeclaredEntity(const QString &name);
     void parseEntity(const QString &value);
-    QXmlStreamReaderPrivate *entityParser;
+    std::unique_ptr<QXmlStreamReaderPrivate> entityParser;
 
     bool scanAfterLangleBang();
     bool scanPublicOrSystem();
