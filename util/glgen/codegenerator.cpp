@@ -187,12 +187,12 @@ void CodeGenerator::writeCoreFactoryImplementation(const QString &fileName) cons
     std::sort(versions.begin(), versions.end(), std::greater<Version>());
 
     // Outout the #include statements
-    stream << QStringLiteral("#if !defined(QT_OPENGL_ES_2)") << endl;
+    stream << QStringLiteral("#if !defined(QT_OPENGL_ES_2)") << Qt::endl;
     Q_FOREACH (const Version &classVersion, versions) {
         if (!versionHasProfiles(classVersion)) {
             stream << QString(QStringLiteral("#include \"qopenglfunctions_%1_%2.h\""))
                       .arg(classVersion.major)
-                      .arg(classVersion.minor) << endl;
+                      .arg(classVersion.minor) << Qt::endl;
         } else {
             const QList<VersionProfile::OpenGLProfile> profiles = (QList<VersionProfile::OpenGLProfile>()
                 << VersionProfile::CoreProfile << VersionProfile::CompatibilityProfile);
@@ -204,33 +204,33 @@ void CodeGenerator::writeCoreFactoryImplementation(const QString &fileName) cons
                 stream << QString(QStringLiteral("#include \"qopenglfunctions_%1_%2_%3.h\""))
                           .arg(classVersion.major)
                           .arg(classVersion.minor)
-                          .arg(profileSuffix) << endl;
+                          .arg(profileSuffix) << Qt::endl;
             }
         }
     }
-    stream << QStringLiteral("#else") << endl;
-    stream << QStringLiteral("#include \"qopenglfunctions_es2.h\"") << endl;
-    stream << QStringLiteral("#endif") << endl;
+    stream << QStringLiteral("#else") << Qt::endl;
+    stream << QStringLiteral("#include \"qopenglfunctions_es2.h\"") << Qt::endl;
+    stream << QStringLiteral("#endif") << Qt::endl;
 
-    stream << endl;
+    stream << Qt::endl;
 
-    stream << QStringLiteral("QT_BEGIN_NAMESPACE") << endl << endl;
-    stream << QStringLiteral("QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::create(const QOpenGLVersionProfile &versionProfile)") << endl;
-    stream << QStringLiteral("{") << endl;
-    stream << QStringLiteral("#if !defined(QT_OPENGL_ES_2)") << endl;
-    stream << QStringLiteral("    const int major = versionProfile.version().first;") << endl;
-    stream << QStringLiteral("    const int minor = versionProfile.version().second;") << endl << endl;
+    stream << QStringLiteral("QT_BEGIN_NAMESPACE") << Qt::endl << Qt::endl;
+    stream << QStringLiteral("QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::create(const QOpenGLVersionProfile &versionProfile)") << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl;
+    stream << QStringLiteral("#if !defined(QT_OPENGL_ES_2)") << Qt::endl;
+    stream << QStringLiteral("    const int major = versionProfile.version().first;") << Qt::endl;
+    stream << QStringLiteral("    const int minor = versionProfile.version().second;") << Qt::endl << Qt::endl;
 
     // Iterate over classes with profiles
-    stream << QStringLiteral("    if (versionProfile.hasProfiles()) {") << endl;
-    stream << QStringLiteral("        switch (versionProfile.profile()) {") << endl;
+    stream << QStringLiteral("    if (versionProfile.hasProfiles()) {") << Qt::endl;
+    stream << QStringLiteral("        switch (versionProfile.profile()) {") << Qt::endl;
     const QList<VersionProfile::OpenGLProfile> profiles = (QList<VersionProfile::OpenGLProfile>()
         << VersionProfile::CoreProfile << VersionProfile::CompatibilityProfile);
     Q_FOREACH (const VersionProfile::OpenGLProfile profile, profiles) {
         const QString caseLabel = profile == VersionProfile::CoreProfile
                                 ? QStringLiteral("QSurfaceFormat::CoreProfile")
                                 : QStringLiteral("QSurfaceFormat::CompatibilityProfile");
-        stream << QString(QStringLiteral("        case %1:")).arg(caseLabel) << endl;
+        stream << QString(QStringLiteral("        case %1:")).arg(caseLabel) << Qt::endl;
 
         int i = 0;
         Q_FOREACH (const Version &classVersion, versions) {
@@ -241,23 +241,23 @@ void CodeGenerator::writeCoreFactoryImplementation(const QString &fileName) cons
             stream << QString(QStringLiteral("            %1 (major == %2 && minor == %3)"))
                       .arg(ifString)
                       .arg(classVersion.major)
-                      .arg(classVersion.minor) << endl;
+                      .arg(classVersion.minor) << Qt::endl;
 
             VersionProfile v;
             v.version = classVersion;
             v.profile = profile;
             stream << QString(QStringLiteral("                return new %1;"))
-                      .arg(generateClassName(v)) << endl;
+                      .arg(generateClassName(v)) << Qt::endl;
         }
 
-        stream << QStringLiteral("            break;") << endl << endl;
+        stream << QStringLiteral("            break;") << Qt::endl << Qt::endl;
     }
 
-    stream << QStringLiteral("        case QSurfaceFormat::NoProfile:") << endl;
-    stream << QStringLiteral("        default:") << endl;
-    stream << QStringLiteral("            break;") << endl;
-    stream << QStringLiteral("        };") << endl;
-    stream << QStringLiteral("    } else {") << endl;
+    stream << QStringLiteral("        case QSurfaceFormat::NoProfile:") << Qt::endl;
+    stream << QStringLiteral("        default:") << Qt::endl;
+    stream << QStringLiteral("            break;") << Qt::endl;
+    stream << QStringLiteral("        };") << Qt::endl;
+    stream << QStringLiteral("    } else {") << Qt::endl;
 
     // Iterate over the legacy classes (no profiles)
     int i = 0;
@@ -269,22 +269,22 @@ void CodeGenerator::writeCoreFactoryImplementation(const QString &fileName) cons
         stream << QString(QStringLiteral("        %1 (major == %2 && minor == %3)"))
                   .arg(ifString)
                   .arg(classVersion.major)
-                  .arg(classVersion.minor) << endl;
+                  .arg(classVersion.minor) << Qt::endl;
 
         VersionProfile v;
         v.version = classVersion;
         stream << QString(QStringLiteral("            return new %1;"))
-                  .arg(generateClassName(v)) << endl;
+                  .arg(generateClassName(v)) << Qt::endl;
     }
 
-    stream << QStringLiteral("    }") << endl;
-    stream << QStringLiteral("    return 0;") << endl;
+    stream << QStringLiteral("    }") << Qt::endl;
+    stream << QStringLiteral("    return 0;") << Qt::endl;
 
-    stream << QStringLiteral("#else") << endl;
-    stream << QStringLiteral("    Q_UNUSED(versionProfile);") << endl;
-    stream << QStringLiteral("    return new QOpenGLFunctions_ES2;") << endl;
-    stream << QStringLiteral("#endif") << endl;
-    stream << QStringLiteral("}") << endl;
+    stream << QStringLiteral("#else") << Qt::endl;
+    stream << QStringLiteral("    Q_UNUSED(versionProfile);") << Qt::endl;
+    stream << QStringLiteral("    return new QOpenGLFunctions_ES2;") << Qt::endl;
+    stream << QStringLiteral("#endif") << Qt::endl;
+    stream << QStringLiteral("}") << Qt::endl;
 
     // Write the postamble
     writePostamble(fileName, stream);
@@ -432,13 +432,13 @@ void CodeGenerator::writeBackendClassDeclaration(QTextStream &stream,
     stream << QString(QStringLiteral("class %1 : public %2"))
               .arg(className)
               .arg(baseClass)
-           << endl;
-    stream << QStringLiteral("{") << endl;
-    stream << QStringLiteral("public:") << endl;
-    stream << QString( QStringLiteral("    %1(QOpenGLContext *context);") ).arg(className) << endl << endl;
+           << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl;
+    stream << QStringLiteral("public:") << Qt::endl;
+    stream << QString( QStringLiteral("    %1(QOpenGLContext *context);") ).arg(className) << Qt::endl << Qt::endl;
 
     // Output function used for generating key used in QOpenGLContextPrivate
-    stream << QStringLiteral("    static QOpenGLVersionStatus versionStatus();") << endl << endl;
+    stream << QStringLiteral("    static QOpenGLVersionStatus versionStatus();") << Qt::endl << Qt::endl;
 
     // Get the functions needed for this class
     FunctionList functions = m_parser->functionsForVersion(versionProfile);
@@ -448,8 +448,8 @@ void CodeGenerator::writeBackendClassDeclaration(QTextStream &stream,
     // Declare the functions
     writeClassFunctionDeclarations(stream, functionSet, Private);
 
-    stream << QStringLiteral("};") << endl;
-    stream << endl;
+    stream << QStringLiteral("};") << Qt::endl;
+    stream << Qt::endl;
 }
 
 void CodeGenerator::writeBackendClassImplementation(QTextStream &stream,
@@ -457,9 +457,9 @@ void CodeGenerator::writeBackendClassImplementation(QTextStream &stream,
                                                     const QString &baseClass) const
 {
     const QString className = backendClassName(versionProfile);
-    stream << QString(QStringLiteral("%1::%1(QOpenGLContext *context)")).arg(className) << endl;
-    stream << QString(QStringLiteral("    : %1(context)")).arg(baseClass) << endl
-           << QStringLiteral("{") << endl;
+    stream << QString(QStringLiteral("%1::%1(QOpenGLContext *context)")).arg(className) << Qt::endl;
+    stream << QString(QStringLiteral("    : %1(context)")).arg(baseClass) << Qt::endl
+           << QStringLiteral("{") << Qt::endl;
 
     // Resolve the entry points for this set of functions
     // Get the functions needed for this class
@@ -468,18 +468,18 @@ void CodeGenerator::writeBackendClassImplementation(QTextStream &stream,
     functionSet.insert(versionProfile, functions);
     writeEntryPointResolutionCode(stream, functionSet);
 
-    stream << QStringLiteral("}") << endl << endl;
+    stream << QStringLiteral("}") << Qt::endl << Qt::endl;
 
-    stream << QString(QStringLiteral("QOpenGLVersionStatus %1::versionStatus()")).arg(className) << endl;
-    stream << QStringLiteral("{") << endl;
+    stream << QString(QStringLiteral("QOpenGLVersionStatus %1::versionStatus()")).arg(className) << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl;
     const QString status = versionProfile.profile == VersionProfile::CoreProfile
                          ? QStringLiteral("QOpenGLVersionStatus::CoreStatus")
                          : QStringLiteral("QOpenGLVersionStatus::DeprecatedStatus");
     stream << QString(QStringLiteral("    return QOpenGLVersionStatus(%1, %2, %3);"))
               .arg(versionProfile.version.major)
               .arg(versionProfile.version.minor)
-              .arg(status) << endl;
-    stream << QStringLiteral("}") << endl << endl;
+              .arg(status) << Qt::endl;
+    stream << QStringLiteral("}") << Qt::endl << Qt::endl;
 }
 
 QString CodeGenerator::coreClassFileName(const VersionProfile &versionProfile,
@@ -525,25 +525,25 @@ void CodeGenerator::writePublicClassDeclaration(const QString &baseFileName,
     stream << QString(QStringLiteral("class Q_GUI_EXPORT %1 : public %2"))
               .arg(className)
               .arg(baseClass)
-           << endl;
-    stream << QStringLiteral("{") << endl;
-    stream << QStringLiteral("public:") << endl;
-    stream << QString(QStringLiteral("    %1();")).arg(className) << endl;
-    stream << QString(QStringLiteral("    ~%1();")).arg(className) << endl << endl;
-    stream << QStringLiteral("    bool initializeOpenGLFunctions() override;") << endl << endl;
+           << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl;
+    stream << QStringLiteral("public:") << Qt::endl;
+    stream << QString(QStringLiteral("    %1();")).arg(className) << Qt::endl;
+    stream << QString(QStringLiteral("    ~%1();")).arg(className) << Qt::endl << Qt::endl;
+    stream << QStringLiteral("    bool initializeOpenGLFunctions() override;") << Qt::endl << Qt::endl;
 
     // Get the functions needed for this class and declare them
     FunctionCollection functionSet = functionCollection(versionProfile);
     writeClassFunctionDeclarations(stream, functionSet, Public);
 
     // isCompatible function and backend variables
-    stream << QStringLiteral("private:") << endl;
-    stream << QStringLiteral("    friend class QOpenGLContext;") << endl << endl;
-    stream << QStringLiteral("    static bool isContextCompatible(QOpenGLContext *context);") << endl;
-    stream << QStringLiteral("    static QOpenGLVersionProfile versionProfile();") << endl << endl;
+    stream << QStringLiteral("private:") << Qt::endl;
+    stream << QStringLiteral("    friend class QOpenGLContext;") << Qt::endl << Qt::endl;
+    stream << QStringLiteral("    static bool isContextCompatible(QOpenGLContext *context);") << Qt::endl;
+    stream << QStringLiteral("    static QOpenGLVersionProfile versionProfile();") << Qt::endl << Qt::endl;
     writeBackendVariableDeclarations(stream, backendsForFunctionCollection(functionSet));
 
-    stream << QStringLiteral("};") << endl << endl;
+    stream << QStringLiteral("};") << Qt::endl << Qt::endl;
 
     // Output the inline functions that forward OpenGL calls to the backends' entry points
     writeClassInlineFunctions(stream, className, functionSet);
@@ -576,11 +576,11 @@ void CodeGenerator::writePublicClassImplementation(const QString &baseFileName,
     writePreamble(templateFileName, stream, versionProfileString);
 
     const QString className = generateClassName(versionProfile, Public);
-    stream << QStringLiteral("/*!") << endl
-           << QStringLiteral("    \\class ") << className << endl
-           << QStringLiteral("    \\inmodule QtGui") << endl
-           << QStringLiteral("    \\since 5.1") << endl
-           << QStringLiteral("    \\wrapper") << endl
+    stream << QStringLiteral("/*!") << Qt::endl
+           << QStringLiteral("    \\class ") << className << Qt::endl
+           << QStringLiteral("    \\inmodule QtGui") << Qt::endl
+           << QStringLiteral("    \\since 5.1") << Qt::endl
+           << QStringLiteral("    \\wrapper") << Qt::endl
            << QStringLiteral("    \\brief The ") << className
            << QString(QStringLiteral(" class provides all functions for OpenGL %1.%2 "))
                 .arg(versionProfile.version.major)
@@ -593,116 +593,116 @@ void CodeGenerator::writePublicClassImplementation(const QString &baseFileName,
         profileSuffix = "specification";
     }
 
-    stream << profileSuffix << QStringLiteral(".") << endl << endl
+    stream << profileSuffix << QStringLiteral(".") << Qt::endl << Qt::endl
            << QStringLiteral("    This class is a wrapper for functions from ")
            << QString(QStringLiteral("OpenGL %1.%2 "))
                 .arg(versionProfile.version.major)
                 .arg(versionProfile.version.minor)
-           << profileSuffix << QStringLiteral(".") << endl
-           << QStringLiteral("    See reference pages on \\l {http://www.opengl.org/sdk/docs/}{opengl.org}") << endl
-           << QStringLiteral("    for function documentation.") << endl << endl
-           << QStringLiteral("    \\sa QAbstractOpenGLFunctions") << endl
-           << QStringLiteral("*/") << endl << endl;
+           << profileSuffix << QStringLiteral(".") << Qt::endl
+           << QStringLiteral("    See reference pages on \\l {http://www.opengl.org/sdk/docs/}{opengl.org}") << Qt::endl
+           << QStringLiteral("    for function documentation.") << Qt::endl << Qt::endl
+           << QStringLiteral("    \\sa QAbstractOpenGLFunctions") << Qt::endl
+           << QStringLiteral("*/") << Qt::endl << Qt::endl;
 
     // Get the data we'll need for this class implementation
     FunctionCollection functionSet = functionCollection(versionProfile);
     QList<VersionProfile> backends = backendsForFunctionCollection(functionSet);
 
     // Output default constructor
-    stream << className << QStringLiteral("::") << className << QStringLiteral("()") << endl;
+    stream << className << QStringLiteral("::") << className << QStringLiteral("()") << Qt::endl;
     stream << QStringLiteral(" : ") << baseClass << QStringLiteral("()");
     Q_FOREACH (const VersionProfile &v, backends)
-        stream << endl << QString(QStringLiteral(" , %1(0)")).arg(backendVariableName(v));
-    stream << endl << QStringLiteral("{") << endl << QStringLiteral("}") << endl << endl;
+        stream << Qt::endl << QString(QStringLiteral(" , %1(0)")).arg(backendVariableName(v));
+    stream << Qt::endl << QStringLiteral("{") << Qt::endl << QStringLiteral("}") << Qt::endl << Qt::endl;
 
     // Output the destructor
-    stream << className << QStringLiteral("::~") << className << QStringLiteral("()") << endl;
-    stream << QStringLiteral("{") << endl;
+    stream << className << QStringLiteral("::~") << className << QStringLiteral("()") << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl;
     Q_FOREACH (const VersionProfile &v, backends) {
         const QString backendVar = backendVariableName(v);
         const QString backendClass = backendClassName(v);
-        stream << QString(QStringLiteral("    if (%1 && !%1->refs.deref()) {")).arg(backendVar) << endl;
+        stream << QString(QStringLiteral("    if (%1 && !%1->refs.deref()) {")).arg(backendVar) << Qt::endl;
         stream << QString(QStringLiteral("        QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(%1->context, %2::versionStatus());"))
                   .arg(backendVar)
-                  .arg(backendClass) << endl;
-        stream << QString(QStringLiteral("        delete %1;")).arg(backendVar) << endl;
-        stream << QStringLiteral("    }") << endl;
+                  .arg(backendClass) << Qt::endl;
+        stream << QString(QStringLiteral("        delete %1;")).arg(backendVar) << Qt::endl;
+        stream << QStringLiteral("    }") << Qt::endl;
     }
-    stream << QStringLiteral("}") << endl << endl;
+    stream << QStringLiteral("}") << Qt::endl << Qt::endl;
 
     // Output the initialize function that creates the backend objects
-    stream << QString(QStringLiteral("bool %1::initializeOpenGLFunctions()")).arg(className) << endl;
-    stream << QStringLiteral("{") << endl;
+    stream << QString(QStringLiteral("bool %1::initializeOpenGLFunctions()")).arg(className) << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl;
 
-    stream << QStringLiteral("    if ( isInitialized() )") << endl;
-    stream << QStringLiteral("        return true;") << endl << endl;
-    stream << QStringLiteral("    QOpenGLContext* context = QOpenGLContext::currentContext();") << endl << endl;
-    stream << QStringLiteral("    // If owned by a context object make sure it is current.") << endl;
-    stream << QStringLiteral("    // Also check that current context is capable of resolving all needed functions") << endl;
-    stream << QStringLiteral("    if (((owningContext() && owningContext() == context) || !owningContext())") << endl;
-    stream << QString(QStringLiteral("        && %1::isContextCompatible(context))")).arg(className) << endl;
-    stream << QStringLiteral("    {") << endl;
-    stream << QStringLiteral("        // Associate with private implementation, creating if necessary") << endl;
-    stream << QStringLiteral("        // Function pointers in the backends are resolved at creation time") << endl;
-    stream << QStringLiteral("        QOpenGLVersionFunctionsBackend* d = 0;") << endl;
+    stream << QStringLiteral("    if ( isInitialized() )") << Qt::endl;
+    stream << QStringLiteral("        return true;") << Qt::endl << Qt::endl;
+    stream << QStringLiteral("    QOpenGLContext* context = QOpenGLContext::currentContext();") << Qt::endl << Qt::endl;
+    stream << QStringLiteral("    // If owned by a context object make sure it is current.") << Qt::endl;
+    stream << QStringLiteral("    // Also check that current context is capable of resolving all needed functions") << Qt::endl;
+    stream << QStringLiteral("    if (((owningContext() && owningContext() == context) || !owningContext())") << Qt::endl;
+    stream << QString(QStringLiteral("        && %1::isContextCompatible(context))")).arg(className) << Qt::endl;
+    stream << QStringLiteral("    {") << Qt::endl;
+    stream << QStringLiteral("        // Associate with private implementation, creating if necessary") << Qt::endl;
+    stream << QStringLiteral("        // Function pointers in the backends are resolved at creation time") << Qt::endl;
+    stream << QStringLiteral("        QOpenGLVersionFunctionsBackend* d = 0;") << Qt::endl;
 
     Q_FOREACH (const VersionProfile &v, backends) {
         const QString backendClass = backendClassName(v);
         const QString backendVar = backendVariableName(v);
         stream << QString(QStringLiteral("        d = QAbstractOpenGLFunctionsPrivate::functionsBackend(context, %1::versionStatus());"))
-                  .arg(backendClass) << endl;
-        stream << QStringLiteral("        if (!d) {") << endl;
-        stream << QString(QStringLiteral("            d = new %1(context);")).arg(backendClass) << endl;
+                  .arg(backendClass) << Qt::endl;
+        stream << QStringLiteral("        if (!d) {") << Qt::endl;
+        stream << QString(QStringLiteral("            d = new %1(context);")).arg(backendClass) << Qt::endl;
         stream << QString(QStringLiteral("            QAbstractOpenGLFunctionsPrivate::insertFunctionsBackend(context, %1::versionStatus(), d);"))
-                  .arg(backendClass) << endl;
-        stream << QStringLiteral("        }") << endl;
-        stream << QString(QStringLiteral("        %1 = static_cast<%2*>(d);")).arg(backendVar).arg(backendClass) << endl;
-        stream << QStringLiteral("        d->refs.ref();") << endl << endl;
+                  .arg(backendClass) << Qt::endl;
+        stream << QStringLiteral("        }") << Qt::endl;
+        stream << QString(QStringLiteral("        %1 = static_cast<%2*>(d);")).arg(backendVar).arg(backendClass) << Qt::endl;
+        stream << QStringLiteral("        d->refs.ref();") << Qt::endl << Qt::endl;
     }
 
-    stream << QStringLiteral("        QAbstractOpenGLFunctions::initializeOpenGLFunctions();") << endl;
-    stream << QStringLiteral("    }") << endl;
+    stream << QStringLiteral("        QAbstractOpenGLFunctions::initializeOpenGLFunctions();") << Qt::endl;
+    stream << QStringLiteral("    }") << Qt::endl;
 
-    stream << QStringLiteral("    return isInitialized();") << endl;
-    stream << QStringLiteral("}") << endl << endl;
+    stream << QStringLiteral("    return isInitialized();") << Qt::endl;
+    stream << QStringLiteral("}") << Qt::endl << Qt::endl;
 
     // Output the context compatibility check function
-    stream << QString(QStringLiteral("bool %1::isContextCompatible(QOpenGLContext *context)")).arg(className) << endl;
-    stream << QStringLiteral("{") << endl;
-    stream << QStringLiteral("    Q_ASSERT(context);") << endl;
-    stream << QStringLiteral("    QSurfaceFormat f = context->format();") << endl;
-    stream << QStringLiteral("    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());") << endl;
+    stream << QString(QStringLiteral("bool %1::isContextCompatible(QOpenGLContext *context)")).arg(className) << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl;
+    stream << QStringLiteral("    Q_ASSERT(context);") << Qt::endl;
+    stream << QStringLiteral("    QSurfaceFormat f = context->format();") << Qt::endl;
+    stream << QStringLiteral("    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());") << Qt::endl;
     stream << QString(QStringLiteral("    if (v < qMakePair(%1, %2))"))
               .arg(versionProfile.version.major)
-              .arg(versionProfile.version.minor) << endl;
-    stream << QStringLiteral("        return false;") << endl << endl;
+              .arg(versionProfile.version.minor) << Qt::endl;
+    stream << QStringLiteral("        return false;") << Qt::endl << Qt::endl;
 
     // If generating a legacy or compatibility profile class we need to ensure that
     // the context does not expose only core functions
     if (versionProfile.profile != VersionProfile::CoreProfile) {
-        stream << QStringLiteral("    if (f.profile() == QSurfaceFormat::CoreProfile)") << endl;
-        stream << QStringLiteral("        return false;") << endl << endl;
+        stream << QStringLiteral("    if (f.profile() == QSurfaceFormat::CoreProfile)") << Qt::endl;
+        stream << QStringLiteral("        return false;") << Qt::endl << Qt::endl;
     }
 
-    stream << QStringLiteral("    return true;") << endl;
-    stream << QStringLiteral("}") << endl << endl;
+    stream << QStringLiteral("    return true;") << Qt::endl;
+    stream << QStringLiteral("}") << Qt::endl << Qt::endl;
 
     // Output static function used as helper in template versionFunctions() function
     // in QOpenGLContext
-    stream << QString(QStringLiteral("QOpenGLVersionProfile %1::versionProfile()")).arg(className) << endl;
-    stream << QStringLiteral("{") << endl;
-    stream << QStringLiteral("    QOpenGLVersionProfile v;") << endl;
+    stream << QString(QStringLiteral("QOpenGLVersionProfile %1::versionProfile()")).arg(className) << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl;
+    stream << QStringLiteral("    QOpenGLVersionProfile v;") << Qt::endl;
     stream << QString(QStringLiteral("    v.setVersion(%1, %2);"))
               .arg(versionProfile.version.major)
-              .arg(versionProfile.version.minor) << endl;
+              .arg(versionProfile.version.minor) << Qt::endl;
     if (versionProfile.hasProfiles()) {
         const QString profileName = versionProfile.profile == VersionProfile::CoreProfile
                                     ? QStringLiteral("QSurfaceFormat::CoreProfile")
                                     : QStringLiteral("QSurfaceFormat::CompatibilityProfile");
-        stream << QString(QStringLiteral("    v.setProfile(%1);")).arg(profileName) << endl;
+        stream << QString(QStringLiteral("    v.setProfile(%1);")).arg(profileName) << Qt::endl;
     }
-    stream << QStringLiteral("    return v;") << endl;
-    stream << QStringLiteral("}") << endl;
+    stream << QStringLiteral("    return v;") << Qt::endl;
+    stream << QStringLiteral("}") << Qt::endl;
 
     // Write the postamble
     writePostamble(templateFileName, stream);
@@ -718,13 +718,13 @@ void CodeGenerator::writeClassFunctionDeclarations(QTextStream &stream,
                   .arg(version.version.major)
                   .arg(version.version.minor)
                   .arg((version.profile == VersionProfile::CoreProfile) ? QStringLiteral("core") : QStringLiteral("deprecated"))
-               << endl;
+               << Qt::endl;
 
         // Output function declarations
         FunctionList functions = functionSet.value(version);
         Q_FOREACH (const Function &f, functions)
             writeFunctionDeclaration(stream, f, visibility);
-        stream << endl;
+        stream << Qt::endl;
     } // version and profile
 }
 
@@ -751,7 +751,7 @@ void CodeGenerator::writeFunctionDeclaration(QTextStream &stream, const Function
     default:
         signature = QString(QStringLiteral("    %1 (QOPENGLF_APIENTRYP %2)(%3);")).arg(f.returnType).arg(f.name).arg(args);
     }
-    stream << signature << endl;
+    stream << signature << Qt::endl;
 }
 
 void CodeGenerator::writeClassInlineFunctions(QTextStream &stream,
@@ -765,7 +765,7 @@ void CodeGenerator::writeClassInlineFunctions(QTextStream &stream,
                   .arg(version.version.major)
                   .arg(version.version.minor)
                   .arg((version.profile == VersionProfile::CoreProfile) ? QStringLiteral("core") : QStringLiteral("deprecated"))
-               << endl;
+               << Qt::endl;
 
         // Output function declarations
         const QString backendVar = backendVariableName(version);
@@ -773,7 +773,7 @@ void CodeGenerator::writeClassInlineFunctions(QTextStream &stream,
         Q_FOREACH (const Function &f, functions)
             writeInlineFunction(stream, className, backendVar, f);
 
-        stream << endl;
+        stream << Qt::endl;
 
     } // version and profile
 }
@@ -798,7 +798,7 @@ void CodeGenerator::writeInlineFunction(QTextStream &stream, const QString &clas
                         .arg(className)
                         .arg(f.name)
                         .arg(args);
-    stream << signature << endl << QStringLiteral("{") << endl;
+    stream << signature << Qt::endl << QStringLiteral("{") << Qt::endl;
 
     QStringList argumentNames;
     Q_FOREACH (const Argument &arg, f.arguments)
@@ -806,10 +806,10 @@ void CodeGenerator::writeInlineFunction(QTextStream &stream, const QString &clas
     QString argNames = argumentNames.join(", ");
 
     if (f.returnType == QLatin1String("void"))
-        stream << QString(QStringLiteral("    %1->%2(%3);")).arg(backendVar).arg(f.name).arg(argNames) << endl;
+        stream << QString(QStringLiteral("    %1->%2(%3);")).arg(backendVar).arg(f.name).arg(argNames) << Qt::endl;
     else
-        stream << QString(QStringLiteral("    return %1->%2(%3);")).arg(backendVar).arg(f.name).arg(argNames) << endl;
-    stream << QStringLiteral("}") << endl << endl;
+        stream << QString(QStringLiteral("    return %1->%2(%3);")).arg(backendVar).arg(f.name).arg(argNames) << Qt::endl;
+    stream << QStringLiteral("}") << Qt::endl << Qt::endl;
 }
 
 void CodeGenerator::writeEntryPointResolutionCode(QTextStream &stream,
@@ -823,32 +823,32 @@ void CodeGenerator::writeEntryPointResolutionCode(QTextStream &stream,
                   .arg(version.version.major)
                   .arg(version.version.minor)
                   .arg((version.profile == VersionProfile::CoreProfile) ? QStringLiteral("core") : QStringLiteral("deprecated"))
-               << endl;
+               << Qt::endl;
 
         // Output function declarations
         FunctionList functions = functionSet.value(version);
 
         bool useGetProcAddress = (version.version.major == 1 && (version.version.minor == 0 || version.version.minor == 1));
         if (useGetProcAddress) {
-            stream << "#if defined(Q_OS_WIN)" << endl;
+            stream << "#if defined(Q_OS_WIN)" << Qt::endl;
             if (!hasModuleHandle) {
-                stream << "    HMODULE handle = GetModuleHandleA(\"opengl32.dll\");" << endl;
+                stream << "    HMODULE handle = GetModuleHandleA(\"opengl32.dll\");" << Qt::endl;
                 hasModuleHandle = true;
             }
 
             Q_FOREACH (const Function &f, functions)
                 writeEntryPointResolutionStatement(stream, f, QString(), useGetProcAddress);
 
-            stream << "#else" << endl;
+            stream << "#else" << Qt::endl;
         }
 
         Q_FOREACH (const Function &f, functions)
             writeEntryPointResolutionStatement(stream, f);
 
         if (useGetProcAddress)
-            stream << "#endif" << endl;
+            stream << "#endif" << Qt::endl;
 
-        stream << endl;
+        stream << Qt::endl;
 
     } // version and profile
 }
@@ -880,7 +880,7 @@ void CodeGenerator::writeEntryPointResolutionStatement(QTextStream &stream, cons
                     .arg(f.name)
                     .arg(prefix);
     }
-    stream << signature << endl;
+    stream << signature << Qt::endl;
 }
 
 QList<VersionProfile> CodeGenerator::backendsForFunctionCollection(const FunctionCollection &functionSet) const
@@ -923,7 +923,7 @@ void CodeGenerator::writeBackendVariableDeclarations(QTextStream &stream, const 
     Q_FOREACH (const VersionProfile &v, backends) {
         const QString className = backendClassName(v);
         const QString varName = backendVariableName(v);
-        stream << QString(QStringLiteral("    %1* %2;")).arg(className).arg(varName) << endl;
+        stream << QString(QStringLiteral("    %1* %2;")).arg(className).arg(varName) << Qt::endl;
     }
 }
 
@@ -982,15 +982,15 @@ void CodeGenerator::writeExtensionClassDeclaration(QTextStream &stream, const QS
     stream << QString(QStringLiteral("class %2 : public %3"))
               .arg(className)
               .arg(baseClass)
-           << endl << "{" << endl << "public:" << endl;
+           << Qt::endl << "{" << Qt::endl << "public:" << Qt::endl;
 
     if (visibility == Public) {
         // Default constructor
-        stream << QStringLiteral("    ") << className << QStringLiteral("();") << endl << endl;
+        stream << QStringLiteral("    ") << className << QStringLiteral("();") << Qt::endl << Qt::endl;
 
         // Base class virtual function(s)
         QString resolveFunction = QStringLiteral("    bool initializeOpenGLFunctions() final;");
-        stream << resolveFunction << endl << endl;
+        stream << resolveFunction << Qt::endl << Qt::endl;
     }
 
     // Output the functions provided by this extension
@@ -1000,12 +1000,12 @@ void CodeGenerator::writeExtensionClassDeclaration(QTextStream &stream, const QS
 
     if (visibility == Public) {
         // Write out the protected ctor
-        stream << endl << QStringLiteral("protected:") << endl;
-        stream << QStringLiteral("    Q_DECLARE_PRIVATE(") << className << QStringLiteral(")") << endl;
+        stream << Qt::endl << QStringLiteral("protected:") << Qt::endl;
+        stream << QStringLiteral("    Q_DECLARE_PRIVATE(") << className << QStringLiteral(")") << Qt::endl;
     }
 
     // End the class declaration
-    stream << QStringLiteral("};") << endl << endl;
+    stream << QStringLiteral("};") << Qt::endl << Qt::endl;
 
     // Output the inline functions for public class
     if (visibility == Public) {
@@ -1033,9 +1033,9 @@ void CodeGenerator::writeExtensionInlineFunction(QTextStream &stream, const QStr
                         .arg(className)
                         .arg(f.name)
                         .arg(args);
-    stream << signature << endl << QStringLiteral("{") << endl;
+    stream << signature << Qt::endl << QStringLiteral("{") << Qt::endl;
 
-    stream << QString(QStringLiteral("    Q_D(%1);")).arg(className) << endl;
+    stream << QString(QStringLiteral("    Q_D(%1);")).arg(className) << Qt::endl;
 
     QStringList argumentNames;
     Q_FOREACH (const Argument &arg, f.arguments)
@@ -1043,10 +1043,10 @@ void CodeGenerator::writeExtensionInlineFunction(QTextStream &stream, const QStr
     QString argNames = argumentNames.join(", ");
 
     if (f.returnType == QStringLiteral("void"))
-        stream << QString(QStringLiteral("    d->%1(%2);")).arg(f.name).arg(argNames) << endl;
+        stream << QString(QStringLiteral("    d->%1(%2);")).arg(f.name).arg(argNames) << Qt::endl;
     else
-        stream << QString(QStringLiteral("    return d->%1(%2);")).arg(f.name).arg(argNames) << endl;
-    stream << QStringLiteral("}") << endl << endl;
+        stream << QString(QStringLiteral("    return d->%1(%2);")).arg(f.name).arg(argNames) << Qt::endl;
+    stream << QStringLiteral("}") << Qt::endl << Qt::endl;
 }
 
 void CodeGenerator::writeExtensionClassImplementation(QTextStream &stream, const QString &extension) const
@@ -1055,30 +1055,30 @@ void CodeGenerator::writeExtensionClassImplementation(QTextStream &stream, const
     const QString privateClassName = generateExtensionClassName(extension, Private);
 
     // Output default constructor
-    stream << className << QStringLiteral("::") << className << QStringLiteral("()") << endl;
-    stream << QStringLiteral(" : QAbstractOpenGLExtension(*(new ") << privateClassName << QStringLiteral("))") << endl;
-    stream << QStringLiteral("{") << endl << QStringLiteral("}") << endl << endl;
+    stream << className << QStringLiteral("::") << className << QStringLiteral("()") << Qt::endl;
+    stream << QStringLiteral(" : QAbstractOpenGLExtension(*(new ") << privateClassName << QStringLiteral("))") << Qt::endl;
+    stream << QStringLiteral("{") << Qt::endl << QStringLiteral("}") << Qt::endl << Qt::endl;
 
 
     // Output function to initialize this class
     stream << QStringLiteral("bool ") << className
-           << QStringLiteral("::initializeOpenGLFunctions()") << endl
-           << QStringLiteral("{") << endl;
+           << QStringLiteral("::initializeOpenGLFunctions()") << Qt::endl
+           << QStringLiteral("{") << Qt::endl;
 
-    stream << QStringLiteral("    if (isInitialized())") << endl;
-    stream << QStringLiteral("        return true;") << endl << endl;
+    stream << QStringLiteral("    if (isInitialized())") << Qt::endl;
+    stream << QStringLiteral("        return true;") << Qt::endl << Qt::endl;
 
-    stream << QStringLiteral("    QOpenGLContext *context = QOpenGLContext::currentContext();") << endl;
-    stream << QStringLiteral("    if (!context) {") << endl;
+    stream << QStringLiteral("    QOpenGLContext *context = QOpenGLContext::currentContext();") << Qt::endl;
+    stream << QStringLiteral("    if (!context) {") << Qt::endl;
     stream << QStringLiteral("        qWarning(\"A current OpenGL context is required to resolve OpenGL extension functions\");")
-           << endl;
-    stream << QStringLiteral("        return false;") << endl;
-    stream << QStringLiteral("    }") << endl << endl;
+           << Qt::endl;
+    stream << QStringLiteral("        return false;") << Qt::endl;
+    stream << QStringLiteral("    }") << Qt::endl << Qt::endl;
 
     // Output code to resolve entry points for this class
-    stream << QStringLiteral("    // Resolve the functions") << endl;
-    stream << QStringLiteral("    Q_D(") << className << QStringLiteral(");") << endl;
-    stream << endl;
+    stream << QStringLiteral("    // Resolve the functions") << Qt::endl;
+    stream << QStringLiteral("    Q_D(") << className << QStringLiteral(");") << Qt::endl;
+    stream << Qt::endl;
 
     // Output function declarations
     QList<Function> functions = m_parser->functionsForExtension(extension);
@@ -1086,11 +1086,11 @@ void CodeGenerator::writeExtensionClassImplementation(QTextStream &stream, const
         writeEntryPointResolutionStatement(stream, f, QStringLiteral("d->"));
 
     // Call the base class implementation
-    stream << QStringLiteral("    QAbstractOpenGLExtension::initializeOpenGLFunctions();") << endl;
+    stream << QStringLiteral("    QAbstractOpenGLExtension::initializeOpenGLFunctions();") << Qt::endl;
 
     // Finish off
-    stream << QStringLiteral("    return true;") << endl;
-    stream << QStringLiteral("}") << endl << endl;
+    stream << QStringLiteral("    return true;") << Qt::endl;
+    stream << QStringLiteral("}") << Qt::endl << Qt::endl;
 }
 
 QString CodeGenerator::generateExtensionClassName(const QString &extension, ClassVisibility visibility) const
