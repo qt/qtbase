@@ -545,7 +545,7 @@ bool TextEdit::fileSaveAs()
 
 void TextEdit::filePrint()
 {
-#if QT_CONFIG(printdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
     QPrinter printer(QPrinter::HighResolution);
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
     if (textEdit->textCursor().hasSelection())

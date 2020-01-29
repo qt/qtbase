@@ -210,7 +210,7 @@ void ScribbleArea::resizeImage(QImage *image, const QSize &newSize)
 //! [21]
 void ScribbleArea::print()
 {
-#if QT_CONFIG(printdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
     QPrinter printer(QPrinter::HighResolution);
 
     QPrintDialog printDialog(&printer, this);

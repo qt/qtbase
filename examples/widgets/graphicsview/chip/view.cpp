@@ -264,7 +264,7 @@ void View::toggleAntialiasing()
 
 void View::print()
 {
-#if QT_CONFIG(printdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
     QPrinter printer;
     QPrintDialog dialog(&printer, this);
     if (dialog.exec() == QDialog::Accepted) {
