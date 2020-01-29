@@ -141,6 +141,16 @@ for i in "$@"; do
 $i"
     else
         case $i in
+            -feature-*)
+                VAR=`echo $i | sed 's,^-feature-\(.*\),\1,'`
+                CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DQT_FEATURE_${VAR}=ON"
+                ;;
+            -no-feature-*)
+                VAR=`echo $i | sed 's,^-no-feature-\(.*\),\1,'`
+                CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DQT_FEATURE_${VAR}=OFF"
+                ;;
             --no-*)
                 VAR=`echo $i | sed 's,^--no-\(.*\),\1,'`
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
