@@ -1147,10 +1147,12 @@ function(qt_extend_target target)
                             ${private_visibility_option} ${arg_LINK_OPTIONS})
 
         if(NOT arg_HEADER_MODULE)
-            set_target_properties("${target}" PROPERTIES
+            set_property (TARGET "${target}" APPEND PROPERTY
                 AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
-                _qt_target_deps "${target_deps}"
             )
+            set_property(TARGET "${target}" PROPERTY
+                _qt_target_deps "${target_deps}"
+           )
         endif()
 
         # When computing the private library dependencies, we need to check not only the known
