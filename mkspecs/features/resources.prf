@@ -30,7 +30,7 @@ qtFlattenResources()
             "{" \
 
         for (resource, RESOURCES) {
-            resource_name = $$section($$list($$basename(resource)), ., 0, 0)
+            resource_name = $$replace($$list($$basename(resource)),\.qrc$, )
             resource_name = $$replace(resource_name, [^a-zA-Z0-9_], _)
             RESOURCE_INIT_CONT += "    Q_INIT_RESOURCE($$resource_name);"
         }
