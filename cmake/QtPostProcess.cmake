@@ -309,7 +309,7 @@ function(qt_generate_build_internals_extra_cmake_code)
 
         if(CMAKE_BUILD_TYPE)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_BUILD_TYPE \"${CMAKE_BUILD_TYPE}\")\n")
+                "set(CMAKE_BUILD_TYPE \"${CMAKE_BUILD_TYPE}\" CACHE STRING \"Choose the type of build.\")\n")
         endif()
         if(CMAKE_CONFIGURATION_TYPES)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
