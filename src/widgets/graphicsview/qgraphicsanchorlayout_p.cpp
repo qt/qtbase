@@ -41,7 +41,6 @@
 
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qapplication.h>
-#include <QtCore/qlinkedlist.h>
 #include <QtCore/qstack.h>
 
 #ifdef QT_DEBUG

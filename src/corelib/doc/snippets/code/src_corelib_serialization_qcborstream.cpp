@@ -208,10 +208,10 @@
 //! [19]
 
 //! [20]
-   void appendList(QCborStreamWriter &writer, const QLinkedList<QString> &list)
+   void appendList(QCborStreamWriter &writer, const QVector<QString> &values)
    {
        writer.startArray();
-       for (const QString &s : list)
+       for (const QString &s : values)
            writer.append(s);
        writer.endArray();
    }
@@ -228,10 +228,10 @@
 //! [21]
 
 //! [22]
-   void appendMap(QCborStreamWriter &writer, const QLinkedList<QPair<int, QString>> &list)
+   void appendMap(QCborStreamWriter &writer, const QVector<QPair<int, QString>> &values)
    {
        writer.startMap();
-       for (const auto pair : list) {
+       for (const auto pair : values) {
            writer.append(pair.first)
            writer.append(pair.second);
        }

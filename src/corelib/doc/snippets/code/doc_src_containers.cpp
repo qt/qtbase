@@ -205,35 +205,35 @@ for (i = splitter->sizes().begin();
 
 
 //! [15]
-QLinkedList<QString> list;
+QVector<QString> values;
 ...
 QString str;
-foreach (str, list)
+foreach (str, values)
     qDebug() << str;
 //! [15]
 
 
 //! [16]
-QLinkedList<QString> list;
+QVector<QString> values;
 ...
-QLinkedListIterator<QString> i(list);
+QVectorIterator<QString> i(values);
 while (i.hasNext())
     qDebug() << i.next();
 //! [16]
 
 
 //! [17]
-QLinkedList<QString> list;
+QVector<QString> values;
 ...
-foreach (const QString &str, list)
+foreach (const QString &str, values)
     qDebug() << str;
 //! [17]
 
 
 //! [18]
-QLinkedList<QString> list;
+QVector<QString> values;
 ...
-foreach (const QString &str, list) {
+foreach (const QString &str, values) {
     if (str.isEmpty())
         break;
     qDebug() << str;

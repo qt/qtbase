@@ -32,7 +32,6 @@
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qmap.h>
-#include <QtCore/qlinkedlist.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qpair.h>

@@ -16,7 +16,6 @@ SUBDIRS=\
     qhash \
     qhashfunctions \
     qline \
-    qlinkedlist \
     qmakearray \
     qmap \
     qmargins \

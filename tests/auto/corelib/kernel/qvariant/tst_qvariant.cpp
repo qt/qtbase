@@ -49,7 +49,6 @@
 #if __has_include(<variant>) && __cplusplus >= 201703L
 #include <variant>
 #endif
-#include <QLinkedList>
 #include <QRegularExpression>
 #include <QDir>
 #include <QBuffer>
@@ -3519,13 +3518,6 @@ void tst_QVariant::moreCustomTypes()
         QList<QSet<int> > data;
         PLAY_WITH_VARIANT(data, false, QString(), 0, false);
         data << (QSet<int>() << 42);
-        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
-    }
-
-    {
-        QList<QLinkedList<int> > data;
-        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
-        data << (QLinkedList<int>() << 42);
         PLAY_WITH_VARIANT(data, false, QString(), 0, false);
     }
 }

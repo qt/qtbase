@@ -66,7 +66,6 @@
     \li QIcon
     \li QImage
     \li QKeySequence
-    \li QLinkedList<T>
     \li QMap<Key, T>
     \li QMargins
     \li QMatrix4x4

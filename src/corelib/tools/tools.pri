@@ -19,7 +19,6 @@ HEADERS +=  \
         tools/qhashfunctions.h \
         tools/qiterator.h \
         tools/qline.h \
-        tools/qlinkedlist.h \
         tools/qlist.h \
         tools/qmakearray_p.h \
         tools/qmap.h \
@@ -56,7 +55,6 @@ SOURCES += \
         tools/qfreelist.cpp \
         tools/qhash.cpp \
         tools/qline.cpp \
-        tools/qlinkedlist.cpp \
         tools/qlist.cpp \
         tools/qpoint.cpp \
         tools/qmap.cpp \

@@ -115,7 +115,7 @@
         \li Supported
     \row
         \li Bidirectional Iterator
-        \li QLinkedList, std::list
+        \li std::list
         \li Supported
     \row
         \li Random Access Iterator

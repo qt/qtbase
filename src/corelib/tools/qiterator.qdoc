@@ -201,55 +201,6 @@
 */
 
 /*!
-    \class QLinkedListIterator
-    \inmodule QtCore
-    \obsolete
-
-    \brief The QLinkedListIterator class provides a Java-style const iterator for QLinkedList.
-
-    QLinkedList has both \l{Java-style iterators} and
-    \l{STL-style iterators}. The Java-style iterators are more
-    high-level and easier to use than the STL-style iterators; on the
-    other hand, they are slightly less efficient.
-
-    QLinkedListIterator\<T\> allows you to iterate over a
-    QLinkedList\<T\>. If you want to modify the list as you iterate
-    over it, use QMutableLinkedListIterator\<T\> instead.
-
-    The QLinkedListIterator constructor takes a QLinkedList as
-    argument. After construction, the iterator is located at the very
-    beginning of the list (before the first item). Here's how to
-    iterate over all the elements sequentially:
-
-    \snippet code/doc_src_qiterator.cpp 2
-
-    The next() function returns the next item in the list and
-    advances the iterator. Unlike STL-style iterators, Java-style
-    iterators point \e between items rather than directly \e at
-    items. The first call to next() advances the iterator to the
-    position between the first and second item, and returns the first
-    item; the second call to next() advances the iterator to the
-    position between the second and third item, and returns the second
-    item; and so on.
-
-    \image javaiterators1.png
-
-    Here's how to iterate over the elements in reverse order:
-
-    \snippet code/doc_src_qiterator.cpp 3
-
-    If you want to find all occurrences of a particular value, use
-    findNext() or findPrevious() in a loop.
-
-    Multiple iterators can be used on the same list. If the list is
-    modified while a QLinkedListIterator is active, the
-    QLinkedListIterator will continue iterating over the original
-    list, ignoring the modified copy.
-
-    \sa QMutableLinkedListIterator, QLinkedList::const_iterator
-*/
-
-/*!
     \class QVectorIterator
     \inmodule QtCore
     \brief The QVectorIterator class provides a Java-style const iterator for QVector and QStack.
@@ -415,68 +366,6 @@
 */
 
 /*!
-    \class QMutableLinkedListIterator
-    \inmodule QtCore
-    \obsolete
-
-    \brief The QMutableLinkedListIterator class provides a Java-style non-const iterator for QLinkedList.
-
-    QLinkedList has both \l{Java-style iterators} and
-    \l{STL-style iterators}. The Java-style iterators are more
-    high-level and easier to use than the STL-style iterators; on the
-    other hand, they are slightly less efficient.
-
-    QMutableLinkedListIterator\<T\> allows you to iterate over a
-    QLinkedList\<T\> and modify the list. If you don't want to modify
-    the list (or have a const QLinkedList), use the slightly faster
-    QLinkedListIterator\<T\> instead.
-
-    The QMutableLinkedListIterator constructor takes a QLinkedList as
-    argument. After construction, the iterator is located at the very
-    beginning of the list (before the first item). Here's how to
-    iterate over all the elements sequentially:
-
-    \snippet code/doc_src_qiterator.cpp 11
-
-    The next() function returns the next item in the list and
-    advances the iterator. Unlike STL-style iterators, Java-style
-    iterators point \e between items rather than directly \e at
-    items. The first call to next() advances the iterator to the
-    position between the first and second item, and returns the first
-    item; the second call to next() advances the iterator to the
-    position between the second and third item, returning the second
-    item; and so on.
-
-    \image javaiterators1.png
-
-    Here's how to iterate over the elements in reverse order:
-
-    \snippet code/doc_src_qiterator.cpp 12
-
-    If you want to find all occurrences of a particular value, use
-    findNext() or findPrevious() in a loop.
-
-    If you want to remove items as you iterate over the list, use
-    remove(). If you want to modify the value of an item, use
-    setValue(). If you want to insert a new item in the list, use
-    insert().
-
-    Example:
-    \snippet code/doc_src_qiterator.cpp 13
-
-    The example traverses a list, replacing negative numbers with
-    their absolute values, and eliminating zeroes.
-
-    Only one mutable iterator can be active on a given list at any
-    time. Furthermore, no changes should be done directly to the list
-    while the iterator is active (as opposed to through the
-    iterator), since this could invalidate the iterator and lead to
-    undefined behavior.
-
-    \sa QLinkedListIterator, QLinkedList::iterator
-*/
-
-/*!
     \class QMutableVectorIterator
     \inmodule QtCore
 
@@ -595,9 +484,7 @@
 
 /*!
     \fn template <class T> QListIterator<T>::QListIterator(const QList<T> &list)
-    \fn template <class T> QLinkedListIterator<T>::QLinkedListIterator(const QLinkedList<T> &list)
     \fn template <class T> QMutableListIterator<T>::QMutableListIterator(QList<T> &list)
-    \fn template <class T> QMutableLinkedListIterator<T>::QMutableLinkedListIterator(QLinkedList<T> &list)
 
     Constructs an iterator for traversing \a list. The iterator is
     set to be at the front of the list (before the first item).
@@ -626,9 +513,7 @@
 */
 
 /*! \fn template <class T> QMutableListIterator &QMutableListIterator<T>::operator=(QList<T> &list)
-    \fn template <class T> QMutableLinkedListIterator &QMutableLinkedListIterator<T>::operator=(QLinkedList<T> &list)
     \fn template <class T> QListIterator &QListIterator<T>::operator=(const QList<T> &list)
-    \fn template <class T> QLinkedListIterator &QLinkedListIterator<T>::operator=(const QLinkedList<T> &list)
 
     Makes the iterator operate on \a list. The iterator is set to be
     at the front of the list (before the first item).
@@ -655,11 +540,9 @@
 */
 
 /*! \fn template <class T> void QListIterator<T>::toFront()
-    \fn template <class T> void QLinkedListIterator<T>::toFront()
     \fn template <class T> void QVectorIterator<T>::toFront()
     \fn template <class T> void QSetIterator<T>::toFront()
     \fn template <class T> void QMutableListIterator<T>::toFront()
-    \fn template <class T> void QMutableLinkedListIterator<T>::toFront()
     \fn template <class T> void QMutableVectorIterator<T>::toFront()
     \fn template <class T> void QMutableSetIterator<T>::toFront()
 
@@ -670,11 +553,9 @@
 */
 
 /*! \fn template <class T> void QListIterator<T>::toBack()
-    \fn template <class T> void QLinkedListIterator<T>::toBack()
     \fn template <class T> void QVectorIterator<T>::toBack()
     \fn template <class T> void QSetIterator<T>::toBack()
     \fn template <class T> void QMutableListIterator<T>::toBack()
-    \fn template <class T> void QMutableLinkedListIterator<T>::toBack()
     \fn template <class T> void QMutableVectorIterator<T>::toBack()
     \fn template <class T> void QMutableSetIterator<T>::toBack()
 
@@ -685,11 +566,9 @@
 */
 
 /*! \fn template <class T> bool QListIterator<T>::hasNext() const
-    \fn template <class T> bool QLinkedListIterator<T>::hasNext() const
     \fn template <class T> bool QVectorIterator<T>::hasNext() const
     \fn template <class T> bool QSetIterator<T>::hasNext() const
     \fn template <class T> bool QMutableListIterator<T>::hasNext() const
-    \fn template <class T> bool QMutableLinkedListIterator<T>::hasNext() const
     \fn template <class T> bool QMutableVectorIterator<T>::hasNext() const
     \fn template <class T> bool QMutableSetIterator<T>::hasNext() const
 
@@ -701,7 +580,6 @@
 */
 
 /*! \fn template <class T> const T &QListIterator<T>::next()
-    \fn template <class T> const T &QLinkedListIterator<T>::next()
     \fn template <class T> const T &QVectorIterator<T>::next()
     \fn template <class T> const T &QSetIterator<T>::next()
     \fn template <class T> const T &QMutableSetIterator<T>::next()
@@ -715,7 +593,6 @@
 */
 
 /*! \fn template <class T> T &QMutableListIterator<T>::next()
-    \fn template <class T> T &QMutableLinkedListIterator<T>::next()
     \fn template <class T> T &QMutableVectorIterator<T>::next()
 
     Returns a reference to the next item, and advances the iterator
@@ -728,7 +605,6 @@
 */
 
 /*! \fn template <class T> const T &QListIterator<T>::peekNext() const
-    \fn template <class T> const T &QLinkedListIterator<T>::peekNext() const
     \fn template <class T> const T &QVectorIterator<T>::peekNext() const
     \fn template <class T> const T &QSetIterator<T>::peekNext() const
     \fn template <class T> const T &QMutableSetIterator<T>::peekNext() const
@@ -742,7 +618,6 @@
 */
 
 /*! \fn template <class T> T &QMutableListIterator<T>::peekNext() const
-    \fn template <class T> T &QMutableLinkedListIterator<T>::peekNext() const
     \fn template <class T> T &QMutableVectorIterator<T>::peekNext() const
 
     Returns a reference to the next item, without moving the iterator.
@@ -754,11 +629,9 @@
 */
 
 /*! \fn template <class T> bool QListIterator<T>::hasPrevious() const
-    \fn template <class T> bool QLinkedListIterator<T>::hasPrevious() const
     \fn template <class T> bool QVectorIterator<T>::hasPrevious() const
     \fn template <class T> bool QSetIterator<T>::hasPrevious() const
     \fn template <class T> bool QMutableListIterator<T>::hasPrevious() const
-    \fn template <class T> bool QMutableLinkedListIterator<T>::hasPrevious() const
     \fn template <class T> bool QMutableVectorIterator<T>::hasPrevious() const
     \fn template <class T> bool QMutableSetIterator<T>::hasPrevious() const
 
@@ -770,7 +643,6 @@
 */
 
 /*! \fn template <class T> const T &QListIterator<T>::previous()
-    \fn template <class T> const T &QLinkedListIterator<T>::previous()
     \fn template <class T> const T &QVectorIterator<T>::previous()
     \fn template <class T> const T &QSetIterator<T>::previous()
     \fn template <class T> const T &QMutableSetIterator<T>::previous()
@@ -785,7 +657,6 @@
 */
 
 /*! \fn template <class T> T &QMutableListIterator<T>::previous()
-    \fn template <class T> T &QMutableLinkedListIterator<T>::previous()
     \fn template <class T> T &QMutableVectorIterator<T>::previous()
 
     Returns a reference to the previous item and moves the iterator
@@ -798,7 +669,6 @@
 */
 
 /*! \fn template <class T> const T &QListIterator<T>::peekPrevious() const
-    \fn template <class T> const T &QLinkedListIterator<T>::peekPrevious() const
     \fn template <class T> const T &QVectorIterator<T>::peekPrevious() const
     \fn template <class T> const T &QSetIterator<T>::peekPrevious() const
     \fn template <class T> const T &QMutableSetIterator<T>::peekPrevious() const
@@ -812,7 +682,6 @@
 */
 
 /*! \fn template <class T> T &QMutableListIterator<T>::peekPrevious() const
-    \fn template <class T> T &QMutableLinkedListIterator<T>::peekPrevious() const
     \fn template <class T> T &QMutableVectorIterator<T>::peekPrevious() const
 
     Returns a reference to the previous item, without moving the iterator.
@@ -824,11 +693,9 @@
 */
 
 /*! \fn template <class T> bool QListIterator<T>::findNext(const T &value)
-    \fn template <class T> bool QLinkedListIterator<T>::findNext(const T &value)
     \fn template <class T> bool QVectorIterator<T>::findNext(const T &value)
     \fn template <class T> bool QSetIterator<T>::findNext(const T &value)
     \fn template <class T> bool QMutableListIterator<T>::findNext(const T &value)
-    \fn template <class T> bool QMutableLinkedListIterator<T>::findNext(const T &value)
     \fn template <class T> bool QMutableVectorIterator<T>::findNext(const T &value)
     \fn template <class T> bool QMutableSetIterator<T>::findNext(const T &value)
 
@@ -843,11 +710,9 @@
 */
 
 /*! \fn template <class T> bool QListIterator<T>::findPrevious(const T &value)
-    \fn template <class T> bool QLinkedListIterator<T>::findPrevious(const T &value)
     \fn template <class T> bool QVectorIterator<T>::findPrevious(const T &value)
     \fn template <class T> bool QSetIterator<T>::findPrevious(const T &value)
     \fn template <class T> bool QMutableListIterator<T>::findPrevious(const T &value)
-    \fn template <class T> bool QMutableLinkedListIterator<T>::findPrevious(const T &value)
     \fn template <class T> bool QMutableVectorIterator<T>::findPrevious(const T &value)
     \fn template <class T> bool QMutableSetIterator<T>::findPrevious(const T &value)
 
@@ -869,17 +734,6 @@
 
     Example:
     \snippet code/doc_src_qiterator.cpp 19
-
-    \sa insert(), setValue()
-*/
-
-/*! \fn template <class T> void QMutableLinkedListIterator<T>::remove()
-
-    Removes the last item that was jumped over using one of the
-    traversal functions (next(), previous(), findNext(), findPrevious()).
-
-    Example:
-    \snippet code/doc_src_qiterator.cpp 20
 
     \sa insert(), setValue()
 */
@@ -920,20 +774,6 @@
     \sa value(), remove(), insert()
 */
 
-/*! \fn template <class T> void QMutableLinkedListIterator<T>::setValue(const T &value) const
-
-    Replaces the value of the last item that was jumped over using
-    one of the traversal functions with \a value.
-
-    The traversal functions are next(), previous(), findNext(), and
-    findPrevious().
-
-    Example:
-    \snippet code/doc_src_qiterator.cpp 24
-
-    \sa value(), remove(), insert()
-*/
-
 /*! \fn template <class T> void QMutableVectorIterator<T>::setValue(const T &value) const
 
     Replaces the value of the last item that was jumped over using
@@ -949,7 +789,6 @@
 */
 
 /*! \fn template <class T> const T &QMutableListIterator<T>::value() const
-    \fn template <class T> const T &QMutableLinkedListIterator<T>::value() const
     \fn template <class T> const T &QMutableVectorIterator<T>::value() const
     \fn template <class T> const T &QMutableSetIterator<T>::value() const
 
@@ -964,7 +803,6 @@
 
 /*!
     \fn template <class T> T &QMutableListIterator<T>::value()
-    \fn template <class T> T &QMutableLinkedListIterator<T>::value()
     \fn template <class T> T &QMutableVectorIterator<T>::value()
     \overload
 
@@ -973,7 +811,6 @@
 */
 
 /*! \fn template <class T> void QMutableListIterator<T>::insert(const T &value)
-    \fn template <class T> void QMutableLinkedListIterator<T>::insert(const T &value)
     \fn template <class T> void QMutableVectorIterator<T>::insert(const T &value)
 
     Inserts \a value at the current iterator position. After the

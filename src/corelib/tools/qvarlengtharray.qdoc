@@ -87,7 +87,7 @@
     places inside Qt and was added to Qt's public API for the
     convenience of advanced users.
 
-    \sa QVector, QList, QLinkedList
+    \sa QVector, QList
 */
 
 /*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(int size)
@@ -537,8 +537,7 @@
     For large arrays, this operation can be slow (\l{linear time}),
     because it requires moving all the items in the vector by one
     position further in memory. If you want a container class that
-    provides a fast prepend() function, use QList or QLinkedList
-    instead.
+    provides a fast prepend() function, use std::list instead.
 
     \sa append(), insert()
 */
@@ -718,7 +717,7 @@
     For large arrays, this operation can be slow (\l{linear time}),
     because it requires moving all the items at indexes \a i and
     above by one position further in memory. If you want a container
-    class that provides a fast insert() function, use QLinkedList
+    class that provides a fast insert() function, use std::list
     instead.
 
     \sa remove()

@@ -111,10 +111,6 @@ macos: CONFIG += testcase_no_bundle
 # Override MinGW's definition in _mingw.h
 mingw: DEFINES += WINVER=0x0601 _WIN32_WINNT=0x0601
 
-# By default, the following features should not be used in Qt's own
-# implementation, so declare them invisible to Qt modules.
-DEFINES += QT_NO_LINKED_LIST # QLinkedList
-
 defineTest(qtBuildPart) {
     bp = $$eval($$upper($$section(_QMAKE_CONF_, /, -2, -2))_BUILD_PARTS)
     isEmpty(bp): bp = $$QT_BUILD_PARTS

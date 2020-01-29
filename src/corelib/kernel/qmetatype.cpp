@@ -155,7 +155,7 @@ struct DefinedTypesFilter {
 
     \list
     \li Pointers to classes derived from QObject
-    \li QList<T>, QVector<T>, QQueue<T>, QStack<T>, QSet<T> or QLinkedList<T>
+    \li QList<T>, QVector<T>, QQueue<T>, QStack<T> or QSet<T>
         where T is a registered meta type
     \li QHash<T1, T2>, QMap<T1, T2> or QPair<T1, T2> where T1 and T2 are
         registered meta types

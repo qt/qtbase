@@ -32,7 +32,6 @@
 
 static QCache<int, int> *cacheX;
 static QHash<int, int> *hashX;
-static QLinkedList<int> *linkedListX;
 static QList<int> *listX;
 static QMap<int, int> *mapX;
 static QMultiHash<int, int> *multiHashX;
@@ -49,7 +48,6 @@ void foo()
 {
     cacheX = 0;
     hashX = 0;
-    linkedListX = 0;
     listX = 0;
     mapX = 0;
     multiHashX = 0;
@@ -71,7 +69,6 @@ void foo()
 #include "qbytearray.h"
 #include "qcache.h"
 #include "qhash.h"
-#include "qlinkedlist.h"
 #include "qlist.h"
 #include "qmap.h"
 #include "qpair.h"
@@ -92,7 +89,6 @@ private slots:
     void typeinfo();
     void qstring();
     void list();
-    void linkedList();
     void vector();
     void byteArray();
     void stack();
@@ -105,7 +101,6 @@ private slots:
 #endif
     void pair();
     void sharableQList();
-    void sharableQLinkedList();
     void sharableQVector();
     void sharableQMap();
     void sharableQHash();
@@ -117,8 +112,6 @@ private slots:
     void vector_stl();
     void list_stl_data();
     void list_stl();
-    void linkedlist_stl_data();
-    void linkedlist_stl();
     void q_init();
     void pointersize();
     void containerInstantiation();
@@ -724,228 +717,6 @@ void tst_Collections::list()
         QCOMPARE(a.endsWith(2), true);
     }
 }
-
-void tst_Collections::linkedList()
-{
-    {
-        QLinkedList<int> list;
-        QVERIFY(list.isEmpty());
-        list.append(1);
-        list.push_back(2);
-        list += (3);
-        list << 4 << 5 << 6;
-        QVERIFY(!list.isEmpty());
-        QVERIFY(list.size() == 6);
-        {
-            int sum = 0;
-            QLinkedListIterator<int> i = list;
-            while (i.hasNext()) {
-                sum += i.next();
-            }
-            QVERIFY(sum == 21);
-        }
-        {
-            int sum = 0;
-            QLinkedList<int>::const_iterator i = list.begin();
-            while (i != list.end())
-                sum += *i++;
-            QVERIFY(sum == 21);
-        }
-        {
-            QMutableLinkedListIterator<int> i = list;
-            while (i.hasNext())
-                i.setValue(2*i.next());
-        }
-        {
-            int sum = 0;
-            QLinkedListIterator<int> i = list;
-            i.toBack();
-            while (i.hasPrevious())
-                sum += i.previous();
-            QVERIFY(sum == 2*21);
-        }
-        {
-            QMutableLinkedListIterator<int> i = list;
-            i.toBack();
-            while (i.hasPrevious())
-                i.setValue(2*i.previous());
-        }
-        {
-            int sum = 0;
-            QLinkedListIterator<int> i = list;
-            i.toBack();
-            while (i.hasPrevious())
-                sum += i.previous();
-            QVERIFY(sum == 2*2*21);
-        }
-        {
-            QMutableLinkedListIterator<int> i = list;
-            while (i.hasNext()) {
-                int a = i.next();
-                i.insert(a);
-            }
-        }
-        {
-            int sum = 0;
-            QLinkedList<int>::iterator i = list.begin();
-            while (i != list.end())
-                sum += *i++;
-            QVERIFY(sum == 2*2*2*21);
-        }
-        {
-            int duplicates = 0;
-            QLinkedListIterator<int> i = list;
-            while (i.hasNext()) {
-                int a = i.next();
-                if (i.hasNext() && a == i.peekNext())
-                    duplicates++;
-            }
-            QVERIFY(duplicates == 6);
-        }
-        {
-            int duplicates = 0;
-            QLinkedListIterator<int> i = list;
-            i.toBack();
-            while (i.hasPrevious()) {
-                int a = i.previous();
-                if (i.hasPrevious() && a == i.peekPrevious())
-                    duplicates++;
-            }
-            QVERIFY(duplicates == 6);
-        }
-        {
-            QMutableLinkedListIterator<int> i = list;
-            while (i.hasNext()) {
-                int a = i.next();
-                if (i.hasNext() &&
-                     i.peekNext() == a)
-                    i.remove();
-            }
-        }
-        {
-            int duplicates = 0;
-            QMutableLinkedListIterator<int> i = list;
-            i.toBack();
-            while (i.hasPrevious()) {
-                int a = i.previous();
-                if (i.hasPrevious() && a == i.peekPrevious())
-                    duplicates++;
-            }
-            QVERIFY(duplicates == 0);
-        }
-        {
-            QVERIFY(list.size() == 6);
-            QMutableLinkedListIterator<int> i = list;
-            while (i.hasNext()) {
-                int a = i.peekNext();
-                i.insert(42);
-                QVERIFY(i.peekPrevious() == 42 && i.peekNext() == a);
-                i.next();
-            }
-            QVERIFY(list.size() == 12);
-            i.toFront();
-            while (i.findNext(42))
-                i.remove();
-        }
-        {
-            QLinkedList<int> l;
-            l << 4 << 8 << 12 << 16 << 20 << 24;
-            QVERIFY(l == list);
-            QLinkedList<int> copy = list;
-            list += list;
-            QVERIFY(l != list && l.size() == list.size()/2 && l == copy);
-            l += copy;
-            QVERIFY(l == list);
-            list = copy;
-        }
-        {
-            QLinkedList<int> copy = list;
-            list.prepend(999);
-            list.append(999);
-            QVERIFY(list.contains(999));
-            QVERIFY(list.count(999) == 2);
-            list.removeAll(999);
-            QVERIFY(list == copy);
-        }
-        {
-            QLinkedList<QString> list;
-            list << "one" << "two" << "three" << "four" << "five" << "six";
-            while (!list.isEmpty())
-                list.removeAll(list.first());
-        }
-        {
-            QLinkedList<QString> list;
-            list << "one" << "two" << "one" << "two";
-            QVERIFY(!list.removeOne("three"));
-            QVERIFY(list.removeOne("two"));
-            QCOMPARE(list, QLinkedList<QString>() << "one" << "one" << "two");;
-            QVERIFY(list.removeOne("two"));
-            QCOMPARE(list, QLinkedList<QString>() << "one" << "one");
-            QVERIFY(!list.removeOne("two"));
-            QCOMPARE(list, QLinkedList<QString>() << "one" << "one");
-            QVERIFY(list.removeOne("one"));
-            QCOMPARE(list, QLinkedList<QString>() << "one");
-            QVERIFY(list.removeOne("one"));
-            QVERIFY(list.isEmpty());
-            QVERIFY(!list.removeOne("one"));
-            QVERIFY(list.isEmpty());
-        }
-        {
-            list.clear();
-            QVERIFY(list.isEmpty());
-            QVERIFY(list.begin() == list.end());
-            QLinkedListIterator<int> i(list);
-            QVERIFY(!i.hasNext() && !i.hasPrevious());
-        }
-    }
-
-    {
-        QLinkedList<QString> list;
-        list.append("Hello");
-
-        QLinkedList<QString>::iterator it = list.begin();
-        QVERIFY((*it)[0] == QChar('H'));
-        QVERIFY(it->constData()[0] == QChar('H'));
-        it->replace(QChar('H'), QChar('X'));
-        QCOMPARE(list.first(), QLatin1String("Xello"));
-
-        QLinkedList<QString>::const_iterator cit = list.constBegin();
-        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
-        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
-
-        cit = list.cbegin();
-        QCOMPARE((*cit).toLower(), QLatin1String("xello"));
-        QCOMPARE(cit->toUpper(), QLatin1String("XELLO"));
-    }
-
-    {
-        QLinkedList<QString> list;
-        list << "alpha" << "beta";
-        list += list;
-        QVERIFY(list.size() == 4);
-        QCOMPARE(*list.begin(), QLatin1String("alpha"));
-        QCOMPARE(*(list.begin() + 1), QLatin1String("beta"));
-        QCOMPARE(*(list.begin() + 2), QLatin1String("alpha"));
-        QCOMPARE(*(list.begin() + 3), QLatin1String("beta"));
-    }
-
-    {
-        QLinkedList<int> a;
-        QCOMPARE(a.startsWith(1), false);
-        QCOMPARE(a.endsWith(1), false);
-        a.append(1);
-        QCOMPARE(a.startsWith(1), true);
-        QCOMPARE(a.startsWith(2), false);
-        QCOMPARE(a.endsWith(1), true);
-        QCOMPARE(a.endsWith(2), false);
-        a.append(2);
-        QCOMPARE(a.startsWith(1), true);
-        QCOMPARE(a.startsWith(2), false);
-        QCOMPARE(a.endsWith(1), false);
-        QCOMPARE(a.endsWith(2), true);
-    }
-};
-
 
 void tst_Collections::vector()
 {
@@ -2311,12 +2082,6 @@ void populate(QList<int> &container)
 }
 
 template <>
-void populate(QLinkedList<int> &container)
-{
-    container << 1 << 2 << 4 << 8;
-}
-
-template <>
 void populate(QMap<int, int> &container)
 {
     container.insert(1, 1);
@@ -2403,11 +2168,6 @@ void testContainer()
 void tst_Collections::sharableQList()
 {
     TEST_SEQUENTIAL_CONTAINER(List);
-}
-
-void tst_Collections::sharableQLinkedList()
-{
-    TEST_SEQUENTIAL_CONTAINER(LinkedList);
 }
 
 void tst_Collections::sharableQVector()
@@ -2729,7 +2489,6 @@ void tst_Collections::constAndNonConstStlIterators()
 {
     testListLikeStlIterators<QList<int> >();
     testListLikeStlIterators<QStringList >();
-    testLinkedListLikeStlIterators<QLinkedList<int> >();
     testListLikeStlIterators<QVector<int> >();
     testMapLikeStlIterators<QMap<QString, QString> >();
     testMapLikeStlIterators<QMultiMap<QString, QString> >();
@@ -2770,31 +2529,6 @@ void tst_Collections::vector_stl()
     QCOMPARE(QVector<QString>::fromStdVector(stdVector), vector);
 #endif
     QCOMPARE(QVector<QString>(stdVector.begin(), stdVector.end()), vector);
-}
-
-void tst_Collections::linkedlist_stl_data()
-{
-    list_stl_data();
-}
-
-void tst_Collections::linkedlist_stl()
-{
-    QFETCH(QStringList, elements);
-
-    QLinkedList<QString> list;
-    for (int i = 0; i < elements.count(); ++i)
-        list << elements.at(i);
-
-    std::list<QString> stdList = list.toStdList();
-
-    QCOMPARE(int(stdList.size()), elements.size());
-
-    std::list<QString>::const_iterator it = stdList.begin();
-    QLinkedList<QString>::const_iterator it2 = list.cbegin();
-    for (uint j = 0; j < stdList.size(); ++j, ++it, ++it2)
-        QCOMPARE(*it, *it2);
-
-    QCOMPARE(QLinkedList<QString>::fromStdList(stdList), list);
 }
 
 void tst_Collections::list_stl_data()
@@ -3038,15 +2772,6 @@ void tst_Collections::containerInstantiation()
     typedef QSet<EqualsComparable> Set;
     instantiateAssociative<Set, EqualsComparable>();
 
-    //Instantiate QLinkedList member functions.
-    typedef QLinkedList<EqualsComparable> LinkedList;
-    instantiateSequence<LinkedList, EqualsComparable> ();
-    {
-        EqualsComparable value;
-        LinkedList list;
-        list.removeAll(value);
-    }
-
     //Instantiate QList member functions.
     typedef QList<EqualsComparable> List;
     instantiateRandomAccess<List, EqualsComparable>();
@@ -3153,7 +2878,6 @@ void tst_Collections::containerTypedefs()
     testContainerTypedefs(QVector<int>());
     testContainerTypedefs(QStack<int>());
     testContainerTypedefs(QList<int>());
-    testContainerTypedefs(QLinkedList<int>());
     testContainerTypedefs(QQueue<int>());
 
     testPairAssociativeContainerTypedefs(QMap<int, int>());
@@ -3175,7 +2899,6 @@ void tst_Collections::forwardDeclared()
     { typedef QMultiMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QPair<T1, T2> C; C *x = 0; Q_UNUSED(x) }
     { typedef QList<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-    { typedef QLinkedList<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QVector<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) Q_UNUSED(i) Q_UNUSED(j) }
     { typedef QStack<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) Q_UNUSED(i) Q_UNUSED(j) }
     { typedef QQueue<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
@@ -3400,7 +3123,6 @@ void tst_Collections::QTBUG13079_collectionInsideCollection()
     QTBUG13079_collectionInsideCollectionImpl<QVector>();
     QTBUG13079_collectionInsideCollectionImpl<QStack>();
     QTBUG13079_collectionInsideCollectionImpl<QList>();
-    QTBUG13079_collectionInsideCollectionImpl<QLinkedList>();
     QTBUG13079_collectionInsideCollectionImpl<QQueue>();
 
     {

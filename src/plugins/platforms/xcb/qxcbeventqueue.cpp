@@ -62,8 +62,8 @@ static bool dispatcherOwnerDestructing = false;
     when accessing the tail node. It does not dequeue the last node and does not
     access (read or write) the tail node's 'next' member. This lets the reader
     add more items at the same time as the main thread is dequeuing nodes from
-    the head. A custom linked list implementation is used, because QLinkedList
-    does not have any thread-safety guarantees and the custom list is more
+    the head. A custom linked list implementation is used, because std::list
+    does not have any thread-safety guarantees. The custom list is
     lightweight - no reference counting, back links, etc.
 
     Memory management:

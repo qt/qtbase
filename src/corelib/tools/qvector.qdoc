@@ -39,7 +39,7 @@
     stores its items in adjacent memory locations and provides fast
     index-based access.
 
-    QList\<T\>, QLinkedList\<T\>, QVector\<T\>, and QVarLengthArray\<T\>
+    QList\<T\>, QVector\<T\>, and QVarLengthArray\<T\>
     provide similar APIs and functionality. They are often interchangeable,
     but there are performance consequences. Here is an overview of use cases:
 
@@ -57,17 +57,12 @@
         those APIs.
     \li If you need a real linked list, which guarantees
         \l{Algorithmic Complexity}{constant time} insertions mid-list and
-        uses iterators to items rather than indexes, use QLinkedList.
+        uses iterators to items rather than indexes, use std::list.
     \endlist
 
     \note QVector and QVarLengthArray both guarantee C-compatible
     array layout. QList does not. This might be important if your
     application must interface with a C API.
-
-    \note Iterators into a QLinkedList and references into
-    heap-allocating QLists remain valid as long as the referenced items
-    remain in the container. This is not true for iterators and
-    references into a QVector and non-heap-allocating QLists.
 
     Here's an example of a QVector that stores integers and a QVector
     that stores QString values:
@@ -129,7 +124,7 @@
     (\l{linear time}) for large vectors, because they require moving many
     items in the vector by one position in memory. If you want a container
     class that provides fast insertion/removal in the middle, use
-    QList or QLinkedList instead.
+    std::list instead.
 
     Unlike plain C++ arrays, QVectors can be resized at any time by
     calling resize(). If the new size is larger than the old size,
@@ -190,8 +185,6 @@
     holding a lot of allocated memory, especially large, contiguous blocks.
     Such considerations, the configuration of such behavior or any mitigation
     are outside the scope of the Qt API.
-
-    \sa QVectorIterator, QMutableVectorIterator, QList, QLinkedList
 */
 
 /*!
@@ -640,7 +633,7 @@
     For large vectors, this operation can be slow (\l{linear time}),
     because it requires moving all the items in the vector by one
     position further in memory. If you want a container class that
-    provides a fast prepend() function, use QList or QLinkedList
+    provides a fast prepend operation, use std::list
     instead.
 
     \sa append(), insert()
@@ -681,7 +674,7 @@
     For large vectors, this operation can be slow (\l{linear time}),
     because it requires moving all the items at indexes \a i and
     above by one position further in memory. If you want a container
-    class that provides a fast insert() function, use QLinkedList
+    class that provides a fast insert() function, use std::list
     instead.
 
     \sa append(), prepend(), remove()

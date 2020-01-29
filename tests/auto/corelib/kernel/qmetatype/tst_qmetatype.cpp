@@ -1742,7 +1742,6 @@ void tst_QMetaType::automaticTemplateRegistration()
     #define FOR_EACH_1ARG_TEMPLATE_TYPE(F, TYPE) \
         F(QList, TYPE) \
         F(QVector, TYPE) \
-        F(QLinkedList, TYPE) \
         F(QVector, TYPE) \
         F(QVector, TYPE) \
         F(QQueue, TYPE) \

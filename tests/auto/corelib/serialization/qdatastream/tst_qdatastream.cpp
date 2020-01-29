@@ -186,7 +186,7 @@ private slots:
 
     void status_QHash_QMap();
 
-    void status_QLinkedList_QList_QVector();
+    void status_QList_QVector();
 
     void streamToAndFromQByteArray();
 
@@ -3172,24 +3172,6 @@ void tst_QDataStream::status_QHash_QMap()
             } \
         } \
         { \
-            LinkedList expectedLinkedList; \
-            for (int i = 0; i < expectedList.count(); ++i) \
-                expectedLinkedList << expectedList.at(i); \
-            QByteArray ba = byteArray; \
-            QDataStream stream(&ba, QIODevice::ReadOnly); \
-            if (inTransaction) \
-                stream.startTransaction(); \
-            stream.setStatus(initialStatus); \
-            stream >> linkedList; \
-            QCOMPARE((int)stream.status(), (int)expectedStatus); \
-            if (!inTransaction || stream.commitTransaction()) { \
-                QCOMPARE(linkedList.size(), expectedLinkedList.size()); \
-                QCOMPARE(linkedList, expectedLinkedList); \
-            } else { \
-                QVERIFY(linkedList.isEmpty()); \
-            } \
-        } \
-        { \
             Vector expectedVector; \
             for (int i = 0; i < expectedList.count(); ++i) \
                 expectedVector << expectedList.at(i); \
@@ -3211,12 +3193,10 @@ void tst_QDataStream::status_QHash_QMap()
             break; \
     }
 
-void tst_QDataStream::status_QLinkedList_QList_QVector()
+void tst_QDataStream::status_QList_QVector()
 {
-    typedef QLinkedList<QString> LinkedList;
     typedef QList<QString> List;
     typedef QVector<QString> Vector;
-    LinkedList linkedList;
     List list;
     Vector vector;
 

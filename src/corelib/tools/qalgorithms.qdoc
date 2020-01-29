@@ -39,7 +39,7 @@
     on all items in a given container or in a given range.
     You can use these algorithms with any \l {container
     class} that provides STL-style iterators, including Qt's QList,
-    QLinkedList, QVector, QMap, and QHash classes.
+    QVector, QMap, and QHash classes.
 
     Most algorithms take \l {STL-style iterators} as parameters. The
     algorithms are generic in the sense that they aren't bound to a

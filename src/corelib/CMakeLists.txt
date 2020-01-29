@@ -219,7 +219,6 @@ qt_add_module(Core
         tools/qhashfunctions.h
         tools/qiterator.h
         tools/qline.cpp tools/qline.h
-        tools/qlinkedlist.cpp tools/qlinkedlist.h
         tools/qlist.cpp tools/qlist.h
         tools/qmakearray_p.h
         tools/qmap.cpp tools/qmap.h

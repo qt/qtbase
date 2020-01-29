@@ -29,7 +29,6 @@
 #include <QtTest/QtTest>
 
 #include "qbytearray.h"
-#include "qlinkedlist.h"
 #include "qlist.h"
 #include "qstring.h"
 #include "qvarlengtharray.h"
@@ -324,11 +323,6 @@ private Q_SLOTS:
 #endif
     }
 
-    void ranged_ctor_QLinkedList_int() { ranged_ctor_non_associative_impl<QLinkedList<int>>(); }
-    void ranged_ctor_QLinkedList_Movable() { ranged_ctor_non_associative_impl<QLinkedList<Movable>>(); }
-    void ranged_ctor_QLinkedList_Complex() { ranged_ctor_non_associative_impl<QLinkedList<Complex>>(); }
-    void ranged_ctor_QLinkedList_duplicates_strategy() { non_associative_container_duplicates_strategy<QLinkedList>(); }
-
     void ranged_ctor_std_set_int() { ranged_ctor_non_associative_impl<std::set<int>>(); }
     void ranged_ctor_std_set_Movable() { ranged_ctor_non_associative_impl<std::set<Movable>>(); }
     void ranged_ctor_std_set_Complex() { ranged_ctor_non_associative_impl<std::set<Complex>>(); }
@@ -482,7 +476,6 @@ private Q_SLOTS:
     void front_back_std_vector() { front_back_impl<std::vector<int>>(); }
     void front_back_QVector() { front_back_impl<QVector<int>>(); }
     void front_back_QList() { front_back_impl<QList<qintptr>>(); }
-    void front_back_QLinkedList() { front_back_impl<QLinkedList<int>>(); }
     void front_back_QVarLengthArray() { front_back_impl<QVarLengthArray<int>>(); }
     void front_back_QString() { front_back_impl<QString>(); }
     void front_back_QStringRef() { front_back_impl<QStringRef>(); }
@@ -586,9 +579,6 @@ struct ContainerDuplicatedValuesStrategy<std::list<T...>> : ContainerAcceptsDupl
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::forward_list<T...>> : ContainerAcceptsDuplicateValues {};
 #endif
-
-template<typename ... T>
-struct ContainerDuplicatedValuesStrategy<QLinkedList<T...>> : ContainerAcceptsDuplicateValues {};
 
 // assuming https://cplusplus.github.io/LWG/lwg-active.html#2844 resolution
 template<typename ... T>

@@ -75,9 +75,9 @@
     \section1 The Container Classes
 
     Qt provides the following sequential containers: QVector,
-    QLinkedList, QStack, and QQueue. For most
+    QStack, and QQueue. For most
     applications, QVector is the best type to use. It provides very fast
-    appends. If you really need a linked-list, use QLinkedList.
+    appends. If you really need a linked-list, use std::list.
     QStack and QQueue are convenience classes that provide LIFO and
     FIFO semantics.
 
@@ -92,14 +92,6 @@
 
     \table
     \header \li Class \li Summary
-
-    \row \li \l{QLinkedList}<T>
-    \li This class implements a doubly linked list. It
-    provides better performance than QVector when inserting in the
-    middle of a huge list, and it has nicer iterator semantics.
-    (Iterators pointing to an item in a QLinkedList remain valid as
-    long as the item exists, whereas iterators to a QVector can become
-    invalid after any insertion or removal.)
 
     \row \li \l{QVector}<T>
     \li This is by far the most commonly used container class. It
@@ -155,7 +147,7 @@
     QString and the value type QVector<int>.
 
     The containers are defined in individual header files with the
-    same name as the container (e.g., \c <QLinkedList>). For
+    same name as the container (e.g., \c <QVector>). For
     convenience, the containers are forward declared in \c
     <QtContainerFwd>.
 
@@ -248,8 +240,6 @@
     \header \li Containers                         \li Read-only iterator
                                                   \li Read-write iterator
                                                   \li QMutableListIterator<T>
-    \row    \li QLinkedList<T>                     \li QLinkedListIterator<T>
-                                                  \li QMutableLinkedListIterator<T>
     \row    \li QVector<T>, QStack<T>, QQueue<T>   \li QVectorIterator<T>
                                                   \li QMutableVectorIterator<T>
     \row    \li QSet<T>                            \li QSetIterator<T>
@@ -261,7 +251,7 @@
     \endtable
 
     In this discussion, we will concentrate on QVector and QMap. The
-    iterator types for QLinkedList, QVector, and QSet have exactly
+    iterator types for QSet have exactly
     the same interface as QVector's iterators; similarly, the iterator
     types for QHash have the same interface as QMap's iterators.
 
@@ -362,7 +352,7 @@
 
     \snippet code/doc_src_containers.cpp 6
 
-    As mentioned above, QLinkedList's, QVector's, and QSet's iterator
+    As mentioned above QSet's iterator
     classes have exactly the same API as QVector's. We will now turn to
     QMapIterator, which is somewhat different because it iterates on
     (key, value) pairs.
@@ -415,8 +405,6 @@
     \table
     \header \li Containers                         \li Read-only iterator
                                                   \li Read-write iterator
-    \row    \li QLinkedList<T>                     \li QLinkedList<T>::const_iterator
-                                                  \li QLinkedList<T>::iterator
     \row    \li QVector<T>, QStack<T>, QQueue<T>   \li QVector<T>::const_iterator
                                                   \li QVector<T>::iterator
     \row    \li QSet<T>                            \li QSet<T>::const_iterator
@@ -437,7 +425,7 @@
     just a typedef for \c{const T *}.
 
     In this discussion, we will concentrate on QVector and QMap. The
-    iterator types for QLinkedList, QVector, and QSet have exactly
+    iterator types for QSet have exactly
     the same interface as QVector's iterators; similarly, the iterator
     types for QHash have the same interface as QMap's iterators.
 
@@ -542,7 +530,7 @@
 
     Its syntax is: \c foreach (\e variable, \e container) \e
     statement. For example, here's how to use \c foreach to iterate
-    over a QLinkedList<QString>:
+    over a QVector<QString>:
 
     \snippet code/doc_src_containers.cpp 15
 
@@ -631,9 +619,9 @@
 
     Algorithmic complexity is concerned about how fast (or slow) each
     function is as the number of items in the container grow. For
-    example, inserting an item in the middle of a QLinkedList is an
+    example, inserting an item in the middle of a std::list is an
     extremely fast operation, irrespective of the number of items
-    stored in the QLinkedList. On the other hand, inserting an item
+    stored in the list. On the other hand, inserting an item
     in the middle of a QVector is potentially very expensive if the
     QVector contains many items, since half of the items must be
     moved one position in memory.
@@ -651,7 +639,7 @@
     \li \b{Constant time:} O(1). A function is said to run in constant
        time if it requires the same amount of time no matter how many
        items are present in the container. One example is
-       QLinkedList::insert().
+       QVector::push_back().
 
     \li \b{Logarithmic time:} O(log \e n). A function that runs in
        logarithmic time is a function whose running time is
@@ -673,12 +661,11 @@
        number of items stored in the container.
     \endlist
 
-    The following table summarizes the algorithmic complexity of Qt's
-    sequential container classes:
+    The following table summarizes the algorithmic complexity of the sequential
+    container QVector<T>:
 
     \table
     \header \li                \li Index lookup \li Insertion \li Prepending         \li Appending
-    \row    \li QLinkedList<T> \li O(\e n)      \li O(1)      \li O(1)               \li O(1)
     \row    \li QVector<T>     \li O(1)         \li O(n)      \li O(n)               \li Amort. O(1)
     \endtable
 
