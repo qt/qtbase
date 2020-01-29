@@ -630,6 +630,10 @@ function(qt6_generate_meta_types_dep_file target dep_file dep_file_install)
     set(gen_exp "")
     set(gen_exp_install "")
     foreach(dep IN LISTS link_dependencies)
+        # Skip over any flags starting with -, like -framework or -lboo.
+        if("${dep}" MATCHES "^-")
+            continue()
+        endif()
         # replace LINK_ONLY with true, or we will get an error evaluating that
         # generator expression
         string(REPLACE "$<LINK_ONLY:" "$<1:" genex_target "$<GENEX_EVAL:${dep}>")
