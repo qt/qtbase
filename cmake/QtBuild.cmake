@@ -1147,7 +1147,6 @@ function(qt_extend_target target)
                             ${private_visibility_option} ${arg_LINK_OPTIONS})
 
         if(NOT arg_HEADER_MODULE)
-            list(APPEND arg_MOC_OPTIONS "--output-json")
             set_target_properties("${target}" PROPERTIES
                 AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
                 _qt_target_deps "${target_deps}"

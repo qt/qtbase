@@ -707,6 +707,11 @@ function(qt6_generate_meta_types_json_file target)
         endif()
     endif()
 
+    # Tell automoc to output json files
+    set_property(TARGET "${target}" APPEND PROPERTY
+        AUTOMOC_MOC_OPTIONS "--output-json"
+    )
+
     get_target_property(target_type ${target} TYPE)
     if (target_type STREQUAL "INTERFACE_LIBRARY" OR CMAKE_VERSION VERSION_LESS "3.16.0")
         # interface libraries not supported or cmake version is not high enough
