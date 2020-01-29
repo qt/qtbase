@@ -599,7 +599,7 @@ class QmlDir:
         qmldir_file.path = path
         return qmldir_file
 
-    def from_lines(self, lines: [str]):
+    def from_lines(self, lines: List[str]):
         for line in lines:
             self.handle_line(line)
 
@@ -3139,7 +3139,7 @@ def write_example(
                     """
             )
 
-            if qml_dir != None:
+            if qml_dir is not None:
                 if qml_dir.designer_supported:
                     add_target += "    DESIGNER_SUPPORTED\n"
                 if len(qml_dir.classname) != 0:
@@ -3404,7 +3404,7 @@ def write_qml_plugin(
             cm_fh.write("\n        ".join(import_list))
             cm_fh.write(f"\n    )\nendif()\n\n")
 
-    if qml_dir != None:
+    if qml_dir is not None:
         if qml_dir.designer_supported:
             extra_lines.append("DESIGNER_SUPPORTED")
         if len(qml_dir.classname) != 0:
@@ -3516,7 +3516,7 @@ def handle_app_or_lib(
 
     # Generate qmltypes instruction for anything that may have CONFIG += qmltypes
     # that is not a qml plugin
-    if "qmltypes" in scope.get("CONFIG") and not "qml_plugin" in scope.get("_LOADED"):
+    if "qmltypes" in scope.get("CONFIG") and "qml_plugin" not in scope.get("_LOADED"):
         cm_fh.write(f"\n{spaces(indent)}set_target_properties({target} PROPERTIES\n")
         cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_INSTALL_QMLTYPES TRUE\n")
 
@@ -3531,7 +3531,7 @@ def handle_app_or_lib(
                 raise RuntimeError(f"No QML_IMPORT_VERSION info found for target {target}.")
 
             if not import_minor_version:
-                import_minor_version = 0
+                import_minor_version = str(0)
             import_version = f"{import_major_version}.{import_minor_version}"
 
         if import_version:
