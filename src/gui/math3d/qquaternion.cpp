@@ -983,7 +983,7 @@ QQuaternion QQuaternion::nlerp
 */
 QQuaternion::operator QVariant() const
 {
-    return QVariant(QVariant::Quaternion, this);
+    return QVariant(QMetaType::QQuaternion, this);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

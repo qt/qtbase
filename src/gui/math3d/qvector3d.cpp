@@ -706,7 +706,7 @@ QVector4D QVector3D::toVector4D() const
 */
 QVector3D::operator QVariant() const
 {
-    return QVariant(QVariant::Vector3D, this);
+    return QVariant(QMetaType::QVector3D, this);
 }
 
 /*!

@@ -175,9 +175,15 @@ public:
     bool isEmpty() const;
 
     Q_REQUIRED_RESULT QPainterPath toReversed() const;
+
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use toSubpathPolygons(const QTransform &)")
     QList<QPolygonF> toSubpathPolygons(const QMatrix &matrix = QMatrix()) const;
+    QT_DEPRECATED_X("Use toFillPolygons(const QTransform &")
     QList<QPolygonF> toFillPolygons(const QMatrix &matrix = QMatrix()) const;
+    QT_DEPRECATED_X("Use toFillPolygon(const QTransform &)")
     QPolygonF toFillPolygon(const QMatrix &matrix = QMatrix()) const;
+#endif // QT_DEPRECATED_SINCE(5, 15)
     QList<QPolygonF> toSubpathPolygons(const QTransform &matrix) const;
     QList<QPolygonF> toFillPolygons(const QTransform &matrix) const;
     QPolygonF toFillPolygon(const QTransform &matrix) const;

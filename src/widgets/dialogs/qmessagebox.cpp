@@ -305,7 +305,7 @@ void QMessageBoxPrivate::setupLayout()
     Q_Q(QMessageBox);
     delete q->layout();
     QGridLayout *grid = new QGridLayout;
-    bool hasIcon = iconLabel->pixmap() && !iconLabel->pixmap()->isNull();
+    bool hasIcon = !iconLabel->pixmap(Qt::ReturnByValue).isNull();
 
     if (hasIcon)
         grid->addWidget(iconLabel, 0, 0, 2, 1, Qt::AlignTop);
@@ -1323,9 +1323,7 @@ void QMessageBox::setIcon(Icon icon)
 QPixmap QMessageBox::iconPixmap() const
 {
     Q_D(const QMessageBox);
-    if (d->iconLabel && d->iconLabel->pixmap())
-        return *d->iconLabel->pixmap();
-    return QPixmap();
+    return d->iconLabel->pixmap(Qt::ReturnByValue);
 }
 
 void QMessageBox::setIconPixmap(const QPixmap &pixmap)

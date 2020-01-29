@@ -611,30 +611,30 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
     if (field.isNull())
         r = nullTxt;
     else {
-        switch (field.type()) {
-        case QVariant::Int:
-        case QVariant::UInt:
-            if (field.value().type() == QVariant::Bool)
+        switch (+field.type()) {
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            if (field.value().userType() == QMetaType::Bool)
                 r = field.value().toBool() ? QLatin1String("1") : QLatin1String("0");
             else
                 r = field.value().toString();
             break;
 #if QT_CONFIG(datestring)
-        case QVariant::Date:
+        case QMetaType::QDate:
             if (field.value().toDate().isValid())
                 r = QLatin1Char('\'') + field.value().toDate().toString(Qt::ISODate)
                     + QLatin1Char('\'');
             else
                 r = nullTxt;
             break;
-        case QVariant::Time:
+        case QMetaType::QTime:
             if (field.value().toTime().isValid())
                 r =  QLatin1Char('\'') + field.value().toTime().toString(Qt::ISODate)
                      + QLatin1Char('\'');
             else
                 r = nullTxt;
             break;
-        case QVariant::DateTime:
+        case QMetaType::QDateTime:
             if (field.value().toDateTime().isValid())
                 r = QLatin1Char('\'') +
                     field.value().toDateTime().toString(Qt::ISODate) + QLatin1Char('\'');
@@ -642,8 +642,8 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 r = nullTxt;
             break;
 #endif
-        case QVariant::String:
-        case QVariant::Char:
+        case QMetaType::QString:
+        case QMetaType::QChar:
         {
             QString result = field.value().toString();
             if (trimStrings) {
@@ -657,10 +657,10 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
             r = QLatin1Char('\'') + result + QLatin1Char('\'');
             break;
         }
-        case QVariant::Bool:
+        case QMetaType::Bool:
             r = QString::number(field.value().toBool());
             break;
-        case QVariant::ByteArray : {
+        case QMetaType::QByteArray : {
             if (hasFeature(BLOB)) {
                 QByteArray ba = field.value().toByteArray();
                 QString res;

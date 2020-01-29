@@ -221,6 +221,7 @@ qtConfig(gui) {
         SUBDIRS += src_openglextensions
         SUBDIRS += src_opengl
         src_plugins.depends += src_opengl
+        src_platformsupport.depends += src_opengl
     }
     src_plugins.depends += src_gui src_platformsupport src_platformheaders
     src_testlib.depends += src_gui      # if QtGui is enabled, QtTest requires QtGui's headers

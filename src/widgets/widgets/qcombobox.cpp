@@ -144,11 +144,11 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         menuOption.menuItemType = QStyleOptionMenuItem::Normal;
 
     QVariant variant = index.model()->data(index, Qt::DecorationRole);
-    switch (variant.type()) {
-    case QVariant::Icon:
+    switch (variant.userType()) {
+    case QMetaType::QIcon:
         menuOption.icon = qvariant_cast<QIcon>(variant);
         break;
-    case QVariant::Color: {
+    case QMetaType::QColor: {
         static QPixmap pixmap(option.decorationSize);
         pixmap.fill(qvariant_cast<QColor>(variant));
         menuOption.icon = pixmap;
@@ -293,8 +293,7 @@ void QComboBoxPrivate::_q_modelReset()
         lineEdit->setText(QString());
         updateLineEditGeometry();
     }
-    if (currentIndex.row() != indexBeforeChange)
-        _q_emitCurrentIndexChanged(currentIndex);
+    trySetValidIndex();
     modelChanged();
     q->update();
 }
@@ -302,6 +301,25 @@ void QComboBoxPrivate::_q_modelReset()
 void QComboBoxPrivate::_q_modelDestroyed()
 {
     model = QAbstractItemModelPrivate::staticEmptyModel();
+}
+
+void QComboBoxPrivate::trySetValidIndex()
+{
+    Q_Q(QComboBox);
+    bool currentReset = false;
+
+    const int rowCount = q->count();
+    for (int pos = 0; pos < rowCount; ++pos) {
+        const QModelIndex idx(model->index(pos, modelColumn, root));
+        if (idx.flags() & Qt::ItemIsEnabled) {
+            setCurrentIndex(idx);
+            currentReset = true;
+            break;
+        }
+    }
+
+    if (!currentReset)
+        setCurrentIndex(QModelIndex());
 }
 
 QRect QComboBoxPrivate::popupGeometry(int screen) const
@@ -1888,7 +1906,7 @@ void QComboBoxPrivate::updateDelegate(bool force)
 QIcon QComboBoxPrivate::itemIcon(const QModelIndex &index) const
 {
     QVariant decoration = model->data(index, Qt::DecorationRole);
-    if (decoration.type() == QVariant::Pixmap)
+    if (decoration.userType() == QMetaType::QPixmap)
         return QIcon(qvariant_cast<QPixmap>(decoration));
     else
         return qvariant_cast<QIcon>(decoration);
@@ -2044,7 +2062,7 @@ const QValidator *QComboBox::validator() const
     \since 4.2
 
     Sets the \a completer to use instead of the current completer.
-    If \a completer is 0, auto completion is disabled.
+    If \a completer is \nullptr, auto completion is disabled.
 
     By default, for an editable combo box, a QCompleter that
     performs case insensitive inline completion is automatically created.
@@ -2096,6 +2114,9 @@ QAbstractItemDelegate *QComboBox::itemDelegate() const
     Sets the item \a delegate for the popup list view.
     The combobox takes ownership of the delegate.
 
+    Any existing delegate will be removed, but not deleted. QComboBox
+    does not take ownership of \a delegate.
+
     \warning You should not share the same instance of a delegate between comboboxes,
     widget mappers or views. Doing so can cause incorrect or unintuitive editing behavior
     since each view connected to a given delegate may receive the
@@ -2110,7 +2131,6 @@ void QComboBox::setItemDelegate(QAbstractItemDelegate *delegate)
         qWarning("QComboBox::setItemDelegate: cannot set a 0 delegate");
         return;
     }
-    delete view()->itemDelegate();
     view()->setItemDelegate(delegate);
 }
 
@@ -2200,20 +2220,7 @@ void QComboBox::setModel(QAbstractItemModel *model)
 
     setRootModelIndex(QModelIndex());
 
-    bool currentReset = false;
-
-    const int rowCount = count();
-    for (int pos=0; pos < rowCount; pos++) {
-        if (d->model->index(pos, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled) {
-            setCurrentIndex(pos);
-            currentReset = true;
-            break;
-        }
-    }
-
-    if (!currentReset)
-        setCurrentIndex(-1);
-
+    d->trySetValidIndex();
     d->modelChanged();
 }
 

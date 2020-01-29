@@ -323,12 +323,12 @@
     QState *s1 = new QState(&machine);
 
     QPushButton button;
-    QSignalTransition *trans = new QSignalTransition(&button, SIGNAL(clicked()));
+    QSignalTransition *trans = new QSignalTransition(&button, &QPushButton::clicked);
     s1->addTransition(trans);
 
     QMessageBox msgBox;
     msgBox.setText("The button was clicked; carry on.");
-    QObject::connect(trans, SIGNAL(triggered()), &msgBox, SLOT(exec()));
+    QObject::connect(trans, QSignalTransition::triggered, &msgBox, &QMessageBox::exec);
 
     machine.setInitialState(s1);
   \endcode

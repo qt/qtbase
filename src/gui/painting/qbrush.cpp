@@ -672,7 +672,7 @@ QBrush &QBrush::operator=(const QBrush &b)
 */
 QBrush::operator QVariant() const
 {
-    return QVariant(QVariant::Brush, this);
+    return QVariant(QMetaType::QBrush, this);
 }
 
 /*!
@@ -893,8 +893,12 @@ bool QBrush::isOpaque() const
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \since 4.2
+    \obsolete
+
+    Use setTransform() instead.
 
     Sets \a matrix as an explicit transformation matrix on the
     current brush. The brush transformation matrix is merged with
@@ -906,6 +910,7 @@ void QBrush::setMatrix(const QMatrix &matrix)
 {
     setTransform(QTransform(matrix));
 }
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     \since 4.3
@@ -923,14 +928,19 @@ void QBrush::setTransform(const QTransform &matrix)
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \fn void QBrush::matrix() const
     \since 4.2
+    \obsolete
+
+    Use transform() instead.
 
     Returns the current transformation matrix for the brush.
 
     \sa setMatrix()
 */
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     \fn bool QBrush::operator!=(const QBrush &brush) const

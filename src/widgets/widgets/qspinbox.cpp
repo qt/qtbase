@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1081,7 +1081,7 @@ QSpinBoxPrivate::QSpinBoxPrivate()
     value = minimum;
     displayIntegerBase = 10;
     singleStep = QVariant((int)1);
-    type = QVariant::Int;
+    type = QMetaType::Int;
 }
 
 /*!
@@ -1168,11 +1168,11 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
         } else {
             num = locale.toInt(copy, &ok);
             if (!ok && (max >= 1000 || min <= -1000)) {
-                const QChar sep = locale.groupSeparator();
-                const QChar doubleSep[2] = {sep, sep};
-                if (copy.contains(sep) && !copy.contains(QString(doubleSep, 2))) {
+                const QString sep(locale.groupSeparator());
+                const QString doubleSep = sep + sep;
+                if (copy.contains(sep) && !copy.contains(doubleSep)) {
                     QString copy2 = copy;
-                    copy2.remove(locale.groupSeparator());
+                    copy2.remove(sep);
                     num = locale.toInt(copy2, &ok);
                 }
             }
@@ -1238,7 +1238,7 @@ QDoubleSpinBoxPrivate::QDoubleSpinBoxPrivate()
     value = minimum;
     singleStep = QVariant(1.0);
     decimals = 2;
-    type = QVariant::Double;
+    type = QMetaType::Double;
 }
 
 /*!
@@ -1314,6 +1314,10 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
     const bool plus = max >= 0;
     const bool minus = min <= 0;
 
+    const QString group(locale.groupSeparator());
+    const uint groupUcs = (group.size() > 1 && group.at(0).isHighSurrogate()
+                           ? QChar::surrogateToUcs4(group.at(0), group.at(1))
+                           : group.at(0).unicode());
     switch (len) {
     case 0:
         state = max != min ? QValidator::Intermediate : QValidator::Invalid;
@@ -1360,14 +1364,15 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                 }
             }
         } else {
-            const QChar last = copy.at(len - 1);
-            const QChar secondLast = copy.at(len - 2);
-            if ((last == locale.groupSeparator() || last.isSpace())
-                && (secondLast == locale.groupSeparator() || secondLast.isSpace())) {
+            const QChar last = copy.back();
+            const bool groupEnd = copy.endsWith(group);
+            const QStringView head(copy.constData(), groupEnd ? len - group.size() : len - 1);
+            const QChar secondLast = head.back();
+            if ((groupEnd || last.isSpace()) && (head.endsWith(group) || secondLast.isSpace())) {
                 state = QValidator::Invalid;
                 QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
                 goto end;
-            } else if (last.isSpace() && (!locale.groupSeparator().isSpace() || secondLast.isSpace())) {
+            } else if (last.isSpace() && (!QChar::isSpace(groupUcs) || secondLast.isSpace())) {
                 state = QValidator::Invalid;
                 QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
                 goto end;
@@ -1381,26 +1386,31 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
         QSBDEBUG() << __FILE__ << __LINE__ << locale << copy << num << ok;
 
         if (!ok) {
-            if (locale.groupSeparator().isPrint()) {
-                if (max < 1000 && min > -1000 && copy.contains(locale.groupSeparator())) {
+            if (QChar::isPrint(groupUcs)) {
+                if (max < 1000 && min > -1000 && copy.contains(group)) {
                     state = QValidator::Invalid;
                     QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
                     goto end;
                 }
 
                 const int len = copy.size();
-                for (int i=0; i<len- 1; ++i) {
-                    if (copy.at(i) == locale.groupSeparator() && copy.at(i + 1) == locale.groupSeparator()) {
-                        QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
-                        state = QValidator::Invalid;
-                        goto end;
+                for (int i = 0; i < len - 1;) {
+                    if (QStringView(copy).mid(i).startsWith(group)) {
+                        if (QStringView(copy).mid(i + group.size()).startsWith(group)) {
+                            QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
+                            state = QValidator::Invalid;
+                            goto end;
+                        }
+                        i += group.size();
+                    } else {
+                        i++;
                     }
                 }
 
                 QString copy2 = copy;
-                copy2.remove(locale.groupSeparator());
+                copy2.remove(group);
                 num = locale.toDouble(copy2, &ok);
-                QSBDEBUG() << locale.groupSeparator() << num << copy2 << ok;
+                QSBDEBUG() << group << num << copy2 << ok;
 
                 if (!ok) {
                     state = QValidator::Invalid;

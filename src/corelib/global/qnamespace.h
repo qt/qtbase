@@ -1749,6 +1749,9 @@ namespace Qt {
         PassThrough
     };
 
+    // QTBUG-48701
+    enum ReturnByValue_t { ReturnByValue }; // ### Qt 7: Remove me
+
 #ifndef Q_QDOC
     // NOTE: Generally, do not add Q_ENUM_NS if a corresponding Q_FLAG_NS exists.
     Q_ENUM_NS(ScrollBarPolicy)

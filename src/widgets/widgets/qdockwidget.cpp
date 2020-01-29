@@ -1674,8 +1674,8 @@ QAction * QDockWidget::toggleViewAction() const
     \since 4.3
 
     Sets an arbitrary \a widget as the dock widget's title bar. If \a widget
-    is 0, any custom title bar widget previously set on the dock widget is
-    removed, but not deleted, and the default title bar will be used
+    is \nullptr, any custom title bar widget previously set on the dock widget
+    is removed, but not deleted, and the default title bar will be used
     instead.
 
     If a title bar widget is set, QDockWidget will not use native window

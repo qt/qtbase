@@ -2015,6 +2015,9 @@ QStringList QFileDialog::history() const
     Sets the item delegate used to render items in the views in the
     file dialog to the given \a delegate.
 
+    Any existing delegate will be removed, but not deleted. QFileDialog
+    does not take ownership of \a delegate.
+
     \warning You should not share the same instance of a delegate between views.
     Doing so can cause incorrect or unintuitive editing behavior since each
     view connected to a given delegate may receive the \l{QAbstractItemDelegate::}{closeEditor()}

@@ -31,7 +31,7 @@
 #include "qwasmwindow.h"
 #include "qwasmcompositor.h"
 
-#include <QtGui/qopengltexture.h>
+#include <QtOpenGL/qopengltexture.h>
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qpainter.h>
 #include <private/qguiapplication_p.h>

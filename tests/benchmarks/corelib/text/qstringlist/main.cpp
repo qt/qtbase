@@ -41,6 +41,9 @@ private slots:
     void join() const;
     void join_data() const;
 
+    void removeDuplicates() const;
+    void removeDuplicates_data() const;
+
     void split_qlist_qbytearray() const;
     void split_qlist_qbytearray_data() const { return split_data(); }
 
@@ -114,6 +117,42 @@ void tst_QStringList::join_data() const
     QTest::newRow("")
         << populateList(100000, QLatin1String("unit"))
         << QString();
+}
+
+void tst_QStringList::removeDuplicates() const
+{
+    QFETCH(const QStringList, input);
+
+    QBENCHMARK {
+        auto copy = input;
+        copy.removeDuplicates();
+    }
+}
+
+void tst_QStringList::removeDuplicates_data() const
+{
+    QTest::addColumn<QStringList>("input");
+
+    const QStringList s = {"one", "two", "three"};
+
+    QTest::addRow("empty") << QStringList();
+    QTest::addRow("short-dup-0.00") << s;
+    QTest::addRow("short-dup-0.50") << (s + s);
+    QTest::addRow("short-dup-0.66") << (s + s + s);
+    QTest::addRow("short-dup-0.75") << (s + s + s + s);
+
+    const QStringList l = []() {
+        QStringList result;
+        const int n = 1000;
+        result.reserve(n);
+        for (int i = 0; i < n; ++i)
+            result.push_back(QString::number(i));
+        return result;
+    }();
+    QTest::addRow("long-dup-0.00") << l;
+    QTest::addRow("long-dup-0.50") << (l + l);
+    QTest::addRow("long-dup-0.66") << (l + l + l);
+    QTest::addRow("long-dup-0.75") << (l + l + l + l);
 }
 
 void tst_QStringList::split_data() const

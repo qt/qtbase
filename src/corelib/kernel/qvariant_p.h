@@ -362,7 +362,7 @@ class QVariantConstructor
         FilteredConstructor(const QVariantConstructor &tc)
         {
             // ignore types that lives outside of the current library
-            tc.m_x->type = QVariant::Invalid;
+            tc.m_x->type = QMetaType::UnknownType;
         }
     };
 public:
@@ -430,7 +430,7 @@ public:
     {}
     ~QVariantDestructor()
     {
-        m_d->type = QVariant::Invalid;
+        m_d->type = QMetaType::UnknownType;
         m_d->is_null = true;
         m_d->is_shared = false;
     }

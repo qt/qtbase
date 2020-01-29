@@ -88,9 +88,9 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format, con
     qreal sourcePixelRatio = 1.0;
     name = resolveFileName(name, &url, devicePixelRatio, &sourcePixelRatio);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
-    if (data.type() == QVariant::Pixmap || data.type() == QVariant::Image) {
+    if (data.userType() == QMetaType::QPixmap || data.userType() == QMetaType::QImage) {
         pm = qvariant_cast<QPixmap>(data);
-    } else if (data.type() == QVariant::ByteArray) {
+    } else if (data.userType() == QMetaType::QByteArray) {
         pm.loadFromData(data.toByteArray());
     }
 
@@ -170,9 +170,9 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format, const
     qreal sourcePixelRatio = 1.0;
     name = resolveFileName(name, &url, devicePixelRatio, &sourcePixelRatio);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
-    if (data.type() == QVariant::Image) {
+    if (data.userType() == QMetaType::QImage) {
         image = qvariant_cast<QImage>(data);
-    } else if (data.type() == QVariant::ByteArray) {
+    } else if (data.userType() == QMetaType::QByteArray) {
         image.loadFromData(data.toByteArray());
     }
 

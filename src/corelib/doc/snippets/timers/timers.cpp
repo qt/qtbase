@@ -61,13 +61,13 @@ Foo::Foo()
 //! [0]
     QTimer *timer = new QTimer(this);
 //! [0] //! [1]
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateCaption()));
+    connect(timer, &QTimer::timeout, this, &Foo::updateCaption);
 //! [1] //! [2]
     timer->start(1000);
 //! [2]
 
 //! [3]
-    QTimer::singleShot(200, this, SLOT(updateCaption()));
+    QTimer::singleShot(200, this, &Foo::updateCaption);
 //! [3]
 
     {
@@ -75,7 +75,7 @@ Foo::Foo()
 //! [4]
     QTimer *timer = new QTimer(this);
 //! [4] //! [5]
-    connect(timer, SIGNAL(timeout()), this, SLOT(processOneThing()));
+    connect(timer, &QTimer::timeout, this, &Foo::processOneThing);
 //! [5] //! [6]
     timer->start();
 //! [6]

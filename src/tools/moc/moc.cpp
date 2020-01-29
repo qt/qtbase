@@ -1254,6 +1254,9 @@ void Moc::createPropertyDef(PropertyDef &propDef)
         } else if(l[0] == 'F' && l == "FINAL") {
             propDef.final = true;
             continue;
+        } else if (l[0] == 'R' && l == "REQUIRED") {
+            propDef.required = true;
+            continue;
         }
 
         QByteArray v, v2;
@@ -1986,6 +1989,7 @@ QJsonObject PropertyDef::toJson() const
 
     prop[QLatin1String("constant")] = constant;
     prop[QLatin1String("final")] = final;
+    prop[QLatin1String("required")] = required;
 
     if (revision > 0)
         prop[QLatin1String("revision")] = revision;

@@ -734,23 +734,23 @@ static void updateSystemPrivate()
         globalLocaleData.m_script_id = res.toInt();
 
     res = sys_locale->query(QSystemLocale::DecimalPoint, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_decimal = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::GroupSeparator, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_group = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::ZeroDigit, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_zero = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::NegativeSign, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_minus = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::PositiveSign, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_plus = res.toString().at(0).unicode();
 }
 #endif // !QT_NO_SYSTEMLOCALE
@@ -2430,7 +2430,7 @@ QTime QLocale::toTime(const QString &string, const QString &format, QCalendar ca
 {
     QTime time;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, cal);
+    QDateTimeParser dt(QMetaType::QTime, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
         dt.fromString(string, nullptr, &time);
@@ -2469,7 +2469,7 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
 {
     QDate date;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
+    QDateTimeParser dt(QMetaType::QDate, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
         dt.fromString(string, &date, nullptr);
@@ -2510,7 +2510,7 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
     QTime time;
     QDate date;
 
-    QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString, cal);
+    QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
         return QDateTime(date, time);
@@ -4463,6 +4463,8 @@ QStringList QLocale::uiLanguages() const
             for (const auto entry : qAsConst(uiLanguages))
                 locales.append(QLocale(entry));
         }
+        if (locales.isEmpty())
+            locales.append(systemLocale()->fallbackUiLocale());
     } else
 #endif
     {

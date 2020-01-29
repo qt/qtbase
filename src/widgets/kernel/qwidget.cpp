@@ -5954,9 +5954,9 @@ void QWidget::setWindowTitle(const QString &title)
 
     \note On \macos, window icons represent the active document,
     and will not be displayed unless a file path has also been
-    set using setFilePath.
+    set using setWindowFilePath.
 
-    \sa windowTitle, setFilePath
+    \sa windowTitle, setWindowFilePath
 */
 QIcon QWidget::windowIcon() const
 {

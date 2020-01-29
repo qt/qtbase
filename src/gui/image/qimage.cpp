@@ -1067,7 +1067,7 @@ int QImage::devType() const
 */
 QImage::operator QVariant() const
 {
-    return QVariant(QVariant::Image, this);
+    return QVariant(QMetaType::QImage, this);
 }
 
 /*!
@@ -2847,7 +2847,13 @@ QImage QImage::scaledToHeight(int h, Qt::TransformationMode mode) const
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
 /*!
+    \obsolete
+
+    Use trueMatrix(const QTransform &matrix, int w, int h) instead.
+
     \fn QMatrix QImage::trueMatrix(const QMatrix &matrix, int width, int height)
 
     Returns the actual matrix used for transforming an image with the
@@ -2869,6 +2875,10 @@ QMatrix QImage::trueMatrix(const QMatrix &matrix, int w, int h)
 }
 
 /*!
+    \obsolete
+
+    Use transformed(const QTransform &matrix, Qt::TransformationMode mode) instead.
+
     Returns a copy of the image that is transformed using the given
     transformation \a matrix and transformation \a mode.
 
@@ -2892,6 +2902,8 @@ QImage QImage::transformed(const QMatrix &matrix, Qt::TransformationMode mode) c
 {
     return transformed(QTransform(matrix), mode);
 }
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Builds and returns a 1-bpp mask from the alpha buffer in this
@@ -3649,8 +3661,8 @@ QImage QImage::fromData(const uchar *data, int size, const char *format)
 /*!
     Saves the image to the file with the given \a fileName, using the
     given image file \a format and \a quality factor. If \a format is
-    0, QImage will attempt to guess the format by looking at \a fileName's
-    suffix.
+    \nullptr, QImage will attempt to guess the format by looking at
+    \a fileName's suffix.
 
     The \a quality factor must be in the range 0 to 100 or -1. Specify
     0 to obtain small compressed files, 100 for large uncompressed

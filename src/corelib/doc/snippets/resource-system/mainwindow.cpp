@@ -68,10 +68,10 @@ MainWindow::MainWindow()
 
     readSettings();
 
-    connect(textEdit->document(), SIGNAL(contentsChanged()),
-            this, SLOT(documentWasModified()));
+    connect(textEdit->document(), &QTextEdit::contentsChanged,
+            this, &QAction::documentWasModified);
 
-    setCurrentFile("");
+    setCurrentFile(QString());
     setUnifiedTitleAndToolBarOnMac(true);
 }
 //! [2]
@@ -95,7 +95,7 @@ void MainWindow::newFile()
 {
     if (maybeSave()) {
         textEdit->clear();
-        setCurrentFile("");
+        setCurrentFile(QString());
     }
 }
 //! [6]
@@ -162,31 +162,31 @@ void MainWindow::createActions()
     newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip(tr("Create a new file"));
-    connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
+    connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
 
 //! [19]
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+    connect(openAct, &QAction::triggered, this, &MainWindow::open);
 //! [18] //! [19]
 
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
-    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+    connect(saveAct, &QAction::triggered, this, &MainWindow::save);
 
     saveAsAct = new QAction(tr("Save &As..."), this);
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
-    connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+    connect(saveAsAct, &QAction::triggered, this, &MainWindow::saveAs);
 
 //! [20]
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
 //! [20]
     exitAct->setStatusTip(tr("Exit the application"));
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+    connect(exitAct, &QAction::triggered, this, &MainWindow::close);
 
 //! [21]
     cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
@@ -194,38 +194,38 @@ void MainWindow::createActions()
     cutAct->setShortcuts(QKeySequence::Cut);
     cutAct->setStatusTip(tr("Cut the current selection's contents to the "
                             "clipboard"));
-    connect(cutAct, SIGNAL(triggered()), textEdit, SLOT(cut()));
+    connect(cutAct, &QAction::triggered, textEdit, &QTextEdit::cut);
 
     copyAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
     copyAct->setStatusTip(tr("Copy the current selection's contents to the "
                              "clipboard"));
-    connect(copyAct, SIGNAL(triggered()), textEdit, SLOT(copy()));
+    connect(copyAct, &QAction::triggered, textEdit, &QTextEdit::copy);
 
     pasteAct = new QAction(QIcon(":/images/paste.png"), tr("&Paste"), this);
     pasteAct->setShortcuts(QKeySequence::Paste);
     pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
                               "selection"));
-    connect(pasteAct, SIGNAL(triggered()), textEdit, SLOT(paste()));
+    connect(pasteAct, &QAction::triggered, textEdit, &QTextEdit::paste);
 
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 
 //! [22]
     aboutQtAct = new QAction(tr("About &Qt"), this);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 //! [22]
 
 //! [23]
     cutAct->setEnabled(false);
 //! [23] //! [24]
     copyAct->setEnabled(false);
-    connect(textEdit, SIGNAL(copyAvailable(bool)),
-            cutAct, SLOT(setEnabled(bool)));
-    connect(textEdit, SIGNAL(copyAvailable(bool)),
-            copyAct, SLOT(setEnabled(bool)));
+    connect(textEdit, &QTextEdit::copyAvailable,
+            cutAct, &QAction::setEnabled);
+    connect(textEdit, &QTextEdit::copyAvailable,
+            copyAct, &QAction::setEnabled);
 }
 //! [24]
 

@@ -160,7 +160,7 @@ QAbstractEventDispatcher::~QAbstractEventDispatcher()
 
 /*!
     Returns a pointer to the event dispatcher object for the specified
-    \a thread. If \a thread is zero, the current thread is used. If no
+    \a thread. If \a thread is \nullptr, the current thread is used. If no
     event dispatcher exists for the specified thread, this function
     returns \nullptr.
 

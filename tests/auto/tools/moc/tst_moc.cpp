@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2020 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -721,6 +721,7 @@ private slots:
     void cxxAttributes();
     void mocJsonOutput();
     void mocInclude();
+    void requiredProperties();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4027,6 +4028,29 @@ void tst_Moc::mocInclude()
     TestFwdProperties obj;
     obj.setProperty("prop1", QVariant::fromValue(FwdClass1 { 45 }));
     QCOMPARE(obj.prop1->x, 45);
+}
+
+class RequiredTest :public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(int required MEMBER m_required REQUIRED)
+    Q_PROPERTY(int notRequired MEMBER m_notRequired)
+
+private:
+    int m_required;
+    int m_notRequired;
+};
+
+void tst_Moc::requiredProperties()
+{
+    QMetaObject mo = RequiredTest::staticMetaObject;
+    QMetaProperty required = mo.property(mo.indexOfProperty("required"));
+    QVERIFY(required.isValid());
+    QVERIFY(required.isRequired());
+    QMetaProperty notRequired = mo.property(mo.indexOfProperty("notRequired"));
+    QVERIFY(notRequired.isValid());
+    QVERIFY(!notRequired.isRequired());
 }
 
 QTEST_MAIN(tst_Moc)

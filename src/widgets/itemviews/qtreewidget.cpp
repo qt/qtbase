@@ -48,6 +48,8 @@
 #include <private/qwidgetitemdata_p.h>
 #include <private/qtreewidgetitemiterator_p.h>
 
+#include <QtCore/private/qduplicatetracker_p.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
@@ -3175,13 +3177,12 @@ QList<QTreeWidgetItem*> QTreeWidget::selectedItems() const
     const QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QTreeWidgetItem*> items;
     items.reserve(indexes.count());
-    QSet<QTreeWidgetItem *> seen;
+    QDuplicateTracker<QTreeWidgetItem *> seen;
     seen.reserve(indexes.count());
     for (const auto &index : indexes) {
         QTreeWidgetItem *item = d->item(index);
-        if (item->isHidden() || seen.contains(item))
+        if (item->isHidden() || seen.hasSeen(item))
             continue;
-        seen.insert(item);
         items.append(item);
     }
     return items;

@@ -48,10 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include <QtWidgets>
-
 #include "buttonwidget.h"
+
+#include <QtWidgets>
 
 //! [0]
 ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
@@ -62,15 +61,16 @@ ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
     QGridLayout *gridLayout = new QGridLayout;
     for (int i = 0; i < texts.size(); ++i) {
         QPushButton *button = new QPushButton(texts[i]);
-        connect(button, SIGNAL(clicked()), signalMapper, SLOT(map()));
+        connect(button, &QPushButton::clicked,
+                signalMapper, &QSignalMapper::map);
 //! [0] //! [1]
         signalMapper->setMapping(button, texts[i]);
         gridLayout->addWidget(button, i / 3, i % 3);
     }
 
-    connect(signalMapper, SIGNAL(mapped(QString)),
+    connect(signalMapper, QOverload<const QString &>::of(&QSignalMapper::mapped),
 //! [1] //! [2]
-            this, SIGNAL(clicked(QString)));
+            this, &ButtonWidget::clicked);
 
     setLayout(gridLayout);
 }
@@ -84,7 +84,7 @@ ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
     for (int i = 0; i < texts.size(); ++i) {
         QString text = texts[i];
         QPushButton *button = new QPushButton(text);
-        connect(button, &QPushButton::clicked, [=] { clicked(text); });
+        connect(button, &QPushButton::clicked, [this, text] { clicked(text); });
         gridLayout->addWidget(button, i / 3, i % 3);
     }
     setLayout(gridLayout);

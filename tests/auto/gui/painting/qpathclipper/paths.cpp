@@ -713,9 +713,5 @@ QPainterPath Paths::bezierQuadrant()
         path.closeSubpath();
     }
 
-    QMatrix m(2, 0,
-            0, 2,
-            0, 0);
-
     return path;
 }

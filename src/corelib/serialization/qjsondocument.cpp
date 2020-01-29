@@ -405,17 +405,17 @@ QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
 {
     QJsonDocument doc;
 
-    switch (variant.type()) {
-    case QVariant::Map:
+    switch (variant.userType()) {
+    case QMetaType::QVariantMap:
         doc.setObject(QJsonObject::fromVariantMap(variant.toMap()));
         break;
-    case QVariant::Hash:
+    case QMetaType::QVariantHash:
         doc.setObject(QJsonObject::fromVariantHash(variant.toHash()));
         break;
-    case QVariant::List:
+    case QMetaType::QVariantList:
         doc.setArray(QJsonArray::fromVariantList(variant.toList()));
         break;
-    case QVariant::StringList:
+    case QMetaType::QStringList:
         doc.d = qt_make_unique<QJsonDocumentPrivate>();
         doc.d->value = QCborArray::fromStringList(variant.toStringList());
         break;

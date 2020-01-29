@@ -1791,7 +1791,7 @@ QDate QDate::fromString(const QString &string, const QString &format, QCalendar 
 {
     QDate date;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
+    QDateTimeParser dt(QMetaType::QDate, QDateTimeParser::FromString, cal);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
         dt.fromString(string, &date, nullptr);
@@ -2537,7 +2537,7 @@ QTime QTime::fromString(const QString &string, const QString &format)
 {
     QTime time;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, QCalendar());
+    QDateTimeParser dt(QMetaType::QTime, QDateTimeParser::FromString, QCalendar());
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
         dt.fromString(string, nullptr, &time);
@@ -5482,7 +5482,7 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format, QC
     QTime time;
     QDate date;
 
-    QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString, cal);
+    QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
         return QDateTime(date, time);

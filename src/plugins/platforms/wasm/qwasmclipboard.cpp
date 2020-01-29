@@ -29,6 +29,7 @@
 
 #include "qwasmclipboard.h"
 #include "qwasmwindow.h"
+#include "qwasmstring.h"
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -40,22 +41,22 @@
 using namespace emscripten;
 
 // there has got to be a better way...
-static QByteArray g_clipboardArray;
-static QByteArray g_clipboardFormat;
+static QString g_clipboardText;
+static QString g_clipboardFormat;
 
 static val getClipboardData()
 {
-    return val(g_clipboardArray.constData());
+    return QWasmString::fromQString(g_clipboardText);
 }
 
 static val getClipboardFormat()
 {
-    return val(g_clipboardFormat.constData());
+    return QWasmString::fromQString(g_clipboardFormat);
 }
 
 static void pasteClipboardData(emscripten::val format, emscripten::val dataPtr)
 {
-    QString formatString = QString::fromStdString(format.as<std::string>());
+    QString formatString = QWasmString::toQString(format);
     QByteArray dataArray =  QByteArray::fromStdString(dataPtr.as<std::string>());
     QMimeData *mMimeData = new QMimeData;
     mMimeData->setData(formatString, dataArray);
@@ -102,11 +103,10 @@ static void qClipboardPasteTo(val event)
     bool hasClipboardApi = QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi;
     val clipdata = hasClipboardApi ?
         val::global("Module").call<val>("qtGetClipboardData") :
-        event["clipboardData"].call<val>("getData", std::string("text"));
+        event["clipboardData"].call<val>("getData", val("text"));
 
-    const std::string data = clipdata.as<std::string>();
-    if (data.length() > 0) {
-        QString qstr = QString::fromStdString(data);
+    const QString qstr = QWasmString::toQString(clipdata);
+    if (qstr.length() > 0) {
         QMimeData *mMimeData = new QMimeData;
         mMimeData->setText(qstr);
         QWasmClipboard::qWasmClipboardPaste(mMimeData);
@@ -133,7 +133,7 @@ QWasmClipboard::QWasmClipboard()
 
 QWasmClipboard::~QWasmClipboard()
 {
-    g_clipboardArray.clear();
+    g_clipboardText.clear();
     g_clipboardFormat.clear();
 }
 
@@ -148,11 +148,11 @@ QMimeData* QWasmClipboard::mimeData(QClipboard::Mode mode)
 void QWasmClipboard::setMimeData(QMimeData* mimeData, QClipboard::Mode mode)
 {
     if (mimeData->hasText()) {
-        g_clipboardFormat = mimeData->formats().at(0).toUtf8();
-        g_clipboardArray = mimeData->text().toUtf8();
+        g_clipboardFormat = mimeData->formats().at(0);
+        g_clipboardText = mimeData->text();
     } else if (mimeData->hasHtml()) {
-        g_clipboardFormat =mimeData->formats().at(0).toUtf8();
-        g_clipboardArray = mimeData->html().toUtf8();
+        g_clipboardFormat = mimeData->formats().at(0);
+        g_clipboardText = mimeData->html();
     }
 
     QPlatformClipboard::setMimeData(mimeData, mode);
@@ -199,13 +199,13 @@ void QWasmClipboard::installEventHandlers(const QString &canvasId)
 
     // Fallback path for browsers which do not support direct clipboard access
     val document = val::global("document");
-    val canvas = document.call<val>("getElementById", val(canvasId.toUtf8().constData()));
+    val canvas = document.call<val>("getElementById", QWasmString::fromQString(canvasId));
 
-    canvas.call<void>("addEventListener", std::string("cut"),
+    canvas.call<void>("addEventListener", val("cut"),
                       val::module_property("qtClipboardCutTo"));
-    canvas.call<void>("addEventListener", std::string("copy"),
+    canvas.call<void>("addEventListener", val("copy"),
                       val::module_property("qtClipboardCopyTo"));
-    canvas.call<void>("addEventListener", std::string("paste"),
+    canvas.call<void>("addEventListener", val("paste"),
                       val::module_property("qtClipboardPasteTo"));
 }
 
@@ -226,6 +226,6 @@ void QWasmClipboard::writeTextToClipboard()
         val txt = module.call<val>("qtGetClipboardData");
         val format =  module.call<val>("qtGetClipboardFormat");
         val navigator = val::global("navigator");
-        navigator["clipboard"].call<void>("writeText", txt.as<std::string>());
+        navigator["clipboard"].call<void>("writeText", txt);
     }
 }

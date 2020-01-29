@@ -60,7 +60,7 @@
 #include <QWidget>
 
 
-// Making use of the class from the opengl example in gui.
+// Making use of the class from the openglwindow example
 class Window : public OpenGLWindow
 {
     Q_OBJECT

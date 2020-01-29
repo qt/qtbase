@@ -72,7 +72,9 @@ public:
 
     QMatrix4x4(const float *values, int cols, int rows);
     QMatrix4x4(const QTransform& transform);
+#if QT_DEPRECATED_SINCE(5, 15)
     QMatrix4x4(const QMatrix& matrix);
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
     inline const float& operator()(int row, int column) const;
     inline float& operator()(int row, int column);
@@ -156,7 +158,9 @@ public:
 
     void copyDataTo(float *values) const;
 
-    QMatrix toAffine() const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use toTransform()") QMatrix toAffine() const;
+#endif // QT_DEPRECATED_SINCE(5, 15)
     QTransform toTransform() const;
     QTransform toTransform(float distanceToPlane) const;
 
@@ -187,6 +191,7 @@ public:
     friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QMatrix4x4 &m);
 #endif
 
+    void projectedRotate(float angle, float x, float y, float z);
 private:
     float m[4][4];          // Column-major order to match OpenGL.
     int flagBits;           // Flag bits from the enum below.
@@ -206,10 +211,6 @@ private:
     explicit QMatrix4x4(int) { }
 
     QMatrix4x4 orthonormalInverse() const;
-
-    void projectedRotate(float angle, float x, float y, float z);
-
-    friend class QGraphicsRotation;
 };
 
 QT_WARNING_PUSH

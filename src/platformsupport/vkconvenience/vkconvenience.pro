@@ -2,6 +2,8 @@ TARGET = QtVulkanSupport
 MODULE = vulkan_support
 
 QT = core-private gui-private
+qtConfig(opengl): QT += opengl
+
 CONFIG += static internal_module
 
 DEFINES += QT_NO_CAST_FROM_ASCII

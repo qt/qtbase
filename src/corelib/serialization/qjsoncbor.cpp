@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -637,9 +637,9 @@ static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
     // Handle strings and byte arrays directly, to avoid creating a temporary
     // dummy container to hold their data.
     int type = variant.userType();
-    if (type == QVariant::String) {
+    if (type == QMetaType::QString) {
         d->append(variant.toString());
-    } else if (type == QVariant::ByteArray) {
+    } else if (type == QMetaType::QByteArray) {
         QByteArray ba = variant.toByteArray();
         d->appendByteData(ba.constData(), ba.size(), QCborValue::ByteArray);
     } else {
@@ -698,48 +698,48 @@ static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
 QCborValue QCborValue::fromVariant(const QVariant &variant)
 {
     switch (variant.userType()) {
-    case QVariant::Invalid:
+    case QMetaType::UnknownType:
         return {};
     case QMetaType::Nullptr:
         return nullptr;
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return variant.toBool();
     case QMetaType::Short:
     case QMetaType::UShort:
-    case QVariant::Int:
-    case QVariant::LongLong:
-    case QVariant::UInt:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
+    case QMetaType::UInt:
         return variant.toLongLong();
-    case QVariant::ULongLong:
+    case QMetaType::ULongLong:
         if (variant.toULongLong() <= static_cast<uint64_t>(std::numeric_limits<qint64>::max()))
             return variant.toLongLong();
         Q_FALLTHROUGH();
     case QMetaType::Float:
-    case QVariant::Double:
+    case QMetaType::Double:
         return variant.toDouble();
-    case QVariant::String:
+    case QMetaType::QString:
         return variant.toString();
-    case QVariant::StringList:
+    case QMetaType::QStringList:
         return QCborArray::fromStringList(variant.toStringList());
-    case QVariant::ByteArray:
+    case QMetaType::QByteArray:
         return variant.toByteArray();
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return QCborValue(variant.toDateTime());
 #ifndef QT_BOOTSTRAPPED
-    case QVariant::Url:
+    case QMetaType::QUrl:
         return QCborValue(variant.toUrl());
 #endif
-    case QVariant::Uuid:
+    case QMetaType::QUuid:
         return QCborValue(variant.toUuid());
-    case QVariant::List:
+    case QMetaType::QVariantList:
         return QCborArray::fromVariantList(variant.toList());
-    case QVariant::Map:
+    case QMetaType::QVariantMap:
         return QCborMap::fromVariantMap(variant.toMap());
-    case QVariant::Hash:
+    case QMetaType::QVariantHash:
         return QCborMap::fromVariantHash(variant.toHash());
 #ifndef QT_BOOTSTRAPPED
 #if QT_CONFIG(regularexpression)
-    case QVariant::RegularExpression:
+    case QMetaType::QRegularExpression:
         return QCborValue(variant.toRegularExpression());
 #endif
     case QMetaType::QJsonValue:

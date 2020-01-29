@@ -1351,8 +1351,8 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
 
     quint32 actualSwapChainBufferCount = 0;
     err = vkGetSwapchainImagesKHR(dev, swapChainD->sc, &actualSwapChainBufferCount, nullptr);
-    if (err != VK_SUCCESS || actualSwapChainBufferCount < 2) {
-        qWarning("Failed to get swapchain images: %d (count=%u)", err, actualSwapChainBufferCount);
+    if (err != VK_SUCCESS || actualSwapChainBufferCount == 0) {
+        qWarning("Failed to get swapchain images: %d", err);
         return false;
     }
 
@@ -1528,7 +1528,8 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
 QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
 {
     QVkSwapChain *swapChainD = QRHI_RES(QVkSwapChain, swapChain);
-    QVkSwapChain::FrameResources &frame(swapChainD->frameRes[swapChainD->currentFrameSlot]);
+    const int frameResIndex = swapChainD->bufferCount > 1 ? swapChainD->currentFrameSlot : 0;
+    QVkSwapChain::FrameResources &frame(swapChainD->frameRes[frameResIndex]);
     QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     if (!frame.imageAcquired) {
@@ -1571,7 +1572,7 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     // will make B wait for A's frame 0 commands, so if a resource is written
     // in B's frame or when B checks for pending resource releases, that won't
     // mess up A's in-flight commands (as they are not in flight anymore).
-    waitCommandCompletion(int(swapChainD->currentFrameSlot));
+    waitCommandCompletion(frameResIndex);
 
     // Now is the time to read the timestamps for the previous frame for this slot.
     if (frame.timestampQueryIndex >= 0) {
@@ -1606,7 +1607,7 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
 
     // when profiling is enabled, pick a free query (pair) from the pool
     int timestampQueryIdx = -1;
-    if (profilerPrivateOrNull()) {
+    if (profilerPrivateOrNull() && swapChainD->bufferCount > 1) { // no timestamps if not having at least 2 frames in flight
         for (int i = 0; i < timestampQueryPoolMap.count(); ++i) {
             if (!timestampQueryPoolMap.testBit(i)) {
                 timestampQueryPoolMap.setBit(i);
@@ -1648,7 +1649,8 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
 
     recordPrimaryCommandBuffer(&swapChainD->cbWrapper);
 
-    QVkSwapChain::FrameResources &frame(swapChainD->frameRes[swapChainD->currentFrameSlot]);
+    int frameResIndex = swapChainD->bufferCount > 1 ? swapChainD->currentFrameSlot : 0;
+    QVkSwapChain::FrameResources &frame(swapChainD->frameRes[frameResIndex]);
     QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
 
     if (image.lastUse != QVkSwapChain::ImageResources::ScImageUseRender) {
@@ -1860,7 +1862,8 @@ QRhi::FrameOpResult QRhiVulkan::endAndSubmitPrimaryCommandBuffer(VkCommandBuffer
 void QRhiVulkan::waitCommandCompletion(int frameSlot)
 {
     for (QVkSwapChain *sc : qAsConst(swapchains)) {
-        QVkSwapChain::FrameResources &frame(sc->frameRes[frameSlot]);
+        const int frameResIndex = sc->bufferCount > 1 ? frameSlot : 0;
+        QVkSwapChain::FrameResources &frame(sc->frameRes[frameResIndex]);
         if (frame.cmdFenceWaitable) {
             df->vkWaitForFences(dev, 1, &frame.cmdFence, VK_TRUE, UINT64_MAX);
             df->vkResetFences(dev, 1, &frame.cmdFence);

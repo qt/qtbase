@@ -97,8 +97,19 @@ public:
     Qt::CursorShape shape() const;
     void setShape(Qt::CursorShape newShape);
 
-    const QBitmap *bitmap() const;
-    const QBitmap *mask() const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QBitmap by-value")
+    const QBitmap *bitmap() const; // ### Qt 7: Remove function
+
+    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QBitmap by-value")
+    const QBitmap *mask() const; // ### Qt 7: Remove function
+
+    QBitmap bitmap(Qt::ReturnByValue_t) const;
+    QBitmap mask(Qt::ReturnByValue_t) const;
+#else
+    QBitmap bitmap(Qt::ReturnByValue_t = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+    QBitmap mask(Qt::ReturnByValue_t = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+#endif // QT_DEPRECATED_SINCE(5, 15)
     QPixmap pixmap() const;
     QPoint hotSpot() const;
 

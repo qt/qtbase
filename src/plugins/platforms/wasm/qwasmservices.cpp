@@ -28,6 +28,8 @@
 ****************************************************************************/
 
 #include "qwasmservices.h"
+#include "qwasmstring.h"
+
 #include <QtCore/QUrl>
 #include <QtCore/QDebug>
 
@@ -37,8 +39,8 @@ QT_BEGIN_NAMESPACE
 
 bool QWasmServices::openUrl(const QUrl &url)
 {
-    QByteArray utf8Url = url.toString().toUtf8();
-    emscripten::val::global("window").call<void>("open", emscripten::val(utf8Url.constData()), emscripten::val("_blank"));
+    emscripten::val jsUrl = QWasmString::fromQString(url.toString());
+    emscripten::val::global("window").call<void>("open", jsUrl, emscripten::val("_blank"));
     return true;
 }
 

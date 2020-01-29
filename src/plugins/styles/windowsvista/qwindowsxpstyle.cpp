@@ -225,9 +225,11 @@ static HRGN qt_hrgn_from_qregion(const QRegion &region)
 */
 bool QWindowsXPStylePrivate::useXP(bool update)
 {
-    if (!update)
-        return use_xp;
-    return use_xp = IsThemeActive() && (IsAppThemed() || !QCoreApplication::instance());
+    if (update) {
+        use_xp = IsThemeActive() && (IsAppThemed() || !QCoreApplication::instance())
+                 && !QWindowsStylePrivate::isDarkMode();
+    }
+    return use_xp;
 }
 
 /* \internal
@@ -1023,7 +1025,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
             imgCopy = cachedPixmap.toImage();
 
         if (themeData.rotate) {
-            QMatrix rotMatrix;
+            QTransform rotMatrix;
             rotMatrix.rotate(themeData.rotate);
             imgCopy = imgCopy.transformed(rotMatrix);
         }

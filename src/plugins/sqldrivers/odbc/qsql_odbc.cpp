@@ -1422,7 +1422,7 @@ bool QODBCResult::exec()
         SQLLEN *ind = &indicators[i];
         if (val.isNull())
             *ind = SQL_NULL_DATA;
-        switch (val.type()) {
+        switch (val.userType()) {
             case QVariant::Date: {
                 QByteArray &ba = tmpStorage[i];
                 ba.resize(sizeof(DATE_STRUCT));
@@ -1694,7 +1694,7 @@ bool QODBCResult::exec()
         return true;
 
     for (i = 0; i < values.count(); ++i) {
-        switch (values.at(i).type()) {
+        switch (values.at(i).userType()) {
             case QVariant::Date: {
                 DATE_STRUCT ds = *((DATE_STRUCT *)const_cast<char *>(tmpStorage.at(i).constData()));
                 values[i] = QVariant(QDate(ds.year, ds.month, ds.day));
@@ -1735,7 +1735,7 @@ bool QODBCResult::exec()
                 break; }
         }
         if (indicators[i] == SQL_NULL_DATA)
-            values[i] = QVariant(values[i].type());
+            values[i] = QVariant(QVariant::Type(values[i].userType()));
     }
     return true;
 }

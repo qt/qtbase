@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -41,6 +41,7 @@
 #include "qbitmap.h"
 #include "qbrush.h"
 #include "qcolor.h"
+#include "qcolorspace.h"
 #include "qcursor.h"
 #include "qfont.h"
 #include "qimage.h"
@@ -48,7 +49,6 @@
 #  include "qkeysequence.h"
 #endif
 #include "qtransform.h"
-#include "qmatrix.h"
 #include "qpalette.h"
 #include "qpen.h"
 #include "qpixmap.h"
@@ -180,25 +180,25 @@ static bool convert(const QVariant::Private *d, int t,
                  void *result, bool *ok)
 {
     switch (t) {
-    case QVariant::ByteArray:
-        if (d->type == QVariant::Color) {
+    case QMetaType::QByteArray:
+        if (d->type == QMetaType::QColor) {
             const QColor *c = v_cast<QColor>(d);
             *static_cast<QByteArray *>(result) = c->name(c->alpha() != 255 ? QColor::HexArgb : QColor::HexRgb).toLatin1();
             return true;
         }
         break;
-    case QVariant::String: {
+    case QMetaType::QString: {
         QString *str = static_cast<QString *>(result);
         switch (d->type) {
 #if QT_CONFIG(shortcut)
-        case QVariant::KeySequence:
+        case QMetaType::QKeySequence:
             *str = (*v_cast<QKeySequence>(d)).toString(QKeySequence::NativeText);
             return true;
 #endif
-        case QVariant::Font:
+        case QMetaType::QFont:
             *str = v_cast<QFont>(d)->toString();
             return true;
-        case QVariant::Color: {
+        case QMetaType::QColor: {
             const QColor *c = v_cast<QColor>(d);
             *str = c->name(c->alpha() != 255 ? QColor::HexArgb : QColor::HexRgb);
             return true;
@@ -208,85 +208,85 @@ static bool convert(const QVariant::Private *d, int t,
         }
         break;
     }
-    case QVariant::Pixmap:
-        if (d->type == QVariant::Image) {
+    case QMetaType::QPixmap:
+        if (d->type == QMetaType::QImage) {
             *static_cast<QPixmap *>(result) = QPixmap::fromImage(*v_cast<QImage>(d));
             return true;
-        } else if (d->type == QVariant::Bitmap) {
+        } else if (d->type == QMetaType::QBitmap) {
             *static_cast<QPixmap *>(result) = *v_cast<QBitmap>(d);
             return true;
-        } else if (d->type == QVariant::Brush) {
+        } else if (d->type == QMetaType::QBrush) {
             if (v_cast<QBrush>(d)->style() == Qt::TexturePattern) {
                 *static_cast<QPixmap *>(result) = v_cast<QBrush>(d)->texture();
                 return true;
             }
         }
         break;
-    case QVariant::Image:
-        if (d->type == QVariant::Pixmap) {
+    case QMetaType::QImage:
+        if (d->type == QMetaType::QPixmap) {
             *static_cast<QImage *>(result) = v_cast<QPixmap>(d)->toImage();
             return true;
-        } else if (d->type == QVariant::Bitmap) {
+        } else if (d->type == QMetaType::QBitmap) {
             *static_cast<QImage *>(result) = v_cast<QBitmap>(d)->toImage();
             return true;
         }
         break;
-    case QVariant::Bitmap:
-        if (d->type == QVariant::Pixmap) {
+    case QMetaType::QBitmap:
+        if (d->type == QMetaType::QPixmap) {
             *static_cast<QBitmap *>(result) = *v_cast<QPixmap>(d);
             return true;
-        } else if (d->type == QVariant::Image) {
+        } else if (d->type == QMetaType::QImage) {
             *static_cast<QBitmap *>(result) = QBitmap::fromImage(*v_cast<QImage>(d));
             return true;
         }
         break;
 #if QT_CONFIG(shortcut)
-    case QVariant::Int:
-        if (d->type == QVariant::KeySequence) {
+    case QMetaType::Int:
+        if (d->type == QMetaType::QKeySequence) {
             const QKeySequence &seq = *v_cast<QKeySequence>(d);
             *static_cast<int *>(result) = seq.isEmpty() ? 0 : seq[0];
             return true;
         }
         break;
 #endif
-    case QVariant::Font:
-        if (d->type == QVariant::String) {
+    case QMetaType::QFont:
+        if (d->type == QMetaType::QString) {
             QFont *f = static_cast<QFont *>(result);
             f->fromString(*v_cast<QString>(d));
             return true;
         }
         break;
-    case QVariant::Color:
-        if (d->type == QVariant::String) {
+    case QMetaType::QColor:
+        if (d->type == QMetaType::QString) {
             static_cast<QColor *>(result)->setNamedColor(*v_cast<QString>(d));
             return static_cast<QColor *>(result)->isValid();
-        } else if (d->type == QVariant::ByteArray) {
+        } else if (d->type == QMetaType::QByteArray) {
             static_cast<QColor *>(result)->setNamedColor(QLatin1String(*v_cast<QByteArray>(d)));
             return true;
-        } else if (d->type == QVariant::Brush) {
+        } else if (d->type == QMetaType::QBrush) {
             if (v_cast<QBrush>(d)->style() == Qt::SolidPattern) {
                 *static_cast<QColor *>(result) = v_cast<QBrush>(d)->color();
                 return true;
             }
         }
         break;
-    case QVariant::Brush:
-        if (d->type == QVariant::Color) {
+    case QMetaType::QBrush:
+        if (d->type == QMetaType::QColor) {
             *static_cast<QBrush *>(result) = QBrush(*v_cast<QColor>(d));
             return true;
-        } else if (d->type == QVariant::Pixmap) {
+        } else if (d->type == QMetaType::QPixmap) {
             *static_cast<QBrush *>(result) = QBrush(*v_cast<QPixmap>(d));
             return true;
         }
         break;
 #if QT_CONFIG(shortcut)
-    case QVariant::KeySequence: {
+    case QMetaType::QKeySequence: {
         QKeySequence *seq = static_cast<QKeySequence *>(result);
         switch (d->type) {
-        case QVariant::String:
+        case QMetaType::QString:
             *seq = QKeySequence(*v_cast<QString>(d));
             return true;
-        case QVariant::Int:
+        case QMetaType::Int:
             *seq = QKeySequence(d->data.i);
             return true;
         default:
@@ -296,7 +296,7 @@ static bool convert(const QVariant::Private *d, int t,
     }
 #endif
 #ifndef QT_NO_ICON
-    case QVariant::Icon: {
+    case QMetaType::QIcon: {
         if (ok)
             *ok = false;
         return false;

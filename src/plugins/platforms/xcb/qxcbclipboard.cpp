@@ -123,8 +123,9 @@ protected:
         return list.contains(format);
     }
 
-    QVariant retrieveData_sys(const QString &fmt, QVariant::Type requestedType) const override
+    QVariant retrieveData_sys(const QString &fmt, QVariant::Type type) const override
     {
+        auto requestedType = QMetaType::Type(type);
         if (fmt.isEmpty() || isEmpty())
             return QByteArray();
 

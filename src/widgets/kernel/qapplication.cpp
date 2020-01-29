@@ -1224,6 +1224,7 @@ void QApplication::setColorSpec(int spec)
     \property QApplication::globalStrut
     \brief the minimum size that any GUI element that the user can interact
            with should have
+    \deprecated
 
     For example, no button should be resized to be smaller than the global
     strut size. The strut size should be considered when reimplementing GUI
@@ -2123,7 +2124,8 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
             && !(!next && focusProxy && test->isAncestorOf(focusProxy))
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
-            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
+            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))
+            && f != focusProxy) {
             w = test;
             if (seenWindow)
                 focusWidgetAfterWindow = true;
@@ -3761,7 +3763,9 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         if (QWidget *fw = aw->focusWidget())
             fw->setFocus(Qt::PopupFocusReason);
 
-        if (QApplicationPrivate::popupWidgets->count() == 1) // grab mouse/keyboard
+        // can become nullptr due to setFocus() above
+        if (QApplicationPrivate::popupWidgets &&
+            QApplicationPrivate::popupWidgets->count() == 1) // grab mouse/keyboard
             grabForPopup(aw);
     }
 

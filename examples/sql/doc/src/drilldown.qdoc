@@ -425,7 +425,7 @@
 
     The \c findWindow() function simply searches through the list of
     existing windows, returning a pointer to the window that matches
-    the given item ID, or 0 if the window doesn't exists.
+    the given item ID, or \nullptr if the window doesn't exists.
 
     Finally, let's take a quick look at our custom \c ImageItem class:
 

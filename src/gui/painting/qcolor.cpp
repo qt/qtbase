@@ -2940,7 +2940,7 @@ bool QColor::operator!=(const QColor &color) const noexcept
 */
 QColor::operator QVariant() const
 {
-    return QVariant(QVariant::Color, this);
+    return QVariant(QMetaType::QColor, this);
 }
 
 /*! \internal

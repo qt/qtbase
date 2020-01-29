@@ -782,7 +782,7 @@ QIcon &QIcon::operator=(const QIcon &other)
 */
 QIcon::operator QVariant() const
 {
-    return QVariant(QVariant::Icon, this);
+    return QVariant(QMetaType::QIcon, this);
 }
 
 /*! \fn int QIcon::serialNumber() const

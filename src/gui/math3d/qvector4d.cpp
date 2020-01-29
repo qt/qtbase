@@ -608,7 +608,7 @@ QVector3D QVector4D::toVector3DAffine() const
 */
 QVector4D::operator QVariant() const
 {
-    return QVariant(QVariant::Vector4D, this);
+    return QVariant(QMetaType::QVector4D, this);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

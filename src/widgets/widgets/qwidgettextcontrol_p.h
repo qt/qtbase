@@ -252,7 +252,7 @@ public:
     QPalette palette() const;
     void setPalette(const QPalette &pal);
 
-    virtual void processEvent(QEvent *e, const QMatrix &matrix, QWidget *contextWidget = nullptr);
+    virtual void processEvent(QEvent *e, const QTransform &transform, QWidget *contextWidget = nullptr);
     void processEvent(QEvent *e, const QPointF &coordinateOffset = QPointF(), QWidget *contextWidget = nullptr);
 
     // control methods

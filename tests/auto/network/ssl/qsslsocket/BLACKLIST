@@ -3,9 +3,9 @@ windows
 [spontaneousWrite]
 windows-7sp1
 [connectToHostEncrypted]
-osx-10.13
+macos
 [setSslConfiguration]
 windows-10 msvc-2015
 windows-7sp1
 [connectToHostEncryptedWithVerificationPeerName]
-osx-10.13
+macos

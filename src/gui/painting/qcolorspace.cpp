@@ -744,6 +744,15 @@ QColorTransform QColorSpace::transformationToColorSpace(const QColorSpace &color
     return d_ptr->transformationToColorSpace(colorspace.d_ptr);
 }
 
+/*!
+    Returns the color space as a QVariant.
+    \since 5.15
+*/
+QColorSpace::operator QVariant() const
+{
+    return QVariant(QMetaType::QColorSpace, this);
+}
+
 /*****************************************************************************
   QColorSpace stream functions
  *****************************************************************************/

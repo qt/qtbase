@@ -372,20 +372,8 @@ int QOpenGLContextPrivate::maxTextureSize()
         GLint next = 64;
         funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
-        QOpenGLFunctions_1_0 *gl1funcs = nullptr;
-        QOpenGLFunctions_3_2_Core *gl3funcs = nullptr;
-
-        if (q->format().profile() == QSurfaceFormat::CoreProfile)
-            gl3funcs = q->versionFunctions<QOpenGLFunctions_3_2_Core>();
-        else
-            gl1funcs = q->versionFunctions<QOpenGLFunctions_1_0>();
-
-        Q_ASSERT(gl1funcs || gl3funcs);
-
-        if (gl1funcs)
-            gl1funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
-        else
-            gl3funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+        QOpenGLExtraFunctions *extraFuncs = q->extraFunctions();
+        extraFuncs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
 
         if (size == 0) {
             return max_texture_size;
@@ -397,11 +385,7 @@ int QOpenGLContextPrivate::maxTextureSize()
             if (next > max_texture_size)
                 break;
             funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-            if (gl1funcs)
-                gl1funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
-            else
-                gl3funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
-
+            extraFuncs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
         } while (next > size);
 
         max_texture_size = size;
@@ -942,7 +926,7 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
     The latter may happen if the surface is not exposed, or the graphics
     hardware is not available due to e.g. the application being suspended.
 
-    If \a surface is 0 this is equivalent to calling doneCurrent().
+    If \a surface is \nullptr this is equivalent to calling doneCurrent().
 
     Avoid calling this function from a different thread than the one the
     QOpenGLContext instance lives in. If you wish to use QOpenGLContext from a

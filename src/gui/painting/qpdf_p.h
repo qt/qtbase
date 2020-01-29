@@ -55,7 +55,6 @@
 
 #ifndef QT_NO_PDF
 
-#include "QtGui/qmatrix.h"
 #include "QtCore/qstring.h"
 #include "QtCore/qvector.h"
 #include "private/qstroker_p.h"

@@ -434,14 +434,14 @@ public:
 
     QImage::Format prepare(QImage *image);
 
-    uchar *scanLine(int y) { Q_ASSERT(y>=0); Q_ASSERT(y<m_height); return m_buffer + y * qsizetype(bytes_per_line); }
+    uchar *scanLine(int y) { Q_ASSERT(y>=0); Q_ASSERT(y<m_height); return m_buffer + y * bytes_per_line; }
 
     int width() const { return m_width; }
     int height() const { return m_height; }
-    int bytesPerLine() const { return bytes_per_line; }
+    qsizetype bytesPerLine() const { return bytes_per_line; }
     int bytesPerPixel() const { return bytes_per_pixel; }
     template<typename T>
-    int stride() { return bytes_per_line / sizeof(T); }
+    int stride() { return static_cast<int>(bytes_per_line / sizeof(T)); }
 
     uchar *buffer() const { return m_buffer; }
 
@@ -456,7 +456,7 @@ public:
 private:
     int m_width;
     int m_height;
-    int bytes_per_line;
+    qsizetype bytes_per_line;
     int bytes_per_pixel;
     uchar *m_buffer;
 };

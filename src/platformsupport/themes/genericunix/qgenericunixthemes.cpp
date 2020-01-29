@@ -517,7 +517,7 @@ QFont *QKdeThemePrivate::kdeFont(const QVariant &fontValue)
         // causing recursion.
         QString fontDescription;
         QString fontFamily;
-        if (fontValue.type() == QVariant::StringList) {
+        if (fontValue.userType() == QMetaType::QStringList) {
             const QStringList list = fontValue.toStringList();
             if (!list.isEmpty()) {
                 fontFamily = list.first();

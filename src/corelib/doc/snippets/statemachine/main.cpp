@@ -48,13 +48,14 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 int main(int argv, char **args)
 {
     QApplication app(argv, args);
 
     QLabel *label = new QLabel;
+    QPushButton *button = new QPushButton;
 
 //![0]
     QStateMachine machine;
@@ -70,14 +71,14 @@ int main(int argv, char **args)
 //![4]
 
 //![5]
-    QObject::connect(s3, SIGNAL(entered()), button, SLOT(showMaximized()));
-    QObject::connect(s3, SIGNAL(exited()), button, SLOT(showMinimized()));
+    QObject::connect(s3, &QState::entered, button, &QPushButton:showMaximized);
+    QObject::connect(s3, &QState::exited, button, &QPushButton::showMinimized);
 //![5]
 
 //![1]
-    s1->addTransition(button, SIGNAL(clicked()), s2);
-    s2->addTransition(button, SIGNAL(clicked()), s3);
-    s3->addTransition(button, SIGNAL(clicked()), s1);
+    s1->addTransition(button, &QPushButton::clicked, s2);
+    s2->addTransition(button, &QPushButton::clicked, s3);
+    s3->addTransition(button, &QPushButton::clicked, s1);
 //![1]
 
 //![2]

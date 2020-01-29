@@ -56,6 +56,8 @@
 
 #include <QtGui/qguiapplication.h>
 
+#include <QtCore/private/qduplicatetracker_p.h>
+
 #include <fontconfig/fontconfig.h>
 #if FC_VERSION >= 20402
 #include <fontconfig/fcfreetype.h>
@@ -778,9 +780,9 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString &family, QFont
     FcPatternDestroy(pattern);
 
     if (fontSet) {
-        QSet<QString> duplicates;
+        QDuplicateTracker<QString> duplicates;
         duplicates.reserve(fontSet->nfont + 1);
-        duplicates.insert(family.toCaseFolded());
+        (void)duplicates.hasSeen(family.toCaseFolded());
         for (int i = 0; i < fontSet->nfont; i++) {
             FcChar8 *value = nullptr;
             if (FcPatternGetString(fontSet->fonts[i], FC_FAMILY, 0, &value) != FcResultMatch)
@@ -788,9 +790,8 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString &family, QFont
             //         capitalize(value);
             const QString familyName = QString::fromUtf8((const char *)value);
             const QString familyNameCF = familyName.toCaseFolded();
-            if (!duplicates.contains(familyNameCF)) {
+            if (!duplicates.hasSeen(familyNameCF)) {
                 fallbackFamilies << familyName;
-                duplicates.insert(familyNameCF);
             }
         }
         FcFontSetDestroy(fontSet);

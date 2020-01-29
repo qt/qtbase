@@ -31,7 +31,7 @@
 #include "qwasmwindow.h"
 #include "qwasmstylepixmaps_p.h"
 
-#include <QtGui/qopengltexture.h>
+#include <QtOpenGL/qopengltexture.h>
 
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/qopenglcontext.h>

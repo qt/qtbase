@@ -699,7 +699,7 @@ QList<QAbstractButton *> QDialogButtonBox::buttons() const
 
 /*!
     Returns the button role for the specified \a button. This function returns
-    \l InvalidRole if \a button is 0 or has not been added to the button box.
+    \l InvalidRole if \a button is \nullptr or has not been added to the button box.
 
     \sa buttons(), addButton()
 */

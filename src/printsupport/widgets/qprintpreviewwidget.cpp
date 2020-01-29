@@ -264,7 +264,7 @@ void QPrintPreviewWidgetPrivate::_q_fit(bool doFitting)
     } else {
         graphicsView->fitInView(target, Qt::KeepAspectRatio);
         if (zoomMode == QPrintPreviewWidget::FitInView) {
-            int step = qRound(graphicsView->matrix().mapRect(target).height());
+            const int step = qRound(graphicsView->transform().mapRect(target).height());
             graphicsView->verticalScrollBar()->setSingleStep(step);
             graphicsView->verticalScrollBar()->setPageStep(step);
         }

@@ -311,8 +311,10 @@ QTransform::QTransform(qreal h11, qreal h12, qreal h21,
 {
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \fn QTransform::QTransform(const QMatrix &matrix)
+    \obsolete
 
     Constructs a matrix that is a copy of the given \a matrix.
     Note that the \c m13, \c m23, and \c m33 elements are set to 0, 0,
@@ -328,6 +330,7 @@ QTransform::QTransform(const QMatrix &mtx)
 #endif
 {
 }
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Returns the adjoint of this matrix.
@@ -2082,7 +2085,9 @@ void QTransform::map(int x, int y, int *tx, int *ty) const
     *ty = qRound(fy);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
+  \obsolete
   Returns the QTransform as an affine matrix.
 
   \warning If a perspective transformation has been specified,
@@ -2092,6 +2097,7 @@ const QMatrix &QTransform::toAffine() const
 {
     return affine;
 }
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
   Returns the transformation type of this matrix.
@@ -2155,7 +2161,7 @@ QTransform::TransformationType QTransform::type() const
 */
 QTransform::operator QVariant() const
 {
-    return QVariant(QVariant::Transform, this);
+    return QVariant(QMetaType::QTransform, this);
 }
 
 

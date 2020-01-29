@@ -350,7 +350,7 @@ QTextLayout::QTextLayout(const QString& text)
     \a font.
 
     All the metric and layout calculations will be done in terms of
-    the paint device, \a paintdevice. If \a paintdevice is 0 the
+    the paint device, \a paintdevice. If \a paintdevice is \nullptr the
     calculations will be done in screen metrics.
 */
 

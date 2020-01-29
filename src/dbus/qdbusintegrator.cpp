@@ -1822,7 +1822,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     hook.service = QDBusUtil::dbusService();
     hook.path.clear(); // no matching
     hook.obj = this;
-    hook.params << QMetaType::Void << QVariant::String; // both functions take a QString as parameter and return void
+    hook.params << QMetaType::Void << QMetaType::QString; // both functions take a QString as parameter and return void
 
     hook.midx = staticMetaObject.indexOfSlot("registerServiceNoLock(QString)");
     Q_ASSERT(hook.midx != -1);
@@ -1836,7 +1836,7 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     // we don't use connectSignal here because the rules are added by connectSignal on a per-need basis
     hook.params.clear();
     hook.params.reserve(4);
-    hook.params << QMetaType::Void << QVariant::String << QVariant::String << QVariant::String;
+    hook.params << QMetaType::Void << QMetaType::QString << QMetaType::QString << QMetaType::QString;
     hook.midx = staticMetaObject.indexOfSlot("serviceOwnerChangedNoLock(QString,QString,QString)");
     Q_ASSERT(hook.midx != -1);
     signalHooks.insert(QLatin1String("NameOwnerChanged:" DBUS_INTERFACE_DBUS), hook);

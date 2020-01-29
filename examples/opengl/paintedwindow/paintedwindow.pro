@@ -1,3 +1,5 @@
+QT += opengl
+
 HEADERS += paintedwindow.h
 SOURCES += paintedwindow.cpp main.cpp
 

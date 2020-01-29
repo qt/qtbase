@@ -1851,7 +1851,6 @@ QString MakefileGenerator::resolveDependency(const QDir &outDir, const QString &
 }
 
 void MakefileGenerator::callExtraCompilerDependCommand(const ProString &extraCompiler,
-                                                       const QString &dep_cd_cmd,
                                                        const QString &tmp_dep_cmd,
                                                        const QString &inpf,
                                                        const QString &tmp_out,
@@ -1864,7 +1863,10 @@ void MakefileGenerator::callExtraCompilerDependCommand(const ProString &extraCom
     QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, tmp_out, LocalShell);
     if (checkCommandAvailability && !canExecute(dep_cmd))
         return;
-    dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
+    dep_cmd = QLatin1String("cd ")
+            + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
+            + QLatin1String(" && ")
+            + fixEnvVariables(dep_cmd);
     if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
         QByteArray depData;
         while (int read_in = feof(proc) ? 0 : (int)fread(buff, 1, 255, proc))
@@ -1916,12 +1918,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                                      FileFixifyFromOutdir);
         const QString tmp_cmd = project->values(ProKey(*it + ".commands")).join(' ');
         const QString tmp_dep_cmd = project->values(ProKey(*it + ".depend_command")).join(' ');
-        QString dep_cd_cmd;
-        if (!tmp_dep_cmd.isEmpty()) {
-            dep_cd_cmd = QLatin1String("cd ")
-                 + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
-                 + QLatin1String(" && ");
-        }
         const bool dep_lines = (config.indexOf("dep_lines") != -1);
         const ProStringList &vars = project->values(ProKey(*it + ".variables"));
         if(tmp_out.isEmpty() || tmp_cmd.isEmpty())
@@ -2035,7 +2031,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 deps += findDependencies(inpf);
                 inputs += Option::fixPathToTargetOS(inpf, false);
                 if(!tmp_dep_cmd.isEmpty() && doDepends()) {
-                    callExtraCompilerDependCommand(*it, dep_cd_cmd, tmp_dep_cmd, inpf,
+                    callExtraCompilerDependCommand(*it, tmp_dep_cmd, inpf,
                                                    tmp_out, dep_lines, &deps, existingDepsOnly);
                 }
             }
@@ -2084,7 +2080,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             for (ProStringList::ConstIterator it3 = vars.constBegin(); it3 != vars.constEnd(); ++it3)
                 cmd.replace("$(" + (*it3) + ")", "$(QMAKE_COMP_" + (*it3)+")");
             if(!tmp_dep_cmd.isEmpty() && doDepends()) {
-                callExtraCompilerDependCommand(*it, dep_cd_cmd, tmp_dep_cmd, inpf,
+                callExtraCompilerDependCommand(*it, tmp_dep_cmd, inpf,
                                                tmp_out, dep_lines, &deps, existingDepsOnly);
                 //use the depend system to find includes of these included files
                 QStringList inc_deps;

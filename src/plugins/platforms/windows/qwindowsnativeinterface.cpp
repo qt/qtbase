@@ -47,6 +47,7 @@
 #include "qwindowsopengltester.h"
 #include "qwindowsintegration.h"
 #include "qwindowsmime.h"
+#include "qwindowstheme.h"
 #include "qwin10helpers.h"
 
 #include <QtGui/qwindow.h>
@@ -314,6 +315,17 @@ QVariant QWindowsNativeInterface::gpuList() const
     for (const auto &gpu : gpus)
         result.append(gpu.toVariant());
     return result;
+}
+
+bool QWindowsNativeInterface::isDarkMode() const
+{
+    return QWindowsContext::isDarkMode();
+}
+
+// Dark mode support level 2 (style)
+bool QWindowsNativeInterface::isDarkModeStyle() const
+{
+    return (QWindowsIntegration::instance()->options() & QWindowsIntegration::DarkModeStyle) != 0;
 }
 
 QT_END_NAMESPACE

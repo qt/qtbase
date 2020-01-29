@@ -26,15 +26,14 @@
 **
 ****************************************************************************/
 
-
+#include <QtOpenGL/QOpenGLPaintDevice>
+#include <QtOpenGL/QOpenGLTexture>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLFunctions_4_2_Core>
 #include <QtGui/QOpenGLVertexArrayObject>
 #include <QtGui/QOpenGLBuffer>
-#include <QtGui/QOpenGLPaintDevice>
-#include <QtGui/QOpenGLTexture>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>

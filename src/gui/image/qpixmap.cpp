@@ -402,7 +402,7 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
 */
 QPixmap::operator QVariant() const
 {
-    return QVariant(QVariant::Pixmap, this);
+    return QVariant(QMetaType::QPixmap, this);
 }
 
 /*!
@@ -438,7 +438,7 @@ QImage QPixmap::toImage() const
 }
 
 /*!
-    \fn QMatrix QPixmap::trueMatrix(const QTransform &matrix, int width, int height)
+    \fn QTransform QPixmap::trueMatrix(const QTransform &matrix, int width, int height)
 
     Returns the actual matrix used for transforming a pixmap with the
     given \a width, \a height and \a matrix.
@@ -458,8 +458,12 @@ QTransform QPixmap::trueMatrix(const QTransform &m, int w, int h)
     return QImage::trueMatrix(m, w, h);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
   \overload
+  \obsolete
+
+  Use trueMatrix(const QTransform &m, int w, int h) instead.
 
   This convenience function loads the matrix \a m into a
   QTransform and calls the overloaded function with the
@@ -469,6 +473,7 @@ QMatrix QPixmap::trueMatrix(const QMatrix &m, int w, int h)
 {
     return trueMatrix(QTransform(m), w, h).toAffine();
 }
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 
 /*!
@@ -813,8 +818,8 @@ bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::I
     0 to obtain small compressed files, 100 for large uncompressed
     files, and -1 to use the default settings.
 
-    If \a format is 0, an image format will be chosen from \a fileName's
-    suffix.
+    If \a format is \nullptr, an image format will be chosen from
+    \a fileName's suffix.
 
     \sa {QPixmap#Reading and Writing Image Files}{Reading and Writing
     Image Files}
@@ -1233,8 +1238,12 @@ QPixmap QPixmap::transformed(const QTransform &transform,
     return data->transformed(transform, mode);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
   \overload
+  \obsolete
+
+  Use transformed(const QTransform &transform, Qt::TransformationMode mode)() instead.
 
   This convenience function loads the \a matrix into a
   QTransform and calls the overloaded function.
@@ -1243,6 +1252,7 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 {
     return transformed(QTransform(matrix), mode);
 }
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 
 

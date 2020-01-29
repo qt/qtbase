@@ -70,7 +70,9 @@ public:
         NoNativeMenus = 0x200,
         DontUseWMPointer = 0x400,
         DetectAltGrModifier = 0x800,
-        RtlEnabled = 0x1000
+        RtlEnabled = 0x1000,
+        DarkModeWindowFrames = 0x2000,
+        DarkModeStyle = 0x4000
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

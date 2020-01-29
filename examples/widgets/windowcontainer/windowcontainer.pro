@@ -6,4 +6,4 @@ QT += widgets
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/windowcontainer
 INSTALLS += target
 
-include(../../gui/openglwindow/openglwindow.pri)
+include(../../opengl/openglwindow/openglwindow.pri)

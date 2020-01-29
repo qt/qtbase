@@ -2,15 +2,12 @@
 ubuntu-16.04
 rhel-7.6
 opensuse-leap
-osx-10.11
-osx-10.13
+macos
 ubuntu-18.04
-osx-10.14
+macos
 rhel-7.4
-osx-10.12
+macos
 opensuse-42.3
 [resizeTimer]
-osx-10.12
-osx-10.14
-osx-10.13
+macos
 

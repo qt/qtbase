@@ -23,7 +23,8 @@ SOURCES = \
     qwasmtheme.cpp \
     qwasmclipboard.cpp \
     qwasmservices.cpp \
-    qwasmoffscreensurface.cpp
+    qwasmoffscreensurface.cpp \
+    qwasmstring.cpp
 
 HEADERS = \
     qwasmintegration.h \
@@ -39,7 +40,8 @@ HEADERS = \
     qwasmtheme.h \
     qwasmclipboard.h \
     qwasmservices.h \
-    qwasmoffscreensurface.h
+    qwasmoffscreensurface.h \
+    qwasmstring.h
 
 wasmfonts.files = \
     ../../../3rdparty/wasm/Vera.ttf \
@@ -50,6 +52,7 @@ wasmfonts.base = ../../../3rdparty/wasm
 RESOURCES += wasmfonts
 
 qtConfig(opengl) {
+    QT += opengl
     SOURCES += qwasmbackingstore.cpp
     HEADERS += qwasmbackingstore.h
 }

@@ -32,7 +32,7 @@
 #include <qimage.h>
 #include <qimagereader.h>
 #include <qlist.h>
-#include <qmatrix.h>
+#include <qtransform.h>
 #include <qrandom.h>
 #include <stdio.h>
 
@@ -1204,7 +1204,7 @@ void tst_QImage::rotate()
     // original.save("rotated90_original.png", "png");
 
     // Initialize the matrix manually (do not use rotate) to avoid rounding errors
-    QMatrix matRotate90;
+    QTransform matRotate90;
     matRotate90.rotate(degrees);
     QImage dest = original;
     // And rotate it 4 times, then the image should be identical to the original
@@ -1218,7 +1218,7 @@ void tst_QImage::rotate()
     // dest.save("rotated90_result.png","png");
     QCOMPARE(original, dest);
 
-    // Test with QMatrix::rotate 90 also, since we trust that now
+    // Test with QTransform::rotate 90 also, since we trust that now
     matRotate90.rotate(degrees);
     dest = original;
     // And rotate it 4 times, then the image should be identical to the original

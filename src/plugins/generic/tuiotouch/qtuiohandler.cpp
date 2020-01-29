@@ -226,7 +226,7 @@ void QTuioHandler::process2DCurSource(const QOscMessage &message)
         return;
     }
 
-    if (QMetaType::Type(arguments.at(1).type()) != QMetaType::QByteArray) {
+    if (QMetaType::Type(arguments.at(1).userType()) != QMetaType::QByteArray) {
         qCWarning(lcTuioSource, "Ignoring malformed TUIO source message (bad argument type)");
         return;
     }
@@ -248,7 +248,7 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
     QMap<int, QTuioCursor> newActiveCursors;
 
     for (int i = 1; i < arguments.count(); ++i) {
-        if (QMetaType::Type(arguments.at(i).type()) != QMetaType::Int) {
+        if (QMetaType::Type(arguments.at(i).userType()) != QMetaType::Int) {
             qCWarning(lcTuioHandler) << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
             return;
         }
@@ -293,12 +293,12 @@ void QTuioHandler::process2DCurSet(const QOscMessage &message)
         return;
     }
 
-    if (QMetaType::Type(arguments.at(1).type()) != QMetaType::Int   ||
-        QMetaType::Type(arguments.at(2).type()) != QMetaType::Float ||
-        QMetaType::Type(arguments.at(3).type()) != QMetaType::Float ||
-        QMetaType::Type(arguments.at(4).type()) != QMetaType::Float ||
-        QMetaType::Type(arguments.at(5).type()) != QMetaType::Float ||
-        QMetaType::Type(arguments.at(6).type()) != QMetaType::Float
+    if (QMetaType::Type(arguments.at(1).userType()) != QMetaType::Int   ||
+        QMetaType::Type(arguments.at(2).userType()) != QMetaType::Float ||
+        QMetaType::Type(arguments.at(3).userType()) != QMetaType::Float ||
+        QMetaType::Type(arguments.at(4).userType()) != QMetaType::Float ||
+        QMetaType::Type(arguments.at(5).userType()) != QMetaType::Float ||
+        QMetaType::Type(arguments.at(6).userType()) != QMetaType::Float
        ) {
         qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with bad types: " << arguments;
         return;
@@ -391,7 +391,7 @@ void QTuioHandler::process2DObjSource(const QOscMessage &message)
         return;
     }
 
-    if (QMetaType::Type(arguments.at(1).type()) != QMetaType::QByteArray) {
+    if (QMetaType::Type(arguments.at(1).userType()) != QMetaType::QByteArray) {
         qCWarning(lcTuioSource, "Ignoring malformed TUIO source message (bad argument type)");
         return;
     }
@@ -413,7 +413,7 @@ void QTuioHandler::process2DObjAlive(const QOscMessage &message)
     QMap<int, QTuioToken> newActiveTokens;
 
     for (int i = 1; i < arguments.count(); ++i) {
-        if (QMetaType::Type(arguments.at(i).type()) != QMetaType::Int) {
+        if (QMetaType::Type(arguments.at(i).userType()) != QMetaType::Int) {
             qCWarning(lcTuioHandler) << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
             return;
         }
@@ -458,16 +458,16 @@ void QTuioHandler::process2DObjSet(const QOscMessage &message)
         return;
     }
 
-    if (QMetaType::Type(arguments.at(1).type()) != QMetaType::Int ||
-            QMetaType::Type(arguments.at(2).type()) != QMetaType::Int ||
-            QMetaType::Type(arguments.at(3).type()) != QMetaType::Float ||
-            QMetaType::Type(arguments.at(4).type()) != QMetaType::Float ||
-            QMetaType::Type(arguments.at(5).type()) != QMetaType::Float ||
-            QMetaType::Type(arguments.at(6).type()) != QMetaType::Float ||
-            QMetaType::Type(arguments.at(7).type()) != QMetaType::Float ||
-            QMetaType::Type(arguments.at(8).type()) != QMetaType::Float ||
-            QMetaType::Type(arguments.at(9).type()) != QMetaType::Float ||
-            QMetaType::Type(arguments.at(10).type()) != QMetaType::Float) {
+    if (QMetaType::Type(arguments.at(1).userType()) != QMetaType::Int ||
+            QMetaType::Type(arguments.at(2).userType()) != QMetaType::Int ||
+            QMetaType::Type(arguments.at(3).userType()) != QMetaType::Float ||
+            QMetaType::Type(arguments.at(4).userType()) != QMetaType::Float ||
+            QMetaType::Type(arguments.at(5).userType()) != QMetaType::Float ||
+            QMetaType::Type(arguments.at(6).userType()) != QMetaType::Float ||
+            QMetaType::Type(arguments.at(7).userType()) != QMetaType::Float ||
+            QMetaType::Type(arguments.at(8).userType()) != QMetaType::Float ||
+            QMetaType::Type(arguments.at(9).userType()) != QMetaType::Float ||
+            QMetaType::Type(arguments.at(10).userType()) != QMetaType::Float) {
         qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with bad types: " << arguments;
         return;
     }

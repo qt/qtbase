@@ -505,7 +505,7 @@ bool QSQLiteResult::exec()
             if (value.isNull()) {
                 res = sqlite3_bind_null(d->stmt, i + 1);
             } else {
-                switch (value.type()) {
+                switch (value.userType()) {
                 case QVariant::ByteArray: {
                     const QByteArray *ba = static_cast<const QByteArray*>(value.constData());
                     res = sqlite3_bind_blob(d->stmt, i + 1, ba->constData(),
