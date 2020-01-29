@@ -3523,6 +3523,17 @@ def handle_app_or_lib(
         import_version = scope.get_string("IMPORT_VERSION")
         if not import_version:
             import_version = scope.get_string("QML_IMPORT_VERSION")
+        if not import_version:
+            import_major_version = scope.get_string("QML_IMPORT_MAJOR_VERSION")
+            import_minor_version = scope.get_string("QML_IMPORT_MINOR_VERSION")
+
+            if not import_major_version and not import_minor_version:
+                raise RuntimeError(f"No QML_IMPORT_VERSION info found for target {target}.")
+
+            if not import_minor_version:
+                import_minor_version = 0
+            import_version = f"{import_major_version}.{import_minor_version}"
+
         if import_version:
             import_version = import_version.replace(
                 "$$QT_MINOR_VERSION", "${CMAKE_PROJECT_VERSION_MINOR}"
