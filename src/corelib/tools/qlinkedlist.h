@@ -58,14 +58,14 @@
 QT_BEGIN_NAMESPACE
 
 
-struct Q_CORE_EXPORT QLinkedListData
+struct QLinkedListData
 {
     QLinkedListData *n, *p;
     QtPrivate::RefCount ref;
     int size;
     uint sharable : 1;
 
-    static const QLinkedListData shared_null;
+    Q_CORE_EXPORT static const QLinkedListData shared_null;
 };
 
 template <typename T>
