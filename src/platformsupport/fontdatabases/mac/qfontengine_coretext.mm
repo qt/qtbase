@@ -345,7 +345,10 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *
 glyph_metrics_t QCoreTextFontEngine::boundingBox(const QGlyphLayout &glyphs)
 {
     QFixed w;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     bool round = fontDef.styleStrategy & QFont::ForceIntegerMetrics;
+QT_WARNING_POP
 
     for (int i = 0; i < glyphs.numGlyphs; ++i) {
         w += round ? glyphs.effectiveAdvance(i).round()
@@ -371,7 +374,10 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
     ret.xoff = QFixed::fromReal(advances[0].width);
     ret.yoff = QFixed::fromReal(advances[0].height);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+QT_WARNING_POP
         ret.xoff = ret.xoff.round();
         ret.yoff = ret.yoff.round();
     }
@@ -381,9 +387,12 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
 
 QFixed QCoreTextFontEngine::ascent() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
             ? QFixed::fromReal(CTFontGetAscent(ctfont)).round()
             : QFixed::fromReal(CTFontGetAscent(ctfont));
+QT_WARNING_POP
 }
 
 QFixed QCoreTextFontEngine::capHeight() const
@@ -392,7 +401,10 @@ QFixed QCoreTextFontEngine::capHeight() const
     if (c <= 0)
         return calculatedCapHeight();
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+QT_WARNING_POP
         c = c.round();
 
     return c;
@@ -401,28 +413,40 @@ QFixed QCoreTextFontEngine::capHeight() const
 QFixed QCoreTextFontEngine::descent() const
 {
     QFixed d = QFixed::fromReal(CTFontGetDescent(ctfont));
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+QT_WARNING_POP
         d = d.round();
 
     return d;
 }
 QFixed QCoreTextFontEngine::leading() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
             ? QFixed::fromReal(CTFontGetLeading(ctfont)).round()
             : QFixed::fromReal(CTFontGetLeading(ctfont));
+QT_WARNING_POP
 }
 QFixed QCoreTextFontEngine::xHeight() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
             ? QFixed::fromReal(CTFontGetXHeight(ctfont)).round()
             : QFixed::fromReal(CTFontGetXHeight(ctfont));
+QT_WARNING_POP
 }
 
 QFixed QCoreTextFontEngine::averageCharWidth() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
             ? avgCharWidth.round() : avgCharWidth;
+QT_WARNING_POP
 }
 
 qreal QCoreTextFontEngine::maxCharWidth() const
@@ -917,8 +941,11 @@ void QCoreTextFontEngine::loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyp
 
     for (int i = 0; i < numGlyphs; ++i) {
         QFixed advance = QFixed::fromReal(advances[i].width);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         glyphs->advances[i] = fontDef.styleStrategy & QFont::ForceIntegerMetrics
                                     ? advance.round() : advance;
+QT_WARNING_POP
     }
 }
 
@@ -1027,7 +1054,10 @@ QFontEngine::Properties QCoreTextFontEngine::properties() const
     result.capHeight = QFixed::fromReal(CTFontGetCapHeight(ctfont) * scale);
     result.lineWidth = QFixed::fromReal(CTFontGetUnderlineThickness(ctfont) * scale);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+QT_WARNING_POP
         result.ascent = result.ascent.round();
         result.descent = result.descent.round();
         result.leading = result.leading.round();

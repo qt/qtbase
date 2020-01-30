@@ -487,7 +487,10 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
         qreal stretch = fontDef.stretch != QFont::AnyStretch ? fontDef.stretch / 100.0 : 1.0;
         for (int i = 0; i < glyphs->numGlyphs; ++i)
             glyphs->advances[i] = DESIGN_TO_LOGICAL(glyphMetrics[i].advanceWidth * stretch);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+QT_WARNING_POP
             for (int i = 0; i < glyphs->numGlyphs; ++i)
                 glyphs->advances[i] = glyphs->advances[i].round();
         }
@@ -531,7 +534,10 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(const QGlyphLayout &g
     if (glyphs.numGlyphs == 0)
         return glyph_metrics_t();
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     bool round = fontDef.styleStrategy & QFont::ForceIntegerMetrics;
+QT_WARNING_POP
 
     QFixed w = 0;
     for (int i = 0; i < glyphs.numGlyphs; ++i) {
@@ -557,7 +563,10 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(glyph_t g)
         QFixed topSideBearing = DESIGN_TO_LOGICAL(glyphMetrics.topSideBearing);
         QFixed bottomSideBearing = DESIGN_TO_LOGICAL(glyphMetrics.bottomSideBearing);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+QT_WARNING_POP
             advanceWidth = advanceWidth.round();
             advanceHeight = advanceHeight.round();
         }
@@ -579,9 +588,12 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(glyph_t g)
 
 QFixed QWindowsFontEngineDirectWrite::ascent() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
             ? m_ascent.round()
             : m_ascent;
+QT_WARNING_POP
 }
 
 QFixed QWindowsFontEngineDirectWrite::capHeight() const
@@ -589,37 +601,52 @@ QFixed QWindowsFontEngineDirectWrite::capHeight() const
     if (m_capHeight <= 0)
         return calculatedCapHeight();
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
             ? m_capHeight.round()
             : m_capHeight;
+QT_WARNING_POP
 }
 
 QFixed QWindowsFontEngineDirectWrite::descent() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
            ? m_descent.round()
            : m_descent;
+QT_WARNING_POP
 }
 
 QFixed QWindowsFontEngineDirectWrite::leading() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
            ? m_lineGap.round()
            : m_lineGap;
+QT_WARNING_POP
 }
 
 QFixed QWindowsFontEngineDirectWrite::xHeight() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
            ? m_xHeight.round()
            : m_xHeight;
+QT_WARNING_POP
 }
 
 qreal QWindowsFontEngineDirectWrite::maxCharWidth() const
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
            ? m_maxAdvanceWidth.round().toReal()
            : m_maxAdvanceWidth.toReal();
+QT_WARNING_POP
 }
 
 QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
