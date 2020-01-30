@@ -205,7 +205,7 @@ f16cextern void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype 
 #undef f16cextern
 }
 
-#elif defined(__ARM_FP16_FORMAT_IEEE) && defined(__ARM_NEON__)
+#elif defined(__ARM_FP16_FORMAT_IEEE) && defined(__ARM_NEON__) && (__ARM_FP & 2)
 static inline bool hasFastF16()
 {
     return true;
