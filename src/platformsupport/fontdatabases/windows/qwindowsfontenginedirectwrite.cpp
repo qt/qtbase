@@ -696,7 +696,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                 &transform,
                 renderMode,
                 DWRITE_MEASURING_MODE_NATURAL,
-                0.0, 0.0,
+                margin, margin,
                 &glyphAnalysis
                 );
 
@@ -997,6 +997,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     DWRITE_RENDERING_MODE renderMode =
             hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
 
+    const int margin = glyphMargin(QFontEngine::Format_A32);
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
     HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
                 &glyphRun,
@@ -1004,7 +1005,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
                 &transform,
                 renderMode,
                 DWRITE_MEASURING_MODE_NATURAL,
-                0.0, 0.0,
+                margin, margin,
                 &glyphAnalysis
                 );
 
@@ -1012,8 +1013,6 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
         RECT rect;
         glyphAnalysis->GetAlphaTextureBounds(DWRITE_TEXTURE_CLEARTYPE_3x1, &rect);
         glyphAnalysis->Release();
-
-        int margin = glyphMargin(QFontEngine::Format_A32);
 
         return glyph_metrics_t(rect.left - margin,
                                rect.top - margin,
