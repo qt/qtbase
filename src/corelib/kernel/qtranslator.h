@@ -63,6 +63,7 @@ public:
 
     virtual bool isEmpty() const;
 
+    QString language() const;
     QString filePath() const;
 
     bool load(const QString & filename,

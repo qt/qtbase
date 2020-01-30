@@ -283,7 +283,7 @@ class QTranslatorPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTranslator)
 public:
-    enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88, Dependencies = 0x96 };
+    enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88, Dependencies = 0x96, Language = 0xa7 };
 
     QTranslatorPrivate() :
 #if defined(QT_USE_MMAP)
@@ -316,6 +316,7 @@ public:
     uint contextLength;
     uint numerusRulesLength;
 
+    QString language;
     QString filePath;
 
     bool do_load(const QString &filename, const QString &directory);
@@ -833,7 +834,9 @@ bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString
             break;
         }
 
-        if (tag == QTranslatorPrivate::Contexts) {
+        if (tag == QTranslatorPrivate::Language) {
+            language = QString::fromUtf8((const char*)data, blockLen);
+        } else if (tag == QTranslatorPrivate::Contexts) {
             contextArray = data;
             contextLength = blockLen;
         } else if (tag == QTranslatorPrivate::Hashes) {
@@ -1095,6 +1098,7 @@ void QTranslatorPrivate::clear()
     qDeleteAll(subTranslators);
     subTranslators.clear();
 
+    language.clear();
     filePath.clear();
 
     if (QCoreApplicationPrivate::isTranslatorInstalled(q))
@@ -1136,6 +1140,17 @@ bool QTranslator::isEmpty() const
     Q_D(const QTranslator);
     return !d->messageArray && !d->offsetArray && !d->contextArray
             && d->subTranslators.isEmpty();
+}
+
+/*!
+    \since 5.15
+
+    Returns the target language as stored in the translation file.
+ */
+QString QTranslator::language() const
+{
+    Q_D(const QTranslator);
+    return d->language;
 }
 
 /*!
