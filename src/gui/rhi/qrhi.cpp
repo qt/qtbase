@@ -2297,11 +2297,10 @@ bool QRhiTexture::buildFrom(QRhiTexture::NativeTexture src)
  */
 QRhiSampler::QRhiSampler(QRhiImplementation *rhi,
                          Filter magFilter_, Filter minFilter_, Filter mipmapMode_,
-                         AddressMode u_, AddressMode v_)
+                         AddressMode u_, AddressMode v_, AddressMode w_)
     : QRhiResource(rhi),
       m_magFilter(magFilter_), m_minFilter(minFilter_), m_mipmapMode(mipmapMode_),
-      m_addressU(u_), m_addressV(v_),
-      m_addressW(QRhiSampler::ClampToEdge),
+      m_addressU(u_), m_addressV(v_), m_addressW(w_),
       m_compareOp(QRhiSampler::Never)
 {
 }
@@ -5321,16 +5320,19 @@ QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
 
 /*!
     \return a new sampler with the specified magnification filter \a magFilter,
-    minification filter \a minFilter, mipmapping mode \a mipmapMpde, and S/T
-    addressing modes \a u and \a v.
+    minification filter \a minFilter, mipmapping mode \a mipmapMode, and the
+    addressing (wrap) modes \a addressU, \a addressV, and \a addressW.
 
     \sa QRhiResource::release()
  */
-QRhiSampler *QRhi::newSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
+QRhiSampler *QRhi::newSampler(QRhiSampler::Filter magFilter,
+                              QRhiSampler::Filter minFilter,
                               QRhiSampler::Filter mipmapMode,
-                              QRhiSampler:: AddressMode u, QRhiSampler::AddressMode v)
+                              QRhiSampler::AddressMode addressU,
+                              QRhiSampler::AddressMode addressV,
+                              QRhiSampler::AddressMode addressW)
 {
-    return d->createSampler(magFilter, minFilter, mipmapMode, u, v);
+    return d->createSampler(magFilter, minFilter, mipmapMode, addressU, addressV, addressW);
 }
 
 /*!

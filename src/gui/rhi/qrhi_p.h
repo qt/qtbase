@@ -850,7 +850,7 @@ public:
 protected:
     QRhiSampler(QRhiImplementation *rhi,
                 Filter magFilter_, Filter minFilter_, Filter mipmapMode_,
-                AddressMode u_, AddressMode v_);
+                AddressMode u_, AddressMode v_, AddressMode w_);
     Filter m_magFilter;
     Filter m_minFilter;
     Filter m_mipmapMode;
@@ -1474,9 +1474,12 @@ public:
                             int sampleCount = 1,
                             QRhiTexture::Flags flags = QRhiTexture::Flags());
 
-    QRhiSampler *newSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
+    QRhiSampler *newSampler(QRhiSampler::Filter magFilter,
+                            QRhiSampler::Filter minFilter,
                             QRhiSampler::Filter mipmapMode,
-                            QRhiSampler::AddressMode u, QRhiSampler::AddressMode v);
+                            QRhiSampler::AddressMode addressU,
+                            QRhiSampler::AddressMode addressV,
+                            QRhiSampler::AddressMode addressW = QRhiSampler::Repeat);
 
     QRhiTextureRenderTarget *newTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
                                                     QRhiTextureRenderTarget::Flags flags = QRhiTextureRenderTarget::Flags());

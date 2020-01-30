@@ -4046,9 +4046,9 @@ QRhiTexture *QRhiVulkan::createTexture(QRhiTexture::Format format, const QSize &
 
 QRhiSampler *QRhiVulkan::createSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
                                        QRhiSampler::Filter mipmapMode,
-                                       QRhiSampler::AddressMode u, QRhiSampler::AddressMode v)
+                                       QRhiSampler::AddressMode u, QRhiSampler::AddressMode v, QRhiSampler::AddressMode w)
 {
-    return new QVkSampler(this, magFilter, minFilter, mipmapMode, u, v);
+    return new QVkSampler(this, magFilter, minFilter, mipmapMode, u, v, w);
 }
 
 QRhiTextureRenderTarget *QRhiVulkan::createTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
@@ -5543,8 +5543,8 @@ VkImageView QVkTexture::imageViewForLevel(int level)
 }
 
 QVkSampler::QVkSampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
-                       AddressMode u, AddressMode v)
-    : QRhiSampler(rhi, magFilter, minFilter, mipmapMode, u, v)
+                       AddressMode u, AddressMode v, AddressMode w)
+    : QRhiSampler(rhi, magFilter, minFilter, mipmapMode, u, v, w)
 {
 }
 
