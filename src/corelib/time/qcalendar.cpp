@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -750,6 +750,8 @@ int QCalendar::daysInMonth(int month, int year) const
 
 /*!
     Returns the number of days in the given \a year.
+
+    Handling of \c Unspecified as \a year is undefined.
 */
 int QCalendar::daysInYear(int year) const
 {
@@ -758,10 +760,15 @@ int QCalendar::daysInYear(int year) const
 
 /*!
     Returns the number of months in the given \a year.
+
+    If \a year is \c Unspecified, returns the maximum number of months in a
+    year.
+
+    \sa maximumMonthsInYear()
 */
 int QCalendar::monthsInYear(int year) const
 {
-    return d ? d->monthsInYear(year) : 0;
+    return d ? year == Unspecified ? d->maximumMonthsInYear() : d->monthsInYear(year) : 0;
 }
 
 /*!
