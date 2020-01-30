@@ -308,8 +308,12 @@ function(qt_generate_build_internals_extra_cmake_code)
                      ${INSTALL_CMAKE_NAMESPACE}BuildInternals/QtBuildInternalsExtra.cmake)
 
         if(CMAKE_BUILD_TYPE)
+            # Need to force set, because CMake itself initializes a value for CMAKE_BUILD_TYPE
+            # at the start of project configuration (with an empty value),
+            # so we need to force override it.
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_BUILD_TYPE \"${CMAKE_BUILD_TYPE}\" CACHE STRING \"Choose the type of build.\")\n")
+                "set(CMAKE_BUILD_TYPE \"${CMAKE_BUILD_TYPE}\" CACHE STRING \"Choose the type of build.\" FORCE)\n")
+
         endif()
         if(CMAKE_CONFIGURATION_TYPES)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
