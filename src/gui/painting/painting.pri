@@ -166,7 +166,7 @@ gcc:equals(QT_GCC_MAJOR_VERSION, 5) {
         DEFINES += QT_COMPILER_SUPPORTS_SSE4_1 QT_COMPILER_SUPPORTS_SSE4_2
         SOURCES += painting/qdrawhelper_sse4.cpp painting/qimagescale_sse4.cpp
     }
-    arm64-v8a {
+    arm64-v8a | armeabi-v7a {
         SOURCES += painting/qdrawhelper_neon.cpp painting/qimagescale_neon.cpp
         HEADERS += painting/qdrawhelper_neon_p.h
     }
