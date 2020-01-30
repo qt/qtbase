@@ -43,6 +43,8 @@
 
 #include <QtCore/qglobal.h>
 
+#include <type_traits>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -98,18 +100,9 @@ template <typename F>
 #if __has_cpp_attribute(nodiscard)
 Q_REQUIRED_RESULT
 #endif
-QScopeGuard<F> qScopeGuard(F &&f)
+QScopeGuard<typename std::decay<F>::type> qScopeGuard(F &&f)
 {
-    return QScopeGuard<F>(std::move(f));
-}
-
-template <typename F>
-#if __has_cpp_attribute(nodiscard)
-Q_REQUIRED_RESULT
-#endif
-QScopeGuard<F> qScopeGuard(const F &f)
-{
-    return QScopeGuard<F>(f);
+    return QScopeGuard<typename std::decay<F>::type>(std::forward<F>(f));
 }
 
 QT_END_NAMESPACE

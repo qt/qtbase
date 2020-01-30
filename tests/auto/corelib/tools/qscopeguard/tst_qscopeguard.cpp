@@ -112,9 +112,16 @@ void tst_QScopeGuard::constructionFromLvalue()
 {
 #ifdef __cpp_deduction_guides
     Callable::resetCounts();
-    Callable callable;
     {
+        Callable callable;
         QScopeGuard guard(callable);
+    }
+    QCOMPARE(Callable::copied, 1);
+    QCOMPARE(Callable::moved, 0);
+    Callable::resetCounts();
+    {
+        Callable callable;
+        auto guard = qScopeGuard(callable);
     }
     QCOMPARE(Callable::copied, 1);
     QCOMPARE(Callable::moved, 0);
@@ -130,6 +137,13 @@ void tst_QScopeGuard::constructionFromRvalue()
     {
         Callable callable;
         QScopeGuard guard(std::move(callable));
+    }
+    QCOMPARE(Callable::copied, 0);
+    QCOMPARE(Callable::moved, 1);
+    Callable::resetCounts();
+    {
+        Callable callable;
+        auto guard = qScopeGuard(std::move(callable));
     }
     QCOMPARE(Callable::copied, 0);
     QCOMPARE(Callable::moved, 1);
