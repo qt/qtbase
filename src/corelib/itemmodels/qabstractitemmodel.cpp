@@ -107,6 +107,9 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
   It is good practice to check that persistent model indexes are valid
   before using them.
 
+  \note You cannot store a QStandardItemModel's  QPersistentModelIndex
+  in one of the model's items.
+
   \sa {Model/View Programming}, QModelIndex, QAbstractItemModel
 */
 
