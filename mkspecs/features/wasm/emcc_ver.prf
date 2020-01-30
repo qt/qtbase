@@ -3,7 +3,9 @@ defineReplace(qtEmccRecommendedVersion) {
 }
 
 defineReplace(qtSystemEmccVersion) {
-    E_VERSION = $$system("emcc -v 2>&1 | perl -alne $$shell_quote($_ = $F[9]; s/://; print;) ")
+    EMCC = $$system("emcc -v 2>&1", lines)
+    EMCC_LINE = $$find(EMCC, "^.*\b(emcc)\b.*$")
+    E_VERSION = $$section(EMCC_LINE, " ", 9,9)
     return ($${E_VERSION})
 }
 
