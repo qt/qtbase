@@ -60,15 +60,8 @@ public:
         Q_Q(QSignalMapper);
 
         auto it = mappedValues.find(sender);
-        if (it != mappedValues.end()) {
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-            Q_EMIT q->mapped(*it);
-QT_WARNING_POP
-#endif
+        if (it != mappedValues.end())
             Q_EMIT (q->*signal)(*it);
-        }
     }
 
     void emitMappedValues(QObject *sender)
@@ -287,56 +280,6 @@ void QSignalMapper::map(QObject *sender)
 {
     d_func()->emitMappedValues(sender);
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \fn void QSignalMapper::mapped(int i)
-    \obsolete
-    \overload
-
-    This signal is emitted when map() is signalled from an object that
-    has an integer mapping set. The object's mapped integer is passed
-    in \a i.
-
-    \sa setMapping()
-*/
-
-/*!
-    \fn void QSignalMapper::mapped(const QString &text)
-    \obsolete
-    \overload
-
-    This signal is emitted when map() is signalled from an object that
-    has a string mapping set. The object's mapped string is passed in
-    \a text.
-
-    \sa setMapping()
-*/
-
-/*!
-    \fn void QSignalMapper::mapped(QWidget *widget)
-    \obsolete
-    \overload
-
-    This signal is emitted when map() is signalled from an object that
-    has a widget mapping set. The object's mapped widget is passed in
-    \a widget.
-
-    \sa setMapping()
-*/
-
-/*!
-    \fn void QSignalMapper::mapped(QObject *object)
-    \obsolete
-    \overload
-
-    This signal is emitted when map() is signalled from an object that
-    has an object mapping set. The object provided by the map is passed in
-    \a object.
-
-    \sa setMapping()
-*/
-#endif
 
 /*!
     \fn void QSignalMapper::mappedInt(int i)
