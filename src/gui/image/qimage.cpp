@@ -1621,7 +1621,9 @@ const uchar *QImage::scanLine(int i) const
     Returns a pointer to the pixel data at the scanline with index \a
     i. The first scanline is at index 0.
 
-    The scanline data is aligned on a 32-bit boundary.
+    The scanline data is as minimum 32-bit aligned. For 64-bit formats
+    it follows the native alignment of 64-bit integers (64-bit for most
+    platforms, but notably 32-bit on i386).
 
     Note that QImage uses \l{Implicit Data Sharing} {implicit data
     sharing}, but this function does \e not perform a deep copy of the
