@@ -41,8 +41,8 @@ class QtTestObject : public QObject
 {
     Q_OBJECT
 public slots:
-    void myslot(int id);
-    void myslot(const QString &str);
+    void myIntSlot(int id);
+    void myStringSlot(const QString &str);
 
 signals:
     void mysignal(int);
@@ -54,12 +54,12 @@ public:
     QString str;
 };
 
-void QtTestObject::myslot(int id)
+void QtTestObject::myIntSlot(int id)
 {
     this->id = id;
 }
 
-void QtTestObject::myslot(const QString &str)
+void QtTestObject::myStringSlot(const QString &str)
 {
     this->str = str;
 }
@@ -71,7 +71,7 @@ void QtTestObject::emit_mysignal(int value)
 
 void tst_QSignalMapper::mapped()
 {
-    QSignalMapper mapper(0);
+    QSignalMapper mapper;
 
     QtTestObject target;
     QtTestObject src1;
@@ -88,8 +88,8 @@ void tst_QSignalMapper::mapped()
     mapper.setMapping(&src2, "two");
     mapper.setMapping(&src3, "three");
 
-    connect(&mapper, SIGNAL(mapped(int)), &target, SLOT(myslot(int)));
-    connect(&mapper, SIGNAL(mapped(QString)), &target, SLOT(myslot(QString)));
+    connect(&mapper, &QSignalMapper::mappedInt, &target, &QtTestObject::myIntSlot);
+    connect(&mapper, &QSignalMapper::mappedString, &target, &QtTestObject::myStringSlot);
 
     src1.emit_mysignal(20);
     QCOMPARE(target.id, 1);

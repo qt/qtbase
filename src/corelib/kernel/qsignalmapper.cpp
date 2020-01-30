@@ -53,11 +53,36 @@ public:
         Q_Q(QSignalMapper);
         q->removeMappings(q->sender());
     }
+
+    template <class Signal, class Container>
+    void emitMappedValue(QObject *sender, Signal signal, const Container &mappedValues)
+    {
+        Q_Q(QSignalMapper);
+
+        auto it = mappedValues.find(sender);
+        if (it != mappedValues.end()) {
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+            Q_EMIT q->mapped(*it);
+QT_WARNING_POP
+#endif
+            Q_EMIT (q->*signal)(*it);
+        }
+    }
+
+    void emitMappedValues(QObject *sender)
+    {
+        emitMappedValue(sender, &QSignalMapper::mappedInt, intHash);
+        emitMappedValue(sender, &QSignalMapper::mappedString, stringHash);
+        emitMappedValue(sender, &QSignalMapper::mappedWidget, widgetHash);
+        emitMappedValue(sender, &QSignalMapper::mappedObject, objectHash);
+    }
+
     QHash<QObject *, int> intHash;
     QHash<QObject *, QString> stringHash;
     QHash<QObject *, QWidget*> widgetHash;
     QHash<QObject *, QObject*> objectHash;
-
 };
 
 /*!
@@ -74,11 +99,12 @@ public:
     use lambdas for passing custom parameters to slots. This is less
     costly and will simplify the code.
 
-    The class supports the mapping of particular strings or integers
-    with particular objects using setMapping(). The objects' signals
-    can then be connected to the map() slot which will emit the
-    mapped() signal with the string or integer associated with the
-    original signalling object. Mappings can be removed later using
+    The class supports the mapping of particular strings, integers,
+    objects and widgets with particular objects using setMapping().
+    The objects' signals can then be connected to the map() slot which
+    will emit a signal (it could be mappedInt(), mappedString(),
+    mappedWidget() and mappedObject()) with a value associated with
+    the original signalling object. Mappings can be removed later using
     removeMappings().
 
     Example: Suppose we want to create a custom widget that contains
@@ -106,8 +132,8 @@ public:
     created. We connect each button's \c clicked() signal to the
     signal mapper's map() slot, and create a mapping in the signal
     mapper from each button to the button's text. Finally we connect
-    the signal mapper's mapped() signal to the custom widget's \c
-    clicked() signal. When the user clicks a button, the custom
+    the signal mapper's mappedString() signal to the custom widget's
+    \c clicked() signal. When the user clicks a button, the custom
     widget will emit a single \c clicked() signal whose argument is
     the text of the button the user clicked.
 
@@ -137,7 +163,7 @@ QSignalMapper::~QSignalMapper()
 
 /*!
     Adds a mapping so that when map() is signalled from the given \a
-    sender, the signal mapped(\a id) is emitted.
+    sender, the signal mappedInt(\a id) is emitted.
 
     There may be at most one integer ID for each sender.
 
@@ -152,7 +178,7 @@ void QSignalMapper::setMapping(QObject *sender, int id)
 
 /*!
     Adds a mapping so that when map() is signalled from the \a sender,
-    the signal mapped(\a text ) is emitted.
+    the signal mappedString(\a text ) is emitted.
 
     There may be at most one text for each sender.
 */
@@ -165,7 +191,7 @@ void QSignalMapper::setMapping(QObject *sender, const QString &text)
 
 /*!
     Adds a mapping so that when map() is signalled from the \a sender,
-    the signal mapped(\a widget ) is emitted.
+    the signal mappedWidget(\a widget ) is emitted.
 
     There may be at most one widget for each sender.
 */
@@ -178,7 +204,7 @@ void QSignalMapper::setMapping(QObject *sender, QWidget *widget)
 
 /*!
     Adds a mapping so that when map() is signalled from the \a sender,
-    the signal mapped(\a object ) is emitted.
+    the signal mappedObject(\a object ) is emitted.
 
     There may be at most one object for each sender.
 */
@@ -259,20 +285,14 @@ void QSignalMapper::map() { map(sender()); }
 */
 void QSignalMapper::map(QObject *sender)
 {
-    Q_D(QSignalMapper);
-    if (d->intHash.contains(sender))
-        emit mapped(d->intHash.value(sender));
-    if (d->stringHash.contains(sender))
-        emit mapped(d->stringHash.value(sender));
-    if (d->widgetHash.contains(sender))
-        emit mapped(d->widgetHash.value(sender));
-    if (d->objectHash.contains(sender))
-        emit mapped(d->objectHash.value(sender));
+    d_func()->emitMappedValues(sender);
 }
 
-
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \fn void QSignalMapper::mapped(int i)
+    \obsolete
+    \overload
 
     This signal is emitted when map() is signalled from an object that
     has an integer mapping set. The object's mapped integer is passed
@@ -283,6 +303,8 @@ void QSignalMapper::map(QObject *sender)
 
 /*!
     \fn void QSignalMapper::mapped(const QString &text)
+    \obsolete
+    \overload
 
     This signal is emitted when map() is signalled from an object that
     has a string mapping set. The object's mapped string is passed in
@@ -293,6 +315,8 @@ void QSignalMapper::map(QObject *sender)
 
 /*!
     \fn void QSignalMapper::mapped(QWidget *widget)
+    \obsolete
+    \overload
 
     This signal is emitted when map() is signalled from an object that
     has a widget mapping set. The object's mapped widget is passed in
@@ -303,6 +327,53 @@ void QSignalMapper::map(QObject *sender)
 
 /*!
     \fn void QSignalMapper::mapped(QObject *object)
+    \obsolete
+    \overload
+
+    This signal is emitted when map() is signalled from an object that
+    has an object mapping set. The object provided by the map is passed in
+    \a object.
+
+    \sa setMapping()
+*/
+#endif
+
+/*!
+    \fn void QSignalMapper::mappedInt(int i)
+    \since 5.15
+
+    This signal is emitted when map() is signalled from an object that
+    has an integer mapping set. The object's mapped integer is passed
+    in \a i.
+
+    \sa setMapping()
+*/
+
+/*!
+    \fn void QSignalMapper::mappedString(const QString &text)
+    \since 5.15
+
+    This signal is emitted when map() is signalled from an object that
+    has a string mapping set. The object's mapped string is passed in
+    \a text.
+
+    \sa setMapping()
+*/
+
+/*!
+    \fn void QSignalMapper::mappedWidget(QWidget *widget)
+    \since 5.15
+
+    This signal is emitted when map() is signalled from an object that
+    has a widget mapping set. The object's mapped widget is passed in
+    \a widget.
+
+    \sa setMapping()
+*/
+
+/*!
+    \fn void QSignalMapper::mappedObject(QObject *object)
+    \since 5.15
 
     This signal is emitted when map() is signalled from an object that
     has an object mapping set. The object provided by the map is passed in
