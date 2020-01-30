@@ -300,25 +300,25 @@ public:
     {
         quint16 offset;
         quint16 size;
-        QString getData(const ushort *table) const
+        QString getData(const char16_t *table) const
         {
             return size > 0
                 ? QString::fromRawData(reinterpret_cast<const QChar *>(table + offset), size)
                 : QString();
         }
-        QStringView viewData(const ushort *table) const
+        QStringView viewData(const char16_t *table) const
         {
             return { reinterpret_cast<const QChar *>(table + offset), size };
         }
-        QString getListEntry(const ushort *table, int index) const
+        QString getListEntry(const char16_t *table, int index) const
         {
             return listEntry(table, index).getData(table);
         }
-        QStringView viewListEntry(const ushort *table, int index) const
+        QStringView viewListEntry(const char16_t *table, int index) const
         {
             return listEntry(table, index).viewData(table);
         }
-        uint ucsFirst(const ushort *table) const
+        uint ucsFirst(const char16_t *table) const
         {
             if (size && !QChar::isSurrogate(table[offset]))
                 return table[offset];
@@ -327,9 +327,9 @@ public:
             return 0;
         }
     private:
-        DataRange listEntry(const ushort *table, int index) const
+        DataRange listEntry(const char16_t *table, int index) const
         {
-            const ushort separator = ';';
+            const char16_t separator = ';';
             quint16 i = 0;
             while (index > 0 && i < size) {
                 if (table[offset + i] == separator)

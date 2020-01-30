@@ -137,7 +137,7 @@ protected:
 
     // Locale support:
     virtual const QCalendarLocale *localeMonthIndexData() const = 0;
-    virtual const ushort *localeMonthData() const = 0;
+    virtual const char16_t *localeMonthData() const = 0;
 
     bool registerAlias(const QString &name);
 

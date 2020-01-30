@@ -2898,7 +2898,7 @@ QString QLocale::standaloneDayName(int day, FormatType type) const
  */
 
 static QString rawMonthName(const QCalendarLocale &localeData,
-                            const ushort *monthsData, int month,
+                            const char16_t *monthsData, int month,
                             QLocale::FormatType type)
 {
     QLocaleData::DataRange range;
@@ -2923,7 +2923,7 @@ static QString rawMonthName(const QCalendarLocale &localeData,
  */
 
 static QString rawStandaloneMonthName(const QCalendarLocale &localeData,
-                                      const ushort *monthsData, int month,
+                                      const char16_t *monthsData, int month,
                                       QLocale::FormatType type)
 {
     QLocaleData::DataRange range;

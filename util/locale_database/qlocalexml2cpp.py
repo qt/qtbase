@@ -319,7 +319,7 @@ class StringData:
         if len(self.data) > 0xffff:
             raise ValueError("Data is too big for quint16 index to its end!" % len(self.data),
                              self.name)
-        fd.write("\nstatic const ushort %s[] = {\n" % self.name)
+        fd.write("\nstatic const char16_t %s[] = {\n" % self.name)
         fd.write(wrap_list(self.data))
         fd.write("\n};\n")
 

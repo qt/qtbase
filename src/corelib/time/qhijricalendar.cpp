@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -118,7 +118,7 @@ const QCalendarLocale *QHijriCalendar::localeMonthIndexData() const
     return locale_data;
 }
 
-const ushort *QHijriCalendar::localeMonthData() const
+const char16_t *QHijriCalendar::localeMonthData() const
 {
     return months_data;
 }
