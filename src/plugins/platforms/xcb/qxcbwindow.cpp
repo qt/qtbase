@@ -2375,8 +2375,7 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int edges)
         if (connection()->isUnity())
             return false; // _NET_WM_MOVERESIZE on this WM is bouncy (WM bug?).
 
-        const QPoint globalPos = QHighDpi::toNativePixels(window()->mapToGlobal(pos), window()->screen());
-        doStartSystemMoveResize(globalPos, edges);
+        doStartSystemMoveResize(mapToGlobal(pos), edges);
     }
 
     return true;
