@@ -1122,7 +1122,7 @@ int QStringView::toWCharArray(wchar_t *array) const
     if (sizeof(wchar_t) == sizeof(QChar)) {
         if (auto src = data())
             memcpy(array, src, sizeof(QChar) * size());
-        return size();
+        return int(size());     // ### q6sizetype
     } else {
         return QString::toUcs4_helper(reinterpret_cast<const ushort *>(data()), int(size()),
                                       reinterpret_cast<uint *>(array));
