@@ -180,20 +180,7 @@ static bool debuggerPresent()
 static bool hasSystemCrashReporter()
 {
 #if defined(Q_OS_MACOS)
-    CFStringRef crashReporterType = static_cast<CFStringRef>(
-                CFPreferencesCopyAppValue(CFSTR("DialogType"), CFSTR("com.apple.CrashReporter")));
-    if (crashReporterType == nullptr)
-        return true;
-
-    auto equals = [](CFStringRef str1, CFStringRef str2) -> bool {
-        return CFStringCompare(str1, str2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
-    };
-
-    const bool createsStackTrace =
-            !equals(crashReporterType, CFSTR("server")) &&
-            !equals(crashReporterType, CFSTR("none"));
-    CFRelease(crashReporterType);
-    return createsStackTrace;
+    return QTestPrivate::macCrashReporterWillShowDialog();
 #else
     return false;
 #endif

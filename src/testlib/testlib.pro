@@ -112,7 +112,7 @@ mac {
     macos {
         HEADERS += qtestutil_macos_p.h
         OBJECTIVE_SOURCES += qtestutil_macos.mm
-        LIBS += -framework Foundation -framework ApplicationServices -framework IOKit
+        LIBS += -framework Foundation -framework ApplicationServices -framework IOKit -framework AppKit
     }
 
     # XCTest support (disabled for now)
