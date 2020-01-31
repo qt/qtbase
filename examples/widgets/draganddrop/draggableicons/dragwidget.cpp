@@ -142,7 +142,7 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
     if (!child)
         return;
 
-    QPixmap pixmap = *child->pixmap();
+    QPixmap pixmap = child->pixmap(Qt::ReturnByValue);
 
     QByteArray itemData;
     QDataStream dataStream(&itemData, QIODevice::WriteOnly);

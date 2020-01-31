@@ -208,7 +208,7 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
 //! [16]
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);
-    drag->setPixmap(*child->pixmap());
+    drag->setPixmap(child->pixmap(Qt::ReturnByValue));
     drag->setHotSpot(hotSpot);
 
     child->hide();

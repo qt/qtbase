@@ -109,7 +109,7 @@ void Screenshot::resizeEvent(QResizeEvent * /* event */)
 {
     QSize scaledSize = originalPixmap.size();
     scaledSize.scale(screenshotLabel->size(), Qt::KeepAspectRatio);
-    if (!screenshotLabel->pixmap() || scaledSize != screenshotLabel->pixmap()->size())
+    if (scaledSize != screenshotLabel->pixmap(Qt::ReturnByValue).size())
         updateScreenshotLabel();
 }
 //! [1]
