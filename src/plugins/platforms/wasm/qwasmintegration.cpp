@@ -108,9 +108,8 @@ QWasmIntegration::QWasmIntegration()
     s_instance = this;
 
     // We expect that qtloader.js has populated Module.qtCanvasElements with one or more canvases.
-    // Also check Module.canvas, which may be set if the emscripen or a custom loader is used.
     emscripten::val qtCanvaseElements = val::module_property("qtCanvasElements");
-    emscripten::val canvas = val::module_property("canvas");
+    emscripten::val canvas = val::module_property("canvas"); // TODO: remove for Qt 6.0
 
     if (!qtCanvaseElements.isUndefined()) {
         int screenCount = qtCanvaseElements["length"].as<int>();
@@ -119,7 +118,9 @@ QWasmIntegration::QWasmIntegration()
             QString canvasId = QWasmString::toQString(canvas["id"]);
             addScreen(canvasId);
         }
-    } else if (!canvas.isUndefined()){
+    } else if (!canvas.isUndefined()) {
+        qWarning() << "Module.canvas is deprecated. A future version of Qt will stop reading this property. "
+                   << "Instead, set Module.qtCanvasElements to be an array of canvas elements, or use qtloader.js.";
         QString canvasId = QWasmString::toQString(canvas["id"]);
         addScreen(canvasId);
     }
@@ -139,7 +140,7 @@ QWasmIntegration::QWasmIntegration()
             integration->resizeAllScreens();
         return 0;
     };
-    emscripten_set_resize_callback(nullptr, nullptr, 1, onWindowResize);
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, 1, onWindowResize);
 }
 
 QWasmIntegration::~QWasmIntegration()

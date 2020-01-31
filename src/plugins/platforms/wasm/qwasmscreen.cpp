@@ -180,10 +180,10 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     // Setting the render size to a value larger than the CSS size enables high-dpi
     // rendering.
 
-    QByteArray canvasId = m_canvasId.toUtf8();
+    QByteArray canvasSelector = "#" + m_canvasId.toUtf8();
     double css_width;
     double css_height;
-    emscripten_get_element_css_size(canvasId.constData(), &css_width, &css_height);
+    emscripten_get_element_css_size(canvasSelector.constData(), &css_width, &css_height);
     QSizeF cssSize(css_width, css_height);
 
     QSizeF canvasSize = cssSize * devicePixelRatio();
