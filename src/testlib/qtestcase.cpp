@@ -1026,6 +1026,7 @@ class WatchDog : public QThread
 public:
     WatchDog()
     {
+        setObjectName(QLatin1String("QtTest Watchdog"));
         auto locker = qt_unique_lock(mutex);
         expecting = ThreadStart;
         start();
