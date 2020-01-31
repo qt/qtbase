@@ -344,30 +344,30 @@ public:
              if_valid_segment_type<Minor> = true>
     static constexpr QTypeRevision fromVersion(Major majorVersion, Minor minorVersion)
     {
-        Q_ASSERT(isValidSegment(majorVersion));
-        Q_ASSERT(isValidSegment(minorVersion));
-        return QTypeRevision(quint8(majorVersion), quint8(minorVersion));
+        return Q_ASSERT(isValidSegment(majorVersion)),
+               Q_ASSERT(isValidSegment(minorVersion)),
+               QTypeRevision(quint8(majorVersion), quint8(minorVersion));
     }
 
     template<typename Major, if_valid_segment_type<Major> = true>
     static constexpr QTypeRevision fromMajorVersion(Major majorVersion)
     {
-        Q_ASSERT(isValidSegment(majorVersion));
-        return QTypeRevision(quint8(majorVersion), SegmentUnknown);
+        return Q_ASSERT(isValidSegment(majorVersion)),
+               QTypeRevision(quint8(majorVersion), SegmentUnknown);
     }
 
     template<typename Minor, if_valid_segment_type<Minor> = true>
     static constexpr QTypeRevision fromMinorVersion(Minor minorVersion)
     {
-        Q_ASSERT(isValidSegment(minorVersion));
-        return QTypeRevision(SegmentUnknown, quint8(minorVersion));
+        return Q_ASSERT(isValidSegment(minorVersion)),
+               QTypeRevision(SegmentUnknown, quint8(minorVersion));
     }
 
     template<typename Integer, if_valid_value_type<Integer> = true>
     static constexpr QTypeRevision fromEncodedVersion(Integer value)
     {
-        Q_ASSERT((value & ~Integer(0xffff)) == Integer(0));
-        return QTypeRevision((value & Integer(0xff00)) >> 8, value & Integer(0xff));
+        return Q_ASSERT((value & ~Integer(0xffff)) == Integer(0)),
+               QTypeRevision((value & Integer(0xff00)) >> 8, value & Integer(0xff));
     }
 
     static constexpr QTypeRevision zero() { return QTypeRevision(0, 0); }
