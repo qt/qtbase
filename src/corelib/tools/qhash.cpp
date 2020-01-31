@@ -71,184 +71,141 @@
 QT_BEGIN_NAMESPACE
 
 /*
-    The Java's hashing algorithm for strings is a variation of D. J. Bernstein
-    hashing algorithm appeared here http://cr.yp.to/cdb/cdb.txt
-    and informally known as DJB33XX - DJB's 33 Times Xor.
-    Java uses DJB31XA, that is, 31 Times Add.
-
-    The original algorithm was a loop around
-        (h << 5) + h ^ c
-    (which is indeed h*33 ^ c); it was then changed to
-        (h << 5) - h ^ c
-    (so h*31^c: DJB31XX), and the XOR changed to a sum:
-        (h << 5) - h + c
-    (DJB31XA), which can save some assembly instructions.
-
-    Still, we can avoid writing the multiplication as "(h << 5) - h"
-    -- the compiler will turn it into a shift and an addition anyway
-    (for instance, gcc 4.4 does that even at -O0).
-*/
-
-#if QT_COMPILER_SUPPORTS_HERE(SSE4_2)
-static inline bool hasFastCrc32()
+ * Hashing for memory segments is based on the public domain MurmurHash2 by
+ * Austin Appleby. See http://murmurhash.googlepages.com/
+ */
+static inline uint hash(const void *key, uint len, uint seed) noexcept
 {
-    return qCpuHasFeature(SSE4_2);
-}
+    // 'm' and 'r' are mixing constants generated offline.
+    // They're not really 'magic', they just happen to work well.
 
-template <typename Char>
-QT_FUNCTION_TARGET(SSE4_2)
-static uint crc32(const Char *ptr, size_t len, uint h)
-{
-    // The CRC32 instructions from Nehalem calculate a 32-bit CRC32 checksum
-    const uchar *p = reinterpret_cast<const uchar *>(ptr);
-    const uchar *const e = p + (len * sizeof(Char));
-#  ifdef Q_PROCESSOR_X86_64
-    // The 64-bit instruction still calculates only 32-bit, but without this
-    // variable GCC 4.9 still tries to clear the high bits on every loop
-    qulonglong h2 = h;
+    const unsigned int m = 0x5bd1e995;
+    const int r = 24;
 
-    p += 8;
-    for ( ; p <= e; p += 8)
-        h2 = _mm_crc32_u64(h2, qFromUnaligned<qlonglong>(p - 8));
-    h = h2;
-    p -= 8;
+    // Initialize the hash to a 'random' value
 
-    len = e - p;
-    if (len & 4) {
-        h = _mm_crc32_u32(h, qFromUnaligned<uint>(p));
-        p += 4;
+    unsigned int h = seed ^ len;
+
+    // Mix 4 bytes at a time into the hash
+
+    const unsigned char *data = reinterpret_cast<const unsigned char *>(key);
+    const unsigned char *end = data + (len & ~3);
+
+    while (data != end) {
+        size_t k;
+        memcpy(&k, data, sizeof(uint));
+
+        k *= m;
+        k ^= k >> r;
+        k *= m;
+
+        h *= m;
+        h ^= k;
+
+        data += 4;
     }
-#  else
-    p += 4;
-    for ( ; p <= e; p += 4)
-        h = _mm_crc32_u32(h, qFromUnaligned<uint>(p - 4));
-    p -= 4;
-    len = e - p;
-#  endif
-    if (len & 2) {
-        h = _mm_crc32_u16(h, qFromUnaligned<ushort>(p));
-        p += 2;
-    }
-    if (sizeof(Char) == 1 && len & 1)
-        h = _mm_crc32_u8(h, *p);
-    return h;
-}
-#elif defined(__ARM_FEATURE_CRC32)
-static inline bool hasFastCrc32()
-{
-    return qCpuHasFeature(CRC32);
-}
 
-template <typename Char>
-#if defined(Q_PROCESSOR_ARM_64)
-QT_FUNCTION_TARGET(CRC32)
-#endif
-static uint crc32(const Char *ptr, size_t len, uint h)
-{
-    // The crc32[whbd] instructions on Aarch64/Aarch32 calculate a 32-bit CRC32 checksum
-    const uchar *p = reinterpret_cast<const uchar *>(ptr);
-    const uchar *const e = p + (len * sizeof(Char));
+    // Handle the last few bytes of the input array
+    len &= 3;
+    if (len) {
+        unsigned int k = 0;
+        end += len;
 
-#ifndef __ARM_FEATURE_UNALIGNED
-    if (Q_UNLIKELY(reinterpret_cast<quintptr>(p) & 7)) {
-        if ((sizeof(Char) == 1) && (reinterpret_cast<quintptr>(p) & 1) && (e - p > 0)) {
-            h = __crc32b(h, *p);
-            ++p;
+        while (data != end) {
+            k <<= 8;
+            k |= *data;
+            ++data;
         }
-        if ((reinterpret_cast<quintptr>(p) & 2) && (e >= p + 2)) {
-            h = __crc32h(h, *reinterpret_cast<const uint16_t *>(p));
-            p += 2;
-        }
-        if ((reinterpret_cast<quintptr>(p) & 4) && (e >= p + 4)) {
-            h = __crc32w(h, *reinterpret_cast<const uint32_t *>(p));
-            p += 4;
-        }
+        h ^= k;
+        h *= m;
     }
-#endif
 
-    for ( ; p + 8 <= e; p += 8)
-        h = __crc32d(h, *reinterpret_cast<const uint64_t *>(p));
+    // Do a few final mixes of the hash to ensure the last few
+    // bytes are well-incorporated.
 
-    len = e - p;
-    if (len == 0)
-        return h;
-    if (len & 4) {
-        h = __crc32w(h, *reinterpret_cast<const uint32_t *>(p));
-        p += 4;
-    }
-    if (len & 2) {
-        h = __crc32h(h, *reinterpret_cast<const uint16_t *>(p));
-        p += 2;
-    }
-    if (sizeof(Char) == 1 && len & 1)
-        h = __crc32b(h, *p);
-    return h;
-}
-#else
-static inline bool hasFastCrc32()
-{
-    return false;
-}
-
-static uint crc32(...)
-{
-    Q_UNREACHABLE();
-    return 0;
-}
-#endif
-
-static inline uint hash(const uchar *p, size_t len, uint seed) noexcept
-{
-    uint h = seed;
-
-    if (seed && hasFastCrc32())
-        return crc32(p, len, h);
-
-    for (size_t i = 0; i < len; ++i)
-        h = 31 * h + p[i];
+    h ^= h >> 13;
+    h *= m;
+    h ^= h >> 15;
 
     return h;
 }
 
-static inline uint hash(const QChar *p, size_t len, uint seed) noexcept
+static inline uint64_t hash(const void *key, uint64_t len, uint64_t seed) noexcept
 {
-    uint h = seed;
+    const uint64_t m = 0xc6a4a7935bd1e995ULL;
+    const int r = 47;
 
-    if (seed && hasFastCrc32())
-        return crc32(p, len, h);
+    uint64_t h = seed ^ (len * m);
 
-    for (size_t i = 0; i < len; ++i)
-        h = 31 * h + p[i].unicode();
+    const unsigned char *data = reinterpret_cast<const unsigned char *>(key);
+    const unsigned char *end = data + (len & ~7ul);
+
+    while (data != end) {
+        uint64_t k;
+        memcpy(&k, data, sizeof(uint64_t));
+
+        k *= m;
+        k ^= k >> r;
+        k *= m;
+
+        h ^= k;
+        h *= m;
+
+        data += 8;
+    }
+
+    len &= 7;
+    if (len) {
+        // handle the last few bytes of input
+        size_t k = 0;
+        end += len;
+
+        while (data != end) {
+            k <<= 8;
+            k |= *data;
+            ++data;
+        }
+        h ^= k;
+        h *= m;
+    }
+
+    h ^= h >> r;
+    h *= m;
+    h ^= h >> r;
 
     return h;
 }
 
 size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 {
-    return hash(static_cast<const uchar*>(p), int(size), static_cast<uint>(seed));
+    size_t result;
+    if constexpr (sizeof(size_t) == 8)
+        result = hash(p, uint64_t(size), uint64_t(seed));
+    else
+        result = hash(p, uint(size), uint(seed));
+    return result;
 }
-
 
 size_t qHash(const QByteArray &key, size_t seed) noexcept
 {
-    return hash(reinterpret_cast<const uchar *>(key.constData()), size_t(key.size()), seed);
+    return qHashBits(key.constData(), size_t(key.size()), seed);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
 size_t qHash(const QString &key, size_t seed) noexcept
 {
-    return hash(key.unicode(), size_t(key.size()), seed);
+    return qHashBits(key.unicode(), size_t(key.size())*sizeof(QChar), seed);
 }
 
 size_t qHash(const QStringRef &key, size_t seed) noexcept
 {
-    return hash(key.unicode(), size_t(key.size()), seed);
+    return qHashBits(key.unicode(), size_t(key.size())*sizeof(QChar), seed);
 }
 #endif
 
 size_t qHash(QStringView key, size_t seed) noexcept
 {
-    return hash(key.data(), key.size(), seed);
+    return qHashBits(key.data(), key.size()*sizeof(QChar), seed);
 }
 
 size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
@@ -266,7 +223,7 @@ size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
 
 size_t qHash(QLatin1String key, size_t seed) noexcept
 {
-    return hash(reinterpret_cast<const uchar *>(key.data()), size_t(key.size()), seed);
+    return qHashBits(reinterpret_cast<const uchar *>(key.data()), size_t(key.size()), seed);
 }
 
 /*!
@@ -610,7 +567,9 @@ uint qt_hash(QStringView key, uint chained) noexcept
 */
 size_t qHash(float key, size_t seed) noexcept
 {
-    return key != 0.0f ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+    // ensure -0 gets mapped to 0
+    key += 0.0f;
+    return qHashBits(&key, sizeof(key), seed);
 }
 
 /*! \relates QHash
@@ -620,7 +579,9 @@ size_t qHash(float key, size_t seed) noexcept
 */
 size_t qHash(double key, size_t seed) noexcept
 {
-    return key != 0.0  ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+    // ensure -0 gets mapped to 0
+    key += 0.0;
+    return qHashBits(&key, sizeof(key), seed);
 }
 
 #if !defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
@@ -631,7 +592,9 @@ size_t qHash(double key, size_t seed) noexcept
 */
 size_t qHash(long double key, size_t seed) noexcept
 {
-    return key != 0.0L ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+    // ensure -0 gets mapped to 0
+    key += static_cast<long double>(0.0);
+    return qHashBits(&key, sizeof(key), seed);
 }
 #endif
 

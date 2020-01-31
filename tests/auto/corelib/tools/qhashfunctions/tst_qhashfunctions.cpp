@@ -55,7 +55,7 @@ private Q_SLOTS:
     void qhash();
     void qhash_of_empty_and_null_qstring();
     void qhash_of_empty_and_null_qbytearray();
-    void fp_qhash_of_zero_is_seed();
+    void qhash_of_zero_floating_points();
     void qthash_data();
     void qthash();
     void range();
@@ -97,7 +97,6 @@ void tst_QHashFunctions::qhash()
     {
         QBitArray a1;
         QBitArray a2;
-        QCOMPARE(qHash(a1, seed), seed);
 
         a1.resize(1);
         a1.setBit(0, true);
@@ -193,17 +192,12 @@ void tst_QHashFunctions::qhash_of_empty_and_null_qbytearray()
     QCOMPARE(qHash(null, seed), qHash(empty, seed));
 }
 
-void tst_QHashFunctions::fp_qhash_of_zero_is_seed()
+void tst_QHashFunctions::qhash_of_zero_floating_points()
 {
-    QCOMPARE(qHash(-0.0f, seed), seed);
-    QCOMPARE(qHash( 0.0f, seed), seed);
-
-    QCOMPARE(qHash(-0.0 , seed), seed);
-    QCOMPARE(qHash( 0.0 , seed), seed);
-
+    QCOMPARE(qHash(-0.0f, seed), qHash(0.0f, seed));
+    QCOMPARE(qHash(-0.0 , seed), qHash(0.0 , seed));
 #ifndef Q_OS_DARWIN
-    QCOMPARE(qHash(-0.0L, seed), seed);
-    QCOMPARE(qHash( 0.0L, seed), seed);
+    QCOMPARE(qHash(-0.0L, seed), qHash(0.0L, seed));
 #endif
 }
 
