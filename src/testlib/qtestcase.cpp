@@ -1957,25 +1957,26 @@ int QTest::qRun()
     }
 
 #ifndef QT_NO_EXCEPTIONS
-     } catch (...) {
-         QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
-         if (QTestResult::currentTestFunction()) {
-             QTestResult::finishedCurrentTestFunction();
-             QTestResult::setCurrentTestFunction(nullptr);
-         }
+    } catch (...) {
+        QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
+        if (QTestResult::currentTestFunction()) {
+            QTestResult::finishedCurrentTestFunction();
+            QTestResult::setCurrentTestFunction(nullptr);
+        }
 
         QTestLog::stopLogging();
-#if defined(Q_OS_MACX)
-         if (macNeedsActivate) {
-             IOPMAssertionRelease(powerID);
-         }
-#endif
-         currentTestObject = nullptr;
 
-         // Rethrow exception to make debugging easier.
-         throw;
-         return 1;
-     }
+#if defined(Q_OS_MACX)
+        if (macNeedsActivate) {
+            IOPMAssertionRelease(powerID);
+        }
+#endif
+        currentTestObject = nullptr;
+
+        // Re-throw exception to make debugging easier
+        throw;
+        return 1;
+    }
 #endif
 
 #if QT_CONFIG(valgrind)
