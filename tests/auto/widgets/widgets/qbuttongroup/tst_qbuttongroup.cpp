@@ -280,67 +280,43 @@ void tst_QButtonGroup::testSignals()
 
     qRegisterMetaType<QAbstractButton *>("QAbstractButton *");
     QSignalSpy clickedSpy(&buttons, SIGNAL(buttonClicked(QAbstractButton*)));
-    QSignalSpy clickedIdSpy(&buttons, SIGNAL(buttonClicked(int)));
     QSignalSpy pressedSpy(&buttons, SIGNAL(buttonPressed(QAbstractButton*)));
-    QSignalSpy pressedIdSpy(&buttons, SIGNAL(buttonPressed(int)));
     QSignalSpy releasedSpy(&buttons, SIGNAL(buttonReleased(QAbstractButton*)));
-    QSignalSpy releasedIdSpy(&buttons, SIGNAL(buttonReleased(int)));
 
     pb1.animateClick();
     QTestEventLoop::instance().enterLoop(1);
 
     QCOMPARE(clickedSpy.count(), 1);
-    QCOMPARE(clickedIdSpy.count(), 1);
 
-    int expectedId = -2;
-
-    QCOMPARE(clickedIdSpy.takeFirst().at(0).toInt(), expectedId);
     QCOMPARE(pressedSpy.count(), 1);
-    QCOMPARE(pressedIdSpy.count(), 1);
-    QCOMPARE(pressedIdSpy.takeFirst().at(0).toInt(), expectedId);
     QCOMPARE(releasedSpy.count(), 1);
-    QCOMPARE(releasedIdSpy.count(), 1);
-    QCOMPARE(releasedIdSpy.takeFirst().at(0).toInt(), expectedId);
 
     clickedSpy.clear();
-    clickedIdSpy.clear();
     pressedSpy.clear();
-    pressedIdSpy.clear();
     releasedSpy.clear();
-    releasedIdSpy.clear();
 
     pb2.animateClick();
     QTestEventLoop::instance().enterLoop(1);
 
     QCOMPARE(clickedSpy.count(), 1);
-    QCOMPARE(clickedIdSpy.count(), 1);
-    QCOMPARE(clickedIdSpy.takeFirst().at(0).toInt(), 23);
     QCOMPARE(pressedSpy.count(), 1);
-    QCOMPARE(pressedIdSpy.count(), 1);
-    QCOMPARE(pressedIdSpy.takeFirst().at(0).toInt(), 23);
     QCOMPARE(releasedSpy.count(), 1);
-    QCOMPARE(releasedIdSpy.count(), 1);
-    QCOMPARE(releasedIdSpy.takeFirst().at(0).toInt(), 23);
 
 
     QSignalSpy toggledSpy(&buttons, SIGNAL(buttonToggled(QAbstractButton*, bool)));
-    QSignalSpy toggledIdSpy(&buttons, SIGNAL(buttonToggled(int, bool)));
 
     pb1.setCheckable(true);
     pb2.setCheckable(true);
     pb1.toggle();
     QCOMPARE(toggledSpy.count(), 1);
-    QCOMPARE(toggledIdSpy.count(), 1);
 
     pb2.toggle();
     QCOMPARE(toggledSpy.count(), 3);     // equals 3 since pb1 and pb2 are both toggled
-    QCOMPARE(toggledIdSpy.count(), 3);
 
     pb1.setCheckable(false);
     pb2.setCheckable(false);
     pb1.toggle();
     QCOMPARE(toggledSpy.count(), 3);
-    QCOMPARE(toggledIdSpy.count(), 3);
 }
 
 void tst_QButtonGroup::task106609()
@@ -372,7 +348,6 @@ void tst_QButtonGroup::task106609()
 
     qRegisterMetaType<QAbstractButton*>("QAbstractButton*");
     QSignalSpy spy1(buttons, SIGNAL(buttonClicked(QAbstractButton*)));
-    QSignalSpy spy2(buttons, SIGNAL(buttonClicked(int)));
 
     QApplication::setActiveWindow(&dlg);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&dlg));
@@ -381,8 +356,6 @@ void tst_QButtonGroup::task106609()
     radio1->setChecked(true);
     QTestEventLoop::instance().enterLoop(1);
 
-    //qDebug() << "int:" << spy2.count() << "QAbstractButton*:" << spy1.count();
-    QCOMPARE(spy2.count(), 2);
     QCOMPARE(spy1.count(), 2);
 }
 
@@ -427,11 +400,12 @@ public:
         : group(group)
         , deleteButton(deleteButton)
     {
-        connect(group, SIGNAL(buttonClicked(int)), SLOT(buttonClicked(int)));
+        connect(group, &QButtonGroup::buttonClicked,
+                this, &task209485_ButtonDeleter::buttonClicked);
     }
 
 private slots:
-    void buttonClicked(int)
+    void buttonClicked()
     {
         if (deleteButton)
             group->removeButton(group->buttons().first());
@@ -447,7 +421,7 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler_data()
     QTest::addColumn<bool>("deleteButton");
     QTest::addColumn<int>("signalCount");
     QTest::newRow("buttonPress 1") << true << 1;
-    QTest::newRow("buttonPress 2") << false << 2;
+    QTest::newRow("buttonPress 2") << false << 1;
 }
 
 void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
@@ -463,12 +437,11 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
     task209485_ButtonDeleter buttonDeleter(&group, deleteButton);
 
     QSignalSpy spy1(&group, SIGNAL(buttonClicked(QAbstractButton*)));
-    QSignalSpy spy2(&group, SIGNAL(buttonClicked(int)));
 
     // NOTE: Reintroducing the bug of this task will cause the following line to crash:
     QTest::mouseClick(button, Qt::LeftButton);
 
-    QCOMPARE(spy1.count() + spy2.count(), signalCount);
+    QCOMPARE(spy1.count(), signalCount);
 }
 
 void tst_QButtonGroup::autoIncrementId()

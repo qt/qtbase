@@ -172,15 +172,16 @@ void MainWindow::changeStyle(bool checked)
 //! [4]
 
 //! [5]
-void MainWindow::changeSize(int id, bool checked)
+void MainWindow::changeSize(QAbstractButton *button, bool checked)
 {
     if (!checked)
         return;
 
-    const bool other = id == int(OtherSize);
+    const int index = sizeButtonGroup->id(button);
+    const bool other = index == int(OtherSize);
     const int extent = other
         ? otherSpinBox->value()
-        : QApplication::style()->pixelMetric(static_cast<QStyle::PixelMetric>(id));
+        : QApplication::style()->pixelMetric(static_cast<QStyle::PixelMetric>(index));
 
     previewArea->setSize(QSize(extent, extent));
     otherSpinBox->setEnabled(other);
@@ -188,7 +189,7 @@ void MainWindow::changeSize(int id, bool checked)
 
 void MainWindow::triggerChangeSize()
 {
-    changeSize(sizeButtonGroup->checkedId(), true);
+    changeSize(sizeButtonGroup->checkedButton(), true);
 }
 //! [5]
 
@@ -372,7 +373,7 @@ QWidget *MainWindow::createIconSizeGroupBox()
     sizeButtonGroup = new QButtonGroup(this);
     sizeButtonGroup->setExclusive(true);
 
-    connect(sizeButtonGroup, QOverload<int, bool>::of(&QButtonGroup::buttonToggled),
+    connect(sizeButtonGroup, &QButtonGroup::buttonToggled,
             this, &MainWindow::changeSize);
 
     QRadioButton *smallRadioButton = new QRadioButton;

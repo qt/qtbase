@@ -67,7 +67,7 @@ Window::Window(QWidget *parent)
 
     connect(m_ui.easingCurvePicker, &QListWidget::currentRowChanged,
             this, &Window::curveChanged);
-    connect(m_ui.buttonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
+    connect(m_ui.buttonGroup, &QButtonGroup::buttonClicked,
             this, &Window::pathChanged);
     connect(m_ui.periodSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &Window::periodChanged);
