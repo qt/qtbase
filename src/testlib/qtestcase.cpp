@@ -302,8 +302,7 @@ static QObject *currentTestObject = nullptr;
 static QString mainSourcePath;
 
 #if defined(Q_OS_MACOS)
-bool macNeedsActivate = false;
-IOPMAssertionID powerID;
+static IOPMAssertionID macPowerSavingDisabled = 0;
 #endif
 
 class TestMethods {
@@ -1854,23 +1853,17 @@ void QTest::qInit(QObject *testObject, int argc, char **argv)
     initEnvironment();
     QBenchmarkGlobalData::current = new QBenchmarkGlobalData;
 
-#if defined(Q_OS_MACX)
-    macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
-
-    // Don't restore saved window state for auto tests.
+#if defined(Q_OS_MACOS)
+    // Don't restore saved window state for auto tests
     QTestPrivate::disableWindowRestore();
 
-    // Disable App Nap which may cause tests to stall.
+    // Disable App Nap which may cause tests to stall
     QTestPrivate::AppNapDisabler appNapDisabler;
-#endif
 
-#if defined(Q_OS_MACX)
-    if (macNeedsActivate) {
-        CFStringRef reasonForActivity= CFSTR("No Display Sleep");
-        IOReturn ok = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, reasonForActivity, &powerID);
-
-        if (ok != kIOReturnSuccess)
-            macNeedsActivate = false; // no need to release the assertion on exit.
+    if (qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0)) {
+        IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+            kIOPMAssertionLevelOn, CFSTR("QtTest running tests"),
+            &macPowerSavingDisabled);
     }
 #endif
 
@@ -1966,11 +1959,10 @@ int QTest::qRun()
 
         QTestLog::stopLogging();
 
-#if defined(Q_OS_MACX)
-        if (macNeedsActivate) {
-            IOPMAssertionRelease(powerID);
-        }
+#if defined(Q_OS_MACOS)
+        IOPMAssertionRelease(macPowerSavingDisabled);
 #endif
+
         currentTestObject = nullptr;
 
         // Re-throw exception to make debugging easier
@@ -2003,8 +1995,7 @@ void QTest::qCleanup()
     QSignalDumper::endDump();
 
 #if defined(Q_OS_MACOS)
-    if (macNeedsActivate)
-        IOPMAssertionRelease(powerID);
+    IOPMAssertionRelease(macPowerSavingDisabled);
 #endif
 }
 
