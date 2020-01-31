@@ -60,20 +60,24 @@ QT_BEGIN_NAMESPACE
 bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
                                         QFileSystemEntry &newLocation, QSystemError &error)
 {
+#ifdef Q_OS_MACOS // desktop macOS has a trash can
+    QMacAutoReleasePool pool;
+
     QFileInfo info(source.filePath());
-    @autoreleasepool {
-        NSString *filepath = info.filePath().toNSString();
-        NSURL *fileurl = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
-        NSURL *resultingUrl = nil;
-        NSError *nserror = nil;
-        NSFileManager *fm = [NSFileManager defaultManager];
-        if ([fm trashItemAtURL:fileurl resultingItemURL:&resultingUrl error:&nserror] != YES) {
-            error = QSystemError(nserror.code, QSystemError::NativeError);
-            return false;
-        }
-        newLocation = QFileSystemEntry(QUrl::fromNSURL(resultingUrl).path());
+    NSString *filepath = info.filePath().toNSString();
+    NSURL *fileurl = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
+    NSURL *resultingUrl = nil;
+    NSError *nserror = nil;
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if ([fm trashItemAtURL:fileurl resultingItemURL:&resultingUrl error:&nserror] != YES) {
+        error = QSystemError(nserror.code, QSystemError::NativeError);
+        return false;
     }
+    newLocation = QFileSystemEntry(QUrl::fromNSURL(resultingUrl).path());
     return true;
+#else // watch, tv, iOS don't have a trash can
+    return false;
+#endif
 }
 
 QT_END_NAMESPACE

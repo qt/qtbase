@@ -1341,13 +1341,15 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     QString infoFileName;
     int counter = 0;
     QFile infoFile;
-    do {
-        while (QFile::exists(trashDir.filePath(filesDir) + uniqueTrashedName)) {
-            ++counter;
-            uniqueTrashedName = QString(QLatin1String("/%1-%2"))
+    auto makeUniqueTrashedName = [trashedName, &counter]() -> QString {
+        ++counter;
+        return QString(QLatin1String("/%1-%2"))
                                         .arg(trashedName)
                                         .arg(counter, 4, 10, QLatin1Char('0'));
-        }
+    };
+    do {
+        while (QFile::exists(trashDir.filePath(filesDir) + uniqueTrashedName))
+            uniqueTrashedName = makeUniqueTrashedName();
         /*
             "The $trash/info directory contains an "information file" for every file and directory
              in $trash/files. This file MUST have exactly the same name as the file or directory in
@@ -1363,15 +1365,21 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         infoFileName = trashDir.filePath(infoDir)
                      + uniqueTrashedName + QLatin1String(".trashinfo");
         infoFile.setFileName(infoFileName);
-    } while (!infoFile.open(QIODevice::NewOnly | QIODevice::WriteOnly | QIODevice::Text));
+        if (!infoFile.open(QIODevice::NewOnly | QIODevice::WriteOnly | QIODevice::Text))
+            uniqueTrashedName = makeUniqueTrashedName();
+    } while (!infoFile.isOpen());
 
     const QString targetPath = trashDir.filePath(filesDir) + uniqueTrashedName;
     const QFileSystemEntry target(targetPath);
 
+    /*
+        We might fail to rename if source and target are on different file systems.
+        In that case, we don't try further, i.e. copying and removing the original
+        is usually not what the user would expect to happen.
+    */
     if (!renameFile(source, target, error)) {
         infoFile.close();
         infoFile.remove();
-        error = QSystemError(errno, QSystemError::StandardLibraryError);
         return false;
     }
 
