@@ -946,7 +946,7 @@ endfunction()
 set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS;MOC_OPTIONS;DISABLE_AUTOGEN_TOOLS;ENABLE_AUTOGEN_TOOLS;PLUGIN_TYPES")
 
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
-
+set(__default_private_module_args "PRIVATE_MODULE_INTERFACE")
 
 option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
 
@@ -1085,7 +1085,7 @@ function(qt_extend_target target)
         message(FATAL_ERROR "Trying to extend non-existing target \"${target}\".")
     endif()
     qt_parse_all_arguments(arg "qt_extend_target" "HEADER_MODULE" "PRECOMPILED_HEADER"
-        "CONDITION;${__default_public_args};${__default_private_args};COMPILE_FLAGS;NO_PCH_SOURCES" ${ARGN})
+        "CONDITION;${__default_public_args};${__default_private_args};${__default_private_module_args};COMPILE_FLAGS;NO_PCH_SOURCES" ${ARGN})
     if ("x${arg_CONDITION}" STREQUAL x)
         set(arg_CONDITION ON)
     endif()
@@ -1193,7 +1193,8 @@ function(qt_extend_target target)
 
         set(target_private "${target}Private")
         if(TARGET "${target_private}")
-          target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
+          target_link_libraries("${target_private}"
+                                INTERFACE "${target}" ${arg_PRIVATE_MODULE_INTERFACE})
         endif()
         qt_register_target_dependencies("${target}"
                                         "${arg_PUBLIC_LIBRARIES}"
@@ -1533,7 +1534,7 @@ function(qt_add_module target)
     qt_parse_all_arguments(arg "qt_add_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES"
         "CONFIG_MODULE_NAME;PRECOMPILED_HEADER"
-        "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
+        "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
@@ -1751,6 +1752,7 @@ function(qt_add_module target)
             "${deprecation_define}"
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         LIBRARIES ${arg_LIBRARIES} Qt::PlatformModuleInternal
+        PRIVATE_MODULE_INTERFACE ${arg_PRIVATE_MODULE_INTERFACE}
         FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         DBUS_ADAPTOR_SOURCES ${arg_DBUS_ADAPTOR_SOURCES}
         DBUS_ADAPTOR_FLAGS ${arg_DBUS_ADAPTOR_FLAGS}
