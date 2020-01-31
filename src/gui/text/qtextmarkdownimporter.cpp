@@ -399,8 +399,10 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
         MD_SPAN_A_DETAIL *detail = static_cast<MD_SPAN_A_DETAIL *>(det);
         QString url = QString::fromUtf8(detail->href.text, int(detail->href.size));
         QString title = QString::fromUtf8(detail->title.text, int(detail->title.size));
+        charFmt.setAnchor(true);
         charFmt.setAnchorHref(url);
-        charFmt.setAnchorNames(QStringList(title));
+        if (!title.isEmpty())
+            charFmt.setToolTip(title);
         charFmt.setForeground(m_palette.link());
         qCDebug(lcMD) << "anchor" << url << title;
         } break;

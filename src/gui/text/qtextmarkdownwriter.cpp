@@ -56,10 +56,13 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
 
 static const QChar Space = QLatin1Char(' ');
+static const QChar Tab = QLatin1Char('\t');
 static const QChar Newline = QLatin1Char('\n');
+static const QChar CarriageReturn = QLatin1Char('\r');
 static const QChar LineBreak = QChar(0x2028);
 static const QChar DoubleQuote = QLatin1Char('"');
 static const QChar Backtick = QLatin1Char('`');
+static const QChar Backslash = QLatin1Char('\\');
 static const QChar Period = QLatin1Char('.');
 
 QTextMarkdownWriter::QTextMarkdownWriter(QTextStream &stream, QTextDocument::MarkdownFeatures features)
@@ -291,6 +294,72 @@ static void maybeEscapeFirstChar(QString &s)
     }
 }
 
+struct LineEndPositions {
+    const QChar *lineEnd;
+    const QChar *nextLineBegin;
+};
+
+static LineEndPositions findLineEnd(const QChar *begin, const QChar *end)
+{
+    LineEndPositions result{ end, end };
+
+    while (begin < end) {
+        if (*begin == Newline) {
+            result.lineEnd = begin;
+            result.nextLineBegin = begin + 1;
+            break;
+        } else if (*begin == CarriageReturn) {
+            result.lineEnd = begin;
+            result.nextLineBegin = begin + 1;
+            if (((begin + 1) < end) && begin[1] == Newline)
+                ++result.nextLineBegin;
+            break;
+        }
+
+        ++begin;
+    }
+
+    return result;
+}
+
+static bool isBlankLine(const QChar *begin, const QChar *end)
+{
+    while (begin < end) {
+        if (*begin != Space && *begin != Tab)
+            return false;
+        ++begin;
+    }
+    return true;
+}
+
+static QString createLinkTitle(const QString &title)
+{
+    QString result;
+    result.reserve(title.size() + 2);
+    result += DoubleQuote;
+
+    const QChar *data = title.data();
+    const QChar *end = data + title.size();
+
+    while (data < end) {
+        const auto lineEndPositions = findLineEnd(data, end);
+
+        if (!isBlankLine(data, lineEndPositions.lineEnd)) {
+            while (data < lineEndPositions.nextLineBegin) {
+                if (*data == DoubleQuote)
+                    result += Backslash;
+                result += *data;
+                ++data;
+            }
+        }
+
+        data = lineEndPositions.nextLineBegin;
+    }
+
+    result += DoubleQuote;
+    return result;
+}
+
 int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ignoreFormat, bool ignoreEmpty)
 {
     if (block.text().isEmpty() && ignoreEmpty)
@@ -445,7 +514,12 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             col += s.length();
         } else if (fmt.hasProperty(QTextFormat::AnchorHref)) {
             QString s = QLatin1Char('[') + fragmentText + QLatin1String("](") +
-                    fmt.property(QTextFormat::AnchorHref).toString() + QLatin1Char(')');
+                    fmt.property(QTextFormat::AnchorHref).toString();
+            if (fmt.hasProperty(QTextFormat::TextToolTip)) {
+                s += Space;
+                s += createLinkTitle(fmt.property(QTextFormat::TextToolTip).toString());
+            }
+            s += QLatin1Char(')');
             if (wrap && col + s.length() > ColumnLimit) {
                 m_stream << Newline << wrapIndentString;
                 col = m_wrappedLineIndent;
