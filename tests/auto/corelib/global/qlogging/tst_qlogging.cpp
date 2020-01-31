@@ -792,10 +792,17 @@ void tst_qmessagehandler::qMessagePattern_data()
 #define QT_NAMESPACE_STR ""
 #endif
 
+
+#ifdef QT_CMAKE_BUILD
+#define BACKTRACE_HELPER_NAME "qlogging_helper"
+#else
+#define BACKTRACE_HELPER_NAME "helper"
+#endif
+
 #ifndef QT_NO_DEBUG
     QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << (QList<QByteArray>()
             // MyClass::qt_static_metacall is explicitly marked as hidden in the Q_OBJECT macro
-            << "[MyClass::myFunction|MyClass::mySlot1|?helper?|" QT_NAMESPACE_STR "QMetaMethod::invoke|" QT_NAMESPACE_STR "QMetaObject::invokeMethod] from_a_function 34");
+            << "[MyClass::myFunction|MyClass::mySlot1|?" BACKTRACE_HELPER_NAME "?|" QT_NAMESPACE_STR "QMetaMethod::invoke|" QT_NAMESPACE_STR "QMetaObject::invokeMethod] from_a_function 34");
 #endif
 
     QTest::newRow("backtrace depth,separator") << "[%{backtrace depth=2 separator=\"\n\"}] %{message}" << true << (QList<QByteArray>()
@@ -820,9 +827,9 @@ void tst_qmessagehandler::qMessagePattern()
 
     QProcess process;
 #ifndef Q_OS_ANDROID
-    const QString appExe(QLatin1String("helper"));
+    const QString appExe(QLatin1String(HELPER_BINARY));
 #else
-    const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/libhelper.so"));
+    const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/lib" BACKTRACE_HELPER_NAME ".so"));
 #endif
 
     //
@@ -870,7 +877,7 @@ void tst_qmessagehandler::setMessagePattern()
 
     QProcess process;
 #ifndef Q_OS_ANDROID
-    const QString appExe(QLatin1String("helper"));
+    const QString appExe(QLatin1String(HELPER_BINARY));
 #else
     const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/libhelper.so"));
 #endif

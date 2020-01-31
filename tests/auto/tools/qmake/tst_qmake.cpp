@@ -318,6 +318,9 @@ void tst_qmake::subdirs()
 
 void tst_qmake::subdir_via_pro_file_extra_target()
 {
+    if (QProcessEnvironment::systemEnvironment().contains(QStringLiteral("QT_TEST_RUNNING_IN_CTEST")))
+        QSKIP("This test does not run properly when invoked from CTest.");
+
     QString workDir = base_path + "/testdata/subdir_via_pro_file_extra_target";
 
     QDir D;

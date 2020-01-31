@@ -1,0 +1,20 @@
+# Generated from watchdog.pro.
+
+#####################################################################
+## watchdog Binary:
+#####################################################################
+
+add_qt_executable(watchdog
+    SOURCES
+        tst_watchdog.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+#### Keys ignored in scope 1:.:.:watchdog.pro:<TRUE>:
+# QT_TOOL_ENV = "checkenv"
+# checkenv.name = "QTEST_FUNCTION_TIMEOUT"
+# checkenv.value = "100"
+
+## Scopes:
+#####################################################################

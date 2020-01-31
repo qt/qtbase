@@ -1,0 +1,34 @@
+# Generated from odbc.pro.
+
+#####################################################################
+## QODBCDriverPlugin Plugin:
+#####################################################################
+
+qt_add_plugin(QODBCDriverPlugin
+    OUTPUT_NAME qsqlodbc
+    TYPE sqldrivers
+    SOURCES
+        main.cpp
+        qsql_odbc.cpp qsql_odbc_p.h
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+        QT_NO_CAST_TO_ASCII
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::SqlPrivate
+    PUBLIC_LIBRARIES
+        ODBC::ODBC
+        Qt::Core
+        Qt::Sql
+)
+
+#### Keys ignored in scope 1:.:.:odbc.pro:<TRUE>:
+# OTHER_FILES = "odbc.json"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(QODBCDriverPlugin CONDITION UNIX
+    DEFINES
+        UNICODE
+)

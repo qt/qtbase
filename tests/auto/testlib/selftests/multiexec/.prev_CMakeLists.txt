@@ -1,0 +1,15 @@
+# Generated from multiexec.pro.
+
+#####################################################################
+## multiexec Binary:
+#####################################################################
+
+add_qt_executable(multiexec
+    SOURCES
+        tst_multiexec.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

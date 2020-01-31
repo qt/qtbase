@@ -1343,8 +1343,7 @@
             "autoDetect": "!config.win32",
             "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
-            "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl))
-                          || (!config.watchos && !config.win32 && !config.wasm && libs.opengl)"
+            "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl)) || (!config.watchos && !config.win32 && !config.wasm && libs.opengl)"
         },
         "opengl-dynamic": {
             "label": "Dynamic OpenGL",
@@ -1827,9 +1826,7 @@
         {
             "type": "note",
             "condition": "features.xcb && config.darwin",
-            "message": "XCB support on macOS is minimal and untested. Some features will
-not work properly or at all (e.g. OpenGL, desktop services or accessibility),
-or may depend on your system and XQuartz setup."
+            "message": "XCB support on macOS is minimal and untested. Some features will not work properly or at all (e.g. OpenGL, desktop services or accessibility), or may depend on your system and XQuartz setup."
         },
         {
             "type": "note",
@@ -1844,16 +1841,12 @@ or may depend on your system and XQuartz setup."
         {
             "type": "warning",
             "condition": "features.gui && config.linux && !config.android && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb",
-            "message": "No QPA platform plugin enabled! This will
-produce a Qt that cannot run GUI applications.
-See \"Platform backends\" in the output of --help."
+            "message": "No QPA platform plugin enabled! This will produce a Qt that cannot run GUI applications.  See \"Platform backends\" in the output of --help."
         },
         {
             "type": "warning",
             "condition": "config.win32 && (features.opengles2 || features.opengl-dynamic) && !features.angle",
-            "message": "Using OpenGL ES 2.0 on Windows without ANGLE.
-The build will most likely fail.
-Specify -opengl desktop to use regular OpenGL."
+            "message": "Using OpenGL ES 2.0 on Windows without ANGLE.  The build will most likely fail.  Specify -opengl desktop to use regular OpenGL."
         },
         {
             "type": "warning",
@@ -1863,9 +1856,7 @@ Specify -opengl desktop to use regular OpenGL."
         {
             "type": "error",
             "condition": "features.gui && !config.watchos && input.opengl != 'no' && !features.opengl-desktop && !features.opengles2 && !features.opengl-dynamic",
-            "message": "The OpenGL functionality tests failed!
-You might need to modify the include and library search paths by editing QMAKE_INCDIR_OPENGL[_ES2],
-QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your platform."
+            "message": "The OpenGL functionality tests failed!  You might need to modify the include and library search paths by editing QMAKE_INCDIR_OPENGL[_ES2], QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your platform."
         },
         {
             "type": "warning",

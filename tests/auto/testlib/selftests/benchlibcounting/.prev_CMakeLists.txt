@@ -1,0 +1,15 @@
+# Generated from benchlibcounting.pro.
+
+#####################################################################
+## benchlibcounting Binary:
+#####################################################################
+
+add_qt_executable(benchlibcounting
+    SOURCES
+        tst_benchlibcounting.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

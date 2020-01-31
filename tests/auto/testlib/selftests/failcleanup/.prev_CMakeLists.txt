@@ -1,0 +1,15 @@
+# Generated from failcleanup.pro.
+
+#####################################################################
+## failcleanup Binary:
+#####################################################################
+
+add_qt_executable(failcleanup
+    SOURCES
+        tst_failcleanup.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

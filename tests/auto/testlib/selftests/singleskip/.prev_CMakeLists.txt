@@ -1,0 +1,15 @@
+# Generated from singleskip.pro.
+
+#####################################################################
+## singleskip Binary:
+#####################################################################
+
+add_qt_executable(singleskip
+    SOURCES
+        tst_singleskip.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

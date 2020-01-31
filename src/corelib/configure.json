@@ -770,11 +770,6 @@
             "condition": "libs.pps",
             "output": [ "privateFeature" ]
         },
-        "qeventtransition": {
-            "label": "QEventTransition class",
-            "condition": "features.statemachine",
-            "output": [ "publicFeature" ]
-        },
         "renameat2": {
             "label": "renameat2()",
             "condition": "config.linux && tests.renameat2",
@@ -1015,6 +1010,11 @@
             "condition": "features.properties",
             "output": [ "publicFeature", "feature" ]
         },
+        "qeventtransition": {
+            "label": "QEventTransition class",
+            "condition": "features.statemachine",
+            "output": [ "publicFeature" ]
+        },
         "gestures": {
             "label": "Gesture",
             "purpose": "Provides a framework for gestures.",
@@ -1082,10 +1082,7 @@
         },
         "topleveldomain": {
             "label": "QUrl::topLevelDomain()",
-            "purpose": "Provides support for extracting the top level domain from URLs.
-
-If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org,
-Mozilla License) is included. The data is then also used in QNetworkCookieJar::validateCookie.",
+            "purpose": "Provides support for extracting the top level domain from URLs.  If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org, Mozilla License) is included. The data is then also used in QNetworkCookieJar::validateCookie.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
         },
@@ -1119,10 +1116,7 @@ Note that this is required for plugin loading. Qt GUI needs QPA plugins for basi
         {
             "type": "note",
             "condition": "features.journald || features.syslog || (config.qnx && features.slog2)",
-            "message": "journald, syslog or slog2 integration is enabled.
-If your users intend to develop applications against this build,
-ensure that the IDEs they use either set QT_FORCE_STDERR_LOGGING to 1
-or are able to read the logged output from journald, syslog or slog2."
+            "message": "journald, syslog or slog2 integration is enabled.  If your users intend to develop applications against this build, ensure that the IDEs they use either set QT_FORCE_STDERR_LOGGING to 1 or are able to read the logged output from journald, syslog or slog2."
         },
         {
             "type": "error",
@@ -1132,15 +1126,12 @@ or are able to read the logged output from journald, syslog or slog2."
         {
             "type": "error",
             "condition": "input.doubleconversion == 'no' && !tests.xlocalescanprint",
-            "message": "Your C library does not provide sscanf_l or snprintf_l.
-You need to use libdouble-conversion for double/string conversion."
+            "message": "Your C library does not provide sscanf_l or snprintf_l.  You need to use libdouble-conversion for double/string conversion."
         },
         {
             "type": "error",
             "condition": "!tests.atomicfptr",
-            "message": "detected a std::atomic implementation that fails for function pointers.
-Please apply the patch corresponding to your Standard Library vendor, found in
-  qtbase/config.tests/atomicfptr"
+            "message": "detected a std::atomic implementation that fails for function pointers.  Please apply the patch corresponding to your Standard Library vendor, found in qtbase/config.tests/atomicfptr"
         },
         {
             "type": "error",

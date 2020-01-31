@@ -1,0 +1,112 @@
+# Generated from input.pro.
+
+qt_find_package(Libinput) # special case
+qt_find_package(XKB) # special case
+qt_find_package(Tslib) # special case
+qt_find_package(Mtdev) # special case
+
+#####################################################################
+## InputSupport Module:
+#####################################################################
+
+qt_add_module(InputSupport
+    STATIC
+    INTERNAL_MODULE
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::DeviceDiscoverySupportPrivate
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::DeviceDiscoverySupport
+        Qt::Gui
+    PRECOMPILED_HEADER
+        "../../corelib/global/qt_pch.h"
+)
+
+#### Keys ignored in scope 3:.:.:input-support.pro:<TRUE>:
+# MODULE = "input_support"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev
+    SOURCES
+        evdevkeyboard/qevdevkeyboard_defaultmap_p.h
+        evdevkeyboard/qevdevkeyboardhandler.cpp evdevkeyboard/qevdevkeyboardhandler_p.h
+        evdevkeyboard/qevdevkeyboardmanager.cpp evdevkeyboard/qevdevkeyboardmanager_p.h
+        evdevmouse/qevdevmousehandler.cpp evdevmouse/qevdevmousehandler_p.h
+        evdevmouse/qevdevmousemanager.cpp evdevmouse/qevdevmousemanager_p.h
+        evdevtouch/qevdevtouchhandler.cpp evdevtouch/qevdevtouchhandler_p.h
+        evdevtouch/qevdevtouchmanager.cpp evdevtouch/qevdevtouchmanager_p.h
+    INCLUDE_DIRECTORIES
+        evdevtouch/../shared
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_tabletevent
+    SOURCES
+        evdevtablet/qevdevtablethandler.cpp evdevtablet/qevdevtablethandler_p.h
+        evdevtablet/qevdevtabletmanager.cpp evdevtablet/qevdevtabletmanager_p.h
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_libudev AND QT_FEATURE_tabletevent
+    LIBRARIES
+        PkgConfig::Libudev
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_libudev
+    LIBRARIES
+        PkgConfig::Libudev
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_mtdev
+    LIBRARIES
+        PkgConfig::Mtdev
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_tslib
+    SOURCES
+        tslib/qtslib.cpp tslib/qtslib_p.h
+    PUBLIC_LIBRARIES
+        PkgConfig::Tslib
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput
+    SOURCES
+        libinput/qlibinputhandler.cpp libinput/qlibinputhandler_p.h
+        libinput/qlibinputkeyboard.cpp libinput/qlibinputkeyboard_p.h
+        libinput/qlibinputpointer.cpp libinput/qlibinputpointer_p.h
+        libinput/qlibinputtouch.cpp libinput/qlibinputtouch_p.h
+    INCLUDE_DIRECTORIES
+        libinput/../shared
+    LIBRARIES
+        Libinput::Libinput
+        PkgConfig::Libudev
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon
+    LIBRARIES
+        Qt::XkbCommonSupportPrivate
+        XKB::XKB
+    PUBLIC_LIBRARIES
+        Qt::XkbCommonSupport
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput
+    SOURCES
+        shared/devicehandlerlist_p.h
+        shared/qevdevutil.cpp shared/qevdevutil_p.h
+        shared/qtouchoutputmapping.cpp shared/qtouchoutputmapping_p.h
+)
+
+qt_extend_target(InputSupport CONDITION QT_FEATURE_integrityhid
+    SOURCES
+        integrityhid/qintegrityhidmanager.cpp integrityhid/qintegrityhidmanager.h
+    LIBRARIES
+        integrityhid
+)
+if(QT_FEATURE_xkbcommon)
+    add_subdirectory(xkbcommon)
+endif()

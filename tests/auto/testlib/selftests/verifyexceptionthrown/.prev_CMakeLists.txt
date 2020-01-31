@@ -1,0 +1,16 @@
+# Generated from verifyexceptionthrown.pro.
+
+#####################################################################
+## verifyexceptionthrown Binary:
+#####################################################################
+
+add_qt_executable(verifyexceptionthrown
+    EXCEPTIONS
+    SOURCES
+        tst_verifyexceptionthrown.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

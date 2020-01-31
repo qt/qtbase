@@ -1,0 +1,16 @@
+# Generated from qvkgen.pro.
+
+#####################################################################
+## qvkgen Tool:
+#####################################################################
+
+qt_add_tool(qvkgen
+    SOURCES
+        qvkgen.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+)
+
+#### Keys ignored in scope 1:.:.:qvkgen.pro:<TRUE>:
+# QMAKE_TARGET_DESCRIPTION = "Qt Vulkan Header Generator"
+# _OPTION = "host_build"

@@ -1,0 +1,15 @@
+# Generated from qnetworkinterface.pro.
+
+#####################################################################
+## tst_qnetworkinterface Test:
+#####################################################################
+
+add_qt_test(tst_qnetworkinterface
+    SOURCES
+        ../../../../shared/emulationdetector.h
+        tst_qnetworkinterface.cpp
+    INCLUDE_DIRECTORIES
+        ../../../../shared
+    PUBLIC_LIBRARIES
+        Qt::Network
+)

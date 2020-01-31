@@ -898,7 +898,7 @@
             "label": "Fuzzer (instrumentation only)",
             "autoDetect": false,
             "output": [ "publicConfig" ],
-            "purpose": [ "Adds instrumentation for fuzzing to the binaries but links to the usual main function instead of a fuzzer's." ]
+            "purpose": "Adds instrumentation for fuzzing to the binaries but links to the usual main function instead of a fuzzer's."
         },
         "sanitize_undefined": {
             "label": "Undefined",
@@ -1426,9 +1426,7 @@
         {
             "type": "warning",
             "condition": "input.debug_and_release == 'yes' && !config.darwin && !config.win32",
-            "message": "-debug-and-release is only supported on Darwin and Windows platforms.
-Qt can be built in release mode with separate debug information, so
--debug-and-release is no longer necessary."
+            "message": "-debug-and-release is only supported on Darwin and Windows platforms.  Qt can be built in release mode with separate debug information, so -debug-and-release is no longer necessary."
         },
         {
             "type": "error",
@@ -1461,9 +1459,7 @@ Qt can be built in release mode with separate debug information, so
         {
             "type": "note",
             "condition": "!features.shared",
-            "message": "Using static linking will disable the use of dynamically
-loaded plugins. Make sure to import all needed static plugins,
-or compile needed modules into the library."
+            "message": "Using static linking will disable the use of dynamically loaded plugins. Make sure to import all needed static plugins, or compile needed modules into the library."
         },
         {
             "type": "note",
@@ -1473,8 +1469,7 @@ or compile needed modules into the library."
         {
             "type": "note",
             "condition": "input.qreal == 'double' && arch.arm",
-            "message": "Qt is using double for qreal on this system. This is binary-incompatible against Qt 5.1.
-Configure with '-qreal float' to create a build that is binary-compatible with 5.1."
+            "message": "Qt is using double for qreal on this system. This is binary-incompatible against Qt 5.1.  Configure with '-qreal float' to create a build that is binary-compatible with 5.1."
         },
         {
             "type": "error",

@@ -1,0 +1,12 @@
+# Generated from udpServer.pro.
+
+#####################################################################
+## udpServer Binary:
+#####################################################################
+
+add_qt_executable(udpServer
+    SOURCES
+        main.cpp
+    PUBLIC_LIBRARIES
+        Qt::Network
+)

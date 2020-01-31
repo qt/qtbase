@@ -218,9 +218,7 @@
         {
             "type": "warning",
             "condition": "config.win32 && !config.msvc && features.sql-oci",
-            "message": "Qt does not support compiling the Oracle database driver with
-MinGW, due to lack of such support from Oracle. Consider disabling the
-Oracle driver, as the current build will most likely fail."
+            "message": "Qt does not support compiling the Oracle database driver with MinGW, due to lack of such support from Oracle. Consider disabling the Oracle driver, as the current build will most likely fail."
         }
     ],
 

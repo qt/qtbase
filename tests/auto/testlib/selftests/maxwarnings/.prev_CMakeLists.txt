@@ -1,0 +1,15 @@
+# Generated from maxwarnings.pro.
+
+#####################################################################
+## maxwarnings Binary:
+#####################################################################
+
+add_qt_executable(maxwarnings
+    SOURCES
+        maxwarnings.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

@@ -1,0 +1,58 @@
+# special case skip regeneration
+add_subdirectory(3rdparty)
+
+function(find_or_build_bootstrap_names)
+    if (QT_WILL_BUILD_TOOLS)
+        add_subdirectory(tools/bootstrap)  # bootstrap library
+    endif()
+    add_subdirectory(tools/moc)
+    add_subdirectory(tools/rcc)
+    add_subdirectory(tools/tracegen)
+    add_subdirectory(tools/cmake_automoc_parser)
+endfunction()
+
+find_or_build_bootstrap_names()
+
+add_subdirectory(corelib)
+if (QT_FEATURE_concurrent)
+    add_subdirectory(concurrent)
+endif()
+if (QT_FEATURE_sql)
+    add_subdirectory(sql)
+endif()
+if (QT_FEATURE_network)
+    add_subdirectory(network)
+endif()
+if (QT_FEATURE_xml)
+    add_subdirectory(xml)
+endif()
+add_subdirectory(tools)
+
+if (QT_FEATURE_dbus)
+    add_subdirectory(dbus)
+endif()
+if(QT_FEATURE_gui)
+    add_subdirectory(gui)
+
+    if(QT_FEATURE_opengl)
+        add_subdirectory(opengl)
+        add_subdirectory(openglextensions)
+    endif()
+
+    if(QT_FEATURE_widgets)
+        add_subdirectory(widgets)
+    endif()
+    add_subdirectory(platformsupport)
+    add_subdirectory(platformheaders)
+endif()
+if (QT_FEATURE_testlib)
+    add_subdirectory(testlib)
+endif()
+if(QT_FEATURE_gui AND QT_FEATURE_widgets)
+   add_subdirectory(printsupport)
+endif()
+add_subdirectory(plugins)
+
+add_subdirectory(winmain)
+
+add_subdirectory(android)

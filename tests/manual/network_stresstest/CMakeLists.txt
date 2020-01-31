@@ -1,0 +1,35 @@
+# Generated from network_stresstest.pro.
+
+#####################################################################
+## tst_network_stresstest Binary:
+#####################################################################
+
+add_qt_manual_test(tst_network_stresstest
+    SOURCES
+        minihttpserver.cpp minihttpserver.h
+        tst_network_stresstest.cpp
+    DEFINES
+        QT_DISABLE_DEPRECATED_BEFORE=0
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::NetworkPrivate
+    PUBLIC_LIBRARIES
+        Qt::Network
+        Qt::Test
+)
+
+# Resources:
+set(wwwfiles_resource_files
+    "qtest"
+)
+
+add_qt_resource(tst_network_stresstest "wwwfiles"
+    PREFIX
+        "/"
+    FILES
+        ${wwwfiles_resource_files}
+)
+
+
+#### Keys ignored in scope 1:.:.:network_stresstest.pro:<TRUE>:
+# QMAKE_RESOURCE_FLAGS = "-no-compress"

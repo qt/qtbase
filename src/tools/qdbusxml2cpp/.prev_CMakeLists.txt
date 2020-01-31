@@ -1,0 +1,36 @@
+# Generated from qdbusxml2cpp.pro.
+
+#####################################################################
+## qdbusxml2cpp Tool:
+#####################################################################
+
+qt_add_tool(qdbusxml2cpp
+    SOURCES
+        qdbusxml2cpp.cpp
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+        QT_NO_FOREACH
+    LIBRARIES
+        Qt::CorePrivate
+)
+
+#### Keys ignored in scope 1:.:.:qdbusxml2cpp.pro:<TRUE>:
+# QMAKE_TARGET_DESCRIPTION = "Qt D-Bus XML to C++ Compiler"
+# _OPTION = "host_build"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(qdbusxml2cpp CONDITION NOT force_bootstrap
+    LIBRARIES
+        Qt::DBusPrivate
+    PUBLIC_LIBRARIES
+        Qt::DBus
+)
+
+qt_extend_target(qdbusxml2cpp CONDITION force_bootstrap
+    LIBRARIES
+        bootstrap_dbusPrivate
+    PUBLIC_LIBRARIES
+        bootstrap_dbus
+)

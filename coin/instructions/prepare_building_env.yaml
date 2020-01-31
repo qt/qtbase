@@ -1,0 +1,202 @@
+# Prepares environment for building Qt module. It sets all important environment variables in particular
+# configures the right compiler and cmake generator
+type: Group
+instructions:
+
+  # Set default cmake generator, it may be overwritten later
+  - type: EnvironmentVariable
+    variableName: CMAKE_GENERATOR
+    variableValue: Ninja
+
+
+  # Export ICC specific env. variables
+  - type: Group
+    instructions:
+      - type: EnvironmentVariable
+        variableName: LD_LIBRARY_PATH
+        variableValue: "{{.Env.ICC64_18_LDLP}}"
+      - type: PrependToEnvironmentVariable
+        variableName: PATH
+        variableValue: "{{.Env.ICC64_18_PATH}}"
+    enable_if:
+      condition: property
+      property: host.compiler
+      equals_value: ICC_18
+
+
+  # Set CMAKE_C[XX]_COMPILER otherwise cmake may prioritize a wrong compiler
+  - type: Group
+    instructions:
+      - type: PrependToEnvironmentVariable
+        variableName: CONFIGURE_ARGS
+        variableValue: "-DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc "
+        enable_if:
+          condition: property
+          property: host.compiler
+          contains_value: ICC
+      - type: PrependToEnvironmentVariable
+        variableName: CONFIGURE_ARGS
+        variableValue: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ "
+        enable_if:
+          condition: property
+          property: host.compiler
+          contains_value: GCC
+      - type: PrependToEnvironmentVariable
+        variableName: CONFIGURE_ARGS
+        variableValue: "-DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe "
+        enable_if:
+          condition: property
+          property: host.compiler
+          contains_value: MSVC
+      - type: PrependToEnvironmentVariable
+        variableName: CONFIGURE_ARGS
+        variableValue: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ "
+        enable_if:
+          condition: property
+          property: host.compiler
+          contains_value: Clang
+
+
+  # Export TARGET_ARCHITECTURE and WINDOWS_SDK_VERSION for MSVC cross compilation
+  - type: Group
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+    instructions:
+      - type: EnvironmentVariable
+        variableName: TARGET_ARCHITECTURE
+        variableValue: amd64 # TODO add something like "{{toLower .Config host.arch}}"
+        disable_if:
+          condition: property
+          property: host.arch
+          not_equals_property: target.arch
+      - type: EnvironmentVariable
+        variableName: TARGET_ARCHITECTURE
+        variableValue: amd64_x86
+        enable_if:
+          condition: and
+          conditions:
+            - condition: property
+              property: target.arch
+              equals_property: X86
+            - condition: property
+              property: host.arch
+              equals_property: X86_64
+      - type: EnvironmentVariable
+        # HACK. Overwrite TARGET_ARCHITECTURE as we do not use standard MSVC cross
+        # compilation targets here. The target architecture will be detected by Qt.
+        variableName: TARGET_ARCHITECTURE
+        variableValue: x86
+        enable_if:
+          condition: property
+          property: target.os
+          in_values: ["WINRT", "WINPHONE", "WINCE"]
+      - type: EnvironmentVariable
+        variableName: WINDOWS_SDK_VERSION
+        variableValue: "10.0.14393.0"
+        enable_if:
+          condition: property
+          property: target.os
+          equals_value: WINRT
+      - type: EnvironmentVariable
+        variableName: WINDOWS_SDK_VERSION
+        variableValue: ""
+        disable_if:
+          condition: property
+          property: host.os
+          equals_value: WINRT  # TODO set windows sdk version for desktop windows as well
+
+
+  # MSVC is installed in somehow arbitrary places. To reduce amount of combinations we need to make a variable.
+  # This seems inverted, but on 64 bit hosts VS is installed into the x86 path, otherwise the regular one
+  # TODO cleanup, that step could be removed if we have same installation paths or we read the path from registry
+  # or we use compiler specific generator (probably superior solution as it allows to get rid of ENV_PREFIX).
+  - type: Group
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+    instructions:
+      # Try to pick one of many coexistent MSVC installation to use
+      # TODO cleanup, that could be much simpler if all tools are installed to similar paths, so it would
+      # be enough to substitute compiler name.
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%VS90COMNTOOLS%\\vsvars32.bat"
+        enable_if:
+          condition: property
+          property: host.compiler
+          equals_value: MSVC2008
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%VS100COMNTOOLS%\\vsvars32.bat"
+        enable_if:
+          condition: property
+          property: host.compiler
+          equals_value: MSVC2010
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio 11.0\\VC\\vcvarsall.bat"
+        enable_if:
+          condition: property
+          property: host.compiler
+          equals_value: MSVC2012
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat"
+        enable_if:
+          condition: property
+          property: host.compiler
+          equals_value: MSVC2013
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat"
+        enable_if:
+          condition: property
+          property: host.compiler
+          equals_value: MSVC2015
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio\\2017\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        enable_if:
+          condition: property
+          property: host.compiler
+          equals_value: MSVC2017
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%ProgramFiles(x86)%\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        enable_if:
+          condition: property
+          property: host.compiler
+          equals_value: MSVC2019
+
+
+  # With MSVC we need setup the environment before every subprocess call, the group below creates a script that
+  # does it. It is enough to prepand it to every call (it is safe to add it even on other OSes)
+  - type: Group
+    instructions:
+    - type: WriteFile
+      fileContents: "call \"{{.Env.VC_SCRIPT}}\" {{.Env.TARGET_ARCHITECTURE}} {{.Env.WINDOWS_SDK_VERSION}}\r\ncmd /c %*"
+      filename: c:\\users\\qt\\prefix.bat
+      fileMode: 420
+      maxTimeInSeconds: 20
+      maxTimeBetweenOutput: 20
+      enable_if:
+        condition: property
+        property: host.os
+        equals_value: Windows
+    - type: EnvironmentVariable
+      variableName: ENV_PREFIX
+      variableValue: "c:\\users\\qt\\prefix.bat"
+      enable_if:
+        condition: property
+        property: host.os
+        equals_value: Windows
+    - type: EnvironmentVariable
+      variableName: ENV_PREFIX
+      variableValue: ""
+      disable_if:
+        condition: property
+        property: host.os
+        equals_value: Windows

@@ -1,0 +1,6 @@
+add_subdirectory(qabstractanimation)
+add_subdirectory(qanimationgroup)
+add_subdirectory(qparallelanimationgroup)
+add_subdirectory(qpauseanimation)
+add_subdirectory(qsequentialanimationgroup)
+add_subdirectory(qvariantanimation)

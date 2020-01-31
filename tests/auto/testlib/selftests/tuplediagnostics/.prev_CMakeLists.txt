@@ -1,0 +1,12 @@
+# Generated from tuplediagnostics.pro.
+
+#####################################################################
+## tuplediagnostics Binary:
+#####################################################################
+
+add_qt_executable(tuplediagnostics
+    SOURCES
+        tst_tuplediagnostics.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)

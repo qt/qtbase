@@ -1,0 +1,3 @@
+# Generated from qplugin.pro.
+
+add_subdirectory(invalidplugin)

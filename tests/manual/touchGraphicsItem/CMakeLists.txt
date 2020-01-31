@@ -1,0 +1,19 @@
+# Generated from touchGraphicsItem.pro.
+
+#####################################################################
+## touchGraphicsItem Binary:
+#####################################################################
+
+add_qt_manual_test(touchGraphicsItem
+    GUI
+    SOURCES
+        main.cpp
+    INCLUDE_DIRECTORIES
+        .
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)
+
+#### Keys ignored in scope 1:.:.:touchGraphicsItem.pro:<TRUE>:
+# TEMPLATE = "app"

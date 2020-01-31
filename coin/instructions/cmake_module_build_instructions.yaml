@@ -1,0 +1,46 @@
+type: Group
+instructions:
+  - type: MakeDirectory
+    directory: .git
+  - type: SetBuildDirectory
+    directory: "{{.SourceDir}}"
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: "-DBUILD_TESTING=OFF {{.SourceDir}}"
+  - !include "{{qt/qtbase}}/call_cmake.yaml"
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to build sources. In the current state bug can be everywhere. Contact Liang first.
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake --install ."
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install package.
+  - type: EnvironmentVariable
+    variableName: DESTDIR
+    variableValue: "{{.InstallRoot}}"
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake --install ."
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install package for archiving.
+  - type: SignPackage
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+    directory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+  - type: UploadArtifact
+    archiveDirectory: "{{.InstallRoot}}/{{.AgentWorkingDir}}"
+    transferType: UploadModuleBuildArtifact
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200

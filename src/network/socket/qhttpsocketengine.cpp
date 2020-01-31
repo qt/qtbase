@@ -865,3 +865,5 @@ QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(qintptr, QOb
 QT_END_NAMESPACE
 
 #endif // !QT_NO_NETWORKPROXY
+
+#include "moc_qhttpsocketengine_p.cpp"

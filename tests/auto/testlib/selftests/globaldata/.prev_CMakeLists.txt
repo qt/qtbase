@@ -1,0 +1,15 @@
+# Generated from globaldata.pro.
+
+#####################################################################
+## globaldata Binary:
+#####################################################################
+
+add_qt_executable(globaldata
+    SOURCES
+        tst_globaldata.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

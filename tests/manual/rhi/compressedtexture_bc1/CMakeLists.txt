@@ -1,0 +1,42 @@
+# Generated from compressedtexture_bc1.pro.
+
+#####################################################################
+## compressedtexture_bc1 Binary:
+#####################################################################
+
+add_qt_manual_test(compressedtexture_bc1
+    GUI
+    SOURCES
+        compressedtexture_bc1.cpp
+    LIBRARIES
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+)
+
+# Resources:
+set_source_files_properties("../shared/qt256_bc1_9mips.dds"
+    PROPERTIES QT_RESOURCE_ALIAS "qt256_bc1_9mips.dds"
+)
+set_source_files_properties("../shared/texture.frag.qsb"
+    PROPERTIES QT_RESOURCE_ALIAS "texture.frag.qsb"
+)
+set_source_files_properties("../shared/texture.vert.qsb"
+    PROPERTIES QT_RESOURCE_ALIAS "texture.vert.qsb"
+)
+set(compressedtexture_bc1_resource_files
+    "../shared/qt256_bc1_9mips.dds"
+    "../shared/texture.frag.qsb"
+    "../shared/texture.vert.qsb"
+)
+
+add_qt_resource(compressedtexture_bc1 "compressedtexture_bc1"
+    PREFIX
+        "/"
+    FILES
+        ${compressedtexture_bc1_resource_files}
+)
+
+
+#### Keys ignored in scope 1:.:.:compressedtexture_bc1.pro:<TRUE>:
+# TEMPLATE = "app"

@@ -1,0 +1,8 @@
+# Generated from concurrent.pro.
+
+add_subdirectory(qtconcurrentfilter)
+add_subdirectory(qtconcurrentiteratekernel)
+add_subdirectory(qtconcurrentmap)
+add_subdirectory(qtconcurrentmedian)
+add_subdirectory(qtconcurrentrun)
+add_subdirectory(qtconcurrentthreadengine)

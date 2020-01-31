@@ -1,0 +1,33 @@
+# Generated from eglfs_kms_support.pro.
+
+#####################################################################
+## EglFsKmsSupport Module:
+#####################################################################
+
+qt_add_module(EglFsKmsSupport
+    INTERNAL_MODULE
+    NO_MODULE_HEADERS
+    SOURCES
+        qeglfskmsdevice.cpp qeglfskmsdevice.h
+        qeglfskmseventreader.cpp qeglfskmseventreader.h
+        qeglfskmshelpers.h
+        qeglfskmsintegration.cpp qeglfskmsintegration.h
+        qeglfskmsscreen.cpp qeglfskmsscreen.h
+    DEFINES
+        QT_EGL_NO_X11
+    INCLUDE_DIRECTORIES
+        ../../api
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::EdidSupportPrivate
+        Qt::EglFSDeviceIntegrationPrivate
+        Qt::GuiPrivate
+        Qt::KmsSupportPrivate
+    PUBLIC_LIBRARIES
+        Libdrm::Libdrm
+        Qt::Core
+        Qt::EdidSupport
+        Qt::EglFSDeviceIntegration
+        Qt::Gui
+        Qt::KmsSupport
+)

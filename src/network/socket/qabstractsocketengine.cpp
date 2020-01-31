@@ -274,3 +274,5 @@ int QAbstractSocketEngine::outboundStreamCount() const
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qabstractsocketengine_p.cpp"

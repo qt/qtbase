@@ -1,0 +1,49 @@
+# Generated from notepad.pro.
+
+#####################################################################
+## notepad Binary:
+#####################################################################
+
+add_qt_executable(notepad
+    GUI
+    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/notepad"
+    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/notepad"
+    SOURCES
+        main.cpp
+        notepad.cpp notepad.h notepad.ui
+    ENABLE_AUTOGEN_TOOLS
+        uic
+)
+
+# Resources:
+add_qt_resource(notepad "notepad" PREFIX "/" FILES
+    images/bold.png
+    images/copy.png
+    images/create.png
+    images/cut.png
+    images/edit_redo.png
+    images/edit_undo.png
+    images/exit.png
+    images/font.png
+    images/info.png
+    images/italic.png
+    images/new.png
+    images/open.png
+    images/paste.png
+    images/pencil.png
+    images/print.png
+    images/save.png
+    images/save_as.png
+    images/underline.png)
+
+
+#### Keys ignored in scope 1:.:.:notepad.pro:<TRUE>:
+# TEMPLATE = "app"
+
+## Scopes:
+#####################################################################
+
+extend_target(notepad CONDITION TARGET Qt::PrintSupport
+    PUBLIC_LIBRARIES
+        Qt::PrintSupport
+)

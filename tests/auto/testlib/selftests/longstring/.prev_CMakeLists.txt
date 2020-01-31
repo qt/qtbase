@@ -1,0 +1,15 @@
+# Generated from longstring.pro.
+
+#####################################################################
+## longstring Binary:
+#####################################################################
+
+add_qt_executable(longstring
+    SOURCES
+        tst_longstring.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

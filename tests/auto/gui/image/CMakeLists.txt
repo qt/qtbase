@@ -1,0 +1,17 @@
+# Generated from image.pro.
+
+if(TARGET Qt::Network)
+    add_subdirectory(qimagereader)
+endif()
+add_subdirectory(qicoimageformat)
+add_subdirectory(qpixmap)
+add_subdirectory(qimage)
+add_subdirectory(qimageiohandler)
+add_subdirectory(qimagewriter)
+add_subdirectory(qmovie)
+add_subdirectory(qpicture)
+add_subdirectory(qicon)
+add_subdirectory(qiconhighdpi)
+if(QT_FEATURE_private_tests)
+    add_subdirectory(qpixmapcache)
+endif()

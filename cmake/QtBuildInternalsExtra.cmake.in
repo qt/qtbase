@@ -1,0 +1,37 @@
+# Propagate common variables via BuildInternals package.
+set(QT_BUILD_SHARED_LIBS @BUILD_SHARED_LIBS@)
+option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" @BUILD_SHARED_LIBS@)
+set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
+set(INSTALL_CMAKE_NAMESPACE @INSTALL_CMAKE_NAMESPACE@)
+set(QT_BUILD_INTERNALS_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+# Propagate the original install prefix, so that a developer building a child module can
+# specify CMAKE_PREFIX_PATH for finding the Qt modules instead of CMAKE_INSTALL_PREFIX.
+set(CMAKE_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@ CACHE PATH
+    "Install path prefix, prepended onto install directories." FORCE)
+
+# Propagate developer builds to other modules via BuildInternals package.
+if(@FEATURE_developer_build@)
+    set(FEATURE_developer_build ON CACHE BOOL "Developer build." FORCE)
+endif()
+
+# Propagate non-prefix builds.
+set(QT_WILL_INSTALL @QT_WILL_INSTALL@ CACHE BOOL
+    "Boolean indicating if doing a Qt prefix build (vs non-prefix build)." FORCE)
+
+set(QT_SOURCE_TREE "@QT_SOURCE_TREE@" CACHE PATH
+"A path to the source tree of the previously configured QtBase project." FORCE)
+
+# Propagate decision of building tests and examples to other repositories.
+set(BUILD_TESTING @BUILD_TESTING@ CACHE BOOL "Build the testing tree.")
+set(BUILD_EXAMPLES @BUILD_EXAMPLES@ CACHE BOOL "Build Qt examples")
+set(QT_NO_MAKE_TESTS @QT_NO_MAKE_TESTS@ CACHE BOOL
+    "Should tests be built as part of the default 'all' target.")
+set(QT_NO_MAKE_EXAMPLES @QT_NO_MAKE_EXAMPLES@ CACHE BOOL
+    "Should examples be built as part of the default 'all' target.")
+
+# Propagate usage of ccache.
+set(QT_USE_CCACHE @QT_USE_CCACHE@ CACHE BOOL "Enable the use of ccache")
+
+# Extra set of exported variables
+@QT_EXTRA_BUILD_INTERNALS_VARS@

@@ -1,0 +1,20 @@
+list(APPEND CMAKE_PREFIX_PATH "@CMAKE_INSTALL_PREFIX@")
+list(APPEND CMAKE_FIND_ROOT_PATH "@CMAKE_INSTALL_PREFIX@")
+
+@init_platform@
+
+@init_qt_host_path@
+
+@init_original_toolchain_file@
+
+@init_vcpkg@
+
+if(qt_chainload_toolchain_file)
+    include("${qt_chainload_toolchain_file}")
+    unset(qt_chainload_toolchain_file)
+endif()
+
+if(QT_HOST_PATH)
+    list(APPEND CMAKE_PREFIX_PATH "${QT_HOST_PATH}")
+    list(APPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
+endif()
