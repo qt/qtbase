@@ -143,7 +143,7 @@ void tst_QSqlDriver::record()
     QCOMPARE(rec.count(), fields.size());
 
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    // QTBUG-1363: QSqlField::length() always return -1 when using QODBC3 driver and QSqlDatabase::record()
+    // QTBUG-1363: QSqlField::length() always return -1 when using QODBC driver and QSqlDatabase::record()
     if (dbType == QSqlDriver::MSSqlServer && db.driverName().startsWith("QODBC"))
         QCOMPARE(rec.field(1).length(), 20);
 

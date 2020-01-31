@@ -336,7 +336,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, const
 {
     int nativeCode = -1;
     QString message = qODBCWarn(p, &nativeCode);
-    return QSqlError(QLatin1String("QODBC3: ") + err, message, type,
+    return QSqlError(QLatin1String("QODBC: ") + err, message, type,
                      nativeCode != -1 ? QString::number(nativeCode) : QString());
 }
 
@@ -345,7 +345,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 {
     int nativeCode = -1;
     QString message = qODBCWarn(p, &nativeCode);
-    return QSqlError(QLatin1String("QODBC3: ") + err, message, type,
+    return QSqlError(QLatin1String("QODBC: ") + err, message, type,
                      nativeCode != -1 ? QString::number(nativeCode) : QString());
 }
 

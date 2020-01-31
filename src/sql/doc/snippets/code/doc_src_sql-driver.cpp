@@ -130,7 +130,7 @@ while (query1.next()) {
 
 
 //! [39]
-QSqlDatabase db = QSqlDatabase::addDatabase("QODBC3");
+QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
 QString connectString = QStringLiteral(
     "DRIVER=/path/to/installation/libodbcHDB.so;"
     "SERVERNODE=hostname:port;"

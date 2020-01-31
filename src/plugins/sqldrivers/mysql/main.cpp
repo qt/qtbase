@@ -62,7 +62,6 @@ QMYSQLDriverPlugin::QMYSQLDriverPlugin()
 QSqlDriver* QMYSQLDriverPlugin::create(const QString &name)
 {
     if (name == QLatin1String("QMYSQL") ||
-        name == QLatin1String("QMYSQL3") ||
         name == QLatin1String("QMARIADB")) {
         QMYSQLDriver* driver = new QMYSQLDriver();
         return driver;

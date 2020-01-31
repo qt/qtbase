@@ -61,7 +61,7 @@ QOCIDriverPlugin::QOCIDriverPlugin()
 
 QSqlDriver* QOCIDriverPlugin::create(const QString &name)
 {
-    if (name == QLatin1String("QOCI") || name == QLatin1String("QOCI8")) {
+    if (name == QLatin1String("QOCI")) {
         QOCIDriver* driver = new QOCIDriver();
         return driver;
     }

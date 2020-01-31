@@ -61,7 +61,7 @@ QPSQLDriverPlugin::QPSQLDriverPlugin()
 
 QSqlDriver* QPSQLDriverPlugin::create(const QString &name)
 {
-    if (name == QLatin1String("QPSQL") || name == QLatin1String("QPSQL7"))
+    if (name == QLatin1String("QPSQL"))
         return new QPSQLDriver;
     return nullptr;
 }

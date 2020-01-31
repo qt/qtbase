@@ -337,7 +337,7 @@ static QSqlError qMakeStmtError(const QString& err, QSqlError::ErrorType type,
                             MYSQL_STMT* stmt)
 {
     const char *cerr = mysql_stmt_error(stmt);
-    return QSqlError(QLatin1String("QMYSQL3: ") + err,
+    return QSqlError(QLatin1String("QMYSQL: ") + err,
                      QString::fromLatin1(cerr),
                      type, QString::number(mysql_stmt_errno(stmt)));
 }
