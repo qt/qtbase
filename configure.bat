@@ -261,7 +261,7 @@ if "%tmpl%" == "win32" (
     echo QMAKESPEC = %PLATFORM%>> Makefile
 ) else (
     echo QMAKESPEC = $^(SOURCE_PATH^)/mkspecs/%PLATFORM%>> Makefile
-    echo CONFIG_CXXFLAGS = -std=c++11 -ffunction-sections>> Makefile
+    echo CONFIG_CXXFLAGS = -std=c++17 -ffunction-sections>> Makefile
     echo CONFIG_LFLAGS = -Wl,--gc-sections>> Makefile
     type "%QTSRC%\qmake\Makefile.unix.win32" >> Makefile
     type "%QTSRC%\qmake\Makefile.unix.mingw" >> Makefile
