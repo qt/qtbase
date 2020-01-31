@@ -205,7 +205,7 @@ qt_add_module(Gui
         text/qabstracttextdocumentlayout.cpp text/qabstracttextdocumentlayout.h text/qabstracttextdocumentlayout_p.h
         text/qdistancefield.cpp text/qdistancefield_p.h
         text/qfont.cpp text/qfont.h text/qfont_p.h
-        text/qfontdatabase.cpp text/qfontdatabase.h
+        text/qfontdatabase.cpp text/qfontdatabase.h text/qfontdatabase_p.h
         text/qfontengine.cpp text/qfontengine_p.h
         text/qfontengine_qpf2.cpp
         text/qfontengineglyphcache.cpp text/qfontengineglyphcache_p.h

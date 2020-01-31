@@ -40,6 +40,7 @@
 #include "qplatformfontdatabase.h"
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qfontengine_qpf2_p.h>
+#include <QtGui/private/qfontdatabase_p.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <qpa/qplatformscreen.h>
@@ -376,16 +377,27 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal
     or using the font contained in the file referenced by \a fileName. Returns
     a list of family names, or an empty list if the font could not be added.
 
+    If \a applicationFont is non-null, its \c properties vector should be filled
+    with information from the loaded fonts. This is exposed through FontLoader in
+    Qt Quick where it is needed for disambiguating fonts in the same family. When
+    the function exits, the \a applicationFont should contain an entry of properties
+    per font in the file, or it should be empty if no font was loaded.
+
     \note The default implementation of this function does not add an application
     font. Subclasses should reimplement this function to perform the necessary
     loading and registration of fonts.
 */
-QStringList QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
     Q_UNUSED(fontData);
     Q_UNUSED(fileName);
+    Q_UNUSED(applicationFont);
+
+    if (applicationFont != nullptr)
+        applicationFont->properties.clear();
 
     qWarning("This plugin does not support application fonts");
+
     return QStringList();
 }
 

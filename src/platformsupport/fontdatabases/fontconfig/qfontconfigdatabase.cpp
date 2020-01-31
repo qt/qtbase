@@ -392,7 +392,7 @@ static inline bool requiresOpenType(int writingSystem)
             || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
 }
 
-static void populateFromPattern(FcPattern *pattern)
+static void populateFromPattern(FcPattern *pattern, QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr)
 {
     QString familyName;
     QString familyNameLang;
@@ -502,6 +502,18 @@ static void populateFromPattern(FcPattern *pattern)
     // Note: stretch should really be an int but registerFont incorrectly uses an enum
     QFont::Stretch stretch = QFont::Stretch(stretchFromFcWidth(width_value));
     QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
+
+    if (applicationFont != nullptr) {
+        QFontDatabasePrivate::ApplicationFont::Properties properties;
+        properties.familyName = familyName;
+        properties.styleName = styleName;
+        properties.weight = weight;
+        properties.style = style;
+        properties.stretch = stretch;
+
+        applicationFont->properties.append(properties);
+    }
+
     QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
 
@@ -523,6 +535,16 @@ static void populateFromPattern(FcPattern *pattern)
             altFamilyNameLang = familyNameLang;
 
         if (familyNameLang == altFamilyNameLang && altStyleName != styleName) {
+            if (applicationFont != nullptr) {
+                QFontDatabasePrivate::ApplicationFont::Properties properties;
+                properties.familyName = altFamilyName;
+                properties.styleName = altStyleName;
+                properties.weight = weight;
+                properties.style = style;
+                properties.stretch = stretch;
+
+                applicationFont->properties.append(properties);
+            }
             FontFile *altFontFile = new FontFile(*fontFile);
             QPlatformFontDatabase::registerFont(altFamilyName, altStyleName, QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,altFontFile);
         } else {
@@ -827,9 +849,12 @@ static FcPattern *queryFont(const FcChar8 *file, const QByteArray &data, int id,
 #endif
 }
 
-QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
     QStringList families;
+
+    if (applicationFont != nullptr)
+        applicationFont->properties.clear();
 
     FcFontSet *set = FcConfigGetFonts(nullptr, FcSetApplication);
     if (!set) {
@@ -855,7 +880,7 @@ QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, 
             QString family = QString::fromUtf8(reinterpret_cast<const char *>(fam));
             families << family;
         }
-        populateFromPattern(pattern);
+        populateFromPattern(pattern, applicationFont);
 
         FcFontSetAdd(set, pattern);
 

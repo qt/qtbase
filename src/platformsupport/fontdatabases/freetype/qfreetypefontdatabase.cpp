@@ -98,9 +98,9 @@ QFontEngine *QFreeTypeFontDatabase::fontEngine(const QByteArray &fontData, qreal
     return QFontEngineFT::create(fontData, pixelSize, hintingPreference);
 }
 
-QStringList QFreeTypeFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QFreeTypeFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
-    return QFreeTypeFontDatabase::addTTFile(fontData, fileName.toLocal8Bit());
+    return QFreeTypeFontDatabase::addTTFile(fontData, fileName.toLocal8Bit(), applicationFont);
 }
 
 void QFreeTypeFontDatabase::releaseHandle(void *handle)
@@ -111,7 +111,7 @@ void QFreeTypeFontDatabase::releaseHandle(void *handle)
 
 extern FT_Library qt_getFreetype();
 
-QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
+QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
     FT_Library library = qt_getFreetype();
 
@@ -199,9 +199,20 @@ QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const Q
         fontFile->indexValue = index;
 
         QFont::Stretch stretch = QFont::Unstretched;
+        QString styleName = QString::fromLatin1(face->style_name);
 
-        registerFont(family,QString::fromLatin1(face->style_name),QString(),weight,style,stretch,true,true,0,fixedPitch,writingSystems,fontFile);
+        if (applicationFont != nullptr) {
+            QFontDatabasePrivate::ApplicationFont::Properties properties;
+            properties.familyName = family;
+            properties.styleName = styleName;
+            properties.weight = weight;
+            properties.stretch = stretch;
+            properties.style = style;
 
+            applicationFont->properties.append(properties);
+        }
+
+        registerFont(family, styleName, QString(), weight, style, stretch, true, true, 0, fixedPitch, writingSystems, fontFile);
         families.append(family);
 
         FT_Done_Face(face);

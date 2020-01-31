@@ -76,7 +76,7 @@ public:
     void populateFamily(const QString &familyName) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) override;
+    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *font = nullptr) override;
     void releaseHandle(void *handle) override;
     QFont defaultFont() const override;
 

@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qfontdatabase.h"
+#include "qfontdatabase_p.h"
 #include "qloggingcategory.h"
 #include "qalgorithms.h"
 #include "qguiapplication.h"
@@ -173,71 +174,6 @@ static int getFontWeight(const QString &weightString)
 }
 
 
-struct  QtFontSize
-{
-
-    void *handle;
-
-    unsigned short pixelSize : 16;
-};
-
-
-
-struct QtFontStyle
-{
-    struct Key {
-        Key(const QString &styleString);
-        Key() : style(QFont::StyleNormal),
-                weight(QFont::Normal), stretch(0) { }
-        Key(const Key &o) : style(o.style), weight(o.weight), stretch(o.stretch) { }
-        uint style : 2;
-        signed int  weight : 8;
-        signed int stretch : 12;
-
-        bool operator==(const Key & other) {
-            return (style == other.style && weight == other.weight &&
-                    (stretch == 0 || other.stretch == 0 || stretch == other.stretch));
-        }
-        bool operator!=(const Key &other) {
-            return !operator==(other);
-        }
-        bool operator <(const Key &o) {
-            int x = (style << 12) + (weight << 14) + stretch;
-            int y = (o.style << 12) + (o.weight << 14) + o.stretch;
-            return (x < y);
-        }
-    };
-
-    QtFontStyle(const Key &k)
-        : key(k), bitmapScalable(false), smoothScalable(false),
-          count(0), pixelSizes(nullptr)
-    {
-    }
-
-    ~QtFontStyle() {
-        while (count) {
-            // bitfield count-- in while condition does not work correctly in mwccsym2
-            count--;
-            QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
-            if (integration) {
-                integration->fontDatabase()->releaseHandle(pixelSizes[count].handle);
-            }
-        }
-        free(pixelSizes);
-    }
-
-    Key key;
-    bool bitmapScalable : 1;
-    bool smoothScalable : 1;
-    signed int count    : 30;
-    QtFontSize *pixelSizes;
-    QString styleName;
-
-    bool antialiased;
-
-    QtFontSize *pixelSize(unsigned short size, bool = false);
-};
-
 QtFontStyle::Key::Key(const QString &styleString)
     : style(QFont::StyleNormal), weight(QFont::Normal), stretch(0)
 {
@@ -284,22 +220,6 @@ QtFontSize *QtFontStyle::pixelSize(unsigned short size, bool add)
     return pixelSizes + (count++);
 }
 
-struct QtFontFoundry
-{
-    QtFontFoundry(const QString &n) : name(n), count(0), styles(nullptr) {}
-    ~QtFontFoundry() {
-        while (count--)
-            delete styles[count];
-        free(styles);
-    }
-
-    QString name;
-
-    int count;
-    QtFontStyle **styles;
-    QtFontStyle *style(const QtFontStyle::Key &, const QString & = QString(), bool = false);
-};
-
 QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, const QString &styleName, bool create)
 {
     int pos = 0;
@@ -330,46 +250,6 @@ QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, const QString &st
     count++;
     return styles[pos];
 }
-
-
-struct  QtFontFamily
-{
-    enum WritingSystemStatus {
-        Unknown         = 0,
-        Supported       = 1,
-        UnsupportedFT  = 2,
-        Unsupported     = UnsupportedFT
-    };
-
-    QtFontFamily(const QString &n)
-        :
-        populated(false),
-        fixedPitch(false),
-        name(n), count(0), foundries(nullptr)
-    {
-        memset(writingSystems, 0, sizeof(writingSystems));
-    }
-    ~QtFontFamily() {
-        while (count--)
-            delete foundries[count];
-        free(foundries);
-    }
-
-    bool populated : 1;
-    bool fixedPitch : 1;
-
-    QString name;
-    QStringList aliases;
-    int count;
-    QtFontFoundry **foundries;
-
-    unsigned char writingSystems[QFontDatabase::WritingSystemsCount];
-
-    bool matchesFamilyName(const QString &familyName) const;
-    QtFontFoundry *foundry(const QString &f, bool = false);
-
-    void ensurePopulated();
-};
 
 QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
 {
@@ -413,85 +293,6 @@ void QtFontFamily::ensurePopulated()
     QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFamily(name);
     Q_ASSERT_X(populated, Q_FUNC_INFO, qPrintable(name));
 }
-
-
-struct FallbacksCacheKey {
-    QString family;
-    QFont::Style style;
-    QFont::StyleHint styleHint;
-    QChar::Script script;
-};
-
-inline bool operator==(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rhs) noexcept
-{
-    return lhs.script == rhs.script &&
-            lhs.styleHint == rhs.styleHint &&
-            lhs.style == rhs.style &&
-            lhs.family == rhs.family;
-}
-
-inline bool operator!=(const FallbacksCacheKey &lhs, const FallbacksCacheKey &rhs) noexcept
-{
-    return !operator==(lhs, rhs);
-}
-
-inline uint qHash(const FallbacksCacheKey &key, uint seed = 0) noexcept
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, key.family);
-    seed = hash(seed, int(key.style));
-    seed = hash(seed, int(key.styleHint));
-    seed = hash(seed, int(key.script));
-    return seed;
-}
-
-
-class QFontDatabasePrivate
-{
-public:
-    QFontDatabasePrivate()
-        : count(0), families(nullptr),
-          fallbacksCache(64)
-    { }
-
-    ~QFontDatabasePrivate() {
-        free();
-    }
-
-    enum FamilyRequestFlags {
-        RequestFamily = 0,
-        EnsureCreated,
-        EnsurePopulated
-    };
-
-    QtFontFamily *family(const QString &f, FamilyRequestFlags flags = EnsurePopulated);
-    void free() {
-        while (count--)
-            delete families[count];
-        ::free(families);
-        families = nullptr;
-        count = 0;
-        // don't clear the memory fonts!
-    }
-
-    int count;
-    QtFontFamily **families;
-
-    QCache<FallbacksCacheKey, QStringList> fallbacksCache;
-
-
-    struct ApplicationFont {
-        QString fileName;
-        QByteArray data;
-        QStringList families;
-    };
-    QVector<ApplicationFont> applicationFonts;
-    int addAppFont(const QByteArray &fontData, const QString &fileName);
-    bool isApplicationFont(const QString &fileName);
-
-    void invalidate();
-};
-Q_DECLARE_TYPEINFO(QFontDatabasePrivate::ApplicationFont, Q_MOVABLE_TYPE);
 
 void QFontDatabasePrivate::invalidate()
 {
@@ -748,6 +549,10 @@ QRecursiveMutex *qt_fontdatabase_mutex()
     return fontDatabaseMutex();
 }
 
+QFontDatabasePrivate *QFontDatabasePrivate::instance()
+{
+    return privateDb();
+}
 
 void qt_registerFont(const QString &familyName, const QString &stylename,
                      const QString &foundryname, int weight,
@@ -878,7 +683,7 @@ static QStringList fallbacksForFamily(const QString &family, QFont::Style style,
     if (!db->count)
         initializeDb();
 
-    const FallbacksCacheKey cacheKey = { family, style, styleHint, script };
+    const QtFontFallbacksCacheKey cacheKey = { family, style, styleHint, script };
 
     if (const QStringList *fallbacks = db->fallbacksCache.object(cacheKey))
         return *fallbacks;
@@ -922,7 +727,7 @@ static void initializeDb()
     if (!db->count) {
         QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
         for (int i = 0; i < db->applicationFonts.count(); i++) {
-            if (!db->applicationFonts.at(i).families.isEmpty())
+            if (!db->applicationFonts.at(i).properties.isEmpty())
                 registerFont(&db->applicationFonts[i]);
         }
     }
@@ -1050,9 +855,22 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
     return engine;
 }
 
+QtFontStyle::~QtFontStyle()
+{
+   while (count) {
+       // bitfield count-- in while condition does not work correctly in mwccsym2
+       count--;
+       QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
+       if (integration)
+           integration->fontDatabase()->releaseHandle(pixelSizes[count].handle);
+   }
+
+   free(pixelSizes);
+}
+
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
-    fnt->families = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->addApplicationFont(fnt->data,fnt->fileName);
+    QGuiApplicationPrivate::platformIntegration()->fontDatabase()->addApplicationFont(fnt->data, fnt->fileName, fnt);
 }
 
 static QtFontStyle *bestStyle(QtFontFoundry *foundry, const QtFontStyle::Key &styleKey,
@@ -2455,7 +2273,7 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
 
     int i;
     for (i = 0; i < applicationFonts.count(); ++i)
-        if (applicationFonts.at(i).families.isEmpty())
+        if (applicationFonts.at(i).properties.isEmpty())
             break;
     if (i >= applicationFonts.count()) {
         applicationFonts.append(ApplicationFont());
@@ -2467,7 +2285,7 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
 
     bool wasEmpty = privateDb()->count == 0;
     registerFont(&font);
-    if (font.families.isEmpty())
+    if (font.properties.isEmpty())
         return -1;
 
     applicationFonts[i] = font;
@@ -2556,7 +2374,14 @@ int QFontDatabase::addApplicationFontFromData(const QByteArray &fontData)
 QStringList QFontDatabase::applicationFontFamilies(int id)
 {
     QMutexLocker locker(fontDatabaseMutex());
-    return privateDb()->applicationFonts.value(id).families;
+
+    QStringList ret;
+    ret.reserve(privateDb()->applicationFonts.value(id).properties.size());
+
+    for (const auto &properties : privateDb()->applicationFonts.value(id).properties)
+        ret.append(properties.familyName);
+
+    return ret;
 }
 
 /*!

@@ -949,7 +949,7 @@ static void getFamiliesAndSignatures(const QByteArray &fontData,
     }
 }
 
-QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
     WinApplicationFont font;
     font.fileName = fileName;
@@ -992,6 +992,16 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             HFONT hfont = CreateFontIndirect(&lf);
             HGDIOBJ oldobj = SelectObject(hdc, hfont);
 
+            if (applicationFont != nullptr) {
+                QFontDatabasePrivate::ApplicationFont::Properties properties;
+                properties.style = values.isItalic ? QFont::StyleItalic : QFont::StyleNormal;
+                properties.weight = QPlatformFontDatabase::weightFromInteger(values.weight);
+                properties.familyName = familyName;
+                properties.styleName = styleName;
+
+                applicationFont->properties.append(properties);
+            }
+
             TEXTMETRIC textMetrics;
             GetTextMetrics(hdc, &textMetrics);
 
@@ -1010,7 +1020,9 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
         QByteArray data = f.readAll();
         f.close();
 
-        getFamiliesAndSignatures(data, &families, nullptr, nullptr);
+
+        getFamiliesAndSignatures(data, &families, nullptr, applicationFont != nullptr ? &fontValues : nullptr);
+
         if (families.isEmpty())
             return QStringList();
 
@@ -1023,6 +1035,20 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
         for (int j = 0; j < families.count(); ++j) {
             const QString familyName = families.at(j).name;
             familyNames << familyName;
+
+            if (applicationFont != nullptr) {
+                const QString &styleName = families.at(j).style;
+                const QFontValues &values = fontValues.at(j);
+
+                QFontDatabasePrivate::ApplicationFont::Properties properties;
+                properties.style = values.isItalic ? QFont::StyleItalic : QFont::StyleNormal;
+                properties.weight = QPlatformFontDatabase::weightFromInteger(values.weight);
+                properties.familyName = familyName;
+                properties.styleName = styleName;
+
+                applicationFont->properties.append(properties);
+            }
+
             populateFamily(familyName);
         }
     }

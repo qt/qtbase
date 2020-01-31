@@ -283,7 +283,7 @@ QStringList QWindowsDirectWriteFontDatabase::fallbacksForFamily(const QString &f
     return result;
 }
 
-QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
     qCDebug(lcQpaFonts) << "Adding application font" << fileName;
 
@@ -354,12 +354,30 @@ QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray
                             << ", fixed:" << fixed;
 
         if (!englishLocaleFamilyName.isEmpty()) {
+            if (applicationFont != nullptr) {
+                QFontDatabasePrivate::ApplicationFont::Properties properties;
+                properties.style = style;
+                properties.weight = weight;
+                properties.familyName = englishLocaleFamilyName;
+                properties.styleName = englishLocaleStyleName;
+                applicationFont->properties.append(properties);
+            }
+
             ret.append(englishLocaleFamilyName);
             QPlatformFontDatabase::registerFont(englishLocaleFamilyName, englishLocaleStyleName, QString(), weight, style, stretch, antialias, scalable, size, fixed, writingSystems, face);
             face->AddRef();
         }
 
         if (!defaultLocaleFamilyName.isEmpty() && defaultLocaleFamilyName != englishLocaleFamilyName) {
+            if (applicationFont != nullptr) {
+                QFontDatabasePrivate::ApplicationFont::Properties properties;
+                properties.style = style;
+                properties.weight = weight;
+                properties.familyName = englishLocaleFamilyName;
+                properties.styleName = englishLocaleStyleName;
+                applicationFont->properties.append(properties);
+            }
+
             ret.append(defaultLocaleFamilyName);
             QPlatformFontDatabase::registerFont(defaultLocaleFamilyName, defaultLocaleStyleName, QString(), weight, style, stretch, antialias, scalable, size, fixed, writingSystems, face);
             face->AddRef();

@@ -115,7 +115,6 @@ qt_add_module(Gui
         painting/qgrayraster.c painting/qgrayraster_p.h
         painting/qicc.cpp painting/qicc_p.h
         painting/qimagescale.cpp
-        painting/qmatrix.cpp painting/qmatrix.h
         painting/qmemrotate.cpp painting/qmemrotate_p.h
         painting/qoutlinemapper.cpp painting/qoutlinemapper_p.h
         painting/qpagedpaintdevice.cpp painting/qpagedpaintdevice.h painting/qpagedpaintdevice_p.h
@@ -161,7 +160,7 @@ qt_add_module(Gui
         text/qabstracttextdocumentlayout.cpp text/qabstracttextdocumentlayout.h text/qabstracttextdocumentlayout_p.h
         text/qdistancefield.cpp text/qdistancefield_p.h
         text/qfont.cpp text/qfont.h text/qfont_p.h
-        text/qfontdatabase.cpp text/qfontdatabase.h
+        text/qfontdatabase.cpp text/qfontdatabase.h text/qfontdatabase_p.h
         text/qfontengine.cpp text/qfontengine_p.h
         text/qfontengine_qpf2.cpp
         text/qfontengineglyphcache.cpp text/qfontengineglyphcache_p.h

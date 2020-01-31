@@ -3,6 +3,7 @@
 HEADERS += \
     text/qfont.h \
     text/qfontdatabase.h \
+    text/qfontdatabase_p.h \
     text/qfontengine_p.h \
     text/qfontengineglyphcache_p.h \
     text/qfontinfo.h \

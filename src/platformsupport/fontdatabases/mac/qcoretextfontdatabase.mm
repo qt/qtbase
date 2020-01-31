@@ -322,7 +322,7 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
     }
 }
 
-void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName)
+void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
     FontDescription fd;
     getFontDescription(font, &fd);
@@ -331,6 +331,17 @@ void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font, con
     // match, as CTFontDescriptorCreateMatchingFontDescriptors will return descriptors for replacement
     // fonts if a font family does not have any fonts available on the system.
     QString family = !familyName.isNull() ? familyName : static_cast<QString>(fd.familyName);
+
+    if (applicationFont != nullptr) {
+        QFontDatabasePrivate::ApplicationFont::Properties properties;
+        properties.familyName = family;
+        properties.styleName = fd.styleName;
+        properties.weight = fd.weight;
+        properties.stretch = fd.stretch;
+        properties.style = fd.style;
+
+        applicationFont->properties.append(properties);
+    }
 
     CFRetain(font);
     QPlatformFontDatabase::registerFont(family, fd.styleName, fd.foundryName, fd.weight, fd.style, fd.stretch,
@@ -570,7 +581,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     return fallbackList;
 }
 
-QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont)
 {
     QCFType<CFArrayRef> fonts;
 
@@ -597,7 +608,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
     const int numFonts = CFArrayGetCount(fonts);
     for (int i = 0; i < numFonts; ++i) {
         CTFontDescriptorRef fontDescriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(fonts, i));
-        populateFromDescriptor(fontDescriptor);
+        populateFromDescriptor(fontDescriptor, QString(), applicationFont);
         QCFType<CFStringRef> familyName = CFStringRef(CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute));
         families.append(QString::fromCFString(familyName));
     }

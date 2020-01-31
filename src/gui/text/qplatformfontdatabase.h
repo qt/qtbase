@@ -59,6 +59,7 @@
 #include <QtGui/QFontDatabase>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qfont_p.h>
+#include <QtGui/private/qfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -111,7 +112,7 @@ public:
     virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
     virtual QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
-    virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
+    virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *font = nullptr);
     virtual void releaseHandle(void *handle);
 
     virtual QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);

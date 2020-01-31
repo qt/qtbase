@@ -76,7 +76,7 @@ public:
     void invalidate() override;
 
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) override;
+    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr) override;
     void releaseHandle(void *handle) override;
     bool isPrivateFontFamily(const QString &family) const override;
     QFont defaultFont() const override;
@@ -91,7 +91,7 @@ protected:
     mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
 
 private:
-    void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
+    void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString(), QFontDatabasePrivate::ApplicationFont *applicationFont = nullptr);
     static CFArrayRef fallbacksForFamily(const QString &family);
 
     mutable QString defaultFontName;
