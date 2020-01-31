@@ -54,7 +54,7 @@
 Database options:
 
   -sql-<driver> ........ Enable SQL <driver> plugin. Supported drivers:
-                         db2 ibase mysql oci odbc psql sqlite2 sqlite tds
+                         db2 ibase mysql oci odbc psql sqlite
                          [all auto]
   -sqlite .............. Select used sqlite3 [system/qt]
 
@@ -144,21 +144,6 @@ qmake -- PSQL_INCDIR=C:/psql/include PSQL_LIBDIR=C:/psql/lib/ms
 nmake sub-psql
 nmake install
 //! [15]
-
-
-//! [16]
-cd $QTDIR/qtbase/src/plugins/sqldrivers
-qmake -- TDS_PREFIX=$SYBASE
-make sub-tds
-//! [16]
-
-
-//! [17]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers
-qmake
-nmake sub-tds
-nmake install
-//! [17]
 
 
 //! [18]
@@ -271,8 +256,6 @@ Checking for MySQL... yes
 Checking for OCI (Oracle)... no
 Checking for ODBC... yes
 Checking for PostgreSQL... no
-Checking for SQLite (version 2)... no
-Checking for TDS (Sybase)... no
 Done running configuration tests.
 
 Configure summary:
@@ -284,10 +267,8 @@ Qt Sql Drivers:
   OCI (Oracle) ........................... no
   ODBC ................................... yes
   PostgreSQL ............................. no
-  SQLite2 ................................ no
   SQLite ................................. yes
     Using system provided SQLite ......... no
-  TDS (Sybase) ........................... no
 
 Qt is now configured for building. Just run 'mingw32-make'.
 Once everything is built, you must run 'mingw32-make install'.

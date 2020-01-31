@@ -1,4 +1,4 @@
-Please note that the DB2, MySQL, Oracle and TDS client drivers are not
+Please note that the DB2, MySQL and Oracle client drivers are not
 distributed with the Qt Open Source Editions.
 
 This is because the client libraries are distributed under a license which

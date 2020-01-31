@@ -7,9 +7,7 @@
 
     "commandline": {
         "assignments": {
-            "MYSQL_PATH": "mysql.prefix",
-            "SYBASE": "tds.prefix",
-            "SYBASE_LIBS": "tds.libs"
+            "MYSQL_PATH": "mysql.prefix"
         },
         "options": {
             "mysql_config": "string",
@@ -22,17 +20,13 @@
             "sql-odbc": "boolean",
             "sql-psql": "boolean",
             "sql-sqlite": "boolean",
-            "sql-sqlite2": "boolean",
-            "sql-tds": "boolean",
             "plugin-sql-db2": { "type": "void", "name": "sql-db2" },
             "plugin-sql-ibase": { "type": "void", "name": "sql-ibase" },
             "plugin-sql-mysql": { "type": "void", "name": "sql-mysql" },
             "plugin-sql-oci": { "type": "void", "name": "sql-oci" },
             "plugin-sql-odbc": { "type": "void", "name": "sql-odbc" },
             "plugin-sql-psql": { "type": "void", "name": "sql-psql" },
-            "plugin-sql-sqlite": { "type": "void", "name": "sql-sqlite" },
-            "plugin-sql-sqlite2": { "type": "void", "name": "sql-sqlite2" },
-            "plugin-sql-tds": { "type": "void", "name": "sql-tds" }
+            "plugin-sql-sqlite": { "type": "void", "name": "sql-sqlite" }
         }
     },
 
@@ -94,15 +88,6 @@
                 { "type": "psqlEnv", "libs": "-lpq", "condition": "!config.win32" }
             ]
         },
-        "tds": {
-            "label": "TDS (Sybase)",
-            "test": {},
-            "headers": [ "sybfront.h", "sybdb.h" ],
-            "sources": [
-                { "type": "sybaseEnv", "libs": "-lNTWDBLIB", "condition": "config.win32" },
-                { "type": "sybaseEnv", "libs": "-lsybdb", "condition": "!config.win32" }
-            ]
-        },
         "oci": {
             "label": "OCI (Oracle)",
             "test": {},
@@ -130,14 +115,6 @@
                 { "libs": "-lodbc32", "condition": "config.win32" },
                 { "libs": "-liodbc", "condition": "config.darwin" },
                 { "libs": "-lodbc", "condition": "!config.win32 && !config.darwin" }
-            ]
-        },
-        "sqlite2": {
-            "label": "SQLite (version 2)",
-            "test": {},
-            "headers": "sqlite.h",
-            "sources": [
-                "-lsqlite"
             ]
         },
         "sqlite3": {
@@ -191,11 +168,6 @@
             "condition": "libs.psql",
             "output": [ "privateFeature" ]
         },
-        "sql-sqlite2": {
-            "label": "SQLite2",
-            "condition": "libs.sqlite2",
-            "output": [ "privateFeature" ]
-        },
         "sql-sqlite": {
             "label": "SQLite",
             "condition": "features.datestring",
@@ -205,11 +177,6 @@
             "label": "  Using system provided SQLite",
             "autoDetect": false,
             "condition": "features.sql-sqlite && libs.sqlite3",
-            "output": [ "privateFeature" ]
-        },
-        "sql-tds": {
-            "label": "TDS (Sybase)",
-            "condition": "features.datestring && libs.tds",
             "output": [ "privateFeature" ]
         }
     },
@@ -227,7 +194,7 @@
             "section": "Qt Sql Drivers",
             "entries": [
                 "sql-db2", "sql-ibase", "sql-mysql", "sql-oci", "sql-odbc", "sql-psql",
-                "sql-sqlite2", "sql-sqlite", "system-sqlite", "sql-tds"
+                "sql-sqlite", "system-sqlite"
             ]
         }
     ]
