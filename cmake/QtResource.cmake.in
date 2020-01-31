@@ -102,13 +102,15 @@ function(__qt_quick_compiler_process_resources target resource_name)
             endif()
             add_custom_command(
                 OUTPUT ${compiled_file}
-                DEPENDS ${file_absolute}
                 ${QT_TOOL_PATH_SETUP_COMMAND}
                 COMMAND
                     @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen
-                    --resource-path ${file_resource_path}
-                    -o ${compiled_file}
-                    ${file_absolute}
+                    --resource-path "${file_resource_path}"
+                    -o "${compiled_file}"
+                    "${file_absolute}"
+                DEPENDS
+                    $<TARGET_FILE:@QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen>
+                    "${file_absolute}"
             )
             target_sources(${target} PRIVATE ${compiled_file})
         endforeach()
@@ -136,14 +138,16 @@ function(__qt_quick_compiler_process_resources target resource_name)
 
         add_custom_command(
             OUTPUT ${qmlcache_loader_file}
-            DEPENDS ${qmlcache_loader_list}
             ${QT_TOOL_PATH_SETUP_COMMAND}
             COMMAND
                 @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen
                 ${retained_args}
                 --resource-name "${resource_name_arg}"
-                -o ${qmlcache_loader_file}
+                -o "${qmlcache_loader_file}"
                 "@${qmlcache_loader_list}"
+            DEPENDS
+                $<TARGET_FILE:@QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen>
+                "${qmlcache_loader_list}"
         )
 
         __qt_propagate_generated_resource(${target}
@@ -293,7 +297,10 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
     add_custom_command(OUTPUT "${generatedSourceCode}"
                        COMMAND "@QT_CMAKE_EXPORT_NAMESPACE@::rcc"
                        ARGS ${rccArgs}
-                       DEPENDS ${resource_dependencies} ${generatedResourceFile}
+                       DEPENDS
+                        ${resource_dependencies}
+                        ${generatedResourceFile}
+                        "@QT_CMAKE_EXPORT_NAMESPACE@::rcc"
                        COMMENT "RCC ${newResourceName}"
                        VERBATIM)
 

@@ -270,9 +270,16 @@ function(qt6_add_binary_resources target )
     endforeach()
 
     add_custom_command(OUTPUT ${rcc_destination}
+                       DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                        ARGS ${rcc_options} --binary --name ${target} --output ${rcc_destination} ${infiles}
-                       DEPENDS ${rc_depends} ${out_depends} ${infiles} VERBATIM)
+                       DEPENDS
+                            ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                            ${rc_depends}
+                            ${out_depends}
+                            ${infiles}
+                       VERBATIM)
+
     add_custom_target(${target} ALL DEPENDS ${rcc_destination})
 endfunction()
 
@@ -324,7 +331,8 @@ function(qt6_add_resources outfiles )
                                COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                                ARGS ${rcc_options} --name ${outfilename} --output ${outfile} ${infile}
                                MAIN_DEPENDENCY ${infile}
-                               DEPENDS ${_rc_depends} "${_out_depends}" VERBATIM)
+                               DEPENDS ${_rc_depends} "${_out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                               VERBATIM)
             set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
             set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
             list(APPEND ${outfiles} ${outfile})
@@ -377,7 +385,8 @@ function(qt6_add_big_resources outfiles )
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
-                           DEPENDS ${infile} ${_rc_depends} "${out_depends}" VERBATIM)
+                           DEPENDS ${infile} ${_rc_depends} "${out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                           VERBATIM)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
         add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
         set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
@@ -388,7 +397,7 @@ function(qt6_add_big_resources outfiles )
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            ARGS ${rcc_options} --name ${outfilename} --pass 2 --temp $<TARGET_OBJECTS:rcc_object_${outfilename}> --output ${outfile} ${infile}
-                           DEPENDS rcc_object_${outfilename}
+                           DEPENDS rcc_object_${outfilename} ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            VERBATIM)
        list(APPEND ${outfiles} ${outfile})
     endforeach()
@@ -745,6 +754,7 @@ function(qt6_generate_meta_types_json_file target)
     set(type_list_file "${target_binary_dir}/meta_types/json_file_list.txt")
 
     add_custom_target(${target}_automoc_json_extraction
+        DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
         BYPRODUCTS ${type_list_file}
         COMMAND
             ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
@@ -771,7 +781,7 @@ function(qt6_generate_meta_types_json_file target)
     set(metatypes_dep_file "${target_binary_dir}/meta_types/${metatypes_dep_file_name}")
 
     add_custom_command(OUTPUT ${metatypes_file}
-        DEPENDS ${type_list_file}
+        DEPENDS ${type_list_file} ${QT_CMAKE_EXPORT_NAMESPACE}::moc
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc
             -o ${metatypes_file}
             --collect-json "@${type_list_file}"

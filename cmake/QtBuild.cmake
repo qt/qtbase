@@ -3398,7 +3398,7 @@ function(qt_create_qdbusxml2cpp_command target infile)
     add_custom_command(OUTPUT "${header_file}" "${source_file}"
                        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp ${arg_FLAGS} "${option}"
                                "${header_file}:${source_file}" "${absolute_in_file_path}"
-                       DEPENDS "${absolute_in_file_path}"
+                       DEPENDS "${absolute_in_file_path}" ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp
                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
                        VERBATIM)
 
@@ -3486,6 +3486,7 @@ function(qt_add_docs)
 
     # qtattributionsscanner
     add_custom_target(qattributionsscanner_${target}
+        DEPENDS ${qattributionsscanner_bin}
         COMMAND ${qtattributionsscanner_bin}
         ${PROJECT_SOURCE_DIR}
         --filter "QDocModule=${qdoc_target}"
@@ -3518,6 +3519,7 @@ function(qt_add_docs)
     )
 
     add_custom_target(prepare_docs_${target}
+        DEPENDS ${qdoc_bin}
         COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
         ${qdoc_bin}
         ${prepare_qdoc_args}
@@ -3536,6 +3538,7 @@ function(qt_add_docs)
     )
 
     add_custom_target(generate_docs_${target}
+        DEPENDS ${qdoc_bin}
         COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
         ${qdoc_bin}
         ${generate_qdocs_args}
@@ -3553,6 +3556,7 @@ function(qt_add_docs)
     )
 
     add_custom_target(html_docs_${target}
+        DEPENDS ${qdoc_bin}
         COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
         ${qdoc_bin}
         ${html_qdocs_args}
@@ -3565,6 +3569,7 @@ function(qt_add_docs)
     set(qch_file_path ${qdoc_output_dir}/${qch_file_name})
 
     add_custom_target(qch_docs_${target}
+        DEPENDS ${qhelpgenerator_bin}
         COMMAND ${qhelpgenerator_bin}
            "${qdoc_output_dir}/${doc_target}.qhp"
            -o "${qch_file_path}"
@@ -3885,6 +3890,7 @@ function(qt_process_qlalr consuming_target input_file_list flags)
         add_custom_command(
             OUTPUT ${cpp_file} ${private_file} ${decl_file} ${impl_file}
             COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr ${flags} ${input_file}
+            DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr
             MAIN_DEPENDENCY ${input_file}
         )
         target_sources(${consuming_target} PRIVATE ${cpp_file} ${impl_file})
