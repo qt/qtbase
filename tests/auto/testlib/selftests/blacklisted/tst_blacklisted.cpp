@@ -80,7 +80,7 @@ void tst_Blacklisted::xpass()
 #include <setjmp.h>
 
 static jmp_buf state;
-static void abort_handler(int signal)
+static void abort_handler(int)
 {
     longjmp(state, 1);
 }
