@@ -1,0 +1,18 @@
+# Generated from corelib.pro.
+
+add_subdirectory(kernel)
+if(NOT APPLE_UIKIT)
+    add_subdirectory(animation)
+    add_subdirectory(codecs)
+    add_subdirectory(global)
+    add_subdirectory(io)
+    add_subdirectory(itemmodels)
+    add_subdirectory(mimetypes)
+    add_subdirectory(plugin)
+    add_subdirectory(serialization)
+    add_subdirectory(statemachine)
+    add_subdirectory(text)
+    add_subdirectory(thread)
+    add_subdirectory(time)
+    add_subdirectory(tools)
+endif()

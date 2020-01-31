@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+#############################################################################
+##
+## Copyright (C) 2018 The Qt Company Ltd.
+## Contact: https://www.qt.io/licensing/
+##
+## This file is part of the plugins of the Qt Toolkit.
+##
+## $QT_BEGIN_LICENSE:GPL-EXCEPT$
+## Commercial License Usage
+## Licensees holding valid commercial Qt licenses may use this file in
+## accordance with the commercial license agreement provided with the
+## Software or, alternatively, in accordance with the terms contained in
+## a written agreement between you and The Qt Company. For licensing terms
+## and conditions see https://www.qt.io/terms-conditions. For further
+## information use the contact form at https://www.qt.io/contact-us.
+##
+## GNU General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU
+## General Public License version 3 as published by the Free Software
+## Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+## included in the packaging of this file. Please review the following
+## information to ensure the GNU General Public License requirements will
+## be met: https://www.gnu.org/licenses/gpl-3.0.html.
+##
+## $QT_END_LICENSE$
+##
+#############################################################################
+
+from condition_simplifier import simplify_condition
+
+
+def validate_simplify(input: str, expected: str) -> None:
+    output = simplify_condition(input)
+    assert output == expected
+
+
+def validate_simplify_unchanged(input: str) -> None:
+    validate_simplify(input, input)
+
+
+def test_simplify_on():
+    validate_simplify_unchanged('ON')
+
+
+def test_simplify_off():
+    validate_simplify_unchanged('OFF')
+
+
+def test_simplify_not_on():
+    validate_simplify('NOT ON', 'OFF')
+
+
+def test_simplify_not_off():
+    validate_simplify('NOT OFF', 'ON')
+
+
+def test_simplify_isEmpty():
+    validate_simplify_unchanged('isEmpty(foo)')
+
+
+def test_simplify_not_isEmpty():
+    validate_simplify_unchanged('NOT isEmpty(foo)')
+
+
+def test_simplify_simple_and():
+    validate_simplify_unchanged('QT_FEATURE_bar AND QT_FEATURE_foo')
+
+
+def test_simplify_simple_or():
+    validate_simplify_unchanged('QT_FEATURE_bar OR QT_FEATURE_foo')
+
+
+def test_simplify_simple_not():
+    validate_simplify_unchanged('NOT QT_FEATURE_foo')
+
+
+def test_simplify_simple_and_reorder():
+    validate_simplify('QT_FEATURE_foo AND QT_FEATURE_bar', 'QT_FEATURE_bar AND QT_FEATURE_foo')
+
+
+def test_simplify_simple_or_reorder():
+    validate_simplify('QT_FEATURE_foo OR QT_FEATURE_bar', 'QT_FEATURE_bar OR QT_FEATURE_foo')
+
+
+def test_simplify_unix_or_win32():
+    validate_simplify('WIN32 OR UNIX', 'ON')
+
+
+def test_simplify_unix_or_win32_or_foobar_or_barfoo():
+    validate_simplify('WIN32 OR UNIX OR foobar OR barfoo', 'ON')
+
+
+def test_simplify_not_not_bar():
+    validate_simplify('  NOT NOT bar   ', 'bar')
+
+
+def test_simplify_not_unix():
+    validate_simplify('NOT UNIX', 'WIN32')
+
+
+def test_simplify_not_win32():
+    validate_simplify('NOT WIN32', 'UNIX')
+
+
+def test_simplify_unix_and_win32():
+    validate_simplify('WIN32 AND UNIX', 'OFF')
+
+
+def test_simplify_unix_or_win32():
+    validate_simplify('WIN32 OR UNIX', 'ON')
+
+
+def test_simplify_unix_and_win32_or_foobar_or_barfoo():
+    validate_simplify('WIN32 AND foobar AND UNIX AND barfoo', 'OFF')
+
+
+def test_simplify_watchos_and_win32():
+    validate_simplify('APPLE_WATCHOS AND WIN32', 'OFF')
+
+
+def test_simplify_win32_and_watchos():
+    validate_simplify('WIN32 AND APPLE_WATCHOS', 'OFF')
+
+
+def test_simplify_apple_and_appleosx():
+    validate_simplify('APPLE AND APPLE_OSX', 'APPLE_OSX')
+
+
+def test_simplify_apple_or_appleosx():
+    validate_simplify('APPLE OR APPLE_OSX', 'APPLE')
+
+
+def test_simplify_apple_or_appleosx_level1():
+    validate_simplify('foobar AND (APPLE OR APPLE_OSX )', 'APPLE AND foobar')
+
+
+def test_simplify_apple_or_appleosx_level1_double():
+    validate_simplify('foobar AND (APPLE OR APPLE_OSX )', 'APPLE AND foobar')
+
+
+def test_simplify_apple_or_appleosx_level1_double_with_extra_spaces():
+    validate_simplify('foobar AND (APPLE OR APPLE_OSX ) '
+                      'AND ( APPLE_OSX    OR APPLE    )', 'APPLE AND foobar')
+
+
+def test_simplify_apple_or_appleosx_level2():
+    validate_simplify('foobar AND ( ( APPLE OR APPLE_WATCHOS ) '
+                      'OR APPLE_OSX ) AND ( APPLE_OSX    OR APPLE    ) '
+                      'AND ( (WIN32 OR WINRT) OR UNIX) ', 'APPLE AND foobar')
+
+
+def test_simplify_not_apple_and_appleosx():
+    validate_simplify('NOT APPLE AND APPLE_OSX', 'OFF')
+
+
+def test_simplify_unix_and_bar_or_win32():
+    validate_simplify('WIN32 AND bar AND UNIX', 'OFF')
+
+
+def test_simplify_unix_or_bar_or_win32():
+    validate_simplify('WIN32 OR bar OR UNIX', 'ON')
+
+
+def test_simplify_complex_true():
+    validate_simplify('WIN32     OR (    APPLE  OR  UNIX)', 'ON')
+
+
+def test_simplify_apple_unix_freebsd():
+    validate_simplify('(    APPLE  OR  ( UNIX OR FREEBSD ))', 'UNIX')
+
+
+def test_simplify_apple_unix_freebsd_foobar():
+    validate_simplify('(    APPLE  OR  ( UNIX OR FREEBSD ) OR foobar)',
+                      'UNIX OR foobar')
+
+
+def test_simplify_complex_false():
+    validate_simplify('WIN32 AND foobar    AND (    '
+                      'APPLE  OR  ( UNIX OR FREEBSD ))',
+                      'OFF')
+
+
+def test_simplify_android_not_apple():
+    validate_simplify('ANDROID AND NOT ANDROID_EMBEDDED AND NOT APPLE_OSX',
+                      'ANDROID AND NOT ANDROID_EMBEDDED')

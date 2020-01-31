@@ -1,0 +1,57 @@
+# Generated from platforms.pro.
+
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    add_subdirectory(android)
+endif()
+if(NOT ANDROID)
+    add_subdirectory(minimal)
+endif()
+if(QT_FEATURE_freetype AND NOT ANDROID)
+    add_subdirectory(offscreen)
+endif()
+if(QT_FEATURE_xcb)
+    add_subdirectory(xcb)
+endif()
+if(APPLE_UIKIT AND NOT APPLE_WATCHOS)
+    add_subdirectory(ios)
+endif()
+if(APPLE_OSX)
+    add_subdirectory(cocoa)
+endif()
+if(WIN32 AND NOT WINRT) # special case TODO fix direct3d9 test
+    add_subdirectory(windows)
+endif()
+if(QT_FEATURE_direct3d11 AND WINRT)
+    # add_subdirectory(winrt) # special case TODO
+endif()
+if(QT_FEATURE_direct2d1_1 AND QT_FEATURE_direct3d11_1 AND QT_FEATURE_directwrite1)
+    # add_subdirectory(direct2d) # special case TODO
+endif()
+if(QNX)
+    # add_subdirectory(qnx) # special case TODO
+endif()
+if(QT_FEATURE_eglfs)
+    add_subdirectory(eglfs)
+    add_subdirectory(minimalegl)
+endif()
+if(QT_FEATURE_directfb)
+    add_subdirectory(directfb)
+endif()
+if(QT_FEATURE_linuxfb)
+    add_subdirectory(linuxfb)
+endif()
+if(QT_FEATURE_vnc AND TARGET Qt::Network)
+    add_subdirectory(vnc)
+endif()
+if(FREEBSD)
+    # add_subdirectory(bsdfb) # special case TODO
+endif()
+if(HAIKU)
+    # add_subdirectory(haiku) # special case TODO
+endif()
+if(WASM)
+    # add_subdirectory(wasm) # special case TODO
+endif()
+if(QT_FEATURE_integrityfb)
+    # add_subdirectory(integrity) # special case TODO
+endif()

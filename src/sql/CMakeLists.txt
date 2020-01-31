@@ -1,0 +1,55 @@
+# Generated from sql.pro.
+
+#####################################################################
+## Sql Module:
+#####################################################################
+
+qt_add_module(Sql
+    PLUGIN_TYPES sqldrivers
+    SOURCES
+        kernel/qsqlcachedresult.cpp kernel/qsqlcachedresult_p.h
+        kernel/qsqldatabase.cpp kernel/qsqldatabase.h
+        kernel/qsqldriver.cpp kernel/qsqldriver.h kernel/qsqldriver_p.h
+        kernel/qsqldriverplugin.cpp kernel/qsqldriverplugin.h
+        kernel/qsqlerror.cpp kernel/qsqlerror.h
+        kernel/qsqlfield.cpp kernel/qsqlfield.h
+        kernel/qsqlindex.cpp kernel/qsqlindex.h
+        kernel/qsqlnulldriver_p.h
+        kernel/qsqlquery.cpp kernel/qsqlquery.h
+        kernel/qsqlrecord.cpp kernel/qsqlrecord.h
+        kernel/qsqlresult.cpp kernel/qsqlresult.h kernel/qsqlresult_p.h
+        kernel/qtsqlglobal.h kernel/qtsqlglobal_p.h
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+        QT_NO_FOREACH
+        QT_NO_USING_NAMESPACE
+    LIBRARIES
+        Qt::CorePrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+    PRECOMPILED_HEADER
+        "../corelib/global/qt_pch.h"
+)
+
+#### Keys ignored in scope 1:.:.:sql.pro:<TRUE>:
+# SQL_P = "sql"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(Sql CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+    LINK_OPTIONS
+        "/BASE:0x62000000"
+)
+
+qt_extend_target(Sql CONDITION QT_FEATURE_sqlmodel
+    SOURCES
+        models/qsqlquerymodel.cpp models/qsqlquerymodel.h models/qsqlquerymodel_p.h
+        models/qsqlrelationaldelegate.cpp models/qsqlrelationaldelegate.h
+        models/qsqlrelationaltablemodel.cpp models/qsqlrelationaltablemodel.h
+        models/qsqltablemodel.cpp models/qsqltablemodel.h models/qsqltablemodel_p.h
+)
+qt_add_docs(Sql
+    doc/qtsql.qdocconf
+)
+

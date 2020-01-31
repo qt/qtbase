@@ -1,0 +1,96 @@
+# Generated from android.pro.
+
+#####################################################################
+## QAndroidIntegrationPlugin Plugin:
+#####################################################################
+
+qt_add_plugin(QAndroidIntegrationPlugin
+    OUTPUT_NAME qtforandroid
+    TYPE platforms
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android # special case
+    SOURCES
+        androidcontentfileengine.cpp androidcontentfileengine.h
+        androiddeadlockprotector.cpp androiddeadlockprotector.h
+        androidjniaccessibility.cpp androidjniaccessibility.h
+        androidjniclipboard.cpp androidjniclipboard.h
+        androidjniinput.cpp androidjniinput.h
+        androidjnimain.cpp androidjnimain.h
+        androidjnimenu.cpp androidjnimenu.h
+        androidsurfaceclient.h
+        main.cpp
+        qandroidassetsfileenginehandler.cpp qandroidassetsfileenginehandler.h
+        qandroideventdispatcher.cpp qandroideventdispatcher.h
+        qandroidinputcontext.cpp qandroidinputcontext.h
+        qandroidplatformaccessibility.cpp qandroidplatformaccessibility.h
+        qandroidplatformbackingstore.cpp qandroidplatformbackingstore.h
+        qandroidplatformclipboard.cpp qandroidplatformclipboard.h
+        qandroidplatformdialoghelpers.cpp qandroidplatformdialoghelpers.h
+        qandroidplatformfiledialoghelper.cpp qandroidplatformfiledialoghelper.h
+        qandroidplatformfontdatabase.cpp qandroidplatformfontdatabase.h
+        qandroidplatformforeignwindow.cpp qandroidplatformforeignwindow.h
+        qandroidplatformintegration.cpp qandroidplatformintegration.h
+        qandroidplatformmenu.cpp qandroidplatformmenu.h
+        qandroidplatformmenubar.cpp qandroidplatformmenubar.h
+        qandroidplatformmenuitem.cpp qandroidplatformmenuitem.h
+        qandroidplatformoffscreensurface.cpp qandroidplatformoffscreensurface.h
+        qandroidplatformopenglcontext.cpp qandroidplatformopenglcontext.h
+        qandroidplatformopenglwindow.cpp qandroidplatformopenglwindow.h
+        qandroidplatformscreen.cpp qandroidplatformscreen.h
+        qandroidplatformservices.cpp qandroidplatformservices.h
+        qandroidplatformtheme.cpp qandroidplatformtheme.h
+        qandroidplatformwindow.cpp qandroidplatformwindow.h
+        qandroidsystemlocale.cpp qandroidsystemlocale.h
+    INCLUDE_DIRECTORIES
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${QT_SOURCE_TREE}/src/3rdparty/android
+    LIBRARIES
+        Qt::AccessibilitySupportPrivate
+        Qt::CorePrivate
+        Qt::EglSupportPrivate
+        Qt::EventDispatcherSupportPrivate
+        Qt::FontDatabaseSupportPrivate
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::AccessibilitySupport
+        Qt::Core
+        Qt::EglSupport
+        Qt::EventDispatcherSupport
+        Qt::FontDatabaseSupport
+        Qt::Gui
+        android
+        jnigraphics
+# special case begin
+    INSTALL_DIRECTORY
+        plugins/platforms
+    OUTPUT_DIRECTORY
+        plugins/platforms
+    ARCHIVE_INSTALL_DIRECTORY
+        plugins/platforms
+# special case end
+)
+
+#### Keys ignored in scope 1:.:.:android.pro:<TRUE>:
+# OTHER_FILES = "$$PWD/android.json"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
+    SOURCES
+        qandroidplatformvulkaninstance.cpp qandroidplatformvulkaninstance.h
+        qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h
+    LIBRARIES
+        Qt::VulkanSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::VulkanSupport
+)
+
+qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_assets
+    SOURCES
+        extract.cpp
+)
+
+qt_extend_target(QAndroidIntegrationPlugin CONDITION NOT QT_FEATURE_android_style_assets
+    SOURCES
+        extract-dummy.cpp
+)

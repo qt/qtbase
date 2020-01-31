@@ -1,0 +1,17 @@
+# Generated from opengl.pro.
+
+add_subdirectory(hellowindow)
+add_subdirectory(paintedwindow)
+add_subdirectory(openglwindow)
+add_subdirectory(qopenglwindow)
+if(TARGET Qt::Widgets)
+    add_subdirectory(contextinfo)
+    add_subdirectory(threadedqopenglwidget)
+    add_subdirectory(2dpainting)
+    add_subdirectory(hellogl2)
+    add_subdirectory(qopenglwidget)
+    add_subdirectory(cube)
+    add_subdirectory(textures)
+    add_subdirectory(hellogles3)
+    add_subdirectory(computegles31)
+endif()

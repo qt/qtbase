@@ -1,0 +1,20 @@
+# Generated from access.pro.
+
+add_subdirectory(qnetworkdiskcache)
+add_subdirectory(qnetworkcookiejar)
+add_subdirectory(qnetworkaccessmanager)
+add_subdirectory(qnetworkcookie)
+add_subdirectory(qnetworkrequest)
+add_subdirectory(qnetworkreply)
+add_subdirectory(qnetworkcachemetadata)
+add_subdirectory(qabstractnetworkcache)
+
+
+if(QT_FEATURE_private_tests)
+    add_subdirectory(qhttpnetworkconnection)
+    add_subdirectory(qhttpnetworkreply)
+    add_subdirectory(qftp)
+    add_subdirectory(hpack)
+    add_subdirectory(http2)
+    add_subdirectory(hsts)
+endif()

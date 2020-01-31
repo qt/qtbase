@@ -1,0 +1,13 @@
+# Generated from qdir.pro.
+
+#####################################################################
+## qdir Binary:
+#####################################################################
+
+add_qt_executable(qdir
+    GUI
+    DEFINES
+        QT_DISABLE_DEPRECATED_BEFORE=0
+    PUBLIC_LIBRARIES
+        Qt::Gui
+)

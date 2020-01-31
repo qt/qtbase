@@ -1,0 +1,20 @@
+# Generated from painting.pro.
+
+add_subdirectory("qpainterpath")
+add_subdirectory("qpainterpathstroker")
+# add_subdirectory("qcolor")
+# add_subdirectory("qbrush")
+# add_subdirectory("qregion")
+# add_subdirectory("qpagelayout")
+add_subdirectory("qpagesize")
+# add_subdirectory("qpainter")
+if (QT_FEATURE_private_tests)
+    # not converted yet
+    #add_subdirectory("qpathclipper")
+endif()
+# add_subdirectory("qpdfwriter")
+add_subdirectory("qpen")
+add_subdirectory("qpaintengine")
+# add_subdirectory("qtransform")
+# add_subdirectory("qwmatrix")
+# add_subdirectory("qpolygon")

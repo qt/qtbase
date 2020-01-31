@@ -1,0 +1,18 @@
+# Generated from signaldumper.pro.
+
+#####################################################################
+## signaldumper Binary:
+#####################################################################
+
+add_qt_executable(signaldumper
+    GUI
+    SOURCES
+        tst_signaldumper.cpp
+    LIBRARIES
+        Qt::TestPrivate
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

@@ -1,0 +1,15 @@
+# Generated from benchliboptions.pro.
+
+#####################################################################
+## benchliboptions Binary:
+#####################################################################
+
+add_qt_executable(benchliboptions
+    SOURCES
+        tst_benchliboptions.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

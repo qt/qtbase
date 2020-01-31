@@ -2185,7 +2185,8 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
 /*! \internal
  */
 
-QString QTest::qFindTestData(const QString& base, const char *file, int line, const char *builddir)
+QString QTest::qFindTestData(const QString& base, const char *file, int line, const char *builddir,
+                             const char *sourcedir)
 {
     QString found;
 
@@ -2295,6 +2296,20 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
         }
     }
 
+    // 7. Try the supplied source directory
+    if (found.isEmpty() && sourcedir) {
+        const QString candidate = QFile::decodeName(sourcedir) % QLatin1Char('/') % base;
+        if (QFileInfo::exists(candidate)) {
+            found = candidate;
+        } else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found in supplied source directory [%2]")
+                    .arg(base, QDir::toNativeSeparators(candidate))),
+                file, line);
+        }
+    }
+
+
     if (found.isEmpty()) {
         QTest::qWarn(qPrintable(
             QString::fromLatin1("testdata %1 could not be located!").arg(base)),
@@ -2310,9 +2325,10 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
 /*! \internal
  */
-QString QTest::qFindTestData(const char *base, const char *file, int line, const char *builddir)
+QString QTest::qFindTestData(const char *base, const char *file, int line, const char *builddir,
+                             const char *sourcedir)
 {
-    return qFindTestData(QFile::decodeName(base), file, line, builddir);
+    return qFindTestData(QFile::decodeName(base), file, line, builddir, sourcedir);
 }
 
 /*! \internal

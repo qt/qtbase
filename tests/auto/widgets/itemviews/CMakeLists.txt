@@ -1,0 +1,21 @@
+# Generated from itemviews.pro.
+
+add_subdirectory(qabstractitemview)
+add_subdirectory(qdatawidgetmapper)
+add_subdirectory(qdirmodel)
+add_subdirectory(qfileiconprovider)
+add_subdirectory(qheaderview)
+add_subdirectory(qitemdelegate)
+add_subdirectory(qitemeditorfactory)
+add_subdirectory(qitemview)
+add_subdirectory(qlistview)
+add_subdirectory(qtableview)
+add_subdirectory(qtablewidget)
+add_subdirectory(qtreeview)
+add_subdirectory(qtreewidget)
+add_subdirectory(qtreewidgetitemiterator)
+
+if(QT_FEATURE_private_tests)
+    add_subdirectory(qcolumnview)
+    add_subdirectory(qlistwidget)
+endif()

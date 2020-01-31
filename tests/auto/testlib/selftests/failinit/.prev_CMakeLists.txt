@@ -1,0 +1,15 @@
+# Generated from failinit.pro.
+
+#####################################################################
+## failinit Binary:
+#####################################################################
+
+add_qt_executable(failinit
+    SOURCES
+        tst_failinit.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

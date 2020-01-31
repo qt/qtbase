@@ -1,0 +1,59 @@
+@PACKAGE_INIT@
+
+# Slightly amended version of ./src/corelib/Qt6Config.cmake.in
+if (CMAKE_VERSION VERSION_LESS 3.1.0)
+    message(FATAL_ERROR "Qt requires at least CMake version 3.1.0")
+endif()
+
+get_filename_component(_qt_cmake_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+set(_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
+
+if (NOT QT_NO_CREATE_TARGETS)
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Targets.cmake")
+    if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
+        include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+    endif()
+else()
+    # For examples using `find_package(...)` inside their CMakeLists.txt files:
+    # Make CMake's AUTOGEN detect this Qt version properly
+    set_directory_properties(PROPERTIES
+                             QT_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+                             QT_VERSION_MINOR @PROJECT_VERSION_MINOR@
+                             QT_VERSION_PATCH @PROJECT_VERSION_PATCH@)
+endif()
+
+# if (NOT @INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS)
+#     set(@INSTALL_CMAKE_NAMESPACE@_NOT_FOUND_MESSAGE "The Qt package requires at least one component")
+#     set(@INSTALL_CMAKE_NAMESPACE@_FOUND False)
+#     return()
+# endif()
+
+get_filename_component(_qt_import_prefix "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_qt_import_prefix "${_qt_import_prefix}" REALPATH)
+list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}")
+list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/3rdparty/extra-cmake-modules/find-modules")
+list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/3rdparty/kwin")
+
+foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
+    find_package(@INSTALL_CMAKE_NAMESPACE@${module}
+        ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}
+        ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_REQUIRED}
+        PATHS ${_qt_cmake_dir} ${QT_EXAMPLES_CMAKE_PREFIX_PATH} NO_DEFAULT_PATH
+    )
+    if (NOT @INSTALL_CMAKE_NAMESPACE@${module}_FOUND)
+        string(CONFIGURE ${_qt5_module_location_template} _expected_module_location @ONLY)
+
+        if (@INSTALL_CMAKE_NAMESPACE@_FIND_REQUIRED_${module})
+            set(_Qt_NOTFOUND_MESSAGE "${_Qt_NOTFOUND_MESSAGE}Failed to find Qt component \"${module}\" config file at                                       \"${_expected_module_location}\"\n")
+        elseif(NOT @INSTALL_CMAKE_NAMESPACE@_FIND_QUIETLY)
+            message(WARNING "Failed to find Qt component \"${module}\" config file at \"${_expected_module_location}\"")
+        endif()
+
+        unset(_expected_module_location)
+    endif()
+endforeach()
+
+if (_Qt_NOTFOUND_MESSAGE)
+    set(@INSTALL_CMAKE_NAMESPACE@_NOT_FOUND_MESSAGE "${_Qt_NOTFOUND_MESSAGE}")
+    set(@INSTALL_CMAKE_NAMESPACE@_FOUND False)
+endif()

@@ -1,0 +1,34 @@
+# Generated from network-chat.pro.
+
+cmake_minimum_required(VERSION 3.14)
+project(network-chat LANGUAGES CXX)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt6 COMPONENTS Network)
+find_package(Qt6 COMPONENTS Widgets)
+
+add_qt_gui_executable(network-chat
+    chatdialog.cpp chatdialog.h chatdialog.ui
+    client.cpp client.h
+    connection.cpp connection.h
+    main.cpp
+    peermanager.cpp peermanager.h
+    server.cpp server.h
+)
+target_link_libraries(network-chat PUBLIC
+    Qt::Network
+    Qt::Widgets
+)
+
+install(TARGETS network-chat
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

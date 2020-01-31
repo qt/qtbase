@@ -1,0 +1,12 @@
+# Generated from bearer.pro.
+
+if(SUBDIRS_ISEMPTY OR (TARGET Qt::DBus AND linux_x_ AND NOT ANDROID))
+    add_subdirectory(generic)
+endif()
+if(TARGET Qt::DBus AND linux_x_ AND NOT ANDROID)
+    add_subdirectory(connman)
+    add_subdirectory(networkmanager)
+endif()
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    add_subdirectory(android)
+endif()

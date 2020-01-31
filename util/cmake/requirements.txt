@@ -1,0 +1,8 @@
+pytest; python_version >= '3.7'
+pytest-cov; python_version >= '3.7'
+mypy; python_version >= '3.7'
+pyparsing; python_version >= '3.7'
+sympy; python_version >= '3.7'
+portalocker; python_version >= '3.7'
+black; python_version >= '3.7'
+

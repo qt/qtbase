@@ -1,0 +1,15 @@
+# Generated from verbose1.pro.
+
+#####################################################################
+## verbose1 Binary:
+#####################################################################
+
+add_qt_executable(verbose1
+    SOURCES
+        ../counting/tst_counting.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

@@ -4128,8 +4128,8 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     If the QVariant contains a pointer to a type derived from QObject then
     \c{T} may be any QObject type. If the pointer stored in the QVariant can be
     qobject_cast to T, then that result is returned. Otherwise \nullptr is
-    returned. Note that this only works for QObject subclasses which use the
-    Q_OBJECT macro.
+    returned. Note that this only works for QObject subclasses which use
+    the Q_OBJECT macro.
 
     If the QVariant contains a sequential container and \c{T} is QVariantList, the
     elements of the container will be converted into \l {QVariant}s and returned as a QVariantList.

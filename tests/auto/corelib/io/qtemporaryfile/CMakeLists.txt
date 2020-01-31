@@ -1,0 +1,47 @@
+# Generated from qtemporaryfile.pro.
+
+#####################################################################
+## tst_qtemporaryfile Test:
+#####################################################################
+
+# Collect test data
+list(APPEND test_data "tst_qtemporaryfile.cpp")
+
+add_qt_test(tst_qtemporaryfile
+    SOURCES
+        tst_qtemporaryfile.cpp
+    LIBRARIES
+        Qt::TestPrivate
+    TESTDATA ${test_data}
+)
+
+# Resources:
+set(qtemporaryfile_resource_files
+    "resources/test.txt"
+)
+
+add_qt_resource(tst_qtemporaryfile "qtemporaryfile"
+    PREFIX
+        "/"
+    FILES
+        ${qtemporaryfile_resource_files}
+)
+
+
+## Scopes:
+#####################################################################
+
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(android_testdata_resource_files
+        "resources/test.txt"
+        "tst_qtemporaryfile.cpp"
+    )
+
+    add_qt_resource(tst_qtemporaryfile "android_testdata"
+        PREFIX
+            "/android_testdata"
+        FILES
+            ${android_testdata_resource_files}
+    )
+endif()

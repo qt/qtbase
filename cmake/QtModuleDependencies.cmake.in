@@ -1,0 +1,66 @@
+# note: _third_party_deps example: "ICU\\;1.0\\;i18n uc data;ZLIB\\;\\;"
+set(_third_party_deps "@third_party_deps@")
+
+foreach(_target_dep ${_third_party_deps})
+    list(GET _target_dep 0 pkg)
+    list(GET _target_dep 1 version)
+    list(GET _target_dep 2 components)
+    set(find_package_args "${pkg}")
+    if(version)
+        list(APPEND find_package_args "${version}")
+    endif()
+
+    if(components)
+        string(REPLACE " " ";" components "${components}")
+        find_dependency(${find_package_args} COMPONENTS ${components})
+    else()
+        find_dependency(${find_package_args})
+    endif()
+
+    if (NOT ${pkg}_FOUND)
+        set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
+        return()
+    endif()
+endforeach()
+
+# Find Qt tool package.
+set(_tool_deps "@main_module_tool_deps@")
+
+# The tools do not provide linkage targets but executables, where a mismatch
+# between 32-bit target and 64-bit host does not matter.
+set(BACKUP_CMAKE_SIZEOF_VOID_P "${CMAKE_SIZEOF_VOID_P}")
+set(CMAKE_SIZEOF_VOID_P "")
+
+foreach(_target_dep ${_tool_deps})
+    list(GET _target_dep 0 pkg)
+    list(GET _target_dep 1 version)
+
+    find_dependency(${pkg} ${version})
+
+    if (NOT ${pkg}_FOUND)
+        set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
+        set(CMAKE_SIZEOF_VOID_P "${BACKUP_CMAKE_SIZEOF_VOID_P}")
+        return()
+    endif()
+endforeach()
+set(CMAKE_SIZEOF_VOID_P "${BACKUP_CMAKE_SIZEOF_VOID_P}")
+
+# note: target_deps example: "Qt6Core\;5.12.0;Qt6Gui\;5.12.0"
+set(_target_deps "@target_deps@")
+foreach(_target_dep ${_target_deps})
+    list(GET _target_dep 0 pkg)
+    list(GET _target_dep 1 version)
+
+    if (NOT ${pkg}_FOUND)
+        find_dependency(${pkg} ${version}
+            PATHS "${CMAKE_CURRENT_LIST_DIR}/.." ${QT_EXAMPLES_CMAKE_PREFIX_PATH} NO_DEFAULT_PATH
+        )
+    endif()
+
+    if (NOT ${pkg}_FOUND)
+        set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
+        return()
+    endif()
+endforeach()
+
+

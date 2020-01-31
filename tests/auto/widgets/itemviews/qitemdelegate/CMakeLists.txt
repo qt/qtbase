@@ -1,0 +1,23 @@
+# Generated from qitemdelegate.pro.
+
+#####################################################################
+## tst_qitemdelegate Test:
+#####################################################################
+
+add_qt_test(tst_qitemdelegate
+    SOURCES
+        tst_qitemdelegate.cpp
+    LIBRARIES
+        Qt::WidgetsPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)
+
+## Scopes:
+#####################################################################
+
+extend_target(tst_qitemdelegate CONDITION WIN32 AND NOT WINRT
+    PUBLIC_LIBRARIES
+        user32
+)

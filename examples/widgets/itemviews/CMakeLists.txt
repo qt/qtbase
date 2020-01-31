@@ -1,0 +1,27 @@
+# Generated from itemviews.pro.
+
+add_subdirectory(addressbook)
+add_subdirectory(basicsortfiltermodel)
+add_subdirectory(chart)
+add_subdirectory(coloreditorfactory)
+add_subdirectory(combowidgetmapper)
+add_subdirectory(customsortfiltermodel)
+add_subdirectory(dirview)
+add_subdirectory(editabletreemodel)
+add_subdirectory(fetchmore)
+add_subdirectory(flattreeview)
+add_subdirectory(frozencolumn)
+add_subdirectory(interview)
+add_subdirectory(pixelator)
+if(QT_FEATURE_draganddrop) # special case
+    add_subdirectory(puzzle)
+endif()
+if(TARGET Qt::Xml) # special case
+    add_subdirectory(simpledommodel)
+endif()
+add_subdirectory(simpletreemodel)
+add_subdirectory(simplewidgetmapper)
+add_subdirectory(spinboxdelegate)
+add_subdirectory(spreadsheet)
+add_subdirectory(stardelegate)
+add_subdirectory(storageview)

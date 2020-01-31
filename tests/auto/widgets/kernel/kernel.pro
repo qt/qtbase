@@ -17,7 +17,7 @@ SUBDIRS=\
    qshortcut \
    qsizepolicy
 
-darwin:SUBDIRS -= \ # Uses native recognizers
+darwin:SUBDIRS -= \
    qgesturerecognizer \
 
 !qtConfig(action):SUBDIRS -= \

@@ -1,0 +1,22 @@
+# Generated from qaccessibilitylinux.pro.
+
+#####################################################################
+## tst_qaccessibilitylinux Test:
+#####################################################################
+
+add_qt_test(tst_qaccessibilitylinux
+    SOURCES
+        tst_qaccessibilitylinux.cpp
+    DBUS_INTERFACE_SOURCES
+        ../../../../src/platformsupport/linuxaccessibility/dbusxml/Bus.xml
+    LIBRARIES
+        Qt::AccessibilitySupportPrivate
+        Qt::GuiPrivate
+        Qt::LinuxAccessibilitySupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::AccessibilitySupport
+        Qt::DBus
+        Qt::Gui
+        Qt::LinuxAccessibilitySupport
+        Qt::Widgets
+)

@@ -1,0 +1,21 @@
+# Generated from ico.pro.
+
+#####################################################################
+## QICOPlugin Plugin:
+#####################################################################
+
+qt_add_plugin(QICOPlugin
+    OUTPUT_NAME qico
+    TYPE imageformats
+    SOURCES
+        main.cpp main.h
+        qicohandler.cpp qicohandler.h
+    LIBRARIES
+        Qt::CorePrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
+)
+
+#### Keys ignored in scope 1:.:.:ico.pro:<TRUE>:
+# OTHER_FILES = "ico.json"

@@ -1001,7 +1001,7 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
     }
     _com_error error(hr);
     result += QByteArrayLiteral(" (");
-    result += errorMessageFromComError(error);
+    result += errorMessageFromComError(error).toUtf8();
     result += ')';
     return result;
 }

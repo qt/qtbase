@@ -1,0 +1,17 @@
+# Generated from serialization.pro.
+
+add_subdirectory(json)
+add_subdirectory(qcborstreamreader)
+add_subdirectory(qcborstreamwriter)
+add_subdirectory(qcborvalue)
+add_subdirectory(qcborvalue_json)
+add_subdirectory(qdatastream_core_pixmap)
+if(TARGET Qt::Gui)
+    add_subdirectory(qdatastream)
+endif()
+if(TARGET Qt::Network)
+    add_subdirectory(qtextstream)
+endif()
+if(TARGET Qt::Network AND TARGET Qt::Xml)
+    add_subdirectory(qxmlstream)
+endif()

@@ -1,0 +1,15 @@
+# Generated from skipinit.pro.
+
+#####################################################################
+## skipinit Binary:
+#####################################################################
+
+add_qt_executable(skipinit
+    SOURCES
+        tst_skipinit.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

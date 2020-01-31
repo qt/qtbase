@@ -1382,3 +1382,5 @@ void QNativeSocketEngine::setExceptionNotificationEnabled(bool enable)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnativesocketengine_p.cpp"

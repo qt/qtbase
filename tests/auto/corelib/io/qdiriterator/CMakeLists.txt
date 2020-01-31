@@ -1,0 +1,38 @@
+# Generated from qdiriterator.pro.
+
+#####################################################################
+## tst_qdiriterator Test:
+#####################################################################
+
+# Collect test data
+list(APPEND test_data "entrylist")
+
+add_qt_test(tst_qdiriterator
+    SOURCES
+        tst_qdiriterator.cpp
+    LIBRARIES
+        Qt::CorePrivate
+    TESTDATA ${test_data}
+)
+
+# Resources:
+set(qdiriterator_resource_files
+    "entrylist/directory/dummy"
+    "entrylist/file"
+)
+
+add_qt_resource(tst_qdiriterator "qdiriterator"
+    PREFIX
+        "/testdata/"
+    FILES
+        ${qdiriterator_resource_files}
+)
+
+
+## Scopes:
+#####################################################################
+
+extend_target(tst_qdiriterator CONDITION CONFIG___contains___builtin_testdata
+    DEFINES
+        BUILTIN_TESTDATA
+)

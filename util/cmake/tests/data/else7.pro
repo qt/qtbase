@@ -1,0 +1,2 @@
+msvc:equals(QT_ARCH, i386): QMAKE_LFLAGS += /BASE:0x65000000
+

@@ -86,7 +86,7 @@ protected:
 
 public:
 
-    QMakeSourceFileInfo(const QString &cachefile="");
+    QMakeSourceFileInfo();
     virtual ~QMakeSourceFileInfo();
 
     QVector<QMakeLocalFileName> dependencyPaths() const { return depdirs; }

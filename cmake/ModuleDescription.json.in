@@ -1,0 +1,11 @@
+{
+    "module_name": "${target}",
+    "version": "${CMAKE_PROJECT_VERSION}",
+    "built_with": {
+        "compiler_id": "${CMAKE_CXX_COMPILER_ID}",
+        "compiler_target": "${CMAKE_CXX_COMPILER_TARGET}",
+        "compiler_version": "${CMAKE_CXX_COMPILER_VERSION}",
+        "cross_compiled": ${cross_compilation},
+        "target_system": "${CMAKE_SYSTEM_NAME}"
+    }
+}

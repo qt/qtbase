@@ -1,0 +1,26 @@
+# Generated from qlalr.pro.
+
+#####################################################################
+## qlalr Tool:
+#####################################################################
+
+qt_add_tool(qlalr
+    SOURCES
+        compress.cpp compress.h
+        cppgenerator.cpp cppgenerator.h
+        dotgraph.cpp dotgraph.h
+        grammar.cpp grammar_p.h
+        lalr.cpp lalr.h
+        main.cpp
+        parsetable.cpp parsetable.h
+        recognizer.cpp recognizer.h
+    DEFINES
+        QT_NO_FOREACH
+    PUBLIC_LIBRARIES
+        Qt::Gui
+)
+
+#### Keys ignored in scope 1:.:.:qlalr.pro:<TRUE>:
+# OTHER_FILES = "lalr.g"
+# QMAKE_TARGET_DESCRIPTION = "Qt Look Ahead LR Parser Generator"
+# _OPTION = "host_build"

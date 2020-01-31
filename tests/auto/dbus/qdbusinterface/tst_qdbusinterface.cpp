@@ -271,7 +271,7 @@ void tst_QDBusInterface::initTestCase()
 #  define EXE ""
 #endif
     proc.setProcessChannelMode(QProcess::ForwardedErrorChannel);
-    proc.start(QFINDTESTDATA("qmyserver/qmyserver" EXE));
+    proc.start(QFINDTESTDATA("qmyserver/qmyserver_qdbusinterface" EXE)); // FIXME CMake: This is most probably wrong now since the binary ends up in bin/ not in the build tree
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
     QVERIFY(proc.waitForReadyRead());
 

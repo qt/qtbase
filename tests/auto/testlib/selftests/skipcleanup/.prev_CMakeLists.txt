@@ -1,0 +1,15 @@
+# Generated from skipcleanup.pro.
+
+#####################################################################
+## skipcleanup Binary:
+#####################################################################
+
+add_qt_executable(skipcleanup
+    SOURCES
+        tst_skipcleanup.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

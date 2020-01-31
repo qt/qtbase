@@ -1,0 +1,29 @@
+# Generated from 5_edit.pro.
+
+cmake_minimum_required(VERSION 3.14)
+project(mv_edit LANGUAGES CXX)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples")
+
+find_package(Qt6 COMPONENTS Widgets)
+
+add_qt_gui_executable(mv_edit
+    main.cpp
+    mainwindow.cpp mainwindow.h
+    mymodel.cpp mymodel.h
+)
+target_link_libraries(mv_edit PUBLIC
+    Qt::Widgets
+)
+
+install(TARGETS mv_edit
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
+)

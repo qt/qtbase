@@ -1,0 +1,40 @@
+# Generated from qlayout.pro.
+
+#####################################################################
+## tst_qlayout Test:
+#####################################################################
+
+# Collect test data
+file(GLOB_RECURSE test_data_glob
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    baseline/*)
+list(APPEND test_data ${test_data_glob})
+
+add_qt_test(tst_qlayout
+    SOURCES
+        tst_qlayout.cpp
+    LIBRARIES
+        Qt::TestPrivate
+        Qt::WidgetsPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+    TESTDATA ${test_data}
+)
+
+## Scopes:
+#####################################################################
+
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(testdata_resource_files
+        "baseline/smartmaxsize"
+    )
+
+    add_qt_resource(tst_qlayout "testdata"
+        PREFIX
+            "/"
+        FILES
+            ${testdata_resource_files}
+    )
+endif()

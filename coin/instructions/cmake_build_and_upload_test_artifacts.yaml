@@ -1,0 +1,29 @@
+type: Group
+instructions:
+  - type: ChangeDirectory
+    directory: "{{.SourceDir}}"
+  - type: MakeDirectory
+    directory: "standalone_tests"
+  - type: SetBuildDirectory
+    directory: "{{.SourceDir}}/standalone_tests"
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: "-DQT_BUILD_STANDALONE_TESTS=ON -S {{.SourceDir}} -B ."
+  - !include "{{qt/qtbase}}/call_cmake.yaml"
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to build sources. In the current state bug can be everywhere. Contact Liang first.
+  - type: UploadTestArtifact
+    transferType: UploadModuleTestsArtifact
+    archiveDirectory: "{{.BuildDir}}"
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+disable_if:
+  condition: property
+  property: configureArgs
+  contains_value: "-DBUILD_SHARED_LIBS=OFF"

@@ -1,0 +1,20 @@
+# Generated from cmptest.pro.
+
+#####################################################################
+## cmptest Binary:
+#####################################################################
+
+add_qt_executable(cmptest
+    SOURCES
+        tst_cmptest.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################
+
+extend_target(cmptest CONDITION TARGET Qt::Gui
+    PUBLIC_LIBRARIES
+        Qt::Gui
+)

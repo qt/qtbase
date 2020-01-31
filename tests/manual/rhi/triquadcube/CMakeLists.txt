@@ -1,0 +1,54 @@
+# Generated from triquadcube.pro.
+
+#####################################################################
+## triquadcube Binary:
+#####################################################################
+
+add_qt_manual_test(triquadcube
+    GUI
+    SOURCES
+        quadrenderer.cpp quadrenderer.h
+        texturedcuberenderer.cpp texturedcuberenderer.h
+        triangleoncuberenderer.cpp triangleoncuberenderer.h
+        trianglerenderer.cpp trianglerenderer.h
+        triquadcube.cpp
+    LIBRARIES
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+)
+
+# Resources:
+set_source_files_properties("../shared/color.frag.qsb"
+    PROPERTIES QT_RESOURCE_ALIAS "color.frag.qsb"
+)
+set_source_files_properties("../shared/color.vert.qsb"
+    PROPERTIES QT_RESOURCE_ALIAS "color.vert.qsb"
+)
+set_source_files_properties("../shared/qt256.png"
+    PROPERTIES QT_RESOURCE_ALIAS "qt256.png"
+)
+set_source_files_properties("../shared/texture.frag.qsb"
+    PROPERTIES QT_RESOURCE_ALIAS "texture.frag.qsb"
+)
+set_source_files_properties("../shared/texture.vert.qsb"
+    PROPERTIES QT_RESOURCE_ALIAS "texture.vert.qsb"
+)
+set(triquadcube_resource_files
+    "../shared/color.frag.qsb"
+    "../shared/color.vert.qsb"
+    "../shared/qt256.png"
+    "../shared/texture.frag.qsb"
+    "../shared/texture.vert.qsb"
+)
+
+add_qt_resource(triquadcube "triquadcube"
+    PREFIX
+        "/"
+    FILES
+        ${triquadcube_resource_files}
+)
+
+
+#### Keys ignored in scope 1:.:.:triquadcube.pro:<TRUE>:
+# TEMPLATE = "app"

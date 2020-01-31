@@ -1,0 +1,15 @@
+# Generated from faildatatype.pro.
+
+#####################################################################
+## faildatatype Binary:
+#####################################################################
+
+add_qt_executable(faildatatype
+    SOURCES
+        tst_faildatatype.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

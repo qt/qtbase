@@ -1927,3 +1927,5 @@ QAbstractSocketEngine *QSocks5SocketEngineHandler::createSocketEngine(qintptr so
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsocks5socketengine_p.cpp"

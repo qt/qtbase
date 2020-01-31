@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pyparsing = "*"
+sympy = "*"
+mypy = "*"
+pytest = "*"
+pytest-cov = "*"
+flake8 = "*"
+portalocker = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"

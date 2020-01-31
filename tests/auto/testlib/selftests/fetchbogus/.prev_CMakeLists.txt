@@ -1,0 +1,15 @@
+# Generated from fetchbogus.pro.
+
+#####################################################################
+## fetchbogus Binary:
+#####################################################################
+
+add_qt_executable(fetchbogus
+    SOURCES
+        tst_fetchbogus.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

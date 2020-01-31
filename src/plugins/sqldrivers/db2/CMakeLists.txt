@@ -1,0 +1,34 @@
+# Generated from db2.pro.
+
+#####################################################################
+## QDB2DriverPlugin Plugin:
+#####################################################################
+
+qt_add_plugin(QDB2DriverPlugin
+    OUTPUT_NAME qsqldb2
+    TYPE sqldrivers
+    SOURCES
+        main.cpp
+        qsql_db2.cpp qsql_db2_p.h
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+        QT_NO_CAST_TO_ASCII
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::SqlPrivate
+    PUBLIC_LIBRARIES
+        DB2::DB2
+        Qt::Core
+        Qt::Sql
+)
+
+#### Keys ignored in scope 1:.:.:db2.pro:<TRUE>:
+# OTHER_FILES = "db2.json"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(QDB2DriverPlugin CONDITION (TEST_architecture_arch STREQUAL "x86_64")
+    DEFINES
+        ODBC64
+)

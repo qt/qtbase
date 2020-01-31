@@ -1,0 +1,16 @@
+# Generated from exceptionthrow.pro.
+
+#####################################################################
+## exceptionthrow Binary:
+#####################################################################
+
+add_qt_executable(exceptionthrow
+    EXCEPTIONS
+    SOURCES
+        tst_exceptionthrow.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

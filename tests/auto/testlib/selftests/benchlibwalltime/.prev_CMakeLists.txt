@@ -1,0 +1,15 @@
+# Generated from benchlibwalltime.pro.
+
+#####################################################################
+## benchlibwalltime Binary:
+#####################################################################
+
+add_qt_executable(benchlibwalltime
+    SOURCES
+        tst_benchlibwalltime.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

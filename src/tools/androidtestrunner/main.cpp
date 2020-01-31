@@ -51,6 +51,7 @@ struct Options
 {
     bool helpRequested = false;
     bool verbose = false;
+    bool skipAddInstallRoot = false;
     std::chrono::seconds timeout{300}; // 5minutes
     QString androidDeployQtCommand;
     QString buildPath;
@@ -233,6 +234,8 @@ static bool parseOptions()
                 g_options.helpRequested = true;
             else
                 g_options.activity = arguments.at(++i);
+        } else if (argument.compare(QStringLiteral("--skip-install-root"), Qt::CaseInsensitive) == 0) {
+            g_options.skipAddInstallRoot = true;
         } else if (argument.compare(QStringLiteral("--timeout"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
@@ -283,6 +286,7 @@ static void printHelp()
                     "       If make is missing make sure the --path is set.\n"
                     "    --apk <apk path>: If the apk is specified and if exists, we'll skip\n"
                     "       the package building.\n"
+                    "    --skip-install-root: Do not append INSTALL_ROOT=... to the make command.\n"
                     "    -- arguments that will be passed to the test application.\n"
                     "    --verbose: Prints out information during processing.\n"
                     "    --help: Displays this information.\n\n",
@@ -452,10 +456,17 @@ int main(int argc, char *argv[])
         }
     } else {
         if (!g_options.makeCommand.isEmpty()) {
-            // we need to run make INSTALL_ROOT=path install to install the application file(s) first
-            if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
-                             .arg(g_options.makeCommand, QDir::toNativeSeparators(g_options.buildPath)), nullptr, g_options.verbose)) {
-                return 1;
+            if (!g_options.skipAddInstallRoot) {
+                // we need to run make INSTALL_ROOT=path install to install the application file(s) first
+                if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
+                                 .arg(g_options.makeCommand, QDir::toNativeSeparators(g_options.buildPath)), nullptr, g_options.verbose)) {
+                    return 1;
+                }
+            } else {
+                if (!execCommand(QStringLiteral("%1")
+                                 .arg(g_options.makeCommand), nullptr, g_options.verbose)) {
+                    return 1;
+                }
             }
         }
 

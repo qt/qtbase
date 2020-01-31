@@ -1,0 +1,15 @@
+# Generated from printdatatagswithglobaltags.pro.
+
+#####################################################################
+## printdatatagswithglobaltags Binary:
+#####################################################################
+
+add_qt_executable(printdatatagswithglobaltags
+    SOURCES
+        tst_printdatatagswithglobaltags.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

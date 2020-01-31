@@ -670,6 +670,8 @@ static const char *getPrefix(
 #  if QT_CONFIGURE_CROSSBUILD
     if (group == QLibraryInfo::DevicePaths)
         return QT_CONFIGURE_PREFIX_PATH;
+#  else
+    Q_UNUSED(group);
 #  endif
     static QByteArray extPrefixPath = getExtPrefixFromHostBinDir().toLatin1();
     return extPrefixPath.constData();

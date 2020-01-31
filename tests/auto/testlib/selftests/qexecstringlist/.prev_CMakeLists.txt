@@ -1,0 +1,15 @@
+# Generated from qexecstringlist.pro.
+
+#####################################################################
+## qexecstringlist Binary:
+#####################################################################
+
+add_qt_executable(qexecstringlist
+    SOURCES
+        tst_qexecstringlist.cpp
+    PUBLIC_LIBRARIES
+        Qt::Test
+)
+
+## Scopes:
+#####################################################################

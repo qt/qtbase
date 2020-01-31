@@ -1,0 +1,2 @@
+requires(qtConfig(dlopen))
+

@@ -265,6 +265,8 @@ static bool copyFileTimes(QFile &targetFile, const QString &sourceFilePath,
                 return false;
         }
     }
+#else
+    Q_UNUSED(mustEnsureWritability);
 #endif
     if (!IoUtils::touchFile(targetFile.fileName(), sourceFilePath, errorString))
         return false;
