@@ -1653,7 +1653,7 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(const QRhiTextureUplo
     Constructs a texture upload description with the specified \a list of entries.
 
     \note \a list can also contain multiple QRhiTextureUploadEntry elements
-    with the the same layer and level. This makes sense when those uploads are
+    with the same layer and level. This makes sense when those uploads are
     partial, meaning their subresource description has a source size or image
     smaller than the subresource dimensions, and can be more efficient than
     issuing separate uploadTexture()'s.
@@ -3468,7 +3468,7 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     \l{QSurfaceFormat::sRGBColorSpace}{sRGBColorSpace} on the QSurfaceFormat of
     the QWindow in addition.
 
-    \value UsedAsTransferSource Indicates the the swapchain will be used as the
+    \value UsedAsTransferSource Indicates the swapchain will be used as the
     source of a readback in QRhiResourceUpdateBatch::readBackTexture().
 
     \value NoVSync Requests disabling waiting for vertical sync, also avoiding
@@ -3585,7 +3585,7 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     \fn QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget()
 
     \return a render target that can used with beginPass() in order to render
-    the the swapchain's current backbuffer. Only valid within a
+    the swapchain's current backbuffer. Only valid within a
     QRhi::beginFrame() - QRhi::endFrame() block where beginFrame() was called
     with this swapchain.
 
@@ -4406,7 +4406,7 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex, int layer)
    recorded.
 
    \note the return value is not owned by the caller and must never be
-   destroyed. Instead, the batch is returned the the pool for reuse by passing
+   destroyed. Instead, the batch is returned the pool for reuse by passing
    it to QRhiCommandBuffer::beginPass(), QRhiCommandBuffer::endPass(), or
    QRhiCommandBuffer::resourceUpdate(), or by calling
    QRhiResourceUpdateBatch::release() on it.

@@ -1301,7 +1301,7 @@ char *toPrettyCString(const char *p, int length)
         //  3 bytes: "" and a character
         //  4 bytes: an hex escape sequence (\xHH)
         if (dst - buffer.data() > 246) {
-            // plus the the quote, the three dots and NUL, it's 255 in the worst case
+            // plus the quote, the three dots and NUL, it's 255 in the worst case
             trimmed = true;
             break;
         }
@@ -1394,7 +1394,7 @@ char *toPrettyUnicode(QStringView string)
     *dst++ = '"';
     for ( ; p != end; ++p) {
         if (dst - buffer.data() > 245) {
-            // plus the the quote, the three dots and NUL, it's 250, 251 or 255
+            // plus the quote, the three dots and NUL, it's 250, 251 or 255
             trimmed = true;
             break;
         }

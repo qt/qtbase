@@ -2414,7 +2414,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 QStyle::State oldState = static_cast<QStyle::State>(styleObject->property("_q_stylestate").value<QStyle::State::Int>());
                 uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
-                // a scrollbar is transient when the the scrollbar itself and
+                // a scrollbar is transient when the scrollbar itself and
                 // its sibling are both inactive (ie. not pressed/hovered/moved)
                 bool transient = !option->activeSubControls && !(option->state & State_On);
 

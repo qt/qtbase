@@ -747,7 +747,7 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w, const QRect &initialGeo
     QPlatformWindow subclasses can re-implement this function to
     provide display refresh synchronized updates. The event
     should be delivered using QPlatformWindow::deliverUpdateRequest()
-    to not get out of sync with the the internal state of QWindow.
+    to not get out of sync with the internal state of QWindow.
 
     The default implementation posts an UpdateRequest event to the
     window after 5 ms. The additional time is there to give the event
