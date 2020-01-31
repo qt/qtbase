@@ -57,6 +57,7 @@
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
+#include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/qscreen.h>
 #include <qmenubar.h>
 #include <qcompleter.h>
@@ -221,6 +222,7 @@ private slots:
     void setFixedSize();
 
     void ensureCreated();
+    void createAndDestroy();
     void winIdChangeEvent();
     void persistentWinId();
     void showNativeChild();
@@ -4133,6 +4135,58 @@ public:
     QList<WId> m_winIdList;
     int winIdChangeEventCount() const { return m_winIdList.count(); }
 };
+
+class CreateDestroyWidget : public WinIdChangeWidget
+{
+public:
+    void create() { QWidget::create(); }
+    void destroy() { QWidget::destroy(); }
+};
+
+void tst_QWidget::createAndDestroy()
+{
+    CreateDestroyWidget widget;
+
+    // Create and destroy via QWidget
+    widget.create();
+    QVERIFY(widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 1);
+    QVERIFY(widget.internalWinId());
+
+    widget.destroy();
+    QVERIFY(!widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 2);
+    QVERIFY(!widget.internalWinId());
+
+    // Create via QWidget, destroy via QWindow
+    widget.create();
+    QVERIFY(widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 3);
+    QVERIFY(widget.internalWinId());
+
+    widget.windowHandle()->destroy();
+    QVERIFY(!widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 4);
+    QVERIFY(!widget.internalWinId());
+
+    // Create via QWidget again
+    widget.create();
+    QVERIFY(widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 5);
+    QVERIFY(widget.internalWinId());
+
+    // Destroy via QWindow, create via QWindow
+    widget.windowHandle()->destroy();
+    QVERIFY(widget.windowHandle());
+    QVERIFY(!widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 6);
+    QVERIFY(!widget.internalWinId());
+
+    widget.windowHandle()->create();
+    QVERIFY(widget.testAttribute(Qt::WA_WState_Created));
+    QCOMPARE(widget.winIdChangeEventCount(), 7);
+    QVERIFY(widget.internalWinId());
+}
 
 void tst_QWidget::winIdChangeEvent()
 {
