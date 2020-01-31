@@ -1534,122 +1534,117 @@ void TestMethods::invokeTests(QObject *testObject) const
 }
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+
 class FatalSignalHandler
 {
 public:
-    FatalSignalHandler();
-    ~FatalSignalHandler();
+    FatalSignalHandler()
+    {
+        sigemptyset(&handledSignals);
+
+        const int fatalSignals[] = {
+             SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
+
+        struct sigaction act;
+        memset(&act, 0, sizeof(act));
+        act.sa_handler = FatalSignalHandler::signal;
+
+        // Remove the handler after it is invoked.
+#if !defined(Q_OS_INTEGRITY)
+        act.sa_flags = SA_RESETHAND;
+#endif
+
+    // tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
+    // unavailable (__WATCHOS_PROHIBITED __TVOS_PROHIBITED in signal.h)
+#if defined(SA_ONSTACK) && !defined(Q_OS_TVOS) && !defined(Q_OS_WATCHOS)
+        // Let the signal handlers use an alternate stack
+        // This is necessary if SIGSEGV is to catch a stack overflow
+#  if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+        // Put the alternate stack in the .lbss (large BSS) section so that it doesn't
+        // interfere with normal .bss symbols
+        __attribute__((section(".lbss.altstack"), aligned(4096)))
+#  endif
+        static char alternate_stack[16 * 1024];
+        stack_t stack;
+        stack.ss_flags = 0;
+        stack.ss_size = sizeof alternate_stack;
+        stack.ss_sp = alternate_stack;
+        sigaltstack(&stack, nullptr);
+        act.sa_flags |= SA_ONSTACK;
+#endif
+
+        // Block all fatal signals in our signal handler so we don't try to close
+        // the testlog twice.
+        sigemptyset(&act.sa_mask);
+        for (int i = 0; fatalSignals[i]; ++i)
+            sigaddset(&act.sa_mask, fatalSignals[i]);
+
+        struct sigaction oldact;
+
+        for (int i = 0; fatalSignals[i]; ++i) {
+            sigaction(fatalSignals[i], &act, &oldact);
+            if (
+#ifdef SA_SIGINFO
+                oldact.sa_flags & SA_SIGINFO ||
+#endif
+                oldact.sa_handler != SIG_DFL) {
+                sigaction(fatalSignals[i], &oldact, nullptr);
+            } else
+            {
+                sigaddset(&handledSignals, fatalSignals[i]);
+            }
+        }
+    }
+
+    ~FatalSignalHandler()
+    {
+        // Unregister any of our remaining signal handlers
+        struct sigaction act;
+        memset(&act, 0, sizeof(act));
+        act.sa_handler = SIG_DFL;
+
+        struct sigaction oldact;
+
+        for (int i = 1; i < 32; ++i) {
+            if (!sigismember(&handledSignals, i))
+                continue;
+            sigaction(i, &act, &oldact);
+
+            // If someone overwrote it in the mean time, put it back
+            if (oldact.sa_handler != FatalSignalHandler::signal)
+                sigaction(i, &oldact, nullptr);
+        }
+    }
 
 private:
-    static void signal(int);
+    static void signal(int signum)
+    {
+        const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+        const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+        if (signum != SIGINT) {
+            stackTrace();
+            if (qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH")) {
+                fprintf(stderr, "Pausing process %d for debugging\n", getpid());
+                raise(SIGSTOP);
+            }
+        }
+        qFatal("Received signal %d\n"
+               "         Function time: %dms Total time: %dms",
+               signum, msecsFunctionTime, msecsTotalTime);
+#if defined(Q_OS_INTEGRITY)
+        {
+            struct sigaction act;
+            memset(&act, 0, sizeof(struct sigaction));
+            act.sa_handler = SIG_DFL;
+            sigaction(signum, &act, NULL);
+        }
+#endif
+    }
+
     sigset_t handledSignals;
 };
 
-void FatalSignalHandler::signal(int signum)
-{
-    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
-    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
-    if (signum != SIGINT) {
-        stackTrace();
-        if (qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH")) {
-            fprintf(stderr, "Pausing process %d for debugging\n", getpid());
-            raise(SIGSTOP);
-        }
-    }
-    qFatal("Received signal %d\n"
-           "         Function time: %dms Total time: %dms",
-           signum, msecsFunctionTime, msecsTotalTime);
-#if defined(Q_OS_INTEGRITY)
-    {
-        struct sigaction act;
-        memset(&act, 0, sizeof(struct sigaction));
-        act.sa_handler = SIG_DFL;
-        sigaction(signum, &act, NULL);
-    }
 #endif
-}
-
-FatalSignalHandler::FatalSignalHandler()
-{
-    sigemptyset(&handledSignals);
-
-    const int fatalSignals[] = {
-         SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
-
-    struct sigaction act;
-    memset(&act, 0, sizeof(act));
-    act.sa_handler = FatalSignalHandler::signal;
-
-    // Remove the handler after it is invoked.
-#if !defined(Q_OS_INTEGRITY)
-    act.sa_flags = SA_RESETHAND;
-#endif
-
-// tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
-// unavailable (__WATCHOS_PROHIBITED __TVOS_PROHIBITED in signal.h)
-#if defined(SA_ONSTACK) && !defined(Q_OS_TVOS) && !defined(Q_OS_WATCHOS)
-    // Let the signal handlers use an alternate stack
-    // This is necessary if SIGSEGV is to catch a stack overflow
-#  if defined(Q_CC_GNU) && defined(Q_OF_ELF)
-    // Put the alternate stack in the .lbss (large BSS) section so that it doesn't
-    // interfere with normal .bss symbols
-    __attribute__((section(".lbss.altstack"), aligned(4096)))
-#  endif
-    static char alternate_stack[16 * 1024];
-    stack_t stack;
-    stack.ss_flags = 0;
-    stack.ss_size = sizeof alternate_stack;
-    stack.ss_sp = alternate_stack;
-    sigaltstack(&stack, nullptr);
-    act.sa_flags |= SA_ONSTACK;
-#endif
-
-    // Block all fatal signals in our signal handler so we don't try to close
-    // the testlog twice.
-    sigemptyset(&act.sa_mask);
-    for (int i = 0; fatalSignals[i]; ++i)
-        sigaddset(&act.sa_mask, fatalSignals[i]);
-
-    struct sigaction oldact;
-
-    for (int i = 0; fatalSignals[i]; ++i) {
-        sigaction(fatalSignals[i], &act, &oldact);
-        if (
-#ifdef SA_SIGINFO
-            oldact.sa_flags & SA_SIGINFO ||
-#endif
-            oldact.sa_handler != SIG_DFL) {
-            sigaction(fatalSignals[i], &oldact, nullptr);
-        } else
-        {
-            sigaddset(&handledSignals, fatalSignals[i]);
-        }
-    }
-}
-
-
-FatalSignalHandler::~FatalSignalHandler()
-{
-    // Unregister any of our remaining signal handlers
-    struct sigaction act;
-    memset(&act, 0, sizeof(act));
-    act.sa_handler = SIG_DFL;
-
-    struct sigaction oldact;
-
-    for (int i = 1; i < 32; ++i) {
-        if (!sigismember(&handledSignals, i))
-            continue;
-        sigaction(i, &act, &oldact);
-
-        // If someone overwrote it in the mean time, put it back
-        if (oldact.sa_handler != FatalSignalHandler::signal)
-            sigaction(i, &oldact, nullptr);
-    }
-}
-
-#endif
-
 
 } // namespace
 
