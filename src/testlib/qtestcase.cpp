@@ -154,10 +154,6 @@ static bool debuggerPresent()
 #elif defined(Q_OS_WIN)
     return IsDebuggerPresent();
 #elif defined(Q_OS_MACOS)
-    auto equals = [](CFStringRef str1, CFStringRef str2) -> bool {
-        return CFStringCompare(str1, str2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
-    };
-
     // Check if there is an exception handler for the process:
     mach_msg_type_number_t portCount = 0;
     exception_mask_t masks[EXC_TYPES_COUNT];
@@ -174,13 +170,24 @@ static bool debuggerPresent()
             }
         }
     }
+    return false;
+#else
+    // TODO
+    return false;
+#endif
+}
 
-    // Ok, no debugger attached. So, let's see if CrashReporter will throw up a dialog. If so, we
-    // leave it to the OS to do the stack trace.
+static bool hasSystemCrashReporter()
+{
+#if defined(Q_OS_MACOS)
     CFStringRef crashReporterType = static_cast<CFStringRef>(
                 CFPreferencesCopyAppValue(CFSTR("DialogType"), CFSTR("com.apple.CrashReporter")));
     if (crashReporterType == nullptr)
         return true;
+
+    auto equals = [](CFStringRef str1, CFStringRef str2) -> bool {
+        return CFStringCompare(str1, str2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
+    };
 
     const bool createsStackTrace =
             !equals(crashReporterType, CFSTR("server")) &&
@@ -188,7 +195,6 @@ static bool debuggerPresent()
     CFRelease(crashReporterType);
     return createsStackTrace;
 #else
-    // TODO
     return false;
 #endif
 }
@@ -216,7 +222,7 @@ static void stackTrace()
     if (ok && disableStackDump == 1)
         return;
 
-    if (debuggerPresent())
+    if (debuggerPresent() || hasSystemCrashReporter())
         return;
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
