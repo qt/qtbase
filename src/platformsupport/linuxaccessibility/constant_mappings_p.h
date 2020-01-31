@@ -118,7 +118,7 @@ struct RoleNames {
     QString localizedName() const {return m_localizedName;}
 
 private:
-    AtspiRole m_spiRole;
+    AtspiRole m_spiRole = ATSPI_ROLE_INVALID;
     QString m_name;
     QString m_localizedName;
 };
