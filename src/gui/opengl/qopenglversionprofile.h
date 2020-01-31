@@ -81,7 +81,7 @@ private:
     QOpenGLVersionProfilePrivate* d;
 };
 
-inline uint qHash(const QOpenGLVersionProfile &v, uint seed = 0)
+inline size_t qHash(const QOpenGLVersionProfile &v, size_t seed = 0)
 {
     return qHash(static_cast<int>(v.profile() * 1000)
                + v.version().first * 100 + v.version().second * 10, seed);

@@ -156,7 +156,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn uint qHash(QSslEllipticCurve curve, uint seed)
+    \fn size_t qHash(QSslEllipticCurve curve, size_t seed)
     \since 5.5
     \relates QHash
 

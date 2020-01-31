@@ -136,7 +136,7 @@ struct QFontDef
     }
 };
 
-inline uint qHash(const QFontDef &fd, uint seed = 0) noexcept
+inline size_t qHash(const QFontDef &fd, size_t seed = 0) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, qRound64(fd.pixelSize*10000)); // use only 4 fractional digits

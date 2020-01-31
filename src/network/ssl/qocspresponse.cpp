@@ -232,20 +232,20 @@ Q_NETWORK_EXPORT bool operator==(const QOcspResponse &lhs, const QOcspResponse &
 */
 
 /*!
-    \fn uint qHash(const QOcspResponse &response, uint seed)
+    \fn size_t qHash(const QOcspResponse &response, size_t seed)
 
     Returns the hash value for the \a response, using \a seed to seed the calculation.
 
     \since 5.13
     \relates QHash
 */
-uint qHash(const QOcspResponse &response, uint seed) noexcept
+size_t qHash(const QOcspResponse &response, size_t seed) noexcept
 {
     const QOcspResponsePrivate *d = response.d.data();
     Q_ASSERT(d);
 
     QtPrivate::QHashCombine hasher;
-    uint hash = hasher(seed, int(d->certificateStatus));
+    size_t hash = hasher(seed, int(d->certificateStatus));
     hash = hasher(hash, int(d->revocationReason));
     if (!d->signerCert.isNull())
         hash = hasher(hash, d->signerCert);

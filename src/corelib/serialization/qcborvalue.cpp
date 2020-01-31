@@ -2921,7 +2921,7 @@ inline QCborMap::QCborMap(QCborContainerPrivate &dd) noexcept
 {
 }
 
-uint qHash(const QCborValue &value, uint seed)
+size_t qHash(const QCborValue &value, size_t seed)
 {
     switch (value.type()) {
     case QCborValue::Integer:

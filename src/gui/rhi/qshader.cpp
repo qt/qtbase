@@ -543,7 +543,7 @@ bool operator==(const QShader &lhs, const QShader &rhs) Q_DECL_NOTHROW
 
     \relates QShader
  */
-uint qHash(const QShader &s, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QShader &s, size_t seed) Q_DECL_NOTHROW
 {
     uint h = s.stage();
     for (auto it = s.d->shaders.constBegin(), itEnd = s.d->shaders.constEnd(); it != itEnd; ++it)
@@ -596,7 +596,7 @@ bool operator==(const QShaderKey &lhs, const QShaderKey &rhs) Q_DECL_NOTHROW
 
     \relates QShaderKey
  */
-uint qHash(const QShaderKey &k, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QShaderKey &k, size_t seed) Q_DECL_NOTHROW
 {
     return seed + 10 * k.source() + k.sourceVersion().version() + k.sourceVersion().flags() + k.sourceVariant();
 }

@@ -1089,7 +1089,7 @@ QDebug operator<<(QDebug dbg, const QUuid &id)
     \relates QUuid
     Returns a hash of the UUID \a uuid, using \a seed to seed the calculation.
 */
-uint qHash(const QUuid &uuid, uint seed) noexcept
+size_t qHash(const QUuid &uuid, size_t seed) noexcept
 {
     return uuid.data1 ^ uuid.data2 ^ (uuid.data3 << 16)
             ^ ((uuid.data4[0] << 24) | (uuid.data4[1] << 16) | (uuid.data4[2] << 8) | uuid.data4[3])

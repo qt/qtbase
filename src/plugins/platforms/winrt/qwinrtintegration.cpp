@@ -95,7 +95,7 @@ typedef IEventHandler<SuspendingEventArgs *> SuspendHandler;
 QT_BEGIN_NAMESPACE
 
 typedef HRESULT (__stdcall ICoreApplication::*CoreApplicationCallbackRemover)(EventRegistrationToken);
-uint qHash(CoreApplicationCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+size_t qHash(CoreApplicationCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 
 class QWinRTIntegrationPrivate
 {

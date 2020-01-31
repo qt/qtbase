@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QSslEllipticCurve;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed = 0) noexcept;
+Q_DECL_CONSTEXPR size_t qHash(QSslEllipticCurve curve, size_t seed = 0) noexcept;
 
 class QSslEllipticCurve {
 public:
@@ -78,7 +78,7 @@ private:
     int id;
 
     friend Q_DECL_CONSTEXPR bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept;
-    friend Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed) noexcept;
+    friend Q_DECL_CONSTEXPR size_t qHash(QSslEllipticCurve curve, size_t seed) noexcept;
 
     friend class QSslContext;
     friend class QSslSocketPrivate;
@@ -87,7 +87,7 @@ private:
 
 Q_DECLARE_TYPEINFO(QSslEllipticCurve, Q_PRIMITIVE_TYPE);
 
-Q_DECL_CONSTEXPR inline uint qHash(QSslEllipticCurve curve, uint seed) noexcept
+Q_DECL_CONSTEXPR inline size_t qHash(QSslEllipticCurve curve, size_t seed) noexcept
 { return qHash(curve.id, seed); }
 
 Q_DECL_CONSTEXPR inline bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept

@@ -153,7 +153,7 @@ struct ThemeMapKey {
 
 };
 
-inline uint qHash(const ThemeMapKey &key)
+inline size_t qHash(const ThemeMapKey &key)
 { return key.theme ^ key.partId ^ key.stateId; }
 
 inline bool operator==(const ThemeMapKey &k1, const ThemeMapKey &k2)

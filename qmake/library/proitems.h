@@ -173,7 +173,7 @@ private:
     mutable uint m_hash;
     QChar *prepareExtend(int extraLen, int thisTarget, int extraTarget);
     uint updatedHash() const;
-    friend uint qHash(const ProString &str);
+    friend size_t qHash(const ProString &str);
     friend QString operator+(const ProString &one, const ProString &two);
     friend class ProKey;
 };
@@ -206,7 +206,7 @@ private:
 };
 Q_DECLARE_TYPEINFO(ProKey, Q_MOVABLE_TYPE);
 
-uint qHash(const ProString &str);
+size_t qHash(const ProString &str);
 QString operator+(const ProString &one, const ProString &two);
 inline QString operator+(const ProString &one, const QString &two)
     { return one.toQStringRef() + two; }

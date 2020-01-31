@@ -105,8 +105,8 @@ void tst_QHashFunctions::qhash()
         a2.resize(1);
         a2.setBit(0, false);
 
-        uint h1 = qHash(a1, seed);
-        uint h2 = qHash(a2, seed);
+        size_t h1 = qHash(a1, seed);
+        size_t h2 = qHash(a2, seed);
 
         QVERIFY(h1 != h2);  // not guaranteed
 
@@ -124,14 +124,14 @@ void tst_QHashFunctions::qhash()
         QVERIFY(h1 == h2);
 
         a2.setBit(0, false);
-        uint h3 = qHash(a2, seed);
+        size_t h3 = qHash(a2, seed);
         QVERIFY(h2 != h3);  // not guaranteed
 
         a2.setBit(0, true);
         QVERIFY(h2 == qHash(a2, seed));
 
         a2.setBit(6, false);
-        uint h4 = qHash(a2, seed);
+        size_t h4 = qHash(a2, seed);
         QVERIFY(h2 != h4);  // not guaranteed
 
         a2.setBit(6, true);
@@ -228,7 +228,7 @@ void tst_QHashFunctions::qthash()
 
 namespace SomeNamespace {
     struct Hashable { int i; };
-    inline uint qHash(Hashable h, uint seed = 0)
+    inline size_t qHash(Hashable h, size_t seed = 0)
     { return QT_PREPEND_NAMESPACE(qHash)(h.i, seed); }
 }
 

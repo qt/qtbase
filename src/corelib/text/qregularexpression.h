@@ -59,7 +59,7 @@ class QRegularExpressionMatchIterator;
 struct QRegularExpressionPrivate;
 class QRegularExpression;
 
-Q_CORE_EXPORT uint qHash(const QRegularExpression &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT size_t qHash(const QRegularExpression &key, size_t seed = 0) noexcept;
 
 class Q_CORE_EXPORT QRegularExpression
 {
@@ -167,7 +167,7 @@ private:
     friend class QRegularExpressionMatch;
     friend struct QRegularExpressionMatchPrivate;
     friend class QRegularExpressionMatchIterator;
-    friend Q_CORE_EXPORT uint qHash(const QRegularExpression &key, uint seed) noexcept;
+    friend Q_CORE_EXPORT size_t qHash(const QRegularExpression &key, size_t seed) noexcept;
 
     QRegularExpression(QRegularExpressionPrivate &dd);
     QExplicitlySharedDataPointer<QRegularExpressionPrivate> d;

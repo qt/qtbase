@@ -59,7 +59,7 @@ struct SubArray
     }
 };
 
-inline uint qHash(const SubArray &key)
+inline size_t qHash(const SubArray &key)
 {
     return qHash(QLatin1String(key.array.constData() + key.from, key.len));
 }

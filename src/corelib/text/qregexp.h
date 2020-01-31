@@ -53,7 +53,7 @@ struct QRegExpPrivate;
 class QStringList;
 class QRegExp;
 
-Q_CORE_EXPORT uint qHash(const QRegExp &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT size_t qHash(const QRegExp &key, size_t seed = 0) noexcept;
 
 class Q_CORE_EXPORT QRegExp
 {
@@ -110,7 +110,7 @@ public:
 
     static QString escape(const QString &str);
 
-    friend Q_CORE_EXPORT uint qHash(const QRegExp &key, uint seed) noexcept;
+    friend Q_CORE_EXPORT size_t qHash(const QRegExp &key, size_t seed) noexcept;
 
 private:
     QRegExpPrivate *priv;

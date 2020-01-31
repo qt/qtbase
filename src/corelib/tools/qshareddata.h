@@ -305,12 +305,12 @@ Q_INLINE_TEMPLATE void swap(QExplicitlySharedDataPointer<T> &p1, QExplicitlyShar
 { p1.swap(p2); }
 
 template <class T>
-Q_INLINE_TEMPLATE uint qHash(const QSharedDataPointer<T> &ptr, uint seed = 0) noexcept
+Q_INLINE_TEMPLATE size_t qHash(const QSharedDataPointer<T> &ptr, size_t seed = 0) noexcept
 {
     return qHash(ptr.data(), seed);
 }
 template <class T>
-Q_INLINE_TEMPLATE uint qHash(const QExplicitlySharedDataPointer<T> &ptr, uint seed = 0) noexcept
+Q_INLINE_TEMPLATE size_t qHash(const QExplicitlySharedDataPointer<T> &ptr, size_t seed = 0) noexcept
 {
     return qHash(ptr.data(), seed);
 }

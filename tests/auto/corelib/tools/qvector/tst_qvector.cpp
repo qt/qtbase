@@ -108,7 +108,7 @@ private:
     }
 };
 
-inline uint qHash(const Movable &key, uint seed = 0) { return qHash(key.i, seed); }
+inline size_t qHash(const Movable &key, size_t seed = 0) { return qHash(key.i, seed); }
 
 QAtomicInt Movable::counter = 0;
 QT_BEGIN_NAMESPACE
@@ -179,7 +179,7 @@ private:
 };
 QAtomicInt Custom::counter = 0;
 
-inline uint qHash(const Custom &key, uint seed = 0) { return qHash(key.i, seed); }
+inline size_t qHash(const Custom &key, size_t seed = 0) { return qHash(key.i, seed); }
 
 Q_DECLARE_METATYPE(Custom);
 

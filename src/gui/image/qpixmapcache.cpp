@@ -253,9 +253,9 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qpixmapcache.moc"
 QT_END_INCLUDE_NAMESPACE
 
-uint qHash(const QPixmapCache::Key &k)
+size_t qHash(const QPixmapCache::Key &k, size_t seed)
 {
-    return qHash(QPMCache::get(k)->key);
+    return qHash(QPMCache::get(k)->key, seed);
 }
 
 QPMCache::QPMCache()

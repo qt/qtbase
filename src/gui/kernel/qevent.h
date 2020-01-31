@@ -831,7 +831,7 @@ Q_DECLARE_TYPEINFO(QPointingDeviceUniqueId, Q_MOVABLE_TYPE);
 Q_GUI_EXPORT bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept;
 inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
 { return !operator==(lhs, rhs); }
-Q_GUI_EXPORT uint qHash(QPointingDeviceUniqueId key, uint seed = 0) noexcept;
+Q_GUI_EXPORT size_t qHash(QPointingDeviceUniqueId key, size_t seed = 0) noexcept;
 
 
 

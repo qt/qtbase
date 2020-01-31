@@ -434,7 +434,7 @@ bool QUrlQuery::operator ==(const QUrlQuery &other) const
     Returns the hash value for \a key,
     using \a seed to seed the calculation.
 */
-uint qHash(const QUrlQuery &key, uint seed) noexcept
+size_t qHash(const QUrlQuery &key, size_t seed) noexcept
 {
     if (const QUrlQueryPrivate *d = key.d) {
         QtPrivate::QHashCombine hash;

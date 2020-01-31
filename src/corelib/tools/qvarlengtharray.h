@@ -611,7 +611,7 @@ inline bool operator>=(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengt
 }
 
 template <typename T, qsizetype Prealloc>
-uint qHash(const QVarLengthArray<T, Prealloc> &key, uint seed = 0)
+size_t qHash(const QVarLengthArray<T, Prealloc> &key, size_t seed = 0)
     noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
 {
     return qHashRange(key.cbegin(), key.cend(), seed);

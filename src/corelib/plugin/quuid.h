@@ -243,7 +243,7 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QUuid &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QUuid &);
 #endif
 
-Q_CORE_EXPORT uint qHash(const QUuid &uuid, uint seed = 0) noexcept;
+Q_CORE_EXPORT size_t qHash(const QUuid &uuid, size_t seed = 0) noexcept;
 
 inline bool operator<=(const QUuid &lhs, const QUuid &rhs) noexcept
 { return !(rhs < lhs); }

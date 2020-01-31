@@ -441,7 +441,7 @@ void tst_QUuid::processUniqueness()
 
 void tst_QUuid::hash()
 {
-    uint h = qHash(uuidA);
+    size_t h = qHash(uuidA);
     QCOMPARE(qHash(uuidA), h);
     QCOMPARE(qHash(QUuid(uuidA.toString())), h);
 }

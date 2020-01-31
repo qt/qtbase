@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 class QVariant;
 class QSizePolicy;
 
-Q_DECL_CONST_FUNCTION inline uint qHash(QSizePolicy key, uint seed = 0) noexcept;
+Q_DECL_CONST_FUNCTION inline size_t qHash(QSizePolicy key, size_t seed = 0) noexcept;
 
 class Q_WIDGETS_EXPORT QSizePolicy
 {
@@ -146,7 +146,7 @@ public:
     QT_SIZEPOLICY_CONSTEXPR bool operator==(const QSizePolicy& s) const noexcept { return data == s.data; }
     QT_SIZEPOLICY_CONSTEXPR bool operator!=(const QSizePolicy& s) const noexcept { return data != s.data; }
 
-    friend Q_DECL_CONST_FUNCTION uint qHash(QSizePolicy key, uint seed) noexcept { return qHash(key.data, seed); }
+    friend Q_DECL_CONST_FUNCTION size_t qHash(QSizePolicy key, size_t seed) noexcept { return qHash(key.data, seed); }
 
     operator QVariant() const;
 

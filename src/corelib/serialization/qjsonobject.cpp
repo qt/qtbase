@@ -1487,7 +1487,7 @@ void QJsonObject::removeAt(int index)
     o->removeAt(index);
 }
 
-uint qHash(const QJsonObject &object, uint seed)
+size_t qHash(const QJsonObject &object, size_t seed)
 {
     QtPrivate::QHashCombine hash;
     for (auto it = object.begin(), end = object.end(); it != end; ++it) {

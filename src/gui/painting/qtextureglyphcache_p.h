@@ -156,7 +156,7 @@ protected:
     int m_currentRowHeight; // Height of last row
 };
 
-inline uint qHash(const QTextureGlyphCache::GlyphAndSubPixelPosition &g)
+inline size_t qHash(const QTextureGlyphCache::GlyphAndSubPixelPosition &g)
 {
     return (g.glyph << 8)  | (g.subPixelPosition * 10).round().toInt();
 }

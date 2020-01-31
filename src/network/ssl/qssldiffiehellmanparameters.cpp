@@ -316,7 +316,7 @@ QDebug operator<<(QDebug debug, const QSslDiffieHellmanParameters &dhparam)
     Returns an hash value for \a dhparam, using \a seed to seed
     the calculation.
 */
-uint qHash(const QSslDiffieHellmanParameters &dhparam, uint seed) noexcept
+size_t qHash(const QSslDiffieHellmanParameters &dhparam, size_t seed) noexcept
 {
     return qHash(dhparam.d->derData, seed);
 }

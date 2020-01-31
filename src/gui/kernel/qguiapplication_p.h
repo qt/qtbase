@@ -372,7 +372,7 @@ private:
     static qreal m_maxDevicePixelRatio;
 };
 
-Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);
+Q_GUI_EXPORT size_t qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k, size_t seed = 0);
 
 Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
                              const QGuiApplicationPrivate::ActiveTouchPointsKey &b);

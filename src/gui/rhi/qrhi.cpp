@@ -711,7 +711,7 @@ bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClear
 
     \relates QRhiDepthStencilClearValue
  */
-uint qHash(const QRhiDepthStencilClearValue &v, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed) Q_DECL_NOTHROW
 {
     return seed * (uint(qFloor(qreal(v.depthClearValue()) * 100)) + v.stencilClearValue());
 }
@@ -807,7 +807,7 @@ bool operator!=(const QRhiViewport &a, const QRhiViewport &b) Q_DECL_NOTHROW
 
     \relates QRhiViewport
  */
-uint qHash(const QRhiViewport &v, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiViewport &v, size_t seed) Q_DECL_NOTHROW
 {
     const std::array<float, 4> r = v.viewport();
     return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3])
@@ -898,7 +898,7 @@ bool operator!=(const QRhiScissor &a, const QRhiScissor &b) Q_DECL_NOTHROW
 
     \relates QRhiScissor
  */
-uint qHash(const QRhiScissor &v, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiScissor &v, size_t seed) Q_DECL_NOTHROW
 {
     const std::array<int, 4> r = v.scissor();
     return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3]);
@@ -1032,7 +1032,7 @@ bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b
 
     \relates QRhiVertexInputBinding
  */
-uint qHash(const QRhiVertexInputBinding &v, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiVertexInputBinding &v, size_t seed) Q_DECL_NOTHROW
 {
     return seed + v.stride() + v.classification();
 }
@@ -1185,7 +1185,7 @@ bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribut
 
     \relates QRhiVertexInputAttribute
  */
-uint qHash(const QRhiVertexInputAttribute &v, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiVertexInputAttribute &v, size_t seed) Q_DECL_NOTHROW
 {
     return seed + uint(v.binding()) + uint(v.location()) + uint(v.format()) + v.offset();
 }
@@ -1246,7 +1246,7 @@ bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) 
 
     \relates QRhiVertexInputLayout
  */
-uint qHash(const QRhiVertexInputLayout &v, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiVertexInputLayout &v, size_t seed) Q_DECL_NOTHROW
 {
     return qHash(v.m_bindings, seed) + qHash(v.m_attributes, seed);
 }
@@ -1336,7 +1336,7 @@ bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) Q_DECL_NOTHR
 
     \relates QRhiShaderStage
  */
-uint qHash(const QRhiShaderStage &v, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiShaderStage &v, size_t seed) Q_DECL_NOTHROW
 {
     return v.type() + qHash(v.shader(), seed) + v.shaderVariant();
 }
@@ -3182,7 +3182,7 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
 
     \relates QRhiShaderResourceBinding
  */
-uint qHash(const QRhiShaderResourceBinding &b, uint seed) Q_DECL_NOTHROW
+size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) Q_DECL_NOTHROW
 {
     const QRhiShaderResourceBinding::Data *d = b.data();
     return seed + uint(d->binding) + 10 * uint(d->stage) + 100 * uint(d->type)

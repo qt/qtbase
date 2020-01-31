@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT uint qHash(const QUrlQuery &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT size_t qHash(const QUrlQuery &key, size_t seed = 0) noexcept;
 
 class QUrlQueryPrivate;
 class Q_CORE_EXPORT QUrlQuery
@@ -109,7 +109,7 @@ public:
 
 private:
     friend class QUrl;
-    friend Q_CORE_EXPORT uint qHash(const QUrlQuery &key, uint seed) noexcept;
+    friend Q_CORE_EXPORT size_t qHash(const QUrlQuery &key, size_t seed) noexcept;
     QSharedDataPointer<QUrlQueryPrivate> d;
 public:
     typedef QSharedDataPointer<QUrlQueryPrivate> DataPtr;

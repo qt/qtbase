@@ -399,7 +399,7 @@ inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId
     return f1.index == f2.index && f1.encoding == f2.encoding && f1.filename == f2.filename && f1.uuid == f2.uuid;
 }
 
-inline uint qHash(const QFontEngine::FaceId &f, uint seed = 0)
+inline size_t qHash(const QFontEngine::FaceId &f, size_t seed = 0)
     noexcept(noexcept(qHash(f.filename)))
 {
     QtPrivate::QHashCombine hash;

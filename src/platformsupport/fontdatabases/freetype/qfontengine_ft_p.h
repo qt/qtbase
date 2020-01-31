@@ -343,7 +343,7 @@ private:
 Q_DECLARE_TYPEINFO(QFontEngineFT::QGlyphSet, Q_MOVABLE_TYPE);
 
 
-inline uint qHash(const QFontEngineFT::GlyphAndSubPixelPosition &g)
+inline size_t qHash(const QFontEngineFT::GlyphAndSubPixelPosition &g)
 {
     return (g.glyph << 8)  | (g.subPixelPosition * 10).round().toInt();
 }

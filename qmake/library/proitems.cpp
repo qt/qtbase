@@ -116,7 +116,7 @@ uint ProString::updatedHash() const
      return (m_hash = hash(m_string.constData() + m_offset, m_length));
 }
 
-uint qHash(const ProString &str)
+size_t qHash(const ProString &str)
 {
     if (!(str.m_hash & 0x80000000))
         return str.m_hash;

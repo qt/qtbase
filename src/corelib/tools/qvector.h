@@ -731,7 +731,7 @@ Q_DECLARE_SEQUENTIAL_ITERATOR(Vector)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(Vector)
 
 template <typename T>
-uint qHash(const QVector<T> &key, uint seed = 0)
+size_t qHash(const QVector<T> &key, size_t seed = 0)
     noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
 {
     return qHashRange(key.cbegin(), key.cend(), seed);

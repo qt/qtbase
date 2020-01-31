@@ -65,7 +65,7 @@ void qt_set_sequence_auto_mnemonic(bool b);
 class QVariant;
 class QKeySequencePrivate;
 
-Q_GUI_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QKeySequence &key, uint seed = 0) noexcept;
+Q_GUI_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QKeySequence &key, size_t seed = 0) noexcept;
 
 class Q_GUI_EXPORT QKeySequence
 {
@@ -211,7 +211,7 @@ private:
 
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QKeySequence &ks);
-    friend Q_GUI_EXPORT uint qHash(const QKeySequence &key, uint seed) noexcept;
+    friend Q_GUI_EXPORT size_t qHash(const QKeySequence &key, size_t seed) noexcept;
     friend class QShortcutMap;
     friend class QShortcut;
 

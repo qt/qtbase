@@ -149,7 +149,7 @@ inline bool operator==(const Employee &e1, const Employee &e2)
            && e1.dateOfBirth() == e2.dateOfBirth();
 }
 
-inline uint qHash(const Employee &key, uint seed)
+inline size_t qHash(const Employee &key, size_t seed)
 {
     return qHash(key.name(), seed) ^ key.dateOfBirth().day();
 }
@@ -312,7 +312,7 @@ qDeleteAll(hash2.keyBegin(), hash2.keyEnd());
 //! [28]
 
 //! [qhashbits]
-inline uint qHash(const std::vector<int> &key, uint seed = 0)
+inline size_t qHash(const std::vector<int> &key, size_t seed = 0)
 {
     if (key.empty())
         return seed;
@@ -322,14 +322,14 @@ inline uint qHash(const std::vector<int> &key, uint seed = 0)
 //! [qhashbits]
 
 //! [qhashrange]
-inline uint qHash(const std::vector<int> &key, uint seed = 0)
+inline size_t qHash(const std::vector<int> &key, size_t seed = 0)
 {
     return qHashRange(key.begin(), key.end(), seed);
 }
 //! [qhashrange]
 
 //! [qhashrangecommutative]
-inline uint qHash(const std::unordered_set<int> &key, uint seed = 0)
+inline size_t qHash(const std::unordered_set<int> &key, size_t seed = 0)
 {
     return qHashRangeCommutative(key.begin(), key.end(), seed);
 }
@@ -348,9 +348,9 @@ qHash(qMakePair(key.first, key.second), seed);
 //! [31]
 
 //! [32]
-uint qHash(K key);
-uint qHash(const K &key);
+size_t qHash(K key);
+size_t qHash(const K &key);
 
-uint qHash(K key, uint seed);
-uint qHash(const K &key, uint seed);
+size_t qHash(K key, size_t seed);
+size_t qHash(const K &key, size_t seed);
 //! [32]

@@ -142,7 +142,7 @@ public:
 
 Q_DECLARE_TYPEINFO(QFileSystemWatcherPathKey, Q_MOVABLE_TYPE);
 
-inline uint qHash(const QFileSystemWatcherPathKey &key) { return qHash(key.toCaseFolded()); }
+inline size_t qHash(const QFileSystemWatcherPathKey &key) { return qHash(key.toCaseFolded()); }
 
 class QWindowsFileSystemWatcherEngineThread : public QThread
 {

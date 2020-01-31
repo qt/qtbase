@@ -1133,7 +1133,7 @@ void QJsonArray::compact()
     a->compact(a->elements.size());
 }
 
-uint qHash(const QJsonArray &array, uint seed)
+size_t qHash(const QJsonArray &array, size_t seed)
 {
     return qHashRange(array.begin(), array.end(), seed);
 }

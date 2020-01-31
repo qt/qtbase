@@ -72,7 +72,7 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
     return false;
 }
 
-uint qHash(const QSslCertificate &key, uint seed) noexcept
+size_t qHash(const QSslCertificate &key, size_t seed) noexcept
 {
     if (X509 * const x509 = key.d->x509) {
         const EVP_MD *sha1 = q_EVP_sha1();

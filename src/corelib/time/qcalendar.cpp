@@ -61,7 +61,7 @@ inline bool operator==(const CalendarName &u, const CalendarName &v)
     return u.compare(v, Qt::CaseInsensitive) == 0;
 }
 
-inline uint qHash(const CalendarName &key, uint seed = 0) noexcept
+inline size_t qHash(const CalendarName &key, size_t seed = 0) noexcept
 {
     return qHash(key.toLower(), seed);
 }

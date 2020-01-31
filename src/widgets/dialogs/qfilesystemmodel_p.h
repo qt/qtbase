@@ -84,7 +84,7 @@ public:
 
 Q_DECLARE_TYPEINFO(QFileSystemModelNodePathKey, Q_MOVABLE_TYPE);
 
-inline uint qHash(const QFileSystemModelNodePathKey &key) { return qHash(key.toCaseFolded()); }
+inline size_t qHash(const QFileSystemModelNodePathKey &key) { return qHash(key.toCaseFolded()); }
 #else // Q_OS_WIN
 typedef QString QFileSystemModelNodePathKey;
 #endif

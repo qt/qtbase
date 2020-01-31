@@ -105,7 +105,7 @@ inline bool operator!=(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 inline bool operator<(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 { return lhs.path() < rhs.path(); }
 
-inline uint qHash(const QDBusObjectPath &objectPath, uint seed = 0)
+inline size_t qHash(const QDBusObjectPath &objectPath, size_t seed = 0)
 { return qHash(objectPath.path(), seed); }
 
 
@@ -158,7 +158,7 @@ inline bool operator!=(const QDBusSignature &lhs, const QDBusSignature &rhs)
 inline bool operator<(const QDBusSignature &lhs, const QDBusSignature &rhs)
 { return lhs.signature() < rhs.signature(); }
 
-inline uint qHash(const QDBusSignature &signature, uint seed = 0)
+inline size_t qHash(const QDBusSignature &signature, size_t seed = 0)
 { return qHash(signature.signature(), seed); }
 
 class QDBusVariant

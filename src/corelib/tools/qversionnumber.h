@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 class QVersionNumber;
-Q_CORE_EXPORT uint qHash(const QVersionNumber &key, uint seed = 0);
+Q_CORE_EXPORT size_t qHash(const QVersionNumber &key, size_t seed = 0);
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream& operator<<(QDataStream &out, const QVersionNumber &version);
@@ -283,7 +283,7 @@ private:
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QVersionNumber &version);
 #endif
-    friend Q_CORE_EXPORT uint qHash(const QVersionNumber &key, uint seed);
+    friend Q_CORE_EXPORT size_t qHash(const QVersionNumber &key, size_t seed);
 };
 
 Q_DECLARE_TYPEINFO(QVersionNumber, Q_MOVABLE_TYPE);

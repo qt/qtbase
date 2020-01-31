@@ -2011,7 +2011,7 @@ public:
 #endif // !QT_NO_JAVA_STYLE_ITERATORS
 
 template <class Key, class T>
-uint qHash(const QHash<Key, T> &key, uint seed = 0)
+size_t qHash(const QHash<Key, T> &key, size_t seed = 0)
     noexcept(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
 {
     QtPrivate::QHashCombineCommutative hash;
@@ -2024,7 +2024,7 @@ uint qHash(const QHash<Key, T> &key, uint seed = 0)
 }
 
 template <class Key, class T>
-inline uint qHash(const QMultiHash<Key, T> &key, uint seed = 0)
+inline size_t qHash(const QMultiHash<Key, T> &key, size_t seed = 0)
     noexcept(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
 {
     const QHash<Key, T> &key2 = key;

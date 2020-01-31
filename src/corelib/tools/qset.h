@@ -230,7 +230,7 @@ QSet(InputIterator, InputIterator) -> QSet<ValueType>;
 #endif
 
 template <typename T>
-uint qHash(const QSet<T> &key, uint seed = 0)
+size_t qHash(const QSet<T> &key, size_t seed = 0)
 noexcept(noexcept(qHashRangeCommutative(key.begin(), key.end(), seed)))
 {
     return qHashRangeCommutative(key.begin(), key.end(), seed);

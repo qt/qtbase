@@ -77,7 +77,7 @@ struct IdentityTracker {
     int value, id;
 };
 
-inline uint qHash(IdentityTracker key) { return qHash(key.value); }
+inline size_t qHash(IdentityTracker key) { return qHash(key.value); }
 inline bool operator==(IdentityTracker lhs, IdentityTracker rhs) { return lhs.value == rhs.value; }
 
 
@@ -1337,52 +1337,52 @@ static int wrongqHashOverload = 0;
 
 struct OneArgumentQHashStruct1 {};
 bool operator==(const OneArgumentQHashStruct1 &, const OneArgumentQHashStruct1 &) { return false; }
-uint qHash(OneArgumentQHashStruct1) { return 0; }
+size_t qHash(OneArgumentQHashStruct1) { return 0; }
 
 struct OneArgumentQHashStruct2 {};
 bool operator==(const OneArgumentQHashStruct2 &, const OneArgumentQHashStruct2 &) { return false; }
-uint qHash(const OneArgumentQHashStruct2 &) { return 0; }
+size_t qHash(const OneArgumentQHashStruct2 &) { return 0; }
 
 struct OneArgumentQHashStruct3 {};
 bool operator==(const OneArgumentQHashStruct3 &, const OneArgumentQHashStruct3 &) { return false; }
-uint qHash(OneArgumentQHashStruct3) { return 0; }
-uint qHash(OneArgumentQHashStruct3 &, uint) { wrongqHashOverload = 1; return 0; }
+size_t qHash(OneArgumentQHashStruct3) { return 0; }
+size_t qHash(OneArgumentQHashStruct3 &, size_t) { wrongqHashOverload = 1; return 0; }
 
 struct OneArgumentQHashStruct4 {};
 bool operator==(const OneArgumentQHashStruct4 &, const OneArgumentQHashStruct4 &) { return false; }
-uint qHash(const OneArgumentQHashStruct4 &) { return 0; }
-uint qHash(OneArgumentQHashStruct4 &, uint) { wrongqHashOverload = 1; return 0; }
+size_t qHash(const OneArgumentQHashStruct4 &) { return 0; }
+size_t qHash(OneArgumentQHashStruct4 &, size_t) { wrongqHashOverload = 1; return 0; }
 
 
 struct TwoArgumentsQHashStruct1 {};
 bool operator==(const TwoArgumentsQHashStruct1 &, const TwoArgumentsQHashStruct1 &) { return false; }
-uint qHash(const TwoArgumentsQHashStruct1 &) { wrongqHashOverload = 1; return 0; }
-uint qHash(const TwoArgumentsQHashStruct1 &, uint) { return 0; }
+size_t qHash(const TwoArgumentsQHashStruct1 &) { wrongqHashOverload = 1; return 0; }
+size_t qHash(const TwoArgumentsQHashStruct1 &, size_t) { return 0; }
 
 struct TwoArgumentsQHashStruct2 {};
 bool operator==(const TwoArgumentsQHashStruct2 &, const TwoArgumentsQHashStruct2 &) { return false; }
-uint qHash(TwoArgumentsQHashStruct2) { wrongqHashOverload = 1; return 0; }
-uint qHash(const TwoArgumentsQHashStruct2 &, uint) { return 0; }
+size_t qHash(TwoArgumentsQHashStruct2) { wrongqHashOverload = 1; return 0; }
+size_t qHash(const TwoArgumentsQHashStruct2 &, size_t) { return 0; }
 
 struct TwoArgumentsQHashStruct3 {};
 bool operator==(const TwoArgumentsQHashStruct3 &, const TwoArgumentsQHashStruct3 &) { return false; }
-uint qHash(const TwoArgumentsQHashStruct3 &) { wrongqHashOverload = 1; return 0; }
-uint qHash(TwoArgumentsQHashStruct3, uint) { return 0; }
+size_t qHash(const TwoArgumentsQHashStruct3 &) { wrongqHashOverload = 1; return 0; }
+size_t qHash(TwoArgumentsQHashStruct3, size_t) { return 0; }
 
 struct TwoArgumentsQHashStruct4 {};
 bool operator==(const TwoArgumentsQHashStruct4 &, const TwoArgumentsQHashStruct4 &) { return false; }
-uint qHash(TwoArgumentsQHashStruct4) { wrongqHashOverload = 1; return 0; }
-uint qHash(TwoArgumentsQHashStruct4, uint) { return 0; }
+size_t qHash(TwoArgumentsQHashStruct4) { wrongqHashOverload = 1; return 0; }
+size_t qHash(TwoArgumentsQHashStruct4, size_t) { return 0; }
 
 /*!
     \internal
 
     Check that QHash picks up the right overload.
     The best one, for a type T, is the two-args version of qHash:
-    either uint qHash(T, uint) or uint qHash(const T &, uint).
+    either size_t qHash(T, size_t) or size_t qHash(const T &, size_t).
 
     If neither of these exists, then one between
-    uint qHash(T) or uint qHash(const T &) must exist
+    size_t qHash(T) or size_t qHash(const T &) must exist
     (and it gets selected instead).
 */
 void tst_QHash::twoArguments_qHash()

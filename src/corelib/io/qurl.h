@@ -119,7 +119,7 @@ class QTypeInfo<QUrlTwoFlags<E1, E2> > : public QTypeInfoMerger<QUrlTwoFlags<E1,
 
 class QUrl;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-Q_CORE_EXPORT uint qHash(const QUrl &url, uint seed = 0) noexcept;
+Q_CORE_EXPORT size_t qHash(const QUrl &url, size_t seed = 0) noexcept;
 
 class Q_CORE_EXPORT QUrl
 {
@@ -356,7 +356,7 @@ public:
     static QList<QUrl> fromStringList(const QStringList &uris, ParsingMode mode = TolerantMode);
 
     static void setIdnWhitelist(const QStringList &);
-    friend Q_CORE_EXPORT uint qHash(const QUrl &url, uint seed) noexcept;
+    friend Q_CORE_EXPORT size_t qHash(const QUrl &url, size_t seed) noexcept;
 
 private:
     QUrlPrivate *d;

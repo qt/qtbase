@@ -541,14 +541,14 @@ QDebug operator<<(QDebug debug, const QVersionNumber &version)
 #endif
 
 /*!
-    \fn uint qHash(const QVersionNumber &key, uint seed)
+    \fn size_t qHash(const QVersionNumber &key, size_t seed)
     \relates QHash
     \since 5.6
 
     Returns the hash value for the \a key, using \a seed to seed the
     calculation.
 */
-uint qHash(const QVersionNumber &key, uint seed)
+size_t qHash(const QVersionNumber &key, size_t seed)
 {
     QtPrivate::QHashCombine hash;
     for (int i = 0; i < key.segmentCount(); ++i)

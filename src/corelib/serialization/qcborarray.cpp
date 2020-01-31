@@ -1200,7 +1200,7 @@ void QCborArray::detach(qsizetype reserved)
     Returns the offset of this iterator relative to \a other.
 */
 
-uint qHash(const QCborArray &array, uint seed)
+size_t qHash(const QCborArray &array, size_t seed)
 {
     return qHashRange(array.begin(), array.end(), seed);
 }

@@ -64,7 +64,7 @@ struct FixStringCacheKey
         return hash;
     }
 };
-inline uint qHash(const FixStringCacheKey &f) { return f.hashCode(); }
+inline size_t qHash(const FixStringCacheKey &f) { return f.hashCode(); }
 
 // -------------------------------------------------------------------------------------------------
 struct FileInfoCacheKey
@@ -102,7 +102,7 @@ struct FileInfoCacheKey
                 || (c0 == QLatin1Char('\\') && c1 == QLatin1Char('\\')));
     }
 };
-inline uint qHash(const FileInfoCacheKey &f) { return f.hashCode(); }
+inline size_t qHash(const FileInfoCacheKey &f) { return f.hashCode(); }
 
 // -------------------------------------------------------------------------------------------------
 template <typename T>

@@ -1467,7 +1467,7 @@ bool QKeySequence::operator==(const QKeySequence &other) const
     Calculates the hash value of \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QKeySequence &key, uint seed) noexcept
+size_t qHash(const QKeySequence &key, size_t seed) noexcept
 {
     return qHashRange(key.d->key, key.d->key + QKeySequencePrivate::MaxKeyCount, seed);
 }

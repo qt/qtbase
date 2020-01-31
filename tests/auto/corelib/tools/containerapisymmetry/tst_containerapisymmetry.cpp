@@ -91,7 +91,7 @@ bool operator==(Movable lhs, Movable rhs) Q_DECL_NOTHROW { return lhs.i == rhs.i
 bool operator!=(Movable lhs, Movable rhs) Q_DECL_NOTHROW { return lhs.i != rhs.i; }
 bool operator<(Movable lhs, Movable rhs) Q_DECL_NOTHROW { return lhs.i < rhs.i; }
 
-uint qHash(Movable m, uint seed = 0) Q_DECL_NOTHROW { return qHash(m.i, seed); }
+size_t qHash(Movable m, size_t seed = 0) Q_DECL_NOTHROW { return qHash(m.i, seed); }
 QDebug &operator<<(QDebug &d, Movable m)
 {
     const QDebugStateSaver saver(d);
@@ -130,7 +130,7 @@ bool operator==(Complex lhs, Complex rhs) Q_DECL_NOTHROW { return lhs.i == rhs.i
 bool operator!=(Complex lhs, Complex rhs) Q_DECL_NOTHROW { return lhs.i != rhs.i; }
 bool operator<(Complex lhs, Complex rhs) Q_DECL_NOTHROW { return lhs.i < rhs.i; }
 
-uint qHash(Complex c, uint seed = 0) Q_DECL_NOTHROW { return qHash(c.i, seed); }
+size_t qHash(Complex c, size_t seed = 0) Q_DECL_NOTHROW { return qHash(c.i, seed); }
 QDebug &operator<<(QDebug &d, Complex c)
 {
     const QDebugStateSaver saver(d);
@@ -171,7 +171,7 @@ bool operator<(DuplicateStrategyTestType lhs, DuplicateStrategyTestType rhs) Q_D
     return lhs.i < rhs.i;
 }
 
-uint qHash(DuplicateStrategyTestType c, uint seed = 0) Q_DECL_NOTHROW
+size_t qHash(DuplicateStrategyTestType c, size_t seed = 0) Q_DECL_NOTHROW
 {
     return qHash(c.i, seed);
 }

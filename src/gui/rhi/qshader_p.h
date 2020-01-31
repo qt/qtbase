@@ -158,7 +158,7 @@ private:
     QShaderPrivate *d;
     friend struct QShaderPrivate;
     friend Q_GUI_EXPORT bool operator==(const QShader &, const QShader &) Q_DECL_NOTHROW;
-    friend Q_GUI_EXPORT uint qHash(const QShader &, uint) Q_DECL_NOTHROW;
+    friend Q_GUI_EXPORT size_t qHash(const QShader &, size_t) Q_DECL_NOTHROW;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QShader &);
 #endif
@@ -190,7 +190,7 @@ private:
 Q_DECLARE_TYPEINFO(QShaderKey, Q_MOVABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QShader &lhs, const QShader &rhs) Q_DECL_NOTHROW;
-Q_GUI_EXPORT uint qHash(const QShader &s, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT size_t qHash(const QShader &s, size_t seed = 0) Q_DECL_NOTHROW;
 
 inline bool operator!=(const QShader &lhs, const QShader &rhs) Q_DECL_NOTHROW
 {
@@ -216,7 +216,7 @@ inline bool operator!=(const QShaderCode &lhs, const QShaderCode &rhs) Q_DECL_NO
     return !(lhs == rhs);
 }
 
-Q_GUI_EXPORT uint qHash(const QShaderKey &k, uint seed = 0) Q_DECL_NOTHROW;
+Q_GUI_EXPORT size_t qHash(const QShaderKey &k, size_t seed = 0) Q_DECL_NOTHROW;
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QShader &);

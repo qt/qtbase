@@ -1828,7 +1828,7 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QRegularExpression &key, uint seed) noexcept
+size_t qHash(const QRegularExpression &key, size_t seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.d->pattern);

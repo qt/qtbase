@@ -2604,7 +2604,7 @@ public:
     bool operator==(const EqualsComparable &) const { return true; }
 };
 
-uint qHash(const EqualsComparable &)
+size_t qHash(const EqualsComparable &)
 {
     return 0;
 }
@@ -2917,7 +2917,7 @@ public:
 
     inline bool operator==(const Aligned4 &other) const { return i == other.i; }
     inline bool operator<(const Aligned4 &other) const { return i < other.i; }
-    friend inline int qHash(const Aligned4 &a) { return qHash(a.i); }
+    friend inline size_t qHash(const Aligned4 &a) { return qHash(a.i); }
 };
 Q_STATIC_ASSERT(alignof(Aligned4) % 4 == 0);
 
@@ -3069,7 +3069,7 @@ template<template<class, class> class C> void QTBUG13079_collectionInsideCollect
 }
 
 
-quint32 qHash(const QTBUG13079_Node<QSet> &)
+size_t qHash(const QTBUG13079_Node<QSet> &)
 {
     return 0;
 }

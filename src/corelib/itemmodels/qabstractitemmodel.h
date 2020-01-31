@@ -103,7 +103,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QModelIndex &);
 class QPersistentModelIndexData;
 
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-uint qHash(const QPersistentModelIndex &index, uint seed = 0) noexcept;
+size_t qHash(const QPersistentModelIndex &index, size_t seed = 0) noexcept;
 
 class Q_CORE_EXPORT QPersistentModelIndex
 {
@@ -141,14 +141,14 @@ public:
     bool isValid() const;
 private:
     QPersistentModelIndexData *d;
-    friend uint qHash(const QPersistentModelIndex &, uint seed) noexcept;
+    friend size_t qHash(const QPersistentModelIndex &, size_t seed) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QPersistentModelIndex &);
 #endif
 };
 Q_DECLARE_SHARED(QPersistentModelIndex)
 
-inline uint qHash(const QPersistentModelIndex &index, uint seed) noexcept
+inline size_t qHash(const QPersistentModelIndex &index, size_t seed) noexcept
 { return qHash(index.d, seed); }
 
 
@@ -461,8 +461,8 @@ inline QVariant QModelIndex::data(int arole) const
 inline Qt::ItemFlags QModelIndex::flags() const
 { return m ? m->flags(*this) : Qt::ItemFlags(); }
 
-inline uint qHash(const QModelIndex &index) noexcept
-{ return uint((uint(index.row()) << 4) + index.column() + index.internalId()); }
+inline size_t qHash(const QModelIndex &index, size_t seed) noexcept
+{ return size_t((size_t(index.row()) << 4) + size_t(index.column()) + index.internalId()) ^ seed; }
 
 QT_END_NAMESPACE
 

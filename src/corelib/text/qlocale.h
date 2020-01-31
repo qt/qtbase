@@ -59,7 +59,7 @@ class QTextStreamPrivate;
 
 class QLocalePrivate;
 
-Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT size_t qHash(const QLocale &key, size_t seed = 0) noexcept;
 
 class Q_CORE_EXPORT QLocale
 {
@@ -1131,7 +1131,7 @@ private:
     friend class QSystemLocale;
     friend class QCalendarBackend;
     friend class QGregorianCalendar;
-    friend Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed) noexcept;
+    friend Q_CORE_EXPORT size_t qHash(const QLocale &key, size_t seed) noexcept;
 
     QSharedDataPointer<QLocalePrivate> d;
 };

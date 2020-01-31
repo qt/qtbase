@@ -1089,7 +1089,7 @@ bool QLocale::operator!=(const QLocale &other) const
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QLocale &key, uint seed) noexcept
+size_t qHash(const QLocale &key, size_t seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.d->m_data);

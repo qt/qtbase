@@ -306,13 +306,13 @@ struct ReplaceExtraCompilerCacheKey
     MakefileGenerator::ReplaceFor forShell;
     ReplaceExtraCompilerCacheKey(const QString &v, const QStringList &i, const QStringList &o, MakefileGenerator::ReplaceFor s);
     bool operator==(const ReplaceExtraCompilerCacheKey &f) const;
-    inline uint hashCode() const {
+    inline size_t hashCode() const {
         if (!hash)
-            hash = (uint)forShell ^ qHash(var) ^ qHash(in) ^ qHash(out) /*^ qHash(pwd)*/;
+            hash = (size_t)forShell ^ qHash(var) ^ qHash(in) ^ qHash(out) /*^ qHash(pwd)*/;
         return hash;
     }
 };
-inline uint qHash(const ReplaceExtraCompilerCacheKey &f) { return f.hashCode(); }
+inline size_t qHash(const ReplaceExtraCompilerCacheKey &f) { return f.hashCode(); }
 
 QT_END_NAMESPACE
 

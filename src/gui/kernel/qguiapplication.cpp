@@ -2749,9 +2749,9 @@ void QGuiApplicationPrivate::processContextMenuEvent(QWindowSystemInterfacePriva
 }
 #endif
 
-Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k)
+Q_GUI_EXPORT size_t qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k, size_t seed)
 {
-    return qHash(k.device) + k.touchPointId;
+    return (qHash(k.device) + k.touchPointId) ^ seed;
 }
 
 Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,

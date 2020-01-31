@@ -74,7 +74,7 @@ struct IdentityTracker {
     int value, id;
 };
 
-inline uint qHash(IdentityTracker key) { return qHash(key.value); }
+inline size_t qHash(IdentityTracker key) { return qHash(key.value); }
 inline bool operator==(IdentityTracker lhs, IdentityTracker rhs) { return lhs.value == rhs.value; }
 
 void tst_QSet::operator_eq()

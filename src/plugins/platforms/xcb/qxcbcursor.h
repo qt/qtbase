@@ -65,9 +65,9 @@ inline bool operator==(const QXcbCursorCacheKey &k1, const QXcbCursorCacheKey &k
     return k1.shape == k2.shape && k1.bitmapCacheKey == k2.bitmapCacheKey && k1.maskCacheKey == k2.maskCacheKey;
 }
 
-inline uint qHash(const QXcbCursorCacheKey &k, uint seed) noexcept
+inline size_t qHash(const QXcbCursorCacheKey &k, size_t seed) noexcept
 {
-    return (uint(k.shape) + uint(k.bitmapCacheKey) + uint(k.maskCacheKey)) ^ seed;
+    return (size_t(k.shape) + size_t(k.bitmapCacheKey) + size_t(k.maskCacheKey)) ^ seed;
 }
 
 #endif // !QT_NO_CURSOR

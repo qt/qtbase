@@ -1744,7 +1744,7 @@ void QCborMap::detach(qsizetype reserved)
     \sa operator+=(), operator-()
 */
 
-uint qHash(const QCborMap &map, uint seed)
+size_t qHash(const QCborMap &map, size_t seed)
 {
     return qHashRange(map.begin(), map.end(), seed);
 }

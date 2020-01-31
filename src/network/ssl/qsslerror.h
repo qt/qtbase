@@ -124,7 +124,7 @@ private:
 };
 Q_DECLARE_SHARED(QSslError)
 
-Q_NETWORK_EXPORT uint qHash(const QSslError &key, uint seed = 0) noexcept;
+Q_NETWORK_EXPORT size_t qHash(const QSslError &key, size_t seed = 0) noexcept;
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;

@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 class QMimeTypePrivate;
 class QMimeType;
 
-Q_CORE_EXPORT uint qHash(const QMimeType &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT size_t qHash(const QMimeType &key, size_t seed = 0) noexcept;
 
 class Q_CORE_EXPORT QMimeType
 {
@@ -119,7 +119,7 @@ protected:
     friend class QMimeXMLProvider;
     friend class QMimeBinaryProvider;
     friend class QMimeTypePrivate;
-    friend Q_CORE_EXPORT uint qHash(const QMimeType &key, uint seed) noexcept;
+    friend Q_CORE_EXPORT size_t qHash(const QMimeType &key, size_t seed) noexcept;
 
     QExplicitlySharedDataPointer<QMimeTypePrivate> d;
 };

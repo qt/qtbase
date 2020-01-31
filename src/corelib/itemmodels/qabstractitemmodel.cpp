@@ -3978,7 +3978,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 */
 
 /*!
-    \fn uint qHash(const QPersistentModelIndex &index, uint seed = 0)
+    \fn size_t qHash(const QPersistentModelIndex &index, size_t seed = 0)
     \since 5.0
     \relates QPersistentModelIndex
 

@@ -65,7 +65,7 @@ class QStringList;
 
 class QSslCertificate;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-Q_NETWORK_EXPORT uint qHash(const QSslCertificate &key, uint seed = 0) noexcept;
+Q_NETWORK_EXPORT size_t qHash(const QSslCertificate &key, size_t seed = 0) noexcept;
 
 class QSslCertificatePrivate;
 class Q_NETWORK_EXPORT QSslCertificate
@@ -170,7 +170,7 @@ private:
     friend class QSslCertificatePrivate;
     friend class QSslSocketBackendPrivate;
 
-    friend Q_NETWORK_EXPORT uint qHash(const QSslCertificate &key, uint seed) noexcept;
+    friend Q_NETWORK_EXPORT size_t qHash(const QSslCertificate &key, size_t seed) noexcept;
 };
 Q_DECLARE_SHARED(QSslCertificate)
 

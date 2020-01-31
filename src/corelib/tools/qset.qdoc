@@ -1136,7 +1136,7 @@
 */
 
 /*!
-    \fn template <class T> uint qHash(const QSet<T> &key, uint seed = 0)
+    \fn template <class T> size_t qHash(const QSet<T> &key, size_t seed = 0)
     \relates QHash
     \since 5.5
 

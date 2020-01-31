@@ -5950,13 +5950,13 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
 }
 #endif // debug_stream && datestring
 
-/*! \fn uint qHash(const QDateTime &key, uint seed = 0)
+/*! \fn size_t qHash(const QDateTime &key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(const QDateTime &key, uint seed)
+size_t qHash(const QDateTime &key, size_t seed)
 {
     // Use to toMSecsSinceEpoch instead of individual qHash functions for
     // QDate/QTime/spec/offset because QDateTime::operator== converts both arguments
@@ -5965,24 +5965,24 @@ uint qHash(const QDateTime &key, uint seed)
     return key.isValid() ? qHash(key.toMSecsSinceEpoch(), seed) : seed;
 }
 
-/*! \fn uint qHash(QDate key, uint seed = 0)
+/*! \fn size_t qHash(QDate key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(QDate key, uint seed) noexcept
+size_t qHash(QDate key, size_t seed) noexcept
 {
     return qHash(key.toJulianDay(), seed);
 }
 
-/*! \fn uint qHash(QTime key, uint seed = 0)
+/*! \fn size_t qHash(QTime key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(QTime key, uint seed) noexcept
+size_t qHash(QTime key, size_t seed) noexcept
 {
     return qHash(key.msecsSinceStartOfDay(), seed);
 }

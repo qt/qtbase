@@ -4116,7 +4116,7 @@ QList<QUrl> QUrl::fromStringList(const QStringList &urls, ParsingMode mode)
     \relates QHash
     \since 5.0
 */
-uint qHash(const QUrl &url, uint seed) noexcept
+size_t qHash(const QUrl &url, size_t seed) noexcept
 {
     if (!url.d)
         return qHash(-1, seed); // the hash of an unset port (-1)

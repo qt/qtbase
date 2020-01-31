@@ -5231,7 +5231,7 @@ bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexce
 
     Returns the hash value for \a key, using \a seed to seed the calculation.
 */
-uint qHash(QPointingDeviceUniqueId key, uint seed) noexcept
+size_t qHash(QPointingDeviceUniqueId key, size_t seed) noexcept
 {
     return qHash(key.numericId(), seed);
 }

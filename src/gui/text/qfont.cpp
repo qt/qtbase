@@ -2086,7 +2086,7 @@ QString QFont::toString() const
     \relates QFont
     \since 5.3
 */
-uint qHash(const QFont &font, uint seed) noexcept
+size_t qHash(const QFont &font, size_t seed) noexcept
 {
     return qHash(QFontPrivate::get(font)->request, seed);
 }

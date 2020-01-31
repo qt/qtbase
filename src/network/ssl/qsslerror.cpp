@@ -362,7 +362,7 @@ QSslCertificate QSslError::certificate() const
     \since 5.4
     \relates QHash
 */
-uint qHash(const QSslError &key, uint seed) noexcept
+size_t qHash(const QSslError &key, size_t seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.error());

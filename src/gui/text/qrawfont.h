@@ -156,7 +156,7 @@ Q_DECLARE_SHARED(QRawFont)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRawFont::LayoutFlags)
 
-Q_GUI_EXPORT uint qHash(const QRawFont &font, uint seed = 0) noexcept;
+Q_GUI_EXPORT size_t qHash(const QRawFont &font, size_t seed = 0) noexcept;
 
 inline QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, QRawFont::LayoutFlags layoutFlags) const
 {

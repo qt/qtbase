@@ -471,13 +471,13 @@ static inline Qt::Key qKeyFromCode(quint32 code, int mods)
 }
 
 typedef HRESULT (__stdcall ICoreWindow::*CoreWindowCallbackRemover)(EventRegistrationToken);
-uint qHash(CoreWindowCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+size_t qHash(CoreWindowCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 typedef HRESULT (__stdcall IDisplayInformation::*DisplayCallbackRemover)(EventRegistrationToken);
-uint qHash(DisplayCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+size_t qHash(DisplayCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 typedef HRESULT (__stdcall ICorePointerRedirector::*RedirectorCallbackRemover)(EventRegistrationToken);
-uint qHash(RedirectorCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+size_t qHash(RedirectorCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 typedef HRESULT (__stdcall IApplicationView2::*ApplicationView2CallbackRemover)(EventRegistrationToken);
-uint qHash(ApplicationView2CallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+size_t qHash(ApplicationView2CallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 
 class QWinRTScreenPrivate
 {

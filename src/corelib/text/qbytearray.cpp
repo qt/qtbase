@@ -5028,7 +5028,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
 */
-uint qHash(const QByteArray::FromBase64Result &key, uint seed) noexcept
+size_t qHash(const QByteArray::FromBase64Result &key, size_t seed) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.decoded);

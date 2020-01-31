@@ -173,7 +173,7 @@ QString LanguageChooser::languageName(const QString &qmFile)
 
 QColor LanguageChooser::colorForLanguage(const QString &language)
 {
-    uint hashValue = qHash(language);
+    size_t hashValue = qHash(language);
     int red = 156 + (hashValue & 0x3F);
     int green = 156 + ((hashValue >> 6) & 0x3F);
     int blue = 156 + ((hashValue >> 12) & 0x3F);

@@ -347,7 +347,7 @@ private:
 
 Q_DECLARE_SHARED(QFont)
 
-Q_GUI_EXPORT uint qHash(const QFont &font, uint seed = 0) noexcept;
+Q_GUI_EXPORT size_t qHash(const QFont &font, size_t seed = 0) noexcept;
 
 inline bool QFont::bold() const
 { return weight() > Medium; }

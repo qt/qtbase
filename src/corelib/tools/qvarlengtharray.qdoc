@@ -903,7 +903,7 @@
 */
 
 /*!
-    \fn template <typename T, qsizetype Prealloc> uint qHash(const QVarLengthArray<T, Prealloc> &key, uint seed = 0)
+    \fn template <typename T, qsizetype Prealloc> size_t qHash(const QVarLengthArray<T, Prealloc> &key, size_t seed = 0)
     \relates QVarLengthArray
     \since 5.14
 

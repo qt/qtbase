@@ -378,7 +378,7 @@ bool operator==(const KeyType &key1, const KeyType &key2)
     return key1.foo == key2.foo;
 }
 
-uint qHash(const KeyType &key)
+size_t qHash(const KeyType &key)
 {
     return qHash(key.foo);
 }

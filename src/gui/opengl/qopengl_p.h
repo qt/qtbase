@@ -133,9 +133,9 @@ inline bool operator!=(const QOpenGLConfig::Gpu &a, const QOpenGLConfig::Gpu &b)
     return !a.equals(b);
 }
 
-inline uint qHash(const QOpenGLConfig::Gpu &gpu)
+inline size_t qHash(const QOpenGLConfig::Gpu &gpu, size_t seed = 0)
 {
-    return qHash(gpu.vendorId) + qHash(gpu.deviceId) + qHash(gpu.driverVersion);
+    return (qHash(gpu.vendorId) + qHash(gpu.deviceId) + qHash(gpu.driverVersion)) ^ seed;
 }
 
 QT_END_NAMESPACE

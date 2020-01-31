@@ -62,7 +62,7 @@ public:
     bool hostBuild;
 };
 
-uint qHash(const QMakeBaseKey &key);
+size_t qHash(const QMakeBaseKey &key);
 bool operator==(const QMakeBaseKey &one, const QMakeBaseKey &two);
 
 class QMakeBaseEnv

@@ -697,7 +697,7 @@ inline bool operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray
     return !operator==(lhs, rhs);
 }
 
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QByteArray::FromBase64Result &key, uint seed = 0) noexcept;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray::FromBase64Result &key, size_t seed = 0) noexcept;
 
 QT_END_NAMESPACE
 

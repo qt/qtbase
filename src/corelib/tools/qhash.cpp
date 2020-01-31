@@ -210,11 +210,6 @@ static inline uint hash(const uchar *p, size_t len, uint seed) noexcept
     return h;
 }
 
-uint qHashBits(const void *p, size_t len, uint seed) noexcept
-{
-    return hash(static_cast<const uchar*>(p), int(len), seed);
-}
-
 static inline uint hash(const QChar *p, size_t len, uint seed) noexcept
 {
     uint h = seed;
@@ -228,33 +223,38 @@ static inline uint hash(const QChar *p, size_t len, uint seed) noexcept
     return h;
 }
 
-uint qHash(const QByteArray &key, uint seed) noexcept
+size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
+{
+    return hash(static_cast<const uchar*>(p), int(size), static_cast<uint>(seed));
+}
+
+
+size_t qHash(const QByteArray &key, size_t seed) noexcept
 {
     return hash(reinterpret_cast<const uchar *>(key.constData()), size_t(key.size()), seed);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
-uint qHash(const QString &key, uint seed) noexcept
+size_t qHash(const QString &key, size_t seed) noexcept
 {
     return hash(key.unicode(), size_t(key.size()), seed);
 }
 
-uint qHash(const QStringRef &key, uint seed) noexcept
+size_t qHash(const QStringRef &key, size_t seed) noexcept
 {
     return hash(key.unicode(), size_t(key.size()), seed);
 }
 #endif
 
-uint qHash(QStringView key, uint seed) noexcept
+size_t qHash(QStringView key, size_t seed) noexcept
 {
     return hash(key.data(), key.size(), seed);
 }
 
-uint qHash(const QBitArray &bitArray, uint seed) noexcept
+size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
 {
     int m = bitArray.d.size() - 1;
-    uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()),
-                       size_t(qMax(0, m)), seed);
+    size_t result = qHashBits(reinterpret_cast<const uchar *>(bitArray.d.constData()), size_t(qMax(0, m)), seed);
 
     // deal with the last 0 to 7 bits manually, because we can't trust that
     // the padding is initialized to 0 in bitArray.d
@@ -264,7 +264,7 @@ uint qHash(const QBitArray &bitArray, uint seed) noexcept
     return result;
 }
 
-uint qHash(QLatin1String key, uint seed) noexcept
+size_t qHash(QLatin1String key, size_t seed) noexcept
 {
     return hash(reinterpret_cast<const uchar *>(key.data()), size_t(key.size()), seed);
 }
@@ -406,7 +406,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
 }
 
 /*!
-    \fn template <typename T1, typename T2> uint qHash(const QPair<T1, T2> &key, uint seed = 0)
+    \fn template <typename T1, typename T2> size_t qHash(const QPair<T1, T2> &key, size_t seed = 0)
     \since 5.0
     \relates QHash
 
@@ -416,7 +416,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
 */
 
 /*!
-    \fn template <typename T1, typename T2> uint qHash(const std::pair<T1, T2> &key, uint seed = 0)
+    \fn template <typename T1, typename T2> size_t qHash(const std::pair<T1, T2> &key, size_t seed = 0)
     \since 5.7
     \relates QHash
 
@@ -430,7 +430,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
     constraints, we cannot change the QPair algorithm to match the std::pair one before Qt 6.
 */
 
-/*! \fn template <typename InputIterator> uint qHashRange(InputIterator first, InputIterator last, uint seed = 0)
+/*! \fn template <typename InputIterator> size_t qHashRange(InputIterator first, InputIterator last, size_t seed = 0)
     \relates QHash
     \since 5.5
 
@@ -465,7 +465,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
     \sa qHashBits(), qHashRangeCommutative()
 */
 
-/*! \fn template <typename InputIterator> uint qHashRangeCommutative(InputIterator first, InputIterator last, uint seed = 0)
+/*! \fn template <typename InputIterator> size_t qHashRangeCommutative(InputIterator first, InputIterator last, size_t seed = 0)
     \relates QHash
     \since 5.5
 
@@ -501,7 +501,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
     \sa qHashBits(), qHashRange()
 */
 
-/*! \fn uint qHashBits(const void *p, size_t len, uint seed = 0)
+/*! \fn size_t qHashBits(const void *p, size_t len, size_t seed = 0)
     \relates QHash
     \since 5.4
 
@@ -526,77 +526,77 @@ uint qt_hash(QStringView key, uint chained) noexcept
     \sa qHashRange(), qHashRangeCommutative()
 */
 
-/*! \fn uint qHash(char key, uint seed = 0)
+/*! \fn size_t qHash(char key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(uchar key, uint seed = 0)
+/*! \fn size_t qHash(uchar key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(signed char key, uint seed = 0)
+/*! \fn size_t qHash(signed char key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(ushort key, uint seed = 0)
+/*! \fn size_t qHash(ushort key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(short key, uint seed = 0)
+/*! \fn size_t qHash(short key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(uint key, uint seed = 0)
+/*! \fn size_t qHash(uint key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(int key, uint seed = 0)
+/*! \fn size_t qHash(int key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(ulong key, uint seed = 0)
+/*! \fn size_t qHash(ulong key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(long key, uint seed = 0)
+/*! \fn size_t qHash(long key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(quint64 key, uint seed = 0)
+/*! \fn size_t qHash(quint64 key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(qint64 key, uint seed = 0)
+/*! \fn size_t qHash(qint64 key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
@@ -608,7 +608,7 @@ uint qt_hash(QStringView key, uint chained) noexcept
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(float key, uint seed) noexcept
+size_t qHash(float key, size_t seed) noexcept
 {
     return key != 0.0f ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
 }
@@ -618,7 +618,7 @@ uint qHash(float key, uint seed) noexcept
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(double key, uint seed) noexcept
+size_t qHash(double key, size_t seed) noexcept
 {
     return key != 0.0  ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
 }
@@ -629,62 +629,62 @@ uint qHash(double key, uint seed) noexcept
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-uint qHash(long double key, uint seed) noexcept
+size_t qHash(long double key, size_t seed) noexcept
 {
     return key != 0.0L ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
 }
 #endif
 
-/*! \fn uint qHash(const QChar key, uint seed = 0)
+/*! \fn size_t qHash(const QChar key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(const QByteArray &key, uint seed = 0)
+/*! \fn size_t qHash(const QByteArray &key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(const QBitArray &key, uint seed = 0)
+/*! \fn size_t qHash(const QBitArray &key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(const QString &key, uint seed = 0)
+/*! \fn size_t qHash(const QString &key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(const QStringRef &key, uint seed = 0)
+/*! \fn size_t qHash(const QStringRef &key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(QStringView key, uint seed = 0)
+/*! \fn size_t qHash(QStringView key, size_t seed = 0)
     \relates QStringView
     \since 5.10
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(QLatin1String key, uint seed = 0)
+/*! \fn size_t qHash(QLatin1String key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn template <class T> uint qHash(const T *key, uint seed = 0)
+/*! \fn template <class T> size_t qHash(const T *key, size_t seed = 0)
     \relates QHash
     \since 5.0
 
@@ -2855,7 +2855,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*!
-    \fn template <class Key, class T> uint qHash(const QHash<Key, T> &key, uint seed = 0)
+    \fn template <class Key, class T> size_t qHash(const QHash<Key, T> &key, size_t seed = 0)
     \since 5.8
     \relates QHash
 
@@ -2865,7 +2865,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*!
-    \fn template <class Key, class T> uint qHash(const QMultiHash<Key, T> &key, uint seed = 0)
+    \fn template <class Key, class T> size_t qHash(const QMultiHash<Key, T> &key, size_t seed = 0)
     \since 5.8
     \relates QMultiHash
 

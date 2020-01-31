@@ -943,7 +943,7 @@ QJsonValue QJsonValueRef::toValue() const
     return o->valueAt(index);
 }
 
-uint qHash(const QJsonValue &value, uint seed)
+size_t qHash(const QJsonValue &value, size_t seed)
 {
     switch (value.type()) {
     case QJsonValue::Null:

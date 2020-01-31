@@ -56,7 +56,7 @@ class QSslDiffieHellmanParametersPrivate;
 
 class QSslDiffieHellmanParameters;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-Q_NETWORK_EXPORT uint qHash(const QSslDiffieHellmanParameters &dhparam, uint seed = 0) noexcept;
+Q_NETWORK_EXPORT size_t qHash(const QSslDiffieHellmanParameters &dhparam, size_t seed = 0) noexcept;
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
@@ -106,7 +106,7 @@ private:
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslDiffieHellmanParameters &dhparam);
 #endif
-    friend Q_NETWORK_EXPORT uint qHash(const QSslDiffieHellmanParameters &dhparam, uint seed) noexcept;
+    friend Q_NETWORK_EXPORT size_t qHash(const QSslDiffieHellmanParameters &dhparam, size_t seed) noexcept;
 };
 
 Q_DECLARE_SHARED(QSslDiffieHellmanParameters)
