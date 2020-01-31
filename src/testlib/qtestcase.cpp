@@ -1957,13 +1957,7 @@ int QTest::qRun()
             QTestResult::setCurrentTestFunction(nullptr);
         }
 
-        QTestLog::stopLogging();
-
-#if defined(Q_OS_MACOS)
-        IOPMAssertionRelease(macPowerSavingDisabled);
-#endif
-
-        currentTestObject = nullptr;
+        qCleanup();
 
         // Re-throw exception to make debugging easier
         throw;
