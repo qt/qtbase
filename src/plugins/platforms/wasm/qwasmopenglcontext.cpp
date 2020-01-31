@@ -106,7 +106,8 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(cons
     attributes.depth = useDepthStencil;
     attributes.stencil = useDepthStencil;
 
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context(canvasId.toUtf8().constData(), &attributes);
+    QByteArray convasSelector = "#" + canvasId.toUtf8();
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context(convasSelector.constData(), &attributes);
 
     return context;
 }
