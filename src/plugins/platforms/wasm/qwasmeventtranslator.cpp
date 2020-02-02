@@ -354,9 +354,7 @@ void QWasmEventTranslator::initEventHandlers()
         g_useNaturalScrolling = false; // make this !default on macOS
 
         if (emscripten::val::global("window")["safari"].isUndefined()) {
-            val document = val::global("document");
-            val jsCanvasId = QWasmString::fromQString(screen()->canvasId());
-            val canvas = document.call<val>("getElementById", jsCanvasId);
+            val canvas = screen()->canvas();
             canvas.call<void>("addEventListener",
                               val("wheel"),
                               val::module_property("qtMouseWheelEvent"));

@@ -40,6 +40,7 @@
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
+#include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,9 +84,9 @@ public:
     static QWasmIntegration *get() { return s_instance; }
     static void QWasmBrowserExit();
 
-    void addScreen(const QString &canvasId);
-    void removeScreen(const QString &canvasId);
-    void resizeScreen(const QString &canvasId);
+    void addScreen(const emscripten::val &canvas);
+    void removeScreen(const emscripten::val &canvas);
+    void resizeScreen(const emscripten::val &canvas);
     void resizeAllScreens();
     void updateDpi();
 
@@ -93,8 +94,7 @@ private:
     mutable QWasmFontDatabase *m_fontDb;
     mutable QWasmServices *m_desktopServices;
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
-
-    QHash<QString, QWasmScreen *> m_screens;
+    QVector<QPair<emscripten::val, QWasmScreen *>> m_screens;
     mutable QWasmClipboard *m_clipboard;
     qreal m_fontDpi = -1;
     mutable QScopedPointer<QPlatformInputContext> m_inputContext;

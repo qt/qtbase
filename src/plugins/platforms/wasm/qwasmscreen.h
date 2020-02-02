@@ -37,6 +37,8 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qtextstream.h>
 
+#include <emscripten/val.h>
+
 QT_BEGIN_NAMESPACE
 
 class QPlatformOpenGLContext;
@@ -50,12 +52,13 @@ class QWasmScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QWasmScreen(const QString &canvasId);
+    QWasmScreen(const emscripten::val &canvas);
     ~QWasmScreen();
     void destroy();
 
     static QWasmScreen *get(QPlatformScreen *screen);
     static QWasmScreen *get(QScreen *screen);
+    emscripten::val canvas() const;
     QString canvasId() const;
 
     QWasmCompositor *compositor();
@@ -80,7 +83,7 @@ public slots:
     void setGeometry(const QRect &rect);
 
 private:
-    QString m_canvasId;
+    emscripten::val m_canvas;
     QWasmCompositor *m_compositor = nullptr;
     QWasmEventTranslator *m_eventTranslator = nullptr;
     QRect m_geometry = QRect(0, 0, 100, 100);

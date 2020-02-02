@@ -36,6 +36,7 @@
 #include <QMimeData>
 
 #include <emscripten/bind.h>
+#include <emscripten/val.h>
 
 class QWasmClipboard : public QObject, public QPlatformClipboard
 {
@@ -51,7 +52,7 @@ public:
 
     static void qWasmClipboardPaste(QMimeData *mData);
     void initClipboardEvents();
-    void installEventHandlers(const QString &canvasId);
+    void installEventHandlers(const emscripten::val &canvas);
     bool hasClipboardApi;
     void readTextFromClipboard();
     void writeTextToClipboard();

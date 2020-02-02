@@ -50,15 +50,13 @@ using namespace emscripten;
 
 QT_BEGIN_NAMESPACE
 
-QWasmScreen::QWasmScreen(const QString &canvasId)
-    : m_canvasId(canvasId)
-
+QWasmScreen::QWasmScreen(const emscripten::val &canvas)
+    : m_canvas(canvas)
 {
     m_compositor = new QWasmCompositor(this);
     m_eventTranslator = new QWasmEventTranslator(this);
     updateQScreenAndCanvasRenderSize();
-    emscripten::val canvas = emscripten::val::global(m_canvasId.toUtf8().constData());
-    canvas.call<void>("focus");
+    m_canvas.call<void>("focus");
 }
 
 QWasmScreen::~QWasmScreen()
@@ -91,9 +89,14 @@ QWasmEventTranslator *QWasmScreen::eventTranslator()
     return m_eventTranslator;
 }
 
+emscripten::val QWasmScreen::canvas() const
+{
+    return m_canvas;
+}
+
 QString QWasmScreen::canvasId() const
 {
-    return m_canvasId;
+    return QWasmString::toQString(m_canvas["id"]);
 }
 
 QRect QWasmScreen::geometry() const
@@ -134,7 +137,7 @@ qreal QWasmScreen::devicePixelRatio() const
 
 QString QWasmScreen::name() const
 {
-    return m_canvasId;
+    return canvasId();
 }
 
 QPlatformCursor *QWasmScreen::cursor() const
@@ -180,24 +183,22 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     // Setting the render size to a value larger than the CSS size enables high-dpi
     // rendering.
 
-    QByteArray canvasSelector = "#" + m_canvasId.toUtf8();
+    QByteArray canvasSelector = "#" + canvasId().toUtf8();
     double css_width;
     double css_height;
     emscripten_get_element_css_size(canvasSelector.constData(), &css_width, &css_height);
     QSizeF cssSize(css_width, css_height);
 
     QSizeF canvasSize = cssSize * devicePixelRatio();
-    val document = val::global("document");
-    val canvas = document.call<val>("getElementById", QWasmString::fromQString(m_canvasId));
 
-    canvas.set("width", canvasSize.width());
-    canvas.set("height", canvasSize.height());
+    m_canvas.set("width", canvasSize.width());
+    m_canvas.set("height", canvasSize.height());
 
     QPoint offset;
-    offset.setX(canvas["offsetTop"].as<int>());
-    offset.setY(canvas["offsetLeft"].as<int>());
+    offset.setX(m_canvas["offsetTop"].as<int>());
+    offset.setY(m_canvas["offsetLeft"].as<int>());
 
-    emscripten::val rect = canvas.call<emscripten::val>("getBoundingClientRect");
+    emscripten::val rect = m_canvas.call<emscripten::val>("getBoundingClientRect");
     QPoint position(rect["left"].as<int>() - offset.x(), rect["top"].as<int>() - offset.y());
 
     setGeometry(QRect(position, cssSize.toSize()));
