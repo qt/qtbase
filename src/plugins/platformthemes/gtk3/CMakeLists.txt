@@ -17,16 +17,15 @@ qt_add_plugin(QGtk3ThemePlugin
         qgtk3theme.cpp qgtk3theme.h
     DEFINES
         GDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_6
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
+    LIBRARIES # special case
         X11::X11 # special case
     PUBLIC_LIBRARIES
         PkgConfig::GTK3
         Qt::Core
+        Qt::CorePrivate
         Qt::Gui
-        Qt::ThemeSupport
+        Qt::GuiPrivate
+        Qt::ThemeSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:gtk3.pro:<TRUE>:

@@ -11,12 +11,9 @@ qt_add_plugin(QGenericEnginePlugin
         ../platformdefs_win.h
         main.cpp
         qgenericengine.cpp qgenericengine.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Network
 )
 
 #### Keys ignored in scope 1:.:.:generic.pro:<TRUE>:

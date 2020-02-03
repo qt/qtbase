@@ -15,14 +15,12 @@ qt_add_plugin(QEglFSEmulatorIntegrationPlugin
         QT_EGL_NO_X11
     INCLUDE_DIRECTORIES
         ../../api
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::EglFSDeviceIntegrationPrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Core
-        Qt::EglFSDeviceIntegration
+        Qt::CorePrivate
+        Qt::EglFSDeviceIntegrationPrivate
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:eglfs_emu.pro:<TRUE>:

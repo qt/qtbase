@@ -23,7 +23,7 @@ qt_add_tool(qdbuscpp2xml
     INCLUDE_DIRECTORIES
         ../moc
         ../moc/../../3rdparty/tinycbor/src
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
 
@@ -35,15 +35,11 @@ qt_add_tool(qdbuscpp2xml
 #####################################################################
 
 qt_extend_target(qdbuscpp2xml CONDITION force_bootstrap
-    LIBRARIES
-        bootstrap_dbusPrivate
     PUBLIC_LIBRARIES
-        bootstrap_dbus
+        bootstrap_dbusPrivate
 )
 
 qt_extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap
-    LIBRARIES
-        Qt::DBusPrivate
     PUBLIC_LIBRARIES
-        Qt::DBus
+        Qt::DBusPrivate
 )

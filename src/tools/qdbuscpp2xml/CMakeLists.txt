@@ -24,7 +24,7 @@ qt_add_tool(qdbuscpp2xml
     INCLUDE_DIRECTORIES
         ../moc
         ../moc/../../3rdparty/tinycbor/src
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
     # COMPILE_OPTIONS  # special case

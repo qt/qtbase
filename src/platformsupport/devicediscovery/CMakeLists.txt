@@ -11,10 +11,8 @@ qt_add_module(DeviceDiscoverySupport
         qdevicediscovery_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
-        Qt::Core
+        Qt::CorePrivate
 )
 
 #### Keys ignored in scope 1:.:.:devicediscovery.pro:<TRUE>:

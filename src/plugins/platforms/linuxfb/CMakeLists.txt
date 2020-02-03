@@ -14,20 +14,15 @@ qt_add_plugin(QLinuxFbIntegrationPlugin
         qlinuxfbscreen.cpp qlinuxfbscreen.h
     DEFINES
         QT_NO_FOREACH
-    LIBRARIES
+    PUBLIC_LIBRARIES
+        Qt::Core
         Qt::CorePrivate
         Qt::EventDispatcherSupportPrivate
         Qt::FbSupportPrivate
         Qt::FontDatabaseSupportPrivate
+        Qt::Gui
         Qt::GuiPrivate
         Qt::ServiceSupportPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::EventDispatcherSupport
-        Qt::FbSupport
-        Qt::FontDatabaseSupport
-        Qt::Gui
-        Qt::ServiceSupport
 )
 
 #### Keys ignored in scope 1:.:.:linuxfb.pro:<TRUE>:
@@ -37,19 +32,15 @@ qt_add_plugin(QLinuxFbIntegrationPlugin
 #####################################################################
 
 qt_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
-    LIBRARIES
-        Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::InputSupport
+        Qt::InputSupportPrivate
 )
 
 qt_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::KmsSupportPrivate
     SOURCES
         qlinuxfbdrmscreen.cpp qlinuxfbdrmscreen.h
-    LIBRARIES
-        Qt::KmsSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::KmsSupport
+        Qt::KmsSupportPrivate
 )
 
 #### Keys ignored in scope 4:.:.:linuxfb.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:

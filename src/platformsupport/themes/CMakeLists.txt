@@ -11,12 +11,9 @@ qt_add_module(ThemeSupport
         qabstractfileiconengine.cpp qabstractfileiconengine_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
 )
 
 #### Keys ignored in scope 1:.:.:themes.pro:<TRUE>:

@@ -11,12 +11,9 @@ qt_add_module(EventDispatcherSupport
     INTERNAL_MODULE
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )

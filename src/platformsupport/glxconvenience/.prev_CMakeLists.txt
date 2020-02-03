@@ -11,12 +11,9 @@ qt_add_module(GlxSupport
         qglxconvenience.cpp qglxconvenience_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
         X11::XCB
 )
 

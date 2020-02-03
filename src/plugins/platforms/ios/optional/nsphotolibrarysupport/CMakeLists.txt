@@ -12,14 +12,13 @@ add_qt_plugin(QIosOptionalPlugin_NSPhotoLibrary
         qiosfileengineassetslibrary.h qiosfileengineassetslibrary.mm
         qiosfileenginefactory.h
         qiosimagepickercontroller.h qiosimagepickercontroller.mm
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         ${FWAssetsLibrary}
         ${FWFoundation}
         ${FWUIKit}
         Qt::Core
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:nsphotolibrarysupport.pro:<TRUE>:

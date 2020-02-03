@@ -13,12 +13,12 @@ qt_add_plugin(QComposePlatformInputContextPlugin
         qcomposeplatforminputcontext.cpp qcomposeplatforminputcontext.h
         qcomposeplatforminputcontextmain.cpp
     LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
         XKB::XKB
     PUBLIC_LIBRARIES
         Qt::Core
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:compose.pro:<TRUE>:

@@ -9,15 +9,13 @@ qt_add_plugin(QTsLibPlugin
     TYPE generic
     SOURCES
         main.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         PkgConfig::Tslib
         Qt::Core
+        Qt::CorePrivate
         Qt::Gui
-        Qt::InputSupport
+        Qt::GuiPrivate
+        Qt::InputSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:tslib.pro:<TRUE>:

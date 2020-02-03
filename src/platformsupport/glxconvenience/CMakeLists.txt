@@ -13,13 +13,10 @@ qt_add_module(GlxSupport
         qglxconvenience.cpp qglxconvenience_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
         X11::X11 # special case
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
 )
 
 #### Keys ignored in scope 1:.:.:glxconvenience.pro:<TRUE>:

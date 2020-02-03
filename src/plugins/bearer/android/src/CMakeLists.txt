@@ -13,10 +13,7 @@ qt_add_plugin(QAndroidBearerEnginePlugin
         wrappers/androidconnectivitymanager.cpp wrappers/androidconnectivitymanager.h
     INCLUDE_DIRECTORIES
         wrappers
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Network
 )

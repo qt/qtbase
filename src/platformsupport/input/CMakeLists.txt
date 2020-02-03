@@ -14,14 +14,10 @@ qt_add_module(InputSupport
     INTERNAL_MODULE
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DeviceDiscoverySupportPrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::DeviceDiscoverySupport
-        Qt::Gui
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )
@@ -88,10 +84,9 @@ qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput
 
 qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon
     LIBRARIES
-        Qt::XkbCommonSupportPrivate
         XKB::XKB
     PUBLIC_LIBRARIES
-        Qt::XkbCommonSupport
+        Qt::XkbCommonSupportPrivate
 )
 
 qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput

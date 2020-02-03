@@ -9,14 +9,12 @@ qt_add_plugin(QCocoaPrinterSupportPlugin
     TYPE printsupport
     SOURCES
         main.cpp
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::PrintSupportPrivate
     PUBLIC_LIBRARIES
         ${FWAppKit}
         Qt::Core
         Qt::Gui
-        Qt::PrintSupport
+        Qt::GuiPrivate
+        Qt::PrintSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:cocoa.pro:<TRUE>:

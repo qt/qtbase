@@ -42,11 +42,6 @@ qt_add_plugin(QWindowsIntegrationPlugin
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
     LIBRARIES
-        Qt::CorePrivate
-        Qt::EventDispatcherSupportPrivate
-        Qt::FontDatabaseSupportPrivate
-        Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
         advapi32
         d3d9
         gdi32
@@ -56,10 +51,12 @@ qt_add_plugin(QWindowsIntegrationPlugin
         winmm
     PUBLIC_LIBRARIES
         Qt::Core
-        Qt::EventDispatcherSupport
-        Qt::FontDatabaseSupport
+        Qt::CorePrivate
+        Qt::EventDispatcherSupportPrivate
+        Qt::FontDatabaseSupportPrivate
         Qt::Gui
-        Qt::ThemeSupport
+        Qt::GuiPrivate
+        Qt::ThemeSupportPrivate
         dwmapi
         imm32
         oleaut32
@@ -110,19 +107,15 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
         uiautomation/qwindowsuiautils.cpp uiautomation/qwindowsuiautils.h
         uiautomation/qwindowsuiavalueprovider.cpp uiautomation/qwindowsuiavalueprovider.h
         uiautomation/qwindowsuiawindowprovider.cpp uiautomation/qwindowsuiawindowprovider.h
-    LIBRARIES
-        Qt::AccessibilitySupportPrivate
     PUBLIC_LIBRARIES
-        Qt::AccessibilitySupport
+        Qt::AccessibilitySupportPrivate
 )
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qwindowsvulkaninstance.cpp qwindowsvulkaninstance.h
-    LIBRARIES
-        Qt::VulkanSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::VulkanSupport
+        Qt::VulkanSupportPrivate
 )
 
 #### Keys ignored in scope 4:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
@@ -220,10 +213,8 @@ if(QT_FEATURE_imageformat_png)
 endif()
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility AND TARGET Qt::WindowsUIAutomationSupportPrivate
-    LIBRARIES
-        Qt::WindowsUIAutomationSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::WindowsUIAutomationSupport
+        Qt::WindowsUIAutomationSupportPrivate
 )
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility AND mingw

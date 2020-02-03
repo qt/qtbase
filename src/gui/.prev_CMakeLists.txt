@@ -218,6 +218,8 @@ qt_add_module(Gui
         ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
     PRECOMPILED_HEADER
         "kernel/qt_gui_pch.h"
 )

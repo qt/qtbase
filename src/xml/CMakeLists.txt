@@ -17,6 +17,8 @@ qt_add_module(Xml
         Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
 )
 
 ## Scopes:

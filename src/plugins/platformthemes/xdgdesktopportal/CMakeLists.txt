@@ -11,15 +11,13 @@ qt_add_plugin(QXdgDesktopPortalThemePlugin
         main.cpp
         qxdgdesktopportalfiledialog.cpp qxdgdesktopportalfiledialog_p.h
         qxdgdesktopportaltheme.cpp qxdgdesktopportaltheme.h
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
     PUBLIC_LIBRARIES
         Qt::Core
+        Qt::CorePrivate
         Qt::DBus
         Qt::Gui
-        Qt::ThemeSupport
+        Qt::GuiPrivate
+        Qt::ThemeSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:xdgdesktopportal.pro:<TRUE>:

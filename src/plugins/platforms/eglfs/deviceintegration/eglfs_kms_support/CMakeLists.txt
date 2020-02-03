@@ -17,17 +17,13 @@ qt_add_module(EglFsKmsSupport
         QT_EGL_NO_X11
     INCLUDE_DIRECTORIES
         ../../api
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::EdidSupportPrivate
-        Qt::EglFSDeviceIntegrationPrivate
-        Qt::GuiPrivate
-        Qt::KmsSupportPrivate
     PUBLIC_LIBRARIES
         Libdrm::Libdrm
         Qt::Core
-        Qt::EdidSupport
-        Qt::EglFSDeviceIntegration
+        Qt::CorePrivate
+        Qt::EdidSupportPrivate
+        Qt::EglFSDeviceIntegrationPrivate
         Qt::Gui
-        Qt::KmsSupport
+        Qt::GuiPrivate
+        Qt::KmsSupportPrivate
 )

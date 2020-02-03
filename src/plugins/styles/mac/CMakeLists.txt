@@ -13,11 +13,10 @@ qt_add_plugin(QMacStylePlugin
         qmacstyle_mac_p_p.h
     LIBRARIES
         ${FWAppKit}
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
-        Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 1:.:.:mac.pro:<TRUE>:

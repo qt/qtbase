@@ -13,13 +13,11 @@ qt_add_plugin(QPSQLDriverPlugin
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::SqlPrivate
     PUBLIC_LIBRARIES
         PostgreSQL::PostgreSQL
         Qt::Core
-        Qt::Sql
+        Qt::CorePrivate
+        Qt::SqlPrivate
 )
 
 #### Keys ignored in scope 1:.:.:psql.pro:<TRUE>:

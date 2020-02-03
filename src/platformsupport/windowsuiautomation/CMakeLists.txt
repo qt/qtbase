@@ -19,12 +19,9 @@ qt_add_module(WindowsUIAutomationSupport
         uiapropertyids_p.h
         uiaserverinterfaces_p.h
         uiatypes_p.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
 )
 
 #### Keys ignored in scope 1:.:.:windowsuiautomation.pro:<TRUE>:

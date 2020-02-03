@@ -16,13 +16,13 @@ qt_add_plugin(QCupsPrinterSupportPlugin
         ../../../printsupport/kernel
     LIBRARIES
         Cups::Cups
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::PrintSupportPrivate
     PUBLIC_LIBRARIES
         Qt::Core
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::PrintSupport
+        Qt::PrintSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:cups.pro:<TRUE>:
