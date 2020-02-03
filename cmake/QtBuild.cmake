@@ -3335,8 +3335,9 @@ endfunction()
 # Complete manual moc invocation with full control.
 # Use AUTOMOC whenever possible.
 function(qt_manual_moc result)
-    cmake_parse_arguments(arg "" "" "FLAGS" ${ARGN})
+    cmake_parse_arguments(arg "" "OUTPUT_MOC_JSON_FILES" "FLAGS" ${ARGN})
     set(moc_files)
+    set(metatypes_json_list)
     foreach(infile ${arg_UNPARSED_ARGUMENTS})
         qt_make_output_file("${infile}" "moc_" ".cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" outfile)
@@ -3344,16 +3345,30 @@ function(qt_manual_moc result)
 
         set(moc_parameters_file "${outfile}_parameters$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
         set(moc_parameters ${arg_FLAGS} -o "${outfile}" "${infile}")
+
+        set(metatypes_byproducts)
+        if (arg_OUTPUT_MOC_JSON_FILES)
+            set(moc_json_file "${outfile}.json")
+            list(APPEND moc_parameters --output-json)
+            list(APPEND metatypes_json_list "${outfile}.json")
+            set(metatypes_byproducts "${outfile}.json")
+        endif()
+
         string (REPLACE ";" "\n" moc_parameters "${moc_parameters}")
 
         file(GENERATE OUTPUT "${moc_parameters_file}" CONTENT "${moc_parameters}\n")
 
-        add_custom_command(OUTPUT "${outfile}"
+        add_custom_command(OUTPUT "${outfile}" ${metatypes_byproducts}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc "@${moc_parameters_file}"
                            DEPENDS "${infile}" ${moc_depends} ${QT_CMAKE_EXPORT_NAMESPACE}::moc
                            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" VERBATIM)
     endforeach()
     set("${result}" ${moc_files} PARENT_SCOPE)
+
+    # Register generated json files
+    if (arg_OUTPUT_MOC_JSON_FILES)
+        set(${arg_OUTPUT_MOC_JSON_FILES} "${metatypes_json_list}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 

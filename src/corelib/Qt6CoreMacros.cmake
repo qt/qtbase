@@ -691,14 +691,23 @@ function(qt6_generate_meta_types_dep_file target dep_file dep_file_install)
 endfunction()
 
 #
-# Generate Qt metatypes.json for a target
+# Generate Qt metatypes.json for a target. By default we check whether AUTOMOC
+# has been enabled and we extract the information from that target. Should you
+# not wish to use automoc you need to pass in all the generated json files via the
+# MANUAL_MOC_JSON_FILES parameter. The latter can be obtained by running moc with
+# the --output-json parameter.
 # Params:
 #   INSTALL_DIR: Location where to install the metatypes file (Optional)
 #   COPY_OVER_INSTALL: When present will install the file via a post build step
 #   copy rather than using install
 function(qt6_generate_meta_types_json_file target)
 
-    cmake_parse_arguments(arg "COPY_OVER_INSTALL" "INSTALL_DIR" "" ${ARGN})
+    get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
+    if (existing_meta_types_file)
+        return()
+    endif()
+
+    cmake_parse_arguments(arg "COPY_OVER_INSTALL" "INSTALL_DIR" "MANUAL_MOC_JSON_FILES" ${ARGN})
 
     if (NOT QT_BUILDING_QT)
         if (NOT arg_INSTALL_DIR)
@@ -716,57 +725,80 @@ function(qt6_generate_meta_types_json_file target)
         endif()
     endif()
 
-    # Tell automoc to output json files
-    set_property(TARGET "${target}" APPEND PROPERTY
-        AUTOMOC_MOC_OPTIONS "--output-json"
-    )
-
     get_target_property(target_type ${target} TYPE)
-    if (target_type STREQUAL "INTERFACE_LIBRARY" OR CMAKE_VERSION VERSION_LESS "3.16.0")
-        # interface libraries not supported or cmake version is not high enough
-        message(WARNING "Meta types generation requires CMake >= 3.16")
+    if (target_type STREQUAL "INTERFACE_LIBRARY")
+        message(FATAL_ERROR "Meta types generation does not work on interface libraries")
         return()
     endif()
 
-    get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
-    if (existing_meta_types_file)
+    if (CMAKE_VERSION VERSION_LESS "3.16.0")
+        message(FATAL_ERROR "Meta types generation requires CMake >= 3.16")
         return()
     endif()
 
     get_target_property(target_binary_dir ${target} BINARY_DIR)
+    set(type_list_file "${target_binary_dir}/meta_types/${target}_json_file_list.txt")
+    set(type_list_file_manual "${target_binary_dir}/meta_types/${target}_json_file_list_manual.txt")
 
-    if(CMAKE_BUILD_TYPE)
-        set(cmake_autogen_cache_file
-            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
-        set(mutli_config_args
-            --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
+    get_target_property(uses_automoc ${target} AUTOMOC)
+    set(automoc_args)
+    set(automoc_dependencies)
+    #Handle automoc generated data
+    if (uses_automoc)
+        # Tell automoc to output json files)
+        set_property(TARGET "${target}" APPEND PROPERTY
+            AUTOMOC_MOC_OPTIONS "--output-json"
         )
-    else()
-        set(cmake_autogen_cache_file
-            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache_$<CONFIG>.txt")
-        set(mutli_config_args
-            --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include_$<CONFIG>"
-            "--cmake-multi-config")
+
+        if(CMAKE_BUILD_TYPE)
+            set(cmake_autogen_cache_file
+                "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
+            set(mutli_config_args
+                --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
+            )
+        else()
+            set(cmake_autogen_cache_file
+                "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache_$<CONFIG>.txt")
+            set(mutli_config_args
+                --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include_$<CONFIG>"
+                "--cmake-multi-config")
+        endif()
+
+        set(cmake_autogen_info_file
+            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
+
+        add_custom_target(${target}_automoc_json_extraction
+            DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+            BYPRODUCTS ${type_list_file}
+            COMMAND
+                ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+                --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
+                --cmake-autogen-info-file "${cmake_autogen_info_file}"
+                --output-file-path "${type_list_file}"
+                ${mutli_config_args}
+            COMMENT "Running Automoc file extraction"
+            COMMAND_EXPAND_LISTS
+        )
+        add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
+        set(automoc_args "@${type_list_file}")
+        set(automoc_dependencies "${type_list_file}")
     endif()
 
-    set(cmake_autogen_info_file
-        "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
-    set(type_list_file "${target_binary_dir}/meta_types/json_file_list.txt")
+    set(manual_args)
+    set(manual_dependencies)
+    if(arg_MANUAL_MOC_JSON_FILES)
+        list(REMOVE_DUPLICATES arg_MANUAL_MOC_JSON_FILES)
+        file(GENERATE
+            OUTPUT ${type_list_file_manual}
+            CONTENT "$<JOIN:$<GENEX_EVAL:${arg_MANUAL_MOC_JSON_FILES}>,\n>"
+        )
+        list(APPEND manual_dependencies ${arg_MANUAL_MOC_JSON_FILES} ${type_list_file_manual})
+        set(manual_args "@${type_list_file_manual}")
+    endif()
 
-    add_custom_target(${target}_automoc_json_extraction
-        DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
-        BYPRODUCTS ${type_list_file}
-        COMMAND
-            ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
-            --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
-            --cmake-autogen-info-file "${cmake_autogen_info_file}"
-            --output-file-path "${type_list_file}"
-            ${mutli_config_args}
-        COMMENT "Running Automoc file extraction"
-        COMMAND_EXPAND_LISTS
-    )
-
-    add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
+    if (NOT manual_args AND NOT automoc_args)
+        message(FATAL_ERROR "Metatype generation requires either the use of AUTOMOC or a manual list of generated json files")
+    endif()
 
     if (CMAKE_BUILD_TYPE)
         string(TOLOWER ${target}_${CMAKE_BUILD_TYPE} target_lowercase)
@@ -781,10 +813,10 @@ function(qt6_generate_meta_types_json_file target)
     set(metatypes_dep_file "${target_binary_dir}/meta_types/${metatypes_dep_file_name}")
 
     add_custom_command(OUTPUT ${metatypes_file}
-        DEPENDS ${type_list_file} ${QT_CMAKE_EXPORT_NAMESPACE}::moc
+        DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${automoc_dependencies} ${manual_dependencies}
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc
             -o ${metatypes_file}
-            --collect-json "@${type_list_file}"
+            --collect-json ${automoc_args} ${manual_args}
         COMMENT "Runing automoc with --collect-json"
     )
 
@@ -808,14 +840,26 @@ function(qt6_generate_meta_types_json_file target)
    )
 
     if (arg_COPY_OVER_INSTALL)
-        add_custom_command(TARGET ${target} POST_BUILD
+        get_target_property(target_type ${target} TYPE)
+        set(command_args
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${metatypes_file}"
                 "${arg_INSTALL_DIR}/${metatypes_file_name}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${metatypes_dep_file}.install"
                 "${arg_INSTALL_DIR}/${metatypes_dep_file_name}"
-           )
+        )
+        if (target_type STREQUAL "OBJECT_LIBRARY")
+            add_custom_target(${target}_metatypes_copy
+                DEPENDS "${metatypes_file}" "${metatypes_dep_file}"
+                ${command_args}
+            )
+            add_dependencies(${target} ${target}_metatypes_copy)
+        else()
+            add_custom_command(TARGET ${target} POST_BUILD
+                ${command_args}
+            )
+        endif()
     else()
         install(FILES "${metatypes_file}"
             DESTINATION "${arg_INSTALL_DIR}"

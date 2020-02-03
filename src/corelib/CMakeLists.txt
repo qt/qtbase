@@ -26,6 +26,10 @@ file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR ${_clean_prefix} ${CMAKE_INSTAL
 ## Core Module:
 #####################################################################
 
+# special case begin
+add_library(Core_qobject OBJECT)
+# special case end
+
 qt_add_module(Core
     GENERATE_METATYPES
     QMAKE_MODULE_CONFIG moc resources
@@ -112,7 +116,7 @@ qt_add_module(Core
         kernel/qmetatype.cpp kernel/qmetatype.h kernel/qmetatype_p.h
         kernel/qmetatypeswitcher_p.h
         kernel/qmimedata.cpp kernel/qmimedata.h
-        # kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h  # special case
+        # kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h # special case
         kernel/qobject_impl.h
         kernel/qobjectcleanuphandler.cpp kernel/qobjectcleanuphandler.h
         kernel/qobjectdefs.h
@@ -260,6 +264,7 @@ qt_add_module(Core
         QtHarfBuzz # special case
         Threads::Threads # special case
         WrapDoubleConversion::WrapDoubleConversion # special case
+        Core_qobject
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
     # special case begin
@@ -284,8 +289,8 @@ qt_generate_qconfig_cpp()
 
 # Handle QObject: Automoc does not work for this as it would
 # require to spill internals into users:
-add_library(Core_qobject OBJECT)
-qt_manual_moc(qobject_moc_files kernel/qobject.h global/qnamespace.h)
+set_target_properties(Core_qobject PROPERTIES AUTOMOC OFF)
+qt_manual_moc(qobject_moc_files OUTPUT_MOC_JSON_FILES core_qobject_metatypes_json_list  kernel/qobject.h global/qnamespace.h)
 set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
 target_sources(Core_qobject PRIVATE
     global/qnamespace.h
@@ -298,6 +303,16 @@ set_target_properties(Core_qobject PROPERTIES
 target_include_directories(Core_qobject PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/kernel") # for moc_qobject.cpp
 target_link_libraries(Core_qobject PRIVATE Qt::Platform Qt::GlobalConfig)
 target_link_libraries(Core PRIVATE Core_qobject)
+
+set(core_qobject_metatypes_json_args)
+if (NOT QT_WILL_INSTALL)
+    set(core_qobject_metatypes_json_args INSTALL_DIR "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/metatypes")
+endif()
+
+qt6_generate_meta_types_json_file(Core_qobject
+    MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list}
+    ${core_qobject_metatypes_json_args}
+)
 
 if(NOT BUILD_SHARED_LIBS)
     install(
