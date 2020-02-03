@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 class MyScrollArea : public QAbstractScrollArea
 {
@@ -97,8 +97,10 @@ void MyScrollArea::updateWidgetPosition()
 //! [0]
 }
 
-void MyScrollArea::scrollContentsBy(int /*dx*/, int /*dy*/)
+void MyScrollArea::scrollContentsBy(int dx, int dy)
 {
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
     updateWidgetPosition();
 }
 
@@ -118,21 +120,6 @@ void MyScrollArea::updateArea()
 
 void MyScrollArea::resizeEvent(QResizeEvent *event)
 {
+    Q_UNUSED(event);
     updateArea();
-}
-
-int main(int argv, char **args)
-{
-    QApplication app(argv, args);
-
-    QPixmap pixmap("mypixmap.png");
-    QLabel label;
-    label.setPixmap(pixmap);
-    MyScrollArea area(&label);
-    area.resize(300, 300);
-    area.show();
-
-    area.setWidget(&label);
-
-    return app.exec();
 }

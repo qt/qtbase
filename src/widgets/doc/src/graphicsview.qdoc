@@ -327,7 +327,7 @@
         Here is an example of how to implement zoom and rotate slots in a
         subclass of QGraphicsView:
 
-        \snippet graphicsview.cpp 2
+        \snippet graphicsview_snippet.cpp 2
 
         The slots could be connected to \l{QToolButton}{QToolButtons} with
         \l{QAbstractButton::autoRepeat}{autoRepeat} enabled.
