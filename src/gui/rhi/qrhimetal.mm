@@ -684,11 +684,27 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                                               bool offsetOnlyChange,
                                               const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES])
 {
-    struct {
-        QRhiBatchedBindings<id<MTLBuffer> > buffers;
-        QRhiBatchedBindings<NSUInteger> bufferOffsets;
-        QRhiBatchedBindings<id<MTLTexture> > textures;
-        QRhiBatchedBindings<id<MTLSamplerState> > samplers;
+    struct Stage {
+        struct Buffer {
+            int nativeBinding;
+            id<MTLBuffer> mtlbuf;
+            uint offset;
+        };
+        struct Texture {
+            int nativeBinding;
+            id<MTLTexture> mtltex;
+        };
+        struct Sampler {
+            int nativeBinding;
+            id<MTLSamplerState> mtlsampler;
+        };
+        QVarLengthArray<Buffer, 8> buffers;
+        QVarLengthArray<Texture, 8> textures;
+        QVarLengthArray<Sampler, 8> samplers;
+        QRhiBatchedBindings<id<MTLBuffer> > bufferBatches;
+        QRhiBatchedBindings<NSUInteger> bufferOffsetBatches;
+        QRhiBatchedBindings<id<MTLTexture> > textureBatches;
+        QRhiBatchedBindings<id<MTLSamplerState> > samplerBatches;
     } res[SUPPORTED_STAGES];
     enum { VERTEX = 0, FRAGMENT = 1, COMPUTE = 2 };
 
@@ -709,24 +725,18 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
                 const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0) {
-                    res[VERTEX].buffers.feed(nativeBinding, mtlbuf);
-                    res[VERTEX].bufferOffsets.feed(b->binding, offset);
-                }
+                if (nativeBinding >= 0)
+                    res[VERTEX].buffers.append({ nativeBinding, mtlbuf, offset });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0) {
-                    res[FRAGMENT].buffers.feed(nativeBinding, mtlbuf);
-                    res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
-                }
+                if (nativeBinding >= 0)
+                    res[FRAGMENT].buffers.append({ nativeBinding, mtlbuf, offset });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0) {
-                    res[COMPUTE].buffers.feed(nativeBinding, mtlbuf);
-                    res[COMPUTE].bufferOffsets.feed(b->binding, offset);
-                }
+                if (nativeBinding >= 0)
+                    res[COMPUTE].buffers.append({ nativeBinding, mtlbuf, offset });
             }
         }
             break;
@@ -738,24 +748,24 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                 const int nativeBindingTexture = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
                 const int nativeBindingSampler = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler);
                 if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                    res[VERTEX].textures.feed(nativeBindingTexture, texD->d->tex);
-                    res[VERTEX].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                    res[VERTEX].textures.append({ nativeBindingTexture, texD->d->tex });
+                    res[VERTEX].samplers.append({ nativeBindingSampler, samplerD->d->samplerState });
                 }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 const int nativeBindingTexture = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
                 const int nativeBindingSampler = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler);
                 if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                    res[FRAGMENT].textures.feed(nativeBindingTexture, texD->d->tex);
-                    res[FRAGMENT].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                    res[FRAGMENT].textures.append({ nativeBindingTexture, texD->d->tex });
+                    res[FRAGMENT].samplers.append({ nativeBindingSampler, samplerD->d->samplerState });
                 }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 const int nativeBindingTexture = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
                 const int nativeBindingSampler = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler);
                 if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                    res[COMPUTE].textures.feed(nativeBindingTexture, texD->d->tex);
-                    res[COMPUTE].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                    res[COMPUTE].textures.append({ nativeBindingTexture, texD->d->tex });
+                    res[COMPUTE].samplers.append({ nativeBindingSampler, samplerD->d->samplerState });
                 }
             }
         }
@@ -769,17 +779,17 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
                 const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
                 if (nativeBinding >= 0)
-                    res[VERTEX].textures.feed(nativeBinding, t);
+                    res[VERTEX].textures.append({ nativeBinding, t });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
                 if (nativeBinding >= 0)
-                    res[FRAGMENT].textures.feed(nativeBinding, t);
+                    res[FRAGMENT].textures.append({ nativeBinding, t });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
                 if (nativeBinding >= 0)
-                    res[COMPUTE].textures.feed(nativeBinding, t);
+                    res[COMPUTE].textures.append({ nativeBinding, t });
             }
         }
             break;
@@ -792,24 +802,18 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             uint offset = uint(b->u.sbuf.offset);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
                 const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0) {
-                    res[VERTEX].buffers.feed(nativeBinding, mtlbuf);
-                    res[VERTEX].bufferOffsets.feed(b->binding, offset);
-                }
+                if (nativeBinding >= 0)
+                    res[VERTEX].buffers.append({ nativeBinding, mtlbuf, offset });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0) {
-                    res[FRAGMENT].buffers.feed(nativeBinding, mtlbuf);
-                    res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
-                }
+                if (nativeBinding >= 0)
+                    res[FRAGMENT].buffers.append({ nativeBinding, mtlbuf, offset });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer);
-                if (nativeBinding >= 0) {
-                    res[COMPUTE].buffers.feed(nativeBinding, mtlbuf);
-                    res[COMPUTE].bufferOffsets.feed(b->binding, offset);
-                }
+                if (nativeBinding >= 0)
+                    res[COMPUTE].buffers.append({ nativeBinding, mtlbuf, offset });
             }
         }
             break;
@@ -825,12 +829,26 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         if (cbD->recordingPass != QMetalCommandBuffer::ComputePass && stage == COMPUTE)
             continue;
 
-        res[stage].buffers.finish();
-        res[stage].bufferOffsets.finish();
+        // QRhiBatchedBindings works with the native bindings and expects
+        // sorted input. The pre-sorted QRhiShaderResourceBinding list (based
+        // on the QRhi (SPIR-V) binding) is not helpful in this regard, so we
+        // have to sort here every time.
 
-        for (int i = 0, ie = res[stage].buffers.batches.count(); i != ie; ++i) {
-            const auto &bufferBatch(res[stage].buffers.batches[i]);
-            const auto &offsetBatch(res[stage].bufferOffsets.batches[i]);
+        std::sort(res[stage].buffers.begin(), res[stage].buffers.end(), [](const Stage::Buffer &a, const Stage::Buffer &b) {
+            return a.nativeBinding < b.nativeBinding;
+        });
+
+        for (const Stage::Buffer &buf : qAsConst(res[stage].buffers)) {
+            res[stage].bufferBatches.feed(buf.nativeBinding, buf.mtlbuf);
+            res[stage].bufferOffsetBatches.feed(buf.nativeBinding, buf.offset);
+        }
+
+        res[stage].bufferBatches.finish();
+        res[stage].bufferOffsetBatches.finish();
+
+        for (int i = 0, ie = res[stage].bufferBatches.batches.count(); i != ie; ++i) {
+            const auto &bufferBatch(res[stage].bufferBatches.batches[i]);
+            const auto &offsetBatch(res[stage].bufferOffsetBatches.batches[i]);
             switch (stage) {
             case VERTEX:
                 [cbD->d->currentRenderPassEncoder setVertexBuffers: bufferBatch.resources.constData()
@@ -856,11 +874,25 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         if (offsetOnlyChange)
             continue;
 
-        res[stage].textures.finish();
-        res[stage].samplers.finish();
+        std::sort(res[stage].textures.begin(), res[stage].textures.end(), [](const Stage::Texture &a, const Stage::Texture &b) {
+            return a.nativeBinding < b.nativeBinding;
+        });
 
-        for (int i = 0, ie = res[stage].textures.batches.count(); i != ie; ++i) {
-            const auto &batch(res[stage].textures.batches[i]);
+        std::sort(res[stage].samplers.begin(), res[stage].samplers.end(), [](const Stage::Sampler &a, const Stage::Sampler &b) {
+            return a.nativeBinding < b.nativeBinding;
+        });
+
+        for (const Stage::Texture &t : qAsConst(res[stage].textures))
+            res[stage].textureBatches.feed(t.nativeBinding, t.mtltex);
+
+        for (const Stage::Sampler &s : qAsConst(res[stage].samplers))
+            res[stage].samplerBatches.feed(s.nativeBinding, s.mtlsampler);
+
+        res[stage].textureBatches.finish();
+        res[stage].samplerBatches.finish();
+
+        for (int i = 0, ie = res[stage].textureBatches.batches.count(); i != ie; ++i) {
+            const auto &batch(res[stage].textureBatches.batches[i]);
             switch (stage) {
             case VERTEX:
                 [cbD->d->currentRenderPassEncoder setVertexTextures: batch.resources.constData()
@@ -879,8 +911,8 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                 break;
             }
         }
-        for (int i = 0, ie = res[stage].samplers.batches.count(); i != ie; ++i) {
-            const auto &batch(res[stage].samplers.batches[i]);
+        for (int i = 0, ie = res[stage].samplerBatches.batches.count(); i != ie; ++i) {
+            const auto &batch(res[stage].samplerBatches.batches[i]);
             switch (stage) {
             case VERTEX:
                 [cbD->d->currentRenderPassEncoder setVertexSamplerStates: batch.resources.constData()
