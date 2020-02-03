@@ -465,7 +465,7 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
     QPen        pen;
     QBrush      brush;
     QRegion     rgn;
-    QMatrix     wmatrix;
+    qreal       wmatrix[6];
     QTransform  matrix;
 
     QTransform worldMatrix = painter->transform();
@@ -820,8 +820,12 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             if (d->formatMajor >= 8) {
                 s >> matrix >> i_8;
             } else {
-                s >> wmatrix >> i_8;
-                matrix = QTransform(wmatrix);
+                s >> wmatrix[0] >> wmatrix[1]
+                  >> wmatrix[2] >> wmatrix[3]
+                  >> wmatrix[4] >> wmatrix[5] >> i_8;
+                matrix = QTransform(wmatrix[0], wmatrix[1],
+                                    wmatrix[2], wmatrix[3],
+                                    wmatrix[4], wmatrix[5]);
             }
             // i_8 is always false due to updateXForm() in qpaintengine_pic.cpp
             painter->setTransform(matrix * worldMatrix, i_8);

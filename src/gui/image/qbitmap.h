@@ -76,10 +76,6 @@ public:
     static QBitmap fromData(const QSize &size, const uchar *bits,
                             QImage::Format monoFormat = QImage::Format_MonoLSB);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QBitmap::transformed(QTransform) instead")
-    QBitmap transformed(const QMatrix &) const;
-#endif
     QBitmap transformed(const QTransform &matrix) const;
 
     typedef QExplicitlySharedDataPointer<QPlatformPixmap> DataPtr;

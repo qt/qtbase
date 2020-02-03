@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MATRIX4X4
 
-class QMatrix;
 class QTransform;
 class QVariant;
 
@@ -72,9 +71,6 @@ public:
 
     QMatrix4x4(const float *values, int cols, int rows);
     QMatrix4x4(const QTransform& transform);
-#if QT_DEPRECATED_SINCE(5, 15)
-    QMatrix4x4(const QMatrix& matrix);
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
     inline const float& operator()(int row, int column) const;
     inline float& operator()(int row, int column);
@@ -158,9 +154,6 @@ public:
 
     void copyDataTo(float *values) const;
 
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use toTransform()") QMatrix toAffine() const;
-#endif // QT_DEPRECATED_SINCE(5, 15)
     QTransform toTransform() const;
     QTransform toTransform(float distanceToPlane) const;
 

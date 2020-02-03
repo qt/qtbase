@@ -87,7 +87,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qpair.h>
-#include <QtGui/qmatrix.h>
 
 #include <algorithm>
 
@@ -293,19 +292,6 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::posList() const
 
     return list;
 }
-
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-  Returns the matrix used to transform the item at the specified \a step value.
-
-  \obsolete Use transformAt() instead
-*/
-QMatrix QGraphicsItemAnimation::matrixAt(qreal step) const
-{
-    check_step_valid(step, "matrixAt");
-    return transformAt(step).toAffine();
-}
-#endif
 
 /*!
   Returns the transform used for the item at the specified \a step value.

@@ -892,26 +892,6 @@ bool QBrush::isOpaque() const
     return false;
 }
 
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \since 4.2
-    \obsolete
-
-    Use setTransform() instead.
-
-    Sets \a matrix as an explicit transformation matrix on the
-    current brush. The brush transformation matrix is merged with
-    QPainter transformation matrix to produce the final result.
-
-    \sa matrix()
-*/
-void QBrush::setMatrix(const QMatrix &matrix)
-{
-    setTransform(QTransform(matrix));
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
 /*!
     \since 4.3
 

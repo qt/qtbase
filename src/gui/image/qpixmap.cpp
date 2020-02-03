@@ -458,24 +458,6 @@ QTransform QPixmap::trueMatrix(const QTransform &m, int w, int h)
     return QImage::trueMatrix(m, w, h);
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-  \overload
-  \obsolete
-
-  Use trueMatrix(const QTransform &m, int w, int h) instead.
-
-  This convenience function loads the matrix \a m into a
-  QTransform and calls the overloaded function with the
-  QTransform and the width \a w and the height \a h.
- */
-QMatrix QPixmap::trueMatrix(const QMatrix &m, int w, int h)
-{
-    return trueMatrix(QTransform(m), w, h).toAffine();
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
-
 /*!
     \fn bool QPixmap::isQBitmap() const
 
@@ -1237,29 +1219,6 @@ QPixmap QPixmap::transformed(const QTransform &transform,
 
     return data->transformed(transform, mode);
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-  \overload
-  \obsolete
-
-  Use transformed(const QTransform &transform, Qt::TransformationMode mode)() instead.
-
-  This convenience function loads the \a matrix into a
-  QTransform and calls the overloaded function.
- */
-QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode) const
-{
-    return transformed(QTransform(matrix), mode);
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
-
-
-
-
-
-
 
 /*!
     \class QPixmap

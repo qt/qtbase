@@ -74,7 +74,6 @@ public:
     friend class QPainterPathData;
     friend class QPainterPathStroker;
     friend class QPainterPathStrokerPrivate;
-    friend class QMatrix;
     friend class QTransform;
     friend class QVectorPath;
     friend struct QPainterPathPrivateDeleter;

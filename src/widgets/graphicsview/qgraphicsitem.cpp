@@ -530,9 +530,6 @@
     setEnabled() in itemChange() as this notification is delivered. The return
     value is ignored.
 
-    \value ItemMatrixChange The item's affine transformation matrix is
-    changing. This value is obsolete; you can use ItemTransformChange instead.
-
     \value ItemPositionChange The item's position changes. This notification
     is sent if the ItemSendsGeometryChanges flag is enabled, and when the
     item's local position changes, relative to its parent (i.e., as a result
@@ -1506,7 +1503,7 @@ void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, con
         return;
 
     // Initialize QStyleOptionGraphicsItem specific values (matrix, exposedRect).
-    option->matrix = worldTransform.toAffine(); //### discards perspective
+    option->matrix = worldTransform; //### discards perspective
 
     if (!allItems) {
         // Determine the item's exposed area
@@ -3997,24 +3994,6 @@ void QGraphicsItem::ensureVisible(const QRectF &rect, int xmargin, int ymargin)
     ensureVisible(QRectF(\a x, \a y, \a w, \a h), \a xmargin, \a ymargin).
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Returns the item's affine transformation matrix. This is a subset or the
-    item's full transformation matrix, and might not represent the item's full
-    transformation.
-
-    Use transform() instead.
-
-    \sa setTransform(), sceneTransform()
-*/
-QMatrix QGraphicsItem::matrix() const
-{
-    return transform().toAffine();
-}
-#endif
-
 /*!
     \since 4.3
 
@@ -4323,22 +4302,6 @@ void QGraphicsItem::setTransformOriginPoint(const QPointF &origin)
     \sa setTransformOriginPoint(), {Transformations}
 */
 
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use sceneTransform() instead.
-
-    \sa transform(), setTransform(), scenePos(), {The Graphics View Coordinate System}
-*/
-QMatrix QGraphicsItem::sceneMatrix() const
-{
-    d_ptr->ensureSceneTransform();
-    return d_ptr->sceneTransform.toAffine();
-}
-#endif
-
 /*!
     \since 4.3
 
@@ -4549,50 +4512,6 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     return x;
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-/*!
-    \obsolete
-
-    Sets the item's affine transformation matrix. This is a subset or the
-    item's full transformation matrix, and might not represent the item's full
-    transformation.
-
-    Use setTransform() instead.
-
-    \sa transform(), {The Graphics View Coordinate System}
-*/
-void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
-{
-    if (!d_ptr->transformData)
-        d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
-
-    QTransform newTransform(combine ? QTransform(matrix) * d_ptr->transformData->transform : QTransform(matrix));
-    if (d_ptr->transformData->transform == newTransform)
-        return;
-
-    // Update and set the new transformation.
-    if (!(d_ptr->flags & ItemSendsGeometryChanges)) {
-        d_ptr->setTransformHelper(newTransform);
-        return;
-    }
-
-    // Notify the item that the transformation matrix is changing.
-    const QVariant newMatrixVariant = QVariant::fromValue<QMatrix>(newTransform.toAffine());
-    newTransform = QTransform(qvariant_cast<QMatrix>(itemChange(ItemMatrixChange, newMatrixVariant)));
-    if (d_ptr->transformData->transform == newTransform)
-        return;
-
-    // Update and set the new transformation.
-    d_ptr->setTransformHelper(newTransform);
-
-    // Send post-notification.
-    itemChange(ItemTransformHasChanged, QVariant::fromValue<QTransform>(newTransform));
-}
-QT_WARNING_POP
-#endif
-
 /*!
     \since 4.3
 
@@ -4645,18 +4564,6 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     itemChange(ItemTransformHasChanged, newTransformVariant);
     d_ptr->sendScenePosChange();
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use resetTransform() instead.
-*/
-void QGraphicsItem::resetMatrix()
-{
-    resetTransform();
-}
-#endif
 
 /*!
     \since 4.3
@@ -11526,14 +11433,6 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)
     case QGraphicsItem::ItemFlagsHaveChanged:
         str = "ItemFlagsHaveChanged";
         break;
-#if QT_DEPRECATED_SINCE(5, 14)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    case QGraphicsItem::ItemMatrixChange:
-        str = "ItemMatrixChange";
-        break;
-QT_WARNING_POP
-#endif
     case QGraphicsItem::ItemParentChange:
         str = "ItemParentChange";
         break;

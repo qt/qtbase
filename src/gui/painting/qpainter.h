@@ -53,7 +53,6 @@
 #include <QtGui/qpolygon.h>
 #include <QtGui/qpen.h>
 #include <QtGui/qbrush.h>
-#include <QtGui/qmatrix.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/qfontinfo.h>
 #include <QtGui/qfontmetrics.h>
@@ -236,34 +235,10 @@ public:
     void restore();
 
     // XForm functions
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use setTransform() instead")
-    void setMatrix(const QMatrix &matrix, bool combine = false);
-    QT_DEPRECATED_X("Use transform() instead")
-    QMatrix matrix() const;
-    QT_DEPRECATED_X("Use deviceTransform() instead")
-    QMatrix deviceMatrix() const;
-    QT_DEPRECATED_X("Use resetTransform() instead")
-    void resetMatrix();
-#endif
-
     void setTransform(const QTransform &transform, bool combine = false);
     const QTransform &transform() const;
     const QTransform &deviceTransform() const;
     void resetTransform();
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use setWorldTransform() instead")
-    void setWorldMatrix(const QMatrix &matrix, bool combine = false);
-    QT_DEPRECATED_X("Use worldTransform() instead")
-    QMatrix worldMatrix() const;
-    QT_DEPRECATED_X("Use combinedTransform() instead")
-    QMatrix combinedMatrix() const;
-    QT_DEPRECATED_X("Use setWorldMatrixEnabled() instead")
-    void setMatrixEnabled(bool enabled);
-    QT_DEPRECATED_X("Use worldMatrixEnabled() instead")
-    bool matrixEnabled() const;
-#endif
 
     void setWorldTransform(const QTransform &matrix, bool combine = false);
     const QTransform &worldTransform() const;

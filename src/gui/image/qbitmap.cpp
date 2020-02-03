@@ -310,18 +310,4 @@ QBitmap QBitmap::transformed(const QTransform &matrix) const
     return bm;
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-  \overload
-  \obsolete
-
-  This convenience function converts the \a matrix to a QTransform
-  and calls the overloaded function.
-*/
-QBitmap QBitmap::transformed(const QMatrix &matrix) const
-{
-    return transformed(QTransform(matrix));
-}
-#endif
-
 QT_END_NAMESPACE

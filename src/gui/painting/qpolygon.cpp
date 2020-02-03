@@ -899,7 +899,7 @@ QPolygon QPolygon::united(const QPolygon &r) const
     QPainterPath subject; subject.addPolygon(*this);
     QPainterPath clip; clip.addPolygon(r);
 
-    return subject.united(clip).toFillPolygon(QTransform()).toPolygon();
+    return subject.united(clip).toFillPolygon().toPolygon();
 }
 
 /*!
@@ -918,7 +918,7 @@ QPolygon QPolygon::intersected(const QPolygon &r) const
     QPainterPath subject; subject.addPolygon(*this);
     QPainterPath clip; clip.addPolygon(r);
 
-    return subject.intersected(clip).toFillPolygon(QTransform()).toPolygon();
+    return subject.intersected(clip).toFillPolygon().toPolygon();
 }
 
 /*!
@@ -936,7 +936,7 @@ QPolygon QPolygon::subtracted(const QPolygon &r) const
     QPainterPath subject; subject.addPolygon(*this);
     QPainterPath clip; clip.addPolygon(r);
 
-    return subject.subtracted(clip).toFillPolygon(QTransform()).toPolygon();
+    return subject.subtracted(clip).toFillPolygon().toPolygon();
 }
 
 /*!
@@ -975,7 +975,7 @@ QPolygonF QPolygonF::united(const QPolygonF &r) const
     QPainterPath subject; subject.addPolygon(*this);
     QPainterPath clip; clip.addPolygon(r);
 
-    return subject.united(clip).toFillPolygon(QTransform());
+    return subject.united(clip).toFillPolygon();
 }
 
 /*!
@@ -994,7 +994,7 @@ QPolygonF QPolygonF::intersected(const QPolygonF &r) const
     QPainterPath subject; subject.addPolygon(*this);
     QPainterPath clip; clip.addPolygon(r);
 
-    return subject.intersected(clip).toFillPolygon(QTransform());
+    return subject.intersected(clip).toFillPolygon();
 }
 
 /*!
@@ -1011,7 +1011,7 @@ QPolygonF QPolygonF::subtracted(const QPolygonF &r) const
 {
     QPainterPath subject; subject.addPolygon(*this);
     QPainterPath clip; clip.addPolygon(r);
-    return subject.subtracted(clip).toFillPolygon(QTransform());
+    return subject.subtracted(clip).toFillPolygon();
 }
 
 /*!

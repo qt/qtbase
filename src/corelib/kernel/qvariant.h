@@ -72,7 +72,6 @@ class QEasingCurve;
 class QLine;
 class QLineF;
 class QLocale;
-class QMatrix;
 class QTransform;
 class QStringList;
 class QTime;
@@ -190,7 +189,6 @@ class Q_CORE_EXPORT QVariant
         Pen = QMetaType::QPen,
         TextLength = QMetaType::QTextLength,
         TextFormat = QMetaType::QTextFormat,
-        Matrix = QMetaType::QMatrix,
         Transform = QMetaType::QTransform,
         Matrix4x4 = QMetaType::QMatrix4x4,
         Vector2D = QMetaType::QVector2D,

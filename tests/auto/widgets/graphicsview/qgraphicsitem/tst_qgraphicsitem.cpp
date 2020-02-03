@@ -4496,19 +4496,6 @@ protected:
             break;
         case QGraphicsItem::ItemPositionHasChanged:
             break;
-#if QT_DEPRECATED_SINCE(5, 14)
-        case QGraphicsItem::ItemMatrixChange: {
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-            QVariant variant;
-            variant.setValue<QMatrix>(matrix());
-            oldValues << variant;
-QT_WARNING_POP
-#endif
-        }
-            break;
-#endif
         case QGraphicsItem::ItemTransformChange: {
             QVariant variant;
             variant.setValue<QTransform>(transform());
@@ -4626,32 +4613,7 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.oldValues.constLast(), QVariant(true));
         QCOMPARE(tester.isEnabled(), true);
     }
-#if QT_DEPRECATED_SINCE(5, 13)
     {
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED // QDesktopWidget::screen()
-        // ItemMatrixChange / ItemTransformHasChanged
-        tester.itemChangeReturnValue.setValue<QMatrix>(QMatrix().rotate(90));
-        tester.setMatrix(QMatrix().translate(50, 0), true);
-        ++changeCount; // notification sent too
-        QCOMPARE(tester.changes.size(), ++changeCount);
-        QCOMPARE(int(tester.changes.at(tester.changes.size() - 2)), int(QGraphicsItem::ItemMatrixChange));
-        QCOMPARE(int(tester.changes.last()), int(QGraphicsItem::ItemTransformHasChanged));
-        QCOMPARE(qvariant_cast<QMatrix>(tester.values.at(tester.values.size() - 2)),
-                 QMatrix().translate(50, 0));
-        QCOMPARE(tester.values.constLast(), QVariant(QTransform(QMatrix().rotate(90))));
-        QVariant variant;
-        variant.setValue<QMatrix>(QMatrix());
-        QCOMPARE(tester.oldValues.constLast(), variant);
-        QCOMPARE(tester.matrix(), QMatrix().rotate(90));
-QT_WARNING_POP
-    }
-#endif
-    {
-        tester.resetTransform();
-        ++changeCount;
-        ++changeCount; // notification sent too
-
         // ItemTransformChange / ItemTransformHasChanged
         tester.itemChangeReturnValue.setValue<QTransform>(QTransform().rotate(90));
         tester.setTransform(QTransform::fromTranslate(50, 0), true);
@@ -8016,21 +7978,10 @@ public:
             //Doesn't use the extended style option so the exposed rect is the boundingRect
             if (!(flags() & QGraphicsItem::ItemUsesExtendedStyleOption)) {
                 QCOMPARE(option->exposedRect, boundingRect());
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-                QCOMPARE(option->matrix, QMatrix());
-QT_WARNING_POP
-#endif
             } else {
                 QVERIFY(option->exposedRect != QRect());
                 QVERIFY(option->exposedRect != boundingRect());
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-                QCOMPARE(option->matrix, sceneTransform().toAffine());
-QT_WARNING_POP
-#endif
+                QCOMPARE(option->matrix, sceneTransform());
             }
         }
         QGraphicsRectItem::paint(painter, option, widget);

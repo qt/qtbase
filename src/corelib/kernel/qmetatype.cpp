@@ -367,7 +367,6 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistery, customTypeRegistery)
     \value QPixmap QPixmap
     \value QLocale QLocale
     \value QBitmap QBitmap
-    \value QMatrix QMatrix
     \value QTransform QTransform
     \value QMatrix4x4 QMatrix4x4
     \value QVector2D QVector2D

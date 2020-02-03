@@ -265,7 +265,6 @@ public:
 #endif
 
 private:
-    friend class QMatrix;
     friend class QTransform;
 
     qreal xp;

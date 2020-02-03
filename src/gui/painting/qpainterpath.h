@@ -41,7 +41,6 @@
 #define QPAINTERPATH_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtGui/qmatrix.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qline.h>
@@ -59,6 +58,7 @@ class QPainterPathStrokerPrivate;
 class QPen;
 class QPolygonF;
 class QRegion;
+class QTransform;
 class QVectorPath;
 
 class Q_GUI_EXPORT QPainterPath
@@ -176,16 +176,11 @@ public:
 
     Q_REQUIRED_RESULT QPainterPath toReversed() const;
 
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use toSubpathPolygons(const QTransform &)")
-    QList<QPolygonF> toSubpathPolygons(const QMatrix &matrix = QMatrix()) const;
-    QT_DEPRECATED_X("Use toFillPolygons(const QTransform &")
-    QList<QPolygonF> toFillPolygons(const QMatrix &matrix = QMatrix()) const;
-    QT_DEPRECATED_X("Use toFillPolygon(const QTransform &)")
-    QPolygonF toFillPolygon(const QMatrix &matrix = QMatrix()) const;
-#endif // QT_DEPRECATED_SINCE(5, 15)
+    QList<QPolygonF> toSubpathPolygons() const;
     QList<QPolygonF> toSubpathPolygons(const QTransform &matrix) const;
+    QList<QPolygonF> toFillPolygons() const;
     QList<QPolygonF> toFillPolygons(const QTransform &matrix) const;
+    QPolygonF toFillPolygon() const;
     QPolygonF toFillPolygon(const QTransform &matrix) const;
 
     int elementCount() const;
@@ -238,7 +233,6 @@ private:
     friend class QPainterPathData;
     friend class QPainterPathStroker;
     friend class QPainterPathStrokerPrivate;
-    friend class QMatrix;
     friend class QTransform;
     friend class QVectorPath;
     friend Q_GUI_EXPORT const QVectorPath &qtVectorPathForPath(const QPainterPath &);

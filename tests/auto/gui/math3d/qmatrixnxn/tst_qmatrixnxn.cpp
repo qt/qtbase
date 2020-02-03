@@ -144,7 +144,6 @@ private slots:
 
     void columnsAndRows();
 
-    void convertQMatrix();
     void convertQTransform();
 
     void fill();
@@ -3060,58 +3059,6 @@ void tst_QMatrixNxN::columnsAndRows()
     QVERIFY(m1.row(2) == QVector4D(3, 7, 11, 15));
     QVERIFY(m1.row(3) == QVector4D(4, 8, 12, 16));
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-// Test converting QMatrix objects into QMatrix4x4 and then
-// checking that transformations in the original perform the
-// equivalent transformations in the new matrix.
-void tst_QMatrixNxN::convertQMatrix()
-{
-    QMatrix m1;
-    m1.translate(-3.5, 2.0);
-    QPointF p1 = m1.map(QPointF(100.0, 150.0));
-    QCOMPARE(p1.x(), 100.0 - 3.5);
-    QCOMPARE(p1.y(), 150.0 + 2.0);
-
-    QMatrix4x4 m2(m1);
-    QPointF p2 = m2 * QPointF(100.0, 150.0);
-    QCOMPARE((double)p2.x(), 100.0 - 3.5);
-    QCOMPARE((double)p2.y(), 150.0 + 2.0);
-    QCOMPARE(m1, m2.toAffine());
-
-    QMatrix m3;
-    m3.scale(1.5, -2.0);
-    QPointF p3 = m3.map(QPointF(100.0, 150.0));
-    QCOMPARE(p3.x(), 1.5 * 100.0);
-    QCOMPARE(p3.y(), -2.0 * 150.0);
-
-    QMatrix4x4 m4(m3);
-    QPointF p4 = m4 * QPointF(100.0, 150.0);
-    QCOMPARE((double)p4.x(), 1.5 * 100.0);
-    QCOMPARE((double)p4.y(), -2.0 * 150.0);
-    QCOMPARE(m3, m4.toAffine());
-
-    QMatrix m5;
-    m5.rotate(45.0);
-    QPointF p5 = m5.map(QPointF(100.0, 150.0));
-
-    QMatrix4x4 m6(m5);
-    QPointF p6 = m6 * QPointF(100.0, 150.0);
-    QVERIFY(qFuzzyCompare(float(p5.x()), float(p6.x())));
-    QVERIFY(qFuzzyCompare(float(p5.y()), float(p6.y())));
-
-    QMatrix m7 = m6.toAffine();
-    QVERIFY(qFuzzyCompare(float(m5.m11()), float(m7.m11())));
-    QVERIFY(qFuzzyCompare(float(m5.m12()), float(m7.m12())));
-    QVERIFY(qFuzzyCompare(float(m5.m21()), float(m7.m21())));
-    QVERIFY(qFuzzyCompare(float(m5.m22()), float(m7.m22())));
-    QVERIFY(qFuzzyCompare(float(m5.dx()), float(m7.dx())));
-    QVERIFY(qFuzzyCompare(float(m5.dy()), float(m7.dy())));
-}
-QT_WARNING_POP
-#endif
 
 // Test converting QTransform objects into QMatrix4x4 and then
 // checking that transformations in the original perform the

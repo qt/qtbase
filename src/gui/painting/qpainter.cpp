@@ -2560,19 +2560,19 @@ QRegion QPainter::clipRegion() const
         case QPainterClipInfo::PathClip: {
             QTransform matrix = (info.matrix * d->invMatrix);
             if (lastWasNothing) {
-                region = QRegion((info.path * matrix).toFillPolygon(QTransform()).toPolygon(),
+                region = QRegion((info.path * matrix).toFillPolygon().toPolygon(),
                                  info.path.fillRule());
                 lastWasNothing = false;
                 continue;
             }
             if (info.operation == Qt::IntersectClip) {
-                region &= QRegion((info.path * matrix).toFillPolygon(QTransform()).toPolygon(),
+                region &= QRegion((info.path * matrix).toFillPolygon().toPolygon(),
                                   info.path.fillRule());
             } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
             } else {
-                region = QRegion((info.path * matrix).toFillPolygon(QTransform()).toPolygon(),
+                region = QRegion((info.path * matrix).toFillPolygon().toPolygon(),
                                  info.path.fillRule());
             }
             break;
@@ -2896,175 +2896,6 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     d->updateState(d->state);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \since 4.2
-    \obsolete
-
-    Sets the transformation matrix to \a matrix and enables transformations.
-
-    \note It is advisable to use setWorldTransform() instead of this function to
-    preserve the properties of perspective transformations.
-
-    If \a combine is true, then \a matrix is combined with the current
-    transformation matrix; otherwise \a matrix replaces the current
-    transformation matrix.
-
-    If \a matrix is the identity matrix and \a combine is false, this
-    function calls setWorldMatrixEnabled(false). (The identity matrix is the
-    matrix where QMatrix::m11() and QMatrix::m22() are 1.0 and the
-    rest are 0.0.)
-
-    The following functions can transform the coordinate system without using
-    a QMatrix:
-    \list
-    \li translate()
-    \li scale()
-    \li shear()
-    \li rotate()
-    \endlist
-
-    They operate on the painter's worldMatrix() and are implemented like this:
-
-    \snippet code/src_gui_painting_qpainter.cpp 4
-
-    Note that when using setWorldMatrix() function you should always have
-    \a combine be true when you are drawing into a QPicture. Otherwise
-    it may not be possible to replay the picture with additional
-    transformations; using the translate(), scale(), etc. convenience
-    functions is safe.
-
-    For more information about the coordinate system, transformations
-    and window-viewport conversion, see \l {Coordinate System}.
-
-    \sa setWorldTransform(), QTransform
-*/
-
-void QPainter::setWorldMatrix(const QMatrix &matrix, bool combine)
-{
-    setWorldTransform(QTransform(matrix), combine);
-}
-
-/*!
-    \since 4.2
-    \obsolete
-
-    Returns the world transformation matrix.
-
-    It is advisable to use worldTransform() because worldMatrix() does not
-    preserve the properties of perspective transformations.
-
-    \sa {QPainter#Coordinate Transformations}{Coordinate Transformations},
-    {Coordinate System}
-*/
-
-QMatrix QPainter::worldMatrix() const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::worldMatrix: Painter not active");
-        return d->fakeState()->transform.toAffine();
-    }
-    return d->state->worldMatrix.toAffine();
-}
-
-/*!
-    \obsolete
-
-    Use setWorldTransform() instead.
-
-    \sa setWorldTransform()
-*/
-
-void QPainter::setMatrix(const QMatrix &matrix, bool combine)
-{
-    setWorldTransform(QTransform(matrix), combine);
-}
-
-/*!
-    \obsolete
-
-    Use worldTransform() instead.
-
-    \sa worldTransform()
-*/
-
-QMatrix QPainter::matrix() const
-{
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return worldMatrix();
-QT_WARNING_POP
-}
-
-
-/*!
-    \since 4.2
-    \obsolete
-
-    Returns the transformation matrix combining the current
-    window/viewport and world transformation.
-
-    It is advisable to use combinedTransform() instead of this
-    function to preserve the properties of perspective transformations.
-
-    \sa setWorldTransform(), setWindow(), setViewport()
-*/
-QMatrix QPainter::combinedMatrix() const
-{
-    return combinedTransform().toAffine();
-}
-
-
-/*!
-    \obsolete
-
-    Returns the matrix that transforms from logical coordinates to
-    device coordinates of the platform dependent paint device.
-
-    \note It is advisable to use deviceTransform() instead of this
-    function to preserve the properties of perspective transformations.
-
-    This function is \e only needed when using platform painting
-    commands on the platform dependent handle (Qt::HANDLE), and the
-    platform does not do transformations nativly.
-
-    The QPaintEngine::PaintEngineFeature enum can be queried to
-    determine whether the platform performs the transformations or
-    not.
-
-    \sa worldMatrix(), QPaintEngine::hasFeature(),
-*/
-QMatrix QPainter::deviceMatrix() const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::deviceMatrix: Painter not active");
-        return d->fakeState()->transform.toAffine();
-    }
-    return d->state->matrix.toAffine();
-}
-
-/*!
-    \obsolete
-
-    Resets any transformations that were made using translate(), scale(),
-    shear(), rotate(), setWorldMatrix(), setViewport() and
-    setWindow().
-
-    It is advisable to use resetTransform() instead of this function
-    to preserve the properties of perspective transformations.
-
-    \sa {QPainter#Coordinate Transformations}{Coordinate
-    Transformations}
-*/
-
-void QPainter::resetMatrix()
-{
-    resetTransform();
-}
-#endif
-
 /*!
     \since 4.2
 
@@ -3113,34 +2944,6 @@ bool QPainter::worldMatrixEnabled() const
     }
     return d->state->WxF;
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use setWorldMatrixEnabled() instead.
-
-    \sa setWorldMatrixEnabled()
-*/
-
-void QPainter::setMatrixEnabled(bool enable)
-{
-    setWorldMatrixEnabled(enable);
-}
-
-/*!
-    \obsolete
-
-    Use worldMatrixEnabled() instead
-
-    \sa worldMatrixEnabled()
-*/
-
-bool QPainter::matrixEnabled() const
-{
-    return worldMatrixEnabled();
-}
-#endif
 
 /*!
     Scales the coordinate system by (\a{sx}, \a{sy}).
@@ -8074,33 +7877,6 @@ QFont QPaintEngineState::font() const
 {
     return static_cast<const QPainterState *>(this)->font;
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \since 4.2
-    \obsolete
-
-    Use transform() instead.
-
-    Returns the matrix in the current paint engine
-    state.
-
-    \note It is advisable to use transform() instead of this function to
-    preserve the properties of perspective transformations.
-
-    This variable should only be used when the state() returns a
-    combination which includes the QPaintEngine::DirtyTransform flag.
-
-    \sa state(), QPaintEngine::updateState()
-*/
-
-QMatrix QPaintEngineState::matrix() const
-{
-    const QPainterState *st = static_cast<const QPainterState *>(this);
-
-    return st->matrix.toAffine();
-}
-#endif
 
 /*!
     \since 4.3

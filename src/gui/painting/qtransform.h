@@ -40,7 +40,6 @@
 #define QTRANSFORM_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtGui/qmatrix.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpolygon.h>
 #include <QtGui/qregion.h>
@@ -73,9 +72,6 @@ public:
                qreal h31, qreal h32, qreal h33 = 1.0);
     QTransform(qreal h11, qreal h12, qreal h21,
                qreal h22, qreal dx, qreal dy);
-#if QT_DEPRECATED_SINCE(5, 15)
-    explicit QTransform(const QMatrix &mtx);
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // ### Qt 6: remove; the compiler-generated ones are fine!
@@ -160,10 +156,6 @@ public:
     void map(int x, int y, int *tx, int *ty) const;
     void map(qreal x, qreal y, qreal *tx, qreal *ty) const;
 
-#if QT_DEPRECATED_SINCE(5, 15)
-    QMatrix toAffine() const;
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
     QTransform &operator*=(qreal div);
     QTransform &operator/=(qreal div);
     QTransform &operator+=(qreal div);
@@ -171,6 +163,16 @@ public:
 
     static QTransform fromTranslate(qreal dx, qreal dy);
     static QTransform fromScale(qreal dx, qreal dy);
+
+private:
+    struct Affine {
+             qreal (& m_matrix)[3][3];
+        };
+
+public:
+    auto asAffineMatrix() { return Affine { m_matrix }; }
+    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &s, Affine &m);
+    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const Affine &m);
 
 private:
     inline QTransform(qreal h11, qreal h12, qreal h13,

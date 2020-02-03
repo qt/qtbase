@@ -3917,7 +3917,7 @@ QRegion::QRegion(const QRect &r, RegionType t)
         } else if (t == Ellipse) {
             QPainterPath path;
             path.addEllipse(r.x(), r.y(), r.width(), r.height());
-            QPolygon a = path.toSubpathPolygons(QTransform()).at(0).toPolygon();
+            QPolygon a = path.toSubpathPolygons().at(0).toPolygon();
             d->qt_rgn = PolygonRegion(a.constData(), a.size(), EvenOddRule);
         }
     }

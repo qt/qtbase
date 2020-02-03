@@ -3297,7 +3297,7 @@ void tst_QDataStream::streamRealDataTypes()
             stream.setVersion(QDataStream::Qt_4_2);
             stream << qreal(0) << qreal(1.0) << qreal(1.1) << qreal(3.14) << qreal(-3.14) << qreal(-1);
             stream << QPointF(3, 5) << QRectF(-1, -2, 3, 4) << (QPolygonF() << QPointF(0, 0) << QPointF(1, 2));
-            stream << QMatrix().rotate(90).scale(2, 2);
+            stream << QTransform().rotate(90).scale(2, 2).asAffineMatrix();
             stream << path;
             stream << picture;
             stream << QTextLength(QTextLength::VariableLength, 1.5);
@@ -3311,7 +3311,7 @@ void tst_QDataStream::streamRealDataTypes()
         QPointF point;
         QRectF rect;
         QPolygonF polygon;
-        QMatrix matrix;
+        QTransform transform;
         QPainterPath p;
         QPicture pict;
         QTextLength textLength;
@@ -3361,8 +3361,9 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(rect, QRectF(-1, -2, 3, 4));
         stream >> polygon;
         QCOMPARE((QVector<QPointF> &)polygon, (QPolygonF() << QPointF(0, 0) << QPointF(1, 2)));
+        auto matrix = transform.asAffineMatrix();
         stream >> matrix;
-        QCOMPARE(matrix, QMatrix().rotate(90).scale(2, 2));
+        QCOMPARE(transform, QTransform().rotate(90).scale(2, 2));
         stream >> p;
         QCOMPARE(p, path);
         if (i == 1) {
@@ -3384,10 +3385,7 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(col, color);
         stream >> rGrad;
         QCOMPARE(rGrad.style(), radialBrush.style());
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        QCOMPARE(rGrad.matrix(), radialBrush.matrix());
-QT_WARNING_POP
+        QCOMPARE(rGrad.transform(), radialBrush.transform());
         QCOMPARE(rGrad.gradient()->type(), radialBrush.gradient()->type());
         QCOMPARE(rGrad.gradient()->stops(), radialBrush.gradient()->stops());
         QCOMPARE(rGrad.gradient()->spread(), radialBrush.gradient()->spread());
@@ -3396,10 +3394,7 @@ QT_WARNING_POP
         QCOMPARE(((QRadialGradient *)rGrad.gradient())->radius(), ((QRadialGradient *)radialBrush.gradient())->radius());
         stream >> cGrad;
         QCOMPARE(cGrad.style(), conicalBrush.style());
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        QCOMPARE(cGrad.matrix(), conicalBrush.matrix());
-QT_WARNING_POP
+        QCOMPARE(cGrad.transform(), conicalBrush.transform());
         QCOMPARE(cGrad.gradient()->type(), conicalBrush.gradient()->type());
         QCOMPARE(cGrad.gradient()->stops(), conicalBrush.gradient()->stops());
         QCOMPARE(cGrad.gradient()->spread(), conicalBrush.gradient()->spread());

@@ -3763,7 +3763,7 @@ qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &wor
      \brief the complete transformation matrix for the item
      \obsolete
 
-     The QMatrix provided through this member does include information about
+     The QTransform provided through this member does include information about
      any perspective transformations applied to the view or item. To get the
      correct transformation matrix, use QPainter::transform() on the painter
      passed into the QGraphicsItem::paint() implementation.
@@ -3774,7 +3774,7 @@ qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &wor
      item drawing.
 
      To find the dimensions of an item in screen coordinates (i.e., pixels),
-     you can use the mapping functions of QMatrix, such as QMatrix::map().
+     you can use the mapping functions of QTransform, such as QTransform::map().
 
      This member is only initialized for items that have the
      QGraphicsItem::ItemUsesExtendedStyleOption flag set.

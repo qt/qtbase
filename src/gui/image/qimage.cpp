@@ -43,7 +43,6 @@
 #include "qdatastream.h"
 #include "qcolortransform.h"
 #include "qmap.h"
-#include "qmatrix.h"
 #include "qtransform.h"
 #include "qimagereader.h"
 #include "qimagewriter.h"
@@ -2855,65 +2854,6 @@ QImage QImage::scaledToHeight(int h, Qt::TransformationMode mode) const
     QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
-
-
-#if QT_DEPRECATED_SINCE(5, 15)
-
-/*!
-    \obsolete
-
-    Use trueMatrix(const QTransform &matrix, int w, int h) instead.
-
-    \fn QMatrix QImage::trueMatrix(const QMatrix &matrix, int width, int height)
-
-    Returns the actual matrix used for transforming an image with the
-    given \a width, \a height and \a matrix.
-
-    When transforming an image using the transformed() function, the
-    transformation matrix is internally adjusted to compensate for
-    unwanted translation, i.e. transformed() returns the smallest
-    image containing all transformed points of the original image.
-    This function returns the modified matrix, which maps points
-    correctly from the original image into the new image.
-
-    \sa transformed(), {QImage#Image Transformations}{Image
-    Transformations}
-*/
-QMatrix QImage::trueMatrix(const QMatrix &matrix, int w, int h)
-{
-    return trueMatrix(QTransform(matrix), w, h).toAffine();
-}
-
-/*!
-    \obsolete
-
-    Use transformed(const QTransform &matrix, Qt::TransformationMode mode) instead.
-
-    Returns a copy of the image that is transformed using the given
-    transformation \a matrix and transformation \a mode.
-
-    The returned image will normally have the same {Image Formats}{format} as
-    the original image. However, a complex transformation may result in an
-    image where not all pixels are covered by the transformed pixels of the
-    original image. In such cases, those background pixels will be assigned a
-    transparent color value, and the transformed image will be given a format
-    with an alpha channel, even if the orginal image did not have that.
-
-    The transformation \a matrix is internally adjusted to compensate
-    for unwanted translation; i.e. the image produced is the smallest
-    image that contains all the transformed points of the original
-    image. Use the trueMatrix() function to retrieve the actual matrix
-    used for transforming an image.
-
-    \sa trueMatrix(), {QImage#Image Transformations}{Image
-    Transformations}
-*/
-QImage QImage::transformed(const QMatrix &matrix, Qt::TransformationMode mode) const
-{
-    return transformed(QTransform(matrix), mode);
-}
-
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Builds and returns a 1-bpp mask from the alpha buffer in this

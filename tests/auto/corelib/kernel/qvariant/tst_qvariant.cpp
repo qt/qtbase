@@ -1769,7 +1769,6 @@ void tst_QVariant::typeName_data()
     QTest::newRow("39") << int(QVariant::RectF) << QByteArray("QRectF");
     QTest::newRow("40") << int(QVariant::PointF) << QByteArray("QPointF");
     QTest::newRow("41") << int(QVariant::RegExp) << QByteArray("QRegExp");
-    QTest::newRow("43") << int(QVariant::Matrix) << QByteArray("QMatrix");
     QTest::newRow("44") << int(QVariant::Transform) << QByteArray("QTransform");
     QTest::newRow("45") << int(QVariant::Hash) << QByteArray("QVariantHash");
     QTest::newRow("46") << int(QVariant::Matrix4x4) << QByteArray("QMatrix4x4");

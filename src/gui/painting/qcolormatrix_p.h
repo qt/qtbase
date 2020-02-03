@@ -112,7 +112,7 @@ inline bool operator!=(const QColorVector &v1, const QColorVector &v2)
 
 
 // A matrix mapping 3 value colors.
-// Not using QMatrix because only floats are needed and performance is critical.
+// Not using QTransform because only floats are needed and performance is critical.
 class QColorMatrix
 {
 public:

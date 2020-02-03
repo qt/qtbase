@@ -47,7 +47,7 @@
 #include <QtWidgets/qabstractspinbox.h>
 #endif
 #include <QtGui/qicon.h>
-#include <QtGui/qmatrix.h>
+#include <QtGui/qtransform.h>
 #if QT_CONFIG(slider)
 #include <QtWidgets/qslider.h>
 #endif
@@ -693,7 +693,7 @@ public:
     enum StyleOptionVersion { Version = 1 };
 
     QRectF exposedRect;
-    QMatrix matrix;
+    QTransform matrix;
     qreal levelOfDetail;
 
     QStyleOptionGraphicsItem();

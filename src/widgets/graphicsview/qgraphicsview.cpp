@@ -292,7 +292,6 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtGui/qevent.h>
 #include <QtWidgets/qlayout.h>
 #include <QtGui/qtransform.h>
-#include <QtGui/qmatrix.h>
 #include <QtGui/qpainter.h>
 #include <QtWidgets/qscrollbar.h>
 #include <QtWidgets/qstyleoption.h>
@@ -1823,75 +1822,6 @@ void QGraphicsView::setSceneRect(const QRectF &rect)
     d->sceneRect = rect;
     d->recalculateContentSize();
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-
-/*!
-    \obsolete
-
-    Use transform() instead.
-
-    Returns the current transformation matrix for the view. If no current
-    transformation is set, the identity matrix is returned.
-
-    \sa setMatrix(), transform(), rotate(), scale(), shear(), translate()
-*/
-QMatrix QGraphicsView::matrix() const
-{
-    Q_D(const QGraphicsView);
-    return d->matrix.toAffine();
-}
-
-/*!
-    \obsolete
-
-    Use setTransform() instead.
-
-    Sets the view's current transformation matrix to \a matrix.
-
-    If \a combine is true, then \a matrix is combined with the current matrix;
-    otherwise, \a matrix \e replaces the current matrix. \a combine is false
-    by default.
-
-    The transformation matrix tranforms the scene into view coordinates. Using
-    the default transformation, provided by the identity matrix, one pixel in
-    the view represents one unit in the scene (e.g., a 10x10 rectangular item
-    is drawn using 10x10 pixels in the view). If a 2x2 scaling matrix is
-    applied, the scene will be drawn in 1:2 (e.g., a 10x10 rectangular item is
-    then drawn using 20x20 pixels in the view).
-
-    Example:
-
-    \snippet code/src_gui_graphicsview_qgraphicsview.cpp 3
-
-    To simplify interation with items using a transformed view, QGraphicsView
-    provides mapTo... and mapFrom... functions that can translate between
-    scene and view coordinates. For example, you can call mapToScene() to map
-    a view coordinate to a floating point scene coordinate, or mapFromScene()
-    to map from floating point scene coordinates to view coordinates.
-
-    \sa matrix(), setTransform(), rotate(), scale(), shear(), translate()
-*/
-void QGraphicsView::setMatrix(const QMatrix &matrix, bool combine)
-{
-    setTransform(QTransform(matrix), combine);
-}
-
-/*!
-    \obsolete
-
-    Use resetTransform() instead.
-
-    Resets the view transformation matrix to the identity matrix.
-
-    \sa resetTransform()
-*/
-void QGraphicsView::resetMatrix()
-{
-    resetTransform();
-}
-
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Rotates the current view transformation \a angle degrees clockwise.

@@ -36,7 +36,6 @@
 #include <qcursor.h>
 #include <qimage.h>
 #include <qicon.h>
-#include <qmatrix.h>
 #include <qmatrix4x4.h>
 #include <qpen.h>
 #include <qpolygon.h>
@@ -86,8 +85,6 @@ private slots:
 
     void toBrush_data();
     void toBrush();
-
-    void matrix();
 
     void transform();
 
@@ -402,24 +399,6 @@ void tst_QGuiVariant::toString()
     QCOMPARE( str, result );
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-void tst_QGuiVariant::matrix()
-{
-    QVariant variant;
-    QMatrix matrix = qvariant_cast<QMatrix>(variant);
-    QVERIFY(matrix.isIdentity());
-    variant.setValue(QMatrix().rotate(90));
-    QCOMPARE(QMatrix().rotate(90), qvariant_cast<QMatrix>(variant));
-
-    void *mmatrix = QMetaType::create(QVariant::Matrix, 0);
-    QVERIFY(mmatrix);
-    QMetaType::destroy(QVariant::Matrix, mmatrix);
-}
-QT_WARNING_POP
-#endif
-
 void tst_QGuiVariant::matrix4x4()
 {
     QVariant variant;
@@ -711,7 +690,6 @@ void tst_QGuiVariant::implicitConstruction()
     F(Pen) \
     F(TextLength) \
     F(TextFormat) \
-    F(Matrix) \
     F(Transform) \
     F(Matrix4x4) \
     F(Vector2D) \

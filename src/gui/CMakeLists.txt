@@ -160,7 +160,6 @@ qt_add_module(Gui
         painting/qgrayraster.c painting/qgrayraster_p.h
         painting/qicc.cpp painting/qicc_p.h
         painting/qimagescale.cpp
-        painting/qmatrix.cpp painting/qmatrix.h
         painting/qmemrotate.cpp painting/qmemrotate_p.h
         painting/qoutlinemapper.cpp painting/qoutlinemapper_p.h
         painting/qpagedpaintdevice.cpp painting/qpagedpaintdevice.h painting/qpagedpaintdevice_p.h

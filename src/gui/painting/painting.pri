@@ -26,7 +26,6 @@ HEADERS += \
         painting/qfixed_p.h \
         painting/qgrayraster_p.h \
         painting/qicc_p.h \
-        painting/qmatrix.h \
         painting/qmemrotate_p.h \
         painting/qoutlinemapper_p.h \
         painting/qpagedpaintdevice.h \
@@ -83,7 +82,6 @@ SOURCES += \
         painting/qgrayraster.c \
         painting/qicc.cpp \
         painting/qimagescale.cpp \
-        painting/qmatrix.cpp \
         painting/qmemrotate.cpp \
         painting/qoutlinemapper.cpp \
         painting/qpagedpaintdevice.cpp \

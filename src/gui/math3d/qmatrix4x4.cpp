@@ -40,7 +40,6 @@
 #include "qmatrix4x4.h"
 #include <QtCore/qmath.h>
 #include <QtCore/qvariant.h>
-#include <QtGui/qmatrix.h>
 #include <QtGui/qtransform.h>
 
 #include <cmath>
@@ -186,42 +185,6 @@ QMatrix4x4::QMatrix4x4(const float *values, int cols, int rows)
     }
     flagBits = General;
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \obsolete
-
-    Constructs a 4x4 matrix from a conventional Qt 2D affine
-    transformation \a matrix.
-
-    If \a matrix has a special type (identity, translate, scale, etc),
-    the programmer should follow this constructor with a call to
-    optimize() if they wish QMatrix4x4 to optimize further
-    calls to translate(), scale(), etc.
-
-    \sa toAffine(), optimize()
-*/
-QMatrix4x4::QMatrix4x4(const QMatrix& matrix)
-{
-    m[0][0] = matrix.m11();
-    m[0][1] = matrix.m12();
-    m[0][2] = 0.0f;
-    m[0][3] = 0.0f;
-    m[1][0] = matrix.m21();
-    m[1][1] = matrix.m22();
-    m[1][2] = 0.0f;
-    m[1][3] = 0.0f;
-    m[2][0] = 0.0f;
-    m[2][1] = 0.0f;
-    m[2][2] = 1.0f;
-    m[2][3] = 0.0f;
-    m[3][0] = matrix.dx();
-    m[3][1] = matrix.dy();
-    m[3][2] = 0.0f;
-    m[3][3] = 1.0f;
-    flagBits = Translation | Scale | Rotation2D;
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Constructs a 4x4 matrix from the conventional Qt 2D
@@ -1662,26 +1625,6 @@ void QMatrix4x4::copyDataTo(float *values) const
         for (int col = 0; col < 4; ++col)
             values[row * 4 + col] = float(m[col][row]);
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \obsolete
-
-    Use toTransform() instead.
-
-    Returns the conventional Qt 2D affine transformation matrix that
-    corresponds to this matrix.  It is assumed that this matrix
-    only contains 2D affine transformation elements.
-
-    \sa toTransform()
-*/
-QMatrix QMatrix4x4::toAffine() const
-{
-    return QMatrix(m[0][0], m[0][1],
-                   m[1][0], m[1][1],
-                   m[3][0], m[3][1]);
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Returns the conventional Qt 2D transformation matrix that

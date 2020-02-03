@@ -14,7 +14,6 @@ SUBDIRS=\
    qpen \
    qpaintengine \
    qtransform \
-   qwmatrix \
    qpolygon \
 
 !qtConfig(private_tests): SUBDIRS -= \

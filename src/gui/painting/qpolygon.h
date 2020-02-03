@@ -47,8 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-class QMatrix;
 class QTransform;
 class QRect;
 class QVariant;

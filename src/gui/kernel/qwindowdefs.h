@@ -68,7 +68,6 @@ class QFontMetrics;
 class QFontInfo;
 class QPen;
 class QBrush;
-class QMatrix;
 class QPixmap;
 class QBitmap;
 class QMovie;

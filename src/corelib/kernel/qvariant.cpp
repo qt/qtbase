@@ -1669,7 +1669,6 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     \value Locale  a QLocale
     \value LongLong a \l qlonglong
     \value Map  a QVariantMap
-    \value Matrix  a QMatrix
     \value Transform  a QTransform
     \value Matrix4x4  a QMatrix4x4
     \value Palette  a QPalette
@@ -2486,7 +2485,7 @@ void QVariant::load(QDataStream &s)
             typeId = QMetaType::QSizePolicy;
         } else if (typeId > 75 && typeId <= 86) {
             // and as a result these types received lower ids too
-            // QKeySequence QPen QTextLength QTextFormat QMatrix QTransform QMatrix4x4 QVector2D QVector3D QVector4D QQuaternion
+            // QKeySequence QPen QTextLength QTextFormat QTransform QMatrix4x4 QVector2D QVector3D QVector4D QQuaternion
             typeId -=1;
         }
     }

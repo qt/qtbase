@@ -140,7 +140,7 @@ private slots:
 
     void setWindow();
 
-    void combinedMatrix();
+    void combinedTransform();
     void renderHints();
 
     void disableEnableClipping();
@@ -1692,7 +1692,7 @@ void tst_QPainter::setWindow()
     QVERIFY(195 < painted.height() && painted.height() < 205); // correct value is around 200
 }
 
-void tst_QPainter::combinedMatrix()
+void tst_QPainter::combinedTransform()
 {
     QPixmap pm(64, 64);
 
@@ -1703,15 +1703,7 @@ void tst_QPainter::combinedMatrix()
     p.translate(0.5, 0.5);
 
     QTransform ct = p.combinedTransform();
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QMatrix cm = p.combinedMatrix();
-    QCOMPARE(cm, ct.toAffine());
-QT_WARNING_POP
-#endif
-
-    QPointF pt = QPointF(0, 0) * ct.toAffine();
+    QPointF pt = QPointF(0, 0) * ct;
 
     QCOMPARE(pt.x(), 48.0);
     QCOMPARE(pt.y(), 16.0);
@@ -4067,7 +4059,7 @@ void tst_QPainter::drawPolygon()
     path.moveTo(2, 34);
     path.lineTo(34, 2);
 
-    QPolygonF poly = stroker.createStroke(path).toFillPolygon(QTransform());
+    QPolygonF poly = stroker.createStroke(path).toFillPolygon();
 
     img.fill(0xffffffff);
     QPainter p(&img);
@@ -4135,24 +4127,12 @@ void tst_QPainter::inactivePainter()
     p.setClipRegion(region);
     p.setClipping(true);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    p.combinedMatrix();
-QT_WARNING_POP
-#endif
     p.combinedTransform();
 
     p.compositionMode();
     p.setCompositionMode(QPainter::CompositionMode_Plus);
 
     p.device();
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    p.deviceMatrix();
-QT_WARNING_POP
-#endif
     p.deviceTransform();
 
     p.font();
@@ -4176,12 +4156,6 @@ QT_WARNING_POP
     p.setRenderHint(QPainter::Antialiasing, true);
     p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, false);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    p.resetMatrix();
-QT_WARNING_POP
-#endif
     p.resetTransform();
     p.rotate(1);
     p.scale(2, 2);
@@ -4197,13 +4171,9 @@ QT_WARNING_POP
     p.window();
     p.setWindow(QRect(10, 10, 620, 460));
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    p.worldMatrix();
-    p.setWorldMatrix(QMatrix().translate(43, 21), true);
-QT_WARNING_POP
-#endif
+    p.worldTransform();
+    p.setWorldTransform(QTransform().translate(43, 21), true);
+
     p.setWorldMatrixEnabled(true);
 
     p.transform();

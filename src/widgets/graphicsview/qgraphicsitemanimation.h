@@ -48,7 +48,6 @@ QT_REQUIRE_CONFIG(graphicsview);
 QT_BEGIN_NAMESPACE
 
 class QGraphicsItem;
-class QMatrix;
 class QPointF;
 class QTimeLine;
 class QTransform;
@@ -72,10 +71,6 @@ public:
     QList<QPair<qreal, QPointF> > posList() const;
     void setPosAt(qreal step, const QPointF &pos);
 
-#if QT_DEPRECATED_SINCE(5, 14)
-    QT_DEPRECATED_X("Use transformAt() instead")
-    QMatrix matrixAt(qreal step) const;
-#endif
     QTransform transformAt(qreal step) const;
 
     qreal rotationAt(qreal step) const;

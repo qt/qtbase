@@ -41,7 +41,6 @@
 #include "qdatastream.h"
 #include "qdebug.h"
 #include "qhashfunctions.h"
-#include "qmatrix.h"
 #include "qregion.h"
 #include "qpainterpath.h"
 #include "qpainterpath_p.h"
@@ -108,14 +107,6 @@ static void nanWarning(const char *func)
     A transformation specifies how to translate, scale, shear, rotate
     or project the coordinate system, and is typically used when
     rendering graphics.
-
-    QTransform differs from QMatrix in that it is a true 3x3 matrix,
-    allowing perspective transformations. QTransform's toAffine()
-    method allows casting QTransform to QMatrix. If a perspective
-    transformation has been specified on the matrix, then the
-    conversion will cause loss of data.
-
-    QTransform is the recommended transformation class in Qt.
 
     A QTransform object can be built using the setMatrix(), scale(),
     rotate(), translate() and shear() functions.  Alternatively, it
@@ -307,26 +298,6 @@ QTransform::QTransform(qreal h11, qreal h12, qreal h21,
 #endif
 {
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \fn QTransform::QTransform(const QMatrix &matrix)
-    \obsolete
-
-    Constructs a matrix that is a copy of the given \a matrix.
-    Note that the \c m13, \c m23, and \c m33 elements are set to 0, 0,
-    and 1 respectively.
- */
-QTransform::QTransform(const QMatrix &mtx)
-    : m_matrix{ {mtx._m11, mtx._m12, 0}, {mtx._m21, mtx._m22, 0}, {mtx._dx, mtx._dy, 1} }
-    , m_type(TxNone)
-    , m_dirty(TxShear)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    , d(nullptr)
-#endif
-{
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Returns the adjoint of this matrix.
@@ -1557,7 +1528,7 @@ QRegion QTransform::map(const QRegion &r) const
     }
 
     QPainterPath p = map(qt_regionToPath(r));
-    return p.toFillPolygon(QTransform()).toPolygon();
+    return p.toFillPolygon().toPolygon();
 }
 
 struct QHomogeneousCoordinate
@@ -2095,22 +2066,6 @@ void QTransform::map(int x, int y, int *tx, int *ty) const
     *ty = qRound(fy);
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-  \obsolete
-  Returns the QTransform as an affine matrix.
-
-  \warning If a perspective transformation has been specified,
-  then the conversion will cause loss of data.
-*/
-QMatrix QTransform::toAffine() const
-{
-    return QMatrix(m_matrix[0][0], m_matrix[0][1],
-                   m_matrix[1][0], m_matrix[1][1],
-                   m_matrix[2][0], m_matrix[2][1]);
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
 /*!
   Returns the transformation type of this matrix.
 
@@ -2400,6 +2355,52 @@ bool qt_scaleForTransform(const QTransform &transform, qreal *scale)
 
         return type == QTransform::TxRotate && qFuzzyCompare(xScale2, yScale2);
     }
+}
+
+QDataStream & operator>>(QDataStream &s, QTransform::Affine &m)
+{
+    if (s.version() == 1) {
+        float m11, m12, m21, m22, dx, dy;
+        s >> m11; s >> m12; s >> m21; s >> m22; s >> dx; s >> dy;
+
+        m.m_matrix[0][0] = m11;
+        m.m_matrix[0][1] = m12;
+        m.m_matrix[1][0] = m21;
+        m.m_matrix[1][1] = m22;
+        m.m_matrix[2][0] = dx;
+        m.m_matrix[2][1] = dy;
+    } else {
+        s >> m.m_matrix[0][0];
+        s >> m.m_matrix[0][1];
+        s >> m.m_matrix[1][0];
+        s >> m.m_matrix[1][1];
+        s >> m.m_matrix[2][0];
+        s >> m.m_matrix[2][1];
+    }
+    m.m_matrix[0][2] = 0;
+    m.m_matrix[1][2] = 0;
+    m.m_matrix[2][2] = 1;
+    return s;
+}
+
+QDataStream &operator<<(QDataStream &s, const QTransform::Affine &m)
+{
+    if (s.version() == 1) {
+        s << (float)m.m_matrix[0][0]
+          << (float)m.m_matrix[0][1]
+          << (float)m.m_matrix[1][0]
+          << (float)m.m_matrix[1][1]
+          << (float)m.m_matrix[2][0]
+          << (float)m.m_matrix[2][1];
+    } else {
+        s << m.m_matrix[0][0]
+          << m.m_matrix[0][1]
+          << m.m_matrix[1][0]
+          << m.m_matrix[1][1]
+          << m.m_matrix[2][0]
+          << m.m_matrix[2][1];
+    }
+    return s;
 }
 
 QT_END_NAMESPACE

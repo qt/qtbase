@@ -2125,8 +2125,8 @@ void tst_QGraphicsView::mapFromScenePath()
     QPainterPath path2;
     path2.addPolygon(polygon2);
 
-    QPolygonF pathPoly = view.mapFromScene(path).toFillPolygon(QTransform());
-    QPolygonF path2Poly = path2.toFillPolygon(QTransform());
+    QPolygonF pathPoly = view.mapFromScene(path).toFillPolygon();
+    QPolygonF path2Poly = path2.toFillPolygon();
 
     for (int i = 0; i < pathPoly.size(); ++i) {
         QVERIFY(qAbs(pathPoly[i].x() - path2Poly[i].x()) < 3);

@@ -176,7 +176,6 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QPen, 76, QPen) \
     F(QTextLength, 77, QTextLength) \
     F(QTextFormat, 78, QTextFormat) \
-    F(QMatrix, 79, QMatrix) \
     F(QTransform, 80, QTransform) \
     F(QMatrix4x4, 81, QMatrix4x4) \
     F(QVector2D, 82, QVector2D) \
@@ -473,7 +472,7 @@ public:
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
         QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
         QCursor = 74, QKeySequence = 75, QPen = 76, QTextLength = 77, QTextFormat = 78,
-        QMatrix = 79, QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
+        QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
         QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86, QColorSpace = 87,
 
         // Widget types
