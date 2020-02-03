@@ -952,6 +952,7 @@ void tst_QTreeView::indexWidget()
     QStandardItemModel treeModel;
     initStandardTreeModel(&treeModel);
     view.setModel(&treeModel);
+    view.resize(300, 400);  // make sure the width of the view is larger than the widgets below
 
     QModelIndex index = view.model()->index(0, 0);
 
@@ -980,6 +981,7 @@ void tst_QTreeView::indexWidget()
 
     //now let's try to do that later when the widget is already shown
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     index = view.model()->index(1, 0);
     QVERIFY(!view.indexWidget(index));
 
