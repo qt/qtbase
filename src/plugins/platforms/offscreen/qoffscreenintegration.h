@@ -55,6 +55,7 @@ public:
     QOffscreenIntegration();
     ~QOffscreenIntegration();
 
+    void configure(const QStringList& paramList);
     void initialize() override;
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
@@ -73,8 +74,9 @@ public:
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
 
-    static QOffscreenIntegration *createOffscreenIntegration();
+    static QOffscreenIntegration *createOffscreenIntegration(const QStringList& paramList);
 
+    QList<QPlatformScreen *> screens() const;
 private:
     QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
 #if QT_CONFIG(draganddrop)
@@ -82,6 +84,8 @@ private:
 #endif
     QScopedPointer<QPlatformInputContext> m_inputContext;
     QScopedPointer<QPlatformServices> m_services;
+    QList<QPlatformScreen *> m_screens;
+    bool m_windowFrameMarginsEnabled = true;
 };
 
 QT_END_NAMESPACE

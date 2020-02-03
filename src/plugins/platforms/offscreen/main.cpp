@@ -53,9 +53,8 @@ public:
 
 QPlatformIntegration *QOffscreenIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    Q_UNUSED(paramList);
     if (!system.compare(QLatin1String("offscreen"), Qt::CaseInsensitive))
-        return QOffscreenIntegration::createOffscreenIntegration();
+        return QOffscreenIntegration::createOffscreenIntegration(paramList);
 
     return nullptr;
 }

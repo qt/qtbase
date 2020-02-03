@@ -47,18 +47,18 @@
 
 QT_BEGIN_NAMESPACE
 
-QOffscreenWindow::QOffscreenWindow(QWindow *window)
+QOffscreenWindow::QOffscreenWindow(QWindow *window, bool frameMarginsEnabled)
     : QPlatformWindow(window)
     , m_positionIncludesFrame(false)
     , m_visible(false)
     , m_pendingGeometryChangeOnShow(true)
+    , m_frameMarginsRequested(frameMarginsEnabled)
 {
-    if (window->windowState() == Qt::WindowNoState)
-        setGeometry(window->geometry());
-    else
+    if (window->windowState() == Qt::WindowNoState) {
+        setGeometry(windowGeometry());
+    } else {
         setWindowState(window->windowStates());
-
-    QWindowSystemInterface::flushWindowSystemEvents();
+    }
 
     static WId counter = 0;
     m_winId = ++counter;
@@ -80,7 +80,7 @@ void QOffscreenWindow::setGeometry(const QRect &rect)
 
     m_positionIncludesFrame = qt_window_private(window())->positionPolicy == QWindowPrivate::WindowFrameInclusive;
 
-    setFrameMarginsEnabled(true);
+    setFrameMarginsEnabled(m_frameMarginsRequested);
     setGeometryImpl(rect);
 
     m_normalGeometry = geometry();
@@ -168,7 +168,7 @@ void QOffscreenWindow::setFrameMarginsEnabled(bool enabled)
 
 void QOffscreenWindow::setWindowState(Qt::WindowStates state)
 {
-    setFrameMarginsEnabled(!(state & Qt::WindowFullScreen));
+    setFrameMarginsEnabled(m_frameMarginsRequested && !(state & Qt::WindowFullScreen));
     m_positionIncludesFrame = false;
 
     if (state & Qt::WindowMinimized)

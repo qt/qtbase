@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "qoffscreencommon.h"
+#include "qoffscreenintegration.h"
 #include "qoffscreenwindow.h"
+
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -49,6 +51,12 @@
 QT_BEGIN_NAMESPACE
 
 QPlatformWindow *QOffscreenScreen::windowContainingCursor = nullptr;
+
+
+QList<QPlatformScreen *> QOffscreenScreen::virtualSiblings() const
+{
+    return m_integration->screens();
+}
 
 class QOffscreenCursor : public QPlatformCursor
 {
@@ -93,9 +101,10 @@ private:
     QPoint m_pos;
 };
 
-QOffscreenScreen::QOffscreenScreen()
+QOffscreenScreen::QOffscreenScreen(const QOffscreenIntegration *integration)
     : m_geometry(0, 0, 800, 600)
     , m_cursor(new QOffscreenCursor)
+    , m_integration(integration)
 {
 }
 

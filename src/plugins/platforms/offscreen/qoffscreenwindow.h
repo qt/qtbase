@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 class QOffscreenWindow : public QPlatformWindow
 {
 public:
-    QOffscreenWindow(QWindow *window);
+    QOffscreenWindow(QWindow *window, bool frameMarginsEnabled);
     ~QOffscreenWindow();
 
     void setGeometry(const QRect &rect) override;
@@ -74,6 +74,7 @@ private:
     bool m_positionIncludesFrame;
     bool m_visible;
     bool m_pendingGeometryChangeOnShow;
+    bool m_frameMarginsRequested;
     WId m_winId;
 
     static QHash<WId, QOffscreenWindow *> m_windowForWinIdHash;
