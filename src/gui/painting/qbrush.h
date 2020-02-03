@@ -90,7 +90,7 @@ public:
     void setStyle(Qt::BrushStyle);
 
 #if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use transform()") inline const QMatrix &matrix() const;
+    QT_DEPRECATED_X("Use transform()") inline QMatrix matrix() const;
     QT_DEPRECATED_X("Use setTransform()") void setMatrix(const QMatrix &mat);
 #endif // QT_DEPRECATED_SINCE(5, 15)
 
@@ -161,7 +161,7 @@ inline Qt::BrushStyle QBrush::style() const { return d->style; }
 inline const QColor &QBrush::color() const { return d->color; }
 #if QT_DEPRECATED_SINCE(5, 15)
 QT_DEPRECATED_X("Use transform()")
-inline const QMatrix &QBrush::matrix() const { return d->transform.toAffine(); }
+inline QMatrix QBrush::matrix() const { return d->transform.toAffine(); }
 #endif // QT_DEPRECATED_SINCE(5, 15)
 inline QTransform QBrush::transform() const { return d->transform; }
 inline bool QBrush::isDetached() const { return d->ref.loadRelaxed() == 1; }

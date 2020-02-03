@@ -66,7 +66,7 @@ public:
         TxProject   = 0x10
     };
 
-    inline explicit QTransform(Qt::Initialization) : affine(Qt::Uninitialized) {}
+    inline explicit QTransform(Qt::Initialization) {}
     QTransform();
     QTransform(qreal h11, qreal h12, qreal h13,
                qreal h21, qreal h22, qreal h23,
@@ -161,7 +161,7 @@ public:
     void map(qreal x, qreal y, qreal *tx, qreal *ty) const;
 
 #if QT_DEPRECATED_SINCE(5, 15)
-    const QMatrix &toAffine() const;
+    QMatrix toAffine() const;
 #endif // QT_DEPRECATED_SINCE(5, 15)
 
     QTransform &operator*=(qreal div);
@@ -176,8 +176,7 @@ private:
     inline QTransform(qreal h11, qreal h12, qreal h13,
                       qreal h21, qreal h22, qreal h23,
                       qreal h31, qreal h32, qreal h33, bool)
-        : affine(h11, h12, h21, h22, h31, h32, true)
-        , m_13(h13), m_23(h23), m_33(h33)
+        : m_matrix{ {h11, h12, h13}, {h21, h22, h23}, {h31, h32, h33} }
         , m_type(TxNone)
         , m_dirty(TxProject)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -186,8 +185,7 @@ private:
     {
     }
     inline QTransform(bool)
-        : affine(true)
-        , m_13(0), m_23(0), m_33(1)
+        : m_matrix{ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} }
         , m_type(TxNone)
         , m_dirty(TxNone)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -196,10 +194,7 @@ private:
     {
     }
     inline TransformationType inline_type() const;
-    QMatrix affine;
-    qreal   m_13;
-    qreal   m_23;
-    qreal   m_33;
+    qreal m_matrix[3][3];
 
     mutable uint m_type : 5;
     mutable uint m_dirty : 5;
@@ -250,8 +245,9 @@ inline bool QTransform::isTranslating() const
 
 inline qreal QTransform::determinant() const
 {
-    return affine._m11*(m_33*affine._m22-affine._dy*m_23) -
-        affine._m21*(m_33*affine._m12-affine._dy*m_13)+affine._dx*(m_23*affine._m12-affine._m22*m_13);
+    return m_matrix[0][0] * (m_matrix[2][2] * m_matrix[1][1] - m_matrix[2][1] * m_matrix[1][2]) -
+           m_matrix[1][0] * (m_matrix[2][2] * m_matrix[0][1] - m_matrix[2][1] * m_matrix[0][2]) +
+           m_matrix[2][0] * (m_matrix[1][2] * m_matrix[0][1] - m_matrix[1][1] * m_matrix[0][2]);
 }
 #if QT_DEPRECATED_SINCE(5, 13)
 inline qreal QTransform::det() const
@@ -261,47 +257,47 @@ inline qreal QTransform::det() const
 #endif
 inline qreal QTransform::m11() const
 {
-    return affine._m11;
+    return m_matrix[0][0];
 }
 inline qreal QTransform::m12() const
 {
-    return affine._m12;
+    return m_matrix[0][1];
 }
 inline qreal QTransform::m13() const
 {
-    return m_13;
+    return m_matrix[0][2];
 }
 inline qreal QTransform::m21() const
 {
-    return affine._m21;
+    return m_matrix[1][0];
 }
 inline qreal QTransform::m22() const
 {
-    return affine._m22;
+    return m_matrix[1][1];
 }
 inline qreal QTransform::m23() const
 {
-    return m_23;
+    return m_matrix[1][2];
 }
 inline qreal QTransform::m31() const
 {
-    return affine._dx;
+    return m_matrix[2][0];
 }
 inline qreal QTransform::m32() const
 {
-    return affine._dy;
+    return m_matrix[2][1];
 }
 inline qreal QTransform::m33() const
 {
-    return m_33;
+    return m_matrix[2][2];
 }
 inline qreal QTransform::dx() const
 {
-    return affine._dx;
+    return m_matrix[2][0];
 }
 inline qreal QTransform::dy() const
 {
-    return affine._dy;
+    return m_matrix[2][1];
 }
 
 QT_WARNING_PUSH
@@ -313,15 +309,15 @@ inline QTransform &QTransform::operator*=(qreal num)
 {
     if (num == 1.)
         return *this;
-    affine._m11 *= num;
-    affine._m12 *= num;
-    m_13        *= num;
-    affine._m21 *= num;
-    affine._m22 *= num;
-    m_23        *= num;
-    affine._dx  *= num;
-    affine._dy  *= num;
-    m_33        *= num;
+    m_matrix[0][0] *= num;
+    m_matrix[0][1] *= num;
+    m_matrix[0][2] *= num;
+    m_matrix[1][0] *= num;
+    m_matrix[1][1] *= num;
+    m_matrix[1][2] *= num;
+    m_matrix[2][0] *= num;
+    m_matrix[2][1] *= num;
+    m_matrix[2][2] *= num;
     if (m_dirty < TxScale)
         m_dirty = TxScale;
     return *this;
@@ -337,15 +333,15 @@ inline QTransform &QTransform::operator+=(qreal num)
 {
     if (num == 0)
         return *this;
-    affine._m11 += num;
-    affine._m12 += num;
-    m_13        += num;
-    affine._m21 += num;
-    affine._m22 += num;
-    m_23        += num;
-    affine._dx  += num;
-    affine._dy  += num;
-    m_33        += num;
+    m_matrix[0][0] += num;
+    m_matrix[0][1] += num;
+    m_matrix[0][2] += num;
+    m_matrix[1][0] += num;
+    m_matrix[1][1] += num;
+    m_matrix[1][2] += num;
+    m_matrix[2][0] += num;
+    m_matrix[2][1] += num;
+    m_matrix[2][2] += num;
     m_dirty     = TxProject;
     return *this;
 }
@@ -353,15 +349,15 @@ inline QTransform &QTransform::operator-=(qreal num)
 {
     if (num == 0)
         return *this;
-    affine._m11 -= num;
-    affine._m12 -= num;
-    m_13        -= num;
-    affine._m21 -= num;
-    affine._m22 -= num;
-    m_23        -= num;
-    affine._dx  -= num;
-    affine._dy  -= num;
-    m_33        -= num;
+    m_matrix[0][0] -= num;
+    m_matrix[0][1] -= num;
+    m_matrix[0][2] -= num;
+    m_matrix[1][0] -= num;
+    m_matrix[1][1] -= num;
+    m_matrix[1][2] -= num;
+    m_matrix[2][0] -= num;
+    m_matrix[2][1] -= num;
+    m_matrix[2][2] -= num;
     m_dirty     = TxProject;
     return *this;
 }

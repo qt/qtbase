@@ -240,9 +240,9 @@ public:
     QT_DEPRECATED_X("Use setTransform() instead")
     void setMatrix(const QMatrix &matrix, bool combine = false);
     QT_DEPRECATED_X("Use transform() instead")
-    const QMatrix &matrix() const;
+    QMatrix matrix() const;
     QT_DEPRECATED_X("Use deviceTransform() instead")
-    const QMatrix &deviceMatrix() const;
+    QMatrix deviceMatrix() const;
     QT_DEPRECATED_X("Use resetTransform() instead")
     void resetMatrix();
 #endif
@@ -256,7 +256,7 @@ public:
     QT_DEPRECATED_X("Use setWorldTransform() instead")
     void setWorldMatrix(const QMatrix &matrix, bool combine = false);
     QT_DEPRECATED_X("Use worldTransform() instead")
-    const QMatrix &worldMatrix() const;
+    QMatrix worldMatrix() const;
     QT_DEPRECATED_X("Use combinedTransform() instead")
     QMatrix combinedMatrix() const;
     QT_DEPRECATED_X("Use setWorldMatrixEnabled() instead")

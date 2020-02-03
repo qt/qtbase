@@ -2958,7 +2958,7 @@ void QPainter::setWorldMatrix(const QMatrix &matrix, bool combine)
     {Coordinate System}
 */
 
-const QMatrix &QPainter::worldMatrix() const
+QMatrix QPainter::worldMatrix() const
 {
     Q_D(const QPainter);
     if (!d->engine) {
@@ -2989,7 +2989,7 @@ void QPainter::setMatrix(const QMatrix &matrix, bool combine)
     \sa worldTransform()
 */
 
-const QMatrix &QPainter::matrix() const
+QMatrix QPainter::matrix() const
 {
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
@@ -3035,7 +3035,7 @@ QMatrix QPainter::combinedMatrix() const
 
     \sa worldMatrix(), QPaintEngine::hasFeature(),
 */
-const QMatrix &QPainter::deviceMatrix() const
+QMatrix QPainter::deviceMatrix() const
 {
     Q_D(const QPainter);
     if (!d->engine) {
