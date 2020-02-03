@@ -48,6 +48,7 @@
 #include "qxcbscreen.h"
 #include "qglxintegration.h"
 
+#include <QtCore/QVersionNumber>
 #include <QtGui/QOpenGLContext>
 
 #include "qxcbglxnativeinterfacehandler.h"
@@ -59,6 +60,9 @@
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(xcb_glx)
+  #define QT_XCB_GLX_REQUIRED_MAJOR 1
+  #define QT_XCB_GLX_REQUIRED_MINOR 3
+
   #if XCB_GLX_MAJOR_VERSION == 1 && XCB_GLX_MINOR_VERSION < 4
     #define XCB_GLX_BUFFER_SWAP_COMPLETE 1
     typedef struct xcb_glx_buffer_swap_complete_event_t {
@@ -113,7 +117,9 @@ bool QXcbGlxIntegration::initialize(QXcbConnection *connection)
     auto xglx_query = Q_XCB_REPLY(xcb_glx_query_version, m_connection->xcb_connection(),
                                   XCB_GLX_MAJOR_VERSION,
                                   XCB_GLX_MINOR_VERSION);
-    if (!xglx_query) {
+    if ((!xglx_query)
+        || (QVersionNumber(xglx_query->major_version, xglx_query->minor_version)
+            < QVersionNumber(QT_XCB_GLX_REQUIRED_MAJOR, QT_XCB_GLX_REQUIRED_MINOR))) {
         qCWarning(lcQpaGl) << "QXcbConnection: Failed to initialize GLX";
         return false;
     }
