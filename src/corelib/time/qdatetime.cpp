@@ -362,9 +362,13 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     date format which is used to interpret the date within the string.
 
     The year(), month(), and day() functions provide access to the year, month,
-    and day numbers. Also, dayOfWeek() and dayOfYear() functions are
-    provided. The same information is provided in textual format by
-    toString(). The day and month numbers can be mapped to names using QLocale.
+    and day numbers. When more than one of these values is needed, it is more
+    efficient to call QCalendar::partsFromDate(), to save repeating (potentially
+    expensive) calendrical calculations.
+
+    Also, dayOfWeek() and dayOfYear() functions are provided. The same
+    information is provided in textual format by toString(). QLocale can map the
+    day numbers to names, QCalendar can map month numbers to names.
 
     QDate provides a full set of operators to compare two QDate
     objects where smaller means earlier, and larger means later.
@@ -374,19 +378,21 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     The daysTo() function returns the number of days between two
     dates.
 
-    The daysInMonth() and daysInYear() functions return how many days
-    there are in this date's month and year, respectively. The
-    isLeapYear() function indicates whether a date is in a leap year.
+    The daysInMonth() and daysInYear() functions return how many days there are
+    in this date's month and year, respectively. The isLeapYear() function
+    indicates whether a date is in a leap year. QCalendar can also supply this
+    information, in some cases more conveniently.
 
     \section1 Remarks
 
     \note All conversion to and from string formats is done using the C locale.
     For localized conversions, see QLocale.
 
-    \note There is no year 0 in the Gregorian calendar. Dates in that year are
+    In the Gregorian calendar, there is no year 0. Dates in that year are
     considered invalid. The year -1 is the year "1 before Christ" or "1 before
-    common era." The day before 1 January 1 CE, QDate(1, 1, 1), is 31 December 1
-    BCE, QDate(-1, 12, 31).
+    common era." The day before 1 January 1 CE, QDate(1, 1, 1), is 31 December
+    1 BCE, QDate(-1, 12, 31). Various other calendars behave similarly; see
+    QCalendar::hasYearZero().
 
     \section2 Range of Valid Dates
 
@@ -398,9 +404,10 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     Hebrew, Islamic or Chinese. The Julian Day number can be obtained using
     QDate::toJulianDay() and can be set using QDate::fromJulianDay().
 
-    The range of dates able to be stored by QDate as a Julian Day number is
-    for technical reasons limited to between -784350574879 and 784354017364,
-    which means from before 2 billion BCE to after 2 billion CE.
+    The range of Julian Day numbers that QDate can represent is, for technical
+    reasons, limited to between -784350574879 and 784354017364, which means from
+    before 2 billion BCE to after 2 billion CE. This is more than seven times as
+    wide as the range of dates a QDateTime can represent.
 
     \sa QTime, QDateTime, QCalendar, QDateTime::YearRange, QDateEdit, QDateTimeEdit, QCalendarWidget
 */
@@ -473,7 +480,7 @@ QDate::QDate(int y, int m, int d, QCalendar cal)
     negative year numbers are used to indicate these years before year 1, with
     -1 indicating the year before 1.
 
-    \sa month(), day(), QCalendar::hasYearZero(), QCalendar::isProleptic()
+    \sa month(), day(), QCalendar::hasYearZero(), QCalendar::isProleptic(), QCalendar::partsFromDate()
 */
 
 int QDate::year(QCalendar cal) const
@@ -525,7 +532,7 @@ int QDate::year() const
     Returns 0 if the date is invalid. Note that some calendars may have more
     than 12 months in some years.
 
-    \sa year(), day()
+    \sa year(), day(), QCalendar::partsFromDate()
 */
 
 int QDate::month(QCalendar cal) const
@@ -558,7 +565,7 @@ int QDate::month() const
     Uses \a cal as calendar if supplied, else the Gregorian calendar (for which
     the return ranges from 1 to 31). Returns 0 if the date is invalid.
 
-    \sa year(), month(), dayOfWeek()
+    \sa year(), month(), dayOfWeek(), QCalendar::partsFromDate()
 */
 
 int QDate::day(QCalendar cal) const
@@ -592,7 +599,7 @@ int QDate::day() const
     if the date is invalid. Some calendars may give special meaning
     (e.g. intercallary days) to values greater than 7.
 
-    \sa day(), dayOfYear(), Qt::DayOfWeek
+    \sa day(), dayOfYear(), QCalendar::dayOfWeek(), Qt::DayOfWeek
 */
 
 int QDate::dayOfWeek(QCalendar cal) const
@@ -618,7 +625,7 @@ int QDate::dayOfWeek() const
     Uses \a cal as calendar if supplied, else the Gregorian calendar.
     Returns 0 if either the date or the first day of its year is invalid.
 
-    \sa day(), dayOfWeek()
+    \sa day(), dayOfWeek(), QCalendar::daysInYear()
 */
 
 int QDate::dayOfYear(QCalendar cal) const
@@ -651,7 +658,8 @@ int QDate::dayOfYear() const
     Uses \a cal as calendar if supplied, else the Gregorian calendar (for which
     the result ranges from 28 to 31). Returns 0 if the date is invalid.
 
-    \sa day(), daysInYear()
+    \sa day(), daysInYear(), QCalendar::daysInMonth(),
+        QCalendar::maximumDaysInMonth(), QCalendar::minimumDaysInMonth()
 */
 
 int QDate::daysInMonth(QCalendar cal) const
@@ -684,7 +692,7 @@ int QDate::daysInMonth() const
     Uses \a cal as calendar if supplied, else the Gregorian calendar (for which
     the result is 365 or 366). Returns 0 if the date is invalid.
 
-    \sa day(), daysInMonth()
+    \sa day(), daysInMonth(), QCalendar::daysInYear(), QCalendar::maximumMonthsInYear()
 */
 
 int QDate::daysInYear(QCalendar cal) const
