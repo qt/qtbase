@@ -203,6 +203,7 @@
 /*!
     \class QLinkedListIterator
     \inmodule QtCore
+    \obsolete
 
     \brief The QLinkedListIterator class provides a Java-style const iterator for QLinkedList.
 
@@ -416,6 +417,7 @@
 /*!
     \class QMutableLinkedListIterator
     \inmodule QtCore
+    \obsolete
 
     \brief The QMutableLinkedListIterator class provides a Java-style non-const iterator for QLinkedList.
 

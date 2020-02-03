@@ -45,6 +45,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 const QLinkedListData QLinkedListData::shared_null = {
     const_cast<QLinkedListData *>(&QLinkedListData::shared_null),
     const_cast<QLinkedListData *>(&QLinkedListData::shared_null),
@@ -53,12 +58,15 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \class QLinkedList
     \inmodule QtCore
+    \obsolete
     \brief The QLinkedList class is a template class that provides linked lists.
 
     \ingroup tools
     \ingroup shared
 
     \reentrant
+
+    \note This class is obsolete, please use std::list instead.
 
     QLinkedList\<T\> is one of Qt's generic \l{container classes}. It
     stores a list of values and provides iterator-based access as
@@ -720,6 +728,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \class QLinkedList::iterator
     \inmodule QtCore
+    \obsolete
     \brief The QLinkedList::iterator class provides an STL-style non-const iterator for QLinkedList.
 
     QLinkedList features both \l{STL-style iterators} and
@@ -965,6 +974,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \class QLinkedList::const_iterator
     \inmodule QtCore
+    \obsolete
     \brief The QLinkedList::const_iterator class provides an STL-style const iterator for QLinkedList.
 
     QLinkedList features both \l{STL-style iterators} and
@@ -1220,5 +1230,9 @@ const QLinkedListData QLinkedListData::shared_null = {
 
     \sa fromStdList()
 */
+
+QT_WARNING_POP
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 QT_END_NAMESPACE
