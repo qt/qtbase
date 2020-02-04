@@ -9,10 +9,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/richtext/orderform")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
-find_package(Qt6 COMPONENTS PrintSupport)
 
 add_qt_gui_executable(orderform
     detailsdialog.cpp detailsdialog.h
@@ -20,10 +21,15 @@ add_qt_gui_executable(orderform
     mainwindow.cpp mainwindow.h
 )
 target_link_libraries(orderform PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
-if (TARGET Qt::PrintSupport)
-    target_link_libraries(orderform PUBLIC Qt::PrintSupport)
+
+if(TARGET Qt::PrintSupport)
+    target_link_libraries(orderform PUBLIC
+        Qt::PrintSupport
+    )
 endif()
 
 install(TARGETS orderform

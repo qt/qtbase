@@ -9,14 +9,18 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/graphicsview/anchorlayout")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(anchorlayout
     main.cpp
 )
 target_link_libraries(anchorlayout PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
 

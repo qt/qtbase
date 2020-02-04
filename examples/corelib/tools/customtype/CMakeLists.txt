@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/corelib/tools/customtype")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(customtype
@@ -18,8 +20,11 @@ add_qt_gui_executable(customtype
     message.cpp message.h
 )
 target_link_libraries(customtype PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
+
 install(TARGETS customtype
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

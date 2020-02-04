@@ -9,18 +9,47 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tools/i18n")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(i18n
-    i18n.qrc
     languagechooser.cpp languagechooser.h
     main.cpp
     mainwindow.cpp mainwindow.h
 )
 target_link_libraries(i18n PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(i18n_resource_files
+    "translations/i18n_ar.qm"
+    "translations/i18n_cs.qm"
+    "translations/i18n_de.qm"
+    "translations/i18n_el.qm"
+    "translations/i18n_en.qm"
+    "translations/i18n_eo.qm"
+    "translations/i18n_fr.qm"
+    "translations/i18n_it.qm"
+    "translations/i18n_jp.qm"
+    "translations/i18n_ko.qm"
+    "translations/i18n_no.qm"
+    "translations/i18n_ru.qm"
+    "translations/i18n_sv.qm"
+    "translations/i18n_zh.qm"
+)
+
+qt6_add_resources(i18n "i18n"
+    PREFIX
+        "/"
+    FILES
+        ${i18n_resource_files}
 )
 
 install(TARGETS i18n

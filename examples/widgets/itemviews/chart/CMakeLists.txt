@@ -9,19 +9,41 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/itemviews/chart")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(chart
-    chart.qrc
     main.cpp
     mainwindow.cpp mainwindow.h
     pieview.cpp pieview.h
 )
 target_link_libraries(chart PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
+
+
+# Resources:
+set(chart_resource_files
+    "qtdata.cht"
+)
+
+qt6_add_resources(chart "chart"
+    PREFIX
+        "/Charts"
+    FILES
+        ${chart_resource_files}
+)
+
+if(UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS)
+    target_link_libraries(chart PUBLIC
+        m
+    )
+endif()
 
 install(TARGETS chart
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

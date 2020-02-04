@@ -1,49 +1,66 @@
 # Generated from notepad.pro.
 
-#####################################################################
-## notepad Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(notepad LANGUAGES CXX)
 
-add_qt_executable(notepad
-    GUI
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/notepad"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/tutorials/notepad"
-    SOURCES
-        main.cpp
-        notepad.cpp notepad.h notepad.ui
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples/widgets/tutorials/notepad")
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+
+add_qt_gui_executable(notepad
+    main.cpp
+    notepad.cpp notepad.h notepad.ui
+)
+target_link_libraries(notepad PUBLIC
+    Qt::Core
+    Qt::Gui
 )
 
+
 # Resources:
-add_qt_resource(notepad "notepad" PREFIX "/" FILES
-    images/bold.png
-    images/copy.png
-    images/create.png
-    images/cut.png
-    images/edit_redo.png
-    images/edit_undo.png
-    images/exit.png
-    images/font.png
-    images/info.png
-    images/italic.png
-    images/new.png
-    images/open.png
-    images/paste.png
-    images/pencil.png
-    images/print.png
-    images/save.png
-    images/save_as.png
-    images/underline.png)
+set(notepad_resource_files
+    "images/bold.png"
+    "images/copy.png"
+    "images/create.png"
+    "images/cut.png"
+    "images/edit_redo.png"
+    "images/edit_undo.png"
+    "images/exit.png"
+    "images/font.png"
+    "images/info.png"
+    "images/italic.png"
+    "images/new.png"
+    "images/open.png"
+    "images/paste.png"
+    "images/pencil.png"
+    "images/print.png"
+    "images/save.png"
+    "images/save_as.png"
+    "images/underline.png"
+)
 
+qt6_add_resources(notepad "notepad"
+    PREFIX
+        "/"
+    FILES
+        ${notepad_resource_files}
+)
 
-#### Keys ignored in scope 1:.:.:notepad.pro:<TRUE>:
-# TEMPLATE = "app"
-
-## Scopes:
-#####################################################################
-
-extend_target(notepad CONDITION TARGET Qt::PrintSupport
-    PUBLIC_LIBRARIES
+if(TARGET Qt::PrintSupport)
+    target_link_libraries(notepad PUBLIC
         Qt::PrintSupport
+    )
+endif()
+
+install(TARGETS notepad
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

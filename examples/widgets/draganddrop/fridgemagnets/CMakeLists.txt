@@ -9,18 +9,34 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/draganddrop/fridgemagnets")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(fridgemagnets
     draglabel.cpp draglabel.h
     dragwidget.cpp dragwidget.h
-    fridgemagnets.qrc
     main.cpp
 )
 target_link_libraries(fridgemagnets PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(fridgemagnets_resource_files
+    "words.txt"
+)
+
+qt6_add_resources(fridgemagnets "fridgemagnets"
+    PREFIX
+        "/dictionary"
+    FILES
+        ${fridgemagnets_resource_files}
 )
 
 install(TARGETS fridgemagnets

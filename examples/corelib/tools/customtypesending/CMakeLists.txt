@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/corelib/tools/customtypesending")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(customtypesending
@@ -19,8 +21,11 @@ add_qt_gui_executable(customtypesending
     window.cpp window.h
 )
 target_link_libraries(customtypesending PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
+
 install(TARGETS customtypesending
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

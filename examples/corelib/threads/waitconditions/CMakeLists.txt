@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/corelib/threads/waitconditions")
 
 find_package(Qt6 COMPONENTS Core)
 
@@ -19,6 +19,7 @@ add_executable(waitconditions
 target_link_libraries(waitconditions PUBLIC
     Qt::Core
 )
+
 install(TARGETS waitconditions
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

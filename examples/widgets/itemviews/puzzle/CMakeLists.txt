@@ -9,19 +9,35 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/itemviews/puzzle")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(itemviews_puzzle # special case: renamed puzzle
     main.cpp
     mainwindow.cpp mainwindow.h
     piecesmodel.cpp piecesmodel.h
-    puzzle.qrc
     puzzlewidget.cpp puzzlewidget.h
 )
-target_link_libraries(itemviews_puzzle PUBLIC # special case: renamed puzzle
+target_link_libraries(itemviews_puzzle PUBLIC # special case
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(puzzle_resource_files
+    "example.jpg"
+)
+
+qt6_add_resources(itemviews_puzzle "puzzle"
+    PREFIX
+        "/images"
+    FILES
+        ${puzzle_resource_files}
 )
 
 install(TARGETS itemviews_puzzle # special case: renamed puzzle

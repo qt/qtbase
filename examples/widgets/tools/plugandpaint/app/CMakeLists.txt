@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tools/plugandpaint")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(plugandpaint
@@ -22,10 +24,42 @@ add_qt_gui_executable(plugandpaint
 )
 target_link_libraries(plugandpaint PUBLIC
     # Remove: L../plugins
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
     pnp_basictools # special case
 )
 target_link_libraries(plugandpaint PUBLIC pnp_basictools) # special case
+
+if(macx-xcode)
+    target_link_libraries(plugandpaint PUBLIC
+        (
+        )
+        pnp_basictools$
+    )
+endif()
+
+if(NOT macx-xcode)
+    target_link_libraries(plugandpaint PUBLIC
+        pnp_basictools
+    )
+endif()
+
+if(((NOT (macx-xcode)) AND (( NOT debug_and_release OR build_pass ) AND CONFIG(debug,debug OR release))) AND (APPLE))
+    target_link_libraries(plugandpaint PUBLIC
+        (LIBS, 0)
+        (LIBS, 1)
+        _debug
+    )
+endif()
+
+if(((NOT (macx-xcode)) AND (( NOT debug_and_release OR build_pass ) AND CONFIG(debug,debug OR release))) AND (WIN32))
+    target_link_libraries(plugandpaint PUBLIC
+        (LIBS, 0)
+        (LIBS, 1)
+        d
+    )
+endif()
 
 install(TARGETS plugandpaint
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

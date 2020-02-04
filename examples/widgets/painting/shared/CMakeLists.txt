@@ -12,9 +12,6 @@ target_sources(painting_shared PRIVATE
 target_link_libraries(painting_shared PUBLIC Qt::Widgets)
 target_include_directories(painting_shared PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-qt6_add_resources(res_files shared.qrc)
-target_sources(painting_shared PRIVATE ${res_files})
-
 ## Scopes:
 #####################################################################
 

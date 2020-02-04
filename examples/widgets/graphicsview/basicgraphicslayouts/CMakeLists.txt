@@ -9,18 +9,34 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/graphicsview/basicgraphicslayouts")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(basicgraphicslayouts
-    basicgraphicslayouts.qrc
     layoutitem.cpp layoutitem.h
     main.cpp
     window.cpp window.h
 )
 target_link_libraries(basicgraphicslayouts PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(basicgraphicslayouts_resource_files
+    "images/block.png"
+)
+
+qt6_add_resources(basicgraphicslayouts "basicgraphicslayouts"
+    PREFIX
+        "/"
+    FILES
+        ${basicgraphicslayouts_resource_files}
 )
 
 install(TARGETS basicgraphicslayouts

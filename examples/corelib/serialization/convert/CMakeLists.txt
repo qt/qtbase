@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/corelib/serialization/convert")
 
 find_package(Qt6 COMPONENTS Core)
 
@@ -24,9 +24,9 @@ add_executable(convert
     xmlconverter.cpp xmlconverter.h
 )
 target_link_libraries(convert PUBLIC
-    # Remove: gui
     Qt::Core
 )
+
 install(TARGETS convert
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

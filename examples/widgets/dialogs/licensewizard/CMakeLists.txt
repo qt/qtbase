@@ -9,18 +9,36 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/dialogs/licensewizard")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS PrintSupport)
 
 add_qt_gui_executable(licensewizard
-    licensewizard.cpp licensewizard.h licensewizard.qrc
+    licensewizard.cpp licensewizard.h
     main.cpp
 )
 target_link_libraries(licensewizard PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::PrintSupport
     Qt::Widgets
+)
+
+
+# Resources:
+set(licensewizard_resource_files
+    "images/logo.png"
+    "images/watermark.png"
+)
+
+qt6_add_resources(licensewizard "licensewizard"
+    PREFIX
+        "/"
+    FILES
+        ${licensewizard_resource_files}
 )
 
 install(TARGETS licensewizard

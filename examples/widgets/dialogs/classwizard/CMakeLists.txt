@@ -9,16 +9,39 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/dialogs/classwizard")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(classwizard
-    classwizard.cpp classwizard.h classwizard.qrc
+    classwizard.cpp classwizard.h
     main.cpp
 )
 target_link_libraries(classwizard PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(classwizard_resource_files
+    "images/background.png"
+    "images/banner.png"
+    "images/logo1.png"
+    "images/logo2.png"
+    "images/logo3.png"
+    "images/watermark1.png"
+    "images/watermark2.png"
+)
+
+qt6_add_resources(classwizard "classwizard"
+    PREFIX
+        "/"
+    FILES
+        ${classwizard_resource_files}
 )
 
 install(TARGETS classwizard

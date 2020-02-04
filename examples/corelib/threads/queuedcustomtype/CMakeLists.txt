@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/corelib/threads/queuedcustomtype")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(queuedcustomtype
@@ -20,8 +22,11 @@ add_qt_gui_executable(queuedcustomtype
     window.cpp window.h
 )
 target_link_libraries(queuedcustomtype PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
+
 install(TARGETS queuedcustomtype
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

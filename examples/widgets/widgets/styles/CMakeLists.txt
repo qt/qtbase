@@ -9,18 +9,35 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/widgets/styles")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(styles
     main.cpp
     norwegianwoodstyle.cpp norwegianwoodstyle.h
-    styles.qrc
     widgetgallery.cpp widgetgallery.h
 )
 target_link_libraries(styles PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(styles_resource_files
+    "images/woodbackground.png"
+    "images/woodbutton.png"
+)
+
+qt6_add_resources(styles "styles"
+    PREFIX
+        "/"
+    FILES
+        ${styles_resource_files}
 )
 
 install(TARGETS styles

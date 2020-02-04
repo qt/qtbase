@@ -9,17 +9,42 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/effects/blurpicker")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(blurpicker
     blureffect.cpp blureffect.h
-    blurpicker.cpp blurpicker.h blurpicker.qrc
+    blurpicker.cpp blurpicker.h
     main.cpp
 )
 target_link_libraries(blurpicker PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(blurpicker_resource_files
+    "images/accessories-calculator.png"
+    "images/accessories-text-editor.png"
+    "images/background.jpg"
+    "images/help-browser.png"
+    "images/internet-group-chat.png"
+    "images/internet-mail.png"
+    "images/internet-web-browser.png"
+    "images/office-calendar.png"
+    "images/system-users.png"
+)
+
+qt6_add_resources(blurpicker "blurpicker"
+    PREFIX
+        "/"
+    FILES
+        ${blurpicker_resource_files}
 )
 
 install(TARGETS blurpicker

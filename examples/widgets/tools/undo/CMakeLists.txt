@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tools/undo")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(undo
@@ -18,10 +20,39 @@ add_qt_gui_executable(undo
     document.cpp document.h
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui
-    undo.qrc
 )
 target_link_libraries(undo PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(undo_resource_files
+    "icons/background.png"
+    "icons/blue.png"
+    "icons/circle.png"
+    "icons/exit.png"
+    "icons/fileclose.png"
+    "icons/filenew.png"
+    "icons/fileopen.png"
+    "icons/filesave.png"
+    "icons/green.png"
+    "icons/ok.png"
+    "icons/rectangle.png"
+    "icons/red.png"
+    "icons/redo.png"
+    "icons/remove.png"
+    "icons/triangle.png"
+    "icons/undo.png"
+)
+
+qt6_add_resources(undo "undo"
+    PREFIX
+        "/"
+    FILES
+        ${undo_resource_files}
 )
 
 install(TARGETS undo

@@ -9,27 +9,48 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/graphicsview/chip")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS OpenGL) # special case
 find_package(Qt6 COMPONENTS PrintSupport) # special case
 
 add_qt_gui_executable(chip
     chip.cpp chip.h
-    images.qrc
     main.cpp
     mainwindow.cpp mainwindow.h
     view.cpp view.h
 )
 target_link_libraries(chip PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
-if (TARGET Qt::OpenGL)
-    target_link_libraries(chip PUBLIC Qt::OpenGL)
-endif()
-if (TARGET Qt::PrintSupport)
-    target_link_libraries(chip PUBLIC Qt::PrintSupport)
+
+
+# Resources:
+set(images_resource_files
+    "fileprint.png"
+    "qt4logo.png"
+    "rotateleft.png"
+    "rotateright.png"
+    "zoomin.png"
+    "zoomout.png"
+)
+
+qt6_add_resources(chip "images"
+    PREFIX
+        "/"
+    FILES
+        ${images_resource_files}
+)
+
+if(TARGET Qt::PrintSupport)
+    target_link_libraries(chip PUBLIC
+        Qt::PrintSupport
+    )
 endif()
 
 install(TARGETS chip

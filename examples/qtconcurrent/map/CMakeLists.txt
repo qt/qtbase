@@ -9,17 +9,19 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/qtconcurrent/map")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Concurrent)
-find_package(Qt6 COMPONENTS Gui) # special case
 
 add_executable(mapdemo
     main.cpp
 )
 target_link_libraries(mapdemo PUBLIC
     Qt::Concurrent
-    Qt::Gui # special case
+    Qt::Core
+    Qt::Gui
 )
 install(TARGETS mapdemo
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/graphicsview/graphicsview_flowlayout") # special case
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(graphicsview_flowlayout # special case: renamed flowlayout
@@ -18,7 +20,9 @@ add_qt_gui_executable(graphicsview_flowlayout # special case: renamed flowlayout
     main.cpp
     window.cpp window.h
 )
-target_link_libraries(graphicsview_flowlayout PUBLIC # special case: renamed flowlayout
+target_link_libraries(graphicsview_flowlayout PUBLIC # special case
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
 

@@ -9,19 +9,38 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/widgets/tablet")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(qttablet
-    images.qrc
     main.cpp
     mainwindow.cpp mainwindow.h
     tabletapplication.cpp tabletapplication.h
     tabletcanvas.cpp tabletcanvas.h
 )
 target_link_libraries(qttablet PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(images_resource_files
+    "images/cursor-airbrush.png"
+    "images/cursor-eraser.png"
+    "images/cursor-felt-marker.png"
+    "images/cursor-pencil.png"
+)
+
+qt6_add_resources(qttablet "images"
+    PREFIX
+        "/"
+    FILES
+        ${images_resource_files}
 )
 
 install(TARGETS qttablet

@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/vulkan/hellovulkantriangle")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
@@ -22,6 +22,7 @@ target_link_libraries(hellovulkantriangle PUBLIC
     Qt::Core
     Qt::Gui
 )
+
 
 # Resources:
 set_source_files_properties("../shared/color_frag.spv"
@@ -41,7 +42,6 @@ qt6_add_resources(hellovulkantriangle "hellovulkantriangle"
     FILES
         ${hellovulkantriangle_resource_files}
 )
-
 
 install(TARGETS hellovulkantriangle
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

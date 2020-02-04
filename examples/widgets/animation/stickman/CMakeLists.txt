@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/animation/stickman")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(stickman
@@ -20,10 +22,28 @@ add_qt_gui_executable(stickman
     main.cpp
     node.cpp node.h
     rectbutton.cpp rectbutton.h
-    stickman.cpp stickman.h stickman.qrc
+    stickman.cpp stickman.h
 )
 target_link_libraries(stickman PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(stickman_resource_files
+    "animations/chilling.bin"
+    "animations/dancing.bin"
+    "animations/dead.bin"
+    "animations/jumping.bin"
+)
+
+qt6_add_resources(stickman "stickman"
+    PREFIX
+        "/"
+    FILES
+        ${stickman_resource_files}
 )
 
 install(TARGETS stickman
