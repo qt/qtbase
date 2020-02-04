@@ -48,8 +48,13 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
 #include "object.h"
+
+#include <QtWidgets>
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
+#include <QPrinter>
+#endif
 
 Object::Object(QObject *parent)
     : QObject(parent)

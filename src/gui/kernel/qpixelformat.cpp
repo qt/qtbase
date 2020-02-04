@@ -485,7 +485,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn ByteOrder QPixelFormat::byteOrder() const
 
-    The byte order is almost always set the the byte order of the current
+    The byte order is almost always set the byte order of the current
     system. However, it can be useful to describe some YUV formats. This
     function should never return QPixelFormat::CurrentSystemEndian as this
     value is translated to a endian value in the constructor.

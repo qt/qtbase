@@ -1527,7 +1527,7 @@ QDebug operator<<(QDebug dbg, const QIcon &i)
     \internal
     \since 5.6
     Attempts to find a suitable @Nx file for the given \a targetDevicePixelRatio
-    Returns the the \a baseFileName if no such file was found.
+    Returns the \a baseFileName if no such file was found.
 
     Given base foo.png and a target dpr of 2.5, this function will look for
     foo@3x.png, then foo@2x, then fall back to foo.png if not found.

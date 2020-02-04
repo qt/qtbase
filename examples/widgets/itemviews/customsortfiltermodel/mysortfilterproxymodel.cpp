@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -60,7 +60,7 @@ MySortFilterProxyModel::MySortFilterProxyModel(QObject *parent)
 //! [0]
 
 //! [1]
-void MySortFilterProxyModel::setFilterMinimumDate(const QDate &date)
+void MySortFilterProxyModel::setFilterMinimumDate(QDate date)
 {
     minDate = date;
     invalidateFilter();
@@ -68,7 +68,7 @@ void MySortFilterProxyModel::setFilterMinimumDate(const QDate &date)
 //! [1]
 
 //! [2]
-void MySortFilterProxyModel::setFilterMaximumDate(const QDate &date)
+void MySortFilterProxyModel::setFilterMaximumDate(QDate date)
 {
     maxDate = date;
     invalidateFilter();
@@ -122,7 +122,7 @@ bool MySortFilterProxyModel::lessThan(const QModelIndex &left,
 //! [5] //! [6]
 
 //! [7]
-bool MySortFilterProxyModel::dateInRange(const QDate &date) const
+bool MySortFilterProxyModel::dateInRange(QDate date) const
 {
     return (!minDate.isValid() || date > minDate)
             && (!maxDate.isValid() || date < maxDate);

@@ -250,7 +250,7 @@ static QDateTime fromTimeStamp(char *buffer)
     return QDateTime(d, t);
 }
 
-static ISC_TIME toTime(const QTime &t)
+static ISC_TIME toTime(QTime t)
 {
     static const QTime midnight(0, 0, 0, 0);
     return (ISC_TIME)midnight.msecsTo(t) * 10;
@@ -266,7 +266,7 @@ static QTime fromTime(char *buffer)
     return t;
 }
 
-static ISC_DATE toDate(const QDate &t)
+static ISC_DATE toDate(QDate t)
 {
     static const QDate basedate(1858, 11, 17);
     ISC_DATE date;

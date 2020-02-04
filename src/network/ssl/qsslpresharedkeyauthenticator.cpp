@@ -141,7 +141,7 @@ QSslPreSharedKeyAuthenticator &QSslPreSharedKeyAuthenticator::operator=(const QS
 /*!
     \fn QSslPreSharedKeyAuthenticator &QSslPreSharedKeyAuthenticator::operator=(QSslPreSharedKeyAuthenticator &&authenticator)
 
-    Move-assigns the the QSslPreSharedKeyAuthenticator object \a authenticator to this
+    Move-assigns the QSslPreSharedKeyAuthenticator object \a authenticator to this
     object, and returns a reference to the moved instance.
 */
 

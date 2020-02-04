@@ -133,7 +133,7 @@ QWasmIntegration::QWasmIntegration()
         Q_UNUSED(userData);
 
         // This resize event is called when the HTML window is resized. Depending
-        // on the page layout the the canvas(es) might also have been resized, so we
+        // on the page layout the canvas(es) might also have been resized, so we
         // update the Qt screen sizes (and canvas render sizes).
         if (QWasmIntegration *integration = QWasmIntegration::get())
             integration->resizeAllScreens();

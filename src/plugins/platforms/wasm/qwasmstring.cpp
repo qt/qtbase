@@ -52,9 +52,10 @@ QString QWasmString::toQString(const val &v)
         val::global("Module")["stringToUTF16"]);
     static const val length("length");
 
-    result.resize(v[length].as<int>());
+    int len = v[length].as<int>();
+    result.resize(len);
     auto ptr = quintptr(result.utf16());
-    stringToUTF16(v, val(ptr));
+    stringToUTF16(v, val(ptr), val((len + 1) * 2));
     return result;
 }
 

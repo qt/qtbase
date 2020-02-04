@@ -1199,6 +1199,7 @@
 
     \value WA_StyleSheetTarget Indicates that the widget appearance was modified
     by a \l{Qt Style Sheets}{style sheet}. WA_StyleSheet will also be set.
+    This value was introduced in Qt 5.12.
 
     \value WA_TabletTracking Indicates that the widget has tablet
     tracking enabled. See QWidget::tabletTracking.

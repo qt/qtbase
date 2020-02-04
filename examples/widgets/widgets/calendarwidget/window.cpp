@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -126,7 +126,7 @@ void Window::selectedDateChanged()
 //! [2]
 
 //! [3]
-void Window::minimumDateChanged(const QDate &date)
+void Window::minimumDateChanged(QDate date)
 {
     calendar->setMinimumDate(date);
     maximumDateEdit->setDate(calendar->maximumDate());
@@ -134,7 +134,7 @@ void Window::minimumDateChanged(const QDate &date)
 //! [3]
 
 //! [4]
-void Window::maximumDateChanged(const QDate &date)
+void Window::maximumDateChanged(QDate date)
 {
     calendar->setMaximumDate(date);
     minimumDateEdit->setDate(calendar->minimumDate());

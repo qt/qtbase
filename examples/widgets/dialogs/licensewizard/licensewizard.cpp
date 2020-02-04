@@ -369,7 +369,7 @@ void ConclusionPage::setVisible(bool visible)
 
 void ConclusionPage::printButtonClicked()
 {
-#if QT_CONFIG(printdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
     QPrinter printer;
     QPrintDialog dialog(&printer, this);
     if (dialog.exec())

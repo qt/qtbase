@@ -48,7 +48,11 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
+#include <QPrinter>
+#endif
 
 int main(int argc, char **argv)
 {

@@ -44,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(__F16C__) && !defined(__ARM_FP16_FORMAT_IEEE)
+#if !defined(__ARM_FP16_FORMAT_IEEE)
 
 const quint32 qfloat16::mantissatable[2048] = {
 0,

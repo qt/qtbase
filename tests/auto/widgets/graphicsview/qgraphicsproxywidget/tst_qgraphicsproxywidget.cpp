@@ -89,6 +89,7 @@ private slots:
     void focusNextPrevChild();
     void focusOutEvent_data();
     void focusOutEvent();
+    void focusProxy_QTBUG_51856();
     void hoverEnterLeaveEvent_data();
     void hoverEnterLeaveEvent();
     void hoverMoveEvent_data();
@@ -861,6 +862,75 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
             QCOMPARE(proxy->paintCount, 0);
             */
         }
+    }
+}
+
+void tst_QGraphicsProxyWidget::focusProxy_QTBUG_51856()
+{
+    // QSpinBox has an internal QLineEdit; this QLineEdit has the spinbox
+    // as its focus proxy.
+    struct FocusedSpinBox : QSpinBox
+    {
+        int focusCount = 0;
+
+        bool event(QEvent *event) override
+        {
+            switch (event->type()) {
+            case QEvent::FocusIn:
+                ++focusCount;
+                break;
+            case QEvent::FocusOut:
+                --focusCount;
+                break;
+            default:
+                break;
+            }
+            return QSpinBox::event(event);
+        }
+    };
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
+    scene.addItem(proxy);
+    view.show();
+    view.raise();
+    view.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+
+    FocusedSpinBox *spinBox = new FocusedSpinBox;
+
+    proxy->setWidget(spinBox);
+    proxy->show();
+    proxy->setFocus();
+    QVERIFY(proxy->hasFocus());
+    QEXPECT_FAIL("", "Widget should have focus but doesn't", Continue);
+    QVERIFY(spinBox->hasFocus());
+    QEXPECT_FAIL("", "Widget should have focus but doesn't", Continue);
+    QCOMPARE(spinBox->focusCount, 1);
+
+    enum { Count = 10 };
+
+    for (int i = 0; i < Count; ++i) {
+        for (int clickCount = 0; clickCount < Count; ++clickCount) {
+            auto proxyCenter = proxy->boundingRect().center();
+            auto proxyCenterInScene = proxy->mapToScene(proxyCenter);
+            auto proxyCenterInView = view.mapFromScene(proxyCenterInScene);
+
+            QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, proxyCenterInView);
+            QTRY_COMPARE(spinBox->focusCount, 1);
+        }
+
+        QLineEdit *edit = new QLineEdit(&view);
+        edit->show();
+        QTRY_VERIFY(edit->isVisible());
+        edit->setFocus();
+        QTRY_VERIFY(edit->hasFocus());
+        QTRY_VERIFY(!proxy->hasFocus());
+        QTRY_COMPARE(proxy->focusOut, i + 1);
+        QTRY_VERIFY(!spinBox->hasFocus());
+        QTRY_COMPARE(spinBox->focusCount, 0);
+        delete edit;
     }
 }
 
