@@ -42,17 +42,6 @@ qt_add_module(OpenGL
 ## Scopes:
 #####################################################################
 
-qt_extend_target(OpenGL CONDITION QT_FEATURE_widgets
-    SOURCES
-        qopenglwidget.cpp qopenglwidget.h
-    LIBRARIES
-        Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    PRIVATE_MODULE_INTERFACE
-        Qt::WidgetsPrivate
-)
-
 qt_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2
     SOURCES
         qopenglqueryhelper_p.h

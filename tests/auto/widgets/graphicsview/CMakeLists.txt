@@ -1,4 +1,6 @@
-if (QT_FEATURE_private_tests)
+# Generated from graphicsview.pro.
+
+if(QT_FEATURE_private_tests)
     add_subdirectory(qgraphicsanchorlayout)
     add_subdirectory(qgraphicsanchorlayout1)
     add_subdirectory(qgraphicsitem)
@@ -15,11 +17,10 @@ add_subdirectory(qgraphicsobject)
 add_subdirectory(qgraphicspixmapitem)
 add_subdirectory(qgraphicspolygonitem)
 add_subdirectory(qgraphicstransform)
-if (NOT WINRT)
-    add_subdirectory(qgraphicsview)
-endif()
-
 if(QT_FEATURE_style_fusion)
     add_subdirectory(qgraphicsproxywidget)
     add_subdirectory(qgraphicswidget)
+endif()
+if(NOT WINRT)
+    add_subdirectory(qgraphicsview)
 endif()

@@ -54,6 +54,7 @@ qt6_add_resources(padnavigator "padnavigator"
 if(TARGET Qt::OpenGL)
     target_link_libraries(padnavigator PUBLIC
         Qt::OpenGL
+        Qt::OpenGLWidgets
     )
 endif()
 

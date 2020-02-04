@@ -13,5 +13,6 @@ add_qt_test(tst_qopenglwidget
         Qt::GuiPrivate
         Qt::OpenGL
         Qt::OpenGLPrivate
+        Qt::OpenGLWidgets
         Qt::Widgets
 )

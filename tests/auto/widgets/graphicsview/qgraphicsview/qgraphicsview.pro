@@ -4,7 +4,7 @@ TARGET = tst_qgraphicsview
 
 QT += widgets widgets-private testlib
 QT += core-private gui-private testlib-private
-qtConfig(opengl): QT += opengl
+qtConfig(opengl): QT += opengl openglwidgets
 
 SOURCES  += tst_qgraphicsview.cpp tst_qgraphicsview_2.cpp
 HEADERS +=  tst_qgraphicsview.h

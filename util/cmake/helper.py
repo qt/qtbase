@@ -213,6 +213,7 @@ _qt_library_map = [
         "openglextensions", "Qt6", "Qt::OpenGLExtensions", extra=["COMPONENTS", "OpenGLExtensions"]
     ),
     LibraryMapping("opengl", "Qt6", "Qt::OpenGL", extra=["COMPONENTS", "OpenGL"]),
+    LibraryMapping("openglwidgets", "Qt6", "Qt::OpenGLWidgets", extra=["COMPONENTS", "OpenGLWidgets"]),
     LibraryMapping(
         "package-lib", "Qt6", "Qt::AppManPackage", extra=["COMPONENTS", "AppManPackage"]
     ),

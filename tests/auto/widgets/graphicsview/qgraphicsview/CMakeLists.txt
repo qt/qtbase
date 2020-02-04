@@ -28,4 +28,5 @@ add_qt_test(tst_qgraphicsview
 extend_target(tst_qgraphicsview CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
         Qt::OpenGL
+        Qt::OpenGLWidgets
 )

@@ -136,6 +136,10 @@ src_opengl.subdir = $$PWD/opengl
 src_opengl.target = sub-opengl
 src_opengl.depends = src_gui
 
+src_openglwidgets.subdir = $$PWD/openglwidgets
+src_openglwidgets.target = sub-openglwidgets
+src_openglwidgets.depends = src_opengl src_widgets
+
 src_openglextensions.subdir = $$PWD/openglextensions
 src_openglextensions.target = sub-openglextensions
 src_openglextensions.depends = src_gui
@@ -230,10 +234,12 @@ qtConfig(gui) {
         TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
         src_testlib.depends += src_widgets        # if QtWidgets is enabled, QtTest requires QtWidgets's headers
-        src_opengl.depends += src_widgets
         qtConfig(printer) {
             SUBDIRS += src_printsupport
             src_plugins.depends += src_printsupport
+        }
+        qtConfig(opengl) {
+            SUBDIRS += src_openglwidgets
         }
     }
 }

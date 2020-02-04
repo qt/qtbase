@@ -1,6 +1,5 @@
 TARGET     = QtOpenGL
 QT         = core-private gui-private
-qtConfig(widgets): QT += widgets widgets-private
 
 DEFINES   += QT_NO_USING_NAMESPACE QT_NO_FOREACH
 
@@ -57,11 +56,6 @@ SOURCES += \
         qopengltimerquery.h
 
     SOURCES += qopengltimerquery.cpp
-}
-
-qtConfig(widgets) {
-    HEADERS += qopenglwidget.h
-    SOURCES += qopenglwidget.cpp
 }
 
 load(qt_module)

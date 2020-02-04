@@ -6,7 +6,7 @@ SOURCES       = glwidget.cpp \
 
 RESOURCES     = textures.qrc
 
-QT           += widgets opengl
+QT += widgets opengl openglwidgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/opengl/textures

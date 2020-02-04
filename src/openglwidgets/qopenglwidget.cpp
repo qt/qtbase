@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtOpenGLWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QOpenGLWidget
-  \inmodule QtOpenGL
+  \inmodule QtOpenGLWidgets
   \since 5.4
 
   \brief The QOpenGLWidget class is a widget for rendering OpenGL graphics.

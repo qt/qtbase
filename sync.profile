@@ -3,6 +3,7 @@
     "QtWidgets" => "$basedir/src/widgets",
     "QtPrintSupport" => "$basedir/src/printsupport",
     "QtOpenGL" => "$basedir/src/opengl",
+    "QtOpenGLWidgets" => "$basedir/src/openglwidgets",
     "QtCore" => "$basedir/src/corelib",
     "QtXml" => "$basedir/src/xml",
     "QtSql" => "$basedir/src/sql",

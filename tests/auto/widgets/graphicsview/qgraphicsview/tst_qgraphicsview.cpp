@@ -49,7 +49,7 @@
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QPushButton>
 #if QT_CONFIG(opengl)
-#include <QtOpenGL/QOpenGLWidget>
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #endif
 #include <private/qgraphicsscene_p.h>
 #include <private/qgraphicsview_p.h>
