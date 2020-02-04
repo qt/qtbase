@@ -55,8 +55,8 @@ private slots:
     void horizontalHeaderChanged(int index);
     void verticalHeaderChanged(int index);
     void selectedDateChanged();
-    void minimumDateChanged(const QDate &date);
-    void maximumDateChanged(const QDate &date);
+    void minimumDateChanged(QDate date);
+    void maximumDateChanged(QDate date);
     void updateWeekendDays();
     void weekdayFormatChanged();
     void weekendFormatChanged();

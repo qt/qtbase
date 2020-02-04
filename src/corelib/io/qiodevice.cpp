@@ -714,7 +714,7 @@ void QIODevicePrivate::setReadChannelCount(int count)
 /*!
     \since 5.7
 
-    Returns the the index of the current write channel.
+    Returns the index of the current write channel.
 
     \sa setCurrentWriteChannel(), writeChannelCount()
 */

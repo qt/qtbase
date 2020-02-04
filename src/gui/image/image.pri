@@ -97,7 +97,7 @@ qtConfig(png) {
     MIPS_DSPR2_ASM += image/qimage_mips_dspr2_asm.S
 } else {
     # see https://developer.android.com/ndk/guides/abis
-    arm64-v8a {
+    arm64-v8a | armeabi-v7a {
         SOURCES += image/qimage_neon.cpp
     }
     x86 | x86_64 {

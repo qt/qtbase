@@ -247,7 +247,7 @@ AppleApplication *qt_apple_sharedApplication()
         qWarning() << "accessing the shared" << [AppleApplication class]
             << "is not allowed in application extensions";
 
-        // In practice the application is actually available, but the the App
+        // In practice the application is actually available, but the App
         // review process will likely catch uses of it, so we return nil just
         // in case, unless we don't care about being App Store compliant.
 #if QT_CONFIG(appstore_compliant)

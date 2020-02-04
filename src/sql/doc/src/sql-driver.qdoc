@@ -208,8 +208,8 @@
     When you distribute your application, remember to include libmysql.dll / libmariadb.dll
     in your installation package. It must be placed in the same folder
     as the application executable. \e libmysql.dll additionally needs the
-    MSVC runtime libraries which can be installed with vcredist.exe
-    (\l {https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads}{vcredist.exe}
+    MSVC runtime libraries which can be installed with
+    \l {https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads}{vcredist.exe}
 
     \target QOCI
     \section2 QOCI for the Oracle Call Interface (OCI)

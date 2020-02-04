@@ -27,6 +27,7 @@
 
 /*!
     \example hellovulkanwindow
+    \meta installpath vulkan
     \title Hello Vulkan Window Example
     \ingroup examples-vulkan
     \brief Shows the basics of using QVulkanWindow.

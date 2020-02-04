@@ -92,7 +92,7 @@ Notepad::Notepad(QWidget *parent) :
     connect(ui->actionAbout, &QAction::triggered, this, &Notepad::about);
 
 // Disable menu actions for unavailable features
-#if !QT_CONFIG(printer)
+#if !defined(QT_PRINTSUPPORT_LIB) || !QT_CONFIG(printer)
     ui->actionPrint->setEnabled(false);
 #endif
 
@@ -171,7 +171,7 @@ void Notepad::saveAs()
 
 void Notepad::print()
 {
-#if QT_CONFIG(printer)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
     QPrinter printDev;
 #if QT_CONFIG(printdialog)
     QPrintDialog dialog(&printDev, this);

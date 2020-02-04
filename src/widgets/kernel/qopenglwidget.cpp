@@ -379,7 +379,7 @@ QT_BEGIN_NAMESPACE
   This is naturally not the only possible solution. One alternative is to use
   the \l{QOpenGLContext::aboutToBeDestroyed()}{aboutToBeDestroyed()} signal of
   QOpenGLContext. By connecting a slot, using direct connection, to this signal,
-  it is possible to perform cleanup whenever the the underlying native context
+  it is possible to perform cleanup whenever the underlying native context
   handle, or the entire QOpenGLContext instance, is going to be released. The
   following snippet is in principle equivalent to the previous one:
 

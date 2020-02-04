@@ -151,7 +151,7 @@ class Employee
 {
 public:
     Employee() {}
-    Employee(const QString &name, const QDate &dateOfBirth);
+    Employee(const QString &name, QDate dateOfBirth);
     ...
 
 private:

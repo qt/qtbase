@@ -368,6 +368,7 @@ void tst_QTextMarkdownWriter::rewriteDocument_data()
     QTest::newRow("example") << "example.md";
     QTest::newRow("list items after headings") << "headingsAndLists.md";
     QTest::newRow("word wrap") << "wordWrap.md";
+    QTest::newRow("links") << "links.md";
 }
 
 void tst_QTextMarkdownWriter::rewriteDocument()

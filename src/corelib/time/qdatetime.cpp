@@ -682,7 +682,7 @@ static bool inDateTimeRange(qint64 jd, bool start)
     return jd >= minDay && jd < maxDay;
 }
 
-static QDateTime toEarliest(const QDate &day, const QDateTime &form)
+static QDateTime toEarliest(QDate day, const QDateTime &form)
 {
     const Qt::TimeSpec spec = form.timeSpec();
     const int offset = (spec == Qt::OffsetFromUTC) ? form.offsetFromUtc() : 0;
@@ -806,7 +806,7 @@ QDateTime QDate::startOfDay(const QTimeZone &zone) const
 }
 #endif // timezone
 
-static QDateTime toLatest(const QDate &day, const QDateTime &form)
+static QDateTime toLatest(QDate day, const QDateTime &form)
 {
     const Qt::TimeSpec spec = form.timeSpec();
     const int offset = (spec == Qt::OffsetFromUTC) ? form.offsetFromUtc() : 0;
@@ -1098,9 +1098,8 @@ QString QDate::longDayName(int weekday, MonthNameType type)
 }
 #endif // textdate && deprecated
 
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring) // depends on, so implies, textdate
 
-#if QT_CONFIG(textdate)
 static QString toStringTextDate(QDate date, QCalendar cal)
 {
     if (date.isValid()) {
@@ -1114,9 +1113,8 @@ static QString toStringTextDate(QDate date, QCalendar cal)
     }
     return QString();
 }
-#endif // textdate
 
-static QString toStringIsoDate(const QDate &date)
+static QString toStringIsoDate(QDate date)
 {
     const auto parts = QCalendar().partsFromDate(date);
     if (parts.isValid() && parts.year >= 0 && parts.year <= 9999)
@@ -1194,10 +1192,8 @@ QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
     case Qt::RFC2822Date:
         return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"), cal);
     default:
-#ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
         return toStringTextDate(*this, cal);
-#endif
     case Qt::ISODate:
     case Qt::ISODateWithMs:
         // No calendar dependence
@@ -1599,7 +1595,7 @@ qint64 QDate::daysTo(const QDate &d) const
     \sa QTime::currentTime(), QDateTime::currentDateTime()
 */
 
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring) // depends on, so implies, textdate
 namespace {
 
 struct ParsedInt { int value = 0; bool ok = false; };
@@ -1661,7 +1657,6 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
     case Qt::RFC2822Date:
         return rfcDateImpl(string).date;
     default:
-#if QT_CONFIG(textdate)
     case Qt::TextDate: {
         QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
 
@@ -1680,7 +1675,6 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
 
         return QDate(year, month, day);
         }
-#endif // textdate
     case Qt::ISODate:
         // Semi-strict parsing, must be long enough and have punctuators as separators
         if (string.size() >= 10 && string.at(4).isPunct() && string.at(7).isPunct()
@@ -1995,7 +1989,7 @@ int QTime::msec() const
     return ds() % 1000;
 }
 
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring) // depends on, so implies, textdate
 /*!
     \overload
 
@@ -2327,7 +2321,7 @@ int QTime::msecsTo(const QTime &t) const
     \sa QDateTime::currentDateTime(), QDateTime::currentDateTimeUtc()
 */
 
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring) // depends on, so implies, textdate
 
 static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *isMidnight24)
 {
@@ -2865,7 +2859,7 @@ static void msecsToTime(qint64 msecs, QDate *date, QTime *time)
 }
 
 // Converts a date/time value into msecs
-static qint64 timeToMSecs(const QDate &date, const QTime &time)
+static qint64 timeToMSecs(QDate date, QTime time)
 {
     return ((date.toJulianDay() - JULIAN_DAY_FOR_EPOCH) * MSECS_PER_DAY)
            + time.msecsSinceStartOfDay();
@@ -3210,7 +3204,7 @@ static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
     }
 }
 
-static void setDateTime(QDateTimeData &d, const QDate &date, const QTime &time)
+static void setDateTime(QDateTimeData &d, QDate date, QTime time)
 {
     // If the date is valid and the time is not we set time to 00:00:00
     QTime useTime = time;
@@ -4283,7 +4277,7 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 }
 #endif
 
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring) // depends on, so implies, textdate
 /*!
     \fn QString QDateTime::toString(Qt::DateFormat format) const
     \fn QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
@@ -4363,7 +4357,6 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
         return buf;
     }
     default:
-#if QT_CONFIG(textdate)
     case Qt::TextDate: {
         const QPair<QDate, QTime> p = getDateTime(d);
         buf = toStringTextDate(p.first, cal);
@@ -4374,11 +4367,11 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
         switch (timeSpec()) {
         case Qt::LocalTime:
             break;
-# if QT_CONFIG(timezone)
+#if QT_CONFIG(timezone)
         case Qt::TimeZone:
             buf += QLatin1Char(' ') + d->m_timeZone.abbreviation(*this);
             break;
-# endif
+#endif
         default:
             buf += QLatin1String(" GMT");
             if (getSpec(d) == Qt::OffsetFromUTC)
@@ -4386,7 +4379,6 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
         }
         return buf;
     }
-#endif
     case Qt::ISODate:
     case Qt::ISODateWithMs: {
         // No calendar dependence
@@ -5212,7 +5204,7 @@ int QDateTime::utcOffset() const
 }
 #endif // QT_DEPRECATED_SINCE
 
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring) // depends on, so implies, textdate
 
 /*!
     Returns the QDateTime represented by the \a string, using the
@@ -5323,7 +5315,6 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             date = date.addDays(1);
         return QDateTime(date, time, spec, offset);
     }
-#if QT_CONFIG(textdate)
     case Qt::TextDate: {
         QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
 
@@ -5429,7 +5420,6 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             return QDateTime(date, time, Qt::UTC);
         }
     }
-#endif // textdate
     }
 
     return QDateTime();

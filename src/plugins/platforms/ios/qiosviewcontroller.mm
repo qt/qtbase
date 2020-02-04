@@ -452,7 +452,7 @@
     if (!focusWindow->screen() || focusWindow->screen()->handle() != self.platformScreen)
         return;
 
-    // All decisions are based on the the top level window
+    // All decisions are based on the top level window
     focusWindow = qt_window_private(focusWindow)->topLevelWindow();
 
 #ifndef Q_OS_TVOS

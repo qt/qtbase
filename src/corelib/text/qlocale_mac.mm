@@ -119,7 +119,7 @@ static QString macDayName(int day, bool short_format)
     return QString();
 }
 
-static QString macDateToString(const QDate &date, bool short_format)
+static QString macDateToString(QDate date, bool short_format)
 {
     QCFType<CFDateRef> myDate = QDateTime(date, QTime()).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
@@ -131,7 +131,7 @@ static QString macDateToString(const QDate &date, bool short_format)
     return QCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
 }
 
-static QString macTimeToString(const QTime &time, bool short_format)
+static QString macTimeToString(QTime time, bool short_format)
 {
     QCFType<CFDateRef> myDate = QDateTime(QDate::currentDate(), time).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
@@ -283,10 +283,12 @@ static QString getMacTimeFormat(CFDateFormatterStyle style)
     return macToQtFormat(QString::fromCFString(CFDateFormatterGetFormat(formatter)));
 }
 
-static QString getCFLocaleValue(CFStringRef key)
+static QVariant getCFLocaleValue(CFStringRef key)
 {
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     CFTypeRef value = CFLocaleGetValue(locale, key);
+    if (!value)
+        return QVariant();
     return QString::fromCFString(CFStringRef(static_cast<CFTypeRef>(value)));
 }
 
@@ -411,14 +413,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     switch(type) {
 //     case Name:
 //         return getMacLocaleName();
-    case DecimalPoint: {
-        QString value = getCFLocaleValue(kCFLocaleDecimalSeparator);
-        return value.isEmpty() ? QVariant() : value;
-    }
-    case GroupSeparator: {
-        QString value = getCFLocaleValue(kCFLocaleGroupingSeparator);
-        return value.isEmpty() ? QVariant() : value;
-    }
+    case DecimalPoint:
+        return getCFLocaleValue(kCFLocaleDecimalSeparator);
+    case GroupSeparator:
+        return getCFLocaleValue(kCFLocaleGroupingSeparator);
     case DateFormatLong:
     case DateFormatShort:
         return getMacDateFormat(type == DateFormatShort

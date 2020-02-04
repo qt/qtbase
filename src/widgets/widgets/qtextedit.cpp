@@ -1272,6 +1272,7 @@ QString QTextEdit::toHtml() const
     The default is \c MarkdownDialectGitHub.
 
     \sa plainText, html, QTextDocument::toMarkdown(), QTextDocument::setMarkdown()
+    \since 5.14
 */
 #endif
 

@@ -305,7 +305,7 @@ void QBitArray::fill(bool value, int begin, int end)
     \since 5.11
 
     Returns a pointer to a dense bit array for this QBitArray. Bits are counted
-    upwards from the least significant bit in each byte. The the number of bits
+    upwards from the least significant bit in each byte. The number of bits
     relevant in the last byte is given by \c{size() % 8}.
 
     \sa fromBits(), size()

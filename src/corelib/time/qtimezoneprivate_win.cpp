@@ -363,7 +363,7 @@ QDate calculateTransitionLocalDate(const SYSTEMTIME &rule, int year)
 }
 
 // Converts a date/time value into msecs
-inline qint64 timeToMSecs(const QDate &date, const QTime &time)
+inline qint64 timeToMSecs(QDate date, QTime time)
 {
     return ((date.toJulianDay() - JULIAN_DAY_FOR_EPOCH) * MSECS_PER_DAY)
            + time.msecsSinceStartOfDay();
