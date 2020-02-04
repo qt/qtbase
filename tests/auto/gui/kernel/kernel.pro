@@ -13,6 +13,7 @@ SUBDIRS=\
    qguimetatype \
    qguitimer \
    qguivariant \
+   qhighdpi\
    qhighdpiscaling \
    qinputdevice \
    qinputmethod \
