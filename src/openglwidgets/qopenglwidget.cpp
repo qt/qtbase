@@ -222,62 +222,6 @@ QT_BEGIN_NAMESPACE
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 6
 
-  \section1 Relation to QGLWidget
-
-  The legacy QtOpenGL module (classes prefixed with QGL) provides a widget
-  called QGLWidget. QOpenGLWidget is intended to be a modern replacement for
-  it. Therefore, especially in new applications, the general recommendation is
-  to use QOpenGLWidget.
-
-  While the API is very similar, there is an important difference between the
-  two: QOpenGLWidget always renders offscreen, using framebuffer
-  objects. QGLWidget on the other hand uses a native window and surface. The
-  latter causes issues when using it in complex user interfaces since, depending
-  on the platform, such native child widgets may have various limitations,
-  regarding stacking orders for example. QOpenGLWidget avoids this by not
-  creating a separate native window.
-
-  Due to being backed by a framebuffer object, the behavior of QOpenGLWidget is
-  very similar to QOpenGLWindow with the update behavior set to \c
-  PartialUpdateBlit or \c PartialUpdateBlend. This means that the contents are
-  preserved between paintGL() calls so that incremental rendering is
-  possible. With QGLWidget (and naturally QOpenGLWindow with the default update
-  behavior) this is usually not the case because swapping the buffers leaves the
-  back buffer with undefined contents.
-
-  \note Most applications do not need incremental rendering because they will
-  render everything in the view on every paint call. In this case it is
-  important to call glClear() as early as possible in paintGL(). This helps
-  mobile GPUs that use a tile-based architecture to recognize that the tile
-  buffer does not need to be reloaded with the framebuffer's previous
-  contents. Omitting the clear call can lead to significant performance drops on
-  such systems.
-
-  \note Avoid calling winId() on a QOpenGLWidget. This function triggers the creation of
-  a native window, resulting in reduced performance and possibly rendering glitches.
-
-  \section1 Differences to QGLWidget
-
-  Besides the main conceptual difference of being backed by a framebuffer object, there
-  are a number of smaller, internal differences between QOpenGLWidget and the older
-  QGLWidget:
-
-  \list
-
-  \li OpenGL state when invoking paintGL(). QOpenGLWidget sets up the viewport via
-  glViewport(). It does not perform any clearing.
-
-  \li Clearing when starting to paint via QPainter. Unlike regular widgets, QGLWidget
-  defaulted to a value of \c true for
-  \l{QWidget::autoFillBackground()}{autoFillBackground}. It then performed clearing to the
-  palette's background color every time QPainter::begin() was used. QOpenGLWidget does not
-  follow this: \l{QWidget::autoFillBackground()}{autoFillBackground} defaults to false,
-  like for any other widget. The only exception is when being used as a viewport for other
-  widgets like QGraphicsView. In such a case autoFillBackground will be automatically set
-  to true to ensure compatibility with QGLWidget-based viewports.
-
-  \endlist
-
   \section1 Multisampling
 
   To enable multisampling, set the number of requested samples on the
@@ -303,11 +247,11 @@ QT_BEGIN_NAMESPACE
   makeCurrent() and doneCurrent() are usable on the worker thread. Be careful to
   move the context back to the GUI/main thread afterwards.
 
-  Unlike QGLWidget, triggering a buffer swap just for the QOpenGLWidget is not
-  possible since there is no real, onscreen native surface for it. Instead, it
-  is up to the widget stack to manage composition and buffer swaps on the gui
-  thread. When a thread is done updating the framebuffer, call update() \b{on
-  the GUI/main thread} to schedule composition.
+  Triggering a buffer swap just for the QOpenGLWidget is not possible since there
+  is no real, onscreen native surface for it. It is up to the widget stack to
+  manage composition and buffer swaps on the gui thread. When a thread is done
+  updating the framebuffer, call update() \b{on the GUI/main thread} to
+  schedule composition.
 
   Extra care has to be taken to avoid using the framebuffer when the GUI/main
   thread is performing compositing. The signals aboutToCompose() and
@@ -329,7 +273,7 @@ QT_BEGIN_NAMESPACE
 
   This means that all QOpenGLWidgets in the same window can access each other's
   sharable resources, like textures, and there is no need for an extra "global
-  share" context, as was the case with QGLWidget.
+  share" context.
 
   To set up sharing between QOpenGLWidget instances belonging to different
   windows, set the Qt::AA_ShareOpenGLContexts application attribute before
