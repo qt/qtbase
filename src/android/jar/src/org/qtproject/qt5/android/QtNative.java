@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+import java.io.IOException;
 
 import android.app.Activity;
 import android.app.Service;
@@ -70,6 +71,7 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.InputDevice;
+import android.database.Cursor;
 
 import java.lang.reflect.Method;
 import java.security.KeyStore;
@@ -228,6 +230,61 @@ public class QtNative
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "openFdForContentUrl(): Invalid Uri");
             return error;
+        }
+    }
+
+    public static long getSize(Context context, String contentUrl)
+    {
+        Uri uri = getUriWithValidPermission(context, contentUrl, "r");
+        long size = -1;
+
+        if (uri == null) {
+            Log.e(QtTAG, "getSize(): No permissions to open Uri");
+            return size;
+        }
+
+        try {
+            ContentResolver resolver = context.getContentResolver();
+            Cursor cur = resolver.query(uri, null, null, null, null);
+            if (cur != null) {
+                if (cur.moveToFirst())
+                    size = cur.getLong(5); // size column
+                cur.close();
+            }
+            return size;
+        } catch (IllegalArgumentException e) {
+            Log.e(QtTAG, "getSize(): Invalid Uri");
+            return size;
+        }  catch (UnsupportedOperationException e) {
+            Log.e(QtTAG, "getSize(): Unsupported operation for given Uri");
+            return size;
+        }
+    }
+
+    public static boolean checkFileExists(Context context, String contentUrl)
+    {
+        Uri uri = getUriWithValidPermission(context, contentUrl, "r");
+        boolean exists = false;
+
+        if (uri == null) {
+            Log.e(QtTAG, "checkFileExists(): No permissions to open Uri");
+            return exists;
+        }
+
+        try {
+            ContentResolver resolver = context.getContentResolver();
+            Cursor cur = resolver.query(uri, null, null, null, null);
+            if (cur != null) {
+                exists = true;
+                cur.close();
+            }
+            return exists;
+        } catch (IllegalArgumentException e) {
+            Log.e(QtTAG, "checkFileExists(): Invalid Uri");
+            return exists;
+        } catch (UnsupportedOperationException e) {
+            Log.e(QtTAG, "checkFileExists(): Unsupported operation for given Uri");
+            return false;
         }
     }
 
