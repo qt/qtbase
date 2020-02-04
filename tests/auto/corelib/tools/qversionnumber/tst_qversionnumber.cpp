@@ -81,9 +81,10 @@ private slots:
     void serialize();
     void moveSemantics();
     void qtVersion();
-    void qPropertyRevision_data();
-    void qPropertyRevision();
-    void qPropertyRevisionTypes();
+    void qTypeRevision_data();
+    void qTypeRevision();
+    void qTypeRevisionTypes();
+    void qTypeRevisionComparison();
 };
 
 void tst_QVersionNumber::singleInstanceData()
@@ -704,7 +705,7 @@ void compileTestRevision<qint8>()
     compileTestRevisionMajorMinor<qint8>();
 }
 
-void tst_QVersionNumber::qPropertyRevision_data()
+void tst_QVersionNumber::qTypeRevision_data()
 {
     QTest::addColumn<QTypeRevision>("revision");
     QTest::addColumn<bool>("valid");
@@ -723,7 +724,7 @@ void tst_QVersionNumber::qPropertyRevision_data()
     // You must not pass them as major or minor versions, or values.
 }
 
-void tst_QVersionNumber::qPropertyRevision()
+void tst_QVersionNumber::qTypeRevision()
 {
     const QTypeRevision other = QTypeRevision::fromVersion(127, 128);
 
@@ -747,7 +748,7 @@ void tst_QVersionNumber::qPropertyRevision()
     QVERIFY(copy != other);
 }
 
-void tst_QVersionNumber::qPropertyRevisionTypes()
+void tst_QVersionNumber::qTypeRevisionTypes()
 {
     compileTestRevision<quint64>();
     compileTestRevision<qint64>();
@@ -758,6 +759,41 @@ void tst_QVersionNumber::qPropertyRevisionTypes()
     const QTypeRevision maxRevision = QTypeRevision::fromVersion(254, 254);
     QVERIFY(maxRevision.hasMajorVersion());
     QVERIFY(maxRevision.hasMinorVersion());
+}
+
+void tst_QVersionNumber::qTypeRevisionComparison()
+{
+    const QTypeRevision revisions[] = {
+        QTypeRevision::zero(),
+        QTypeRevision::fromMajorVersion(0),
+        QTypeRevision::fromVersion(0, 1),
+        QTypeRevision::fromVersion(0, 20),
+        QTypeRevision::fromMinorVersion(0),
+        QTypeRevision(),
+        QTypeRevision::fromMinorVersion(1),
+        QTypeRevision::fromMinorVersion(20),
+        QTypeRevision::fromVersion(1, 0),
+        QTypeRevision::fromMajorVersion(1),
+        QTypeRevision::fromVersion(1, 1),
+        QTypeRevision::fromVersion(1, 20),
+        QTypeRevision::fromVersion(20, 0),
+        QTypeRevision::fromMajorVersion(20),
+        QTypeRevision::fromVersion(20, 1),
+        QTypeRevision::fromVersion(20, 20),
+    };
+
+    const int length = sizeof(revisions) / sizeof(QTypeRevision);
+
+    for (int i = 0; i < length; ++i) {
+        for (int j = 0; j < length; ++j) {
+            QCOMPARE(revisions[i] == revisions[j], i == j);
+            QCOMPARE(revisions[i] != revisions[j], i != j);
+            QCOMPARE(revisions[i] < revisions[j], i < j);
+            QCOMPARE(revisions[i] > revisions[j], i > j);
+            QCOMPARE(revisions[i] <= revisions[j], i <= j);
+            QCOMPARE(revisions[i] >= revisions[j], i >= j);
+        }
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QVersionNumber)
