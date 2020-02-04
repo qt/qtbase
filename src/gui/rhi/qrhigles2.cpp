@@ -2386,7 +2386,14 @@ void QRhiGles2::executeBindGraphicsPipeline(QRhiGraphicsPipeline *ps)
         f->glDisable(GL_STENCIL_TEST);
     }
 
-    if (psD->topology() == QRhiGraphicsPipeline::Lines || psD->topology() == QRhiGraphicsPipeline::LineStrip)
+    if (psD->m_depthBias != 0 || !qFuzzyIsNull(psD->m_slopeScaledDepthBias)) {
+        f->glPolygonOffset(psD->m_slopeScaledDepthBias, psD->m_depthBias);
+        f->glEnable(GL_POLYGON_OFFSET_FILL);
+    } else {
+        f->glDisable(GL_POLYGON_OFFSET_FILL);
+    }
+
+    if (psD->m_topology == QRhiGraphicsPipeline::Lines || psD->m_topology == QRhiGraphicsPipeline::LineStrip)
         f->glLineWidth(psD->m_lineWidth);
 
     f->glUseProgram(psD->program);

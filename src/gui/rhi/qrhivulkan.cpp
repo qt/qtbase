@@ -6208,6 +6208,11 @@ bool QVkGraphicsPipeline::build()
     rastInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rastInfo.cullMode = toVkCullMode(m_cullMode);
     rastInfo.frontFace = toVkFrontFace(m_frontFace);
+    if (m_depthBias != 0 || !qFuzzyIsNull(m_slopeScaledDepthBias)) {
+        rastInfo.depthBiasEnable = true;
+        rastInfo.depthBiasConstantFactor = float(m_depthBias);
+        rastInfo.depthBiasSlopeFactor = m_slopeScaledDepthBias;
+    }
     rastInfo.lineWidth = rhiD->hasWideLines ? m_lineWidth : 1.0f;
     pipelineInfo.pRasterizationState = &rastInfo;
 

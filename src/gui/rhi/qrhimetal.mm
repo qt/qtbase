@@ -298,6 +298,8 @@ struct QMetalGraphicsPipelineData
     MTLPrimitiveType primitiveType;
     MTLWinding winding;
     MTLCullMode cullMode;
+    float depthBias;
+    float slopeScaledDepthBias;
     QMetalShader vs;
     QMetalShader fs;
 };
@@ -955,6 +957,14 @@ void QRhiMetal::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
         if (cbD->currentFrontFaceWinding == -1 || psD->d->winding != uint(cbD->currentFrontFaceWinding)) {
             [cbD->d->currentRenderPassEncoder setFrontFacingWinding: psD->d->winding];
             cbD->currentFrontFaceWinding = int(psD->d->winding);
+        }
+        if (!qFuzzyCompare(psD->d->depthBias, cbD->currentDepthBiasValues.first)
+                || !qFuzzyCompare(psD->d->slopeScaledDepthBias, cbD->currentDepthBiasValues.second))
+        {
+            [cbD->d->currentRenderPassEncoder setDepthBias: psD->d->depthBias
+                                                            slopeScale: psD->d->slopeScaledDepthBias
+                                                            clamp: 0.0f];
+            cbD->currentDepthBiasValues = { psD->d->depthBias, psD->d->slopeScaledDepthBias };
         }
     }
 
@@ -3454,6 +3464,8 @@ bool QMetalGraphicsPipeline::build()
     d->primitiveType = toMetalPrimitiveType(m_topology);
     d->winding = m_frontFace == CCW ? MTLWindingCounterClockwise : MTLWindingClockwise;
     d->cullMode = toMetalCullMode(m_cullMode);
+    d->depthBias = float(m_depthBias);
+    d->slopeScaledDepthBias = m_slopeScaledDepthBias;
 
     lastActiveFrameSlot = -1;
     generation += 1;
@@ -3602,6 +3614,7 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentIndexFormat = QRhiCommandBuffer::IndexUInt16;
     currentCullMode = -1;
     currentFrontFaceWinding = -1;
+    currentDepthBiasValues = { 0.0f, 0.0f };
 
     d->currentFirstVertexBinding = -1;
     d->currentVertexInputsBuffers.clear();

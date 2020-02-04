@@ -1155,6 +1155,12 @@ public:
     float lineWidth() const { return m_lineWidth; }
     void setLineWidth(float width) { m_lineWidth = width; }
 
+    int depthBias() const { return m_depthBias; }
+    void setDepthBias(int bias) { m_depthBias = bias; }
+
+    float slopeScaledDepthBias() const { return m_slopeScaledDepthBias; }
+    void setSlopeScaledDepthBias(float bias) { m_slopeScaledDepthBias = bias; }
+
     void setShaderStages(std::initializer_list<QRhiShaderStage> list) { m_shaderStages = list; }
     template<typename InputIterator>
     void setShaderStages(InputIterator first, InputIterator last)
@@ -1193,6 +1199,8 @@ protected:
     quint32 m_stencilWriteMask = 0xFF;
     int m_sampleCount = 1;
     float m_lineWidth = 1.0f;
+    int m_depthBias = 0;
+    float m_slopeScaledDepthBias = 0.0f;
     QVarLengthArray<QRhiShaderStage, 4> m_shaderStages;
     QRhiVertexInputLayout m_vertexInputLayout;
     QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;

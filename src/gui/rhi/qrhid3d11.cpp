@@ -3467,6 +3467,8 @@ bool QD3D11GraphicsPipeline::build()
     rastDesc.FillMode = D3D11_FILL_SOLID;
     rastDesc.CullMode = toD3DCullMode(m_cullMode);
     rastDesc.FrontCounterClockwise = m_frontFace == CCW;
+    rastDesc.DepthBias = m_depthBias;
+    rastDesc.SlopeScaledDepthBias = m_slopeScaledDepthBias;
     rastDesc.DepthClipEnable = true;
     rastDesc.ScissorEnable = m_flags.testFlag(UsesScissor);
     rastDesc.MultisampleEnable = rhiD->effectiveSampleCount(m_sampleCount).Count > 1;

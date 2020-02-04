@@ -288,6 +288,7 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QRhiCommandBuffer::IndexFormat currentIndexFormat;
     int currentCullMode;
     int currentFrontFaceWinding;
+    QPair<float, float> currentDepthBiasValues;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState();
