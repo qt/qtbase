@@ -3467,6 +3467,7 @@ bool QD3D11GraphicsPipeline::build()
     rastDesc.FillMode = D3D11_FILL_SOLID;
     rastDesc.CullMode = toD3DCullMode(m_cullMode);
     rastDesc.FrontCounterClockwise = m_frontFace == CCW;
+    rastDesc.DepthClipEnable = true;
     rastDesc.ScissorEnable = m_flags.testFlag(UsesScissor);
     rastDesc.MultisampleEnable = rhiD->effectiveSampleCount(m_sampleCount).Count > 1;
     HRESULT hr = rhiD->dev->CreateRasterizerState(&rastDesc, &rastState);
