@@ -1203,6 +1203,9 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 /*
     Implementing as per https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
 */
+
+// bootstrapped tools don't need this, and we don't want QStorageInfo
+#ifndef QT_BOOTSTRAPPED
 static QString freeDesktopTrashLocation(const QString &sourcePath)
 {
     auto makeTrashDir = [](const QDir &topDir, const QString &trashDir) -> QString {
@@ -1298,11 +1301,18 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
 
     return trash;
 }
+#endif // QT_BOOTSTRAPPED
 
 //static
 bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
                                         QFileSystemEntry &newLocation, QSystemError &error)
 {
+#ifdef QT_BOOTSTRAPPED
+    Q_UNUSED(source);
+    Q_UNUSED(newLocation);
+    error = QSystemError(ENOSYS, QSystemError::StandardLibraryError);
+    return false;
+#else
     const QFileInfo sourceInfo(source.filePath());
     if (!sourceInfo.exists()) {
         error = QSystemError(ENOENT, QSystemError::StandardLibraryError);
@@ -1395,8 +1405,9 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 
     newLocation = QFileSystemEntry(targetPath);
     return true;
+#endif // QT_BOOTSTRAPPED
 }
-#endif
+#endif // Q_OS_DARWIN
 
 //static
 bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
