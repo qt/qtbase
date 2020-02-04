@@ -126,7 +126,7 @@ void Window::createControls(const QString &title)
     orientationCombo->addItem(tr("Vertical slider-like widgets"));
 
 //! [6] //! [7]
-    connect(orientationCombo, QOverload<int>::of(&QComboBox::activated),
+    connect(orientationCombo, &QComboBox::activated,
 //! [7] //! [8]
             stackedWidget, &QStackedWidget::setCurrentIndex);
     connect(minimumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),

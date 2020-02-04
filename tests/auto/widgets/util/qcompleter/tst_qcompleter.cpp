@@ -1807,7 +1807,7 @@ void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
     QApplication::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
-    QSignalSpy activatedSpy(&cbox, QOverload<int>::of(&QComboBox::activated));
+    QSignalSpy activatedSpy(&cbox, &QComboBox::activated);
 
     // Tab key will complete but not activate
     cbox.lineEdit()->clear();
@@ -1851,7 +1851,7 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
     QApplication::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
-    QSignalSpy activatedSpy(&cbox, QOverload<int>::of(&QComboBox::activated));
+    QSignalSpy activatedSpy(&cbox, &QComboBox::activated);
 
     // Navigate + enter activates only once (first item)
     cbox.lineEdit()->clear();

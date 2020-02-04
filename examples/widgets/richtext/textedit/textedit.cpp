@@ -389,7 +389,7 @@ void TextEdit::setupTextActions()
     comboStyle->addItem("Heading 5");
     comboStyle->addItem("Heading 6");
 
-    connect(comboStyle, QOverload<int>::of(&QComboBox::activated), this, &TextEdit::textStyle);
+    connect(comboStyle, &QComboBox::activated, this, &TextEdit::textStyle);
 
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);

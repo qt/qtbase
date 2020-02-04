@@ -102,7 +102,7 @@ ImageComposer::ImageComposer()
 //! [3]
     connect(sourceButton, &QAbstractButton::clicked,
             this, &ImageComposer::chooseSource);
-    connect(operatorComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(operatorComboBox, &QComboBox::activated,
             this, &ImageComposer::recalculateResult);
     connect(destinationButton, &QAbstractButton::clicked,
             this, &ImageComposer::chooseDestination);

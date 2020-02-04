@@ -127,15 +127,15 @@ Window::Window(QWidget *parent)
 //! [4]
 
 //! [5]
-    connect(echoComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(echoComboBox, &QComboBox::activated,
             this, &Window::echoChanged);
-    connect(validatorComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(validatorComboBox, &QComboBox::activated,
             this, &Window::validatorChanged);
-    connect(alignmentComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(alignmentComboBox, &QComboBox::activated,
             this, &Window::alignmentChanged);
-    connect(inputMaskComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(inputMaskComboBox, &QComboBox::activated,
             this, &Window::inputMaskChanged);
-    connect(accessComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(accessComboBox, &QComboBox::activated,
             this, &Window::accessChanged);
 //! [5]
 

@@ -86,7 +86,7 @@ MainWindow::MainWindow()
 //! [2]
 
 //! [3]
-    connect(monthCombo, QOverload<int>::of(&QComboBox::activated),
+    connect(monthCombo, &QComboBox::activated,
             this, &MainWindow::setMonth);
     connect(yearEdit, &QDateTimeEdit::dateChanged,
             this, &MainWindow::setYear);

@@ -274,7 +274,7 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
     initUnits();
     initPagesPerSheet();
 
-    connect(m_ui.unitCombo, QOverload<int>::of(&QComboBox::activated), this, &QPageSetupWidget::unitChanged);
+    connect(m_ui.unitCombo, &QComboBox::activated, this, &QPageSetupWidget::unitChanged);
 
     connect(m_ui.pageSizeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QPageSetupWidget::pageSizeChanged);
     connect(m_ui.pageWidth, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QPageSetupWidget::pageSizeChanged);
