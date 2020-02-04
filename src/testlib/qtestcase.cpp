@@ -296,6 +296,8 @@ namespace QTestPrivate
 
 namespace QTest
 {
+extern Q_TESTLIB_EXPORT int lastMouseTimestamp;
+
 class WatchDog;
 
 static QObject *currentTestObject = nullptr;
@@ -1173,6 +1175,7 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
                 QTestPrivate::qtestMouseButtons = Qt::NoButton;
                 if (watchDog)
                     watchDog->beginTest();
+                QTest::lastMouseTimestamp += 500;   // Maintain at least 500ms mouse event timestamps between each test function call
                 invokeTestOnData(index);
                 if (watchDog)
                     watchDog->testFinished();
