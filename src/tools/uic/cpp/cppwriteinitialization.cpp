@@ -1174,7 +1174,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             m_output << m_indent << "if (" << varName << "->objectName().isEmpty())\n";
             break;
         case Language::Python:
-           m_output << m_indent << "if " << varName << ".objectName():\n";
+           m_output << m_indent << "if not " << varName << ".objectName():\n";
            break;
         }
     }

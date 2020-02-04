@@ -48,7 +48,7 @@ from gammaview import GammaView
 
 class Ui_Config(object):
     def setupUi(self, Config):
-        if Config.objectName():
+        if not Config.objectName():
             Config.setObjectName(u"Config")
         Config.resize(600, 650)
         Config.setSizeGripEnabled(True)
