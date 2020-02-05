@@ -2561,6 +2561,8 @@ function(qt_add_qml_module target)
         set(generate_qmltypes_arg GENERATE_QMLTYPES)
     endif()
 
+    qt_path_join(qml_module_install_dir ${QT_INSTALL_DIR} "${INSTALL_QMLDIR}/${arg_TARGET_PATH}")
+
     qt6_add_qml_module(${target}
         ${designer_supported_arg}
         ${no_create_option}
@@ -2577,14 +2579,16 @@ function(qt_add_qml_module target)
         DO_NOT_INSTALL_METADATA
         DO_NOT_CREATE_TARGET
         INSTALL_QML_FILES
+        INSTALL_LOCATION "${qml_module_install_dir}"
         DEPENDENCIES ${arg_DEPENDENCIES}
         RESOURCE_EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
     )
 
     get_target_property(qmldir_file ${target} QT_QML_MODULE_QMLDIR_FILE)
     get_target_property(plugin_types ${target} QT_QML_MODULE_PLUGIN_TYPES_FILE)
-    qt_path_join(qml_module_install_dir ${QT_INSTALL_DIR} "${INSTALL_QMLDIR}/${arg_TARGET_PATH}")
+    set(files_to_install)
     if (EXISTS ${plugin_types})
+        list(APPEND files_to_install ${plugin_types})
         qt_copy_or_install(FILES ${plugin_types}
             DESTINATION "${qml_module_install_dir}"
         )
@@ -2598,21 +2602,21 @@ function(qt_add_qml_module target)
         endif()
     endif()
 
-    qt_copy_or_install(
-        FILES
-            "${qmldir_file}"
-        DESTINATION
-            "${qml_module_install_dir}"
-    )
-
-    if(QT_WILL_INSTALL)
-        # qmldir should also be copied to the cmake binary dir when doing
-        # prefix builds
-        file(COPY "${qmldir_file}"
-            DESTINATION "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
-        )
+    list(APPEND files_to_install ${qmldir_file})
+    if (QT_WILL_INSTALL)
+        install(FILES ${files_to_install} DESTINATION ${qml_module_install_dir})
     endif()
 
+    set(copy_destination "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${arg_TARGET_PATH}")
+    foreach(file IN LISTS files_to_install)
+        get_filename_component(file_name "${file}" NAME)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${file}"
+                "${copy_destination}/${file_name}"
+            COMMENT "Copying ${file} to ${copy_destination}"
+        )
+    endforeach()
 endfunction()
 
 # Collection of qt_add_executable arguments so they can be shared across qt_add_executable
