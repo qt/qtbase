@@ -52,12 +52,12 @@ QT_BEGIN_NAMESPACE
 struct Q_CORE_EXPORT QContiguousCacheData
 {
     QBasicAtomicInt ref;
-    int alloc;
-    int count;
-    int start;
-    int offset;
+    qsizetype alloc;
+    qsizetype count;
+    qsizetype start;
+    qsizetype offset;
 
-    static QContiguousCacheData *allocateData(int size, int alignment);
+    static QContiguousCacheData *allocateData(qsizetype size, qsizetype alignment);
     static void freeData(QContiguousCacheData *data);
 
 #ifdef QT_QCONTIGUOUSCACHE_DEBUG
@@ -83,9 +83,9 @@ public:
     typedef value_type& reference;
     typedef const value_type& const_reference;
     typedef qptrdiff difference_type;
-    typedef int size_type;
+    typedef qsizetype size_type;
 
-    explicit QContiguousCache(int capacity = 0);
+    explicit QContiguousCache(qsizetype capacity = 0);
     QContiguousCache(const QContiguousCache<T> &v) : d(v.d) { d->ref.ref(); }
 
     inline ~QContiguousCache() { if (!d) return; if (!d->ref.deref()) freeData(d); }
@@ -100,32 +100,32 @@ public:
     bool operator==(const QContiguousCache<T> &other) const;
     inline bool operator!=(const QContiguousCache<T> &other) const { return !(*this == other); }
 
-    inline int capacity() const {return d->alloc; }
-    inline int count() const { return d->count; }
-    inline int size() const { return d->count; }
+    inline qsizetype capacity() const {return d->alloc; }
+    inline qsizetype count() const { return d->count; }
+    inline qsizetype size() const { return d->count; }
 
     inline bool isEmpty() const { return d->count == 0; }
     inline bool isFull() const { return d->count == d->alloc; }
-    inline int available() const { return d->alloc - d->count; }
+    inline qsizetype available() const { return d->alloc - d->count; }
 
     void clear();
-    void setCapacity(int size);
+    void setCapacity(qsizetype size);
 
-    const T &at(int pos) const;
-    T &operator[](int i);
-    const T &operator[](int i) const;
+    const T &at(qsizetype pos) const;
+    T &operator[](qsizetype i);
+    const T &operator[](qsizetype i) const;
 
     void append(T &&value);
     void append(const T &value);
     void prepend(T &&value);
     void prepend(const T &value);
-    void insert(int pos, T &&value);
-    void insert(int pos, const T &value);
+    void insert(qsizetype pos, T &&value);
+    void insert(qsizetype pos, const T &value);
 
 
-    inline bool containsIndex(int pos) const { return pos >= d->offset && pos - d->offset < d->count; }
-    inline int firstIndex() const { return d->offset; }
-    inline int lastIndex() const { return d->offset + d->count - 1; }
+    inline bool containsIndex(qsizetype pos) const { return pos >= d->offset && pos - d->offset < d->count; }
+    inline qsizetype firstIndex() const { return d->offset; }
+    inline qsizetype lastIndex() const { return d->offset + d->count - 1; }
 
     inline const T &first() const { Q_ASSERT(!isEmpty()); return d->array[d->start]; }
     inline const T &last() const { Q_ASSERT(!isEmpty()); return d->array[(d->start + d->count -1) % d->alloc]; }
@@ -138,7 +138,7 @@ public:
     T takeLast();
 
     inline bool areIndexesValid() const
-    { return d->offset >= 0 && d->offset < INT_MAX - d->count && (d->offset % d->alloc) == d->start; }
+    { return d->offset >= 0 && d->offset < std::numeric_limits<qsizetype>::max() - d->count && (d->offset % d->alloc) == d->start; }
 
     inline void normalizeIndexes() { d->offset = d->start; }
 
@@ -148,7 +148,7 @@ public:
 private:
     void detach_helper();
 
-    Data *allocateData(int aalloc);
+    Data *allocateData(qsizetype aalloc);
     void freeData(Data *x);
 };
 
@@ -164,7 +164,7 @@ void QContiguousCache<T>::detach_helper()
 
     T *dest = x->array + x->start;
     T *src = d->array + d->start;
-    int oldcount = x->count;
+    qsizetype oldcount = x->count;
     while (oldcount--) {
         new (dest) T(*src);
         dest++;
@@ -181,7 +181,7 @@ void QContiguousCache<T>::detach_helper()
 }
 
 template <typename T>
-void QContiguousCache<T>::setCapacity(int asize)
+void QContiguousCache<T>::setCapacity(qsizetype asize)
 {
     Q_ASSERT(asize >= 0);
     if (asize == d->alloc)
@@ -197,7 +197,7 @@ void QContiguousCache<T>::setCapacity(int asize)
     else
         x->start = 0;
 
-    int oldcount = x->count;
+    qsizetype oldcount = x->count;
     if(oldcount)
     {
         T *dest = x->array + (x->start + x->count-1) % x->alloc;
@@ -222,7 +222,7 @@ void QContiguousCache<T>::clear()
 {
     if (d->ref.loadRelaxed() == 1) {
         if (QTypeInfo<T>::isComplex) {
-            int oldcount = d->count;
+            qsizetype oldcount = d->count;
             T * i = d->array + d->start;
             T * e = d->array + d->alloc;
             while (oldcount--) {
@@ -245,13 +245,13 @@ void QContiguousCache<T>::clear()
 }
 
 template <typename T>
-inline typename QContiguousCache<T>::Data *QContiguousCache<T>::allocateData(int aalloc)
+inline typename QContiguousCache<T>::Data *QContiguousCache<T>::allocateData(qsizetype aalloc)
 {
     return static_cast<Data *>(QContiguousCacheData::allocateData(sizeof(Data) + (aalloc - 1) * sizeof(T), alignof(Data)));
 }
 
 template <typename T>
-QContiguousCache<T>::QContiguousCache(int cap)
+QContiguousCache<T>::QContiguousCache(qsizetype cap)
 {
     Q_ASSERT(cap >= 0);
     d = allocateData(cap);
@@ -280,7 +280,7 @@ bool QContiguousCache<T>::operator==(const QContiguousCache<T> &other) const
             || other.d->offset != d->offset
             || other.d->alloc != d->alloc)
         return false;
-    for (int i = firstIndex(); i <= lastIndex(); ++i)
+    for (qsizetype i = firstIndex(); i <= lastIndex(); ++i)
         if (!(at(i) == other.at(i)))
             return false;
     return true;
@@ -290,7 +290,7 @@ template <typename T>
 void QContiguousCache<T>::freeData(Data *x)
 {
     if (QTypeInfo<T>::isComplex) {
-        int oldcount = d->count;
+        qsizetype oldcount = d->count;
         T * i = d->array + d->start;
         T * e = d->array + d->alloc;
         while (oldcount--) {
@@ -383,9 +383,9 @@ void QContiguousCache<T>::prepend(const T &value)
 }
 
 template<typename T>
-void QContiguousCache<T>::insert(int pos, T &&value)
+void QContiguousCache<T>::insert(qsizetype pos, T &&value)
 {
-    Q_ASSERT_X(pos >= 0 && pos < INT_MAX, "QContiguousCache<T>::insert", "index out of range");
+    Q_ASSERT_X(pos >= 0, "QContiguousCache<T>::insert", "index out of range");
     if (!d->alloc)
         return;     // zero capacity
     detach();
@@ -406,19 +406,19 @@ void QContiguousCache<T>::insert(int pos, T &&value)
 }
 
 template<typename T>
-void QContiguousCache<T>::insert(int pos, const T &value)
+void QContiguousCache<T>::insert(qsizetype pos, const T &value)
 {
     return insert(pos, T(value));
 }
 template <typename T>
-inline const T &QContiguousCache<T>::at(int pos) const
+inline const T &QContiguousCache<T>::at(qsizetype pos) const
 { Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return d->array[pos % d->alloc]; }
 template <typename T>
-inline const T &QContiguousCache<T>::operator[](int pos) const
+inline const T &QContiguousCache<T>::operator[](qsizetype pos) const
 { return at(pos); }
 
 template <typename T>
-inline T &QContiguousCache<T>::operator[](int pos)
+inline T &QContiguousCache<T>::operator[](qsizetype pos)
 {
     detach();
     if (!containsIndex(pos))

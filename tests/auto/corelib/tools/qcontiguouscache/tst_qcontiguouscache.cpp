@@ -106,25 +106,25 @@ void tst_QContiguousCache::swap()
 
 void tst_QContiguousCache::append_data()
 {
-    QTest::addColumn<int>("start");
-    QTest::addColumn<int>("count");
-    QTest::addColumn<int>("cacheSize");
+    QTest::addColumn<qsizetype>("start");
+    QTest::addColumn<qsizetype>("count");
+    QTest::addColumn<qsizetype>("cacheSize");
     QTest::addColumn<bool>("invalidIndexes");
 
-    QTest::newRow("0+30[10]") << 0 << 30 << 10 << false;
-    QTest::newRow("300+30[10]") << 300 << 30 << 10 << false;
-    QTest::newRow("MAX-10+30[10]") << INT_MAX-10 << 30 << 10 << true;
+    QTest::newRow("0+30[10]") << qsizetype(0) << qsizetype(30) << qsizetype(10) << false;
+    QTest::newRow("300+30[10]") << qsizetype(300) << qsizetype(30) << qsizetype(10) << false;
+    QTest::newRow("MAX-10+30[10]") << std::numeric_limits<qsizetype>::max()-10 << qsizetype(30) << qsizetype(10) << true;
 }
 
 void tst_QContiguousCache::append()
 {
-    QFETCH(int, start);
-    QFETCH(int, count);
-    QFETCH(int, cacheSize);
+    QFETCH(qsizetype, start);
+    QFETCH(qsizetype, count);
+    QFETCH(qsizetype, cacheSize);
     QFETCH(bool, invalidIndexes);
 
-    int i, j;
-    QContiguousCache<int> c(cacheSize);
+    qsizetype i, j;
+    QContiguousCache<qsizetype> c(cacheSize);
 
     i = 1;
     QCOMPARE(c.available(), cacheSize);
@@ -134,8 +134,8 @@ void tst_QContiguousCache::append()
         c.insert(start, i++);
     while (i < count) {
         c.append(i);
-        QCOMPARE(c.available(), qMax(0, cacheSize - i));
-        QCOMPARE(c.first(), qMax(1, i-cacheSize+1));
+        QCOMPARE(c.available(), qMax(qsizetype(0), cacheSize - i));
+        QCOMPARE(c.first(), qMax(qsizetype(1), i-cacheSize+1));
         QCOMPARE(c.last(), i);
         QCOMPARE(c.count(), qMin(i, cacheSize));
         QCOMPARE(c.isFull(), i >= cacheSize);
