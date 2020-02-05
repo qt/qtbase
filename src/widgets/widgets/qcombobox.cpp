@@ -959,6 +959,8 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     changes either through user interaction or programmatically. The
     item's \a index is passed or -1 if the combobox becomes empty or the
     currentIndex was reset.
+
+    \obsolete Use currentIndexChanged(int index, const QString &text) instead
 */
 
 /*!
@@ -968,6 +970,18 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     This signal is sent whenever the currentIndex in the combobox
     changes either through user interaction or programmatically.  The
     item's \a text is passed.
+
+    \obsolete Use currentIndexChanged(int index, const QString &text) instead
+*/
+
+/*!
+    \fn void QComboBox::currentIndexChanged(int index, const QString &text)
+    \since 5.15
+
+    This signal is sent whenever the currentIndex in the combobox
+    changes either through user interaction or programmatically. The
+    item's \a index is passed or -1 if the combobox becomes empty or
+    the currentIndex was reset. The item's \a text is also passed.
 */
 
 /*!
@@ -1452,13 +1466,14 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
 {
     Q_Q(QComboBox);
     const QString text = itemText(index);
-    emit q->currentIndexChanged(index.row());
-#if QT_DEPRECATED_SINCE(5, 13)
+#if QT_DEPRECATED_SINCE(5, 15)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
+    emit q->currentIndexChanged(index.row());
     emit q->currentIndexChanged(text);
     QT_WARNING_POP
 #endif
+    emit q->currentIndexChanged(index.row(), text);
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
         emit q->currentTextChanged(text);
