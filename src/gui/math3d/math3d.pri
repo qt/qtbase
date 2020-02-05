@@ -4,12 +4,11 @@ HEADERS += \
     math3d/qquaternion.h \
     math3d/qvector2d.h \
     math3d/qvector3d.h \
-    math3d/qvector4d.h
+    math3d/qvector4d.h \
+    math3d/qvectornd.h \
 
 SOURCES += \
     math3d/qgenericmatrix.cpp \
     math3d/qmatrix4x4.cpp \
     math3d/qquaternion.cpp \
-    math3d/qvector2d.cpp \
-    math3d/qvector3d.cpp \
-    math3d/qvector4d.cpp
+    math3d/qvectornd.cpp \
