@@ -76,8 +76,6 @@ private:
     QList<LoggerSet> allLoggerSets() const;
 
     QTemporaryDir tempDir;
-    QRegularExpression durationRegExp;
-    QRegularExpression teamcityLocRegExp;
 };
 
 struct BenchmarkResult
@@ -418,8 +416,6 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
 
 tst_Selftests::tst_Selftests()
     : tempDir(QDir::tempPath() + "/tst_selftests.XXXXXX")
-    , durationRegExp("<Duration msecs=\"[\\d\\.]+\"/>")
-    , teamcityLocRegExp("\\|\\[Loc: .*\\(\\d*\\)\\|\\]")
 {}
 
 void tst_Selftests::initTestCase()
@@ -881,6 +877,7 @@ bool tst_Selftests::compareOutput(const QString &logger, const QString &subdir,
 
         // Special handling for ignoring _FILE_ and _LINE_ if logger is teamcity
         if (logger.endsWith(QLatin1String("teamcity"))) {
+            static QRegularExpression teamcityLocRegExp("\\|\\[Loc: .*\\(\\d*\\)\\|\\]");
             actualLine.replace(teamcityLocRegExp, teamCityLocation());
             expectedLine.replace(teamcityLocRegExp, teamCityLocation());
         }
@@ -951,6 +948,7 @@ bool tst_Selftests::compareLine(const QString &logger, const QString &subdir,
 
     if (actualLine.startsWith(QLatin1String("    <Duration msecs="))
         || actualLine.startsWith(QLatin1String("<Duration msecs="))) {
+        static QRegularExpression durationRegExp("<Duration msecs=\"[\\d\\.]+\"/>");
         QRegularExpressionMatch match = durationRegExp.match(actualLine);
         if (match.hasMatch())
             return true;
