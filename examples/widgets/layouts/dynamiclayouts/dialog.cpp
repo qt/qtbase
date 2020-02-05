@@ -155,7 +155,7 @@ void Dialog::createOptionsGroupBox()
     buttonsOrientationComboBox->addItem(tr("Vertical"), Qt::Vertical);
 
     connect(buttonsOrientationComboBox,
-            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            &QComboBox::currentIndexChanged,
             this,
             &Dialog::buttonsOrientationChanged);
 

@@ -142,7 +142,7 @@ RegExpDialog::RegExpDialog(QWidget *parent)
     connect(caseSensitiveCheckBox, &QAbstractButton::toggled,
             this, &RegExpDialog::refresh);
     connect(minimalCheckBox, &QAbstractButton::toggled, this, &RegExpDialog::refresh);
-    connect(syntaxComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(syntaxComboBox, &QComboBox::currentIndexChanged,
             this, &RegExpDialog::refresh);
 
     patternComboBox->addItem(tr("[A-Za-z_]+([A-Za-z_0-9]*)"));

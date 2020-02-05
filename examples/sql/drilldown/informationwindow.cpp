@@ -87,7 +87,7 @@ InformationWindow::InformationWindow(int id, QSqlRelationalTableModel *items,
     connect(descriptionEditor, &QTextEdit::textChanged, [=]() {
         enableButtons();
     });
-    connect(imageFileEditor, QOverload<int>::of(&QComboBox::currentIndexChanged), [=]() {
+    connect(imageFileEditor, &QComboBox::currentIndexChanged, [=]() {
         enableButtons();
     });
 

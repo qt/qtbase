@@ -225,7 +225,7 @@ RegularExpressionDialog::RegularExpressionDialog(QWidget *parent)
     connect(offsetSpinBox, &QSpinBox::valueChanged,
             this, &RegularExpressionDialog::refresh);
 
-    connect(matchTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(matchTypeComboBox, &QComboBox::currentIndexChanged,
             this, &RegularExpressionDialog::refresh);
 
     connect(anchoredMatchOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);

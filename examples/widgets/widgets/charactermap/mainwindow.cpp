@@ -90,7 +90,7 @@ MainWindow::MainWindow(QWidget *parent)
     filterCombo->addItem(tr("Monospaced"), QVariant::fromValue(QFontComboBox::MonospacedFonts));
     filterCombo->addItem(tr("Proportional"), QVariant::fromValue(QFontComboBox::ProportionalFonts));
     filterCombo->setCurrentIndex(0);
-    connect(filterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(filterCombo, &QComboBox::currentIndexChanged,
             this, &MainWindow::filterChanged);
 
     QLabel *fontLabel = new QLabel(tr("Font:"));

@@ -313,19 +313,19 @@ void Window::createGeneralOptionsGroupBox()
     verticalHeaderLabel->setBuddy(verticalHeaderCombo);
 
 //! [11]
-    connect(localeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(localeCombo, &QComboBox::currentIndexChanged,
             this, &Window::localeChanged);
-    connect(firstDayCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(firstDayCombo, &QComboBox::currentIndexChanged,
             this, &Window::firstDayChanged);
-    connect(selectionModeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(selectionModeCombo, &QComboBox::currentIndexChanged,
             this, &Window::selectionModeChanged);
     connect(gridCheckBox, &QCheckBox::toggled,
             calendar, &QCalendarWidget::setGridVisible);
     connect(navigationCheckBox, &QCheckBox::toggled,
             calendar, &QCalendarWidget::setNavigationBarVisible);
-    connect(horizontalHeaderCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(horizontalHeaderCombo, &QComboBox::currentIndexChanged,
             this, &Window::horizontalHeaderChanged);
-    connect(verticalHeaderCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(verticalHeaderCombo, &QComboBox::currentIndexChanged,
             this, &Window::verticalHeaderChanged);
 //! [11]
 
@@ -446,15 +446,15 @@ void Window::createTextFormatsGroupBox()
     mayFirstCheckBox = new QCheckBox(tr("May &1 in red"));
 
 //! [17] //! [18]
-    connect(weekdayColorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(weekdayColorCombo, &QComboBox::currentIndexChanged,
             this, &Window::weekdayFormatChanged);
-    connect(weekdayColorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(weekdayColorCombo, &QComboBox::currentIndexChanged,
             this, &Window::reformatCalendarPage);
-    connect(weekendColorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(weekendColorCombo, &QComboBox::currentIndexChanged,
             this, &Window::weekendFormatChanged);
-    connect(weekendColorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(weekendColorCombo, &QComboBox::currentIndexChanged,
             this, &Window::reformatCalendarPage);
-    connect(headerTextFormatCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(headerTextFormatCombo, &QComboBox::currentIndexChanged,
             this, &Window::reformatHeaders);
     connect(firstFridayCheckBox, &QCheckBox::toggled,
             this, &Window::reformatCalendarPage);

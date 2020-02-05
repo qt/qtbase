@@ -487,7 +487,7 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
 
                         if (choicesCb->count() > 1) {
 
-                            connect(choicesCb, QOverload<int>::of(&QComboBox::currentIndexChanged), this, setPpdOptionFromCombo);
+                            connect(choicesCb, &QComboBox::currentIndexChanged, this, setPpdOptionFromCombo);
 
                             // We need an extra label at the end to show the conflict warning
                             QWidget *choicesCbWithLabel = new QWidget();

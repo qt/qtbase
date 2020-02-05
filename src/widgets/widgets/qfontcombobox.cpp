@@ -427,7 +427,7 @@ QFontComboBox::QFontComboBox(QWidget *parent)
         lview->setUniformItemSizes(true);
     setWritingSystem(QFontDatabase::Any);
 
-    connect(this, SIGNAL(currentIndexChanged(QString)),
+    connect(this, SIGNAL(currentTextChanged(QString)),
             this, SLOT(_q_currentChanged(QString)));
 
     connect(qApp, SIGNAL(fontDatabaseChanged()),

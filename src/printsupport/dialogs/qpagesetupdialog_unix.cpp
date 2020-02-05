@@ -276,7 +276,7 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
 
     connect(m_ui.unitCombo, &QComboBox::activated, this, &QPageSetupWidget::unitChanged);
 
-    connect(m_ui.pageSizeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QPageSetupWidget::pageSizeChanged);
+    connect(m_ui.pageSizeCombo, &QComboBox::currentIndexChanged, this, &QPageSetupWidget::pageSizeChanged);
     connect(m_ui.pageWidth, &QDoubleSpinBox::valueChanged, this, &QPageSetupWidget::pageSizeChanged);
     connect(m_ui.pageHeight, &QDoubleSpinBox::valueChanged, this, &QPageSetupWidget::pageSizeChanged);
 
@@ -288,7 +288,7 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
     connect(m_ui.portrait, &QRadioButton::clicked, this, &QPageSetupWidget::pageOrientationChanged);
     connect(m_ui.landscape, &QRadioButton::clicked, this, &QPageSetupWidget::pageOrientationChanged);
 
-    connect(m_ui.pagesPerSheetCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QPageSetupWidget::pagesPerSheetChanged);
+    connect(m_ui.pagesPerSheetCombo, &QComboBox::currentIndexChanged, this, &QPageSetupWidget::pagesPerSheetChanged);
 }
 
 // Init the Units combo box

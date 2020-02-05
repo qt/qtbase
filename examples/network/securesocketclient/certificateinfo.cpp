@@ -57,7 +57,7 @@ CertificateInfo::CertificateInfo(QWidget *parent)
     form = new Ui_CertificateInfo;
     form->setupUi(this);
 
-    connect(form->certificationPathView, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(form->certificationPathView, &QComboBox::currentIndexChanged,
             this, &CertificateInfo::updateCertificateInfo);
 }
 

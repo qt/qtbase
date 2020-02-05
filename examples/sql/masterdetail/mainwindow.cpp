@@ -283,7 +283,7 @@ QGroupBox* MainWindow::createArtistGroupBox()
     artistView->setModel(model->relationModel(2));
     artistView->setModelColumn(1);
 
-    connect(artistView, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    connect(artistView, &QComboBox::currentIndexChanged,
             this, &MainWindow::changeArtist);
 
     QGroupBox *box = new QGroupBox(tr("Artist"));

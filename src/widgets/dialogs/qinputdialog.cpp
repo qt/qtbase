@@ -300,7 +300,7 @@ void QInputDialogPrivate::ensureComboBox()
         comboBox->hide();
         QObject::connect(comboBox, SIGNAL(editTextChanged(QString)),
                          q, SLOT(_q_textChanged(QString)));
-        QObject::connect(comboBox, SIGNAL(currentIndexChanged(QString)),
+        QObject::connect(comboBox, SIGNAL(currentTextChanged(QString)),
                          q, SLOT(_q_textChanged(QString)));
     }
 }

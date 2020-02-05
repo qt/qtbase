@@ -2763,7 +2763,7 @@ void tst_QComboBox::resetModel()
     };
     QComboBox cb;
     StringListModel model({"1", "2"});
-    QSignalSpy spy(&cb, QOverload<int, const QString &>::of(&QComboBox::currentIndexChanged));
+    QSignalSpy spy(&cb, &QComboBox::currentIndexChanged);
     QCOMPARE(spy.count(), 0);
     QCOMPARE(cb.currentIndex(), -1); //no selection
 
