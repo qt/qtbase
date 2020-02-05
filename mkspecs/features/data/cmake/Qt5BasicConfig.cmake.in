@@ -111,7 +111,7 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
                     if(current_search_paths)
                         find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib} HINTS ${current_search_paths} NO_DEFAULT_PATH)
                     endif()
-                    find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib})
+                    find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib} HINTS ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
                     mark_as_advanced(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH)
                     if(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH)
                         list(APPEND _lib_deps
