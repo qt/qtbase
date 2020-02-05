@@ -115,9 +115,13 @@ public:
     T &operator[](int i);
     const T &operator[](int i) const;
 
+    void append(T &&value);
     void append(const T &value);
+    void prepend(T &&value);
     void prepend(const T &value);
+    void insert(int pos, T &&value);
     void insert(int pos, const T &value);
+
 
     inline bool containsIndex(int pos) const { return pos >= d->offset && pos - d->offset < d->count; }
     inline int firstIndex() const { return d->offset; }
@@ -162,11 +166,7 @@ void QContiguousCache<T>::detach_helper()
     T *src = d->array + d->start;
     int oldcount = x->count;
     while (oldcount--) {
-        if (QTypeInfo<T>::isComplex) {
-            new (dest) T(*src);
-        } else {
-            *dest = *src;
-        }
+        new (dest) T(*src);
         dest++;
         if (dest == x->array + x->alloc)
             dest = x->array;
@@ -203,11 +203,7 @@ void QContiguousCache<T>::setCapacity(int asize)
         T *dest = x->array + (x->start + x->count-1) % x->alloc;
         T *src = d->array + (d->start + d->count-1) % d->alloc;
         while (oldcount--) {
-            if (QTypeInfo<T>::isComplex) {
-                new (dest) T(*src);
-            } else {
-                *dest = *src;
-            }
+            new (dest) T(*src);
             if (dest == x->array)
                 dest = x->array + x->alloc;
             dest--;
@@ -307,18 +303,14 @@ void QContiguousCache<T>::freeData(Data *x)
     Data::freeData(x);
 }
 template <typename T>
-void QContiguousCache<T>::append(const T &value)
+void QContiguousCache<T>::append(T &&value)
 {
     if (!d->alloc)
         return;     // zero capacity
     detach();
-    if (QTypeInfo<T>::isComplex) {
-        if (d->count == d->alloc)
-            (d->array + (d->start+d->count) % d->alloc)->~T();
-        new (d->array + (d->start+d->count) % d->alloc) T(value);
-    } else {
-        d->array[(d->start+d->count) % d->alloc] = value;
-    }
+    if (d->count == d->alloc)
+        (d->array + (d->start+d->count) % d->alloc)->~T();
+    new (d->array + (d->start+d->count) % d->alloc) T(std::move(value));
 
     if (d->count == d->alloc) {
         d->start++;
@@ -327,6 +319,46 @@ void QContiguousCache<T>::append(const T &value)
     } else {
         d->count++;
     }
+}
+
+template <typename T>
+void QContiguousCache<T>::append(const T &value)
+{
+    if (!d->alloc)
+        return;     // zero capacity
+    detach();
+    if (d->count == d->alloc)
+        (d->array + (d->start+d->count) % d->alloc)->~T();
+    new (d->array + (d->start+d->count) % d->alloc) T(value);
+
+    if (d->count == d->alloc) {
+        d->start++;
+        d->start %= d->alloc;
+        d->offset++;
+    } else {
+        d->count++;
+    }
+}
+
+template<typename T>
+void QContiguousCache<T>::prepend(T &&value)
+{
+    if (!d->alloc)
+        return;     // zero capacity
+    detach();
+    if (d->start)
+        d->start--;
+    else
+        d->start = d->alloc-1;
+    d->offset--;
+
+    if (d->count != d->alloc)
+        d->count++;
+    else
+        if (d->count == d->alloc)
+            (d->array + d->start)->~T();
+
+    new (d->array + d->start) T(std::move(value));
 }
 
 template<typename T>
@@ -344,29 +376,21 @@ void QContiguousCache<T>::prepend(const T &value)
     if (d->count != d->alloc)
         d->count++;
     else
-        if (d->count == d->alloc)
-            (d->array + d->start)->~T();
+            if (d->count == d->alloc)
+        (d->array + d->start)->~T();
 
-    if (QTypeInfo<T>::isComplex)
-        new (d->array + d->start) T(value);
-    else
-        d->array[d->start] = value;
+    new (d->array + d->start) T(value);
 }
 
 template<typename T>
-void QContiguousCache<T>::insert(int pos, const T &value)
+void QContiguousCache<T>::insert(int pos, T &&value)
 {
     Q_ASSERT_X(pos >= 0 && pos < INT_MAX, "QContiguousCache<T>::insert", "index out of range");
     if (!d->alloc)
         return;     // zero capacity
     detach();
     if (containsIndex(pos)) {
-        if (QTypeInfo<T>::isComplex) {
-            (d->array + pos % d->alloc)->~T();
-            new (d->array + pos % d->alloc) T(value);
-        } else {
-            d->array[pos % d->alloc] = value;
-        }
+        d->array[pos % d->alloc] = std::move(value);
     } else if (pos == d->offset-1)
         prepend(value);
     else if (pos == d->offset+d->count)
@@ -377,19 +401,21 @@ void QContiguousCache<T>::insert(int pos, const T &value)
         d->offset = pos;
         d->start = pos % d->alloc;
         d->count = 1;
-        if (QTypeInfo<T>::isComplex)
-            new (d->array + d->start) T(value);
-        else
-            d->array[d->start] = value;
+        new (d->array + d->start) T(std::move(value));
     }
 }
 
+template<typename T>
+void QContiguousCache<T>::insert(int pos, const T &value)
+{
+    return insert(pos, T(value));
+}
 template <typename T>
 inline const T &QContiguousCache<T>::at(int pos) const
 { Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return d->array[pos % d->alloc]; }
 template <typename T>
 inline const T &QContiguousCache<T>::operator[](int pos) const
-{ Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return d->array[pos % d->alloc]; }
+{ return at(pos); }
 
 template <typename T>
 inline T &QContiguousCache<T>::operator[](int pos)
@@ -424,11 +450,11 @@ inline void QContiguousCache<T>::removeLast()
 
 template <typename T>
 inline T QContiguousCache<T>::takeFirst()
-{ T t = first(); removeFirst(); return t; }
+{ T t = std::move(first()); removeFirst(); return t; }
 
 template <typename T>
 inline T QContiguousCache<T>::takeLast()
-{ T t = last(); removeLast(); return t; }
+{ T t = std::move(last()); removeLast(); return t; }
 
 QT_END_NAMESPACE
 
