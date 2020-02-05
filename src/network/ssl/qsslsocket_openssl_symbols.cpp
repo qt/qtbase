@@ -1375,12 +1375,12 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_select_next_proto)
     RESOLVEFUNC(SSL_CTX_set_next_proto_select_cb)
     RESOLVEFUNC(SSL_get0_next_proto_negotiated)
-#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-    RESOLVEFUNC(SSL_set_alpn_protos)
-    RESOLVEFUNC(SSL_CTX_set_alpn_select_cb)
-    RESOLVEFUNC(SSL_get0_alpn_selected)
+        RESOLVEFUNC(SSL_set_alpn_protos)
+        RESOLVEFUNC(SSL_CTX_set_alpn_select_cb)
+        RESOLVEFUNC(SSL_get0_alpn_selected)
 #endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 #if QT_CONFIG(dtls)
     RESOLVEFUNC(SSL_CTX_set_cookie_generate_cb)
     RESOLVEFUNC(SSL_CTX_set_cookie_verify_cb)
