@@ -4704,6 +4704,12 @@ void tst_QString::fromUcs4()
     s = QString::fromUcs4(U"\u221212\U000020AC\U00010000");
     QCOMPARE(s, QString::fromUtf8("\342\210\222" "12" "\342\202\254" "\360\220\200\200"));
 #endif
+
+    // QTBUG-62011: don't mistake ZWNBS for BOM
+    // Start with one BOM, to ensure we use the right endianness:
+    const uint text[] = { 0xfeff, 97, 0xfeff, 98, 0xfeff, 99, 0xfeff, 100 };
+    s = QString::fromUcs4(text, 8);
+    QCOMPARE(s, QStringView(u"a\xfeff" u"b\xfeff" u"c\xfeff" "d"));
 }
 
 void tst_QString::toUcs4()
