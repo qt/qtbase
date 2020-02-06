@@ -3632,7 +3632,7 @@ def handle_app_or_lib(
 
         install_dir = scope.expandString("QMLTYPES_INSTALL_DIR")
         if install_dir:
-            install_dir = install_dir.replace("$$[QT_INSTALL_QML]", "${Qt6_DIR}/../../../qml")
+            install_dir = install_dir.replace("$$[QT_INSTALL_QML]", "${INSTALL_QMLDIR}")
             cm_fh.write(f'{spaces(indent+1)}QT_QML_MODULE_INSTALL_DIR "{install_dir}"\n')
 
         cm_fh.write(f"{spaces(indent)})\n\n")
