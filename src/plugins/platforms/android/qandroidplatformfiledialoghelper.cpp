@@ -104,6 +104,7 @@ void QAndroidPlatformFileDialogHelper::exec()
 
 void QAndroidPlatformFileDialogHelper::hide()
 {
+    QtAndroidPrivate::unregisterActivityResultListener(this);
 }
 
 QString QAndroidPlatformFileDialogHelper::selectedNameFilter() const

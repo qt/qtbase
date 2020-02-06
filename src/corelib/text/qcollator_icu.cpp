@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2013 Aleix Pol Gonzalez <aleixpol@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -109,6 +109,11 @@ void QCollatorPrivate::cleanup()
 
 int QCollator::compare(QStringView s1, QStringView s2) const
 {
+    if (!s1.size())
+        return s2.size() ? -1 : 0;
+    if (!s2.size())
+        return +1;
+
     if (d->dirty)
         d->init();
 

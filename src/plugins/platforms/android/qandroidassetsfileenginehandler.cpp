@@ -110,6 +110,8 @@ public:
 
     static AssetItem::Type fileType(const QString &filePath)
     {
+        if (filePath.isEmpty())
+            return AssetItem::Type::Folder;
         const QStringList paths = filePath.split(QLatin1Char('/'));
         QString fullPath;
         AssetItem::Type res = AssetItem::Type::Invalid;
@@ -399,7 +401,8 @@ public:
 private:
     AAsset *m_assetFile = nullptr;
     AAssetManager *m_assetManager = nullptr;
-    QString m_fileName;
+    // initialize with a name that can't be used as a file name
+    QString m_fileName = QLatin1String(".");
     bool m_isFolder = false;
 };
 
