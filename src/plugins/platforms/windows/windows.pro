@@ -10,6 +10,8 @@ qtHaveModule(platformcompositor_support-private): QT += platformcompositor_suppo
 qtConfig(accessibility): QT += accessibility_support-private
 qtConfig(vulkan): QT += vulkan_support-private
 
+qtConfig(directwrite3): DEFINES *= QT_USE_DIRECTWRITE2 QT_USE_DIRECTWRITE3
+
 LIBS += -ldwmapi
 QMAKE_USE_PRIVATE += gdi32
 
