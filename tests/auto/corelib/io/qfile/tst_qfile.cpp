@@ -3681,9 +3681,6 @@ void tst_QFile::moveToTrash_data()
     QTest::addColumn<bool>("create");
     QTest::addColumn<bool>("result");
 
-    if (QOperatingSystemVersion::current() <= QOperatingSystemVersion::Windows7)
-        QSKIP("Windows 7 insists on showing a confirmation dialog", SkipAll);
-
     // success cases
     {
         QTemporaryFile temp;
