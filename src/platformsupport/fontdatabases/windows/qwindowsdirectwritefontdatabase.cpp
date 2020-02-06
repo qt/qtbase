@@ -85,7 +85,7 @@ static QFont::Stretch fromDirectWriteStretch(DWRITE_FONT_STRETCH stretch)
     case DWRITE_FONT_STRETCH_EXTRA_CONDENSED: return QFont::ExtraCondensed;
     case DWRITE_FONT_STRETCH_CONDENSED: return QFont::Condensed;
     case DWRITE_FONT_STRETCH_SEMI_CONDENSED: return QFont::SemiCondensed;
-    case DWRITE_FONT_STRETCH_NORMAL: return QFont::UltraCondensed;
+    case DWRITE_FONT_STRETCH_NORMAL: return QFont::Unstretched;
     case DWRITE_FONT_STRETCH_SEMI_EXPANDED: return QFont::SemiExpanded;
     case DWRITE_FONT_STRETCH_EXPANDED: return QFont::Expanded;
     case DWRITE_FONT_STRETCH_EXTRA_EXPANDED: return QFont::ExtraExpanded;
