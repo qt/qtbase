@@ -2042,6 +2042,8 @@ void tst_QLocale::windowsDefaultLocale()
     setWinLocaleInfo(LOCALE_SLONGDATE, longDateFormat);
     const QString shortTimeFormat = QStringLiteral("h^m^s");
     setWinLocaleInfo(LOCALE_SSHORTTIME, shortTimeFormat);
+    const QString longTimeFormat = QStringLiteral("HH%mm%ss");
+    setWinLocaleInfo(LOCALE_STIMEFORMAT, longTimeFormat);
 
     QSystemLocale dummy; // to provoke a refresh of the system locale
     QLocale locale = QLocale::system();
@@ -2055,7 +2057,7 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.dateTimeFormat(QLocale::ShortFormat),
              shortDateFormat + QLatin1Char(' ') + shortTimeFormat);
     const QString expectedLongDateTimeFormat
-        = longDateFormat + QLatin1Char(' ') + QStringLiteral("h:mm:ss AP");
+        = longDateFormat + QLatin1Char(' ') + longTimeFormat;
     QCOMPARE(locale.dateTimeFormat(QLocale::LongFormat), expectedLongDateTimeFormat);
 
     // make sure we are using the system to parse them
@@ -2069,7 +2071,7 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::ShortFormat), expectedFormattedShortTime);
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::NarrowFormat),
              locale.toString(QTime(1,2,3), QLocale::ShortFormat));
-    const QString expectedFormattedLongTime = QStringLiteral("1:02:03 AM");
+    const QString expectedFormattedLongTime = QStringLiteral("01%02%03");
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::LongFormat), expectedFormattedLongTime);
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::ShortFormat),
              QStringLiteral("1*12*1974 ") + expectedFormattedShortTime);
@@ -2077,7 +2079,6 @@ void tst_QLocale::windowsDefaultLocale()
              locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::ShortFormat));
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::LongFormat),
              QStringLiteral("1@12@1974 ") + expectedFormattedLongTime);
-    QCOMPARE(locale.toString(QTime(1,2,3), QLocale::LongFormat), expectedFormattedLongTime);
 }
 #endif // Q_OS_WIN but !Q_OS_WINRT
 
