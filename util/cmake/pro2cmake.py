@@ -3287,8 +3287,8 @@ def write_example(
 
     example_install_dir = scope.expandString("target.path")
     if not example_install_dir:
-        example_install_dir = "examples"
-    example_install_dir = example_install_dir.replace("$$[QT_INSTALL_EXAMPLES]", "examples")
+        example_install_dir = "${INSTALL_EXAMPLESDIR}"
+    example_install_dir = example_install_dir.replace("$$[QT_INSTALL_EXAMPLES]", "${INSTALL_EXAMPLESDIR}")
 
     cm_fh.write(
         "cmake_minimum_required(VERSION 3.14)\n"
@@ -3297,6 +3297,9 @@ def write_example(
         "set(CMAKE_AUTOMOC ON)\n"
         "set(CMAKE_AUTORCC ON)\n"
         "set(CMAKE_AUTOUIC ON)\n\n"
+        "if(NOT DEFINED INSTALL_EXAMPLESDIR)\n"
+        "  set(INSTALL_EXAMPLESDIR \"examples\")\n"
+        "endif()\n\n"
         f'set(INSTALL_EXAMPLEDIR "{example_install_dir}")\n\n'
     )
 
