@@ -1147,6 +1147,8 @@ bool QFileInfo::isShortcut() const
 
 
 /*!
+    \since 5.15
+
     Returns \c true if the object points to a junction;
     otherwise returns \c false.
 

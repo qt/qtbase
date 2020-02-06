@@ -552,6 +552,8 @@ QFile::remove(const QString &fileName)
 }
 
 /*!
+    \since 5.15
+
     Moves the file specified by fileName() to the trash. Returns \c true if successful,
     and sets the fileName() to the path at which the file can be found within the trash;
     otherwise returns \c false.
@@ -586,6 +588,7 @@ QFile::moveToTrash()
 }
 
 /*!
+    \since 5.15
     \overload
 
     Moves the file specified by fileName() to the trash. Returns \c true if successful,
