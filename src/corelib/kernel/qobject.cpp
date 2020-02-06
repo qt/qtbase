@@ -4677,12 +4677,12 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \c{2.1} or greater.
 
     Since all methods are considered to be in revision \c{0} if untagged, a tag
-    of \c{Q_REVISION(0)}, or \c{Q_REVISION(0, 0)} is invalid and ignored.
+    of \c{Q_REVISION(0)} or \c{Q_REVISION(0, 0)} is invalid and ignored.
 
     You can pass one or two integer parameters to \c{Q_REVISION}. If you pass
-    one, the parameter denotes the minor version and major version is
-    unspecified. If you pass two, the first parameter is the major version and
-    the second parameter is the minor version.
+    one parameter, it denotes the minor version only. This means that the major
+    version is unspecified. If you pass two, the first parameter is the major
+    version and the second parameter is the minor version.
 
     This tag is not used by the meta-object system itself. Currently this is only
     used by the QtQml module.
