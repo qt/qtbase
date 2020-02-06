@@ -1949,12 +1949,13 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     # Handle cases like QmlDevTools which do not have their own headers, but rather borrow them
     # from another module.
     if(NOT arg_NO_SYNC_QT)
-        list(APPEND interface_includes
-                    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-                    "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
-                    "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
+        list(APPEND interface_includes "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 
         if(NOT arg_NO_MODULE_HEADERS)
+            list(APPEND interface_includes
+                        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
+                        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
+
             if(is_framework)
                 set(fw_headers_dir
                     "${INSTALL_LIBDIR}/${module}.framework/Headers/")
