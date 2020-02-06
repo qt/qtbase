@@ -47,6 +47,7 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qtypeinfo.h>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -334,10 +335,10 @@ public:
     template<typename Integer, if_valid_segment_type<Integer> = true>
     static constexpr bool isValidSegment(Integer segment)
     {
-        return segment >= Integer(0) && segment < Integer(SegmentUnknown);
+        return segment >= Integer(0)
+                && (std::numeric_limits<Integer>::max() < Integer(SegmentUnknown)
+                    || segment < Integer(SegmentUnknown));
     }
-
-    static constexpr bool isValidSegment(qint8 segment) { return segment >= 0; }
 
     template<typename Major, typename Minor,
              if_valid_segment_type<Major> = true,
