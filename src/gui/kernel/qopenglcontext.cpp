@@ -623,7 +623,6 @@ bool QOpenGLContext::create()
 */
 void QOpenGLContext::destroy()
 {
-    deleteQGLContext();
     Q_D(QOpenGLContext);
     if (d->platformGLContext)
         emit aboutToBeDestroyed();
@@ -1174,44 +1173,6 @@ QScreen *QOpenGLContext::screen() const
 {
     Q_D(const QOpenGLContext);
     return d->screen;
-}
-
-/*!
-    internal: Needs to have a pointer to qGLContext. But since this is in Qt GUI we can't
-    have any type information.
-
-    \internal
-*/
-void *QOpenGLContext::qGLContextHandle() const
-{
-    Q_D(const QOpenGLContext);
-    return d->qGLContextHandle;
-}
-
-/*!
-    internal: If the delete function is specified QOpenGLContext "owns"
-    the passed context handle and will use the delete function to destroy it.
-
-    \internal
-*/
-void QOpenGLContext::setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *))
-{
-    Q_D(QOpenGLContext);
-    d->qGLContextHandle = handle;
-    d->qGLContextDeleteFunction = qGLContextDeleteFunction;
-}
-
-/*!
-    \internal
-*/
-void QOpenGLContext::deleteQGLContext()
-{
-    Q_D(QOpenGLContext);
-    if (d->qGLContextDeleteFunction && d->qGLContextHandle) {
-        d->qGLContextDeleteFunction(d->qGLContextHandle);
-        d->qGLContextDeleteFunction = nullptr;
-        d->qGLContextHandle = nullptr;
-    }
 }
 
 /*!

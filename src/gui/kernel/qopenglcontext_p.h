@@ -197,9 +197,7 @@ class Q_GUI_EXPORT QOpenGLContextPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QOpenGLContext)
 public:
     QOpenGLContextPrivate()
-        : qGLContextHandle(nullptr)
-        , qGLContextDeleteFunction(nullptr)
-        , platformGLContext(nullptr)
+        : platformGLContext(nullptr)
         , shareContext(nullptr)
         , shareGroup(nullptr)
         , screen(nullptr)
@@ -227,9 +225,6 @@ public:
     mutable QHash<QOpenGLVersionProfile, QAbstractOpenGLFunctions *> versionFunctions;
     mutable QOpenGLVersionFunctionsStorage versionFunctionsStorage;
     mutable QSet<QAbstractOpenGLFunctions *> externalVersionFunctions;
-
-    void *qGLContextHandle;
-    void (*qGLContextDeleteFunction)(void *handle);
 
     QSurfaceFormat requestedFormat;
     QPlatformOpenGLContext *platformGLContext;
