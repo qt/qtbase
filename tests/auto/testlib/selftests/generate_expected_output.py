@@ -295,23 +295,7 @@ def testEnv(testname,
     return data
 
 def generateTestData(testname, clean,
-                     formats = ('xml', 'txt', 'junitxml', 'lightxml', 'teamcity', 'tap'),
-                     # Make sure this matches tst_Selftests::runSubTest_data():
-                     extraArgs = {
-        "commandlinedata": "fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2",
-        "benchlibcallgrind": "-callgrind",
-        "benchlibeventcounter": "-eventcounter",
-        "benchliboptions": "-eventcounter",
-        "benchlibtickcounter": "-tickcounter",
-        "badxml": "-eventcounter",
-        "benchlibcounting": "-eventcounter",
-        "printdatatags": "-datatags",
-        "printdatatagswithglobaltags": "-datatags",
-        "signaldumper": "-vs",
-        "silent": "-silent",
-        "verbose1": "-v1",
-        "verbose2": "-v2",
-        }):
+                     formats = ('xml', 'txt', 'junitxml', 'lightxml', 'teamcity', 'tap')):
     """Run one test and save its cleaned results.
 
     Required arguments are the name of the test directory (the binary
@@ -330,9 +314,6 @@ def generateTestData(testname, clean,
     print("  running", testname)
     for format in formats:
         cmd = [path, '-' + format]
-        if testname in extraArgs:
-            cmd += extraArgs[testname].split()
-
         data = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env,
                                 universal_newlines=True).communicate()[0]
         with open('expected_' + testname + '.' + format, 'w') as out:

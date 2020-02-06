@@ -94,6 +94,11 @@ void tst_BenchlibEventCounter::events_data()
 
 int main(int argc, char** argv)
 {
+    std::vector<const char*> args(argv, argv + argc);
+    args.push_back("-eventcounter");
+    argc = args.size();
+    argv = const_cast<char**>(&args[0]);
+
     TestEventDispatcher dispatcher;
     QCoreApplication app(argc, argv);
     tst_BenchlibEventCounter test;

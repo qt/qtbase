@@ -79,6 +79,14 @@ void tst_BenchlibCallgrind::twoHundredMillionInstructions()
 #endif
 }
 
-QTEST_MAIN(tst_BenchlibCallgrind)
+int main(int argc, char *argv[])
+{
+    std::vector<const char*> args(argv, argv + argc);
+    args.push_back("-callgrind");
+    argc = args.size();
+    argv = const_cast<char**>(&args[0]);
+
+    QTEST_MAIN_IMPL(tst_BenchlibCallgrind)
+}
 
 #include "tst_benchlibcallgrind.moc"

@@ -528,49 +528,6 @@ void tst_Selftests::runSubTest_data()
         QStringList loggers = loggerSet.loggers;
 
         foreach (QString const& subtest, tests) {
-            QStringList arguments = loggerSet.arguments;
-            // Keep in sync with generateTestData()'s extraArgs in generate_expected_output.py:
-            if (subtest == "commandlinedata") {
-                arguments << QString("fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2").split(' ');
-            }
-            else if (subtest == "benchlibcallgrind") {
-                arguments << "-callgrind";
-            }
-            else if (subtest == "benchlibeventcounter") {
-                arguments << "-eventcounter";
-            }
-            else if (subtest == "benchliboptions") {
-                arguments << "-eventcounter";
-            }
-            else if (subtest == "benchlibtickcounter") {
-                arguments << "-tickcounter";
-            }
-            else if (subtest == "badxml") {
-                arguments << "-eventcounter";
-            }
-            else if (subtest == "benchlibcounting") {
-                arguments << "-eventcounter";
-            }
-            else if (subtest == "printdatatags") {
-                arguments << "-datatags";
-            }
-            else if (subtest == "printdatatagswithglobaltags") {
-                arguments << "-datatags";
-            }
-            else if (subtest == "signaldumper") {
-                arguments << "-vs";
-            }
-            else if (subtest == "silent") {
-                arguments << "-silent";
-            }
-            else if (subtest == "verbose1") {
-                arguments << "-v1";
-            }
-            else if (subtest == "verbose2") {
-                arguments << "-v2";
-            }
-
-
             // These tests don't work right unless logging plain text to
             // standard output, either because they execute multiple test
             // objects or because they internally supply arguments to
@@ -634,7 +591,7 @@ void tst_Selftests::runSubTest_data()
             QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
                 << subtest
                 << loggers
-                << arguments
+                << loggerSet.arguments
                 << crashes
             ;
         }
@@ -690,7 +647,7 @@ static inline QByteArray msgProcessError(const QString &binary, const QStringLis
 void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments, bool crashes)
 {
 #if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
-    if (arguments.contains("-callgrind")) {
+    if (subdir == "benchlibcallgrind") {
         QProcess checkProcess;
         QStringList args;
         args << QLatin1String("--version");

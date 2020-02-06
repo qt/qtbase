@@ -62,6 +62,14 @@ void tst_BenchlibTickCounter::threeBillionTicks()
 #endif
 }
 
-QTEST_MAIN(tst_BenchlibTickCounter)
+int main(int argc, char *argv[])
+{
+    std::vector<const char*> args(argv, argv + argc);
+    args.push_back("-tickcounter");
+    argc = args.size();
+    argv = const_cast<char**>(&args[0]);
+
+    QTEST_MAIN_IMPL(tst_BenchlibTickCounter)
+}
 
 #include "tst_benchlibtickcounter.moc"

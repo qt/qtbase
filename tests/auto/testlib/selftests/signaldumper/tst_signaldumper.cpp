@@ -424,5 +424,14 @@ void tst_Signaldumper::deletingSender()
     emit signalSlotOwner->signalWithoutParameters();
 }
 
-QTEST_MAIN(tst_Signaldumper)
+int main(int argc, char *argv[])
+{
+    std::vector<const char*> args(argv, argv + argc);
+    args.push_back("-vs");
+    argc = args.size();
+    argv = const_cast<char**>(&args[0]);
+
+    QTEST_MAIN_IMPL(tst_Signaldumper)
+}
+
 #include "tst_signaldumper.moc"
