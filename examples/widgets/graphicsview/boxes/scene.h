@@ -215,7 +215,6 @@ private:
     void initGL();
     QPointF pixelPosToViewPos(const QPointF& p);
 
-    QTime m_time; // ### Qt 6: remove (unused)
     int m_lastTime;
     int m_mouseEventTime;
     int m_distExp;
