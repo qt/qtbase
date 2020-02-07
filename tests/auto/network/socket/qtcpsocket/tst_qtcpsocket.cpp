@@ -523,7 +523,7 @@ void tst_QTcpSocket::bind_data()
                 continue; // link-local bind will fail, at least on Linux, so skip it.
 
             QString ip(entry.ip().toString());
-            QTest::newRow(ip.toLatin1().constData()) << ip << 0 << true << ip;
+            QTest::addRow("%s:0", ip.toLatin1().constData()) << ip << 0 << true << ip;
 
             if (!testIpv6 && entry.ip().protocol() == QAbstractSocket::IPv6Protocol)
                 testIpv6 = true;
@@ -531,9 +531,9 @@ void tst_QTcpSocket::bind_data()
     }
 
     // test binding to localhost
-    QTest::newRow("0.0.0.0") << "0.0.0.0" << 0 << true << "0.0.0.0";
+    QTest::newRow("0.0.0.0:0") << "0.0.0.0" << 0 << true << "0.0.0.0";
     if (testIpv6)
-        QTest::newRow("[::]") << "::" << 0 << true << "::";
+        QTest::newRow("[::]:0") << "::" << 0 << true << "::";
 
     // and binding with a port number...
     // Since we want to test that we got the port number we asked for, we need a random port number.
@@ -551,16 +551,16 @@ void tst_QTcpSocket::bind_data()
     knownBad << "198.51.100.1";
     knownBad << "2001:0DB8::1";
     foreach (const QString &badAddress, knownBad) {
-        QTest::newRow(badAddress.toLatin1().constData()) << badAddress << 0 << false << QString();
+        QTest::addRow("%s:0", badAddress.toLatin1().constData()) << badAddress << 0 << false << QString();
     }
 
-#ifdef Q_OS_UNIX
     // try to bind to a privileged ports
     // we should fail if we're not root (unless the ports are in use!)
-    QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << !geteuid() << (geteuid() ? QString() : "127.0.0.1");
+    QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << QtNetworkSettings::canBindToLowPorts()
+                                 << (QtNetworkSettings::canBindToLowPorts() ? "127.0.0.1" : QString());
     if (testIpv6)
-        QTest::newRow("[::]:1") << "::" << 1 << !geteuid() << (geteuid() ? QString() : "::");
-#endif
+        QTest::newRow("[::]:1") << "::" << 1 << QtNetworkSettings::canBindToLowPorts()
+                                << (QtNetworkSettings::canBindToLowPorts() ? "::" : QString());
 }
 
 void tst_QTcpSocket::bind()
