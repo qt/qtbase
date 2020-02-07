@@ -321,6 +321,15 @@ if(NOT BUILD_SHARED_LIBS)
     )
 endif()
 
+# Core_qobject is never exported so we need to duplicate the metatypes file
+# interface on Core
+get_target_property(core_qobject_metatypes_file_genex_build Core_qobject QT_MODULE_META_TYPES_FILE_GENEX_BUILD)
+get_target_property(core_qobject_metatypes_file_genex_install Core_qobject QT_MODULE_META_TYPES_FILE_GENEX_INSTALL)
+target_sources(Core INTERFACE
+    ${core_qobject_metatypes_file_genex_build}
+    ${core_qobject_metatypes_file_genex_install}
+)
+
 set_property(TARGET Core APPEND PROPERTY
     PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
 set_property(TARGET Core APPEND PROPERTY

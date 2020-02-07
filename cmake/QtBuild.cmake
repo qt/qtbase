@@ -1862,8 +1862,6 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
             set(args INSTALL_DIR "${metatypes_install_dir}")
         endif()
         qt6_generate_meta_types_json_file(${target} ${args})
-        get_target_property(QT_MODULE_META_TYPES_FILE ${target} INTERFACE_QT_META_TYPES_INSTALL_FILE)
-        get_target_property(QT_MODULE_META_TYPES_DEP_FILE ${target} INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE)
     endif()
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
