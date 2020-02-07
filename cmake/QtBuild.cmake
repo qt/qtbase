@@ -3486,14 +3486,14 @@ function(qt_add_docs)
 
     get_filename_component(doc_target "${doc_project}" NAME_WLE)
     if (QT_WILL_INSTALL)
-        set(qdoc_output_dir "${CMAKE_BINARY_DIR}/doc/${doc_target}")
-        set(index_dir "${CMAKE_BINARY_DIR}/doc")
+        set(qdoc_output_dir "${CMAKE_BINARY_DIR}/${INSTALL_DOCDIR}/${doc_target}")
+        set(index_dir "${CMAKE_BINARY_DIR}/${INSTALL_DOCDIR}")
     elseif (QT_SUPERBUILD)
-        set(qdoc_output_dir "${CMAKE_INSTALL_PREFIX}/qtbase/doc/${doc_target}")
-        set(index_dir "${CMAKE_INSTALL_PREFIX}/qtbase/doc")
+        set(qdoc_output_dir "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}/${doc_target}")
+        set(index_dir "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}")
     else()
-        set(qdoc_output_dir "${CMAKE_INSTALL_PREFIX}/doc/${doc_target}")
-        set(index_dir "${CMAKE_INSTALL_PREFIX}/doc")
+        set(qdoc_output_dir "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}/${doc_target}")
+        set(index_dir "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
     endif()
 
     # qtattributionsscanner
@@ -3508,7 +3508,7 @@ function(qt_add_docs)
     # prepare docs target
     set(prepare_qdoc_args
         -outputdir "${qdoc_output_dir}"
-        -installdir "${QT_INSTALL_DIR}/doc"
+        -installdir "${QT_INSTALL_DIR}/${INSTALL_DOCDIR}"
         "${target_source_dir}/${doc_project}"
         -prepare
         -indexdir "${index_dir}"
@@ -3517,9 +3517,9 @@ function(qt_add_docs)
     )
 
     if (QT_SUPERBUILD AND NOT QT_WILL_INSTALL)
-        set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/qtbase/doc")
+        set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}")
     else()
-        set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/doc")
+        set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
     endif()
 
     set(qdoc_env_args
@@ -3593,7 +3593,7 @@ function(qt_add_docs)
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                 "${qdoc_output_dir}"
                 "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}/${doc_target}"
-            COMMENT "Installing html docs for target {$target}"
+            COMMENT "Installing html docs for target ${target}"
         )
 
         add_custom_target(install_qch_docs_${target}
