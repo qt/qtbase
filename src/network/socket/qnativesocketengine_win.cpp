@@ -588,7 +588,8 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     // local address of the socket which bound on both IPv4 and IPv6 interfaces.
     // This address does not match to any special address and should not be used
     // to send the data. So, replace it with QHostAddress::Any.
-    if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+    const uchar ipv6MappedNet[] = {0,0,0,0, 0,0,0,0, 0,0,0xff,0xff, 0,0,0,0};
+    if (localAddress.isInSubnet(QHostAddress(ipv6MappedNet), 128 - 32)) {
         bool ok = false;
         const quint32 localIPv4 = localAddress.toIPv4Address(&ok);
         if (ok && localIPv4 == INADDR_ANY) {

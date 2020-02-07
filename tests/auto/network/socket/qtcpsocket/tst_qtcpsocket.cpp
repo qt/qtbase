@@ -585,7 +585,7 @@ void tst_QTcpSocket::bind()
 
     if (successExpected) {
         bool randomPort = port == -1;
-        int attemptsLeft = 5;     // only used with randomPort
+        int attemptsLeft = 5;     // only used with randomPort or Windows
         do {
             if (randomPort) {
                 // try to get a random port number
