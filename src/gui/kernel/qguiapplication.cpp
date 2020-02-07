@@ -1727,6 +1727,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     window_list.clear();
     screen_list.clear();
+
+    self = nullptr;
 }
 
 #if 0
@@ -3401,8 +3403,11 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 */
 QFont QGuiApplication::font()
 {
-    Q_ASSERT_X(QGuiApplicationPrivate::self, "QGuiApplication::font()", "no QGuiApplication instance");
     const auto locker = qt_scoped_lock(applicationFontMutex);
+    if (!QGuiApplicationPrivate::self && !QGuiApplicationPrivate::app_font) {
+        qWarning("QGuiApplication::font(): no QGuiApplication instance and no application font set.");
+        return QFont();  // in effect: QFont((QFontPrivate*)nullptr), so no recursion
+    }
     initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;
 }
