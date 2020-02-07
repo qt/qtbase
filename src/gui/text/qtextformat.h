@@ -184,16 +184,16 @@ public:
         // character properties
         FirstFontProperty = 0x1FE0,
         FontCapitalization = FirstFontProperty,
-        FontLetterSpacingType = 0x2033,
         FontLetterSpacing = 0x1FE1,
         FontWordSpacing = 0x1FE2,
-        FontStretch = 0x2034,
         FontStyleHint = 0x1FE3,
         FontStyleStrategy = 0x1FE4,
         FontKerning = 0x1FE5,
         FontHintingPreference = 0x1FE6,
         FontFamilies = 0x1FE7,
         FontStyleName = 0x1FE8,
+        FontLetterSpacingType = 0x1FE9,
+        FontStretch = 0x1FEA,
         FontFamily = 0x2000,
         FontPointSize = 0x2001,
         FontSizeAdjustment = 0x2002,
@@ -207,7 +207,7 @@ public:
         FontPixelSize = 0x2009,
         LastFontProperty = FontPixelSize,
 
-        TextUnderlineColor = 0x2010,
+        TextUnderlineColor = 0x2020,
         TextVerticalAlignment = 0x2021,
         TextOutline = 0x2022,
         TextUnderlineStyle = 0x2023,
@@ -216,6 +216,12 @@ public:
         IsAnchor = 0x2030,
         AnchorHref = 0x2031,
         AnchorName = 0x2032,
+
+        // Included for backwards compatibility with old QDataStreams.
+        // Should not be referenced in user code.
+        OldFontLetterSpacingType = 0x2033,
+        OldFontStretch = 0x2034,
+
         ObjectType = 0x2f00,
 
         // list properties

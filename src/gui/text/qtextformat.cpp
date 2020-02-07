@@ -201,10 +201,9 @@ public:
     inline void insertProperty(qint32 key, const QVariant &value)
     {
         hashDirty = true;
-        if ((key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
-                || key == QTextFormat::FontLetterSpacingType) {
+        if (key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
             fontDirty = true;
-        }
+
         for (int i = 0; i < props.count(); ++i)
             if (props.at(i).key == key) {
                 props[i].value = value;
@@ -218,10 +217,8 @@ public:
         for (int i = 0; i < props.count(); ++i)
             if (props.at(i).key == key) {
                 hashDirty = true;
-                if ((key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
-                        || key == QTextFormat::FontLetterSpacingType) {
+                if (key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
                     fontDirty = true;
-                }
                 props.remove(i);
                 return;
             }
@@ -444,7 +441,22 @@ void QTextFormatPrivate::recalcFont() const
 #ifndef QT_NO_DATASTREAM
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFormat &fmt)
 {
-    stream << fmt.format_type << fmt.properties();
+    QMap<int, QVariant> properties = fmt.properties();
+    if (stream.version() < QDataStream::Qt_6_0) {
+        auto it = properties.find(QTextFormat::FontLetterSpacingType);
+        if (it != properties.end()) {
+            properties[QTextFormat::OldFontLetterSpacingType] = it.value();
+            properties.erase(it);
+        }
+
+        it = properties.find(QTextFormat::FontStretch);
+        if (it != properties.end()) {
+            properties[QTextFormat::OldFontStretch] = it.value();
+            properties.erase(it);
+        }
+    }
+
+    stream << fmt.format_type << properties;
     return stream;
 }
 
@@ -459,8 +471,14 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
         fmt.d = new QTextFormatPrivate();
 
     for (QMap<qint32, QVariant>::ConstIterator it = properties.constBegin();
-         it != properties.constEnd(); ++it)
-        fmt.d->insertProperty(it.key(), it.value());
+         it != properties.constEnd(); ++it) {
+        qint32 key = it.key();
+        if (key == QTextFormat::OldFontLetterSpacingType)
+            key = QTextFormat::FontLetterSpacingType;
+        else if (key == QTextFormat::OldFontStretch)
+            key = QTextFormat::FontStretch;
+        fmt.d->insertProperty(key, it.value());
+    }
 
     return stream;
 }
@@ -620,6 +638,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value IsAnchor
     \value AnchorHref
     \value AnchorName
+    \omitvalue OldFontLetterSpacingType
+    \omitvalue OldFontStretch
     \value ObjectType
 
     List properties

@@ -40,6 +40,10 @@
 #include <qtextlayout.h>
 #include <qabstracttextdocumentlayout.h>
 
+#ifndef QT_NO_DATASTREAM
+#  include <qdatastream.h>
+#endif
+
 class tst_QTextFormat : public QObject
 {
 Q_OBJECT
@@ -61,6 +65,10 @@ private slots:
     void setFont_collection_data();
     void setFont_collection();
     void clearCollection();
+
+#ifndef QT_NO_DATASTREAM
+    void dataStreamCompatibility();
+#endif
 };
 
 /*! \internal
@@ -676,6 +684,126 @@ void tst_QTextFormat::clearCollection()
     QCOMPARE(collection.hashes.count(), 1);
     QCOMPARE(collection.defaultFont(), f); // kept, QTextDocument::clear or setPlainText should not reset the font set by setDefaultFont
 }
+
+#ifndef QT_NO_DATASTREAM
+void tst_QTextFormat::dataStreamCompatibility()
+{
+    // Make sure that we are still compatible with the old values of QTextFormat::FontLetterSpacingType
+    // and QTextFormat::FontStretch, when used with earlier QDataStream versions
+    QTextCharFormat format;
+    format.setFontStretch(42);
+    format.setFontLetterSpacingType(QFont::AbsoluteSpacing);
+
+    // Sanity check
+    {
+        QMap<int, QVariant> properties = format.properties();
+        QVERIFY(properties.contains(QTextFormat::FontLetterSpacingType));
+        QVERIFY(properties.contains(QTextFormat::FontStretch));
+        QVERIFY(!properties.contains(QTextFormat::OldFontLetterSpacingType));
+        QVERIFY(!properties.contains(QTextFormat::OldFontStretch));
+    }
+
+    QByteArray memory;
+
+    // Current stream version
+    {
+        {
+            QBuffer buffer(&memory);
+            buffer.open(QIODevice::WriteOnly);
+
+            QDataStream stream(&buffer);
+            stream << format;
+        }
+
+        {
+            QBuffer buffer(&memory);
+            buffer.open(QIODevice::ReadOnly);
+
+            QDataStream stream(&buffer);
+
+            QTextFormat other;
+            stream >> other;
+
+            {
+                QMap<int, QVariant> properties = other.properties();
+                QVERIFY(properties.contains(QTextFormat::FontLetterSpacingType));
+                QVERIFY(properties.contains(QTextFormat::FontStretch));
+                QVERIFY(!properties.contains(QTextFormat::OldFontLetterSpacingType));
+                QVERIFY(!properties.contains(QTextFormat::OldFontStretch));
+            }
+        }
+
+        {
+            QBuffer buffer(&memory);
+            buffer.open(QIODevice::ReadOnly);
+
+            QDataStream stream(&buffer);
+
+            quint32 type;
+            stream >> type;
+
+            QMap<qint32, QVariant> properties;
+            stream >> properties;
+            QVERIFY(properties.contains(QTextFormat::FontLetterSpacingType));
+            QVERIFY(properties.contains(QTextFormat::FontStretch));
+            QVERIFY(!properties.contains(QTextFormat::OldFontLetterSpacingType));
+            QVERIFY(!properties.contains(QTextFormat::OldFontStretch));
+        }
+    }
+
+    // Qt 5.15 stream version
+    memory.clear();
+    {
+        {
+            QBuffer buffer(&memory);
+            buffer.open(QIODevice::WriteOnly);
+
+            QDataStream stream(&buffer);
+            stream.setVersion(QDataStream::Qt_5_15);
+            stream << format;
+        }
+
+        {
+            QBuffer buffer(&memory);
+            buffer.open(QIODevice::ReadOnly);
+
+            QDataStream stream(&buffer);
+            stream.setVersion(QDataStream::Qt_5_15);
+
+            QTextFormat other;
+            stream >> other;
+
+            {
+                QMap<int, QVariant> properties = other.properties();
+                QVERIFY(properties.contains(QTextFormat::FontLetterSpacingType));
+                QVERIFY(properties.contains(QTextFormat::FontStretch));
+                QVERIFY(!properties.contains(QTextFormat::OldFontLetterSpacingType));
+                QVERIFY(!properties.contains(QTextFormat::OldFontStretch));
+            }
+        }
+
+        {
+            QBuffer buffer(&memory);
+            buffer.open(QIODevice::ReadOnly);
+
+            QDataStream stream(&buffer);
+            stream.setVersion(QDataStream::Qt_5_15);
+
+            quint32 type;
+            stream >> type;
+
+            // Verify that old data stream still has the compatibility values
+            QMap<qint32, QVariant> properties;
+            stream >> properties;
+            QVERIFY(!properties.contains(QTextFormat::FontLetterSpacingType));
+            QVERIFY(!properties.contains(QTextFormat::FontStretch));
+            QVERIFY(properties.contains(QTextFormat::OldFontLetterSpacingType));
+            QVERIFY(properties.contains(QTextFormat::OldFontStretch));
+        }
+    }
+
+}
+#endif // QT_NO_DATASTREAM
 
 QTEST_MAIN(tst_QTextFormat)
 #include "tst_qtextformat.moc"
