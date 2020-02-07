@@ -617,6 +617,12 @@ static bool familySupportsWritingSystem(QtFontFamily *family, size_t writingSyst
     return false;
 }
 
+Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int script)
+{
+    return QFontDatabase::WritingSystem(std::find(scriptForWritingSystem,
+                                                  scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
+                                                  script) - scriptForWritingSystem);
+}
 
 /*!
   \internal
@@ -833,9 +839,7 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
     QStringList preferredFallbacks;
     QStringList otherFallbacks;
 
-    size_t writingSystem = std::find(scriptForWritingSystem,
-                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
-                                     script) - scriptForWritingSystem;
+    auto writingSystem = qt_writing_system_for_script(script);
     if (writingSystem >= QFontDatabase::WritingSystemsCount)
         writingSystem = QFontDatabase::Any;
 
@@ -1272,8 +1276,7 @@ static int match(int script, const QFontDef &request,
 
     load(family_name, script);
 
-    size_t writingSystem = std::find(scriptForWritingSystem, scriptForWritingSystem +
-            QFontDatabase::WritingSystemsCount, script) - scriptForWritingSystem;
+    auto writingSystem = qt_writing_system_for_script(script);
     if (writingSystem >= QFontDatabase::WritingSystemsCount)
         writingSystem = QFontDatabase::Any;
 
@@ -2876,9 +2879,7 @@ QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
 
 Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script, const QStringList &families)
 {
-    size_t writingSystem = std::find(scriptForWritingSystem,
-                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
-                                     script) - scriptForWritingSystem;
+    size_t writingSystem = qt_writing_system_for_script(script);
     if (writingSystem == QFontDatabase::Any
             || writingSystem >= QFontDatabase::WritingSystemsCount) {
         return families;

@@ -268,17 +268,7 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
                     Q_UNREACHABLE();
                 Q_ASSERT(length >= 86);
             }
-            quint32 unicodeRange[4] = {
-                qFromBigEndian<quint32>(os2Table.data() + 42),
-                qFromBigEndian<quint32>(os2Table.data() + 46),
-                qFromBigEndian<quint32>(os2Table.data() + 50),
-                qFromBigEndian<quint32>(os2Table.data() + 54)
-            };
-            quint32 codePageRange[2] = {
-                qFromBigEndian<quint32>(os2Table.data() + 78),
-                qFromBigEndian<quint32>(os2Table.data() + 82)
-            };
-            fd->writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+            fd->writingSystems = QPlatformFontDatabase::writingSystemsFromOS2Table(reinterpret_cast<const char *>(os2Table.data()), length);
         }
     }
 

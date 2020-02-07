@@ -40,6 +40,7 @@
 #include "qwindowsdirectwritefontdatabase_p.h"
 #include "qwindowsfontenginedirectwrite_p.h"
 
+#include <QtCore/qendian.h>
 #include <QtCore/qstringbuilder.h>
 #include <QtCore/qvarlengtharray.h>
 
@@ -174,16 +175,6 @@ void QWindowsDirectWriteFontDatabase::populateFamily(const QString &familyName)
                 if (defaultLocaleFamilyName.isEmpty() && englishLocaleFamilyName.isEmpty())
                     englishLocaleFamilyName = familyName;
 
-                QVarLengthArray<DWRITE_UNICODE_RANGE, 64> ranges(QFontDatabase::WritingSystemsCount);
-
-                uint count = 0;
-                if (SUCCEEDED(font1->GetUnicodeRanges(QFontDatabase::WritingSystemsCount, ranges.data(), &count))) {
-                    // ###
-                }
-                QSupportedWritingSystems writingSystems;
-                writingSystems.setSupported(QFontDatabase::Any);
-                writingSystems.setSupported(QFontDatabase::Latin);
-
                 {
                     IDWriteLocalizedStrings *names;
                     if (SUCCEEDED(font1->GetFaceNames(&names))) {
@@ -199,7 +190,47 @@ void QWindowsDirectWriteFontDatabase::populateFamily(const QString &familyName)
 
                         IDWriteFontFace *face = nullptr;
                         if (SUCCEEDED(font->CreateFontFace(&face))) {
+                            QSupportedWritingSystems writingSystems;
+
+                            const void *tableData = nullptr;
+                            UINT32 tableSize;
+                            void *tableContext = nullptr;
+                            BOOL exists;
+                            HRESULT hr = face->TryGetFontTable(qbswap<quint32>(MAKE_TAG('O','S','/','2')),
+                                                               &tableData,
+                                                               &tableSize,
+                                                               &tableContext,
+                                                               &exists);
+                            if (SUCCEEDED(hr) && exists) {
+                                writingSystems = QPlatformFontDatabase::writingSystemsFromOS2Table(reinterpret_cast<const char *>(tableData), tableSize);
+                            } else { // Fall back to checking first character of each Unicode range in font (may include too many writing systems)
+                                quint32 rangeCount;
+                                hr = font1->GetUnicodeRanges(0, nullptr, &rangeCount);
+
+                                if (rangeCount > 0) {
+                                    QVarLengthArray<DWRITE_UNICODE_RANGE, QChar::ScriptCount> ranges(rangeCount);
+
+                                    hr = font1->GetUnicodeRanges(rangeCount, ranges.data(), &rangeCount);
+                                    if (SUCCEEDED(hr)) {
+                                        for (uint i = 0; i < rangeCount; ++i) {
+                                            QChar::Script script = QChar::script(ranges.at(i).first);
+
+                                            Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int script);
+                                            QFontDatabase::WritingSystem writingSystem = qt_writing_system_for_script(script);
+
+                                            if (writingSystem > QFontDatabase::Any && writingSystem < QFontDatabase::WritingSystemsCount)
+                                                writingSystems.setSupported(writingSystem);
+                                        }
+                                    } else {
+                                        const QString errorString = qt_error_string(int(hr));
+                                        qCWarning(lcQpaFonts) << "Failed to get unicode ranges for font" << englishLocaleFamilyName << englishLocaleStyleName << ":" << errorString;
+                                    }
+                                }
+                            }
+
                             if (!englishLocaleStyleName.isEmpty() || defaultLocaleStyleName.isEmpty()) {
+                                qCDebug(lcQpaFonts) << "Font" << englishLocaleFamilyName << englishLocaleStyleName << "supports writing systems:" << writingSystems;
+
                                 QPlatformFontDatabase::registerFont(englishLocaleFamilyName, englishLocaleStyleName, QString(), weight, style, stretch, antialias, scalable, size, fixed, writingSystems, face);
                                 face->AddRef();
                             }

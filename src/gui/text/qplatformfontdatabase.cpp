@@ -534,6 +534,32 @@ enum CsbBits {
 };
 
 /*!
+    Helper function that determines the writing system support based on the contents of the OS/2 table
+    in the font.
+
+    \since 6.0
+*/
+QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromOS2Table(const char *os2Table, size_t length)
+{
+    if (length >= 86)  {
+        quint32 unicodeRange[4] = {
+            qFromBigEndian<quint32>(os2Table + 42),
+            qFromBigEndian<quint32>(os2Table + 46),
+            qFromBigEndian<quint32>(os2Table + 50),
+            qFromBigEndian<quint32>(os2Table + 54)
+        };
+        quint32 codePageRange[2] = {
+            qFromBigEndian<quint32>(os2Table + 78),
+            qFromBigEndian<quint32>(os2Table + 82)
+        };
+
+        return writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+    }
+
+    return QSupportedWritingSystems();
+}
+
+/*!
     Helper function that determines the writing systems support by a given
     \a unicodeRange and \a codePageRange.
 
