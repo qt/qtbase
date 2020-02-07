@@ -29,54 +29,24 @@
 
 #include <QtCore/QCoreApplication>
 
-#if QT_CONFIG(temporaryfile) && QT_CONFIG(process)
+#if QT_CONFIG(process)
+
+#if QT_CONFIG(temporaryfile)
 #  define USE_DIFF
+#  include <QtCore/QTemporaryFile>
+#  include <QtCore/QStandardPaths>
 #endif
+
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QTemporaryDir>
-#ifdef USE_DIFF
-#  include <QtCore/QTemporaryFile>
-#  include <QtCore/QStandardPaths>
-#endif
+
 #include <QtTest/QtTest>
 
 #include <private/cycle_p.h>
 
 #include "emulationdetector.h"
-
-struct LoggerSet;
-
-class tst_Selftests: public QObject
-{
-    Q_OBJECT
-public:
-    tst_Selftests();
-
-private slots:
-    void initTestCase();
-    void runSubTest_data();
-    void runSubTest();
-    void cleanup();
-
-private:
-    void doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments, bool crashes);
-    bool compareOutput(const QString &logger, const QString &subdir,
-                       const QByteArray &rawOutput, const QByteArrayList &actual,
-                       const QByteArrayList &expected,
-                       QString *errorMessage) const;
-    bool compareLine(const QString &logger, const QString &subdir, bool benchmark,
-                     const QString &actualLine, const QString &expLine,
-                     QString *errorMessage) const;
-    bool checkXml(const QString &logger, QByteArray rawOutput,
-                  QString *errorMessage) const;
-
-    QString logName(const QString &logger) const;
-    QList<LoggerSet> allLoggerSets() const;
-
-    QTemporaryDir tempDir;
-};
 
 struct BenchmarkResult
 {
@@ -168,34 +138,6 @@ static QList<QByteArray> splitLines(QByteArray ba)
     return out;
 }
 
-// Return the log format, e.g. for both "stdout txt" and "txt", return "txt'.
-static inline QString logFormat(const QString &logger)
-{
-    return (logger.startsWith("stdout") ? logger.mid(7) : logger);
-}
-
-// Return the log file name, or an empty string if the log goes to stdout.
-QString tst_Selftests::logName(const QString &logger) const
-{
-    return (logger.startsWith("stdout") ? "" : QString(tempDir.path() + "/test_output." + logger));
-}
-
-static QString expectedFileNameFromTest(const QString &subdir, const QString &logger)
-{
-    return QStringLiteral("expected_") + subdir + QLatin1Char('.') + logFormat(logger);
-}
-
-// Load the expected test output for the nominated test (subdir) and logger
-// as an array of lines.  If there is no expected output file, return an
-// empty array.
-static QList<QByteArray> expectedResult(const QString &fileName)
-{
-    QFile file(QStringLiteral(":/") + fileName);
-    if (!file.open(QIODevice::ReadOnly))
-        return QList<QByteArray>();
-    return splitLines(file.readAll());
-}
-
 // Helpers for running the 'diff' tool in case comparison fails
 #ifdef USE_DIFF
 static inline void writeLines(QIODevice &d, const QByteArrayList &lines)
@@ -240,569 +182,18 @@ static QByteArray runDiff(const QByteArrayList &expected, const QByteArrayList &
     return result;
 }
 
-// Each test is run with a set of one or more test output loggers.
-// This struct holds information about one such test.
-struct LoggerSet
-{
-    LoggerSet(QString const& _name, QStringList const& _loggers, QStringList const& _arguments)
-        : name(_name), loggers(_loggers), arguments(_arguments)
-    { }
-
-    QString name;
-    QStringList loggers;
-    QStringList arguments;
-};
-
-// This function returns a list of all sets of loggers to be used for
-// running each subtest.
-QList<LoggerSet> tst_Selftests::allLoggerSets() const
-{
-    // Note that in order to test XML output to standard output, the subtests
-    // must not send output directly to stdout, bypassing Qt's output mechanisms
-    // (e.g. via printf), otherwise the output may not be well-formed XML.
-    return QList<LoggerSet>()
-        // Test with old-style options for a single logger
-        << LoggerSet("old stdout txt",
-                     QStringList() << "stdout txt",
-                     QStringList()
-                    )
-        << LoggerSet("old txt",
-                     QStringList() << "txt",
-                     QStringList() << "-o" << logName("txt")
-                    )
-        << LoggerSet("old stdout xml",
-                     QStringList() << "stdout xml",
-                     QStringList() << "-xml"
-                    )
-        << LoggerSet("old xml",
-                     QStringList() << "xml",
-                     QStringList() << "-xml" << "-o" << logName("xml")
-                    )
-        << LoggerSet("old stdout junitxml",
-                     QStringList() << "stdout junitxml",
-                     QStringList() << "-junitxml"
-                    )
-        << LoggerSet("old junitxml",
-                     QStringList() << "junitxml",
-                     QStringList() << "-junitxml" << "-o" << logName("junitxml")
-                    )
-        << LoggerSet("old xunitxml compatibility",
-                     QStringList() << "junitxml",
-                     QStringList() << "-xunitxml" << "-o" << logName("junitxml")
-                    )
-        << LoggerSet("old stdout lightxml",
-                     QStringList() << "stdout lightxml",
-                     QStringList() << "-lightxml"
-                    )
-        << LoggerSet("old lightxml",
-                     QStringList() << "lightxml",
-                     QStringList() << "-lightxml" << "-o" << logName("lightxml")
-                    )
-        << LoggerSet("old stdout csv", // benchmarks only
-                     QStringList() << "stdout csv",
-                     QStringList() << "-csv")
-        << LoggerSet("old csv", // benchmarks only
-                     QStringList() << "csv",
-                     QStringList() << "-csv" << "-o" << logName("csv"))
-        << LoggerSet("old stdout teamcity",
-                     QStringList() << "stdout teamcity",
-                     QStringList() << "-teamcity"
-                    )
-        << LoggerSet("old teamcity",
-                     QStringList() << "teamcity",
-                     QStringList() << "-teamcity" << "-o" << logName("teamcity")
-                    )
-        << LoggerSet("old stdout tap",
-                     QStringList() << "stdout tap",
-                     QStringList() << "-tap"
-                    )
-        << LoggerSet("old tap",
-                     QStringList() << "tap",
-                     QStringList() << "-tap" << "-o" << logName("tap")
-                    )
-        // Test with new-style options for a single logger
-        << LoggerSet("new stdout txt",
-                     QStringList() << "stdout txt",
-                     QStringList() << "-o" << "-,txt"
-                    )
-        << LoggerSet("new txt",
-                     QStringList() << "txt",
-                     QStringList() << "-o" << logName("txt")+",txt"
-                    )
-        << LoggerSet("new stdout xml",
-                     QStringList() << "stdout xml",
-                     QStringList() << "-o" << "-,xml"
-                    )
-        << LoggerSet("new xml",
-                     QStringList() << "xml",
-                     QStringList() << "-o" << logName("xml")+",xml"
-                    )
-        << LoggerSet("new stdout junitxml",
-                     QStringList() << "stdout junitxml",
-                     QStringList() << "-o" << "-,junitxml"
-                    )
-        << LoggerSet("new stdout xunitxml compatibility",
-                     QStringList() << "stdout junitxml",
-                     QStringList() << "-o" << "-,xunitxml"
-                    )
-        << LoggerSet("new junitxml",
-                     QStringList() << "junitxml",
-                     QStringList() << "-o" << logName("junitxml")+",junitxml"
-                    )
-        << LoggerSet("new stdout lightxml",
-                     QStringList() << "stdout lightxml",
-                     QStringList() << "-o" << "-,lightxml"
-                    )
-        << LoggerSet("new lightxml",
-                     QStringList() << "lightxml",
-                     QStringList() << "-o" << logName("lightxml")+",lightxml"
-                    )
-        << LoggerSet("new stdout csv", // benchmarks only
-                     QStringList() << "stdout csv",
-                     QStringList() << "-o" << "-,csv")
-        << LoggerSet("new csv", // benchmarks only
-                     QStringList() << "csv",
-                     QStringList() << "-o" << logName("csv")+",csv")
-        << LoggerSet("new stdout teamcity",
-                     QStringList() << "stdout teamcity",
-                     QStringList() << "-o" << "-,teamcity"
-                    )
-        << LoggerSet("new teamcity",
-                     QStringList() << "teamcity",
-                     QStringList() << "-o" << logName("teamcity")+",teamcity"
-                    )
-        << LoggerSet("new stdout tap",
-                     QStringList() << "stdout tap",
-                     QStringList() << "-o" << "-,tap"
-                    )
-        << LoggerSet("new tap",
-                     QStringList() << "tap",
-                     QStringList() << "-o" << logName("tap")+",tap"
-                    )
-        // Test with two loggers (don't test all 32 combinations, just a sample)
-        << LoggerSet("stdout txt + txt",
-                     QStringList() << "stdout txt" << "txt",
-                     QStringList() << "-o" << "-,txt"
-                                   << "-o" << logName("txt")+",txt"
-                    )
-        << LoggerSet("xml + stdout txt",
-                     QStringList() << "xml" << "stdout txt",
-                     QStringList() << "-o" << logName("xml")+",xml"
-                                   << "-o" << "-,txt"
-                    )
-        << LoggerSet("txt + junitxml",
-                     QStringList() << "txt" << "junitxml",
-                     QStringList() << "-o" << logName("txt")+",txt"
-                                   << "-o" << logName("junitxml")+",junitxml"
-                    )
-        << LoggerSet("lightxml + stdout junitxml",
-                     QStringList() << "lightxml" << "stdout junitxml",
-                     QStringList() << "-o" << logName("lightxml")+",lightxml"
-                                   << "-o" << "-,junitxml"
-                    )
-        // All loggers at the same time (except csv)
-        << LoggerSet("all loggers",
-                     QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "junitxml" << "tap",
-                     QStringList() << "-o" << logName("txt")+",txt"
-                                   << "-o" << logName("xml")+",xml"
-                                   << "-o" << logName("lightxml")+",lightxml"
-                                   << "-o" << "-,txt"
-                                   << "-o" << logName("junitxml")+",junitxml"
-                                   << "-o" << logName("teamcity")+",teamcity"
-                                   << "-o" << logName("tap")+",tap"
-                    )
-    ;
-}
-
-tst_Selftests::tst_Selftests()
-    : tempDir(QDir::tempPath() + "/tst_selftests.XXXXXX")
-{}
-
-void tst_Selftests::initTestCase()
-{
-    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
-    //Detect the location of the sub programs
-    QString subProgram = QLatin1String("pass/pass");
-#if defined(Q_OS_WIN)
-    subProgram = QLatin1String("pass/pass.exe");
-#endif
-    QString testdataDir = QFINDTESTDATA(subProgram);
-    if (testdataDir.lastIndexOf(subProgram) > 0)
-        testdataDir = testdataDir.left(testdataDir.lastIndexOf(subProgram));
-    else
-        testdataDir = QCoreApplication::applicationDirPath();
-    // chdir to our testdata path and execute helper apps relative to that.
-    QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
-}
-
-void tst_Selftests::runSubTest_data()
-{
-    QTest::addColumn<QString>("subdir");
-    QTest::addColumn<QStringList>("loggers");
-    QTest::addColumn<QStringList>("arguments");
-    QTest::addColumn<bool>("crashes");
-
-    QStringList tests = QStringList()
-#if !defined(Q_OS_WIN)
-        // On windows, assert does nothing in release mode and blocks execution
-        // with a popup window in debug mode.
-        << "assert"
-#endif
-        << "badxml"
-#if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
-        // Only run on platforms where callgrind is available.
-        << "benchlibcallgrind"
-#endif
-        << "benchlibcounting"
-        << "benchlibeventcounter"
-        << "benchliboptions"
-        << "blacklisted"
-        << "cmptest"
-        << "commandlinedata"
-        << "counting"
-        << "crashes"
-        << "datatable"
-        << "datetime"
-        << "differentexec"
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_CC_INTEL) && !defined(Q_OS_WIN)
-        // Disable this test on Windows and for intel compiler, as the run-times
-        // will popup dialogs with warnings that uncaught exceptions were thrown
-        << "exceptionthrow"
-#endif
-        << "expectfail"
-        << "failcleanup"
-#ifndef Q_OS_WIN // these assert, by design; so same problem as "assert"
-        << "faildatatype"
-        << "failfetchtype"
-#endif
-        << "failinit"
-        << "failinitdata"
-#ifndef Q_OS_WIN // asserts, by design; so same problem as "assert"
-        << "fetchbogus"
-#endif
-        << "findtestdata"
-        << "float"
-        << "globaldata"
-        << "keyboard"
-        << "longstring"
-        << "maxwarnings"
-        << "multiexec"
-        << "pass"
-        << "pairdiagnostics"
-        << "printdatatags"
-        << "printdatatagswithglobaltags"
-        << "qexecstringlist"
-        << "signaldumper"
-        << "silent"
-        << "singleskip"
-        << "skip"
-        << "skipcleanup"
-        << "skipinit"
-        << "skipinitdata"
-        << "sleep"
-        << "strcmp"
-        << "subtest"
-        << "testlib"
-        << "tuplediagnostics"
-        << "verbose1"
-        << "verbose2"
-#ifndef QT_NO_EXCEPTIONS
-        // this test will test nothing if the exceptions are disabled
-        << "verifyexceptionthrown"
-#endif //!QT_NO_EXCEPTIONS
-        << "warnings"
-        << "watchdog"
-        << "xunit"
-    ;
-
-    // These tests are affected by timing and whether the CPU tick counter
-    // is monotonically increasing.  They won't work on some machines so
-    // leave them off by default.  Feel free to enable them for your own
-    // testing by setting the QTEST_ENABLE_EXTRA_SELFTESTS environment
-    // variable to something non-empty.
-    if (!qgetenv("QTEST_ENABLE_EXTRA_SELFTESTS").isEmpty())
-        tests << "benchlibtickcounter"
-              << "benchlibwalltime"
-        ;
-
-    foreach (LoggerSet const& loggerSet, allLoggerSets()) {
-        QStringList loggers = loggerSet.loggers;
-
-        foreach (QString const& subtest, tests) {
-            // These tests don't work right unless logging plain text to
-            // standard output, either because they execute multiple test
-            // objects or because they internally supply arguments to
-            // themselves.
-            if (loggerSet.name != "old stdout txt" && loggerSet.name != "new stdout txt") {
-                if (subtest == "differentexec") {
-                    continue;
-                }
-                if (subtest == "multiexec") {
-                    continue;
-                }
-                if (subtest == "qexecstringlist") {
-                    continue;
-                }
-                if (subtest == "benchliboptions") {
-                    continue;
-                }
-                if (subtest == "blacklisted") {
-                    continue;
-                }
-                if (subtest == "printdatatags") {
-                    continue;
-                }
-                if (subtest == "printdatatagswithglobaltags") {
-                    continue;
-                }
-                if (subtest == "silent") {
-                    continue;
-                }
-                // `crashes' will not output valid XML on platforms without a crash handler
-                if (subtest == "crashes") {
-                    continue;
-                }
-                // this test prints out some floats in the testlog and the formatting is
-                // platform-specific and hard to predict.
-                if (subtest == "float") {
-                    continue;
-                }
-                // these tests are quite slow, and running them for all the loggers significantly
-                // increases the overall test time.  They do not really relate to logging, so it
-                // should be safe to run them just for the stdout loggers.
-                if (subtest == "benchlibcallgrind" || subtest == "sleep") {
-                    continue;
-                }
-            }
-            if (subtest == "badxml" && (loggerSet.name == "all loggers" || loggerSet.name.contains("txt")))
-                continue; // XML only, do not mix txt and XML for encoding test.
-
-            if (loggerSet.name.contains("csv") && !subtest.startsWith("benchlib"))
-                continue;
-
-            if (loggerSet.name.contains("teamcity") && subtest.startsWith("benchlib"))
-                continue;   // Skip benchmark for TeamCity logger
-
-            // Keep in sync with generateTestData()'s crashers in generate_expected_output.py:
-            const bool crashes = subtest == QLatin1String("assert") || subtest == QLatin1String("exceptionthrow")
-                || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
-                || subtest == QLatin1String("faildatatype") || subtest == QLatin1String("failfetchtype")
-                || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent")
-                || subtest == QLatin1String("blacklisted") || subtest == QLatin1String("watchdog");
-            QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
-                << subtest
-                << loggers
-                << loggerSet.arguments
-                << crashes
-            ;
-        }
-    }
-}
-
-#if QT_CONFIG(process)
-
-static QProcessEnvironment processEnvironment()
-{
-    static QProcessEnvironment result;
-    if (result.isEmpty()) {
-        const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
-        const bool preserveLibPath = qEnvironmentVariableIsSet("QT_PRESERVE_TESTLIB_PATH");
-        foreach (const QString &key, systemEnvironment.keys()) {
-            const bool useVariable = key == QLatin1String("PATH") || key == QLatin1String("QT_QPA_PLATFORM")
-#if defined(Q_OS_QNX)
-                || key == QLatin1String("GRAPHICS_ROOT") || key == QLatin1String("TZ")
-#elif defined(Q_OS_UNIX)
-                || key == QLatin1String("HOME") || key == QLatin1String("USER") // Required for X11 on openSUSE
-                || key == QLatin1String("QEMU_SET_ENV") || key == QLatin1String("QEMU_LD_PREFIX") // Required for QEMU
-#  if !defined(Q_OS_MAC)
-                || key == QLatin1String("DISPLAY") || key == QLatin1String("XAUTHLOCALHOSTNAME")
-                || key.startsWith(QLatin1String("XDG_"))
-#  endif // !Q_OS_MAC
-#endif // Q_OS_UNIX
-#ifdef __COVERAGESCANNER__
-                || key == QLatin1String("QT_TESTCOCOON_ACTIVE")
-#endif
-                || ( preserveLibPath && (key == QLatin1String("QT_PLUGIN_PATH")
-                                        || key == QLatin1String("LD_LIBRARY_PATH")))
-                ;
-            if (useVariable)
-                result.insert(key, systemEnvironment.value(key));
-        }
-        // Avoid interference from any qtlogging.ini files, e.g. in /etc/xdg/QtProject/:
-        result.insert(QStringLiteral("QT_LOGGING_RULES"),
-                      // Must match generate_expected_output.py's main()'s value:
-                      QStringLiteral("*.debug=true;qt.*=false"));
-
-#if defined(Q_OS_UNIX)
-        // avoid the warning from QCoreApplication
-        result.insert(QStringLiteral("LC_ALL"), QStringLiteral("en_US.UTF-8"));
-#endif
-    }
-    return result;
-}
-
-static inline QByteArray msgProcessError(const QString &binary, const QStringList &args,
-                                         const QProcessEnvironment &e, const QString &what)
-{
-    QString result;
-    QTextStream(&result) <<"Error running " << binary << ' ' << args.join(' ')
-        << " with environment " << e.toStringList().join(' ') << ": " << what;
-    return result.toLocal8Bit();
-}
-
-void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments, bool crashes)
-{
-#if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
-    if (subdir == "benchlibcallgrind") {
-        QProcess checkProcess;
-        QStringList args;
-        args << QLatin1String("--version");
-        checkProcess.start(QLatin1String("valgrind"), args);
-        if (!checkProcess.waitForFinished(-1))
-            QSKIP(QString("Valgrind broken or not available. Not running %1 test!").arg(subdir).toLocal8Bit());
-    }
-#endif
-
-    QProcess proc;
-    QProcessEnvironment environment = processEnvironment();
-    // Keep in sync with generateTestData()'s extraEnv in generate_expected_output.py:
-    if (crashes) {
-        environment.insert("QTEST_DISABLE_CORE_DUMP", "1");
-        environment.insert("QTEST_DISABLE_STACK_DUMP", "1");
-        if (subdir == QLatin1String("watchdog"))
-            environment.insert("QTEST_FUNCTION_TIMEOUT", "100");
-    }
-    proc.setProcessEnvironment(environment);
-    const QString path = subdir + QLatin1Char('/') + subdir;
-    proc.start(path, arguments);
-    QVERIFY2(proc.waitForStarted(), msgProcessError(path, arguments, environment, QStringLiteral("Cannot start: ") + proc.errorString()));
-    QVERIFY2(proc.waitForFinished(), msgProcessError(path, arguments, environment, QStringLiteral("Timed out: ") + proc.errorString()));
-    if (!crashes) {
-        QVERIFY2(proc.exitStatus() == QProcess::NormalExit,
-                 msgProcessError(path, arguments, environment,
-                                 QStringLiteral("Crashed: ") + proc.errorString()
-                                 + QStringLiteral(": ") + QString::fromLocal8Bit(proc.readAllStandardError())));
-    }
-
-    QList<QByteArray> actualOutputs;
-    for (int i = 0; i < loggers.count(); ++i) {
-        QString logFile = logName(loggers[i]);
-        QByteArray out;
-        if (logFile.isEmpty()) {
-            out = proc.readAllStandardOutput();
-        } else {
-            QFile file(logFile);
-            if (file.open(QIODevice::ReadOnly))
-                out = file.readAll();
-        }
-        actualOutputs << out;
-    }
-
-    const QByteArray err(proc.readAllStandardError());
-
-    // Some tests may output unpredictable strings to stderr, which we'll ignore.
-    //
-    // For instance, uncaught exceptions on Windows might say (depending on Windows
-    // version and JIT debugger settings):
-    // "This application has requested the Runtime to terminate it in an unusual way.
-    // Please contact the application's support team for more information."
-    //
-    // Also, tests which use valgrind may generate warnings if the toolchain is
-    // newer than the valgrind version, such that valgrind can't understand the
-    // debug information on the binary.
-    if (subdir != QLatin1String("exceptionthrow")
-        && subdir != QLatin1String("cmptest") // QImage comparison requires QGuiApplication
-        && subdir != QLatin1String("fetchbogus")
-        && subdir != QLatin1String("watchdog")
-        && subdir != QLatin1String("xunit")
-#ifdef Q_CC_MINGW
-        && subdir != QLatin1String("blacklisted") // calls qFatal()
-        && subdir != QLatin1String("silent") // calls qFatal()
-#endif
-#ifdef Q_OS_LINUX
-        // QEMU outputs to stderr about uncaught signals
-        && !(EmulationDetector::isRunningArmOnX86() &&
-                (subdir == QLatin1String("assert")
-                 || subdir == QLatin1String("blacklisted")
-                 || subdir == QLatin1String("crashes")
-                 || subdir == QLatin1String("faildatatype")
-                 || subdir == QLatin1String("failfetchtype")
-                 || subdir == QLatin1String("silent")
-                )
-            )
-#endif
-        && subdir != QLatin1String("benchlibcallgrind"))
-        QVERIFY2(err.isEmpty(), err.constData());
-
-    for (int n = 0; n < loggers.count(); ++n) {
-        QString logger = loggers[n];
-        if (n == 0 && subdir == QLatin1String("crashes")) {
-            QByteArray &actual = actualOutputs[0];
-#ifndef Q_OS_WIN
-             // Remove digits of times to match the expected file.
-            const QLatin1String timePattern("Function time:");
-            int timePos = actual.indexOf(timePattern);
-            if (timePos >= 0) {
-                timePos += timePattern.size();
-                const int nextLinePos = actual.indexOf('\n', timePos);
-                for (int c = (nextLinePos != -1 ? nextLinePos : actual.size()) - 1; c >= timePos; --c) {
-                    if (actual.at(c) >= '0' && actual.at(c) <= '9')
-                        actual.remove(c, 1);
-                }
-            }
-#else // !Q_OS_WIN
-            // Remove stack trace which is output to stdout.
-            const int exceptionLogStart = actual.indexOf("A crash occurred in ");
-            if (exceptionLogStart >= 0)
-                actual.truncate(exceptionLogStart);
-#endif // Q_OS_WIN
-        }
-
-        QList<QByteArray> res = splitLines(actualOutputs[n]);
-        QString errorMessage;
-        QString expectedFileName = expectedFileNameFromTest(subdir, logger);
-        QByteArrayList exp = expectedResult(expectedFileName);
-        if (!exp.isEmpty()) {
-            if (!compareOutput(logger, subdir, actualOutputs[n], res, exp, &errorMessage)) {
-                errorMessage.prepend(QLatin1Char('"') + logger + QLatin1String("\", ")
-                                     + expectedFileName + QLatin1Char(' '));
-                errorMessage += QLatin1String("\nActual:\n") + QLatin1String(actualOutputs[n]);
-                const QByteArray diff = runDiff(exp, res);
-                if (!diff.isEmpty())
-                    errorMessage += QLatin1String("\nDiff:\n") + QLatin1String(diff);
-                QFAIL(qPrintable(errorMessage));
-            }
-        } else {
-            // For the "crashes" and other tests, there are multiple versions of the
-            // expected output. Loop until a matching one is found.
-            bool ok = false;
-            for (int i = 1; !ok; ++i) {
-                expectedFileName = expectedFileNameFromTest(subdir + QLatin1Char('_') + QString::number(i), logger);
-                const QByteArrayList exp = expectedResult(expectedFileName);
-                if (exp.isEmpty())
-                    break;
-                QString errorMessage2;
-                ok = compareOutput(logger, subdir, actualOutputs[n], res, exp, &errorMessage2);
-                if (!ok)
-                    errorMessage += QLatin1Char('\n') + expectedFileName + QLatin1String(": ") + errorMessage2;
-            }
-            if (!ok) { // Use QDebug's quote mechanism to report potentially garbled output.
-                errorMessage.prepend(QLatin1String("Cannot find a matching file for ") + subdir);
-                errorMessage += QLatin1String("\nActual:\n");
-                QDebug(&errorMessage) << actualOutputs[n];
-                QFAIL(qPrintable(errorMessage));
-            }
-        }
-    }
-}
-
 static QString teamCityLocation() { return QStringLiteral("|[Loc: _FILE_(_LINE_)|]"); }
 static QString qtVersionPlaceHolder() { return QStringLiteral("@INSERT_QT_VERSION_HERE@"); }
 
-bool tst_Selftests::compareOutput(const QString &logger, const QString &subdir,
+// Forward declarations
+bool compareLine(const QString &logger, const QString &subdir, bool benchmark,
+    const QString &actualLine, const QString &expectedLine, QString *errorMessage);
+bool checkXml(const QString &logger, QByteArray xml, QString *errorMessage);
+
+bool compareOutput(const QString &logger, const QString &subdir,
                                   const QByteArray &rawOutput, const QByteArrayList &actual,
                                   const QByteArrayList &expected,
-                                  QString *errorMessage) const
+                                  QString *errorMessage)
 {
 
     if (actual.size() != expected.size()) {
@@ -864,10 +255,10 @@ bool tst_Selftests::compareOutput(const QString &logger, const QString &subdir,
     return true;
 }
 
-bool tst_Selftests::compareLine(const QString &logger, const QString &subdir,
+bool compareLine(const QString &logger, const QString &subdir,
                                 bool benchmark,
                                 const QString &actualLine, const QString &expectedLine,
-                                QString *errorMessage) const
+                                QString *errorMessage)
 {
     if (actualLine == expectedLine)
         return true;
@@ -957,8 +348,7 @@ bool tst_Selftests::compareLine(const QString &logger, const QString &subdir,
     return false;
 }
 
-bool tst_Selftests::checkXml(const QString &logger, QByteArray xml,
-                             QString *errorMessage) const
+bool checkXml(const QString &logger, QByteArray xml, QString *errorMessage)
 {
     // lightxml intentionally skips the root element, which technically makes it
     // not valid XML.
@@ -981,22 +371,6 @@ bool tst_Selftests::checkXml(const QString &logger, QByteArray xml,
         return false;
     }
     return true;
-}
-
-#endif // QT_CONFIG(process)
-
-void tst_Selftests::runSubTest()
-{
-#if !QT_CONFIG(process)
-    QSKIP("This test requires QProcess support");
-#else
-    QFETCH(QString, subdir);
-    QFETCH(QStringList, loggers);
-    QFETCH(QStringList, arguments);
-    QFETCH(bool, crashes);
-
-    doRunSubTest(subdir, loggers, arguments, crashes);
-#endif // QT_CONFIG(process)
 }
 
 // attribute must contain ="
@@ -1179,21 +553,694 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
     return out;
 }
 
-void tst_Selftests::cleanup()
-{
-    QFETCH(QStringList, loggers);
+// ----------------------------------------------------------------------
 
-    // Remove the test output files
-    for (int i = 0; i < loggers.count(); ++i) {
-        QString logFileName = logName(loggers[i]);
-        if (!logFileName.isEmpty()) {
-            QFile logFile(logFileName);
-            if (logFile.exists())
-                QVERIFY2(logFile.remove(), qPrintable(QString::fromLatin1("Cannot remove file '%1': %2: ").arg(logFileName, logFile.errorString())));
+#include "catch_p.h"
+#include <QtTest/private/qtestlog_p.h>
+
+#if defined(Q_OS_MACOS)
+#include <QtCore/private/qcore_mac_p.h>
+#endif
+
+enum RebaseMode { NoRebase, RebaseMissing, RebaseFailing, RebaseAll };
+static RebaseMode rebaseMode = NoRebase;
+
+static QTemporaryDir testOutputDir(QDir::tempPath() + "/tst_selftests.XXXXXX");
+
+enum ArgumentStyle { NewStyleArgument, OldStyleArguments };
+enum OutputMode { FileOutput, StdoutOutput };
+
+struct TestLogger
+{
+    TestLogger(QTestLog::LogMode logger) : logger(logger) {}
+
+    TestLogger(QTestLog::LogMode logger, ArgumentStyle argumentStyle)
+        : logger(logger), argumentStyle(argumentStyle) {}
+    TestLogger(QTestLog::LogMode logger, OutputMode outputMode)
+        : logger(logger), outputMode(outputMode) {}
+
+    TestLogger(QTestLog::LogMode logger, OutputMode outputMode, ArgumentStyle argumentStyle)
+        : logger(logger), outputMode(outputMode), argumentStyle(argumentStyle) {}
+
+    QString shortName() const
+    {
+        if (logger == QTestLog::Plain)
+            return "txt";
+
+        auto loggers = QMetaEnum::fromType<QTestLog::LogMode>();
+        return QString(loggers.valueToKey(logger)).toLower();
+    }
+
+    QString outputFileName(const QString &test) const
+    {
+        if (outputMode == StdoutOutput)
+            return QString();
+
+        return testOutputDir.filePath("output_" + test + "." + shortName());
+    }
+
+    QString expectationFileName(const QString &test, int version = 0) const
+    {
+        auto fileName = "expected_" + test;
+        if (version)
+            fileName += QString("_%1").arg(version);
+        fileName += "." + shortName();
+        return fileName;
+    }
+
+    QStringList arguments(const QString &test) const
+    {
+        auto fileName = outputFileName(test);
+
+        QStringList arguments;
+        if (argumentStyle == NewStyleArgument) {
+            arguments << "-o" << (!fileName.isEmpty() ? fileName : QStringLiteral("-"))
+                + "," + shortName();
+        } else {
+            arguments << "-" + shortName();
+            if (!fileName.isEmpty())
+                arguments << "-o" << fileName;
+        }
+
+        return arguments;
+    }
+
+    QByteArray testOutput(const QString &test) const
+    {
+        if (outputMode == StdoutOutput)
+            return QByteArray();
+
+        QFile outputFile(outputFileName(test));
+        REQUIRE(outputFile.exists());
+        REQUIRE(outputFile.open(QIODevice::ReadOnly));
+        return outputFile.readAll();
+    }
+
+    bool shouldIgnoreTest(const QString &test) const;
+
+    operator QTestLog::LogMode() const { return logger; }
+
+    QTestLog::LogMode logger;
+    OutputMode outputMode = FileOutput;
+    ArgumentStyle argumentStyle = NewStyleArgument;
+};
+
+bool TestLogger::shouldIgnoreTest(const QString &test) const
+{
+#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    if (logger == QTestLog::Apple)
+        return true;
+#endif
+
+    if (test == "deleteLater" || test == "deleteLater_noApp" || test == "mouse")
+        return true; // Missing expectation files
+
+    // These tests are affected by timing and whether the CPU tick counter
+    // is monotonically increasing. They won't work on some machines so
+    // leave them off by default. Feel free to enable them for your own
+    // testing by setting the QTEST_ENABLE_EXTRA_SELFTESTS environment
+    // variable to something non-empty.
+    static bool enableExtraTests = !qEnvironmentVariableIsEmpty("QTEST_ENABLE_EXTRA_SELFTESTS");
+    if (!enableExtraTests && (test == "benchlibtickcounter" || test == "benchlibwalltime"))
+        return true;
+
+#if defined(Q_OS_WIN)
+    // On windows, assert does nothing in release mode and blocks execution
+    // with a popup window in debug mode, so skip tests that assert.
+    if (test == "assert" || test == "faildatatype" || test == "failfetchtype"
+        || test == "fetchbogus")
+        return true;
+#endif
+
+#if defined(QT_NO_EXCEPTIONS) || defined(Q_CC_INTEL) || defined(Q_OS_WIN)
+    // Disable this test on Windows or for Intel compiler, as the run-times
+    // will popup dialogs with warnings that uncaught exceptions were thrown
+    if (test == "exceptionthrow")
+        return true;
+#endif
+
+#if defined(QT_NO_EXCEPTIONS)
+    // This test will test nothing if the exceptions are disabled
+    if (test == "verifyexceptionthrown")
+        return true;
+#endif
+
+    if (test == "benchlibcallgrind") {
+#if !(defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX))
+        // Skip on platforms where callgrind is not available
+        return true;
+#else
+        // Check that it's actually available
+        QProcess checkProcess;
+        QStringList args;
+        args << "--version";
+        checkProcess.start("valgrind", args);
+        if (!checkProcess.waitForFinished(-1))
+            WARN("Valgrind broken or not available. Not running benchlibcallgrind test!");
+#endif
+    }
+
+    if (logger != QTestLog::Plain || outputMode == FileOutput) {
+        // The following tests only work with plain text output to stdout,
+        // either because they execute multiple test objects or because
+        // they internally supply arguments to themselves.
+        if (test == "differentexec"
+            || test == "multiexec"
+            || test == "qexecstringlist"
+            || test == "benchliboptions"
+            || test == "blacklisted"
+            || test == "printdatatags"
+            || test == "printdatatagswithglobaltags"
+            || test == "silent")
+            return true;
+
+        // `crashes' will not output valid XML on platforms without a crash handler
+        if (test == "crashes")
+            return true;
+
+        // this test prints out some floats in the testlog and the formatting is
+        // platform-specific and hard to predict.
+        if (test == "float")
+            return true;
+
+        // these tests are quite slow, and running them for all the loggers significantly
+        // increases the overall test time.  They do not really relate to logging, so it
+        // should be safe to run them just for the stdout loggers.
+        if (test == "benchlibcallgrind" || test == "sleep")
+            return true;
+    }
+
+    if (test == "badxml" && !(logger == QTestLog::XML
+            || logger == QTestLog::LightXML || logger == QTestLog::JUnitXML))
+        return true;
+
+    if (logger == QTestLog::CSV && !test.startsWith("benchlib"))
+        return true;
+
+    if (logger == QTestLog::TeamCity && test.startsWith("benchlib"))
+        return true; // Skip benchmark for TeamCity logger
+
+    return false;
+}
+
+using TestLoggers = QVector<TestLogger>;
+
+// ----------------------- Output checking -----------------------
+
+/*
+    Check that the test doesn't produce any unexpected error output.
+
+    Some tests may output unpredictable strings to stderr, which we'll ignore.
+
+    For instance, uncaught exceptions on Windows might say (depending on Windows
+    version and JIT debugger settings):
+    "This application has requested the Runtime to terminate it in an unusual way.
+    Please contact the application's support team for more information."
+
+    Also, tests which use valgrind may generate warnings if the toolchain is
+    newer than the valgrind version, such that valgrind can't understand the
+    debug information on the binary.
+*/
+void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
+{
+    if (test == "exceptionthrow"
+        || test == "cmptest" // QImage comparison requires QGuiApplication
+        || test == "fetchbogus"
+        || test == "watchdog"
+        || test == "xunit"
+        || test == "benchlibcallgrind")
+        return;
+
+#ifdef Q_CC_MINGW
+    if (test == "blacklisted" // calls qFatal()
+        || test == "silent") // calls qFatal()
+#endif
+        return;
+
+#ifdef Q_OS_LINUX
+    // QEMU outputs to stderr about uncaught signals
+    if (EmulationDetector::isRunningArmOnX86() &&
+        (test == "assert"
+         || test == "blacklisted"
+         || test == "crashes"
+         || test == "faildatatype"
+         || test == "failfetchtype"
+         || test == "silent"
+        ))
+        return;
+#endif
+
+    INFO(errorOutput);
+    REQUIRE(errorOutput.isEmpty());
+}
+
+/*
+    Removes any parts of the output that may vary between test runs.
+*/
+QByteArray sanitizeOutput(const QString &test, const QByteArray &output)
+{
+    QByteArray actual = output;
+
+    if (test == "crashes") {
+#if !defined(Q_OS_WIN)
+        // Remove digits of times
+        const QLatin1String timePattern("Function time:");
+        int timePos = actual.indexOf(timePattern);
+        if (timePos >= 0) {
+            timePos += timePattern.size();
+            const int nextLinePos = actual.indexOf('\n', timePos);
+            for (int c = (nextLinePos != -1 ? nextLinePos : actual.size()) - 1; c >= timePos; --c) {
+                if (actual.at(c) >= '0' && actual.at(c) <= '9')
+                    actual.remove(c, 1);
+            }
+        }
+#endif
+
+#if defined(Q_OS_WIN)
+        // Remove stack trace which is output to stdout
+        const int exceptionLogStart = actual.indexOf("A crash occurred in ");
+        if (exceptionLogStart >= 0)
+            actual.truncate(exceptionLogStart);
+#endif
+    }
+
+    return actual;
+}
+
+QByteArray readExpectationFile(const QString &fileName)
+{
+    QFile file(QStringLiteral(":/") + fileName);
+
+    if (!file.exists() && rebaseMode != NoRebase) {
+        // Try rebased test results
+        file.setFileName(testOutputDir.filePath(fileName));
+    }
+
+    if (!file.exists())
+        return QByteArray();
+
+    CAPTURE(file.fileName());
+    REQUIRE(file.open(QIODevice::ReadOnly));
+    return file.readAll();
+}
+
+void checkTestOutput(const QString &test, const TestLogger &logger, const QByteArray &testOutput)
+{
+    REQUIRE(!testOutput.isEmpty());
+
+    QByteArray actual = sanitizeOutput(test, testOutput);
+    auto actualLines = splitLines(actual);
+
+    QString outputMessage;
+    bool expectationMatched = false;
+
+    QString expectationFileName;
+
+    // Rebases test results if the given mode has been enabled on the command line
+    auto rebaseTestResult = [&](RebaseMode mode) {
+        if (rebaseMode < mode)
+            return false;
+
+        QFile file(testOutputDir.filePath(expectationFileName));
+        REQUIRE(file.open(QIODevice::WriteOnly));
+        file.write(actual);
+
+        expectationMatched = true;
+        return true;
+    };
+
+    for (int version = 0; !expectationMatched; ++version) {
+        // Look for a test expectation file. Most tests only have a single
+        // expectation file, while some have multiple versions that should
+        // all be considered before failing the test.
+        expectationFileName = logger.expectationFileName(test, version);
+
+        if (rebaseTestResult(RebaseAll))
+            break;
+
+        const QByteArray expected = readExpectationFile(expectationFileName);
+        if (expected.isEmpty()) {
+            if (rebaseTestResult(RebaseMissing))
+                break;
+
+            if (!version) {
+                // Look for version-specific expectations
+                continue;
+            } else {
+                // No more versions found, and still no match
+                assert(!expectationMatched);
+                outputMessage += "Could not find any expectation files for subtest '" + test + "'";
+                break;
+            }
+        }
+
+        // Found expected result
+        QString errorMessage;
+        auto expectedLines = splitLines(expected);
+        if (compareOutput(logger.shortName(), test, actual, actualLines, expectedLines, &errorMessage)) {
+            expectationMatched = true;
+        } else if (rebaseTestResult(RebaseFailing)) {
+            break;
+        } else {
+            if (!outputMessage.isEmpty())
+                outputMessage += "\n\n" + QString('-').repeated(80) + "\n";
+            outputMessage += "\n" + errorMessage + "\n";
+            outputMessage += "\nExpected (" + expectationFileName + "):\n" + expected;
+            outputMessage += "\nActual:\n" + actual;
+            const QByteArray diff = runDiff(expectedLines, actualLines);
+            if (!diff.isEmpty())
+                 outputMessage += "\nDiff:\n" + diff.trimmed();
+        }
+    }
+
+    INFO(outputMessage);
+    CHECK(expectationMatched);
+}
+
+// ----------------------- Test running -----------------------
+
+static QProcessEnvironment testEnvironment()
+{
+    static QProcessEnvironment environment;
+    if (environment.isEmpty()) {
+        const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
+        const bool preserveLibPath = qEnvironmentVariableIsSet("QT_PRESERVE_TESTLIB_PATH");
+        foreach (const QString &key, systemEnvironment.keys()) {
+            const bool useVariable = key == "PATH" || key == "QT_QPA_PLATFORM"
+#if defined(Q_OS_QNX)
+                || key == "GRAPHICS_ROOT" || key == "TZ"
+#elif defined(Q_OS_UNIX)
+                || key == "HOME" || key == "USER" // Required for X11 on openSUSE
+                || key == "QEMU_SET_ENV" || key == "QEMU_LD_PREFIX" // Required for QEMU
+#  if !defined(Q_OS_MACOS)
+                || key == "DISPLAY" || key == "XAUTHLOCALHOSTNAME"
+                || key.startsWith("XDG_")
+#  endif // !Q_OS_MACOS
+#endif // Q_OS_UNIX
+#ifdef __COVERAGESCANNER__
+                || key == "QT_TESTCOCOON_ACTIVE"
+#endif
+                || ( preserveLibPath && (key == "QT_PLUGIN_PATH"
+                                        || key == "LD_LIBRARY_PATH"))
+                ;
+            if (useVariable)
+                environment.insert(key, systemEnvironment.value(key));
+        }
+        // Avoid interference from any qtlogging.ini files, e.g. in /etc/xdg/QtProject/:
+        environment.insert("QT_LOGGING_RULES", "*.debug=true;qt.*=false");
+
+#if defined(Q_OS_UNIX)
+        // Avoid the warning from QCoreApplication
+        environment.insert("LC_ALL", "en_US.UTF-8");
+#endif
+    }
+    return environment;
+}
+
+struct TestProcessResult
+{
+    int exitCode;
+    QByteArray standardOutput;
+    QByteArray errorOutput;
+};
+
+TestProcessResult runTestProcess(const QString &test, const QStringList &arguments)
+{
+    QProcessEnvironment environment = testEnvironment();
+
+    const bool crashes = test == "assert" || test == "exceptionthrow"
+        || test == "fetchbogus" || test == "crashedterminate"
+        || test == "faildatatype" || test == "failfetchtype"
+        || test == "crashes" || test == "silent"
+        || test == "blacklisted" || test == "watchdog";
+
+    if (crashes) {
+        environment.insert("QTEST_DISABLE_CORE_DUMP", "1");
+        environment.insert("QTEST_DISABLE_STACK_DUMP", "1");
+        if (test == "watchdog")
+            environment.insert("QTEST_FUNCTION_TIMEOUT", "100");
+    }
+
+    QProcess process;
+    process.setProcessEnvironment(environment);
+    const QString command = test + '/' + test;
+    process.start(command, arguments);
+
+    CAPTURE(command);
+    INFO(environment.toStringList().join('\n').toStdString());
+    CAPTURE(process.errorString());
+
+    REQUIRE(process.waitForStarted());
+    REQUIRE(process.waitForFinished());
+
+    if (!crashes)
+         REQUIRE(process.exitStatus() == QProcess::NormalExit);
+
+    return { process.exitCode(), process.readAllStandardOutput(), process.readAllStandardError() };
+}
+
+/*
+    Runs a single test and verifies the output against the expected results.
+*/
+void runTest(const QString &test, const TestLoggers &requestedLoggers)
+{
+    TestLoggers loggers;
+    for (auto logger : requestedLoggers) {
+        if (!logger.shouldIgnoreTest(test))
+            loggers += logger;
+    }
+
+    if (loggers.isEmpty())
+        return;
+
+    QStringList arguments;
+    for (auto logger : loggers)
+        arguments += logger.arguments(test);
+
+    CAPTURE(test);
+    CAPTURE(arguments);
+
+    auto testProcess = runTestProcess(test, arguments);
+
+    checkErrorOutput(test, testProcess.errorOutput);
+
+    for (auto logger : loggers) {
+        QByteArray testOutput;
+        if (logger.outputMode == StdoutOutput)
+            testOutput = testProcess.standardOutput;
+        else
+            testOutput = logger.testOutput(test);
+
+        checkTestOutput(test, logger, testOutput);
+    }
+}
+
+/*
+    Runs a single test and verifies the output against the expected result.
+*/
+void runTest(const QString &test, const TestLogger &logger)
+{
+    runTest(test, TestLoggers{logger});
+}
+
+// ----------------------- Catch helpers -----------------------
+
+template <typename T>
+class QtMetaEnumGenerator : public Catch::Generators::IGenerator<T>
+{
+public:
+    QtMetaEnumGenerator()
+    {
+        metaEnum = QMetaEnum::fromType<T>();
+        next();
+    }
+
+    bool next() override
+    {
+        current = static_cast<T>(metaEnum.value(++index));
+        return index < metaEnum.keyCount();
+    }
+
+    const T& get() const override { return current; }
+
+private:
+    QMetaEnum metaEnum;
+    int index = -1;
+    T current;
+};
+
+template <typename T>
+Catch::Generators::GeneratorWrapper<T> enums()
+{
+    return Catch::Generators::GeneratorWrapper<T>(
+        std::unique_ptr<Catch::Generators::IGenerator<T>>(
+            new QtMetaEnumGenerator<T>()));
+}
+
+QT_BEGIN_NAMESPACE
+template <typename T, typename A = typename std::enable_if<std::is_same<T, std::string>::value == false, void>::type>
+std::ostream& operator<<(std::ostream &os, const T &value)
+{
+    QString output;
+    QDebug debug(&output);
+    debug.nospace() << value;
+    os << output.toStdString();
+    return os;
+}
+QT_END_NAMESPACE
+
+// ----------------------- Test cases -----------------------
+
+static const auto kBaselineTest = "pass";
+
+bool isCommandLineLogger(QTestLog::LogMode logger)
+{
+#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    // The Apple logger is internal and never logs to file or stdout
+    return logger != QTestLog::Apple;
+#else
+    Q_UNUSED(logger);
+    return true;
+#endif
+}
+
+bool isGenericCommandLineLogger(QTestLog::LogMode logger)
+{
+    // The CSV logger is only used for benchmarks
+    return isCommandLineLogger(logger) && logger != QTestLog::CSV;
+}
+
+TEST_CASE("Loggers support both old and new style arguments")
+{
+    auto logger = GENERATE(filter(isGenericCommandLineLogger, enums<QTestLog::LogMode>()));
+
+    GIVEN("The " << logger << " logger") {
+        auto argumentStyle = GENERATE(OldStyleArguments, NewStyleArgument);
+        WHEN("Passing arguments with " <<
+            (argumentStyle == NewStyleArgument ? "new" : "old") << " style") {
+            runTest(kBaselineTest, TestLogger(logger, argumentStyle));
         }
     }
 }
 
-QTEST_MAIN(tst_Selftests)
+TEST_CASE("Loggers can output to both file and stdout")
+{
+    auto logger = GENERATE(filter(isGenericCommandLineLogger, enums<QTestLog::LogMode>()));
 
-#include "tst_selftests.moc"
+    GIVEN("The " << logger << " logger") {
+        auto outputMode = GENERATE(StdoutOutput, FileOutput);
+        WHEN("Directing output to " << (outputMode == FileOutput ? "file" : "stdout")) {
+            runTest(kBaselineTest, TestLogger(logger, outputMode));
+        }
+    }
+}
+
+TEST_CASE("Logging to file and stdout at the same time")
+{
+    auto loggerEnum = QMetaEnum::fromType<QTestLog::LogMode>();
+    for (int i = 0; i < loggerEnum.keyCount(); ++i) {
+        auto stdoutLogger = QTestLog::LogMode(loggerEnum.value(i));
+        if (!isGenericCommandLineLogger(stdoutLogger))
+            continue;
+
+        for (int j = 0; j < loggerEnum.keyCount(); ++j) {
+            auto fileLogger = QTestLog::LogMode(loggerEnum.value(j));
+            if (!isGenericCommandLineLogger(fileLogger))
+                continue;
+
+            runTest(kBaselineTest, TestLoggers{
+                TestLogger(fileLogger, FileOutput),
+                TestLogger(stdoutLogger, StdoutOutput)
+            });
+        }
+    }
+}
+
+TEST_CASE("All loggers can be enabled at the same time")
+{
+    TestLoggers loggers;
+
+    auto loggerEnum = QMetaEnum::fromType<QTestLog::LogMode>();
+    for (int i = 0; i < loggerEnum.keyCount(); ++i) {
+        auto logger = QTestLog::LogMode(loggerEnum.value(i));
+        if (!isGenericCommandLineLogger(logger))
+            continue;
+
+        loggers += TestLogger(logger, FileOutput);
+    }
+
+    runTest(kBaselineTest, loggers);
+}
+
+SCENARIO("Test output of the loggers is as expected")
+{
+    static QStringList tests = QString(QT_STRINGIFY(SUBPROGRAMS)).split(' ');
+
+    auto logger = GENERATE(filter(isGenericCommandLineLogger, enums<QTestLog::LogMode>()));
+
+    GIVEN("The " << logger << " logger") {
+        for (QString test : tests) {
+            AND_GIVEN("The " << test << " subtest") {
+                runTest(test, TestLogger(logger));
+            }
+        }
+    }
+}
+
+#endif // QT_CONFIG(process)
+
+// ----------------------- Entrypoint -----------------------
+
+int main(int argc, char **argv)
+{
+#if !QT_CONFIG(process)
+    return 0;
+#else
+    std::vector<const char*> args(argv, argv + argc);
+
+    static auto kRebaseArgument = "--rebase";
+    auto rebaseArgument = std::find_if(args.begin(), args.end(),
+        [=](const char *arg) { return strncmp(arg, kRebaseArgument, 8) == 0; });
+    if (rebaseArgument != args.end()) {
+        QString mode((*rebaseArgument) + 8);
+        if (mode == "=missing")
+            rebaseMode = RebaseMissing;
+        else if (mode.isEmpty() || mode == "=failing")
+            rebaseMode = RebaseFailing;
+        else if (mode == "=all")
+            rebaseMode = RebaseAll;
+
+        args.erase(rebaseArgument);
+        argc = args.size();
+        argv = const_cast<char**>(&args[0]);
+    }
+
+    QCoreApplication app(argc, argv);
+
+    if (!testOutputDir.isValid())
+        qFatal("Could not create temp directory: %s", qUtf8Printable(testOutputDir.errorString()));
+
+    // Detect the location of the sub programs
+    QString subProgram = "pass/pass";
+#if defined(Q_OS_WIN)
+    subProgram += ".exe";
+#endif
+    QString testdataDir = QFINDTESTDATA(subProgram);
+    int testDataDirCutoff = testdataDir.lastIndexOf(subProgram);
+    testdataDir = testDataDirCutoff > 0 ? testdataDir.left(testDataDirCutoff)
+        : QCoreApplication::applicationDirPath();
+
+    // Move into testdata path and execute tests relative to that
+    if (!QDir::setCurrent(testdataDir))
+        qFatal("Could not chdir to %s", qUtf8Printable(testdataDir));
+
+    auto result = QTestPrivate::catchMain(argc, argv);
+
+    if (result != 0 || rebaseMode != NoRebase) {
+        // Note: Ctrl+C won't pass though here, so the test output won't be kept
+        qDebug() << "Test outputs left in" << qUtf8Printable(testOutputDir.path());
+        testOutputDir.setAutoRemove(false);
+    }
+#endif
+}
+

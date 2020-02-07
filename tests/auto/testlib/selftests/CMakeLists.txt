@@ -7,9 +7,11 @@ include(../../../../src/testlib/selfcover.cmake)
 
 qt_add_test(tst_selftests
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    EXCEPTIONS
     SOURCES
         ../../../shared/emulationdetector.h
         tst_selftests.cpp
+        catch.cpp
     INCLUDE_DIRECTORIES
         ../../../shared
     PUBLIC_LIBRARIES
@@ -60,68 +62,84 @@ qt_apply_testlib_coverage_options(tst_selftests)
 
 # ------------- Sub tests -------------
 
+# special case begin
 if(NOT WINRT)
-    add_subdirectory(assert)
-    add_subdirectory(badxml)
-    add_subdirectory(benchlibcallgrind)
-    add_subdirectory(benchlibcounting)
-    add_subdirectory(benchlibeventcounter)
-    add_subdirectory(benchliboptions)
-    add_subdirectory(benchlibtickcounter)
-    add_subdirectory(benchlibwalltime)
-    add_subdirectory(blacklisted)
-    add_subdirectory(cmptest)
-    add_subdirectory(commandlinedata)
-    add_subdirectory(counting)
-    add_subdirectory(crashes)
-    add_subdirectory(datatable)
-    add_subdirectory(datetime)
-    add_subdirectory(deleteLater)
-    add_subdirectory(deleteLater_noApp)
-    add_subdirectory(differentexec)
-    add_subdirectory(exceptionthrow)
-    add_subdirectory(expectfail)
-    add_subdirectory(failcleanup)
-    add_subdirectory(faildatatype)
-    add_subdirectory(failfetchtype)
-    add_subdirectory(failinit)
-    add_subdirectory(failinitdata)
-    add_subdirectory(fetchbogus)
-    add_subdirectory(findtestdata)
-    add_subdirectory(float)
-    add_subdirectory(globaldata)
-    add_subdirectory(longstring)
-    add_subdirectory(maxwarnings)
-    add_subdirectory(multiexec)
-    add_subdirectory(pass)
-    add_subdirectory(pairdiagnostics)
-    add_subdirectory(printdatatags)
-    add_subdirectory(printdatatagswithglobaltags)
-    add_subdirectory(qexecstringlist)
-    add_subdirectory(silent)
-    add_subdirectory(signaldumper)
-    add_subdirectory(singleskip)
-    add_subdirectory(skip)
-    add_subdirectory(skipcleanup)
-    add_subdirectory(skipinit)
-    add_subdirectory(skipinitdata)
-    add_subdirectory(sleep)
-    add_subdirectory(strcmp)
-    add_subdirectory(subtest)
-    add_subdirectory(testlib)
-    add_subdirectory(tuplediagnostics)
-    add_subdirectory(verbose1)
-    add_subdirectory(verbose2)
-    add_subdirectory(verifyexceptionthrown)
-    add_subdirectory(warnings)
-    add_subdirectory(watchdog)
-    add_subdirectory(xunit)
+    set(subprograms
+        assert
+        badxml
+        benchlibcallgrind
+        benchlibcounting
+        benchlibeventcounter
+        benchliboptions
+        benchlibtickcounter
+        benchlibwalltime
+        blacklisted
+        cmptest
+        commandlinedata
+        counting
+        crashes
+        datatable
+        datetime
+        deleteLater
+        deleteLater_noApp
+        differentexec
+        exceptionthrow
+        expectfail
+        failcleanup
+        faildatatype
+        failfetchtype
+        failinit
+        failinitdata
+        fetchbogus
+        findtestdata
+        float
+        globaldata
+        longstring
+        maxwarnings
+        multiexec
+        pass
+        pairdiagnostics
+        printdatatags
+        printdatatagswithglobaltags
+        qexecstringlist
+        silent
+        signaldumper
+        singleskip
+        skip
+        skipcleanup
+        skipinit
+        skipinitdata
+        sleep
+        strcmp
+        subtest
+        testlib
+        tuplediagnostics
+        verbose1
+        verbose2
+        verifyexceptionthrown
+        warnings
+        watchdog
+        xunit
+    )
 
     if(TARGET Qt::Gui)
-        add_subdirectory(keyboard)
-        add_subdirectory(mouse)
+        list(APPEND subprograms
+            keyboard
+            mouse
+        )
     endif()
 endif()
+
+foreach(subprogram IN LISTS subprograms)
+    add_subdirectory(${subprogram})
+endforeach()
+
+list(JOIN subprograms " " subprograms)
+qt_extend_target(tst_selftests
+    DEFINES
+        SUBPROGRAMS=${subprograms}
+)
+# special case end
 
 #### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
 # CONFIG = "testcase"
