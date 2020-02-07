@@ -97,12 +97,7 @@ public:
     virtual bool canReadLine() const override;
     virtual bool open(OpenMode openMode = ReadWrite) override;
     virtual void close() override;
-
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use socketError()") LocalSocketError error() const;
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
-    LocalSocketError socketError() const;
+    LocalSocketError error() const;
     bool flush();
     bool isValid() const;
     qint64 readBufferSize() const;

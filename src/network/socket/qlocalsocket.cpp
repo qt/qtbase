@@ -220,24 +220,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QLocalSocket::LocalSocketError QLocalSocket::error() const
 
-    \deprecated
-
-    Use socketError() instead.
-
-    Returns the type of error that last occurred.
-
-    \sa state(), errorString(), socketError()
-*/
-
-/*!
-    \fn QLocalSocket::LocalSocketError QLocalSocket::socketError() const
-    \since 5.15
-
     Returns the type of error that last occurred.
 
     \sa state(), errorString()
 */
-
 
 /*!
     \fn bool QLocalSocket::isValid() const
@@ -286,7 +272,7 @@ QT_BEGIN_NAMESPACE
     Waits until the socket is connected, up to \a msecs milliseconds. If the
     connection has been established, this function returns \c true; otherwise
     it returns \c false. In the case where it returns \c false, you can call
-    socketError() to determine the cause of the error.
+    error() to determine the cause of the error.
 
     The following example waits up to one second for a connection
     to be established:
@@ -305,7 +291,7 @@ QT_BEGIN_NAMESPACE
     connection was successfully disconnected, this function returns \c true;
     otherwise it returns \c false (if the operation timed out, if an error
     occurred, or if this QLocalSocket is already disconnected). In the case
-    where it returns \c false, you can call socketError() to determine the cause of
+    where it returns \c false, you can call error() to determine the cause of
     the error.
 
     The following example waits up to one second for a connection
@@ -351,7 +337,7 @@ QT_BEGIN_NAMESPACE
     connections, you will have to register it with Q_DECLARE_METATYPE() and
     qRegisterMetaType().
 
-    \sa socketError(), errorString(), {Creating Custom Qt Types}
+    \sa error(), errorString(), {Creating Custom Qt Types}
 */
 
 /*!
@@ -460,7 +446,7 @@ QString QLocalSocket::fullServerName() const
 /*!
     Returns the state of the socket.
 
-    \sa socketError()
+    \sa error()
  */
 QLocalSocket::LocalSocketState QLocalSocket::state() const
 {
@@ -480,7 +466,7 @@ bool QLocalSocket::isSequential() const
 
     The LocalServerError enumeration represents the errors that can occur.
     The most recent error can be retrieved through a call to
-    \l QLocalSocket::socketError().
+    \l QLocalSocket::error().
 
     \value ConnectionRefusedError The connection was refused by
         the peer (or timed out).
