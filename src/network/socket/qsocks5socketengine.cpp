@@ -559,8 +559,8 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
                      Qt::DirectConnection);
     QObject::connect(data->controlSocket, SIGNAL(bytesWritten(qint64)), q, SLOT(_q_controlSocketBytesWritten()),
                      Qt::DirectConnection);
-    QObject::connect(data->controlSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-                     q, SLOT(_q_controlSocketError(QAbstractSocket::SocketError)),
+    QObject::connect(data->controlSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
+                     q, SLOT(_q_controlSocketErrorOccurred(QAbstractSocket::SocketError)),
                      Qt::DirectConnection);
     QObject::connect(data->controlSocket, SIGNAL(disconnected()), q, SLOT(_q_controlSocketDisconnected()),
                      Qt::DirectConnection);
@@ -1056,7 +1056,7 @@ bool QSocks5SocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
                          Qt::DirectConnection);
         QObject::connect(d->data->controlSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(_q_controlSocketBytesWritten()),
                          Qt::DirectConnection);
-        QObject::connect(d->data->controlSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(_q_controlSocketError(QAbstractSocket::SocketError)),
+        QObject::connect(d->data->controlSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(_q_controlSocketErrorOccurred(QAbstractSocket::SocketError)),
                          Qt::DirectConnection);
         QObject::connect(d->data->controlSocket, SIGNAL(disconnected()), this, SLOT(_q_controlSocketDisconnected()),
                          Qt::DirectConnection);
@@ -1231,7 +1231,7 @@ void QSocks5SocketEnginePrivate::_q_controlSocketBytesWritten()
     }
 }
 
-void QSocks5SocketEnginePrivate::_q_controlSocketError(QAbstractSocket::SocketError error)
+void QSocks5SocketEnginePrivate::_q_controlSocketErrorOccurred(QAbstractSocket::SocketError error)
 {
     QSOCKS5_D_DEBUG << "controlSocketError" << error << data->controlSocket->errorString();
 

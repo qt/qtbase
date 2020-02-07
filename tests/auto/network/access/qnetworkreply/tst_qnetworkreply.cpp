@@ -674,7 +674,7 @@ private:
         //qDebug() << "connectSocketSignals" << client;
         connect(client.data(), SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
         connect(client.data(), SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
-        connect(client.data(), SIGNAL(error(QAbstractSocket::SocketError)),
+        connect(client.data(), SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
                 this, SLOT(slotError(QAbstractSocket::SocketError)));
     }
 

@@ -77,8 +77,8 @@ void QLocalSocketPrivate::setSocket(QLocalUnixSocket* socket)
     q->connect(tcpSocket, SIGNAL(disconnected()), q, SIGNAL(disconnected()));
     q->connect(tcpSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
                q, SLOT(_q_stateChanged(QAbstractSocket::SocketState)));
-    q->connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-               q, SLOT(_q_error(QAbstractSocket::SocketError)));
+    q->connect(tcpSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
+               q, SLOT(_q_errorOccurred(QAbstractSocket::SocketError)));
     q->connect(tcpSocket, SIGNAL(readChannelFinished()), q, SIGNAL(readChannelFinished()));
     tcpSocket->setParent(q);
 }
@@ -88,7 +88,7 @@ qint64 QLocalSocketPrivate::skip(qint64 maxSize)
     return tcpSocket->skip(maxSize);
 }
 
-void QLocalSocketPrivate::_q_error(QAbstractSocket::SocketError socketError)
+void QLocalSocketPrivate::_q_errorOccurred(QAbstractSocket::SocketError socketError)
 {
     Q_Q(QLocalSocket);
     QString function = QLatin1String("QLocalSocket");

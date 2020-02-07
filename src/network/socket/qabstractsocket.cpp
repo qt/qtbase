@@ -84,7 +84,7 @@
     HostLookupState. If the host is found, QAbstractSocket enters
     ConnectingState and emits the hostFound() signal. When the
     connection has been established, it enters ConnectedState and
-    emits connected(). If an error occurs at any stage, error() is
+    emits connected(). If an error occurs at any stage, errorOccurred() is
     emitted. Whenever the state changes, stateChanged() is emitted.
     For convenience, isValid() returns \c true if the socket is ready for
     reading and writing, but note that the socket's state must be
@@ -113,7 +113,7 @@
     QAbstractSocket::UnconnectedState, and emits disconnected(). If you want
     to abort a connection immediately, discarding all pending data, call
     abort() instead. If the remote host closes the connection,
-    QAbstractSocket will emit error(QAbstractSocket::RemoteHostClosedError),
+    QAbstractSocket will emit errorOccurred(QAbstractSocket::RemoteHostClosedError),
     during which the socket state will still be ConnectedState, and then the
     disconnected() signal will be emitted.
 
@@ -203,6 +203,14 @@
 
 /*!
     \fn void QAbstractSocket::error(QAbstractSocket::SocketError socketError)
+    \obsolete
+
+    Use errorOccurred() instead.
+*/
+
+/*!
+    \fn void QAbstractSocket::errorOccurred(QAbstractSocket::SocketError socketError)
+    \since 5.15
 
     This signal is emitted after an error occurred. The \a socketError
     parameter describes the type of error that occurred.
@@ -330,6 +338,7 @@
 
     \value UnknownSocketError An unidentified error occurred.
     \sa QAbstractSocket::error()
+    \sa QAbstractSocket::errorOccurred()
 */
 
 /*!
@@ -988,7 +997,7 @@ void QAbstractSocketPrivate::startConnectingByName(const QString &host)
     }
 
     state = QAbstractSocket::UnconnectedState;
-    emit q->error(socketError);
+    emit q->errorOccurred(socketError);
     emit q->stateChanged(state);
 }
 
@@ -1047,7 +1056,7 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
         state = QAbstractSocket::UnconnectedState;
         setError(QAbstractSocket::HostNotFoundError, QAbstractSocket::tr("Host not found"));
         emit q->stateChanged(state);
-        emit q->error(QAbstractSocket::HostNotFoundError);
+        emit q->errorOccurred(QAbstractSocket::HostNotFoundError);
         return;
     }
 
@@ -1070,8 +1079,8 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
     _q_testConnection(), this function takes the first address of the
     pending addresses list and tries to connect to it. If the
     connection succeeds, QAbstractSocket will emit
-    connected(). Otherwise, error(ConnectionRefusedError) or
-    error(SocketTimeoutError) is emitted.
+    connected(). Otherwise, errorOccurred(ConnectionRefusedError) or
+    errorOccurred(SocketTimeoutError) is emitted.
 */
 void QAbstractSocketPrivate::_q_connectToNextAddress()
 {
@@ -1101,7 +1110,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
 //                q->setErrorString(QAbstractSocket::tr("Connection refused"));
             }
             emit q->stateChanged(state);
-            emit q->error(socketError);
+            emit q->errorOccurred(socketError);
             return;
         }
 
@@ -1223,7 +1232,7 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
         setError(QAbstractSocket::SocketTimeoutError,
                  QAbstractSocket::tr("Connection timed out"));
         emit q->stateChanged(state);
-        emit q->error(socketError);
+        emit q->errorOccurred(socketError);
     } else {
         _q_connectToNextAddress();
     }
@@ -1430,14 +1439,14 @@ void QAbstractSocketPrivate::setError(QAbstractSocket::SocketError errorCode,
     \internal
 
     Sets the socket error state to \c errorCode and \a errorString,
-    and emits the QAbstractSocket::error() signal.
+    and emits the QAbstractSocket::errorOccurred() signal.
 */
 void QAbstractSocketPrivate::setErrorAndEmit(QAbstractSocket::SocketError errorCode,
                                              const QString &errorString)
 {
     Q_Q(QAbstractSocket);
     setError(errorCode, errorString);
-    emit q->error(errorCode);
+    emit q->errorOccurred(errorCode);
 }
 
 /*! \internal
@@ -1456,6 +1465,9 @@ QAbstractSocket::QAbstractSocket(SocketType socketType,
            : socketType == SctpSocket ? "Sctp" : "Unknown", &dd, parent);
 #endif
     d->socketType = socketType;
+
+    // Support the deprecated error() signal:
+    connect(this, &QAbstractSocket::errorOccurred, this, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error));
 }
 
 /*!
@@ -1654,7 +1666,7 @@ bool QAbstractSocket::isValid() const
     established, QAbstractSocket enters ConnectedState and
     emits connected().
 
-    At any point, the socket can emit error() to signal that an error
+    At any point, the socket can emit errorOccurred() to signal that an error
     occurred.
 
     \a hostName may be an IP address in string form (e.g.,

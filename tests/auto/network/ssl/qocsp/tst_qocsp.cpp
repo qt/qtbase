@@ -410,7 +410,7 @@ private:
 
     static QString certDirPath;
 
-    void (QSslSocket::*socketErrorSignal)(QAbstractSocket::SocketError) = &QAbstractSocket::error;
+    void (QSslSocket::*socketErrorSignal)(QAbstractSocket::SocketError) = &QAbstractSocket::errorOccurred;
     void (QSslSocket::*tlsErrorsSignal)(const QList<QSslError> &) = &QSslSocket::sslErrors;
     void (QTestEventLoop::*exitLoopSlot)() = &QTestEventLoop::exitLoop;
 

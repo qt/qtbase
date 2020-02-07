@@ -206,7 +206,11 @@ Q_SIGNALS:
     void connected();
     void disconnected();
     void stateChanged(QAbstractSocket::SocketState);
+#if QT_DEPRECATED_SINCE(5,15)
+    QT_DEPRECATED_X("Use QAbstractSocket::errorOccurred(QAbstractSocket::SocketError) instead")
     void error(QAbstractSocket::SocketError);
+#endif
+    void errorOccurred(QAbstractSocket::SocketError);
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
 #endif

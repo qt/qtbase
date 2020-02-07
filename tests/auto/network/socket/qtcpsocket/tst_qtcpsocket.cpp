@@ -2019,14 +2019,14 @@ void tst_QTcpSocket::remoteCloseError()
     QCOMPARE(clientSocket->bytesAvailable(), qint64(5));
 
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
-    QSignalSpy errorSpy(clientSocket, SIGNAL(error(QAbstractSocket::SocketError)));
+    QSignalSpy errorSpy(clientSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
     QSignalSpy disconnectedSpy(clientSocket, SIGNAL(disconnected()));
 
     clientSocket->write("World");
     serverSocket->disconnectFromHost();
 
     tmpSocket = clientSocket;
-    connect(clientSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+    connect(clientSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
             this, SLOT(remoteCloseErrorSlot()));
 
     enterLoop(30);
@@ -2079,7 +2079,7 @@ void tst_QTcpSocket::nestedEventLoopInErrorSlot()
 {
     QTcpSocket *socket = newSocket();
     QPointer<QTcpSocket> p(socket);
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(enterLoopSlot()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(enterLoopSlot()));
 
     socket->connectToHost("hostnotfoundhostnotfound.qt-project.org", 9999);
     enterLoop(30);
@@ -2109,7 +2109,7 @@ void tst_QTcpSocket::connectToHostError()
     QFETCH(int, port);
     QFETCH(QAbstractSocket::SocketError, expectedError);
 
-    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),[&](QAbstractSocket::SocketError socketError){
+    connect(socket, &QAbstractSocket::errorOccurred, [&](QAbstractSocket::SocketError socketError){
         error = socketError;
     });
     socket->connectToHost(host, port); // no service running here, one suspects
@@ -2326,7 +2326,7 @@ void tst_QTcpSocket::abortiveClose()
 
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     QSignalSpy readyReadSpy(clientSocket, SIGNAL(readyRead()));
-    QSignalSpy errorSpy(clientSocket, SIGNAL(error(QAbstractSocket::SocketError)));
+    QSignalSpy errorSpy(clientSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
 
     connect(clientSocket, SIGNAL(disconnected()), this, SLOT(exitLoopSlot()));
     QTimer::singleShot(0, this, SLOT(abortiveClose_abortSlot()));
@@ -2439,14 +2439,14 @@ void tst_QTcpSocket::connectionRefused()
 
     QTcpSocket *socket = newSocket();
     QSignalSpy stateSpy(socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)));
-    QSignalSpy errorSpy(socket, SIGNAL(error(QAbstractSocket::SocketError)));
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
+    QSignalSpy errorSpy(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
             &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     socket->connectToHost(QtNetworkSettings::httpServerName(), 144);
 
     enterLoop(10);
-    disconnect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
+    disconnect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
                &QTestEventLoop::instance(), SLOT(exitLoop()));
     QVERIFY2(!timeout(), "Network timeout");
 
@@ -2773,7 +2773,7 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorEventLoop()
     // check that we get a proper error connecting to port 12346
     // This testcase uses an event loop
     QTcpSocket socket;
-    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
     socket.connectToHost(QtNetworkSettings::httpServerName(), 12346);
 
     QTestEventLoop::instance().enterLoop(10);
@@ -3209,7 +3209,7 @@ void tst_QTcpSocket::readNotificationsAfterBind()
     QAbstractSocket socket(QAbstractSocket::TcpSocket, nullptr);
     QVERIFY2(socket.bind(), "Bind error!");
 
-    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QSignalSpy spyReadyRead(&socket, SIGNAL(readyRead()));
     socket.connectToHost(QtNetworkSettings::serverName(), 12346);
 

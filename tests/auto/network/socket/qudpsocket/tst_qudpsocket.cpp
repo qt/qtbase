@@ -883,7 +883,7 @@ void tst_QUdpSocket::writeDatagram()
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
 
     for(int i=0;;i++) {
-        QSignalSpy errorspy(&client, SIGNAL(error(QAbstractSocket::SocketError)));
+        QSignalSpy errorspy(&client, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
         QSignalSpy bytesspy(&client, SIGNAL(bytesWritten(qint64)));
 
         qint64 written = client.writeDatagram(QByteArray(i * 1024, 'w'), serverAddress,
@@ -1044,7 +1044,7 @@ void tst_QUdpSocket::writeToNonExistingPeer()
 
     QUdpSocket sConnected;
     QSignalSpy sConnectedReadyReadSpy(&sConnected, SIGNAL(readyRead()));
-    QSignalSpy sConnectedErrorSpy(&sConnected, SIGNAL(error(QAbstractSocket::SocketError)));
+    QSignalSpy sConnectedErrorSpy(&sConnected, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
     sConnected.connectToHost(peerAddress, peerPort, QIODevice::ReadWrite);
     QVERIFY(sConnected.waitForConnected(10000));
 

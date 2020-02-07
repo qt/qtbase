@@ -2535,7 +2535,7 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->connect(plainSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
                q, SLOT(_q_stateChangedSlot(QAbstractSocket::SocketState)),
                Qt::DirectConnection);
-    q->connect(plainSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+    q->connect(plainSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
                q, SLOT(_q_errorSlot(QAbstractSocket::SocketError)),
                Qt::DirectConnection);
     q->connect(plainSocket, SIGNAL(readyRead()),

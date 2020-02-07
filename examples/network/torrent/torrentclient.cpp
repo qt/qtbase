@@ -843,7 +843,7 @@ void TorrentClient::initializeConnection(PeerWireClient *client)
             this, &TorrentClient::setupOutgoingConnection);
     connect(client, &PeerWireClient::disconnected,
             this, &TorrentClient::removeClient);
-    connect(client, QOverload<QAbstractSocket::SocketError>::of(&PeerWireClient::error),
+    connect(client, &PeerWireClient::errorOccurred,
             this, &TorrentClient::removeClient);
     connect(client, &PeerWireClient::piecesAvailable,
             this, &TorrentClient::peerPiecesAvailable);

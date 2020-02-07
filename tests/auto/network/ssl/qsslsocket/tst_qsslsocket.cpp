@@ -1240,7 +1240,7 @@ protected:
         configuration.setProtocol(protocol);
         if (ignoreSslErrors)
             connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
-        connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SIGNAL(socketError(QAbstractSocket::SocketError)));
+        connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SIGNAL(socketError(QAbstractSocket::SocketError)));
 
         QFile file(m_keyFile);
         QVERIFY(file.open(QIODevice::ReadOnly));
@@ -1377,8 +1377,8 @@ void tst_QSslSocket::protocolServerSide()
     socket = &client;
     QFETCH(QSsl::SslProtocol, clientProtocol);
     socket->setProtocol(clientProtocol);
-    // upon SSL wrong version error, error will be triggered, not sslErrors
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    // upon SSL wrong version error, errorOccurred will be triggered, not sslErrors
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
 
@@ -1438,8 +1438,8 @@ void tst_QSslSocket::serverCipherPreferences()
         sslConfig.setCiphers({QSslCipher("AES256-SHA"), QSslCipher("AES128-SHA")});
         socket->setSslConfiguration(sslConfig);
 
-        // upon SSL wrong version error, error will be triggered, not sslErrors
-        connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+        // upon SSL wrong version error, errorOccurred will be triggered, not sslErrors
+        connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
         connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
         connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
 
@@ -1470,8 +1470,8 @@ void tst_QSslSocket::serverCipherPreferences()
         sslConfig.setCiphers({QSslCipher("AES256-SHA"), QSslCipher("AES128-SHA")});
         socket->setSslConfiguration(sslConfig);
 
-        // upon SSL wrong version error, error will be triggered, not sslErrors
-        connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+        // upon SSL wrong version error, errorOccurred will be triggered, not sslErrors
+        connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
         connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
         connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
 
@@ -1561,7 +1561,7 @@ void tst_QSslSocket::setLocalCertificateChain()
     const QScopedPointer<QSslSocket, QScopedPointerDeleteLater> client(new QSslSocket);
     socket = client.data();
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
 
     socket->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
@@ -2551,8 +2551,8 @@ void tst_QSslSocket::closeWhileEmittingSocketError()
     clientConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
     clientSocket.setSslConfiguration(clientConfig);
 
-    QSignalSpy socketErrorSpy(&clientSocket, SIGNAL(error(QAbstractSocket::SocketError)));
-    void (QSslSocket::*errorSignal)(QAbstractSocket::SocketError) = &QSslSocket::error;
+    QSignalSpy socketErrorSpy(&clientSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
+    void (QSslSocket::*errorSignal)(QAbstractSocket::SocketError) = &QSslSocket::errorOccurred;
     connect(&clientSocket, errorSignal, &handshake, &BrokenPskHandshake::socketError);
 
     clientSocket.connectToHostEncrypted(QStringLiteral("127.0.0.1"), handshake.serverPort());
@@ -2652,7 +2652,7 @@ void tst_QSslSocket::ignoreSslErrorsList()
     socket.ignoreSslErrors(expectedSslErrors);
 
     QFETCH(int, expectedSslErrorSignalCount);
-    QSignalSpy sslErrorsSpy(&socket, SIGNAL(error(QAbstractSocket::SocketError)));
+    QSignalSpy sslErrorsSpy(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
 
     socket.connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
 
@@ -2946,13 +2946,13 @@ void tst_QSslSocket::resume()
 
     QSignalSpy sslErrorSpy(&socket, SIGNAL(sslErrors(QList<QSslError>)));
     QSignalSpy encryptedSpy(&socket, SIGNAL(encrypted()));
-    QSignalSpy errorSpy(&socket, SIGNAL(error(QAbstractSocket::SocketError)));
+    QSignalSpy errorSpy(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
 
     connect(&socket, SIGNAL(sslErrors(QList<QSslError>)), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(&socket, SIGNAL(encrypted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(&socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
             this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
-    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     socket.connectToHostEncrypted(QtNetworkSettings::imapServerName(), 993);
     QTestEventLoop::instance().enterLoop(10);
@@ -3263,7 +3263,7 @@ void tst_QSslSocket::dhServer()
 
     QSslSocket client;
     socket = &client;
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
 
@@ -3297,7 +3297,7 @@ void tst_QSslSocket::dhServerCustomParamsNull()
 
     QSslSocket client;
     socket = &client;
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
 
@@ -3342,7 +3342,7 @@ void tst_QSslSocket::dhServerCustomParams()
 
     QSslSocket client;
     socket = &client;
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
 
@@ -3377,7 +3377,7 @@ void tst_QSslSocket::ecdhServer()
 
     QSslSocket client;
     socket = &client;
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
 
@@ -3569,7 +3569,7 @@ void tst_QSslSocket::readBufferMaxSize()
 
     QSslSocketPtr client(new QSslSocket);
     socket = client.data();
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
 
@@ -3830,7 +3830,7 @@ void tst_QSslSocket::simplePskConnect()
     QSignalSpy sslErrorsSpy(&socket, SIGNAL(sslErrors(QList<QSslError>)));
     QVERIFY(sslErrorsSpy.isValid());
 
-    QSignalSpy socketErrorsSpy(&socket, SIGNAL(error(QAbstractSocket::SocketError)));
+    QSignalSpy socketErrorsSpy(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
     QVERIFY(socketErrorsSpy.isValid());
 
     QSignalSpy peerVerifyErrorSpy(&socket, SIGNAL(peerVerifyError(QSslError)));
@@ -3844,7 +3844,7 @@ void tst_QSslSocket::simplePskConnect()
     connect(&socket, SIGNAL(modeChanged(QSslSocket::SslMode)), this, SLOT(exitLoop()));
     connect(&socket, SIGNAL(encrypted()), this, SLOT(exitLoop()));
     connect(&socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(exitLoop()));
-    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(exitLoop()));
     connect(&socket, SIGNAL(peerVerifyError(QSslError)), this, SLOT(exitLoop()));
     connect(&socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(exitLoop()));
 
@@ -4112,7 +4112,7 @@ void tst_QSslSocket::pskServer()
     connect(&socket, SIGNAL(modeChanged(QSslSocket::SslMode)), this, SLOT(exitLoop()));
     connect(&socket, SIGNAL(encrypted()), this, SLOT(exitLoop()));
     connect(&socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(exitLoop()));
-    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(exitLoop()));
+    connect(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), this, SLOT(exitLoop()));
     connect(&socket, SIGNAL(peerVerifyError(QSslError)), this, SLOT(exitLoop()));
     connect(&socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(exitLoop()));
 
@@ -4292,7 +4292,7 @@ void tst_QSslSocket::signatureAlgorithm()
 
     QEventLoop loop;
     QTimer::singleShot(5000, &loop, &QEventLoop::quit);
-    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), &loop, &QEventLoop::quit);
+    connect(socket, &QAbstractSocket::errorOccurred, &loop, &QEventLoop::quit);
     connect(socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors), this, &tst_QSslSocket::ignoreErrorSlot);
     connect(socket, &QSslSocket::encrypted, &loop, &QEventLoop::quit);
 

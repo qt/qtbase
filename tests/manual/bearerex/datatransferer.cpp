@@ -53,7 +53,7 @@ DataTransfererQTcp::DataTransfererQTcp(QObject* parent)
 
     connect(&m_qsocket, SIGNAL(readyRead()), this, SLOT(readyRead()));
     connect(&m_qsocket, SIGNAL(connected()), this, SLOT(connected()));
-    connect(&m_qsocket, SIGNAL(error(QAbstractSocket::SocketError)),
+    connect(&m_qsocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
             this, SLOT(error(QAbstractSocket::SocketError)));
 }
 

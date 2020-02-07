@@ -93,7 +93,7 @@ bool QHttpSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstractSo
     connect(d->socket, SIGNAL(bytesWritten(qint64)),
             this, SLOT(slotSocketBytesWritten()),
             Qt::DirectConnection);
-    connect(d->socket, SIGNAL(error(QAbstractSocket::SocketError)),
+    connect(d->socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
             this, SLOT(slotSocketError(QAbstractSocket::SocketError)),
             Qt::DirectConnection);
     connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
