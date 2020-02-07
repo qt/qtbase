@@ -215,7 +215,7 @@
     connections, you will have to register it with Q_DECLARE_METATYPE() and
     qRegisterMetaType().
 
-    \sa socketError(), errorString(), {Creating Custom Qt Types}
+    \sa error(), errorString(), {Creating Custom Qt Types}
 */
 
 /*!
@@ -329,7 +329,7 @@
            is non-blocking).
 
     \value UnknownSocketError An unidentified error occurred.
-    \sa QAbstractSocket::socketError()
+    \sa QAbstractSocket::error()
 */
 
 /*!
@@ -2092,7 +2092,7 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
     Waits until the socket is connected, up to \a msecs
     milliseconds. If the connection has been established, this
     function returns \c true; otherwise it returns \c false. In the case
-    where it returns \c false, you can call socketError() to determine
+    where it returns \c false, you can call error() to determine
     the cause of the error.
 
     The following example waits up to one second for a connection
@@ -2864,7 +2864,7 @@ void QAbstractSocket::setReadBufferSize(qint64 size)
 /*!
     Returns the state of the socket.
 
-    \sa socketError()
+    \sa error()
 */
 QAbstractSocket::SocketState QAbstractSocket::state() const
 {
@@ -2891,34 +2891,15 @@ QAbstractSocket::SocketType QAbstractSocket::socketType() const
     return d_func()->socketType;
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
 /*!
-    \deprecated
-
-    Use socketError() instead.
-
-    Returns the type of error that last occurred.
-
-    \sa state(), errorString(), socketError()
-*/
-QAbstractSocket::SocketError QAbstractSocket::error() const
-{
-    return socketError();
-}
-#endif //  QT_DEPRECATED_SINCE(5, 15)
-
-/*!
-    \since 5.15
-
     Returns the type of error that last occurred.
 
     \sa state(), errorString()
 */
-QAbstractSocket::SocketError QAbstractSocket::socketError() const
+QAbstractSocket::SocketError QAbstractSocket::error() const
 {
     return d_func()->socketError;
 }
-
 
 /*!
     Sets the type of error that last occurred to \a socketError.

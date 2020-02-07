@@ -582,7 +582,7 @@ bool QSslSocketBackendPrivate::sendToken(void *token, unsigned long tokenLength,
     if (written != qint64(tokenLength)) {
         // Failed to write/buffer everything or an error occurred
         if (emitError)
-            setErrorAndEmit(plainSocket->socketError(), plainSocket->errorString());
+            setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
         return false;
     }
     return true;
@@ -1292,7 +1292,7 @@ void QSslSocketBackendPrivate::transmit()
             if (bytesWritten >= 0) {
                 totalBytesWritten += bytesWritten;
             } else {
-                setErrorAndEmit(plainSocket->socketError(), plainSocket->errorString());
+                setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
                 return;
             }
         }

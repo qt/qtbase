@@ -606,7 +606,7 @@ void tst_QOcsp::malformedResponse()
     loop.enterLoopMSecs(handshakeTimeoutMS);
 
     QVERIFY(!clientSocket.isEncrypted());
-    QCOMPARE(clientSocket.socketError(), QAbstractSocket::SslHandshakeFailedError);
+    QCOMPARE(clientSocket.error(), QAbstractSocket::SslHandshakeFailedError);
 }
 
 void tst_QOcsp::expiredResponse_data()

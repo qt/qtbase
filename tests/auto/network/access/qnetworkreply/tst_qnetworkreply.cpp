@@ -1111,7 +1111,7 @@ protected:
 
         // get the "request" packet
         if (!client->waitForReadyRead(2000)) {
-            qDebug() << "FastSender:" << client->socketError() << "waiting for \"request\" packet";
+            qDebug() << "FastSender:" << client->error() << "waiting for \"request\" packet";
             return;
         }
         client->readAll();      // we're not interested in the actual contents (e.g. HTTP request)
@@ -1148,7 +1148,7 @@ protected:
         while (client->bytesToWrite() > 0) {
             qDebug() << "Still having" << client->bytesToWrite() << "bytes to write, doing that now";
             if (!client->waitForBytesWritten(10000)) {
-                qDebug() << "ERROR: FastSender:" << client->socketError() << "cleaning up residue";
+                qDebug() << "ERROR: FastSender:" << client->error() << "cleaning up residue";
                 return;
             }
         }
@@ -1168,7 +1168,7 @@ protected:
 
             while (client->bytesToWrite() > 0) {
                 if (!client->waitForBytesWritten(10000)) {
-                    qDebug() << "ERROR: FastSender:" << client->socketError() << "during blocking write";
+                    qDebug() << "ERROR: FastSender:" << client->error() << "during blocking write";
                     return;
                 }
             }

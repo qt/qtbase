@@ -493,7 +493,7 @@ void tst_QTcpSocket::constructing()
     QCOMPARE(socket->peerAddress(), QHostAddress());
     QCOMPARE(socket->readChannelCount(), 0);
     QCOMPARE(socket->writeChannelCount(), 0);
-    QCOMPARE(socket->socketError(), QTcpSocket::UnknownSocketError);
+    QCOMPARE(socket->error(), QTcpSocket::UnknownSocketError);
     QCOMPARE(socket->errorString(), QString("Unknown error"));
 
     // Check the state of the socket layer?
@@ -603,7 +603,7 @@ void tst_QTcpSocket::bind()
             }
 
             bool bindSuccess = socket->bind(addr, port);
-            if (!bindSuccess && randomPort && socket->socketError() == QTcpSocket::AddressInUseError) {
+            if (!bindSuccess && randomPort && socket->error() == QTcpSocket::AddressInUseError) {
                 // we may have been unlucky and hit an already open port, so try another
                 --attemptsLeft;
                 continue;
@@ -730,7 +730,7 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
     QVERIFY(!socket->setSocketDescriptor(-5, QTcpSocket::UnconnectedState));
     QCOMPARE(socket->socketDescriptor(), (qintptr)-1);
 
-    QCOMPARE(socket->socketError(), QTcpSocket::UnsupportedSocketOperationError);
+    QCOMPARE(socket->error(), QTcpSocket::UnsupportedSocketOperationError);
 
     delete socket;
 }
@@ -893,7 +893,7 @@ void tst_QTcpSocket::hostNotFound()
                          "when we expect 404", Continue);
     }
 #endif
-    QCOMPARE(int(socket->socketError()), int(QTcpSocket::HostNotFoundError));
+    QCOMPARE(int(socket->error()), int(QTcpSocket::HostNotFoundError));
 
     delete socket;
 }
@@ -919,7 +919,7 @@ void tst_QTcpSocket::timeoutConnect()
     QVERIFY(timer.elapsed() < 150);
     QVERIFY(!socket->waitForConnected(1000)); //200ms is too short when using SOCKS proxy authentication
     QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
-    QCOMPARE(int(socket->socketError()), int(QTcpSocket::SocketTimeoutError));
+    QCOMPARE(int(socket->error()), int(QTcpSocket::SocketTimeoutError));
     QCOMPARE(socket->readChannelCount(), 0);
     QCOMPARE(socket->writeChannelCount(), 0);
 
@@ -1238,7 +1238,7 @@ void tst_QTcpSocket::openCloseOpenClose()
         QCOMPARE(socket->localAddress(), QHostAddress());
         QCOMPARE((int) socket->peerPort(), 0);
         QCOMPARE(socket->peerAddress(), QHostAddress());
-        QCOMPARE(socket->socketError(), QTcpSocket::UnknownSocketError);
+        QCOMPARE(socket->error(), QTcpSocket::UnknownSocketError);
         QCOMPARE(socket->errorString(), QString("Unknown error"));
 
         QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
@@ -1392,7 +1392,7 @@ protected:
         while (!quit) {
             if (socket->waitForDisconnected(500))
                 break;
-            if (socket->socketError() != QAbstractSocket::SocketTimeoutError)
+            if (socket->error() != QAbstractSocket::SocketTimeoutError)
                 return;
         }
 
@@ -1628,8 +1628,8 @@ void tst_QTcpSocket::readLine()
 
     QVERIFY(!socket->waitForReadyRead(100));
     QCOMPARE(socket->readLine(buffer, sizeof(buffer)), qint64(0));
-    QVERIFY(socket->socketError() == QAbstractSocket::SocketTimeoutError
-            || socket->socketError() == QAbstractSocket::RemoteHostClosedError);
+    QVERIFY(socket->error() == QAbstractSocket::SocketTimeoutError
+            || socket->error() == QAbstractSocket::RemoteHostClosedError);
     QCOMPARE(socket->bytesAvailable(), qint64(0));
 
     socket->close();
@@ -1778,11 +1778,11 @@ void tst_QTcpSocket::dontCloseOnTimeout()
     QTcpSocket *socket = newSocket();
     socket->connectToHost(serverAddress, server.serverPort());
     QVERIFY(!socket->waitForReadyRead(100));
-    QCOMPARE(socket->socketError(), QTcpSocket::SocketTimeoutError);
+    QCOMPARE(socket->error(), QTcpSocket::SocketTimeoutError);
     QVERIFY(socket->isOpen());
 
     QVERIFY(!socket->waitForDisconnected(100));
-    QCOMPARE(socket->socketError(), QTcpSocket::SocketTimeoutError);
+    QCOMPARE(socket->error(), QTcpSocket::SocketTimeoutError);
     QVERIFY(socket->isOpen());
 
     delete socket;
@@ -2034,7 +2034,7 @@ void tst_QTcpSocket::remoteCloseError()
 
     QCOMPARE(disconnectedSpy.count(), 1);
     QCOMPARE(errorSpy.count(), 1);
-    QCOMPARE(clientSocket->socketError(), QAbstractSocket::RemoteHostClosedError);
+    QCOMPARE(clientSocket->error(), QAbstractSocket::RemoteHostClosedError);
 
     delete serverSocket;
 
@@ -2402,7 +2402,7 @@ void tst_QTcpSocket::zeroAndMinusOneReturns()
 
     socket->write("GET / HTTP/1.0\r\n\r\n");
     QVERIFY(socket->waitForDisconnected(15000));
-    QCOMPARE(socket->socketError(), QAbstractSocket::RemoteHostClosedError);
+    QCOMPARE(socket->error(), QAbstractSocket::RemoteHostClosedError);
 
     QCOMPARE(socket->write("BLUBBER"), qint64(-1));
     QVERIFY(socket->getChar(c));
@@ -2451,7 +2451,7 @@ void tst_QTcpSocket::connectionRefused()
     QVERIFY2(!timeout(), "Network timeout");
 
     QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
-    QCOMPARE(socket->socketError(), QAbstractSocket::ConnectionRefusedError);
+    QCOMPARE(socket->error(), QAbstractSocket::ConnectionRefusedError);
 
     QCOMPARE(stateSpy.count(), 3);
     QCOMPARE(qvariant_cast<QAbstractSocket::SocketState>(stateSpy.at(0).at(0)), QAbstractSocket::HostLookupState);
@@ -2574,7 +2574,7 @@ void tst_QTcpSocket::connectToMultiIP()
     socket->connectToHost("multi.dev.qt-project.org", 81);
     QVERIFY(!socket->waitForConnected(2000));
     QVERIFY(stopWatch.elapsed() < 2000);
-    QCOMPARE(socket->socketError(), QAbstractSocket::SocketTimeoutError);
+    QCOMPARE(socket->error(), QAbstractSocket::SocketTimeoutError);
 
     delete socket;
 #endif
@@ -2760,7 +2760,7 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorWaitForConnected()
     socket.waitForConnected(10000);
     QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");
     QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
-    QVERIFY2(socket.socketError() == QAbstractSocket::ConnectionRefusedError,
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
              QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
 }
 
@@ -2779,7 +2779,7 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorEventLoop()
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY2(!QTestEventLoop::instance().timeout(), "Connection to closed port timed out instead of refusing, something is wrong");
     QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
-    QVERIFY2(socket.socketError() == QAbstractSocket::ConnectionRefusedError,
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
              QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
 }
 
@@ -2789,12 +2789,12 @@ void tst_QTcpSocket::taskQtBug7054TimeoutErrorResetting()
 
     socket->connectToHost(QtNetworkSettings::httpServerName(), 443);
     QVERIFY(socket->waitForConnected(5*1000));
-    QCOMPARE(socket->socketError(), QAbstractSocket::UnknownSocketError);
+    QCOMPARE(socket->error(), QAbstractSocket::UnknownSocketError);
 
     // We connected to the HTTPS port. Wait two seconds to receive data. We will receive
     // nothing because we would need to start the SSL handshake
     QVERIFY(!socket->waitForReadyRead(2*1000));
-    QCOMPARE(socket->socketError(), QAbstractSocket::SocketTimeoutError);
+    QCOMPARE(socket->error(), QAbstractSocket::SocketTimeoutError);
 
     // Now write some crap to make the server disconnect us. 4 lines are enough.
     socket->write("a\r\nb\r\nc\r\nd\r\n");
@@ -2804,7 +2804,7 @@ void tst_QTcpSocket::taskQtBug7054TimeoutErrorResetting()
     // should get a better error since the server disconnected us
     QVERIFY(!socket->waitForReadyRead(2*1000));
     // It must NOT be the SocketTimeoutError that had been set before
-    QCOMPARE(socket->socketError(), QAbstractSocket::RemoteHostClosedError);
+    QCOMPARE(socket->error(), QAbstractSocket::RemoteHostClosedError);
 }
 
 #ifndef QT_NO_NETWORKPROXY
@@ -2862,7 +2862,7 @@ void tst_QTcpSocket::invalidProxy()
 
     // note: the following test is not a hard failure.
     // Sometimes, error codes change for the better
-    QTEST(int(socket->socketError()), "expectedError");
+    QTEST(int(socket->error()), "expectedError");
 
     delete socket;
 }
@@ -2982,7 +2982,7 @@ void tst_QTcpSocket::proxyFactory()
 
     // note: the following test is not a hard failure.
     // Sometimes, error codes change for the better
-    QTEST(int(socket->socketError()), "expectedError");
+    QTEST(int(socket->error()), "expectedError");
 
     delete socket;
 }

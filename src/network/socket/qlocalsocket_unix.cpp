@@ -464,7 +464,7 @@ void QLocalSocket::disconnectFromServer()
 QLocalSocket::LocalSocketError QLocalSocket::error() const
 {
     Q_D(const QLocalSocket);
-    switch (d->unixSocket.socketError()) {
+    switch (d->unixSocket.error()) {
     case QAbstractSocket::ConnectionRefusedError:
         return QLocalSocket::ConnectionRefusedError;
     case QAbstractSocket::RemoteHostClosedError:

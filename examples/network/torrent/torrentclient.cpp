@@ -867,7 +867,7 @@ void TorrentClient::removeClient()
 
     // Remove the host from our list of known peers if the connection
     // failed.
-    if (client->peer() && client->socketError() == QAbstractSocket::ConnectionRefusedError)
+    if (client->peer() && client->error() == QAbstractSocket::ConnectionRefusedError)
         d->peers.removeAll(client->peer());
 
     // Remove the client from RateController and all structures.

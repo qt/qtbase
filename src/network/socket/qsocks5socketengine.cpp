@@ -594,7 +594,7 @@ void QSocks5SocketEnginePrivate::setErrorState(Socks5State state, const QString 
 
     case ConnectError:
     case ControlSocketError: {
-        QAbstractSocket::SocketError controlSocketError = data->controlSocket->socketError();
+        QAbstractSocket::SocketError controlSocketError = data->controlSocket->error();
         if (socks5State != Connected) {
             switch (controlSocketError) {
             case QAbstractSocket::ConnectionRefusedError:
@@ -918,7 +918,7 @@ void QSocks5SocketEnginePrivate::_q_emitPendingReadNotification()
             return;
         // check if there needs to be a new zero read notification
         if (data && data->controlSocket->state() == QAbstractSocket::UnconnectedState
-                && data->controlSocket->socketError() == QAbstractSocket::RemoteHostClosedError) {
+                && data->controlSocket->error() == QAbstractSocket::RemoteHostClosedError) {
             connectData->readBuffer.clear();
             emitReadNotification();
         }
@@ -1256,7 +1256,7 @@ void QSocks5SocketEnginePrivate::_q_controlSocketError(QAbstractSocket::SocketEr
         data->controlSocket->close();
         emitConnectionNotification();
     } else {
-        q_func()->setError(data->controlSocket->socketError(), data->controlSocket->errorString());
+        q_func()->setError(data->controlSocket->error(), data->controlSocket->errorString());
         emitReadNotification();
         emitWriteNotification();
     }
@@ -1348,7 +1348,7 @@ bool QSocks5SocketEngine::bind(const QHostAddress &addr, quint16 port)
     if (d->mode == QSocks5SocketEnginePrivate::UdpAssociateMode) {
         if (!d->udpData->udpSocket->bind(address, port)) {
             QSOCKS5_Q_DEBUG << "local udp bind failed";
-            setError(d->udpData->udpSocket->socketError(), d->udpData->udpSocket->errorString());
+            setError(d->udpData->udpSocket->error(), d->udpData->udpSocket->errorString());
             return false;
         }
         d->localAddress = d->udpData->udpSocket->localAddress();
@@ -1656,8 +1656,8 @@ qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QI
     }
     if (d->udpData->udpSocket->writeDatagram(sealedBuf, d->udpData->associateAddress, d->udpData->associatePort) != sealedBuf.size()) {
         //### try frgamenting
-        if (d->udpData->udpSocket->socketError() == QAbstractSocket::DatagramTooLargeError)
-            setError(d->udpData->udpSocket->socketError(), d->udpData->udpSocket->errorString());
+        if (d->udpData->udpSocket->error() == QAbstractSocket::DatagramTooLargeError)
+            setError(d->udpData->udpSocket->error(), d->udpData->udpSocket->errorString());
         //### else maybe more serious error
         return -1;
     }
@@ -1727,7 +1727,7 @@ bool QSocks5SocketEnginePrivate::waitForConnected(int msecs, bool *timedOut)
                 return true;
 
             setErrorState(QSocks5SocketEnginePrivate::ControlSocketError);
-            if (timedOut && data->controlSocket->socketError() == QAbstractSocket::SocketTimeoutError)
+            if (timedOut && data->controlSocket->error() == QAbstractSocket::SocketTimeoutError)
                 *timedOut = true;
             return false;
         }
@@ -1765,8 +1765,8 @@ bool QSocks5SocketEngine::waitForRead(int msecs, bool *timedOut)
                 if (d->data->controlSocket->state() == QAbstractSocket::UnconnectedState)
                     return true;
 
-                setError(d->data->controlSocket->socketError(), d->data->controlSocket->errorString());
-                if (timedOut && d->data->controlSocket->socketError() == QAbstractSocket::SocketTimeoutError)
+                setError(d->data->controlSocket->error(), d->data->controlSocket->errorString());
+                if (timedOut && d->data->controlSocket->error() == QAbstractSocket::SocketTimeoutError)
                     *timedOut = true;
                 return false;
             }
@@ -1775,8 +1775,8 @@ bool QSocks5SocketEngine::waitForRead(int msecs, bool *timedOut)
     } else {
         while (!d->readNotificationActivated) {
             if (!d->udpData->udpSocket->waitForReadyRead(qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
-                setError(d->udpData->udpSocket->socketError(), d->udpData->udpSocket->errorString());
-                if (timedOut && d->udpData->udpSocket->socketError() == QAbstractSocket::SocketTimeoutError)
+                setError(d->udpData->udpSocket->error(), d->udpData->udpSocket->errorString());
+                if (timedOut && d->udpData->udpSocket->error() == QAbstractSocket::SocketTimeoutError)
                     *timedOut = true;
                 return false;
             }
