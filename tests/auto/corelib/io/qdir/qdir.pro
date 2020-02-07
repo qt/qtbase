@@ -12,3 +12,5 @@ contains(CONFIG, builtin_testdata): DEFINES += BUILTIN_TESTDATA
 android:!android-embedded {
     RESOURCES += android_testdata.qrc
 }
+
+qtConfig(c++17): CONFIG += c++17

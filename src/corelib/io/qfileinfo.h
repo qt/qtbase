@@ -64,6 +64,18 @@ public:
     QFileInfo(const QFile &file);
     QFileInfo(const QDir &dir, const QString &file);
     QFileInfo(const QFileInfo &fileinfo);
+#ifdef Q_CLANG_QDOC
+    QFileInfo(const std::filesystem::path &file);
+    QFileInfo(const QDir &dir, const std::filesystem::path &file);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    QFileInfo(const T &file) : QFileInfo(QtPrivate::fromFilesystemPath(file)) { }
+
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    QFileInfo(const QDir &dir, const T &file) : QFileInfo(dir, QtPrivate::fromFilesystemPath(file))
+    {
+    }
+#endif // QT_CONFIG(cxx17_filesystem)
     ~QFileInfo();
 
     QFileInfo &operator=(const QFileInfo &fileinfo);
@@ -78,6 +90,13 @@ public:
     void setFile(const QString &file);
     void setFile(const QFile &file);
     void setFile(const QDir &dir, const QString &file);
+#ifdef Q_CLANG_QDOC
+    void setFile(const std::filesystem::path &file);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    void setFile(const T &file) { setFile(QtPrivate::fromFilesystemPath(file)); }
+#endif // QT_CONFIG(cxx17_filesystem)
+
     bool exists() const;
     static bool exists(const QString &file);
     void refresh();
@@ -85,6 +104,14 @@ public:
     QString filePath() const;
     QString absoluteFilePath() const;
     QString canonicalFilePath() const;
+#if QT_CONFIG(cxx17_filesystem)
+    std::filesystem::path filesystemFilePath() const
+    { return QtPrivate::toFilesystemPath(filePath()); }
+    std::filesystem::path filesystemAbsoluteFilePath() const
+    { return QtPrivate::toFilesystemPath(absoluteFilePath()); }
+    std::filesystem::path filesystemCanonicalFilePath() const
+    { return QtPrivate::toFilesystemPath(canonicalFilePath()); }
+#endif // QT_CONFIG(cxx17_filesystem)
     QString fileName() const;
     QString baseName() const;
     QString completeBaseName() const;
@@ -95,6 +122,13 @@ public:
     QString path() const;
     QString absolutePath() const;
     QString canonicalPath() const;
+#if QT_CONFIG(cxx17_filesystem)
+    std::filesystem::path filesystemPath() const { return QtPrivate::toFilesystemPath(path()); }
+    std::filesystem::path filesystemAbsolutePath() const
+    { return QtPrivate::toFilesystemPath(absolutePath()); }
+    std::filesystem::path filesystemCanonicalPath() const
+    { return QtPrivate::toFilesystemPath(canonicalPath()); }
+#endif // QT_CONFIG(cxx17_filesystem)
     QDir dir() const;
     QDir absoluteDir() const;
 
@@ -122,6 +156,10 @@ public:
     QString readLink() const;
 #endif
     QString symLinkTarget() const;
+#if QT_CONFIG(cxx17_filesystem)
+    std::filesystem::path filesystemSymLinkTarget() const
+    { return QtPrivate::toFilesystemPath(symLinkTarget()); }
+#endif // QT_CONFIG(cxx17_filesystem)
 
     QString owner() const;
     uint ownerId() const;

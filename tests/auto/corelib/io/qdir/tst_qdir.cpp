@@ -216,6 +216,8 @@ private slots:
     void emptyDir();
     void nonEmptyDir();
 
+    void stdfilesystem();
+
 private:
 #ifdef BUILTIN_TESTDATA
     QString m_dataPath;
@@ -2401,6 +2403,45 @@ void tst_QDir::nonEmptyDir()
 {
     const QDir dir(m_dataPath);
     QVERIFY(!dir.isEmpty());
+}
+
+void tst_QDir::stdfilesystem()
+{
+#if QT_CONFIG(cxx17_filesystem)
+    namespace fs = std::filesystem;
+    fs::path path(".");
+    QDir dir(path);
+    QCOMPARE(dir, QDir(QStringLiteral(".")));
+
+    path = path / "testdir" / "dir";
+    dir.setPath(path);
+
+    QCOMPARE(dir, QDir(QStringLiteral("./testdir/dir")));
+
+    auto fsPath = dir.filesystemPath();
+    QCOMPARE(QString::fromStdU16String(fsPath.u16string()), dir.path());
+    fsPath = dir.filesystemAbsolutePath();
+    QCOMPARE(QString::fromStdU16String(fsPath.u16string()), dir.absolutePath());
+    fsPath = dir.filesystemCanonicalPath();
+    QCOMPARE(QString::fromStdU16String(fsPath.u16string()), dir.canonicalPath());
+
+    QDir emptyPath(fs::path{});
+    QCOMPARE(emptyPath, QDir(QStringLiteral(".")));
+
+    {
+        // Test QDir ctor with filter and sorting reversed
+        QDir filteredDir(fs::path{"."} / "searchdir", "subdir*",
+                         QDir::SortFlag::Reversed, QDir::Filter::Dirs);
+        QStringList entries = filteredDir.entryList();
+        QCOMPARE(entries, QStringList() << "subdir2" << "subdir1");
+        QCOMPARE(filteredDir.sorting(), QDir::SortFlag::Reversed);
+        QCOMPARE(filteredDir.filter(), QDir::Filter::Dirs);
+        QCOMPARE(filteredDir.nameFilters().length(), 1);
+        QCOMPARE(filteredDir.nameFilters().first(), "subdir*");
+    }
+#else
+    QSKIP("Not supported");
+#endif
 }
 
 QTEST_MAIN(tst_QDir)

@@ -45,11 +45,43 @@
 #include <QtCore/qstring.h>
 #include <stdio.h>
 
+#if QT_CONFIG(cxx17_filesystem)
+#include <filesystem>
+#endif
+
 #ifdef open
 #error qfile.h must be included before any header file that defines open
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#if QT_CONFIG(cxx17_filesystem)
+namespace QtPrivate {
+inline QString fromFilesystemPath(const std::filesystem::path &path)
+{
+#ifdef Q_OS_WIN
+    return QString::fromStdWString(path.native());
+#else
+    return QString::fromStdString(path.native());
+#endif
+}
+
+inline std::filesystem::path toFilesystemPath(const QString &path)
+{
+#ifdef Q_OS_WIN
+    return std::filesystem::path(path.toStdU16String());
+#else
+    return std::filesystem::path(path.toStdString());
+#endif
+}
+
+// Both std::filesystem::path and QString (without QT_NO_CAST_FROM_ASCII) can be implicitly
+// constructed from string literals so we force the std::fs::path parameter to only
+// accept std::fs::path with no implicit conversions.
+template<typename T>
+using ForceFilesystemPath = typename std::enable_if_t<std::is_same_v<std::filesystem::path, T>, int>;
+}
+#endif // QT_CONFIG(cxx17_filesystem)
 
 class QTemporaryFile;
 class QFilePrivate;
@@ -64,14 +96,45 @@ class Q_CORE_EXPORT QFile : public QFileDevice
 public:
     QFile();
     QFile(const QString &name);
+#ifdef Q_CLANG_QDOC
+    QFile(const std::filesystem::path &name);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    QFile(const T &name) : QFile(QtPrivate::fromFilesystemPath(name))
+    {
+    }
+#endif // QT_CONFIG(cxx17_filesystem)
+
 #ifndef QT_NO_QOBJECT
     explicit QFile(QObject *parent);
     QFile(const QString &name, QObject *parent);
-#endif
+
+#ifdef Q_CLANG_QDOC
+    QFile(const std::filesystem::path &path, QObject *parent);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    QFile(const T &path, QObject *parent) : QFile(QtPrivate::fromFilesystemPath(path), parent)
+    {
+    }
+#endif // QT_CONFIG(cxx17_filesystem)
+#endif // !QT_NO_QOBJECT
     ~QFile();
 
     QString fileName() const override;
+#if QT_CONFIG(cxx17_filesystem)
+    std::filesystem::path filesystemFileName() const
+    { return QtPrivate::toFilesystemPath(fileName()); }
+#endif
     void setFileName(const QString &name);
+#ifdef Q_CLANG_QDOC
+    void setFileName(const std::filesystem::path &name);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    void setFileName(const T &name)
+    {
+        setFileName(QtPrivate::fromFilesystemPath(name));
+    }
+#endif // QT_CONFIG(cxx17_filesystem)
 
 #if defined(Q_OS_DARWIN)
     // Mac always expects filenames in UTF-8... and decomposed...
@@ -129,12 +192,39 @@ public:
     static bool moveToTrash(const QString &fileName, QString *pathInTrash = nullptr);
 
     bool rename(const QString &newName);
+#ifdef Q_CLANG_QDOC
+    bool rename(const std::filesystem::path &newName);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    bool rename(const T &newName)
+    {
+        return rename(QtPrivate::fromFilesystemPath(newName));
+    }
+#endif // QT_CONFIG(cxx17_filesystem)
     static bool rename(const QString &oldName, const QString &newName);
 
     bool link(const QString &newName);
+#ifdef Q_CLANG_QDOC
+    bool link(const std::filesystem::path &newName);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    bool link(const T &newName)
+    {
+        return link(QtPrivate::fromFilesystemPath(newName));
+    }
+#endif // QT_CONFIG(cxx17_filesystem)
     static bool link(const QString &oldname, const QString &newName);
 
     bool copy(const QString &newName);
+#ifdef Q_CLANG_QDOC
+    bool copy(const std::filesystem::path &newName);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    bool copy(const T &newName)
+    {
+        return copy(QtPrivate::fromFilesystemPath(newName));
+    }
+#endif // QT_CONFIG(cxx17_filesystem)
     static bool copy(const QString &fileName, const QString &newName);
 
     bool open(OpenMode flags) override;
@@ -150,6 +240,21 @@ public:
     static Permissions permissions(const QString &filename);
     bool setPermissions(Permissions permissionSpec) override;
     static bool setPermissions(const QString &filename, Permissions permissionSpec);
+#ifdef Q_CLANG_QDOC
+    static Permissions permissions(const std::filesystem::path &filename);
+    static bool setPermissions(const std::filesystem::path &filename, Permissions permissionSpec);
+#elif QT_CONFIG(cxx17_filesystem)
+    template<typename T,  QtPrivate::ForceFilesystemPath<T> = 0>
+    static Permissions permissions(const T &filename)
+    {
+        return permissions(QtPrivate::fromFilesystemPath(filename));
+    }
+    template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
+    static bool setPermissions(const T &filename, Permissions permissionSpec)
+    {
+        return setPermissions(QtPrivate::fromFilesystemPath(filename), permissionSpec);
+    }
+#endif // QT_CONFIG(cxx17_filesystem)
 
 protected:
 #ifdef QT_NO_QOBJECT

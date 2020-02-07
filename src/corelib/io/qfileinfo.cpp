@@ -363,7 +363,7 @@ QFileInfo::QFileInfo(const QFile &file) : d_ptr(new QFileInfoPrivate(file.fileNa
 
 /*!
     Constructs a new QFileInfo that gives information about the given
-    \a file in the directory \a dir.
+    \a file relative to the directory \a dir.
 
     If \a dir has a relative path, the QFileInfo will also have a
     relative path.
@@ -1575,5 +1575,84 @@ QDebug operator<<(QDebug dbg, const QFileInfo &fi)
     return dbg;
 }
 #endif
+
+/*!
+    \fn QFileInfo::QFileInfo(const std::filesystem::path &file)
+    \since 6.0
+
+    Constructs a new QFileInfo that gives information about the given
+    \a file.
+
+    \sa setFile(), isRelative(), QDir::setCurrent(), QDir::isRelativePath()
+*/
+/*!
+    \fn QFileInfo::QFileInfo(const QDir &dir, const std::filesystem::path &file)
+    \since 6.0
+
+    Constructs a new QFileInfo that gives information about the given
+    \a file relative to the directory \a dir.
+
+    If \a dir has a relative path, the QFileInfo will also have a
+    relative path.
+
+    If \a file is an absolute path, then the directory specified
+    by \a dir will be disregarded.
+*/
+/*!
+    \fn void QFileInfo::setFile(const std::filesystem::path &file)
+    \since 6.0
+
+    Sets the file that the QFileInfo provides information about to \a
+    file.
+*/
+/*!
+    \fn std::filesystem::path QFileInfo::filesystemFilePath() const
+    \since 6.0
+
+    Returns filePath() as a \c{std::filesystem::path}.
+    \sa filePath()
+*/
+/*!
+    \fn std::filesystem::path QFileInfo::filesystemAbsoluteFilePath() const
+    \since 6.0
+
+    Returns absoluteFilePath() as a \c{std::filesystem::path}.
+    \sa absoluteFilePath()
+*/
+/*!
+    \fn std::filesystem::path QFileInfo::filesystemCanonicalFilePath() const
+    \since 6.0
+
+    Returns canonicalFilePath() as a \c{std::filesystem::path}.
+    \sa canonicalFilePath()
+*/
+/*!
+    \fn std::filesystem::path QFileInfo::filesystemPath() const
+    \since 6.0
+
+    Returns path() as a \c{std::filesystem::path}.
+    \sa path()
+*/
+/*!
+    \fn std::filesystem::path QFileInfo::filesystemAbsolutePath() const
+    \since 6.0
+
+    Returns absolutePath() as a \c{std::filesystem::path}.
+    \sa absolutePath()
+*/
+/*!
+    \fn std::filesystem::path QFileInfo::filesystemCanonicalPath() const
+    \since 6.0
+
+    Returns canonicalPath() as a \c{std::filesystem::path}.
+    \sa canonicalPath()
+*/
+/*!
+    \fn std::filesystem::path QFileInfo::filesystemSymLinkTarget() const
+    \since 6.0
+
+    Returns symLinkTarget() as a \c{std::filesystem::path}.
+    \sa symLinkTarget()
+*/
 
 QT_END_NAMESPACE

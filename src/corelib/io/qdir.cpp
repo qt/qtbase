@@ -585,8 +585,8 @@ QDir::QDir(const QString &path) : d_ptr(new QDirPrivate(path))
     also sorts the names using \a sort.
 
     The default \a nameFilter is an empty string, which excludes
-    nothing; the default \a filters is \l AllEntries, which also means
-    exclude nothing. The default \a sort is \l Name | \l IgnoreCase,
+    nothing; the default \a filters is \l AllEntries, which also
+    excludes nothing. The default \a sort is \l Name | \l IgnoreCase,
     i.e. sort by name case-insensitively.
 
     If \a path is an empty string, QDir uses "." (the current
@@ -2550,5 +2550,66 @@ QDebug operator<<(QDebug debug, const QDir &dir)
     return debug;
 }
 #endif // QT_NO_DEBUG_STREAM
+
+/*!
+    \fn QDir::QDir(const std::filesystem::path &path)
+    \since 6.0
+    Constructs a QDir pointing to the given directory \a path. If path
+    is empty the program's working directory, ("."), is used.
+
+    \sa currentPath()
+*/
+/*!
+    \fn QDir::QDir(const std::filesystem::path &path,
+                   const QString &nameFilter,
+                   SortFlags sort,
+                   Filters filters)
+    \since 6.0
+
+    Constructs a QDir with path \a path, that filters its entries by
+    name using \a nameFilter and by attributes using \a filters. It
+    also sorts the names using \a sort.
+
+    The default \a nameFilter is an empty string, which excludes
+    nothing; the default \a filters is \l AllEntries, which also
+    excludes nothing. The default \a sort is \l Name | \l IgnoreCase,
+    i.e. sort by name case-insensitively.
+
+    If \a path is empty, QDir uses "." (the current
+    directory). If \a nameFilter is an empty string, QDir uses the
+    name filter "*" (all files).
+
+    Note that \a path need not exist.
+
+    \sa exists(), setPath(), setNameFilters(), setFilter(), setSorting()
+*/
+/*!
+    \fn void QDir::setPath(const std::filesystem::path &path)
+    \since 6.0
+    \overload
+*/
+/*!
+    \fn void QDir::addSearchPath(const QString &prefix, const std::filesystem::path &path)
+    \since 6.0
+    \overload
+*/
+/*!
+    \fn std::filesystem::path QDir::filesystemPath() const
+    \since 6.0
+    Returns path() as \c{std::filesystem::path}.
+    \sa path()
+*/
+/*!
+    \fn std::filesystem::path QDir::filesystemAbsolutePath() const
+    \since 6.0
+    Returns absolutePath() as \c{std::filesystem::path}.
+    \sa absolutePath()
+*/
+/*!
+    \fn std::filesystem::path QDir::filesystemCanonicalPath() const
+    \since 6.0
+    Returns canonicalPath() as \c{std::filesystem::path}.
+    \sa canonicalPath()
+*/
 
 QT_END_NAMESPACE

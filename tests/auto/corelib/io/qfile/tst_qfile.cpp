@@ -282,6 +282,8 @@ private slots:
     void moveToTrash_data();
     void moveToTrash();
 
+    void stdfilesystem();
+
 private:
 #ifdef BUILTIN_TESTDATA
     QSharedPointer<QTemporaryDir> m_dataDir;
@@ -3810,6 +3812,55 @@ void tst_QFile::moveToTrash()
             }
         }
     }
+}
+
+void tst_QFile::stdfilesystem()
+{
+#if QT_CONFIG(cxx17_filesystem)
+    namespace fs = std::filesystem;
+    auto toFSPath = [](const QFile &file) { return fs::path(file.fileName().toStdU16String()); };
+    fs::path path { "./path" };
+    QFile file(path);
+    QCOMPARE(toFSPath(file), path);
+
+    QCOMPARE(path, file.filesystemFileName());
+
+    {
+        QFile parentedFile(path, this);
+        QCOMPARE(file.fileName(), parentedFile.fileName());
+        QCOMPARE(parentedFile.parent(), this);
+    }
+
+    path = path / "filename";
+    file.setFileName(path);
+    QCOMPARE(toFSPath(file), path);
+
+    path = "test-file";
+    file.setFileName(path);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    file.close();
+
+    path = "tile-fest";
+    QVERIFY(file.rename(path));
+    QVERIFY(fs::exists(path));
+    fs::path linkfile { "test-link" };
+    QVERIFY(file.link(linkfile));
+    QVERIFY(fs::exists(linkfile));
+
+    fs::path copyfile { "copy-file" };
+    QVERIFY(file.copy(copyfile));
+    QVERIFY(fs::exists(copyfile));
+
+    QFileDevice::Permissions p = QFile::permissions(path);
+    QVERIFY(p.testFlag(QFile::WriteUser) || p.testFlag(QFile::WriteOwner)); // some we know for sure
+    if (p.testFlag(QFile::ReadUser))
+        p.setFlag(QFile::ReadUser, false);
+    else if (p.testFlag(QFile::ReadOwner))
+        p.setFlag(QFile::ReadOwner, false);
+    QVERIFY(QFile::setPermissions(path, p));
+#else
+    QSKIP("Not supported");
+#endif
 }
 
 QTEST_MAIN(tst_QFile)

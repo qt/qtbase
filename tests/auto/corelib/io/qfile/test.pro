@@ -24,3 +24,5 @@ TESTDATA += \
     resources/file1.ext1
 
 win32:!winrt: QMAKE_USE += ole32 uuid
+
+CONFIG += c++17

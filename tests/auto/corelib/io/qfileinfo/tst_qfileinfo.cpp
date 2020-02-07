@@ -287,6 +287,8 @@ private slots:
     void invalidState();
     void nonExistingFile();
 
+    void stdfilesystem();
+
 private:
     const QString m_currentDir;
     QString m_sourceFile;
@@ -2269,6 +2271,97 @@ void tst_QFileInfo::nonExistingFile()
     stateCheck(info, dirname, filename);
 }
 
+void tst_QFileInfo::stdfilesystem()
+{
+#if QT_CONFIG(cxx17_filesystem)
+
+    namespace fs = std::filesystem;
+
+    // Verify constructing with fs::path leads to valid objects
+    {
+        // We compare using absoluteFilePath since QFileInfo::operator== ends up using
+        // canonicalFilePath which evaluates to empty-string for non-existent paths causing
+        // these tests to always succeed.
+#define COMPARE_CONSTRUCTION(filepath)                                                 \
+        QCOMPARE(QFileInfo(fs::path(filepath)).absoluteFilePath(),                     \
+                 QFileInfo(QString::fromLocal8Bit(filepath)).absoluteFilePath());      \
+        QCOMPARE(QFileInfo(base, fs::path(filepath)).absoluteFilePath(),               \
+                 QFileInfo(base, QString::fromLocal8Bit(filepath)).absoluteFilePath())
+
+        QDir base{ "../" }; // Used for the QFileInfo(QDir, <path>) ctor
+
+        COMPARE_CONSTRUCTION("./file");
+
+#ifdef Q_OS_WIN32
+        COMPARE_CONSTRUCTION("C:\\path\\to\\file.txt");
+        COMPARE_CONSTRUCTION("x:\\path/to\\file.txt");
+        COMPARE_CONSTRUCTION("D:/path/TO/file.txt");
+        COMPARE_CONSTRUCTION("//sharename/folder/file.txt");
+#endif
+        COMPARE_CONSTRUCTION("/path/TO/file.txt");
+        COMPARE_CONSTRUCTION("./path/TO/file.txt");
+        COMPARE_CONSTRUCTION("../file.txt");
+        COMPARE_CONSTRUCTION("./filæ.txt");
+
+#undef COMPARE_CONSTRUCTION
+        {
+            // One proper comparison with operator== for each ctor
+            QFile file(QStringLiteral("./filesystem_test_file.txt"));
+            if (!file.open(QFile::NewOnly))
+                QVERIFY(file.exists());
+            file.close();
+
+            QFileInfo pinfo{ fs::path{ "./filesystem_test_file.txt" } };
+            QFileInfo info{ QStringLiteral("./filesystem_test_file.txt") };
+            QCOMPARE(pinfo, info);
+        }
+
+        {
+            // And once more for QFileInfo(QDir, <path>)
+            const QString &subdir = QStringLiteral("./filesystem_test_dir/");
+            base = QDir(QStringLiteral("."));
+            if (!base.exists(subdir))
+                QVERIFY(base.mkdir(subdir));
+            base.cd(subdir);
+            QFile file{ base.filePath(QStringLiteral("./filesystem_test_file.txt")) };
+            if (!file.open(QFile::NewOnly))
+                QVERIFY(file.exists());
+            file.close();
+            QFileInfo pinfo{ base, fs::path{ "filesystem_test_file.txt" } };
+            QFileInfo info{ base, QStringLiteral("filesystem_test_file.txt") };
+            QCOMPARE(pinfo, info);
+        }
+    }
+
+    // Verify that functions returning path all point to the same place
+    {
+#define COMPARE_PATHS(actual, expected)                               \
+    QCOMPARE(QString::fromStdU16String(actual.u16string()), expected)
+
+        QFile file(QStringLiteral("./orig"));
+        if (!file.open(QFile::NewOnly))
+            QVERIFY(file.exists());
+        file.close();
+
+        QFileInfo info{ QStringLiteral("./orig") };
+        COMPARE_PATHS(info.filesystemPath(), info.path());
+        COMPARE_PATHS(info.filesystemAbsolutePath(), info.absolutePath());
+        COMPARE_PATHS(info.filesystemCanonicalPath(), info.canonicalPath());
+        COMPARE_PATHS(info.filesystemFilePath(), info.filePath());
+        COMPARE_PATHS(info.filesystemAbsoluteFilePath(), info.absoluteFilePath());
+        COMPARE_PATHS(info.filesystemCanonicalFilePath(), info.canonicalFilePath());
+
+        QVERIFY(file.link(QStringLiteral("./filesystem_test_symlink.lnk")));
+        info = QFileInfo{ "./filesystem_test_symlink.lnk" };
+
+        COMPARE_PATHS(info.filesystemSymLinkTarget(), info.symLinkTarget());
+#undef COMPARE_PATHS
+    }
+
+#else
+    QSKIP("Not supported");
+#endif
+}
 
 QTEST_MAIN(tst_QFileInfo)
 #include "tst_qfileinfo.moc"

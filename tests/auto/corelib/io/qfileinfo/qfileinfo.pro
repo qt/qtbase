@@ -6,3 +6,6 @@ RESOURCES += qfileinfo.qrc \
     testdata.qrc
 
 win32:!winrt: QMAKE_USE += advapi32 netapi32
+
+# for std::filesystem tests
+qtConfig(c++17): CONFIG += c++17

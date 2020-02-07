@@ -1210,6 +1210,56 @@ qint64 QFile::size() const
     return QFileDevice::size(); // for now
 }
 
+/*!
+    \fn QFile::QFile(const std::filesystem::path &name)
+    \since 6.0
+
+    Constructs a new file object to represent the file with the given \a name.
+*/
+/*!
+    \fn QFile::QFile(const std::filesystem::path &name, QObject *parent)
+    \since 6.0
+
+    Constructs a new file object with the given \a parent to represent the
+    file with the specified \a name.
+*/
+/*!
+    \fn std::filesystem::path QFile::filesystemFileName() const
+    \since 6.0
+    Returns fileName() as \c{std::filesystem::path}.
+*/
+/*!
+    \fn void QFile::setFileName(const std::filesystem::path &name)
+    \since 6.0
+    \overload
+*/
+/*!
+    \fn bool QFile::rename(const std::filesystem::path &newName)
+    \since 6.0
+    \overload
+*/
+/*!
+    \fn bool QFile::link(const std::filesystem::path &newName)
+    \since 6.0
+    \overload
+*/
+/*!
+    \fn bool QFile::copy(const std::filesystem::path &newName)
+    \since 6.0
+    \overload
+*/
+/*!
+    \fn QFile::Permissions QFile::permissions(const std::filesystem::path &filename)
+    \since 6.0
+    \overload
+*/
+/*!
+    \fn bool QFile::setPermissions(const std::filesystem::path &filename, Permissions permissionSpec)
+    \since 6.0
+    \overload
+*/
+
+
 QT_END_NAMESPACE
 
 #ifndef QT_NO_QOBJECT
