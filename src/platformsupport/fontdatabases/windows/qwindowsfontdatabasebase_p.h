@@ -102,6 +102,9 @@ public:
     static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef, const QString &faceName);
     static QFont LOGFONT_to_QFont(const LOGFONT& lf, int verticalDPI = 0);
 
+    static QString familyForStyleHint(QFont::StyleHint styleHint);
+    static QStringList extraTryFontsForFamily(const QString &family);
+
     class FontTable{};
     class EmbeddedFont
     {

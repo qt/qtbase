@@ -96,9 +96,6 @@ public:
 
     static qreal fontSmoothingGamma();
 
-    static QStringList extraTryFontsForFamily(const QString &family);
-    static QString familyForStyleHint(QFont::StyleHint styleHint);
-
     static void setFontOptions(unsigned options);
     static unsigned fontOptions();
 

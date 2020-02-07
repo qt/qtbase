@@ -39,6 +39,7 @@
 
 #include "qwindowsdirectwritefontdatabase_p.h"
 #include "qwindowsfontenginedirectwrite_p.h"
+#include "qwindowsfontdatabase_p.h"
 
 #include <QtCore/qendian.h>
 #include <QtCore/qstringbuilder.h>
@@ -269,54 +270,14 @@ QFontEngine *QWindowsDirectWriteFontDatabase::fontEngine(const QFontDef &fontDef
 
 QStringList QWindowsDirectWriteFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
-    Q_UNUSED(styleHint);
-    Q_UNUSED(script);
+    QStringList result;
+    result.append(familyForStyleHint(styleHint));
+    result.append(extraTryFontsForFamily(family));
+    result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
-    wchar_t defaultLocale[LOCALE_NAME_MAX_LENGTH];
-    bool hasDefaultLocale = GetUserDefaultLocaleName(defaultLocale, LOCALE_NAME_MAX_LENGTH) != 0;
-    wchar_t englishLocale[] = L"en-us";
-
-    QStringList ret;
-
-    auto it = m_populatedFonts.find(family);
-    IDWriteFontFamily *fontFamily = it != m_populatedFonts.end() ? it.value() : nullptr;
-    if (fontFamily != nullptr) {
-        IDWriteFontList *matchingFonts = nullptr;
-        if (SUCCEEDED(fontFamily->GetMatchingFonts(DWRITE_FONT_WEIGHT_REGULAR,
-                                                   DWRITE_FONT_STRETCH_NORMAL,
-                                                   toDirectWriteStyle(style),
-                                                   &matchingFonts))) {
-            for (uint j = 0; j < matchingFonts->GetFontCount(); ++j) {
-                IDWriteFont *font = nullptr;
-                if (SUCCEEDED(matchingFonts->GetFont(j, &font))) {
-                    IDWriteFontFamily *fontFamily2;
-                    if (SUCCEEDED(font->GetFontFamily(&fontFamily2))) {
-                        IDWriteLocalizedStrings *names;
-                        if (SUCCEEDED(fontFamily2->GetFamilyNames(&names))) {
-                            QString name = localeString(names, englishLocale);
-                            if (name.isEmpty() && hasDefaultLocale)
-                                name = localeString(names, defaultLocale);
-
-                            if (!name.isEmpty() && m_populatedFonts.contains(name))
-                                ret.append(name);
-
-                            names->Release();
-                        }
-
-                        fontFamily2->Release();
-                    }
-
-                    font->Release();
-                }
-            }
-
-            matchingFonts->Release();
-        }
-    }
-
-    qDebug(lcQpaFonts) << "fallbacks for" << family << "is" << ret;
-
-    return ret;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
+        << script << result;
+    return result;
 }
 
 QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
