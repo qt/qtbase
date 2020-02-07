@@ -168,7 +168,7 @@ QString QLocalSocketPrivate::generateErrorString(QLocalSocket::LocalSocketError 
     return errorString;
 }
 
-void QLocalSocketPrivate::errorOccurred(QLocalSocket::LocalSocketError error, const QString &function)
+void QLocalSocketPrivate::setErrorAndEmit(QLocalSocket::LocalSocketError error, const QString &function)
 {
     Q_Q(QLocalSocket);
     switch (error) {
@@ -231,8 +231,8 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     emit stateChanged(d->state);
 
     if (d->serverName.isEmpty()) {
-        d->errorOccurred(ServerNotFoundError,
-                         QLatin1String("QLocalSocket::connectToServer"));
+        d->setErrorAndEmit(ServerNotFoundError,
+                           QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
 
@@ -246,8 +246,8 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     bool ok;
     const quint16 port = settings.value(d->fullServerName).toUInt(&ok);
     if (!ok) {
-        d->errorOccurred(ServerNotFoundError,
-                         QLatin1String("QLocalSocket::connectToServer"));
+        d->setErrorAndEmit(ServerNotFoundError,
+                           QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
     QIODevice::open(openMode);

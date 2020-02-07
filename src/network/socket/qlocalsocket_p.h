@@ -125,7 +125,7 @@ public:
     bool ownsTcpSocket;
     void setSocket(QLocalUnixSocket*);
     QString generateErrorString(QLocalSocket::LocalSocketError, const QString &function) const;
-    void errorOccurred(QLocalSocket::LocalSocketError, const QString &function);
+    void setErrorAndEmit(QLocalSocket::LocalSocketError, const QString &function);
     void _q_stateChanged(QAbstractSocket::SocketState newState);
     void _q_error(QAbstractSocket::SocketError newError);
 #elif defined(Q_OS_WIN)
@@ -142,7 +142,7 @@ public:
     qint64 skip(qint64 maxSize) override;
     QLocalUnixSocket unixSocket;
     QString generateErrorString(QLocalSocket::LocalSocketError, const QString &function) const;
-    void errorOccurred(QLocalSocket::LocalSocketError, const QString &function);
+    void setErrorAndEmit(QLocalSocket::LocalSocketError, const QString &function);
     void _q_stateChanged(QAbstractSocket::SocketState newState);
     void _q_error(QAbstractSocket::SocketError newError);
     void _q_connectToSocket();

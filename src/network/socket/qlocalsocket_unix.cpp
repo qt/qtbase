@@ -172,7 +172,7 @@ QString QLocalSocketPrivate::generateErrorString(QLocalSocket::LocalSocketError 
     return errorString;
 }
 
-void QLocalSocketPrivate::errorOccurred(QLocalSocket::LocalSocketError error, const QString &function)
+void QLocalSocketPrivate::setErrorAndEmit(QLocalSocket::LocalSocketError error, const QString &function)
 {
     Q_Q(QLocalSocket);
     switch (error) {
@@ -237,15 +237,15 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     emit stateChanged(d->state);
 
     if (d->serverName.isEmpty()) {
-        d->errorOccurred(ServerNotFoundError,
-                QLatin1String("QLocalSocket::connectToServer"));
+        d->setErrorAndEmit(ServerNotFoundError,
+                           QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
 
     // create the socket
     if (-1 == (d->connectingSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0, O_NONBLOCK))) {
-        d->errorOccurred(UnsupportedSocketOperationError,
-                        QLatin1String("QLocalSocket::connectToServer"));
+        d->setErrorAndEmit(UnsupportedSocketOperationError,
+                           QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
 
@@ -281,7 +281,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
     name.sun_family = PF_UNIX;
     if (sizeof(name.sun_path) < (uint)encodedConnectingPathName.size() + 1) {
         QString function = QLatin1String("QLocalSocket::connectToServer");
-        errorOccurred(QLocalSocket::ServerNotFoundError, function);
+        setErrorAndEmit(QLocalSocket::ServerNotFoundError, function);
         return;
     }
     ::memcpy(name.sun_path, encodedConnectingPathName.constData(),
@@ -292,17 +292,17 @@ void QLocalSocketPrivate::_q_connectToSocket()
         {
         case EINVAL:
         case ECONNREFUSED:
-            errorOccurred(QLocalSocket::ConnectionRefusedError, function);
+            setErrorAndEmit(QLocalSocket::ConnectionRefusedError, function);
             break;
         case ENOENT:
-            errorOccurred(QLocalSocket::ServerNotFoundError, function);
+            setErrorAndEmit(QLocalSocket::ServerNotFoundError, function);
             break;
         case EACCES:
         case EPERM:
-            errorOccurred(QLocalSocket::SocketAccessError, function);
+            setErrorAndEmit(QLocalSocket::SocketAccessError, function);
             break;
         case ETIMEDOUT:
-            errorOccurred(QLocalSocket::SocketTimeoutError, function);
+            setErrorAndEmit(QLocalSocket::SocketTimeoutError, function);
             break;
         case EAGAIN:
             // Try again later, all of the sockets listening are full
@@ -320,7 +320,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
             delayConnect->setEnabled(true);
             break;
         default:
-            errorOccurred(QLocalSocket::UnknownSocketError, function);
+            setErrorAndEmit(QLocalSocket::UnknownSocketError, function);
         }
         return;
     }
@@ -336,7 +336,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
         q->emit connected();
     } else {
         QString function = QLatin1String("QLocalSocket::connectToServer");
-        errorOccurred(QLocalSocket::UnknownSocketError, function);
+        setErrorAndEmit(QLocalSocket::UnknownSocketError, function);
     }
     connectingSocket = -1;
     connectingName.clear();
@@ -529,8 +529,8 @@ bool QLocalSocket::waitForConnected(int msec)
         const int result = qt_poll_msecs(&pfd, 1, timeout);
 
         if (result == -1)
-            d->errorOccurred(QLocalSocket::UnknownSocketError,
-                             QLatin1String("QLocalSocket::waitForConnected"));
+            d->setErrorAndEmit(QLocalSocket::UnknownSocketError,
+                               QLatin1String("QLocalSocket::waitForConnected"));
         else if (result > 0)
             d->_q_connectToSocket();
     } while (state() == ConnectingState && !timer.hasExpired(msec));
