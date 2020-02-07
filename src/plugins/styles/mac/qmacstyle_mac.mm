@@ -3096,13 +3096,18 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         bool needTranslation = false;
         if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave
             && !qt_mac_applicationIsInDarkMode()) {
-            // Another surprise from AppKit (SDK 10.14) - -displayRectIgnoringOpacity:
-            // is different from drawRect: for some Apple-known reason box is smaller
-            // in height than we need, resulting in tab buttons sitting too high/not
-            // centered. Attempts to play with insets etc did not work - the same wrong
-            // height. Simple translation is not working (too much space "at bottom"),
-            // so we make it bigger and translate (otherwise it's clipped at bottom btw).
-            adjustedRect.adjust(0, 0, 0, 3);
+            // In Aqua theme we have to use the 'default' NSBox (as opposite
+            // to the 'custom' QDarkNSBox we use in dark theme). Since -drawRect:
+            // does nothing in default NSBox, we call -displayRectIgnoringOpaticty:.
+            // Unfortunately, the resulting box is smaller then the actual rect we
+            // wanted. This can be seen, e.g. because tabs (buttons) are misaligned
+            // vertically and even worse, if QTabWidget has autoFillBackground
+            // set, this background overpaints NSBox making it to disappear.
+            // We trick our NSBox to render in a larger rectangle, so that
+            // the actuall result (which is again smaller than requested),
+            // more or less is what we really want. We'll have to adjust CTM
+            // and translate accordingly.
+            adjustedRect.adjust(0, 0, 6, 6);
             needTranslation = true;
         }
         d->drawNSViewInRect(box, adjustedRect, p, ^(CGContextRef ctx, const CGRect &rect) {
@@ -3117,7 +3122,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 [box drawRect:rect];
             } else {
                 if (needTranslation)
-                    CGContextTranslateCTM(ctx, 0.0, 4.0);
+                    CGContextTranslateCTM(ctx, -3.0, 5.0);
                 [box displayRectIgnoringOpacity:box.bounds inContext:NSGraphicsContext.currentContext];
             }
         });
