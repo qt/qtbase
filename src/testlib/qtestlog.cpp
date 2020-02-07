@@ -597,4 +597,6 @@ qint64 QTestLog::nsecsFunctionTime()
     return elapsedFunctionTime.nsecsElapsed();
 }
 
+#include "moc_qtestlog_p.cpp"
+
 QT_END_NAMESPACE

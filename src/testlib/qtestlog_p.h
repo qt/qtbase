@@ -57,6 +57,8 @@
 #include <QtCore/private/qcore_mac_p.h>
 #endif
 
+#include <QtCore/qobjectdefs.h>
+
 QT_BEGIN_NAMESPACE
 
 class QBenchmarkResult;
@@ -65,6 +67,7 @@ class QTestData;
 
 class Q_TESTLIB_EXPORT QTestLog
 {
+    Q_GADGET
 public:
     QTestLog() = delete;
     ~QTestLog() = delete;
@@ -79,6 +82,7 @@ public:
         , XCTest
 #endif
     };
+    Q_ENUM(LogMode);
 
     static void enterTestFunction(const char* function);
     static void leaveTestFunction();
