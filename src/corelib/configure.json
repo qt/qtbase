@@ -366,6 +366,15 @@
                 "main": "std::mt19937 mt(0);"
             }
         },
+        "cxx17_filesystem": {
+            "label": "C++17 <filesystem>",
+            "type": "compile",
+            "test": {
+                "include": "filesystem",
+                "main": "std::filesystem::path p(\"./file\");",
+                "qmake": "CONFIG += c++17"
+            }
+        },
         "eventfd": {
             "label": "eventfd",
             "type": "compile",
@@ -612,6 +621,13 @@
             "label": "C++11 <future>",
             "condition": "tests.cxx11_future",
             "output": [ "publicFeature" ]
+        },
+        "cxx17_filesystem": {
+            "label": "C++17 <filesystem>",
+            "condition": "tests.cxx17_filesystem",
+            "output": [
+                "publicFeature"
+            ]
         },
         "eventfd": {
             "label": "eventfd",

@@ -44,11 +44,7 @@
 
 #include "qfilesystemiterator.h"
 
-#if QT_HAS_INCLUDE(<filesystem>) && defined(__cpp_lib_filesystem) && __cpp_lib_filesystem >= 201703L
-#define HAS_STD_FILESYSTEM
-#endif
-
-#ifdef HAS_STD_FILESYSTEM
+#if QT_CONFIG(cxx17_filesystem)
 #include <filesystem>
 #endif
 
@@ -248,7 +244,7 @@ void tst_qdiriterator::fsiterator()
 
 void tst_qdiriterator::stdRecursiveDirectoryIterator()
 {
-#ifdef HAS_STD_FILESYSTEM
+#if QT_CONFIG(cxx17_filesystem)
     QFETCH(QByteArray, dirpath);
 
     int count = 0;
