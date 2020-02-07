@@ -99,9 +99,13 @@ class QCache
               value(std::move(t))
         {
         }
-        static Node create(Key &&k, Value &&t) noexcept(std::is_nothrow_move_assignable_v<Key> && std::is_nothrow_move_assignable_v<T>)
+        static void createInPlace(Node *n, const Key &k, T *o, int cost)
         {
-            return Node(std::move(k), std::move(t));
+            new (n) Node{ Key(k), Value(o, cost) };
+        }
+        void emplace(T *o, int cost)
+        {
+            value = Value(o, cost);
         }
         static Node create(const Key &k, Value &&t) noexcept(std::is_nothrow_move_assignable_v<Key> && std::is_nothrow_move_assignable_v<T>)
         {
@@ -230,9 +234,15 @@ public:
             return false;
         }
         trim(mx - cost);
-        auto it = d.insert(Node::create(Key(key), Value(object, cost)));
+        auto result = d.findOrInsert(key);
+        Node *n = result.it.node();
+        if (result.initialized) {
+            cost -= n->value.cost;
+            result.it.node()->emplace(object, cost);
+        } else {
+            Node::createInPlace(n, key, object, cost);
+        }
         total += cost;
-        Node *n = it.node();
         n->prev = &chain;
         n->next = chain.next;
         chain.next->prev = n;

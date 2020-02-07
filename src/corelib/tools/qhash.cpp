@@ -1422,6 +1422,18 @@ size_t qHash(long double key, size_t seed) noexcept
     is replaced with \a value.
 */
 
+/*!
+    \fn template <typename T> template <typename ...Args> QHash<Key, T>::iterator QHash<Key, T>::emplace(const Key &key, Args&&... args)
+    \fn template <typename T> template <typename ...Args> QHash<Key, T>::iterator QHash<Key, T>::emplace(Key &&key, Args&&... args)
+
+    Inserts a new element into the container. This new element
+    is constructed in-place using \a args as the arguments for its
+    construction.
+
+    Returns an iterator pointing to the new element.
+*/
+
+
 /*! \fn template <class Key, class T> void QHash<Key, T>::insert(const QHash &other)
     \since 5.15
 
@@ -2098,6 +2110,41 @@ size_t qHash(long double key, size_t seed) noexcept
 
     \sa replace()
 */
+
+/*!
+    \fn template <typename T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplace(const Key &key, Args&&... args)
+    \fn template <typename T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplace(Key &&key, Args&&... args)
+
+    Inserts a new element into the container. This new element
+    is constructed in-place using \a args as the arguments for its
+    construction.
+
+    If there is already an item with the same key in the hash, this
+    function will simply create a new one. (This behavior is
+    different from replace(), which overwrites the value of an
+    existing item.)
+
+    Returns an iterator pointing to the new element.
+
+    \sa insert
+*/
+
+/*!
+    \fn template <typename T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplaceReplace(const Key &key, Args&&... args)
+    \fn template <typename T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplaceReplace(Key &&key, Args&&... args)
+
+    Inserts a new element into the container. This new element
+    is constructed in-place using \a args as the arguments for its
+    construction.
+
+    If there is already an item with the same key in the hash, that item's
+    value is replaced with a value constructed from \a args.
+
+    Returns an iterator pointing to the new element.
+
+    \sa replace, emplace
+*/
+
 
 /*! \fn template <class Key, class T> QMultiHash &QMultiHash<Key, T>::unite(const QMultiHash &other)
     \since 5.13

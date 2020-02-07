@@ -70,6 +70,8 @@ private slots:
     void equal_range();
     void insert_hash();
 
+    void emplace();
+
     void badHashFunction();
 };
 
@@ -96,26 +98,53 @@ int Foo::count = 0;
 class MyClass
 {
 public:
-    MyClass() { ++count;
+    MyClass()
+    {
+        ++count;
     }
-    MyClass( const QString& c) {
-        count++; str = c;
+    MyClass( const QString& c)
+    {
+        count++;
+        str = c;
+    }
+    MyClass(const QString &a, const QString &b)
+    {
+        count++;
+        str = a + b;
     }
     ~MyClass() {
         count--;
     }
     MyClass( const MyClass& c ) {
-        count++; str = c.str;
+        count++;
+        ++copies;
+        str = c.str;
     }
     MyClass &operator =(const MyClass &o) {
-        str = o.str; return *this;
+        str = o.str;
+        ++copies;
+        return *this;
+    }
+    MyClass(MyClass &&c) {
+        count++;
+        ++moves;
+        str = c.str;
+    }
+    MyClass &operator =(MyClass &&o) {
+        str = o.str;
+        ++moves;
+        return *this;
     }
 
     QString str;
     static int count;
+    static int copies;
+    static int moves;
 };
 
-int MyClass::count = 0;
+int MyClass::count  = 0;
+int MyClass::copies = 0;
+int MyClass::moves  = 0;
 
 typedef QHash<QString, MyClass> MyMap;
 
@@ -1647,6 +1676,50 @@ void tst_QHash::insert_hash()
         QCOMPARE(hash[0], 7);
         QCOMPARE(hash[2], 5);
         QCOMPARE(hash[7], 55);
+    }
+}
+
+void tst_QHash::emplace()
+{
+    {
+        QHash<QString, MyClass> hash;
+        MyClass::copies = 0;
+        MyClass::moves = 0;
+
+        hash.emplace(QString("a"), QString("a"));
+        QCOMPARE(hash["a"].str, "a");
+        QCOMPARE(MyClass::copies, 0);
+        QCOMPARE(MyClass::moves, 0);
+        hash.emplace(QString("ab"), QString("ab"));
+        QCOMPARE(hash["ab"].str, "ab");
+        QCOMPARE(MyClass::copies, 0);
+        QCOMPARE(MyClass::moves, 0);
+        hash.emplace(QString("ab"), QString("abc"));
+        QCOMPARE(hash["ab"].str, "abc");
+        QCOMPARE(MyClass::copies, 0);
+        QCOMPARE(MyClass::moves, 1);
+    }
+    {
+        QMultiHash<QString, MyClass> hash;
+        MyClass::copies = 0;
+        MyClass::moves = 0;
+
+        hash.emplace(QString("a"), QString("a"));
+        QCOMPARE(hash["a"].str, "a");
+        QCOMPARE(MyClass::copies, 0);
+        QCOMPARE(MyClass::moves, 0);
+        hash.emplace(QString("ab"), QString("ab"));
+        QCOMPARE(hash["ab"].str, "ab");
+        QCOMPARE(MyClass::copies, 0);
+        QCOMPARE(MyClass::moves, 0);
+        hash.emplace(QString("ab"), QString("abc"));
+        QCOMPARE(hash["ab"].str, "abc");
+        QCOMPARE(MyClass::copies, 0);
+        QCOMPARE(MyClass::moves, 0);
+        hash.emplaceReplace(QString("ab"), QString("abcd"));
+        QCOMPARE(hash["ab"].str, "abcd");
+        QCOMPARE(MyClass::copies, 0);
+        QCOMPARE(MyClass::moves, 1);
     }
 }
 

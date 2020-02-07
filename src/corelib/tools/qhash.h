@@ -87,21 +87,16 @@ struct Node
 
     Key key;
     T value;
-    static Node create(Key &&k, T &&t) noexcept(std::is_nothrow_move_assignable_v<Key> && std::is_nothrow_move_assignable_v<T>)
+    template<typename ...Args>
+    static void createInPlace(Node *n, Key &&k, Args &&... args)
+    { new (n) Node{ std::move(k), T(std::forward<Args>(args)...) }; }
+    template<typename ...Args>
+    static void createInPlace(Node *n, const Key &k, Args &&... args)
+    { new (n) Node{ Key(k), T(std::forward<Args>(args)...) }; }
+    template<typename ...Args>
+    void emplaceValue(Args &&... args)
     {
-        return Node{ std::move(k), std::move(t) };
-    }
-    static Node create(const Key &k, const T &t) noexcept(std::is_nothrow_copy_constructible_v<Key> && std::is_nothrow_copy_constructible_v<T>)
-    {
-        return Node{ k, t };
-    }
-    void replace(const T &t) noexcept(std::is_nothrow_assignable_v<T>)
-    {
-        value = t;
-    }
-    void replace(T &&t) noexcept(std::is_nothrow_move_assignable_v<T>)
-    {
-        value = std::move(t);
+        value = T(std::forward<Args>(args)...);
     }
     T &&takeValue() noexcept(std::is_nothrow_move_assignable_v<T>)
     {
@@ -116,18 +111,14 @@ struct Node<Key, QHashDummyValue> {
     using ValueType = QHashDummyValue;
 
     Key key;
-    static Node create(Key &&k, ValueType &&)
-    {
-        return Node{ std::move(k) };
-    }
-    static Node create(const Key &k, const ValueType &)
-    {
-        return Node{ k };
-    }
-    void replace(const ValueType &)
-    {
-    }
-    void replace(ValueType &&)
+    template<typename ...Args>
+    static void createInPlace(Node *n, Key &&k, Args &&...)
+    { new (n) Node{ std::move(k) }; }
+    template<typename ...Args>
+    static void createInPlace(Node *n, const Key &k, Args &&...)
+    { new (n) Node{ k }; }
+    template<typename ...Args>
+    void emplaceValue(Args &&...)
     {
     }
     ValueType takeValue() { return QHashDummyValue(); }
@@ -176,16 +167,12 @@ struct MultiNode
     Key key;
     Chain *value;
 
-    static MultiNode create(Key &&k, T &&t)
-    {
-        Chain *c = new Chain{ std::move(t), nullptr };
-        return MultiNode(std::move(k), c);
-    }
-    static MultiNode create(const Key &k, const T &t)
-    {
-        Chain *c = new Chain{ t, nullptr };
-        return MultiNode(k, c);
-    }
+    template<typename ...Args>
+    static void createInPlace(MultiNode *n, Key &&k, Args &&... args)
+    { new (n) MultiNode(std::move(k), new Chain{ T(std::forward<Args>(args)...), nullptr }); }
+    template<typename ...Args>
+    static void createInPlace(MultiNode *n, const Key &k, Args &&... args)
+    { new (n) MultiNode(k, new Chain{ T(std::forward<Args>(args)...), nullptr }); }
 
     MultiNode(const Key &k, Chain *c)
         : key(k),
@@ -226,19 +213,17 @@ struct MultiNode
         n->value = nullptr;
         return size;
     }
-    void replace(const T &t) noexcept(std::is_nothrow_assignable_v<T, T>)
+    template<typename ...Args>
+    void insertMulti(Args &&... args)
     {
-        value->value = t;
-    }
-    void replace(T &&t) noexcept(std::is_nothrow_move_assignable_v<T>)
-    {
-        value->value = std::move(t);
-    }
-    void insertMulti(const T &t)
-    {
-        Chain *e = new Chain{ t, nullptr };
+        Chain *e = new Chain{ T(std::forward<Args>(args)...), nullptr };
         e->next = value;
         value = e;
+    }
+    template<typename ...Args>
+    void emplaceValue(Args &&... args)
+    {
+        value->value = T(std::forward<Args>(args)...);
     }
 
     // compiler generated move operators are fine
@@ -305,7 +290,7 @@ struct Span {
             entries = nullptr;
         }
     }
-    void insert(size_t i, Node &&n)
+    Node *insert(size_t i)
     {
         Q_ASSERT(i <= NEntries);
         Q_ASSERT(offsets[i] == UnusedEntry);
@@ -315,7 +300,7 @@ struct Span {
         Q_ASSERT(entry < allocated);
         nextFree = entries[entry].nextFree();
         offsets[i] = entry;
-        new (&entries[entry].node()) Node(std::move(n));
+        return &entries[entry].node();
     }
     void erase(size_t bucket) noexcept(std::is_nothrow_destructible<Node>::value)
     {
@@ -471,7 +456,8 @@ struct Data
                 iterator it{ this, s*Span::NEntries + index };
                 Q_ASSERT(it.isUnused());
 
-                spans[it.span()].insert(it.index(), std::move(Node(n)));
+                Node *newNode = spans[it.span()].insert(it.index());
+                new (newNode) Node(n);
             }
         }
     }
@@ -491,7 +477,8 @@ struct Data
                 const Node &n = span.at(index);
                 iterator it = find(n.key);
                 Q_ASSERT(it.isUnused());
-                spans[it.span()].insert(it.index(), std::move(Node(n)));
+                Node *newNode = spans[it.span()].insert(it.index());
+                new (newNode) Node(n);
             }
         }
     }
@@ -563,7 +550,8 @@ struct Data
                 Node &n = span.at(index);
                 iterator it = find(n.key);
                 Q_ASSERT(it.isUnused());
-                spans[it.span()].insert(it.index(), std::move(n));
+                Node *newNode = spans[it.span()].insert(it.index());
+                new (newNode) Node(std::move(n));
             }
             span.freeData();
         }
@@ -622,61 +610,23 @@ struct Data
         return it.node();
     }
 
-    Node *findAndInsertNode(const Key &key) noexcept
+    struct InsertionResult {
+        iterator it;
+        bool initialized;
+    };
+
+    InsertionResult findOrInsert(const Key &key) noexcept
     {
         if (shouldGrow())
             rehash(size + 1);
         iterator it = find(key);
         if (it.isUnused()) {
-            spans[it.span()].insert(it.index(), Node::create(key, T()));
+            spans[it.span()].insert(it.index());
             ++size;
+            return { it, false };
         }
-        return it.node();
+        return { it, true };
     }
-
-
-    iterator insert(Node &&n)
-    {
-        if (shouldGrow())
-            rehash(size + 1);
-        iterator it = find(n.key);
-        if (it.isUnused()) {
-            spans[it.span()].insert(it.index(), std::move(n));
-            ++size;
-        } else {
-            it.node()->replace(std::move(n.takeValue()));
-        }
-        return it;
-    }
-
-    iterator insert(const Key &key, const T &value)
-    {
-        if (shouldGrow())
-            rehash(size + 1);
-        auto it = find(key);
-        if (it.isUnused()) {
-            spans[it.span()].insert(it.index(), Node::create(key, value));
-            ++size;
-        } else {
-            it.node()->replace(value);
-        }
-        return it;
-    }
-
-    iterator insertMulti(const Key &key, const T &value)
-    {
-        if (shouldGrow())
-            rehash(size + 1);
-        auto it = find(key);
-        if (it.isUnused()) {
-            spans[it.span()].insert(it.index(), std::move(Node::create(key, value)));
-            ++size;
-        } else {
-            it.node()->insertMulti(value);
-        }
-        return it;
-    }
-
 
     iterator erase(iterator it) noexcept(std::is_nothrow_destructible<Node>::value)
     {
@@ -963,9 +913,11 @@ public:
     T &operator[](const Key &key)
     {
         detach();
-        Node *n = d->findAndInsertNode(key);
-        Q_ASSERT(n);
-        return n->value;
+        auto result = d->findOrInsert(key);
+        Q_ASSERT(!result.it.atEnd());
+        if (!result.initialized)
+            Node::createInPlace(result.it.node(), key, T());
+        return result.it.node()->value;
     }
 
     const T operator[](const Key &key) const noexcept
@@ -1179,11 +1131,9 @@ public:
     }
     iterator insert(const Key &key, const T &value)
     {
-        detach();
-
-        auto i = d->insert(Node::create(key, value));
-        return iterator(i);
+        return emplace(key, value);
     }
+
     void insert(const QHash &hash)
     {
         if (d == hash.d || !hash.d)
@@ -1196,7 +1146,26 @@ public:
         detach();
 
         for (auto it = hash.begin(); it != hash.end(); ++it)
-            insert(it.key(), it.value());
+            emplace(it.key(), it.value());
+    }
+
+    template <typename ...Args>
+    iterator emplace(const Key &key, Args &&... args)
+    {
+        return emplace(Key(key), std::forward<Args>(args)...);
+    }
+
+    template <typename ...Args>
+    iterator emplace(Key &&key, Args &&... args)
+    {
+        detach();
+
+        auto result = d->findOrInsert(key);
+        if (!result.initialized)
+            Node::createInPlace(result.it.node(), std::move(key), std::forward<Args>(args)...);
+        else
+            result.it.node()->emplaceValue(std::forward<Args>(args)...);
+        return iterator(result.it);
     }
 
     float load_factor() const noexcept { return d ? d->loadFactor() : 0; }
@@ -1427,9 +1396,11 @@ public:
     T &operator[](const Key &key)
     {
         detach();
-        Node *n = d->findAndInsertNode(key);
-        Q_ASSERT(n);
-        return n->value->value;
+        auto result = d->findOrInsert(key);
+        Q_ASSERT(!result.it.atEnd());
+        if (!result.initialized)
+            Node::createInPlace(result.it.node(), key, T());
+        return result.it.node()->value->value;
     }
 
     const T operator[](const Key &key) const noexcept
@@ -1711,11 +1682,29 @@ public:
     }
     iterator insert(const Key &key, const T &value)
     {
-        detach();
-        auto it = d->insertMulti(key, value);
-        ++m_size;
-        return iterator(it);
+        return emplace(key, value);
     }
+
+    template <typename ...Args>
+    iterator emplace(const Key &key, Args &&... args)
+    {
+        return emplace(Key(key), std::forward<Args>(args)...);
+    }
+
+    template <typename ...Args>
+    iterator emplace(Key &&key, Args &&... args)
+    {
+        detach();
+
+        auto result = d->findOrInsert(key);
+        if (!result.initialized)
+            Node::createInPlace(result.it.node(), std::move(key), std::forward<Args>(args)...);
+        else
+            result.it.node()->insertMulti(std::forward<Args>(args)...);
+        ++m_size;
+        return iterator(result.it);
+    }
+
 
     float load_factor() const noexcept { return d ? d->loadFactor() : 0; }
     static float max_load_factor() noexcept { return 0.5; }
@@ -1724,13 +1713,30 @@ public:
 
     inline bool empty() const noexcept { return isEmpty(); }
 
-    inline typename QMultiHash<Key, T>::iterator replace(const Key &key, const T &value)
+    inline iterator replace(const Key &key, const T &value)
+    {
+        return emplaceReplace(key, value);
+    }
+
+    template <typename ...Args>
+    iterator emplaceReplace(const Key &key, Args &&... args)
+    {
+        return emplaceReplace(Key(key), std::forward<Args>(args)...);
+    }
+
+    template <typename ...Args>
+    iterator emplaceReplace(Key &&key, Args &&... args)
     {
         detach();
-        qsizetype s = d->size;
-        auto it = d->insert(key, value);
-        m_size += d->size - s;
-        return iterator(it);
+
+        auto result = d->findOrInsert(key);
+        if (!result.initialized) {
+            ++m_size;
+            Node::createInPlace(result.it.node(), std::move(key), std::forward<Args>(args)...);
+        } else {
+            result.it.node()->emplaceValue(std::forward<Args>(args)...);
+        }
+        return iterator(result.it);
     }
 
     inline QMultiHash &operator+=(const QMultiHash &other)
