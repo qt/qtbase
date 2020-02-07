@@ -2462,9 +2462,10 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
 {
     QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, srb);
 
-    QVarLengthArray<VkDescriptorBufferInfo, 4> bufferInfos;
-    QVarLengthArray<VkDescriptorImageInfo, 4> imageInfos;
-    QVarLengthArray<VkWriteDescriptorSet, 8> writeInfos;
+    QVarLengthArray<VkDescriptorBufferInfo, 8> bufferInfos;
+    QVarLengthArray<VkDescriptorImageInfo, 8> imageInfos;
+    QVarLengthArray<VkWriteDescriptorSet, 12> writeInfos;
+    QVarLengthArray<QPair<int, int>, 12> infoIndices;
 
     const bool updateAll = descSetIdx < 0;
     int frameSlot = updateAll ? 0 : descSetIdx;
@@ -2481,6 +2482,9 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
             writeInfo.dstBinding = uint32_t(b->binding);
             writeInfo.descriptorCount = 1;
 
+            int bufferInfoIndex = -1;
+            int imageInfoIndex = -1;
+
             switch (b->type) {
             case QRhiShaderResourceBinding::UniformBuffer:
             {
@@ -2496,8 +2500,8 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
                 bufInfo.range = VkDeviceSize(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size);
                 // be nice and assert when we know the vulkan device would die a horrible death due to non-aligned reads
                 Q_ASSERT(aligned(bufInfo.offset, ubufAlign) == bufInfo.offset);
+                bufferInfoIndex = bufferInfos.count();
                 bufferInfos.append(bufInfo);
-                writeInfo.pBufferInfo = &bufferInfos.last();
             }
                 break;
             case QRhiShaderResourceBinding::SampledTexture:
@@ -2513,8 +2517,8 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
                 imageInfo.sampler = samplerD->sampler;
                 imageInfo.imageView = texD->imageView;
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfoIndex = imageInfos.count();
                 imageInfos.append(imageInfo);
-                writeInfo.pImageInfo = &imageInfos.last();
             }
                 break;
             case QRhiShaderResourceBinding::ImageLoad:
@@ -2531,8 +2535,8 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
                     imageInfo.sampler = VK_NULL_HANDLE;
                     imageInfo.imageView = view;
                     imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    imageInfoIndex = imageInfos.count();
                     imageInfos.append(imageInfo);
-                    writeInfo.pImageInfo = &imageInfos.last();
                 }
             }
                 break;
@@ -2548,8 +2552,8 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
                 bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[frameSlot] : bufD->buffers[0];
                 bufInfo.offset = VkDeviceSize(b->u.ubuf.offset);
                 bufInfo.range = VkDeviceSize(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size);
+                bufferInfoIndex = bufferInfos.count();
                 bufferInfos.append(bufInfo);
-                writeInfo.pBufferInfo = &bufferInfos.last();
             }
                 break;
             default:
@@ -2557,8 +2561,18 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
             }
 
             writeInfos.append(writeInfo);
+            infoIndices.append({ bufferInfoIndex, imageInfoIndex });
         }
         ++frameSlot;
+    }
+
+    for (int i = 0, writeInfoCount = writeInfos.count(); i < writeInfoCount; ++i) {
+        const int bufferInfoIndex = infoIndices[i].first;
+        const int imageInfoIndex = infoIndices[i].second;
+        if (bufferInfoIndex >= 0)
+            writeInfos[i].pBufferInfo = &bufferInfos[bufferInfoIndex];
+        else if (imageInfoIndex >= 0)
+            writeInfos[i].pImageInfo = &imageInfos[imageInfoIndex];
     }
 
     df->vkUpdateDescriptorSets(dev, uint32_t(writeInfos.count()), writeInfos.constData(), 0, nullptr);
