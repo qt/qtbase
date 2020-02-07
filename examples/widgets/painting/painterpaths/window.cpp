@@ -204,9 +204,9 @@ Window::Window()
             this, &Window::penColorChanged);
 
     for (RenderArea *area : qAsConst(renderAreas)) {
-        connect(penWidthSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+        connect(penWidthSpinBox, &QSpinBox::valueChanged,
                 area, &RenderArea::setPenWidth);
-        connect(rotationAngleSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+        connect(rotationAngleSpinBox, &QSpinBox::valueChanged,
                 area, &RenderArea::setRotationAngle);
     }
 

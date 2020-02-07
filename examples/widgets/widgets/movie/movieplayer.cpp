@@ -81,7 +81,7 @@ MoviePlayer::MoviePlayer(QWidget *parent)
     connect(movie, &QMovie::stateChanged, this, &MoviePlayer::updateButtons);
     connect(fitCheckBox, &QCheckBox::clicked, this, &MoviePlayer::fitToWindow);
     connect(frameSlider, &QSlider::valueChanged, this, &MoviePlayer::goToFrame);
-    connect(speedSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(speedSpinBox, &QSpinBox::valueChanged,
             movie, &QMovie::setSpeed);
 
     mainLayout = new QVBoxLayout;

@@ -401,7 +401,7 @@ QWidget *MainWindow::createIconSizeGroupBox()
 //! [26]
 
 //! [27]
-    connect(otherSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(otherSpinBox, &QSpinBox::valueChanged,
             this, &MainWindow::triggerChangeSize);
 
     QHBoxLayout *otherSizeLayout = new QHBoxLayout;

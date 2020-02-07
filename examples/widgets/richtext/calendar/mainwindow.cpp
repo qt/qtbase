@@ -90,7 +90,7 @@ MainWindow::MainWindow()
             this, &MainWindow::setMonth);
     connect(yearEdit, &QDateTimeEdit::dateChanged,
             this, &MainWindow::setYear);
-    connect(fontSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(fontSizeSpinBox, &QSpinBox::valueChanged,
             this, &MainWindow::setFontSize);
 //! [3]
 

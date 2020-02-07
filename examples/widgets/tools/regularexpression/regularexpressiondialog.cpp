@@ -222,7 +222,7 @@ RegularExpressionDialog::RegularExpressionDialog(QWidget *parent)
     connect(optimizeOnFirstUsageOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
     connect(dontAutomaticallyOptimizeOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
 
-    connect(offsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(offsetSpinBox, &QSpinBox::valueChanged,
             this, &RegularExpressionDialog::refresh);
 
     connect(matchTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),

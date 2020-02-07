@@ -262,7 +262,7 @@ void Window::createDoubleSpinBoxes()
     priceSpinBox->setPrefix("$");
     priceSpinBox->setValue(99.99);
 
-    connect(precisionSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(precisionSpinBox, &QSpinBox::valueChanged,
 //! [17]
             this, &Window::changePrecision);
 

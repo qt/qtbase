@@ -254,7 +254,6 @@ QAccessibleSpinBox::QAccessibleSpinBox(QWidget *w)
 {
     Q_ASSERT(spinBox());
     addControllingSignal(QLatin1String("valueChanged(int)"));
-    addControllingSignal(QLatin1String("valueChanged(QString)"));
 }
 
 /*!
@@ -272,7 +271,6 @@ QAccessibleDoubleSpinBox::QAccessibleDoubleSpinBox(QWidget *widget)
 {
     Q_ASSERT(qobject_cast<QDoubleSpinBox *>(widget));
     addControllingSignal(QLatin1String("valueChanged(double)"));
-    addControllingSignal(QLatin1String("valueChanged(QString)"));
 }
 
 /*!

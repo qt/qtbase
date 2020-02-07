@@ -1830,9 +1830,9 @@ void tst_QSpinBox::stepModifierPressAndHold()
     stepModifierStyle->stepModifier = static_cast<Qt::KeyboardModifier>(stepModifier);
     spin.setStyle(stepModifierStyle.data());
 
-    QSignalSpy spy(&spin, QOverload<int>::of(&SpinBox::valueChanged));
+    QSignalSpy spy(&spin, &SpinBox::valueChanged);
     // TODO: remove debug output when QTBUG-69492 is fixed
-    connect(&spin, QOverload<int>::of(&SpinBox::valueChanged), [=]() {
+    connect(&spin, &SpinBox::valueChanged, [=]() {
         qDebug() << QTime::currentTime() << "valueChanged emitted";
     });
 

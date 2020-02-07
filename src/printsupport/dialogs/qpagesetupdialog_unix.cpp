@@ -277,13 +277,13 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
     connect(m_ui.unitCombo, &QComboBox::activated, this, &QPageSetupWidget::unitChanged);
 
     connect(m_ui.pageSizeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QPageSetupWidget::pageSizeChanged);
-    connect(m_ui.pageWidth, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QPageSetupWidget::pageSizeChanged);
-    connect(m_ui.pageHeight, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QPageSetupWidget::pageSizeChanged);
+    connect(m_ui.pageWidth, &QDoubleSpinBox::valueChanged, this, &QPageSetupWidget::pageSizeChanged);
+    connect(m_ui.pageHeight, &QDoubleSpinBox::valueChanged, this, &QPageSetupWidget::pageSizeChanged);
 
-    connect(m_ui.leftMargin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QPageSetupWidget::leftMarginChanged);
-    connect(m_ui.topMargin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QPageSetupWidget::topMarginChanged);
-    connect(m_ui.rightMargin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QPageSetupWidget::rightMarginChanged);
-    connect(m_ui.bottomMargin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &QPageSetupWidget::bottomMarginChanged);
+    connect(m_ui.leftMargin, &QDoubleSpinBox::valueChanged, this, &QPageSetupWidget::leftMarginChanged);
+    connect(m_ui.topMargin, &QDoubleSpinBox::valueChanged, this, &QPageSetupWidget::topMarginChanged);
+    connect(m_ui.rightMargin, &QDoubleSpinBox::valueChanged, this, &QPageSetupWidget::rightMarginChanged);
+    connect(m_ui.bottomMargin, &QDoubleSpinBox::valueChanged, this, &QPageSetupWidget::bottomMarginChanged);
 
     connect(m_ui.portrait, &QRadioButton::clicked, this, &QPageSetupWidget::pageOrientationChanged);
     connect(m_ui.landscape, &QRadioButton::clicked, this, &QPageSetupWidget::pageOrientationChanged);

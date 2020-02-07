@@ -419,7 +419,7 @@ void tst_QDoubleSpinBox::setTracking()
     spin.setDecimals(decimals);
     spin.show();
 
-    connect(&spin, SIGNAL(valueChanged(QString)), this, SLOT(valueChangedHelper(QString)));
+    connect(&spin, SIGNAL(textChanged(QString)), this, SLOT(valueChangedHelper(QString)));
 
     keys.simulate(&spin);
     QCOMPARE(actualTexts, texts);
@@ -1774,7 +1774,7 @@ void tst_QDoubleSpinBox::stepModifierPressAndHold()
     stepModifierStyle->stepModifier = static_cast<Qt::KeyboardModifier>(stepModifier);
     spin.setStyle(stepModifierStyle.data());
 
-    QSignalSpy spy(&spin, QOverload<double>::of(&DoubleSpinBox::valueChanged));
+    QSignalSpy spy(&spin, &DoubleSpinBox::valueChanged);
 
     spin.show();
     QVERIFY(QTest::qWaitForWindowExposed(&spin));

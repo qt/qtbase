@@ -123,7 +123,7 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::changeMode);
     connect(caseCombo, &QComboBox::activated,
             this, &MainWindow::changeCase);
-    connect(maxVisibleSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(maxVisibleSpinBox, &QSpinBox::valueChanged,
             this, &MainWindow::changeMaxVisible);
 //! [2]
 

@@ -159,7 +159,7 @@ Window::Window()
 //! [8]
     connect(shapeComboBox, &QComboBox::activated,
             this, &Window::shapeChanged);
-    connect(penWidthSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(penWidthSpinBox, &QSpinBox::valueChanged,
             this, &Window::penChanged);
     connect(penStyleComboBox, &QComboBox::activated,
             this, &Window::penChanged);
