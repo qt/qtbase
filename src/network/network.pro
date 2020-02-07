@@ -15,7 +15,7 @@ msvc:equals(QT_ARCH, i386): QMAKE_LFLAGS += /BASE:0x64000000
 QMAKE_DOCS = $$PWD/doc/qtnetwork.qdocconf
 
 include(access/access.pri)
-include(bearer/bearer.pri)
+qtConfig(bearermanagement): include(bearer/bearer.pri)
 include(kernel/kernel.pri)
 include(socket/socket.pri)
 include(ssl/ssl.pri)
@@ -38,6 +38,4 @@ MODULE_WINRT_CAPABILITIES = \
     internetClientServer \
     privateNetworkClientServer
 
-MODULE_PLUGIN_TYPES = \
-    bearer
 load(qt_module)
