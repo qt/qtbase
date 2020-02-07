@@ -160,7 +160,13 @@ public:
 
     void start(const QString &program, const QStringList &arguments, OpenMode mode = ReadWrite);
 #if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X(
+        "Use QProcess::start(const QString &program, const QStringList &arguments,"
+        "OpenMode mode = ReadWrite) instead"
+    )
     void start(const QString &command, OpenMode mode = ReadWrite);
+#endif
 #endif
     void start(OpenMode mode = ReadWrite);
     bool startDetached(qint64 *pid = nullptr);
@@ -250,8 +256,12 @@ public:
     bool atEnd() const override; // ### Qt6: remove trivial override
 
     static int execute(const QString &program, const QStringList &arguments);
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X(
+        "Use QProcess::execute(const QString &program, const QStringList &arguments) instead"
+    )
     static int execute(const QString &command);
-
+#endif
     static bool startDetached(const QString &program, const QStringList &arguments,
                               const QString &workingDirectory
 #if defined(Q_QDOC)
@@ -261,11 +271,18 @@ public:
 #if !defined(Q_QDOC)
     static bool startDetached(const QString &program, const QStringList &arguments); // ### Qt6: merge overloads
 #endif
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X(
+        "Use QProcess::startDetached(const QString &program, const QStringList &arguments) instead"
+    )
     static bool startDetached(const QString &command);
+#endif
 
     static QStringList systemEnvironment();
 
     static QString nullDevice();
+
+    static QStringList splitCommand(const QString &command);
 
 public Q_SLOTS:
     void terminate();
