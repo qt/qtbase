@@ -13,6 +13,7 @@ instructions:
       equals_value: Windows
   - type: ExecuteCommand
     command: "{{.InstallDir}}/target/bin/qt-cmake {{.Env.COIN_CMAKE_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
