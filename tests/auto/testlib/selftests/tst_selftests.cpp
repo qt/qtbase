@@ -800,8 +800,8 @@ bool tst_Selftests::compareOutput(const QString &logger, const QString &subdir,
 {
 
     if (actual.size() != expected.size()) {
-        *errorMessage = QString::fromLatin1("Mismatch in line count: %1 != %2.")
-                        .arg(actual.size()).arg(expected.size());
+        *errorMessage = QString::fromLatin1("Mismatch in line count. Expected %1 but got %2.")
+                        .arg(expected.size()).arg(actual.size());
         return false;
     }
 
