@@ -99,7 +99,7 @@ void QLocalSocketPrivate::_q_error(QAbstractSocket::SocketError socketError)
     QLocalSocket::LocalSocketError error = (QLocalSocket::LocalSocketError)socketError;
     QString errorString = generateErrorString(error, function);
     q->setErrorString(errorString);
-    emit q->error(error);
+    emit q->errorOccurred(error);
 }
 
 void QLocalSocketPrivate::_q_stateChanged(QAbstractSocket::SocketState newState)
@@ -210,7 +210,7 @@ void QLocalSocketPrivate::setErrorAndEmit(QLocalSocket::LocalSocketError error, 
 
     QString errorString = generateErrorString(error, function);
     q->setErrorString(errorString);
-    emit q->error(error);
+    emit q->errorOccurred(error);
 
     // errors cause a disconnect
     unixSocket.setSocketState(QAbstractSocket::UnconnectedState);
@@ -227,7 +227,7 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     if (state() == ConnectedState || state() == ConnectingState) {
         QString errorString = d->generateErrorString(QLocalSocket::OperationError, QLatin1String("QLocalSocket::connectToserver"));
         setErrorString(errorString);
-        emit error(QLocalSocket::OperationError);
+        emit errorOccurred(QLocalSocket::OperationError);
         return;
     }
 

@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     The socket is opened in the given \a openMode and first enters ConnectingState.
     If a connection is established, QLocalSocket enters ConnectedState and emits connected().
 
-    After calling this function, the socket can emit error() to signal that an error occurred.
+    After calling this function, the socket can emit errorOccurred() to signal that an error occurred.
 
     \sa state(), serverName(), waitForConnected()
 */
@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
 
     Note that unlike in most other QIODevice subclasses, open() may not open the device directly.
     The function return false if the socket was already connected or if the server to connect
-    to was not defined and true in any other case. The connected() or error() signals will be
+    to was not defined and true in any other case. The connected() or errorOccurred() signals will be
     emitted once the device is actualy open (or the connection failed).
 
     See connectToServer() for more details.
@@ -329,6 +329,14 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn void QLocalSocket::error(QLocalSocket::LocalSocketError socketError)
+    \obsolete
+
+    Use errorOccurred() instead.
+*/
+
+/*!
+    \fn void QLocalSocket::errorOccurred(QLocalSocket::LocalSocketError socketError)
+    \since 5.15
 
     This signal is emitted after an error occurred. The \a socketError
     parameter describes the type of error that occurred.
@@ -362,6 +370,9 @@ QLocalSocket::QLocalSocket(QObject * parent)
 {
     Q_D(QLocalSocket);
     d->init();
+
+    // Support the deprecated error() signal:
+    connect(this, &QLocalSocket::errorOccurred, this, QOverload<QLocalSocket::LocalSocketError>::of(&QLocalSocket::error));
 }
 
 /*!
@@ -389,7 +400,7 @@ bool QLocalSocket::open(OpenMode openMode)
     The socket is opened in the given \a openMode and first enters ConnectingState.
     If a connection is established, QLocalSocket enters ConnectedState and emits connected().
 
-    After calling this function, the socket can emit error() to signal that an error occurred.
+    After calling this function, the socket can emit errorOccurred() to signal that an error occurred.
 
     \sa state(), serverName(), waitForConnected()
 */
