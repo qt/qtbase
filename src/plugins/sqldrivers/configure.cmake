@@ -44,15 +44,7 @@ qt_feature("sql-psql" PRIVATE
     LABEL "PostgreSQL"
     CONDITION PostgreSQL_FOUND
 )
-qt_feature("sql-sqlite2" PRIVATE
-    LABEL "SQLite2"
-    CONDITION libs.sqlite2 OR FIXME
-)
 qt_feature("sql-sqlite" PRIVATE
     LABEL "SQLite"
     CONDITION QT_FEATURE_datestring AND SQLite3_FOUND
-)
-qt_feature("sql-tds" PRIVATE
-    LABEL "TDS (Sybase)"
-    CONDITION QT_FEATURE_datestring AND libs.tds OR FIXME
 )

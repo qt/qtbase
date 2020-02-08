@@ -149,6 +149,24 @@ std::mt19937 mt(0);
 }
 ")
 
+# cxx17_filesystem
+qt_config_compile_test(cxx17_filesystem
+    LABEL "C++17 <filesystem>"
+    CODE
+"
+#include <filesystem>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+std::filesystem::path p(\"./file\");
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: qmake: CONFIG += c++17
+)
+
 # eventfd
 qt_config_compile_test(eventfd
     LABEL "eventfd"
@@ -514,6 +532,10 @@ qt_feature_definition("clock-monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1"
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
     CONDITION TEST_cxx11_future
+)
+qt_feature("cxx17_filesystem" PUBLIC
+    LABEL "C++17 <filesystem>"
+    CONDITION TEST_cxx17_filesystem
 )
 qt_feature("eventfd" PUBLIC
     LABEL "eventfd"

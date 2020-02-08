@@ -111,6 +111,11 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
         qcocoasessionmanager.cpp qcocoasessionmanager.h
 )
 
+qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::PlatformCompositorSupportPrivate
+)
+
 qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::Widgets
     SOURCES
         qpaintengine_mac.mm qpaintengine_mac_p.h
@@ -118,7 +123,7 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::Widgets
         Qt::WidgetsPrivate
 )
 
-#### Keys ignored in scope 7:.:.:cocoa.pro:TARGET Qt::Widgets:
+#### Keys ignored in scope 8:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
 
 qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
@@ -145,5 +150,5 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_fontdialog AND TAR
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )
 
-#### Keys ignored in scope 12:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 13:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"

@@ -16,7 +16,7 @@ add_subdirectory(filetest)
 # add_subdirectory(foreignwindows)
 # special case end
 add_subdirectory(gestures)
-add_subdirectory(highdpi)
+# add_subdirectory(highdpi) special case broken in dev
 add_subdirectory(inputmethodhints)
 add_subdirectory(keypadnavigation)
 #add_subdirectory(lance) # special case qgl.h missing
@@ -76,10 +76,10 @@ if(QT_FEATURE_openssl)
     add_subdirectory(qssloptions)
 endif()
 if(QT_FEATURE_opengl)
-    add_subdirectory(qopengltextureblitter)
+    # add_subdirectory(qopengltextureblitter) special case broken in dev
 endif()
 if(QT_FEATURE_egl AND QT_FEATURE_opengl)
-    add_subdirectory(qopenglcontext)
+    # add_subdirectory(qopenglcontext) # special case broken in dev
 endif()
 if(QT_FEATURE_vulkan)
     add_subdirectory(qvulkaninstance)

@@ -87,6 +87,11 @@ qt_add_resource(QWindowsIntegrationPlugin "openglblacklists"
 ## Scopes:
 #####################################################################
 
+qt_extend_target(QWindowsIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::PlatformCompositorSupportPrivate
+)
+
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
         uiautomation/qwindowsuiaaccessibility.cpp uiautomation/qwindowsuiaaccessibility.h
@@ -118,7 +123,7 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_vulkan
         Qt::VulkanSupportPrivate
 )
 
-#### Keys ignored in scope 4:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 5:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl AND NOT QT_FEATURE_opengles2
