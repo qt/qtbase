@@ -826,7 +826,19 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
 
         f->ensurePopulated();
 
-        if (writingSystem > QFontDatabase::Any && f->writingSystems[writingSystem] != QtFontFamily::Supported)
+        size_t otherWritingSystem = writingSystem;
+
+        while (writingSystem > QFontDatabase::Any && f->writingSystems[otherWritingSystem] != QtFontFamily::Supported) {
+            otherWritingSystem = std::find(scriptForWritingSystem + (otherWritingSystem + 1),
+                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
+                                     script) - scriptForWritingSystem;
+
+            if (otherWritingSystem >= QFontDatabase::WritingSystemsCount) {
+                break;
+            }
+        }
+
+        if (otherWritingSystem >= QFontDatabase::WritingSystemsCount)
             continue;
 
         for (int j = 0; j < f->count; ++j) {
@@ -2857,9 +2869,10 @@ QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
 
 Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script, const QStringList &families)
 {
-    size_t writingSystem = std::find(scriptForWritingSystem,
-                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
-                                     script) - scriptForWritingSystem;
+    const size_t writingSystem =
+            std::find(scriptForWritingSystem,
+                      scriptForWritingSystem + QFontDatabase::WritingSystemsCount, script)
+            - scriptForWritingSystem;
     if (writingSystem == QFontDatabase::Any
             || writingSystem >= QFontDatabase::WritingSystemsCount) {
         return families;
@@ -2879,9 +2892,30 @@ Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script
             }
         }
 
+        bool isSupported = false;
+
+        if (testFamily != nullptr) {
+            isSupported = testFamily->writingSystems[writingSystem] & QtFontFamily::Supported;
+            auto otherWritingSystem = writingSystem;
+
+            // test other writing systems
+            while (!isSupported) {
+                otherWritingSystem =
+                        std::find(&scriptForWritingSystem[otherWritingSystem + 1],
+                                  scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
+                                  script)
+                        - scriptForWritingSystem;
+
+                if (otherWritingSystem >= QFontDatabase::WritingSystemsCount)
+                    break;
+
+                isSupported |=
+                        testFamily->writingSystems[otherWritingSystem] & QtFontFamily::Supported;
+            }
+        }
+
         uint order = i;
-        if (testFamily == nullptr
-              || (testFamily->writingSystems[writingSystem] & QtFontFamily::Supported) == 0) {
+        if (!isSupported) {
             order |= 1u << 31;
         }
 
