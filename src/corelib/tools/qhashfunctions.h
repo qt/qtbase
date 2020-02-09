@@ -68,25 +68,55 @@ class QLatin1String;
 Q_CORE_EXPORT int qGlobalQHashSeed();
 Q_CORE_EXPORT void qSetGlobalQHashSeed(int newSeed);
 
+namespace QHashPrivate {
+
+Q_DECL_CONST_FUNCTION constexpr uint hash(size_t key, uint seed) noexcept
+{
+    key ^= seed;
+    if constexpr (sizeof(size_t) == 4) {
+        key ^= key >> 16;
+        key *= UINT32_C(0x45d9f3b);
+        key ^= key >> 16;
+        key *= UINT32_C(0x45d9f3b);
+        key ^= key >> 16;
+        return key;
+    } else {
+        key ^= key >> 32;
+        key *= UINT64_C(0xd6e8feb86659fd93);
+        key ^= key >> 32;
+        key *= UINT64_C(0xd6e8feb86659fd93);
+        key ^= key >> 32;
+        return uint(key);
+    }
+}
+
+}
+
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHashBits(const void *p, size_t size, uint seed = 0) noexcept;
 
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(char key, uint seed = 0) noexcept { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uchar key, uint seed = 0) noexcept { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(signed char key, uint seed = 0) noexcept { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(ushort key, uint seed = 0) noexcept { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(short key, uint seed = 0) noexcept { return uint(key) ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uint key, uint seed = 0) noexcept { return key ^ seed; }
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(int key, uint seed = 0) noexcept { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(char key, uint seed = 0) noexcept
+{ return QHashPrivate::hash(size_t(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uchar key, uint seed = 0) noexcept
+{ return QHashPrivate::hash(size_t(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(signed char key, uint seed = 0) noexcept
+{ return QHashPrivate::hash(size_t(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(ushort key, uint seed = 0) noexcept
+{ return QHashPrivate::hash(size_t(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(short key, uint seed = 0) noexcept
+{ return QHashPrivate::hash(size_t(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uint key, uint seed = 0) noexcept
+{ return QHashPrivate::hash(size_t(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(int key, uint seed = 0) noexcept
+{ return QHashPrivate::hash(size_t(key), seed); }
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(ulong key, uint seed = 0) noexcept
-{
-    return (sizeof(ulong) > sizeof(uint))
-        ? (uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed)
-        : (uint(key & (~0U)) ^ seed);
-}
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(long key, uint seed = 0) noexcept { return qHash(ulong(key), seed); }
+{ return QHashPrivate::hash(size_t(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(long key, uint seed = 0) noexcept
+{ return QHashPrivate::hash(size_t(key), seed); }
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(quint64 key, uint seed = 0) noexcept
 {
-    return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
+    if (sizeof(quint64) > sizeof(size_t))
+        key ^= (key >> 32);
+    return QHashPrivate::hash(size_t(key), seed);
 }
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(qint64 key, uint seed = 0) noexcept { return qHash(quint64(key), seed); }
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(float key, uint seed = 0) noexcept;
