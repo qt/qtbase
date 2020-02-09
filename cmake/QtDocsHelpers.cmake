@@ -162,19 +162,32 @@ function(qt_internal_add_docs)
     add_dependencies(qch_docs qch_top_level_docs_${target})
 
     if (QT_WILL_INSTALL)
+        install(DIRECTORY "${qdoc_output_dir}/"
+                DESTINATION "${INSTALL_DOCDIR}/${doc_target}"
+                COMPONENT _install_html_docs_${target}
+                EXCLUDE_FROM_ALL
+        )
+
         add_custom_target(install_html_docs_${target}
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${qdoc_output_dir}"
-                "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}/${doc_target}"
+            COMMAND ${CMAKE_COMMAND}
+            --install "${CMAKE_BINARY_DIR}"
+            --component _install_html_docs_${target}
             COMMENT "Installing html docs for target ${target}"
         )
 
+        install(FILES "${qch_file_path}"
+                DESTINATION "${INSTALL_DOCDIR}/${qch_file_name}"
+                COMPONENT _install_qch_docs_${target}
+                EXCLUDE_FROM_ALL
+        )
+
         add_custom_target(install_qch_docs_${target}
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${qch_file_path}"
-                "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}/${qch_file_name}"
+            COMMAND ${CMAKE_COMMAND}
+            --install "${CMAKE_BINARY_DIR}"
+            --component _install_qch_docs_${target}
             COMMENT "Installing qch docs for target ${target}"
-       )
+        )
+
     else()
         # Don't need to do anything when not installing
         add_custom_target(install_html_docs_${target})
