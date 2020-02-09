@@ -769,17 +769,12 @@ uint qt_hash(QStringView key, uint chained) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \relates QHash
+/*! \fn size_t qHash(float key, size_t seed) noexcept
+    \relates QHash
     \since 5.3
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
-size_t qHash(float key, size_t seed) noexcept
-{
-    // ensure -0 gets mapped to 0
-    key += 0.0f;
-    return murmurhash(&key, sizeof(key), seed);
-}
 
 /*! \relates QHash
     \since 5.3
@@ -790,7 +785,13 @@ size_t qHash(double key, size_t seed) noexcept
 {
     // ensure -0 gets mapped to 0
     key += 0.0;
-    return murmurhash(&key, sizeof(key), seed);
+    if constexpr (sizeof(double) == sizeof(size_t)) {
+        size_t k;
+        memcpy(&k, &key, sizeof(double));
+        return QHashPrivate::hash(k, seed);
+    } else {
+        return murmurhash(&key, sizeof(key), seed);
+    }
 }
 
 #if !defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
@@ -803,7 +804,13 @@ size_t qHash(long double key, size_t seed) noexcept
 {
     // ensure -0 gets mapped to 0
     key += static_cast<long double>(0.0);
-    return murmurhash(&key, sizeof(key), seed);
+    if constexpr (sizeof(long double) == sizeof(size_t)) {
+        size_t k;
+        memcpy(&k, &key, sizeof(long double));
+        return QHashPrivate::hash(k, seed);
+    } else {
+        return murmurhash(&key, sizeof(key), seed);
+    }
 }
 #endif
 

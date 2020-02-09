@@ -120,7 +120,14 @@ Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline size_t qHash(quint64 key, size_t s
     return QHashPrivate::hash(size_t(key), seed);
 }
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(qint64 key, size_t seed = 0) noexcept { return qHash(quint64(key), seed); }
-Q_CORE_EXPORT Q_DECL_CONST_FUNCTION size_t qHash(float key, size_t seed = 0) noexcept;
+Q_DECL_CONST_FUNCTION inline size_t qHash(float key, size_t seed = 0) noexcept
+{
+    // ensure -0 gets mapped to 0
+    key += 0.0f;
+    uint k;
+    memcpy(&k, &key, sizeof(float));
+    return QHashPrivate::hash(k, seed);
+}
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION size_t qHash(double key, size_t seed = 0) noexcept;
 #if !defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION size_t qHash(long double key, size_t seed = 0) noexcept;
