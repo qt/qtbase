@@ -11,7 +11,7 @@ qt_add_tool(qdbusxml2cpp
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
     # COMPILE_OPTIONS  # special case

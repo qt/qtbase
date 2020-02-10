@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/dbus/remotecontrolledcar/car")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS DBus)
 find_package(Qt6 COMPONENTS Widgets)
 
@@ -29,9 +31,12 @@ add_qt_gui_executable(car
     ${car_SRCS} # special case
 )
 target_link_libraries(car PUBLIC
+    Qt::Core
     Qt::DBus
+    Qt::Gui
     Qt::Widgets
 )
+
 install(TARGETS car
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

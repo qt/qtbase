@@ -11,14 +11,11 @@ qt_add_plugin(QConnmanEnginePlugin
         main.cpp
         qconnmanengine.cpp qconnmanengine.h
         qconnmanservice_linux.cpp qconnmanservice_linux_p.h
-    LIBRARIES
-        Qt::LinuxOfonoSupportPrivate
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::DBus
-        Qt::LinuxOfonoSupport
-        Qt::Network
+        Qt::LinuxOfonoSupportPrivate
+        Qt::NetworkPrivate
 )
 
 #### Keys ignored in scope 1:.:.:connman.pro:<TRUE>:

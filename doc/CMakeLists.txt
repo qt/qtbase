@@ -1,3 +1,4 @@
+# special case skip regeneration
 #
 # Copy/Install doc configuration files to the build/install directory
 #

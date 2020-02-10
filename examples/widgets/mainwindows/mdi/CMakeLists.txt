@@ -9,18 +9,39 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/mainwindows/mdi")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(mdi
     main.cpp
     mainwindow.cpp mainwindow.h
-    mdi.qrc
     mdichild.cpp mdichild.h
 )
 target_link_libraries(mdi PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(mdi_resource_files
+    "images/copy.png"
+    "images/cut.png"
+    "images/new.png"
+    "images/open.png"
+    "images/paste.png"
+    "images/save.png"
+)
+
+qt6_add_resources(mdi "mdi"
+    PREFIX
+        "/"
+    FILES
+        ${mdi_resource_files}
 )
 
 install(TARGETS mdi

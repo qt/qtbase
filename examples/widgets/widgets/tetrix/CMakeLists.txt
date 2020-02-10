@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/widgets/tetrix")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(tetrix
@@ -20,6 +22,8 @@ add_qt_gui_executable(tetrix
     tetrixwindow.cpp tetrixwindow.h
 )
 target_link_libraries(tetrix PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
 

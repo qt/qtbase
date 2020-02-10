@@ -18,19 +18,15 @@ qt_add_plugin(QDirectFbIntegrationPlugin
         qdirectfbintegration.cpp qdirectfbintegration.h
         qdirectfbscreen.cpp qdirectfbscreen.h
         qdirectfbwindow.cpp qdirectfbwindow.h
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::EventDispatcherSupportPrivate
-        Qt::FontDatabaseSupportPrivate
-        Qt::GuiPrivate
-        Qt::ServiceSupportPrivate
     PUBLIC_LIBRARIES
         PkgConfig::DirectFB
         Qt::Core
-        Qt::EventDispatcherSupport
-        Qt::FontDatabaseSupport
+        Qt::CorePrivate
+        Qt::EventDispatcherSupportPrivate
+        Qt::FontDatabaseSupportPrivate
         Qt::Gui
-        Qt::ServiceSupport
+        Qt::GuiPrivate
+        Qt::ServiceSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:directfb.pro:<TRUE>:
@@ -44,10 +40,8 @@ qt_extend_target(QDirectFbIntegrationPlugin CONDITION QT_CONFIG___contains___dir
         qdirectfb_egl.cpp qdirectfb_egl.h
     DEFINES
         DIRECTFB_GL_EGL
-    LIBRARIES
-        Qt::EglSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::EglSupport
+        Qt::EglSupportPrivate
 )
 
 qt_extend_target(QDirectFbIntegrationPlugin CONDITION NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY

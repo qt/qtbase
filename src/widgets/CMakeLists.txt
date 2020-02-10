@@ -60,6 +60,9 @@ qt_add_module(Widgets
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
+        Qt::GuiPrivate
     PRECOMPILED_HEADER
         "kernel/qt_widgets_pch.h"
 )

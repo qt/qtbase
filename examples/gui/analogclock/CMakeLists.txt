@@ -3,7 +3,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(analogclock LANGUAGES CXX)
 
-find_package(Qt6 COMPONENTS Widgets) # special case: add
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -11,22 +10,31 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/gui/gui_analogclock") # special case
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS Widgets) # special case: add
 
 add_qt_gui_executable(gui_analogclock # special case: renamed target
     ../rasterwindow/rasterwindow.cpp ../rasterwindow/rasterwindow.h
     main.cpp
 )
-target_include_directories(gui_analogclock PUBLIC
+target_include_directories(gui_analogclock PUBLIC # special case
     ../rasterwindow
 )
 # special case begin
-target_link_libraries(gui_analogclock PUBLIC
+target_link_libraries(gui_analogclock PUBLIC # special case
     Qt::Gui
 )
 # special case end
 
-install(TARGETS gui_analogclock
+target_link_libraries(gui_analogclock PUBLIC # special case
+    Qt::Core
+    Qt::Gui
+)
+
+install(TARGETS gui_analogclock # special case
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"

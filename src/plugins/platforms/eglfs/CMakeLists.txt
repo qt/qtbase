@@ -20,7 +20,7 @@ qt_add_module(EglFSDeviceIntegration
         QT_EGL_NO_X11
     INCLUDE_DIRECTORIES
         api
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DeviceDiscoverySupportPrivate
         Qt::EglSupportPrivate
@@ -40,17 +40,21 @@ qt_add_module(EglFSDeviceIntegration
 #####################################################################
 
 qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
-    LIBRARIES
-        Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::InputSupport
+        Qt::InputSupportPrivate
 )
 
 qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupportPrivate
-    LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupport
+        Qt::PlatformCompositorSupportPrivate
+)
+
+qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_vulkan
+    SOURCES
+        api/vulkan/qeglfsvulkaninstance.cpp api/vulkan/qeglfsvulkaninstance_p.h
+        api/vulkan/qeglfsvulkanwindow.cpp api/vulkan/qeglfsvulkanwindow_p.h
+    PUBLIC_LIBRARIES
+        Qt::VulkanSupportPrivate
 )
 
 # special case:
@@ -78,12 +82,12 @@ qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
         api/qeglfscursor.cpp api/qeglfscursor_p.h
 )
 #####################################################################
-## qeglfs Plugin:
+## QEglFSIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qeglfs
+qt_add_plugin(QEglFSIntegrationPlugin
+    OUTPUT_NAME qeglfs
     TYPE platforms
-    CLASS_NAME QEglFSIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES eglfs # special case
     SOURCES
         qeglfsmain.cpp
@@ -91,18 +95,18 @@ qt_add_plugin(qeglfs
         QT_EGL_NO_X11
     INCLUDE_DIRECTORIES
         api
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate # special case
         Qt::EglFSDeviceIntegrationPrivate
         EGL::EGL # special case
 )
 
-#### Keys ignored in scope 11:.:.:eglfs-plugin.pro:<TRUE>:
+#### Keys ignored in scope 13:.:.:eglfs-plugin.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/eglfs.json"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 12:.:.:eglfs-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 14:.:.:eglfs-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(deviceintegration)

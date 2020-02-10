@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/itemviews/spinboxdelegate")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(spinboxdelegate
@@ -18,6 +20,8 @@ add_qt_gui_executable(spinboxdelegate
     main.cpp
 )
 target_link_libraries(spinboxdelegate PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
 

@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/painting/painterpaths")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(painterpaths
@@ -19,8 +21,16 @@ add_qt_gui_executable(painterpaths
     window.cpp window.h
 )
 target_link_libraries(painterpaths PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
+
+if(UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS)
+    target_link_libraries(painterpaths PUBLIC
+        m
+    )
+endif()
 
 install(TARGETS painterpaths
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

@@ -27,6 +27,8 @@ qt_add_module(Sql
         Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
 )

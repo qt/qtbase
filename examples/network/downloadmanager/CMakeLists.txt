@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/network/downloadmanager")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Network)

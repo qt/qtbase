@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/dbus/chat")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS DBus)
 find_package(Qt6 COMPONENTS Widgets)
 
@@ -34,9 +36,12 @@ add_qt_gui_executable(chat
     ${chat_SRCS} # special case
 )
 target_link_libraries(chat PUBLIC
+    Qt::Core
     Qt::DBus
+    Qt::Gui
     Qt::Widgets
 )
+
 install(TARGETS chat
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

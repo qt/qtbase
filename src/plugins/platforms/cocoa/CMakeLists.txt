@@ -45,13 +45,6 @@ qt_add_plugin(QCocoaIntegrationPlugin
         qnsview.h qnsview.mm
         qnswindow.h qnswindow.mm
         qnswindowdelegate.h qnswindowdelegate.mm
-    LIBRARIES
-        Qt::ClipboardSupportPrivate
-        Qt::CorePrivate
-        Qt::FontDatabaseSupportPrivate
-        Qt::GraphicsSupportPrivate
-        Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
     PUBLIC_LIBRARIES
         ${FWAppKit}
         ${FWCarbon}
@@ -62,12 +55,14 @@ qt_add_plugin(QCocoaIntegrationPlugin
         ${FWMetal}
         ${FWQuartzCore}
         Cups::Cups
-        Qt::ClipboardSupport
+        Qt::ClipboardSupportPrivate
         Qt::Core
-        Qt::FontDatabaseSupport
-        Qt::GraphicsSupport
+        Qt::CorePrivate
+        Qt::FontDatabaseSupportPrivate
+        Qt::GraphicsSupportPrivate
         Qt::Gui
-        Qt::ThemeSupport
+        Qt::GuiPrivate
+        Qt::ThemeSupportPrivate
 )
 
 # Resources:
@@ -99,20 +94,16 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_opengl
 qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qcocoavulkaninstance.h qcocoavulkaninstance.mm
-    LIBRARIES
-        Qt::VulkanSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::VulkanSupport
+        Qt::VulkanSupportPrivate
 )
 
 qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
         qcocoaaccessibility.h qcocoaaccessibility.mm
         qcocoaaccessibilityelement.h qcocoaaccessibilityelement.mm
-    LIBRARIES
-        Qt::AccessibilitySupportPrivate
     PUBLIC_LIBRARIES
-        Qt::AccessibilitySupport
+        Qt::AccessibilitySupportPrivate
 )
 
 qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
@@ -123,10 +114,8 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
 qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::Widgets
     SOURCES
         qpaintengine_mac.mm qpaintengine_mac_p.h
-    LIBRARIES
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
-        Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 7:.:.:cocoa.pro:TARGET Qt::Widgets:
@@ -137,10 +126,8 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::PrintSupport AND T
         qcocoaprintdevice.h qcocoaprintdevice.mm
         qcocoaprintersupport.h qcocoaprintersupport.mm
         qprintengine_mac.mm qprintengine_mac_p.h
-    LIBRARIES
-        Qt::PrintSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::PrintSupport
+        Qt::PrintSupportPrivate
 )
 
 qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets

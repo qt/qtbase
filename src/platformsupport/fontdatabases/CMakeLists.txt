@@ -12,12 +12,9 @@ qt_add_module(FontDatabaseSupport
     INTERNAL_MODULE
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )
@@ -76,13 +73,12 @@ qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
         windows/qwindowsfontengine.cpp windows/qwindowsfontengine_p.h
         windows/qwindowsnativeimage.cpp windows/qwindowsnativeimage_p.h
     LIBRARIES
-        Qt::GuiPrivate
         advapi32
         gdi32
         ole32
         user32
     PUBLIC_LIBRARIES
-        Qt::Gui
+        Qt::GuiPrivate
 )
 
 qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype AND WIN32 AND NOT WINRT
@@ -125,9 +121,8 @@ qt_extend_target(FontDatabaseSupport CONDITION WINRT
     DEFINES
         __WRL_NO_DEFAULT_LIB__
     LIBRARIES
-        Qt::GuiPrivate
         dwrite_1
         ws2_32
     PUBLIC_LIBRARIES
-        Qt::Gui
+        Qt::GuiPrivate
 )

@@ -12,12 +12,9 @@ qt_add_module(XkbCommonSupport
         qxkbcommon_3rdparty.cpp
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
         XKB::XKB
     PRECOMPILED_HEADER
         "../../../corelib/global/qt_pch.h"

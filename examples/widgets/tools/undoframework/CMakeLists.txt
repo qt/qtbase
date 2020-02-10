@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tools/undoframework")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(undoframework
@@ -19,10 +21,24 @@ add_qt_gui_executable(undoframework
     diagramscene.cpp diagramscene.h
     main.cpp
     mainwindow.cpp mainwindow.h
-    undoframework.qrc
 )
 target_link_libraries(undoframework PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(undoframework_resource_files
+    "images/cross.png"
+)
+
+qt6_add_resources(undoframework "undoframework"
+    PREFIX
+        "/"
+    FILES
+        ${undoframework_resource_files}
 )
 
 install(TARGETS undoframework

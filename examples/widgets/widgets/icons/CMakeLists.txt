@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/widgets/icons")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(icons
@@ -21,11 +23,15 @@ add_qt_gui_executable(icons
     mainwindow.cpp mainwindow.h
 )
 target_compile_definitions(icons PUBLIC
-    SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}" # special case
 )
+
 target_link_libraries(icons PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
+
 install(TARGETS icons
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

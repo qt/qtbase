@@ -11,12 +11,9 @@ qt_add_module(AccessibilitySupport
         qaccessiblebridgeutils.cpp qaccessiblebridgeutils_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
 )
 
 #### Keys ignored in scope 1:.:.:accessibility.pro:<TRUE>:

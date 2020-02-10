@@ -29,16 +29,12 @@ qt_add_module(LinuxAccessibilitySupport
         "-i" "struct_marshallers_p.h"
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
-        Qt::AccessibilitySupportPrivate
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         PkgConfig::ATSPI2_nolink
-        Qt::AccessibilitySupport
-        Qt::Core
+        Qt::AccessibilitySupportPrivate
+        Qt::CorePrivate
         Qt::DBus
-        Qt::Gui
+        Qt::GuiPrivate
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )

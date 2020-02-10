@@ -46,6 +46,8 @@ qt_add_module(DBus
         Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
 )
 
 #### Keys ignored in scope 1:.:.:dbus.pro:<TRUE>:

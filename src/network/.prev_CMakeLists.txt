@@ -62,6 +62,8 @@ qt_add_module(Network
         ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
 )

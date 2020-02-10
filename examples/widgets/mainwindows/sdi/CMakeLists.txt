@@ -9,17 +9,38 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/mainwindows/sdi")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(sdi
     main.cpp
     mainwindow.cpp mainwindow.h
-    sdi.qrc
 )
 target_link_libraries(sdi PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(sdi_resource_files
+    "images/copy.png"
+    "images/cut.png"
+    "images/new.png"
+    "images/open.png"
+    "images/paste.png"
+    "images/save.png"
+)
+
+qt6_add_resources(sdi "sdi"
+    PREFIX
+        "/"
+    FILES
+        ${sdi_resource_files}
 )
 
 install(TARGETS sdi

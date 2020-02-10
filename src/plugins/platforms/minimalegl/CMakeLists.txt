@@ -15,18 +15,14 @@ qt_add_plugin(QMinimalEglIntegrationPlugin
         qminimaleglwindow.cpp qminimaleglwindow.h
     DEFINES
         QT_EGL_NO_X11
-    LIBRARIES
+    PUBLIC_LIBRARIES
+        Qt::Core
         Qt::CorePrivate
         Qt::EglSupportPrivate
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
-        Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::EglSupport
-        Qt::EventDispatcherSupport
-        Qt::FontDatabaseSupport
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:minimalegl.pro:<TRUE>:

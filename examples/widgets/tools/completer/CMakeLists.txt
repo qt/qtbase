@@ -9,18 +9,35 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tools/completer")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(completer
-    completer.qrc
     fsmodel.cpp fsmodel.h
     main.cpp
     mainwindow.cpp mainwindow.h
 )
 target_link_libraries(completer PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(completer_resource_files
+    "resources/countries.txt"
+    "resources/wordlist.txt"
+)
+
+qt6_add_resources(completer "completer"
+    PREFIX
+        "/"
+    FILES
+        ${completer_resource_files}
 )
 
 install(TARGETS completer

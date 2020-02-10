@@ -9,18 +9,23 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/qtestlib/tutorial5")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS Test)
 
-add_qt_gui_executable(tutorial5
+add_executable(tutorial5
     benchmarking.cpp
 )
 target_link_libraries(tutorial5 PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Test
     Qt::Widgets
 )
+
 install(TARGETS tutorial5
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

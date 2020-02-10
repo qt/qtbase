@@ -9,18 +9,34 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/itemviews/simpletreemodel")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(simpletreemodel
     main.cpp
-    simpletreemodel.qrc
     treeitem.cpp treeitem.h
     treemodel.cpp treemodel.h
 )
 target_link_libraries(simpletreemodel PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(simpletreemodel_resource_files
+    "default.txt"
+)
+
+qt6_add_resources(simpletreemodel "simpletreemodel"
+    PREFIX
+        "/"
+    FILES
+        ${simpletreemodel_resource_files}
 )
 
 install(TARGETS simpletreemodel

@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/xml/rsslisting")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Xml)
 find_package(Qt6 COMPONENTS Widgets)
@@ -20,10 +22,13 @@ add_qt_gui_executable(rsslisting
     rsslisting.cpp rsslisting.h
 )
 target_link_libraries(rsslisting PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Network
     Qt::Widgets
     Qt::Xml
 )
+
 install(TARGETS rsslisting
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

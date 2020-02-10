@@ -13,13 +13,10 @@ qt_add_module(KmsSupport
         qkmsdevice.cpp qkmsdevice_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Libdrm::Libdrm
-        Qt::Core
-        Qt::Gui
+        Qt::CorePrivate
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:kmsconvenience.pro:<TRUE>:

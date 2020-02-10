@@ -14,14 +14,12 @@ qt_add_plugin(QEglFSX11IntegrationPlugin
         QT_EGL_NO_X11
     INCLUDE_DIRECTORIES
         ../../api
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::EglFSDeviceIntegrationPrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Core
-        Qt::EglFSDeviceIntegration
+        Qt::CorePrivate
+        Qt::EglFSDeviceIntegrationPrivate
         Qt::Gui
+        Qt::GuiPrivate
         X11::XCB
         XCB::XCB
 )

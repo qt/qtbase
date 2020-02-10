@@ -18,14 +18,11 @@ qt_add_plugin(QXcbEglIntegrationPlugin
     INCLUDE_DIRECTORIES
         ..
         ../..
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::EglSupportPrivate
-        Qt::GuiPrivate
-        Qt::XcbQpaPrivate
     PUBLIC_LIBRARIES
         Qt::Core
-        Qt::EglSupport
+        Qt::CorePrivate
+        Qt::EglSupportPrivate
         Qt::Gui
-        Qt::XcbQpa
+        Qt::GuiPrivate
+        Qt::XcbQpaPrivate
 )

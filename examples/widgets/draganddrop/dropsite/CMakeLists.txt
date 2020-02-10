@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/draganddrop/dropsite")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(dropsite
@@ -19,6 +21,8 @@ add_qt_gui_executable(dropsite
     main.cpp
 )
 target_link_libraries(dropsite PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
 

@@ -791,6 +791,12 @@ function(qt_ensure_sync_qt)
         qt_path_join(syncqt_install_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})
         qt_copy_or_install(PROGRAMS "${SYNCQT_FROM_SOURCE}"
                            DESTINATION "${syncqt_install_dir}")
+    elseif(QT_HOST_PATH)
+        get_filename_component(syncqt_absolute_path
+                               "${QT_HOST_PATH}/${INSTALL_LIBEXECDIR}/syncqt.pl"
+                               ABSOLUTE)
+        set(QT_SYNCQT "${syncqt_absolute_path}" CACHE FILEPATH "syncqt script")
+        message(STATUS "Using host syncqt found at: ${QT_SYNCQT}")
     else()
         get_filename_component(syncqt_absolute_path
                                "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/syncqt.pl"
@@ -931,8 +937,8 @@ function(qt_internal_module_info result target)
     string(REPLACE "." "_" define "${define}")
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
-    set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)
-    set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
+    set("${result}_repo_include_dir" "${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}" PARENT_SCOPE)
+    set("${result}_include_dir" "${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}/${module}" PARENT_SCOPE)
     set("${result}_define" "${define}" PARENT_SCOPE)
 endfunction()
 
@@ -940,7 +946,7 @@ endfunction()
 set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS;MOC_OPTIONS;DISABLE_AUTOGEN_TOOLS;ENABLE_AUTOGEN_TOOLS;PLUGIN_TYPES")
 
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
-
+set(__default_private_module_args "PRIVATE_MODULE_INTERFACE")
 
 option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
 
@@ -1079,7 +1085,7 @@ function(qt_extend_target target)
         message(FATAL_ERROR "Trying to extend non-existing target \"${target}\".")
     endif()
     qt_parse_all_arguments(arg "qt_extend_target" "HEADER_MODULE" "PRECOMPILED_HEADER"
-        "CONDITION;${__default_public_args};${__default_private_args};COMPILE_FLAGS;NO_PCH_SOURCES" ${ARGN})
+        "CONDITION;${__default_public_args};${__default_private_args};${__default_private_module_args};COMPILE_FLAGS;NO_PCH_SOURCES" ${ARGN})
     if ("x${arg_CONDITION}" STREQUAL x)
         set(arg_CONDITION ON)
     endif()
@@ -1187,7 +1193,8 @@ function(qt_extend_target target)
 
         set(target_private "${target}Private")
         if(TARGET "${target_private}")
-          target_link_libraries("${target_private}" INTERFACE "${target}" "${qt_libs_private}")
+          target_link_libraries("${target_private}"
+                                INTERFACE "${target}" ${arg_PRIVATE_MODULE_INTERFACE})
         endif()
         qt_register_target_dependencies("${target}"
                                         "${arg_PUBLIC_LIBRARIES}"
@@ -1527,7 +1534,7 @@ function(qt_add_module target)
     qt_parse_all_arguments(arg "qt_add_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES"
         "CONFIG_MODULE_NAME;PRECOMPILED_HEADER"
-        "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
+        "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
@@ -1715,7 +1722,7 @@ function(qt_add_module target)
 
     if(NOT arg_NO_MODULE_HEADERS AND NOT arg_NO_SYNC_QT)
         # For the syncqt headers
-        list(APPEND ${public_headers_list} "$<INSTALL_INTERFACE:include/${module}>")
+        list(APPEND ${public_headers_list} "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}>")
     endif()
     list(APPEND ${public_headers_list} ${arg_PUBLIC_INCLUDE_DIRECTORIES})
 
@@ -1745,6 +1752,7 @@ function(qt_add_module target)
             "${deprecation_define}"
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         LIBRARIES ${arg_LIBRARIES} Qt::PlatformModuleInternal
+        PRIVATE_MODULE_INTERFACE ${arg_PRIVATE_MODULE_INTERFACE}
         FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         DBUS_ADAPTOR_SOURCES ${arg_DBUS_ADAPTOR_SOURCES}
         DBUS_ADAPTOR_FLAGS ${arg_DBUS_ADAPTOR_FLAGS}
@@ -1854,14 +1862,20 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
             set(args INSTALL_DIR "${metatypes_install_dir}")
         endif()
         qt6_generate_meta_types_json_file(${target} ${args})
-        get_target_property(QT_MODULE_META_TYPES_FILE ${target} INTERFACE_QT_META_TYPES_INSTALL_FILE)
-        get_target_property(QT_MODULE_META_TYPES_DEP_FILE ${target} INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE)
     endif()
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
         INSTALL_DESTINATION "${config_install_dir}"
     )
+
+    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}BuildInternals.cmake")
+        configure_file("${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}BuildInternals.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}BuildInternals.cmake"
+            @ONLY)
+        list(APPEND extra_cmake_files "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}BuildInternals.cmake")
+    endif()
+
     write_basic_package_version_file(
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
@@ -1933,12 +1947,13 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     # Handle cases like QmlDevTools which do not have their own headers, but rather borrow them
     # from another module.
     if(NOT arg_NO_SYNC_QT)
-        list(APPEND interface_includes
-                    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-                    "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
-                    "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
+        list(APPEND interface_includes "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 
         if(NOT arg_NO_MODULE_HEADERS)
+            list(APPEND interface_includes
+                        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
+                        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
+
             if(is_framework)
                 set(fw_headers_dir
                     "${INSTALL_LIBDIR}/${module}.framework/Headers/")
@@ -1947,8 +1962,8 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
                             "$<INSTALL_INTERFACE:${fw_headers_dir}${PROJECT_VERSION}/${module}>")
             else()
                 list(APPEND interface_includes
-                            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>"
-                            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>")
+                            "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}>"
+                            "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}>")
             endif()
         endif()
     endif()
@@ -2446,167 +2461,6 @@ function(qt_add_resource target resourceName)
 
 endfunction()
 
-
-# This function creates a CMake target for qml modules. It will also make
-# sure that if no C++ source are present, that qml files show up in the project
-# in an IDE. Finally, it will also create a custom ${target}_qmltypes which
-# can be used to generate the respective plugin.qmltypes file.
-#
-#  CPP_PLUGIN: Whether this qml module has any c++ source files.
-#  URI: Module's uri.
-#  TARGET_PATH: Expected installation path for the Qml Module. Equivalent
-#  to the module's URI where '.' is replaced with '/'. Use this to override the
-#  default substitution pattern.
-#  VERSION: Version of the qml module
-#  QML_PLUGINDUMP_DEPENDENCIES: Path to a dependencies.json file to be consumed
-#  with the ${target}_qmltypes target (optional)
-#  SKIP_TYPE_REGISTRATION: All qml files are expected to be registered by the
-#  c++ plugin code.
-#
-function(qt_add_qml_module target)
-
-    set(qml_module_optional_args
-        GENERATE_QMLTYPES
-        DESIGNER_SUPPORTED
-        DO_NOT_INSTALL
-        SKIP_TYPE_REGISTRATION
-    )
-
-    set(qml_module_single_args
-        URI
-        TARGET_PATH
-        VERSION
-        QML_PLUGINDUMP_DEPENDENCIES
-        CLASSNAME
-    )
-
-    set(qml_module_multi_args
-        IMPORTS
-        TYPEINFO
-        DEPENDENCIES
-    )
-
-    qt_parse_all_arguments(arg "qt_add_qml_module"
-        "${__qt_add_plugin_optional_args};${qml_module_optional_args}"
-        "${__qt_add_plugin_single_args};${qml_module_single_args}"
-        "${__qt_add_plugin_multi_args};${qml_module_multi_args}" ${ARGN})
-
-    if (NOT arg_URI)
-        message(FATAL_ERROR "qt_add_qml_module called without specifying the module's uri. Please specify one using the URI parameter.")
-    endif()
-
-    set(target_path ${arg_TARGET_PATH})
-
-    if (NOT arg_VERSION)
-        message(FATAL_ERROR "qt_add_qml_module called without specifying the module's import version. Please specify one using the VERSION parameter.")
-    endif()
-
-    if (NOT arg_TARGET_PATH)
-        string(REPLACE "." "/" arg_TARGET_PATH ${arg_URI})
-    endif()
-
-    qt_remove_args(plugin_args
-        ARGS_TO_REMOVE
-            ${target}
-            ${qml_module_multi_args}
-            ${qml_module_single_args}
-        ALL_ARGS
-            ${__qt_add_plugin_optional_args}
-            ${__qt_add_plugin_single_args}
-            ${qml_module_single_args}
-            ${__qt_add_plugin_multi_args}
-            ${qml_module_multi_args}
-        ARGS
-            ${ARGV}
-    )
-
-    # If we have no sources, but qml files, create a custom target so the
-    # qml file will be visibile in an IDE.
-    if (arg_SOURCES)
-        qt_add_plugin(${target}
-            TYPE
-                qml_plugin
-            QML_TARGET_PATH
-                "${arg_TARGET_PATH}"
-            ${plugin_args}
-        )
-    endif()
-
-
-    if (arg_CPP_PLUGIN)
-        set(no_create_option DO_NOT_CREATE_TARGET)
-    endif()
-
-    if (arg_CLASSNAME)
-        set(classname_arg CLASSNAME ${arg_CLASSNAME})
-    endif()
-
-    if (arg_DESIGNER_SUPPORTED)
-        set(designer_supported_arg DESIGNER_SUPPORTED)
-    endif()
-
-    if (arg_SKIP_TYPE_REGISTRATION)
-        set(skip_registration_arg SKIP_TYPE_REGISTRATION)
-    endif()
-
-    if (arg_GENERATE_QMLTYPES)
-        set(generate_qmltypes_arg GENERATE_QMLTYPES)
-    endif()
-
-    qt6_add_qml_module(${target}
-        ${designer_supported_arg}
-        ${no_create_option}
-        ${skip_registration_arg}
-        ${classname_arg}
-        ${generate_qmltypes_arg}
-        RESOURCE_PREFIX "/qt-project.org/imports"
-        TARGET_PATH ${arg_TARGET_PATH}
-        URI ${arg_URI}
-        VERSION ${arg_VERSION}
-        QML_FILES ${arg_QML_FILES}
-        IMPORTS "${arg_IMPORTS}"
-        TYPEINFO "${arg_TYPEINFO}"
-        DO_NOT_INSTALL_METADATA
-        DO_NOT_CREATE_TARGET
-        INSTALL_QML_FILES
-        DEPENDENCIES ${arg_DEPENDENCIES}
-        RESOURCE_EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
-    )
-
-    get_target_property(qmldir_file ${target} QT_QML_MODULE_QMLDIR_FILE)
-    get_target_property(plugin_types ${target} QT_QML_MODULE_PLUGIN_TYPES_FILE)
-    qt_path_join(qml_module_install_dir ${QT_INSTALL_DIR} "${INSTALL_QMLDIR}/${arg_TARGET_PATH}")
-    if (EXISTS ${plugin_types})
-        qt_copy_or_install(FILES ${plugin_types}
-            DESTINATION "${qml_module_install_dir}"
-        )
-
-        if(QT_WILL_INSTALL)
-            # plugin.qmltypes when present should also be copied to the
-            # cmake binary dir when doing prefix builds
-            file(COPY ${plugin_types}
-                DESTINATION "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
-            )
-        endif()
-    endif()
-
-    qt_copy_or_install(
-        FILES
-            "${qmldir_file}"
-        DESTINATION
-            "${qml_module_install_dir}"
-    )
-
-    if(QT_WILL_INSTALL)
-        # qmldir should also be copied to the cmake binary dir when doing
-        # prefix builds
-        file(COPY "${qmldir_file}"
-            DESTINATION "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
-        )
-    endif()
-
-endfunction()
-
 # Collection of qt_add_executable arguments so they can be shared across qt_add_executable
 # and qt_add_test_helper.
 set(__qt_add_executable_optional_args
@@ -2796,7 +2650,7 @@ function(qt_add_test name)
         set(private_includes
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
-            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/include>"
+            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}>"
              ${arg_INCLUDE_DIRECTORIES}
         )
 
@@ -3327,8 +3181,9 @@ endfunction()
 # Complete manual moc invocation with full control.
 # Use AUTOMOC whenever possible.
 function(qt_manual_moc result)
-    cmake_parse_arguments(arg "" "" "FLAGS" ${ARGN})
+    cmake_parse_arguments(arg "" "OUTPUT_MOC_JSON_FILES" "FLAGS" ${ARGN})
     set(moc_files)
+    set(metatypes_json_list)
     foreach(infile ${arg_UNPARSED_ARGUMENTS})
         qt_make_output_file("${infile}" "moc_" ".cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" outfile)
@@ -3336,16 +3191,30 @@ function(qt_manual_moc result)
 
         set(moc_parameters_file "${outfile}_parameters$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
         set(moc_parameters ${arg_FLAGS} -o "${outfile}" "${infile}")
+
+        set(metatypes_byproducts)
+        if (arg_OUTPUT_MOC_JSON_FILES)
+            set(moc_json_file "${outfile}.json")
+            list(APPEND moc_parameters --output-json)
+            list(APPEND metatypes_json_list "${outfile}.json")
+            set(metatypes_byproducts "${outfile}.json")
+        endif()
+
         string (REPLACE ";" "\n" moc_parameters "${moc_parameters}")
 
         file(GENERATE OUTPUT "${moc_parameters_file}" CONTENT "${moc_parameters}\n")
 
-        add_custom_command(OUTPUT "${outfile}"
+        add_custom_command(OUTPUT "${outfile}" ${metatypes_byproducts}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc "@${moc_parameters_file}"
                            DEPENDS "${infile}" ${moc_depends} ${QT_CMAKE_EXPORT_NAMESPACE}::moc
                            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" VERBATIM)
     endforeach()
     set("${result}" ${moc_files} PARENT_SCOPE)
+
+    # Register generated json files
+    if (arg_OUTPUT_MOC_JSON_FILES)
+        set(${arg_OUTPUT_MOC_JSON_FILES} "${metatypes_json_list}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 
@@ -3398,7 +3267,7 @@ function(qt_create_qdbusxml2cpp_command target infile)
     add_custom_command(OUTPUT "${header_file}" "${source_file}"
                        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp ${arg_FLAGS} "${option}"
                                "${header_file}:${source_file}" "${absolute_in_file_path}"
-                       DEPENDS "${absolute_in_file_path}"
+                       DEPENDS "${absolute_in_file_path}" ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp
                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
                        VERBATIM)
 
@@ -3486,6 +3355,7 @@ function(qt_add_docs)
 
     # qtattributionsscanner
     add_custom_target(qattributionsscanner_${target}
+        DEPENDS ${qattributionsscanner_bin}
         COMMAND ${qtattributionsscanner_bin}
         ${PROJECT_SOURCE_DIR}
         --filter "QDocModule=${qdoc_target}"
@@ -3518,6 +3388,7 @@ function(qt_add_docs)
     )
 
     add_custom_target(prepare_docs_${target}
+        DEPENDS ${qdoc_bin}
         COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
         ${qdoc_bin}
         ${prepare_qdoc_args}
@@ -3536,6 +3407,7 @@ function(qt_add_docs)
     )
 
     add_custom_target(generate_docs_${target}
+        DEPENDS ${qdoc_bin}
         COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
         ${qdoc_bin}
         ${generate_qdocs_args}
@@ -3553,6 +3425,7 @@ function(qt_add_docs)
     )
 
     add_custom_target(html_docs_${target}
+        DEPENDS ${qdoc_bin}
         COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
         ${qdoc_bin}
         ${html_qdocs_args}
@@ -3565,6 +3438,7 @@ function(qt_add_docs)
     set(qch_file_path ${qdoc_output_dir}/${qch_file_name})
 
     add_custom_target(qch_docs_${target}
+        DEPENDS ${qhelpgenerator_bin}
         COMMAND ${qhelpgenerator_bin}
            "${qdoc_output_dir}/${doc_target}.qhp"
            -o "${qch_file_path}"
@@ -3885,6 +3759,7 @@ function(qt_process_qlalr consuming_target input_file_list flags)
         add_custom_command(
             OUTPUT ${cpp_file} ${private_file} ${decl_file} ${impl_file}
             COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr ${flags} ${input_file}
+            DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr
             MAIN_DEPENDENCY ${input_file}
         )
         target_sources(${consuming_target} PRIVATE ${cpp_file} ${impl_file})
@@ -4045,10 +3920,6 @@ endfunction()
 
 function(add_qt_resource)
     qt_add_resource(${ARGV})
-endfunction()
-
-function(add_qml_module)
-    qt_add_qml_module(${ARGV})
 endfunction()
 
 function(add_cmake_library)

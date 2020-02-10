@@ -11,7 +11,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/gui/rasterwindow")
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 
 add_qt_gui_executable(rasterwindow
     main.cpp
@@ -20,11 +23,11 @@ add_qt_gui_executable(rasterwindow
 target_include_directories(rasterwindow PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
-# special case begin
 target_link_libraries(rasterwindow PUBLIC
+    Qt::Core
     Qt::Gui
 )
-# special case end
+
 install(TARGETS rasterwindow
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

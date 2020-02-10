@@ -9,14 +9,12 @@ qt_add_plugin(QEvdevTouchScreenPlugin
     TYPE generic
     SOURCES
         main.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::Core
+        Qt::CorePrivate
         Qt::Gui
-        Qt::InputSupport
+        Qt::GuiPrivate
+        Qt::InputSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:evdevtouch.pro:<TRUE>:

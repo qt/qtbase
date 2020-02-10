@@ -1,45 +1,63 @@
 # Generated from padnavigator.pro.
 
-#####################################################################
-## padnavigator Binary:
-#####################################################################
+cmake_minimum_required(VERSION 3.14)
+project(padnavigator LANGUAGES CXX)
 
-add_qt_executable(padnavigator
-    OUTPUT_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/padnavigator"
-    INSTALL_DIRECTORY "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/padnavigator"
-    SOURCES
-        flippablepad.cpp flippablepad.h
-        form.ui
-        main.cpp
-        padnavigator.cpp padnavigator.h
-        roundrectitem.cpp roundrectitem.h
-        splashitem.cpp splashitem.h
-    PUBLIC_LIBRARIES
-        Qt::Widgets
-    ENABLE_AUTOGEN_TOOLS
-        uic
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(INSTALL_EXAMPLEDIR "examples/widgets/graphicsview/padnavigator")
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS Widgets)
+
+add_executable(padnavigator
+    flippablepad.cpp flippablepad.h
+    form.ui
+    main.cpp
+    padnavigator.cpp padnavigator.h
+    roundrectitem.cpp roundrectitem.h
+    splashitem.cpp splashitem.h
+)
+target_link_libraries(padnavigator PUBLIC
+    Qt::Core
+    Qt::Gui
+    Qt::Widgets
 )
 
+
 # Resources:
-add_qt_resource(padnavigator "padnavigator" FILES
-    images/artsfftscope.png
-    images/blue_angle_swirl.jpg
-    images/kontact_contacts.png
-    images/kontact_journal.png
-    images/kontact_mail.png
-    images/kontact_notes.png
-    images/kopeteavailable.png
-    images/metacontact_online.png
-    images/minitools.png)
+set(padnavigator_resource_files
+    "images/artsfftscope.png"
+    "images/blue_angle_swirl.jpg"
+    "images/kontact_contacts.png"
+    "images/kontact_journal.png"
+    "images/kontact_mail.png"
+    "images/kontact_notes.png"
+    "images/kopeteavailable.png"
+    "images/metacontact_online.png"
+    "images/minitools.png"
+)
 
+qt6_add_resources(padnavigator "padnavigator"
+    PREFIX
+        "/"
+    FILES
+        ${padnavigator_resource_files}
+)
 
-#### Keys ignored in scope 1:.:.:padnavigator.pro:<TRUE>:
-# CONFIG = "console"
-
-## Scopes:
-#####################################################################
-
-extend_target(padnavigator CONDITION TARGET Qt::OpenGL
-    PUBLIC_LIBRARIES
+if(TARGET Qt::OpenGL)
+    target_link_libraries(padnavigator PUBLIC
         Qt::OpenGL
+    )
+endif()
+
+install(TARGETS padnavigator
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

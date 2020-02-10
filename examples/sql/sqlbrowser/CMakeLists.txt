@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/sql/sqlbrowser")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Sql)
 find_package(Qt6 COMPONENTS Widgets)
 
@@ -22,6 +24,8 @@ add_qt_gui_executable(sqlbrowser
     qsqlconnectiondialog.cpp qsqlconnectiondialog.h qsqlconnectiondialog.ui
 )
 target_link_libraries(sqlbrowser PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Sql
     Qt::Widgets
 )

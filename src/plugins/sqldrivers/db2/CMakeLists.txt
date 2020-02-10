@@ -13,13 +13,11 @@ qt_add_plugin(QDB2DriverPlugin
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::SqlPrivate
     PUBLIC_LIBRARIES
         DB2::DB2
         Qt::Core
-        Qt::Sql
+        Qt::CorePrivate
+        Qt::SqlPrivate
 )
 
 #### Keys ignored in scope 1:.:.:db2.pro:<TRUE>:

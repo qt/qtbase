@@ -14,14 +14,12 @@ qt_add_plugin(QIbusPlatformInputContextPlugin
         qibusproxy.cpp qibusproxy.h
         qibusproxyportal.cpp qibusproxyportal.h
         qibustypes.cpp qibustypes.h
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::XkbCommonSupportPrivate
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::DBus
         Qt::Gui
-        Qt::XkbCommonSupport
+        Qt::GuiPrivate
+        Qt::XkbCommonSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:ibus.pro:<TRUE>:

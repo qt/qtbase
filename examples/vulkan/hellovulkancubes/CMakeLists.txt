@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/vulkan/hellovulkancubes")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
@@ -31,6 +31,7 @@ target_link_libraries(hellovulkancubes PUBLIC
     Qt::Gui
     Qt::Widgets
 )
+
 
 # Resources:
 set_source_files_properties("../shared/block.buf"
@@ -54,7 +55,6 @@ qt6_add_resources(hellovulkancubes "hellovulkancubes"
     FILES
         ${hellovulkancubes_resource_files}
 )
-
 
 install(TARGETS hellovulkancubes
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

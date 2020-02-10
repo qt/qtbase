@@ -11,10 +11,8 @@ qt_add_module(EdidSupport
         qedidparser.cpp qedidparser_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
-        Qt::Core
+        Qt::CorePrivate
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )
