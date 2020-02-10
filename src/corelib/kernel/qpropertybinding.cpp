@@ -162,4 +162,11 @@ QMetaType QUntypedPropertyBinding::valueMetaType() const
     return d->metaType;
 }
 
+void QUntypedPropertyBinding::setDirty(bool dirty)
+{
+    if (!d)
+        return;
+    d->dirty = dirty;
+}
+
 QT_END_NAMESPACE

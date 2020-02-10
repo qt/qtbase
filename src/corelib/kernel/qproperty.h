@@ -137,6 +137,8 @@ public:
 
     QMetaType valueMetaType() const;
 
+    void setDirty(bool dirty = true);
+
 private:
     explicit QUntypedPropertyBinding(const QPropertyBindingPrivatePtr &priv);
     friend class QtPrivate::QPropertyBase;
