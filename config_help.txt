@@ -163,8 +163,6 @@ Build options:
   -reduce-exports ...... Reduce amount of exported symbols [auto]
   -reduce-relocations .. Reduce amount of relocations [auto] (Unix only)
 
-  -relocatable ......... Enable the Qt installation to be relocated [auto]
-
   -plugin-manifests .... Embed manifests into plugins [no] (Windows only)
   -static-runtime ...... With -static, use static runtime [no] (Windows only)
 

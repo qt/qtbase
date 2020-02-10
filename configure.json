@@ -1380,6 +1380,7 @@
         },
         "relocatable": {
             "label": "Relocatable",
+            "purpose": "Enable the Qt installation to be relocated.",
             "autoDetect": "features.shared",
             "condition": "features.dlopen || config.win32 || !features.shared",
             "output": [ "privateFeature" ]
