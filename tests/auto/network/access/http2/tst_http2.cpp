@@ -279,7 +279,7 @@ void tst_Http2::singleRequest()
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 
-    QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->isFinished());
 }
 
@@ -444,7 +444,7 @@ void tst_Http2::pushPromise()
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 
-    QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->isFinished());
 
     // Now, the most interesting part!
@@ -466,7 +466,7 @@ void tst_Http2::pushPromise()
     QCOMPARE(nSentRequests, 0);
     // Decreased by replyFinished():
     QCOMPARE(nRequests, 0);
-    QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->isFinished());
 }
 
@@ -511,7 +511,7 @@ void tst_Http2::goaway()
         QNetworkRequest request(url);
         request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
         replies[i] = manager->get(request);
-        QCOMPARE(replies[i]->networkError(), QNetworkReply::NoError);
+        QCOMPARE(replies[i]->error(), QNetworkReply::NoError);
         void (QNetworkReply::*errorSignal)(QNetworkReply::NetworkError) =
             &QNetworkReply::error;
         connect(replies[i], errorSignal, this, &tst_Http2::replyFinishedWithError);
@@ -671,7 +671,7 @@ void tst_Http2::connectToHost()
     connect(reply, &QNetworkReply::finished, [this, reply]() {
         --nRequests;
         eventLoop.exitLoop();
-        QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
         QVERIFY(reply->isFinished());
         // Nothing received back:
         QVERIFY(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).isNull());
@@ -698,7 +698,7 @@ void tst_Http2::connectToHost()
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
 
-    QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->isFinished());
 }
 
@@ -927,10 +927,10 @@ void tst_Http2::replyFinished()
     QVERIFY(nRequests);
 
     if (const auto reply = qobject_cast<QNetworkReply *>(sender())) {
-        if (reply->networkError() != QNetworkReply::NoError)
+        if (reply->error() != QNetworkReply::NoError)
             stopEventLoop();
 
-        QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
 
         const QVariant http2Used(reply->attribute(QNetworkRequest::Http2WasUsedAttribute));
         if (!http2Used.isValid() || !http2Used.toBool())
@@ -967,9 +967,9 @@ void tst_Http2::replyFinishedWithError()
     if (const auto reply = qobject_cast<QNetworkReply *>(sender())) {
         // For now this is a 'generic' code, it just verifies some error was
         // reported without testing its type.
-        if (reply->networkError() == QNetworkReply::NoError)
+        if (reply->error() == QNetworkReply::NoError)
             stopEventLoop();
-        QVERIFY(reply->networkError() != QNetworkReply::NoError);
+        QVERIFY(reply->error() != QNetworkReply::NoError);
     }
 
     --nRequests;

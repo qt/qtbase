@@ -275,7 +275,7 @@ void tst_Spdy::download()
 
     QVERIFY(proxyAuthRequiredSpy.count() <= 1);
 
-    QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->attribute(QNetworkRequest::SpdyWasUsedAttribute).toBool(), true);
     QCOMPARE(reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool(), true);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
@@ -508,7 +508,7 @@ void tst_Spdy::upload()
     QVERIFY(uploadProgressSpy.count() > 0);
     QVERIFY(readyReadSpy.count() > 0);
 
-    QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->attribute(QNetworkRequest::SpdyWasUsedAttribute).toBool(), true);
     QCOMPARE(reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool(), true);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
@@ -591,7 +591,7 @@ void tst_Spdy::errors()
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(errorSpy.count(), 1);
 
-    QCOMPARE(reply->networkError(), static_cast<QNetworkReply::NetworkError>(expectedReplyError));
+    QCOMPARE(reply->error(), static_cast<QNetworkReply::NetworkError>(expectedReplyError));
 
     m_manager.setProxy(QNetworkProxy()); // reset
     m_manager.clearAccessCache(); // e.g. to get an SSL error we need a new connection
@@ -666,7 +666,7 @@ void tst_Spdy::multipleRequests()
                  QByteArray(QSslConfiguration::NextProtocolSpdy3_0));
 #endif // QT_NO_OPENSSL
 
-        QCOMPARE(replies.at(a)->networkError(), QNetworkReply::NoError);
+        QCOMPARE(replies.at(a)->error(), QNetworkReply::NoError);
         QCOMPARE(replies.at(a)->attribute(QNetworkRequest::SpdyWasUsedAttribute).toBool(), true);
         QCOMPARE(replies.at(a)->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool(), true);
         QCOMPARE(replies.at(a)->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);

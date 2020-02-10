@@ -144,7 +144,7 @@ public:
 private slots:
 
     void handleNetworkData(QNetworkReply *networkReply) {
-        if (!networkReply->networkError()) {
+        if (!networkReply->error()) {
             if (!mapReplies.contains(networkReply)) {
                 // Assume UTF-8 encoded
                 QByteArray data = networkReply->readAll();

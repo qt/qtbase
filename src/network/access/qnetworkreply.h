@@ -124,12 +124,7 @@ public:
     QNetworkAccessManager *manager() const;
     QNetworkAccessManager::Operation operation() const;
     QNetworkRequest request() const;
-
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use networkError()") NetworkError error() const;
-#endif // QT_DEPRECATED_SINCE(5, 15)
-    NetworkError networkError() const;
-
+    NetworkError error() const;
     bool isFinished() const;
     bool isRunning() const;
     QUrl url() const;

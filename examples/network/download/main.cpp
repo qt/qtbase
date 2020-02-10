@@ -175,7 +175,7 @@ void DownloadManager::sslErrors(const QList<QSslError> &sslErrors)
 void DownloadManager::downloadFinished(QNetworkReply *reply)
 {
     QUrl url = reply->url();
-    if (reply->networkError()) {
+    if (reply->error()) {
         fprintf(stderr, "Download of %s failed: %s\n",
                 url.toEncoded().constData(),
                 qPrintable(reply->errorString()));
