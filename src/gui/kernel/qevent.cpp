@@ -2063,7 +2063,6 @@ QInputMethodEvent::QInputMethodEvent(const QInputMethodEvent &other)
 
 QInputMethodEvent::~QInputMethodEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
