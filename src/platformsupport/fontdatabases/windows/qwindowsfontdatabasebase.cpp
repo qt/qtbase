@@ -564,6 +564,7 @@ QSharedPointer<QWindowsFontEngineData> QWindowsFontDatabaseBase::data()
 
 bool QWindowsFontDatabaseBase::init(QSharedPointer<QWindowsFontEngineData> d)
 {
+#if !defined(QT_NO_DIRECTWRITE)
     if (!d->directWriteFactory) {
         createDirectWriteFactory(&d->directWriteFactory);
         if (!d->directWriteFactory)
@@ -576,9 +577,11 @@ bool QWindowsFontDatabaseBase::init(QSharedPointer<QWindowsFontEngineData> d)
             return false;
         }
     }
+#endif
     return true;
 }
 
+#if !defined(QT_NO_DIRECTWRITE)
 // ### Qt 6: Link directly to dwrite instead
 typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID &, IUnknown **);
 static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
@@ -601,14 +604,14 @@ void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory
         return;
 
     IUnknown *result = nullptr;
-#if defined(QT_USE_DIRECTWRITE3)
+#  if defined(QT_USE_DIRECTWRITE3)
     dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3), &result);
-#endif
+#  endif
 
-#if defined(QT_USE_DIRECTWRITE2)
+#  if defined(QT_USE_DIRECTWRITE2)
     if (result == nullptr)
         dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), &result);
-#endif
+#  endif
 
     if (result == nullptr) {
         if (FAILED(dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
@@ -619,6 +622,7 @@ void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory
 
     *factory = static_cast<IDWriteFactory *>(result);
 }
+#endif // !defined(QT_NO_DIRECTWRITE)
 
 int QWindowsFontDatabaseBase::defaultVerticalDPI()
 {
@@ -853,7 +857,11 @@ QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QByteArray &fontData, qr
     fontEngine->fontDef.hintingPreference = hintingPreference;
 
     directWriteFontFace->Release();
-#endif // !defined(QT_NO_DIRECTWRITE)
+#else // !defined(QT_NO_DIRECTWRITE)
+    Q_UNUSED(fontData);
+    Q_UNUSED(pixelSize);
+    Q_UNUSED(hintingPreference);
+#endif
 
     return fontEngine;
 }

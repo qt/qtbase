@@ -94,7 +94,9 @@ public:
 
     static int defaultVerticalDPI();
     static QSharedPointer<QWindowsFontEngineData> data();
+#if !defined(QT_NO_DIRECTWRITE)
     static void createDirectWriteFactory(IDWriteFactory **factory);
+#endif
     static QFont systemDefaultFont();
     static HFONT systemFont();
     static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef, const QString &faceName);
