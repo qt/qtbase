@@ -45,24 +45,9 @@ if(NOT _qt_module_target_type STREQUAL "INTERFACE_LIBRARY")
     endif()
 endif()
 
-# Apply meta types properties
-if (@QT_MODULE_HAS_META_TYPES_FILE@)
-    if (NOT QT_NO_CREATE_TARGETS)
-        set_target_properties("@INSTALL_CMAKE_NAMESPACE@::@target@" PROPERTIES
-            INTERFACE_QT_MODULE_HAS_META_TYPES TRUE
-            INTERFACE_QT_META_TYPES_INSTALL_FILE "@QT_MODULE_META_TYPES_FILE@"
-            INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE "@QT_MODULE_META_TYPES_DEP_FILE@"
-        )
-    endif()
 
-    if (NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
-        get_target_property(is_alias_target "Qt::@target@" ALIASED_TARGET)
-        if (NOT is_alias_target)
-            set_target_properties("Qt::@target@" PROPERTIES
-                INTERFACE_QT_MODULE_HAS_META_TYPES TRUE
-                INTERFACE_QT_META_TYPES_INSTALL_FILE "@QT_MODULE_META_TYPES_FILE@"
-                INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE "@QT_MODULE_META_TYPES_DEP_FILE@"
-            )
-        endif()
-    endif()
+# Load Module's BuildIntenals should any exist
+if (@INSTALL_CMAKE_NAMESPACE@BuildInternals_DIR AND
+        EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
 endif()

@@ -9,17 +9,35 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/itemviews/interview")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(interview
-    interview.qrc
     main.cpp
     model.cpp model.h
 )
 target_link_libraries(interview PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(interview_resource_files
+    "images/folder.png"
+    "images/interview.png"
+    "images/services.png"
+)
+
+qt6_add_resources(interview "interview"
+    PREFIX
+        "/"
+    FILES
+        ${interview_resource_files}
 )
 
 install(TARGETS interview

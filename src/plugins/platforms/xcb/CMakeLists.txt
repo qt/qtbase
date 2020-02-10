@@ -60,7 +60,7 @@ qt_add_module(XcbQpa
         QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         gl_integrations
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::EdidSupportPrivate
         Qt::FontDatabaseSupportPrivate
@@ -69,14 +69,6 @@ qt_add_module(XcbQpa
         Qt::ThemeSupportPrivate
         Qt::XkbCommonSupportPrivate
         PkgConfig::XKB_COMMON_X11 # special case
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::EdidSupport
-        Qt::FontDatabaseSupport
-        Qt::Gui
-        Qt::ServiceSupport
-        Qt::ThemeSupport
-        Qt::XkbCommonSupport
         XCB::ICCCM
         XCB::IMAGE
         XCB::KEYSYMS
@@ -98,20 +90,16 @@ qt_add_module(XcbQpa
 #####################################################################
 
 qt_extend_target(XcbQpa CONDITION TARGET Qt::LinuxAccessibilitySupportPrivate
-    LIBRARIES
-        Qt::LinuxAccessibilitySupportPrivate
     PUBLIC_LIBRARIES
-        Qt::LinuxAccessibilitySupport
+        Qt::LinuxAccessibilitySupportPrivate
 )
 
 qt_extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
     SOURCES
         qxcbvulkaninstance.cpp qxcbvulkaninstance.h
         qxcbvulkanwindow.cpp qxcbvulkanwindow.h
-    LIBRARIES
-        Qt::VulkanSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::VulkanSupport
+        Qt::VulkanSupportPrivate
 )
 
 qt_extend_target(XcbQpa CONDITION QT_FEATURE_glib
@@ -185,25 +173,21 @@ endif()
 # special case end
 
 #####################################################################
-## qxcb Plugin:
+## QXcbIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(qxcb
+qt_add_plugin(QXcbIntegrationPlugin
+    OUTPUT_NAME qxcb
     TYPE platforms
-    CLASS_NAME QXcbIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES xcb # special case
     SOURCES
         qxcbmain.cpp
     DEFINES
         QT_NO_FOREACH
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::XcbQpaPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
-        Qt::XcbQpa
 )
 
 #### Keys ignored in scope 19:.:.:xcb-plugin.pro:<TRUE>:

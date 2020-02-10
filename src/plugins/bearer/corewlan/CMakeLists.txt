@@ -10,14 +10,11 @@ qt_add_plugin(QCoreWlanEnginePlugin
     SOURCES
         main.cpp
         qcorewlanengine.h qcorewlanengine.mm
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
         ${FWFoundation}
         ${FWSystemConfiguration}
-        Qt::Core
-        Qt::Network
+        Qt::CorePrivate
+        Qt::NetworkPrivate
 )
 
 #### Keys ignored in scope 1:.:.:corewlan.pro:<TRUE>:

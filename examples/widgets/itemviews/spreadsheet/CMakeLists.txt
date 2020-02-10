@@ -9,19 +9,23 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/itemviews/spreadsheet")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS PrintSupport) # special case
 
 add_qt_gui_executable(spreadsheet
     main.cpp
     printview.cpp printview.h
-    spreadsheet.cpp spreadsheet.h spreadsheet.qrc
+    spreadsheet.cpp spreadsheet.h
     spreadsheetdelegate.cpp spreadsheetdelegate.h
     spreadsheetitem.cpp spreadsheetitem.h
 )
 target_link_libraries(spreadsheet PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
 # special case begin
@@ -29,6 +33,25 @@ if (TARGET Qt::PrintSupport)
     target_link_libraries(spreadsheet PUBLIC Qt::PrintSupport)
 endif()
 # special case end
+
+
+# Resources:
+set(spreadsheet_resource_files
+    "images/interview.png"
+)
+
+qt6_add_resources(spreadsheet "spreadsheet"
+    PREFIX
+        "/"
+    FILES
+        ${spreadsheet_resource_files}
+)
+
+if(TARGET Qt::PrintSupport)
+    target_link_libraries(spreadsheet PUBLIC
+        Qt::PrintSupport
+    )
+endif()
 
 install(TARGETS spreadsheet
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

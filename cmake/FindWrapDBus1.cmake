@@ -2,6 +2,10 @@
 # Work around that:-/
 # See https://gitlab.freedesktop.org/dbus/dbus/issues/267 for more information
 
+if(DBus1_FOUND OR WrapDBus1_FOUND)
+    return()
+endif()
+
 if(DEFINED ENV{PKG_CONFIG_DIR})
     set(__qt_dbus_pcd "$ENV{PKG_CONFIG_DIR}")
 endif()

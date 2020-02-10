@@ -11,12 +11,9 @@ qt_add_module(GraphicsSupport
         qrasterbackingstore.cpp qrasterbackingstore_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
 )
 
 #### Keys ignored in scope 1:.:.:graphics.pro:<TRUE>:

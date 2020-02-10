@@ -14,14 +14,13 @@ qt_add_plugin(QWindowsVistaStylePlugin
         qwindowsxpstyle.cpp qwindowsxpstyle_p.h
         qwindowsxpstyle_p_p.h
     LIBRARIES
-        Qt::WidgetsPrivate
         gdi32
         user32
         uxtheme
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
-        Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 1:.:.:windowsvista.pro:<TRUE>:

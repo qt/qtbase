@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/graphicsview/padnavigator")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS OpenGL) # special case
 
@@ -18,18 +20,42 @@ add_executable(padnavigator
     flippablepad.cpp flippablepad.h
     form.ui
     main.cpp
-    padnavigator.cpp padnavigator.h padnavigator.qrc
+    padnavigator.cpp padnavigator.h
     roundrectitem.cpp roundrectitem.h
     splashitem.cpp splashitem.h
 )
 target_link_libraries(padnavigator PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
-# special case begin
-if (TARGET Qt::OpenGL)
-    target_link_libraries(padnavigator PUBLIC Qt::OpenGL)
+
+
+# Resources:
+set(padnavigator_resource_files
+    "images/artsfftscope.png"
+    "images/blue_angle_swirl.jpg"
+    "images/kontact_contacts.png"
+    "images/kontact_journal.png"
+    "images/kontact_mail.png"
+    "images/kontact_notes.png"
+    "images/kopeteavailable.png"
+    "images/metacontact_online.png"
+    "images/minitools.png"
+)
+
+qt6_add_resources(padnavigator "padnavigator"
+    PREFIX
+        "/"
+    FILES
+        ${padnavigator_resource_files}
+)
+
+if(TARGET Qt::OpenGL)
+    target_link_libraries(padnavigator PUBLIC
+        Qt::OpenGL
+    )
 endif()
-# special case end
 
 install(TARGETS padnavigator
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

@@ -32,6 +32,9 @@ qt_add_module(OpenGL
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
+        Qt::GuiPrivate
 )
 
 ## Scopes:
@@ -44,6 +47,8 @@ qt_extend_target(OpenGL CONDITION QT_FEATURE_widgets
         Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Widgets
+    PRIVATE_MODULE_INTERFACE
+        Qt::WidgetsPrivate
 )
 
 qt_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2

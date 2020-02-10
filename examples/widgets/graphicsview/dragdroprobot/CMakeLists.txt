@@ -9,17 +9,34 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/graphicsview/dragdroprobot")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(dragdroprobot
     coloritem.cpp coloritem.h
     main.cpp
-    robot.cpp robot.h robot.qrc
+    robot.cpp robot.h
 )
 target_link_libraries(dragdroprobot PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(robot_resource_files
+    "images/head.png"
+)
+
+qt6_add_resources(dragdroprobot "robot"
+    PREFIX
+        "/"
+    FILES
+        ${robot_resource_files}
 )
 
 install(TARGETS dragdroprobot

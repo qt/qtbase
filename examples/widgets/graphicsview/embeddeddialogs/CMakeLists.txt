@@ -9,18 +9,34 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/graphicsview/embeddeddialogs")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(embeddeddialogs
     customproxy.cpp customproxy.h
     embeddeddialog.cpp embeddeddialog.h embeddeddialog.ui
-    embeddeddialogs.qrc
     main.cpp
 )
 target_link_libraries(embeddeddialogs PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(embeddeddialogs_resource_files
+    "No-Ones-Laughing-3.jpg"
+)
+
+qt6_add_resources(embeddeddialogs "embeddeddialogs"
+    PREFIX
+        "/"
+    FILES
+        ${embeddeddialogs_resource_files}
 )
 
 install(TARGETS embeddeddialogs

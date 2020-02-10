@@ -13,16 +13,13 @@ qt_add_plugin(QMinimalIntegrationPlugin
         qminimalintegration.cpp qminimalintegration.h
     DEFINES
         QT_NO_FOREACH
-    LIBRARIES
+    PUBLIC_LIBRARIES
+        Qt::Core
         Qt::CorePrivate
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
-        Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::EventDispatcherSupport
-        Qt::FontDatabaseSupport
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:minimal.pro:<TRUE>:

@@ -6,35 +6,7 @@ accept_configuration:
 
 instructions:
   Build:
-    - !include "{{qt/qtbase}}/prepare_building_env.yaml"
-    - type: Group
-      instructions:
-        - !include "{{qt/qtbase}}/cmake_qtbase_build_instructions.yaml"
-        - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts.yaml"
-      enable_if:
-        condition: property
-        property: host.os
-        equals_property: target.os
-    - type: Group
-      instructions:
-        - !include "{{qt/qtbase}}/cmake_cross_compilation.yaml"
-      disable_if:
-        condition: property
-        property: host.os
-        equals_property: target.os
+    - !include "{{qt/qtbase}}/coin_qtbase_build_template_v2.yaml"
 
   Test:
-    - type: Group
-      instructions:
-        - !include "{{qt/qtbase}}/cmake_regular_test_instructions.yaml"
-      enable_if:
-        condition: property
-        property: host.os
-        equals_property: target.os
-    - type: EnvironmentVariable
-      variableName: Dummy
-      variableValue: dummy
-      disable_if:
-        condition: property
-        property: host.os
-        equals_property: target.os
+    - !include "{{qt/qtbase}}/coin_module_test_template_v2.yaml"

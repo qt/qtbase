@@ -904,6 +904,8 @@ class Scope(object):
         self._visited_keys = set()  # type: Set[str]
         self._total_condition = None  # type: Optional[str]
         self._parent_include_line_no = parent_include_line_no
+        self._is_public_module = False
+        self._has_private_module = False
 
     def __repr__(self):
         return (
@@ -934,6 +936,14 @@ class Scope(object):
     @property
     def currentdir(self) -> str:
         return self._currentdir
+
+    @property
+    def is_public_module(self) -> bool:
+        return self._is_public_module
+
+    @property
+    def has_private_module(self) -> bool:
+        return self._has_private_module
 
     def can_merge_condition(self):
         if self._condition == "else":
@@ -1219,7 +1229,7 @@ class Scope(object):
     def get(self, key: str, *, ignore_includes: bool = False, inherit: bool = False) -> List[str]:
         is_same_path = self.currentdir == self.basedir
         if not is_same_path:
-            relative_path = os.path.relpath(self.currentdir, self.basedir)
+            relative_path = posixpath.relpath(self.currentdir, self.basedir)
 
         if key == "QQC2_SOURCE_TREE":
             qmake_conf_path = find_qmake_conf(os.path.abspath(self.currentdir))
@@ -1826,16 +1836,9 @@ def extract_cmake_libraries(
         private_dependencies += [map_qt_library(q) for q in scope.expand(key)]
 
     for key in ["QT"]:
-        # Qt public libs: These may include FooPrivate in which case we get
-        # a private dependency on FooPrivate as well as a public dependency on Foo
         for lib in scope.expand(key):
             mapped_lib = map_qt_library(lib)
-
-            if mapped_lib.endswith("Private"):
-                private_dependencies.append(mapped_lib)
-                public_dependencies.append(mapped_lib[:-7])
-            else:
-                public_dependencies.append(mapped_lib)
+            public_dependencies.append(mapped_lib)
 
     return (
         _map_libraries_to_cmake(public_dependencies, known_libraries, is_example=is_example),
@@ -1972,8 +1975,41 @@ def write_library_section(
         scope, known_libraries=known_libraries
     )
 
-    write_list(cm_fh, private_dependencies, "LIBRARIES", indent + 1)
-    write_list(cm_fh, public_dependencies, "PUBLIC_LIBRARIES", indent + 1)
+    is_public_module = scope.is_public_module
+    current_scope = scope
+    while not is_public_module and current_scope.parent:
+        current_scope = current_scope.parent
+        is_public_module = current_scope.is_public_module
+
+    # When handling module dependencies, handle QT += foo-private magic.
+    # This implies:
+    #  target_link_libraries(Module PUBLIC Qt::Foo)
+    #  target_link_libraries(Module PRIVATE Qt::FooPrivate)
+    #  target_link_libraries(ModulePrivate INTERFACE Qt::FooPrivate)
+    if is_public_module:
+        private_module_dep_pattern = re.compile(r"^(Qt::(.+))Private$")
+
+        public_module_public_deps = []
+        public_module_private_deps = private_dependencies
+        private_module_interface_deps = []
+
+        for dep in public_dependencies:
+            match = re.match(private_module_dep_pattern, dep)
+            if match:
+                if match[1] not in public_module_public_deps:
+                    public_module_public_deps.append(match[1])
+                private_module_interface_deps.append(dep)
+                if dep not in public_module_private_deps:
+                    public_module_private_deps.append(dep)
+            else:
+                if dep not in public_module_public_deps:
+                    public_module_public_deps.append(dep)
+        write_list(cm_fh, public_module_private_deps, "LIBRARIES", indent + 1)
+        write_list(cm_fh, public_module_public_deps, "PUBLIC_LIBRARIES", indent + 1)
+        write_list(cm_fh, private_module_interface_deps, "PRIVATE_MODULE_INTERFACE", indent + 1)
+    else:
+        write_list(cm_fh, private_dependencies, "LIBRARIES", indent + 1)
+        write_list(cm_fh, public_dependencies, "PUBLIC_LIBRARIES", indent + 1)
 
 
 def write_autogen_section(cm_fh: IO[str], scope: Scope, *, indent: int = 0):
@@ -2827,9 +2863,12 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     # or when option(host_build) is used, as described in qt_module.prf.
     is_static = "static" in scope.get("CONFIG") or "host_build" in scope.get("_OPTION")
 
+    is_public_module = True
+
     if is_static:
         extra.append("STATIC")
     if "internal_module" in scope.get("CONFIG"):
+        is_public_module = False
         extra.append("INTERNAL_MODULE")
     if "no_module_headers" in scope.get("CONFIG"):
         extra.append("NO_MODULE_HEADERS")
@@ -2837,6 +2876,8 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         extra.append("NO_SYNC_QT")
     if "no_private_module" in scope.get("CONFIG"):
         extra.append("NO_PRIVATE_MODULE")
+    else:
+        scope._has_private_module = True
     if "header_module" in scope.get("CONFIG"):
         extra.append("HEADER_MODULE")
     if "metatypes" in scope.get("CONFIG") or "qmltypes" in scope.get("CONFIG"):
@@ -2849,6 +2890,8 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     module_plugin_types = scope.get_files("MODULE_PLUGIN_TYPES")
     if module_plugin_types:
         extra.append(f"PLUGIN_TYPES {' '.join(module_plugin_types)}")
+
+    scope._is_public_module = is_public_module
 
     target_name = module_name[2:]
     write_main_part(

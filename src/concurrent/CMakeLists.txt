@@ -29,6 +29,8 @@ qt_add_module(Concurrent
         Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
 )

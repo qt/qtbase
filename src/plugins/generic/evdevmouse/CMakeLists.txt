@@ -9,14 +9,12 @@ qt_add_plugin(QEvdevMousePlugin
     TYPE generic
     SOURCES
         main.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::Core
+        Qt::CorePrivate
         Qt::Gui
-        Qt::InputSupport
+        Qt::GuiPrivate
+        Qt::InputSupportPrivate
 )
 
 #### Keys ignored in scope 1:.:.:evdevmouse.pro:<TRUE>:

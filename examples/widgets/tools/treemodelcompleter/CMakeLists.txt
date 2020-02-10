@@ -9,17 +9,34 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tools/treemodelcompleter")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(treemodelcompleter
     main.cpp
     mainwindow.cpp mainwindow.h
-    treemodelcompleter.cpp treemodelcompleter.h treemodelcompleter.qrc
+    treemodelcompleter.cpp treemodelcompleter.h
 )
 target_link_libraries(treemodelcompleter PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(treemodelcompleter_resource_files
+    "resources/treemodel.txt"
+)
+
+qt6_add_resources(treemodelcompleter "treemodelcompleter"
+    PREFIX
+        "/"
+    FILES
+        ${treemodelcompleter_resource_files}
 )
 
 install(TARGETS treemodelcompleter

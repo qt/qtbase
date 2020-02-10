@@ -32,6 +32,10 @@ qt_add_module(PrintSupport
         Qt::Core
         Qt::Gui
         Qt::Widgets
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
+        Qt::GuiPrivate
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 1:.:.:printsupport.pro:<TRUE>:

@@ -15,13 +15,10 @@ qt_add_module(EglSupport
         qt_egl_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
         EGL::EGL # special case
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )

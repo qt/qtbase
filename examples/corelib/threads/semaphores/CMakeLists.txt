@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/corelib/threads/semaphores")
 
 find_package(Qt6 COMPONENTS Core)
 
@@ -19,6 +19,7 @@ add_executable(semaphores
 target_link_libraries(semaphores PUBLIC
     Qt::Core
 )
+
 install(TARGETS semaphores
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

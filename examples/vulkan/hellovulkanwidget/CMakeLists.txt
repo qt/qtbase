@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/vulkan/hellovulkanwidget")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
@@ -25,6 +25,7 @@ target_link_libraries(hellovulkanwidget PUBLIC
     Qt::Gui
     Qt::Widgets
 )
+
 
 # Resources:
 set_source_files_properties("../shared/color_frag.spv"
@@ -44,7 +45,6 @@ qt6_add_resources(hellovulkanwidget "hellovulkanwidget"
     FILES
         ${hellovulkanwidget_resource_files}
 )
-
 
 install(TARGETS hellovulkanwidget
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

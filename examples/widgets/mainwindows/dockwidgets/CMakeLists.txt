@@ -9,17 +9,20 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/mainwindows/dockwidgets")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS PrintSupport) # special case
 
 add_qt_gui_executable(dockwidgets
-    dockwidgets.qrc
     main.cpp
     mainwindow.cpp mainwindow.h
 )
 target_link_libraries(dockwidgets PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
 # special case begin
@@ -27,6 +30,28 @@ if (TARGET Qt::PrintSupport)
     target_link_libraries(dockwidgets PUBLIC Qt::PrintSupport)
 endif()
 # special case end
+
+
+# Resources:
+set(dockwidgets_resource_files
+    "images/new.png"
+    "images/print.png"
+    "images/save.png"
+    "images/undo.png"
+)
+
+qt6_add_resources(dockwidgets "dockwidgets"
+    PREFIX
+        "/"
+    FILES
+        ${dockwidgets_resource_files}
+)
+
+if(TARGET Qt::PrintSupport)
+    target_link_libraries(dockwidgets PUBLIC
+        Qt::PrintSupport
+    )
+endif()
 
 install(TARGETS dockwidgets
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

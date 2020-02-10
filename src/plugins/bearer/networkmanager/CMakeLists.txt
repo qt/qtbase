@@ -11,14 +11,11 @@ qt_add_plugin(QNetworkManagerEnginePlugin
         main.cpp
         qnetworkmanagerengine.cpp qnetworkmanagerengine.h
         qnetworkmanagerservice.cpp qnetworkmanagerservice.h
-    LIBRARIES
-        Qt::LinuxOfonoSupportPrivate
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::DBus
-        Qt::LinuxOfonoSupport
-        Qt::Network
+        Qt::LinuxOfonoSupportPrivate
+        Qt::NetworkPrivate
 )
 
 #### Keys ignored in scope 1:.:.:networkmanager.pro:<TRUE>:

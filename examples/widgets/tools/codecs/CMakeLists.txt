@@ -9,19 +9,35 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tools/codecs")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(codecs
-    codecs.qrc
     encodingdialog.cpp encodingdialog.h
     main.cpp
     mainwindow.cpp mainwindow.h
     previewform.cpp previewform.h
 )
 target_link_libraries(codecs PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(codecs_resource_files
+    "images/editcopy.png"
+)
+
+qt6_add_resources(codecs "codecs"
+    PREFIX
+        "/"
+    FILES
+        ${codecs_resource_files}
 )
 
 install(TARGETS codecs

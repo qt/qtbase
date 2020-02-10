@@ -46,6 +46,8 @@ qt_add_module(DBus
         Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
 )
 
 set_source_files_properties(qdbusmarshaller.cpp

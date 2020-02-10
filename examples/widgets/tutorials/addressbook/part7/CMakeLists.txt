@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tutorials/addressbook/part7")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(part7
@@ -19,6 +21,8 @@ add_qt_gui_executable(part7
     main.cpp
 )
 target_link_libraries(part7 PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
 )
 

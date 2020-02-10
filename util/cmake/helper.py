@@ -536,6 +536,7 @@ _library_map = [
     LibraryMapping("webp", "WrapWebP", "WrapWebP::WrapWebP"),
     LibraryMapping("jasper", "WrapJasper", "WrapJasper::WrapJasper"),
     LibraryMapping("sdl2", "WrapSDL2", "WrapSDL2::WrapSDL2"),
+    LibraryMapping("assimp", "WrapAssimp", "WrapAssimp::WrapAssimp", extra=["5"]),
 ]
 
 

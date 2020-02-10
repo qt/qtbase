@@ -60,6 +60,8 @@ qt_add_module(Test
         Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
     # special case begin
     # remove COMPILE_OPTIONS, LINK_OPTIONS, COVERAGE_OPTIONS
     # figure out how it should be handled.

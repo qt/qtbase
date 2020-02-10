@@ -262,6 +262,8 @@ qt_add_module(Gui
         ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
+    PRIVATE_MODULE_INTERFACE
+        Qt::CorePrivate
     NO_PCH_SOURCES # special case
         "painting/qdrawhelper.cpp" # special case
     PRECOMPILED_HEADER

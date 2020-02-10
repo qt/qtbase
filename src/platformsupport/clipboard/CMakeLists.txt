@@ -11,11 +11,9 @@ qt_add_module(ClipboardSupport
         qmacmime.mm qmacmime_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
         ${FWImageIO}
-        Qt::Core
+        Qt::CorePrivate
         Qt::Gui
 )
 

@@ -19,21 +19,16 @@ qt_add_plugin(QEglFSKmsGbmIntegrationPlugin
     INCLUDE_DIRECTORIES
         ../../api
         ../eglfs_kms_support
-    LIBRARIES
+    PUBLIC_LIBRARIES
+        Libdrm::Libdrm
+        Qt::Core
         Qt::CorePrivate
         Qt::EdidSupportPrivate
         Qt::EglFSDeviceIntegrationPrivate
         Qt::EglFsKmsSupportPrivate
+        Qt::Gui
         Qt::GuiPrivate
         Qt::KmsSupportPrivate
-    PUBLIC_LIBRARIES
-        Libdrm::Libdrm
-        Qt::Core
-        Qt::EdidSupport
-        Qt::EglFSDeviceIntegration
-        Qt::EglFsKmsSupport
-        Qt::Gui
-        Qt::KmsSupport
         gbm::gbm
 )
 

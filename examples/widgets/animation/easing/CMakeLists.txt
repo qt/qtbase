@@ -9,19 +9,35 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/animation/easing")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(easing
     animation.h
-    easing.qrc
     form.ui
     main.cpp
     window.cpp window.h
 )
 target_link_libraries(easing PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(easing_resource_files
+    "images/qt-logo.png"
+)
+
+qt6_add_resources(easing "easing"
+    PREFIX
+        "/"
+    FILES
+        ${easing_resource_files}
 )
 
 install(TARGETS easing

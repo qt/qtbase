@@ -59,7 +59,9 @@ function(qt6_add_dbus_interface _sources _interface _basename)
 
     add_custom_command(OUTPUT "${_impl}" "${_header}"
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp ${_params} -p ${_basename} ${_infile}
-        DEPENDS ${_infile} VERBATIM)
+        DEPENDS ${_infile} ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml
+        VERBATIM
+    )
 
     set_source_files_properties("${_impl}" "${_header}" PROPERTIES SKIP_AUTOMOC TRUE)
 
@@ -134,7 +136,8 @@ function(qt6_generate_dbus_interface _header) # _customName OPTIONS -some -optio
 
     add_custom_command(OUTPUT ${_target}
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml ${_DBUS_INTERFACE_OPTIONS} ${_in_file} -o ${_target}
-        DEPENDS ${_in_file} VERBATIM
+        DEPENDS ${_in_file} ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml
+        VERBATIM
     )
 endfunction()
 
@@ -168,12 +171,14 @@ function(qt6_add_dbus_adaptor _sources _xml_file _include _parentClass) # _optio
     if(_optionalClassName)
         add_custom_command(OUTPUT "${_impl}" "${_header}"
           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp -m -a ${_basename} -c ${_optionalClassName} -i ${_include} -l ${_parentClass} ${_infile}
-          DEPENDS ${_infile} VERBATIM
+          DEPENDS ${_infile} ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml
+          VERBATIM
         )
     else()
         add_custom_command(OUTPUT "${_impl}" "${_header}"
           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp -m -a ${_basename} -i ${_include} -l ${_parentClass} ${_infile}
-          DEPENDS ${_infile} VERBATIM
+          DEPENDS ${_infile} ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml
+          VERBATIM
         )
     endif()
 

@@ -9,17 +9,34 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/painting/imagecomposition")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 add_qt_gui_executable(imagecomposition
     imagecomposer.cpp imagecomposer.h
-    imagecomposition.qrc
     main.cpp
 )
 target_link_libraries(imagecomposition PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Widgets
+)
+
+
+# Resources:
+set(imagecomposition_resource_files
+    "images/butterfly.png"
+    "images/checker.png"
+)
+
+qt6_add_resources(imagecomposition "imagecomposition"
+    PREFIX
+        "/"
+    FILES
+        ${imagecomposition_resource_files}
 )
 
 install(TARGETS imagecomposition

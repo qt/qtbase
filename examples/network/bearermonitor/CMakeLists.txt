@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/network/bearermonitor")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
@@ -29,6 +29,12 @@ target_link_libraries(bearermonitor PUBLIC
     Qt::Network
     Qt::Widgets
 )
+
+if(WIN32)
+    target_link_libraries(bearermonitor PUBLIC
+        ws2_32
+    )
+endif()
 
 install(TARGETS bearermonitor
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

@@ -3,31 +3,62 @@
 cmake_minimum_required(VERSION 3.14)
 project(notepad LANGUAGES CXX)
 
-find_package(Qt6 COMPONENTS Widgets) # special case: add
-find_package(Qt6 COMPONENTS PrintSupport) # special case: add
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/widgets/tutorials/notepad")
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS PrintSupport) # special case: add
 
 add_qt_gui_executable(notepad
     main.cpp
-    notepad.cpp notepad.h notepad.qrc notepad.ui
+    notepad.cpp notepad.h notepad.ui
 )
-# special case begin
 target_link_libraries(notepad PUBLIC
-    Qt::Widgets
+    Qt::Core
+    Qt::Gui
 )
-if (TARGET Qt::PrintSupport)
+
+
+# Resources:
+set(notepad_resource_files
+    "images/bold.png"
+    "images/copy.png"
+    "images/create.png"
+    "images/cut.png"
+    "images/edit_redo.png"
+    "images/edit_undo.png"
+    "images/exit.png"
+    "images/font.png"
+    "images/info.png"
+    "images/italic.png"
+    "images/new.png"
+    "images/open.png"
+    "images/paste.png"
+    "images/pencil.png"
+    "images/print.png"
+    "images/save.png"
+    "images/save_as.png"
+    "images/underline.png"
+)
+
+qt6_add_resources(notepad "notepad"
+    PREFIX
+        "/"
+    FILES
+        ${notepad_resource_files}
+)
+
+if(TARGET Qt::PrintSupport)
     target_link_libraries(notepad PUBLIC
         Qt::PrintSupport
     )
 endif()
-# special case end
 
 install(TARGETS notepad
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

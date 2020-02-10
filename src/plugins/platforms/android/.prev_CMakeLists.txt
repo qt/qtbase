@@ -42,20 +42,15 @@ qt_add_plugin(QAndroidIntegrationPlugin
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${QT_SOURCE_TREE}/src/3rdparty/android
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::AccessibilitySupportPrivate
+        Qt::Core
         Qt::CorePrivate
         Qt::EglSupportPrivate
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
-        Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::AccessibilitySupport
-        Qt::Core
-        Qt::EglSupport
-        Qt::EventDispatcherSupport
-        Qt::FontDatabaseSupport
         Qt::Gui
+        Qt::GuiPrivate
         android
         jnigraphics
 )
@@ -70,10 +65,8 @@ qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qandroidplatformvulkaninstance.cpp qandroidplatformvulkaninstance.h
         qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h
-    LIBRARIES
-        Qt::VulkanSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::VulkanSupport
+        Qt::VulkanSupportPrivate
 )
 
 qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_assets

@@ -270,9 +270,16 @@ function(qt6_add_binary_resources target )
     endforeach()
 
     add_custom_command(OUTPUT ${rcc_destination}
+                       DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                        ARGS ${rcc_options} --binary --name ${target} --output ${rcc_destination} ${infiles}
-                       DEPENDS ${rc_depends} ${out_depends} ${infiles} VERBATIM)
+                       DEPENDS
+                            ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                            ${rc_depends}
+                            ${out_depends}
+                            ${infiles}
+                       VERBATIM)
+
     add_custom_target(${target} ALL DEPENDS ${rcc_destination})
 endfunction()
 
@@ -324,7 +331,8 @@ function(qt6_add_resources outfiles )
                                COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                                ARGS ${rcc_options} --name ${outfilename} --output ${outfile} ${infile}
                                MAIN_DEPENDENCY ${infile}
-                               DEPENDS ${_rc_depends} "${_out_depends}" VERBATIM)
+                               DEPENDS ${_rc_depends} "${_out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                               VERBATIM)
             set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
             set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
             list(APPEND ${outfiles} ${outfile})
@@ -377,7 +385,8 @@ function(qt6_add_big_resources outfiles )
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
-                           DEPENDS ${infile} ${_rc_depends} "${out_depends}" VERBATIM)
+                           DEPENDS ${infile} ${_rc_depends} "${out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                           VERBATIM)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
         add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
         set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
@@ -388,7 +397,7 @@ function(qt6_add_big_resources outfiles )
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            ARGS ${rcc_options} --name ${outfilename} --pass 2 --temp $<TARGET_OBJECTS:rcc_object_${outfilename}> --output ${outfile} ${infile}
-                           DEPENDS rcc_object_${outfilename}
+                           DEPENDS rcc_object_${outfilename} ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
                            VERBATIM)
        list(APPEND ${outfiles} ${outfile})
     endforeach()
@@ -586,110 +595,24 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
-# Generate metatypes dependency file. This function extracts the list of
-# metatypes files as well as the dependency file from the direct library
-# dependencies of a target via generator expressions.
-# Parameters:
-#   dep_file: Location where to generate the dependency file for build time
-#   dependencies.
-#   dep_file_install: Location where to generate the dependency file which
-#   is expected to be installed.
-function(qt6_generate_meta_types_dep_file target dep_file dep_file_install)
-    # Due to generator expressions it is not possible to recursively evaluate
-    # the LINK_LIBRARIES of target. Therefore we generate a dependency file for
-    # every module with metatypes which can be evaluated at build time.
-    # When generating this file we need to take into account that there are two
-    # levels at which dependencies can be expressed: build and install.
-    # Build dependencies refer to targets which are being built along side the
-    # original target. These targets' install dependencies are not available
-    # at this point in time. We set a special property on these targets that's
-    # only available at build time.
-    # Install dependencies refer to targets which are found via a find_package()
-    # call.
-    # Both install and build targets have the
-    # INTERFACE_QT_META_TYPES_INSTALL_[DEP_FILE|FILE]. When building the target,
-    # INTERFACE_QT_META_TYPES_INSTALL_... refer to the expected install
-    # directory to be appended to CMAKE_INSTALL_PREFIX.
-    # Only build target have the INTERFACE_QT_META_TYPES_[DEP_FILE|FILE] which
-    # point to the files that have been produced during build time.
-    # Finally, to make sure the targets actually have a metatypes files, we
-    # check if they have the INTERFACE_QT_MODULE_HAS_META_TYPES property.
-    #
-    # Note: All properties start with INTERFACE_ since it is the only way to
-    # set properties on interface targets that get generated in the
-    # QtModuleConfig.in
-    #
-    get_target_property(link_dependencies ${target} LINK_LIBRARIES)
-    set(prop_dep "INTERFACE_QT_META_TYPES_BUILD_DEP_FILE")
-    set(prop_file "INTERFACE_QT_META_TYPES_BUILD_FILE")
-    set(prop_file_install "INTERFACE_QT_META_TYPES_INSTALL_FILE")
-    set(prop_dep_install "INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE")
-    set(prop_is_local "INTERFACE_QT_MODULE_META_TYPES_FROM_BUILD")
-    set(prop_has_metatypes "INTERFACE_QT_MODULE_HAS_META_TYPES")
 
-    set(gen_exp "")
-    set(gen_exp_install "")
-    foreach(dep IN LISTS link_dependencies)
-        # Skip over any flags starting with -, like -framework or -lboo.
-        if("${dep}" MATCHES "^-")
-            continue()
-        endif()
-        # replace LINK_ONLY with true, or we will get an error evaluating that
-        # generator expression
-        string(REPLACE "$<LINK_ONLY:" "$<1:" genex_target "$<GENEX_EVAL:${dep}>")
-        string(REPLACE "$<TARGET_OBJECTS:" "$<1:" genex_target "${genex_target}")
-        set(genex_check_is_local
-            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_is_local}>>"
-        )
-        set(genex_is_target "$<TARGET_EXISTS:$<IF:$<BOOL:${genex_target}>,${genex_target},-NOTFOUND>>")
-        set(genex_has_metatypes
-            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_has_metatypes}>>"
-        )
-        set(genex_get_metatypes
-            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_file}>>"
-        )
-        set(genex_get_metatypes_dep
-            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_dep}>>"
-        )
-        set(genex_get_metatypes_install
-            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_file_install}>>"
-        )
-        set(genex_get_metatypes_install_dep
-            "$<TARGET_GENEX_EVAL:${genex_target},$<TARGET_PROPERTY:${genex_target},${prop_dep_install}>>"
-        )
-        set(get_local_or_install
-            "$<IF:$<BOOL:${genex_check_is_local}>,${genex_get_metatypes}=${genex_get_metatypes_dep},${genex_get_metatypes_install}=${genex_get_metatypes_install_dep}>"
-        )
-
-        list(APPEND gen_exp
-            "$<$<AND:$<BOOL:${genex_target}>,$<BOOL:${genex_has_metatypes}>>:${get_local_or_install}>"
-        )
-
-        list(APPEND gen_exp_install
-            "$<$<AND:$<BOOL:${genex_target}>,$<BOOL:${genex_get_metatypes_install}>>:${genex_get_metatypes_install}=${genex_get_metatypes_install_dep}>"
-        )
-    endforeach()
-
-    file(GENERATE
-        OUTPUT "${dep_file}"
-        CONTENT "$<JOIN:$<GENEX_EVAL:${gen_exp}>,\n>"
-    )
-
-    file(GENERATE
-        OUTPUT "${dep_file_install}"
-        CONTENT "$<JOIN:$<GENEX_EVAL:${gen_exp_install}>,\n>"
-    )
-endfunction()
-
-#
-# Generate Qt metatypes.json for a target
+# Generate Qt metatypes.json for a target. By default we check whether AUTOMOC
+# has been enabled and we extract the information from that target. Should you
+# not wish to use automoc you need to pass in all the generated json files via the
+# MANUAL_MOC_JSON_FILES parameter. The latter can be obtained by running moc with
+# the --output-json parameter.
 # Params:
 #   INSTALL_DIR: Location where to install the metatypes file (Optional)
 #   COPY_OVER_INSTALL: When present will install the file via a post build step
 #   copy rather than using install
 function(qt6_generate_meta_types_json_file target)
 
-    cmake_parse_arguments(arg "COPY_OVER_INSTALL" "INSTALL_DIR" "" ${ARGN})
+    get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
+    if (existing_meta_types_file)
+        return()
+    endif()
+
+    cmake_parse_arguments(arg "COPY_OVER_INSTALL" "INSTALL_DIR" "MANUAL_MOC_JSON_FILES" ${ARGN})
 
     if (NOT QT_BUILDING_QT)
         if (NOT arg_INSTALL_DIR)
@@ -707,56 +630,80 @@ function(qt6_generate_meta_types_json_file target)
         endif()
     endif()
 
-    # Tell automoc to output json files
-    set_property(TARGET "${target}" APPEND PROPERTY
-        AUTOMOC_MOC_OPTIONS "--output-json"
-    )
-
     get_target_property(target_type ${target} TYPE)
-    if (target_type STREQUAL "INTERFACE_LIBRARY" OR CMAKE_VERSION VERSION_LESS "3.16.0")
-        # interface libraries not supported or cmake version is not high enough
-        message(WARNING "Meta types generation requires CMake >= 3.16")
+    if (target_type STREQUAL "INTERFACE_LIBRARY")
+        message(FATAL_ERROR "Meta types generation does not work on interface libraries")
         return()
     endif()
 
-    get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
-    if (existing_meta_types_file)
+    if (CMAKE_VERSION VERSION_LESS "3.16.0")
+        message(FATAL_ERROR "Meta types generation requires CMake >= 3.16")
         return()
     endif()
 
     get_target_property(target_binary_dir ${target} BINARY_DIR)
+    set(type_list_file "${target_binary_dir}/meta_types/${target}_json_file_list.txt")
+    set(type_list_file_manual "${target_binary_dir}/meta_types/${target}_json_file_list_manual.txt")
 
-    if(CMAKE_BUILD_TYPE)
-        set(cmake_autogen_cache_file
-            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
-        set(mutli_config_args
-            --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
+    get_target_property(uses_automoc ${target} AUTOMOC)
+    set(automoc_args)
+    set(automoc_dependencies)
+    #Handle automoc generated data
+    if (uses_automoc)
+        # Tell automoc to output json files)
+        set_property(TARGET "${target}" APPEND PROPERTY
+            AUTOMOC_MOC_OPTIONS "--output-json"
         )
-    else()
-        set(cmake_autogen_cache_file
-            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache_$<CONFIG>.txt")
-        set(mutli_config_args
-            --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include_$<CONFIG>"
-            "--cmake-multi-config")
+
+        if(CMAKE_BUILD_TYPE)
+            set(cmake_autogen_cache_file
+                "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
+            set(mutli_config_args
+                --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
+            )
+        else()
+            set(cmake_autogen_cache_file
+                "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache_$<CONFIG>.txt")
+            set(mutli_config_args
+                --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include_$<CONFIG>"
+                "--cmake-multi-config")
+        endif()
+
+        set(cmake_autogen_info_file
+            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
+
+        add_custom_target(${target}_automoc_json_extraction
+            DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+            BYPRODUCTS ${type_list_file}
+            COMMAND
+                ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+                --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
+                --cmake-autogen-info-file "${cmake_autogen_info_file}"
+                --output-file-path "${type_list_file}"
+                ${mutli_config_args}
+            COMMENT "Running Automoc file extraction"
+            COMMAND_EXPAND_LISTS
+        )
+        add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
+        set(automoc_args "@${type_list_file}")
+        set(automoc_dependencies "${type_list_file}")
     endif()
 
-    set(cmake_autogen_info_file
-        "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
-    set(type_list_file "${target_binary_dir}/meta_types/json_file_list.txt")
+    set(manual_args)
+    set(manual_dependencies)
+    if(arg_MANUAL_MOC_JSON_FILES)
+        list(REMOVE_DUPLICATES arg_MANUAL_MOC_JSON_FILES)
+        file(GENERATE
+            OUTPUT ${type_list_file_manual}
+            CONTENT "$<JOIN:$<GENEX_EVAL:${arg_MANUAL_MOC_JSON_FILES}>,\n>"
+        )
+        list(APPEND manual_dependencies ${arg_MANUAL_MOC_JSON_FILES} ${type_list_file_manual})
+        set(manual_args "@${type_list_file_manual}")
+    endif()
 
-    add_custom_target(${target}_automoc_json_extraction
-        BYPRODUCTS ${type_list_file}
-        COMMAND
-            ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
-            --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
-            --cmake-autogen-info-file "${cmake_autogen_info_file}"
-            --output-file-path "${type_list_file}"
-            ${mutli_config_args}
-        COMMENT "Running Automoc file extraction"
-        COMMAND_EXPAND_LISTS
-    )
-
-    add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
+    if (NOT manual_args AND NOT automoc_args)
+        message(FATAL_ERROR "Metatype generation requires either the use of AUTOMOC or a manual list of generated json files")
+    endif()
 
     if (CMAKE_BUILD_TYPE)
         string(TOLOWER ${target}_${CMAKE_BUILD_TYPE} target_lowercase)
@@ -766,53 +713,84 @@ function(qt6_generate_meta_types_json_file target)
 
     set(metatypes_file_name "qt6${target_lowercase}_metatypes.json")
     set(metatypes_file "${target_binary_dir}/meta_types/${metatypes_file_name}")
+    set(metatypes_file_gen "${target_binary_dir}/meta_types/${metatypes_file_name}.gen")
 
     set(metatypes_dep_file_name "qt6${target_lowercase}_metatypes_dep.txt")
     set(metatypes_dep_file "${target_binary_dir}/meta_types/${metatypes_dep_file_name}")
 
-    add_custom_command(OUTPUT ${metatypes_file}
-        DEPENDS ${type_list_file}
+    # Due to generated source file dependency rules being tied to the directory
+    # scope in which they are created it is not possible for other targets which
+    # are defined in a separate scope to see these rules. This leads to failures
+    # in locating the generated source files.
+    # To work around this we write a dummy file to disk to make sure targets
+    # which link against the current target do not produce the error. This dummy
+    # file is then replaced with the contents of the generated file during
+    # build.
+    if (NOT EXISTS ${metatypes_file})
+        file(MAKE_DIRECTORY "${target_binary_dir}/meta_types")
+        file(TOUCH ${metatypes_file})
+    endif()
+    add_custom_command(OUTPUT ${metatypes_file_gen} ${metatypes_file}
+        DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${automoc_dependencies} ${manual_dependencies}
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc
-            -o ${metatypes_file}
-            --collect-json "@${type_list_file}"
+            -o ${metatypes_file_gen}
+            --collect-json ${automoc_args} ${manual_args}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${metatypes_file_gen}
+            ${metatypes_file}
         COMMENT "Runing automoc with --collect-json"
     )
 
-    target_sources(${target} PRIVATE ${metatypes_file})
+    # We still need to add this file as a source of Core, otherwise the file
+    # rule above is not triggered. INTERFACE_SOURCES do not properly register
+    # as dependencies to build the current target.
+    target_sources(${target} PRIVATE ${metatypes_file_gen})
+    set(metatypes_file_genex_build)
+    set(metatypes_file_genex_install)
+    if (arg_COPY_OVER_INSTALL)
+        set(metatypes_file_genex_build
+            "$<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:${arg_INSTALL_DIR}/${metatypes_file_name}>>"
+        )
+    else()
+        set(metatypes_file_genex_build
+            "$<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:${metatypes_file}>>"
+        )
+        set(metatypes_file_genex_install
+            "$<INSTALL_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:$<INSTALL_PREFIX>/${arg_INSTALL_DIR}/${metatypes_file_name}>>"
+        )
+    endif()
     set_source_files_properties(${metatypes_file} PROPERTIES HEADER_FILE_ONLY TRUE)
 
-    # Set the required properties. See documentation of
-    # qt6_generate_meta_types_dep_file()
     set_target_properties(${target} PROPERTIES
         INTERFACE_QT_MODULE_HAS_META_TYPES YES
         INTERFACE_QT_MODULE_META_TYPES_FROM_BUILD YES
         INTERFACE_QT_META_TYPES_BUILD_FILE ${metatypes_file}
-        INTERFACE_QT_META_TYPES_BUILD_DEP_FILE ${metatypes_dep_file}
-        INTERFACE_QT_META_TYPES_INSTALL_FILE "${arg_INSTALL_DIR}/${metatypes_file_name}"
-        INTERFACE_QT_META_TYPES_INSTALL_DEP_FILE "${arg_INSTALL_DIR}/${metatypes_dep_file_name}"
+        QT_MODULE_META_TYPES_FILE_GENEX_BUILD "${metatypes_file_genex_build}"
+        QT_MODULE_META_TYPES_FILE_GENEX_INSTALL "${metatypes_file_genex_install}"
     )
-
-    qt6_generate_meta_types_dep_file(${target}
-        "${metatypes_dep_file}"
-        "${metatypes_dep_file}.install"
-   )
+    target_sources(${target} INTERFACE ${metatypes_file_genex_build} ${metatypes_file_genex_install})
 
     if (arg_COPY_OVER_INSTALL)
-        add_custom_command(TARGET ${target} POST_BUILD
+        get_target_property(target_type ${target} TYPE)
+        set(command_args
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${metatypes_file}"
                 "${arg_INSTALL_DIR}/${metatypes_file_name}"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${metatypes_dep_file}.install"
-                "${arg_INSTALL_DIR}/${metatypes_dep_file_name}"
-           )
+        )
+        if (target_type STREQUAL "OBJECT_LIBRARY")
+            add_custom_target(${target}_metatypes_copy
+                DEPENDS "${metatypes_file}"
+                ${command_args}
+            )
+            add_dependencies(${target} ${target}_metatypes_copy)
+        else()
+            add_custom_command(TARGET ${target} POST_BUILD
+                ${command_args}
+            )
+        endif()
     else()
         install(FILES "${metatypes_file}"
             DESTINATION "${arg_INSTALL_DIR}"
-        )
-        install(FILES "${metatypes_dep_file}.install"
-            DESTINATION "${arg_INSTALL_DIR}"
-            RENAME "${metatypes_dep_file_name}"
         )
     endif()
 endfunction()

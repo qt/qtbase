@@ -15,16 +15,13 @@ qt_add_plugin(QOffscreenIntegrationPlugin
         qoffscreenwindow.cpp qoffscreenwindow.h
     DEFINES
         QT_NO_FOREACH
-    LIBRARIES
+    PUBLIC_LIBRARIES
+        Qt::Core
         Qt::CorePrivate
         Qt::EventDispatcherSupportPrivate
         Qt::FontDatabaseSupportPrivate
-        Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::EventDispatcherSupport
-        Qt::FontDatabaseSupport
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:offscreen.pro:<TRUE>:
@@ -36,10 +33,8 @@ qt_add_plugin(QOffscreenIntegrationPlugin
 qt_extend_target(QOffscreenIntegrationPlugin CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
     SOURCES
         qoffscreenintegration_x11.cpp qoffscreenintegration_x11.h
-    LIBRARIES
-        Qt::GlxSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::GlxSupport
+        Qt::GlxSupportPrivate
 )
 
 #### Keys ignored in scope 3:.:.:offscreen.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:

@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/network/torrent")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Widgets)
 
@@ -20,7 +22,6 @@ add_qt_gui_executable(torrent
     connectionmanager.cpp connectionmanager.h
     filemanager.cpp filemanager.h
     forms/addtorrentform.ui
-    icons.qrc
     main.cpp
     mainwindow.cpp mainwindow.h
     metainfo.cpp metainfo.h
@@ -32,8 +33,30 @@ add_qt_gui_executable(torrent
 )
 target_include_directories(torrent PUBLIC forms) # special case
 target_link_libraries(torrent PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Network
     Qt::Widgets
+)
+
+
+# Resources:
+set(icons_resource_files
+    "icons/1downarrow.png"
+    "icons/1uparrow.png"
+    "icons/bottom.png"
+    "icons/exit.png"
+    "icons/peertopeer.png"
+    "icons/player_pause.png"
+    "icons/player_play.png"
+    "icons/player_stop.png"
+)
+
+qt6_add_resources(torrent "icons"
+    PREFIX
+        "/"
+    FILES
+        ${icons_resource_files}
 )
 
 install(TARGETS torrent

@@ -18,16 +18,13 @@ qt_add_plugin(QXcbGlxIntegrationPlugin
     INCLUDE_DIRECTORIES
         ..
         ../..
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GlxSupportPrivate
-        Qt::GuiPrivate
-        Qt::XcbQpaPrivate
     PUBLIC_LIBRARIES
         Qt::Core
-        Qt::GlxSupport
+        Qt::CorePrivate
+        Qt::GlxSupportPrivate
         Qt::Gui
-        Qt::XcbQpa
+        Qt::GuiPrivate
+        Qt::XcbQpaPrivate
 )
 
 ## Scopes:

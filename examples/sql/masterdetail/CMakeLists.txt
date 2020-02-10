@@ -9,8 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/sql/masterdetail")
 
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Sql)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS Xml)
@@ -20,12 +22,27 @@ add_qt_gui_executable(masterdetail
     dialog.cpp dialog.h
     main.cpp
     mainwindow.cpp mainwindow.h
-    masterdetail.qrc
 )
 target_link_libraries(masterdetail PUBLIC
+    Qt::Core
+    Qt::Gui
     Qt::Sql
     Qt::Widgets
     Qt::Xml
+)
+
+
+# Resources:
+set(masterdetail_resource_files
+    "images/icon.png"
+    "images/image.png"
+)
+
+qt6_add_resources(masterdetail "masterdetail"
+    PREFIX
+        "/"
+    FILES
+        ${masterdetail_resource_files}
 )
 
 install(TARGETS masterdetail
