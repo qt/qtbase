@@ -960,6 +960,10 @@
             default is used.
     \row    \li thread \li Thread support is enabled. This is enabled when CONFIG
             includes \c qt, which is the default.
+    \row    \li utf8_source \li Specifies that the project's source files use the
+            UTF-8 encoding. By default, the compiler default is used.
+    \row    \li hide_symbols \li Set the default visibility of symbols in the binary
+            to hidden. By default, the compiler default is used.
     \row    \li c99 \li C99 support is enabled. This option has no effect if
             the compiler does not support C99, or can't select the C standard.
             By default, the compiler default is used.
