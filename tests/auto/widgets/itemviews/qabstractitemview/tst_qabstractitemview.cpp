@@ -151,6 +151,7 @@ private slots:
     void currentFollowsIndexWidget();
     void checkFocusAfterActivationChanges_data();
     void checkFocusAfterActivationChanges();
+    void dragSelectAfterNewPress();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2512,6 +2513,63 @@ void tst_QAbstractItemView::checkFocusAfterActivationChanges()
     QApplication::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
     QVERIFY(view->hasFocus());
+}
+
+void tst_QAbstractItemView::dragSelectAfterNewPress()
+{
+    QStandardItemModel model;
+    for (int i = 0; i < 10; ++i) {
+        QStandardItem *item = new QStandardItem(QString::number(i));
+        model.setItem(i, 0, item);
+    }
+
+    QListView view;
+    view.setFixedSize(160, 650); // Minimum width for windows with frame on Windows 8
+    view.setSelectionMode(QListView::ExtendedSelection);
+    view.setModel(&model);
+    centerOnScreen(&view);
+    moveCursorAway(&view);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QModelIndex index0 = model.index(0, 0);
+    QModelIndex index2 = model.index(2, 0);
+
+    view.setCurrentIndex(index0);
+    QCOMPARE(view.currentIndex(), index0);
+
+    // Select item 0 using a single click
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier,
+                      view.visualRect(index0).center());
+    QCOMPARE(view.currentIndex(), index0);
+
+    // Press to select item 2
+    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::ShiftModifier,
+                      view.visualRect(index2).center());
+    QCOMPARE(view.currentIndex(), index2);
+
+    // Verify that the selection worked OK
+    QModelIndexList selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 3);
+    for (int i = 0; i < 2; ++i)
+        QVERIFY(selected.contains(model.index(i, 0)));
+
+    QModelIndex index5 = model.index(5, 0);
+    const QPoint releasePos = view.visualRect(index5).center();
+    // The mouse move event has to be created manually because the QTest framework does not
+    // contain a function for mouse moves with buttons pressed
+    QMouseEvent moveEvent2(QEvent::MouseMove, releasePos, Qt::NoButton, Qt::LeftButton,
+                           Qt::ShiftModifier);
+    const bool moveEventReceived = qApp->notify(view.viewport(), &moveEvent2);
+    QVERIFY(moveEventReceived);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, releasePos);
+    QCOMPARE(view.currentIndex(), index5);
+
+    // Verify that the selection worked OK
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 6);
+    for (int i = 0; i < 5; ++i)
+        QVERIFY(selected.contains(model.index(i, 0)));
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

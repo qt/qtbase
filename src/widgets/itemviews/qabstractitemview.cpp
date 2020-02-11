@@ -1844,10 +1844,16 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
         || edit(index, NoEditTriggers, event))
         return;
 
-    if (d->selectionMode != SingleSelection)
-        topLeft = d->pressedPosition - d->offset();
-    else
+    if (d->selectionMode != SingleSelection) {
+        // Use the current selection start index if it is valid as this will be based on the
+        // start of the selection and not the last item being pressed which can be different
+        // when in extended selection
+        topLeft = d->currentSelectionStartIndex.isValid()
+                ? visualRect(d->currentSelectionStartIndex).center()
+                : d->pressedPosition - d->offset();
+    } else {
         topLeft = bottomRight;
+    }
 
     d->checkMouseMove(index);
 
