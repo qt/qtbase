@@ -59,5 +59,5 @@ qtHaveModule(gui): SUBPROGRAMS += \
     keyboard \
     mouse
 
-INCLUDEPATH += ../../../../shared/
-HEADERS += ../../../../shared/emulationdetector.h
+INCLUDEPATH += ../../../shared/
+HEADERS += ../../../shared/emulationdetector.h

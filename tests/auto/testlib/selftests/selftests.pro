@@ -2,10 +2,12 @@ TEMPLATE = subdirs
 
 !winrt: include(selftests.pri)
 
-SUBDIRS = $$SUBPROGRAMS test
+selftest.file = selftest.pro
+selftest.makefile = Makefile.selftest
+selftest.target = selftest
+
+SUBDIRS = $$SUBPROGRAMS selftest
 
 INSTALLS =
 
 QT = core
-
-
