@@ -1,0 +1,11 @@
+TAP version 13
+# tst_Pass
+ok 1 - initTestCase()
+ok 2 - testNumber1()
+ok 3 - testNumber2()
+ok 4 - testNumber3()
+ok 5 - cleanupTestCase()
+1..5
+# tests 5
+# pass 5
+# fail 0

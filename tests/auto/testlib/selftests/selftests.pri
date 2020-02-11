@@ -31,6 +31,7 @@ SUBPROGRAMS = \
      longstring \
      maxwarnings \
      multiexec \
+     pass \
      pairdiagnostics \
      printdatatags \
      printdatatagswithglobaltags \
