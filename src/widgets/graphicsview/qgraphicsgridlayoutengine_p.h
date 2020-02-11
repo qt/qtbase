@@ -89,10 +89,6 @@ public:
         return q_layoutItem->effectiveSizeHint(which, constraint);
     }
 
-    bool isHidden() const;
-
-    virtual bool isIgnored() const override;
-
     virtual void setGeometry(const QRectF &rect) override
     {
          q_layoutItem->setGeometry(rect);
@@ -100,6 +96,8 @@ public:
 
     virtual bool hasDynamicConstraint() const override;
     virtual Qt::Orientation dynamicConstraintOrientation() const override;
+
+    virtual bool isEmpty() const override;
 
     QGraphicsLayoutItem *layoutItem() const { return q_layoutItem; }
 

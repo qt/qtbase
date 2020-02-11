@@ -94,6 +94,7 @@ public:
 
     virtual void updateGeometry();
 
+    virtual bool isEmpty() const;
     QGraphicsLayoutItem *parentLayoutItem() const;
     void setParentLayoutItem(QGraphicsLayoutItem *parent);
 

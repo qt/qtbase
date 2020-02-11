@@ -45,6 +45,7 @@
 #include "qgraphicslayoutitem_p.h"
 #include "qwidget.h"
 #include "qgraphicswidget.h"
+#include "qgraphicsitem_p.h"
 
 #include <QtDebug>
 
@@ -823,6 +824,22 @@ void QGraphicsLayoutItem::updateGeometry()
     Q_D(QGraphicsLayoutItem);
     d->sizeHintCacheDirty = true;
     d->sizeHintWithConstraintCacheDirty = true;
+}
+
+/*!
+ * returns \c true if this item is empty, i.e whether it has no content and
+ * should not occupy any space.
+ *
+ * The default implementation returns true if the item has been hidden unless
+ * its size policy has retainSizeWhenHidden set to \c true
+ */
+bool QGraphicsLayoutItem::isEmpty() const
+{
+    bool isHidden = false;
+    if (QGraphicsItem *item = graphicsItem())
+        isHidden = QGraphicsItemPrivate::get(item)->explicitlyHidden;
+
+    return isHidden && !sizePolicy().retainSizeWhenHidden();
 }
 
 /*!

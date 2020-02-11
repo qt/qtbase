@@ -42,28 +42,8 @@
 #include "qgraphicslayoutitem_p.h"
 #include "qgraphicslayout_p.h"
 #include "qgraphicswidget.h"
-#include <private/qgraphicswidget_p.h>
 
 QT_BEGIN_NAMESPACE
-
-bool QGraphicsGridLayoutEngineItem::isHidden() const
-{
-    if (QGraphicsItem *item = q_layoutItem->graphicsItem())
-        return QGraphicsItemPrivate::get(item)->explicitlyHidden;
-    return false;
-}
-
-/*!
-  \internal
-
-  If this returns true, the layout will arrange just as if the item was never added to the layout.
-  (Note that this shouldn't lead to a "double spacing" where the item was hidden)
-  ### Qt6: Move to QGraphicsLayoutItem and make virtual
-*/
-bool QGraphicsGridLayoutEngineItem::isIgnored() const
-{
-    return isHidden() && !q_layoutItem->sizePolicy().retainSizeWhenHidden();
-}
 
 /*
   returns \c true if the size policy returns \c true for either hasHeightForWidth()
@@ -83,6 +63,16 @@ Qt::Orientation QGraphicsGridLayoutEngineItem::dynamicConstraintOrientation() co
         return Qt::Horizontal;
 }
 
+/*!
+  \internal
+
+  If this returns true, the layout will arrange just as if the item was never added to the layout.
+  (Note that this shouldn't lead to a "double spacing" where the item was hidden)
+*/
+bool QGraphicsGridLayoutEngineItem::isEmpty() const
+{
+    return q_layoutItem->isEmpty();
+}
 
 void QGraphicsGridLayoutEngine::setAlignment(QGraphicsLayoutItem *graphicsLayoutItem, Qt::Alignment alignment)
 {
