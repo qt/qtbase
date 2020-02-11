@@ -2936,6 +2936,142 @@ function(qt_add_cmake_library target)
 
 endfunction()
 
+#
+# This function replaces qmake's qt_helper_lib feature. It is intended to
+# compile 3rdparty libraries as part of the build.
+#
+function(qt_add_3rdparty_library target)
+    # Process arguments:
+    qt_parse_all_arguments(arg "qt_add_3rdparty_library"
+        "SHARED;MODULE;STATIC;INTERFACE;EXCEPTIONS"
+        "OUTPUT_DIRECTORY"
+        "${__default_private_args};${__default_public_args}"
+        ${ARGN}
+    )
+
+    ### Define Targets:
+    if(${arg_INTERFACE})
+        add_library("${target}" INTERFACE)
+    elseif(${arg_STATIC} OR (${arg_MODULE} AND NOT BUILD_SHARED_LIBS))
+        add_library("${target}" STATIC)
+    elseif(${arg_SHARED})
+        add_library("${target}" SHARED)
+    elseif(${arg_MODULE})
+        add_library("${target}" MODULE)
+        set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
+        set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
+
+        if(APPLE)
+            # CMake defaults to using .so extensions for loadable modules, aka plugins,
+            # but Qt plugins are actually suffixed with .dylib.
+            set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
+        endif()
+    else()
+        add_library("${target}")
+    endif()
+
+    if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
+        set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
+    endif()
+
+    qt_internal_add_qt_repo_known_module(${target})
+    qt_internal_add_target_aliases(${target})
+
+    if (ANDROID)
+        qt_android_apply_arch_suffix("${target}")
+    endif()
+
+    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+
+    if(NOT arg_HEADER_MODULE)
+        set_target_properties(${target} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+            RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+            ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+            VERSION ${PROJECT_VERSION}
+            SOVERSION ${PROJECT_VERSION_MAJOR}
+            QT_MODULE_IS_3RDPARTY_LIBRARY TRUE
+        )
+        qt_handle_multi_config_output_dirs("${target}")
+
+        set_target_properties(${target} PROPERTIES
+            OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
+        )
+    endif()
+
+    if(NOT arg_INTERFACE)
+        # This property is used for super builds with static libraries. We use
+        # it in QtPlugins.cmake.in to avoid "polluting" the dependency chain
+        # for the target in it's project directory.
+        # E.g: When we process find_package(Qt6 ... Gui) in QtDeclarative, the
+        # rules in QtPugins.cmake add all the known Gui plugins as interface
+        # dependencies. This in turn causes circular dependencies on every
+        # plugin which links against Gui. Plugin A -> GUI -> Plugin A ....
+        set_target_properties(${target} PROPERTIES QT_BUILD_PROJECT_NAME ${PROJECT_NAME})
+    endif()
+
+    if(NOT arg_EXCEPTIONS AND NOT arg_INTERFACE)
+        qt_internal_set_no_exceptions_flags("${target}")
+    endif()
+
+    qt_extend_target("${target}"
+        SOURCES ${arg_SOURCES}
+        INCLUDE_DIRECTORIES
+            ${arg_INCLUDE_DIRECTORIES}
+        PUBLIC_INCLUDE_DIRECTORIES
+            ${arg_PUBLIC_INCLUDE_DIRECTORIES}
+        PUBLIC_DEFINES
+            ${arg_PUBLIC_DEFINES}
+        DEFINES
+            ${arg_DEFINES}
+        PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES}
+        COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
+        PUBLIC_COMPILE_OPTIONS ${arg_PUBLIC_COMPILE_OPTIONS}
+        LINK_OPTIONS ${arg_LINK_OPTIONS}
+        PUBLIC_LINK_OPTIONS ${arg_PUBLIC_LINK_OPTIONS}
+        MOC_OPTIONS ${arg_MOC_OPTIONS}
+        ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
+        DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        ${install_arguments}
+    )
+
+    if(NOT BUILD_SHARED_LIBS OR arg_SHARED)
+        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
+        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+        set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
+
+        configure_package_config_file(
+            "${QT_CMAKE_DIR}/Qt3rdPartyLibraryConfig.cmake.in"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+            INSTALL_DESTINATION "${config_install_dir}"
+        )
+
+        write_basic_package_version_file(
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
+            VERSION ${PROJECT_VERSION}
+            COMPATIBILITY AnyNewerVersion
+        )
+
+        qt_install(TARGETS ${target}
+            EXPORT "${export_name}"
+            DESTINATION "${config_install_dir}"
+        )
+
+        qt_install(EXPORT ${export_name}
+            NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::"
+            DESTINATION "${config_install_dir}"
+        )
+
+        qt_internal_export_modern_cmake_config_targets_file(
+            TARGETS ${target}
+            EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+            CONFIG_INSTALL_DIR "${config_install_dir}"
+        )
+    endif()
+endfunction()
+
 function(qt_get_tool_cmake_configuration out_var)
     qt_get_main_cmake_configuration("${out_var}")
     string(TOUPPER "${${out_var}}" upper_config)

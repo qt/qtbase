@@ -327,6 +327,7 @@ def set_up_cmake_api_calls():
     api[2]["qt_add_resource"] = "qt_add_resource"
     api[2]["qt_add_qml_module"] = "qt_add_qml_module"
     api[2]["qt_add_cmake_library"] = "qt_add_cmake_library"
+    api[2]["qt_add_3rdparty_library"] = "qt_add_3rdparty_library"
 
     return api
 
@@ -2802,6 +2803,41 @@ def write_main_part(
             cm_fh.write(ignored_keys_report)
 
 
+def write_3rdparty_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
+
+    # Remove default QT libs.
+    scope._append_operation("QT", RemoveOperation(["core", "gui"]))
+
+    target_name = re.sub(r"^qt", "", scope.TARGET)
+    target_name = target_name.replace("-", "_")
+
+    library_type = ""
+
+    if "dll" in scope.get("CONFIG"):
+        library_type = "SHARED"
+    else:
+        library_type = "STATIC"
+
+    extra_lines = []
+
+    if library_type:
+        extra_lines.append(library_type)
+
+    write_main_part(
+        cm_fh,
+        target_name,
+        "Generic Library",
+        get_cmake_api_call("qt_add_3rdparty_library"),
+        scope,
+        extra_lines=extra_lines,
+        indent=indent,
+        known_libraries={},
+        extra_keys=[],
+    )
+
+    return target_name
+
+
 def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
 
     target_name = scope.TARGET
@@ -3524,6 +3560,9 @@ def handle_app_or_lib(
 
     if is_jar:
         write_jar(cm_fh, scope, indent=indent)
+    elif "qt_helper_lib" in scope.get("_LOADED"):
+        assert not is_example
+        target = write_3rdparty_library(cm_fh, scope, indent=indent)
     elif is_example:
         target = write_example(cm_fh, scope, gui, indent=indent, is_plugin=is_plugin)
     elif is_qt_plugin:
