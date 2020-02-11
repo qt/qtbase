@@ -1217,9 +1217,6 @@ void tst_QTextScriptEngine::thaiWithZWJ()
     QFont font(QStringLiteral("Waree"));
     font.setStyleStrategy(QFont::NoFontMerging);
 
-    if (QFontInfo(font).styleName() != QStringLiteral("Book"))
-        QSKIP("couldn't find 'Waree Book' font");
-
     QString s(QString::fromUtf8("\xe0\xb8\xa3\xe2\x80\x8d\xe0\xb8\xa3\xe2\x80"
                                 "\x8c\x2e\xe0\xb8\xa3\x2e\xe2\x80\x9c\xe0\xb8"
                                 "\xa3\xe2\x80\xa6\xe0\xb8\xa3\xe2\x80\x9d\xe0"
