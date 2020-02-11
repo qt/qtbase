@@ -1024,7 +1024,14 @@ function(qt_register_target_dependencies target public_libs private_libs)
         set(target_deps "")
     endif()
 
-    foreach(lib IN LISTS public_libs private_libs)
+    # Only process private dependencies if target is a static library
+    get_target_property(target_type ${target} TYPE)
+    set(lib_list ${public_libs})
+    if (target_type STREQUAL "STATIC_LIBRARY")
+        list(APPEND lib_list ${private_libs})
+    endif()
+
+    foreach(lib IN LISTS lib_list)
         if ("${lib}" MATCHES "^Qt::(.*)")
             set(lib "${CMAKE_MATCH_1}")
             if (lib STREQUAL Platform

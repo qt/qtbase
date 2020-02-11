@@ -68,9 +68,11 @@ function(qt_internal_create_module_depends_file target)
         set(arg_HEADER_MODULE OFF)
     endif()
 
-    if(NOT arg_HEADER_MODULE)
+    set(depends "")
+    if(target_type STREQUAL "STATIC_LIBRARY" AND NOT arg_HEADER_MODULE)
         get_target_property(depends "${target}" LINK_LIBRARIES)
     endif()
+
     get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
 
     # Used for collecting Qt module dependencies that should be find_package()'d in
