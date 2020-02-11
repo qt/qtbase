@@ -280,7 +280,7 @@ public:
         HotkeyField    = 0x00000032,
         Slider         = 0x00000033,
         SpinBox        = 0x00000034,
-        Canvas         = 0x00000035, // Diagram for MSAA
+        Canvas         = 0x00000035, // MSAA: ROLE_SYSTEM_DIAGRAM - The object represents a graphical image that is used to diagram data.
         Animation      = 0x00000036,
         Equation       = 0x00000037,
         ButtonDropDown = 0x00000038, // The object represents a button that expands a grid.
@@ -302,7 +302,7 @@ public:
         Notification   = 0x00000086,
 
         // IAccessible2 roles
-        // IA2_ROLE_CANVAS = 0x401, ### Qt 6 use this one instead of Canvas above
+        // IA2_ROLE_CANVAS = 0x401, // An object that can be drawn into and to manage events from the objects drawn into it
         // IA2_ROLE_CAPTION = 0x402,
         // IA2_ROLE_CHECK_MENU_ITEM = 0x403,
         ColorChooser = 0x404,
