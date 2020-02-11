@@ -309,8 +309,159 @@ Q_REQUIRED_RESULT inline bool operator==(const QVersionNumber &lhs, const QVersi
 Q_REQUIRED_RESULT inline bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
 { return QVersionNumber::compare(lhs, rhs) != 0; }
 
+class QTypeRevision;
+Q_CORE_EXPORT uint qHash(const QTypeRevision &key, uint seed = 0);
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream& operator<<(QDataStream &out, const QTypeRevision &revision);
+Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QTypeRevision &revision);
+#endif
+
+class QTypeRevision
+{
+public:
+    template<typename Integer>
+    using if_valid_segment_type = typename std::enable_if<
+            std::is_integral<Integer>::value, bool>::type;
+
+    template<typename Integer>
+    using if_valid_value_type = typename std::enable_if<
+            std::is_integral<Integer>::value
+            && (sizeof(Integer) > sizeof(quint16)
+                || (sizeof(Integer) == sizeof(quint16)
+                    && !std::is_signed<Integer>::value)), bool>::type;
+
+    template<typename Integer, if_valid_segment_type<Integer> = true>
+    static constexpr bool isValidSegment(Integer segment)
+    {
+        return segment >= Integer(0) && segment < Integer(SegmentUnknown);
+    }
+
+    static constexpr bool isValidSegment(qint8 segment) { return segment >= 0; }
+
+    template<typename Major, typename Minor,
+             if_valid_segment_type<Major> = true,
+             if_valid_segment_type<Minor> = true>
+    static constexpr QTypeRevision fromVersion(Major majorVersion, Minor minorVersion)
+    {
+        return Q_ASSERT(isValidSegment(majorVersion)),
+               Q_ASSERT(isValidSegment(minorVersion)),
+               QTypeRevision(quint8(majorVersion), quint8(minorVersion));
+    }
+
+    template<typename Major, if_valid_segment_type<Major> = true>
+    static constexpr QTypeRevision fromMajorVersion(Major majorVersion)
+    {
+        return Q_ASSERT(isValidSegment(majorVersion)),
+               QTypeRevision(quint8(majorVersion), SegmentUnknown);
+    }
+
+    template<typename Minor, if_valid_segment_type<Minor> = true>
+    static constexpr QTypeRevision fromMinorVersion(Minor minorVersion)
+    {
+        return Q_ASSERT(isValidSegment(minorVersion)),
+               QTypeRevision(SegmentUnknown, quint8(minorVersion));
+    }
+
+    template<typename Integer, if_valid_value_type<Integer> = true>
+    static constexpr QTypeRevision fromEncodedVersion(Integer value)
+    {
+        return Q_ASSERT((value & ~Integer(0xffff)) == Integer(0)),
+               QTypeRevision((value & Integer(0xff00)) >> 8, value & Integer(0xff));
+    }
+
+    static constexpr QTypeRevision zero() { return QTypeRevision(0, 0); }
+
+    constexpr QTypeRevision() = default;
+
+    constexpr bool hasMajorVersion() const { return m_majorVersion != SegmentUnknown; }
+    constexpr quint8 majorVersion() const { return m_majorVersion; }
+
+    constexpr bool hasMinorVersion() const { return m_minorVersion != SegmentUnknown; }
+    constexpr quint8 minorVersion() const { return m_minorVersion; }
+
+    constexpr bool isValid() const { return hasMajorVersion() || hasMinorVersion(); }
+
+    template<typename Integer, if_valid_value_type<Integer> = true>
+    constexpr Integer toEncodedVersion() const
+    {
+        return Integer(m_majorVersion << 8) | Integer(m_minorVersion);
+    }
+
+private:
+    enum { SegmentUnknown = quint8(~0U) };
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    constexpr QTypeRevision(quint8 major, quint8 minor)
+        : m_minorVersion(minor), m_majorVersion(major) {}
+
+    quint8 m_minorVersion = SegmentUnknown;
+    quint8 m_majorVersion = SegmentUnknown;
+#else
+    constexpr QTypeRevision(quint8 major, quint8 minor)
+        : m_majorVersion(major), m_minorVersion(minor) {}
+
+    quint8 m_majorVersion = SegmentUnknown;
+    quint8 m_minorVersion = SegmentUnknown;
+#endif
+};
+
+inline constexpr bool operator==(QTypeRevision lhs, QTypeRevision rhs)
+{
+    return lhs.toEncodedVersion<quint16>() == rhs.toEncodedVersion<quint16>();
+}
+
+inline constexpr bool operator!=(QTypeRevision lhs, QTypeRevision rhs)
+{
+    return lhs.toEncodedVersion<quint16>() != rhs.toEncodedVersion<quint16>();
+}
+
+inline constexpr bool operator<(QTypeRevision lhs, QTypeRevision rhs)
+{
+    return (!lhs.hasMajorVersion() && rhs.hasMajorVersion())
+            // non-0 major > unspecified major > major 0
+            ? rhs.majorVersion() != 0
+            : ((lhs.hasMajorVersion() && !rhs.hasMajorVersion())
+               // major 0 < unspecified major < non-0 major
+               ? lhs.majorVersion() == 0
+               : (lhs.majorVersion() != rhs.majorVersion()
+                  // both majors specified and non-0
+                  ? lhs.majorVersion() < rhs.majorVersion()
+                  : ((!lhs.hasMinorVersion() && rhs.hasMinorVersion())
+                     // non-0 minor > unspecified minor > minor 0
+                     ? rhs.minorVersion() != 0
+                     : ((lhs.hasMinorVersion() && !rhs.hasMinorVersion())
+                        // minor 0 < unspecified minor < non-0 minor
+                        ? lhs.minorVersion() == 0
+                        // both minors specified and non-0
+                        : lhs.minorVersion() < rhs.minorVersion()))));
+}
+
+inline constexpr bool operator>(QTypeRevision lhs, QTypeRevision rhs)
+{
+    return lhs != rhs && !(lhs < rhs);
+}
+
+inline constexpr bool operator<=(QTypeRevision lhs, QTypeRevision rhs)
+{
+    return lhs == rhs || lhs < rhs;
+}
+
+inline constexpr bool operator>=(QTypeRevision lhs, QTypeRevision rhs)
+{
+    return lhs == rhs || !(lhs < rhs);
+}
+
+Q_STATIC_ASSERT(sizeof(QTypeRevision) == 2);
+Q_DECLARE_TYPEINFO(QTypeRevision, Q_MOVABLE_TYPE);
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QTypeRevision &revision);
+#endif
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QVersionNumber)
+Q_DECLARE_METATYPE(QTypeRevision)
 
 #endif //QVERSIONNUMBER_H

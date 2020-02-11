@@ -189,6 +189,20 @@
                 "-ldwrite"
             ]
         },
+        "dwrite_3": {
+            "label": "DirectWrite 3",
+            "test": {
+                "main": [
+                    "IUnknown *factory = 0;",
+                    "DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3),",
+                    "                    &factory);"
+                ]
+            },
+            "headers": "dwrite_3.h",
+            "sources": [
+                "-ldwrite"
+            ]
+        },
         "drm": {
             "label": "KMS",
             "test": {
@@ -1143,6 +1157,12 @@
             "label": "DirectWrite 1",
             "emitIf": "config.win32",
             "condition": "libs.dwrite_1",
+            "output": [ "privateFeature" ]
+        },
+        "directwrite3": {
+            "label": "DirectWrite 3",
+            "emitIf": "config.win32",
+            "condition": "features.directwrite1 && libs.dwrite_3",
             "output": [ "privateFeature" ]
         },
         "directwrite2": {

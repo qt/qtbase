@@ -116,9 +116,9 @@ MainWindow::MainWindow()
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
     connect(aboutAction, &QAction::triggered, this, &MainWindow::showAboutBox);
 //! [4]
-    connect(pixelSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(pixelSizeSpinBox, &QSpinBox::valueChanged,
             delegate, &PixelDelegate::setPixelSize);
-    connect(pixelSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(pixelSizeSpinBox, &QSpinBox::valueChanged,
             this, &MainWindow::updateView);
 //! [4]
 

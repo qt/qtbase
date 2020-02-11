@@ -69,6 +69,11 @@ qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
         Qt::VulkanSupportPrivate
 )
 
+qt_extend_target(QAndroidIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::PlatformCompositorSupportPrivate
+)
+
 qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_assets
     SOURCES
         extract.cpp

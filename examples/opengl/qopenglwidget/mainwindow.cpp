@@ -134,7 +134,7 @@ MainWindow::MainWindow()
 
     connect(slider, &QAbstractSlider::valueChanged, glwidget, &GLWidget::setScaling);
     connect(transparent, &QCheckBox::toggled, glwidget, &GLWidget::setTransparent);
-    connect(updateInterval, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(updateInterval, &QSpinBox::valueChanged,
             this, &MainWindow::updateIntervalChanged);
     connect(timerBased, &QCheckBox::toggled, this, &MainWindow::timerUsageChanged);
     connect(timerBased, &QCheckBox::toggled, updateInterval, &QWidget::setEnabled);

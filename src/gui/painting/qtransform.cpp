@@ -76,20 +76,20 @@ static void nanWarning(const char *func)
             ny = FY_;   \
             break;    \
         case TxTranslate:    \
-            nx = FX_ + affine._dx;                \
-            ny = FY_ + affine._dy;                \
+            nx = FX_ + m_matrix[2][0];                \
+            ny = FY_ + m_matrix[2][1];                \
             break;                              \
         case TxScale:                           \
-            nx = affine._m11 * FX_ + affine._dx;  \
-            ny = affine._m22 * FY_ + affine._dy;  \
+            nx = m_matrix[0][0] * FX_ + m_matrix[2][0];  \
+            ny = m_matrix[1][1] * FY_ + m_matrix[2][1];  \
             break;                              \
         case TxRotate:                          \
         case TxShear:                           \
         case TxProject:                                      \
-            nx = affine._m11 * FX_ + affine._m21 * FY_ + affine._dx;        \
-            ny = affine._m12 * FX_ + affine._m22 * FY_ + affine._dy;        \
+            nx = m_matrix[0][0] * FX_ + m_matrix[1][0] * FY_ + m_matrix[2][0];        \
+            ny = m_matrix[0][1] * FX_ + m_matrix[1][1] * FY_ + m_matrix[2][1];        \
             if (t == TxProject) {                                       \
-                qreal w = (m_13 * FX_ + m_23 * FY_ + m_33);              \
+                qreal w = (m_matrix[0][2] * FX_ + m_matrix[1][2] * FY_ + m_matrix[2][2]);              \
                 if (w < qreal(Q_NEAR_CLIP)) w = qreal(Q_NEAR_CLIP);     \
                 w = 1./w;                                               \
                 nx *= w;                                                \
@@ -261,8 +261,7 @@ static void nanWarning(const char *func)
     \sa reset()
 */
 QTransform::QTransform()
-    : affine(true)
-    , m_13(0), m_23(0), m_33(1)
+    : m_matrix{ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} }
     , m_type(TxNone)
     , m_dirty(TxNone)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -282,8 +281,7 @@ QTransform::QTransform()
 QTransform::QTransform(qreal h11, qreal h12, qreal h13,
                        qreal h21, qreal h22, qreal h23,
                        qreal h31, qreal h32, qreal h33)
-    : affine(h11, h12, h21, h22, h31, h32, true)
-    , m_13(h13), m_23(h23), m_33(h33)
+    : m_matrix{ {h11, h12, h13}, {h21, h22, h23}, {h31, h32, h33} }
     , m_type(TxNone)
     , m_dirty(TxProject)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -301,8 +299,7 @@ QTransform::QTransform(qreal h11, qreal h12, qreal h13,
 */
 QTransform::QTransform(qreal h11, qreal h12, qreal h21,
                        qreal h22, qreal dx, qreal dy)
-    : affine(h11, h12, h21, h22, dx, dy, true)
-    , m_13(0), m_23(0), m_33(1)
+    : m_matrix{ {h11, h12, 0}, {h21, h22, 0}, {dx, dy, 1} }
     , m_type(TxNone)
     , m_dirty(TxShear)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -321,8 +318,7 @@ QTransform::QTransform(qreal h11, qreal h12, qreal h21,
     and 1 respectively.
  */
 QTransform::QTransform(const QMatrix &mtx)
-    : affine(mtx._m11, mtx._m12, mtx._m21, mtx._m22, mtx._dx, mtx._dy, true),
-      m_13(0), m_23(0), m_33(1)
+    : m_matrix{ {mtx._m11, mtx._m12, 0}, {mtx._m21, mtx._m22, 0}, {mtx._dx, mtx._dy, 1} }
     , m_type(TxNone)
     , m_dirty(TxShear)
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -338,17 +334,17 @@ QTransform::QTransform(const QMatrix &mtx)
 QTransform QTransform::adjoint() const
 {
     qreal h11, h12, h13,
-        h21, h22, h23,
-        h31, h32, h33;
-    h11 = affine._m22*m_33 - m_23*affine._dy;
-    h21 = m_23*affine._dx - affine._m21*m_33;
-    h31 = affine._m21*affine._dy - affine._m22*affine._dx;
-    h12 = m_13*affine._dy - affine._m12*m_33;
-    h22 = affine._m11*m_33 - m_13*affine._dx;
-    h32 = affine._m12*affine._dx - affine._m11*affine._dy;
-    h13 = affine._m12*m_23 - m_13*affine._m22;
-    h23 = m_13*affine._m21 - affine._m11*m_23;
-    h33 = affine._m11*affine._m22 - affine._m12*affine._m21;
+          h21, h22, h23,
+          h31, h32, h33;
+    h11 = m_matrix[1][1] * m_matrix[2][2] - m_matrix[1][2] * m_matrix[2][1];
+    h21 = m_matrix[1][2] * m_matrix[2][0] - m_matrix[1][0] * m_matrix[2][2];
+    h31 = m_matrix[1][0] * m_matrix[2][1] - m_matrix[1][1] * m_matrix[2][0];
+    h12 = m_matrix[0][2] * m_matrix[2][1] - m_matrix[0][1] * m_matrix[2][2];
+    h22 = m_matrix[0][0] * m_matrix[2][2] - m_matrix[0][2] * m_matrix[2][0];
+    h32 = m_matrix[0][1] * m_matrix[2][0] - m_matrix[0][0] * m_matrix[2][1];
+    h13 = m_matrix[0][1] * m_matrix[1][2] - m_matrix[0][2] * m_matrix[1][1];
+    h23 = m_matrix[0][2] * m_matrix[1][0] - m_matrix[0][0] * m_matrix[1][2];
+    h33 = m_matrix[0][0] * m_matrix[1][1] - m_matrix[0][1] * m_matrix[1][0];
 
     return QTransform(h11, h12, h13,
                       h21, h22, h23,
@@ -360,9 +356,9 @@ QTransform QTransform::adjoint() const
 */
 QTransform QTransform::transposed() const
 {
-    QTransform t(affine._m11, affine._m21, affine._dx,
-                 affine._m12, affine._m22, affine._dy,
-                 m_13, m_23, m_33, true);
+    QTransform t(m_matrix[0][0], m_matrix[1][0], m_matrix[2][0],
+                 m_matrix[0][1], m_matrix[1][1], m_matrix[2][1],
+                 m_matrix[0][2], m_matrix[1][2], m_matrix[2][2], true);
     return t;
 }
 
@@ -385,23 +381,23 @@ QTransform QTransform::inverted(bool *invertible) const
     case TxNone:
         break;
     case TxTranslate:
-        invert.affine._dx = -affine._dx;
-        invert.affine._dy = -affine._dy;
+        invert.m_matrix[2][0] = -m_matrix[2][0];
+        invert.m_matrix[2][1] = -m_matrix[2][1];
         break;
     case TxScale:
-        inv = !qFuzzyIsNull(affine._m11);
-        inv &= !qFuzzyIsNull(affine._m22);
+        inv = !qFuzzyIsNull(m_matrix[0][0]);
+        inv &= !qFuzzyIsNull(m_matrix[1][1]);
         if (inv) {
-            invert.affine._m11 = 1. / affine._m11;
-            invert.affine._m22 = 1. / affine._m22;
-            invert.affine._dx = -affine._dx * invert.affine._m11;
-            invert.affine._dy = -affine._dy * invert.affine._m22;
+            invert.m_matrix[0][0] = 1. / m_matrix[0][0];
+            invert.m_matrix[1][1] = 1. / m_matrix[1][1];
+            invert.m_matrix[2][0] = -m_matrix[2][0] * invert.m_matrix[0][0];
+            invert.m_matrix[2][1] = -m_matrix[2][1] * invert.m_matrix[1][1];
         }
         break;
-    case TxRotate:
-    case TxShear:
-        invert.affine = affine.inverted(&inv);
-        break;
+//    case TxRotate:
+//    case TxShear:
+//        invert.affine = affine.inverted(&inv);
+//        break;
     default:
         // general case
         qreal det = determinant();
@@ -442,24 +438,24 @@ QTransform &QTransform::translate(qreal dx, qreal dy)
 
     switch(inline_type()) {
     case TxNone:
-        affine._dx = dx;
-        affine._dy = dy;
+        m_matrix[2][0] = dx;
+        m_matrix[2][1] = dy;
         break;
     case TxTranslate:
-        affine._dx += dx;
-        affine._dy += dy;
+        m_matrix[2][0] += dx;
+        m_matrix[2][1] += dy;
         break;
     case TxScale:
-        affine._dx += dx*affine._m11;
-        affine._dy += dy*affine._m22;
+        m_matrix[2][0] += dx * m_matrix[0][0];
+        m_matrix[2][1] += dy * m_matrix[1][1];
         break;
     case TxProject:
-        m_33 += dx*m_13 + dy*m_23;
+        m_matrix[2][2] += dx * m_matrix[0][2] + dy * m_matrix[1][2];
         Q_FALLTHROUGH();
     case TxShear:
     case TxRotate:
-        affine._dx += dx*affine._m11 + dy*affine._m21;
-        affine._dy += dy*affine._m22 + dx*affine._m12;
+        m_matrix[2][0] += dx * m_matrix[0][0] + dy * m_matrix[1][0];
+        m_matrix[2][1] += dy * m_matrix[1][1] + dx * m_matrix[0][1];
         break;
     }
     if (m_dirty < TxTranslate)
@@ -511,21 +507,21 @@ QTransform & QTransform::scale(qreal sx, qreal sy)
     switch(inline_type()) {
     case TxNone:
     case TxTranslate:
-        affine._m11 = sx;
-        affine._m22 = sy;
+        m_matrix[0][0] = sx;
+        m_matrix[1][1] = sy;
         break;
     case TxProject:
-        m_13 *= sx;
-        m_23 *= sy;
+        m_matrix[0][2] *= sx;
+        m_matrix[1][2] *= sy;
         Q_FALLTHROUGH();
     case TxRotate:
     case TxShear:
-        affine._m12 *= sx;
-        affine._m21 *= sy;
+        m_matrix[0][1] *= sx;
+        m_matrix[1][0] *= sy;
         Q_FALLTHROUGH();
     case TxScale:
-        affine._m11 *= sx;
-        affine._m22 *= sy;
+        m_matrix[0][0] *= sx;
+        m_matrix[1][1] *= sy;
         break;
     }
     if (m_dirty < TxScale)
@@ -577,28 +573,30 @@ QTransform & QTransform::shear(qreal sh, qreal sv)
     switch(inline_type()) {
     case TxNone:
     case TxTranslate:
-        affine._m12 = sv;
-        affine._m21 = sh;
+        m_matrix[0][1] = sv;
+        m_matrix[1][0] = sh;
         break;
     case TxScale:
-        affine._m12 = sv*affine._m22;
-        affine._m21 = sh*affine._m11;
+        m_matrix[0][1] = sv*m_matrix[1][1];
+        m_matrix[1][0] = sh*m_matrix[0][0];
         break;
     case TxProject: {
-        qreal tm13 = sv*m_23;
-        qreal tm23 = sh*m_13;
-        m_13 += tm13;
-        m_23 += tm23;
+        qreal tm13 = sv * m_matrix[1][2];
+        qreal tm23 = sh * m_matrix[0][2];
+        m_matrix[0][2] += tm13;
+        m_matrix[1][2] += tm23;
     }
         Q_FALLTHROUGH();
     case TxRotate:
     case TxShear: {
-        qreal tm11 = sv*affine._m21;
-        qreal tm22 = sh*affine._m12;
-        qreal tm12 = sv*affine._m22;
-        qreal tm21 = sh*affine._m11;
-        affine._m11 += tm11; affine._m12 += tm12;
-        affine._m21 += tm21; affine._m22 += tm22;
+        qreal tm11 = sv * m_matrix[1][0];
+        qreal tm22 = sh * m_matrix[0][1];
+        qreal tm12 = sv * m_matrix[1][1];
+        qreal tm21 = sh * m_matrix[0][0];
+        m_matrix[0][0] += tm11;
+        m_matrix[0][1] += tm12;
+        m_matrix[1][0] += tm21;
+        m_matrix[1][1] += tm22;
         break;
     }
     }
@@ -653,35 +651,39 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
         switch(inline_type()) {
         case TxNone:
         case TxTranslate:
-            affine._m11 = cosa;
-            affine._m12 = sina;
-            affine._m21 = -sina;
-            affine._m22 = cosa;
+            m_matrix[0][0] = cosa;
+            m_matrix[0][1] = sina;
+            m_matrix[1][0] = -sina;
+            m_matrix[1][1] = cosa;
             break;
         case TxScale: {
-            qreal tm11 = cosa*affine._m11;
-            qreal tm12 = sina*affine._m22;
-            qreal tm21 = -sina*affine._m11;
-            qreal tm22 = cosa*affine._m22;
-            affine._m11 = tm11; affine._m12 = tm12;
-            affine._m21 = tm21; affine._m22 = tm22;
+            qreal tm11 = cosa * m_matrix[0][0];
+            qreal tm12 = sina * m_matrix[1][1];
+            qreal tm21 = -sina * m_matrix[0][0];
+            qreal tm22 = cosa * m_matrix[1][1];
+            m_matrix[0][0] = tm11;
+            m_matrix[0][1] = tm12;
+            m_matrix[1][0] = tm21;
+            m_matrix[1][1] = tm22;
             break;
         }
         case TxProject: {
-            qreal tm13 = cosa*m_13 + sina*m_23;
-            qreal tm23 = -sina*m_13 + cosa*m_23;
-            m_13 = tm13;
-            m_23 = tm23;
+            qreal tm13 = cosa * m_matrix[0][2] + sina * m_matrix[1][2];
+            qreal tm23 = -sina * m_matrix[0][2] + cosa * m_matrix[1][2];
+            m_matrix[0][2] = tm13;
+            m_matrix[1][2] = tm23;
             Q_FALLTHROUGH();
         }
         case TxRotate:
         case TxShear: {
-            qreal tm11 = cosa*affine._m11 + sina*affine._m21;
-            qreal tm12 = cosa*affine._m12 + sina*affine._m22;
-            qreal tm21 = -sina*affine._m11 + cosa*affine._m21;
-            qreal tm22 = -sina*affine._m12 + cosa*affine._m22;
-            affine._m11 = tm11; affine._m12 = tm12;
-            affine._m21 = tm21; affine._m22 = tm22;
+            qreal tm11 = cosa * m_matrix[0][0] + sina * m_matrix[1][0];
+            qreal tm12 = cosa * m_matrix[0][1] + sina * m_matrix[1][1];
+            qreal tm21 = -sina * m_matrix[0][0] + cosa * m_matrix[1][0];
+            qreal tm22 = -sina * m_matrix[0][1] + cosa * m_matrix[1][1];
+            m_matrix[0][0] = tm11;
+            m_matrix[0][1] = tm12;
+            m_matrix[1][0] = tm21;
+            m_matrix[1][1] = tm22;
             break;
         }
         }
@@ -690,11 +692,11 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
     } else {
         QTransform result;
         if (axis == Qt::YAxis) {
-            result.affine._m11 = cosa;
-            result.m_13 = -sina * inv_dist_to_plane;
+            result.m_matrix[0][0] = cosa;
+            result.m_matrix[0][2] = -sina * inv_dist_to_plane;
         } else {
-            result.affine._m22 = cosa;
-            result.m_23 = -sina * inv_dist_to_plane;
+            result.m_matrix[1][1] = cosa;
+            result.m_matrix[1][2] = -sina * inv_dist_to_plane;
         }
         result.m_type = TxProject;
         *this = result * *this;
@@ -732,35 +734,39 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
         switch(inline_type()) {
         case TxNone:
         case TxTranslate:
-            affine._m11 = cosa;
-            affine._m12 = sina;
-            affine._m21 = -sina;
-            affine._m22 = cosa;
+            m_matrix[0][0] = cosa;
+            m_matrix[0][1] = sina;
+            m_matrix[1][0] = -sina;
+            m_matrix[1][1] = cosa;
             break;
         case TxScale: {
-            qreal tm11 = cosa*affine._m11;
-            qreal tm12 = sina*affine._m22;
-            qreal tm21 = -sina*affine._m11;
-            qreal tm22 = cosa*affine._m22;
-            affine._m11 = tm11; affine._m12 = tm12;
-            affine._m21 = tm21; affine._m22 = tm22;
+            qreal tm11 = cosa * m_matrix[0][0];
+            qreal tm12 = sina * m_matrix[1][1];
+            qreal tm21 = -sina * m_matrix[0][0];
+            qreal tm22 = cosa * m_matrix[1][1];
+            m_matrix[0][0] = tm11;
+            m_matrix[0][1] = tm12;
+            m_matrix[1][0] = tm21;
+            m_matrix[1][1] = tm22;
             break;
         }
         case TxProject: {
-            qreal tm13 = cosa*m_13 + sina*m_23;
-            qreal tm23 = -sina*m_13 + cosa*m_23;
-            m_13 = tm13;
-            m_23 = tm23;
+            qreal tm13 = cosa * m_matrix[0][2] + sina * m_matrix[1][2];
+            qreal tm23 = -sina * m_matrix[0][2] + cosa * m_matrix[1][2];
+            m_matrix[0][2] = tm13;
+            m_matrix[1][2] = tm23;
             Q_FALLTHROUGH();
         }
         case TxRotate:
         case TxShear: {
-            qreal tm11 = cosa*affine._m11 + sina*affine._m21;
-            qreal tm12 = cosa*affine._m12 + sina*affine._m22;
-            qreal tm21 = -sina*affine._m11 + cosa*affine._m21;
-            qreal tm22 = -sina*affine._m12 + cosa*affine._m22;
-            affine._m11 = tm11; affine._m12 = tm12;
-            affine._m21 = tm21; affine._m22 = tm22;
+            qreal tm11 = cosa * m_matrix[0][0] + sina * m_matrix[1][0];
+            qreal tm12 = cosa * m_matrix[0][1] + sina * m_matrix[1][1];
+            qreal tm21 = -sina * m_matrix[0][0] + cosa * m_matrix[1][0];
+            qreal tm22 = -sina * m_matrix[0][1] + cosa * m_matrix[1][1];
+            m_matrix[0][0] = tm11;
+            m_matrix[0][1] = tm12;
+            m_matrix[1][0] = tm21;
+            m_matrix[1][1] = tm22;
             break;
         }
         }
@@ -769,11 +775,11 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
     } else {
         QTransform result;
         if (axis == Qt::YAxis) {
-            result.affine._m11 = cosa;
-            result.m_13 = -sina * inv_dist_to_plane;
+            result.m_matrix[0][0] = cosa;
+            result.m_matrix[0][2] = -sina * inv_dist_to_plane;
         } else {
-            result.affine._m22 = cosa;
-            result.m_23 = -sina * inv_dist_to_plane;
+            result.m_matrix[1][1] = cosa;
+            result.m_matrix[1][2] = -sina * inv_dist_to_plane;
         }
         result.m_type = TxProject;
         *this = result * *this;
@@ -788,15 +794,15 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
 */
 bool QTransform::operator==(const QTransform &o) const
 {
-    return affine._m11 == o.affine._m11 &&
-           affine._m12 == o.affine._m12 &&
-           affine._m21 == o.affine._m21 &&
-           affine._m22 == o.affine._m22 &&
-           affine._dx == o.affine._dx &&
-           affine._dy == o.affine._dy &&
-           m_13 == o.m_13 &&
-           m_23 == o.m_23 &&
-           m_33 == o.m_33;
+    return m_matrix[0][0] == o.m_matrix[0][0] &&
+           m_matrix[0][1] == o.m_matrix[0][1] &&
+           m_matrix[1][0] == o.m_matrix[1][0] &&
+           m_matrix[1][1] == o.m_matrix[1][1] &&
+           m_matrix[2][0] == o.m_matrix[2][0] &&
+           m_matrix[2][1] == o.m_matrix[2][1] &&
+           m_matrix[0][2] == o.m_matrix[0][2] &&
+           m_matrix[1][2] == o.m_matrix[1][2] &&
+           m_matrix[2][2] == o.m_matrix[2][2];
 }
 
 /*!
@@ -854,56 +860,59 @@ QTransform & QTransform::operator*=(const QTransform &o)
     case TxNone:
         break;
     case TxTranslate:
-        affine._dx += o.affine._dx;
-        affine._dy += o.affine._dy;
+        m_matrix[2][0] += o.m_matrix[2][0];
+        m_matrix[2][1] += o.m_matrix[2][1];
         break;
     case TxScale:
     {
-        qreal m11 = affine._m11*o.affine._m11;
-        qreal m22 = affine._m22*o.affine._m22;
+        qreal m11 = m_matrix[0][0] * o.m_matrix[0][0];
+        qreal m22 = m_matrix[1][1] * o.m_matrix[1][1];
 
-        qreal m31 = affine._dx*o.affine._m11 + o.affine._dx;
-        qreal m32 = affine._dy*o.affine._m22 + o.affine._dy;
+        qreal m31 = m_matrix[2][0] * o.m_matrix[0][0] + o.m_matrix[2][0];
+        qreal m32 = m_matrix[2][1] * o.m_matrix[1][1] + o.m_matrix[2][1];
 
-        affine._m11 = m11;
-        affine._m22 = m22;
-        affine._dx = m31; affine._dy = m32;
+        m_matrix[0][0] = m11;
+        m_matrix[1][1] = m22;
+        m_matrix[2][0] = m31; m_matrix[2][1] = m32;
         break;
     }
     case TxRotate:
     case TxShear:
     {
-        qreal m11 = affine._m11*o.affine._m11 + affine._m12*o.affine._m21;
-        qreal m12 = affine._m11*o.affine._m12 + affine._m12*o.affine._m22;
+        qreal m11 = m_matrix[0][0] * o.m_matrix[0][0] + m_matrix[0][1] * o.m_matrix[1][0];
+        qreal m12 = m_matrix[0][0] * o.m_matrix[0][1] + m_matrix[0][1] * o.m_matrix[1][1];
 
-        qreal m21 = affine._m21*o.affine._m11 + affine._m22*o.affine._m21;
-        qreal m22 = affine._m21*o.affine._m12 + affine._m22*o.affine._m22;
+        qreal m21 = m_matrix[1][0] * o.m_matrix[0][0] + m_matrix[1][1] * o.m_matrix[1][0];
+        qreal m22 = m_matrix[1][0] * o.m_matrix[0][1] + m_matrix[1][1] * o.m_matrix[1][1];
 
-        qreal m31 = affine._dx*o.affine._m11 + affine._dy*o.affine._m21 + o.affine._dx;
-        qreal m32 = affine._dx*o.affine._m12 + affine._dy*o.affine._m22 + o.affine._dy;
+        qreal m31 = m_matrix[2][0] * o.m_matrix[0][0] + m_matrix[2][1] * o.m_matrix[1][0] + o.m_matrix[2][0];
+        qreal m32 = m_matrix[2][0] * o.m_matrix[0][1] + m_matrix[2][1] * o.m_matrix[1][1] + o.m_matrix[2][1];
 
-        affine._m11 = m11; affine._m12 = m12;
-        affine._m21 = m21; affine._m22 = m22;
-        affine._dx = m31; affine._dy = m32;
+        m_matrix[0][0] = m11;
+        m_matrix[0][1] = m12;
+        m_matrix[1][0] = m21;
+        m_matrix[1][1] = m22;
+        m_matrix[2][0] = m31;
+        m_matrix[2][1] = m32;
         break;
     }
     case TxProject:
     {
-        qreal m11 = affine._m11*o.affine._m11 + affine._m12*o.affine._m21 + m_13*o.affine._dx;
-        qreal m12 = affine._m11*o.affine._m12 + affine._m12*o.affine._m22 + m_13*o.affine._dy;
-        qreal m13 = affine._m11*o.m_13 + affine._m12*o.m_23 + m_13*o.m_33;
+        qreal m11 = m_matrix[0][0] * o.m_matrix[0][0] + m_matrix[0][1] * o.m_matrix[1][0] + m_matrix[0][2] * o.m_matrix[2][0];
+        qreal m12 = m_matrix[0][0] * o.m_matrix[0][1] + m_matrix[0][1] * o.m_matrix[1][1] + m_matrix[0][2] * o.m_matrix[2][1];
+        qreal m13 = m_matrix[0][0] * o.m_matrix[0][2] + m_matrix[0][1] * o.m_matrix[1][2] + m_matrix[0][2] * o.m_matrix[2][2];
 
-        qreal m21 = affine._m21*o.affine._m11 + affine._m22*o.affine._m21 + m_23*o.affine._dx;
-        qreal m22 = affine._m21*o.affine._m12 + affine._m22*o.affine._m22 + m_23*o.affine._dy;
-        qreal m23 = affine._m21*o.m_13 + affine._m22*o.m_23 + m_23*o.m_33;
+        qreal m21 = m_matrix[1][0] * o.m_matrix[0][0] + m_matrix[1][1] * o.m_matrix[1][0] + m_matrix[1][2] * o.m_matrix[2][0];
+        qreal m22 = m_matrix[1][0] * o.m_matrix[0][1] + m_matrix[1][1] * o.m_matrix[1][1] + m_matrix[1][2] * o.m_matrix[2][1];
+        qreal m23 = m_matrix[1][0] * o.m_matrix[0][2] + m_matrix[1][1] * o.m_matrix[1][2] + m_matrix[1][2] * o.m_matrix[2][2];
 
-        qreal m31 = affine._dx*o.affine._m11 + affine._dy*o.affine._m21 + m_33*o.affine._dx;
-        qreal m32 = affine._dx*o.affine._m12 + affine._dy*o.affine._m22 + m_33*o.affine._dy;
-        qreal m33 = affine._dx*o.m_13 + affine._dy*o.m_23 + m_33*o.m_33;
+        qreal m31 = m_matrix[2][0] * o.m_matrix[0][0] + m_matrix[2][1] * o.m_matrix[1][0] + m_matrix[2][2] * o.m_matrix[2][0];
+        qreal m32 = m_matrix[2][0] * o.m_matrix[0][1] + m_matrix[2][1] * o.m_matrix[1][1] + m_matrix[2][2] * o.m_matrix[2][1];
+        qreal m33 = m_matrix[2][0] * o.m_matrix[0][2] + m_matrix[2][1] * o.m_matrix[1][2] + m_matrix[2][2] * o.m_matrix[2][2];
 
-        affine._m11 = m11; affine._m12 = m12; m_13 = m13;
-        affine._m21 = m21; affine._m22 = m22; m_23 = m23;
-        affine._dx = m31; affine._dy = m32; m_33 = m33;
+        m_matrix[0][0] = m11; m_matrix[0][1] = m12; m_matrix[0][2] = m13;
+        m_matrix[1][0] = m21; m_matrix[1][1] = m22; m_matrix[1][2] = m23;
+        m_matrix[2][0] = m31; m_matrix[2][1] = m32; m_matrix[2][2] = m33;
     }
     }
 
@@ -937,56 +946,57 @@ QTransform QTransform::operator*(const QTransform &m) const
     case TxNone:
         break;
     case TxTranslate:
-        t.affine._dx = affine._dx + m.affine._dx;
-        t.affine._dy += affine._dy + m.affine._dy;
+        t.m_matrix[2][0] = m_matrix[2][0] + m.m_matrix[2][0];
+        t.m_matrix[2][1] = m_matrix[2][1] + m.m_matrix[2][1];
         break;
     case TxScale:
     {
-        qreal m11 = affine._m11*m.affine._m11;
-        qreal m22 = affine._m22*m.affine._m22;
+        qreal m11 = m_matrix[0][0] * m.m_matrix[0][0];
+        qreal m22 = m_matrix[1][1] * m.m_matrix[1][1];
 
-        qreal m31 = affine._dx*m.affine._m11 + m.affine._dx;
-        qreal m32 = affine._dy*m.affine._m22 + m.affine._dy;
+        qreal m31 = m_matrix[2][0] * m.m_matrix[0][0] + m.m_matrix[2][0];
+        qreal m32 = m_matrix[2][1] * m.m_matrix[1][1] + m.m_matrix[2][1];
 
-        t.affine._m11 = m11;
-        t.affine._m22 = m22;
-        t.affine._dx = m31; t.affine._dy = m32;
+        t.m_matrix[0][0] = m11;
+        t.m_matrix[1][1] = m22;
+        t.m_matrix[2][0] = m31;
+        t.m_matrix[2][1] = m32;
         break;
     }
     case TxRotate:
     case TxShear:
     {
-        qreal m11 = affine._m11*m.affine._m11 + affine._m12*m.affine._m21;
-        qreal m12 = affine._m11*m.affine._m12 + affine._m12*m.affine._m22;
+        qreal m11 = m_matrix[0][0] * m.m_matrix[0][0] + m_matrix[0][1] * m.m_matrix[1][0];
+        qreal m12 = m_matrix[0][0] * m.m_matrix[0][1] + m_matrix[0][1] * m.m_matrix[1][1];
 
-        qreal m21 = affine._m21*m.affine._m11 + affine._m22*m.affine._m21;
-        qreal m22 = affine._m21*m.affine._m12 + affine._m22*m.affine._m22;
+        qreal m21 = m_matrix[1][0] * m.m_matrix[0][0] + m_matrix[1][1] * m.m_matrix[1][0];
+        qreal m22 = m_matrix[1][0] * m.m_matrix[0][1] + m_matrix[1][1] * m.m_matrix[1][1];
 
-        qreal m31 = affine._dx*m.affine._m11 + affine._dy*m.affine._m21 + m.affine._dx;
-        qreal m32 = affine._dx*m.affine._m12 + affine._dy*m.affine._m22 + m.affine._dy;
+        qreal m31 = m_matrix[2][0] * m.m_matrix[0][0] + m_matrix[2][1] * m.m_matrix[1][0] + m.m_matrix[2][0];
+        qreal m32 = m_matrix[2][0] * m.m_matrix[0][1] + m_matrix[2][1] * m.m_matrix[1][1] + m.m_matrix[2][1];
 
-        t.affine._m11 = m11; t.affine._m12 = m12;
-        t.affine._m21 = m21; t.affine._m22 = m22;
-        t.affine._dx = m31; t.affine._dy = m32;
+        t.m_matrix[0][0] = m11; t.m_matrix[0][1] = m12;
+        t.m_matrix[1][0] = m21; t.m_matrix[1][1] = m22;
+        t.m_matrix[2][0] = m31; t.m_matrix[2][1] = m32;
         break;
     }
     case TxProject:
     {
-        qreal m11 = affine._m11*m.affine._m11 + affine._m12*m.affine._m21 + m_13*m.affine._dx;
-        qreal m12 = affine._m11*m.affine._m12 + affine._m12*m.affine._m22 + m_13*m.affine._dy;
-        qreal m13 = affine._m11*m.m_13 + affine._m12*m.m_23 + m_13*m.m_33;
+        qreal m11 = m_matrix[0][0] * m.m_matrix[0][0] + m_matrix[0][1] * m.m_matrix[1][0] + m_matrix[0][2] * m.m_matrix[2][0];
+        qreal m12 = m_matrix[0][0] * m.m_matrix[0][1] + m_matrix[0][1] * m.m_matrix[1][1] + m_matrix[0][2] * m.m_matrix[2][1];
+        qreal m13 = m_matrix[0][0] * m.m_matrix[0][2] + m_matrix[0][1] * m.m_matrix[1][2] + m_matrix[0][2] * m.m_matrix[2][2];
 
-        qreal m21 = affine._m21*m.affine._m11 + affine._m22*m.affine._m21 + m_23*m.affine._dx;
-        qreal m22 = affine._m21*m.affine._m12 + affine._m22*m.affine._m22 + m_23*m.affine._dy;
-        qreal m23 = affine._m21*m.m_13 + affine._m22*m.m_23 + m_23*m.m_33;
+        qreal m21 = m_matrix[1][0] * m.m_matrix[0][0] + m_matrix[1][1] * m.m_matrix[1][0] + m_matrix[1][2] * m.m_matrix[2][0];
+        qreal m22 = m_matrix[1][0] * m.m_matrix[0][1] + m_matrix[1][1] * m.m_matrix[1][1] + m_matrix[1][2] * m.m_matrix[2][1];
+        qreal m23 = m_matrix[1][0] * m.m_matrix[0][2] + m_matrix[1][1] * m.m_matrix[1][2] + m_matrix[1][2] * m.m_matrix[2][2];
 
-        qreal m31 = affine._dx*m.affine._m11 + affine._dy*m.affine._m21 + m_33*m.affine._dx;
-        qreal m32 = affine._dx*m.affine._m12 + affine._dy*m.affine._m22 + m_33*m.affine._dy;
-        qreal m33 = affine._dx*m.m_13 + affine._dy*m.m_23 + m_33*m.m_33;
+        qreal m31 = m_matrix[2][0] * m.m_matrix[0][0] + m_matrix[2][1] * m.m_matrix[1][0] + m_matrix[2][2] * m.m_matrix[2][0];
+        qreal m32 = m_matrix[2][0] * m.m_matrix[0][1] + m_matrix[2][1] * m.m_matrix[1][1] + m_matrix[2][2] * m.m_matrix[2][1];
+        qreal m33 = m_matrix[2][0] * m.m_matrix[0][2] + m_matrix[2][1] * m.m_matrix[1][2] + m_matrix[2][2] * m.m_matrix[2][2];
 
-        t.affine._m11 = m11; t.affine._m12 = m12; t.m_13 = m13;
-        t.affine._m21 = m21; t.affine._m22 = m22; t.m_23 = m23;
-        t.affine._dx = m31; t.affine._dy = m32; t.m_33 = m33;
+        t.m_matrix[0][0] = m11; t.m_matrix[0][1] = m12; t.m_matrix[0][2] = m13;
+        t.m_matrix[1][0] = m21; t.m_matrix[1][1] = m22; t.m_matrix[1][2] = m23;
+        t.m_matrix[2][0] = m31; t.m_matrix[2][1] = m32; t.m_matrix[2][2] = m33;
     }
     }
 
@@ -1034,15 +1044,15 @@ QTransform QTransform::operator*(const QTransform &m) const
 */
 QTransform & QTransform::operator=(const QTransform &matrix) noexcept
 {
-    affine._m11 = matrix.affine._m11;
-    affine._m12 = matrix.affine._m12;
-    affine._m21 = matrix.affine._m21;
-    affine._m22 = matrix.affine._m22;
-    affine._dx = matrix.affine._dx;
-    affine._dy = matrix.affine._dy;
-    m_13 = matrix.m_13;
-    m_23 = matrix.m_23;
-    m_33 = matrix.m_33;
+    m_matrix[0][0] = matrix.m_matrix[0][0];
+    m_matrix[0][1] = matrix.m_matrix[0][1];
+    m_matrix[1][0] = matrix.m_matrix[1][0];
+    m_matrix[1][1] = matrix.m_matrix[1][1];
+    m_matrix[2][0] = matrix.m_matrix[2][0];
+    m_matrix[2][1] = matrix.m_matrix[2][1];
+    m_matrix[0][2] = matrix.m_matrix[0][2];
+    m_matrix[1][2] = matrix.m_matrix[1][2];
+    m_matrix[2][2] = matrix.m_matrix[2][2];
     m_type = matrix.m_type;
     m_dirty = matrix.m_dirty;
 
@@ -1060,8 +1070,8 @@ QTransform & QTransform::operator=(const QTransform &matrix) noexcept
 */
 void QTransform::reset()
 {
-    affine._m11 = affine._m22 = m_33 = 1.0;
-    affine._m12 = m_13 = affine._m21 = m_23 = affine._dx = affine._dy = 0;
+    m_matrix[0][0] = m_matrix[1][1] = m_matrix[2][2] = 1.0;
+    m_matrix[0][1] = m_matrix[0][2] = m_matrix[1][0] = m_matrix[1][2] = m_matrix[2][0] = m_matrix[2][1] = 0;
     m_type = TxNone;
     m_dirty = TxNone;
 }
@@ -1179,20 +1189,20 @@ QPoint QTransform::map(const QPoint &p) const
         y = fy;
         break;
     case TxTranslate:
-        x = fx + affine._dx;
-        y = fy + affine._dy;
+        x = fx + m_matrix[2][0];
+        y = fy + m_matrix[2][1];
         break;
     case TxScale:
-        x = affine._m11 * fx + affine._dx;
-        y = affine._m22 * fy + affine._dy;
+        x = m_matrix[0][0] * fx + m_matrix[2][0];
+        y = m_matrix[1][1] * fy + m_matrix[2][1];
         break;
     case TxRotate:
     case TxShear:
     case TxProject:
-        x = affine._m11 * fx + affine._m21 * fy + affine._dx;
-        y = affine._m12 * fx + affine._m22 * fy + affine._dy;
+        x = m_matrix[0][0] * fx + m_matrix[1][0] * fy + m_matrix[2][0];
+        y = m_matrix[0][1] * fx + m_matrix[1][1] * fy + m_matrix[2][1];
         if (t == TxProject) {
-            qreal w = 1./(m_13 * fx + m_23 * fy + m_33);
+            qreal w = 1./(m_matrix[0][2] * fx + m_matrix[1][2] * fy + m_matrix[2][2]);
             x *= w;
             y *= w;
         }
@@ -1230,20 +1240,20 @@ QPointF QTransform::map(const QPointF &p) const
         y = fy;
         break;
     case TxTranslate:
-        x = fx + affine._dx;
-        y = fy + affine._dy;
+        x = fx + m_matrix[2][0];
+        y = fy + m_matrix[2][1];
         break;
     case TxScale:
-        x = affine._m11 * fx + affine._dx;
-        y = affine._m22 * fy + affine._dy;
+        x = m_matrix[0][0] * fx + m_matrix[2][0];
+        y = m_matrix[1][1] * fy + m_matrix[2][1];
         break;
     case TxRotate:
     case TxShear:
     case TxProject:
-        x = affine._m11 * fx + affine._m21 * fy + affine._dx;
-        y = affine._m12 * fx + affine._m22 * fy + affine._dy;
+        x = m_matrix[0][0] * fx + m_matrix[1][0] * fy + m_matrix[2][0];
+        y = m_matrix[0][1] * fx + m_matrix[1][1] * fy + m_matrix[2][1];
         if (t == TxProject) {
-            qreal w = 1./(m_13 * fx + m_23 * fy + m_33);
+            qreal w = 1./(m_matrix[0][2] * fx + m_matrix[1][2] * fy + m_matrix[2][2]);
             x *= w;
             y *= w;
         }
@@ -1303,29 +1313,29 @@ QLine QTransform::map(const QLine &l) const
         y2 = fy2;
         break;
     case TxTranslate:
-        x1 = fx1 + affine._dx;
-        y1 = fy1 + affine._dy;
-        x2 = fx2 + affine._dx;
-        y2 = fy2 + affine._dy;
+        x1 = fx1 + m_matrix[2][0];
+        y1 = fy1 + m_matrix[2][1];
+        x2 = fx2 + m_matrix[2][0];
+        y2 = fy2 + m_matrix[2][1];
         break;
     case TxScale:
-        x1 = affine._m11 * fx1 + affine._dx;
-        y1 = affine._m22 * fy1 + affine._dy;
-        x2 = affine._m11 * fx2 + affine._dx;
-        y2 = affine._m22 * fy2 + affine._dy;
+        x1 = m_matrix[0][0] * fx1 + m_matrix[2][0];
+        y1 = m_matrix[1][1] * fy1 + m_matrix[2][1];
+        x2 = m_matrix[0][0] * fx2 + m_matrix[2][0];
+        y2 = m_matrix[1][1] * fy2 + m_matrix[2][1];
         break;
     case TxRotate:
     case TxShear:
     case TxProject:
-        x1 = affine._m11 * fx1 + affine._m21 * fy1 + affine._dx;
-        y1 = affine._m12 * fx1 + affine._m22 * fy1 + affine._dy;
-        x2 = affine._m11 * fx2 + affine._m21 * fy2 + affine._dx;
-        y2 = affine._m12 * fx2 + affine._m22 * fy2 + affine._dy;
+        x1 = m_matrix[0][0] * fx1 + m_matrix[1][0] * fy1 + m_matrix[2][0];
+        y1 = m_matrix[0][1] * fx1 + m_matrix[1][1] * fy1 + m_matrix[2][1];
+        x2 = m_matrix[0][0] * fx2 + m_matrix[1][0] * fy2 + m_matrix[2][0];
+        y2 = m_matrix[0][1] * fx2 + m_matrix[1][1] * fy2 + m_matrix[2][1];
         if (t == TxProject) {
-            qreal w = 1./(m_13 * fx1 + m_23 * fy1 + m_33);
+            qreal w = 1./(m_matrix[0][2] * fx1 + m_matrix[1][2] * fy1 + m_matrix[2][2]);
             x1 *= w;
             y1 *= w;
-            w = 1./(m_13 * fx2 + m_23 * fy2 + m_33);
+            w = 1./(m_matrix[0][2] * fx2 + m_matrix[1][2] * fy2 + m_matrix[2][2]);
             x2 *= w;
             y2 *= w;
         }
@@ -1362,29 +1372,29 @@ QLineF QTransform::map(const QLineF &l) const
         y2 = fy2;
         break;
     case TxTranslate:
-        x1 = fx1 + affine._dx;
-        y1 = fy1 + affine._dy;
-        x2 = fx2 + affine._dx;
-        y2 = fy2 + affine._dy;
+        x1 = fx1 + m_matrix[2][0];
+        y1 = fy1 + m_matrix[2][1];
+        x2 = fx2 + m_matrix[2][0];
+        y2 = fy2 + m_matrix[2][1];
         break;
     case TxScale:
-        x1 = affine._m11 * fx1 + affine._dx;
-        y1 = affine._m22 * fy1 + affine._dy;
-        x2 = affine._m11 * fx2 + affine._dx;
-        y2 = affine._m22 * fy2 + affine._dy;
+        x1 = m_matrix[0][0] * fx1 + m_matrix[2][0];
+        y1 = m_matrix[1][1] * fy1 + m_matrix[2][1];
+        x2 = m_matrix[0][0] * fx2 + m_matrix[2][0];
+        y2 = m_matrix[1][1] * fy2 + m_matrix[2][1];
         break;
     case TxRotate:
     case TxShear:
     case TxProject:
-        x1 = affine._m11 * fx1 + affine._m21 * fy1 + affine._dx;
-        y1 = affine._m12 * fx1 + affine._m22 * fy1 + affine._dy;
-        x2 = affine._m11 * fx2 + affine._m21 * fy2 + affine._dx;
-        y2 = affine._m12 * fx2 + affine._m22 * fy2 + affine._dy;
+        x1 = m_matrix[0][0] * fx1 + m_matrix[1][0] * fy1 + m_matrix[2][0];
+        y1 = m_matrix[0][1] * fx1 + m_matrix[1][1] * fy1 + m_matrix[2][1];
+        x2 = m_matrix[0][0] * fx2 + m_matrix[1][0] * fy2 + m_matrix[2][0];
+        y2 = m_matrix[0][1] * fx2 + m_matrix[1][1] * fy2 + m_matrix[2][1];
         if (t == TxProject) {
-            qreal w = 1./(m_13 * fx1 + m_23 * fy1 + m_33);
+            qreal w = 1./(m_matrix[0][2] * fx1 + m_matrix[1][2] * fy1 + m_matrix[2][2]);
             x1 *= w;
             y1 *= w;
-            w = 1./(m_13 * fx2 + m_23 * fy2 + m_33);
+            w = 1./(m_matrix[0][2] * fx2 + m_matrix[1][2] * fy2 + m_matrix[2][2]);
             x2 *= w;
             y2 *= w;
         }
@@ -1445,7 +1455,7 @@ QPolygonF QTransform::map(const QPolygonF &a) const
 {
     TransformationType t = inline_type();
     if (t <= TxTranslate)
-        return a.translated(affine._dx, affine._dy);
+        return a.translated(m_matrix[2][0], m_matrix[2][1]);
 
     if (t >= QTransform::TxProject)
         return mapProjective(*this, a);
@@ -1475,7 +1485,7 @@ QPolygon QTransform::map(const QPolygon &a) const
 {
     TransformationType t = inline_type();
     if (t <= TxTranslate)
-        return a.translated(qRound(affine._dx), qRound(affine._dy));
+        return a.translated(qRound(m_matrix[2][0]), qRound(m_matrix[2][1]));
 
     if (t >= QTransform::TxProject)
         return mapProjective(*this, QPolygonF(a)).toPolygon();
@@ -1524,7 +1534,7 @@ QRegion QTransform::map(const QRegion &r) const
 
     if (t == TxTranslate) {
         QRegion copy(r);
-        copy.translate(qRound(affine._dx), qRound(affine._dy));
+        copy.translate(qRound(m_matrix[2][0]), qRound(m_matrix[2][1]));
         return copy;
     }
 
@@ -1703,7 +1713,7 @@ QPainterPath QTransform::map(const QPainterPath &path) const
     QPainterPath copy = path;
 
     if (t == TxTranslate) {
-        copy.translate(affine._dx, affine._dy);
+        copy.translate(m_matrix[2][0], m_matrix[2][1]);
     } else {
         copy.detach();
         // Full xform
@@ -1743,10 +1753,10 @@ QPolygon QTransform::mapToPolygon(const QRect &rect) const
     QPolygon a(4);
     qreal x[4] = { 0, 0, 0, 0 }, y[4] = { 0, 0, 0, 0 };
     if (t <= TxScale) {
-        x[0] = affine._m11*rect.x() + affine._dx;
-        y[0] = affine._m22*rect.y() + affine._dy;
-        qreal w = affine._m11*rect.width();
-        qreal h = affine._m22*rect.height();
+        x[0] = m_matrix[0][0]*rect.x() + m_matrix[2][0];
+        y[0] = m_matrix[1][1]*rect.y() + m_matrix[2][1];
+        qreal w = m_matrix[0][0]*rect.width();
+        qreal h = m_matrix[1][1]*rect.height();
         if (w < 0) {
             w = -w;
             x[0] -= w;
@@ -1903,9 +1913,9 @@ void QTransform::setMatrix(qreal m11, qreal m12, qreal m13,
                            qreal m21, qreal m22, qreal m23,
                            qreal m31, qreal m32, qreal m33)
 {
-    affine._m11 = m11; affine._m12 = m12; m_13 = m13;
-    affine._m21 = m21; affine._m22 = m22; m_23 = m23;
-    affine._dx = m31; affine._dy = m32; m_33 = m33;
+    m_matrix[0][0] = m11; m_matrix[0][1] = m12; m_matrix[0][2] = m13;
+    m_matrix[1][0] = m21; m_matrix[1][1] = m22; m_matrix[1][2] = m23;
+    m_matrix[2][0] = m31; m_matrix[2][1] = m32; m_matrix[2][2] = m33;
     m_type = TxNone;
     m_dirty = TxProject;
 }
@@ -1922,13 +1932,13 @@ QRect QTransform::mapRect(const QRect &rect) const
 {
     TransformationType t = inline_type();
     if (t <= TxTranslate)
-        return rect.translated(qRound(affine._dx), qRound(affine._dy));
+        return rect.translated(qRound(m_matrix[2][0]), qRound(m_matrix[2][1]));
 
     if (t <= TxScale) {
-        int x = qRound(affine._m11*rect.x() + affine._dx);
-        int y = qRound(affine._m22*rect.y() + affine._dy);
-        int w = qRound(affine._m11*rect.width());
-        int h = qRound(affine._m22*rect.height());
+        int x = qRound(m_matrix[0][0] * rect.x() + m_matrix[2][0]);
+        int y = qRound(m_matrix[1][1] * rect.y() + m_matrix[2][1]);
+        int w = qRound(m_matrix[0][0] * rect.width());
+        int h = qRound(m_matrix[1][1] * rect.height());
         if (w < 0) {
             w = -w;
             x -= w;
@@ -1992,13 +2002,13 @@ QRectF QTransform::mapRect(const QRectF &rect) const
 {
     TransformationType t = inline_type();
     if (t <= TxTranslate)
-        return rect.translated(affine._dx, affine._dy);
+        return rect.translated(m_matrix[2][0], m_matrix[2][1]);
 
     if (t <= TxScale) {
-        qreal x = affine._m11*rect.x() + affine._dx;
-        qreal y = affine._m22*rect.y() + affine._dy;
-        qreal w = affine._m11*rect.width();
-        qreal h = affine._m22*rect.height();
+        qreal x = m_matrix[0][0] * rect.x() + m_matrix[2][0];
+        qreal y = m_matrix[1][1] * rect.y() + m_matrix[2][1];
+        qreal w = m_matrix[0][0] * rect.width();
+        qreal h = m_matrix[1][1] * rect.height();
         if (w < 0) {
             w = -w;
             x -= w;
@@ -2093,9 +2103,11 @@ void QTransform::map(int x, int y, int *tx, int *ty) const
   \warning If a perspective transformation has been specified,
   then the conversion will cause loss of data.
 */
-const QMatrix &QTransform::toAffine() const
+QMatrix QTransform::toAffine() const
 {
-    return affine;
+    return QMatrix(m_matrix[0][0], m_matrix[0][1],
+                   m_matrix[1][0], m_matrix[1][1],
+                   m_matrix[2][0], m_matrix[2][1]);
 }
 #endif // QT_DEPRECATED_SINCE(5, 15)
 
@@ -2118,15 +2130,15 @@ QTransform::TransformationType QTransform::type() const
 
     switch (static_cast<TransformationType>(m_dirty)) {
     case TxProject:
-        if (!qFuzzyIsNull(m_13) || !qFuzzyIsNull(m_23) || !qFuzzyIsNull(m_33 - 1)) {
+        if (!qFuzzyIsNull(m_matrix[0][2]) || !qFuzzyIsNull(m_matrix[1][2]) || !qFuzzyIsNull(m_matrix[2][2] - 1)) {
              m_type = TxProject;
              break;
         }
         Q_FALLTHROUGH();
     case TxShear:
     case TxRotate:
-        if (!qFuzzyIsNull(affine._m12) || !qFuzzyIsNull(affine._m21)) {
-            const qreal dot = affine._m11 * affine._m12 + affine._m21 * affine._m22;
+        if (!qFuzzyIsNull(m_matrix[0][1]) || !qFuzzyIsNull(m_matrix[1][0])) {
+            const qreal dot = m_matrix[0][0] * m_matrix[0][1] + m_matrix[1][0] * m_matrix[1][1];
             if (qFuzzyIsNull(dot))
                 m_type = TxRotate;
             else
@@ -2135,13 +2147,13 @@ QTransform::TransformationType QTransform::type() const
         }
         Q_FALLTHROUGH();
     case TxScale:
-        if (!qFuzzyIsNull(affine._m11 - 1) || !qFuzzyIsNull(affine._m22 - 1)) {
+        if (!qFuzzyIsNull(m_matrix[0][0] - 1) || !qFuzzyIsNull(m_matrix[1][1] - 1)) {
             m_type = TxScale;
             break;
         }
         Q_FALLTHROUGH();
     case TxTranslate:
-        if (!qFuzzyIsNull(affine._dx) || !qFuzzyIsNull(affine._dy)) {
+        if (!qFuzzyIsNull(m_matrix[2][0]) || !qFuzzyIsNull(m_matrix[2][1])) {
             m_type = TxTranslate;
             break;
         }

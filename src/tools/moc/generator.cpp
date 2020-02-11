@@ -476,7 +476,7 @@ void Generator::generateCode()
         QByteArray unqualifiedScope = p.type.left(s);
 
         // The scope may be a namespace for example, so it's only safe to include scopes that are known QObjects (QTBUG-2151)
-        QHash<QByteArray, QByteArray>::ConstIterator scopeIt;
+        QMultiHash<QByteArray, QByteArray>::ConstIterator scopeIt;
 
         QByteArray thisScope = cdef->qualified;
         do {

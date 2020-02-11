@@ -194,19 +194,19 @@ Window::Window()
 //! [12]
 
 //! [16]
-    connect(fillRuleComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(fillRuleComboBox, &QComboBox::activated,
             this, &Window::fillRuleChanged);
-    connect(fillColor1ComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(fillColor1ComboBox, &QComboBox::activated,
             this, &Window::fillGradientChanged);
-    connect(fillColor2ComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(fillColor2ComboBox, &QComboBox::activated,
             this, &Window::fillGradientChanged);
-    connect(penColorComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(penColorComboBox, &QComboBox::activated,
             this, &Window::penColorChanged);
 
     for (RenderArea *area : qAsConst(renderAreas)) {
-        connect(penWidthSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+        connect(penWidthSpinBox, &QSpinBox::valueChanged,
                 area, &RenderArea::setPenWidth);
-        connect(rotationAngleSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+        connect(rotationAngleSpinBox, &QSpinBox::valueChanged,
                 area, &RenderArea::setRotationAngle);
     }
 

@@ -117,6 +117,9 @@ struct QPodArrayOps
         this->size += int(n);
     }
 
+    template <typename ...Args>
+    void emplaceBack(Args&&... args) { this->emplace(this->end(), T(std::forward<Args>(args)...)); }
+
     void truncate(size_t newSize)
     {
         Q_ASSERT(this->isMutable());
@@ -163,16 +166,28 @@ struct QPodArrayOps
             *where++ = t;
     }
 
-    void insert(T *where, T &&t)
+    template <typename ...Args>
+    void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
+
+    template <typename ...Args>
+    void emplace(T *where, Args&&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(this->allocatedCapacity() - this->size >= 1);
 
-        ::memmove(static_cast<void *>(where + 1), static_cast<void *>(where),
-                  (static_cast<const T*>(this->end()) - where) * sizeof(T));
-        this->size += 1;
-        new (where) T(std::move(t));
+        if (where == this->end()) {
+            new (this->end()) T(std::forward<Args>(args)...);
+        } else {
+            // Preserve the value, because it might be a reference to some part of the moved chunk
+            T t(std::forward<Args>(args)...);
+
+            ::memmove(static_cast<void *>(where + 1), static_cast<void *>(where),
+                      (static_cast<const T*>(this->end()) - where) * sizeof(T));
+            *where = t;
+        }
+
+        ++this->size;
     }
 
 
@@ -287,6 +302,12 @@ struct QGenericArrayOps
             new (iter) T(t);
             ++this->size;
         }
+    }
+
+    template <typename ...Args>
+    void emplaceBack(Args&&... args)
+    {
+        this->emplace(this->end(), std::forward<Args>(args)...);
     }
 
     void truncate(size_t newSize)
@@ -444,31 +465,20 @@ struct QGenericArrayOps
         }
     }
 
-    void insert(T *where, T &&t)
+    template <typename ...Args>
+    void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
+
+    template <typename iterator, typename ...Args>
+    void emplace(iterator where, Args&&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(this->allocatedCapacity() - this->size >= 1);
 
-        // Array may be truncated at where in case of exceptions
-        T *const end = this->end();
-
-        if (where != end) {
-            // Move elements in array
-            T *readIter = end - 1;
-            T *writeIter = end;
-            new (writeIter) T(std::move(*readIter));
-            while (readIter > where) {
-                --readIter;
-                --writeIter;
-                *writeIter = std::move(*readIter);
-            }
-            *where = std::move(t);
-        } else {
-            new (where) T(std::move(t));
-        }
-
+        createInPlace(this->end(), std::forward<Args>(args)...);
         ++this->size;
+
+        std::rotate(where, this->end() - 1, this->end());
     }
 
     void erase(T *b, T *e)

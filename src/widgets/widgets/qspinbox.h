@@ -107,10 +107,6 @@ public Q_SLOTS:
 Q_SIGNALS:
     void valueChanged(int);
     void textChanged(const QString &);
-#if QT_DEPRECATED_SINCE(5, 14)
-    QT_DEPRECATED_X("Use textChanged(QString) instead")
-    void valueChanged(const QString &);
-#endif
 
 private:
     Q_DISABLE_COPY(QSpinBox)
@@ -173,10 +169,6 @@ public Q_SLOTS:
 Q_SIGNALS:
     void valueChanged(double);
     void textChanged(const QString &);
-#if QT_DEPRECATED_SINCE(5, 14)
-    QT_DEPRECATED_X("Use textChanged(QString) instead")
-    void valueChanged(const QString &);
-#endif
 
 private:
     Q_DISABLE_COPY(QDoubleSpinBox)

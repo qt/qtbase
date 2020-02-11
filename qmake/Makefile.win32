@@ -28,7 +28,7 @@ CFLAGS_PCH        = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch
 PCH_OBJECT        = qmake_pch.obj
 
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
-              -W2 -nologo -O2 \
+              -W2 -nologo -O2 -std:c++17 -Zc:__cplusplus \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac \
               -I$(SOURCE_PATH)/src/3rdparty/tinycbor/src \

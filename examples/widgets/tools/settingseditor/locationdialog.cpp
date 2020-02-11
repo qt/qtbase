@@ -115,9 +115,9 @@ LocationDialog::LocationDialog(QWidget *parent)
 
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
-    connect(formatComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(formatComboBox, &QComboBox::activated,
             this, &LocationDialog::updateLocationsTable);
-    connect(scopeComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(scopeComboBox, &QComboBox::activated,
             this, &LocationDialog::updateLocationsTable);
     connect(organizationComboBox->lineEdit(),
             &QLineEdit::editingFinished,
@@ -125,7 +125,7 @@ LocationDialog::LocationDialog(QWidget *parent)
     connect(applicationComboBox->lineEdit(),
             &QLineEdit::editingFinished,
             this, &LocationDialog::updateLocationsTable);
-    connect(applicationComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(applicationComboBox, &QComboBox::activated,
             this, &LocationDialog::updateLocationsTable);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);

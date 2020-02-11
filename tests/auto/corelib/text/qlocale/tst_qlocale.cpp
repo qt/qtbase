@@ -59,6 +59,7 @@
 #endif
 
 Q_DECLARE_METATYPE(QLocale::FormatType)
+Q_DECLARE_METATYPE(QStringView)
 
 class tst_QLocale : public QObject
 {
@@ -95,6 +96,7 @@ private slots:
     void long_long_conversion_extra();
     void testInfAndNan();
     void fpExceptions();
+    void negativeZero_data();
     void negativeZero();
     void dayOfWeek();
     void dayOfWeek_data();
@@ -1060,8 +1062,8 @@ void tst_QLocale::doubleToString_data()
 
     QTest::newRow("de_DE 3,4 f 1") << QString("de_DE") << QString("3,4")     << 3.4 << 'f' << 1;
     QTest::newRow("de_DE 3,4 f -") << QString("de_DE") << QString("3,4")     << 3.4 << 'f' << shortest;
-    QTest::newRow("de_DE 3,4 e 1") << QString("de_DE") << QString("3,4e+00") << 3.4 << 'e' << 1;
-    QTest::newRow("de_DE 3,4 e -") << QString("de_DE") << QString("3,4e+00") << 3.4 << 'e' << shortest;
+    QTest::newRow("de_DE 3,4 e 1") << QString("de_DE") << QString("3,4E+00") << 3.4 << 'e' << 1;
+    QTest::newRow("de_DE 3,4 e -") << QString("de_DE") << QString("3,4E+00") << 3.4 << 'e' << shortest;
     QTest::newRow("de_DE 3,4 g 2") << QString("de_DE") << QString("3,4")     << 3.4 << 'g' << 2;
     QTest::newRow("de_DE 3,4 g -") << QString("de_DE") << QString("3,4")     << 3.4 << 'g' << shortest;
 
@@ -1081,8 +1083,8 @@ void tst_QLocale::doubleToString_data()
 
     QTest::newRow("de_DE 0,035003945 f 9") << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'f' << 9;
     QTest::newRow("de_DE 0,035003945 f -") << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'f' << shortest;
-    QTest::newRow("de_DE 0,035003945 e 7") << QString("de_DE") << QString("3,5003945e-02") << 0.035003945 << 'e' << 7;
-    QTest::newRow("de_DE 0,035003945 e -") << QString("de_DE") << QString("3,5003945e-02") << 0.035003945 << 'e' << shortest;
+    QTest::newRow("de_DE 0,035003945 e 7") << QString("de_DE") << QString("3,5003945E-02") << 0.035003945 << 'e' << 7;
+    QTest::newRow("de_DE 0,035003945 e -") << QString("de_DE") << QString("3,5003945E-02") << 0.035003945 << 'e' << shortest;
     QTest::newRow("de_DE 0,035003945 g 8") << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'g' << 8;
     QTest::newRow("de_DE 0,035003945 g -") << QString("de_DE") << QString("0,035003945")   << 0.035003945 << 'g' << shortest;
 
@@ -1102,10 +1104,10 @@ void tst_QLocale::doubleToString_data()
 
     QTest::newRow("de_DE 0,000003945 f 9") << QString("de_DE") << QString("0,000003945") << 0.000003945 << 'f' << 9;
     QTest::newRow("de_DE 0,000003945 f -") << QString("de_DE") << QString("0,000003945") << 0.000003945 << 'f' << shortest;
-    QTest::newRow("de_DE 0,000003945 e 3") << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'e' << 3;
-    QTest::newRow("de_DE 0,000003945 e -") << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'e' << shortest;
-    QTest::newRow("de_DE 0,000003945 g 4") << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'g' << 4;
-    QTest::newRow("de_DE 0,000003945 g -") << QString("de_DE") << QString("3,945e-06")   << 0.000003945 << 'g' << shortest;
+    QTest::newRow("de_DE 0,000003945 e 3") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'e' << 3;
+    QTest::newRow("de_DE 0,000003945 e -") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'e' << shortest;
+    QTest::newRow("de_DE 0,000003945 g 4") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'g' << 4;
+    QTest::newRow("de_DE 0,000003945 g -") << QString("de_DE") << QString("3,945E-06")   << 0.000003945 << 'g' << shortest;
 
     QTest::newRow("C 12456789012 f 3")  << QString("C") << QString("12456789012.000")     << 12456789012.0 << 'f' << 3;
     QTest::newRow("C 12456789012 e 13") << QString("C") << QString("1.2456789012000e+10") << 12456789012.0 << 'e' << 13;
@@ -1122,8 +1124,8 @@ void tst_QLocale::doubleToString_data()
 
     QTest::newRow("de_DE 12456789012 f 0")  << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'f' << 0;
     QTest::newRow("de_DE 12456789012 f -")  << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'f' << shortest;
-    QTest::newRow("de_DE 12456789012 e 10") << QString("de_DE") << QString("1,2456789012e+10") << 12456789012.0 << 'e' << 10;
-    QTest::newRow("de_DE 12456789012 e -")  << QString("de_DE") << QString("1,2456789012e+10") << 12456789012.0 << 'e' << shortest;
+    QTest::newRow("de_DE 12456789012 e 10") << QString("de_DE") << QString("1,2456789012E+10") << 12456789012.0 << 'e' << 10;
+    QTest::newRow("de_DE 12456789012 e -")  << QString("de_DE") << QString("1,2456789012E+10") << 12456789012.0 << 'e' << shortest;
     QTest::newRow("de_DE 12456789012 g 11") << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'g' << 11;
     QTest::newRow("de_DE 12456789012 g -")  << QString("de_DE") << QString("12.456.789.012")   << 12456789012.0 << 'g' << shortest;
 }
@@ -1422,13 +1424,29 @@ void tst_QLocale::fpExceptions()
 #endif
 }
 
+void tst_QLocale::negativeZero_data()
+{
+    QTest::addColumn<QLocale::Language>("language");
+    QTest::addColumn<QLocale::Script>("script");
+    QTest::addColumn<QLocale::Country>("territory");
+    QTest::addColumn<QStringView>("expect");
+
+    QTest::newRow("C")
+        << QLocale::C << QLocale::AnyScript << QLocale::AnyCountry
+        << QStringView(u"0");
+    QTest::newRow("Arabic")
+        << QLocale::Arabic << QLocale::ArabicScript << QLocale::AnyCountry
+        << QStringView(u"\u0660");
+}
+
 void tst_QLocale::negativeZero()
 {
-    double negativeZero( 0.0 ); // Initialise to zero.
-    uchar *ptr = (uchar *)&negativeZero;
-    ptr[QSysInfo::ByteOrder == QSysInfo::BigEndian ? 0 : 7] = 0x80;
-    QString s = QString::number(negativeZero);
-    QCOMPARE(s, QString("0"));
+    QFETCH(QLocale::Language, language);
+    QFETCH(QLocale::Script, script);
+    QFETCH(QLocale::Country, territory);
+    QFETCH(QStringView, expect);
+    QLocale locale(language, script, territory);
+    QCOMPARE(locale.toString(std::copysign(0.0, -1.0)), expect);
 }
 
 void tst_QLocale::dayOfWeek_data()

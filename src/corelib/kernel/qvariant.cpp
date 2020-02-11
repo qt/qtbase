@@ -972,7 +972,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             const QVariantMap *map = v_cast<QVariantMap>(d);
             const auto end = map->end();
             for (auto it = map->begin(); it != end; ++it)
-                static_cast<QMultiHash<QString, QVariant> *>(hash)->insert(it.key(), it.value());
+                hash->insert(it.key(), it.value());
 #ifndef QT_BOOTSTRAPPED
         } else if (d->type == QMetaType::QCborValue) {
             if (!v_cast<QCborValue>(d)->isMap())
@@ -2471,6 +2471,8 @@ static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
     QMetaType::QBitArray,
 #if QT_CONFIG(shortcut)
     QMetaType::QKeySequence,
+#else
+    0, // QKeySequence
 #endif
     QMetaType::QPen,
     QMetaType::LongLong,

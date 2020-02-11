@@ -167,7 +167,7 @@ PreviewForm::PreviewForm(QWidget *parent)
         new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     okButton = buttonBox->button(QDialogButtonBox::Ok);
 
-    connect(encodingComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(encodingComboBox, &QComboBox::activated,
             this, &PreviewForm::updateTextEdit);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);

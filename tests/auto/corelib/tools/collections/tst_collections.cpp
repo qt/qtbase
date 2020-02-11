@@ -1551,12 +1551,12 @@ void tst_Collections::hash()
     }
 
     {
-        QHash<int, QString> hash1, hash2;
-        hash1.insertMulti(1, "Alpha");
-        hash1.insertMulti(1, "Gamma");
-        hash2.insertMulti(1, "Beta");
-        hash2.insertMulti(1, "Gamma");
-        hash2.insertMulti(1, "Gamma");
+        QMultiHash<int, QString> hash1, hash2;
+        hash1.insert(1, "Alpha");
+        hash1.insert(1, "Gamma");
+        hash2.insert(1, "Beta");
+        hash2.insert(1, "Gamma");
+        hash2.insert(1, "Gamma");
 
         hash1.unite(hash2);
         QCOMPARE(hash1.size(), 5);
@@ -1985,15 +1985,6 @@ void tst_Collections::qstring()
     QVERIFY(null.mid(0).isNull());
     QVERIFY(null.isNull());
     QVERIFY(!nonNull.isNull());
-
-#if QT_DEPRECATED_SINCE(5, 9)
-    QVERIFY(null == QString::null);
-    QVERIFY(QString::null  == null);
-    QVERIFY(nonNull != QString::null);
-    QVERIFY(QString::null != nonNull);
-    QVERIFY(null == nonNull);
-    QVERIFY(QString::null == QString::null);
-#endif
 
     QString fill = "123";
     fill.fill('a');
@@ -2710,8 +2701,10 @@ void testMapLikeStlIterators()
     QString t;
     fake.insert(k, t);
 
-    typename Container::iterator i1 = fake.begin(), i2 = i1 + 1;
-    typename Container::const_iterator c1 = i1, c2 = c1 + 1;
+    typename Container::iterator i1 = fake.begin(), i2 = i1;
+    ++i2;
+    typename Container::const_iterator c1 = i1, c2 = c1;
+    ++c2;
 
     QVERIFY(i1 == i1);
     QVERIFY(i1 == c1);
@@ -2721,8 +2714,6 @@ void testMapLikeStlIterators()
     QVERIFY(i2 == c2);
     QVERIFY(c2 == i2);
     QVERIFY(c2 == c2);
-    QVERIFY(1 + i1 == i1 + 1);
-    QVERIFY(1 + c1 == c1 + 1);
 
     QVERIFY(i1 != i2);
     QVERIFY(i1 != c2);
@@ -2933,10 +2924,6 @@ void instantiateMutableIterationContainer()
     it = container.begin();
     it = container.end();
     Q_UNUSED(it)
-
-    // QSet lacks count(T).
-    const ValueType value = ValueType();
-    container.count(value);
 }
 
 template <typename ContainerType, typename ValueType>
@@ -2944,10 +2931,9 @@ void instantiateSequence()
 {
     instantiateMutableIterationContainer<ContainerType, ValueType>();
 
-// QVector lacks removeAll(T)
-//    ValueType value = ValueType();
-//    ContainerType container;
-//    container.removeAll(value);
+    ValueType value = ValueType();
+    ContainerType container;
+    container.removeAll(value);
 }
 
 template <typename ContainerType, typename ValueType>
@@ -3020,11 +3006,10 @@ void instantiatePairAssociative()
     constContainer.keys();
     container.remove(key);
     container.take(key);
-    container.unite(constContainer);
+    container.insert(constContainer);
     container.value(key);
     container.value(key, value);
     container.values();
-    container.values(key);
     container[key];
     const int foo = constContainer[key];
     Q_UNUSED(foo);

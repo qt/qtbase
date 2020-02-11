@@ -413,16 +413,8 @@ void QAbstractButtonPrivate::emitClicked()
     QPointer<QAbstractButton> guard(q);
     emit q->clicked(checked);
 #if QT_CONFIG(buttongroup)
-    if (guard && group) {
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit group->buttonClicked(group->id(q));
-        if (guard && group)
-QT_WARNING_POP
-#endif
-            emit group->buttonClicked(q);
-    }
+    if (guard && group)
+        emit group->buttonClicked(q);
 #endif
 }
 
@@ -432,16 +424,8 @@ void QAbstractButtonPrivate::emitPressed()
     QPointer<QAbstractButton> guard(q);
     emit q->pressed();
 #if QT_CONFIG(buttongroup)
-    if (guard && group) {
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit group->buttonPressed(group->id(q));
-        if (guard && group)
-QT_WARNING_POP
-#endif
-            emit group->buttonPressed(q);
-    }
+    if (guard && group)
+        emit group->buttonPressed(q);
 #endif
 }
 
@@ -451,16 +435,8 @@ void QAbstractButtonPrivate::emitReleased()
     QPointer<QAbstractButton> guard(q);
     emit q->released();
 #if QT_CONFIG(buttongroup)
-    if (guard && group) {
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit group->buttonReleased(group->id(q));
-        if (guard && group)
-QT_WARNING_POP
-#endif
-            emit group->buttonReleased(q);
-    }
+    if (guard && group)
+        emit group->buttonReleased(q);
 #endif
 }
 
@@ -470,16 +446,8 @@ void QAbstractButtonPrivate::emitToggled(bool checked)
     QPointer<QAbstractButton> guard(q);
     emit q->toggled(checked);
 #if QT_CONFIG(buttongroup)
-    if (guard && group) {
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit group->buttonToggled(group->id(q), checked);
-        if (guard && group)
-QT_WARNING_POP
-#endif
-            emit group->buttonToggled(q, checked);
-    }
+    if (guard && group)
+        emit group->buttonToggled(q, checked);
 #endif
 }
 

@@ -214,7 +214,7 @@ public:
 };
 template <typename T>
 class QTypeInfo<QStyleSheetStyleCaches::Tampered<T>>
-    : QTypeInfoMerger<QStyleSheetStyleCaches::Tampered<T>, T> {};
+    : public QTypeInfoMerger<QStyleSheetStyleCaches::Tampered<T>, T> {};
 
 
 // Returns a QStyleSheet from the given style.

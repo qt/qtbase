@@ -45,6 +45,10 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 
+#if QT_CONFIG(opengl)
+#include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QWindowsGdiIntegrationPrivate
@@ -73,7 +77,11 @@ QPlatformPixmap *QWindowsGdiIntegration::createPlatformPixmap(QPlatformPixmap::P
 
 QPlatformBackingStore *QWindowsGdiIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QWindowsBackingStore(window);
+    auto *backingStore = new QWindowsBackingStore(window);
+#ifndef QT_NO_OPENGL
+    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
+#endif
+    return backingStore;
 }
 
 QT_END_NAMESPACE

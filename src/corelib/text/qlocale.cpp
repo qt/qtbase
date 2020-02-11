@@ -791,28 +791,6 @@ const QLocaleData *QLocaleData::c()
     return c_data;
 }
 
-static inline QString getLocaleData(const ushort *data, int size)
-{
-    return size > 0 ? QString::fromRawData(reinterpret_cast<const QChar *>(data), size) : QString();
-}
-
-static QString getLocaleListData(const ushort *data, int size, int index)
-{
-    static const ushort separator = ';';
-    while (index && size > 0) {
-        while (*data != separator)
-            ++data, --size;
-        --index;
-        ++data;
-        --size;
-    }
-    const ushort *end = data;
-    while (size > 0 && *end != separator)
-        ++end, --size;
-    return getLocaleData(data, end - data);
-}
-
-
 #ifndef QT_NO_DATASTREAM
 QDataStream &operator<<(QDataStream &ds, const QLocale &l)
 {
@@ -1130,31 +1108,24 @@ QString QLocale::createSeparatedList(const QStringList &list) const
 #endif
 
     const int size = list.size();
-    if (size == 1) {
-        return list.at(0);
-    } else if (size == 2) {
-        QString format = getLocaleData(
-            list_pattern_part_data + d->m_data->m_list_pattern_part_two_idx,
-            d->m_data->m_list_pattern_part_two_size);
-        return format.arg(list.at(0), list.at(1));
-    } else if (size > 2) {
-        QString formatStart = getLocaleData(
-            list_pattern_part_data + d->m_data->m_list_pattern_part_start_idx,
-            d->m_data->m_list_pattern_part_start_size);
-        QString formatMid = getLocaleData(
-            list_pattern_part_data + d->m_data->m_list_pattern_part_mid_idx,
-            d->m_data->m_list_pattern_part_mid_size);
-        QString formatEnd = getLocaleData(
-            list_pattern_part_data + d->m_data->m_list_pattern_part_end_idx,
-            d->m_data->m_list_pattern_part_end_size);
-        QString result = formatStart.arg(list.at(0), list.at(1));
-        for (int i = 2; i < size - 1; ++i)
-            result = formatMid.arg(result, list.at(i));
-        result = formatEnd.arg(result, list.at(size - 1));
-        return result;
-    }
+    if (size < 1)
+        return QString();
 
-    return QString();
+    if (size == 1)
+        return list.at(0);
+
+    if (size == 2)
+        return d->m_data->pairListPattern().getData(
+            list_pattern_part_data).arg(list.at(0), list.at(1));
+
+    QStringView formatStart = d->m_data->startListPattern().viewData(list_pattern_part_data);
+    QStringView formatMid = d->m_data->midListPattern().viewData(list_pattern_part_data);
+    QStringView formatEnd = d->m_data->endListPattern().viewData(list_pattern_part_data);
+    QString result = formatStart.arg(list.at(0), list.at(1));
+    for (int i = 2; i < size - 1; ++i)
+        result = formatMid.arg(result, list.at(i));
+    result = formatEnd.arg(result, list.at(size - 1));
+    return result;
 }
 
 /*!
@@ -2251,18 +2222,10 @@ QString QLocale::dateFormat(FormatType format) const
     }
 #endif
 
-    quint32 idx, size;
-    switch (format) {
-    case LongFormat:
-        idx = d->m_data->m_long_date_format_idx;
-        size = d->m_data->m_long_date_format_size;
-        break;
-    default:
-        idx = d->m_data->m_short_date_format_idx;
-        size = d->m_data->m_short_date_format_size;
-        break;
-    }
-    return getLocaleData(date_format_data + idx, size);
+    return (format == LongFormat
+            ? d->m_data->longDateFormat()
+            : d->m_data->shortDateFormat()
+           ).getData(date_format_data);
 }
 
 /*!
@@ -2289,18 +2252,10 @@ QString QLocale::timeFormat(FormatType format) const
     }
 #endif
 
-    quint32 idx, size;
-    switch (format) {
-    case LongFormat:
-        idx = d->m_data->m_long_time_format_idx;
-        size = d->m_data->m_long_time_format_size;
-        break;
-    default:
-        idx = d->m_data->m_short_time_format_idx;
-        size = d->m_data->m_short_time_format_size;
-        break;
-    }
-    return getLocaleData(time_format_data + idx, size);
+    return (format == LongFormat
+            ? d->m_data->longTimeFormat()
+            : d->m_data->shortTimeFormat()
+           ).getData(time_format_data);
 }
 
 /*!
@@ -2869,24 +2824,21 @@ static QString rawMonthName(const QCalendarLocale &localeData,
                             const ushort *monthsData, int month,
                             QLocale::FormatType type)
 {
-    quint32 idx, size;
+    QLocaleData::DataRange range;
     switch (type) {
     case QLocale::LongFormat:
-       idx = localeData.m_long.index;
-       size = localeData.m_long.size;
-       break;
+        range = localeData.longMonth();
+        break;
     case QLocale::ShortFormat:
-       idx = localeData.m_short.index;
-       size = localeData.m_short.size;
-       break;
+        range = localeData.shortMonth();
+        break;
     case QLocale::NarrowFormat:
-       idx = localeData.m_narrow.index;
-       size = localeData.m_narrow.size;
-       break;
+        range = localeData.narrowMonth();
+        break;
     default:
-       return QString();
+        return QString();
     }
-    return getLocaleListData(monthsData + idx, size, month - 1);
+    return range.getListEntry(monthsData, month - 1);
 }
 
 /*!
@@ -2897,24 +2849,21 @@ static QString rawStandaloneMonthName(const QCalendarLocale &localeData,
                                       const ushort *monthsData, int month,
                                       QLocale::FormatType type)
 {
-    quint32 idx, size;
+    QLocaleData::DataRange range;
     switch (type) {
     case QLocale::LongFormat:
-        idx = localeData.m_standalone_long.index;
-        size = localeData.m_standalone_long.size;
+        range = localeData.longMonthStandalone();
         break;
     case QLocale::ShortFormat:
-        idx = localeData.m_standalone_short.index;
-        size = localeData.m_standalone_short.size;
+        range = localeData.shortMonthStandalone();
         break;
     case QLocale::NarrowFormat:
-        idx = localeData.m_standalone_narrow.index;
-        size = localeData.m_standalone_narrow.size;
+        range = localeData.narrowMonthStandalone();
         break;
     default:
         return QString();
     }
-    QString name = getLocaleListData(monthsData + idx, size, month - 1);
+    QString name = range.getListEntry(monthsData, month - 1);
     return name.isEmpty() ? rawMonthName(localeData, monthsData, month, type) : name;
 }
 
@@ -2925,24 +2874,21 @@ static QString rawStandaloneMonthName(const QCalendarLocale &localeData,
 static QString rawWeekDayName(const QLocaleData *data, const int day,
                               QLocale::FormatType type)
 {
-    quint32 idx, size;
+    QLocaleData::DataRange range;
     switch (type) {
     case QLocale::LongFormat:
-        idx = data->m_long_day_names_idx;
-        size = data->m_long_day_names_size;
+        range = data->longDayNames();
         break;
     case QLocale::ShortFormat:
-        idx = data->m_short_day_names_idx;
-        size = data->m_short_day_names_size;
+        range = data->shortDayNames();
         break;
     case QLocale::NarrowFormat:
-        idx = data->m_narrow_day_names_idx;
-        size = data->m_narrow_day_names_size;
+        range = data->narrowDayNames();
         break;
     default:
         return QString();
     }
-    return getLocaleListData(days_data + idx, size, day == 7 ? 0 : day);
+    return range.getListEntry(days_data, day == 7 ? 0 : day);
 }
 
 /*!
@@ -2952,24 +2898,21 @@ static QString rawWeekDayName(const QLocaleData *data, const int day,
 static QString rawStandaloneWeekDayName(const QLocaleData *data, const int day,
                                         QLocale::FormatType type)
 {
-    quint32 idx, size;
+    QLocaleData::DataRange range;
     switch (type) {
     case QLocale::LongFormat:
-        idx = data->m_standalone_long_day_names_idx;
-        size = data->m_standalone_long_day_names_size;
+        range =data->longDayNamesStandalone();
         break;
     case QLocale::ShortFormat:
-        idx = data->m_standalone_short_day_names_idx;
-        size = data->m_standalone_short_day_names_size;
+        range = data->shortDayNamesStandalone();
         break;
     case QLocale::NarrowFormat:
-        idx = data->m_standalone_narrow_day_names_idx;
-        size = data->m_standalone_narrow_day_names_size;
+        range = data->narrowDayNamesStandalone();
         break;
     default:
         return QString();
     }
-    QString name = getLocaleListData(days_data + idx, size, day == 7 ? 0 : day);
+    QString name = range.getListEntry(days_data, day == 7 ? 0 : day);
     if (name.isEmpty())
         return rawWeekDayName(data, day, type);
     return name;
@@ -3253,7 +3196,7 @@ QString QLocale::amText() const
             return res.toString();
     }
 #endif
-    return getLocaleData(am_data + d->m_data->m_am_idx, d->m_data->m_am_size);
+    return d->m_data->anteMeridiem().getData(am_data);
 }
 
 /*!
@@ -3273,7 +3216,7 @@ QString QLocale::pmText() const
             return res.toString();
     }
 #endif
-    return getLocaleData(pm_data + d->m_data->m_pm_idx, d->m_data->m_pm_size);
+    return d->m_data->postMeridiem().getData(pm_data);
 }
 
 // Another intrusion from QCalendar, using some of the tools above:
@@ -3885,7 +3828,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             if (decpt_idx != -1 || exponent_idx != -1)
                 return false;
             decpt_idx = idx;
-        } else if (out == 'e' || out == 'E') {
+        } else if (out == 'e') {
             exponent_idx = idx;
         }
 
@@ -3932,7 +3875,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
                 // don't add the group separator
                 ++idx;
                 continue;
-            } else if (out == '.' || out == 'e' || out == 'E') {
+            } else if (out == '.' || idx == exponent_idx) {
                 // check distance from the last separator
                 // ### FIXME: Some locales allow other groupings!
                 // See https://en.wikipedia.org/wiki/Thousands_separator
@@ -4215,23 +4158,16 @@ QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
             return res.toString();
     }
 #endif
-    quint32 idx, size;
     switch (format) {
     case CurrencySymbol:
-        idx = d->m_data->m_currency_symbol_idx;
-        size = d->m_data->m_currency_symbol_size;
-        return getLocaleData(currency_symbol_data + idx, size);
+        return d->m_data->currencySymbol().getData(currency_symbol_data);
     case CurrencyDisplayName:
-        idx = d->m_data->m_currency_display_name_idx;
-        size = d->m_data->m_currency_display_name_size;
-        return getLocaleListData(currency_display_name_data + idx, size, 0);
+        return d->m_data->currencyDisplayName().getListEntry(currency_display_name_data, 0);
     case CurrencyIsoCode: {
-        int len = 0;
-        const QLocaleData *data = this->d->m_data;
-        for (; len < 3; ++len)
-            if (!data->m_currency_iso_code[len])
-                break;
-        return len ? QString::fromLatin1(data->m_currency_iso_code, len) : QString();
+        const char *code = d->m_data->m_currency_iso_code;
+        if (int len = qstrnlen(code, 3))
+            return QString::fromLatin1(code, len);
+        break;
     }
     }
     return QString();
@@ -4257,19 +4193,16 @@ QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
     }
 #endif
     const QLocalePrivate *d = this->d;
-    quint8 idx = d->m_data->m_currency_format_idx;
-    quint8 size = d->m_data->m_currency_format_size;
-    if (d->m_data->m_currency_negative_format_size && value < 0) {
-        idx = d->m_data->m_currency_negative_format_idx;
-        size = d->m_data->m_currency_negative_format_size;
+    QLocaleData::DataRange range = d->m_data->currencyFormatNegative();
+    if (!range.size || value >= 0)
+        range = d->m_data->currencyFormat();
+    else
         value = -value;
-    }
     QString str = toString(value);
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);
-    QString format = getLocaleData(currency_format_data + idx, size);
-    return format.arg(str, sym);
+    return range.getData(currency_format_data).arg(str, sym);
 }
 
 /*!
@@ -4287,15 +4220,11 @@ QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
             return res.toString();
     }
 #endif
-    const QLocaleData *data = this->d->m_data;
-    quint8 idx = data->m_currency_format_idx;
-    quint8 size = data->m_currency_format_size;
     QString str = toString(value);
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);
-    QString format = getLocaleData(currency_format_data + idx, size);
-    return format.arg(str, sym);
+    return d->m_data->currencyFormat().getData(currency_format_data).arg(str, sym);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -4330,20 +4259,16 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
             return res.toString();
     }
 #endif
-    const QLocaleData *data = this->d->m_data;
-    quint8 idx = data->m_currency_format_idx;
-    quint8 size = data->m_currency_format_size;
-    if (data->m_currency_negative_format_size && value < 0) {
-        idx = data->m_currency_negative_format_idx;
-        size = data->m_currency_negative_format_size;
+    QLocaleData::DataRange range = d->m_data->currencyFormatNegative();
+    if (!range.size || value >= 0)
+        range = d->m_data->currencyFormat();
+    else
         value = -value;
-    }
     QString str = toString(value, 'f', precision == -1 ? d->m_data->m_currency_digits : precision);
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);
-    QString format = getLocaleData(currency_format_data + idx, size);
-    return format.arg(str, sym);
+    return range.getData(currency_format_data).arg(str, sym);
 }
 
 /*!
@@ -4418,17 +4343,11 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     Q_ASSERT(power <= 6 && power >= 0);
     QString unit;
     if (power > 0) {
-        quint16 index, size;
-        if (format & DataSizeSIQuantifiers) {
-            index = d->m_data->m_byte_si_quantified_idx;
-            size = d->m_data->m_byte_si_quantified_size;
-        } else {
-            index = d->m_data->m_byte_iec_quantified_idx;
-            size = d->m_data->m_byte_iec_quantified_size;
-        }
-        unit = getLocaleListData(byte_unit_data + index, size, power - 1);
+        QLocaleData::DataRange range = (format & DataSizeSIQuantifiers)
+            ? d->m_data->byteAmountSI() : d->m_data->byteAmountIEC();
+        unit = range.getListEntry(byte_unit_data, power - 1);
     } else {
-        unit = getLocaleData(byte_unit_data + d->m_data->m_byte_idx, d->m_data->m_byte_size);
+        unit = d->m_data->byteCount().getData(byte_unit_data);
     }
 
     return number + QLatin1Char(' ') + unit;
@@ -4554,8 +4473,7 @@ QString QLocale::nativeLanguageName() const
             return res.toString();
     }
 #endif
-    return getLocaleData(endonyms_data + d->m_data->m_language_endonym_idx,
-                         d->m_data->m_language_endonym_size);
+    return d->m_data->endonymLanguage().getData(endonyms_data);
 }
 
 /*!
@@ -4575,8 +4493,7 @@ QString QLocale::nativeCountryName() const
             return res.toString();
     }
 #endif
-    return getLocaleData(endonyms_data + d->m_data->m_country_endonym_idx,
-                         d->m_data->m_country_endonym_size);
+    return d->m_data->endonymCountry().getData(endonyms_data);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

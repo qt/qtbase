@@ -905,19 +905,8 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     The item's \a index is passed. Note that this signal is sent even
     when the choice is not changed. If you need to know when the
     choice actually changes, use signal currentIndexChanged().
-
 */
 
-/*!
-    \fn void QComboBox::activated(const QString &text)
-
-    This signal is sent when the user chooses an item in the combobox.
-    The item's \a text is passed. Note that this signal is sent even
-    when the choice is not changed. If you need to know when the
-    choice actually changes, use signal currentIndexChanged().
-
-    \obsolete Use QComboBox::textActivated() instead
-*/
 /*!
     \fn void QComboBox::textActivated(const QString &text)
     \since 5.14
@@ -935,14 +924,6 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     highlighted by the user. The item's \a index is passed.
 */
 
-/*!
-    \fn void QComboBox::highlighted(const QString &text)
-
-    This signal is sent when an item in the combobox popup list is
-    highlighted by the user. The item's \a text is passed.
-
-    \obsolete Use textHighlighted() instead
-*/
 /*!
     \fn void QComboBox::textHighlighted(const QString &text)
     \since 5.14
@@ -1424,12 +1405,6 @@ void QComboBoxPrivate::emitActivated(const QModelIndex &index)
     QString text(itemText(index));
     emit q->activated(index.row());
     emit q->textActivated(text);
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    emit q->activated(text);
-QT_WARNING_POP
-#endif
 }
 
 void QComboBoxPrivate::_q_emitHighlighted(const QModelIndex &index)
@@ -1440,12 +1415,6 @@ void QComboBoxPrivate::_q_emitHighlighted(const QModelIndex &index)
     QString text(itemText(index));
     emit q->highlighted(index.row());
     emit q->textHighlighted(text);
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    emit q->highlighted(text);
-QT_WARNING_POP
-#endif
 }
 
 void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)

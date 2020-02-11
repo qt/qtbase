@@ -81,16 +81,6 @@ Q_SIGNALS:
     void buttonPressed(QAbstractButton *);
     void buttonReleased(QAbstractButton *);
     void buttonToggled(QAbstractButton *, bool);
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_X_5_15("Use QButtonGroup::buttonClicked(QAbstractButton *) instead")
-    void buttonClicked(int);
-    QT_DEPRECATED_VERSION_X_5_15("Use QButtonGroup::buttonPressed(QAbstractButton *) instead")
-    void buttonPressed(int);
-    QT_DEPRECATED_VERSION_X_5_15("Use QButtonGroup::buttonReleased(QAbstractButton *) instead")
-    void buttonReleased(int);
-    QT_DEPRECATED_VERSION_X_5_15("Use QButtonGroup::buttonToggled(QAbstractButton *, bool) instead")
-    void buttonToggled(int, bool);
-#endif
 
 private:
     Q_DISABLE_COPY(QButtonGroup)

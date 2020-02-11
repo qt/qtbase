@@ -75,9 +75,9 @@ ValidatorWidget::ValidatorWidget(QWidget *parent)
             this, &ValidatorWidget::updateDoubleValidator);
     connect(doubleMinVal, &QDoubleSpinBox::editingFinished,
             this, &ValidatorWidget::updateDoubleValidator);
-    connect(doubleDecimals, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(doubleDecimals, &QSpinBox::valueChanged,
             this, &ValidatorWidget::updateDoubleValidator);
-    connect(doubleFormat, QOverload<int>::of(&QComboBox::activated),
+    connect(doubleFormat, &QComboBox::activated,
             this, &ValidatorWidget::updateDoubleValidator);
     connect(doubleEditor, &QLineEdit::editingFinished,
             doubleLedWidget, &LEDWidget::flash);

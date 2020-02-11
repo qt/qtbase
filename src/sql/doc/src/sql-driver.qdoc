@@ -54,9 +54,7 @@
          \li Open Database Connectivity (ODBC) - Microsoft SQL Server and other
             ODBC-compliant databases
     \row \li \l{#QPSQL}{QPSQL} \li PostgreSQL (versions 7.3 and above)
-    \row \li \l{#QSQLITE2}{QSQLITE2} \li SQLite version 2 \note obsolete since Qt 5.14
     \row \li \l{#QSQLITE}{QSQLITE} \li SQLite version 3
-    \row \li \l{#QTDS}{QTDS} \li Sybase Adaptive Server \note obsolete since Qt 4.7
     \endtable
 
     SQLite is the in-process database system with the best test coverage
@@ -500,49 +498,6 @@
     in your installation package. It must be placed in the same folder
     as the application executable.
 
-    \target QTDS
-    \section2 QTDS for Sybase Adaptive Server
-
-    \note TDS is no longer used by MS Sql Server, and is superseded by
-    \l{QODBC}{ODBC}. QTDS is obsolete from Qt 4.7.
-
-    It is not possible to set the port with QSqlDatabase::setPort() due to limitations in the
-    Sybase client library. Refer to the Sybase documentation for information on how to set up
-    a Sybase client configuration file to enable connections to databases on non-default ports.
-
-    \section3 How to Build the QTDS Plugin on Unix and \macos
-
-    Under Unix, two libraries are available which support the TDS protocol:
-
-    \list
-    \li FreeTDS, a free implementation of the TDS protocol
-      (\l{http://www.freetds.org}).
-
-    \li Sybase Open Client, available from \l{https://support.sap.com}.
-    \endlist
-
-    Regardless of which library you use, the shared object file
-    \c{libsybdb.so} is needed. Set the \c SYBASE environment variable to
-    point to the directory where you installed the client library and
-    execute \c{qmake}:
-
-    \snippet code/doc_src_sql-driver.qdoc 16
-
-    \section3 How to Build the QDTS Plugin on Windows
-
-    You can either use the DB-Library supplied by Microsoft or the Sybase
-    Open Client (\l{https://support.sap.com}). Configure will try to find
-    NTWDBLIB.LIB to build the plugin:
-
-    \snippet code/doc_src_sql-driver.qdoc 17
-
-    By default, the Microsoft library is used on Windows. If you want to
-    force the use of the Sybase Open Client, you must define \c
-    Q_USE_SYBASE in \c{%QTDIR%\qtbase\src\plugins\sqldrivers\tds\qsql_tds.cpp}.
-
-    If you are not using a Microsoft compiler, replace \c nmake
-    with \c mingw32-make in the line above.
-
     \target QDB2
     \section2 QDB2 for IBM DB2 (Version 7.1 and Above)
 
@@ -570,13 +525,6 @@
 
     If you are not using a Microsoft compiler, replace \c nmake
     with \c mingw32-make in the line above.
-
-    \target QSQLITE2
-    \section2 QSQLITE2 for SQLite Version 2
-
-    The Qt SQLite 2 plugin is offered for compatibility. Whenever
-    possible, use the \l{#QSQLITE}{version 3 plugin} instead. The
-    build instructions for version 3 apply to version 2 as well.
 
     \target QSQLITE
     \section2 QSQLITE for SQLite (Version 3 and Above)

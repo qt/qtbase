@@ -280,7 +280,7 @@ public:
         QVector<int> proxy_rows;
         QVector<int> proxy_columns;
         QVector<QModelIndex> mapped_children;
-        QHash<QModelIndex, Mapping *>::const_iterator map_iter;
+        QModelIndex source_parent;
     };
 
     mutable QHash<QModelIndex, Mapping*> source_index_mapping;
@@ -321,7 +321,7 @@ public:
         const void *p = proxy_index.internalPointer();
         Q_ASSERT(p);
         QHash<QModelIndex, Mapping *>::const_iterator it =
-            static_cast<const Mapping*>(p)->map_iter;
+                source_index_mapping.constFind(static_cast<const Mapping*>(p)->source_parent);
         Q_ASSERT(it != source_index_mapping.constEnd());
         Q_ASSERT(it.value());
         return it;
@@ -517,8 +517,7 @@ IndexMap::const_iterator QSortFilterProxyModelPrivate::create_mapping(
     m->proxy_columns.resize(source_cols);
     build_source_to_proxy_mapping(m->source_columns, m->proxy_columns);
 
-    it = IndexMap::const_iterator(source_index_mapping.insert(source_parent, m));
-    m->map_iter = it;
+    m->source_parent = source_parent;
 
     if (source_parent.isValid()) {
         QModelIndex source_grand_parent = source_parent.parent();
@@ -527,6 +526,7 @@ IndexMap::const_iterator QSortFilterProxyModelPrivate::create_mapping(
         it2.value()->mapped_children.append(source_parent);
     }
 
+    it = IndexMap::const_iterator(source_index_mapping.insert(source_parent, m));
     Q_ASSERT(it != source_index_mapping.constEnd());
     Q_ASSERT(it.value());
 
@@ -1169,7 +1169,8 @@ void QSortFilterProxyModelPrivate::updateChildrenMapping(const QModelIndex &sour
     // reinsert moved, mapped indexes
     QVector<QPair<QModelIndex, Mapping*> >::iterator it = moved_source_index_mappings.begin();
     for (; it != moved_source_index_mappings.end(); ++it) {
-        (*it).second->map_iter = QHash<QModelIndex, Mapping *>::const_iterator(source_index_mapping.insert((*it).first, (*it).second));
+        it->second->source_parent = it->first;
+        source_index_mapping.insert(it->first, it->second);
     }
 }
 

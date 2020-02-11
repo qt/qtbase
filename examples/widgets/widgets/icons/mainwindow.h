@@ -62,6 +62,7 @@ class QActionGroup;
 class QLabel;
 class QButtonGroup;
 class QTableWidget;
+class QAbstractButton;
 QT_END_NAMESPACE
 class IconPreviewArea;
 class IconSizeSpinBox;
@@ -81,7 +82,7 @@ public:
 private slots:
     void about();
     void changeStyle(bool checked);
-    void changeSize(int, bool);
+    void changeSize(QAbstractButton *button, bool);
     void triggerChangeSize();
     void changeIcon();
     void addSampleImages();

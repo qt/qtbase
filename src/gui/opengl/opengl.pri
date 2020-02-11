@@ -16,7 +16,6 @@ qtConfig(opengl) {
                opengl/qopenglversionfunctions.h \
                opengl/qopenglversionfunctionsfactory_p.h \
                opengl/qopenglvertexarrayobject.h \
-               opengl/qopengltextureblitter.h \
                opengl/qopenglextrafunctions.h \
                opengl/qopenglprogrambinarycache_p.h
 
@@ -28,7 +27,6 @@ qtConfig(opengl) {
                opengl/qopenglversionfunctions.cpp \
                opengl/qopenglversionfunctionsfactory.cpp \
                opengl/qopenglvertexarrayobject.cpp \
-               opengl/qopengltextureblitter.cpp \
                opengl/qopenglprogrambinarycache.cpp
 
     !qtConfig(opengles2) {

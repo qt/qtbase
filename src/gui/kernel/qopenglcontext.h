@@ -218,8 +218,6 @@ Q_SIGNALS:
     void aboutToBeDestroyed();
 
 private:
-    friend class QGLContext;
-    friend class QGLPixelBuffer;
     friend class QOpenGLContextResourceBase;
     friend class QOpenGLPaintDevice;
     friend class QOpenGLGlyphTexture;
@@ -233,10 +231,6 @@ private:
     friend class QWidgetPrivate;
     friend class QAbstractOpenGLFunctionsPrivate;
     friend class QOpenGLTexturePrivate;
-
-    void *qGLContextHandle() const;
-    void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
-    void deleteQGLContext();
 
     QOpenGLVersionFunctionsStorage* functionsBackendStorage() const;
     void insertExternalFunctions(QAbstractOpenGLFunctions *f);

@@ -51,39 +51,16 @@
 // We mean it.
 //
 
+#include "qwindowsfontdatabasebase_p.h"
+
 #include <qpa/qplatformfontdatabase.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/qt_windows.h>
 
-#if !defined(QT_NO_DIRECTWRITE)
-    struct IDWriteFactory;
-    struct IDWriteGdiInterop;
-#endif
-
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
-
-class QWindowsFontEngineData
-{
-    Q_DISABLE_COPY_MOVE(QWindowsFontEngineData)
-public:
-    QWindowsFontEngineData();
-    ~QWindowsFontEngineData();
-
-    uint pow_gamma[256];
-
-    bool clearTypeEnabled = false;
-    qreal fontSmoothingGamma;
-    HDC hdc = 0;
-#if !defined(QT_NO_DIRECTWRITE)
-    IDWriteFactory *directWriteFactory = nullptr;
-    IDWriteGdiInterop *directWriteGdiInterop = nullptr;
-#endif
-};
-
-class QWindowsFontDatabase : public QPlatformFontDatabase
+class QWindowsFontDatabase : public QWindowsFontDatabaseBase
 {
     Q_DISABLE_COPY_MOVE(QWindowsFontDatabase)
 public:
@@ -113,22 +90,14 @@ public:
     void refUniqueFont(const QString &uniqueFont);
     bool isPrivateFontFamily(const QString &family) const override;
 
-    static QFont systemDefaultFont();
-
     static QFontEngine *createEngine(const QFontDef &request, const QString &faceName,
                                      int dpi,
                                      const QSharedPointer<QWindowsFontEngineData> &data);
 
-    static HFONT systemFont();
-    static QFont LOGFONT_to_QFont(const LOGFONT& lf, int verticalDPI = 0);
-
     static qreal fontSmoothingGamma();
-    static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef, const QString &faceName);
 
     static QStringList extraTryFontsForFamily(const QString &family);
     static QString familyForStyleHint(QFont::StyleHint styleHint);
-
-    static int defaultVerticalDPI();
 
     static void setFontOptions(unsigned options);
     static unsigned fontOptions();

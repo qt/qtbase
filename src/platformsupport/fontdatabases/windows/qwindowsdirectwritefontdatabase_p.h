@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,58 +37,60 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGLTEXTUREBLITTER_H
-#define QOPENGLTEXTUREBLITTER_H
+#ifndef QWINDOWSDIRECTWRITEFONTDATABASE_P_H
+#define QWINDOWSDIRECTWRITEFONTDATABASE_P_H
 
-#include <QtGui/qtguiglobal.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#ifndef QT_NO_OPENGL
+#include "qwindowsfontdatabasebase_p.h"
 
-#include <QtGui/qopengl.h>
-#include <QtGui/QMatrix3x3>
-#include <QtGui/QMatrix4x4>
+#include <qpa/qplatformfontdatabase.h>
+#include <QtCore/qloggingcategory.h>
+
+struct IDWriteFactory;
+struct IDWriteFont;
+struct IDWriteFontFamily;
+struct IDWriteLocalizedStrings;
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLTextureBlitterPrivate;
+#ifdef QT_USE_DIRECTWRITE3
 
-class Q_GUI_EXPORT QOpenGLTextureBlitter
+class QWindowsDirectWriteFontDatabase : public QWindowsFontDatabaseBase
 {
+    Q_DISABLE_COPY_MOVE(QWindowsDirectWriteFontDatabase)
 public:
-    QOpenGLTextureBlitter();
-    ~QOpenGLTextureBlitter();
+    QWindowsDirectWriteFontDatabase();
+    ~QWindowsDirectWriteFontDatabase() override;
 
-    enum Origin {
-        OriginBottomLeft,
-        OriginTopLeft
-    };
+    void populateFontDatabase() override;
+    void populateFamily(const QString &familyName) override;
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
+    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) override;
+    void releaseHandle(void *handle) override;
+    QFont defaultFont() const override;
 
-    bool create();
-    bool isCreated() const;
-    void destroy();
-
-    bool supportsExternalOESTarget() const;
-
-    void bind(GLenum target = GL_TEXTURE_2D);
-    void release();
-
-    void setRedBlueSwizzle(bool swizzle);
-    void setOpacity(float opacity);
-
-    void blit(GLuint texture, const QMatrix4x4 &targetTransform, Origin sourceOrigin);
-    void blit(GLuint texture, const QMatrix4x4 &targetTransform, const QMatrix3x3 &sourceTransform);
-
-    static QMatrix4x4 targetTransform(const QRectF &target, const QRect &viewport);
-    static QMatrix3x3 sourceTransform(const QRectF &subTexture, const QSize &textureSize, Origin origin);
+    bool fontsAlwaysScalable() const override;
+    bool isPrivateFontFamily(const QString &family) const override;
 
 private:
-    Q_DISABLE_COPY(QOpenGLTextureBlitter)
-    Q_DECLARE_PRIVATE(QOpenGLTextureBlitter)
-    QScopedPointer<QOpenGLTextureBlitterPrivate> d_ptr;
+    static QString localeString(IDWriteLocalizedStrings *names, wchar_t localeName[]);
+
+    QHash<QString, IDWriteFontFamily *> m_populatedFonts;
 };
+
+#endif // QT_USE_DIRECTWRITE3
 
 QT_END_NAMESPACE
 
-#endif
-
-#endif //QOPENGLTEXTUREBLITTER_H
+#endif // QWINDOWSDIRECTWRITEFONTDATABASE_P_H

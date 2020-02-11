@@ -646,6 +646,28 @@
     \sa append(), insert()
 */
 
+/*!
+    \fn template <typename T> template <typename ...Args> T &QVector<T>::emplaceBack(Args&&... args)
+    \fn template <typename T> template <typename ...Args> T &QVector<T>::emplace_back(Args&&... args)
+
+    Adds a new element to the end for the container. This new element
+    is constructed in-place using \a args as the arguments for its
+    construction.
+
+    Returns a reference to the new element.
+
+    Example:
+    \snippet code/src_corelib_tools_qvector.cpp emplace-back
+
+    It is also possible to access a newly created object by using
+    returned reference:
+    \snippet code/src_corelib_tools_qvector.cpp emplace-back-ref
+
+    This is the same as vector.emplace(vector.size(), \a args).
+
+    \sa emplace
+*/
+
 /*! \fn template <typename T> void QVector<T>::insert(int i, const T &value)
     \fn template <typename T> void QVector<T>::insert(int i, T &&value)
 
@@ -692,6 +714,26 @@
     by the iterator \a before. Returns an iterator pointing at the
     first of the inserted items.
 */
+
+/*!
+    \fn template <typename T> template <typename ...Args> QVector<T>::iterator QVector<T>::emplace(int i, Args&&... args)
+
+    Extends the container by inserting a new element at position \a i.
+    This new element is constructed in-place using \a args as the
+    arguments for its construction.
+
+    Returns an iterator to the new element.
+
+    Example:
+    \snippet code/src_corelib_tools_qvector.cpp emplace
+
+    \note It is garanteed that the element will be created in place
+          at the beginning, but after that it might be copied or
+          moved to the right position.
+
+    \sa emplaceBack
+*/
+
 
 /*! \fn template <typename T> void QVector<T>::replace(int i, const T &value)
 
@@ -838,6 +880,17 @@
     \sa takeFirst(), removeLast()
 */
 
+/*!
+    \fn template <typename T> template <typename ...Args> QVector<T>::iterator QVector<T>::emplace(QVector<T>::iterator before, Args&&... args)
+
+    \overload
+
+    Creates a new element in front of the item pointed to by the
+    iterator \a before. This new element is constructed in-place
+    using \a args as the arguments for its construction.
+
+    Returns an iterator to the new element.
+*/
 
 /*! \fn template <typename T> QVector<T> &QVector<T>::fill(const T &value, int size = -1)
 

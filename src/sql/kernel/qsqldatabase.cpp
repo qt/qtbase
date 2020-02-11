@@ -619,8 +619,6 @@ QStringList QSqlDatabase::connectionNames()
     \row \li QODBC    \li ODBC Driver (includes Microsoft SQL Server)
     \row \li QPSQL    \li PostgreSQL Driver
     \row \li QSQLITE  \li SQLite version 3 or above
-    \row \li QSQLITE2 \li SQLite version 2
-    \row \li QTDS     \li Sybase Adaptive Server
     \endtable
 
     Additional third party drivers, including your own custom
@@ -1185,7 +1183,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li service
     \endlist
 
-    \header \li DB2 \li OCI \li TDS
+    \header \li DB2 \li OCI
     \row
 
     \li
@@ -1199,9 +1197,6 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li OCI_ATTR_PREFETCH_ROWS
     \li OCI_ATTR_PREFETCH_MEMORY
     \endlist
-
-    \li
-    \e none
 
     \header \li SQLite \li Interbase
     \row
@@ -1327,11 +1322,6 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
     \li SQLHANDLE environment, SQLHANDLE connection
     \li \c qsql_db2.cpp
     \row
-    \li QTDS
-    \li QTDSDriver
-    \li LOGINREC *loginRecord, DBPROCESS *dbProcess, const QString &hostName
-    \li \c qsql_tds.cpp
-    \row
     \li QSQLITE
     \li QSQLiteDriver
     \li sqlite *connection
@@ -1342,11 +1332,6 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
     \li isc_db_handle connection
     \li \c qsql_ibase.cpp
     \endtable
-
-    The host name (or service name) is needed when constructing the
-    QTDSDriver for creating new connections for internal queries. This
-    is to prevent blocking when several QSqlQuery objects are used
-    simultaneously.
 
     \warning Adding a database connection with the same connection
     name as an existing connection, causes the existing connection to

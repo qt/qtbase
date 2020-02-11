@@ -530,11 +530,17 @@ void tst_PlatformSocketEngine::tooManySockets()
 void tst_PlatformSocketEngine::bind()
 {
 #if !defined Q_OS_WIN
-    PLATFORMSOCKETENGINE binder;
-    QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
-    QVERIFY(!binder.bind(QHostAddress::AnyIPv4, 82));
-    QCOMPARE(binder.error(), QAbstractSocket::SocketAccessError);
-#endif
+#if defined Q_OS_MACOS
+    // On macOS >= 10.14 the bind on this port is successful.
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSMojave)
+#endif // Q_OS_MACOS
+    {
+        PLATFORMSOCKETENGINE binder;
+        QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
+        QVERIFY(!binder.bind(QHostAddress::AnyIPv4, 82));
+        QCOMPARE(binder.error(), QAbstractSocket::SocketAccessError);
+    }
+#endif // Q_OS_WIN
 
     PLATFORMSOCKETENGINE binder2;
     QVERIFY(binder2.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));

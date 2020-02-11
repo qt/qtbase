@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -288,6 +288,62 @@ public:
     Q_CORE_EXPORT bool validateChars(QStringView str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
             QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
 
+    struct DataRange
+    {
+        quint16 offset;
+        quint16 size;
+        QString getData(const ushort *table) const
+        {
+            return size > 0
+                ? QString::fromRawData(reinterpret_cast<const QChar *>(table + offset), size)
+                : QString();
+        }
+        QStringView viewData(const ushort *table) const
+        {
+            return { reinterpret_cast<const QChar *>(table + offset), size };
+        }
+        QString getListEntry(const ushort *table, int index) const
+        {
+            return listEntry(table, index).getData(table);
+        }
+        QStringView viewListEntry(const ushort *table, int index) const
+        {
+            return listEntry(table, index).viewData(table);
+        }
+    private:
+        DataRange listEntry(const ushort *table, int index) const
+        {
+            const ushort separator = ';';
+            quint16 i = 0;
+            while (index > 0 && i < size) {
+                if (table[offset + i] == separator)
+                    index--;
+                i++;
+            }
+            quint16 end = i;
+            while (end < size && table[offset + end] != separator)
+                end++;
+            return { quint16(offset + i), quint16(end - i) };
+        }
+    };
+
+#define ForEachQLocaleRange(X) \
+    X(startListPattern) X(midListPattern) X(endListPattern) X(pairListPattern) \
+    X(longDateFormat) X(shortDateFormat) X(longTimeFormat) X(shortTimeFormat) \
+    X(longDayNamesStandalone) X(longDayNames) \
+    X(shortDayNamesStandalone) X(shortDayNames) \
+    X(narrowDayNamesStandalone) X(narrowDayNames) \
+    X(anteMeridiem) X(postMeridiem) \
+    X(byteCount) X(byteAmountSI) X(byteAmountIEC) \
+    X(currencySymbol) X(currencyDisplayName) \
+    X(currencyFormat) X(currencyFormatNegative) \
+    X(endonymLanguage) X(endonymCountry)
+
+#define rangeGetter(name) \
+    DataRange name() const { return { m_ ## name ## _idx, m_ ## name ## _size }; }
+    ForEachQLocaleRange(rangeGetter)
+#undef rangeGetter
+
 public:
     quint16 m_language_id, m_script_id, m_country_id;
 
@@ -296,34 +352,20 @@ public:
     char16_t m_quotation_start, m_quotation_end;
     char16_t m_alternate_quotation_start, m_alternate_quotation_end;
 
-    quint16 m_list_pattern_part_start_idx, m_list_pattern_part_start_size;
-    quint16 m_list_pattern_part_mid_idx, m_list_pattern_part_mid_size;
-    quint16 m_list_pattern_part_end_idx, m_list_pattern_part_end_size;
-    quint16 m_list_pattern_part_two_idx, m_list_pattern_part_two_size;
-    quint16 m_short_date_format_idx, m_short_date_format_size;
-    quint16 m_long_date_format_idx, m_long_date_format_size;
-    quint16 m_short_time_format_idx, m_short_time_format_size;
-    quint16 m_long_time_format_idx, m_long_time_format_size;
-    quint16 m_standalone_short_day_names_idx, m_standalone_short_day_names_size;
-    quint16 m_standalone_long_day_names_idx, m_standalone_long_day_names_size;
-    quint16 m_standalone_narrow_day_names_idx, m_standalone_narrow_day_names_size;
-    quint16 m_short_day_names_idx, m_short_day_names_size;
-    quint16 m_long_day_names_idx, m_long_day_names_size;
-    quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
-    quint16 m_am_idx, m_am_size;
-    quint16 m_pm_idx, m_pm_size;
-    quint16 m_byte_idx, m_byte_size;
-    quint16 m_byte_si_quantified_idx, m_byte_si_quantified_size;
-    quint16 m_byte_iec_quantified_idx, m_byte_iec_quantified_size;
+    // Offsets, then sizes, for each range:
+#define rangeIndex(name) quint16 m_ ## name ## _idx;
+    ForEachQLocaleRange(rangeIndex)
+#undef rangeIndex
+#define Size(name) quint8 m_ ## name ## _size;
+    ForEachQLocaleRange(Size)
+#undef Size
+
+#undef ForEachQLocaleRange
+
+    // Strays:
     char    m_currency_iso_code[3];
-    quint16 m_currency_symbol_idx, m_currency_symbol_size;
-    quint16 m_currency_display_name_idx, m_currency_display_name_size;
-    quint8  m_currency_format_idx, m_currency_format_size;
-    quint8  m_currency_negative_format_idx, m_currency_negative_format_size;
-    quint16 m_language_endonym_idx, m_language_endonym_size;
-    quint16 m_country_endonym_idx, m_country_endonym_size;
     quint16 m_currency_digits : 2;
-    quint16 m_currency_rounding : 3;
+    quint16 m_currency_rounding : 3; // (not yet used !)
     quint16 m_first_day_of_week : 3;
     quint16 m_weekend_start : 3;
     quint16 m_weekend_end : 3;
@@ -417,7 +459,7 @@ inline char QLocaleData::digitToCLocale(QChar in) const
     if (in == m_group)
         return ',';
 
-    if (in == m_exponential || in == QChar(QChar::toUpper(m_exponential)))
+    if (in == m_exponential || in.toCaseFolded().unicode() == QChar::toCaseFolded(m_exponential))
         return 'e';
 
     // In several languages group() is a non-breaking space (U+00A0) or its thin

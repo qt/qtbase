@@ -121,8 +121,14 @@ private slots:
     void stream_Map_data();
     void stream_Map();
 
+    void stream_MultiMap_data();
+    void stream_MultiMap();
+
     void stream_Hash_data();
     void stream_Hash();
+
+    void stream_MultiHash_data();
+    void stream_MultiHash();
 
     void stream_qint64_data();
     void stream_qint64();
@@ -230,7 +236,9 @@ private:
     void writeQRegularExpression(QDataStream *dev);
 #endif
     void writeMap(QDataStream* dev);
+    void writeMultiMap(QDataStream* dev);
     void writeHash(QDataStream* dev);
+    void writeMultiHash(QDataStream* dev);
     void writeqint64(QDataStream *s);
     void writeQIcon(QDataStream *s);
     void writeQEasingCurve(QDataStream *s);
@@ -262,7 +270,9 @@ private:
     void readQRegularExpression(QDataStream *s);
 #endif
     void readMap(QDataStream *s);
+    void readMultiMap(QDataStream *s);
     void readHash(QDataStream *s);
+    void readMultiHash(QDataStream *s);
     void readqint64(QDataStream *s);
     void readQIcon(QDataStream *s);
     void readQEasingCurve(QDataStream *s);
@@ -650,16 +660,10 @@ static Map MapData(int index)
         map.insert(2, "bbb");
         map.insert(3, "cccccc");
         break;
-    case 2:
-        map.insert(1, "a");
-        map.insert(2, "one");
-        map.insertMulti(2, "two");
-        map.insertMulti(2, "three");
-        map.insert(3, "cccccc");
     }
     return map;
 }
-#define MAX_MAP_DATA 3
+#define MAX_MAP_DATA 2
 
 void tst_QDataStream::stream_Map_data()
 {
@@ -689,6 +693,60 @@ void tst_QDataStream::readMap(QDataStream *s)
     QCOMPARE(S, test);
 }
 
+typedef QMultiMap<int, QString> MultiMap;
+
+static MultiMap MultiMapData(int index)
+{
+    MultiMap map;
+
+    switch (index) {
+    case 0:
+    default:
+        break;
+    case 1:
+        map.insert(1, "a");
+        map.insert(2, "bbb");
+        map.insert(3, "cccccc");
+        break;
+    case 2:
+        map.insert(1, "a");
+        map.insert(2, "one");
+        map.insert(2, "two");
+        map.insert(2, "three");
+        map.insert(3, "cccccc");
+    }
+    return map;
+}
+#define MAX_MULTIMAP_DATA 3
+
+void tst_QDataStream::stream_MultiMap_data()
+{
+    stream_data(MAX_MULTIMAP_DATA);
+}
+
+void tst_QDataStream::stream_MultiMap()
+{
+    STREAM_IMPL(MultiMap);
+}
+
+void tst_QDataStream::writeMultiMap(QDataStream* s)
+{
+    MultiMap test(MultiMapData(dataIndex(QTest::currentDataTag())));
+    *s << test;
+    *s << test;
+}
+
+void tst_QDataStream::readMultiMap(QDataStream *s)
+{
+    MultiMap S;
+    MultiMap test(MultiMapData(dataIndex(QTest::currentDataTag())));
+
+    *s >> S;
+    QCOMPARE(S, test);
+    *s >> S;
+    QCOMPARE(S, test);
+}
+
 // ************************************
 
 typedef QHash<int, QString> Hash;
@@ -706,16 +764,10 @@ static Hash HashData(int index)
         map.insert(2, "bbb");
         map.insert(3, "cccccc");
         break;
-    case 2:
-        map.insert(1, "a");
-        map.insert(2, "one");
-        map.insertMulti(2, "two");
-        map.insertMulti(2, "three");
-        map.insert(3, "cccccc");
     }
     return map;
 }
-#define MAX_HASH_DATA 3
+#define MAX_HASH_DATA 2
 
 void tst_QDataStream::stream_Hash_data()
 {
@@ -738,6 +790,60 @@ void tst_QDataStream::readHash(QDataStream *s)
 {
     Hash S;
     Hash test(HashData(dataIndex(QTest::currentDataTag())));
+
+    *s >> S;
+    QCOMPARE(S, test);
+    *s >> S;
+    QCOMPARE(S, test);
+}
+
+typedef QMultiHash<int, QString> MultiHash;
+
+static MultiHash MultiHashData(int index)
+{
+    MultiHash map;
+
+    switch (index) {
+    case 0:
+    default:
+        break;
+    case 1:
+        map.insert(1, "a");
+        map.insert(2, "bbb");
+        map.insert(3, "cccccc");
+        break;
+    case 2:
+        map.insert(1, "a");
+        map.insert(2, "one");
+        map.insert(2, "two");
+        map.insert(2, "three");
+        map.insert(3, "cccccc");
+    }
+    return map;
+}
+#define MAX_MULTIHASH_DATA 3
+
+void tst_QDataStream::stream_MultiHash_data()
+{
+    stream_data(MAX_HASH_DATA);
+}
+
+void tst_QDataStream::stream_MultiHash()
+{
+    STREAM_IMPL(MultiHash);
+}
+
+void tst_QDataStream::writeMultiHash(QDataStream* s)
+{
+    MultiHash test(MultiHashData(dataIndex(QTest::currentDataTag())));
+    *s << test;
+    *s << test;
+}
+
+void tst_QDataStream::readMultiHash(QDataStream *s)
+{
+    MultiHash S;
+    MultiHash test(MultiHashData(dataIndex(QTest::currentDataTag())));
 
     *s >> S;
     QCOMPARE(S, test);

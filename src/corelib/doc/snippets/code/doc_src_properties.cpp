@@ -54,7 +54,7 @@ Q_PROPERTY(type name
             MEMBER memberName [(READ getFunction | WRITE setFunction)])
            [RESET resetFunction]
            [NOTIFY notifySignal]
-           [REVISION int]
+           [REVISION int | REVISION(int[, int])]
            [DESIGNABLE bool]
            [SCRIPTABLE bool]
            [STORED bool]

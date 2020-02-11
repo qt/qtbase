@@ -67,11 +67,10 @@ class QRect;
 class QPoint;
 class QImage;
 class QPlatformBackingStorePrivate;
-class QPlatformWindow;
 class QPlatformTextureList;
 class QPlatformTextureListPrivate;
-class QOpenGLContext;
 class QPlatformGraphicsBuffer;
+class QPlatformBackingStoreOpenGLSupportBase;
 
 #ifndef QT_NO_OPENGL
 class Q_GUI_EXPORT QPlatformTextureList : public QObject
@@ -118,6 +117,8 @@ public:
     QWindow *window() const;
     QBackingStore *backingStore() const;
 
+    void setOpenGLSupport(QPlatformBackingStoreOpenGLSupportBase *openGLSupport);
+
     virtual QPaintDevice *paintDevice() = 0;
 
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) = 0;
@@ -152,6 +153,17 @@ private:
     void setBackingStore(QBackingStore *);
     friend class QBackingStore;
 };
+
+#ifndef QT_NO_OPENGL
+class Q_GUI_EXPORT QPlatformBackingStoreOpenGLSupportBase // pure interface
+{
+public:
+    virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+                                 QPlatformTextureList *textures, bool translucentBackground) = 0;
+    virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, QPlatformBackingStore::TextureFlags *flags) const = 0;
+    virtual ~QPlatformBackingStoreOpenGLSupportBase() {}
+};
+#endif // QT_NO_OPENGL
 
 #ifndef QT_NO_OPENGL
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformBackingStore::TextureFlags)

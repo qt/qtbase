@@ -296,10 +296,7 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
             c.clear();
             break;
         }
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        c.insertMulti(k, t);
-QT_WARNING_POP
+        c.insert(k, t);
     }
 
     return s;
@@ -319,19 +316,20 @@ template <typename Container>
 QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
 {
     s << quint32(c.size());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
-    // Deserialization should occur in the reverse order.
-    // Otherwise, value() will return the least recently inserted
-    // value instead of the most recently inserted one.
-    auto it = c.constEnd();
-    auto begin = c.constBegin();
-    while (it != begin) {
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        --it;
-        QT_WARNING_POP
+    auto it = c.constBegin();
+    auto end = c.constEnd();
+    while (it != end) {
         s << it.key() << it.value();
-#else
+        ++it;
+    }
+
+    return s;
+}
+
+template <typename Container>
+QDataStream &writeAssociativeMultiContainer(QDataStream &s, const Container &c)
+{
+    s << quint32(c.size());
     auto it = c.constBegin();
     auto end = c.constEnd();
     while (it != end) {
@@ -343,7 +341,6 @@ QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
             auto next = std::next(rangeStart, i);
             s << next.key() << next.value();
         }
-#endif
     }
 
     return s;
@@ -440,9 +437,22 @@ inline QDataStream &operator>>(QDataStream &s, QHash<Key, T> &hash)
 }
 
 template <class Key, class T>
+
 inline QDataStream &operator<<(QDataStream &s, const QHash<Key, T> &hash)
 {
     return QtPrivate::writeAssociativeContainer(s, hash);
+}
+
+template <class Key, class T>
+inline QDataStream &operator>>(QDataStream &s, QMultiHash<Key, T> &hash)
+{
+    return QtPrivate::readAssociativeContainer(s, hash);
+}
+
+template <class Key, class T>
+inline QDataStream &operator<<(QDataStream &s, const QMultiHash<Key, T> &hash)
+{
+    return QtPrivate::writeAssociativeMultiContainer(s, hash);
 }
 
 template <class Key, class T>
@@ -455,6 +465,18 @@ template <class Key, class T>
 inline QDataStream &operator<<(QDataStream &s, const QMap<Key, T> &map)
 {
     return QtPrivate::writeAssociativeContainer(s, map);
+}
+
+template <class Key, class T>
+inline QDataStream &operator>>(QDataStream &s, QMultiMap<Key, T> &map)
+{
+    return QtPrivate::readAssociativeContainer(s, map);
+}
+
+template <class Key, class T>
+inline QDataStream &operator<<(QDataStream &s, const QMultiMap<Key, T> &map)
+{
+    return QtPrivate::writeAssociativeMultiContainer(s, map);
 }
 
 #ifndef QT_NO_DATASTREAM

@@ -558,8 +558,18 @@ void tst_QTcpSocket::bind_data()
     // try to bind to a privileged ports
     // we should fail if we're not root (unless the ports are in use!)
     QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << !geteuid() << (geteuid() ? QString() : "127.0.0.1");
-    if (testIpv6)
+    if (testIpv6) {
+#ifdef Q_OS_DARWIN
+        // This case is faling in different ways, first, it manages to bind to
+        // port 1 on macOS >= 10.14, but if we change the logic to not fail,
+        // it's becoming flaky and sometimes fails to bind, with error 'port in use'
+        // (apparently inflicted by the previous test row with 127.0.0.1). Amen.
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
+            QTest::qWarn("Skipping [::]:1, see QTBUG-81905", __FILE__, __LINE__);
+        else
+#endif // Q_OS_DARWIN
         QTest::newRow("[::]:1") << "::" << 1 << !geteuid() << (geteuid() ? QString() : "::");
+    }
 #endif
 }
 

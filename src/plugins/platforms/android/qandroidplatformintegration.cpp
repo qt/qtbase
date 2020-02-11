@@ -43,6 +43,9 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QGuiApplication>
 #include <QOpenGLContext>
+#if QT_CONFIG(opengl)
+#include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+#endif
 #include <QThread>
 #include <QOffscreenSurface>
 
@@ -275,7 +278,12 @@ QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(Q
 {
     if (!QtAndroid::activity())
         return nullptr;
-    return new QAndroidPlatformBackingStore(window);
+
+    auto *backingStore = new QAndroidPlatformBackingStore(window);
+#if QT_CONFIG(opengl)
+    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
+#endif // QT_CONFIG(opengl)
+    return backingStore;
 }
 
 QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const

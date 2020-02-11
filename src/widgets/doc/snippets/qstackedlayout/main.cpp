@@ -74,7 +74,7 @@ Widget::Widget(QWidget *parent)
     pageComboBox->addItem(tr("Page 1"));
     pageComboBox->addItem(tr("Page 2"));
     pageComboBox->addItem(tr("Page 3"));
-    connect(pageComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(pageComboBox, &QComboBox::activated,
             stackedLayout, &QStackedLayout::setCurrentIndex);
 //! [1]
 

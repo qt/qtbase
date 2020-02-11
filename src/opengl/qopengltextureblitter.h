@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,45 +37,54 @@
 **
 ****************************************************************************/
 
-#define Q_UUIDIMPL
-#include <qsqldriverplugin.h>
-#include <qstringlist.h>
-#ifdef Q_OS_WIN32    // We assume that MS SQL Server is used. Set Q_USE_SYBASE to force Sybase.
-// Conflicting declarations of LPCBYTE in sqlfront.h and winscard.h
-#define _WINSCARD_H_
-#include <windows.h>
-#endif
-#include "qsql_tds_p.h"
+#ifndef QOPENGLTEXTUREBLITTER_H
+#define QOPENGLTEXTUREBLITTER_H
+
+#include <QtOpenGL/qtopenglglobal.h>
+
+#include <QtGui/qopengl.h>
+#include <QtGui/QMatrix3x3>
+#include <QtGui/QMatrix4x4>
 
 QT_BEGIN_NAMESPACE
 
+class QOpenGLTextureBlitterPrivate;
 
-// ### Qt6: remove, obsolete since 4.7
-class QTDSDriverPlugin : public QSqlDriverPlugin
+class Q_OPENGL_EXPORT QOpenGLTextureBlitter
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "tds.json")
-
 public:
-    QTDSDriverPlugin();
+    QOpenGLTextureBlitter();
+    ~QOpenGLTextureBlitter();
 
-    QSqlDriver* create(const QString &);
+    enum Origin {
+        OriginBottomLeft,
+        OriginTopLeft
+    };
+
+    bool create();
+    bool isCreated() const;
+    void destroy();
+
+    bool supportsExternalOESTarget() const;
+
+    void bind(GLenum target = GL_TEXTURE_2D);
+    void release();
+
+    void setRedBlueSwizzle(bool swizzle);
+    void setOpacity(float opacity);
+
+    void blit(GLuint texture, const QMatrix4x4 &targetTransform, Origin sourceOrigin);
+    void blit(GLuint texture, const QMatrix4x4 &targetTransform, const QMatrix3x3 &sourceTransform);
+
+    static QMatrix4x4 targetTransform(const QRectF &target, const QRect &viewport);
+    static QMatrix3x3 sourceTransform(const QRectF &subTexture, const QSize &textureSize, Origin origin);
+
+private:
+    Q_DISABLE_COPY(QOpenGLTextureBlitter)
+    Q_DECLARE_PRIVATE(QOpenGLTextureBlitter)
+    QScopedPointer<QOpenGLTextureBlitterPrivate> d_ptr;
 };
-
-QTDSDriverPlugin::QTDSDriverPlugin()
-    : QSqlDriverPlugin()
-{
-}
-
-QSqlDriver* QTDSDriverPlugin::create(const QString &name)
-{
-    if (name == QLatin1String("QTDS") || name == QLatin1String("QTDS7")) {
-        QTDSDriver* driver = new QTDSDriver();
-        return driver;
-    }
-    return 0;
-}
 
 QT_END_NAMESPACE
 
-#include "main.moc"
+#endif //QOPENGLTEXTUREBLITTER_H
