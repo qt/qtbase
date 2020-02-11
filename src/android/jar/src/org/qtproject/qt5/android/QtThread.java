@@ -84,8 +84,11 @@ public class QtThread {
             m_pendingRunnables.add(new Runnable() {
                 @Override
                 public void run() {
-                    runnable.run();
-                    sem.release();
+                    try {
+                        runnable.run();
+                    } finally {
+                        sem.release();
+                    }
                 }
             });
             m_qtThread.notify();
