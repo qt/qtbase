@@ -373,15 +373,6 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
     \sa subjectInfo()
 */
 
-#if QT_DEPRECATED_SINCE(5,0)
-/*!
-  \fn QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubjectNames() const
-  \obsolete
-
-  Use QSslCertificate::subjectAlternativeNames();
-*/
-#endif
-
 /*!
   \fn QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlternativeNames() const
 

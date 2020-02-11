@@ -130,10 +130,6 @@ public:
 
     QList<QByteArray> subjectInfoAttributes() const;
     QList<QByteArray> issuerInfoAttributes() const;
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED inline QMultiMap<QSsl::AlternateNameEntryType, QString>
-                  alternateSubjectNames() const { return subjectAlternativeNames(); }
-#endif
     QMultiMap<QSsl::AlternativeNameEntryType, QString> subjectAlternativeNames() const;
     QDateTime effectiveDate() const;
     QDateTime expiryDate() const;

@@ -72,10 +72,6 @@ namespace QSsl {
         IpAddressEntry
     };
 
-#if QT_DEPRECATED_SINCE(5,0)
-    typedef AlternativeNameEntryType AlternateNameEntryType;
-#endif
-
     enum SslProtocol {
         TlsV1_0 = 2,
         TlsV1_1,

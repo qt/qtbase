@@ -102,17 +102,7 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \value IpAddressEntry An IP address entry; the entry contains an IP address
     entry that the certificate is valid for, introduced in Qt 5.13.
 
-    \note In Qt 4, this enum was called \c {AlternateNameEntryType}. That name
-    is deprecated in Qt 5.
-
     \sa QSslCertificate::subjectAlternativeNames()
-*/
-
-/*!
-  \typedef QSsl::AlternateNameEntryType
-  \obsolete
-
-  Use QSsl::AlternativeNameEntryType instead.
 */
 
 /*!
@@ -122,7 +112,6 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
 
     \value TlsV1_0 TLSv1.0
     \value TlsV1_0OrLater TLSv1.0 and later versions. This option is not available when using the WinRT backend due to platform limitations.
-    \value TlsV1 Obsolete, means the same as TlsV1_0
     \value TlsV1_1 TLSv1.1. When using the WinRT backend this option will also enable TLSv1.0.
     \value TlsV1_1OrLater TLSv1.1 and later versions. This option is not available when using the WinRT backend due to platform limitations.
     \value TlsV1_2 TLSv1.2. When using the WinRT backend this option will also enable TLSv1.0 and TLSv1.1.
