@@ -274,6 +274,7 @@ qt_feature("ftp" PUBLIC
     SECTION "Networking"
     LABEL "FTP"
     PURPOSE "Provides support for the File Transfer Protocol in QNetworkAccessManager."
+    AUTODETECT OFF
     CONDITION QT_FEATURE_textdate
 )
 qt_feature_definition("ftp" "QT_NO_FTP" NEGATE VALUE "1")

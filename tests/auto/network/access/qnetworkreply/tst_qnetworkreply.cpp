@@ -219,9 +219,11 @@ private Q_SLOTS:
     void getFromFile();
     void getFromFileSpecial_data();
     void getFromFileSpecial();
+#if QT_CONFIG(ftp)
     void getFromFtp_data();
     void getFromFtp();
     void getFromFtpAfterError();    // QTBUG-40797
+#endif
     void getFromHttp_data();
     void getFromHttp();
     void getErrors_data();
@@ -232,9 +234,11 @@ private Q_SLOTS:
 #endif // !QT_NO_NETWORKPROXY
     void putToFile_data();
     void putToFile();
+#if QT_CONFIG(ftp)
     void putToFtp_data();
     void putToFtp();
     void putToFtpWithInvalidCredentials();    // QTBUG-40622
+#endif
     void putToHttp_data();
     void putToHttp();
     void putToHttpSynchronous_data();
@@ -275,9 +279,11 @@ private Q_SLOTS:
     void ioGetFromFileSpecial();
     void ioGetFromFile_data();
     void ioGetFromFile();
+#if QT_CONFIG(ftp)
     void ioGetFromFtp_data();
     void ioGetFromFtp();
     void ioGetFromFtpWithReuse();
+#endif
     void ioGetFromHttp();
 
     void ioGetFromBuiltinHttp_data();
@@ -319,8 +325,10 @@ private Q_SLOTS:
     void ioPutToFileFromLocalSocket();
     void ioPutToFileFromProcess_data();
     void ioPutToFileFromProcess();
+#if QT_CONFIG(ftp)
     void ioPutToFtpFromFile_data();
     void ioPutToFtpFromFile();
+#endif
     void ioPutToHttpFromFile_data();
     void ioPutToHttpFromFile();
     void ioPostToHttpFromFile_data();
@@ -466,8 +474,10 @@ private Q_SLOTS:
     void closeDuringDownload_data();
     void closeDuringDownload();
 
+#if QT_CONFIG(ftp)
     void ftpAuthentication_data();
     void ftpAuthentication();
+#endif
 
     void emitErrorForAllReplies(); // QTBUG-36890
 
@@ -1852,6 +1862,7 @@ void tst_QNetworkReply::getFromFileSpecial()
     QCOMPARE(reply->readAll(), resource.readAll());
 }
 
+#if QT_CONFIG(ftp)
 void tst_QNetworkReply::getFromFtp_data()
 {
     QTest::addColumn<QString>("referenceName");
@@ -1904,6 +1915,7 @@ void tst_QNetworkReply::getFromFtpAfterError()
     QCOMPARE(validReply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
     QCOMPARE(validReply->readAll(), reference.readAll());
 }
+#endif
 
 void tst_QNetworkReply::getFromHttp_data()
 {
@@ -2073,6 +2085,7 @@ void tst_QNetworkReply::getErrors_data()
         QTest::newRow("file-permissions") << "file:" + filePermissionFileName
                                           << int(QNetworkReply::ContentAccessDenied) << 0 << true;
 
+#if QT_CONFIG(ftp)
     // ftp: errors
     QTest::newRow("ftp-host") << "ftp://invalid.test.qt-project.org/foo.txt"
                               << int(QNetworkReply::HostNotFoundError) << 0 << true;
@@ -2086,6 +2099,7 @@ void tst_QNetworkReply::getErrors_data()
                                            << int(QNetworkReply::ContentAccessDenied) << 0 << true;
     QTest::newRow("ftp-exist") << "ftp://" + QtNetworkSettings::ftpServerName() + "/pub/this-file-doesnt-exist.txt"
                                << int(QNetworkReply::ContentNotFoundError) << 0 << true;
+#endif
 
     // http: errors
     QTest::newRow("http-host") << "http://invalid.test.qt-project.org/"
@@ -2139,9 +2153,11 @@ void tst_QNetworkReply::getErrors()
     QVERIFY2(waitResult != Timeout, msgGetErrors(waitResult, reply));
 
     QFETCH(int, error);
+#if QT_CONFIG(ftp)
     QEXPECT_FAIL("ftp-is-dir", "QFtp cannot provide enough detail", Abort);
     // the line below is not necessary
     QEXPECT_FAIL("ftp-dir-not-readable", "QFtp cannot provide enough detail", Abort);
+#endif
     QCOMPARE(reply->networkError(), QNetworkReply::NetworkError(error));
 
     QTEST(reply->readAll().isEmpty(), "dataIsEmpty");
@@ -2211,6 +2227,7 @@ void tst_QNetworkReply::putToFile()
     QCOMPARE(contents, data);
 }
 
+#if QT_CONFIG(ftp)
 void tst_QNetworkReply::putToFtp_data()
 {
     putToFile_data();
@@ -2283,6 +2300,7 @@ void tst_QNetworkReply::putToFtpWithInvalidCredentials()
         r->close();
     }
 }
+#endif
 
 void tst_QNetworkReply::putToHttp_data()
 {
@@ -3283,6 +3301,7 @@ void tst_QNetworkReply::ioGetFromFile()
     QCOMPARE(reader.data, data);
 }
 
+#if QT_CONFIG(ftp)
 void tst_QNetworkReply::ioGetFromFtp_data()
 {
     QTest::addColumn<QString>("fileName");
@@ -3349,6 +3368,7 @@ void tst_QNetworkReply::ioGetFromFtpWithReuse()
     QCOMPARE(reader1.data, referenceData);
     QCOMPARE(reader2.data, referenceData);
 }
+#endif
 
 void tst_QNetworkReply::ioGetFromHttp()
 {
@@ -4205,6 +4225,7 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::NoError;
 
+#if QT_CONFIG(ftp)
     // FTP request with FTP caching proxy
     proxyList.clear();
     proxyList << QNetworkProxy(QNetworkProxy::FtpCachingProxy, QtNetworkSettings::ftpProxyServerName(), 2121);
@@ -4223,6 +4244,7 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << proxyList << proxyList.at(0)
         << "ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::NoError;
+#endif
 
 #ifndef QT_NO_SSL
     // HTTPS with HTTP transparent proxy
@@ -4252,6 +4274,7 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::ProxyNotFoundError;
 
+#if QT_CONFIG(ftp)
     // FTP request with HTTP caching proxy
     proxyList.clear();
     proxyList << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129);
@@ -4268,6 +4291,7 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << proxyList << QNetworkProxy()
         << "ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::ProxyNotFoundError;
+#endif
 
 #ifndef QT_NO_SSL
     // HTTPS with HTTP caching proxy
@@ -4335,6 +4359,7 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::NoError;
 
+#if QT_CONFIG(ftp)
     // FTP request with HTTP Caching + FTP
     proxyList.clear();
     proxyList << QNetworkProxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::httpProxyServerName(), 3129)
@@ -4343,6 +4368,7 @@ void tst_QNetworkReply::ioGetWithManyProxies_data()
         << proxyList << proxyList.at(1) // second proxy should be used
         << "ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/rfc3252.txt"
         << QNetworkReply::NoError;
+#endif
 
 #ifndef QT_NO_SSL
     // HTTPS request with HTTP Caching + HTTP transparent
@@ -4403,7 +4429,9 @@ void tst_QNetworkReply::ioGetWithManyProxies()
 #endif
 
     QFETCH(QNetworkReply::NetworkError, expectedError);
+#if QT_CONFIG(ftp)
     QEXPECT_FAIL("ftp-on-socks", "QFtp is too limited and won't accept non-FTP proxies", Abort);
+#endif
     QCOMPARE(reply->networkError(), expectedError);
 
     // Verify that the factory was called properly
@@ -4419,8 +4447,10 @@ void tst_QNetworkReply::ioGetWithManyProxies()
         if (proxyUsed.type() == QNetworkProxy::NoProxy) {
             QCOMPARE(authspy.count(), 0);
         } else {
+#if QT_CONFIG(ftp)
             if (QByteArray(QTest::currentDataTag()).startsWith("ftp-"))
                 return;         // No authentication with current FTP or with FTP proxies
+#endif
             QCOMPARE(authspy.count(), 1);
             QCOMPARE(qvariant_cast<QNetworkProxy>(authspy.at(0).at(0)), proxyUsed);
         }
@@ -4601,6 +4631,7 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
 #endif // QT_CONFIG(process)
 }
 
+#if QT_CONFIG(ftp)
 void tst_QNetworkReply::ioPutToFtpFromFile_data()
 {
     ioPutToFileFromFile_data();
@@ -4649,6 +4680,7 @@ void tst_QNetworkReply::ioPutToFtpFromFile()
     QTestEventLoop::instance().enterLoop(10);
     QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 }
+#endif
 
 void tst_QNetworkReply::ioPutToHttpFromFile_data()
 {
@@ -8016,7 +8048,9 @@ void tst_QNetworkReply::closeDuringDownload_data()
 {
     QTest::addColumn<QUrl>("url");
     QTest::newRow("http") << QUrl("http://" + QtNetworkSettings::httpServerName() + "/bigfile");
+#if QT_CONFIG(ftp)
     QTest::newRow("ftp") << QUrl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/bigfile");
+#endif
 }
 
 void tst_QNetworkReply::closeDuringDownload()
@@ -8034,6 +8068,7 @@ void tst_QNetworkReply::closeDuringDownload()
     QVERIFY(destroySpy.wait());
 }
 
+#if QT_CONFIG(ftp)
 void tst_QNetworkReply::ftpAuthentication_data()
 {
     QTest::addColumn<QString>("referenceName");
@@ -8060,6 +8095,7 @@ void tst_QNetworkReply::ftpAuthentication()
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->networkError(), QNetworkReply::NetworkError(error));
 }
+#endif
 
 void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
 {
@@ -8103,7 +8139,9 @@ void tst_QNetworkReply::backgroundRequest_data()
 
     QUrl httpurl("http://" + QtNetworkSettings::httpServerName());
     QUrl httpsurl("https://" + QtNetworkSettings::httpServerName());
+#if QT_CONFIG(ftp)
     QUrl ftpurl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/rfc3252.txt");
+#endif
 
     QTest::newRow("http, fg, normal") << httpurl << false << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
     QTest::newRow("http, bg, normal") << httpurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
@@ -8117,10 +8155,12 @@ void tst_QNetworkReply::backgroundRequest_data()
     QTest::newRow("https, bg, nobg") << httpsurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
 #endif
 
+#if QT_CONFIG(ftp)
     QTest::newRow("ftp, fg, normal") << ftpurl << false << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
     QTest::newRow("ftp, bg, normal") << ftpurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
     QTest::newRow("ftp, fg, nobg") << ftpurl << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
     QTest::newRow("ftp, bg, nobg") << ftpurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
+#endif
 #endif // !QT_NO_BEARERMANAGEMENT
 }
 #endif
@@ -8175,7 +8215,9 @@ void tst_QNetworkReply::backgroundRequestInterruption_data()
 
     QUrl httpurl("http://" + QtNetworkSettings::httpServerName() + "/qtest/mediumfile");
     QUrl httpsurl("https://" + QtNetworkSettings::httpServerName() + "/qtest/mediumfile");
+#if QT_CONFIG(ftp)
     QUrl ftpurl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/bigfile");
+#endif
 
     QTest::newRow("http, fg, nobg") << httpurl << false << QNetworkReply::NoError;
     QTest::newRow("http, bg, nobg") << httpurl << true << QNetworkReply::BackgroundRequestNotAllowedError;
@@ -8185,9 +8227,10 @@ void tst_QNetworkReply::backgroundRequestInterruption_data()
     QTest::newRow("https, bg, nobg") << httpsurl << true  << QNetworkReply::BackgroundRequestNotAllowedError;
 #endif
 
+#if QT_CONFIG(ftp)
     QTest::newRow("ftp, fg, nobg") << ftpurl << false << QNetworkReply::NoError;
     QTest::newRow("ftp, bg, nobg") << ftpurl << true << QNetworkReply::BackgroundRequestNotAllowedError;
-
+#endif
 }
 #endif
 
@@ -8251,13 +8294,17 @@ void tst_QNetworkReply::backgroundRequestConnectInBackground_data()
     QTest::addColumn<bool>("background");
 
     QUrl httpurl("http://" + QtNetworkSettings::httpServerName());
+#if QT_CONFIG(ftp)
     QUrl ftpurl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/rfc3252.txt");
+#endif
 
     QTest::newRow("http, fg") << httpurl << false;
     QTest::newRow("http, bg") << httpurl << true;
 
+#if QT_CONFIG(ftp)
     QTest::newRow("ftp, fg") << ftpurl << false;
     QTest::newRow("ftp, bg") << ftpurl << true;
+#endif
 }
 #endif
 
@@ -9183,7 +9230,9 @@ void tst_QNetworkReply::autoDeleteRepliesAttribute_data()
 
     QTest::newRow("http") << QUrl("http://QInvalidDomain.qt/test");
     QTest::newRow("https") << QUrl("https://QInvalidDomain.qt/test");
+#if QT_CONFIG(ftp)
     QTest::newRow("ftp") << QUrl("ftp://QInvalidDomain.qt/test");
+#endif
     QTest::newRow("file") << QUrl("file:///thisfolderdoesn'texist/probably.txt");
 #ifdef Q_OS_WIN
     // Only supported on windows.

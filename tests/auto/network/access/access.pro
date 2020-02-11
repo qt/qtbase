@@ -1,4 +1,6 @@
 TEMPLATE=subdirs
+QT_FOR_CONFIG += network
+
 SUBDIRS=\
    qnetworkdiskcache \
    qnetworkcookiejar \
@@ -8,7 +10,6 @@ SUBDIRS=\
    qhttpnetworkconnection \
    qnetworkreply \
    qnetworkcachemetadata \
-   qftp \
    qhttpnetworkreply \
    qabstractnetworkcache \
    hpack \
@@ -18,7 +19,8 @@ SUBDIRS=\
 !qtConfig(private_tests): SUBDIRS -= \
           qhttpnetworkconnection \
           qhttpnetworkreply \
-          qftp \
           hpack \
           http2 \
           hsts
+
+qtConfig(ftp): qtConfig(private_tests): SUBDIRS += qftp

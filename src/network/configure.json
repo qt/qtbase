@@ -343,6 +343,7 @@
             "label": "FTP",
             "purpose": "Provides support for the File Transfer Protocol in QNetworkAccessManager.",
             "section": "Networking",
+            "autoDetect": false,
             "condition": "features.textdate",
             "output": [ "publicFeature", "feature" ]
         },
@@ -480,6 +481,7 @@ For example:
                 "opensslv11",
                 "dtls",
                 "ocsp",
+                "ftp",
                 "sctp",
                 "system-proxies",
                 "gssapi"

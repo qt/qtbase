@@ -1,5 +1,8 @@
 # Generated from qftp.pro.
 
+if(NOT QT_FEATURE_ftp)
+    return()
+endif()
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
@@ -17,5 +20,6 @@ add_qt_test(tst_qftp
 )
 
 #### Keys ignored in scope 1:.:.:qftp.pro:<TRUE>:
+# QT_FOR_CONFIG = "network"
 # QT_TEST_SERVER_LIST = "vsftpd" "ftp-proxy" "squid" "danted"
-# _REQUIREMENTS = "qtConfig(private_tests)"
+# _REQUIREMENTS = "qtConfig(ftp)" "qtConfig(private_tests)"
