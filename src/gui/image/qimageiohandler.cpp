@@ -224,7 +224,7 @@
 
     An image format plugin can support three capabilities: reading (\l
     CanRead), writing (\l CanWrite) and \e incremental reading (\l
-    CanReadIncremental). Reimplement capabilities() in you subclass to
+    CanReadIncremental). Reimplement capabilities() in your subclass to
     expose the capabilities of your image format.
 
     create() should create an instance of your QImageIOHandler
