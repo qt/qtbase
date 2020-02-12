@@ -161,7 +161,7 @@ long roleToControlTypeId(QAccessible::Role role)
         {QAccessible::Sound, UIA_CustomControlTypeId},
         {QAccessible::Cursor, UIA_CustomControlTypeId},
         {QAccessible::Caret, UIA_CustomControlTypeId},
-        {QAccessible::AlertMessage, UIA_CustomControlTypeId},
+        {QAccessible::AlertMessage, UIA_WindowControlTypeId},
         {QAccessible::Window, UIA_WindowControlTypeId},
         {QAccessible::Client, UIA_GroupControlTypeId},
         {QAccessible::PopupMenu, UIA_MenuControlTypeId},

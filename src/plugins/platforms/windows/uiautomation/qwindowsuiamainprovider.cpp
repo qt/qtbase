@@ -448,6 +448,10 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             setVariantBool(wt == Qt::Popup || wt == Qt::ToolTip || wt == Qt::SplashScreen, pRetVal);
         }
         break;
+    case UIA_IsDialogPropertyId:
+        setVariantBool(accessible->role() == QAccessible::Dialog
+                       || accessible->role() == QAccessible::AlertMessage, pRetVal);
+        break;
     case UIA_FullDescriptionPropertyId:
         setVariantString(accessible->text(QAccessible::Description), pRetVal);
         break;
