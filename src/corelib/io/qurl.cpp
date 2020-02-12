@@ -4189,7 +4189,7 @@ static bool isIp6(const QString &text)
 
 /*!
     Returns a valid URL from a user supplied \a userInput string if one can be
-    deducted. In the case that is not possible, an invalid QUrl() is returned.
+    deduced. In the case that is not possible, an invalid QUrl() is returned.
 
     This overload takes a \a workingDirectory path, in order to be able to
     handle relative paths. This is especially useful when handling command
