@@ -9,13 +9,12 @@ add_qt_benchmark(tst_bench_opengl
         main.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::OpenGLPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::OpenGL
+        Qt::OpenGLPrivate
         Qt::Test
 )
 

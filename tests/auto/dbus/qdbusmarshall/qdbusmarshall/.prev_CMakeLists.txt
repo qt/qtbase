@@ -8,11 +8,9 @@ add_qt_test(tst_qdbusmarshall
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qdbusmarshall.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
-    PUBLIC_LIBRARIES
-        Qt::DBus
 )
 
 ## Scopes:

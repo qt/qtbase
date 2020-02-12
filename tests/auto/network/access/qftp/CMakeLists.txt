@@ -11,10 +11,9 @@ endif()
 add_qt_test(tst_qftp
     SOURCES
         tst_qftp.cpp
-    LIBRARIES
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
         Qt::Network
+        Qt::NetworkPrivate
 )
 
 #### Keys ignored in scope 1:.:.:qftp.pro:<TRUE>:

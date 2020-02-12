@@ -9,6 +9,6 @@ add_qt_test(tst_qurlquery
         tst_qurlquery.cpp
     DEFINES
         SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

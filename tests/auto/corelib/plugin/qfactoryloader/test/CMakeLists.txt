@@ -10,7 +10,7 @@ add_qt_test(tst_qfactoryloader
         ../plugin1/plugininterface1.h
         ../plugin2/plugininterface2.h
         ../tst_qfactoryloader.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
 

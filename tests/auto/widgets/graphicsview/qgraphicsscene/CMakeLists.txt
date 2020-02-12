@@ -10,13 +10,12 @@ add_qt_test(tst_qgraphicsscene
     DEFINES
         QT_NO_CAST_TO_ASCII
         SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}\\\"
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 # Resources:

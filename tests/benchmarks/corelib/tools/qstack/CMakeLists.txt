@@ -7,8 +7,7 @@
 add_qt_benchmark(tst_bench_stack
     SOURCES
         main.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Test
 )

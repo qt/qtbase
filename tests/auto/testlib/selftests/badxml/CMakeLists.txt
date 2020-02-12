@@ -9,9 +9,8 @@ add_qt_executable(badxml
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         tst_badxml.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Test
 )
 

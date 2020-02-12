@@ -7,7 +7,7 @@
 add_qt_test(tst_qtimer
     SOURCES
         tst_qtimer.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
 

@@ -8,10 +8,9 @@ add_qt_manual_test(texuploads
     GUI
     SOURCES
         texuploads.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

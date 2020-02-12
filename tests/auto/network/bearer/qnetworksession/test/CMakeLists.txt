@@ -9,10 +9,9 @@ add_qt_test(tst_qnetworksession
     SOURCES
         ../../qbearertestcommon.h
         tst_qnetworksession.cpp
-    LIBRARIES
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
         Qt::Network
+        Qt::NetworkPrivate
 )
 
 ## Scopes:

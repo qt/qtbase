@@ -11,8 +11,7 @@ add_qt_executable(generate
     INCLUDE_DIRECTORIES
         .
         /usr/include/freetype2
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
 )

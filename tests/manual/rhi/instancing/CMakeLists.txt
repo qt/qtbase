@@ -8,10 +8,9 @@ add_qt_manual_test(instancing
     GUI
     SOURCES
         instancing.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

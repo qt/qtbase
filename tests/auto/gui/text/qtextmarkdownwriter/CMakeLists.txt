@@ -13,10 +13,9 @@ add_qt_test(tst_qtextmarkdownwriter
         tst_qtextmarkdownwriter.cpp
     DEFINES
         SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}\\\"
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
     TESTDATA ${test_data}
 )

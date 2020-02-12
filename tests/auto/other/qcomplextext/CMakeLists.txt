@@ -10,11 +10,10 @@ list(APPEND test_data "data")
 add_qt_test(tst_qcomplextext
     SOURCES
         tst_qcomplextext.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
     TESTDATA ${test_data}
 )
 

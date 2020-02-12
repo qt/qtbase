@@ -9,12 +9,10 @@ add_qt_manual_test(qopenglcontext
     SOURCES
         main.cpp
         qopenglcontextwindow.cpp qopenglcontextwindow.h
-    LIBRARIES
-        Qt::EglSupportPrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
-        Qt::EglSupport
+        Qt::EglSupportPrivate
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:qopenglcontext.pro:<TRUE>:

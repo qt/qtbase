@@ -10,10 +10,8 @@ add_qt_executable(silent
     GUI
     SOURCES
         tst_silent.cpp
-    LIBRARIES
-        Qt::TestPrivate
     PUBLIC_LIBRARIES
-        Qt::Test
+        Qt::TestPrivate
 )
 
 ## Scopes:

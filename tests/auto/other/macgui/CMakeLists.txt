@@ -15,11 +15,9 @@ add_qt_test(tst_macgui
     SOURCES
         guitest.cpp guitest.h
         tst_macgui.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES
-        Qt::Widgets
 )
 
 #### Keys ignored in scope 1:.:.:macgui.pro:<TRUE>:

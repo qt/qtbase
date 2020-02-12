@@ -7,11 +7,9 @@
 add_qt_test(tst_qdbustype
     SOURCES
         tst_qdbustype.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
-    PUBLIC_LIBRARIES
-        Qt::DBus
 )
 
 ## Scopes:

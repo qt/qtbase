@@ -7,12 +7,11 @@
 add_qt_test(tst_qopenglwidget
     SOURCES
         tst_qopenglwidget.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::OpenGLPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::OpenGL
+        Qt::OpenGLPrivate
         Qt::Widgets
 )

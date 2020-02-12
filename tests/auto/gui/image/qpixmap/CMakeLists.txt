@@ -25,11 +25,10 @@ list(APPEND test_data ${test_data_glob})
 add_qt_test(tst_qpixmap
     SOURCES
         tst_qpixmap.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
     TESTDATA ${test_data}
 )
 
@@ -96,10 +95,9 @@ add_qt_resource(tst_qpixmap "qpixmap"
 #####################################################################
 
 extend_target(tst_qpixmap CONDITION TARGET Qt::Widgets
-    LIBRARIES
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 extend_target(tst_qpixmap CONDITION WIN32 AND NOT WINRT

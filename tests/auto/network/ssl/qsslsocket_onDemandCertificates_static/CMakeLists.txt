@@ -13,11 +13,9 @@ add_qt_test(tst_qsslsocket_onDemandCertificates_static
         tst_qsslsocket_onDemandCertificates_static.cpp
     DEFINES
         SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Network
 )
 
 #### Keys ignored in scope 1:.:.:qsslsocket_onDemandCertificates_static.pro:<TRUE>:

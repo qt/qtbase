@@ -8,10 +8,9 @@ add_qt_manual_test(msaarenderbuffer
     GUI
     SOURCES
         msaarenderbuffer.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

@@ -13,11 +13,9 @@ add_qt_test(tst_qsocks5socketengine
         tst_qsocks5socketengine.cpp
     INCLUDE_DIRECTORIES
         ${QT_SOURCE_TREE}/src/network
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Network
 )
 
 #### Keys ignored in scope 1:.:.:qsocks5socketengine.pro:<TRUE>:

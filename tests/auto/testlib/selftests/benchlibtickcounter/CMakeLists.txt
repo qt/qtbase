@@ -10,10 +10,8 @@ add_qt_executable(benchlibtickcounter
     GUI
     SOURCES
         tst_benchlibtickcounter.cpp
-    LIBRARIES
-        Qt::TestPrivate
     PUBLIC_LIBRARIES
-        Qt::Test
+        Qt::TestPrivate
 )
 
 ## Scopes:

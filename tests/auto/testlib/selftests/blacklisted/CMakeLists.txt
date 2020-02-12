@@ -10,10 +10,8 @@ add_qt_executable(blacklisted
     GUI
     SOURCES
         tst_blacklisted.cpp
-    LIBRARIES
-        Qt::TestPrivate
     PUBLIC_LIBRARIES
-        Qt::Test
+        Qt::TestPrivate
 )
 
 ## Scopes:

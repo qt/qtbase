@@ -15,11 +15,10 @@ add_qt_manual_test(foreignwindows
         QT_DIAG_LIB
     INCLUDE_DIRECTORIES
         ../diaglib
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )
 
@@ -46,10 +45,8 @@ extend_target(foreignwindows CONDITION QT_FEATURE_widgets
         ../diaglib/debugproxystyle.cpp ../diaglib/debugproxystyle.h
         ../diaglib/logwidget.cpp ../diaglib/logwidget.h
         ../diaglib/qwidgetdump.cpp ../diaglib/qwidgetdump.h
-    LIBRARIES
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
-        Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 extend_target(foreignwindows CONDITION QT_FEATURE_opengl

@@ -13,10 +13,8 @@ add_qt_test(tst_qauthenticator
         tst_qauthenticator.cpp
     DEFINES
         SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
-    LIBRARIES
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
-        Qt::Network
+        Qt::NetworkPrivate
 )
 
 #### Keys ignored in scope 1:.:.:qauthenticator.pro:<TRUE>:

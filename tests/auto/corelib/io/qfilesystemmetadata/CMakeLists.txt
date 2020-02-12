@@ -7,6 +7,6 @@
 add_qt_test(tst_qfilesystemmetadata
     SOURCES
         tst_qfilesystemmetadata.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

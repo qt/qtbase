@@ -7,6 +7,6 @@
 add_qt_test(tst_qstorageinfo
     SOURCES
         tst_qstorageinfo.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

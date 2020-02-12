@@ -11,13 +11,12 @@ endif()
 add_qt_test(tst_qgraphicssceneindex
     SOURCES
         tst_qgraphicssceneindex.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 1:.:.:qgraphicssceneindex.pro:<TRUE>:

@@ -7,7 +7,7 @@
 add_qt_test(tst_qtimezone
     SOURCES
         tst_qtimezone.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
 

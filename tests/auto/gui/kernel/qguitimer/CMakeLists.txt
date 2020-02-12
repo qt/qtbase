@@ -7,9 +7,8 @@
 add_qt_test(tst_qguitimer
     SOURCES
         ../../../corelib/kernel/qtimer/tst_qtimer.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Threads::Threads # special case
 )

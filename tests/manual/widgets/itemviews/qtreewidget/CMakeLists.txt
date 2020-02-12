@@ -8,9 +8,8 @@ add_qt_manual_test(qtreewidget
     GUI
     SOURCES
         main.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
 )

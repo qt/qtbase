@@ -13,11 +13,9 @@ endif()
 add_qt_manual_test(tst_socketengine
     SOURCES
         main.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Network
         Qt::Test
 )
 

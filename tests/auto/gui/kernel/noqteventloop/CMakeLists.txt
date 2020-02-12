@@ -7,11 +7,10 @@
 add_qt_test(tst_noqteventloop
     SOURCES
         tst_noqteventloop.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Network
 )
 

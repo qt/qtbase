@@ -13,11 +13,10 @@ add_qt_test(tst_qsocketnotifier
         tst_qsocketnotifier.cpp
     INCLUDE_DIRECTORIES
         ${QT_SOURCE_TREE}/src/network
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Network
+        Qt::NetworkPrivate
 )
 
 #### Keys ignored in scope 1:.:.:qsocketnotifier.pro:<TRUE>:

@@ -7,9 +7,8 @@
 add_qt_test(tst_qtextformat
     SOURCES
         tst_qtextformat.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
 )

@@ -10,10 +10,9 @@ add_qt_manual_test(xcb_gl_integration
         main.cpp
     INCLUDE_DIRECTORIES
         .
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:xcb_gl_integration.pro:<TRUE>:

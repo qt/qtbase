@@ -8,10 +8,9 @@ add_qt_benchmark(tst_bench_lancebench
     SOURCES
         ../../../../auto/other/lancelot/paintcommands.cpp ../../../../auto/other/lancelot/paintcommands.h
         tst_lancebench.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Test
 )
 

@@ -10,10 +10,9 @@ list(APPEND test_data "parser.json")
 add_qt_test(tst_qnetworkcookiejar
     SOURCES
         tst_qnetworkcookiejar.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Network
+        Qt::NetworkPrivate
     TESTDATA ${test_data}
 )

@@ -13,11 +13,10 @@ add_qt_manual_test(lance
     INCLUDE_DIRECTORIES
         .
         ../../auto/other/lancelot
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::PrintSupport
         Qt::Widgets
 )

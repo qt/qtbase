@@ -7,9 +7,8 @@
 add_qt_test(tst_qtouchevent
     SOURCES
         tst_qtouchevent.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )

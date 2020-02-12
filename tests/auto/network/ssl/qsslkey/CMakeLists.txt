@@ -26,10 +26,7 @@ add_qt_test(tst_qsslkey
 #####################################################################
 
 extend_target(tst_qsslkey CONDITION QT_FEATURE_private_tests
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Network
 )

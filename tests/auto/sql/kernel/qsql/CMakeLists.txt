@@ -7,9 +7,7 @@
 add_qt_test(tst_qsql
     SOURCES
         tst_qsql.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::SqlPrivate
-    PUBLIC_LIBRARIES
-        Qt::Sql
 )
