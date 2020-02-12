@@ -30,7 +30,6 @@
 #include <QtCore/QUrl>
 #include <QtTest/QtTest>
 
-#include "private/qtldurl_p.h"
 #include "private/qurl_p.h"
 
 // For testsuites

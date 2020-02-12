@@ -39,6 +39,8 @@
 
 #include <qglobal.h>
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #if QT_CONFIG(topleveldomain)
 
 #include "qplatformdefs.h"
@@ -92,7 +94,7 @@ static bool containsTLDEntry(QStringView entry, TLDMatchType match)
     \a domain.
 */
 
-Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain)
+Q_NETWORK_EXPORT QString qTopLevelDomain(const QString &domain)
 {
     const QString domainLower = domain.toLower();
     QVector<QStringRef> sections = domainLower.splitRef(QLatin1Char('.'), QString::SkipEmptyParts);
@@ -114,7 +116,7 @@ Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain)
     Return true if \a domain is a top-level-domain per Qt's copy of the Mozilla public suffix list.
 */
 
-Q_CORE_EXPORT bool qIsEffectiveTLD(const QStringRef &domain)
+Q_NETWORK_EXPORT bool qIsEffectiveTLD(const QStringRef &domain)
 {
     // for domain 'foo.bar.com':
     // 1. return if TLD table contains 'foo.bar.com'

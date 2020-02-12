@@ -431,6 +431,12 @@
             "section": "Networking",
             "condition": "config.win32 && tests.netlistmgr",
             "output": [ "privateFeature" ]
+        },
+        "topleveldomain": {
+            "label": "qTopLevelDomain()",
+            "purpose": "Provides support for extracting the top level domain from URLs.  If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org, Mozilla License) is included. The data is then also used in QNetworkCookieJar::validateCookie.",
+            "section": "Networking",
+            "output": [ "publicFeature" ]
         }
     },
 

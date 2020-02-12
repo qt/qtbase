@@ -191,6 +191,6 @@ int main(int argc, char **argv)
     outFile.write(chunks.join(", ").toLatin1());
     outFile.write("};\n");
     outFile.close();
-    printf("Data generated to %s - now revise qtbase/src/corelib/io/qurltlds_p.h to use this data.\n", argv[2]);
+    printf("Data generated to %s - now revise qtbase/src/network/kernel/qurltlds_p.h to use this data.\n", argv[2]);
     return 0;
 }

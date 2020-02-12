@@ -415,9 +415,6 @@
 #include "qhash.h"
 #include "qdir.h"         // for QDir::fromNativeSeparators
 #include "qdatastream.h"
-#if QT_CONFIG(topleveldomain) // ### Qt6: Remove section
-#include "qtldurl_p.h"
-#endif
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
 #include "private/qdir_p.h"
@@ -3149,46 +3146,6 @@ bool QUrl::hasFragment() const
     return d->hasFragment();
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-#if QT_CONFIG(topleveldomain)
-/*!
-    \since 4.8
-
-    \deprecated
-
-    Returns the TLD (Top-Level Domain) of the URL, (e.g. .co.uk, .net).
-    Note that the return value is prefixed with a '.' unless the
-    URL does not contain a valid TLD, in which case the function returns
-    an empty string.
-
-    Note that this function considers a TLD to be any domain that allows users
-    to register subdomains under, including many home, dynamic DNS websites and
-    blogging providers. This is useful for determining whether two websites
-    belong to the same infrastructure and communication should be allowed, such
-    as browser cookies: two domains should be considered part of the same
-    website if they share at least one label in addition to the value
-    returned by this function.
-
-    \list
-      \li \c{foo.co.uk} and \c{foo.com} do not share a top-level domain
-      \li \c{foo.co.uk} and \c{bar.co.uk} share the \c{.co.uk} domain, but the next label is different
-      \li \c{www.foo.co.uk} and \c{ftp.foo.co.uk} share the same top-level domain and one more label,
-          so they are considered part of the same site
-    \endlist
-
-    If \a options includes EncodeUnicode, the returned string will be in
-    ASCII Compatible Encoding.
-*/
-QString QUrl::topLevelDomain(ComponentFormattingOptions options) const
-{
-    QString tld = qTopLevelDomain(host());
-    if (options & EncodeUnicode) {
-        return qt_ACE_do(tld, ToAceOnly, AllowLeadingDot);
-    }
-    return tld;
-}
-#endif
-#endif // QT_DEPRECATED_SINCE(5, 15)
 /*!
     Returns the result of the merge of this URL with \a relative. This
     URL is used as a base to convert \a relative to an absolute URL.

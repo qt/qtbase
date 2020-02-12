@@ -48,8 +48,6 @@ class tst_QUrl : public QObject
 private slots:
     void initTestCase();
     void cleanupTestCase();
-    void effectiveTLDs_data();
-    void effectiveTLDs();
     void getSetCheck();
     void constructing();
     void hashInPath();
@@ -3385,61 +3383,6 @@ void tst_QUrl::acceptEmptyAuthoritySegments()
 
     QCOMPARE(QUrl(file_uni_bar).toString(), file_triple_bar);
     QCOMPARE(QUrl(file_uni_bar, QUrl::StrictMode).toString(), file_triple_bar);
-}
-
-void tst_QUrl::effectiveTLDs_data()
-{
-    // See also: tst_QNetworkCookieJar::setCookiesFromUrl().
-    // in tests/auto/network/access/qnetworkcookiejar/tst_qnetworkcookiejar.cpp
-    QTest::addColumn<QUrl>("domain");
-    QTest::addColumn<QString>("TLD");
-    // TODO: autogenerate test-cases from:
-    // https://raw.githubusercontent.com/publicsuffix/list/master/tests/test_psl.txt
-    // checkPublicSuffix(domain, tail) appears in the list if
-    // either tail is null and domain is public or
-    // tail is the "registrable" part of domain; i.e. its minimal non-public tail.
-
-    QTest::newRow("yes0") << QUrl::fromEncoded("http://test.co.uk") << ".co.uk";
-    QTest::newRow("yes1") << QUrl::fromEncoded("http://test.com") << ".com";
-    QTest::newRow("yes2") << QUrl::fromEncoded("http://www.test.de") << ".de";
-    QTest::newRow("yes3") << QUrl::fromEncoded("http://test.ulm.museum") << ".ulm.museum";
-    QTest::newRow("yes4") << QUrl::fromEncoded("http://www.com.krodsherad.no") << ".krodsherad.no";
-    QTest::newRow("yes5") << QUrl::fromEncoded("http://www.co.uk.1.bg") << ".1.bg";
-    QTest::newRow("yes6") << QUrl::fromEncoded("http://www.com.com.cn") << ".com.cn";
-    QTest::newRow("yes7") << QUrl::fromEncoded("http://www.test.org.ws") << ".org.ws";
-    QTest::newRow("yes9") << QUrl::fromEncoded("http://www.com.co.uk.wallonie.museum") << ".wallonie.museum";
-    QTest::newRow("yes10") << QUrl::fromEncoded("http://www.com.evje-og-hornnes.no") << ".evje-og-hornnes.no";
-    QTest::newRow("yes11") << QUrl::fromEncoded("http://www.bla.kamijima.ehime.jp") << ".kamijima.ehime.jp";
-    QTest::newRow("yes12") << QUrl::fromEncoded("http://www.bla.kakuda.miyagi.jp") << ".kakuda.miyagi.jp";
-    QTest::newRow("yes13") << QUrl::fromEncoded("http://mypage.betainabox.com") << ".betainabox.com";
-    QTest::newRow("yes14") << QUrl::fromEncoded("http://mypage.rhcloud.com") << ".rhcloud.com";
-    QTest::newRow("yes15") << QUrl::fromEncoded("http://mypage.int.az") << ".int.az";
-    QTest::newRow("yes16") << QUrl::fromEncoded("http://anything.pagespeedmobilizer.com") << ".pagespeedmobilizer.com";
-    QTest::newRow("yes17") << QUrl::fromEncoded("http://anything.eu-central-1.compute.amazonaws.com") << ".eu-central-1.compute.amazonaws.com";
-    QTest::newRow("yes18") << QUrl::fromEncoded("http://anything.ltd.hk") << ".ltd.hk";
-    QTest::newRow("trentino.it")
-        << QUrl::fromEncoded("http://any.thing.trentino.it") << ".trentino.it";
-    QTest::newRow("net.ni") << QUrl::fromEncoded("http://test.net.ni") << ".net.ni";
-    QTest::newRow("dyn.cosidns.de")
-        << QUrl::fromEncoded("http://test.dyn.cosidns.de") << ".dyn.cosidns.de";
-    QTest::newRow("freeddns.org")
-        << QUrl::fromEncoded("http://test.freeddns.org") << ".freeddns.org";
-    QTest::newRow("app.os.stg.fedoraproject.org")
-        << QUrl::fromEncoded("http://test.app.os.stg.fedoraproject.org")
-        << ".app.os.stg.fedoraproject.org";
-    QTest::newRow("development.run") << QUrl::fromEncoded("http://test.development.run") << ".development.run";
-    QTest::newRow("crafting.xyz") << QUrl::fromEncoded("http://test.crafting.xyz") << ".crafting.xyz";
-    QTest::newRow("nym.ie") << QUrl::fromEncoded("http://shamus.nym.ie") << ".nym.ie";
-    QTest::newRow("vapor.cloud") << QUrl::fromEncoded("http://test.vapor.cloud") << ".vapor.cloud";
-    QTest::newRow("official.academy") << QUrl::fromEncoded("http://acredited.official.academy") << ".official.academy";
-}
-
-void tst_QUrl::effectiveTLDs()
-{
-    QFETCH(QUrl, domain);
-    QFETCH(QString, TLD);
-    QCOMPARE(domain.topLevelDomain(QUrl::PrettyDecoded), TLD);
-    QCOMPARE(domain.topLevelDomain(QUrl::FullyDecoded), TLD);
 }
 
 void tst_QUrl::lowercasesScheme()

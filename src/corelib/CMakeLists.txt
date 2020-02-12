@@ -90,12 +90,10 @@ qt_add_module(Core
         io/qstorageinfo.cpp io/qstorageinfo.h io/qstorageinfo_p.h
         io/qtemporarydir.cpp io/qtemporarydir.h
         io/qtemporaryfile.cpp io/qtemporaryfile.h io/qtemporaryfile_p.h
-        io/qtldurl.cpp io/qtldurl_p.h
         io/qurl.cpp io/qurl.h io/qurl_p.h
         io/qurlidna.cpp
         io/qurlquery.cpp io/qurlquery.h
         io/qurlrecode.cpp
-        io/qurltlds_p.h
         itemmodels/qabstractitemmodel.cpp itemmodels/qabstractitemmodel.h itemmodels/qabstractitemmodel_p.h
         itemmodels/qitemselectionmodel.cpp itemmodels/qitemselectionmodel.h itemmodels/qitemselectionmodel_p.h
         kernel/qabstracteventdispatcher.cpp kernel/qabstracteventdispatcher.h kernel/qabstracteventdispatcher_p.h
@@ -903,7 +901,7 @@ qt_extend_target(Core CONDITION WINRT
         kernel/qfunctions_winrt.cpp kernel/qfunctions_winrt.h
 )
 
-qt_extend_target(Core CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT rtems
+qt_extend_target(Core CONDITION QT_FEATURE_process AND UNIX
     SOURCES
         ../3rdparty/forkfd/forkfd.h
         io/forkfd_qt.cpp

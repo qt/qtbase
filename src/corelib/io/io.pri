@@ -32,8 +32,6 @@ HEADERS +=  \
         io/qurl.h \
         io/qurl_p.h \
         io/qurlquery.h \
-        io/qurltlds_p.h \
-        io/qtldurl_p.h \
         io/qfsfileengine_p.h \
         io/qfsfileengine_iterator_p.h \
         io/qfilesystementry_p.h \
@@ -49,7 +47,6 @@ SOURCES += \
         io/qabstractfileengine.cpp \
         io/qbuffer.cpp \
         io/qdataurl.cpp \
-        io/qtldurl.cpp \
         io/qdebug.cpp \
         io/qdir.cpp \
         io/qdiriterator.cpp \

@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qurl.h"
 #include "QtCore/qstring.h"
 
@@ -59,8 +59,8 @@ QT_REQUIRE_CONFIG(topleveldomain);
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain);
-Q_CORE_EXPORT bool qIsEffectiveTLD(const QStringRef &domain);
+Q_NETWORK_EXPORT QString qTopLevelDomain(const QString &domain);
+Q_NETWORK_EXPORT bool qIsEffectiveTLD(const QStringRef &domain);
 inline bool qIsEffectiveTLD(const QString &domain)
 {
     return qIsEffectiveTLD(QStringRef(&domain));

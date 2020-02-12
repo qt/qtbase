@@ -233,11 +233,6 @@ public:
 
     void setHost(const QString &host, ParsingMode mode = DecodedMode);
     QString host(ComponentFormattingOptions = FullyDecoded) const;
-#if QT_DEPRECATED_SINCE(5, 15)
-#if QT_CONFIG(topleveldomain)
-    QT_DEPRECATED QString topLevelDomain(ComponentFormattingOptions options = FullyDecoded) const;
-#endif
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
     void setPort(int port);
     int port(int defaultPort = -1) const;

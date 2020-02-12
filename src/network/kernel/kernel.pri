@@ -26,6 +26,13 @@ SOURCES += kernel/qauthenticator.cpp \
            kernel/qnetworkinterface.cpp \
            kernel/qnetworkproxy.cpp
 
+
+qtConfig(topleveldomain) {
+    HEADERS += kernel/qurltlds_p.h \
+               kernel/qtldurl_p.h
+    SOURCES += kernel/qtldurl.cpp
+}
+
 qtConfig(ftp) {
     HEADERS += kernel/qurlinfo_p.h
     SOURCES += kernel/qurlinfo.cpp

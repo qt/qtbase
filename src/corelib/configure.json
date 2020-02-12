@@ -1096,12 +1096,6 @@
             "condition": "config.win32",
             "output": [ "privateFeature" ]
         },
-        "topleveldomain": {
-            "label": "QUrl::topLevelDomain()",
-            "purpose": "Provides support for extracting the top level domain from URLs.  If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org, Mozilla License) is included. The data is then also used in QNetworkCookieJar::validateCookie.",
-            "section": "Utilities",
-            "output": [ "publicFeature" ]
-        },
         "win32_system_libs": {
             "label": "Windows System Libraries",
             "condition": "config.win32 && libs.advapi32 && libs.gdi32 && libs.kernel32 && libs.netapi32 && libs.ole32 && libs.shell32 && libs.uuid && libs.user32 && libs.winmm && libs.ws2_32"

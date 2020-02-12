@@ -761,7 +761,7 @@ qt_feature("process" PUBLIC
     SECTION "File I/O"
     LABEL "QProcess"
     PURPOSE "Supports external process invocation."
-    CONDITION QT_FEATURE_processenvironment AND NOT WINRT AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT VXWORKS AND NOT rtems
+    CONDITION QT_FEATURE_processenvironment AND ( QT_FEATURE_thread OR NOT UNIX ) AND NOT WINRT AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT VXWORKS AND NOT rtems
 )
 qt_feature_definition("process" "QT_NO_PROCESS" NEGATE VALUE "1")
 qt_feature("processenvironment" PUBLIC
@@ -954,11 +954,6 @@ qt_feature("etw" PRIVATE
     CONDITION WIN32
     ENABLE INPUT_trace STREQUAL 'etw' OR ( INPUT_trace STREQUAL 'yes' AND WIN32 )
     DISABLE INPUT_trace STREQUAL 'lttng' OR INPUT_trace STREQUAL 'no'
-)
-qt_feature("topleveldomain" PUBLIC
-    SECTION "Utilities"
-    LABEL "QUrl::topLevelDomain()"
-    PURPOSE "Provides support for extracting the top level domain from URLs.  If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org, Mozilla License) is included. The data is then also used in QNetworkCookieJar::validateCookie."
 )
 qt_feature("win32_system_libs"
     LABEL "Windows System Libraries"
