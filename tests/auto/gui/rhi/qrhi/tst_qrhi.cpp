@@ -294,7 +294,8 @@ void tst_QRhi::create()
             QRhi::BaseInstance,
             QRhi::TriangleFanTopology,
             QRhi::ReadBackNonUniformBuffer,
-            QRhi::ReadBackNonBaseMipLevel
+            QRhi::ReadBackNonBaseMipLevel,
+            QRhi::TexelFetch
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);

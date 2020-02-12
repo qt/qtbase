@@ -514,6 +514,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.nonBaseLevelFramebufferTexture = true;
 
+    caps.texelFetch = caps.ctxMajor >= 3; // 3.0 or ES 3.0
+
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         f->glEnable(GL_POINT_SPRITE);
@@ -767,6 +769,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return !caps.gles || caps.properMapBuffer;
     case QRhi::ReadBackNonBaseMipLevel:
         return caps.nonBaseLevelFramebufferTexture;
+    case QRhi::TexelFetch:
+        return caps.texelFetch;
     default:
         Q_UNREACHABLE();
         return false;

@@ -464,6 +464,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ReadBackNonBaseMipLevel:
         return true;
+    case QRhi::TexelFetch:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

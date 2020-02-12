@@ -577,6 +577,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     specifying a non-zero level in QRhiReadbackDescription leads to returning
     an all-zero image. In practice this feature will be unsupported with OpenGL
     ES 2.0, while it will likely be supported everywhere else.
+
+    \value TexelFetch Indicates that texelFetch() is available in shaders. In
+    practice this will be reported as unsupported with OpenGL ES 2.0 and OpenGL
+    2.x contexts, because GLSL 100 es and versions before 130 do not support
+    this function.
  */
 
 /*!
