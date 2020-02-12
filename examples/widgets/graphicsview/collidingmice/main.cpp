@@ -58,6 +58,9 @@ static constexpr int MouseCount = 7;
 //! [0]
 int main(int argc, char **argv)
 {
+#ifdef Q_OS_ANDROID
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
     QApplication app(argc, argv);
 //! [0]
 
