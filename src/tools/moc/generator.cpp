@@ -381,7 +381,7 @@ void Generator::generateCode()
             isConstructible ? index : 0);
 
     int flags = 0;
-    if (cdef->hasQGadget) {
+    if (cdef->hasQGadget || cdef->hasQNamespace) {
         // Ideally, all the classes could have that flag. But this broke classes generated
         // by qdbusxml2cpp which generate code that require that we call qt_metacall for properties
         flags |= PropertyAccessInStaticMetaCall;
@@ -541,7 +541,7 @@ void Generator::generateCode()
 
     if (isQObject)
         fprintf(out, "    nullptr,\n");
-    else if (cdef->superclassList.size() && !cdef->hasQGadget) // for qobject, we know the super class must have a static metaobject
+    else if (cdef->superclassList.size() && !cdef->hasQGadget && !cdef->hasQNamespace) // for qobject, we know the super class must have a static metaobject
         fprintf(out, "    QMetaObject::SuperData::link<%s::staticMetaObject>(),\n", purestSuperClass.constData());
     else if (cdef->superclassList.size()) // for gadgets we need to query at compile time for it
         fprintf(out, "    QtPrivate::MetaObjectForType<%s>::value(),\n", purestSuperClass.constData());
@@ -1179,7 +1179,7 @@ void Generator::generateStaticMetacall()
             }
             fprintf(out, ");\n");
             fprintf(out, "            if (_a[0]) *reinterpret_cast<%s**>(_a[0]) = _r; } break;\n",
-                    cdef->hasQGadget ? "void" : "QObject");
+                    (cdef->hasQGadget || cdef->hasQNamespace) ? "void" : "QObject");
         }
         fprintf(out, "        default: break;\n");
         fprintf(out, "        }\n");

@@ -3,6 +3,7 @@
         "classes": [
             {
                 "className": "MyBooooooostishClass",
+                "object": true,
                 "qualifiedClassName": "MyBooooooostishClass",
                 "signals": [
                     {
@@ -33,6 +34,7 @@
         "classes": [
             {
                 "className": "Task87883",
+                "object": true,
                 "qualifiedClassName": "Task87883",
                 "superClasses": [
                     {
@@ -49,6 +51,7 @@
         "classes": [
             {
                 "className": "IfdefedClass",
+                "object": true,
                 "qualifiedClassName": "IfdefedClass",
                 "superClasses": [
                     {
@@ -65,6 +68,7 @@
         "classes": [
             {
                 "className": "BackslashNewlines",
+                "object": true,
                 "qualifiedClassName": "BackslashNewlines",
                 "slots": [
                     {
@@ -88,6 +92,7 @@
         "classes": [
             {
                 "className": "OldStyleCast",
+                "object": true,
                 "qualifiedClassName": "OldStyleCast",
                 "slots": [
                     {
@@ -146,6 +151,7 @@
         "classes": [
             {
                 "className": "SlotsWithVoidTemplateTest",
+                "object": true,
                 "qualifiedClassName": "SlotsWithVoidTemplateTest",
                 "signals": [
                     {
@@ -218,6 +224,7 @@
                         "returnType": "const char*"
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "InvokableBeforeReturnType",
                 "superClasses": [
                     {
@@ -240,6 +247,7 @@
                         "returnType": "void"
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "InvokableBeforeInline",
                 "superClasses": [
                     {
@@ -268,6 +276,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -293,6 +302,7 @@
             },
             {
                 "className": "Baz",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -337,6 +347,7 @@
         "classes": [
             {
                 "className": "Foo",
+                "object": true,
                 "qualifiedClassName": "BBB::Foo",
                 "signals": [
                     {
@@ -423,6 +434,7 @@
                     }
                 ],
                 "className": "StringLiterals",
+                "object": true,
                 "qualifiedClassName": "StringLiterals",
                 "superClasses": [
                     {
@@ -477,6 +489,7 @@
                         "returnType": "void"
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "TestQPrivateSlots",
                 "slots": [
                     {
@@ -540,6 +553,7 @@
                         }
                     ]
                 ],
+                "object": true,
                 "qualifiedClassName": "DirInIncludePath",
                 "superClasses": [
                     {
@@ -560,6 +574,7 @@
         "classes": [
             {
                 "className": "SingleFunctionKeywordBeforeReturnType",
+                "object": true,
                 "qualifiedClassName": "SingleFunctionKeywordBeforeReturnType",
                 "signals": [
                     {
@@ -584,6 +599,7 @@
             },
             {
                 "className": "SingleFunctionKeywordBeforeInline",
+                "object": true,
                 "qualifiedClassName": "SingleFunctionKeywordBeforeInline",
                 "signals": [
                     {
@@ -608,6 +624,7 @@
             },
             {
                 "className": "SingleFunctionKeywordAfterInline",
+                "object": true,
                 "qualifiedClassName": "SingleFunctionKeywordAfterInline",
                 "signals": [
                     {
@@ -638,6 +655,7 @@
         "classes": [
             {
                 "className": "Task192552",
+                "object": true,
                 "qualifiedClassName": "Task192552",
                 "superClasses": [
                     {
@@ -654,6 +672,7 @@
         "classes": [
             {
                 "className": "InlineSlotsWithThrowDeclaration",
+                "object": true,
                 "qualifiedClassName": "InlineSlotsWithThrowDeclaration",
                 "slots": [
                     {
@@ -697,6 +716,7 @@
         "classes": [
             {
                 "className": "TestObject",
+                "object": true,
                 "qualifiedClassName": "NS_A::NS_B::TestObject",
                 "superClasses": [
                     {
@@ -707,6 +727,7 @@
             },
             {
                 "className": "TestMain",
+                "object": true,
                 "qualifiedClassName": "NS_A::NS_Main::TestMain",
                 "superClasses": [
                     {
@@ -723,6 +744,7 @@
         "classes": [
             {
                 "className": "TypenameWithUnsigned",
+                "object": true,
                 "qualifiedClassName": "TypenameWithUnsigned",
                 "slots": [
                     {
@@ -872,6 +894,7 @@
         "classes": [
             {
                 "className": "PureVirtualSignalsTest",
+                "object": true,
                 "qualifiedClassName": "PureVirtualSignalsTest",
                 "signals": [
                     {
@@ -905,6 +928,7 @@
             },
             {
                 "className": "PureVirtualSignalsImpl",
+                "object": true,
                 "qualifiedClassName": "PureVirtualSignalsImpl",
                 "signals": [
                     {
@@ -1105,6 +1129,7 @@
         "classes": [
             {
                 "className": "FinalTestClassQt",
+                "object": true,
                 "qualifiedClassName": "FinalTestClassQt",
                 "superClasses": [
                     {
@@ -1115,6 +1140,7 @@
             },
             {
                 "className": "ExportedFinalTestClassQt",
+                "object": true,
                 "qualifiedClassName": "ExportedFinalTestClassQt",
                 "superClasses": [
                     {
@@ -1125,6 +1151,7 @@
             },
             {
                 "className": "ExportedFinalTestClassQtX",
+                "object": true,
                 "qualifiedClassName": "ExportedFinalTestClassQtX",
                 "superClasses": [
                     {
@@ -1135,6 +1162,7 @@
             },
             {
                 "className": "FinalTestClassCpp11",
+                "object": true,
                 "qualifiedClassName": "FinalTestClassCpp11",
                 "superClasses": [
                     {
@@ -1145,6 +1173,7 @@
             },
             {
                 "className": "ExportedFinalTestClassCpp11",
+                "object": true,
                 "qualifiedClassName": "ExportedFinalTestClassCpp11",
                 "superClasses": [
                     {
@@ -1155,6 +1184,7 @@
             },
             {
                 "className": "ExportedFinalTestClassCpp11X",
+                "object": true,
                 "qualifiedClassName": "ExportedFinalTestClassCpp11X",
                 "superClasses": [
                     {
@@ -1165,6 +1195,7 @@
             },
             {
                 "className": "SealedTestClass",
+                "object": true,
                 "qualifiedClassName": "SealedTestClass",
                 "superClasses": [
                     {
@@ -1175,6 +1206,7 @@
             },
             {
                 "className": "ExportedSealedTestClass",
+                "object": true,
                 "qualifiedClassName": "ExportedSealedTestClass",
                 "superClasses": [
                     {
@@ -1185,6 +1217,7 @@
             },
             {
                 "className": "ExportedSealedTestClassX",
+                "object": true,
                 "qualifiedClassName": "ExportedSealedTestClassX",
                 "superClasses": [
                     {
@@ -1201,6 +1234,7 @@
         "classes": [
             {
                 "className": "ExplicitOverrideControlBase",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlBase",
                 "slots": [
                     {
@@ -1233,6 +1267,7 @@
             },
             {
                 "className": "ExplicitOverrideControlFinalQt",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlFinalQt",
                 "slots": [
                     {
@@ -1265,6 +1300,7 @@
             },
             {
                 "className": "ExplicitOverrideControlFinalCxx11",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlFinalCxx11",
                 "slots": [
                     {
@@ -1297,6 +1333,7 @@
             },
             {
                 "className": "ExplicitOverrideControlSealed",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlSealed",
                 "slots": [
                     {
@@ -1329,6 +1366,7 @@
             },
             {
                 "className": "ExplicitOverrideControlOverrideQt",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlOverrideQt",
                 "slots": [
                     {
@@ -1361,6 +1399,7 @@
             },
             {
                 "className": "ExplicitOverrideControlOverrideCxx11",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlOverrideCxx11",
                 "slots": [
                     {
@@ -1393,6 +1432,7 @@
             },
             {
                 "className": "ExplicitOverrideControlFinalQtOverrideQt",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlFinalQtOverrideQt",
                 "slots": [
                     {
@@ -1425,6 +1465,7 @@
             },
             {
                 "className": "ExplicitOverrideControlFinalCxx11OverrideCxx11",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlFinalCxx11OverrideCxx11",
                 "slots": [
                     {
@@ -1457,6 +1498,7 @@
             },
             {
                 "className": "ExplicitOverrideControlSealedOverride",
+                "object": true,
                 "qualifiedClassName": "ExplicitOverrideControlSealedOverride",
                 "slots": [
                     {
@@ -1495,6 +1537,7 @@
         "classes": [
             {
                 "className": "ForwardDeclaredParamClass",
+                "object": true,
                 "qualifiedClassName": "ForwardDeclaredParamClass",
                 "signals": [
                     {
@@ -1709,6 +1752,7 @@
                     }
                 ],
                 "className": "ParseDefine",
+                "object": true,
                 "qualifiedClassName": "PD::ParseDefine",
                 "signals": [
                     {
@@ -1894,6 +1938,7 @@
         "classes": [
             {
                 "className": "FunctionWithAttributes",
+                "object": true,
                 "qualifiedClassName": "FunctionWithAttributes",
                 "slots": [
                     {
@@ -1922,6 +1967,7 @@
         "classes": [
             {
                 "className": "TestPluginMetaData",
+                "object": true,
                 "qualifiedClassName": "TestPluginMetaData",
                 "superClasses": [
                     {
@@ -1948,6 +1994,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "KDAB",
                 "superClasses": [
                     {
@@ -1974,6 +2021,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "QTBUG_2151::A",
                 "superClasses": [
                     {
@@ -1984,6 +2032,7 @@
             },
             {
                 "className": "B",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -2085,6 +2134,7 @@
         "classes": [
             {
                 "className": "B",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -2140,6 +2190,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "Unsused::Object",
                 "superClasses": [
                     {
@@ -2175,6 +2226,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "NS1::Nested::Object",
                 "superClasses": [
                     {
@@ -2210,6 +2262,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "NS1::NestedUnsused::Object",
                 "superClasses": [
                     {
@@ -2245,6 +2298,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "NS1::Object",
                 "superClasses": [
                     {
@@ -2255,6 +2309,7 @@
             },
             {
                 "className": "DependingObject",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -2291,6 +2346,7 @@
             },
             {
                 "className": "DependingNestedGadget",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -2315,6 +2371,7 @@
             },
             {
                 "className": "DependingNestedObject",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -2364,6 +2421,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "NS2::Nested::Object",
                 "superClasses": [
                     {
@@ -2399,6 +2457,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "NS2::NestedUnsused::Object",
                 "superClasses": [
                     {
@@ -2434,6 +2493,7 @@
                         ]
                     }
                 ],
+                "object": true,
                 "qualifiedClassName": "NS2::Object",
                 "superClasses": [
                     {
@@ -2444,6 +2504,7 @@
             },
             {
                 "className": "DependingObject",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -2480,6 +2541,7 @@
             },
             {
                 "className": "DependingNestedGadget",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -2504,6 +2566,7 @@
             },
             {
                 "className": "DependingNestedObject",
+                "object": true,
                 "properties": [
                     {
                         "constant": false,
@@ -2545,7 +2608,7 @@
                         ]
                     }
                 ],
-                "gadget": true,
+                "namespace": true,
                 "qualifiedClassName": "FooNamespace"
             },
             {
@@ -2570,7 +2633,7 @@
                         ]
                     }
                 ],
-                "gadget": true,
+                "namespace": true,
                 "qualifiedClassName": "FooNamespace::FooNestedNamespace"
             },
             {
@@ -2586,7 +2649,7 @@
                         ]
                     }
                 ],
-                "gadget": true,
+                "namespace": true,
                 "qualifiedClassName": "FooNamespace::FooNestedNamespace::FooMoreNestedNamespace"
             }
         ],
@@ -2622,7 +2685,7 @@
                         ]
                     }
                 ],
-                "gadget": true,
+                "namespace": true,
                 "qualifiedClassName": "CXX17Namespace::A::B::C::D"
             }
         ],

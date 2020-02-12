@@ -192,6 +192,7 @@ struct ClassDef : BaseDef {
 
     bool hasQObject = false;
     bool hasQGadget = false;
+    bool hasQNamespace = false;
 
     QJsonObject toJson() const;
 };
