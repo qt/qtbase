@@ -2797,11 +2797,11 @@ function(qt_add_test name)
         foreach(testdata IN LISTS arg_TESTDATA)
             set(testdata "${CMAKE_CURRENT_SOURCE_DIR}/${testdata}")
             if (IS_DIRECTORY "${testdata}")
-                qt_copy_or_install(
+                qt_install(
                     DIRECTORY "${testdata}"
                     DESTINATION "${testdata_install_dir}")
             else()
-                qt_copy_or_install(
+                qt_install(
                     FILES "${testdata}"
                     DESTINATION "${testdata_install_dir}")
             endif()
