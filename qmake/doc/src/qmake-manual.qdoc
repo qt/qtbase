@@ -917,7 +917,7 @@
     Specifies project configuration and compiler options. The values are
     recognized internally by qmake and have special meaning.
 
-    The following \c CONFIG values control compilation flags:
+    The following \c CONFIG values control compiler and linker flags:
 
     \table
     \header \li Option   \li Description
@@ -948,6 +948,8 @@
     \row    \li warn_off \li The compiler should output as few warnings as possible.
     \row    \li exceptions \li Exception support is enabled. Set by default.
     \row    \li exceptions_off \li Exception support is disabled.
+    \row    \li ltcg \li Link time code generation is enabled.
+            This option is off by default.
     \row    \li rtti \li RTTI support is enabled. By default, the compiler
             default is used.
     \row    \li rtti_off \li RTTI support is disabled. By default, the compiler

@@ -100,10 +100,13 @@ bool QAndroidPlatformFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::Win
 
 void QAndroidPlatformFileDialogHelper::exec()
 {
+    m_eventLoop.exec(QEventLoop::DialogExec);
 }
 
 void QAndroidPlatformFileDialogHelper::hide()
 {
+    if (m_eventLoop.isRunning())
+        m_eventLoop.exit();
     QtAndroidPrivate::unregisterActivityResultListener(this);
 }
 
