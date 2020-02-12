@@ -597,6 +597,25 @@ Q_GUI_EXPORT int qt_script_for_writing_system(QFontDatabase::WritingSystem writi
 }
 
 
+/*!
+    \internal
+
+    Tests if the given family \a family supports writing system \a writingSystem,
+    including the special case for Han script mapping to several subsequent writing systems
+*/
+static bool familySupportsWritingSystem(QtFontFamily *family, size_t writingSystem)
+{
+    Q_ASSERT(family != nullptr);
+    Q_ASSERT(writingSystem != QFontDatabase::Any && writingSystem < QFontDatabase::WritingSystemsCount);
+
+    size_t ws = writingSystem;
+    do {
+        if ((family->writingSystems[ws] & QtFontFamily::Supported) != 0)
+            return true;
+    } while (writingSystem >= QFontDatabase::SimplifiedChinese && writingSystem <= QFontDatabase::Japanese && ++ws <= QFontDatabase::Japanese);
+
+    return false;
+}
 
 
 /*!
@@ -826,19 +845,7 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
 
         f->ensurePopulated();
 
-        size_t otherWritingSystem = writingSystem;
-
-        while (writingSystem > QFontDatabase::Any && f->writingSystems[otherWritingSystem] != QtFontFamily::Supported) {
-            otherWritingSystem = std::find(scriptForWritingSystem + (otherWritingSystem + 1),
-                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
-                                     script) - scriptForWritingSystem;
-
-            if (otherWritingSystem >= QFontDatabase::WritingSystemsCount) {
-                break;
-            }
-        }
-
-        if (otherWritingSystem >= QFontDatabase::WritingSystemsCount)
+        if (writingSystem != QFontDatabase::Any && !familySupportsWritingSystem(f, writingSystem))
             continue;
 
         for (int j = 0; j < f->count; ++j) {
@@ -1283,7 +1290,7 @@ static int match(int script, const QFontDef &request,
         test.family->ensurePopulated();
 
         // Check if family is supported in the script we want
-        if (writingSystem != QFontDatabase::Any && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
+        if (writingSystem != QFontDatabase::Any && !familySupportsWritingSystem(test.family, writingSystem))
             continue;
 
         // as we know the script is supported, we can be sure
@@ -2869,10 +2876,9 @@ QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
 
 Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script, const QStringList &families)
 {
-    const size_t writingSystem =
-            std::find(scriptForWritingSystem,
-                      scriptForWritingSystem + QFontDatabase::WritingSystemsCount, script)
-            - scriptForWritingSystem;
+    size_t writingSystem = std::find(scriptForWritingSystem,
+                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
+                                     script) - scriptForWritingSystem;
     if (writingSystem == QFontDatabase::Any
             || writingSystem >= QFontDatabase::WritingSystemsCount) {
         return families;
@@ -2892,30 +2898,9 @@ Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script
             }
         }
 
-        bool isSupported = false;
-
-        if (testFamily != nullptr) {
-            isSupported = testFamily->writingSystems[writingSystem] & QtFontFamily::Supported;
-            auto otherWritingSystem = writingSystem;
-
-            // test other writing systems
-            while (!isSupported) {
-                otherWritingSystem =
-                        std::find(&scriptForWritingSystem[otherWritingSystem + 1],
-                                  scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
-                                  script)
-                        - scriptForWritingSystem;
-
-                if (otherWritingSystem >= QFontDatabase::WritingSystemsCount)
-                    break;
-
-                isSupported |=
-                        testFamily->writingSystems[otherWritingSystem] & QtFontFamily::Supported;
-            }
-        }
-
         uint order = i;
-        if (!isSupported) {
+        if (testFamily == nullptr
+              || !familySupportsWritingSystem(testFamily, writingSystem)) {
             order |= 1u << 31;
         }
 
