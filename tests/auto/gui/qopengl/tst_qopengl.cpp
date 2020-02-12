@@ -28,6 +28,7 @@
 
 #include <QtOpenGL/QOpenGLPaintDevice>
 #include <QtOpenGL/QOpenGLTexture>
+#include <QtOpenGL/qopengltextureblitter.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLFunctions>
@@ -40,7 +41,6 @@
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QGenericMatrix>
 #include <QtGui/QMatrix4x4>
-#include <QtGui/qopengltextureblitter.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <qpa/qplatformintegration.h>

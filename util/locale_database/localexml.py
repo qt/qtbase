@@ -1,7 +1,7 @@
 # coding=utf8
 #############################################################################
 ##
-## Copyright (C) 2018 The Qt Company Ltd.
+## Copyright (C) 2020 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -267,7 +267,7 @@ class Locale:
             except KeyError: # Need to add an entry to known, above.
                 print 'Unsupported calendar:', cal
                 raise
-            names, get = data[0] + ('',), data[1:]
+            names, get = data[0], data[1:]
             for n, size in enumerate(sizes):
                 yield ('_'.join((camelCase((size, 'months')), cal)),
                        ';'.join(get[n][0](i, x) for i, x in enumerate(names)))
@@ -279,7 +279,7 @@ class Locale:
     def C(cls, calendars=('gregorian',),
           # Empty entry at end to ensure final separator when join()ed:
           days = ('Sunday', 'Monday', 'Tuesday', 'Wednesday',
-                  'Thursday', 'Friday', 'Saturday', ''),
+                  'Thursday', 'Friday', 'Saturday'),
           quantifiers=('k', 'M', 'G', 'T', 'P', 'E')):
         """Returns an object representing the C locale."""
         return cls(dict(cls.__monthNames(calendars)),
@@ -303,11 +303,11 @@ class Locale:
                    longTimeFormat='HH:mm:ss z', shortTimeFormat='HH:mm:ss',
                    longDays=';'.join(days),
                    shortDays=';'.join(d[:3] for d in days),
-                   narrowDays='7;1;2;3;4;5;6;',
+                   narrowDays='7;1;2;3;4;5;6',
                    standaloneLongDays=';'.join(days),
                    standaloneShortDays=';'.join(d[:3] for d in days),
                    standaloneNarrowDays=';'.join(d[:1] for d in days),
                    currencyIsoCode='', currencySymbol='',
-                   currencyDisplayName=';' * 7,
+                   currencyDisplayName='',
                    currencyDigits=2, currencyRounding=1,
                    currencyFormat='%1%2', currencyNegativeFormat='')

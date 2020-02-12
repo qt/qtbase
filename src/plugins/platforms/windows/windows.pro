@@ -5,6 +5,8 @@ QT += \
     eventdispatcher_support-private \
     fontdatabase_support-private theme_support-private
 
+qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
+
 qtConfig(accessibility): QT += accessibility_support-private
 qtConfig(vulkan): QT += vulkan_support-private
 

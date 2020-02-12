@@ -4927,13 +4927,14 @@ void tst_QString::arg()
 
 void tst_QString::number()
 {
-    QCOMPARE( QString::number(int(0)), QLatin1String("0") );
-    QCOMPARE( QString::number((unsigned int)(11)), QLatin1String("11") );
-    QCOMPARE( QString::number(-22L), QLatin1String("-22") );
-    QCOMPARE( QString::number(333UL), QLatin1String("333") );
-    QCOMPARE( QString::number(4.4), QLatin1String("4.4") );
-    QCOMPARE( QString::number(Q_INT64_C(-555)), QLatin1String("-555") );
-    QCOMPARE( QString::number(Q_UINT64_C(6666)), QLatin1String("6666") );
+    QCOMPARE(QString::number(int(0)), QLatin1String("0"));
+    QCOMPARE(QString::number(std::copysign(0.0, -1.0)), QLatin1String("0"));
+    QCOMPARE(QString::number((unsigned int)(11)), QLatin1String("11"));
+    QCOMPARE(QString::number(-22L), QLatin1String("-22"));
+    QCOMPARE(QString::number(333UL), QLatin1String("333"));
+    QCOMPARE(QString::number(4.4), QLatin1String("4.4"));
+    QCOMPARE(QString::number(Q_INT64_C(-555)), QLatin1String("-555"));
+    QCOMPARE(QString::number(Q_UINT64_C(6666)), QLatin1String("6666"));
 
 #ifndef QT_NO_DOUBLECONVERSION // snprintf_l is too stupid for this
     QCOMPARE( QString::number(12.05, 'f', 1), QString("12.1") );

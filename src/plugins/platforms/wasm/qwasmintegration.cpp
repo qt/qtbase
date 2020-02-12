@@ -41,6 +41,7 @@
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
 # include "qwasmbackingstore.h"
+# include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
 #endif
 #include "qwasmfontdatabase.h"
 #if defined(Q_OS_UNIX)
@@ -185,6 +186,7 @@ QPlatformBackingStore *QWasmIntegration::createPlatformBackingStore(QWindow *win
 #ifndef QT_NO_OPENGL
     QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
     QWasmBackingStore *backingStore = new QWasmBackingStore(compositor, window);
+    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
     m_backingStores.insert(window, backingStore);
     return backingStore;
 #else

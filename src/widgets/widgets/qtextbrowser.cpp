@@ -156,11 +156,6 @@ public:
     {
         Q_Q(QTextBrowser);
         emit q->highlighted(url);
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit q->highlighted(url.toString());
-#endif
     }
 };
 Q_DECLARE_TYPEINFO(QTextBrowserPrivate::HistoryEntry, Q_MOVABLE_TYPE);
@@ -926,16 +921,6 @@ void QTextBrowser::doSetSource(const QUrl &url, QTextDocument::ResourceType type
     activated an anchor in the document. The URL referred to by the
     anchor is passed in \a link.
 */
-
-/*!  \fn void QTextBrowser::highlighted(const QString &link)
-     \overload
-     \obsolete
-
-     Convenience signal that allows connecting to a slot
-     that takes just a QString, like for example QStatusBar's
-     message().
-*/
-
 
 /*!
     \fn void QTextBrowser::anchorClicked(const QUrl &link)

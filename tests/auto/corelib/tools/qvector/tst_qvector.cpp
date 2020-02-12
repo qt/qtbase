@@ -324,6 +324,18 @@ private slots:
 
     void swapItemsAt() const;
 
+    void emplaceInt();
+    void emplaceCustom();
+    void emplaceMovable();
+    void emplaceConsistentWithStdVectorInt();
+    void emplaceConsistentWithStdVectorCustom();
+    void emplaceConsistentWithStdVectorMovable();
+    void emplaceReturnsIterator();
+    void emplaceBack();
+    void emplaceBackReturnsRef();
+    void emplaceWithElementFromTheSameContainer();
+    void emplaceWithElementFromTheSameContainer_data();
+
 private:
     template<typename T> void copyConstructor() const;
     template<typename T> void add() const;
@@ -349,6 +361,8 @@ private:
     template<typename T> void initializeList();
     template<typename T> void detach() const;
     template<typename T> void detachThreadSafety() const;
+    template<typename T> void emplaceImpl() const;
+    template<typename T> void emplaceConsistentWithStdVectorImpl() const;
 };
 
 
@@ -2643,6 +2657,173 @@ void tst_QVector::swapItemsAt() const
     QCOMPARE(v.at(2), 0);
     QCOMPARE(copy.at(0), 0);
     QCOMPARE(copy.at(2), 2);
+}
+
+void tst_QVector::emplaceInt()
+{
+    emplaceImpl<int>();
+}
+
+void tst_QVector::emplaceCustom()
+{
+    emplaceImpl<Custom>();
+}
+
+void tst_QVector::emplaceMovable()
+{
+    emplaceImpl<Movable>();
+}
+
+void tst_QVector::emplaceConsistentWithStdVectorInt()
+{
+    emplaceConsistentWithStdVectorImpl<int>();
+}
+
+void tst_QVector::emplaceConsistentWithStdVectorCustom()
+{
+    emplaceConsistentWithStdVectorImpl<Custom>();
+}
+
+void tst_QVector::emplaceConsistentWithStdVectorMovable()
+{
+    emplaceConsistentWithStdVectorImpl<Movable>();
+}
+
+void tst_QVector::emplaceReturnsIterator()
+{
+    QVector<Movable> vec;
+
+    vec.emplace(0, 'k')->i = 'p';
+
+    QCOMPARE(vec[0].i, 'p');
+}
+
+void tst_QVector::emplaceBack()
+{
+    QScopedValueRollback<QAtomicInt> rollback(Movable::counter, 0);
+
+    QVector<Movable> vec;
+
+    vec.emplaceBack('k');
+
+    QCOMPARE(Movable::counter, 1);
+}
+
+void tst_QVector::emplaceBackReturnsRef()
+{
+    QVector<Movable> vec;
+
+    vec.emplaceBack('k').i = 'p';
+
+    QCOMPARE(vec.at(0).i, 'p');
+}
+
+void tst_QVector::emplaceWithElementFromTheSameContainer()
+{
+    QFETCH(int, elementPos);
+    QFETCH(int, insertPos);
+    QFETCH(bool, doCopy);
+
+    QVector<QString> vec {"a", "b", "c", "d", "e"};
+    const QString e = vec[elementPos];
+
+    if (doCopy)
+        vec.emplace(insertPos, vec[elementPos]);
+    else
+        vec.emplace(insertPos, std::move(vec[elementPos]));
+
+    QCOMPARE(vec[insertPos], e);
+}
+
+void tst_QVector::emplaceWithElementFromTheSameContainer_data()
+{
+    QTest::addColumn<int>("elementPos");
+    QTest::addColumn<int>("insertPos");
+    QTest::addColumn<bool>("doCopy");
+
+    for (int i = 0; i < 2; ++i) {
+        const bool doCopy = i == 0;
+        const char *opName = doCopy ? "copy" : "move";
+
+        QTest::addRow("%s: begin  -> end"   , opName) << 0 << 5 << doCopy;
+        QTest::addRow("%s: begin  -> middle", opName) << 0 << 2 << doCopy;
+        QTest::addRow("%s: middle -> begin" , opName) << 2 << 0 << doCopy;
+        QTest::addRow("%s: middle -> end"   , opName) << 2 << 5 << doCopy;
+        QTest::addRow("%s: end    -> middle", opName) << 4 << 2 << doCopy;
+        QTest::addRow("%s: end    -> begin" , opName) << 4 << 0 << doCopy;
+    }
+}
+
+template<typename T>
+void tst_QVector::emplaceImpl() const
+{
+    QVector<T> vec {'a', 'b', 'c', 'd'};
+
+    vec.emplace(2, 'k');
+
+    QCOMPARE(vec[2], T('k'));
+}
+
+template <class T>
+static void vecEq(const QVector<T> &qVec, const std::vector<T> &stdVec)
+{
+    QCOMPARE(std::size_t(qVec.size()), stdVec.size());
+    QVERIFY(std::equal(qVec.begin(), qVec.end(), stdVec.begin(), stdVec.end()));
+}
+
+template <class T>
+static void squeezeVec(QVector<T> &qVec, std::vector<T> &stdVec)
+{
+    qVec.squeeze();
+    stdVec.shrink_to_fit();
+}
+
+template<typename T>
+void tst_QVector::emplaceConsistentWithStdVectorImpl() const
+{
+    QVector<T> qVec {'a', 'b', 'c', 'd', 'e'};
+    std::vector<T> stdVec {'a', 'b', 'c', 'd', 'e'};
+    vecEq(qVec, stdVec);
+
+    qVec.emplaceBack('f');
+    stdVec.emplace_back('f');
+    vecEq(qVec, stdVec);
+
+    qVec.emplace(3, 'g');
+    stdVec.emplace(stdVec.begin() + 3, 'g');
+    vecEq(qVec, stdVec);
+
+    qVec.emplaceBack(std::move(qVec[0]));
+    stdVec.emplace_back(std::move(stdVec[0]));
+    vecEq(qVec, stdVec);
+
+    squeezeVec(qVec, stdVec);
+
+    qVec.emplaceBack(std::move(qVec[1]));
+    stdVec.emplace_back(std::move(stdVec[1]));
+    vecEq(qVec, stdVec);
+
+    squeezeVec(qVec, stdVec);
+
+    qVec.emplace(3, std::move(qVec[5]));
+    stdVec.emplace(stdVec.begin() + 3, std::move(stdVec[5]));
+    vecEq(qVec, stdVec);
+
+    qVec.emplaceBack(qVec[3]);
+    stdVec.emplace_back(stdVec[3]);
+    vecEq(qVec, stdVec);
+
+    squeezeVec(qVec, stdVec);
+
+    qVec.emplaceBack(qVec[4]);
+    stdVec.emplace_back(stdVec[4]);
+    vecEq(qVec, stdVec);
+
+    squeezeVec(qVec, stdVec);
+
+    qVec.emplace(5, qVec[7]);
+    stdVec.emplace(stdVec.begin() + 5, stdVec[7]);
+    vecEq(qVec, stdVec);
 }
 
 QTEST_MAIN(tst_QVector)

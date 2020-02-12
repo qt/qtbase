@@ -2484,7 +2484,7 @@ void tst_QComboBox::task247863_keyBoardSelection()
   QApplication::setActiveWindow(&combo);
   QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
-  QSignalSpy spy(&combo, SIGNAL(activated(QString)));
+  QSignalSpy spy(&combo, &QComboBox::activated);
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
   QTest::keyClick(&combo, Qt::Key_Space);
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, true);

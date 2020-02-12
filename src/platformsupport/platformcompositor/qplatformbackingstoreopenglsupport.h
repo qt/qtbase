@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,38 +37,51 @@
 **
 ****************************************************************************/
 
-#include <qsqldriverplugin.h>
-#include <qstringlist.h>
-#include "qsql_sqlite2_p.h"
+#ifndef QPLATFORMBACKINGSTOREOPENGLSUPPORT_H
+#define QPLATFORMBACKINGSTOREOPENGLSUPPORT_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is part of the QPA API and is not meant to be used
+// in applications. Usage of this API may make your code
+// source and binary incompatible with future versions of Qt.
+//
+
+#ifndef QT_NO_OPENGL
+
+#include <QtGui/qtguiglobal.h>
+#include <qpa/qplatformbackingstore.h>
+
+#include <QtGui/QOpenGLContext>
 
 QT_BEGIN_NAMESPACE
 
-// ### Qt6: remove, obsolete since 5.14
-class QSQLite2DriverPlugin : public QSqlDriverPlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "sqlite2.json")
+class QOpenGLTextureBlitter;
+class QOpenGLBackingStore;
 
+class QPlatformBackingStoreOpenGLSupport : public QPlatformBackingStoreOpenGLSupportBase
+{
 public:
-    QSQLite2DriverPlugin();
+    explicit QPlatformBackingStoreOpenGLSupport(QPlatformBackingStore *backingStore) : backingStore(backingStore) {}
+    ~QPlatformBackingStoreOpenGLSupport() override;
+    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+                         QPlatformTextureList *textures, bool translucentBackground) override;
+    GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, QPlatformBackingStore::TextureFlags *flags) const override;
 
-    QSqlDriver* create(const QString &);
+private:
+    QPlatformBackingStore *backingStore = nullptr;
+    QScopedPointer<QOpenGLContext> context;
+    mutable GLuint textureId = 0;
+    mutable QSize textureSize;
+    mutable bool needsSwizzle = false;
+    mutable bool premultiplied = false;
+    QOpenGLTextureBlitter *blitter = nullptr;
 };
-
-QSQLite2DriverPlugin::QSQLite2DriverPlugin()
-    : QSqlDriverPlugin()
-{
-}
-
-QSqlDriver* QSQLite2DriverPlugin::create(const QString &name)
-{
-    if (name == QLatin1String("QSQLITE2")) {
-        QSQLite2Driver* driver = new QSQLite2Driver();
-        return driver;
-    }
-    return 0;
-}
 
 QT_END_NAMESPACE
 
-#include "smain.moc"
+#endif // QT_NO_OPENGL
+
+#endif // QPLATFORMBACKINGSTOREOPENGLSUPPORT_H

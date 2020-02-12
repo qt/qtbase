@@ -2550,7 +2550,7 @@ QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
     m->readonly = readonly;
     m->appendToParent = appendToParent;
 
-    QHash<QString, QDomNodePrivate*>::const_iterator it = map.constBegin();
+    auto it = map.constBegin();
     for (; it != map.constEnd(); ++it) {
         QDomNodePrivate *new_node = (*it)->cloneNode();
         new_node->setParent(p);
@@ -2566,7 +2566,7 @@ void QDomNamedNodeMapPrivate::clearMap()
 {
     // Dereference all of our children if we took references
     if (!appendToParent) {
-        QHash<QString, QDomNodePrivate *>::const_iterator it = map.constBegin();
+        auto it = map.constBegin();
         for (; it != map.constEnd(); ++it)
             if (!(*it)->ref.deref())
                 delete *it;
@@ -2582,7 +2582,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::namedItem(const QString& name) const
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::namedItemNS(const QString& nsURI, const QString& localName) const
 {
-    QHash<QString, QDomNodePrivate *>::const_iterator it = map.constBegin();
+    auto it = map.constBegin();
     QDomNodePrivate *n;
     for (; it != map.constEnd(); ++it) {
         n = *it;
@@ -3098,11 +3098,11 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
     if (entities->length()>0 || notations->length()>0) {
         s << " [" << Qt::endl;
 
-        QHash<QString, QDomNodePrivate *>::const_iterator it2 = notations->map.constBegin();
+        auto it2 = notations->map.constBegin();
         for (; it2 != notations->map.constEnd(); ++it2)
             (*it2)->save(s, 0, indent);
 
-        QHash<QString, QDomNodePrivate *>::const_iterator it = entities->map.constBegin();
+        auto it = entities->map.constBegin();
         for (; it != entities->map.constEnd(); ++it)
             (*it)->save(s, 0, indent);
 
@@ -4088,7 +4088,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
     /* Write out attributes. */
     if (!m_attr->map.isEmpty()) {
         QDuplicateTracker<QString> outputtedPrefixes;
-        QHash<QString, QDomNodePrivate *>::const_iterator it = m_attr->map.constBegin();
+        auto it = m_attr->map.constBegin();
         for (; it != m_attr->map.constEnd(); ++it) {
             s << ' ';
             if (it.value()->namespaceURI.isNull()) {

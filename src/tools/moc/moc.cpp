@@ -376,17 +376,42 @@ bool Moc::skipCxxAttributes()
     return false;
 }
 
+QTypeRevision Moc::parseRevision()
+{
+    next(LPAREN);
+    QByteArray revisionString = lexemUntil(RPAREN);
+    revisionString.remove(0, 1);
+    revisionString.chop(1);
+    const QList<QByteArray> majorMinor = revisionString.split(',');
+    switch (majorMinor.length()) {
+    case 1: {
+        bool ok = false;
+        const int revision = revisionString.toInt(&ok);
+        if (!ok || !QTypeRevision::isValidSegment(revision))
+            error("Invalid revision");
+        return QTypeRevision::fromMinorVersion(revision);
+    }
+    case 2: { // major.minor
+        bool ok = false;
+        const int major = majorMinor[0].toInt(&ok);
+        if (!ok || !QTypeRevision::isValidSegment(major))
+            error("Invalid major version");
+        const int minor = majorMinor[1].toInt(&ok);
+        if (!ok || !QTypeRevision::isValidSegment(minor))
+            error("Invalid minor version");
+        return QTypeRevision::fromVersion(major, minor);
+    }
+    default:
+        error("Invalid revision");
+        return QTypeRevision();
+    }
+}
+
 bool Moc::testFunctionRevision(FunctionDef *def)
 {
+
     if (test(Q_REVISION_TOKEN)) {
-        next(LPAREN);
-        QByteArray revision = lexemUntil(RPAREN);
-        revision.remove(0, 1);
-        revision.chop(1);
-        bool ok = false;
-        def->revision = revision.toInt(&ok);
-        if (!ok || def->revision < 0)
-            error("Invalid revision");
+        def->revision = parseRevision().toEncodedVersion<int>();
         return true;
     }
 
@@ -1100,17 +1125,9 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
 
 void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
 {
-    int defaultRevision = -1;
-    if (test(Q_REVISION_TOKEN)) {
-        next(LPAREN);
-        QByteArray revision = lexemUntil(RPAREN);
-        revision.remove(0, 1);
-        revision.chop(1);
-        bool ok = false;
-        defaultRevision = revision.toInt(&ok);
-        if (!ok || defaultRevision < 0)
-            error("Invalid revision");
-    }
+    QTypeRevision defaultRevision;
+    if (test(Q_REVISION_TOKEN))
+        defaultRevision = parseRevision();
 
     next(COLON);
     while (inClass(def) && hasNext()) {
@@ -1139,8 +1156,8 @@ void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
             continue;
         if (funcDef.revision > 0) {
             ++def->revisionedMethods;
-        } else if (defaultRevision != -1) {
-            funcDef.revision = defaultRevision;
+        } else if (defaultRevision.isValid()) {
+            funcDef.revision = defaultRevision.toEncodedVersion<int>();
             ++def->revisionedMethods;
         }
         def->slotList += funcDef;
@@ -1154,17 +1171,9 @@ void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
 
 void Moc::parseSignals(ClassDef *def)
 {
-    int defaultRevision = -1;
-    if (test(Q_REVISION_TOKEN)) {
-        next(LPAREN);
-        QByteArray revision = lexemUntil(RPAREN);
-        revision.remove(0, 1);
-        revision.chop(1);
-        bool ok = false;
-        defaultRevision = revision.toInt(&ok);
-        if (!ok || defaultRevision < 0)
-            error("Invalid revision");
-    }
+    QTypeRevision defaultRevision;
+    if (test(Q_REVISION_TOKEN))
+        defaultRevision = parseRevision();
 
     next(COLON);
     while (inClass(def) && hasNext()) {
@@ -1195,8 +1204,8 @@ void Moc::parseSignals(ClassDef *def)
             error("Not a signal declaration");
         if (funcDef.revision > 0) {
             ++def->revisionedMethods;
-        } else if (defaultRevision != -1) {
-            funcDef.revision = defaultRevision;
+        } else if (defaultRevision.isValid()) {
+            funcDef.revision = defaultRevision.toEncodedVersion<int>();
             ++def->revisionedMethods;
         }
         def->signalList += funcDef;
@@ -1257,6 +1266,10 @@ void Moc::createPropertyDef(PropertyDef &propDef)
         } else if (l[0] == 'R' && l == "REQUIRED") {
             propDef.required = true;
             continue;
+        } else if (l[0] == 'R' && l == "REVISION" && test(LPAREN)) {
+            prev();
+            propDef.revision = parseRevision().toEncodedVersion<int>();
+            continue;
         }
 
         QByteArray v, v2;
@@ -1289,9 +1302,10 @@ void Moc::createPropertyDef(PropertyDef &propDef)
                 propDef.reset = v + v2;
             else if (l == "REVISION") {
                 bool ok = false;
-                propDef.revision = v.toInt(&ok);
-                if (!ok || propDef.revision < 0)
+                const int minor = v.toInt(&ok);
+                if (!ok || !QTypeRevision::isValidSegment(minor))
                     error(1);
+                propDef.revision = QTypeRevision::fromMinorVersion(minor).toEncodedVersion<int>();
             } else
                 error(2);
             break;
@@ -1499,6 +1513,8 @@ void Moc::parseClassInfo(BaseDef *def)
     next(COMMA);
     if (test(STRING_LITERAL)) {
         infoDef.value = symbol().unquotedLexem();
+    } else if (test(Q_REVISION_TOKEN)) {
+        infoDef.value = QByteArray::number(parseRevision().toEncodedVersion<quint16>());
     } else {
         // support Q_CLASSINFO("help", QT_TR_NOOP("blah"))
         next(IDENTIFIER);

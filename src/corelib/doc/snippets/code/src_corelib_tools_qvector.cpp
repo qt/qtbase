@@ -115,6 +115,29 @@ vector.append(std::move(three));
 //! [move-append]
 
 
+//! [emplace]
+QVector<QString> vector{"a", "ccc"};
+vector.emplace(1, 2, 'b');
+// vector: ["a", "bb", "ccc"]
+//! [emplace]
+
+
+//! [emplace-back]
+QVector<QString> vector{"one", "two"};
+vector.emplaceBack(3, 'a');
+qDebug() << vector;
+// vector: ["one", "two", "aaa"]
+//! [emplace-back]
+
+
+//! [emplace-back-ref]
+QVector<QString> vector;
+auto &ref = vector.emplaceBack();
+ref = "one";
+// vector: ["one"]
+//! [emplace-back-ref]
+
+
 //! [8]
 QVector<QString> vector;
 vector.prepend("one");

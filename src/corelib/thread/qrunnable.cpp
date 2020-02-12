@@ -43,7 +43,6 @@ QT_BEGIN_NAMESPACE
 
 QRunnable::~QRunnable()
 {
-    // Must be empty until ### Qt 6
 }
 
 /*!

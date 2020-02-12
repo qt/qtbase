@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief The QOpenGLTextureBlitter class provides a convenient way to draw textured quads via OpenGL.
     \since 5.8
     \ingroup painting-3D
-    \inmodule QtGui
+    \inmodule QtOpenGL
 
     Drawing textured quads, in order to get the contents of a texture
     onto the screen, is a common operation when developing 2D user

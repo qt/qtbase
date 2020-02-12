@@ -53,7 +53,6 @@ QAbstractTextDocumentLayoutPrivate::~QAbstractTextDocumentLayoutPrivate()
 
 QTextObjectInterface::~QTextObjectInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!

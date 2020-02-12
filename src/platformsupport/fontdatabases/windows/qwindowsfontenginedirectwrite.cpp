@@ -187,6 +187,18 @@ namespace {
 
 }
 
+static DWRITE_MEASURING_MODE renderModeToMeasureMode(DWRITE_RENDERING_MODE renderMode)
+{
+    switch (renderMode) {
+    case DWRITE_RENDERING_MODE_GDI_CLASSIC:
+        return DWRITE_MEASURING_MODE_GDI_CLASSIC;
+    case DWRITE_RENDERING_MODE_GDI_NATURAL:
+        return DWRITE_MEASURING_MODE_GDI_NATURAL;
+    default:
+        return DWRITE_MEASURING_MODE_NATURAL;
+    }
+}
+
 static DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(QFont::HintingPreference hintingPreference)
 {
     if (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting)
@@ -209,13 +221,10 @@ static DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(QFont::HintingPref
     \ingroup qt-lighthouse-win
 
     Font engine for subpixel positioned text on Windows Vista
-    (with platform update) and Windows 7. If selected during
+    (with platform update) and later. If selected during
     configuration, the engine will be selected only when the hinting
-    preference of a font is set to None or Vertical hinting. The font
-    database uses most of the same logic but creates a direct write
-    font based on the LOGFONT rather than a GDI handle.
-
-    Will probably be superseded by a common Free Type font engine in Qt 5.X.
+    preference of a font is set to None or Vertical hinting, or
+    when fontengine=directwrite is selected as platform option.
 */
 
 QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *directWriteFontFace,
@@ -480,9 +489,22 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
         glyphIndices[i] = UINT16(glyphs->glyphs[i]);
 
     QVarLengthArray<DWRITE_GLYPH_METRICS> glyphMetrics(glyphIndices.size());
-    HRESULT hr = m_directWriteFontFace->GetDesignGlyphMetrics(glyphIndices.data(),
-                                                              glyphIndices.size(),
-                                                              glyphMetrics.data());
+
+    HRESULT hr;
+    DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
+    if (renderMode == DWRITE_RENDERING_MODE_GDI_CLASSIC || renderMode == DWRITE_RENDERING_MODE_GDI_NATURAL) {
+        hr = m_directWriteFontFace->GetGdiCompatibleGlyphMetrics(float(fontDef.pixelSize),
+                                                                 1.0f,
+                                                                 NULL,
+                                                                 TRUE,
+                                                                 glyphIndices.data(),
+                                                                 glyphIndices.size(),
+                                                                 glyphMetrics.data());
+    } else {
+        hr = m_directWriteFontFace->GetDesignGlyphMetrics(glyphIndices.data(),
+                                                          glyphIndices.size(),
+                                                          glyphMetrics.data());
+    }
     if (SUCCEEDED(hr)) {
         qreal stretch = fontDef.stretch != QFont::AnyStretch ? fontDef.stretch / 100.0 : 1.0;
         for (int i = 0; i < glyphs->numGlyphs; ++i)
@@ -688,6 +710,8 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
 
     DWRITE_RENDERING_MODE renderMode =
             hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
+    DWRITE_MEASURING_MODE measureMode =
+            renderModeToMeasureMode(renderMode);
 
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
     HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
@@ -695,7 +719,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                 1.0f,
                 &transform,
                 renderMode,
-                DWRITE_MEASURING_MODE_NATURAL,
+                measureMode,
                 0.0, 0.0,
                 &glyphAnalysis
                 );
@@ -725,7 +749,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                                                   0.0f,
                                                   &glyphRun,
                                                   NULL,
-                                                  DWRITE_MEASURING_MODE_NATURAL,
+                                                  measureMode,
                                                   NULL,
                                                   0,
                                                   &enumerator);
@@ -756,7 +780,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
                             1.0f,
                             &transform,
                             renderMode,
-                            DWRITE_MEASURING_MODE_NATURAL,
+                            measureMode,
                             0.0, 0.0,
                             &colorGlyphsAnalysis
                             );
@@ -996,6 +1020,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
 
     DWRITE_RENDERING_MODE renderMode =
             hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
+    DWRITE_MEASURING_MODE measureMode = renderModeToMeasureMode(renderMode);
 
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
     HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
@@ -1003,7 +1028,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
                 1.0f,
                 &transform,
                 renderMode,
-                DWRITE_MEASURING_MODE_NATURAL,
+                measureMode,
                 0.0, 0.0,
                 &glyphAnalysis
                 );

@@ -242,10 +242,14 @@ public:
     void append(const_reference t)
     { append(const_iterator(std::addressof(t)), const_iterator(std::addressof(t)) + 1); }
     void append(const_iterator i1, const_iterator i2);
-    void append(value_type &&t);
+    void append(rvalue_ref t) { emplaceBack(std::move(t)); }
     void append(const QVector<T> &l) { append(l.constBegin(), l.constEnd()); }
     void prepend(rvalue_ref t);
     void prepend(const T &t);
+
+    template <typename ...Args>
+    reference emplaceBack(Args&&... args) { return *emplace(count(), std::forward<Args>(args)...); }
+
     iterator insert(int i, parameter_type t)
     { return insert(i, 1, t); }
     iterator insert(int i, int n, parameter_type t);
@@ -264,7 +268,17 @@ public:
         Q_ASSERT_X(isValidIterator(before),  "QVector::insert", "The specified iterator argument 'before' is invalid");
         return insert(std::distance(constBegin(), before), std::move(t));
     }
-    iterator insert(int i, rvalue_ref t);
+    iterator insert(int i, rvalue_ref t) { return emplace(i, std::move(t)); }
+
+    template <typename ...Args>
+    iterator emplace(const_iterator before, Args&&... args)
+    {
+        Q_ASSERT_X(isValidIterator(before),  "QVector::emplace", "The specified iterator argument 'before' is invalid");
+        return emplace(std::distance(constBegin(), before), std::forward<Args>(args)...);
+    }
+
+    template <typename ...Args>
+    iterator emplace(int i, Args&&... args);
 #if 0
     template< class InputIt >
     iterator insert( const_iterator pos, InputIt first, InputIt last );
@@ -388,6 +402,10 @@ public:
     inline void push_front(const T &t) { prepend(t); }
     void pop_back() { removeLast(); }
     void pop_front() { removeFirst(); }
+
+    template <typename ...Args>
+    reference emplace_back(Args&&... args) { return emplaceBack(std::forward<Args>(args)...); }
+
     inline bool empty() const
     { return d->size == 0; }
     inline reference front() { return first(); }
@@ -538,27 +556,6 @@ inline void QVector<T>::append(const_iterator i1, const_iterator i2)
 }
 
 template <typename T>
-inline void QVector<T>::append(value_type &&t)
-{
-    const size_t newSize = size() + 1;
-    const bool isTooSmall = newSize > d->allocatedCapacity();
-    const bool isOverlapping = std::addressof(*d->begin()) <= std::addressof(t)
-            && std::addressof(t) < std::addressof(*d->end());
-    if (isTooSmall || d->needsDetach() || Q_UNLIKELY(isOverlapping)) {
-        typename Data::ArrayOptions flags = d->detachFlags();
-        if (isTooSmall)
-            flags |= Data::GrowsForward;
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize), flags));
-        detached->copyAppend(constBegin(), constEnd());
-        detached->moveAppend(std::addressof(t), std::addressof(t) + 1);
-        d.swap(detached);
-    } else {
-        // we're detached and we can just move data around
-        d->moveAppend(std::addressof(t), std::addressof(t) + 1);
-    }
-}
-
-template <typename T>
 inline typename QVector<T>::iterator
 QVector<T>::insert(int i, int n, parameter_type t)
 {
@@ -592,10 +589,11 @@ QVector<T>::insert(int i, int n, parameter_type t)
 }
 
 template <typename T>
+template <typename ...Args>
 typename QVector<T>::iterator
-QVector<T>::insert(int i, rvalue_ref t)
+QVector<T>::emplace(int i, Args&&... args)
 {
-    Q_ASSERT_X(size_t(i) <= size_t(d->size), "QVector<T>::insert", "index out of range");
+     Q_ASSERT_X(i >= 0 && i <= d->size, "QVector<T>::insert", "index out of range");
 
     const size_t newSize = size() + 1;
     if (d->needsDetach() || newSize > d->allocatedCapacity()) {
@@ -605,12 +603,24 @@ QVector<T>::insert(int i, rvalue_ref t)
 
         DataPointer detached(Data::allocate(d->detachCapacity(newSize), flags));
         const_iterator where = constBegin() + i;
+
+        // First, create an element to handle cases, when a user moves
+        // the element from a container to the same container
+        detached->createInPlace(detached.begin() + i, std::forward<Args>(args)...);
+
+        // Then, put the first part of the elements to the new location
         detached->copyAppend(constBegin(), where);
-        detached->moveAppend(std::addressof(t), std::addressof(t) + 1);
+
+        // After that, increase the actual size, because we created
+        // one extra element
+        ++detached.size;
+
+        // Finally, put the rest of the elements to the new location
         detached->copyAppend(where, constEnd());
+
         d.swap(detached);
     } else {
-        d->insert(d.begin() + i, std::move(t));
+        d->emplace(d.begin() + i, std::forward<Args>(args)...);
     }
     return d.begin() + i;
 }

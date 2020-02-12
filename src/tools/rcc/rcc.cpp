@@ -744,10 +744,9 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
     const QString filename = nodes.at(nodes.size()-1);
     RCCFileInfo *s = new RCCFileInfo(file);
     s->m_parent = parent;
-    typedef QHash<QString, RCCFileInfo*>::const_iterator ChildConstIterator;
-    const ChildConstIterator cbegin = parent->m_children.constFind(filename);
-    const ChildConstIterator cend = parent->m_children.constEnd();
-    for (ChildConstIterator it = cbegin; it != cend; ++it) {
+    auto cbegin = parent->m_children.constFind(filename);
+    auto cend = parent->m_children.constEnd();
+    for (auto it = cbegin; it != cend; ++it) {
         if (it.key() == filename && it.value()->m_language == s->m_language &&
             it.value()->m_country == s->m_country) {
             for (const QString &name : qAsConst(m_fileNames)) {
@@ -823,7 +822,7 @@ QStringList RCCResourceLibrary::dataFiles() const
     pending.push(m_root);
     while (!pending.isEmpty()) {
         RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
+        for (auto it = file->m_children.begin();
             it != file->m_children.end(); ++it) {
             RCCFileInfo *child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
@@ -838,10 +837,9 @@ QStringList RCCResourceLibrary::dataFiles() const
 // Determine map of resource identifier (':/newPrefix/images/p1.png') to file via recursion
 static void resourceDataFileMapRecursion(const RCCFileInfo *m_root, const QString &path, RCCResourceLibrary::ResourceDataFileMap &m)
 {
-    typedef QHash<QString, RCCFileInfo*>::const_iterator ChildConstIterator;
     const QChar slash = QLatin1Char('/');
-    const ChildConstIterator cend = m_root->m_children.constEnd();
-    for (ChildConstIterator it = m_root->m_children.constBegin(); it != cend; ++it) {
+    const auto cend = m_root->m_children.constEnd();
+    for (auto it = m_root->m_children.constBegin(); it != cend; ++it) {
         const RCCFileInfo *child = it.value();
         const QString childName = path + slash + child->m_name;
         if (child->m_flags & RCCFileInfo::Directory) {
@@ -1149,8 +1147,7 @@ bool RCCResourceLibrary::writeDataBlobs()
     QString errorMessage;
     while (!pending.isEmpty()) {
         RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
-            it != file->m_children.end(); ++it) {
+        for (auto it = file->m_children.cbegin(); it != file->m_children.cend(); ++it) {
             RCCFileInfo *child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
@@ -1214,8 +1211,7 @@ bool RCCResourceLibrary::writeDataNames()
     qint64 offset = 0;
     while (!pending.isEmpty()) {
         RCCFileInfo *file = pending.pop();
-        for (QHash<QString, RCCFileInfo*>::iterator it = file->m_children.begin();
-            it != file->m_children.end(); ++it) {
+        for (auto it = file->m_children.cbegin(); it != file->m_children.cend(); ++it) {
             RCCFileInfo *child = it.value();
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);

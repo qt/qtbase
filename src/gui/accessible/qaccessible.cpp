@@ -619,7 +619,6 @@ QAccessible::RootObjectHandler QAccessible::installRootObjectHandler(RootObjectH
 
 QAccessible::ActivationObserver::~ActivationObserver()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -1334,7 +1333,6 @@ QColor QAccessibleInterface::backgroundColor() const
 */
 QAccessibleEvent::~QAccessibleEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 /*! \fn QAccessible::Event QAccessibleEvent::type() const
@@ -1414,7 +1412,6 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
 */
 QAccessibleValueChangeEvent::~QAccessibleValueChangeEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -1458,7 +1455,6 @@ QAccessibleValueChangeEvent::~QAccessibleValueChangeEvent()
 */
 QAccessibleStateChangeEvent::~QAccessibleStateChangeEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -1538,7 +1534,6 @@ QAccessibleStateChangeEvent::~QAccessibleStateChangeEvent()
 */
 QAccessibleTableModelChangeEvent::~QAccessibleTableModelChangeEvent()
 {
-    // must be empty until ### Qt 6
 }
 /*!
     \class QAccessibleTextCursorEvent
@@ -1567,7 +1562,6 @@ QAccessibleTableModelChangeEvent::~QAccessibleTableModelChangeEvent()
 */
 QAccessibleTextCursorEvent::~QAccessibleTextCursorEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 
@@ -1608,7 +1602,6 @@ QAccessibleTextCursorEvent::~QAccessibleTextCursorEvent()
 */
 QAccessibleTextInsertEvent::~QAccessibleTextInsertEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 
@@ -1651,7 +1644,6 @@ QAccessibleTextInsertEvent::~QAccessibleTextInsertEvent()
 */
 QAccessibleTextRemoveEvent::~QAccessibleTextRemoveEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -1713,7 +1705,6 @@ QAccessibleTextRemoveEvent::~QAccessibleTextRemoveEvent()
 */
 QAccessibleTextUpdateEvent::~QAccessibleTextUpdateEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 
@@ -1748,7 +1739,6 @@ QAccessibleTextUpdateEvent::~QAccessibleTextUpdateEvent()
 */
 QAccessibleTextSelectionEvent::~QAccessibleTextSelectionEvent()
 {
-    // must be empty until ### Qt 6
 }
 
 
@@ -1978,7 +1968,6 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 */
 QAccessibleTextInterface::~QAccessibleTextInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -2367,7 +2356,6 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 */
 QAccessibleEditableTextInterface::~QAccessibleEditableTextInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -2412,7 +2400,6 @@ QAccessibleEditableTextInterface::~QAccessibleEditableTextInterface()
 */
 QAccessibleValueInterface::~QAccessibleValueInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -2476,7 +2463,6 @@ QAccessibleValueInterface::~QAccessibleValueInterface()
 */
 QAccessibleImageInterface::~QAccessibleImageInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -2496,7 +2482,6 @@ QAccessibleImageInterface::~QAccessibleImageInterface()
 */
 QAccessibleTableCellInterface::~QAccessibleTableCellInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -2564,7 +2549,6 @@ QAccessibleTableCellInterface::~QAccessibleTableCellInterface()
 */
 QAccessibleTableInterface::~QAccessibleTableInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!
@@ -2740,7 +2724,6 @@ QAccessibleTableInterface::~QAccessibleTableInterface()
 */
 QAccessibleActionInterface::~QAccessibleActionInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 /*!

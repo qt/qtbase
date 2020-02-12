@@ -117,13 +117,13 @@ MainWindow::MainWindow(QWidget *parent)
     contentsLabel = new QLabel;
     contentsLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    connect(modelCombo, QOverload<int>::of(&QComboBox::activated),
+    connect(modelCombo, &QComboBox::activated,
             this, &MainWindow::changeModel);
-    connect(modeCombo, QOverload<int>::of(&QComboBox::activated),
+    connect(modeCombo, &QComboBox::activated,
             this, &MainWindow::changeMode);
-    connect(caseCombo, QOverload<int>::of(&QComboBox::activated),
+    connect(caseCombo, &QComboBox::activated,
             this, &MainWindow::changeCase);
-    connect(maxVisibleSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(maxVisibleSpinBox, &QSpinBox::valueChanged,
             this, &MainWindow::changeMaxVisible);
 //! [2]
 

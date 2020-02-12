@@ -359,53 +359,67 @@ void QCryptographicHash::reset()
     Adds the first \a length chars of \a data to the cryptographic
     hash.
 */
-void QCryptographicHash::addData(const char *data, int length)
+void QCryptographicHash::addData(const char *data, qsizetype length)
 {
-    switch (d->method) {
-    case Sha1:
-        sha1Update(&d->sha1Context, (const unsigned char *)data, length);
-        break;
-#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-    default:
-        Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
-        Q_UNREACHABLE();
-        break;
+    Q_ASSERT(length >= 0);
+
+#if QT_POINTER_SIZE == 8
+    // feed the data UINT_MAX bytes at a time, as some of the methods below
+    // take a uint (of course, feeding more than 4G of data into the hashing
+    // functions will be pretty slow anyway)
+    qsizetype remaining = length;
+    while (remaining) {
+        length = qMin(qsizetype(std::numeric_limits<uint>::max()), remaining);
+        remaining -= length;
 #else
-    case Md4:
-        md4_update(&d->md4Context, (const unsigned char *)data, length);
-        break;
-    case Md5:
-        MD5Update(&d->md5Context, (const unsigned char *)data, length);
-        break;
-    case Sha224:
-        SHA224Input(&d->sha224Context, reinterpret_cast<const unsigned char *>(data), length);
-        break;
-    case Sha256:
-        SHA256Input(&d->sha256Context, reinterpret_cast<const unsigned char *>(data), length);
-        break;
-    case Sha384:
-        SHA384Input(&d->sha384Context, reinterpret_cast<const unsigned char *>(data), length);
-        break;
-    case Sha512:
-        SHA512Input(&d->sha512Context, reinterpret_cast<const unsigned char *>(data), length);
-        break;
-    case RealSha3_224:
-    case Keccak_224:
-        sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), quint64(length) * 8);
-        break;
-    case RealSha3_256:
-    case Keccak_256:
-        sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), quint64(length) * 8);
-        break;
-    case RealSha3_384:
-    case Keccak_384:
-        sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), quint64(length) * 8);
-        break;
-    case RealSha3_512:
-    case Keccak_512:
-        sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), quint64(length) * 8);
-        break;
+    {
 #endif
+        switch (d->method) {
+        case Sha1:
+            sha1Update(&d->sha1Context, (const unsigned char *)data, length);
+            break;
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+        default:
+            Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
+            Q_UNREACHABLE();
+            break;
+#else
+        case Md4:
+            md4_update(&d->md4Context, (const unsigned char *)data, length);
+            break;
+        case Md5:
+            MD5Update(&d->md5Context, (const unsigned char *)data, length);
+            break;
+        case Sha224:
+            SHA224Input(&d->sha224Context, reinterpret_cast<const unsigned char *>(data), length);
+            break;
+        case Sha256:
+            SHA256Input(&d->sha256Context, reinterpret_cast<const unsigned char *>(data), length);
+            break;
+        case Sha384:
+            SHA384Input(&d->sha384Context, reinterpret_cast<const unsigned char *>(data), length);
+            break;
+        case Sha512:
+            SHA512Input(&d->sha512Context, reinterpret_cast<const unsigned char *>(data), length);
+            break;
+        case RealSha3_224:
+        case Keccak_224:
+            sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), quint64(length) * 8);
+            break;
+        case RealSha3_256:
+        case Keccak_256:
+            sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), quint64(length) * 8);
+            break;
+        case RealSha3_384:
+        case Keccak_384:
+            sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), quint64(length) * 8);
+            break;
+        case RealSha3_512:
+        case Keccak_512:
+            sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), quint64(length) * 8);
+            break;
+#endif
+        }
     }
     d->result.clear();
 }

@@ -126,9 +126,9 @@ MainWindow::MainWindow(QWidget *parent)
 //! [1]
 
 //! [2]
-    connect(modeCombo, QOverload<int>::of(&QComboBox::activated),
+    connect(modeCombo, &QComboBox::activated,
             this, &MainWindow::changeMode);
-    connect(caseCombo, QOverload<int>::of(&QComboBox::activated),
+    connect(caseCombo, &QComboBox::activated,
             this, &MainWindow::changeMode);
 
     lineEdit = new QLineEdit;

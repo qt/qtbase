@@ -157,17 +157,17 @@ Window::Window()
 //! [7]
 
 //! [8]
-    connect(shapeComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(shapeComboBox, &QComboBox::activated,
             this, &Window::shapeChanged);
-    connect(penWidthSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(penWidthSpinBox, &QSpinBox::valueChanged,
             this, &Window::penChanged);
-    connect(penStyleComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(penStyleComboBox, &QComboBox::activated,
             this, &Window::penChanged);
-    connect(penCapComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(penCapComboBox, &QComboBox::activated,
             this, &Window::penChanged);
-    connect(penJoinComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(penJoinComboBox, &QComboBox::activated,
             this, &Window::penChanged);
-    connect(brushStyleComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(brushStyleComboBox, &QComboBox::activated,
             this, &Window::brushChanged);
     connect(antialiasingCheckBox, &QAbstractButton::toggled,
             renderArea, &RenderArea::setAntialiased);

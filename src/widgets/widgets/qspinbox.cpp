@@ -191,17 +191,6 @@ public:
     The new text is passed in \a text with prefix() and suffix().
 */
 
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-    \fn void QSpinBox::valueChanged(const QString &text)
-
-    \overload
-    \obsolete Use textChanged(QString) instead
-
-    The new value is passed in \a text with prefix() and suffix().
-*/
-#endif
-
 /*!
     Constructs a spin box with 0 as minimum value and 99 as maximum value, a
     step value of 1. The value is initially set to 0. It is parented to \a
@@ -663,17 +652,6 @@ void QSpinBox::fixup(QString &input) const
     The new text is passed in \a text with prefix() and suffix().
 */
 
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-    \fn void QDoubleSpinBox::valueChanged(const QString &text);
-
-    \overload
-    \obsolete Use textChanged(QString) instead
-
-    The new value is passed in \a text with prefix() and suffix().
-*/
-#endif
-
 /*!
     Constructs a spin box with 0.0 as minimum value and 99.99 as maximum value,
     a step value of 1.0 and a precision of 2 decimal places. The value is
@@ -1095,12 +1073,6 @@ void QSpinBoxPrivate::emitSignals(EmitPolicy ep, const QVariant &old)
     if (ep != NeverEmit) {
         pendingEmit = false;
         if (ep == AlwaysEmit || value != old) {
-#if QT_DEPRECATED_SINCE(5, 14)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-            emit q->valueChanged(edit->displayText());
-QT_WARNING_POP
-#endif
             emit q->textChanged(edit->displayText());
             emit q->valueChanged(value.toInt());
         }
@@ -1252,12 +1224,6 @@ void QDoubleSpinBoxPrivate::emitSignals(EmitPolicy ep, const QVariant &old)
     if (ep != NeverEmit) {
         pendingEmit = false;
         if (ep == AlwaysEmit || value != old) {
-#if QT_DEPRECATED_SINCE(5, 14)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-            emit q->valueChanged(edit->displayText());
-QT_WARNING_POP
-#endif
             emit q->textChanged(edit->displayText());
             emit q->valueChanged(value.toDouble());
         }

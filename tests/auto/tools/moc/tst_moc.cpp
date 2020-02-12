@@ -32,6 +32,7 @@
 #include <qobject.h>
 #include <qmetaobject.h>
 #include <qjsondocument.h>
+#include <qversionnumber.h>
 
 #include "using-namespaces.h"
 #include "assign-namespace.h"
@@ -1895,12 +1896,14 @@ class VersionTest : public QObject
     Q_OBJECT
     Q_PROPERTY(int prop1 READ foo)
     Q_PROPERTY(int prop2 READ foo REVISION 2)
+    Q_PROPERTY(int prop514 READ foo REVISION(5, 14))
 
 public:
     int foo() const { return 0; }
 
     Q_INVOKABLE void method1() {}
     Q_INVOKABLE Q_REVISION(4) void method2() {}
+    Q_INVOKABLE Q_REVISION(6, 0) void method60() {}
 
     enum TestEnum { One, Two };
     Q_ENUM(TestEnum);
@@ -1909,18 +1912,26 @@ public:
 public slots:
     void slot1() {}
     Q_REVISION(3) void slot2() {}
+    Q_REVISION(6, 1) void slot61() {}
 
 signals:
     void signal1();
     Q_REVISION(5) void signal2();
+    Q_REVISION(6, 2) void signal62();
 
 public slots Q_REVISION(6):
     void slot3() {}
     void slot4() {}
 
+public slots Q_REVISION(5, 12):
+    void slot512() {}
+
 signals Q_REVISION(7):
     void signal3();
     void signal4();
+
+signals Q_REVISION(5, 15):
+    void signal515();
 };
 
 // If changed, update VersionTest above
@@ -1929,12 +1940,14 @@ class VersionTestNotify : public QObject
     Q_OBJECT
     Q_PROPERTY(int prop1 READ foo NOTIFY fooChanged)
     Q_PROPERTY(int prop2 READ foo REVISION 2)
+    Q_PROPERTY(int prop514 READ foo REVISION(5, 14))
 
 public:
     int foo() const { return 0; }
 
     Q_INVOKABLE void method1() {}
     Q_INVOKABLE Q_REVISION(4) void method2() {}
+    Q_INVOKABLE Q_REVISION(6, 0) void method60() {}
 
     enum TestEnum { One, Two };
     Q_ENUM(TestEnum);
@@ -1942,19 +1955,27 @@ public:
 public slots:
     void slot1() {}
     Q_REVISION(3) void slot2() {}
+    Q_REVISION(6, 1) void slot61() {}
 
 signals:
     void fooChanged();
     void signal1();
     Q_REVISION(5) void signal2();
+    Q_REVISION(6, 2) void signal62();
 
 public slots Q_REVISION(6):
     void slot3() {}
     void slot4() {}
 
+public slots Q_REVISION(5, 12):
+    void slot512() {}
+
 signals Q_REVISION(7):
     void signal3();
     void signal4();
+
+signals Q_REVISION(5, 15):
+    void signal515();
 };
 
 template <class T>
@@ -1963,32 +1984,58 @@ void tst_Moc::revisions_T()
     int idx = T::staticMetaObject.indexOfProperty("prop1");
     QCOMPARE(T::staticMetaObject.property(idx).revision(), 0);
     idx = T::staticMetaObject.indexOfProperty("prop2");
-    QCOMPARE(T::staticMetaObject.property(idx).revision(), 2);
+    QCOMPARE(T::staticMetaObject.property(idx).revision(),
+             QTypeRevision::fromMinorVersion(2).toEncodedVersion<int>());
+    idx = T::staticMetaObject.indexOfProperty("prop514");
+    QCOMPARE(T::staticMetaObject.property(idx).revision(),
+             QTypeRevision::fromVersion(5, 14).toEncodedVersion<int>());
 
     idx = T::staticMetaObject.indexOfMethod("method1()");
     QCOMPARE(T::staticMetaObject.method(idx).revision(), 0);
     idx = T::staticMetaObject.indexOfMethod("method2()");
-    QCOMPARE(T::staticMetaObject.method(idx).revision(), 4);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromMinorVersion(4).toEncodedVersion<int>());
+    idx = T::staticMetaObject.indexOfMethod("method60()");
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromVersion(6, 0).toEncodedVersion<int>());
 
     idx = T::staticMetaObject.indexOfSlot("slot1()");
     QCOMPARE(T::staticMetaObject.method(idx).revision(), 0);
     idx = T::staticMetaObject.indexOfSlot("slot2()");
-    QCOMPARE(T::staticMetaObject.method(idx).revision(), 3);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromMinorVersion(3).toEncodedVersion<int>());
+    idx = T::staticMetaObject.indexOfSlot("slot61()");
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromVersion(6, 1).toEncodedVersion<int>());
 
     idx = T::staticMetaObject.indexOfSlot("slot3()");
-    QCOMPARE(T::staticMetaObject.method(idx).revision(), 6);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromMinorVersion(6).toEncodedVersion<int>());
     idx = T::staticMetaObject.indexOfSlot("slot4()");
-    QCOMPARE(T::staticMetaObject.method(idx).revision(), 6);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromMinorVersion(6).toEncodedVersion<int>());
+    idx = T::staticMetaObject.indexOfSlot("slot512()");
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromVersion(5, 12).toEncodedVersion<int>());
 
     idx = T::staticMetaObject.indexOfSignal("signal1()");
     QCOMPARE(T::staticMetaObject.method(idx).revision(), 0);
     idx = T::staticMetaObject.indexOfSignal("signal2()");
-    QCOMPARE(T::staticMetaObject.method(idx).revision(), 5);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromMinorVersion(5).toEncodedVersion<int>());
+    idx = T::staticMetaObject.indexOfSignal("signal62()");
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromVersion(6, 2).toEncodedVersion<int>());
 
     idx = T::staticMetaObject.indexOfSignal("signal3()");
-    QCOMPARE(T::staticMetaObject.method(idx).revision(), 7);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromMinorVersion(7).toEncodedVersion<int>());
     idx = T::staticMetaObject.indexOfSignal("signal4()");
-    QCOMPARE(T::staticMetaObject.method(idx).revision(), 7);
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromMinorVersion(7).toEncodedVersion<int>());
+    idx = T::staticMetaObject.indexOfSignal("signal515()");
+    QCOMPARE(T::staticMetaObject.method(idx).revision(),
+             QTypeRevision::fromVersion(5, 15).toEncodedVersion<int>());
 
     idx = T::staticMetaObject.indexOfEnumerator("TestEnum");
     QCOMPARE(T::staticMetaObject.enumerator(idx).keyCount(), 2);

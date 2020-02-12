@@ -2155,7 +2155,7 @@ void tst_QSharedPointer::threadStressTest()
     }
 }
 
-template<typename Container, bool Ordered>
+template<typename Container, bool Ordered, bool Multi>
 void hashAndMapTest()
 {
     typedef typename Container::key_type Key;
@@ -2200,26 +2200,30 @@ void hashAndMapTest()
         QVERIFY(it == c.end());
     }
 
-    c.insertMulti(k1, Value(47));
-    it = c.find(k1);
-    QVERIFY(it != c.end());
-    QCOMPARE(it.key(), k1);
-    ++it;
-    QVERIFY(it != c.end());
-    QCOMPARE(it.key(), k1);
-    ++it;
-    if (Ordered)
-        QVERIFY(it == c.end());
+    if (Multi) {
+        c.insert(k1, Value(47));
+        it = c.find(k1);
+        QVERIFY(it != c.end());
+        QCOMPARE(it.key(), k1);
+        ++it;
+        QVERIFY(it != c.end());
+        QCOMPARE(it.key(), k1);
+        ++it;
+        if (Ordered)
+            QVERIFY(it == c.end());
+    }
 }
 
 void tst_QSharedPointer::map()
 {
-    hashAndMapTest<QMap<QSharedPointer<int>, int>, true>();
+    hashAndMapTest<QMap<QSharedPointer<int>, int>, true, false>();
+    hashAndMapTest<QMultiMap<QSharedPointer<int>, int>, true, true>();
 }
 
 void tst_QSharedPointer::hash()
 {
-    hashAndMapTest<QHash<QSharedPointer<int>, int>, false>();
+    hashAndMapTest<QHash<QSharedPointer<int>, int>, false, false>();
+    hashAndMapTest<QMultiHash<QSharedPointer<int>, int>, false, true>();
 }
 
 void tst_QSharedPointer::validConstructs()

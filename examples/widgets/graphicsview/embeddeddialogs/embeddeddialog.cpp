@@ -67,7 +67,7 @@ EmbeddedDialog::EmbeddedDialog(QWidget *parent)
             ui->style->setCurrentIndex(ui->style->count() - 1);
     }
 
-    connect(ui->layoutDirection, QOverload<int>::of(&QComboBox::activated),
+    connect(ui->layoutDirection, &QComboBox::activated,
             this, &EmbeddedDialog::layoutDirectionChanged);
     connect(ui->spacing, &QSlider::valueChanged,
             this, &EmbeddedDialog::spacingChanged);

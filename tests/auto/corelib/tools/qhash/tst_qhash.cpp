@@ -451,20 +451,6 @@ void tst_QHash::insert1()
         QCOMPARE(hash.find(searchKey).value(), id01.id);  // last-inserted value
         QCOMPARE(hash.find(searchKey).key().id, id00.id); // but first-inserted key
     }
-    {
-        QMultiHash<IdentityTracker, int> hash;
-        QCOMPARE(hash.size(), 0);
-        const int dummy = -1;
-        IdentityTracker id00 = {0, 0}, id01 = {0, 1}, searchKey = {0, dummy};
-        QCOMPARE(hash.insert(id00, id00.id).key().id, id00.id);
-        QCOMPARE(hash.size(), 1);
-        QCOMPARE(hash.insert(id01, id01.id).key().id, id01.id);
-        QCOMPARE(hash.size(), 2);
-        QMultiHash<IdentityTracker, int>::const_iterator pos = hash.constFind(searchKey);
-        QCOMPARE(pos.value(), pos.key().id); // key fits to value it was inserted with
-        ++pos;
-        QCOMPARE(pos.value(), pos.key().id); // key fits to value it was inserted with
-    }
 }
 
 void tst_QHash::erase()
@@ -491,13 +477,15 @@ void tst_QHash::erase()
         ++n;
     }
     QVERIFY(n == 3);
-    QHash<int, int> h2;
-    h2.insertMulti(20, 41);
-    h2.insertMulti(20, 42);
+
+    QMultiHash<int, int> h2;
+    h2.insert(20, 41);
+    h2.insert(20, 42);
     QVERIFY(h2.size() == 2);
-    it1 = h2.erase(h2.begin());
-    it1 = h2.erase(h2.begin());
-    QVERIFY(it1 == h2.end());
+    auto bit = h2.begin();
+    auto mit = h2.erase(bit);
+    mit = h2.erase(h2.begin());
+    QVERIFY(mit == h2.end());
 }
 
 void tst_QHash::key()
@@ -631,14 +619,15 @@ void tst_QHash::find()
     QCOMPARE(map1.find(1).value(), QLatin1String("Mayer"));
     QCOMPARE(map1.find(2).value(), QLatin1String("Hej"));
 
-    for(i = 3; i < 10; ++i) {
+    QMultiHash<int, QString> multiMap(map1);
+    for (i = 3; i < 10; ++i) {
         compareString = testString.arg(i);
-        map1.insertMulti(4, compareString);
+        multiMap.insert(4, compareString);
     }
 
-    QHash<int, QString>::const_iterator it=map1.constFind(4);
+    auto it = multiMap.constFind(4);
 
-    for(i = 9; i > 2 && it != map1.constEnd() && it.key() == 4; --i) {
+    for (i = 9; i > 2 && it != multiMap.constEnd() && it.key() == 4; --i) {
         compareString = testString.arg(i);
         QVERIFY(it.value() == compareString);
         ++it;
@@ -664,14 +653,15 @@ void tst_QHash::constFind()
     QCOMPARE(map1.constFind(1).value(), QLatin1String("Mayer"));
     QCOMPARE(map1.constFind(2).value(), QLatin1String("Hej"));
 
-    for(i = 3; i < 10; ++i) {
+    QMultiHash<int, QString> multiMap(map1);
+    for (i = 3; i < 10; ++i) {
         compareString = testString.arg(i);
-        map1.insertMulti(4, compareString);
+        multiMap.insert(4, compareString);
     }
 
-    QHash<int, QString>::const_iterator it=map1.constFind(4);
+    auto it = multiMap.constFind(4);
 
-    for(i = 9; i > 2 && it != map1.constEnd() && it.key() == 4; --i) {
+    for (i = 9; i > 2 && it != multiMap.constEnd() && it.key() == 4; --i) {
         compareString = testString.arg(i);
         QVERIFY(it.value() == compareString);
         ++it;
@@ -689,9 +679,9 @@ void tst_QHash::contains()
     map1.insert(1, "one");
     QVERIFY(map1.contains(1));
 
-    for(i=2; i < 100; ++i)
+    for (i=2; i < 100; ++i)
         map1.insert(i, "teststring");
-    for(i=99; i > 1; --i)
+    for (i=99; i > 1; --i)
         QVERIFY(map1.contains(i));
 
     map1.remove(43);
@@ -855,33 +845,33 @@ void tst_QHash::operator_eq()
     // regardless of insertion or iteration order
 
     {
-        QHash<int, int> a;
-        QHash<int, int> b;
+        QMultiHash<int, int> a;
+        QMultiHash<int, int> b;
 
-        a.insertMulti(0, 0);
-        a.insertMulti(0, 1);
+        a.insert(0, 0);
+        a.insert(0, 1);
 
-        b.insertMulti(0, 1);
-        b.insertMulti(0, 0);
+        b.insert(0, 1);
+        b.insert(0, 0);
 
         QVERIFY(a == b);
         QVERIFY(!(a != b));
     }
 
     {
-        QHash<int, int> a;
-        QHash<int, int> b;
+        QMultiHash<int, int> a;
+        QMultiHash<int, int> b;
 
         enum { Count = 100 };
 
         for (int key = 0; key < Count; ++key) {
             for (int value = 0; value < Count; ++value)
-                a.insertMulti(key, value);
+                a.insert(key, value);
         }
 
         for (int key = Count - 1; key >= 0; --key) {
             for (int value = 0; value < Count; ++value)
-                b.insertMulti(key, value);
+                b.insert(key, value);
         }
 
         QVERIFY(a == b);
@@ -889,8 +879,8 @@ void tst_QHash::operator_eq()
     }
 
     {
-        QHash<int, int> a;
-        QHash<int, int> b;
+        QMultiHash<int, int> a;
+        QMultiHash<int, int> b;
 
         enum {
             Count = 100,
@@ -900,7 +890,7 @@ void tst_QHash::operator_eq()
 
         for (int key = 0; key < Count; ++key) {
             for (int value = 0; value < Count; ++value)
-                a.insertMulti(key, value);
+                a.insert(key, value);
         }
 
         // Generates two permutations of [0, Count) for the keys and values,
@@ -909,7 +899,7 @@ void tst_QHash::operator_eq()
         for (int k = 0; k < Count; ++k) {
            const int key = (k * KeyStep) % Count;
            for (int v = 0; v < Count; ++v)
-               b.insertMulti(key, (v * ValueStep) % Count);
+               b.insert(key, (v * ValueStep) % Count);
         }
 
         QVERIFY(a == b);
@@ -923,10 +913,10 @@ void tst_QHash::compare()
     QString testString = "Teststring %1";
     int i;
 
-    for(i = 0; i < 1000; ++i)
+    for (i = 0; i < 1000; ++i)
         hash1.insert(i,testString.arg(i));
 
-    for(--i; i >= 0; --i)
+    for (--i; i >= 0; --i)
         hash2.insert(i,testString.arg(i));
 
     hash1.squeeze();
@@ -947,39 +937,39 @@ void tst_QHash::compare()
 
 void tst_QHash::compare2()
 {
-    QHash<int, int> a;
-    QHash<int, int> b;
+    QMultiHash<int, int> a;
+    QMultiHash<int, int> b;
 
-    a.insertMulti(17, 1);
-    a.insertMulti(17 * 2, 1);
-    b.insertMulti(17 * 2, 1);
-    b.insertMulti(17, 1);
+    a.insert(17, 1);
+    a.insert(17 * 2, 1);
+    b.insert(17 * 2, 1);
+    b.insert(17, 1);
     QVERIFY(a == b);
     QVERIFY(b == a);
 
-    a.insertMulti(17, 2);
-    a.insertMulti(17 * 2, 3);
-    b.insertMulti(17 * 2, 3);
-    b.insertMulti(17, 2);
+    a.insert(17, 2);
+    a.insert(17 * 2, 3);
+    b.insert(17 * 2, 3);
+    b.insert(17, 2);
     QVERIFY(a == b);
     QVERIFY(b == a);
 
-    a.insertMulti(17, 4);
-    a.insertMulti(17 * 2, 5);
-    b.insertMulti(17 * 2, 4);
-    b.insertMulti(17, 5);
+    a.insert(17, 4);
+    a.insert(17 * 2, 5);
+    b.insert(17 * 2, 4);
+    b.insert(17, 5);
     QVERIFY(!(a == b));
     QVERIFY(!(b == a));
 
     a.clear();
     b.clear();
-    a.insertMulti(1, 1);
-    a.insertMulti(1, 2);
-    a.insertMulti(1, 3);
-    b.insertMulti(1, 1);
-    b.insertMulti(1, 2);
-    b.insertMulti(1, 3);
-    b.insertMulti(1, 4);
+    a.insert(1, 1);
+    a.insert(1, 2);
+    a.insert(1, 3);
+    b.insert(1, 1);
+    b.insert(1, 2);
+    b.insert(1, 3);
+    b.insert(1, 4);
     QVERIFY(!(a == b));
     QVERIFY(!(b == a));
 }
@@ -993,7 +983,7 @@ void tst_QHash::iterators()
     QString testString1;
     int i;
 
-    for(i = 1; i < 100; ++i)
+    for (i = 1; i < 100; ++i)
         hash.insert(i, testString.arg(i));
 
     //to get some chaos in the hash
@@ -1010,17 +1000,12 @@ void tst_QHash::iterators()
 
     QVERIFY(stlIt.value() == testMap.value(1));
 
-    stlIt+=5;
+    for (int i = 0; i < 5; ++i)
+        ++stlIt;
     QVERIFY(stlIt.value() == testMap.value(6));
 
     stlIt++;
     QVERIFY(stlIt.value() == testMap.value(7));
-
-    stlIt-=3;
-    QVERIFY(stlIt.value() == testMap.value(4));
-
-    stlIt--;
-    QVERIFY(stlIt.value() == testMap.value(3));
 
     testMap.clear();
 
@@ -1035,17 +1020,12 @@ void tst_QHash::iterators()
 
     QVERIFY(cstlIt.value() == testMap.value(1));
 
-    cstlIt+=5;
+    for (int i = 0; i < 5; ++i)
+        ++cstlIt;
     QVERIFY(cstlIt.value() == testMap.value(6));
 
     cstlIt++;
     QVERIFY(cstlIt.value() == testMap.value(7));
-
-    cstlIt-=3;
-    QVERIFY(cstlIt.value() == testMap.value(4));
-
-    cstlIt--;
-    QVERIFY(cstlIt.value() == testMap.value(3));
 
     testMap.clear();
 
@@ -1068,14 +1048,7 @@ void tst_QHash::iterators()
         QVERIFY(javaIt.value() == testMap.value(i));
     }
 
-    ++i;
-    while(javaIt.hasPrevious()) {
-        --i;
-        javaIt.previous();
-        QVERIFY(javaIt.value() == testMap.value(i));
-    }
-
-    //peekNext()  peekPrevious()
+    //peekNext()
     javaIt.toFront();
     javaIt.next();
     while(javaIt.hasNext()) {
@@ -1083,14 +1056,6 @@ void tst_QHash::iterators()
         testString1 = javaIt.peekNext().value();
         javaIt.next();
         QVERIFY(javaIt.value() == testString1);
-        QCOMPARE(javaIt.peekPrevious().value(), testString1);
-    }
-    while(javaIt.hasPrevious()) {
-        testString = javaIt.value();
-        testString1 = javaIt.peekPrevious().value();
-        javaIt.previous();
-        QVERIFY(javaIt.value() == testString1);
-        QCOMPARE(javaIt.peekNext().value(), testString1);
     }
 }
 
@@ -1115,9 +1080,15 @@ void tst_QHash::keyIterator()
     QVERIFY(key_it != hash.keyEnd());
     QCOMPARE(*key_it, it.key());
     QCOMPARE(*(key_it++), (it++).key());
-    QCOMPARE(*(key_it--), (it--).key());
-    QCOMPARE(*(++key_it), (++it).key());
-    QCOMPARE(*(--key_it), (--it).key());
+    if (key_it != hash.keyEnd()) {
+        QVERIFY(it != hash.end());
+        ++key_it;
+        ++it;
+        if (key_it != hash.keyEnd())
+            QCOMPARE(*key_it, it.key());
+        else
+            QVERIFY(it == hash.end());
+    }
 
     QCOMPARE(std::count(hash.keyBegin(), hash.keyEnd(), 99), 1);
 
@@ -1162,19 +1133,11 @@ void tst_QHash::keyValueIterator()
 
     ++it;
     ++key_value_it;
-    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+    if (it != hash.end())
+        QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+    else
+        QVERIFY(key_value_it == hash.constKeyValueEnd());
 
-    --it;
-    --key_value_it;
-    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
-
-    ++it;
-    ++key_value_it;
-    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
-
-    --it;
-    --key_value_it;
-    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
     key = 99;
     value = 99 * 100;
     QCOMPARE(std::count(hash.constKeyValueBegin(), hash.constKeyValueEnd(), entry_type(key, value)), 1);
@@ -1184,9 +1147,9 @@ void tst_QHash::rehash_isnt_quadratic()
 {
     // this test should be incredibly slow if rehash() is quadratic
     for (int j = 0; j < 5; ++j) {
-        QHash<int, int> testHash;
+        QMultiHash<int, int> testHash;
         for (int i = 0; i < 500000; ++i)
-            testHash.insertMulti(1, 1);
+            testHash.insert(1, 1);
     }
 }
 
@@ -1330,27 +1293,27 @@ QList<T> sorted(const QList<T> &list)
 
 void tst_QHash::keys_values_uniqueKeys()
 {
-    QHash<QString, int> hash;
+    QMultiHash<QString, int> hash;
     QVERIFY(hash.uniqueKeys().isEmpty());
     QVERIFY(hash.keys().isEmpty());
     QVERIFY(hash.values().isEmpty());
 
-    hash.insertMulti("alpha", 1);
+    hash.insert("alpha", 1);
     QVERIFY(sorted(hash.keys()) == (QList<QString>() << "alpha"));
     QVERIFY(hash.keys() == hash.uniqueKeys());
     QVERIFY(hash.values() == (QList<int>() << 1));
 
-    hash.insertMulti("beta", -2);
+    hash.insert("beta", -2);
     QVERIFY(sorted(hash.keys()) == (QList<QString>() << "alpha" << "beta"));
     QVERIFY(hash.keys() == hash.uniqueKeys());
     QVERIFY(sorted(hash.values()) == sorted(QList<int>() << 1 << -2));
 
-    hash.insertMulti("alpha", 2);
+    hash.insert("alpha", 2);
     QVERIFY(sorted(hash.uniqueKeys()) == (QList<QString>() << "alpha" << "beta"));
     QVERIFY(sorted(hash.keys()) == (QList<QString>() << "alpha" << "alpha" << "beta"));
     QVERIFY(sorted(hash.values()) == sorted(QList<int>() << 2 << 1 << -2));
 
-    hash.insertMulti("beta", 4);
+    hash.insert("beta", 4);
     QVERIFY(sorted(hash.uniqueKeys()) == (QList<QString>() << "alpha" << "beta"));
     QVERIFY(sorted(hash.keys()) == (QList<QString>() << "alpha" << "alpha" << "beta" << "beta"));
     QVERIFY(sorted(hash.values()) == sorted(QList<int>() << 2 << 1 << 4 << -2));
@@ -1504,14 +1467,14 @@ void tst_QHash::initializerList()
 
 void tst_QHash::eraseValidIteratorOnSharedHash()
 {
-    QHash<int, int> a, b;
+    QMultiHash<int, int> a, b;
     a.insert(10, 10);
-    a.insertMulti(10, 25);
-    a.insertMulti(10, 30);
+    a.insert(10, 25);
+    a.insert(10, 30);
     a.insert(20, 20);
     a.insert(40, 40);
 
-    QHash<int, int>::iterator i = a.begin();
+    auto i = a.begin();
     while (i.value() != 25)
         ++i;
 
@@ -1533,7 +1496,7 @@ void tst_QHash::eraseValidIteratorOnSharedHash()
 
 void tst_QHash::equal_range()
 {
-    QHash<int, QString> hash;
+    QMultiHash<int, QString> hash;
 
     auto result = hash.equal_range(0);
     QCOMPARE(result.first, hash.end());
@@ -1546,7 +1509,7 @@ void tst_QHash::equal_range()
     QCOMPARE(result.first, hash.find(1));
     QVERIFY(std::distance(result.first, result.second) == 1);
 
-    QHash<int, int> h1;
+    QMultiHash<int, int> h1;
     {
         auto p = h1.equal_range(0);
         QVERIFY(p.first == p.second);
@@ -1597,7 +1560,7 @@ void tst_QHash::equal_range()
         QVERIFY(p2.first == m1.begin() || p2.second == m1.end());
     }
 
-    const QHash<int, int> ch1 = h1;
+    const QMultiHash<int, int> ch1 = h1;
     {
         auto p1 = ch1.equal_range(9);
         QVERIFY(p1.first == p1.second);
@@ -1623,10 +1586,10 @@ void tst_QHash::equal_range()
         QVERIFY(p2.first == cm1.cbegin() || p2.second == cm1.cend());
     }
 
-    QHash<int, int> h2;
+    QMultiHash<int, int> h2;
     for (int i = 0; i < 8; ++i)
         for (int j = 0; j < 8; ++j)
-            h2.insertMulti(i, i*j);
+            h2.insert(i, i*j);
 
     for (int i = 0; i < 8; ++i) {
         auto pair = h2.equal_range(i);
@@ -1691,21 +1654,6 @@ void tst_QHash::insert_hash()
         QCOMPARE(hash[0], 7);
         QCOMPARE(hash[2], 5);
         QCOMPARE(hash[7], 55);
-    }
-    {
-        // This will use a QMultiHash and then insert that into QHash,
-        // the ordering is undefined so we won't test that but make
-        // sure this isn't adding multiple entries with the same key
-        // to the QHash.
-        QHash<int, int> hash;
-        QMultiHash<int, int> hash2;
-        hash2.insert(0, 5);
-        hash2.insert(0, 6);
-        hash2.insert(0, 7);
-
-        hash.insert(hash2);
-
-        QCOMPARE(hash.count(), 1);
     }
 }
 

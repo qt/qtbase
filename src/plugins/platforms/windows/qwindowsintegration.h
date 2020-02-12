@@ -72,7 +72,8 @@ public:
         DetectAltGrModifier = 0x800,
         RtlEnabled = 0x1000,
         DarkModeWindowFrames = 0x2000,
-        DarkModeStyle = 0x4000
+        DarkModeStyle = 0x4000,
+        FontDatabaseDirectWrite = 0x8000
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

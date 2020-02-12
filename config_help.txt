@@ -320,6 +320,6 @@ Gui, printing, widget options:
 Database options:
 
   -sql-<driver> ........ Enable SQL <driver> plugin. Supported drivers:
-                         db2 ibase mysql oci odbc psql sqlite2 sqlite tds
+                         db2 ibase mysql oci odbc psql sqlite
                          [all auto]
-  -sqlite .............. Select used sqlite3 [system/qt]
+  -sqlite .............. Select used sqlite [system/qt]

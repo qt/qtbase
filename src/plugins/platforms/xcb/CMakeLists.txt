@@ -89,6 +89,11 @@ qt_add_module(XcbQpa
 ## Scopes:
 #####################################################################
 
+qt_extend_target(XcbQpa CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::PlatformCompositorSupportPrivate
+)
+
 qt_extend_target(XcbQpa CONDITION TARGET Qt::LinuxAccessibilitySupportPrivate
     PUBLIC_LIBRARIES
         Qt::LinuxAccessibilitySupportPrivate
@@ -190,13 +195,13 @@ qt_add_plugin(QXcbIntegrationPlugin
         Qt::XcbQpaPrivate
 )
 
-#### Keys ignored in scope 19:.:.:xcb-plugin.pro:<TRUE>:
+#### Keys ignored in scope 20:.:.:xcb-plugin.pro:<TRUE>:
 # OTHER_FILES = "xcb.json" "README"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 21:.:.:xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 22:.:.:xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(gl_integrations)
 if(OFF)

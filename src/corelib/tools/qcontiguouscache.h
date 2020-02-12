@@ -56,8 +56,6 @@ struct Q_CORE_EXPORT QContiguousCacheData
     int count;
     int start;
     int offset;
-    uint sharable : 1;
-    uint reserved : 31;
 
     // total is 24 bytes (HP-UX aCC: 40 bytes)
     // the next entry is already aligned to 8 bytes
@@ -96,7 +94,7 @@ public:
     typedef int size_type;
 
     explicit QContiguousCache(int capacity = 0);
-    QContiguousCache(const QContiguousCache<T> &v) : d(v.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
+    QContiguousCache(const QContiguousCache<T> &v) : d(v.d) { d->ref.ref(); }
 
     inline ~QContiguousCache() { if (!d) return; if (!d->ref.deref()) freeData(p); }
 
@@ -178,8 +176,6 @@ void QContiguousCache<T>::detach_helper()
     x.d->start = d->start;
     x.d->offset = d->offset;
     x.d->alloc = d->alloc;
-    x.d->sharable = true;
-    x.d->reserved = 0;
 
     T *dest = x.p->array + x.d->start;
     T *src = p->array + d->start;
@@ -267,7 +263,6 @@ void QContiguousCache<T>::clear()
         x.d->ref.storeRelaxed(1);
         x.d->alloc = d->alloc;
         x.d->count = x.d->start = x.d->offset = 0;
-        x.d->sharable = true;
         if (!d->ref.deref()) freeData(p);
         d = x.d;
     }
@@ -287,7 +282,6 @@ QContiguousCache<T>::QContiguousCache(int cap)
     d->ref.storeRelaxed(1);
     d->alloc = cap;
     d->count = d->start = d->offset = 0;
-    d->sharable = true;
 }
 
 template <typename T>
@@ -297,8 +291,6 @@ QContiguousCache<T> &QContiguousCache<T>::operator=(const QContiguousCache<T> &o
     if (!d->ref.deref())
         freeData(p);
     d = other.d;
-    if (!d->sharable)
-        detach_helper();
     return *this;
 }
 

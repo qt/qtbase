@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace QPlatformGraphicsBufferHelper {
-    bool lockAndBindToTexture(QPlatformGraphicsBuffer *graphicsBuffer, bool *swizzleRandB, bool *premultipliedB, const QRect &rect = QRect());
+    Q_GUI_EXPORT bool lockAndBindToTexture(QPlatformGraphicsBuffer *graphicsBuffer, bool *swizzleRandB, bool *premultipliedB, const QRect &rect = QRect());
     bool bindSWToTexture(const QPlatformGraphicsBuffer *graphicsBuffer, bool *swizzleRandB = nullptr, bool *premultipliedB = nullptr, const QRect &rect = QRect());
 }
 

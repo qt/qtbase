@@ -24,6 +24,7 @@ HEADERS += \
     qopengltexture.h \
     qopengltexture_p.h \
     qopengltexturehelper_p.h \
+    qopengltextureblitter.h \
     qopengltexturecache_p.h \
     qopengltextureglyphcache_p.h \
     qopengltextureuploader_p.h \
@@ -40,6 +41,7 @@ SOURCES += \
     qopenglpixeltransferoptions.cpp \
     qopengltexture.cpp \
     qopengltexturehelper.cpp \
+    qopengltextureblitter.cpp \
     qopengltexturecache.cpp \
     qopengltextureglyphcache.cpp \
     qopengltextureuploader.cpp \

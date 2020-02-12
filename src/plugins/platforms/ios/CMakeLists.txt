@@ -44,6 +44,11 @@ add_qt_plugin(QIOSIntegrationPlugin
 ## Scopes:
 #####################################################################
 
+extend_target(QIOSIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::PlatformCompositorSupportPrivate
+)
+
 extend_target(QIOSIntegrationPlugin CONDITION NOT APPLE_TVOS
     SOURCES
         qiosclipboard.h qiosclipboard.mm
@@ -55,6 +60,6 @@ extend_target(QIOSIntegrationPlugin CONDITION NOT APPLE_TVOS
         ${FWAssetsLibrary}
 )
 
-#### Keys ignored in scope 5:.:.:kernel.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 6:.:.:kernel.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(optional)

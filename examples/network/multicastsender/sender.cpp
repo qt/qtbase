@@ -81,7 +81,7 @@ Sender::Sender(QWidget *parent)
     buttonBox->addButton(startButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(ttlSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &Sender::ttlChanged);
+    connect(ttlSpinBox, &QSpinBox::valueChanged, this, &Sender::ttlChanged);
     connect(startButton, &QPushButton::clicked, this, &Sender::startSending);
     connect(quitButton, &QPushButton::clicked, this, &Sender::close);
     connect(&timer, &QTimer::timeout, this, &Sender::sendDatagram);

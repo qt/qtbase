@@ -614,6 +614,7 @@ public:
 
         LastScript = JamoScript
     };
+
     enum Country {
         AnyCountry = 0,
         Afghanistan = 1,

@@ -557,6 +557,11 @@ qt_feature("directwrite1" PRIVATE
     CONDITION libs.dwrite_1 OR FIXME
     EMIT_IF WIN32
 )
+qt_feature("directwrite3" PRIVATE
+    LABEL "DirectWrite 3"
+    CONDITION QT_FEATURE_directwrite1 AND libs.dwrite_3 OR FIXME
+    EMIT_IF WIN32
+)
 qt_feature("directwrite2" PRIVATE
     LABEL "DirectWrite 2"
     CONDITION QT_FEATURE_directwrite1 AND libs.dwrite_2 OR FIXME

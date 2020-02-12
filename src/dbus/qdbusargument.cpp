@@ -908,9 +908,10 @@ void QDBusArgument::endArray()
 
     \snippet code/src_qdbus_qdbusargument.cpp 7
 
-    If the type you want to marshall is a QMap or QHash, you need not
-    declare an \c{operator<<} function for it, since Qt D-Bus provides
-    generic templates to do the job of marshalling the data.
+    You usually don't need to provide an \c{operator<<} or \c{operator>>}
+    function for associative containers such as QHash or std::map,
+    since Qt D-Bus provides generic templates to do the job of marshalling
+    the data.
 
     \sa endMap(), beginStructure(), beginArray(), beginMapEntry()
 */

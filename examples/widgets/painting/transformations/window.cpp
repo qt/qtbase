@@ -79,7 +79,7 @@ Window::Window()
         operationComboBoxes[i]->addItem(tr("Scale to 75%"));
         operationComboBoxes[i]->addItem(tr("Translate by (50, 50)"));
 
-        connect(operationComboBoxes[i], QOverload<int>::of(&QComboBox::activated),
+        connect(operationComboBoxes[i], &QComboBox::activated,
                 this, &Window::operationChanged);
 
         layout->addWidget(transformedRenderAreas[i], 0, i + 1);
@@ -159,7 +159,7 @@ void Window::setupShapes()
     shapes.append(text);
     shapes.append(truck);
 
-    connect(shapeComboBox, QOverload<int>::of(&QComboBox::activated),
+    connect(shapeComboBox, &QComboBox::activated,
             this, &Window::shapeSelected);
 }
 //! [7]

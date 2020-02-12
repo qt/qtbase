@@ -43,7 +43,6 @@ QT_BEGIN_NAMESPACE
 
 QFactoryInterface::~QFactoryInterface()
 {
-    // must be empty until ### Qt 6
 }
 
 QT_END_NAMESPACE

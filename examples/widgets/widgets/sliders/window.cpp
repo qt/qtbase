@@ -78,7 +78,7 @@ Window::Window(QWidget *parent)
             verticalSliders, &SlidersGroup::setValue);
     connect(verticalSliders, &SlidersGroup::valueChanged,
             valueSpinBox, &QSpinBox::setValue);
-    connect(valueSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(valueSpinBox, &QSpinBox::valueChanged,
             horizontalSliders, &SlidersGroup::setValue);
 
     QHBoxLayout *layout = new QHBoxLayout;
@@ -126,16 +126,16 @@ void Window::createControls(const QString &title)
     orientationCombo->addItem(tr("Vertical slider-like widgets"));
 
 //! [6] //! [7]
-    connect(orientationCombo, QOverload<int>::of(&QComboBox::activated),
+    connect(orientationCombo, &QComboBox::activated,
 //! [7] //! [8]
             stackedWidget, &QStackedWidget::setCurrentIndex);
-    connect(minimumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(minimumSpinBox, &QSpinBox::valueChanged,
             horizontalSliders, &SlidersGroup::setMinimum);
-    connect(minimumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(minimumSpinBox, &QSpinBox::valueChanged,
             verticalSliders, &SlidersGroup::setMinimum);
-    connect(maximumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(maximumSpinBox, &QSpinBox::valueChanged,
             horizontalSliders, &SlidersGroup::setMaximum);
-    connect(maximumSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    connect(maximumSpinBox, &QSpinBox::valueChanged,
             verticalSliders, &SlidersGroup::setMaximum);
     connect(invertedAppearance, &QCheckBox::toggled,
             horizontalSliders, &SlidersGroup::invertAppearance);

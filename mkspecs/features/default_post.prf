@@ -124,22 +124,20 @@ breakpad {
 c++17: CONFIG += c++1z
 c++latest: CONFIG *= c++2a c++1z c++14 c++11
 
-!c++11:!c++14:!c++1z:!c++2a {
-    # Qt requires C++11 since 5.7, check if we need to force a compiler option
+!c++1z:!c++2a {
+    # Qt requires C++17
     QT_COMPILER_STDCXX_no_L = $$replace(QT_COMPILER_STDCXX, "L$", "")
-    !greaterThan(QT_COMPILER_STDCXX_no_L, 199711): CONFIG += c++11
+    !greaterThan(QT_COMPILER_STDCXX_no_L, 201402): CONFIG += c++1z
 }
-c++11|c++14|c++1z|c++2a {
+c++1z|c++2a {
     # Disable special compiler flags for host builds
     !host_build|!cross_compile {
         c++2a:       cxxstd = CXX2A
-        else: c++1z: cxxstd = CXX1Z
-        else: c++14: cxxstd = CXX14
-        else:        cxxstd = CXX11
+        else:        cxxstd = CXX1Z
     } else {
-        # Fall back to c++11, because since 5.7 c++11 is required everywhere,
+        # Fall back to c++17, because C++17 is required everywhere,
         # including host builds
-        cxxstd = CXX11
+        cxxstd = CXX1Z
     }
 
     # Check if we should disable compiler extensions or not

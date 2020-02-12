@@ -36,7 +36,6 @@
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qopenglfunctions.h>
-#include <QtGui/qopengltextureblitter.h>
 #include <QtGui/qoffscreensurface.h>
 #include <QtGui/qpainter.h>
 #include <private/qpixmapcache_p.h>

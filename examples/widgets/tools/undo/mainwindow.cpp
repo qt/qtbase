@@ -86,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(actionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(actionAboutQt, &QAction::triggered, this, &MainWindow::aboutQt);
 
-    connect(undoLimit, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::updateActions);
+    connect(undoLimit, &QSpinBox::valueChanged, this, &MainWindow::updateActions);
     connect(documentTabs, &QTabWidget::currentChanged, this, &MainWindow::updateActions);
 
     actionOpen->setShortcut(QString("Ctrl+O"));
