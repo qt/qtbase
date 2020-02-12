@@ -1831,12 +1831,9 @@ uint qHash(const QRegularExpression &key, uint seed) noexcept
 
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
+    \fn QString QRegularExpression::escape(const QString &str)
     \overload
 */
-QString QRegularExpression::escape(const QString &str)
-{
-    return escape(QStringView(str));
-}
 #endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
@@ -1897,12 +1894,9 @@ QString QRegularExpression::escape(QStringView str)
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 5.12
+    \fn QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
     \overload
 */
-QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
-{
-    return wildcardToRegularExpression(QStringView(pattern));
-}
 #endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
@@ -2036,9 +2030,7 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern)
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QRegularExpression::anchoredPattern(const QString &expression)
-
     \since 5.12
-
     \overload
 */
 #endif // QT_STRINGVIEW_LEVEL < 2

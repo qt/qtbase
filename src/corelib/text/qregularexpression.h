@@ -138,11 +138,19 @@ public:
     void optimize() const;
 
 #if QT_STRINGVIEW_LEVEL < 2
-    static QString escape(const QString &str);
-    static QString wildcardToRegularExpression(const QString &str);
+    static QString escape(const QString &str)
+    {
+        return escape(qToStringViewIgnoringNull(str));
+    }
+
+    static QString wildcardToRegularExpression(const QString &str)
+    {
+        return wildcardToRegularExpression(qToStringViewIgnoringNull(str));
+    }
+
     static inline QString anchoredPattern(const QString &expression)
     {
-        return anchoredPattern(QStringView(expression));
+        return anchoredPattern(qToStringViewIgnoringNull(expression));
     }
 #endif
 
