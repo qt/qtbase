@@ -45,8 +45,10 @@ class tst_QEventDispatcher : public QObject
     Q_OBJECT
 
     QAbstractEventDispatcher *eventDispatcher;
-    int receivedEventType;
-    int timerIdFromEvent;
+
+    int receivedEventType = -1;
+    int timerIdFromEvent = -1;
+    bool doubleTimer = false;
 
 protected:
     bool event(QEvent *e);
@@ -54,9 +56,7 @@ protected:
 public:
     inline tst_QEventDispatcher()
         : QObject(),
-          eventDispatcher(QAbstractEventDispatcher::instance(thread())),
-          receivedEventType(-1),
-          timerIdFromEvent(-1)
+          eventDispatcher(QAbstractEventDispatcher::instance(thread()))
     { }
 
 private slots:
@@ -75,6 +75,9 @@ bool tst_QEventDispatcher::event(QEvent *e)
     switch (receivedEventType = e->type()) {
     case QEvent::Timer:
     {
+        // sometimes, two timers fire during a single QTRY_xxx wait loop
+        if (timerIdFromEvent != -1)
+            doubleTimer = true;
         timerIdFromEvent = static_cast<QTimerEvent *>(e)->timerId();
         return true;
     }
@@ -220,12 +223,17 @@ void tst_QEventDispatcher::registerTimer()
     // process events, waiting for the next event... this should only fire the precise timer
     receivedEventType = -1;
     timerIdFromEvent = -1;
+    doubleTimer = false;
     QTRY_COMPARE_WITH_TIMEOUT(receivedEventType, int(QEvent::Timer), PreciseTimerInterval * 2);
+
 #ifdef Q_OS_DARWIN
+    if (doubleTimer)
+        QSKIP("Double timer during a single timeout - aborting test as flaky on macOS");
     if (timerIdFromEvent != timers.preciseTimerId()
         && elapsedTimer.elapsed() > PreciseTimerInterval * 3)
         QSKIP("Ignore flaky test behavior due to VM scheduling on macOS");
 #endif
+
     QCOMPARE(timerIdFromEvent, timers.preciseTimerId());
     // now unregister it and make sure it's gone
     timers.unregister(timers.preciseTimerId());
@@ -239,8 +247,12 @@ void tst_QEventDispatcher::registerTimer()
     // do the same again for the coarse timer
     receivedEventType = -1;
     timerIdFromEvent = -1;
+    doubleTimer = false;
     QTRY_COMPARE_WITH_TIMEOUT(receivedEventType, int(QEvent::Timer), CoarseTimerInterval * 2);
+
 #ifdef Q_OS_DARWIN
+    if (doubleTimer)
+        QSKIP("Double timer during a single timeout - aborting test as flaky on macOS");
     if (timerIdFromEvent != timers.coarseTimerId()
         && elapsedTimer.elapsed() > CoarseTimerInterval * 3)
         QSKIP("Ignore flaky test behavior due to VM scheduling on macOS");
