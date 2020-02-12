@@ -705,15 +705,6 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
     }
     d->model = (model ? model : QAbstractItemModelPrivate::staticEmptyModel());
 
-    // These asserts do basic sanity checking of the model
-    Q_ASSERT_X(d->model->index(0,0) == d->model->index(0,0),
-               "QAbstractItemView::setModel",
-               "A model should return the exact same index "
-               "(including its internal id/pointer) when asked for it twice in a row.");
-    Q_ASSERT_X(!d->model->index(0,0).parent().isValid(),
-               "QAbstractItemView::setModel",
-               "The parent of a top level index should be invalid");
-
     if (d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
         connect(d->model, SIGNAL(destroyed()),
                 this, SLOT(_q_modelDestroyed()));
