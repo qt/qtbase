@@ -53,14 +53,21 @@ class Node (object):
     nodes are returned wrapped as Node objects.  A Node exposes the
     raw DOM node it wraps via its .dom attribute."""
 
-    def __init__(self, elt, draft = 0):
+    def __init__(self, elt, dullAttrs = None, draft = 0):
         """Wraps a DOM node for ease of access.
 
-        First argument, elt, is the DOM node to wrap. (Optional second
-        argument, draft, should only be supplied by this class's
-        creation of child nodes; it is the maximum draft score of any
-        ancestor of the new node.)"""
-        self.dom = elt
+        First argument, elt, is the DOM node to wrap.
+
+        Optional second argument, dullAttrs, should either be None or
+        map each LDML tag name to a list of the names of
+        non-distinguishing attributes for nodes with the given tag
+        name. If None is given, no distinguishing attribute checks are
+        performed.
+
+        (Optional third argument, draft, should only be supplied by
+        this class's creation of child nodes; it is the maximum draft
+        score of any ancestor of the new node.)"""
+        self.dom, self.__dull = elt, dullAttrs
         try:
             attr = elt.attributes['draft'].nodeValue
         except KeyError:
@@ -68,7 +75,7 @@ class Node (object):
         else:
             self.draft = max(draft, self.draftScore(attr))
 
-    def findAllChildren(self, tag, wanted = None):
+    def findAllChildren(self, tag, wanted = None, allDull = False):
         """All children that do have the given tag and attributes.
 
         First argument is the tag: children with any other tag are
@@ -76,7 +83,15 @@ class Node (object):
 
         Optional second argument, wanted, should either be None or map
         attribute names to the values they must have. Only child nodes
-        with thes attributes set to the given values are yielded."""
+        with thes attributes set to the given values are yielded.
+
+        By default, nodes that have distinguishing attributes, other
+        than those specified in wanted, are ignored.  Pass the allDull
+        parameter a true value to suppress this check."""
+
+        if self.__dull is None:
+            allDull = True
+        dull = () if allDull else self.__dull[tag]
 
         for child in self.dom.childNodes:
             if child.nodeType != child.ELEMENT_NODE:
@@ -92,7 +107,15 @@ class Node (object):
                 except KeyError: # Some wanted attribute is missing
                     continue
 
-            yield Node(child, self.draft)
+                if not (allDull or all(k in dull or k in wanted
+                                       for k in child.attributes.keys())):
+                    continue
+
+            elif not (allDull or all(k in dull
+                                     for k in child.attributes.keys())):
+                continue
+
+            yield Node(child, self.__dull, self.draft)
 
     def findUniqueChild(self, tag):
         """Returns the single child with the given nodeName.
@@ -156,7 +179,9 @@ class XmlScanner (object):
         self.root = node
 
     def findNodes(self, xpath):
-        """Return all nodes under self.root matching this xpath"""
+        """Return all nodes under self.root matching this xpath.
+
+        Ignores any excess attributes."""
         elts = (self.root,)
         for selector in xpath.split('/'):
             tag, attrs = _parseXPath(selector)
@@ -202,7 +227,7 @@ class LocaleScanner (object):
             elt = self.base.root
             for i, selector in enumerate(tags):
                 tag, attrs = _parseXPath(selector)
-                for alias in elt.findAllChildren('alias'):
+                for alias in elt.findAllChildren('alias', allDull = True):
                     if alias.dom.attributes['source'].nodeValue == 'locale':
                         replace = alias.dom.attributes['path'].nodeValue.split('/')
                         tags = self.__xpathJoin(tags[:i], replace, tags[i:])
@@ -251,7 +276,7 @@ class LocaleScanner (object):
         attribute; that attribute value is mentioned in the error's
         message."""
         root = self.nodes[0]
-        for alias in root.findAllChildren('alias'):
+        for alias in root.findAllChildren('alias', allDull=True):
             try:
                 source = alias.dom.attributes['source'].nodeValue
             except (KeyError, AttributeError):
@@ -261,7 +286,7 @@ class LocaleScanner (object):
 
         ids = root.findUniqueChild('identity')
         for code in ('language', 'script', 'territory', 'variant'):
-            for node in ids.findAllChildren(code):
+            for node in ids.findAllChildren(code, allDull=True):
                 try:
                     yield node.dom.attributes['type'].nodeValue
                 except (KeyError, AttributeError):
@@ -322,8 +347,8 @@ class LocaleScanner (object):
         yield 'plus', plus
         yield 'minus', minus
 
-        # Currency formatting (currencyFormat may have a type field):
-        xpath = 'numbers/currencyFormats/currencyFormatLength/currencyFormat/pattern'
+        # Currency formatting:
+        xpath = 'numbers/currencyFormats/currencyFormatLength/currencyFormat[standard]/pattern'
         try:
             money = self.find(xpath.replace('Formats/',
                                             'Formats[numberSystem={}]/'.format(system)))

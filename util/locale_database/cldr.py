@@ -439,7 +439,7 @@ class CldrAccess (object):
     @property
     def cldrVersion(self):
         # Evaluate so as to ensure __cldrVersion is set:
-        self.__scanLdmlDtd()
+        self.__unDistinguishedAttributes
         return self.__cldrVersion
 
     # Implementation details
@@ -545,17 +545,68 @@ class CldrAccess (object):
 
         return cache
 
+    @property
+    def __unDistinguishedAttributes(self, cache = {}, joinPath = os.path.join):
+        """Mapping from tag names to lists of attributes.
+
+        LDML defines some attributes as 'distinguishing': if a node
+        has distinguishing attributes that weren't specified in an
+        XPath, a search on that XPath should exclude the node's
+        children.
+
+        This property is a mapping from tag names to tuples of
+        attribute names that *aren't* distinguishing for that tag.
+        Its value is cached (so its costly computation isonly done
+        once) and there's a side-effect of populating its cache: it
+        sets self.__cldrVersion to the value found in ldml.dtd, during
+        parsing."""
+        if not cache:
+            cache.update(self.__scanLdmlDtd())
+            assert cache
+
+        return cache
+
     def __scanLdmlDtd(self, joinPath = os.path.join):
-        """Scan the LDML DTD, record CLDR version."""
+        """Scan the LDML DTD, record CLDR version
+
+        Yields (tag, attrs) pairs: on elements with a given tag,
+        attributes named in its attrs (a tuple) may be ignored in an
+        XPath search; other attributes are distinguished attributes,
+        in the terminology of LDML's locale-inheritance rules.
+
+        Sets self.__cldrVersion as a side-effect, since this
+        information is found in the same file."""
         with self.__open(('common', 'dtd', 'ldml.dtd')) as dtd:
+            tag, ignored, last = None, None, None
+
             for line in dtd:
+                if line.startswith('<!ELEMENT '):
+                    if ignored:
+                        assert tag
+                        yield tag, tuple(ignored)
+                    tag, ignored, last = line.split()[1], [], None
+                    continue
+
                 if line.startswith('<!ATTLIST '):
+                    assert tag is not None
                     parts = line.split()
+                    assert parts[1] == tag
+                    last = parts[2]
                     if parts[1:5] == ['version', 'cldrVersion', 'CDATA', '#FIXED']:
-                        # parts[5] is the version, in quotes, maybe
-                        # with a final > attached to its end:
+                        # parts[5] is the version, in quotes, although the final > might be stuck on its end:
                         self.__cldrVersion = parts[5].split('"')[1]
-                        break
+                    continue
+
+                # <!ELEMENT...>s can also be @METADATA, but not @VALUE:
+                if '<!--@VALUE-->' in line or (last and '<!--@METADATA-->' in line):
+                    assert last is not None
+                    assert ignored is not None
+                    assert tag is not None
+                    ignored.append(last)
+                    last = None # No attribute is both value and metadata
+
+            if tag and ignored:
+                yield tag, tuple(ignored)
 
     def __enumMap(self, key, cache = {}):
         if not cache:
@@ -650,7 +701,7 @@ class CldrAccess (object):
         while name and name != 'root':
             doc = self.__localeAsDoc(name)
             if doc is not None:
-                yield Node(doc)
+                yield Node(doc, self.__unDistinguishedAttributes)
 
             try:
                 name = self.__parentLocale(name)
