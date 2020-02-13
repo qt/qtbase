@@ -53,6 +53,7 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/qsimd.h>
 
 /*
  * qt_module_config.prf defines the QT_COMPILER_SUPPORTS_XXX macros.
@@ -183,30 +184,11 @@
 #  if defined(Q_CC_MSVC) && (defined(_M_X64) || _M_IX86_FP >= 2)
 // MSVC doesn't define __SSE2__, so do it ourselves
 #    define __SSE__                         1
-#    define __SSE2__                        1
-#  endif
-
-#  ifdef __SSE2__
-// #include the intrinsics
-#    include <immintrin.h>
 #  endif
 
 #  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
 // GCC 4.4 and Clang 2.8 added a few more intrinsics there
 #    include <x86intrin.h>
-#  endif
-
-#  if defined(Q_CC_MSVC) && (defined(_M_AVX) || defined(__AVX__))
-// Visual Studio defines __AVX__ when /arch:AVX is passed, but not the earlier macros
-// See: https://msdn.microsoft.com/en-us/library/b0084kay.aspx
-#    define __SSE3__                        1
-#    define __SSSE3__                       1
-// no Intel CPU supports SSE4a, so don't define it
-#    define __SSE4_1__                      1
-#    define __SSE4_2__                      1
-#    ifndef __AVX__
-#      define __AVX__                       1
-#    endif
 #  endif
 
 #  if defined(__SSE4_2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
@@ -287,7 +269,6 @@ QT_END_NAMESPACE
 // NEON intrinsics
 // note: as of GCC 4.9, does not support function targets for ARM
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
-#include <arm_neon.h>
 #define QT_FUNCTION_TARGET_STRING_NEON      "+neon" // unused: gcc doesn't support function targets on non-aarch64, and on Aarch64 NEON is always available.
 #ifndef __ARM_NEON__
 // __ARM_NEON__ is not defined on AArch64, but we need it in our NEON detection.

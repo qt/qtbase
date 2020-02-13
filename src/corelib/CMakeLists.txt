@@ -45,7 +45,7 @@ qt_add_module(Core
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
         global/qprocessordetection.h
         global/qrandom.cpp global/qrandom.h global/qrandom_p.h
-        global/qsimd.cpp global/qsimd_p.h
+        global/qsimd.cpp global/qsimd.h global/qsimd_p.h
         global/qsysinfo.h
         global/qsystemdetection.h
         global/qtypeinfo.h
