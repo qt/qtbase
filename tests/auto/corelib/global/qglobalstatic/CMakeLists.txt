@@ -10,6 +10,6 @@ add_qt_test(tst_qglobalstatic
         tst_qglobalstatic.cpp
     DEFINES
         SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

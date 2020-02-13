@@ -10,13 +10,12 @@ list(APPEND test_data "fullWidthSelection")
 add_qt_test(tst_qtextedit
     SOURCES
         tst_qtextedit.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
     TESTDATA ${test_data}
 )
 

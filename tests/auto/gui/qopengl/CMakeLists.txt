@@ -7,11 +7,10 @@
 add_qt_test(tst_qopengl
     SOURCES
         tst_qopengl.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::OpenGL
 )
 

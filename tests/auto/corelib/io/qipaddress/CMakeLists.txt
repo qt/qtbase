@@ -7,6 +7,6 @@
 add_qt_test(tst_qipaddress
     SOURCES
         tst_qipaddress.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

@@ -7,9 +7,8 @@
 add_qt_test(tst_qscreen
     SOURCES
         tst_qscreen.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
 )

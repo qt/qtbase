@@ -10,7 +10,7 @@ list(APPEND test_data "entrylist")
 add_qt_test(tst_qdiriterator
     SOURCES
         tst_qdiriterator.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
     TESTDATA ${test_data}
 )

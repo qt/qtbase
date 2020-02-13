@@ -13,8 +13,6 @@ add_qt_test(tst_qmutex
 #####################################################################
 
 extend_target(tst_qmutex CONDITION WIN32
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
-        Qt::Core
+        Qt::CorePrivate
 )

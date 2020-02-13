@@ -7,8 +7,7 @@
 add_qt_test(tst_networkselftest
     SOURCES
         tst_networkselftest.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Network
 )

@@ -16,11 +16,10 @@ add_qt_manual_test(embeddedintoforeignwindow
         QT_DIAG_LIB
     INCLUDE_DIRECTORIES
         ../diaglib
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 #### Keys ignored in scope 1:.:.:embeddedintoforeignwindow.pro:<TRUE>:
@@ -46,10 +45,8 @@ extend_target(embeddedintoforeignwindow CONDITION QT_FEATURE_widgets
         ../diaglib/debugproxystyle.cpp ../diaglib/debugproxystyle.h
         ../diaglib/logwidget.cpp ../diaglib/logwidget.h
         ../diaglib/qwidgetdump.cpp ../diaglib/qwidgetdump.h
-    LIBRARIES
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
-        Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 extend_target(embeddedintoforeignwindow CONDITION QT_FEATURE_opengl

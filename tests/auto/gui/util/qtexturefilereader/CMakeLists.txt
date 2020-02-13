@@ -7,10 +7,9 @@
 add_qt_test(tst_qtexturefilereader
     SOURCES
         tst_qtexturefilereader.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

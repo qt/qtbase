@@ -8,12 +8,11 @@ add_qt_test(tst_qcolumnview
     SOURCES
         ../../../../shared/fakedirmodel.h
         tst_qcolumnview.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
+        Qt::Gui
         Qt::GuiPrivate
         Qt::TestPrivate
-        Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES
-        Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

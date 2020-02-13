@@ -13,9 +13,8 @@ add_qt_test(tst_http2
         SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
     INCLUDE_DIRECTORIES
         ../../../../shared
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Network
+        Qt::NetworkPrivate
 )

@@ -18,14 +18,11 @@ add_qt_gui_executable(hellowindow
     hellowindow.cpp hellowindow.h
     main.cpp
 )
-target_link_libraries(hellowindow PRIVATE
-    Qt::CorePrivate
-    Qt::GuiPrivate
-)
-
 target_link_libraries(hellowindow PUBLIC
     Qt::Core
+    Qt::CorePrivate
     Qt::Gui
+    Qt::GuiPrivate
 )
 
 install(TARGETS hellowindow

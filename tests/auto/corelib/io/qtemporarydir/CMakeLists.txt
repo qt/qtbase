@@ -10,6 +10,6 @@ add_qt_test(tst_qtemporarydir
         tst_qtemporarydir.cpp
     INCLUDE_DIRECTORIES
         ../../../../shared
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::TestPrivate
 )

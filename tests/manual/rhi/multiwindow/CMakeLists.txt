@@ -8,10 +8,9 @@ add_qt_manual_test(multiwindow
     GUI
     SOURCES
         multiwindow.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )
 

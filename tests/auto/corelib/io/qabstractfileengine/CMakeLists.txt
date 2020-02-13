@@ -7,7 +7,7 @@
 add_qt_test(tst_qabstractfileengine
     SOURCES
         tst_qabstractfileengine.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
 

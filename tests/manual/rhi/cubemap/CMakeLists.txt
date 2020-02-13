@@ -8,10 +8,9 @@ add_qt_manual_test(cubemap
     GUI
     SOURCES
         cubemap.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

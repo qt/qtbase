@@ -8,10 +8,9 @@ add_qt_manual_test(compressedtexture_bc1
     GUI
     SOURCES
         compressedtexture_bc1.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

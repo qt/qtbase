@@ -10,14 +10,13 @@ add_qt_test(tst_qgraphicsview
         tst_qgraphicsview_2.cpp
     DEFINES
         QT_NO_CAST_TO_ASCII
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
+        Qt::Gui
         Qt::GuiPrivate
         Qt::TestPrivate
-        Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES
-        Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 1:.:.:qgraphicsview.pro:<TRUE>:

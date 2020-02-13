@@ -13,12 +13,11 @@ list(APPEND test_data ${test_data_glob})
 add_qt_test(tst_qlayout
     SOURCES
         tst_qlayout.cpp
-    LIBRARIES
-        Qt::TestPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::TestPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
     TESTDATA ${test_data}
 )
 

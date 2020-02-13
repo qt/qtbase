@@ -11,13 +11,12 @@ endif()
 add_qt_test(tst_qstylesheetstyle
     SOURCES
         tst_qstylesheetstyle.cpp
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::TestPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
+        Qt::TestPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 # Resources:

@@ -7,12 +7,11 @@
 add_qt_executable(keyboard
     SOURCES
         tst_keyboard.cpp
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::TestPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Test
+        Qt::TestPrivate
 )
 
 ## Scopes:

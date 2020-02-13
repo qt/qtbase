@@ -7,10 +7,9 @@
 add_qt_benchmark(tst_bench_drawtexture
     SOURCES
         tst_drawtexture.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Test
 )
 

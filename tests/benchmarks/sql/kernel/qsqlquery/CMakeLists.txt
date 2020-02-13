@@ -7,10 +7,9 @@
 add_qt_benchmark(tst_bench_qsqlquery
     SOURCES
         main.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::SqlPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Sql
+        Qt::SqlPrivate
         Qt::Test
 )

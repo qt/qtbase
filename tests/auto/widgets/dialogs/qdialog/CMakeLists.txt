@@ -7,10 +7,9 @@
 add_qt_test(tst_qdialog
     SOURCES
         tst_qdialog.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )

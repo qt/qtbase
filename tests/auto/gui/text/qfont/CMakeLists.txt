@@ -7,11 +7,10 @@
 add_qt_test(tst_qfont
     SOURCES
         tst_qfont.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

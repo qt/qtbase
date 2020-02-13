@@ -10,11 +10,10 @@ list(APPEND test_data "LED_REAL.TTF")
 add_qt_test(tst_qfontdatabase
     SOURCES
         tst_qfontdatabase.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
     TESTDATA ${test_data}
 )
 

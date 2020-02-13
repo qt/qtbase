@@ -18,14 +18,11 @@ add_executable(windows
     main.cpp
     window.cpp window.h
 )
-target_link_libraries(windows PRIVATE
-    Qt::CorePrivate
-    Qt::GuiPrivate
-)
-
 target_link_libraries(windows PUBLIC
     Qt::Core
+    Qt::CorePrivate
     Qt::Gui
+    Qt::GuiPrivate
 )
 
 install(TARGETS windows

@@ -10,12 +10,11 @@ add_qt_test(tst_qfilesystemmodel
         tst_qfilesystemmodel.cpp
     INCLUDE_DIRECTORIES
         ../../../../shared
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 ## Scopes:

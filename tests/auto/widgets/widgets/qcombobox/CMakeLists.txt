@@ -13,13 +13,12 @@ add_qt_test(tst_qcombobox
         tst_qcombobox.cpp
     DEFINES
         QTEST_QPA_MOUSE_HANDLING
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
+        Qt::Gui
         Qt::GuiPrivate
         Qt::TestPrivate
-        Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES
-        Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
     TESTDATA ${test_data}
 )

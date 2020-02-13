@@ -12,14 +12,12 @@ add_qt_test(tst_qaccessibility
     SOURCES
         accessiblewidgets.h
         tst_qaccessibility.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
+        Qt::Gui
         Qt::GuiPrivate
         Qt::TestPrivate
         Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES
-        Qt::Gui
-        Qt::Widgets
 )
 
 #### Keys ignored in scope 1:.:.:qaccessibility.pro:<TRUE>:
@@ -42,8 +40,6 @@ extend_target(tst_qaccessibility CONDITION WIN32
 )
 
 extend_target(tst_qaccessibility CONDITION WIN32 AND NOT WINRT
-    LIBRARIES
-        Qt::WindowsUIAutomationSupportPrivate
     PUBLIC_LIBRARIES
-        Qt::WindowsUIAutomationSupport
+        Qt::WindowsUIAutomationSupportPrivate
 )

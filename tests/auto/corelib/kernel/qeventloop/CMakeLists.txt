@@ -7,9 +7,8 @@
 add_qt_test(tst_qeventloop
     SOURCES
         tst_qeventloop.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Network
 )
 

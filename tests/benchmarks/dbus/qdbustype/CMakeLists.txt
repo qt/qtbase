@@ -7,11 +7,9 @@
 add_qt_benchmark(tst_bench_qdbustype
     SOURCES
         main.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
-    PUBLIC_LIBRARIES
-        Qt::DBus
         Qt::Test
 )
 

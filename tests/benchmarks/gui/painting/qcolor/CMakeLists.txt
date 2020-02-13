@@ -7,10 +7,9 @@
 add_qt_benchmark(tst_bench_qcolor
     SOURCES
         tst_qcolor.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Test
 )
 

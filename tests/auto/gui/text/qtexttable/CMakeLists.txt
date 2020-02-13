@@ -7,10 +7,9 @@
 add_qt_test(tst_qtexttable
     SOURCES
         tst_qtexttable.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 ## Scopes:

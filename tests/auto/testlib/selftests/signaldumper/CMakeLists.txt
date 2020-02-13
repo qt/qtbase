@@ -10,10 +10,8 @@ add_qt_executable(signaldumper
     GUI
     SOURCES
         tst_signaldumper.cpp
-    LIBRARIES
-        Qt::TestPrivate
     PUBLIC_LIBRARIES
-        Qt::Test
+        Qt::TestPrivate
 )
 
 ## Scopes:

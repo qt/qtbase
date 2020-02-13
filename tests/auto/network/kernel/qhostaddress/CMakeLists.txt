@@ -7,10 +7,8 @@
 add_qt_test(tst_qhostaddress
     SOURCES
         tst_qhostaddress.cpp
-    LIBRARIES
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
-        Qt::Network
+        Qt::NetworkPrivate
 )
 
 ## Scopes:

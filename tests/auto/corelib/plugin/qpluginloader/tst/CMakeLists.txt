@@ -23,10 +23,8 @@ add_qt_test(tst_qpluginloader
 #####################################################################
 
 extend_target(tst_qpluginloader CONDITION QT_FEATURE_private_tests
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
-        Qt::Core
+        Qt::CorePrivate
 )
 
 extend_target(tst_qpluginloader CONDITION CMAKE_BUILD_TYPE STREQUAL Debug AND WIN32 AND debug_and_release

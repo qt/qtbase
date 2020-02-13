@@ -9,12 +9,11 @@ add_qt_test(tst_qplaintextedit
         tst_qplaintextedit.cpp
     INCLUDE_DIRECTORIES
         ..
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 ## Scopes:

@@ -10,10 +10,9 @@ list(APPEND test_data "testdata")
 add_qt_test(tst_qzip
     SOURCES
         tst_qzip.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
     TESTDATA ${test_data}
 )
 

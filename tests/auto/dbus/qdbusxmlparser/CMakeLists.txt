@@ -7,10 +7,8 @@
 add_qt_test(tst_qdbusxmlparser
     SOURCES
         tst_qdbusxmlparser.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::DBusPrivate
-    PUBLIC_LIBRARIES
-        Qt::DBus
         Qt::Xml
 )

@@ -9,9 +9,7 @@ add_qt_test(tst_qprintdevice
         tst_qprintdevice.cpp
     DEFINES
         QT_USE_USING_NAMESPACE
-    LIBRARIES
-        Qt::PrintSupportPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
-        Qt::PrintSupport
+        Qt::PrintSupportPrivate
 )

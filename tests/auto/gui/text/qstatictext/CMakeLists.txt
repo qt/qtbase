@@ -15,10 +15,7 @@ add_qt_test(tst_qstatictext
 #####################################################################
 
 extend_target(tst_qstatictext CONDITION QT_FEATURE_private_tests
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Core
-        Qt::Gui
 )

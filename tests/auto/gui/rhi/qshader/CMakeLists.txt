@@ -7,10 +7,9 @@
 add_qt_test(tst_qshader
     SOURCES
         tst_qshader.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:
