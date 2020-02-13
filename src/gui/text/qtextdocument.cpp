@@ -904,6 +904,9 @@ int QTextDocument::lineCount() const
 
   Returns the number of characters of this document.
 
+  \note As a QTextDocument always contains at least one
+  QChar::ParagraphSeparator, this method will return at least 1.
+
   \sa blockCount(), characterAt()
  */
 int QTextDocument::characterCount() const
