@@ -7,10 +7,9 @@
 add_qt_test(tst_qdatetimeedit
     SOURCES
         tst_qdatetimeedit.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

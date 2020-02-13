@@ -8,10 +8,9 @@ add_qt_manual_test(cubemap_scissor
     GUI
     SOURCES
         cubemap_scissor.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

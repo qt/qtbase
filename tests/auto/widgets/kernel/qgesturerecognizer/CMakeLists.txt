@@ -7,10 +7,9 @@
 add_qt_test(tst_qgesturerecognizer
     SOURCES
         tst_qgesturerecognizer.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )

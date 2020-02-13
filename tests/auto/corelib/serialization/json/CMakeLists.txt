@@ -7,7 +7,7 @@
 add_qt_test(tst_json
     SOURCES
         tst_qtjson.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
 

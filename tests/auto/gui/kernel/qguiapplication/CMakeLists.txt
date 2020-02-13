@@ -16,11 +16,9 @@ add_qt_test(tst_qguiapplication
         QT_DISABLE_DEPRECATED_BEFORE=0x050E00
     INCLUDE_DIRECTORIES
         ../../../corelib/kernel/qcoreapplication
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Gui
         Threads::Threads # special case
 )
 

@@ -7,10 +7,9 @@
 add_qt_test(tst_qsqlrelationaldelegate
     SOURCES
         tst_qsqlrelationaldelegate.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::SqlPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Sql
+        Qt::SqlPrivate
         Qt::Widgets
 )

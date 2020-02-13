@@ -7,9 +7,8 @@
 add_qt_test(tst_qgraphicsobject
     SOURCES
         tst_qgraphicsobject.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
 )

@@ -12,13 +12,12 @@ list(APPEND test_data "../modal")
 add_qt_test(tst_qapplication # special case
     SOURCES
         ../tst_qapplication.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
     TESTDATA ${test_data}
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.." # special case
 )

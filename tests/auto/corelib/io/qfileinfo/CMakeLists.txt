@@ -7,7 +7,7 @@
 add_qt_test(tst_qfileinfo
     SOURCES
         tst_qfileinfo.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
 

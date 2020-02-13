@@ -7,11 +7,10 @@
 add_qt_test(tst_qmessagebox
     SOURCES
         tst_qmessagebox.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )
 

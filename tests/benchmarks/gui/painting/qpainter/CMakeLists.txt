@@ -7,13 +7,12 @@
 add_qt_benchmark(tst_bench_qpainter
     SOURCES
         tst_qpainter.cpp
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Test
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 1:.:.:qpainter.pro:<TRUE>:

@@ -7,9 +7,8 @@
 add_qt_test(tst_qinputmethod
     SOURCES
         tst_qinputmethod.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
 )

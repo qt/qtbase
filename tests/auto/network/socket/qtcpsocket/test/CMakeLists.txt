@@ -7,11 +7,9 @@
 add_qt_test(tst_qtcpsocket
     SOURCES
         ../tst_qtcpsocket.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Network
 )
 
 ## Scopes:

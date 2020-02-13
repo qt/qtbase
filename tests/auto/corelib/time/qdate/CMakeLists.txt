@@ -7,6 +7,6 @@
 add_qt_test(tst_qdate
     SOURCES
         tst_qdate.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

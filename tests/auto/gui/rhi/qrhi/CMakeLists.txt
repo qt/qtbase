@@ -7,10 +7,9 @@
 add_qt_test(tst_qrhi
     SOURCES
         tst_qrhi.cpp
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

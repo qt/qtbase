@@ -10,10 +10,8 @@ list(APPEND test_data "certs")
 add_qt_test(tst_qdtls
     SOURCES
         tst_qdtls.cpp
-    LIBRARIES
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
-        Qt::Network
+        Qt::NetworkPrivate
     TESTDATA ${test_data}
 )
 

@@ -7,10 +7,9 @@
 add_qt_test(tst_qsidebar
     SOURCES
         tst_qsidebar.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

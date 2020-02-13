@@ -7,9 +7,8 @@
 add_qt_executable(badxml
     SOURCES
         tst_badxml.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Test
 )
 

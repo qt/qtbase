@@ -7,9 +7,8 @@
 add_qt_test(tst_qscrollbar
     SOURCES
         tst_qscrollbar.cpp
-    LIBRARIES
-        Qt::TestPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::TestPrivate
         Qt::Widgets
 )

@@ -13,11 +13,10 @@ endif()
 add_qt_manual_test(tst_manual_qnetworkreply
     SOURCES
         main.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Network
+        Qt::NetworkPrivate
         Qt::Test
 )
 

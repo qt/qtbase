@@ -17,11 +17,10 @@ list(APPEND test_data ${test_data_glob})
 add_qt_test(tst_qimagereader
     SOURCES
         tst_qimagereader.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Network
     TESTDATA ${test_data}
 )

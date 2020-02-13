@@ -7,11 +7,10 @@
 add_qt_test(tst_qmenu
     SOURCES
         tst_qmenu.cpp
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::TestPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
+        Qt::TestPrivate
         Qt::Widgets
 )
 

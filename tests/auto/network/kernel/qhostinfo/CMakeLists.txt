@@ -11,11 +11,9 @@ endif()
 add_qt_test(tst_qhostinfo
     SOURCES
         tst_qhostinfo.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Network
 )
 
 #### Keys ignored in scope 1:.:.:qhostinfo.pro:<TRUE>:

@@ -9,12 +9,11 @@ add_qt_executable(mouse
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         tst_mouse.cpp
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::TestPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Test
+        Qt::TestPrivate
 )
 
 ## Scopes:

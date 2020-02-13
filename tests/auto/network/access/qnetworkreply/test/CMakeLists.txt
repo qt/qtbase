@@ -23,11 +23,9 @@ add_qt_test(tst_qnetworkreply
         ../tst_qnetworkreply.cpp
     INCLUDE_DIRECTORIES
         ../../../../../shared
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
-    PUBLIC_LIBRARIES
-        Qt::Network
     TESTDATA ${test_data}
 )
 

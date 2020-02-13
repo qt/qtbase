@@ -21,10 +21,9 @@ add_qt_test(tst_lancelot
         QMAKESPEC=\\\"\\\"
     INCLUDE_DIRECTORIES
         ../../../baselineserver/shared
-    LIBRARIES
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Network
     TESTDATA ${test_data}
 )

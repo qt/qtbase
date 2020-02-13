@@ -9,13 +9,12 @@ add_qt_manual_test(openglwidget
     SOURCES
         main.cpp
         openglwidget.cpp openglwidget.h
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
 
 #### Keys ignored in scope 1:.:.:openglwidget.pro:<TRUE>:

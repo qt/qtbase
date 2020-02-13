@@ -7,6 +7,6 @@
 add_qt_test(tst_qmimetype
     SOURCES
         tst_qmimetype.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

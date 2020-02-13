@@ -7,6 +7,6 @@
 add_qt_test(tst_qwineventnotifier
     SOURCES
         tst_qwineventnotifier.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

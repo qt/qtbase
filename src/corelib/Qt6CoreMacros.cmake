@@ -737,6 +737,10 @@ function(qt6_generate_meta_types_json_file target)
         file(MAKE_DIRECTORY "${target_binary_dir}/meta_types")
         file(TOUCH ${metatypes_file})
     endif()
+    if (arg_COPY_OVER_INSTALL AND NOT EXISTS ${arg_INSTALL_DIR}/${metatypes_file_name})
+        file(MAKE_DIRECTORY "${arg_INSTALL_DIR}")
+        file(TOUCH "${arg_INSTALL_DIR}/${metatypes_file_name}")
+    endif()
     add_custom_command(OUTPUT ${metatypes_file_gen} ${metatypes_file}
         DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${automoc_dependencies} ${manual_dependencies}
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc

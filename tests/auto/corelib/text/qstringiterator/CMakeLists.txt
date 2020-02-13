@@ -7,6 +7,6 @@
 add_qt_test(tst_qstringiterator
     SOURCES
         tst_qstringiterator.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
 )

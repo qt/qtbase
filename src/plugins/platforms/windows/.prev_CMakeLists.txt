@@ -122,7 +122,13 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_vulkan
         Qt::VulkanSupportPrivate
 )
 
-#### Keys ignored in scope 5:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_directwrite3
+    DEFINES
+        QT_USE_DIRECTWRITE2
+        QT_USE_DIRECTWRITE3
+)
+
+#### Keys ignored in scope 6:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl AND NOT QT_FEATURE_opengles2

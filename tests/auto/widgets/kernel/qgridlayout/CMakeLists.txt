@@ -8,14 +8,13 @@ add_qt_test(tst_qgridlayout
     SOURCES
         sortdialog.ui
         tst_qgridlayout.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
+        Qt::Gui
         Qt::GuiPrivate
         Qt::TestPrivate
-        Qt::WidgetsPrivate
-    PUBLIC_LIBRARIES
-        Qt::Gui
         Qt::Widgets
+        Qt::WidgetsPrivate
     ENABLE_AUTOGEN_TOOLS
         uic
 )

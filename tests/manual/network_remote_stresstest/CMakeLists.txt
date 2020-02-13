@@ -7,11 +7,10 @@
 add_qt_manual_test(tst_network_remote_stresstest
     SOURCES
         tst_network_remote_stresstest.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Network
+        Qt::NetworkPrivate
         Qt::Test
 )
 

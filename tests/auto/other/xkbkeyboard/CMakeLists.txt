@@ -7,9 +7,7 @@
 add_qt_test(tst_xkbkeyboard
     SOURCES
         tst_xkbkeyboard.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-    PUBLIC_LIBRARIES
-        Qt::Gui
 )

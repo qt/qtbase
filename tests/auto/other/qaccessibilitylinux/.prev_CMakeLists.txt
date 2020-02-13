@@ -9,14 +9,11 @@ add_qt_test(tst_qaccessibilitylinux
         tst_qaccessibilitylinux.cpp
     DBUS_INTERFACE_SOURCES
         ../../../../src/platformsupport/linuxaccessibility/dbusxml/Bus.xml
-    LIBRARIES
-        Qt::AccessibilitySupportPrivate
-        Qt::GuiPrivate
-        Qt::LinuxAccessibilitySupportPrivate
     PUBLIC_LIBRARIES
-        Qt::AccessibilitySupport
+        Qt::AccessibilitySupportPrivate
         Qt::DBus
         Qt::Gui
-        Qt::LinuxAccessibilitySupport
+        Qt::GuiPrivate
+        Qt::LinuxAccessibilitySupportPrivate
         Qt::Widgets
 )

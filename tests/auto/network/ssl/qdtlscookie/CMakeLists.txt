@@ -7,10 +7,8 @@
 add_qt_test(tst_qdtlscookie
     SOURCES
         tst_qdtlscookie.cpp
-    LIBRARIES
-        Qt::NetworkPrivate
     PUBLIC_LIBRARIES
-        Qt::Network
+        Qt::NetworkPrivate
 )
 
 ## Scopes:
