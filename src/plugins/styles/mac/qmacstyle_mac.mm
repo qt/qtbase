@@ -3935,7 +3935,20 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     CGContextRotateCTM(ctx, M_PI_2);
                 }
 
+                // Now, if it's a trick with a popup button, it has an arrow
+                // which makes no sense on tabs.
+                NSPopUpArrowPosition oldPosition = NSPopUpArrowAtCenter;
+                NSPopUpButtonCell *pbCell = nil;
+                if (isPopupButton) {
+                    pbCell = static_cast<NSPopUpButtonCell *>(pb.cell);
+                    oldPosition = pbCell.arrowPosition;
+                    pbCell.arrowPosition = NSPopUpNoArrow;
+                }
+
                 [pb.cell drawBezelWithFrame:r inView:pb.superview];
+
+                if (pbCell) // Restore, we may reuse it for a ComboBox.
+                    pbCell.arrowPosition = oldPosition;
             };
 
             if (needsInactiveHack) {
