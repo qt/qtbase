@@ -128,7 +128,7 @@ void MainWindow::newLetter()
 //! [3]
 void MainWindow::print()
 {
-#if QT_CONFIG(printdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
     QTextDocument *document = textEdit->document();
     QPrinter printer;
 

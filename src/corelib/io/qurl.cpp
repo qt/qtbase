@@ -415,7 +415,7 @@
 #include "qhash.h"
 #include "qdir.h"         // for QDir::fromNativeSeparators
 #include "qdatastream.h"
-#if QT_CONFIG(topleveldomain)
+#if QT_CONFIG(topleveldomain) // ### Qt6: Remove section
 #include "qtldurl_p.h"
 #endif
 #include "private/qipaddress_p.h"
@@ -3149,9 +3149,12 @@ bool QUrl::hasFragment() const
     return d->hasFragment();
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 #if QT_CONFIG(topleveldomain)
 /*!
     \since 4.8
+
+    \deprecated
 
     Returns the TLD (Top-Level Domain) of the URL, (e.g. .co.uk, .net).
     Note that the return value is prefixed with a '.' unless the
@@ -3185,7 +3188,7 @@ QString QUrl::topLevelDomain(ComponentFormattingOptions options) const
     return tld;
 }
 #endif
-
+#endif // QT_DEPRECATED_SINCE(5, 15)
 /*!
     Returns the result of the merge of this URL with \a relative. This
     URL is used as a base to convert \a relative to an absolute URL.

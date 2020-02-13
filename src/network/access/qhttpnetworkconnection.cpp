@@ -132,7 +132,7 @@ void QHttpNetworkConnectionPrivate::init()
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
         channels[i].ssl = encrypt;
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
         //push session down to channels
         channels[i].networkSession = networkSession;
 #endif
@@ -1267,7 +1267,7 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
         channels[1].networkLayerPreference = QAbstractSocket::IPv6Protocol;
 
         int timeout = 300;
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
         if (networkSession) {
             const QNetworkConfiguration::BearerType bearerType = networkSession->configuration().bearerType();
             if (bearerType == QNetworkConfiguration::Bearer2G)
@@ -1309,7 +1309,7 @@ void QHttpNetworkConnectionPrivate::_q_connectDelayedChannel()
         channels[1].ensureConnection();
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt,
                                                QHttpNetworkConnection::ConnectionType connectionType,
                                                QObject *parent, QSharedPointer<QNetworkSession> networkSession)

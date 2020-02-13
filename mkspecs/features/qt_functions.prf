@@ -2,10 +2,21 @@
 defineReplace(qtPlatformTargetSuffix) {
     suffix =
     android: return($${suffix}_$${QT_ARCH})
-    else: CONFIG(debug, debug|release) {
-        !debug_and_release|build_pass {
-            mac: return($${suffix}_debug)
-            win32: return($${suffix}d)
+    win32 {
+        CONFIG(debug, debug|release) {
+            mingw {
+                qtConfig(debug_and_release):build_pass: \
+                    return($${suffix}d)
+            } else {
+                !debug_and_release|build_pass: \
+                    return($${suffix}d)
+            }
+        }
+    }
+    darwin {
+        CONFIG(debug, debug|release) {
+            !debug_and_release|build_pass: \
+                return($${suffix}_debug)
         }
     }
     return($$suffix)

@@ -136,8 +136,10 @@ Build options:
                          for example, -sanitize address cannot be combined with
                          -sanitize thread.
 
-  -coverage {trace-pc-guard}
-                         Add code coverage instrumentation (Clang only)
+  -coverage {trace-pc-guard|source-based}
+                         Specify the 'trace-pc-guard' coverage instrumentation for
+                         sanitizers or generate instrumented code to collect execution
+                         counts and enable code coverage analysis, respectively. (Clang only)
 
   -c++std <edition> .... Select C++ standard <edition> [c++2a/c++17/c++14/c++11]
                          (Not supported with MSVC 2015)

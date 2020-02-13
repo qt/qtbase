@@ -183,7 +183,9 @@ win32 {
             SOURCES += io/qstorageinfo_mac.cpp
             qtConfig(processenvironment): \
                 OBJECTIVE_SOURCES += io/qprocess_darwin.mm
-            OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
+            OBJECTIVE_SOURCES += \
+                io/qstandardpaths_mac.mm \
+                io/qfilesystemengine_mac.mm
             osx {
                 LIBS += -framework DiskArbitration -framework IOKit
             } else {

@@ -311,6 +311,7 @@ static void ensureInitialized()
 
 /*!
     \fn void QNetworkAccessManager::networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible)
+    \obsolete
 
     This signal is emitted when the value of the \l networkAccessible property changes.
     \a accessible is the new network accessibility.
@@ -320,6 +321,7 @@ static void ensureInitialized()
     \fn void QNetworkAccessManager::networkSessionConnected()
 
     \since 4.7
+    \obsolete
 
     \internal
 
@@ -1008,10 +1010,11 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
     return d_func()->postProcess(createRequest(QNetworkAccessManager::DeleteOperation, request));
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
 
 /*!
     \since 4.7
+    \obsolete
 
     Sets the network configuration that will be used when creating the
     \l {QNetworkSession}{network session} to \a config.
@@ -1049,6 +1052,7 @@ void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config
 
 /*!
     \since 4.7
+    \obsolete
 
     Returns the network configuration that will be used to create the
     \l {QNetworkSession}{network session} which will be used when processing network requests.
@@ -1069,6 +1073,7 @@ QNetworkConfiguration QNetworkAccessManager::configuration() const
 
 /*!
     \since 4.7
+    \obsolete
 
     Returns the current active network configuration.
 
@@ -1097,6 +1102,7 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 
 /*!
     \since 4.7
+    \obsolete
 
     Overrides the reported network accessibility.  If \a accessible is NotAccessible the reported
     network accessiblity will always be NotAccessible.  Otherwise the reported network
@@ -1109,16 +1115,20 @@ void QNetworkAccessManager::setNetworkAccessible(QNetworkAccessManager::NetworkA
     d->defaultAccessControl = accessible == NotAccessible ? false : true;
 
     if (d->networkAccessible != accessible) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         NetworkAccessibility previous = networkAccessible();
         d->networkAccessible = accessible;
         NetworkAccessibility current = networkAccessible();
         if (previous != current)
             emit networkAccessibleChanged(current);
+QT_WARNING_POP
     }
 }
 
 /*!
     \since 4.7
+    \obsolete
 
     Returns the current network accessibility.
 */
@@ -1482,7 +1492,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         if (!d->statusMonitor.isMonitoring() && !d->statusMonitor.start())
             qWarning(lcNetMon, "failed to start network status monitoring");
     } else {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
         // Return a disabled network reply if network access is disabled.
         // Except if the scheme is empty or file:// or if the host resolves to a loopback address.
         if (d->networkAccessible == NotAccessible && !isLocalFile) {
@@ -1556,7 +1566,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         }
 #endif
         QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
         if (!d->statusMonitor.isEnabled()) {
             connect(this, SIGNAL(networkSessionConnected()),
                     reply, SLOT(_q_networkSessionConnected()));
@@ -1568,7 +1578,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
     // first step: create the reply
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     // NETMONTODO: network reply impl must be augmented to use the same monitoring
     // capabilities as http network reply impl does. Once it does: uncomment the condition below
     if (!isLocalFile /*&& !d->statusMonitor.isEnabled()*/) {
@@ -1759,7 +1769,7 @@ void QNetworkAccessManagerPrivate::_q_replyFinished(QNetworkReply *reply)
     if (reply->request().attribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, false).toBool())
         QMetaObject::invokeMethod(reply, [reply] { reply->deleteLater(); }, Qt::QueuedConnection);
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     // If there are no active requests, release our reference to the network session.
     // It will not be destroyed immediately, but rather when the connection cache is flushed
     // after 2 minutes.
@@ -1817,7 +1827,7 @@ QNetworkReply *QNetworkAccessManagerPrivate::postProcess(QNetworkReply *reply)
     q->connect(reply, SIGNAL(sslErrors(QList<QSslError>)), SLOT(_q_replySslErrors(QList<QSslError>)));
     q->connect(reply, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)), SLOT(_q_replyPreSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)));
 #endif
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     activeReplyCount++;
 #endif
 
@@ -1987,7 +1997,7 @@ void QNetworkAccessManagerPrivate::destroyThread()
     }
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
 void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &config)
 {
     Q_Q(QNetworkAccessManager);
@@ -2022,10 +2032,13 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 
     if (!networkSessionStrongRef) {
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         if (networkAccessible == QNetworkAccessManager::NotAccessible || !online)
             emit q->networkAccessibleChanged(QNetworkAccessManager::NotAccessible);
         else
             emit q->networkAccessibleChanged(QNetworkAccessManager::UnknownAccessibility);
+QT_WARNING_POP
 
         return;
     }
@@ -2072,6 +2085,8 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
     bool reallyOnline = false;
     //Do not emit the networkSessionConnected signal here, except for roaming -> connected
     //transition, otherwise it is emitted twice in a row when opening a connection.
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (state == QNetworkSession::Connected && lastSessionState != QNetworkSession::Roaming)
         emit q->networkSessionConnected();
     lastSessionState = state;
@@ -2107,6 +2122,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
         _q_networkSessionClosed();
         createSession(q->configuration());
     }
+QT_WARNING_POP
 }
 
 void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
@@ -2118,6 +2134,8 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
         return;
     }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
    // if the user set a config, we only care whether this one is active.
     // Otherwise, this QNAM is online if there is an online config.
@@ -2143,6 +2161,7 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
             emit q->networkAccessibleChanged(networkAccessible);
         }
     }
+QT_WARNING_POP
 }
 
 void QNetworkAccessManagerPrivate::_q_configurationChanged(const QNetworkConfiguration &configuration)

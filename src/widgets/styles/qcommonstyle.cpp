@@ -1350,6 +1350,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 QRect ir = btn->rect;
                 QStyleOptionButton newBtn = *btn;
                 newBtn.rect = QRect(ir.right() - mbi + 2, ir.height()/2 - mbi/2 + 3, mbi - 6, mbi - 6);
+                newBtn.rect = visualRect(btn->direction, br, newBtn.rect);
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
             }
         }
@@ -1378,7 +1379,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 int iconSpacing = 4;//### 4 is currently hardcoded in QPushButton::sizeHint()
                 if (!button->text.isEmpty()) {
                     int textWidth = button->fontMetrics.boundingRect(opt->rect, tf, button->text).width();
-                    labelWidth += (textWidth + iconSpacing);
+                    labelWidth += (textWidth + iconSpacing * 2);
                 }
 
                 QRect iconRect = QRect(textRect.x() + (textRect.width() - labelWidth) / 2,
@@ -2462,6 +2463,12 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
             r.setRect(btn->rect.x() + dfw1 + dbw1, btn->rect.y() + dfw1 + dbw1,
                       btn->rect.width() - dfw2 - dbw2, btn->rect.height()- dfw2 - dbw2);
+            r = visualRect(opt->direction, opt->rect, r);
+        }
+        break;
+    case SE_PushButtonBevel:
+        {
+            r = opt->rect;
             r = visualRect(opt->direction, opt->rect, r);
         }
         break;

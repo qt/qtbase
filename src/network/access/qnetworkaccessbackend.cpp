@@ -371,7 +371,7 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 */
 bool QNetworkAccessBackend::start()
 {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     // For bearer, check if session start is required
     QSharedPointer<QNetworkSession> networkSession(manager->getNetworkSession());
     if (networkSession) {

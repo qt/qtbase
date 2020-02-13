@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     The socket is opened in the given \a openMode and first enters ConnectingState.
     If a connection is established, QLocalSocket enters ConnectedState and emits connected().
 
-    After calling this function, the socket can emit error() to signal that an error occurred.
+    After calling this function, the socket can emit errorOccurred() to signal that an error occurred.
 
     \sa state(), serverName(), waitForConnected()
 */
@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
 
     Note that unlike in most other QIODevice subclasses, open() may not open the device directly.
     The function return false if the socket was already connected or if the server to connect
-    to was not defined and true in any other case. The connected() or error() signals will be
+    to was not defined and true in any other case. The connected() or errorOccurred() signals will be
     emitted once the device is actualy open (or the connection failed).
 
     See connectToServer() for more details.
@@ -220,24 +220,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QLocalSocket::LocalSocketError QLocalSocket::error() const
 
-    \deprecated
-
-    Use socketError() instead.
-
-    Returns the type of error that last occurred.
-
-    \sa state(), errorString(), socketError()
-*/
-
-/*!
-    \fn QLocalSocket::LocalSocketError QLocalSocket::socketError() const
-    \since 5.15
-
     Returns the type of error that last occurred.
 
     \sa state(), errorString()
 */
-
 
 /*!
     \fn bool QLocalSocket::isValid() const
@@ -286,7 +272,7 @@ QT_BEGIN_NAMESPACE
     Waits until the socket is connected, up to \a msecs milliseconds. If the
     connection has been established, this function returns \c true; otherwise
     it returns \c false. In the case where it returns \c false, you can call
-    socketError() to determine the cause of the error.
+    error() to determine the cause of the error.
 
     The following example waits up to one second for a connection
     to be established:
@@ -305,7 +291,7 @@ QT_BEGIN_NAMESPACE
     connection was successfully disconnected, this function returns \c true;
     otherwise it returns \c false (if the operation timed out, if an error
     occurred, or if this QLocalSocket is already disconnected). In the case
-    where it returns \c false, you can call socketError() to determine the cause of
+    where it returns \c false, you can call error() to determine the cause of
     the error.
 
     The following example waits up to one second for a connection
@@ -343,6 +329,14 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn void QLocalSocket::error(QLocalSocket::LocalSocketError socketError)
+    \obsolete
+
+    Use errorOccurred() instead.
+*/
+
+/*!
+    \fn void QLocalSocket::errorOccurred(QLocalSocket::LocalSocketError socketError)
+    \since 5.15
 
     This signal is emitted after an error occurred. The \a socketError
     parameter describes the type of error that occurred.
@@ -351,7 +345,7 @@ QT_BEGIN_NAMESPACE
     connections, you will have to register it with Q_DECLARE_METATYPE() and
     qRegisterMetaType().
 
-    \sa socketError(), errorString(), {Creating Custom Qt Types}
+    \sa error(), errorString(), {Creating Custom Qt Types}
 */
 
 /*!
@@ -376,6 +370,9 @@ QLocalSocket::QLocalSocket(QObject * parent)
 {
     Q_D(QLocalSocket);
     d->init();
+
+    // Support the deprecated error() signal:
+    connect(this, &QLocalSocket::errorOccurred, this, QOverload<QLocalSocket::LocalSocketError>::of(&QLocalSocket::error));
 }
 
 /*!
@@ -403,7 +400,7 @@ bool QLocalSocket::open(OpenMode openMode)
     The socket is opened in the given \a openMode and first enters ConnectingState.
     If a connection is established, QLocalSocket enters ConnectedState and emits connected().
 
-    After calling this function, the socket can emit error() to signal that an error occurred.
+    After calling this function, the socket can emit errorOccurred() to signal that an error occurred.
 
     \sa state(), serverName(), waitForConnected()
 */
@@ -460,7 +457,7 @@ QString QLocalSocket::fullServerName() const
 /*!
     Returns the state of the socket.
 
-    \sa socketError()
+    \sa error()
  */
 QLocalSocket::LocalSocketState QLocalSocket::state() const
 {
@@ -480,7 +477,7 @@ bool QLocalSocket::isSequential() const
 
     The LocalServerError enumeration represents the errors that can occur.
     The most recent error can be retrieved through a call to
-    \l QLocalSocket::socketError().
+    \l QLocalSocket::error().
 
     \value ConnectionRefusedError The connection was refused by
         the peer (or timed out).

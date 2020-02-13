@@ -81,6 +81,8 @@ public:
     QAndroidPlatformIntegration(const QStringList &paramList);
     ~QAndroidPlatformIntegration();
 
+    void initialize() override;
+
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
@@ -167,7 +169,7 @@ private:
     mutable QPlatformAccessibility *m_accessibility;
 #endif
 
-    mutable QAndroidInputContext m_platformInputContext;
+    QScopedPointer<QPlatformInputContext> m_inputContext;
 };
 
 QT_END_NAMESPACE

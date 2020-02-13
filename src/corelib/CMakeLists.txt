@@ -492,6 +492,7 @@ qt_extend_target(Core CONDITION WIN32 AND NOT WINRT
 qt_extend_target(Core CONDITION APPLE
     SOURCES
         global/qoperatingsystemversion_darwin.mm
+        io/qfilesystemengine_mac.mm
         io/qstandardpaths_mac.mm
         io/qstorageinfo_mac.cpp
         kernel/qcfsocketnotifier.cpp kernel/qcfsocketnotifier_p.h

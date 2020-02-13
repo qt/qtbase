@@ -84,8 +84,12 @@ public:
     void setCompression(int compression);
     int compression() const;
 
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use QColorSpace instead")
     void setGamma(float gamma);
+    QT_DEPRECATED_VERSION_X_5_15("Use QColorSpace instead")
     float gamma() const;
+#endif
 
     void setSubType(const QByteArray &type);
     QByteArray subType() const;

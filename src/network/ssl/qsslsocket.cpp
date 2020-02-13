@@ -432,6 +432,23 @@
 
     \sa continueInterruptedHandshake(), sslErrors(), QSslConfiguration::setHandshakeMustInterruptOnError()
 */
+
+/*!
+    \fn void QSslSocket::newSessionTicketReceived()
+    \since 5.15
+
+    If TLS 1.3 protocol was negotiated during a handshake, QSslSocket
+    emits this signal after receiving NewSessionTicket message. Session
+    and session ticket's lifetime hint are updated in the socket's
+    configuration. The session can be used for session resumption (and
+    a shortened handshake) in future TLS connections.
+
+    \note This functionality enabled only with OpenSSL backend and requires
+    OpenSSL v 1.1.1 or above.
+
+    \sa QSslSocket::sslConfiguration(), QSslConfiguration::sessionTicket(), QSslConfiguration::sessionTicketLifeTimeHint()
+*/
+
 #include "qssl_p.h"
 #include "qsslsocket.h"
 #include "qsslcipher.h"
@@ -1530,7 +1547,10 @@ bool QSslSocket::addCaCertificates(const QString &path, QSsl::EncodingFormat for
                                    QRegExp::PatternSyntax syntax)
 {
     Q_D(QSslSocket);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
+QT_WARNING_POP
     if (certs.isEmpty())
         return false;
 
@@ -2502,7 +2522,10 @@ bool QSslSocketPrivate::addDefaultCaCertificates(const QString &path, QSsl::Enco
                                                  QRegExp::PatternSyntax syntax)
 {
     QSslSocketPrivate::ensureInitialized();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
+QT_WARNING_POP
     if (certs.isEmpty())
         return false;
 
@@ -2642,7 +2665,7 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->setPeerName(QString());
 
     plainSocket = new QTcpSocket(q);
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     //copy network session down to the plain socket (if it has been set)
     plainSocket->setProperty("_q_networksession", q->property("_q_networksession"));
 #endif

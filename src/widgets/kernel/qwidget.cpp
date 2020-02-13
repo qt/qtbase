@@ -2347,7 +2347,9 @@ QWidget *QWidget::find(WId id)
 */
 WId QWidget::winId() const
 {
-    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
+    if (!data->in_destructor
+        && (!testAttribute(Qt::WA_WState_Created) || !internalWinId()))
+    {
 #ifdef ALIEN_DEBUG
         qDebug() << "QWidget::winId: creating native window for" << this;
 #endif
@@ -6306,7 +6308,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
             previousProxyFocus = topData->proxyWidget->widget()->focusWidget();
             if (previousProxyFocus && previousProxyFocus->focusProxy())
                 previousProxyFocus = previousProxyFocus->focusProxy();
-            if (previousProxyFocus == this && !topData->proxyWidget->d_func()->proxyIsGivingFocus)
+            if (previousProxyFocus == f && !topData->proxyWidget->d_func()->proxyIsGivingFocus)
                 return;
         }
     }

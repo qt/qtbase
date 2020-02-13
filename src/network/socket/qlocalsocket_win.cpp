@@ -91,7 +91,7 @@ void QLocalSocketPrivate::_q_winError(ulong windowsError, const QString &functio
         if (state == QLocalSocket::UnconnectedState && currentState != QLocalSocket::ConnectingState)
             emit q->disconnected();
     }
-    emit q->error(error);
+    emit q->errorOccurred(error);
 }
 
 QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
@@ -123,7 +123,7 @@ void QLocalSocket::connectToServer(OpenMode openMode)
     if (state() == ConnectedState || state() == ConnectingState) {
         d->error = OperationError;
         d->errorString = tr("Trying to connect while connection is in progress");
-        emit error(QLocalSocket::OperationError);
+        emit errorOccurred(QLocalSocket::OperationError);
         return;
     }
 
@@ -135,7 +135,7 @@ void QLocalSocket::connectToServer(OpenMode openMode)
         d->error = ServerNotFoundError;
         d->errorString = tr("%1: Invalid name").arg(QLatin1String("QLocalSocket::connectToServer"));
         d->state = UnconnectedState;
-        emit error(d->error);
+        emit errorOccurred(d->error);
         emit stateChanged(d->state);
         return;
     }
@@ -330,14 +330,7 @@ void QLocalSocket::disconnectFromServer()
     }
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
 QLocalSocket::LocalSocketError QLocalSocket::error() const
-{
-    return socketError();
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
-QLocalSocket::LocalSocketError QLocalSocket::socketError() const
 {
     Q_D(const QLocalSocket);
     return d->error;

@@ -27,6 +27,7 @@
 
 /*!
     \example hellovulkanwidget
+    \meta installpath vulkan
     \ingroup examples-vulkan
     \title Hello Vulkan Widget Example
     \brief Shows the usage of QVulkanWindow in QWidget applications.

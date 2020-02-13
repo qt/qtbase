@@ -1245,6 +1245,7 @@ Q_OUTOFLINE_TEMPLATE int QMultiHash<Key, T>::count(const Key &akey) const
     return cnt;
 }
 
+#if !defined(QT_NO_JAVA_STYLE_ITERATORS)
 template <class Key, class T>
 class QHashIterator
 {
@@ -1419,6 +1420,7 @@ public:
     }
 #endif
 };
+#endif // !QT_NO_JAVA_STYLE_ITERATORS
 
 template <class Key, class T>
 uint qHash(const QHash<Key, T> &key, uint seed = 0)

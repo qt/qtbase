@@ -176,13 +176,24 @@ public:
     static int getInt(QWidget *parent, const QString &title, const QString &label, int value = 0,
                       int minValue = -2147483647, int maxValue = 2147483647,
                       int step = 1, bool *ok = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("This overload is deprecated. Use the overload that takes step as a final argument")
     static double getDouble(QWidget *parent, const QString &title, const QString &label, double value = 0,
                             double minValue = -2147483647, double maxValue = 2147483647,
                             int decimals = 1, bool *ok = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    static double getDouble(QWidget *parent, const QString &title, const QString &label, double value = 0,
+                            double minValue = -2147483647, double maxValue = 2147483647,
+                            int decimals = 1, bool *ok = nullptr, Qt::WindowFlags flags = Qt::WindowFlags(),
+                            double step = 1);
+#else
     // ### Qt 6: merge overloads
     static double getDouble(QWidget *parent, const QString &title, const QString &label, double value,
                             double minValue, double maxValue, int decimals, bool *ok, Qt::WindowFlags flags,
                             double step);
+#endif
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static inline int getInteger(QWidget *parent, const QString &title, const QString &label, int value = 0,

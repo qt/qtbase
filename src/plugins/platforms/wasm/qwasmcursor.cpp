@@ -57,9 +57,7 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
         htmlCursorName = "auto";
 
     // Set cursor on the canvas
-    val jsCanvasId = QWasmString::fromQString(QWasmScreen::get(screen)->canvasId());
-    val document = val::global("document");
-    val canvas = document.call<val>("getElementById", jsCanvasId);
+    val canvas = QWasmScreen::get(screen)->canvas();
     val canvasStyle = canvas["style"];
     canvasStyle.set("cursor", val(htmlCursorName.constData()));
 }

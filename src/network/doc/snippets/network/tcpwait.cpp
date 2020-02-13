@@ -51,8 +51,6 @@
 #include <QtGui>
 #include <QTcpSocket>
 
-#include "server.h"
-
 int main(int argv, char **args)
 {
     QCoreApplication app(argv, args);

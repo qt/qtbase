@@ -419,18 +419,18 @@ bool TextEdit::load(const QString &f)
     QByteArray data = file.readAll();
     QTextCodec *codec = Qt::codecForHtml(data);
     QString str = codec->toUnicode(data);
-    QUrl baseUrl = (f.front() == QLatin1Char(':') ? QUrl(f) : QUrl::fromLocalFile(f)).adjusted(QUrl::RemoveFilename);
-    textEdit->document()->setBaseUrl(baseUrl);
     if (Qt::mightBeRichText(str)) {
+        QUrl baseUrl = (f.front() == QLatin1Char(':') ? QUrl(f) : QUrl::fromLocalFile(f)).adjusted(QUrl::RemoveFilename);
+        textEdit->document()->setBaseUrl(baseUrl);
         textEdit->setHtml(str);
     } else {
 #if QT_CONFIG(textmarkdownreader)
         QMimeDatabase db;
         if (db.mimeTypeForFileNameAndData(f, data).name() == QLatin1String("text/markdown"))
-            textEdit->setMarkdown(str);
+            textEdit->setMarkdown(QString::fromUtf8(data));
         else
 #endif
-            textEdit->setPlainText(QString::fromLocal8Bit(data));
+            textEdit->setPlainText(QString::fromUtf8(data));
     }
 
     setCurrentFileName(f);
@@ -545,7 +545,7 @@ bool TextEdit::fileSaveAs()
 
 void TextEdit::filePrint()
 {
-#if QT_CONFIG(printdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
     QPrinter printer(QPrinter::HighResolution);
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
     if (textEdit->textCursor().hasSelection())

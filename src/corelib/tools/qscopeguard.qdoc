@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Sérgio Martins <sergio.martins@kdab.com>
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -35,6 +36,30 @@ QT_BEGIN_NAMESPACE
     \inmodule QtCore
     \brief Provides a scope guard for calling a function at the end of
            a scope.
+
+    QScopeGuard<F> is a class of which the sole purpose is to run the function
+    \a f in its destructor. This is useful for guaranteeing
+    your cleanup code is executed, whether the function is exited normally,
+    exited early by a return statement, or exited by an exception.
+
+    \note Exceptions are not supported. The callable shouldn't throw when
+          executed, copied or moved.
+
+    \sa QScopedValueRollback
+*/
+
+/*!
+    \fn template <typename F> QScopeGuard<F>::QScopeGuard(F &&f)
+    \fn template <typename F> QScopeGuard<F>::QScopeGuard(const F &f)
+
+    Create a scope guard that will execute \a f at the end of the scope.
+
+    If \e F is a lambda, its type cannot be written. In that case you need to
+    either rely on class template argument deduction (C++17 feature) and leave
+    the template parameter out completely or use the helper function
+    qScopeGuard() instead of this constructor.
+
+    \since 5.15
 */
 
 /*! \fn template <typename F> void QScopeGuard<F>::dismiss()
@@ -51,23 +76,17 @@ QT_BEGIN_NAMESPACE
            of the scope.
     \ingroup misc
 
-    QScopeGuard<F> is a class of which the sole purpose is to run the function
-    \a f in its destructor. This is useful for guaranteeing
-    your cleanup code is executed, whether the function is exited normally,
-    exited early by a return statement, or exited by an exception.
+    Create a scope guard that will execute \a f at the end of the scope.
 
-    If \e F is a lambda then you cannot instantiate the template directly,
-    therefore the qScopeGuard() helper is provided and QScopeGuard<F> is made a
-    private implementation detail.
+    This helper function is provided so that you can easily construct a
+    QScopeGuard without having to name the template parameter for the type of
+    the callable. If \e F is a lambda then you cannot write its type and relying
+    on this helper or class template argument deduction is necessary.
 
     Example usage is as follows:
 
     \snippet code/src_corelib_tools_qscopeguard.cpp 0
 
-    \note Exceptions are not supported. The callable shouldn't throw when
-          executed, copied or moved.
-
-    \sa QScopedValueRollback
 */
 
 QT_END_NAMESPACE

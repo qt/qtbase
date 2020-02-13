@@ -421,7 +421,7 @@ Options parseOptions()
             options.buildAAB = true;
             options.build = true;
             options.jarSigner = true;
-        } else if (options.buildAAB && argument.compare(QLatin1String("--no-build"), Qt::CaseInsensitive) == 0) {
+        } else if (!options.buildAAB && argument.compare(QLatin1String("--no-build"), Qt::CaseInsensitive) == 0) {
             options.build = false;
         } else if (argument.compare(QLatin1String("--install"), Qt::CaseInsensitive) == 0) {
             options.installApk = true;
@@ -2308,7 +2308,8 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
 bool buildAndroidProject(const Options &options)
 {
     GradleProperties localProperties;
-    localProperties["sdk.dir"] = options.sdkPath.toLocal8Bit();
+    localProperties["sdk.dir"] = options.sdkPath.toUtf8();
+    localProperties["ndk.dir"] = options.ndkPath.toUtf8();
 
     if (!mergeGradleProperties(options.outputDirectory + QLatin1String("local.properties"), localProperties))
         return false;

@@ -621,7 +621,7 @@ const QBitmap *QCursor::mask() const
     QBitmap bmpVal = cursor->bitmap();
     \endcode
 */
-QBitmap QCursor::bitmap(Qt::ReturnByValue_t) const
+QBitmap QCursor::bitmap(Qt::ReturnByValueConstant) const
 {
     if (!QCursorData::initialized)
         QCursorData::initialize();
@@ -653,7 +653,7 @@ QBitmap QCursor::bitmap(Qt::ReturnByValue_t) const
     QBitmap bmpVal = cursor->mask();
     \endcode
 */
-QBitmap QCursor::mask(Qt::ReturnByValue_t) const
+QBitmap QCursor::mask(Qt::ReturnByValueConstant) const
 {
     if (!QCursorData::initialized)
         QCursorData::initialize();

@@ -47,6 +47,7 @@
 #include <qtablewidget.h>
 #include <qscrollbar.h>
 #include <qboxlayout.h>
+#include <qstackedwidget.h>
 
 #include <qstandarditemmodel.h>
 #include <qstringlistmodel.h>
@@ -164,6 +165,7 @@ private slots:
     void task_QTBUG_56693_itemFontFromModel();
     void inputMethodUpdate();
     void task_QTBUG_52027_mapCompleterIndex();
+    void checkMenuItemPosWhenStyleSheetIsSet();
 
 private:
     PlatformInputContext m_platformInputContext;
@@ -1206,8 +1208,7 @@ void tst_QComboBox::currentIndex()
         QVERIFY(testWidget->currentText().isEmpty());
 
         // spy on currentIndexChanged
-        QSignalSpy indexChangedInt(testWidget, SIGNAL(currentIndexChanged(int)));
-        QSignalSpy indexChangedString(testWidget, SIGNAL(currentIndexChanged(QString)));
+        QSignalSpy indexChangedSpy(testWidget, SIGNAL(currentIndexChanged(int, QString)));
 
         // stuff items into it
         foreach(QString text, initialItems) {
@@ -1231,16 +1232,12 @@ void tst_QComboBox::currentIndex()
         QCOMPARE(testWidget->currentText(), expectedCurrentText);
 
         // check that signal count is correct
-        QCOMPARE(indexChangedInt.count(), expectedSignalCount);
-        QCOMPARE(indexChangedString.count(), expectedSignalCount);
+        QCOMPARE(indexChangedSpy.count(), expectedSignalCount);
 
         // compare with last sent signal values
-        if (indexChangedInt.count())
-            QCOMPARE(indexChangedInt.at(indexChangedInt.count() - 1).at(0).toInt(),
-                    testWidget->currentIndex());
-        if (indexChangedString.count())
-            QCOMPARE(indexChangedString.at(indexChangedString.count() - 1).at(0).toString(),
-                     testWidget->currentText());
+        if (indexChangedSpy.count())
+            QCOMPARE(indexChangedSpy.at(indexChangedSpy.count() - 1).at(0).toInt(),
+                     testWidget->currentIndex());
 
         if (edit) {
             testWidget->setCurrentIndex(-1);
@@ -2339,7 +2336,8 @@ public:
     {
         QStringList list;
         list << "one" << "two";
-        connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
+        connect(this, SIGNAL(currentIndexChanged(int, QString)),
+                this, SLOT(onCurrentIndexChanged(int)));
         addItems(list);
     }
 public slots:
@@ -2765,7 +2763,7 @@ void tst_QComboBox::resetModel()
     };
     QComboBox cb;
     StringListModel model({"1", "2"});
-    QSignalSpy spy(&cb, QOverload<int>::of(&QComboBox::currentIndexChanged));
+    QSignalSpy spy(&cb, QOverload<int, const QString &>::of(&QComboBox::currentIndexChanged));
     QCOMPARE(spy.count(), 0);
     QCOMPARE(cb.currentIndex(), -1); //no selection
 
@@ -3513,6 +3511,47 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     QApplication::processEvents();
     arguments = spy.takeLast();
     QCOMPARE(arguments.at(0).toInt(), 1);
+}
+
+void tst_QComboBox::checkMenuItemPosWhenStyleSheetIsSet()
+{
+    QString newCss = "QComboBox {font-size: 18pt;}";
+    QString oldCss = qApp->styleSheet();
+    qApp->setStyleSheet(newCss);
+
+    QWidget topLevel;
+    QVBoxLayout *layout = new QVBoxLayout(&topLevel);
+    QStackedWidget *stack = new QStackedWidget(&topLevel);
+    layout->addWidget(stack);
+    QWidget *container = new QWidget(&topLevel);
+    QHBoxLayout *cLayout = new QHBoxLayout(container);
+    QComboBox *cBox = new QComboBox;
+
+    QStandardItemModel *model = new QStandardItemModel(cBox);
+    QStandardItem *item = new QStandardItem(QStringLiteral("Item1"));
+    model->appendRow(item);
+    item = new QStandardItem(QStringLiteral("Item2"));
+    model->appendRow(item);
+    item = new QStandardItem(QStringLiteral("Item3"));
+    model->appendRow(item);
+    item = new QStandardItem(QStringLiteral("Item4"));
+    model->appendRow(item);
+    cBox->setModel(model);
+
+    cLayout->addWidget(cBox);
+    stack->addWidget(container);
+    topLevel.show();
+    cBox->showPopup();
+
+    QTRY_VERIFY(cBox->view());
+    QTRY_VERIFY(cBox->view()->isVisible());
+
+    int menuHeight = cBox->view()->geometry().height();
+    QRect menuItemRect = cBox->view()->visualRect(model->indexFromItem(item));
+
+    QCOMPARE(menuHeight, menuItemRect.y() + menuItemRect.height());
+
+    qApp->setStyleSheet(oldCss);
 }
 
 QTEST_MAIN(tst_QComboBox)

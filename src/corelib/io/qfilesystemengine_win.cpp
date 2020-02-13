@@ -41,6 +41,7 @@
 #include "qoperatingsystemversion.h"
 #include "qplatformdefs.h"
 #include "qsysinfo.h"
+#include "qscopeguard.h"
 #include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
 #include <private/qsystemlibrary_p.h>
@@ -59,6 +60,8 @@
 #include <objbase.h>
 #ifndef Q_OS_WINRT
 #  include <shlobj.h>
+#  include <shobjidl.h>
+#  include <shellapi.h>
 #  include <lm.h>
 #  include <accctrl.h>
 #endif
@@ -421,6 +424,104 @@ static inline bool getFindData(QString path, WIN32_FIND_DATA &findData)
 
     return false;
 }
+
+#if defined(__IFileOperation_INTERFACE_DEFINED__)
+class FileOperationProgressSink : public IFileOperationProgressSink
+{
+public:
+    FileOperationProgressSink()
+    : ref(1)
+    {}
+    virtual ~FileOperationProgressSink() {}
+
+    ULONG STDMETHODCALLTYPE AddRef()
+    {
+        return ++ref;
+    }
+    ULONG STDMETHODCALLTYPE Release()
+    {
+        if (--ref == 0) {
+            delete this;
+            return 0;
+        }
+        return ref;
+    }
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **ppvObject)
+    {
+        if (!ppvObject)
+            return E_POINTER;
+
+        *ppvObject = nullptr;
+
+        if (iid == __uuidof(IUnknown)) {
+            *ppvObject = static_cast<IUnknown*>(this);
+        } else if (iid == __uuidof(IFileOperationProgressSink)) {
+            *ppvObject = static_cast<IFileOperationProgressSink*>(this);
+        }
+
+        if (*ppvObject) {
+            AddRef();
+            return S_OK;
+        }
+
+        return E_NOINTERFACE;
+    }
+
+    HRESULT STDMETHODCALLTYPE StartOperations()
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE FinishOperations(HRESULT)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PreRenameItem(DWORD, IShellItem *, LPCWSTR)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PostRenameItem(DWORD, IShellItem *, LPCWSTR, HRESULT, IShellItem *)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PreMoveItem(DWORD, IShellItem *, IShellItem *, LPCWSTR)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PostMoveItem(DWORD, IShellItem *, IShellItem *, LPCWSTR, HRESULT,
+                                           IShellItem *)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PreCopyItem(DWORD, IShellItem *, IShellItem *, LPCWSTR )
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PostCopyItem(DWORD, IShellItem *, IShellItem *, LPCWSTR, HRESULT,
+                                           IShellItem *)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PreDeleteItem(DWORD dwFlags, IShellItem *)
+    {
+        // stop the operation if the file will be deleted rather than trashed
+        return (dwFlags & TSF_DELETE_RECYCLE_IF_POSSIBLE) ? S_OK : E_FAIL;
+    }
+    HRESULT STDMETHODCALLTYPE PostDeleteItem(DWORD /* dwFlags */, IShellItem * /* psiItem */,
+                                             HRESULT /* hrDelete */, IShellItem *psiNewlyCreated)
+    {
+        if (psiNewlyCreated) {
+            wchar_t *pszName = nullptr;
+            psiNewlyCreated->GetDisplayName(SIGDN_FILESYSPATH, &pszName);
+            if (pszName) {
+                targetPath = QString::fromWCharArray(pszName);
+                CoTaskMemFree(pszName);
+            }
+        }
+        return S_OK;
+    }
+    HRESULT STDMETHODCALLTYPE PreNewItem(DWORD, IShellItem *, LPCWSTR)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PostNewItem(DWORD, IShellItem *, LPCWSTR, LPCWSTR, DWORD, HRESULT,
+                                          IShellItem *)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE UpdateProgress(UINT,UINT)
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE ResetTimer()
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE PauseTimer()
+    { return S_OK; }
+    HRESULT STDMETHODCALLTYPE ResumeTimer()
+    { return S_OK; }
+
+    QString targetPath;
+private:
+    ULONG ref;
+};
+#endif
 
 bool QFileSystemEngine::uncListSharesOnServer(const QString &server, QStringList *list)
 {
@@ -1429,6 +1530,103 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
     if(!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
+}
+
+/*
+    If possible, we use the IFileOperation implementation, which allows us to determine
+    the location of the object in the trash.
+    If not (likely on mingw), we fall back to the old API, which won't allow us to know
+    that.
+*/
+//static
+bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
+                                        QFileSystemEntry &newLocation, QSystemError &error)
+{
+#ifndef Q_OS_WINRT
+    // we need the "display name" of the file, so can't use nativeFilePath
+    const QString sourcePath = QDir::toNativeSeparators(source.filePath());
+
+    /*
+        Windows 7 insists on showing confirmation dialogs and ignores the respective
+        flags set on IFileOperation. Fall back to SHFileOperation, even if it doesn't
+        give us the new location of the file.
+    */
+    if (QOperatingSystemVersion::current() > QOperatingSystemVersion::Windows7) {
+#  if defined(__IFileOperation_INTERFACE_DEFINED__)
+        CoInitialize(NULL);
+        IFileOperation *pfo = nullptr;
+        IShellItem *deleteItem = nullptr;
+        FileOperationProgressSink *sink = nullptr;
+        HRESULT hres = E_FAIL;
+
+        auto coUninitialize = qScopeGuard([&](){
+            if (sink)
+                sink->Release();
+            if (deleteItem)
+                deleteItem->Release();
+            if (pfo)
+                pfo->Release();
+            CoUninitialize();
+            if (!SUCCEEDED(hres))
+                error = QSystemError(hres, QSystemError::NativeError);
+        });
+
+        hres = CoCreateInstance(CLSID_FileOperation, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&pfo));
+        if (!pfo)
+            return false;
+        pfo->SetOperationFlags(FOF_ALLOWUNDO | FOFX_RECYCLEONDELETE | FOF_NOCONFIRMATION
+                            | FOF_SILENT | FOF_NOERRORUI);
+        hres = SHCreateItemFromParsingName(reinterpret_cast<const wchar_t*>(sourcePath.utf16()),
+                                        nullptr, IID_PPV_ARGS(&deleteItem));
+        if (!deleteItem)
+            return false;
+        sink = new FileOperationProgressSink;
+        hres = pfo->DeleteItem(deleteItem, static_cast<IFileOperationProgressSink*>(sink));
+        if (!SUCCEEDED(hres))
+            return false;
+        hres = pfo->PerformOperations();
+        if (!SUCCEEDED(hres))
+            return false;
+        newLocation = QFileSystemEntry(sink->targetPath);
+
+#  endif // no IFileOperation in SDK (mingw, likely) - fall back to SHFileOperation
+    } else {
+        // double null termination needed, so can't use QString::utf16
+        QVarLengthArray<wchar_t, MAX_PATH + 1> winFile(sourcePath.length() + 2);
+        sourcePath.toWCharArray(winFile.data());
+        winFile[sourcePath.length()] = wchar_t{};
+        winFile[sourcePath.length() + 1] = wchar_t{};
+
+        SHFILEOPSTRUCTW operation;
+        operation.hwnd = nullptr;
+        operation.wFunc = FO_DELETE;
+        operation.pFrom = winFile.constData();
+        operation.pTo = nullptr;
+        operation.fFlags = FOF_ALLOWUNDO | FOF_NO_UI;
+        operation.fAnyOperationsAborted = FALSE;
+        operation.hNameMappings = nullptr;
+        operation.lpszProgressTitle = nullptr;
+
+        int result = SHFileOperation(&operation);
+        if (result != 0) {
+            error = QSystemError(result, QSystemError::NativeError);
+            return false;
+        }
+        /*
+            This implementation doesn't let us know where the file ended up, even if
+            we would specify FOF_WANTMAPPINGHANDLE | FOF_RENAMEONCOLLISION, as
+            FOF_RENAMEONCOLLISION has no effect unless files are moved, copied, or renamed.
+        */
+        Q_UNUSED(newLocation);
+    }
+    return true;
+
+#else // Q_OS_WINRT
+    Q_UNUSED(source);
+    Q_UNUSED(newLocation);
+    Q_UNUSED(error);
+    return false;
+#endif
 }
 
 //static

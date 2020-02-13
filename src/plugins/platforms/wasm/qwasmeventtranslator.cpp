@@ -339,8 +339,7 @@ QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
 
 void QWasmEventTranslator::initEventHandlers()
 {
-    QByteArray _canvasId = screen()->canvasId().toUtf8();
-    const char *canvasId = _canvasId.constData();
+    QByteArray canvasSelector = "#" + screen()->canvasId().toUtf8();
 
     // The Platform Detect: expand coverage and move as needed
     enum Platform {
@@ -355,30 +354,28 @@ void QWasmEventTranslator::initEventHandlers()
         g_useNaturalScrolling = false; // make this !default on macOS
 
         if (emscripten::val::global("window")["safari"].isUndefined()) {
-            val document = val::global("document");
-            val jsCanvasId = QWasmString::fromQString(screen()->canvasId());
-            val canvas = document.call<val>("getElementById", jsCanvasId);
+            val canvas = screen()->canvas();
             canvas.call<void>("addEventListener",
                               val("wheel"),
                               val::module_property("qtMouseWheelEvent"));
         }
     }
 
-    emscripten_set_keydown_callback(canvasId, (void *)this, 1, &keyboard_cb);
-    emscripten_set_keyup_callback(canvasId, (void *)this, 1, &keyboard_cb);
+    emscripten_set_keydown_callback(canvasSelector.constData(), (void *)this, 1, &keyboard_cb);
+    emscripten_set_keyup_callback(canvasSelector.constData(), (void *)this, 1, &keyboard_cb);
 
-    emscripten_set_mousedown_callback(canvasId, (void *)this, 1, &mouse_cb);
-    emscripten_set_mouseup_callback(canvasId, (void *)this, 1, &mouse_cb);
-    emscripten_set_mousemove_callback(canvasId, (void *)this, 1, &mouse_cb);
+    emscripten_set_mousedown_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
+    emscripten_set_mouseup_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
+    emscripten_set_mousemove_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
 
-    emscripten_set_focus_callback(canvasId, (void *)this, 1, &focus_cb);
+    emscripten_set_focus_callback(canvasSelector.constData(), (void *)this, 1, &focus_cb);
 
-    emscripten_set_wheel_callback(canvasId, (void *)this, 1, &wheel_cb);
+    emscripten_set_wheel_callback(canvasSelector.constData(), (void *)this, 1, &wheel_cb);
 
-    emscripten_set_touchstart_callback(canvasId, (void *)this, 1, &touchCallback);
-    emscripten_set_touchend_callback(canvasId, (void *)this, 1, &touchCallback);
-    emscripten_set_touchmove_callback(canvasId, (void *)this, 1, &touchCallback);
-    emscripten_set_touchcancel_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchstart_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
+    emscripten_set_touchend_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
+    emscripten_set_touchmove_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
+    emscripten_set_touchcancel_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
 }
 
 template <typename Event>

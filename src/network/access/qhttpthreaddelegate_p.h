@@ -118,7 +118,7 @@ public:
     QNetworkReply::NetworkError incomingErrorCode;
     QString incomingErrorDetail;
     QHttp2Configuration http2Parameters;
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     QSharedPointer<QNetworkSession> networkSession;
 #endif
 

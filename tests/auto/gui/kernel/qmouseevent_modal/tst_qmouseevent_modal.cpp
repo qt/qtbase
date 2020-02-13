@@ -42,6 +42,19 @@ class TstWidget;
 class TstDialog;
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 
+class TestButton : public QPushButton
+{
+public:
+    TestButton(const QString &title, QWidget *parent = nullptr)
+    : QPushButton(title, parent)
+    {}
+protected:
+    bool hitButton(const QPoint &pos) const override
+    {
+        return rect().contains(pos);
+    }
+};
+
 class tst_qmouseevent_modal : public QObject
 {
     Q_OBJECT
@@ -63,7 +76,7 @@ public:
 public slots:
     void buttonPressed();
 public:
-    QPushButton *pb;
+    TestButton *pb;
     TstDialog *d;
 };
 
@@ -135,7 +148,7 @@ void tst_qmouseevent_modal::mousePressRelease()
 
 TstWidget::TstWidget()
 {
-    pb = new QPushButton( "Press me", this );
+    pb = new TestButton( "Press me", this );
     pb->setObjectName("testbutton");
     QSize s = pb->sizeHint();
     pb->setGeometry( 5, 5, s.width(), s.height() );

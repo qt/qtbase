@@ -17,6 +17,7 @@ qt_add_module(Test
         qbenchmarkperfevents.cpp qbenchmarkperfevents_p.h
         qbenchmarktimemeasurers_p.h
         qcsvbenchmarklogger.cpp qcsvbenchmarklogger_p.h
+        qjunittestlogger.cpp qjunittestlogger_p.h
         qplaintestlogger.cpp qplaintestlogger_p.h
         qsignaldumper.cpp qsignaldumper_p.h
         qsignalspy.h
@@ -38,6 +39,7 @@ qt_add_module(Test
         qtestevent.h
         qtesteventloop.h
         qtesthelpers_p.h
+        qtestjunitstreamer.cpp qtestjunitstreamer_p.h
         qtestkeyboard.h
         qtestlog.cpp qtestlog_p.h
         qtestmouse.cpp qtestmouse.h
@@ -46,10 +48,8 @@ qt_add_module(Test
         qtestsystem.h
         qtesttable.cpp qtesttable_p.h
         qtesttouch.h
-        qtestxunitstreamer.cpp qtestxunitstreamer_p.h
         qttestglobal.h
         qxmltestlogger.cpp qxmltestlogger_p.h
-        qxunittestlogger.cpp qxunittestlogger_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
@@ -103,6 +103,7 @@ qt_extend_target(Test CONDITION APPLE_OSX
     SOURCES
         qtestutil_macos.mm qtestutil_macos_p.h
     PUBLIC_LIBRARIES
+        ${FWAppKit}
         ${FWApplicationServices}
         ${FWFoundation}
         ${FWIOKit}

@@ -110,9 +110,10 @@ void tst_QTranslator::load_data()
     QTest::addColumn<QString>("filepath");
     QTest::addColumn<bool>("isEmpty");
     QTest::addColumn<QString>("translation");
+    QTest::addColumn<QString>("language");
 
-    QTest::newRow("hellotr_la") << "hellotr_la.qm" << false << "Hallo Welt!";
-    QTest::newRow("hellotr_empty") << "hellotr_empty.qm" << true << "";
+    QTest::newRow("hellotr_la") << "hellotr_la.qm" << false << "Hallo Welt!" << "de";
+    QTest::newRow("hellotr_empty") << "hellotr_empty.qm" << true << "" << "";
 }
 
 void tst_QTranslator::load()
@@ -120,12 +121,15 @@ void tst_QTranslator::load()
     QFETCH(QString, filepath);
     QFETCH(bool, isEmpty);
     QFETCH(QString, translation);
+    QFETCH(QString, language);
 
     {
         QTranslator tor;
         QVERIFY(tor.load(QFileInfo(filepath).baseName()));
         QCOMPARE(tor.isEmpty(), isEmpty);
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+        QCOMPARE(tor.filePath(), filepath);
+        QCOMPARE(tor.language(), language);
     }
 
     {
@@ -136,13 +140,18 @@ void tst_QTranslator::load()
         QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
         QCOMPARE(tor.isEmpty(), isEmpty);
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+        QCOMPARE(tor.filePath(), "");
+        QCOMPARE(tor.language(), language);
     }
 
     {
         QTranslator tor;
-        QVERIFY(tor.load(QString(":/tst_qtranslator/%1").arg(filepath)));
+        QString path = QString(":/tst_qtranslator/%1").arg(filepath);
+        QVERIFY(tor.load(path));
         QCOMPARE(tor.isEmpty(), isEmpty);
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), translation);
+        QCOMPARE(tor.filePath(), path);
+        QCOMPARE(tor.language(), language);
     }
 }
 

@@ -163,6 +163,8 @@ DEFINEFUNC(const char *, SSL_alert_desc_string_long, int value, value, return nu
 #ifdef TLS1_3_VERSION
 DEFINEFUNC2(int, SSL_CTX_set_ciphersuites, SSL_CTX *ctx, ctx, const char *str, str, return 0, return)
 DEFINEFUNC2(void, SSL_set_psk_use_session_callback, SSL *ssl, ssl, q_SSL_psk_use_session_cb_func_t callback, callback, return, DUMMYARG)
+DEFINEFUNC2(void, SSL_CTX_sess_set_new_cb, SSL_CTX *ctx, ctx, NewSessionCallback cb, cb, return, return)
+DEFINEFUNC(int, SSL_SESSION_is_resumable, const SSL_SESSION *s, s, return 0, return)
 #endif
 DEFINEFUNC3(size_t, SSL_get_client_random, SSL *a, a, unsigned char *out, out, size_t outlen, outlen, return 0, return)
 DEFINEFUNC3(size_t, SSL_SESSION_get_master_key, const SSL_SESSION *ses, ses, unsigned char *out, out, size_t outlen, outlen, return 0, return)
@@ -849,6 +851,8 @@ bool q_resolveOpenSslSymbols()
 #ifdef TLS1_3_VERSION
     RESOLVEFUNC(SSL_CTX_set_ciphersuites)
     RESOLVEFUNC(SSL_set_psk_use_session_callback)
+    RESOLVEFUNC(SSL_CTX_sess_set_new_cb)
+    RESOLVEFUNC(SSL_SESSION_is_resumable)
 #endif // TLS 1.3 or OpenSSL > 1.1.1
 
     RESOLVEFUNC(SSL_get_client_random)

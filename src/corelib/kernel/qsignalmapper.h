@@ -66,10 +66,20 @@ public:
     QObject *mapping(QObject *object) const;
 
 Q_SIGNALS:
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use QSignalMapper::mappedInt(int) instead")
     void mapped(int);
+    QT_DEPRECATED_VERSION_X_5_15("Use QSignalMapper::mappedString(const QString&) instead")
     void mapped(const QString &);
+    QT_DEPRECATED_VERSION_X_5_15("Use QSignalMapper::mappedWidget(QWidget *) instead")
     void mapped(QWidget *);
+    QT_DEPRECATED_VERSION_X_5_15("Use QSignalMapper::mappedObject(QObject *) instead")
     void mapped(QObject *);
+#endif
+    void mappedInt(int);
+    void mappedString(const QString &);
+    void mappedWidget(QWidget *);
+    void mappedObject(QObject *);
 
 public Q_SLOTS:
     void map();

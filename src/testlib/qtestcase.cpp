@@ -154,10 +154,6 @@ static bool debuggerPresent()
 #elif defined(Q_OS_WIN)
     return IsDebuggerPresent();
 #elif defined(Q_OS_MACOS)
-    auto equals = [](CFStringRef str1, CFStringRef str2) -> bool {
-        return CFStringCompare(str1, str2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
-    };
-
     // Check if there is an exception handler for the process:
     mach_msg_type_number_t portCount = 0;
     exception_mask_t masks[EXC_TYPES_COUNT];
@@ -174,21 +170,18 @@ static bool debuggerPresent()
             }
         }
     }
-
-    // Ok, no debugger attached. So, let's see if CrashReporter will throw up a dialog. If so, we
-    // leave it to the OS to do the stack trace.
-    CFStringRef crashReporterType = static_cast<CFStringRef>(
-                CFPreferencesCopyAppValue(CFSTR("DialogType"), CFSTR("com.apple.CrashReporter")));
-    if (crashReporterType == nullptr)
-        return true;
-
-    const bool createsStackTrace =
-            !equals(crashReporterType, CFSTR("server")) &&
-            !equals(crashReporterType, CFSTR("none"));
-    CFRelease(crashReporterType);
-    return createsStackTrace;
+    return false;
 #else
     // TODO
+    return false;
+#endif
+}
+
+static bool hasSystemCrashReporter()
+{
+#if defined(Q_OS_MACOS)
+    return QTestPrivate::macCrashReporterWillShowDialog();
+#else
     return false;
 #endif
 }
@@ -216,7 +209,7 @@ static void stackTrace()
     if (ok && disableStackDump == 1)
         return;
 
-    if (debuggerPresent())
+    if (debuggerPresent() || hasSystemCrashReporter())
         return;
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
@@ -290,14 +283,15 @@ namespace QTestPrivate
 
 namespace QTest
 {
+extern Q_TESTLIB_EXPORT int lastMouseTimestamp;
+
 class WatchDog;
 
 static QObject *currentTestObject = nullptr;
 static QString mainSourcePath;
 
 #if defined(Q_OS_MACOS)
-bool macNeedsActivate = false;
-IOPMAssertionID powerID;
+static IOPMAssertionID macPowerSavingDisabled = 0;
 #endif
 
 class TestMethods {
@@ -536,7 +530,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          "                       Valid formats are:\n"
          "                         txt      : Plain text\n"
          "                         csv      : CSV format (suitable for benchmarks)\n"
-         "                         xunitxml : XML XUnit document\n"
+         "                         junitxml : XML JUnit document\n"
          "                         xml      : XML document\n"
          "                         lightxml : A stream of XML tags\n"
          "                         teamcity : TeamCity format\n"
@@ -548,7 +542,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          " -o filename         : Write the output into file\n"
          " -txt                : Output results in Plain Text\n"
          " -csv                : Output results in a CSV format (suitable for benchmarks)\n"
-         " -xunitxml           : Output results as XML XUnit document\n"
+         " -junitxml           : Output results as XML JUnit document\n"
          " -xml                : Output results as XML document\n"
          " -lightxml           : Output results as stream of XML tags\n"
          " -teamcity           : Output results in TeamCity format\n"
@@ -632,8 +626,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             logFormat = QTestLog::Plain;
         } else if (strcmp(argv[i], "-csv") == 0) {
             logFormat = QTestLog::CSV;
-        } else if (strcmp(argv[i], "-xunitxml") == 0) {
-            logFormat = QTestLog::XunitXML;
+        } else if (strcmp(argv[i], "-junitxml") == 0 || strcmp(argv[i], "-xunitxml") == 0)  {
+            logFormat = QTestLog::JUnitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
             logFormat = QTestLog::XML;
         } else if (strcmp(argv[i], "-lightxml") == 0) {
@@ -672,14 +666,14 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                     logFormat = QTestLog::LightXML;
                 else if (strcmp(format, "xml") == 0)
                     logFormat = QTestLog::XML;
-                else if (strcmp(format, "xunitxml") == 0)
-                    logFormat = QTestLog::XunitXML;
+                else if (strcmp(format, "junitxml") == 0 || strcmp(format, "xunitxml") == 0)
+                    logFormat = QTestLog::JUnitXML;
                 else if (strcmp(format, "teamcity") == 0)
                     logFormat = QTestLog::TeamCity;
                 else if (strcmp(format, "tap") == 0)
                     logFormat = QTestLog::TAP;
                 else {
-                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml, tap, teamcity or xunitxml\n");
+                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml, tap, teamcity or junitxml\n");
                     exit(1);
                 }
                 if (strcmp(filename, "-") == 0 && QTestLog::loggerUsingStdout()) {
@@ -1168,6 +1162,7 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
                 QTestPrivate::qtestMouseButtons = Qt::NoButton;
                 if (watchDog)
                     watchDog->beginTest();
+                QTest::lastMouseTimestamp += 500;   // Maintain at least 500ms mouse event timestamps between each test function call
                 invokeTestOnData(index);
                 if (watchDog)
                     watchDog->testFinished();
@@ -1332,7 +1327,7 @@ char *toPrettyCString(const char *p, int length)
         //  3 bytes: "" and a character
         //  4 bytes: an hex escape sequence (\xHH)
         if (dst - buffer.data() > 246) {
-            // plus the the quote, the three dots and NUL, it's 255 in the worst case
+            // plus the quote, the three dots and NUL, it's 255 in the worst case
             trimmed = true;
             break;
         }
@@ -1425,7 +1420,7 @@ char *toPrettyUnicode(QStringView string)
     *dst++ = '"';
     for ( ; p != end; ++p) {
         if (dst - buffer.data() > 245) {
-            // plus the the quote, the three dots and NUL, it's 250, 251 or 255
+            // plus the quote, the three dots and NUL, it's 250, 251 or 255
             trimmed = true;
             break;
         }
@@ -1528,126 +1523,6 @@ void TestMethods::invokeTests(QObject *testObject) const
     QTestResult::setCurrentTestFunction(nullptr);
 }
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
-class FatalSignalHandler
-{
-public:
-    FatalSignalHandler();
-    ~FatalSignalHandler();
-
-private:
-    static void signal(int);
-    sigset_t handledSignals;
-};
-
-void FatalSignalHandler::signal(int signum)
-{
-    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
-    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
-    if (signum != SIGINT) {
-        stackTrace();
-        if (qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH")) {
-            fprintf(stderr, "Pausing process %d for debugging\n", getpid());
-            raise(SIGSTOP);
-        }
-    }
-    qFatal("Received signal %d\n"
-           "         Function time: %dms Total time: %dms",
-           signum, msecsFunctionTime, msecsTotalTime);
-#if defined(Q_OS_INTEGRITY)
-    {
-        struct sigaction act;
-        memset(&act, 0, sizeof(struct sigaction));
-        act.sa_handler = SIG_DFL;
-        sigaction(signum, &act, NULL);
-    }
-#endif
-}
-
-FatalSignalHandler::FatalSignalHandler()
-{
-    sigemptyset(&handledSignals);
-
-    const int fatalSignals[] = {
-         SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
-
-    struct sigaction act;
-    memset(&act, 0, sizeof(act));
-    act.sa_handler = FatalSignalHandler::signal;
-
-    // Remove the handler after it is invoked.
-#if !defined(Q_OS_INTEGRITY)
-    act.sa_flags = SA_RESETHAND;
-#endif
-
-// tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
-// unavailable (__WATCHOS_PROHIBITED __TVOS_PROHIBITED in signal.h)
-#if defined(SA_ONSTACK) && !defined(Q_OS_TVOS) && !defined(Q_OS_WATCHOS)
-    // Let the signal handlers use an alternate stack
-    // This is necessary if SIGSEGV is to catch a stack overflow
-#  if defined(Q_CC_GNU) && defined(Q_OF_ELF)
-    // Put the alternate stack in the .lbss (large BSS) section so that it doesn't
-    // interfere with normal .bss symbols
-    __attribute__((section(".lbss.altstack"), aligned(4096)))
-#  endif
-    static char alternate_stack[16 * 1024];
-    stack_t stack;
-    stack.ss_flags = 0;
-    stack.ss_size = sizeof alternate_stack;
-    stack.ss_sp = alternate_stack;
-    sigaltstack(&stack, nullptr);
-    act.sa_flags |= SA_ONSTACK;
-#endif
-
-    // Block all fatal signals in our signal handler so we don't try to close
-    // the testlog twice.
-    sigemptyset(&act.sa_mask);
-    for (int i = 0; fatalSignals[i]; ++i)
-        sigaddset(&act.sa_mask, fatalSignals[i]);
-
-    struct sigaction oldact;
-
-    for (int i = 0; fatalSignals[i]; ++i) {
-        sigaction(fatalSignals[i], &act, &oldact);
-        if (
-#ifdef SA_SIGINFO
-            oldact.sa_flags & SA_SIGINFO ||
-#endif
-            oldact.sa_handler != SIG_DFL) {
-            sigaction(fatalSignals[i], &oldact, nullptr);
-        } else
-        {
-            sigaddset(&handledSignals, fatalSignals[i]);
-        }
-    }
-}
-
-
-FatalSignalHandler::~FatalSignalHandler()
-{
-    // Unregister any of our remaining signal handlers
-    struct sigaction act;
-    memset(&act, 0, sizeof(act));
-    act.sa_handler = SIG_DFL;
-
-    struct sigaction oldact;
-
-    for (int i = 1; i < 32; ++i) {
-        if (!sigismember(&handledSignals, i))
-            continue;
-        sigaction(i, &act, &oldact);
-
-        // If someone overwrote it in the mean time, put it back
-        if (oldact.sa_handler != FatalSignalHandler::signal)
-            sigaction(i, &oldact, nullptr);
-    }
-}
-
-#endif
-
-
-} // namespace
-
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
 // Helper class for resolving symbol names by dynamically loading "dbghelp.dll".
@@ -1746,49 +1621,177 @@ DebugSymbolResolver::Symbol DebugSymbolResolver::resolveSymbol(DWORD64 address) 
     return result;
 }
 
-static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
-{
-    enum { maxStackFrames = 100 };
-    char appName[MAX_PATH];
-    if (!GetModuleFileNameA(NULL, appName, MAX_PATH))
-        appName[0] = 0;
-    const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
-    const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
-    const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
-    printf("A crash occurred in %s.\n"
-           "Function time: %dms Total time: %dms\n\n"
-           "Exception address: 0x%p\n"
-           "Exception code   : 0x%lx\n",
-           appName, msecsFunctionTime, msecsTotalTime,
-           exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
-    DebugSymbolResolver resolver(GetCurrentProcess());
-    if (resolver.isValid()) {
-        DebugSymbolResolver::Symbol exceptionSymbol = resolver.resolveSymbol(DWORD64(exceptionAddress));
-        if (exceptionSymbol.name) {
-            printf("Nearby symbol    : %s\n", exceptionSymbol.name);
-            delete [] exceptionSymbol.name;
-        }
-        void *stack[maxStackFrames];
-        fputs("\nStack:\n", stdout);
-        const unsigned frameCount = CaptureStackBackTrace(0, DWORD(maxStackFrames), stack, NULL);
-        for (unsigned f = 0; f < frameCount; ++f)     {
-            DebugSymbolResolver::Symbol symbol = resolver.resolveSymbol(DWORD64(stack[f]));
-            if (symbol.name) {
-                printf("#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
-                delete [] symbol.name;
-            } else {
-                printf("#%3u: Unable to obtain symbol\n", f + 1);
+class FatalSignalHandler
+{
+public:
+    FatalSignalHandler()
+    {
+#if defined(Q_OS_WIN)
+#  if !defined(Q_CC_MINGW)
+        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+#  endif
+#  if !defined(Q_OS_WINRT)
+        SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
+        SetUnhandledExceptionFilter(windowsFaultHandler);
+#  endif
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+        sigemptyset(&handledSignals);
+
+        const int fatalSignals[] = {
+             SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
+
+        struct sigaction act;
+        memset(&act, 0, sizeof(act));
+        act.sa_handler = FatalSignalHandler::signal;
+
+        // Remove the handler after it is invoked.
+#  if !defined(Q_OS_INTEGRITY)
+        act.sa_flags = SA_RESETHAND;
+#  endif
+
+    // tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
+    // unavailable (__WATCHOS_PROHIBITED __TVOS_PROHIBITED in signal.h)
+#  if defined(SA_ONSTACK) && !defined(Q_OS_TVOS) && !defined(Q_OS_WATCHOS)
+        // Let the signal handlers use an alternate stack
+        // This is necessary if SIGSEGV is to catch a stack overflow
+#    if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+        // Put the alternate stack in the .lbss (large BSS) section so that it doesn't
+        // interfere with normal .bss symbols
+        __attribute__((section(".lbss.altstack"), aligned(4096)))
+#    endif
+        static char alternate_stack[16 * 1024];
+        stack_t stack;
+        stack.ss_flags = 0;
+        stack.ss_size = sizeof alternate_stack;
+        stack.ss_sp = alternate_stack;
+        sigaltstack(&stack, nullptr);
+        act.sa_flags |= SA_ONSTACK;
+#  endif
+
+        // Block all fatal signals in our signal handler so we don't try to close
+        // the testlog twice.
+        sigemptyset(&act.sa_mask);
+        for (int i = 0; fatalSignals[i]; ++i)
+            sigaddset(&act.sa_mask, fatalSignals[i]);
+
+        struct sigaction oldact;
+
+        for (int i = 0; fatalSignals[i]; ++i) {
+            sigaction(fatalSignals[i], &act, &oldact);
+            if (
+#  ifdef SA_SIGINFO
+                oldact.sa_flags & SA_SIGINFO ||
+#  endif
+                oldact.sa_handler != SIG_DFL) {
+                sigaction(fatalSignals[i], &oldact, nullptr);
+            } else
+            {
+                sigaddset(&handledSignals, fatalSignals[i]);
             }
         }
+#endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
     }
 
-    fputc('\n', stdout);
-    fflush(stdout);
+    ~FatalSignalHandler()
+    {
+#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+        // Unregister any of our remaining signal handlers
+        struct sigaction act;
+        memset(&act, 0, sizeof(act));
+        act.sa_handler = SIG_DFL;
 
-    return EXCEPTION_EXECUTE_HANDLER;
-}
-#endif // Q_OS_WIN) && !Q_OS_WINRT
+        struct sigaction oldact;
+
+        for (int i = 1; i < 32; ++i) {
+            if (!sigismember(&handledSignals, i))
+                continue;
+            sigaction(i, &act, &oldact);
+
+            // If someone overwrote it in the mean time, put it back
+            if (oldact.sa_handler != FatalSignalHandler::signal)
+                sigaction(i, &oldact, nullptr);
+        }
+#endif
+    }
+
+private:
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
+    {
+        enum { maxStackFrames = 100 };
+        char appName[MAX_PATH];
+        if (!GetModuleFileNameA(NULL, appName, MAX_PATH))
+            appName[0] = 0;
+        const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+        const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+        const void *exceptionAddress = exInfo->ExceptionRecord->ExceptionAddress;
+        printf("A crash occurred in %s.\n"
+               "Function time: %dms Total time: %dms\n\n"
+               "Exception address: 0x%p\n"
+               "Exception code   : 0x%lx\n",
+               appName, msecsFunctionTime, msecsTotalTime,
+               exceptionAddress, exInfo->ExceptionRecord->ExceptionCode);
+
+        DebugSymbolResolver resolver(GetCurrentProcess());
+        if (resolver.isValid()) {
+            DebugSymbolResolver::Symbol exceptionSymbol = resolver.resolveSymbol(DWORD64(exceptionAddress));
+            if (exceptionSymbol.name) {
+                printf("Nearby symbol    : %s\n", exceptionSymbol.name);
+                delete [] exceptionSymbol.name;
+            }
+            void *stack[maxStackFrames];
+            fputs("\nStack:\n", stdout);
+            const unsigned frameCount = CaptureStackBackTrace(0, DWORD(maxStackFrames), stack, NULL);
+            for (unsigned f = 0; f < frameCount; ++f)     {
+                DebugSymbolResolver::Symbol symbol = resolver.resolveSymbol(DWORD64(stack[f]));
+                if (symbol.name) {
+                    printf("#%3u: %s() - 0x%p\n", f + 1, symbol.name, (const void *)symbol.address);
+                    delete [] symbol.name;
+                } else {
+                    printf("#%3u: Unable to obtain symbol\n", f + 1);
+                }
+            }
+        }
+
+        fputc('\n', stdout);
+        fflush(stdout);
+
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+#endif // defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+    static void signal(int signum)
+    {
+        const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
+        const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
+        if (signum != SIGINT) {
+            stackTrace();
+            if (qEnvironmentVariableIsSet("QTEST_PAUSE_ON_CRASH")) {
+                fprintf(stderr, "Pausing process %d for debugging\n", getpid());
+                raise(SIGSTOP);
+            }
+        }
+        qFatal("Received signal %d\n"
+               "         Function time: %dms Total time: %dms",
+               signum, msecsFunctionTime, msecsTotalTime);
+#  if defined(Q_OS_INTEGRITY)
+        {
+            struct sigaction act;
+            memset(&act, 0, sizeof(struct sigaction));
+            act.sa_handler = SIG_DFL;
+            sigaction(signum, &act, NULL);
+        }
+#  endif
+    }
+
+    sigset_t handledSignals;
+#endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
+};
+
+} // namespace
 
 static void initEnvironment()
 {
@@ -1848,23 +1851,17 @@ void QTest::qInit(QObject *testObject, int argc, char **argv)
     initEnvironment();
     QBenchmarkGlobalData::current = new QBenchmarkGlobalData;
 
-#if defined(Q_OS_MACX)
-    macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
-
-    // Don't restore saved window state for auto tests.
+#if defined(Q_OS_MACOS)
+    // Don't restore saved window state for auto tests
     QTestPrivate::disableWindowRestore();
 
-    // Disable App Nap which may cause tests to stall.
+    // Disable App Nap which may cause tests to stall
     QTestPrivate::AppNapDisabler appNapDisabler;
-#endif
 
-#if defined(Q_OS_MACX)
-    if (macNeedsActivate) {
-        CFStringRef reasonForActivity= CFSTR("No Display Sleep");
-        IOReturn ok = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, reasonForActivity, &powerID);
-
-        if (ok != kIOReturnSuccess)
-            macNeedsActivate = false; // no need to release the assertion on exit.
+    if (qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0)) {
+        IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+            kIOPMAssertionLevelOn, CFSTR("QtTest running tests"),
+            &macPowerSavingDisabled);
     }
 #endif
 
@@ -1902,18 +1899,6 @@ int QTest::qRun()
     try {
 #endif
 
-#if defined(Q_OS_WIN)
-    if (!noCrashHandler) {
-# ifndef Q_CC_MINGW
-        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
-# endif
-# ifndef Q_OS_WINRT
-        SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
-        SetUnhandledExceptionFilter(windowsFaultHandler);
-# endif
-    } // !noCrashHandler
-#endif // Q_OS_WIN
-
 #if QT_CONFIG(valgrind)
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
         if (Q_UNLIKELY(!qApp))
@@ -1928,11 +1913,10 @@ int QTest::qRun()
     } else
 #endif
     {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
         QScopedPointer<FatalSignalHandler> handler;
         if (!noCrashHandler)
             handler.reset(new FatalSignalHandler);
-#endif
+
         TestMethods::MetaMethods commandLineMethods;
         for (const QString &tf : qAsConst(QTest::testFunctions)) {
                 const QByteArray tfB = tf.toLatin1();
@@ -1951,25 +1935,19 @@ int QTest::qRun()
     }
 
 #ifndef QT_NO_EXCEPTIONS
-     } catch (...) {
-         QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
-         if (QTestResult::currentTestFunction()) {
-             QTestResult::finishedCurrentTestFunction();
-             QTestResult::setCurrentTestFunction(nullptr);
-         }
+    } catch (...) {
+        QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
+        if (QTestResult::currentTestFunction()) {
+            QTestResult::finishedCurrentTestFunction();
+            QTestResult::setCurrentTestFunction(nullptr);
+        }
 
-        QTestLog::stopLogging();
-#if defined(Q_OS_MACX)
-         if (macNeedsActivate) {
-             IOPMAssertionRelease(powerID);
-         }
-#endif
-         currentTestObject = nullptr;
+        qCleanup();
 
-         // Rethrow exception to make debugging easier.
-         throw;
-         return 1;
-     }
+        // Re-throw exception to make debugging easier
+        throw;
+        return 1;
+    }
 #endif
 
 #if QT_CONFIG(valgrind)
@@ -1996,8 +1974,7 @@ void QTest::qCleanup()
     QSignalDumper::endDump();
 
 #if defined(Q_OS_MACOS)
-    if (macNeedsActivate)
-        IOPMAssertionRelease(powerID);
+    IOPMAssertionRelease(macPowerSavingDisabled);
 #endif
 }
 

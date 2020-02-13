@@ -60,6 +60,7 @@
 #elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
 #  include <mntent.h>
 #  include <sys/statvfs.h>
+#  include <sys/sysmacros.h>
 #elif defined(Q_OS_SOLARIS)
 #  include <sys/mnttab.h>
 #  include <sys/statvfs.h>
@@ -152,7 +153,7 @@ private:
         //(2)  parent ID: the ID of the parent mount (or of self for the top of the mount tree).
 //      int parent_id;
         //(3)  major:minor: the value of st_dev for files on this filesystem (see stat(2)).
-//      dev_t rdev;
+        dev_t rdev;
         //(4)  root: the pathname of the directory in the filesystem which forms the root of this mount.
         char *subvolume;
         //(5)  mount point: the pathname of the mount point relative to the process's root directory.
@@ -503,8 +504,7 @@ inline bool QStorageIterator::next()
     int rdevminor = qstrtoll(ptr + 1, const_cast<const char **>(&ptr), 10, &ok);
     if (!ptr || !ok)
         return false;
-    Q_UNUSED(rdevmajor);
-    Q_UNUSED(rdevminor);
+    mnt.rdev = makedev(rdevmajor, rdevminor);
 
     if (*ptr != ' ')
         return false;
@@ -566,6 +566,21 @@ inline QByteArray QStorageIterator::fileSystemType() const
 
 inline QByteArray QStorageIterator::device() const
 {
+    // check that the device exists
+    if (mnt.mnt_fsname[0] == '/' && access(mnt.mnt_fsname, F_OK) != 0) {
+        // It doesn't, so let's try to resolve the dev_t from /dev/block.
+        // Note how strlen("4294967295") == digits10 + 1, so we need to add 1
+        // for each number, plus the ':'.
+        char buf[sizeof("/dev/block/") + 2 * std::numeric_limits<unsigned>::digits10 + 3];
+        QByteArray dev(PATH_MAX, Qt::Uninitialized);
+        char *devdata = dev.data();
+
+        snprintf(buf, sizeof(buf), "/dev/block/%u:%u", major(mnt.rdev), minor(mnt.rdev));
+        if (realpath(buf, devdata)) {
+            dev.truncate(strlen(devdata));
+            return dev;
+        }
+    }
     return QByteArray(mnt.mnt_fsname);
 }
 

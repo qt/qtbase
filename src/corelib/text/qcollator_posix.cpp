@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Aleix Pol Gonzalez <aleixpol@kde.org>
+** Copyright (C) 2020 Aleix Pol Gonzalez <aleixpol@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -75,6 +75,11 @@ static void stringToWCharArray(QVarLengthArray<wchar_t> &ret, QStringView string
 
 int QCollator::compare(QStringView s1, QStringView s2) const
 {
+    if (!s1.size())
+        return s2.size() ? -1 : 0;
+    if (!s2.size())
+        return +1;
+
     if (d->isC())
         return s1.compare(s2, caseSensitivity());
     if (d->dirty)

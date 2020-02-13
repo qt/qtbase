@@ -77,6 +77,8 @@
 #include "qandroidplatformvulkaninstance.h"
 #endif
 
+#include <QtGui/qpa/qplatforminputcontextfactory_p.h>
+
 QT_BEGIN_NAMESPACE
 
 int QAndroidPlatformIntegration::m_defaultGeometryWidth = 320;
@@ -258,6 +260,15 @@ static bool needsBasicRenderloopWorkaround()
     return needsWorkaround;
 }
 
+void QAndroidPlatformIntegration::initialize()
+{
+    const QString icStr = QPlatformInputContextFactory::requested();
+    if (icStr.isNull())
+        m_inputContext.reset(new QAndroidInputContext);
+    else
+        m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
+}
+
 bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {
@@ -374,7 +385,7 @@ QPlatformClipboard *QAndroidPlatformIntegration::clipboard() const
 
 QPlatformInputContext *QAndroidPlatformIntegration::inputContext() const
 {
-    return &m_platformInputContext;
+    return m_inputContext.data();
 }
 
 QPlatformNativeInterface *QAndroidPlatformIntegration::nativeInterface() const

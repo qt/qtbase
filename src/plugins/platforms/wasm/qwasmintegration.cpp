@@ -69,20 +69,17 @@ static void browserBeforeUnload(emscripten::val)
 
 static void addCanvasElement(emscripten::val canvas)
 {
-    QString canvasId = QWasmString::toQString(canvas["id"]);
-    QWasmIntegration::get()->addScreen(canvasId);
+    QWasmIntegration::get()->addScreen(canvas);
 }
 
 static void removeCanvasElement(emscripten::val canvas)
 {
-    QString canvasId = QWasmString::toQString(canvas["id"]);
-    QWasmIntegration::get()->removeScreen(canvasId);
+    QWasmIntegration::get()->removeScreen(canvas);
 }
 
 static void resizeCanvasElement(emscripten::val canvas)
 {
-    QString canvasId = QWasmString::toQString(canvas["id"]);
-    QWasmIntegration::get()->resizeScreen(canvasId);
+    QWasmIntegration::get()->resizeScreen(canvas);
 }
 
 static void qtUpdateDpi()
@@ -109,20 +106,18 @@ QWasmIntegration::QWasmIntegration()
     s_instance = this;
 
     // We expect that qtloader.js has populated Module.qtCanvasElements with one or more canvases.
-    // Also check Module.canvas, which may be set if the emscripen or a custom loader is used.
     emscripten::val qtCanvaseElements = val::module_property("qtCanvasElements");
-    emscripten::val canvas = val::module_property("canvas");
+    emscripten::val canvas = val::module_property("canvas"); // TODO: remove for Qt 6.0
 
     if (!qtCanvaseElements.isUndefined()) {
         int screenCount = qtCanvaseElements["length"].as<int>();
         for (int i = 0; i < screenCount; ++i) {
-            emscripten::val canvas = qtCanvaseElements[i].as<emscripten::val>();
-            QString canvasId = QWasmString::toQString(canvas["id"]);
-            addScreen(canvasId);
+            addScreen(qtCanvaseElements[i].as<emscripten::val>());
         }
-    } else if (!canvas.isUndefined()){
-        QString canvasId = QWasmString::toQString(canvas["id"]);
-        addScreen(canvasId);
+    } else if (!canvas.isUndefined()) {
+        qWarning() << "Module.canvas is deprecated. A future version of Qt will stop reading this property. "
+                   << "Instead, set Module.qtCanvasElements to be an array of canvas elements, or use qtloader.js.";
+        addScreen(canvas);
     }
 
     emscripten::val::global("window").set("onbeforeunload", val::module_property("qtBrowserBeforeUnload"));
@@ -134,13 +129,13 @@ QWasmIntegration::QWasmIntegration()
         Q_UNUSED(userData);
 
         // This resize event is called when the HTML window is resized. Depending
-        // on the page layout the the canvas(es) might also have been resized, so we
+        // on the page layout the canvas(es) might also have been resized, so we
         // update the Qt screen sizes (and canvas render sizes).
         if (QWasmIntegration *integration = QWasmIntegration::get())
             integration->resizeAllScreens();
         return 0;
     };
-    emscripten_set_resize_callback(nullptr, nullptr, 1, onWindowResize);
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, 1, onWindowResize);
 }
 
 QWasmIntegration::~QWasmIntegration()
@@ -148,8 +143,8 @@ QWasmIntegration::~QWasmIntegration()
     delete m_fontDb;
     delete m_desktopServices;
 
-    for (auto it = m_screens.constBegin(); it != m_screens.constEnd(); ++it)
-        QWindowSystemInterface::handleScreenRemoved(*it);
+    for (const auto &canvasAndScreen : m_screens)
+        QWindowSystemInterface::handleScreenRemoved(canvasAndScreen.second);
     m_screens.clear();
 
     s_instance = nullptr;
@@ -272,24 +267,37 @@ QPlatformClipboard* QWasmIntegration::clipboard() const
     return m_clipboard;
 }
 
-void QWasmIntegration::addScreen(const QString &canvasId)
+void QWasmIntegration::addScreen(const emscripten::val &canvas)
 {
-    QWasmScreen *screen = new QWasmScreen(canvasId);
-    m_clipboard->installEventHandlers(canvasId);
-    m_screens.insert(canvasId, screen);
+    QWasmScreen *screen = new QWasmScreen(canvas);
+    m_screens.append(qMakePair(canvas, screen));
+    m_clipboard->installEventHandlers(canvas);
     QWindowSystemInterface::handleScreenAdded(screen);
 }
 
-void QWasmIntegration::removeScreen(const QString &canvasId)
+void QWasmIntegration::removeScreen(const emscripten::val &canvas)
 {
-    QWasmScreen *exScreen = m_screens.take(canvasId);
+    auto it = std::find_if(m_screens.begin(), m_screens.end(),
+        [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(canvas); });
+    if (it == m_screens.end()) {
+        qWarning() << "Attempting to remove non-existing screen for canvas" << QWasmString::toQString(canvas["id"]);;
+        return;
+    }
+    QWasmScreen *exScreen = it->second;
+    m_screens.erase(it);
     exScreen->destroy(); // clean up before deleting the screen
     QWindowSystemInterface::handleScreenRemoved(exScreen);
 }
 
-void QWasmIntegration::resizeScreen(const QString &canvasId)
+void QWasmIntegration::resizeScreen(const emscripten::val &canvas)
 {
-    m_screens.value(canvasId)->updateQScreenAndCanvasRenderSize();
+    auto it = std::find_if(m_screens.begin(), m_screens.end(),
+        [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(canvas); });
+    if (it == m_screens.end()) {
+        qWarning() << "Attempting to resize non-existing screen for canvas" << QWasmString::toQString(canvas["id"]);;
+        return;
+    }
+    it->second->updateQScreenAndCanvasRenderSize();
 }
 
 void QWasmIntegration::updateDpi()
@@ -298,15 +306,14 @@ void QWasmIntegration::updateDpi()
     if (dpi.isUndefined())
         return;
     qreal dpiValue = dpi.as<qreal>();
-    for (QWasmScreen *screen : m_screens)
-        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen->screen(), dpiValue, dpiValue);
+    for (const auto &canvasAndScreen : m_screens)
+        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(canvasAndScreen.second->screen(), dpiValue, dpiValue);
 }
 
 void QWasmIntegration::resizeAllScreens()
 {
-    qDebug() << "resizeAllScreens";
-    for (QWasmScreen *screen : m_screens)
-        screen->updateQScreenAndCanvasRenderSize();
+    for (const auto &canvasAndScreen : m_screens)
+        canvasAndScreen.second->updateQScreenAndCanvasRenderSize();
 }
 
 QT_END_NAMESPACE

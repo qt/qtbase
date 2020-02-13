@@ -300,6 +300,22 @@ static int q_ssl_psk_use_session_callback(SSL *ssl, const EVP_MD *md, const unsi
 
     return 1; // need to return 1 or else "the connection setup fails."
 }
+
+int q_ssl_sess_set_new_cb(SSL *ssl, SSL_SESSION *session)
+{
+    if (!ssl) {
+        qCWarning(lcSsl, "Invalid SSL (nullptr)");
+        return 0;
+    }
+    if (!session) {
+        qCWarning(lcSsl, "Invalid SSL_SESSION (nullptr)");
+        return 0;
+    }
+
+    auto socketPrivate = static_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl,
+                                                                 QSslSocketBackendPrivate::s_indexForSSLExtraData));
+    return socketPrivate->handleNewSessionTicket(ssl);
+}
 #endif // TLS1_3_VERSION
 
 #endif // !OPENSSL_NO_PSK
@@ -1524,6 +1540,60 @@ void QSslSocketBackendPrivate::storePeerCertificates()
         if (!configuration.peerCertificate.isNull() && mode == QSslSocket::SslServerMode)
             configuration.peerCertificateChain.prepend(configuration.peerCertificate);
     }
+}
+
+int QSslSocketBackendPrivate::handleNewSessionTicket(SSL *connection)
+{
+    // If we return 1, this means we own the session, but we don't.
+    // 0 would tell OpenSSL to deref (but they still have it in the
+    // internal cache).
+    Q_Q(QSslSocket);
+
+    Q_ASSERT(connection);
+
+    if (q->sslConfiguration().testSslOption(QSsl::SslOptionDisableSessionPersistence)) {
+        // We silently ignore, do nothing, remove from cache.
+        return 0;
+    }
+
+    SSL_SESSION *currentSession = q_SSL_get_session(connection);
+    if (!currentSession) {
+        qCWarning(lcSsl,
+                  "New session ticket callback, the session is invalid (nullptr)");
+        return 0;
+    }
+
+    if (q_SSL_version(connection) < 0x304) {
+        // We only rely on this mechanics with TLS >= 1.3
+        return 0;
+    }
+
+#ifdef TLS1_3_VERSION
+    if (!q_SSL_SESSION_is_resumable(currentSession)) {
+        qCDebug(lcSsl, "New session ticket, but the session is non-resumable");
+        return 0;
+    }
+#endif // TLS1_3_VERSION
+
+    const int sessionSize = q_i2d_SSL_SESSION(currentSession, nullptr);
+    if (sessionSize <= 0) {
+        qCWarning(lcSsl, "could not store persistent version of SSL session");
+        return 0;
+    }
+
+    // We have somewhat perverse naming, it's not a ticket, it's a session.
+    QByteArray sessionTicket(sessionSize, 0);
+    auto data = reinterpret_cast<unsigned char *>(sessionTicket.data());
+    if (!q_i2d_SSL_SESSION(currentSession, &data)) {
+        qCWarning(lcSsl, "could not store persistent version of SSL session");
+        return 0;
+    }
+
+    configuration.sslSession = sessionTicket;
+    configuration.sslSessionTicketLifeTimeHint = int(q_SSL_SESSION_get_ticket_lifetime_hint(currentSession));
+
+    emit q->newSessionTicketReceived();
+    return 0;
 }
 
 bool QSslSocketBackendPrivate::checkSslErrors()

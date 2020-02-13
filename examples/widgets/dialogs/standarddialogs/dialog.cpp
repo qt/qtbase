@@ -329,7 +329,8 @@ void Dialog::setDouble()
 //! [1]
     bool ok;
     double d = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),
-                                       tr("Amount:"), 37.56, -10000, 10000, 2, &ok);
+                                       tr("Amount:"), 37.56, -10000, 10000, 2, &ok,
+                                       Qt::WindowFlags(), 1);
     if (ok)
         doubleLabel->setText(QString("$%1").arg(d));
 //! [1]

@@ -77,7 +77,7 @@ void tst_Silent::xpass()
 #include <setjmp.h>
 
 static jmp_buf state;
-static void abort_handler(int signal)
+static void abort_handler(int)
 {
     longjmp(state, 1);
 }
@@ -102,5 +102,14 @@ void tst_Silent::messages()
         qFatal("This is a fatal error message that should still appear in silent test output");
 }
 
-QTEST_MAIN(tst_Silent)
+int main(int argc, char *argv[])
+{
+    std::vector<const char*> args(argv, argv + argc);
+    args.push_back("-silent");
+    argc = args.size();
+    argv = const_cast<char**>(&args[0]);
+
+    QTEST_MAIN_IMPL(tst_Silent)
+}
+
 #include "tst_silent.moc"

@@ -606,7 +606,7 @@ bool QPngHandlerPrivate::readPngHeader()
 #endif
         png_uint_32 profLen;
         png_get_iCCP(png_ptr, info_ptr, &name, &compressionType, &profileData, &profLen);
-        colorSpace = QColorSpace::fromIccProfile(QByteArray::fromRawData((const char *)profileData, profLen));
+        colorSpace = QColorSpace::fromIccProfile(QByteArray((const char *)profileData, profLen));
         if (!colorSpace.isValid()) {
             qWarning() << "QPngHandler: Failed to parse ICC profile";
         } else {

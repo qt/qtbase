@@ -30,8 +30,8 @@ defineReplace(yaccCommands) {
     commands = \
         -$(DEL_FILE) $${hpp_output} $${cpp_output}$$escape_expand(\\n\\t) \
         $${yacc_call}$$escape_expand(\\n\\t) \
-        $(MOVE) $${YACC_DIR}/$${QMAKE_YACC_HEADER} $${hpp_output}$$escape_expand(\\n\\t) \
-        $(MOVE) $${YACC_DIR}/$${QMAKE_YACC_SOURCE} $${cpp_output}$$escape_expand(\\n\\t)
+        $(MOVE) $$shell_path($${YACC_DIR}/$${QMAKE_YACC_HEADER}) $${hpp_output}$$escape_expand(\\n\\t) \
+        $(MOVE) $$shell_path($${YACC_DIR}/$${QMAKE_YACC_SOURCE}) $${cpp_output}$$escape_expand(\\n\\t)
 
     silent: commands = @echo Yacc $$1 && $$commands
     return($$commands)

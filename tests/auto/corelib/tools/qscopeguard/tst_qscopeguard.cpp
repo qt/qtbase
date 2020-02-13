@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Sérgio Martins <sergio.martins@kdab.com>
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -30,24 +31,130 @@
 #include <QtCore/QScopeGuard>
 
 /*!
- \class tst_QScopedGuard
+ \class tst_QScopeGuard
  \internal
  \since 5.11
- \brief Tests class QScopedCleanup and function qScopeGuard
+ \brief Tests class QScopeGuard and function qScopeGuard
 
  */
-class tst_QScopedGuard : public QObject
+class tst_QScopeGuard : public QObject
 {
     Q_OBJECT
 
 private Q_SLOTS:
+    void construction();
+    void constructionFromLvalue();
+    void constructionFromRvalue();
     void leavingScope();
     void exceptions();
 };
 
+void func()
+{
+}
+
+int intFunc()
+{
+    return 0;
+}
+
+Q_REQUIRED_RESULT int noDiscardFunc()
+{
+    return 0;
+}
+
+struct Callable
+{
+    Callable() { }
+    Callable(const Callable &other)
+    {
+        Q_UNUSED(other);
+        ++copied;
+    }
+    Callable(Callable &&other)
+    {
+        Q_UNUSED(other);
+        ++moved;
+    }
+    void operator()() { }
+
+    static int copied;
+    static int moved;
+    static void resetCounts()
+    {
+        copied = 0;
+        moved = 0;
+    }
+};
+
+int Callable::copied = 0;
+int Callable::moved = 0;
+
 static int s_globalState = 0;
 
-void tst_QScopedGuard::leavingScope()
+void tst_QScopeGuard::construction()
+{
+#ifdef __cpp_deduction_guides
+    QScopeGuard fromLambda([] { });
+    QScopeGuard fromFunction(func);
+    QScopeGuard fromFunctionPointer(&func);
+    QScopeGuard fromNonVoidFunction(intFunc);
+    QScopeGuard fromNoDiscardFunction(noDiscardFunc);
+#ifndef __apple_build_version__
+    QScopeGuard fromStdFunction{std::function(func)};
+    std::function stdFunction(func);
+    QScopeGuard fromNamedStdFunction(stdFunction);
+#endif
+#else
+    QSKIP("This test requires C++17 Class Template Argument Deduction support enabled in the compiler.");
+#endif
+}
+
+void tst_QScopeGuard::constructionFromLvalue()
+{
+#ifdef __cpp_deduction_guides
+    Callable::resetCounts();
+    {
+        Callable callable;
+        QScopeGuard guard(callable);
+    }
+    QCOMPARE(Callable::copied, 1);
+    QCOMPARE(Callable::moved, 0);
+    Callable::resetCounts();
+    {
+        Callable callable;
+        auto guard = qScopeGuard(callable);
+    }
+    QCOMPARE(Callable::copied, 1);
+    QCOMPARE(Callable::moved, 0);
+#else
+    QSKIP("This test requires C++17 Class Template Argument Deduction support enabled in the compiler.");
+#endif
+}
+
+void tst_QScopeGuard::constructionFromRvalue()
+{
+#ifdef __cpp_deduction_guides
+    Callable::resetCounts();
+    {
+        Callable callable;
+        QScopeGuard guard(std::move(callable));
+    }
+    QCOMPARE(Callable::copied, 0);
+    QCOMPARE(Callable::moved, 1);
+    Callable::resetCounts();
+    {
+        Callable callable;
+        auto guard = qScopeGuard(std::move(callable));
+    }
+    QCOMPARE(Callable::copied, 0);
+    QCOMPARE(Callable::moved, 1);
+#else
+    QSKIP("This test requires C++17 Class Template Argument Deduction support enabled in the compiler.");
+#endif
+}
+
+void tst_QScopeGuard::leavingScope()
 {
     auto cleanup = qScopeGuard([] { s_globalState++; QCOMPARE(s_globalState, 3); });
     QCOMPARE(s_globalState, 0);
@@ -61,7 +168,7 @@ void tst_QScopedGuard::leavingScope()
     s_globalState++;
 }
 
-void tst_QScopedGuard::exceptions()
+void tst_QScopeGuard::exceptions()
 {
     s_globalState = 0;
     bool caught = false;
@@ -81,5 +188,5 @@ void tst_QScopedGuard::exceptions()
 
 }
 
-QTEST_MAIN(tst_QScopedGuard)
+QTEST_MAIN(tst_QScopeGuard)
 #include "tst_qscopeguard.moc"

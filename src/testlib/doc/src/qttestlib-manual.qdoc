@@ -237,7 +237,7 @@
     \list
     \li \c -o \e{filename,format} \br
     Writes output to the specified file, in the specified format (one of
-    \c txt, \c xml, \c lightxml, \c xunitxml or \c tap).  The special filename \c -
+    \c txt, \c xml, \c lightxml, \c junitxml or \c tap).  The special filename \c -
     may be used to log to standard output.
     \li \c -o \e filename \br
     Writes output to the specified file.
@@ -247,8 +247,8 @@
     Outputs results as an XML document.
     \li \c -lightxml \br
     Outputs results as a stream of XML tags.
-    \li \c -xunitxml \br
-    Outputs results as an Xunit XML document.
+    \li \c -junitxml \br
+    Outputs results as an JUnit XML document.
     \li \c -csv \br
     Outputs results as comma-separated values (CSV). This mode is only suitable for
     benchmarks, since it suppresses normal pass/fail messages.
@@ -264,7 +264,7 @@
 
     If the first version of the \c -o option is used, neither the second version
     of the \c -o option nor the \c -txt, \c -xml, \c -lightxml, \c -teamcity,
-    \c -xunitxml or \c -tap options should be used.
+    \c -junitxml or \c -tap options should be used.
 
     If neither version of the \c -o option is used, test results will be logged to
     standard output.  If no format option is used, test results will be logged in

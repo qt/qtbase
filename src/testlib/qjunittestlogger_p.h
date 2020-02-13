@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTXUNITSTREAMER_P_H
-#define QTESTXUNITSTREAMER_P_H
+#ifndef QJUNITTESTLOGGER_P_H
+#define QJUNITTESTLOGGER_P_H
 
 //
 //  W A R N I N G
@@ -51,39 +51,44 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtTest/private/qabstracttestlogger_p.h>
 
 QT_BEGIN_NAMESPACE
 
-
+class QTestJUnitStreamer;
 class QTestElement;
-class QTestElementAttribute;
-class QXunitTestLogger;
-struct QTestCharBuffer;
 
-class QTestXunitStreamer
+class QJUnitTestLogger : public QAbstractTestLogger
 {
     public:
-        QTestXunitStreamer(QXunitTestLogger *logger);
-        ~QTestXunitStreamer();
+        QJUnitTestLogger(const char *filename);
+        ~QJUnitTestLogger();
 
-        void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const;
-        void output(QTestElement *element) const;
-        void outputElements(QTestElement *element, bool isChildElement = false) const;
-        void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
+        void startLogging() override;
+        void stopLogging() override;
 
-        void outputString(const char *msg) const;
+        void enterTestFunction(const char *function) override;
+        void leaveTestFunction() override;
+
+        void addIncident(IncidentTypes type, const char *description,
+                     const char *file = nullptr, int line = 0) override;
+        void addBenchmarkResult(const QBenchmarkResult &result) override;
+        void addTag(QTestElement* element);
+
+        void addMessage(MessageTypes type, const QString &message,
+                    const char *file = nullptr, int line = 0) override;
 
     private:
-        void displayXunitXmlHeader() const;
-        static void indentForElement(const QTestElement* element, char* buf, int size);
+        QTestElement *listOfTestcases = nullptr;
+        QTestElement *currentLogElement = nullptr;
+        QTestElement *errorLogElement = nullptr;
+        QTestJUnitStreamer *logFormatter = nullptr;
 
-        QXunitTestLogger *testLogger;
+        int testCounter = 0;
+        int failureCounter = 0;
+        int errorCounter = 0;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QJUNITTESTLOGGER_P_H

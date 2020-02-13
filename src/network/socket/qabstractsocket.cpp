@@ -464,7 +464,10 @@
 #include "qabstractsocket_p.h"
 
 #include "private/qhostinfo_p.h"
+#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
 #include "private/qnetworksession_p.h"
+#endif
+#include "private/qnetworkconfiguration_p.h" // ### Qt6: Remove include
 
 #include <qabstracteventdispatcher.h>
 #include <qhostaddress.h>
@@ -643,7 +646,7 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
                  QAbstractSocket::tr("Operation on socket is not supported"));
         return false;
     }
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     //copy network session down to the socket engine (if it has been set)
     socketEngine->setProperty("_q_networksession", q->property("_q_networksession"));
 #endif
@@ -1146,7 +1149,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
                                  Qt::DirectConnection);
             }
             int connectTimeout = QNetworkConfigurationPrivate::DefaultTimeout;
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
             QSharedPointer<QNetworkSession> networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(q->property("_q_networksession"));
             if (networkSession) {
                 QNetworkConfiguration networkConfiguration = networkSession->configuration();
@@ -1941,7 +1944,7 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
         d->setError(UnsupportedSocketOperationError, tr("Operation on socket is not supported"));
         return false;
     }
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     //copy network session down to the socket engine (if it has been set)
     d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
 #endif
@@ -2134,7 +2137,7 @@ bool QAbstractSocket::waitForConnected(int msecs)
     QElapsedTimer stopWatch;
     stopWatch.start();
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     QSharedPointer<QNetworkSession> networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(property("_q_networksession"));
 #endif
 
@@ -2157,7 +2160,7 @@ bool QAbstractSocket::waitForConnected(int msecs)
         return false; // connect not im progress anymore!
 
     int connectTimeout = QNetworkConfigurationPrivate::DefaultTimeout;
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     if (networkSession) {
         QNetworkConfiguration networkConfiguration = networkSession->configuration();
         connectTimeout = networkConfiguration.connectTimeout();

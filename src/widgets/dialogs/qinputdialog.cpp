@@ -1349,6 +1349,7 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
     \sa getText(), getDouble(), getItem(), getMultiLineText()
 */
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     Static convenience function to get a floating point number from the user.
 
@@ -1380,7 +1381,7 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
 {
     return QInputDialog::getDouble(parent, title, label, value, min, max, decimals, ok, flags, 1.0);
 }
-
+#endif
 /*!
     \overload
     Static convenience function to get a floating point number from the user.

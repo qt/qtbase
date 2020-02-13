@@ -2326,12 +2326,17 @@ void QGraphicsItem::setCursor(const QCursor &cursor)
             view->viewport()->setMouseTracking(true);
             // Note: Some of this logic is duplicated in QGraphicsView's mouse events.
             if (view->underMouse()) {
-                const auto itemsUnderCursor = view->items(view->mapFromGlobal(QCursor::pos()));
-                for (QGraphicsItem *itemUnderCursor : itemsUnderCursor) {
-                    if (itemUnderCursor->hasCursor()) {
-                        QMetaObject::invokeMethod(view, "_q_setViewportCursor",
-                                                  Q_ARG(QCursor, itemUnderCursor->cursor()));
-                        break;
+                const QPoint viewPoint = view->mapFromGlobal(QCursor::pos());
+                const QPointF cursorPos = mapFromScene(view->mapToScene(viewPoint));
+                // the cursor can only change if the current item is under the mouse
+                if (boundingRect().contains(cursorPos)) {
+                    const auto itemsUnderCursor = view->items(viewPoint);
+                    for (QGraphicsItem *itemUnderCursor : itemsUnderCursor) {
+                        if (itemUnderCursor->hasCursor()) {
+                            QMetaObject::invokeMethod(view, "_q_setViewportCursor",
+                                                      Q_ARG(QCursor, itemUnderCursor->cursor()));
+                            break;
+                        }
                     }
                 }
                 break;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1249,14 +1249,16 @@ namespace Qt {
     enum DateFormat {
         TextDate,      // default Qt
         ISODate,       // ISO 8601
-        SystemLocaleDate, // deprecated
-        LocalDate = SystemLocaleDate, // deprecated
-        LocaleDate,     // deprecated
-        SystemLocaleShortDate,
-        SystemLocaleLongDate,
-        DefaultLocaleShortDate,
-        DefaultLocaleLongDate,
-        RFC2822Date,        // RFC 2822 (+ 850 and 1036 during parsing)
+#if QT_DEPRECATED_SINCE(5, 15)
+        SystemLocaleDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
+        LocalDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale") = 2, // i.e. SystemLocaleDate
+        LocaleDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
+        SystemLocaleShortDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
+        SystemLocaleLongDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
+        DefaultLocaleShortDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
+        DefaultLocaleLongDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
+#endif
+        RFC2822Date = 8, // RFC 2822 (+ 850 and 1036 during parsing)
         ISODateWithMs
     };
 
@@ -1750,7 +1752,7 @@ namespace Qt {
     };
 
     // QTBUG-48701
-    enum ReturnByValue_t { ReturnByValue }; // ### Qt 7: Remove me
+    enum ReturnByValueConstant { ReturnByValue }; // ### Qt 7: Remove me
 
 #ifndef Q_QDOC
     // NOTE: Generally, do not add Q_ENUM_NS if a corresponding Q_FLAG_NS exists.

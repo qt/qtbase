@@ -87,7 +87,7 @@ public:
         LanguageId, // uint
         CountryId, // uint
         DecimalPoint, // QString
-        GroupSeparator, // QString
+        GroupSeparator, // QString (empty QString means: don't group digits)
         ZeroDigit, // QString
         NegativeSign, // QString
         DateFormatLong, // QString

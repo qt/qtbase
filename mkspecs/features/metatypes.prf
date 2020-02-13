@@ -1,7 +1,5 @@
 qtPrepareTool(MOC_COLLECT_JSON, moc)
 
-load(qt_build_paths)
-
 QMAKE_MOC_OPTIONS += --output-json
 
 MOC_JSON_H_BASE = $${QMAKE_H_MOD_MOC}
@@ -39,6 +37,7 @@ install_metatypes {
     do_install_metatypes.path = $$[QT_INSTALL_LIBS]/metatypes
     do_install_metatypes.files = $$OUT_PWD/$$MOC_COLLECT_JSON_OUTPUT
     prefix_build {
+        load(qt_build_paths)
         !isEmpty(MODULE_BASE_OUTDIR) {
             metatypes_to_builddir.files = $$do_install_metatypes.files
             metatypes_to_builddir.path = $$MODULE_BASE_OUTDIR/lib/metatypes

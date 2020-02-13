@@ -355,6 +355,8 @@ public:
         SE_TabBarScrollRightButton,
         SE_TabBarTearIndicatorRight,
 
+        SE_PushButtonBevel,
+
         // do not add any values below/greater than this
         SE_CustomBase = 0xf0000000
     };

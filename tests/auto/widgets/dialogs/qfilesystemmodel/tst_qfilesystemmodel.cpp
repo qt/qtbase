@@ -1014,30 +1014,38 @@ void tst_QFileSystemModel::drives()
 
 void tst_QFileSystemModel::dirsBeforeFiles()
 {
-    QDir dir(flatDirTestPath);
+    auto diagnosticMsg = [](int row, const QFileInfo &left, const QFileInfo &right) -> QByteArray {
+        QString message;
+        QDebug(&message).noquote() << "Unexpected sort order at #" << row << ':' << left << right;
+        return message.toLocal8Bit();
+    };
+    QTemporaryDir testDir(flatDirTestPath);
+    QVERIFY2(testDir.isValid(), qPrintable(testDir.errorString()));
+    QDir dir(testDir.path());
 
     const int itemCount = 3;
     for (int i = 0; i < itemCount; ++i) {
         QLatin1Char c('a' + char(i));
         QVERIFY(dir.mkdir(c + QLatin1String("-dir")));
-        QFile file(flatDirTestPath + QLatin1Char('/') + c + QLatin1String("-file"));
+        QFile file(dir.filePath(c + QLatin1String("-file")));
         QVERIFY(file.open(QIODevice::ReadWrite));
         file.close();
     }
 
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
-    QModelIndex root = model->setRootPath(flatDirTestPath);
+    QModelIndex root = model->setRootPath(dir.absolutePath());
     // Wait for model to be notified by the file system watcher
     QTRY_COMPARE(model->rowCount(root), 2 * itemCount);
-
-    // Ensure that no file occurs before any directory:
-    for (int i = 1; i < model->rowCount(root); ++i) {
+    // sort explicitly - dirs before files (except on macOS), and then by name
+    model->sort(0);
+    // Ensure that no file occurs before any directory (see QFileSystemModelSorter):
+    for (int i = 1, count = model->rowCount(root); i < count; ++i) {
+        const QFileInfo previous = model->fileInfo(model->index(i - 1, 0, root));
+        const QFileInfo current = model->fileInfo(model->index(i, 0, root));
 #ifndef Q_OS_MAC
-        QVERIFY(!(model->fileInfo(model->index(i - 1, 0, root)).isFile()
-                  && model->fileInfo(model->index(i, 0, root)).isDir()));
+        QVERIFY2(!(previous.isFile() && current.isDir()), diagnosticMsg(i, previous, current).constData());
 #else
-        QVERIFY(model->fileInfo(model->index(i - 1, 0, root)).fileName() <
-                model->fileInfo(model->index(i, 0, root)).fileName());
+        QVERIFY2(previous.fileName() < current.fileName(), diagnosticMsg(i, previous, current).constData());
 #endif
     }
 }

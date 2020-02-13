@@ -83,8 +83,7 @@ Client::Client(QWidget *parent)
             this, &Client::requestNewFortune);
     connect(quitButton, &QPushButton::clicked, this, &Client::close);
     connect(socket, &QLocalSocket::readyRead, this, &Client::readFortune);
-    connect(socket, QOverload<QLocalSocket::LocalSocketError>::of(&QLocalSocket::error),
-            this, &Client::displayError);
+    connect(socket, &QLocalSocket::errorOccurred, this, &Client::displayError);
 
     QGridLayout *mainLayout = new QGridLayout(this);
     mainLayout->addWidget(hostLabel, 0, 0);

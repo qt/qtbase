@@ -45,7 +45,7 @@
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qdatetime.h"
 #include "QtNetwork/qsslconfiguration.h"
-#include "QtNetwork/qnetworksession.h"
+#include "QtNetwork/qnetworksession.h" // ### Qt6: Remove include
 #include "qnetworkaccessmanager_p.h"
 
 #include <QtCore/QCoreApplication>
@@ -88,7 +88,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     Q_Q(QNetworkReplyImpl);
     // Do not start background requests if they are not allowed by session policy
     QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
@@ -102,7 +102,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 #endif
 
     if (!backend->start()) {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call _q_startOperation again for us when the session
         // state changes.
@@ -132,7 +132,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 #endif
         return;
     } else {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
         if (session) {
             QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
                              q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)), Qt::QueuedConnection);
@@ -140,7 +140,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 #endif
     }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     if (session) {
         //get notification of policy changes.
         QObject::connect(session.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
@@ -287,7 +287,7 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
     }
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
 void QNetworkReplyImplPrivate::_q_networkSessionConnected()
 {
     Q_Q(QNetworkReplyImpl);
@@ -787,7 +787,7 @@ void QNetworkReplyImplPrivate::finished()
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
     if (!manager.isNull()) {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
         QSharedPointer<QNetworkSession> session (manager->d_func()->getNetworkSession());
         if (session && session->state() == QNetworkSession::Roaming &&
             state == Working && errorCode != QNetworkReply::OperationCanceledError) {

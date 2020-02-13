@@ -409,6 +409,8 @@ private slots:
     void closeEvent();
     void closeWithChildWindow();
 
+    void winIdAfterClose();
+
 private:
     bool ensureScreenSize(int width, int height);
 
@@ -11307,6 +11309,55 @@ void tst_QWidget::closeWithChildWindow()
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QVERIFY(!childWidget->isVisible());
+}
+
+class WinIdChangeSpy : public QObject
+{
+    Q_OBJECT
+public:
+    QWidget *widget = nullptr;
+    WId winId = 0;
+    explicit WinIdChangeSpy(QWidget *w, QObject *parent = nullptr)
+        : QObject(parent)
+        , widget(w)
+        , winId(widget->winId())
+    {
+    }
+
+public slots:
+    bool eventFilter(QObject *obj, QEvent *event) override
+    {
+        if (obj == widget) {
+            if (event->type() == QEvent::WinIdChange) {
+                winId = widget->winId();
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+void tst_QWidget::winIdAfterClose()
+{
+    auto widget = new QWidget;
+    auto notifier = new QObject(widget);
+    auto deleteWidget = new QWidget(new QWidget(widget));
+    auto spy = new WinIdChangeSpy(deleteWidget);
+    deleteWidget->installEventFilter(spy);
+    connect(notifier, &QObject::destroyed, [&] { delete deleteWidget; });
+
+    widget->setAttribute(Qt::WA_NativeWindow);
+    widget->windowHandle()->create();
+    widget->show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
+    QVERIFY(spy->winId);
+
+    widget->windowHandle()->close();
+    delete widget;
+
+    QCOMPARE(spy->winId, WId(0));
+    delete spy;
 }
 
 QTEST_MAIN(tst_QWidget)

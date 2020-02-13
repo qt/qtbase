@@ -51,10 +51,10 @@ HEADERS = \
     qtestblacklist_p.h \
     qtesthelpers_p.h \
     qttestglobal.h \
-    qtestxunitstreamer_p.h \
+    qtestjunitstreamer_p.h \
     qtaptestlogger_p.h \
     qxmltestlogger_p.h \
-    qxunittestlogger_p.h
+    qjunittestlogger_p.h
 
 SOURCES = \
     qtestcase.cpp \
@@ -77,8 +77,8 @@ SOURCES = \
     qtestelement.cpp \
     qtestelementattribute.cpp \
     qtestmouse.cpp \
-    qtestxunitstreamer.cpp \
-    qxunittestlogger.cpp \
+    qtestjunitstreamer.cpp \
+    qjunittestlogger.cpp \
     qtestblacklist.cpp \
     qtaptestlogger.cpp
 
@@ -112,7 +112,7 @@ mac {
     macos {
         HEADERS += qtestutil_macos_p.h
         OBJECTIVE_SOURCES += qtestutil_macos.mm
-        LIBS += -framework Foundation -framework ApplicationServices -framework IOKit
+        LIBS += -framework Foundation -framework ApplicationServices -framework IOKit -framework AppKit
     }
 
     # XCTest support (disabled for now)

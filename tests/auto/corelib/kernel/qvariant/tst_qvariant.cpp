@@ -276,6 +276,8 @@ private slots:
     void shouldDeleteVariantDataWorksForAssociative();
     void fromStdVariant();
     void qt4UuidDataStream();
+    void sequentialIterableEndianessSanityCheck();
+    void sequentialIterableAppend();
 
     void preferDirectConversionOverInterfaces();
 
@@ -4696,6 +4698,28 @@ void tst_QVariant::qt4UuidDataStream()
     QVariant result;
     input >> result;
     QCOMPARE(result.value<QUuid>(), source);
+}
+
+void tst_QVariant::sequentialIterableEndianessSanityCheck()
+{
+    namespace QMTP = QtMetaTypePrivate;
+    uint oldIteratorCaps = QMTP::ForwardCapability | QMTP::BiDirectionalCapability | QMTP::RandomAccessCapability;
+    QMTP::QSequentialIterableImpl seqImpl {};
+    QCOMPARE(seqImpl.revision(), 1u);
+    memcpy(&seqImpl._iteratorCapabilities, &oldIteratorCaps, sizeof(oldIteratorCaps));
+    QCOMPARE(seqImpl.revision(), 0u);
+}
+
+void tst_QVariant::sequentialIterableAppend()
+{
+    QVector<int> container {1, 2};
+    auto variant = QVariant::fromValue(container);
+    QVERIFY(variant.canConvert<QtMetaTypePrivate::QSequentialIterableImpl>());
+    auto asIterable = variant.value<QtMetaTypePrivate::QSequentialIterableImpl>();
+    const int i = 3, j = 4;
+    asIterable.append(&i);
+    asIterable.append(&j);
+    QCOMPARE(variant.value<QVector<int>>(), QVector<int> ({1, 2, 3, 4}));
 }
 
 void tst_QVariant::preferDirectConversionOverInterfaces()

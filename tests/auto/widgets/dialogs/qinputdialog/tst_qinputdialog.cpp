@@ -326,7 +326,7 @@ void tst_QInputDialog::getDouble()
     // rounded off to 10.03)
     const double value = static_cast<int>(min + (max - min) / 2);
     const double result =
-        QInputDialog::getDouble(parent, "", "", value, min, max, decimals, &ok);
+        QInputDialog::getDouble(parent, "", "", value, min, max, decimals, &ok, Qt::WindowFlags(), 1);
     QVERIFY(ok);
     QCOMPARE(result, value);
     delete parent;
@@ -395,7 +395,8 @@ void tst_QInputDialog::taskQTBUG_54693_crashWhenParentIsDeletedWhileDialogIsOpen
         const double initial = 7;
         QAutoPointer<SelfDestructParent> dialog(new SelfDestructParent);
         bool ok = true;
-        const double result = QInputDialog::getDouble(dialog.get(), "Title", "Label", initial, -10, +10, 2, &ok);
+        const double result = QInputDialog::getDouble(dialog.get(), "Title", "Label", initial, -10, +10, 2, &ok,
+                                                      Qt::WindowFlags(), 1);
         QVERIFY(!dialog);
         QVERIFY(!ok);
         QCOMPARE(result, initial);
@@ -411,7 +412,7 @@ void tst_QInputDialog::task255502getDouble()
     bool ok = false;
     const double value = 0.001;
     const double result =
-        QInputDialog::getDouble(parent, "", "", value, -1, 1, 4, &ok);
+        QInputDialog::getDouble(parent, "", "", value, -1, 1, 4, &ok, Qt::WindowFlags(), 1);
     QVERIFY(ok);
     QCOMPARE(result, value);
     delete parent;

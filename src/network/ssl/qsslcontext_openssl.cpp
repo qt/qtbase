@@ -71,6 +71,10 @@ extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
 }
 #endif // dtls
 
+#ifdef TLS1_3_VERSION
+extern "C" int q_ssl_sess_set_new_cb(SSL *context, SSL_SESSION *session);
+#endif // TLS1_3_VERSION
+
 // Defined in qsslsocket.cpp
 QList<QSslCipher> q_getDefaultDtlsCiphers();
 
@@ -169,8 +173,8 @@ SSL* QSslContext::createSsl()
     if (!session && !sessionASN1().isEmpty()
             && !sslConfiguration.testSslOption(QSsl::SslOptionDisableSessionPersistence)) {
         const unsigned char *data = reinterpret_cast<const unsigned char *>(m_sessionASN1.constData());
-        session = q_d2i_SSL_SESSION(
-            nullptr, &data, m_sessionASN1.size()); // refcount is 1 already, set by function above
+        session = q_d2i_SSL_SESSION(nullptr, &data, m_sessionASN1.size());
+        // 'session' has refcount 1 already, set by the function above
     }
 
     if (session) {
@@ -568,7 +572,8 @@ init_context:
         }
     }
 
-    // Initialize peer verification.
+    // Initialize peer verification, different callbacks, TLS/DTLS verification first
+    // (note, all these set_some_callback do not have return value):
     if (sslContext->sslConfiguration.peerVerifyMode() == QSslSocket::VerifyNone) {
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_NONE, nullptr);
     } else {
@@ -588,7 +593,17 @@ init_context:
         q_SSL_CTX_set_verify(sslContext->ctx, verificationMode, verificationCallback);
     }
 
+#ifdef TLS1_3_VERSION
+    // NewSessionTicket callback:
+    if (mode == QSslSocket::SslClientMode && !isDtls) {
+        q_SSL_CTX_sess_set_new_cb(sslContext->ctx, q_ssl_sess_set_new_cb);
+        q_SSL_CTX_set_session_cache_mode(sslContext->ctx, SSL_SESS_CACHE_CLIENT);
+    }
+
+#endif // TLS1_3_VERSION
+
 #if QT_CONFIG(dtls)
+    // DTLS cookies:
     if (mode == QSslSocket::SslServerMode && isDtls && configuration.dtlsCookieVerificationEnabled()) {
         q_SSL_CTX_set_cookie_generate_cb(sslContext->ctx, dtlscallbacks::q_generate_cookie_callback);
         q_SSL_CTX_set_cookie_verify_cb(sslContext->ctx, dtlscallbacks::q_verify_cookie_callback);

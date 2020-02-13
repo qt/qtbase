@@ -194,6 +194,9 @@ int main(int argc, char** argv)
             args << argv[i];
         }
     }
+
+    args << "-eventcounter";
+
     /*
         We just want testlib to output a benchmark result, we don't actually care about the value,
         so just do one iteration to save time.

@@ -535,7 +535,7 @@ void QHighDpiScaling::updateHighDpiScaling()
             ++i;
         }
     }
-    m_active = m_globalScalingActive || m_screenFactorSet || m_usePixelDensity;
+    m_active = m_globalScalingActive || m_screenFactorSet || m_pixelDensityScalingActive;
 }
 
 /*

@@ -283,7 +283,7 @@ class QTranslatorPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTranslator)
 public:
-    enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88, Dependencies = 0x96 };
+    enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88, Dependencies = 0x96, Language = 0xa7 };
 
     QTranslatorPrivate() :
 #if defined(QT_USE_MMAP)
@@ -315,6 +315,9 @@ public:
     uint offsetLength;
     uint contextLength;
     uint numerusRulesLength;
+
+    QString language;
+    QString filePath;
 
     bool do_load(const QString &filename, const QString &directory);
     bool do_load(const uchar *data, qsizetype len, const QString &directory);
@@ -597,8 +600,10 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         }
     }
 
-    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength, directory))
+    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength, directory)) {
+        d->filePath = realname;
         return true;
+    }
 
 #if defined(QT_USE_MMAP)
     if (used_mmap) {
@@ -829,7 +834,9 @@ bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString
             break;
         }
 
-        if (tag == QTranslatorPrivate::Contexts) {
+        if (tag == QTranslatorPrivate::Language) {
+            language = QString::fromUtf8((const char*)data, blockLen);
+        } else if (tag == QTranslatorPrivate::Contexts) {
             contextArray = data;
             contextLength = blockLen;
         } else if (tag == QTranslatorPrivate::Hashes) {
@@ -1091,6 +1098,9 @@ void QTranslatorPrivate::clear()
     qDeleteAll(subTranslators);
     subTranslators.clear();
 
+    language.clear();
+    filePath.clear();
+
     if (QCoreApplicationPrivate::isTranslatorInstalled(q))
         QCoreApplication::postEvent(QCoreApplication::instance(),
                                     new QEvent(QEvent::LanguageChange));
@@ -1130,6 +1140,32 @@ bool QTranslator::isEmpty() const
     Q_D(const QTranslator);
     return !d->messageArray && !d->offsetArray && !d->contextArray
             && d->subTranslators.isEmpty();
+}
+
+/*!
+    \since 5.15
+
+    Returns the target language as stored in the translation file.
+ */
+QString QTranslator::language() const
+{
+    Q_D(const QTranslator);
+    return d->language;
+}
+
+/*!
+    \since 5.15
+
+    Returns the path of the loaded translation file.
+
+    The file path is empty if no translation was loaded yet,
+    the loading failed, or if the translation was not loaded
+    from a file.
+ */
+QString QTranslator::filePath() const
+{
+    Q_D(const QTranslator);
+    return d->filePath;
 }
 
 QT_END_NAMESPACE

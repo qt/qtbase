@@ -260,6 +260,17 @@ void QSizeGrip::paintEvent(QPaintEvent *event)
     parameter.
 */
 
+static Qt::Edges edgesFromCorner(Qt::Corner corner)
+{
+    switch (corner) {
+    case Qt::TopLeftCorner: return Qt::TopEdge | Qt::LeftEdge;
+    case Qt::TopRightCorner: return Qt::TopEdge | Qt::RightEdge;
+    case Qt::BottomLeftCorner: return Qt::BottomEdge | Qt::LeftEdge;
+    case Qt::BottomRightCorner: return Qt::BottomEdge | Qt::RightEdge;
+    }
+    return Qt::Edges{};
+}
+
 void QSizeGrip::mousePressEvent(QMouseEvent * e)
 {
     if (e->button() != Qt::LeftButton) {
@@ -281,8 +292,9 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
         && !tlw->testAttribute(Qt::WA_DontShowOnScreen)
         && !tlw->hasHeightForWidth()) {
         QPlatformWindow *platformWindow = tlw->windowHandle()->handle();
-        const QPoint topLevelPos = mapTo(tlw, e->pos());
-        d->m_platformSizeGrip = platformWindow && platformWindow->startSystemResize(topLevelPos, d->m_corner);
+        const Qt::Edges edges = edgesFromCorner(d->m_corner);
+        if (!QGuiApplication::platformName().contains(QStringLiteral("xcb"))) // ### FIXME QTBUG-69716
+            d->m_platformSizeGrip = platformWindow && platformWindow->startSystemResize(edges);
     }
 
     if (d->m_platformSizeGrip)

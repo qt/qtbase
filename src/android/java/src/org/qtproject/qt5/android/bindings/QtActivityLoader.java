@@ -62,7 +62,7 @@ public class QtActivityLoader extends QtLoader {
     protected void downloadUpgradeMinistro(String msg) {
         AlertDialog.Builder downloadDialog = new AlertDialog.Builder(m_activity);
         downloadDialog.setMessage(msg);
-        downloadDialog.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+        downloadDialog.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 try {
@@ -76,7 +76,7 @@ public class QtActivityLoader extends QtLoader {
             }
         });
 
-        downloadDialog.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+        downloadDialog.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 m_activity.finish();

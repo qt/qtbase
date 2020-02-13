@@ -212,17 +212,20 @@ contains(CONFIG, plugin) {
     CMAKE_PLUGIN_TYPE_ESCAPED = $$replace(PLUGIN_TYPE, [-/], _)
 
     win32 {
+        !mingw|qtConfig(debug_and_release): debug_suffix="d"
+
         CMAKE_PRL_FILE_LOCATION_RELEASE = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}.prl
-        CMAKE_PRL_FILE_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}d.prl
+        CMAKE_PRL_FILE_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}$${debug_suffix}.prl
+
         isEmpty(CMAKE_STATIC_TYPE) {
             CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}.dll
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}d.dll
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}$${debug_suffix}.dll
         } else:mingw {
             CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}.a
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}d.a
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}$${debug_suffix}.a
         } else {                         # MSVC static
             CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}.lib
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}d.lib
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}$${debug_suffix}.lib
         }
     } else {
         mac {
@@ -313,27 +316,29 @@ mac {
     CMAKE_WINDOWS_BUILD = "true"
     CMAKE_FIND_OTHER_LIBRARY_BUILD = "true"
 
-    CMAKE_LIB_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}d.dll
+    !mingw|qtConfig(debug_and_release): debug_suffix="d"
+
+    CMAKE_LIB_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}$${debug_suffix}.dll
     CMAKE_LIB_FILE_LOCATION_RELEASE = $${CMAKE_QT_STEM}.dll
 
     !isEmpty(CMAKE_STATIC_TYPE) {
         CMAKE_STATIC_WINDOWS_BUILD = "true"
 
-        CMAKE_PRL_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}d.prl
+        CMAKE_PRL_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}$${debug_suffix}.prl
         CMAKE_PRL_FILE_LOCATION_RELEASE = $${CMAKE_QT_STEM}.prl
     }
 
     mingw {
-        CMAKE_WINMAIN_FILE_LOCATION_DEBUG = libqtmain$${QT_LIBINFIX}d.a
+        CMAKE_WINMAIN_FILE_LOCATION_DEBUG = libqtmain$${QT_LIBINFIX}$${debug_suffix}.a
         CMAKE_WINMAIN_FILE_LOCATION_RELEASE = libqtmain$${QT_LIBINFIX}.a
 
-        CMAKE_IMPLIB_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}d.a
+        CMAKE_IMPLIB_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}$${debug_suffix}.a
         CMAKE_IMPLIB_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.a
     } else {
-        CMAKE_WINMAIN_FILE_LOCATION_DEBUG = qtmain$${QT_LIBINFIX}d.lib
+        CMAKE_WINMAIN_FILE_LOCATION_DEBUG = qtmain$${QT_LIBINFIX}$${debug_suffix}.lib
         CMAKE_WINMAIN_FILE_LOCATION_RELEASE = qtmain$${QT_LIBINFIX}.lib
 
-        CMAKE_IMPLIB_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}d.lib
+        CMAKE_IMPLIB_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}$${debug_suffix}.lib
         CMAKE_IMPLIB_FILE_LOCATION_RELEASE = $${CMAKE_QT_STEM}.lib
     }
 } else {

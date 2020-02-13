@@ -39,6 +39,8 @@
 
 #include "qtestutil_macos_p.h"
 
+#include "QtCore/private/qcore_mac_p.h"
+
 #import <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
@@ -53,6 +55,32 @@ namespace QTestPrivate {
     */
     void disableWindowRestore() {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"ApplePersistenceIgnoreState"];
+    }
+
+    bool macCrashReporterWillShowDialog()
+    {
+        auto dialogType = QCFType<CFStringRef>(CFPreferencesCopyAppValue(
+            CFSTR("DialogType"), CFSTR("com.apple.CrashReporter")));
+
+        auto stringCompare = [](CFStringRef str1, CFStringRef str2) -> bool {
+            return CFStringCompare(str1, str2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
+        };
+
+        if (!dialogType || stringCompare(dialogType, CFSTR("basic"))) {
+            // The default (basic) dialog type only shows up if the
+            // application is 'user visible', as indicated by the
+            // activation policy.
+            auto *runningApp = NSRunningApplication.currentApplication;
+            return runningApp && runningApp.activationPolicy == NSApplicationActivationPolicyRegular;
+        } else if (stringCompare(dialogType, CFSTR("developer"))
+                || stringCompare(dialogType, CFSTR("crashreport"))) {
+            // While in developer mode the dialog will show for all
+            // crashed applications, including backgrounded ones.
+            return true;
+        } else {
+            // Finally, 'server' or 'none' will result in no dialog
+            return false;
+        }
     }
 
     /*! \internal

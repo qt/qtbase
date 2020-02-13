@@ -5,13 +5,13 @@
 #####################################################################
 
 add_qt_manual_test(hellominimalcrossgfxtriangle
-    GUI
     SOURCES
-        hellominimalcrossgfxtriangle.cpp
-    LIBRARIES
-        Qt::GuiPrivate
+        hellowindow.cpp hellowindow.h
+        main.cpp
+        window.cpp window.h
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
 
 # Resources:

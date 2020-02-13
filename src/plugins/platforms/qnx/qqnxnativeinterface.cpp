@@ -94,6 +94,11 @@ void *QQnxNativeInterface::nativeResourceForIntegration(const QByteArray &resour
     if (resource == "screenContext")
         return m_integration->screenContext();
 
+#if QT_CONFIG(opengl)
+    if (resource.toLower() == "egldisplay")
+        return m_integration->eglDisplay();
+#endif
+
     return 0;
 }
 

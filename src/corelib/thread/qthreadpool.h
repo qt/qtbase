@@ -45,6 +45,8 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qrunnable.h>
 
+#include <functional>
+
 QT_REQUIRE_CONFIG(thread);
 
 QT_BEGIN_NAMESPACE
@@ -69,6 +71,9 @@ public:
 
     void start(QRunnable *runnable, int priority = 0);
     bool tryStart(QRunnable *runnable);
+
+    void start(std::function<void()> fun, int priority = 0);
+    bool tryStart(std::function<void()> fun);
 
     int expiryTimeout() const;
     void setExpiryTimeout(int expiryTimeout);

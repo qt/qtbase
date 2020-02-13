@@ -657,6 +657,8 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
 }
 
 /*!
+  \since 5.15
+
   Searches all files in the \a path for certificates encoded in the
   specified \a format and adds them to this socket's CA certificate
   database. \a path must be a file or a pattern matching one or more
@@ -672,7 +674,7 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
   \sa addCaCertificate(), QSslCertificate::fromPath()
 */
 bool QSslConfiguration::addCaCertificates(const QString &path, QSsl::EncodingFormat format,
-                                          QRegExp::PatternSyntax syntax)
+                                          QSslCertificate::PatternSyntax syntax)
 {
     QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
     if (certs.isEmpty())
@@ -777,7 +779,7 @@ bool QSslConfiguration::testSslOption(QSsl::SslOption option) const
   knowledge of the session allows for eavesdropping on data
   encrypted with the session parameters.
 
-  \sa setSessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+  \sa setSessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption(), QSslSocket::newSessionTicketReceived()
  */
 QByteArray QSslConfiguration::sessionTicket() const
 {
@@ -792,7 +794,7 @@ QByteArray QSslConfiguration::sessionTicket() const
   for this to work, and \a sessionTicket must be in ASN.1 format
   as returned by sessionTicket().
 
-  \sa sessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+  \sa sessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption(), QSslSocket::newSessionTicketReceived()
  */
 void QSslConfiguration::setSessionTicket(const QByteArray &sessionTicket)
 {
@@ -810,7 +812,7 @@ void QSslConfiguration::setSessionTicket(const QByteArray &sessionTicket)
   QSsl::SslOptionDisableSessionPersistence was not turned off,
   this function returns -1.
 
-  \sa sessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+  \sa sessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption(), QSslSocket::newSessionTicketReceived()
  */
 int QSslConfiguration::sessionTicketLifeTimeHint() const
 {

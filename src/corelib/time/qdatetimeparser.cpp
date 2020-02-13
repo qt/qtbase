@@ -219,7 +219,8 @@ int QDateTimeParser::absoluteMax(int s, const QDateTime &cur) const
     const SectionNode &sn = sectionNode(s);
     switch (sn.type) {
 #if QT_CONFIG(timezone)
-    case TimeZoneSection: return QTimeZone::MaxUtcOffsetSecs;
+    case TimeZoneSection:
+        return QTimeZone::MaxUtcOffsetSecs;
 #endif
     case Hour24Section:
     case Hour12Section:
@@ -227,20 +228,25 @@ int QDateTimeParser::absoluteMax(int s, const QDateTime &cur) const
         // We want it to be 23 for the stepBy case.
         return 23;
     case MinuteSection:
-    case SecondSection: return 59;
-    case MSecSection: return 999;
+    case SecondSection:
+        return 59;
+    case MSecSection:
+        return 999;
     case YearSection2Digits:
     case YearSection:
         // sectionMaxSize will prevent people from typing in a larger number in
         // count == 2 sections; stepBy() will work on real years anyway.
         return 9999;
-    case MonthSection: return calendar.maximumMonthsInYear();
+    case MonthSection:
+        return calendar.maximumMonthsInYear();
     case DaySection:
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
         return cur.isValid() ? cur.date().daysInMonth(calendar) : calendar.maximumDaysInMonth();
-    case AmPmSection: return 1;
-    default: break;
+    case AmPmSection:
+        return 1;
+    default:
+        break;
     }
     qWarning("QDateTimeParser::absoluteMax() Internal error (%ls)",
              qUtf16Printable(sn.name()));
@@ -620,7 +626,8 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     switch (s) {
     case FirstSection:
     case NoSection:
-    case LastSection: return 0;
+    case LastSection:
+        return 0;
 
     case AmPmSection: {
         const int lowerMax = qMax(getAmPmText(AmText, LowerCase).size(),
@@ -634,7 +641,9 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case Hour12Section:
     case MinuteSection:
     case SecondSection:
-    case DaySection: return 2;
+    case DaySection:
+        return 2;
+
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
 #if !QT_CONFIG(textdate)
@@ -663,11 +672,15 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
             return ret;
         }
 #endif
-    case MSecSection: return 3;
-    case YearSection: return 4;
-    case YearSection2Digits: return 2;
+    case MSecSection:
+        return 3;
+    case YearSection:
+        return 4;
+    case YearSection2Digits:
+        return 2;
+    case TimeZoneSection:
         // Arbitrarily many tokens (each up to 14 bytes) joined with / separators:
-    case TimeZoneSection: return std::numeric_limits<int>::max();
+        return std::numeric_limits<int>::max();
 
     case CalendarPopupSection:
     case Internal:
@@ -903,7 +916,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
   by \a weekDay.
 */
 
-static int weekDayWithinMonth(const QCalendar &calendar, const QDate &rough, int weekDay)
+static int weekDayWithinMonth(QCalendar calendar, QDate rough, int weekDay)
 {
     // TODO: can we adapt this to cope gracefully with intercallary days (day of
     // week > 7) without making it slower for more widely-used calendars ?

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
@@ -71,7 +71,7 @@ QVariant addGenre(QSqlQuery &q, const QString &name)
     return q.lastInsertId();
 }
 
-QVariant addAuthor(QSqlQuery &q, const QString &name, const QDate &birthdate)
+QVariant addAuthor(QSqlQuery &q, const QString &name, QDate birthdate)
 {
     q.addBindValue(name);
     q.addBindValue(birthdate);

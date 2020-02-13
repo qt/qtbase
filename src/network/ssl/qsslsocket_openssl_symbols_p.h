@@ -224,7 +224,6 @@ QT_BEGIN_NAMESPACE
 // To reduce the amount of the change, I'm directly copying and pasting the
 // content of the header here. Later, can be better sorted/split into groups,
 // depending on the functionality.
-//#include "qsslsocket_openssl11_symbols_p.h"
 
 const unsigned char * q_ASN1_STRING_get0_data(const ASN1_STRING *x);
 
@@ -287,6 +286,23 @@ unsigned long q_SSL_set_options(SSL *s, unsigned long op);
 
 #ifdef TLS1_3_VERSION
 int q_SSL_CTX_set_ciphersuites(SSL_CTX *ctx, const char *str);
+
+// The functions below do not really have to be ifdefed like this, but for now
+// they only used in TLS 1.3 handshake (and probably future versions).
+// Plus, 'is resumalbe' is OpenSSL 1.1.1-only (and again we need it for
+// TLS 1.3-specific session management).
+
+extern "C"
+{
+using NewSessionCallback = int (*)(SSL *, SSL_SESSION *);
+}
+
+void q_SSL_CTX_sess_set_new_cb(SSL_CTX *ctx, NewSessionCallback cb);
+int q_SSL_SESSION_is_resumable(const SSL_SESSION *s);
+
+#define q_SSL_CTX_set_session_cache_mode(ctx,m) \
+    q_SSL_CTX_ctrl(ctx,SSL_CTRL_SET_SESS_CACHE_MODE,m,NULL)
+
 #endif
 
 #if QT_CONFIG(dtls)

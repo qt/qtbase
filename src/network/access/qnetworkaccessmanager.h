@@ -63,7 +63,7 @@ class QNetworkProxy;
 class QNetworkProxyFactory;
 class QSslError;
 class QHstsPolicy;
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
 class QNetworkConfiguration;
 #endif
 class QHttpMultiPart;
@@ -74,7 +74,7 @@ class Q_NETWORK_EXPORT QNetworkAccessManager: public QObject
 {
     Q_OBJECT
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     Q_PROPERTY(NetworkAccessibility networkAccessible READ networkAccessible WRITE setNetworkAccessible NOTIFY networkAccessibleChanged)
 #endif
 
@@ -90,7 +90,7 @@ public:
         UnknownOperation = 0
     };
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     enum NetworkAccessibility {
         UnknownAccessibility = -1,
         NotAccessible = 0,
@@ -145,13 +145,13 @@ public:
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QHttpMultiPart *multiPart);
 #endif
 
-#ifndef QT_NO_BEARERMANAGEMENT
-    void setConfiguration(const QNetworkConfiguration &config);
-    QNetworkConfiguration configuration() const;
-    QNetworkConfiguration activeConfiguration() const;
+#if !defined(QT_NO_BEARERMANAGEMENT) // ### Qt6: Remove section
+    QT_DEPRECATED_VERSION_5_15 void setConfiguration(const QNetworkConfiguration &config);
+    QT_DEPRECATED_VERSION_5_15 QNetworkConfiguration configuration() const;
+    QT_DEPRECATED_VERSION_5_15 QNetworkConfiguration activeConfiguration() const;
 
-    void setNetworkAccessible(NetworkAccessibility accessible);
-    NetworkAccessibility networkAccessible() const;
+    QT_DEPRECATED_VERSION_5_15 void setNetworkAccessible(NetworkAccessibility accessible);
+    QT_DEPRECATED_VERSION_5_15 NetworkAccessibility networkAccessible() const;
 #endif
 
 #ifndef QT_NO_SSL
@@ -184,10 +184,10 @@ Q_SIGNALS:
     void preSharedKeyAuthenticationRequired(QNetworkReply *reply, QSslPreSharedKeyAuthenticator *authenticator);
 #endif
 
-#ifndef QT_NO_BEARERMANAGEMENT
-    void networkSessionConnected();
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
+    QT_DEPRECATED_VERSION_5_15 void networkSessionConnected();
 
-    void networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
+    QT_DEPRECATED_VERSION_5_15 void networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
 #endif
 
 protected:
@@ -209,7 +209,7 @@ private:
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
     Q_PRIVATE_SLOT(d_func(), void _q_replyPreSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*))
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
     Q_PRIVATE_SLOT(d_func(), void _q_configurationChanged(const QNetworkConfiguration &))

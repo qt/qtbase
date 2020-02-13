@@ -291,6 +291,22 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
     // will call QPlatformWindow::setGeometry(rect) during resize confirmation (see qnsview.mm)
 }
 
+bool QCocoaWindow::startSystemMove()
+{
+    switch (NSApp.currentEvent.type) {
+    case NSEventTypeLeftMouseDown:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeOtherMouseDown:
+    case NSEventTypeMouseMoved:
+        // The documentation only describes starting a system move
+        // based on mouse down events, but move events also work.
+        [m_view.window performWindowDragWithEvent:NSApp.currentEvent];
+        return true;
+    default:
+        return false;
+    }
+}
+
 void QCocoaWindow::setVisible(bool visible)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setVisible" << window() << visible;

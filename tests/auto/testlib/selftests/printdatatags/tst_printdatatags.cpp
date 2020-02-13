@@ -72,6 +72,14 @@ void tst_PrintDataTags::c() const
 {
 }
 
-QTEST_MAIN(tst_PrintDataTags)
+int main(int argc, char *argv[])
+{
+    std::vector<const char*> args(argv, argv + argc);
+    args.push_back("-datatags");
+    argc = args.size();
+    argv = const_cast<char**>(&args[0]);
+
+    QTEST_MAIN_IMPL(tst_PrintDataTags)
+}
 
 #include "tst_printdatatags.moc"

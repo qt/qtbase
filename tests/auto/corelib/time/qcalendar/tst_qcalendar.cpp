@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -40,6 +40,8 @@ private:
 private slots:
     void basic_data();
     void basic();
+    void unspecified_data() { basic_data(); }
+    void unspecified();
     void nameCase();
     void specific_data();
     void specific();
@@ -143,6 +145,27 @@ void tst_QCalendar::basic()
     // Either year is non-leap or we have a decade of leap years together;
     // expect daysInMonth() to treat year the same as unspecified.
     NORMALYEAR(cal, year);
+}
+
+void tst_QCalendar::unspecified()
+{
+    QFETCH(QCalendar::System, system);
+    QCalendar cal(system);
+
+    const QDate today = QDate::currentDate();
+    const int thisYear = today.year();
+    QCOMPARE(cal.monthsInYear(QCalendar::Unspecified), cal.maximumMonthsInYear());
+    for (int month = cal.maximumMonthsInYear(); month > 0; month--) {
+        const int days = cal.daysInMonth(month);
+        int count = 0;
+        // 19 years = one Metonic cycle (used by some lunar calendars)
+        for (int i = 19; i > 0; --i) {
+            if (cal.daysInMonth(month, thisYear - i) == days)
+                count++;
+        }
+        // Require a majority of the years tested:
+        QVERIFY2(count > 9, "Default daysInMonth() should be for a normal year");
+    }
 }
 
 void tst_QCalendar::nameCase()

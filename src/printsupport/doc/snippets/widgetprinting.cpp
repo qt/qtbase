@@ -48,7 +48,6 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
 #include <QtWidgets>
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printdialog)
@@ -61,11 +60,12 @@ class Window : public QWidget
     Q_OBJECT
 
 public:
-    Window() {
+    Window()
+    {
         myWidget = new QPushButton("Print Me");
-        connect(myWidget, SIGNAL(clicked()), this, SLOT(print()));
+        connect(myWidget, &QPushButton::clicked, this, &Window::print);
         myWidget2 = new QPushButton("Print Document");
-        connect(myWidget2, SIGNAL(clicked()), this, SLOT(printFile()));
+        connect(myWidget2, &QPushButton::clicked, this, &Window::printFile);
         editor = new QTextEdit(this);
 
         QVBoxLayout *layout = new QVBoxLayout;
@@ -76,8 +76,9 @@ public:
     }
 
 private slots:
-    void print() {
-    #if !defined(QT_NO_PRINTER)
+    void print()
+    {
+    #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
         QPrinter printer(QPrinter::HighResolution);
 
         printer.setOutputFileName("test.pdf");
@@ -85,8 +86,8 @@ private slots:
 //! [0]
         QPainter painter;
         painter.begin(&printer);
-        double xscale = printer.pageRect().width()/double(myWidget->width());
-        double yscale = printer.pageRect().height()/double(myWidget->height());
+        double xscale = printer.pageRect().width() / double(myWidget->width());
+        double yscale = printer.pageRect().height() / double(myWidget->height());
         double scale = qMin(xscale, yscale);
         painter.translate(printer.paperRect().x() + printer.pageRect().width()/2,
                            printer.paperRect().y() + printer.pageRect().height()/2);
@@ -98,8 +99,9 @@ private slots:
     #endif
     }
 
-    void printFile() {
-    #if QT_CONFIG(printdialog)
+    void printFile()
+    {
+    #if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
 //! [1]
         QPrinter printer;
 

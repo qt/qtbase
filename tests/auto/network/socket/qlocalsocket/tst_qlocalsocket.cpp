@@ -174,7 +174,7 @@ public:
                 this, SLOT(slotConnected()));
         connect(this, SIGNAL(disconnected()),
                 this, SLOT(slotDisconnected()));
-        connect(this, SIGNAL(error(QLocalSocket::LocalSocketError)),
+        connect(this, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)),
                 this, SLOT(slotError(QLocalSocket::LocalSocketError)));
         connect(this, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)),
                 this, SLOT(slotStateChanged(QLocalSocket::LocalSocketState)));
@@ -192,10 +192,10 @@ private slots:
     {
         QCOMPARE(state(), QLocalSocket::UnconnectedState);
     }
-    void slotError(QLocalSocket::LocalSocketError newError)
+    void slotErrorOccurred(QLocalSocket::LocalSocketError newError)
     {
         QVERIFY(errorString() != QLatin1String("Unknown error"));
-        QCOMPARE(socketError(), newError);
+        QCOMPARE(error(), newError);
     }
     void slotStateChanged(QLocalSocket::LocalSocketState newState)
     {
@@ -244,7 +244,7 @@ void tst_QLocalSocket::socket_basic()
     LocalSocket socket;
     QSignalSpy spyConnected(&socket, SIGNAL(connected()));
     QSignalSpy spyDisconnected(&socket, SIGNAL(disconnected()));
-    QSignalSpy spyError(&socket, SIGNAL(error(QLocalSocket::LocalSocketError)));
+    QSignalSpy spyError(&socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)));
     QSignalSpy spyStateChanged(&socket, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)));
     QSignalSpy spyReadyRead(&socket, SIGNAL(readyRead()));
 
@@ -256,7 +256,7 @@ void tst_QLocalSocket::socket_basic()
     QCOMPARE(socket.canReadLine(), false);
     socket.close();
     socket.disconnectFromServer();
-    QCOMPARE(QLocalSocket::UnknownSocketError, socket.socketError());
+    QCOMPARE(QLocalSocket::UnknownSocketError, socket.error());
     QVERIFY(!socket.errorString().isEmpty());
     QCOMPARE(socket.flush(), false);
     QCOMPARE(socket.isValid(), false);
@@ -359,7 +359,7 @@ void tst_QLocalSocket::listenAndConnect()
 
         QSignalSpy spyConnected(socket, SIGNAL(connected()));
         QSignalSpy spyDisconnected(socket, SIGNAL(disconnected()));
-        QSignalSpy spyError(socket, SIGNAL(error(QLocalSocket::LocalSocketError)));
+        QSignalSpy spyError(socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)));
         QSignalSpy spyStateChanged(socket, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)));
         QSignalSpy spyReadyRead(socket, SIGNAL(readyRead()));
 
@@ -375,13 +375,13 @@ void tst_QLocalSocket::listenAndConnect()
             QVERIFY(socket->waitForConnected());
             QVERIFY(socket->isValid());
             QCOMPARE(socket->errorString(), QString("Unknown error"));
-            QCOMPARE(socket->socketError(), QLocalSocket::UnknownSocketError);
+            QCOMPARE(socket->error(), QLocalSocket::UnknownSocketError);
             QCOMPARE(socket->state(), QLocalSocket::ConnectedState);
             //QVERIFY(socket->socketDescriptor() != -1);
             QCOMPARE(spyError.count(), 0);
         } else {
             QVERIFY(!socket->errorString().isEmpty());
-            QVERIFY(socket->socketError() != QLocalSocket::UnknownSocketError);
+            QVERIFY(socket->error() != QLocalSocket::UnknownSocketError);
             QCOMPARE(socket->state(), QLocalSocket::UnconnectedState);
             //QCOMPARE(socket->socketDescriptor(), -1);
             QCOMPARE(qvariant_cast<QLocalSocket::LocalSocketError>(spyError.first()[0]),
@@ -525,7 +525,7 @@ void tst_QLocalSocket::sendData()
     LocalSocket socket;
     QSignalSpy spyConnected(&socket, SIGNAL(connected()));
     QSignalSpy spyDisconnected(&socket, SIGNAL(disconnected()));
-    QSignalSpy spyError(&socket, SIGNAL(error(QLocalSocket::LocalSocketError)));
+    QSignalSpy spyError(&socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)));
     QSignalSpy spyStateChanged(&socket, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)));
     QSignalSpy spyReadyRead(&socket, SIGNAL(readyRead()));
 
@@ -1104,7 +1104,7 @@ void tst_QLocalSocket::recycleClientSocket()
     QVERIFY(server.listen(serverName));
     QLocalSocket client;
     QSignalSpy clientReadyReadSpy(&client, SIGNAL(readyRead()));
-    QSignalSpy clientErrorSpy(&client, SIGNAL(error(QLocalSocket::LocalSocketError)));
+    QSignalSpy clientErrorSpy(&client, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)));
     for (int i = 0; i < lines.count(); ++i) {
         client.abort();
         clientReadyReadSpy.clear();

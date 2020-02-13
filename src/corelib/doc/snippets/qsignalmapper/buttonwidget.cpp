@@ -61,14 +61,13 @@ ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
     QGridLayout *gridLayout = new QGridLayout;
     for (int i = 0; i < texts.size(); ++i) {
         QPushButton *button = new QPushButton(texts[i]);
-        connect(button, &QPushButton::clicked,
-                signalMapper, &QSignalMapper::map);
+        connect(button, &QPushButton::clicked, signalMapper, &QSignalMapper::map);
 //! [0] //! [1]
         signalMapper->setMapping(button, texts[i]);
         gridLayout->addWidget(button, i / 3, i % 3);
     }
 
-    connect(signalMapper, QOverload<const QString &>::of(&QSignalMapper::mapped),
+    connect(signalMapper, &QSignalMapper::mappedString,
 //! [1] //! [2]
             this, &ButtonWidget::clicked);
 

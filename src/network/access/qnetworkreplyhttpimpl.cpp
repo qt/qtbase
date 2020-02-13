@@ -164,7 +164,7 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
     }
 }
 
-#if QT_CONFIG(bearermanagement)
+#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
 static bool isSessionNeeded(const QUrl &url)
 {
     if (QNetworkStatusMonitor::isEnabled()) {
@@ -798,7 +798,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
     // Propagate Http/2 settings:
     delegate->http2Parameters = request.http2Configuration();
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     if (!QNetworkStatusMonitor::isEnabled())
         delegate->networkSession = managerPrivate->getNetworkSession();
 #endif
@@ -1206,7 +1206,7 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
     if (managerPrivate->thread)
         managerPrivate->thread->disconnect();
 
-#if QT_CONFIG(bearermanagement)
+#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
     // If the original request didn't need a session (i.e. it was to localhost)
     // then we might not have a session open, to which to redirect, if the
     // new URL is remote.  When this happens, we need to open the session now:
@@ -1782,13 +1782,13 @@ void QNetworkReplyHttpImplPrivate::setResumeOffset(quint64 offset)
 */
 bool QNetworkReplyHttpImplPrivate::start(const QNetworkRequest &newHttpRequest)
 {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     QSharedPointer<QNetworkSession> networkSession(managerPrivate->getNetworkSession());
     if (!networkSession || QNetworkStatusMonitor::isEnabled()) {
 #endif
         postRequest(newHttpRequest);
         return true;
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     }
 
     // This is not ideal.
@@ -1817,7 +1817,7 @@ bool QNetworkReplyHttpImplPrivate::start(const QNetworkRequest &newHttpRequest)
 #endif
 }
 
-#if QT_CONFIG(bearermanagement)
+#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
 bool QNetworkReplyHttpImplPrivate::startWaitForSession(QSharedPointer<QNetworkSession> &session)
 {
     Q_Q(QNetworkReplyHttpImpl);
@@ -1853,7 +1853,7 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
 
     state = Working;
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     // Do not start background requests if they are not allowed by session policy
     QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
     QVariant isBackground = request.attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
@@ -2049,7 +2049,7 @@ void QNetworkReplyHttpImplPrivate::setupTransferTimeout()
     }
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
 void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
 {
     Q_Q(QNetworkReplyHttpImpl);
@@ -2185,7 +2185,7 @@ void QNetworkReplyHttpImplPrivate::finished()
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     Q_ASSERT(managerPrivate);
     QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
     if (!QNetworkStatusMonitor::isEnabled() && session && session->state() == QNetworkSession::Roaming &&

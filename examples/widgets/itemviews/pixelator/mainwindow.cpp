@@ -167,7 +167,7 @@ void MainWindow::openImage(const QString &fileName)
 
 void MainWindow::printImage()
 {
-#if QT_CONFIG(printdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
     if (model->rowCount(QModelIndex())*model->columnCount(QModelIndex()) > 90000) {
         QMessageBox::StandardButton answer;
         answer = QMessageBox::question(this, tr("Large Image Size"),

@@ -3185,6 +3185,26 @@ QStateMachine::WrappedEvent::~WrappedEvent()
   \sa QStateMachine::running
 */
 
+/*!
+  \fn QStateMachine::postDelayedEvent(QEvent *event, std::chrono::milliseconds delay)
+  \since 5.15
+  \overload
+  \threadsafe
+
+  Posts the given \a event for processing by this state machine, with the
+  given \a delay in milliseconds. Returns an identifier associated with the
+  delayed event, or -1 if the event could not be posted.
+
+  This function returns immediately. When the delay has expired, the event
+  will be added to the state machine's event queue for processing. The state
+  machine takes ownership of the event and deletes it once it has been
+  processed.
+
+  You can only post events when the state machine is running.
+
+  \sa cancelDelayedEvent(), postEvent()
+*/
+
 QT_END_NAMESPACE
 
 #include "qstatemachine.moc"

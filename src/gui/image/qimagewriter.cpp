@@ -498,6 +498,7 @@ int QImageWriter::compression() const
     return d->compression;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     This is an image format specific function that sets the gamma
     level of the image to \a gamma. For image formats that do not
@@ -522,6 +523,7 @@ float QImageWriter::gamma() const
 {
     return d->gamma;
 }
+#endif
 
 /*!
     \since 5.4

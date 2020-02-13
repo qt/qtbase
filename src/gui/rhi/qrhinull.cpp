@@ -193,9 +193,9 @@ QRhiTexture *QRhiNull::createTexture(QRhiTexture::Format format, const QSize &pi
 
 QRhiSampler *QRhiNull::createSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
                                      QRhiSampler::Filter mipmapMode,
-                                     QRhiSampler::AddressMode u, QRhiSampler::AddressMode v)
+                                     QRhiSampler::AddressMode u, QRhiSampler::AddressMode v, QRhiSampler::AddressMode w)
 {
-    return new QNullSampler(this, magFilter, minFilter, mipmapMode, u, v);
+    return new QNullSampler(this, magFilter, minFilter, mipmapMode, u, v, w);
 }
 
 QRhiTextureRenderTarget *QRhiNull::createTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
@@ -645,8 +645,8 @@ bool QNullTexture::buildFrom(QRhiTexture::NativeTexture src)
 }
 
 QNullSampler::QNullSampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
-                           AddressMode u, AddressMode v)
-    : QRhiSampler(rhi, magFilter, minFilter, mipmapMode, u, v)
+                           AddressMode u, AddressMode v, AddressMode w)
+    : QRhiSampler(rhi, magFilter, minFilter, mipmapMode, u, v, w)
 {
 }
 

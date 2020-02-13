@@ -120,7 +120,7 @@ struct QMetalSamplerData;
 struct QMetalSampler : public QRhiSampler
 {
     QMetalSampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
-                  AddressMode u, AddressMode v);
+                  AddressMode u, AddressMode v, AddressMode w);
     ~QMetalSampler();
     void release() override;
     bool build() override;
@@ -288,6 +288,7 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QRhiCommandBuffer::IndexFormat currentIndexFormat;
     int currentCullMode;
     int currentFrontFaceWinding;
+    QPair<float, float> currentDepthBiasValues;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState();
@@ -349,9 +350,12 @@ public:
                                const QSize &pixelSize,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
-    QRhiSampler *createSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
+    QRhiSampler *createSampler(QRhiSampler::Filter magFilter,
+                               QRhiSampler::Filter minFilter,
                                QRhiSampler::Filter mipmapMode,
-                               QRhiSampler:: AddressMode u, QRhiSampler::AddressMode v) override;
+                               QRhiSampler:: AddressMode u,
+                               QRhiSampler::AddressMode v,
+                               QRhiSampler::AddressMode w) override;
 
     QRhiTextureRenderTarget *createTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
                                                        QRhiTextureRenderTarget::Flags flags) override;

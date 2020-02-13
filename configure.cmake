@@ -15,7 +15,7 @@ qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev)
 
 #### Tests
 
-# c++14
+# cxx14
 qt_config_compile_test(cxx14
     LABEL "C++14 support"
     CODE
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     CXX_STANDARD 14
 )
 
-# c++17
+# cxx17
 qt_config_compile_test(cxx17
     LABEL "C++17 support"
     CODE
@@ -65,7 +65,7 @@ std::visit([](const auto &) { return 1; }, v);
     CXX_STANDARD 17
 )
 
-# c++2a
+# cxx2a
 qt_config_compile_test(cxx2a
     LABEL "C++2a support"
     CODE
@@ -398,9 +398,14 @@ qt_feature("coverage_trace_pc_guard"
     AUTODETECT OFF
 )
 qt_feature_config("coverage_trace_pc_guard" QMAKE_PUBLIC_CONFIG)
+qt_feature("coverage_source_based"
+    LABEL "source-based"
+    AUTODETECT OFF
+)
+qt_feature_config("coverage_source_based" QMAKE_PUBLIC_CONFIG)
 qt_feature("coverage"
     LABEL "Code Coverage Instrumentation"
-    CONDITION QT_FEATURE_coverage_trace_pc_guard
+    CONDITION QT_FEATURE_coverage_trace_pc_guard OR QT_FEATURE_coverage_source_based
 )
 qt_feature_config("coverage" QMAKE_PUBLIC_CONFIG)
 qt_feature("plugin-manifests"

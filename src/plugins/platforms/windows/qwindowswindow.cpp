@@ -1946,12 +1946,13 @@ void QWindowsWindow::checkForScreenChanged(ScreenChangeMode mode)
     if (newScreen == nullptr || newScreen == currentScreen)
         return;
     // For screens with different DPI: postpone until WM_DPICHANGE
-    if (mode == FromGeometryChange
+    // Check on currentScreen as it can be 0 when resuming a session (QTBUG-80436).
+    if (mode == FromGeometryChange && currentScreen != nullptr
         && !equalDpi(currentScreen->logicalDpi(), newScreen->logicalDpi())) {
         return;
     }
     qCDebug(lcQpaWindows).noquote().nospace() << __FUNCTION__
-        << ' ' << window() << " \"" << currentScreen->name()
+        << ' ' << window() << " \"" << (currentScreen ? currentScreen->name() : QString())
         << "\"->\"" << newScreen->name() << '"';
     if (mode == FromGeometryChange)
         setFlag(SynchronousGeometryChangeEvent);
@@ -2604,37 +2605,41 @@ bool QWindowsWindow::setMouseGrabEnabled(bool grab)
     return grab;
 }
 
-static inline DWORD cornerToWinOrientation(Qt::Corner corner)
+static inline DWORD edgesToWinOrientation(Qt::Edges edges)
 {
-    switch (corner) {
-    case Qt::TopLeftCorner:
-        return 0xf004; // SZ_SIZETOPLEFT;
-    case Qt::TopRightCorner:
-        return 0xf005; // SZ_SIZETOPRIGHT
-    case Qt::BottomLeftCorner:
-        return 0xf007; // SZ_SIZEBOTTOMLEFT
-    case Qt::BottomRightCorner:
-        return 0xf008; // SZ_SIZEBOTTOMRIGHT
-    }
-    return 0;
+    if (edges == Qt::LeftEdge)
+        return 0xf001; // SC_SIZELEFT;
+    else if (edges == (Qt::RightEdge))
+        return 0xf002; // SC_SIZERIGHT
+    else if (edges == (Qt::TopEdge))
+        return 0xf003; // SC_SIZETOP
+    else if (edges == (Qt::TopEdge | Qt::LeftEdge))
+        return 0xf004; // SC_SIZETOPLEFT
+    else if (edges == (Qt::TopEdge | Qt::RightEdge))
+        return 0xf005; // SC_SIZETOPRIGHT
+    else if (edges == (Qt::BottomEdge))
+        return 0xf006; // SC_SIZEBOTTOM
+    else if (edges == (Qt::BottomEdge | Qt::LeftEdge))
+        return 0xf007; // SC_SIZEBOTTOMLEFT
+    else if (edges == (Qt::BottomEdge | Qt::RightEdge))
+        return 0xf008; // SC_SIZEBOTTOMRIGHT
+
+    return 0xf000; // SC_SIZE
 }
 
-bool QWindowsWindow::startSystemResize(const QPoint &, Qt::Corner corner)
+bool QWindowsWindow::startSystemResize(Qt::Edges edges)
 {
-    if (!GetSystemMenu(m_data.hwnd, FALSE))
+    if (Q_UNLIKELY(!(window()->flags() & Qt::MSWindowsFixedSizeDialogHint)))
         return false;
 
     ReleaseCapture();
-    PostMessage(m_data.hwnd, WM_SYSCOMMAND, cornerToWinOrientation(corner), 0);
+    PostMessage(m_data.hwnd, WM_SYSCOMMAND, edgesToWinOrientation(edges), 0);
     setFlag(SizeGripOperation);
     return true;
 }
 
-bool QWindowsWindow::startSystemMove(const QPoint &)
+bool QWindowsWindow::startSystemMove()
 {
-    if (!GetSystemMenu(m_data.hwnd, FALSE))
-        return false;
-
     ReleaseCapture();
     PostMessage(m_data.hwnd, WM_SYSCOMMAND, 0xF012 /*SC_DRAGMOVE*/, 0);
     return true;

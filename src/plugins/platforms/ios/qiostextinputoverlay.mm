@@ -511,7 +511,7 @@ static void executeBlockWithoutAnimation(Block block)
 
 - (void)createLoupe
 {
-    // We magnify the the desktop view. But the loupe itself will be added as a child
+    // We magnify the desktop view. But the loupe itself will be added as a child
     // of the desktop view's parent, so it doesn't become a part of what we magnify.
     _loupeLayer = [[self createLoupeLayer] retain];
     _loupeLayer.targetView = _desktopView;

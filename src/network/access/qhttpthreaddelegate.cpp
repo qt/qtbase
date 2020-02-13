@@ -185,7 +185,7 @@ public:
     QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt,
                                        QHttpNetworkConnection::ConnectionType connectionType)
         : QHttpNetworkConnection(hostName, port, encrypt, connectionType)
-#else
+#else // ### Qt6: Remove section
     QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt,
                                        QHttpNetworkConnection::ConnectionType connectionType,
                                        QSharedPointer<QNetworkSession> networkSession)
@@ -337,7 +337,7 @@ void QHttpThreadDelegate::startRequest()
 #ifdef QT_NO_BEARERMANAGEMENT
         httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl,
                                                                 connectionType);
-#else
+#else // ### Qt6: Remove section
         httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl,
                                                                 connectionType,
                                                                 networkSession);

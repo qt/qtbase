@@ -59,9 +59,9 @@
 
 QT_USE_NAMESPACE
 
-typedef QSharedPointer<QWidget> WidgetPtr;
-typedef QList<WidgetPtr> WidgetPtrList;
-typedef QList<WId> WIdList;
+using WidgetPtr = QSharedPointer<QWidget>;
+using WidgetPtrList = QVector<WidgetPtr>;
+using WIdList = QVector<WId>;
 
 // Create some pre-defined Windows controls by class name
 static WId createInternalWindow(const QString &name)
@@ -74,7 +74,7 @@ static WId createInternalWindow(const QString &name)
             CreateWindowEx(0, reinterpret_cast<const wchar_t *>(name.utf16()),
                           L"NativeCtrl", WS_OVERLAPPEDWINDOW,
                           CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                          0, 0, GetModuleHandle(NULL), NULL);
+                          nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
         if (hwnd) {
             SetWindowText(hwnd, L"Demo");
             result = WId(hwnd);
@@ -179,7 +179,7 @@ void WindowDumper::dump() const
     debug << '#' << n++;
     if (m_watchedWindows.size() > 1)
         debug << '\n';
-    foreach (const QWindow *w, m_watchedWindows) {
+    for (const QWindow *w : m_watchedWindows) {
         const QPoint globalPos = w->mapToGlobal(QPoint());
         debug << "  " << w << " pos=" << globalPos.x() << ',' << globalPos.y() << '\n';
     }
@@ -212,7 +212,7 @@ struct EventFilterOption
     QtDiag::EventFilter::EventCategories categories;
 };
 
-EventFilterOption eventFilterOptions[] = {
+static EventFilterOption eventFilterOptions[] = {
 {"mouse-events", "Dump mouse events.", QtDiag::EventFilter::MouseEvents},
 {"keyboard-events", "Dump keyboard events.", QtDiag::EventFilter::KeyEvents},
 {"state-events", "Dump state/focus change events.", QtDiag::EventFilter::StateChangeEvents | QtDiag::EventFilter::FocusEvents}
@@ -248,11 +248,10 @@ int main(int argc, char *argv[])
     parser.addOption(outputAllOption);
     QCommandLineOption continuousOption(QStringList() << QStringLiteral("c") << QStringLiteral("continuous"),
                                         QStringLiteral("Output continuously."));
-    parser.addOption(outputAllOption);
+    parser.addOption(continuousOption);
     QCommandLineOption moveOption(QStringList() << QStringLiteral("m") << QStringLiteral("move"),
                                   QStringLiteral("Move window to top left corner."));
     parser.addOption(moveOption);
-    parser.addOption(continuousOption);
     QCommandLineOption embedOption(QStringList() << QStringLiteral("e") << QStringLiteral("embed"),
                                    QStringLiteral("Embed a foreign window into a Qt widget."));
     parser.addOption(embedOption);
@@ -271,7 +270,7 @@ int main(int argc, char *argv[])
     }
 
     QWindowList windows;
-    foreach (const QString &argument, parser.positionalArguments()) {
+    for (const QString &argument : parser.positionalArguments()) {
         bool ok = true;
         WId wid = createInternalWindow(argument);
         if (!wid)
@@ -295,7 +294,7 @@ int main(int argc, char *argv[])
     int exitCode = 0;
 
     if (parser.isSet(embedOption)) {
-        QtDiag::EventFilter::EventCategories eventCategories = 0;
+        QtDiag::EventFilter::EventCategories eventCategories;
         for (int i = 0; i < eventFilterOptionCount; ++i) {
             if (parser.isSet(QLatin1String(eventFilterOptions[i].name)))
                 eventCategories |= eventFilterOptions[i].categories;
@@ -303,11 +302,11 @@ int main(int argc, char *argv[])
         if (eventCategories)
             app.installEventFilter(new QtDiag::EventFilter(eventCategories, &app));
 
-        const QRect availableGeometry = QApplication::desktop()->availableGeometry(0);
+        const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
         QPoint pos = availableGeometry.topLeft() + QPoint(availableGeometry.width(), availableGeometry.height()) / 3;
 
         WidgetPtrList mainWindows;
-        foreach (QWindow *window, windows) {
+        for (QWindow *window : qAsConst(windows)) {
             WidgetPtr mainWindow(new EmbeddingWindow(window));
             mainWindow->move(pos);
             mainWindow->resize(availableGeometry.size() / 4);
@@ -324,7 +323,6 @@ int main(int argc, char *argv[])
         QObject::connect(timer, &QTimer::timeout, &dumper, &WindowDumper::dump);
         timer->start(1000);
         exitCode = app.exec();
-
     } else {
         WindowDumper(windows).dump();
     }

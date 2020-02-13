@@ -58,6 +58,23 @@ protected:
     }
 };
 
+class TestPushButton : public QPushButton
+{
+public:
+    TestPushButton(QWidget *parent = nullptr)
+    : QPushButton(parent)
+    {}
+    TestPushButton(const QString &title, QWidget *parent = nullptr)
+    : QPushButton(title, parent)
+    {}
+
+protected:
+    bool hitButton(const QPoint &pos) const override
+    {
+        return rect().contains(pos);
+    }
+};
+
 #include <qbuttongroup.h>
 
 class tst_QButtonGroup : public QObject
@@ -97,7 +114,7 @@ void tst_QButtonGroup::arrowKeyNavigation()
     QGroupBox g1("1", &dlg);
     QHBoxLayout g1layout(&g1);
     QRadioButton bt1("Radio1", &g1);
-    QPushButton pb("PB", &g1);
+    TestPushButton pb("PB", &g1);
     QLineEdit le(&g1);
     QRadioButton bt2("Radio2", &g1);
     g1layout.addWidget(&bt1);
@@ -231,9 +248,9 @@ void tst_QButtonGroup::exclusive()
 {
     QDialog dlg(0);
     QHBoxLayout layout(&dlg);
-    QPushButton *pushButton1 = new QPushButton(&dlg);
-    QPushButton *pushButton2 = new QPushButton(&dlg);
-    QPushButton *pushButton3 = new QPushButton(&dlg);
+    TestPushButton *pushButton1 = new TestPushButton(&dlg);
+    TestPushButton *pushButton2 = new TestPushButton(&dlg);
+    TestPushButton *pushButton3 = new TestPushButton(&dlg);
     pushButton1->setCheckable(true);
     pushButton2->setCheckable(true);
     pushButton3->setCheckable(true);
@@ -271,9 +288,9 @@ void tst_QButtonGroup::exclusive()
 void tst_QButtonGroup::testSignals()
 {
     QButtonGroup buttons;
-    QPushButton pb1;
-    QPushButton pb2;
-    QPushButton pb3;
+    TestPushButton pb1;
+    TestPushButton pb2;
+    TestPushButton pb3;
     buttons.addButton(&pb1);
     buttons.addButton(&pb2, 23);
     buttons.addButton(&pb3);
@@ -363,9 +380,9 @@ void tst_QButtonGroup::checkedButton()
 {
     QButtonGroup buttons;
     buttons.setExclusive(false);
-    QPushButton pb1;
+    TestPushButton pb1;
     pb1.setCheckable(true);
-    QPushButton pb2;
+    TestPushButton pb2;
     pb2.setCheckable(true);
     buttons.addButton(&pb1);
     buttons.addButton(&pb2, 23);
@@ -430,7 +447,7 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
     QFETCH(int, signalCount);
     qRegisterMetaType<QAbstractButton *>("QAbstractButton *");
 
-    QPushButton *button = new QPushButton;
+    TestPushButton *button = new TestPushButton;
     QButtonGroup group;
     group.addButton(button);
 

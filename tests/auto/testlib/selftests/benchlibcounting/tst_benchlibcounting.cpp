@@ -59,5 +59,14 @@ void tst_BenchlibCounting::failingBenchmark()
     };
 }
 
-QTEST_MAIN(tst_BenchlibCounting)
+int main(int argc, char *argv[])
+{
+    std::vector<const char*> args(argv, argv + argc);
+    args.push_back("-eventcounter");
+    argc = args.size();
+    argv = const_cast<char**>(&args[0]);
+
+    QTEST_MAIN_IMPL(tst_BenchlibCounting)
+}
+
 #include "tst_benchlibcounting.moc"

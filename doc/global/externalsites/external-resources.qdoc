@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -480,6 +480,11 @@
 /*!
     \externalpage http://www.khronos.org/registry/gles/
     \title Khronos OpenGL ES API Registry
+*/
+
+/*!
+    \externalpage https://www.khronos.org/opengl/wiki/Array_Texture
+    \title Array Texture
 */
 
 /*!

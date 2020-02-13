@@ -58,7 +58,7 @@ tst_QNetworkAccessManager::tst_QNetworkAccessManager()
 
 void tst_QNetworkAccessManager::networkAccessible()
 {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     QNetworkAccessManager manager;
 
     qRegisterMetaType<QNetworkAccessManager::NetworkAccessibility>("QNetworkAccessManager::NetworkAccessibility");

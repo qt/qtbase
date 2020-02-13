@@ -1999,7 +1999,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa replace()
 */
 
-/*! \fn template <class Key, class T> typename QMap<Key, T>::iterator QMultiMap<Key, T>::insert(typename QMap<Key, T>::const_iterator pos, const Key &key, const T &value)
+/*! \fn template <class Key, class T> typename QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insert(typename QMultiMap<Key, T>::const_iterator pos, const Key &key, const T &value)
 
     \since 5.1
     Inserts a new item with the key \a key and value \a value and with hint \a pos

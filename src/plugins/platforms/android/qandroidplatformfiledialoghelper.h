@@ -41,6 +41,7 @@
 #define QANDROIDPLATFORMFILEDIALOGHELPER_H
 
 #include <jni.h>
+#include <QEventLoop>
 #include <qpa/qplatformdialoghelper.h>
 #include <QtCore/private/qjnihelpers_p.h>
 
@@ -72,6 +73,7 @@ public:
     bool handleActivityResult(jint requestCode, jint resultCode, jobject data) override;
 
 private:
+    QEventLoop m_eventLoop;
     QUrl m_selectedFile;
 };
 

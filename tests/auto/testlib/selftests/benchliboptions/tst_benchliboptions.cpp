@@ -83,6 +83,9 @@ void tst_BenchlibOptions::threeEvents()
 
 int main(int argc, char** argv)
 {
+    std::vector<const char*> args(argv, argv + argc);
+    args.push_back("-eventcounter");
+
     int ret = 0;
 
     TestEventDispatcher dispatcher;
@@ -91,29 +94,27 @@ int main(int argc, char** argv)
     /* Run with no special arguments. */
     {
         tst_BenchlibOptions test;
-        ret += QTest::qExec(&test, argc, argv);
+        ret += QTest::qExec(&test, args.size(), const_cast<char**>(&args[0]));
     }
 
     /* Run with an exact number of iterations. */
     {
-        QVector<char const*> args;
-        for (int i = 0; i < argc; ++i) args << argv[i];
-        args << "-iterations";
-        args << "15";
+        auto extraArgs = args;
+        extraArgs.push_back("-iterations");
+        extraArgs.push_back("15");
         tst_BenchlibFifteenIterations test;
-        ret += QTest::qExec(&test, args.count(), const_cast<char**>(args.data()));
+        ret += QTest::qExec(&test, extraArgs.size(), const_cast<char**>(&extraArgs[0]));
     }
 
     /*
         Run until getting a value of at least 100.
     */
     {
-        QVector<char const*> args;
-        for (int i = 0; i < argc; ++i) args << argv[i];
-        args << "-minimumvalue";
-        args << "100";
+        auto extraArgs = args;
+        extraArgs.push_back("-minimumvalue");
+        extraArgs.push_back("100");
         tst_BenchlibOneHundredMinimum test;
-        ret += QTest::qExec(&test, args.count(), const_cast<char**>(args.data()));
+        ret += QTest::qExec(&test, extraArgs.size(), const_cast<char**>(&extraArgs[0]));
     }
 
     return ret;

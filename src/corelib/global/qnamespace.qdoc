@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -709,26 +709,38 @@
 
     \value ISODateWithMs \l{ISO 8601} extended format, including milliseconds if applicable.
 
-    \value SystemLocaleShortDate The \l{QLocale::ShortFormat}{short format} used
-    by the \l{QLocale::system()}{operating system}.
+    \value SystemLocaleShortDate \e{This enum value is deprecated and
+    shall be removed in Qt 6.} Use QLocale's methods for converting
+    dates and times to and from strings, with the
+    \l{QLocale::ShortFormat}{short format} of
+    \l{QLocale::system()}{the locale used by the operating system}.
 
-    \value SystemLocaleLongDate The \l{QLocale::LongFormat}{long format} used
-    by the \l{QLocale::system()}{operating system}.
+    \value SystemLocaleLongDate \e{This enum value is deprecated and
+    shall be removed in Qt 6.} Use QLocale's methods for converting
+    dates and times to and from strings, with the
+    \l{QLocale::LongFormat}{long format} of \l{QLocale::system()}{the
+    locale used by the operating system}.
 
-    \value DefaultLocaleShortDate The \l{QLocale::ShortFormat}{short format} specified
-    by the \l{QLocale::setDefault()}{application's locale}.
+    \value DefaultLocaleShortDate \e{This enum value is deprecated and
+    shall be removed in Qt 6.} Use QLocale's methods for converting
+    dates and times to and from strings, with the
+    \l{QLocale::ShortFormat}{short format} of
+    \l{QLocale::setDefault()}{the application's locale}.
 
-    \value DefaultLocaleLongDate The \l{QLocale::LongFormat}{long format} used
-    by the \l{QLocale::setDefault()}{application's locale}.
+    \value DefaultLocaleLongDate \e{This enum value is deprecated and
+    shall be removed in Qt 6.} Use QLocale's methods for converting
+    dates and times to and from strings, with the
+    \l{QLocale::LongFormat}{long format} \l{QLocale::setDefault()}{the
+    application's locale}.
 
-    \value SystemLocaleDate \e{This enum value is deprecated.} Use Qt::SystemLocaleShortDate
-    instead (or Qt::SystemLocaleLongDate if you want long dates).
+    \value SystemLocaleDate \e{This enum value is deprecated and shall
+    be removed in Qt 6.} It is equivalent to SystemLocaleShortDate.
 
-    \value LocaleDate \e{This enum value is deprecated.} Use Qt::DefaultLocaleShortDate
-    instead (or Qt::DefaultLocaleLongDate if you want long dates).
+    \value LocaleDate \e{This enum value is deprecated and shall be
+    removed in Qt 6.} It is equivalent to DefaultLocaleShortDate.
 
-    \value LocalDate \e{This enum value is deprecated.} Use Qt::SystemLocaleShortDate
-    instead (or Qt::SystemLocaleLongDate if you want long dates).
+    \value LocalDate \e{This enum value is deprecated and shall be
+    removed in Qt 6.} It is equivalent to SystemLocaleShortDate.
 
     \value RFC2822Date \l{RFC 2822}, \l{RFC 850} and \l{RFC 1036} format:
     either \c{[ddd,] dd MMM yyyy [hh:mm[:ss]][ ±tzoff]}
@@ -1187,6 +1199,7 @@
 
     \value WA_StyleSheetTarget Indicates that the widget appearance was modified
     by a \l{Qt Style Sheets}{style sheet}. WA_StyleSheet will also be set.
+    This value was introduced in Qt 5.12.
 
     \value WA_TabletTracking Indicates that the widget has tablet
     tracking enabled. See QWidget::tabletTracking.
@@ -3321,7 +3334,7 @@
 */
 
 /*!
-  \enum Qt::ReturnByValue_t
+  \enum Qt::ReturnByValueConstant
   \since 5.15
 
   This is a dummy type, designed to help users transition from certain deprecated APIs to their replacement APIs.

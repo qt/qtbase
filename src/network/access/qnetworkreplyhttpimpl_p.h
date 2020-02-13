@@ -66,7 +66,7 @@
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qnetworkreply_p.h>
 #include <QtNetwork/QNetworkProxy>
-#include <QtNetwork/QNetworkSession>
+#include <QtNetwork/QNetworkSession> // ### Qt6: Remove include
 
 #ifndef QT_NO_SSL
 #include <QtNetwork/QSslConfiguration>
@@ -102,7 +102,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingData())
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingDataFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_transferTimedOut())
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
@@ -162,7 +162,7 @@ signals:
 
 class QNetworkReplyHttpImplPrivate: public QNetworkReplyPrivate
 {
-#if QT_CONFIG(bearermanagement)
+#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
     bool startWaitForSession(QSharedPointer<QNetworkSession> &session);
 #endif
 
@@ -186,7 +186,7 @@ public:
     void _q_transferTimedOut();
     void setupTransferTimeout();
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     void _q_networkSessionConnected();
     void _q_networkSessionFailed();
     void _q_networkSessionStateChanged(QNetworkSession::State);

@@ -538,7 +538,7 @@ if(NOT ANDROID)
     )
 endif()
 
-qt_extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL arm64
+qt_extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL arm64 OR TEST_architecture_arch STREQUAL arm) # special case
     SOURCES
         image/qimage_neon.cpp
         painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
@@ -603,6 +603,8 @@ qt_extend_target(Gui CONDITION QT_FEATURE_system_textmarkdownreader AND QT_FEATU
 qt_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader AND NOT QT_FEATURE_system_textmarkdownreader
     SOURCES
         ../3rdparty/md4c/md4c.c ../3rdparty/md4c/md4c.h
+    DEFINES
+        MD4C_USE_UTF8
     INCLUDE_DIRECTORIES
         ../3rdparty/md4c
 )

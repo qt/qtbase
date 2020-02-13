@@ -277,8 +277,8 @@ public:
     bool setMouseGrabEnabled(bool grab) override;
     inline bool hasMouseCapture() const { return GetCapture() == m_data.hwnd; }
 
-    bool startSystemResize(const QPoint &pos, Qt::Corner corner) override;
-    bool startSystemMove(const QPoint &pos) override;
+    bool startSystemResize(Qt::Edges edges) override;
+    bool startSystemMove() override;
 
     void setFrameStrutEventsEnabled(bool enabled) override;
     bool frameStrutEventsEnabled() const override { return testFlag(FrameStrutEventsEnabled); }

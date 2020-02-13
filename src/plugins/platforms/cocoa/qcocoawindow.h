@@ -219,6 +219,8 @@ protected:
     void toggleFullScreen();
     bool isTransitioningToFullScreen() const;
 
+    bool startSystemMove() override;
+
 // private:
 public: // for QNSView
     friend class QCocoaBackingStore;

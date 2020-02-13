@@ -838,9 +838,9 @@ QRhiTexture *QRhiGles2::createTexture(QRhiTexture::Format format, const QSize &p
 
 QRhiSampler *QRhiGles2::createSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
                                       QRhiSampler::Filter mipmapMode,
-                                      QRhiSampler::AddressMode u, QRhiSampler::AddressMode v)
+                                      QRhiSampler::AddressMode u, QRhiSampler::AddressMode v, QRhiSampler::AddressMode w)
 {
-    return new QGles2Sampler(this, magFilter, minFilter, mipmapMode, u, v);
+    return new QGles2Sampler(this, magFilter, minFilter, mipmapMode, u, v, w);
 }
 
 QRhiTextureRenderTarget *QRhiGles2::createTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
@@ -2386,7 +2386,14 @@ void QRhiGles2::executeBindGraphicsPipeline(QRhiGraphicsPipeline *ps)
         f->glDisable(GL_STENCIL_TEST);
     }
 
-    if (psD->topology() == QRhiGraphicsPipeline::Lines || psD->topology() == QRhiGraphicsPipeline::LineStrip)
+    if (psD->m_depthBias != 0 || !qFuzzyIsNull(psD->m_slopeScaledDepthBias)) {
+        f->glPolygonOffset(psD->m_slopeScaledDepthBias, psD->m_depthBias);
+        f->glEnable(GL_POLYGON_OFFSET_FILL);
+    } else {
+        f->glDisable(GL_POLYGON_OFFSET_FILL);
+    }
+
+    if (psD->m_topology == QRhiGraphicsPipeline::Lines || psD->m_topology == QRhiGraphicsPipeline::LineStrip)
         f->glLineWidth(psD->m_lineWidth);
 
     f->glUseProgram(psD->program);
@@ -3626,8 +3633,8 @@ QRhiTexture::NativeTexture QGles2Texture::nativeTexture()
 }
 
 QGles2Sampler::QGles2Sampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,
-                             AddressMode u, AddressMode v)
-    : QRhiSampler(rhi, magFilter, minFilter, mipmapMode, u, v)
+                             AddressMode u, AddressMode v, AddressMode w)
+    : QRhiSampler(rhi, magFilter, minFilter, mipmapMode, u, v, w)
 {
 }
 

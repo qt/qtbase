@@ -76,8 +76,6 @@ private:
     QList<LoggerSet> allLoggerSets() const;
 
     QTemporaryDir tempDir;
-    QRegularExpression durationRegExp;
-    QRegularExpression teamcityLocRegExp;
 };
 
 struct BenchmarkResult
@@ -280,13 +278,17 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "xml",
                      QStringList() << "-xml" << "-o" << logName("xml")
                     )
-        << LoggerSet("old stdout xunitxml",
-                     QStringList() << "stdout xunitxml",
-                     QStringList() << "-xunitxml"
+        << LoggerSet("old stdout junitxml",
+                     QStringList() << "stdout junitxml",
+                     QStringList() << "-junitxml"
                     )
-        << LoggerSet("old xunitxml",
-                     QStringList() << "xunitxml",
-                     QStringList() << "-xunitxml" << "-o" << logName("xunitxml")
+        << LoggerSet("old junitxml",
+                     QStringList() << "junitxml",
+                     QStringList() << "-junitxml" << "-o" << logName("junitxml")
+                    )
+        << LoggerSet("old xunitxml compatibility",
+                     QStringList() << "junitxml",
+                     QStringList() << "-xunitxml" << "-o" << logName("junitxml")
                     )
         << LoggerSet("old stdout lightxml",
                      QStringList() << "stdout lightxml",
@@ -335,13 +337,17 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "xml",
                      QStringList() << "-o" << logName("xml")+",xml"
                     )
-        << LoggerSet("new stdout xunitxml",
-                     QStringList() << "stdout xunitxml",
+        << LoggerSet("new stdout junitxml",
+                     QStringList() << "stdout junitxml",
+                     QStringList() << "-o" << "-,junitxml"
+                    )
+        << LoggerSet("new stdout xunitxml compatibility",
+                     QStringList() << "stdout junitxml",
                      QStringList() << "-o" << "-,xunitxml"
                     )
-        << LoggerSet("new xunitxml",
-                     QStringList() << "xunitxml",
-                     QStringList() << "-o" << logName("xunitxml")+",xunitxml"
+        << LoggerSet("new junitxml",
+                     QStringList() << "junitxml",
+                     QStringList() << "-o" << logName("junitxml")+",junitxml"
                     )
         << LoggerSet("new stdout lightxml",
                      QStringList() << "stdout lightxml",
@@ -384,24 +390,24 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "-o" << logName("xml")+",xml"
                                    << "-o" << "-,txt"
                     )
-        << LoggerSet("txt + xunitxml",
-                     QStringList() << "txt" << "xunitxml",
+        << LoggerSet("txt + junitxml",
+                     QStringList() << "txt" << "junitxml",
                      QStringList() << "-o" << logName("txt")+",txt"
-                                   << "-o" << logName("xunitxml")+",xunitxml"
+                                   << "-o" << logName("junitxml")+",junitxml"
                     )
-        << LoggerSet("lightxml + stdout xunitxml",
-                     QStringList() << "lightxml" << "stdout xunitxml",
+        << LoggerSet("lightxml + stdout junitxml",
+                     QStringList() << "lightxml" << "stdout junitxml",
                      QStringList() << "-o" << logName("lightxml")+",lightxml"
-                                   << "-o" << "-,xunitxml"
+                                   << "-o" << "-,junitxml"
                     )
         // All loggers at the same time (except csv)
         << LoggerSet("all loggers",
-                     QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "xunitxml" << "tap",
+                     QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "junitxml" << "tap",
                      QStringList() << "-o" << logName("txt")+",txt"
                                    << "-o" << logName("xml")+",xml"
                                    << "-o" << logName("lightxml")+",lightxml"
                                    << "-o" << "-,txt"
-                                   << "-o" << logName("xunitxml")+",xunitxml"
+                                   << "-o" << logName("junitxml")+",junitxml"
                                    << "-o" << logName("teamcity")+",teamcity"
                                    << "-o" << logName("tap")+",tap"
                     )
@@ -410,8 +416,6 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
 
 tst_Selftests::tst_Selftests()
     : tempDir(QDir::tempPath() + "/tst_selftests.XXXXXX")
-    , durationRegExp("<Duration msecs=\"[\\d\\.]+\"/>")
-    , teamcityLocRegExp("\\|\\[Loc: .*\\(\\d*\\)\\|\\]")
 {}
 
 void tst_Selftests::initTestCase()
@@ -524,49 +528,6 @@ void tst_Selftests::runSubTest_data()
         QStringList loggers = loggerSet.loggers;
 
         foreach (QString const& subtest, tests) {
-            QStringList arguments = loggerSet.arguments;
-            // Keep in sync with generateTestData()'s extraArgs in generate_expected_output.py:
-            if (subtest == "commandlinedata") {
-                arguments << QString("fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2").split(' ');
-            }
-            else if (subtest == "benchlibcallgrind") {
-                arguments << "-callgrind";
-            }
-            else if (subtest == "benchlibeventcounter") {
-                arguments << "-eventcounter";
-            }
-            else if (subtest == "benchliboptions") {
-                arguments << "-eventcounter";
-            }
-            else if (subtest == "benchlibtickcounter") {
-                arguments << "-tickcounter";
-            }
-            else if (subtest == "badxml") {
-                arguments << "-eventcounter";
-            }
-            else if (subtest == "benchlibcounting") {
-                arguments << "-eventcounter";
-            }
-            else if (subtest == "printdatatags") {
-                arguments << "-datatags";
-            }
-            else if (subtest == "printdatatagswithglobaltags") {
-                arguments << "-datatags";
-            }
-            else if (subtest == "signaldumper") {
-                arguments << "-vs";
-            }
-            else if (subtest == "silent") {
-                arguments << "-silent";
-            }
-            else if (subtest == "verbose1") {
-                arguments << "-v1";
-            }
-            else if (subtest == "verbose2") {
-                arguments << "-v2";
-            }
-
-
             // These tests don't work right unless logging plain text to
             // standard output, either because they execute multiple test
             // objects or because they internally supply arguments to
@@ -630,7 +591,7 @@ void tst_Selftests::runSubTest_data()
             QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
                 << subtest
                 << loggers
-                << arguments
+                << loggerSet.arguments
                 << crashes
             ;
         }
@@ -686,7 +647,7 @@ static inline QByteArray msgProcessError(const QString &binary, const QStringLis
 void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments, bool crashes)
 {
 #if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
-    if (arguments.contains("-callgrind")) {
+    if (subdir == "benchlibcallgrind") {
         QProcess checkProcess;
         QStringList args;
         args << QLatin1String("--version");
@@ -839,8 +800,8 @@ bool tst_Selftests::compareOutput(const QString &logger, const QString &subdir,
 {
 
     if (actual.size() != expected.size()) {
-        *errorMessage = QString::fromLatin1("Mismatch in line count: %1 != %2.")
-                        .arg(actual.size()).arg(expected.size());
+        *errorMessage = QString::fromLatin1("Mismatch in line count. Expected %1 but got %2.")
+                        .arg(expected.size()).arg(actual.size());
         return false;
     }
 
@@ -873,6 +834,7 @@ bool tst_Selftests::compareOutput(const QString &logger, const QString &subdir,
 
         // Special handling for ignoring _FILE_ and _LINE_ if logger is teamcity
         if (logger.endsWith(QLatin1String("teamcity"))) {
+            static QRegularExpression teamcityLocRegExp("\\|\\[Loc: .*\\(\\d*\\)\\|\\]");
             actualLine.replace(teamcityLocRegExp, teamCityLocation());
             expectedLine.replace(teamcityLocRegExp, teamCityLocation());
         }
@@ -943,6 +905,7 @@ bool tst_Selftests::compareLine(const QString &logger, const QString &subdir,
 
     if (actualLine.startsWith(QLatin1String("    <Duration msecs="))
         || actualLine.startsWith(QLatin1String("<Duration msecs="))) {
+        static QRegularExpression durationRegExp("<Duration msecs=\"[\\d\\.]+\"/>");
         QRegularExpressionMatch match = durationRegExp.match(actualLine);
         if (match.hasMatch())
             return true;

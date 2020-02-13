@@ -317,7 +317,7 @@ void QFtpDTP::connectToHost(const QString & host, quint16 port)
         socket = nullptr;
     }
     socket = new QTcpSocket(this);
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     //copy network session down to the socket
     socket->setProperty("_q_networksession", property("_q_networksession"));
 #endif
@@ -333,7 +333,7 @@ void QFtpDTP::connectToHost(const QString & host, quint16 port)
 
 int QFtpDTP::setupListener(const QHostAddress &address)
 {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     //copy network session down to the socket
     listener.setProperty("_q_networksession", property("_q_networksession"));
 #endif
@@ -817,7 +817,7 @@ QFtpPI::QFtpPI(QObject *parent) :
 void QFtpPI::connectToHost(const QString &host, quint16 port)
 {
     emit connectState(QFtp::HostLookup);
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     //copy network session down to the socket & DTP
     commandSocket.setProperty("_q_networksession", property("_q_networksession"));
     dtp.setProperty("_q_networksession", property("_q_networksession"));
@@ -2287,7 +2287,7 @@ void QFtpPrivate::_q_startNextCommand()
         c->rawCmds.clear();
         _q_piFinished(QLatin1String("Proxy set to ") + proxyHost + QLatin1Char(':') + QString::number(proxyPort));
     } else if (c->command == QFtp::ConnectToHost) {
-#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
         //copy network session down to the PI
         pi.setProperty("_q_networksession", q->property("_q_networksession"));
 #endif

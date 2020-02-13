@@ -261,6 +261,7 @@ Q_SIGNALS:
     void modeChanged(QSslSocket::SslMode newMode);
     void encryptedBytesWritten(qint64 totalBytes);
     void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator);
+    void newSessionTicketReceived();
     void alertSent(QAlertLevel level, QAlertType type, const QString &description);
     void alertReceived(QAlertLevel level, QAlertType type, const QString &description);
     void handshakeInterruptedOnError(const QSslError &error);

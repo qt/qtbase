@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QTestPrivate {
     void disableWindowRestore();
+    bool macCrashReporterWillShowDialog();
 
     class AppNapDisabler
     {

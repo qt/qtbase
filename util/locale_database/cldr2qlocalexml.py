@@ -305,6 +305,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
 
     result['decimal'] = get_number_in_system(path, "numbers/symbols/decimal", numbering_system)
     result['group'] = get_number_in_system(path, "numbers/symbols/group", numbering_system)
+    assert result['decimal'] != result['group']
     result['list'] = get_number_in_system(path, "numbers/symbols/list", numbering_system)
     result['percent'] = get_number_in_system(path, "numbers/symbols/percentSign", numbering_system)
     try:

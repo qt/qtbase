@@ -310,7 +310,7 @@ static QString commandLinesForOutput(QStringList commands)
         if (!commands.at(i).startsWith("rem", Qt::CaseInsensitive))
             commands.insert(i + 1, errchk);
     }
-    return commands.join('\n');
+    return commands.join("\r\n");
 }
 
 static QString unquote(const QString &value)

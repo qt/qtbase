@@ -72,6 +72,7 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
         string(REGEX REPLACE \"QMAKE_PRL_LIBS_FOR_CMAKE[ \\t]*=[ \\t]*([^\\n]*)\" \"\\\\1\" _static_depends \"${_prl_strings}\")
         string(REGEX REPLACE \"[ \\t]+\" \";\" _standard_libraries \"${CMAKE_CXX_STANDARD_LIBRARIES}\")
         set(_search_paths)
+        set(_fw_search_paths)
         set(_framework_flag)
         string(REPLACE \"\\$\\$[QT_INSTALL_LIBS]\" \"${_qt5_install_libs}\" _static_depends \"${_static_depends}\")
         foreach(_flag ${_static_depends})
@@ -79,10 +80,13 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
             if(_flag MATCHES \"^-framework$\")
                 # Handle the next flag as framework name
                 set(_framework_flag 1)
+            elseif(_flag MATCHES \"^-F(.*)$\")
+                # Handle -F/foo/bar flags by recording the framework search paths to be used
+                # by find_library.
+                list(APPEND _fw_search_paths \"${CMAKE_MATCH_1}\")
             elseif(_framework_flag OR _flag MATCHES \"^-l(.*)$\")
                 if(_framework_flag)
                     # Handle Darwin framework bundles passed as -framework Foo
-                    unset(_framework_flag)
                     set(_lib ${_flag})
                 else()
                     # Handle normal libraries passed as -lfoo
@@ -100,10 +104,14 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
                     find_package(Threads REQUIRED)
                     list(APPEND _lib_deps Threads::Threads)
                 else()
-                    if(_search_paths)
-                        find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib} HINTS ${_search_paths} NO_DEFAULT_PATH)
+                    set(current_search_paths \"${_search_paths}\")
+                    if(_framework_flag)
+                        set(current_search_paths \"${_fw_search_paths}\")
                     endif()
-                    find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib})
+                    if(current_search_paths)
+                        find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib} HINTS ${current_search_paths} NO_DEFAULT_PATH)
+                    endif()
+                    find_library(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH ${_lib} HINTS ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
                     mark_as_advanced(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH)
                     if(_Qt5$${CMAKE_MODULE_NAME}_${Configuration}_${_lib}_PATH)
                         list(APPEND _lib_deps
@@ -112,6 +120,7 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
                     else()
                         message(FATAL_ERROR \"Library not found: ${_lib}\")
                     endif()
+                    unset(_framework_flag)
                 endif()
             elseif(EXISTS \"${_flag}\")
                 # The flag is an absolute path to an existing library
