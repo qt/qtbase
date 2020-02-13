@@ -410,6 +410,7 @@ private slots:
     void closeWithChildWindow();
 
     void winIdAfterClose();
+    void receivesLanguageChangeEvent();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -11358,6 +11359,56 @@ void tst_QWidget::winIdAfterClose()
 
     QCOMPARE(spy->winId, WId(0));
     delete spy;
+}
+
+class LanguageChangeEventWidget : public QWidget
+{
+public:
+    LanguageChangeEventWidget(QWidget *parent = nullptr) : QWidget(parent) {}
+    int languageChangeCount = 0;
+protected:
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::LanguageChange)
+            languageChangeCount++;
+        return QWidget::event(e);
+    }
+};
+
+class LanguageChangeEventWindow : public QWindow
+{
+public:
+    LanguageChangeEventWindow(QWindow *parent = nullptr) : QWindow(parent) {}
+    int languageChangeCount = 0;
+protected:
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::LanguageChange)
+            languageChangeCount++;
+        return QWindow::event(e);
+    }
+};
+
+void tst_QWidget::receivesLanguageChangeEvent()
+{
+    // Confirm that any QWindow or QWidget only gets a single
+    // LanguageChange event when a translator is installed
+    LanguageChangeEventWidget topLevel;
+    auto childWidget = new LanguageChangeEventWidget(&topLevel);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    LanguageChangeEventWindow ww;
+    ww.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&ww));
+    LanguageChangeEventWidget topLevelNotShown;
+    QTranslator t;
+    QVERIFY(t.load("hellotr_la.qm", ":/"));
+    QVERIFY(qApp->installTranslator(&t));
+    QCoreApplication::sendPostedEvents(0, QEvent::LanguageChange);
+    QCOMPARE(topLevel.languageChangeCount, 1);
+    QCOMPARE(topLevelNotShown.languageChangeCount, 1);
+    QCOMPARE(childWidget->languageChangeCount, 1);
+    QCOMPARE(ww.languageChangeCount, 1);
 }
 
 QTEST_MAIN(tst_QWidget)
