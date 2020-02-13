@@ -1238,6 +1238,7 @@ void QSslConfiguration::setHandshakeMustInterruptOnError(bool interrupt)
 #if QT_CONFIG(openssl)
     d->reportFromCallback = interrupt;
 #else
+    Q_UNUSED(interrupt);
     qCWarning(lcSsl, "This operation requires OpenSSL as TLS backend");
 #endif
 }
@@ -1275,6 +1276,7 @@ void QSslConfiguration::setMissingCertificateIsFatal(bool cannotRecover)
 #if QT_CONFIG(openssl)
     d->missingCertIsFatal = cannotRecover;
 #else
+    Q_UNUSED(cannotRecover);
     qCWarning(lcSsl, "Handling a missing certificate as a fatal error requires an OpenSSL backend");
 #endif // openssl
 }
