@@ -6,7 +6,7 @@ instructions:
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
-      Failed to call cmake. Contact Liang then.
+      Failed to call cmake.
     enable_if:
       condition: property
       property: host.os
@@ -17,7 +17,7 @@ instructions:
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
-      Failed to call cmake. Contact Liang then.
+      Failed to call cmake.
     disable_if:
       condition: property
       property: host.os
