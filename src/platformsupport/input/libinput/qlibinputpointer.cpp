@@ -133,16 +133,28 @@ void QLibInputPointer::processAxis(libinput_event_pointer *e)
         angleDelta.setX(qRound(value));
 #else
     if (libinput_event_pointer_has_axis(e, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL)) {
+#if QT_CONFIG(libinput_hires_wheel_support)
+        value = libinput_event_pointer_get_scroll_value_v120(e, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+#else
         value = libinput_event_pointer_get_axis_value(e, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+#endif
         angleDelta.setY(qRound(value));
     }
     if (libinput_event_pointer_has_axis(e, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL)) {
+#if QT_CONFIG(libinput_hires_wheel_support)
+        value = libinput_event_pointer_get_scroll_value_v120(e, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+#else
         value = libinput_event_pointer_get_axis_value(e, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+#endif
         angleDelta.setX(qRound(value));
     }
 #endif
-    const int factor = 8;
-    angleDelta *= -factor;
+#if QT_CONFIG(libinput_hires_wheel_support)
+    const int factor = -1;
+#else
+    const int factor = -8;
+#endif
+    angleDelta *= factor;
     Qt::KeyboardModifiers mods = QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers();
     QWindowSystemInterface::handleWheelEvent(nullptr, m_pos, m_pos, QPoint(), angleDelta, mods);
 }

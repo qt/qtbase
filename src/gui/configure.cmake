@@ -512,6 +512,23 @@ xcb_xkb_get_kbd_by_name_replies_key_names_value_list_sizeof(nullptr, 0, 0, 0, 0,
 }
 ")
 
+# libinput_hires_wheel_support
+qt_config_compile_test(libinput_hires_wheel_support
+    LABEL "libinput hires wheel support"
+    LIBRARIES
+        Libinput::Libinput
+    CODE
+"#include <libinput.h>
+int main(void)
+{
+    /* BEGIN TEST: */
+libinput_event_type type = LIBINPUT_EVENT_POINTER_SCROLL_WHEEL;
+libinput_event_pointer_get_scroll_value_v120(nullptr, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+    /* END TEST: */
+    return 0;
+}
+")
+
 # special case begin
 # directwrite (assumes DirectWrite2)
 qt_config_compile_test(directwrite
@@ -677,6 +694,10 @@ qt_feature("integrityhid" PRIVATE
 qt_feature("libinput-axis-api" PRIVATE
     LABEL "axis API in libinput"
     CONDITION QT_FEATURE_libinput AND ON
+)
+qt_feature("libinput-hires-wheel-support" PRIVATE
+    LABEL "HiRes wheel support in libinput"
+    CONDITION QT_FEATURE_libinput AND TEST_libinput_hires_wheel_support
 )
 qt_feature("lgmon"
     LABEL "lgmon"
@@ -1223,6 +1244,7 @@ qt_configure_end_summary_section() # end of "Qt Gui" section
 qt_configure_add_summary_section(NAME "Features used by QPA backends")
 qt_configure_add_summary_entry(ARGS "evdev")
 qt_configure_add_summary_entry(ARGS "libinput")
+qt_configure_add_summary_entry(ARGS "libinput_hires_wheel_support")
 qt_configure_add_summary_entry(ARGS "integrityhid")
 qt_configure_add_summary_entry(ARGS "mtdev")
 qt_configure_add_summary_entry(ARGS "tslib")

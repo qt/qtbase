@@ -208,7 +208,11 @@ void QLibInputHandler::processEvent(libinput_event *ev)
     case LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
         m_pointer->processAbsMotion(libinput_event_get_pointer_event(ev));
         break;
+#if QT_CONFIG(libinput_hires_wheel_support)
+    case LIBINPUT_EVENT_POINTER_SCROLL_WHEEL:
+#else
     case LIBINPUT_EVENT_POINTER_AXIS:
+#endif
         m_pointer->processAxis(libinput_event_get_pointer_event(ev));
         break;
     case LIBINPUT_EVENT_KEYBOARD_KEY:
