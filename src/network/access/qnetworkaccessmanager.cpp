@@ -1462,7 +1462,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         // immediately set 'networkAccessible' even before we start
         // the monitor.
 #ifdef QT_NO_BEARERMANAGEMENT
-        if (d->networkAccessible
+        if (!d->networkAccessible
 #else
         if (d->networkAccessible == NotAccessible
 #endif // QT_NO_BEARERMANAGEMENT
