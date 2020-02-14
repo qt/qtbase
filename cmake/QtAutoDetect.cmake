@@ -173,7 +173,22 @@ function(qt_auto_detect_cmake_config)
     endif()
 endfunction()
 
+function(qt_auto_detect_darwin)
+    if(APPLE)
+        # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default
+        # to a value that we choose. This replicates the behavior
+        # in mkspecs/common/macx.conf where
+        # QMAKE_MACOSX_DEPLOYMENT_TARGET is set.
+        if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+            set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING
+                "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value.")
+        endif()
+        message(STATUS "CMAKE_OSX_DEPLOYMENT_TARGET set to: \"${CMAKE_OSX_DEPLOYMENT_TARGET}\".")
+    endif()
+endfunction()
+
 qt_auto_detect_cmake_config()
+qt_auto_detect_darwin()
 qt_auto_detect_ios()
 qt_auto_detect_android()
 qt_auto_detect_vpckg()
