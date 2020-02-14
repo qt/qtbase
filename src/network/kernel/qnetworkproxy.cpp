@@ -241,10 +241,6 @@
 #include "qstringlist.h"
 #include "qurl.h"
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-#include <QtNetwork/QNetworkConfiguration>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QSocks5SocketEngineHandler;
@@ -1128,73 +1124,6 @@ QNetworkProxyQuery::QNetworkProxyQuery(quint16 bindPort, const QString &protocol
     d->type = queryType;
 }
 
-#if !defined(QT_NO_BEARERMANAGEMENT) && QT_DEPRECATED_SINCE(5, 10)
-/*!
-    \deprecated
-
-    Constructs a QNetworkProxyQuery with the URL \a requestUrl and
-    sets the query type to \a queryType. The specified \a networkConfiguration
-    parameter is ignored.
-
-    \sa protocolTag(), peerHostName(), peerPort(), networkConfiguration()
-*/
-QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfiguration,
-                                       const QUrl &requestUrl, QueryType queryType)
-{
-    Q_UNUSED(networkConfiguration)
-    d->remote = requestUrl;
-    d->type = queryType;
-}
-
-/*!
-    \deprecated
-
-    Constructs a QNetworkProxyQuery of type \a queryType and sets the
-    protocol tag to be \a protocolTag. This constructor is suitable
-    for QNetworkProxyQuery::TcpSocket queries, because it sets the
-    peer hostname to \a hostname and the peer's port number to \a
-    port. The specified \a networkConfiguration parameter is ignored.
-
-    \sa networkConfiguration()
-*/
-QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfiguration,
-                                       const QString &hostname, int port,
-                                       const QString &protocolTag,
-                                       QueryType queryType)
-{
-    Q_UNUSED(networkConfiguration);
-    d->remote.setScheme(protocolTag);
-    d->remote.setHost(hostname);
-    d->remote.setPort(port);
-    d->type = queryType;
-}
-
-/*!
-    \deprecated
-
-    Constructs a QNetworkProxyQuery of type \a queryType and sets the
-    protocol tag to be \a protocolTag. This constructor is suitable
-    for QNetworkProxyQuery::TcpSocket queries because it sets the
-    local port number to \a bindPort. The specified \a networkConfiguration
-    parameter is ignored.
-
-    Note that \a bindPort is of type quint16 to indicate the exact
-    port number that is requested. The value of -1 (unknown) is not
-    allowed in this context.
-
-    \sa localPort(), networkConfiguration()
-*/
-QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfiguration,
-                                       quint16 bindPort, const QString &protocolTag,
-                                       QueryType queryType)
-{
-    Q_UNUSED(networkConfiguration);
-    d->remote.setScheme(protocolTag);
-    d->localPort = bindPort;
-    d->type = queryType;
-}
-#endif // !defined(QT_NO_BEARERMANAGEMENT) && QT_DEPRECATED_SINCE(5, 10)
-
 /*!
     Constructs a QNetworkProxyQuery object that is a copy of \a other.
 */
@@ -1416,33 +1345,6 @@ void QNetworkProxyQuery::setUrl(const QUrl &url)
 {
     d->remote = url;
 }
-
-#if !defined(QT_NO_BEARERMANAGEMENT) && QT_DEPRECATED_SINCE(5, 10)
-/*!
-    \deprecated
-
-    Returns QNetworkConfiguration().
-
-    \sa setNetworkConfiguration()
-*/
-QNetworkConfiguration QNetworkProxyQuery::networkConfiguration() const
-{
-    return QNetworkConfiguration();
-}
-
-/*!
-    \deprecated
-
-    This function does nothing. The specified \a networkConfiguration parameter
-    is ignored.
-
-    \sa networkConfiguration()
-*/
-void QNetworkProxyQuery::setNetworkConfiguration(const QNetworkConfiguration &networkConfiguration)
-{
-    Q_UNUSED(networkConfiguration);
-}
-#endif // !defined(QT_NO_BEARERMANAGEMENT) && QT_DEPRECATED_SINCE(5, 10)
 
 /*!
     \class QNetworkProxyFactory

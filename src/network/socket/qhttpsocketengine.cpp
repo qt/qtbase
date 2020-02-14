@@ -72,9 +72,6 @@ bool QHttpSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstractSo
     setSocketType(type);
     d->socket = new QTcpSocket(this);
     d->reply = new QHttpNetworkReply(QUrl(), this);
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    d->socket->setProperty("_q_networkSession", property("_q_networkSession"));
-#endif
 
     // Explicitly disable proxying on the proxy socket itself to avoid
     // unwanted recursion.

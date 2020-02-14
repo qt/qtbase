@@ -56,10 +56,6 @@
 #    include <QtNetwork/qsslcipher.h>
 #endif
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-#include "private/qnetworksession_p.h"
-#endif
-
 #include "private/qnetconmonitor_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -122,11 +118,6 @@ void QHttpNetworkConnectionChannel::init()
         socket = new QTcpSocket;
 #else
     socket = new QTcpSocket;
-#endif
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    //push session down to socket
-    if (networkSession)
-        socket->setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
 #ifndef QT_NO_NETWORKPROXY
     // Set by QNAM anyway, but let's be safe here

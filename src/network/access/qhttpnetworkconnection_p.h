@@ -55,7 +55,6 @@
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qabstractsocket.h>
-#include <QtNetwork/qnetworksession.h>
 
 #include <qhttp2configuration.h>
 
@@ -100,23 +99,12 @@ public:
         ConnectionTypeHTTP2Direct
     };
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
-                                    ConnectionType connectionType = ConnectionTypeHTTP,
-                                    QObject *parent = nullptr, QSharedPointer<QNetworkSession> networkSession
-                                    = QSharedPointer<QNetworkSession>());
-    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
-                           bool encrypt = false, QObject *parent = nullptr,
-                           QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>(),
-                           ConnectionType connectionType = ConnectionTypeHTTP);
-#else
     explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
                                     ConnectionType connectionType = ConnectionTypeHTTP,
                                     QObject *parent = 0);
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
                            bool encrypt = false, QObject *parent = 0,
                            ConnectionType connectionType = ConnectionTypeHTTP);
-#endif
     ~QHttpNetworkConnection();
 
     //The hostname to which this is connected to.
@@ -288,10 +276,6 @@ public:
 
 #ifndef QT_NO_SSL
     QSharedPointer<QSslContext> sslContext;
-#endif
-
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    QSharedPointer<QNetworkSession> networkSession;
 #endif
 
     QHttp2Configuration http2Parameters;

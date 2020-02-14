@@ -317,10 +317,6 @@ void QFtpDTP::connectToHost(const QString & host, quint16 port)
         socket = nullptr;
     }
     socket = new QTcpSocket(this);
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    //copy network session down to the socket
-    socket->setProperty("_q_networksession", property("_q_networksession"));
-#endif
     socket->setObjectName(QLatin1String("QFtpDTP Passive state socket"));
     connect(socket, SIGNAL(connected()), SLOT(socketConnected()));
     connect(socket, SIGNAL(readyRead()), SLOT(socketReadyRead()));
@@ -333,10 +329,6 @@ void QFtpDTP::connectToHost(const QString & host, quint16 port)
 
 int QFtpDTP::setupListener(const QHostAddress &address)
 {
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    //copy network session down to the socket
-    listener.setProperty("_q_networksession", property("_q_networksession"));
-#endif
     if (!listener.isListening() && !listener.listen(address, 0))
         return -1;
     return listener.serverPort();
@@ -819,11 +811,6 @@ QFtpPI::QFtpPI(QObject *parent) :
 void QFtpPI::connectToHost(const QString &host, quint16 port)
 {
     emit connectState(QFtp::HostLookup);
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    //copy network session down to the socket & DTP
-    commandSocket.setProperty("_q_networksession", property("_q_networksession"));
-    dtp.setProperty("_q_networksession", property("_q_networksession"));
-#endif
     commandSocket.connectToHost(host, port);
 }
 
@@ -2290,10 +2277,6 @@ void QFtpPrivate::_q_startNextCommand()
         c->rawCmds.clear();
         _q_piFinished(QLatin1String("Proxy set to ") + proxyHost + QLatin1Char(':') + QString::number(proxyPort));
     } else if (c->command == QFtp::ConnectToHost) {
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-        //copy network session down to the PI
-        pi.setProperty("_q_networksession", q->property("_q_networksession"));
-#endif
         if (!proxyHost.isEmpty()) {
             host = c->rawCmds.at(0);
             port = c->rawCmds.at(1).toUInt();

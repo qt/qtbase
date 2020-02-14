@@ -66,12 +66,6 @@
 #include <QtNetwork/private/qsslconfiguration_p.h>
 #endif
 #endif
-#ifndef QT_NO_BEARERMANAGEMENT
-#include <QtNetwork/qnetworkconfigmanager.h>
-#include <QtNetwork/qnetworkconfiguration.h>
-#include <QtNetwork/qnetworksession.h>
-#include <QtNetwork/private/qnetworksession_p.h>
-#endif
 #ifdef QT_BUILD_INTERNAL
 #include <QtNetwork/private/qnetworkreplyimpl_p.h> // implicitly included by qnetworkaccessmanager_p.h currently, but don't rely on that being true forever
 #include <QtNetwork/private/qnetworkaccessmanager_p.h>
@@ -160,11 +154,6 @@ class tst_QNetworkReply: public QObject
     QSslConfiguration storedSslConfiguration;
     QList<QSslError> storedExpectedSslErrors;
     static const QString certsFilePath;
-#endif
-#ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfigurationManager *netConfMan;
-    QNetworkConfiguration networkConfiguration;
-    QScopedPointer<QNetworkSession> networkSession;
 #endif
 
     using QObject::connect;
@@ -480,15 +469,6 @@ private Q_SLOTS:
 #endif
 
     void emitErrorForAllReplies(); // QTBUG-36890
-
-#ifdef QT_BUILD_INTERNAL
-    void backgroundRequest_data();
-    void backgroundRequest();
-    void backgroundRequestInterruption_data();
-    void backgroundRequestInterruption();
-    void backgroundRequestConnectInBackground_data();
-    void backgroundRequestConnectInBackground();
-#endif
 
     void putWithRateLimiting();
 
@@ -1576,15 +1556,6 @@ void tst_QNetworkReply::initTestCase()
 #ifndef QT_NO_SSL
     QSslConfiguration::defaultConfiguration().caCertificates(); //preload certificates
 #endif
-#ifndef QT_NO_BEARERMANAGEMENT
-    netConfMan = new QNetworkConfigurationManager(this);
-    networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession.reset(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
-    }
-#endif
 
     echoProcessDir = QFINDTESTDATA("echo");
     QVERIFY2(!echoProcessDir.isEmpty(), qPrintable(
@@ -1598,11 +1569,6 @@ void tst_QNetworkReply::cleanupTestCase()
 #if !defined Q_OS_WIN
     if (!wronlyFileName.isNull())
         QFile::remove(wronlyFileName);
-#endif
-#ifndef QT_NO_BEARERMANAGEMENT
-    if (networkSession && networkSession->isOpen()) {
-        networkSession->close();
-    }
 #endif
 }
 
@@ -5931,11 +5897,6 @@ void tst_QNetworkReply::httpProxyCommands()
     QNetworkRequest request(url);
     request.setRawHeader("User-Agent", "QNetworkReplyAutoTest/1.0");
     QNetworkReplyPtr reply(manager.get(request));
-    //clearing the proxy here causes the test to fail.
-    //the proxy isn't used until after the bearer has been started
-    //which is correct in general, because system proxy isn't known until that time.
-    //removing this line is safe, as the proxy is also reset by the cleanup() function
-    //manager.setProxy(QNetworkProxy());
 
     // wait for the finished signal
     QVERIFY(waitForFinish(reply) != Timeout);
@@ -7028,38 +6989,7 @@ void tst_QNetworkReply::getFromUnreachableIp()
     // NOERROR; so socket engine starts a timer (30 s.) and waits for a timeout/
     // error/success. Unfortunately, the test itself is waiting only for 5 s.
     // So we have to adjust the connection timeout or skip the test completely
-    // if the 'bearermanagement' feature is not available.
-#if QT_CONFIG(bearermanagement)
-    class ConfigurationGuard
-    {
-    public:
-        explicit ConfigurationGuard(QNetworkAccessManager *m)
-            : manager(m)
-        {
-            Q_ASSERT(m);
-            auto conf = manager->configuration();
-            previousTimeout = conf.connectTimeout();
-            conf.setConnectTimeout(1500);
-            manager->setConfiguration(conf);
-        }
-        ~ConfigurationGuard()
-        {
-            Q_ASSERT(manager);
-            auto conf = manager->configuration();
-            conf.setConnectTimeout(previousTimeout);
-            manager->setConfiguration(conf);
-        }
-    private:
-        QNetworkAccessManager *manager = nullptr;
-        int previousTimeout = 0;
-
-        Q_DISABLE_COPY(ConfigurationGuard)
-    };
-
-    const ConfigurationGuard restorer(&manager);
-#else // bearermanagement
     QSKIP("This test is non-deterministic on Windows x86");
-#endif // !bearermanagement
 #endif // Q_OS_WIN
 
     QNetworkRequest request(QUrl("http://255.255.255.255/42/23/narf/narf/narf"));
@@ -8135,233 +8065,6 @@ void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
         replies.at(a)->deleteLater();
     }
 }
-
-#ifdef QT_BUILD_INTERNAL
-void tst_QNetworkReply::backgroundRequest_data()
-{
-#ifndef QT_NO_BEARERMANAGEMENT
-    QTest::addColumn<QUrl>("url");
-    QTest::addColumn<bool>("background");
-    QTest::addColumn<int>("policy");
-    QTest::addColumn<QNetworkReply::NetworkError>("error");
-
-    QUrl httpurl("http://" + QtNetworkSettings::httpServerName());
-    QUrl httpsurl("https://" + QtNetworkSettings::httpServerName());
-#if QT_CONFIG(ftp)
-    QUrl ftpurl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/rfc3252.txt");
-#endif
-
-    QTest::newRow("http, fg, normal") << httpurl << false << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
-    QTest::newRow("http, bg, normal") << httpurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
-    QTest::newRow("http, fg, nobg") << httpurl << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
-    QTest::newRow("http, bg, nobg") << httpurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
-
-#ifndef QT_NO_SSL
-    QTest::newRow("https, fg, normal") << httpsurl << false << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
-    QTest::newRow("https, bg, normal") << httpsurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
-    QTest::newRow("https, fg, nobg") << httpsurl << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
-    QTest::newRow("https, bg, nobg") << httpsurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
-#endif
-
-#if QT_CONFIG(ftp)
-    QTest::newRow("ftp, fg, normal") << ftpurl << false << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
-    QTest::newRow("ftp, bg, normal") << ftpurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
-    QTest::newRow("ftp, fg, nobg") << ftpurl << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
-    QTest::newRow("ftp, bg, nobg") << ftpurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
-#endif
-#endif // !QT_NO_BEARERMANAGEMENT
-}
-#endif
-
-//test purpose: background requests can't be started when not allowed
-#ifdef QT_BUILD_INTERNAL
-void tst_QNetworkReply::backgroundRequest()
-{
-#ifndef QT_NO_BEARERMANAGEMENT
-    QFETCH(QUrl, url);
-    QFETCH(bool, background);
-    QFETCH(int, policy);
-    QFETCH(QNetworkReply::NetworkError, error);
-
-    QNetworkRequest request(url);
-
-    if (background)
-        request.setAttribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(true));
-
-    //this preconstructs the session so we can change policies in advance
-    manager.setConfiguration(networkConfiguration);
-
-#ifndef QT_NO_SSL
-    connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
-        SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
-#endif
-
-    const QWeakPointer<const QNetworkSession> sessionWeakPtr = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
-    QVERIFY(!sessionWeakPtr.isNull());
-    auto session = const_cast<QNetworkSession *>(sessionWeakPtr.toStrongRef().data());
-    QNetworkSession::UsagePolicies original = session->usagePolicies();
-    QNetworkSessionPrivate::setUsagePolicies(*session, QNetworkSession::UsagePolicies(policy));
-
-    QNetworkReplyPtr reply(manager.get(request));
-
-    QVERIFY(waitForFinish(reply) != Timeout);
-    if (session)
-        QNetworkSessionPrivate::setUsagePolicies(*session, original);
-
-    QVERIFY(reply->isFinished());
-    QCOMPARE(reply->error(), error);
-#endif
-}
-#endif
-
-#ifdef QT_BUILD_INTERNAL
-void tst_QNetworkReply::backgroundRequestInterruption_data()
-{
-    QTest::addColumn<QUrl>("url");
-    QTest::addColumn<bool>("background");
-    QTest::addColumn<QNetworkReply::NetworkError>("error");
-
-    QUrl httpurl("http://" + QtNetworkSettings::httpServerName() + "/qtest/mediumfile");
-    QUrl httpsurl("https://" + QtNetworkSettings::httpServerName() + "/qtest/mediumfile");
-#if QT_CONFIG(ftp)
-    QUrl ftpurl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/bigfile");
-#endif
-
-    QTest::newRow("http, fg, nobg") << httpurl << false << QNetworkReply::NoError;
-    QTest::newRow("http, bg, nobg") << httpurl << true << QNetworkReply::BackgroundRequestNotAllowedError;
-
-#ifndef QT_NO_SSL
-    QTest::newRow("https, fg, nobg") << httpsurl << false << QNetworkReply::NoError;
-    QTest::newRow("https, bg, nobg") << httpsurl << true  << QNetworkReply::BackgroundRequestNotAllowedError;
-#endif
-
-#if QT_CONFIG(ftp)
-    QTest::newRow("ftp, fg, nobg") << ftpurl << false << QNetworkReply::NoError;
-    QTest::newRow("ftp, bg, nobg") << ftpurl << true << QNetworkReply::BackgroundRequestNotAllowedError;
-#endif
-}
-#endif
-
-//test purpose: background requests in progress are aborted when policy changes to disallow them
-#ifdef QT_BUILD_INTERNAL
-void tst_QNetworkReply::backgroundRequestInterruption()
-{
-#ifndef QT_NO_BEARERMANAGEMENT
-    if (QNetworkStatusMonitor::isEnabled() && QByteArray(QTest::currentDataTag()).startsWith("http"))
-        QSKIP("This test (currently) doesn't make any sense when QNetworkStatusMonitor is enabled");
-
-    QFETCH(QUrl, url);
-    QFETCH(bool, background);
-    QFETCH(QNetworkReply::NetworkError, error);
-
-    QNetworkRequest request(url);
-
-    if (background)
-        request.setAttribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(true));
-
-    //this preconstructs the session so we can change policies in advance
-    manager.setConfiguration(networkConfiguration);
-
-#ifndef QT_NO_SSL
-    connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
-        SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
-#endif
-
-    const QWeakPointer<const QNetworkSession> sessionWeakPtr = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
-    QVERIFY(!sessionWeakPtr.isNull());
-    auto session = const_cast<QNetworkSession *>(sessionWeakPtr.toStrongRef().data());
-    QNetworkSession::UsagePolicies original = session->usagePolicies();
-    QNetworkSessionPrivate::setUsagePolicies(*session, QNetworkSession::NoPolicy);
-
-    request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 8192);
-    QNetworkReplyPtr reply(manager.get(request));
-    reply->setReadBufferSize(1024);
-
-    QSignalSpy spy(reply.data(), SIGNAL(readyRead()));
-    QTRY_VERIFY(spy.count() > 0);
-
-    QNetworkSessionPrivate::setUsagePolicies(*session, QNetworkSession::NoBackgroundTrafficPolicy);
-
-    // After we have changed the policy we can download at full speed.
-    reply->setReadBufferSize(0);
-
-    QVERIFY(waitForFinish(reply) != Timeout);
-    if (session)
-        QNetworkSessionPrivate::setUsagePolicies(*session, original);
-
-    QVERIFY(reply->isFinished());
-    QCOMPARE(reply->error(), error);
-#endif
-}
-#endif
-
-#ifdef QT_BUILD_INTERNAL
-void tst_QNetworkReply::backgroundRequestConnectInBackground_data()
-{
-    QTest::addColumn<QUrl>("url");
-    QTest::addColumn<bool>("background");
-
-    QUrl httpurl("http://" + QtNetworkSettings::httpServerName());
-#if QT_CONFIG(ftp)
-    QUrl ftpurl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/rfc3252.txt");
-#endif
-
-    QTest::newRow("http, fg") << httpurl << false;
-    QTest::newRow("http, bg") << httpurl << true;
-
-#if QT_CONFIG(ftp)
-    QTest::newRow("ftp, fg") << ftpurl << false;
-    QTest::newRow("ftp, bg") << ftpurl << true;
-#endif
-}
-#endif
-
-//test purpose: check that backgroundness is propagated to the network session
-#ifdef QT_BUILD_INTERNAL
-void tst_QNetworkReply::backgroundRequestConnectInBackground()
-{
-#ifndef QT_NO_BEARERMANAGEMENT
-    QFETCH(QUrl, url);
-    QFETCH(bool, background);
-
-    QNetworkRequest request(url);
-
-    if (background)
-        request.setAttribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(true));
-
-    QWeakPointer<const QNetworkSession> session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
-    //force QNAM to reopen the session.
-    if (session && session.toStrongRef().data()->isOpen()) {
-        const_cast<QNetworkSession *>(session.toStrongRef().data())->close();
-        QCoreApplication::processEvents(); //let signals propagate inside QNAM
-    }
-
-    //this preconstructs the session so we can change policies in advance
-    manager.setConfiguration(networkConfiguration);
-
-    session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
-    QVERIFY(session);
-    QNetworkSession::UsagePolicies original = session.toStrongRef().data()->usagePolicies();
-    QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.toStrongRef().data()), QNetworkSession::NoPolicy);
-
-    QNetworkReplyPtr reply(manager.get(request));
-
-    QVERIFY(waitForFinish(reply) != Timeout);
-    session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
-    if (session) {
-        QVariant cib = session.toStrongRef().data()->sessionProperty(QStringLiteral("ConnectInBackground"));
-        if (!cib.isValid())
-            QSKIP("inconclusive - ConnectInBackground session property not supported by the bearer plugin");
-        QCOMPARE(cib.toBool(), background);
-        QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.toStrongRef().data()), original);
-    } else {
-        QSKIP("inconclusive - network session has been destroyed");
-    }
-
-    QVERIFY(reply->isFinished());
-#endif
-}
-#endif
 
 class RateLimitedUploadDevice : public QIODevice
 {

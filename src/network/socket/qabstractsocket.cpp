@@ -475,10 +475,6 @@
 #include "qabstractsocket_p.h"
 
 #include "private/qhostinfo_p.h"
-#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
-#include "private/qnetworksession_p.h"
-#endif
-#include "private/qnetworkconfiguration_p.h" // ### Qt6: Remove include
 
 #include <qabstracteventdispatcher.h>
 #include <qhostaddress.h>
@@ -513,6 +509,8 @@
 #define QT_TRANSFER_TIMEOUT 120000
 
 QT_BEGIN_NAMESPACE
+
+static const int DefaultConnectTimeout = 30000;
 
 #if defined QABSTRACTSOCKET_DEBUG
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -657,10 +655,6 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
                  QAbstractSocket::tr("Operation on socket is not supported"));
         return false;
     }
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    //copy network session down to the socket engine (if it has been set)
-    socketEngine->setProperty("_q_networksession", q->property("_q_networksession"));
-#endif
     if (!socketEngine->initialize(q->socketType(), protocol)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::initSocketLayer(%s, %s) failed (%s)",
@@ -1159,14 +1153,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
                                  q, SLOT(_q_abortConnectionAttempt()),
                                  Qt::DirectConnection);
             }
-            int connectTimeout = QNetworkConfigurationPrivate::DefaultTimeout;
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-            QSharedPointer<QNetworkSession> networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(q->property("_q_networksession"));
-            if (networkSession) {
-                QNetworkConfiguration networkConfiguration = networkSession->configuration();
-                connectTimeout = networkConfiguration.connectTimeout();
-            }
-#endif
+            int connectTimeout = DefaultConnectTimeout;
             connectTimer->start(connectTimeout);
         }
 
@@ -1953,10 +1940,6 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
         d->setError(UnsupportedSocketOperationError, tr("Operation on socket is not supported"));
         return false;
     }
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    //copy network session down to the socket engine (if it has been set)
-    d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
-#endif
     bool result = d->socketEngine->initialize(socketDescriptor, socketState);
     if (!result) {
         d->setError(d->socketEngine->error(), d->socketEngine->errorString());
@@ -2146,10 +2129,6 @@ bool QAbstractSocket::waitForConnected(int msecs)
     QElapsedTimer stopWatch;
     stopWatch.start();
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    QSharedPointer<QNetworkSession> networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(property("_q_networksession"));
-#endif
-
     if (d->state == HostLookupState) {
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::waitForConnected(%i) doing host name lookup", msecs);
@@ -2168,13 +2147,7 @@ bool QAbstractSocket::waitForConnected(int msecs)
     if (state() == UnconnectedState)
         return false; // connect not im progress anymore!
 
-    int connectTimeout = QNetworkConfigurationPrivate::DefaultTimeout;
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    if (networkSession) {
-        QNetworkConfiguration networkConfiguration = networkSession->configuration();
-        connectTimeout = networkConfiguration.connectTimeout();
-    }
-#endif
+    int connectTimeout = DefaultConnectTimeout;
     bool timedOut = true;
 #if defined (QABSTRACTSOCKET_DEBUG)
     int attempt = 1;

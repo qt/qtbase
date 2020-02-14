@@ -535,9 +535,6 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
         udpData = new QSocks5UdpAssociateData;
         data = udpData;
         udpData->udpSocket = new QUdpSocket(q);
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-        udpData->udpSocket->setProperty("_q_networksession", q->property("_q_networksession"));
-#endif
         udpData->udpSocket->setProxy(QNetworkProxy::NoProxy);
         QObject::connect(udpData->udpSocket, SIGNAL(readyRead()),
                          q, SLOT(_q_udpSocketReadNotification()),
@@ -549,9 +546,6 @@ void QSocks5SocketEnginePrivate::initialize(Socks5Mode socks5Mode)
     }
 
     data->controlSocket = new QTcpSocket(q);
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    data->controlSocket->setProperty("_q_networksession", q->property("_q_networksession"));
-#endif
     data->controlSocket->setProxy(QNetworkProxy::NoProxy);
     QObject::connect(data->controlSocket, SIGNAL(connected()), q, SLOT(_q_controlSocketConnected()),
                      Qt::DirectConnection);

@@ -39,13 +39,11 @@
 
 #include "qnetworkaccessbackend_p.h"
 #include "qnetworkaccessmanager_p.h"
-#include "qnetworkconfigmanager.h"
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
 #include "QtCore/qmutex.h"
 #include "QtCore/qstringlist.h"
-#include "QtNetwork/private/qnetworksession_p.h"
 
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
@@ -371,30 +369,6 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 */
 bool QNetworkAccessBackend::start()
 {
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    // For bearer, check if session start is required
-    QSharedPointer<QNetworkSession> networkSession(manager->getNetworkSession());
-    if (networkSession) {
-        // session required
-        if (networkSession->isOpen() &&
-            networkSession->state() == QNetworkSession::Connected) {
-            // Session is already open and ready to use.
-            // copy network session down to the backend
-            setProperty("_q_networksession", QVariant::fromValue(networkSession));
-        } else {
-            // Session not ready, but can skip for loopback connections
-
-            // This is not ideal.
-            // Don't need an open session for localhost access.
-            if (!reply->url.isLocalFile()) {
-                const QString host = reply->url.host();
-                if (host != QLatin1String("localhost") && !QHostAddress(host).isLoopback())
-                    return false; // need to wait for session to be opened
-            }
-        }
-    }
-#endif
-
 #ifndef QT_NO_NETWORKPROXY
     reply->proxyList = manager->queryProxy(QNetworkProxyQuery(url()));
 #endif

@@ -60,11 +60,7 @@
 #include "qhsts_p.h"
 #include "private/qobject_p.h"
 #include "QtNetwork/qnetworkproxy.h"
-#include "QtNetwork/qnetworksession.h"
 #include "qnetworkaccessauthenticationmanager_p.h"
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-#include "QtNetwork/qnetworkconfigmanager.h"
-#endif
 
 #if QT_CONFIG(settings)
 #include "qhstsstore_p.h"
@@ -87,33 +83,11 @@ public:
 #ifndef QT_NO_NETWORKPROXY
           proxyFactory(nullptr),
 #endif
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-          lastSessionState(QNetworkSession::Invalid),
-          networkConfiguration(networkConfigurationManager.defaultConfiguration()),
-          customNetworkConfiguration(false),
-          networkSessionRequired(networkConfigurationManager.capabilities()
-                                 & QNetworkConfigurationManager::NetworkSessionRequired),
-          activeReplyCount(0),
-          online(false),
-          initializeSession(true),
-#endif
           cookieJarCreated(false),
           defaultAccessControl(true),
           redirectPolicy(QNetworkRequest::ManualRedirectPolicy),
           authenticationManager(QSharedPointer<QNetworkAccessAuthenticationManager>::create())
     {
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-        // we would need all active configurations to check for
-        // d->networkConfigurationManager.isOnline(), which is asynchronous
-        // and potentially expensive. We can just check the configuration here
-        online = (networkConfiguration.state().testFlag(QNetworkConfiguration::Active));
-        if (online)
-            networkAccessible = QNetworkAccessManager::Accessible;
-        else if (networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined))
-            networkAccessible = QNetworkAccessManager::UnknownAccessibility;
-        else
-            networkAccessible = QNetworkAccessManager::NotAccessible;
-#endif
     }
     ~QNetworkAccessManagerPrivate();
 
@@ -153,21 +127,6 @@ public:
     QStringList backendSupportedSchemes() const;
 
     void _q_onlineStateChanged(bool isOnline);
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    void createSession(const QNetworkConfiguration &config);
-    QSharedPointer<QNetworkSession> getNetworkSession() const;
-
-    void _q_networkSessionClosed();
-    void _q_networkSessionNewConfigurationActivated();
-    void _q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &config,
-                                                        bool isSeamless);
-    void _q_networkSessionStateChanged(QNetworkSession::State state);
-
-    void _q_configurationChanged(const QNetworkConfiguration &configuration);
-    void _q_networkSessionFailed(QNetworkSession::SessionError error);
-
-    QSet<QString> onlineConfigurations;
-#endif
 
 #if QT_CONFIG(http)
     QNetworkRequest prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart);
@@ -186,23 +145,7 @@ public:
     QNetworkProxyFactory *proxyFactory;
 #endif
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    QSharedPointer<QNetworkSession> networkSessionStrongRef;
-    QWeakPointer<QNetworkSession> networkSessionWeakRef;
-    QNetworkSession::State lastSessionState;
-    QNetworkConfigurationManager networkConfigurationManager;
-    QNetworkConfiguration networkConfiguration;
-    // we need to track whether the user set a config or not,
-    // because the default config might change
-    bool customNetworkConfiguration;
-    bool networkSessionRequired;
-    QNetworkAccessManager::NetworkAccessibility networkAccessible;
-    int activeReplyCount;
-    bool online;
-    bool initializeSession;
-#else
     bool networkAccessible = true;
-#endif
 
     bool cookieJarCreated;
     bool defaultAccessControl;
@@ -231,9 +174,6 @@ public:
 
     int transferTimeout = 0;
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    Q_AUTOTEST_EXPORT static const QWeakPointer<const QNetworkSession> getNetworkSession(const QNetworkAccessManager *manager);
-#endif
     Q_DECLARE_PUBLIC(QNetworkAccessManager)
 };
 

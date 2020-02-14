@@ -161,10 +161,6 @@ void QNetworkAccessFtpBackend::open()
     if (!objectCache->requestEntry(cacheKey, this,
                              SLOT(ftpConnectionReady(QNetworkAccessCache::CacheableObject*)))) {
         ftp = new QNetworkAccessCachedFtpConnection;
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-        //copy network session down to the QFtp
-        ftp->setProperty("_q_networksession", property("_q_networksession"));
-#endif
 #ifndef QT_NO_NETWORKPROXY
         if (proxy.type() == QNetworkProxy::FtpCachingProxy)
             ftp->setProxy(proxy.hostName(), proxy.port());

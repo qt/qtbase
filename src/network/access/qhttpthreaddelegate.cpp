@@ -181,17 +181,9 @@ class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,
 {
     // Q_OBJECT
 public:
-#ifdef QT_NO_BEARERMANAGEMENT
     QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt,
                                        QHttpNetworkConnection::ConnectionType connectionType)
         : QHttpNetworkConnection(hostName, port, encrypt, connectionType)
-#else // ### Qt6: Remove section
-    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt,
-                                       QHttpNetworkConnection::ConnectionType connectionType,
-                                       QSharedPointer<QNetworkSession> networkSession)
-        : QHttpNetworkConnection(hostName, port, encrypt, connectionType, /*parent=*/nullptr,
-                                 std::move(networkSession))
-#endif
     {
         setExpires(true);
         setShareable(true);
@@ -334,14 +326,8 @@ void QHttpThreadDelegate::startRequest()
     if (!httpConnection) {
         // no entry in cache; create an object
         // the http object is actually a QHttpNetworkConnection
-#ifdef QT_NO_BEARERMANAGEMENT
         httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl,
                                                                 connectionType);
-#else // ### Qt6: Remove section
-        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl,
-                                                                connectionType,
-                                                                networkSession);
-#endif // QT_NO_BEARERMANAGEMENT
         if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
             || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
             httpConnection->setHttp2Parameters(http2Parameters);

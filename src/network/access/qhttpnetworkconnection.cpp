@@ -132,10 +132,6 @@ void QHttpNetworkConnectionPrivate::init()
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
         channels[i].ssl = encrypt;
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-        //push session down to channels
-        channels[i].networkSession = networkSession;
-#endif
     }
 
     delayedConnectionTimer.setSingleShot(true);
@@ -1267,19 +1263,6 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
         channels[1].networkLayerPreference = QAbstractSocket::IPv6Protocol;
 
         int timeout = 300;
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-        if (networkSession) {
-            const QNetworkConfiguration::BearerType bearerType = networkSession->configuration().bearerType();
-            if (bearerType == QNetworkConfiguration::Bearer2G)
-                timeout = 800;
-            else if (bearerType == QNetworkConfiguration::BearerCDMA2000)
-                timeout = 500;
-            else if (bearerType == QNetworkConfiguration::BearerWCDMA)
-                timeout = 500;
-            else if (bearerType == QNetworkConfiguration::BearerHSPA)
-                timeout = 400;
-        }
-#endif
         delayedConnectionTimer.start(timeout);
         if (delayIpv4)
             channels[1].ensureConnection();
@@ -1309,37 +1292,6 @@ void QHttpNetworkConnectionPrivate::_q_connectDelayedChannel()
         channels[1].ensureConnection();
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt,
-                                               QHttpNetworkConnection::ConnectionType connectionType,
-                                               QObject *parent, QSharedPointer<QNetworkSession> networkSession)
-    : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt, connectionType)), parent)
-{
-    Q_D(QHttpNetworkConnection);
-    d->networkSession = std::move(networkSession);
-    d->init();
-    if (QNetworkStatusMonitor::isEnabled()) {
-        connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
-                this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
-    }
-}
-
-QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName,
-                                               quint16 port, bool encrypt, QObject *parent,
-                                               QSharedPointer<QNetworkSession> networkSession,
-                                               QHttpNetworkConnection::ConnectionType connectionType)
-     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt,
-                                                   connectionType)), parent)
-{
-    Q_D(QHttpNetworkConnection);
-    d->networkSession = std::move(networkSession);
-    d->init();
-    if (QNetworkStatusMonitor::isEnabled()) {
-        connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
-                this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
-    }
-}
-#else
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt,
                                                QHttpNetworkConnection::ConnectionType connectionType, QObject *parent)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt , connectionType)), parent)
@@ -1365,7 +1317,6 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
                 this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
     }
 }
-#endif // QT_NO_BEARERMANAGEMENT
 
 QHttpNetworkConnection::~QHttpNetworkConnection()
 {

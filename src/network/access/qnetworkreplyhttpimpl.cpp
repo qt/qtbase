@@ -164,21 +164,6 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
     }
 }
 
-#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
-static bool isSessionNeeded(const QUrl &url)
-{
-    if (QNetworkStatusMonitor::isEnabled()) {
-        // In case QNetworkStatus/QNetConManager are in business,
-        // no session, no bearer manager are involved.
-        return false;
-    }
-    // Connections to the local machine does not require a session
-    QString host = url.host().toLower();
-    return !QHostAddress(host).isLoopback() && host != QLatin1String("localhost")
-           && host != QSysInfo::machineHostName().toLower();
-}
-#endif // bearer management
-
 QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manager,
                                              const QNetworkRequest& request,
                                              QNetworkAccessManager::Operation& operation,
@@ -798,10 +783,6 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
     // Propagate Http/2 settings:
     delegate->http2Parameters = request.http2Configuration();
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    if (!QNetworkStatusMonitor::isEnabled())
-        delegate->networkSession = managerPrivate->getNetworkSession();
-#endif
 
     // For the synchronous HTTP, this is the normal way the delegate gets deleted
     // For the asynchronous HTTP this is a safety measure, the delegate deletes itself when HTTP is finished
@@ -1205,24 +1186,6 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
 
     if (managerPrivate->thread)
         managerPrivate->thread->disconnect();
-
-#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
-    // If the original request didn't need a session (i.e. it was to localhost)
-    // then we might not have a session open, to which to redirect, if the
-    // new URL is remote.  When this happens, we need to open the session now:
-    if (isSessionNeeded(url)) {
-        if (auto session = managerPrivate->getNetworkSession()) {
-            if (session->state() != QNetworkSession::State::Connected || !session->isOpen()) {
-                startWaitForSession(session);
-                // Need to set 'request' to the redirectRequest so that when QNAM restarts
-                // the request after the session starts it will not repeat the previous request.
-                request = redirectRequest;
-                // Return now, QNAM will start the request when the session has started.
-                return;
-            }
-        }
-    }
-#endif // bearer management
 
     QMetaObject::invokeMethod(q, "start", Qt::QueuedConnection,
                               Q_ARG(QNetworkRequest, redirectRequest));
@@ -1782,68 +1745,9 @@ void QNetworkReplyHttpImplPrivate::setResumeOffset(quint64 offset)
 */
 bool QNetworkReplyHttpImplPrivate::start(const QNetworkRequest &newHttpRequest)
 {
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    QSharedPointer<QNetworkSession> networkSession(managerPrivate->getNetworkSession());
-    if (!networkSession || QNetworkStatusMonitor::isEnabled()) {
-#endif
-        postRequest(newHttpRequest);
-        return true;
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    }
-
-    // This is not ideal.
-    if (!isSessionNeeded(url)) {
-        // Don't need to check for an open session if we don't need one.
-        postRequest(newHttpRequest);
-        return true;
-    }
-
-    if (networkSession->isOpen() &&
-        networkSession->state() == QNetworkSession::Connected) {
-        Q_Q(QNetworkReplyHttpImpl);
-        QObject::connect(networkSession.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
-                            q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
-        postRequest(newHttpRequest);
-        return true;
-    } else if (synchronous) {
-        // Command line applications using the synchronous path such as xmlpatterns may need an extra push.
-        networkSession->open();
-        if (networkSession->waitForOpened()) {
-            postRequest(newHttpRequest);
-            return true;
-        }
-    }
-    return false;
-#endif
+    postRequest(newHttpRequest);
+    return true;
 }
-
-#if QT_CONFIG(bearermanagement) // ### Qt6: Remove section
-bool QNetworkReplyHttpImplPrivate::startWaitForSession(QSharedPointer<QNetworkSession> &session)
-{
-    Q_Q(QNetworkReplyHttpImpl);
-    state = WaitingForSession;
-
-    if (session) {
-        QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
-                         q, SLOT(_q_networkSessionFailed()), Qt::QueuedConnection);
-
-        if (!session->isOpen()) {
-            QVariant isBackground = request.attribute(QNetworkRequest::BackgroundRequestAttribute,
-                                                      QVariant::fromValue(false));
-            session->setSessionProperty(QStringLiteral("ConnectInBackground"), isBackground);
-            session->open();
-        }
-        return true;
-    }
-    const Qt::ConnectionType connection = synchronous ? Qt::DirectConnection : Qt::QueuedConnection;
-    qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
-    QMetaObject::invokeMethod(q, "_q_error", connection,
-        Q_ARG(QNetworkReply::NetworkError, QNetworkReply::NetworkSessionFailedError),
-        Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "Network session error.")));
-    QMetaObject::invokeMethod(q, "_q_finished", connection);
-    return false;
-}
-#endif // QT_CONFIG(bearermanagement)
 
 void QNetworkReplyHttpImplPrivate::_q_startOperation()
 {
@@ -1853,31 +1757,7 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
 
     state = Working;
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    // Do not start background requests if they are not allowed by session policy
-    QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
-    QVariant isBackground = request.attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
-    if (isBackground.toBool() && session && session->usagePolicies().testFlag(QNetworkSession::NoBackgroundTrafficPolicy)) {
-        QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
-            Q_ARG(QNetworkReply::NetworkError, QNetworkReply::BackgroundRequestNotAllowedError),
-            Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "Background request not allowed.")));
-        QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
-        return;
-    }
-
-    if (!start(request)) {
-        // backend failed to start because the session state is not Connected.
-        // QNetworkAccessManager will call reply->backend->start() again for us when the session
-        // state changes.
-        if (!startWaitForSession(session))
-            return;
-    } else if (session && !QNetworkStatusMonitor::isEnabled()) {
-        QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
-                         q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)),
-                         Qt::QueuedConnection);
-    }
-#else
-    if (!start(request)) {
+    if (!start(request)) { // @todo next commit: cleanup, start now always returns true
         qWarning("Backend start failed");
         QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
             Q_ARG(QNetworkReply::NetworkError, QNetworkReply::UnknownNetworkError),
@@ -1885,7 +1765,6 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
     }
-#endif // QT_NO_BEARERMANAGEMENT
 
     setupTransferTimeout();
     if (synchronous) {
@@ -2049,80 +1928,6 @@ void QNetworkReplyHttpImplPrivate::setupTransferTimeout()
     }
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
-{
-    Q_Q(QNetworkReplyHttpImpl);
-    Q_ASSERT(managerPrivate);
-
-    QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
-    if (!session)
-        return;
-
-    if (session->state() != QNetworkSession::Connected)
-        return;
-
-    switch (state) {
-    case QNetworkReplyPrivate::Buffering:
-    case QNetworkReplyPrivate::Working:
-    case QNetworkReplyPrivate::Reconnecting:
-        // Migrate existing downloads to new network connection.
-        migrateBackend();
-        break;
-    case QNetworkReplyPrivate::WaitingForSession:
-        // Start waiting requests.
-        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-        break;
-    default:
-        ;
-    }
-}
-
-void QNetworkReplyHttpImplPrivate::_q_networkSessionStateChanged(QNetworkSession::State sessionState)
-{
-    if (sessionState == QNetworkSession::Disconnected
-        && state != Idle && state != Reconnecting) {
-        error(QNetworkReplyImpl::NetworkSessionFailedError,
-              QCoreApplication::translate("QNetworkReply", "Network session error."));
-        finished();
-    }
-}
-
-void QNetworkReplyHttpImplPrivate::_q_networkSessionFailed()
-{
-    // Abort waiting and working replies.
-    if (state == WaitingForSession || state == Working) {
-        state = Working;
-        QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
-        QString errorStr;
-        if (session)
-            errorStr = session->errorString();
-        else
-            errorStr = QCoreApplication::translate("QNetworkReply", "Network session error.");
-        error(QNetworkReplyImpl::NetworkSessionFailedError, errorStr);
-        finished();
-    }
-}
-
-void QNetworkReplyHttpImplPrivate::_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies newPolicies)
-{
-    if (request.attribute(QNetworkRequest::BackgroundRequestAttribute).toBool()) {
-        if (newPolicies & QNetworkSession::NoBackgroundTrafficPolicy) {
-            // Abort waiting and working replies.
-            if (state == WaitingForSession || state == Working) {
-                state = Working;
-                error(QNetworkReply::BackgroundRequestNotAllowedError,
-                    QCoreApplication::translate("QNetworkReply", "Background request not allowed."));
-                finished();
-            }
-            // ### if canResume(), then we could resume automatically
-        }
-    }
-
-}
-#endif
-
-
 // need to have this function since the reply is a private member variable
 // and the special backends need to access this.
 void QNetworkReplyHttpImplPrivate::emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal)
@@ -2184,28 +1989,6 @@ void QNetworkReplyHttpImplPrivate::finished()
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
-
-#ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    Q_ASSERT(managerPrivate);
-    QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
-    if (!QNetworkStatusMonitor::isEnabled() && session && session->state() == QNetworkSession::Roaming &&
-        state == Working && errorCode != QNetworkReply::OperationCanceledError) {
-        // only content with a known size will fail with a temporary network failure error
-        if (!totalSize.isNull()) {
-            if (bytesDownloaded != totalSize) {
-                if (migrateBackend()) {
-                    // either we are migrating or the request is finished/aborted
-                    if (state == Reconnecting || state == WaitingForSession) {
-                        return; // exit early if we are migrating.
-                    }
-                } else {
-                    error(QNetworkReply::TemporaryNetworkFailureError,
-                            QNetworkReply::tr("Temporary network failure."));
-                }
-            }
-        }
-    }
-#endif
 
     // if we don't know the total size of or we received everything save the cache
     if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)
