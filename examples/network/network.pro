@@ -23,7 +23,6 @@ qtHaveModule(widgets) {
         qtConfig(processenvironment): SUBDIRS += network-chat
 
         SUBDIRS += \
-                bearermonitor \
                 fortuneclient \
                 fortuneserver
 
