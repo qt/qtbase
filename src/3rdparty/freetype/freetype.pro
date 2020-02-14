@@ -11,13 +11,9 @@ MODULE_INCLUDEPATH += $$PWD/include
 load(qt_helper_lib)
 
 SOURCES += \
-    $$PWD/src/autofit/afangles.c \
     $$PWD/src/autofit/afdummy.c \
-    $$PWD/src/autofit/afglobal.c \
     $$PWD/src/autofit/afhints.c \
     $$PWD/src/autofit/aflatin.c \
-    $$PWD/src/autofit/afloader.c \
-    $$PWD/src/autofit/afmodule.c \
     $$PWD/src/autofit/autofit.c \
     $$PWD/src/base/ftbase.c \
     $$PWD/src/base/ftbitmap.c \
@@ -56,6 +52,14 @@ SOURCES += \
     $$PWD/src/type1/type1.c \
     $$PWD/src/type42/type42.c \
     $$PWD/src/winfonts/winfnt.c
+
+# These source files are included by one of the sources above
+# which means they should not be compiled as separate object files.
+OTHER_FILES += \
+    $$PWD/src/autofit/afangles.c \
+    $$PWD/src/autofit/afglobal.c \
+    $$PWD/src/autofit/afloader.c \
+    $$PWD/src/autofit/afmodule.c
 
 win32 {
     SOURCES += $$PWD/src/base/ftsystem.c

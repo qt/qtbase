@@ -26,14 +26,14 @@ qt_find_package(ATSPI2 PROVIDED_TARGETS PkgConfig::ATSPI2)
 qt_find_package(DirectFB PROVIDED_TARGETS PkgConfig::DirectFB)
 qt_find_package(Libdrm PROVIDED_TARGETS Libdrm::Libdrm)
 qt_find_package(EGL PROVIDED_TARGETS EGL::EGL)
-qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
+qt_find_package(WrapSystemFreetype PROVIDED_TARGETS WrapSystemFreetype::WrapSystemFreetype)
 set_package_properties(WrapFreetype PROPERTIES TYPE REQUIRED)
 qt_find_package(Fontconfig PROVIDED_TARGETS Fontconfig::Fontconfig)
 qt_find_package(gbm PROVIDED_TARGETS gbm::gbm)
-qt_find_package(WrapHarfbuzz PROVIDED_TARGETS WrapHarfbuzz::WrapHarfbuzz)
+qt_find_package(WrapSystemHarfbuzz PROVIDED_TARGETS WrapSystemHarfbuzz::WrapSystemHarfbuzz)
 qt_find_package(Libinput PROVIDED_TARGETS Libinput::Libinput)
 qt_find_package(JPEG PROVIDED_TARGETS JPEG::JPEG)
-qt_find_package(PNG PROVIDED_TARGETS PNG::PNG)
+qt_find_package(WrapSystemPNG PROVIDED_TARGETS WrapSystemPNG::WrapSystemPNG)
 qt_find_package(Mtdev PROVIDED_TARGETS PkgConfig::Mtdev)
 qt_find_package(OpenGL PROVIDED_TARGETS OpenGL::GL)
 qt_find_package(GLESv2 PROVIDED_TARGETS GLESv2::GLESv2)
@@ -43,7 +43,7 @@ if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(Wayland PROVIDED_TARGETS Wayland::Server)
 endif()
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(X11 PROVIDED_TARGETS X11::XCB)
+    qt_find_package(X11 PROVIDED_TARGETS X11::X11)
 endif()
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(X11 PROVIDED_TARGETS ${X11_SM_LIB} ${X11_ICE_LIB})
@@ -82,6 +82,9 @@ if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XCB COMPONENTS XINERAMA PROVIDED_TARGETS XCB::XINERAMA)
 endif()
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    qt_find_package(X11_XCB PROVIDED_TARGETS X11::XCB)
+endif()
+if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XCB COMPONENTS XKB PROVIDED_TARGETS XCB::XKB)
 endif()
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
@@ -95,6 +98,9 @@ if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
 endif()
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XKB 0.4.1 PROVIDED_TARGETS XKB::XKB)
+endif()
+if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    qt_find_package(XKB_COMMON_X11 0.4.1 PROVIDED_TARGETS PkgConfig::XKB_COMMON_X11)
 endif()
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XRender PROVIDED_TARGETS PkgConfig::XRender)
@@ -148,7 +154,7 @@ qt_config_compile_test(egl_x11
     LABEL "EGL on X11"
     LIBRARIES
         EGL::EGL
-        X11::XCB
+        X11::X11
     CODE
 "// Check if EGL is compatible with X. Some EGL implementations, typically on
 // embedded devices, are not intended to be used together with X. EGL support
@@ -609,10 +615,17 @@ qt_feature("freetype" PUBLIC PRIVATE
     PURPOSE "Supports the FreeType 2 font engine (and its supported font formats)."
 )
 qt_feature_definition("freetype" "QT_NO_FREETYPE" NEGATE VALUE "1")
+qt_feature("system-freetype" PRIVATE
+    LABEL "  Using system FreeType"
+    AUTODETECT NOT MSVC
+    CONDITION QT_FEATURE_freetype AND WrapSystemFreetype_FOUND
+    ENABLE INPUT_freetype STREQUAL 'system'
+    DISABLE INPUT_freetype STREQUAL 'qt'
+)
 qt_feature("fontconfig" PUBLIC PRIVATE
     LABEL "Fontconfig"
     AUTODETECT NOT APPLE
-    CONDITION NOT MSVC AND ON AND FONTCONFIG_FOUND
+    CONDITION NOT MSVC AND QT_FEATURE_system_freetype AND FONTCONFIG_FOUND
 )
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
 qt_feature("gbm"
@@ -625,6 +638,13 @@ qt_feature("harfbuzz" PUBLIC PRIVATE
     CONDITION harfbuzz_FOUND
 )
 qt_feature_definition("harfbuzz" "QT_NO_HARFBUZZ" NEGATE VALUE "1")
+qt_feature("system-harfbuzz" PRIVATE
+    LABEL "  Using system HarfBuzz"
+    AUTODETECT NOT APPLE AND NOT WIN32
+    CONDITION QT_FEATURE_harfbuzz AND WrapSystemHarfbuzz_FOUND
+    ENABLE INPUT_harfbuzz STREQUAL 'system'
+    DISABLE INPUT_harfbuzz STREQUAL 'qt'
+)
 qt_feature("qqnx_imf" PRIVATE
     LABEL "IMF"
     CONDITION libs.imf OR FIXME
@@ -810,11 +830,24 @@ qt_feature("jpeg" PRIVATE
     DISABLE INPUT_libjpeg STREQUAL 'no'
 )
 qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE)
+qt_feature("system-jpeg" PRIVATE
+    LABEL "  Using system libjpeg"
+    CONDITION QT_FEATURE_jpeg AND JPEG_FOUND
+    ENABLE INPUT_libjpeg STREQUAL 'system'
+    DISABLE INPUT_libjpeg STREQUAL 'qt'
+)
 qt_feature("png" PRIVATE
     LABEL "PNG"
     DISABLE INPUT_libpng STREQUAL 'no'
 )
 qt_feature_definition("png" "QT_NO_IMAGEFORMAT_PNG" NEGATE)
+qt_feature("system-png" PRIVATE
+    LABEL "  Using system libpng"
+    AUTODETECT QT_FEATURE_system_zlib
+    CONDITION QT_FEATURE_png AND WrapSystemPNG_FOUND
+    ENABLE INPUT_libpng STREQUAL 'system'
+    DISABLE INPUT_libpng STREQUAL 'qt'
+)
 qt_feature("sessionmanager" PUBLIC
     SECTION "Kernel"
     LABEL "Session Management"
@@ -884,7 +917,7 @@ qt_feature("xkbcommon" PRIVATE
 )
 qt_feature("xkbcommon-x11" PRIVATE
     LABEL "xkbcommon-x11"
-    CONDITION QT_FEATURE_xkbcommon AND XKB_FOUND
+    CONDITION QT_FEATURE_xkbcommon AND XKB_COMMON_X11_FOUND
 )
 qt_feature("xlib" PRIVATE
     LABEL "XLib"

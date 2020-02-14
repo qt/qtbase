@@ -1,6 +1,6 @@
 # Generated from fontdatabases.pro.
 
-qt_find_package(WrapFreetype) # special case
+qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype) # special case
 qt_find_package(Fontconfig) # special case
 
 #####################################################################

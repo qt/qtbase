@@ -4,8 +4,11 @@
 ## Bootstrap Module:
 #####################################################################
 
-# special case:
+# special case begin
+# The bootstrap library has a few manual tweaks compared to other
+# libraries.
 add_library(Bootstrap STATIC)
+# special case end
 qt_extend_target(Bootstrap
     SOURCES
         ../../corelib/codecs/qlatincodec.cpp
@@ -110,11 +113,10 @@ qt_extend_target(Bootstrap
         ..
         ../../3rdparty/tinycbor/src
     PUBLIC_INCLUDE_DIRECTORIES  # special case
-        $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:Xml,INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES> # special case
+        $<TARGET_PROPERTY:Xml,INCLUDE_DIRECTORIES> # special case
     PUBLIC_LIBRARIES  # special case
-        ZLIB::ZLIB
-        Qt::Platform
+        Qt::Platform # special case
 )
 
 #### Keys ignored in scope 1:.:.:bootstrap.pro:<TRUE>:
@@ -189,34 +191,31 @@ qt_extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
         ../../corelib/io/qstandardpaths_unix.cpp
 )
 
-# special case begin
-# These lines need to commented out. This will never get cross_compiled!
-#qt_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING
-#    SOURCES
-#        ../../3rdparty/zlib/src/adler32.c
-#        ../../3rdparty/zlib/src/compress.c
-#        ../../3rdparty/zlib/src/crc32.c
-#        ../../3rdparty/zlib/src/deflate.c
-#        ../../3rdparty/zlib/src/gzclose.c
-#        ../../3rdparty/zlib/src/gzlib.c
-#        ../../3rdparty/zlib/src/gzread.c
-#        ../../3rdparty/zlib/src/gzwrite.c
-#        ../../3rdparty/zlib/src/infback.c
-#       ../../3rdparty/zlib/src/inffast.c
-#        ../../3rdparty/zlib/src/inflate.c
-#        ../../3rdparty/zlib/src/inftrees.c
-#        ../../3rdparty/zlib/src/trees.c
-#        ../../3rdparty/zlib/src/uncompr.c
-#        ../../3rdparty/zlib/src/zutil.c
-#    INCLUDE_DIRECTORIES
-#        ../../3rdparty/zlib/src
-#)
-#
-#qt_extend_target(Bootstrap CONDITION NOT CMAKE_CROSSCOMPILING
-#    LIBRARIES
-#        ZLIB::ZLIB
-#)
-# special case end
+qt_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_system_zlib
+    SOURCES
+        ../../3rdparty/zlib/src/adler32.c
+        ../../3rdparty/zlib/src/compress.c
+        ../../3rdparty/zlib/src/crc32.c
+        ../../3rdparty/zlib/src/deflate.c
+        ../../3rdparty/zlib/src/gzclose.c
+        ../../3rdparty/zlib/src/gzlib.c
+        ../../3rdparty/zlib/src/gzread.c
+        ../../3rdparty/zlib/src/gzwrite.c
+        ../../3rdparty/zlib/src/infback.c
+        ../../3rdparty/zlib/src/inffast.c
+        ../../3rdparty/zlib/src/inflate.c
+        ../../3rdparty/zlib/src/inftrees.c
+        ../../3rdparty/zlib/src/trees.c
+        ../../3rdparty/zlib/src/uncompr.c
+        ../../3rdparty/zlib/src/zutil.c
+    INCLUDE_DIRECTORIES
+        ../../3rdparty/zlib/src
+)
+
+qt_extend_target(Bootstrap CONDITION QT_FEATURE_system_zlib AND NOT CMAKE_CROSSCOMPILING
+    LIBRARIES
+        ZLIB::ZLIB
+)
 
 qt_extend_target(Bootstrap CONDITION WIN32 AND mingw
     PUBLIC_LIBRARIES

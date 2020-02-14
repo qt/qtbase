@@ -41,6 +41,7 @@ class LibraryMapping:
         extra: typing.List[str] = [],
         appendFoundSuffix: bool = True,
         emit_if: str = "",
+        is_bundled_with_qt: bool = False,
     ) -> None:
         self.soName = soName
         self.packageName = packageName
@@ -48,6 +49,9 @@ class LibraryMapping:
         self.appendFoundSuffix = appendFoundSuffix
         self.extra = extra
         self.targetName = targetName
+
+        # True if qt bundles the library sources as part of Qt.
+        self.is_bundled_with_qt = is_bundled_with_qt
 
         # if emit_if is non-empty, the generated find_package call
         # for a library will be surrounded by this condition.
@@ -369,8 +373,10 @@ _qt_library_map = [
     LibraryMapping("axcontainer", "Qt6", "Qt::AxContainer", extra=["COMPONENTS", "AxContainer"]),
     LibraryMapping(
         "webkitwidgets", "Qt6", "Qt::WebKitWidgets", extra=["COMPONENTS", "WebKitWidgets"]
+    ),
+    LibraryMapping(
+        "zlib", "Qt6", "Qt::Zlib", extra=["COMPONENTS", "Zlib"]
     )
-    # qtzlib: No longer supported.
 ]
 
 # Note that the library map is adjusted dynamically further down.
@@ -391,13 +397,21 @@ _library_map = [
     LibraryMapping(
         "fontconfig", "Fontconfig", "Fontconfig::Fontconfig", resultVariable="FONTCONFIG"
     ),
-    LibraryMapping("freetype", "WrapFreetype", "WrapFreetype::WrapFreetype", extra=["REQUIRED"]),
+    LibraryMapping(
+        "freetype",
+        "WrapFreetype",
+        "WrapFreetype::WrapFreetype",
+        extra=["REQUIRED"],
+        is_bundled_with_qt=True,
+    ),
     LibraryMapping("gbm", "gbm", "gbm::gbm"),
     LibraryMapping("glib", "GLIB2", "GLIB2::GLIB2"),
     LibraryMapping("gnu_iconv", None, None),
     LibraryMapping("gtk3", "GTK3", "PkgConfig::GTK3"),
     LibraryMapping("gssapi", "GSSAPI", "GSSAPI::GSSAPI"),
-    LibraryMapping("harfbuzz", "WrapHarfbuzz", "WrapHarfbuzz::WrapHarfbuzz"),
+    LibraryMapping(
+        "harfbuzz", "WrapHarfbuzz", "WrapHarfbuzz::WrapHarfbuzz", is_bundled_with_qt=True
+    ),
     LibraryMapping("host_dbus", None, None),
     LibraryMapping(
         "icu", "ICU", "ICU::i18n ICU::uc ICU::data", extra=["COMPONENTS", "i18n", "uc", "data"]
@@ -409,7 +423,7 @@ _library_map = [
     LibraryMapping("libdl", None, "${CMAKE_DL_LIBS}"),
     LibraryMapping("libinput", "Libinput", "Libinput::Libinput"),
     LibraryMapping("libjpeg", "JPEG", "JPEG::JPEG"),  # see also jpeg
-    LibraryMapping("libpng", "PNG", "PNG::PNG"),
+    LibraryMapping("libpng", "WrapPNG", "WrapPNG::WrapPNG", is_bundled_with_qt=True),
     LibraryMapping("libproxy", "Libproxy", "PkgConfig::Libproxy"),
     LibraryMapping("librt", "WrapRt", "WrapRt"),
     LibraryMapping("libudev", "Libudev", "PkgConfig::Libudev"),
@@ -428,7 +442,9 @@ _library_map = [
     ),
     LibraryMapping("openssl", "OpenSSL", "OpenSSL::SSL"),
     LibraryMapping("oci", "Oracle", "Oracle::OCI"),
-    LibraryMapping("pcre2", "WrapPCRE2", "WrapPCRE2::WrapPCRE2", extra=["REQUIRED"]),
+    LibraryMapping(
+        "pcre2", "WrapPCRE2", "WrapPCRE2::WrapPCRE2", extra=["REQUIRED"], is_bundled_with_qt=True
+    ),
     LibraryMapping("posix_iconv", None, None),
     LibraryMapping("pps", "PPS", "PPS::PPS"),
     LibraryMapping("psql", "PostgreSQL", "PostgreSQL::PostgreSQL"),
@@ -532,7 +548,7 @@ _library_map = [
     LibraryMapping("xkbcommon", "XKB", "XKB::XKB", extra=["0.4.1"]),
     LibraryMapping("xlib", "X11", "X11::X11"),
     LibraryMapping("xrender", "XRender", "PkgConfig::XRender"),
-    LibraryMapping("zlib", "ZLIB", "ZLIB::ZLIB", extra=["REQUIRED"]),
+    LibraryMapping("zlib", "ZLIB", "ZLIB::ZLIB"),
     LibraryMapping("zstd", "ZSTD", "ZSTD::ZSTD"),
     LibraryMapping("tiff", "TIFF", "TIFF::TIFF"),
     LibraryMapping("webp", "WrapWebP", "WrapWebP::WrapWebP"),
@@ -671,7 +687,12 @@ def map_3rd_party_library(lib: str) -> str:
 
 
 def generate_find_package_info(
-    lib: LibraryMapping, use_qt_find_package: bool = True, *, indent: int = 0, emit_if: str = ""
+    lib: LibraryMapping,
+    use_qt_find_package: bool = True,
+    *,
+    indent: int = 0,
+    emit_if: str = "",
+    use_system_package_name: bool = False,
 ) -> str:
     isRequired = False
 
@@ -688,6 +709,13 @@ def generate_find_package_info(
     if cmake_target_name.endswith("_nolink") or cmake_target_name.endswith("/nolink"):
         cmake_target_name = cmake_target_name[:-7]
 
+    initial_package_name = lib.packageName
+    package_name = initial_package_name
+    if use_system_package_name:
+        replace_args = ["Wrap", "WrapSystem"]
+        package_name = package_name.replace(*replace_args)
+        cmake_target_name = cmake_target_name.replace(*replace_args)
+
     if cmake_target_name and use_qt_find_package:
         extra += ["PROVIDED_TARGETS", cmake_target_name]
 
@@ -697,17 +725,19 @@ def generate_find_package_info(
 
     if use_qt_find_package:
         if extra:
-            result = f"{ind}qt_find_package({lib.packageName} {' '.join(extra)})\n"
+            result = f"{ind}qt_find_package({package_name} {' '.join(extra)})\n"
         else:
-            result = f"{ind}qt_find_package({lib.packageName})\n"
+            result = f"{ind}qt_find_package({package_name})\n"
 
         if isRequired:
-            result += f"{ind}set_package_properties({lib.packageName} PROPERTIES TYPE REQUIRED)\n"
+            result += (
+                f"{ind}set_package_properties({initial_package_name} PROPERTIES TYPE REQUIRED)\n"
+            )
     else:
         if extra:
-            result = f"{ind}find_package({lib.packageName} {' '.join(extra)})\n"
+            result = f"{ind}find_package({package_name} {' '.join(extra)})\n"
         else:
-            result = f"{ind}find_package({lib.packageName})\n"
+            result = f"{ind}find_package({package_name})\n"
 
     # If a package should be found only in certain conditions, wrap
     # the find_package call within that condition.

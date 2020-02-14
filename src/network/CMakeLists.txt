@@ -63,7 +63,6 @@ qt_add_module(Network
         kernel
     LIBRARIES
         Qt::CorePrivate
-        ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
     PRIVATE_MODULE_INTERFACE
@@ -158,6 +157,21 @@ qt_extend_target(Network CONDITION QT_FEATURE_http
         access/qhttpthreaddelegate.cpp access/qhttpthreaddelegate_p.h
         access/qnetworkreplyhttpimpl.cpp access/qnetworkreplyhttpimpl_p.h
         socket/qhttpsocketengine.cpp socket/qhttpsocketengine_p.h
+)
+
+qt_extend_target(Network CONDITION QT_FEATURE_system_zlib
+    LIBRARIES
+        ZLIB::ZLIB
+)
+
+qt_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib
+    INCLUDE_DIRECTORIES
+        ../3rdparty/zlib/src
+)
+
+qt_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
+    LIBRARIES
+        Qt::Core
 )
 
 qt_extend_target(Network CONDITION QT_FEATURE_topleveldomain

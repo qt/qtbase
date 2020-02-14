@@ -371,7 +371,28 @@ function(qt_internal_create_config_file_for_standalone_tests)
                  ${QT_CONFIG_INSTALL_DIR}
                  "${INSTALL_CMAKE_NAMESPACE}BuildInternals" "${standalone_tests_config_dir}")
 
-    list(JOIN QT_REPO_KNOWN_MODULES " " QT_REPO_KNOWN_MODULES_STRING)
+    # Filter out bundled system libraries. Otherwise when looking for their dependencies
+    # (like PNG for Freetype) FindWrapPNG is searched for during configuration of
+    # standalone tests, and it can happen that Core or Gui features are not
+    # imported early enough, which means FindWrapPNG will try to find a system PNG library instead
+    # of the bundled one.
+    set(modules)
+    foreach(m ${QT_REPO_KNOWN_MODULES})
+        get_target_property(target_type "${m}" TYPE)
+
+        # Interface libraries are never bundled system libraries (hopefully).
+        if(target_type STREQUAL "INTERFACE_LIBRARY")
+            list(APPEND modules "${m}")
+            continue()
+        endif()
+
+        get_target_property(is_3rd_party "${m}" QT_MODULE_IS_3RDPARTY_LIBRARY)
+        if(NOT is_3rd_party)
+            list(APPEND modules "${m}")
+        endif()
+    endforeach()
+
+    list(JOIN modules " " QT_REPO_KNOWN_MODULES_STRING)
     string(STRIP "${QT_REPO_KNOWN_MODULES_STRING}" QT_REPO_KNOWN_MODULES_STRING)
 
     # Skip generating and installing file if no modules were built. This make sure not to install

@@ -1556,8 +1556,11 @@ def map_condition(condition: str) -> str:
                 part = f"TARGET {map_qt_library(feature.group(2))}"
             else:
                 feature_name = featureName(feature.group(2))
-                if feature_name.startswith("system_") and is_known_3rd_party_library(
-                    feature_name[7:]
+                if (
+                    feature_name.startswith("system_")
+                    and is_known_3rd_party_library(feature_name[7:])
+                    and not feature_name.startswith("system_jpeg")
+                    and not feature_name.startswith("system_zlib")
                 ):
                     part = "ON"
                 elif feature == "dlopen":
@@ -1955,12 +1958,44 @@ def write_defines(
     write_list(cm_fh, defines, cmake_parameter, indent, footer=footer)
 
 
+def write_3rd_party_defines(
+    cm_fh: IO[str], scope: Scope, cmake_parameter: str, *, indent: int = 0, footer: str = ""
+):
+    defines = scope.expand("MODULE_DEFINES")
+    write_list(cm_fh, defines, cmake_parameter, indent, footer=footer)
+
+
+def get_include_paths_helper(scope: Scope, include_var_name: str) -> List[str]:
+    includes = [i.rstrip("/") or ("/") for i in scope.get_files(include_var_name)]
+    return includes
+
+
 def write_include_paths(
     cm_fh: IO[str], scope: Scope, cmake_parameter: str, *, indent: int = 0, footer: str = ""
 ):
-    includes = [i.rstrip("/") or ("/") for i in scope.get_files("INCLUDEPATH")]
-
+    includes = get_include_paths_helper(scope, "INCLUDEPATH")
     write_list(cm_fh, includes, cmake_parameter, indent, footer=footer)
+
+
+def write_3rd_party_include_paths(
+    cm_fh: IO[str], scope: Scope, cmake_parameter: str, *, indent: int = 0, footer: str = ""
+):
+    # Used in qt_helper_lib.prf.
+    includes = get_include_paths_helper(scope, "MODULE_INCLUDEPATH")
+
+    # Wrap the includes in BUILD_INTERFACE generator expression, because
+    # the include paths point to a source dir, and CMake will error out
+    # when trying to create consumable exported targets.
+    processed_includes = []
+    for i in includes:
+        # CMake generator expressions don't seem to like relative paths.
+        # Make them absolute relative to the source dir.
+        if not os.path.isabs(i) and not i.startswith("$"):
+            i = f"${{CMAKE_CURRENT_SOURCE_DIR}}/{i}"
+        i = f"$<BUILD_INTERFACE:{i}>"
+        processed_includes.append(i)
+
+    write_list(cm_fh, processed_includes, cmake_parameter, indent, footer=footer)
 
 
 def write_compile_options(
@@ -2051,7 +2086,11 @@ def write_sources_section(
 
     write_defines(cm_fh, scope, "DEFINES", indent=indent + 1)
 
+    write_3rd_party_defines(cm_fh, scope, "PUBLIC_DEFINES", indent=indent + 1)
+
     write_include_paths(cm_fh, scope, "INCLUDE_DIRECTORIES", indent=indent + 1)
+
+    write_3rd_party_include_paths(cm_fh, scope, "PUBLIC_INCLUDE_DIRECTORIES", indent=indent + 1)
 
     write_library_section(cm_fh, scope, indent=indent, known_libraries=known_libraries)
 
@@ -2330,6 +2369,11 @@ def write_repc_files(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0)
         for f in sources:
             cm_fh.write(f"{spaces(indent)}{f}\n")
         cm_fh.write(")\n")
+
+
+def write_generic_cmake_command(cm_fh: IO[str], command_name: str, arguments: List[str]):
+    arguments_str = " ".join(arguments)
+    cm_fh.write(f"{command_name}({arguments_str})\n")
 
 
 def expand_project_requirements(scope: Scope, skip_message: bool = False) -> str:
@@ -2785,6 +2829,12 @@ def write_main_part(
 
     write_wayland_part(cm_fh, name, scopes[0], indent)
 
+    if "warn_off" in scope.get("CONFIG"):
+        write_generic_cmake_command(cm_fh, "qt_disable_warnings", [name])
+
+    if "hide_symbols" in scope.get("CONFIG"):
+        write_generic_cmake_command(cm_fh, "qt_set_symbol_visibility_hidden", [name])
+
     ignored_keys_report = write_ignored_keys(scopes[0], spaces(indent))
     if ignored_keys_report:
         cm_fh.write(ignored_keys_report)
@@ -2808,14 +2858,18 @@ def write_main_part(
 
 
 def write_3rdparty_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
-
     # Remove default QT libs.
     scope._append_operation("QT", RemoveOperation(["core", "gui"]))
 
     target_name = re.sub(r"^qt", "", scope.TARGET)
     target_name = target_name.replace("-", "_")
 
-    library_type = ""
+    # Capitalize the first letter for a nicer name.
+    target_name = target_name.title()
+
+    # Prefix with Bundled, to avoid possible duplicate target names
+    # e.g. "BundledFreetype" instead of "freetype".
+    target_name = f"Bundled{target_name}"
 
     if "dll" in scope.get("CONFIG"):
         library_type = "SHARED"
@@ -2826,6 +2880,9 @@ def write_3rdparty_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> 
 
     if library_type:
         extra_lines.append(library_type)
+
+    if "installed" in scope.get("CONFIG"):
+        extra_lines.append("INSTALL")
 
     write_main_part(
         cm_fh,

@@ -7,7 +7,6 @@
 #### Libraries
 
 qt_find_package(ZLIB PROVIDED_TARGETS ZLIB::ZLIB)
-set_package_properties(ZLIB PROPERTIES TYPE REQUIRED)
 qt_find_package(ZSTD PROVIDED_TARGETS ZSTD::ZSTD)
 qt_find_package(WrapDBus1 PROVIDED_TARGETS dbus-1)
 qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev)
@@ -613,6 +612,10 @@ qt_feature("alloca_malloc_h" PRIVATE
 qt_feature("alloca" PRIVATE
     LABEL "alloca()"
     CONDITION QT_FEATURE_alloca_h OR QT_FEATURE_alloca_malloc_h OR TEST_alloca_stdlib_h
+)
+qt_feature("system-zlib" PRIVATE
+    LABEL "Using system zlib"
+    CONDITION ZLIB_FOUND
 )
 qt_feature("zstd" PRIVATE
     LABEL "Zstandard support"

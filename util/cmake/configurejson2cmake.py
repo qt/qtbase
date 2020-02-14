@@ -202,7 +202,25 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
 
     cmake_find_packages_set.add(newlib.targetName)
 
-    cm_fh.write(generate_find_package_info(newlib, emit_if=emit_if))
+    find_package_kwargs = {"emit_if": emit_if}
+    if newlib.is_bundled_with_qt:
+        # If a library is bundled with Qt, it has 2 FindFoo.cmake
+        # modules: WrapFoo and WrapSystemFoo.
+        # FindWrapSystemFoo.cmake will try to find the 'Foo' library in
+        # the usual CMake locations, and will create a
+        # WrapSystemFoo::WrapSystemFoo target pointing to the library.
+        #
+        # FindWrapFoo.cmake will create a WrapFoo::WrapFoo target which
+        # will link either against the WrapSystemFoo or QtBundledFoo
+        # target depending on certain feature values.
+        #
+        # Because the following qt_find_package call is for
+        # configure.cmake consumption, we make the assumption that
+        # configure.cmake is interested in finding the system library
+        # for the purpose of enabling or disabling a system_foo feature.
+        find_package_kwargs["use_system_package_name"] = True
+
+    cm_fh.write(generate_find_package_info(newlib, **find_package_kwargs))
 
 
 def lineify(label, value, quote=True):
@@ -225,12 +243,7 @@ def map_condition(condition):
             return "OFF"
     assert isinstance(condition, str)
 
-    mapped_features = {
-        "gbm": "gbm_FOUND",
-        "system-xcb": "ON",
-        "system-freetype": "ON",
-        "system-pcre2": "ON",
-    }
+    mapped_features = {"gbm": "gbm_FOUND", "system-xcb": "ON"}
 
     # Turn foo != "bar" into (NOT foo STREQUAL 'bar')
     condition = re.sub(r"(.+)\s*!=\s*('.+')", "(! \\1 == \\2)", condition)
@@ -258,6 +271,12 @@ def map_condition(condition):
                     substitution = libmapping.resultVariable
                 if libmapping.appendFoundSuffix:
                     substitution += "_FOUND"
+
+                # Assume that feature conditions are interested whether
+                # a system library is found, rather than the bundled one
+                # which we always know we can build.
+                if libmapping.is_bundled_with_qt:
+                    substitution = substitution.replace("Wrap", "WrapSystem")
 
         elif match.group(1) == "features":
             feature = match.group(2)
@@ -748,14 +767,8 @@ def parseFeature(ctx, feature, data, cm_fh):
             "disable": "NOT TEST_sun_iconv",
         },
         "system-doubleconversion": None,  # No system libraries anymore!
-        "system-freetype": None,
-        "system-harfbuzz": None,
-        "system-jpeg": None,
-        "system-pcre2": None,
-        "system-png": None,
         "system-sqlite": None,
         "system-xcb": None,
-        "system-zlib": None,
         "tiff": {"condition": "QT_FEATURE_imageformatplugin AND TIFF_FOUND"},
         "use_gold_linker": None,
         "verifyspec": None,  # qmake specific...

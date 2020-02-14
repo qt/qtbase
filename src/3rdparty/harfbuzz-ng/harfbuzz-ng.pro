@@ -164,7 +164,7 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-var.h
 }
 
-contains(SHAPERS, coretext) {
+darwin {
     DEFINES += HAVE_CORETEXT
 
     SOURCES += \
@@ -173,13 +173,14 @@ contains(SHAPERS, coretext) {
     HEADERS += \
         $$PWD/src/hb-coretext.h
 
-    uikit: \
+    uikit {
         # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
         LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
-    else: \
+    } else {
         # On Mac OS they are part of the ApplicationServices umbrella framework,
         # even in 10.8 where they were also made available stand-alone.
         LIBS_PRIVATE += -framework ApplicationServices
+    }
 
     CONFIG += watchos_coretext
 }

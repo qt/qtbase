@@ -4,6 +4,8 @@
 ## QMinimalIntegrationPlugin Plugin:
 #####################################################################
 
+qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype) # special case
+
 qt_add_plugin(QMinimalIntegrationPlugin
     OUTPUT_NAME qminimal
     TYPE platforms

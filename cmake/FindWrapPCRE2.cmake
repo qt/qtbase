@@ -1,23 +1,17 @@
-if(TARGET WrapPCRE2::WrapPCRE2)
-    set(WrapPCRE2_FOUND TRUE)
-    return()
+include(QtFindWrapHelper NO_POLICY_SCOPE)
+
+set(_qt_wrap_use_bundled FALSE)
+if(QT_FEATURE_pcre2 AND NOT QT_FEATURE_system_pcre2)
+    set(_qt_wrap_use_bundled TRUE)
 endif()
 
-find_package(PCRE2 CONFIG QUIET)
-
-if(PCRE2_FOUND AND TARGET PCRE2::pcre2-16)
-  # Hunter case.
-  add_library(WrapPCRE2::WrapPCRE2 INTERFACE IMPORTED)
-  target_link_libraries(WrapPCRE2::WrapPCRE2 INTERFACE PCRE2::pcre2-16)
-  set(WrapPCRE2_FOUND TRUE)
-else()
-  find_library(PCRE2_LIBRARIES NAMES pcre2-16)
-  find_path(PCRE2_INCLUDE_DIRS pcre2.h)
-
-  if (PCRE2_LIBRARIES AND PCRE2_INCLUDE_DIRS)
-      add_library(WrapPCRE2::WrapPCRE2 INTERFACE IMPORTED)
-      target_link_libraries(WrapPCRE2::WrapPCRE2 INTERFACE ${PCRE2_LIBRARIES})
-      target_include_directories(WrapPCRE2::WrapPCRE2 INTERFACE ${PCRE2_INCLUDE_DIRS})
-      set(WrapPCRE2_FOUND TRUE)
-  endif()
-endif()
+qt_find_package_system_or_bundled(wrap_pcre2
+    FRIENDLY_PACKAGE_NAME "PCRE2"
+    WRAP_PACKAGE_TARGET "WrapPCRE2::WrapPCRE2"
+    WRAP_PACKAGE_FOUND_VAR_NAME "WrapPCRE2_FOUND"
+    BUNDLED_PACKAGE_NAME "Qt6BundledPcre2"
+    BUNDLED_PACKAGE_TARGET "Qt6::BundledPcre2"
+    SYSTEM_PACKAGE_NAME "WrapSystemPCRE2"
+    SYSTEM_PACKAGE_TARGET "WrapSystemPCRE2::WrapSystemPCRE2"
+    USE_BUNDLED_PACKAGE "${_qt_wrap_use_bundled}"
+)

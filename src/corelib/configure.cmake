@@ -16,7 +16,7 @@ qt_find_package(Libsystemd PROVIDED_TARGETS PkgConfig::Libsystemd)
 qt_find_package(Atomic PROVIDED_TARGETS Atomic)
 qt_find_package(WrapRt PROVIDED_TARGETS WrapRt)
 qt_find_package(LTTngUST PROVIDED_TARGETS LTTng::UST)
-qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
+qt_find_package(WrapSystemPCRE2 PROVIDED_TARGETS WrapSystemPCRE2::WrapSystemPCRE2)
 set_package_properties(WrapPCRE2 PROPERTIES TYPE REQUIRED)
 if((QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(PPS PROVIDED_TARGETS PPS::PPS)
@@ -642,6 +642,12 @@ qt_feature("pcre2"
     DISABLE INPUT_pcre STREQUAL 'no' OR INPUT_pcre STREQUAL 'system'
 )
 qt_feature_config("pcre2" QMAKE_PRIVATE_CONFIG)
+qt_feature("system-pcre2" PRIVATE
+    LABEL "  Using system PCRE2"
+    CONDITION WrapSystemPCRE2_FOUND
+    ENABLE INPUT_pcre STREQUAL 'system'
+    DISABLE INPUT_pcre STREQUAL 'no' OR INPUT_pcre STREQUAL 'qt'
+)
 qt_feature("poll_ppoll" PRIVATE
     LABEL "Native ppoll()"
     CONDITION NOT WASM AND TEST_ppoll
@@ -701,7 +707,7 @@ qt_feature("regularexpression" PUBLIC
     SECTION "Kernel"
     LABEL "QRegularExpression"
     PURPOSE "Provides an API to Perl-compatible regular expressions."
-    CONDITION ON OR QT_FEATURE_pcre2
+    CONDITION QT_FEATURE_system_pcre2 OR QT_FEATURE_pcre2
 )
 qt_feature_definition("regularexpression" "QT_NO_REGULAREXPRESSION" NEGATE VALUE "1")
 qt_feature("sharedmemory" PUBLIC

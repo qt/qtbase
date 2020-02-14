@@ -236,7 +236,6 @@ qt_add_module(Core
         ../3rdparty/sha3
         ../3rdparty/tinycbor/src
     LIBRARIES
-        ZLIB::ZLIB
         doubleconversion
     PRECOMPILED_HEADER
         "global/qt_pch.h"
@@ -306,8 +305,10 @@ endif()
 #### Keys ignored in scope 2:.:.:corelib.pro:QT_FEATURE_gc_binaries:
 # MODULE_CONFIG = "gc_binaries"
 
-#### Keys ignored in scope 3:.:.:corelib.pro:NOT QT_NAMESPACE_ISEMPTY:
-# MODULE_DEFINES = "QT_NAMESPACE=$$QT_NAMESPACE"
+qt_extend_target(Core CONDITION NOT QT_NAMESPACE_ISEMPTY
+    PUBLIC_DEFINES
+        QT_NAMESPACE=
+)
 
 qt_extend_target(Core CONDITION ANDROID
     SOURCES
@@ -592,6 +593,32 @@ qt_extend_target(Core CONDITION MSVC
         tools/qvector_msvc.cpp
     NO_PCH_SOURCES
         "tools/qvector_msvc.cpp"
+)
+
+qt_extend_target(Core CONDITION QT_FEATURE_system_zlib
+    LIBRARIES
+        ZLIB::ZLIB
+)
+
+qt_extend_target(Core CONDITION NOT QT_FEATURE_system_zlib
+    SOURCES
+        ../3rdparty/zlib/src/adler32.c
+        ../3rdparty/zlib/src/compress.c
+        ../3rdparty/zlib/src/crc32.c
+        ../3rdparty/zlib/src/deflate.c
+        ../3rdparty/zlib/src/gzclose.c
+        ../3rdparty/zlib/src/gzlib.c
+        ../3rdparty/zlib/src/gzread.c
+        ../3rdparty/zlib/src/gzwrite.c
+        ../3rdparty/zlib/src/infback.c
+        ../3rdparty/zlib/src/inffast.c
+        ../3rdparty/zlib/src/inflate.c
+        ../3rdparty/zlib/src/inftrees.c
+        ../3rdparty/zlib/src/trees.c
+        ../3rdparty/zlib/src/uncompr.c
+        ../3rdparty/zlib/src/zutil.c
+    INCLUDE_DIRECTORIES
+        ../3rdparty/zlib/src
 )
 
 qt_extend_target(Core CONDITION QT_FEATURE_commandlineparser

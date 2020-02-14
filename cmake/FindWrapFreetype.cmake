@@ -1,33 +1,17 @@
-# We can't create the same interface imported target multiple times, CMake will complain if we do
-# that. This can happen if the find_package call is done in multiple different subdirectories.
-if(TARGET WrapFreetype::WrapFreetype)
-    set(WrapFreetype_FOUND ON)
-    return()
+include(QtFindWrapHelper NO_POLICY_SCOPE)
+
+set(_qt_wrap_use_bundled FALSE)
+if(QT_FEATURE_freetype AND NOT QT_FEATURE_system_freetype)
+    set(_qt_wrap_use_bundled TRUE)
 endif()
 
-set(WrapFreetype_FOUND OFF)
-
-# Hunter has the package named freetype, but exports the Freetype::Freetype target as upstream
-# First try the CONFIG package, and afterwards the MODULE if not found
-
-find_package(Freetype CONFIG NAMES Freetype freetype QUIET)
-if(NOT Freetype_FOUND)
-    find_package(Freetype MODULE)
-endif()
-
-if(Freetype_FOUND)
-    # vcpkg defines a lower case target name, while upstream Find module defines a prefixed
-    # upper case name.
-    set(potential_target_names Freetype::Freetype freetype)
-    foreach(target_name ${potential_target_names})
-        if(TARGET ${target_name})
-            set(WrapFreetype_FOUND ON)
-            set(final_target_name ${target_name})
-
-            add_library(WrapFreetype::WrapFreetype INTERFACE IMPORTED)
-            target_link_libraries(WrapFreetype::WrapFreetype INTERFACE ${final_target_name})
-
-            break()
-        endif()
-    endforeach()
-endif()
+qt_find_package_system_or_bundled(wrap_freetype
+    FRIENDLY_PACKAGE_NAME "Freetype"
+    WRAP_PACKAGE_TARGET "WrapFreetype::WrapFreetype"
+    WRAP_PACKAGE_FOUND_VAR_NAME "WrapFreetype_FOUND"
+    BUNDLED_PACKAGE_NAME "Qt6BundledFreetype"
+    BUNDLED_PACKAGE_TARGET "Qt6::BundledFreetype"
+    SYSTEM_PACKAGE_NAME "WrapSystemFreetype"
+    SYSTEM_PACKAGE_TARGET "WrapSystemFreetype::WrapSystemFreetype"
+    USE_BUNDLED_PACKAGE "${_qt_wrap_use_bundled}"
+)

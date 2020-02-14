@@ -4,6 +4,7 @@
 qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
 qt_find_package(WrapDoubleConversion REQUIRED
                                      PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion)
+qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
 
 if (NOT WrapDoubleConversion_FOUND)
     message(FATAL_ERROR "Your C library does not provide \
@@ -249,14 +250,12 @@ qt_add_module(Core
     INCLUDE_DIRECTORIES
         "${CMAKE_CURRENT_BINARY_DIR}/global" # special case
         ../3rdparty/tinycbor/src
-        # special case: remove ../3rdparty/...
     PRECOMPILED_HEADER
         global/qt_pch.h
     NO_PCH_SOURCES
         "text/qstring_compat.cpp"
     LIBRARIES
-        ZLIB::ZLIB
-        # double-conversion # special case
+        # double-conversion # special case remove
         Qt::GlobalConfigPrivate # special case
         QtHarfBuzz # special case
         Threads::Threads # special case
@@ -414,8 +413,13 @@ endif()
 #### Keys ignored in scope 2:.:.:corelib.pro:QT_FEATURE_gc_binaries:
 # MODULE_CONFIG = "gc_binaries"
 
-#### Keys ignored in scope 3:.:.:corelib.pro:NOT QT_NAMESPACE_ISEMPTY:
-# MODULE_DEFINES = "QT_NAMESPACE=$$QT_NAMESPACE"
+# special case begin
+# remove because it's handled manually
+#qt_extend_target(Core CONDITION NOT QT_NAMESPACE_ISEMPTY
+#    PUBLIC_DEFINES
+#        QT_NAMESPACE=
+#)
+# special case end
 
 qt_extend_target(Core CONDITION ANDROID
     SOURCES
@@ -692,6 +696,32 @@ qt_extend_target(Core CONDITION MSVC
         tools/qvector_msvc.cpp
     NO_PCH_SOURCES
         "tools/qvector_msvc.cpp"
+)
+
+qt_extend_target(Core CONDITION QT_FEATURE_system_zlib
+    LIBRARIES
+        ZLIB::ZLIB
+)
+
+qt_extend_target(Core CONDITION NOT QT_FEATURE_system_zlib
+    SOURCES
+        ../3rdparty/zlib/src/adler32.c
+        ../3rdparty/zlib/src/compress.c
+        ../3rdparty/zlib/src/crc32.c
+        ../3rdparty/zlib/src/deflate.c
+        ../3rdparty/zlib/src/gzclose.c
+        ../3rdparty/zlib/src/gzlib.c
+        ../3rdparty/zlib/src/gzread.c
+        ../3rdparty/zlib/src/gzwrite.c
+        ../3rdparty/zlib/src/infback.c
+        ../3rdparty/zlib/src/inffast.c
+        ../3rdparty/zlib/src/inflate.c
+        ../3rdparty/zlib/src/inftrees.c
+        ../3rdparty/zlib/src/trees.c
+        ../3rdparty/zlib/src/uncompr.c
+        ../3rdparty/zlib/src/zutil.c
+    INCLUDE_DIRECTORIES
+        ../3rdparty/zlib/src
 )
 
 qt_extend_target(Core CONDITION QT_FEATURE_commandlineparser
@@ -1258,3 +1288,14 @@ qt_add_docs(Core
     doc/qtcore.qdocconf
 )
 
+# special case begin
+# Handle qtzlib.pro to create headers for the
+# QtZlibPrivate target, equivalent to Qt += zlib-private
+if(NOT QT_FEATURE_system_zlib)
+    qt_add_module(Zlib
+        INTERNAL_MODULE
+        HEADER_MODULE
+        NO_CONFIG_HEADER_FILE
+    )
+endif()
+# special case end

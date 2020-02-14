@@ -8,6 +8,8 @@ set(OpenGL_GL_PREFERENCE GLVND) # special case:
 
 # special case begin
 qt_find_package(X11_XCB)
+qt_find_package(WrapHarfbuzz PROVIDED_TARGETS WrapHarfbuzz::WrapHarfbuzz)
+qt_find_package(WrapPNG PROVIDED_TARGETS WrapPNG::WrapPNG)
 
 if (QT_FEATURE_gui)
     if (WINRT)
@@ -259,7 +261,6 @@ qt_add_module(Gui
         ../3rdparty/VulkanMemoryAllocator
     LIBRARIES
         Qt::CorePrivate
-        ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
     PRIVATE_MODULE_INTERFACE
@@ -479,7 +480,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_png
     SOURCES
         image/qpnghandler.cpp image/qpnghandler_p.h
     LIBRARIES
-        PNG::PNG
+        WrapPNG::WrapPNG
 )
 
 #### Keys ignored in scope 38:.:image:image/image.pri:WIN32 AND mingw:
@@ -639,6 +640,21 @@ qt_extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL x86_6
         QT_COMPILER_SUPPORTS_SSE4_2
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_system_zlib
+    LIBRARIES
+        ZLIB::ZLIB
+)
+
+qt_extend_target(Gui CONDITION NOT QT_FEATURE_system_zlib
+    INCLUDE_DIRECTORIES
+        ../3rdparty/zlib/src
+)
+
+qt_extend_target(Gui CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
+    LIBRARIES
+        Qt::Core
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_regularexpression
     SOURCES
         util/qshadergenerator.cpp util/qshadergenerator_p.h
@@ -678,14 +694,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2
     SOURCES
         opengl/qopenglfunctions_es2.cpp opengl/qopenglfunctions_es2.h
 )
-
-# special case begin
-# Make Vulkan a global imported target, so that generator expressions involving Vulkan
-# can be correctly evaluated in any sub project directory.
-if(TARGET Vulkan::Vulkan)
-    set_property(TARGET Vulkan::Vulkan PROPERTY IMPORTED_GLOBAL TRUE)
-endif()
-# special case end
 
 qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES

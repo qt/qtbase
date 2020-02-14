@@ -107,6 +107,13 @@ qt_add_module(Bootstrap
         QT_VERSION_MINOR=
         QT_VERSION_PATCH=
         QT_VERSION_STR=\"\"
+    PUBLIC_DEFINES
+        QT_BOOTSTRAPPED
+        QT_NO_CAST_TO_ASCII
+        QT_VERSION_MAJOR=
+        QT_VERSION_MINOR=
+        QT_VERSION_PATCH=
+        QT_VERSION_STR=\"\"
     INCLUDE_DIRECTORIES
         ..
         ../../3rdparty/tinycbor/src
@@ -184,7 +191,7 @@ qt_extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
         ../../corelib/io/qstandardpaths_unix.cpp
 )
 
-qt_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING
+qt_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_system_zlib
     SOURCES
         ../../3rdparty/zlib/src/adler32.c
         ../../3rdparty/zlib/src/compress.c
@@ -205,7 +212,7 @@ qt_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING
         ../../3rdparty/zlib/src
 )
 
-qt_extend_target(Bootstrap CONDITION NOT CMAKE_CROSSCOMPILING
+qt_extend_target(Bootstrap CONDITION QT_FEATURE_system_zlib AND NOT CMAKE_CROSSCOMPILING
     LIBRARIES
         ZLIB::ZLIB
 )
