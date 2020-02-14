@@ -261,29 +261,4 @@
     by passing a factory to QNetworkProxyFactory::setApplicationProxyFactory()
     and a custom proxying policy can be created by subclassing
     QNetworkProxyFactory; see the class documentation for details.
-
-    \section1 Bearer Management Support
-
-    Bearer Management controls the connectivity state of the device such that
-    the application can start or stop network interfaces and roam
-    transparently between access points.
-
-    The QNetworkConfigurationManager class manages the list of network
-    configurations known to the device. A network configuration describes the
-    set of parameters used to start a network interface and is represented by
-    the QNetworkConfiguration class.
-
-    A network interface is started by openning a QNetworkSession based on a
-    given network configuration. In most situations creating a network session
-    based on the platform specified default network configuration is
-    appropriate. The default network configuration is returned by the
-    QNetworkConfigurationManager::defaultConfiguration() function.
-
-    On some platforms it is a platform requirement that the application open a
-    network session before any network operations can be performed. This can be
-    tested by the presents of the
-    QNetworkConfigurationManager::NetworkSessionRequired flag in the value
-    returned by the QNetworkConfigurationManager::capabilities() function.
-
-    \sa {Bearer Management}
 */
