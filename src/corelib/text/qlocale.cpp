@@ -1091,10 +1091,7 @@ bool QLocale::operator!=(const QLocale &other) const
 */
 size_t qHash(const QLocale &key, size_t seed) noexcept
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, key.d->m_data);
-    seed = hash(seed, key.d->m_numberOptions);
-    return seed;
+    return qHashMulti(seed, key.d->m_data, key.d->m_numberOptions);
 }
 
 /*!

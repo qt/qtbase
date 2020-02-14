@@ -1712,10 +1712,7 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
 */
 size_t qHash(const QRegularExpression &key, size_t seed) noexcept
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, key.d->pattern);
-    seed = hash(seed, key.d->patternOptions);
-    return seed;
+    return qHashMulti(seed, key.d->pattern, key.d->patternOptions);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2

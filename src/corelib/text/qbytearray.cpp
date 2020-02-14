@@ -5030,10 +5030,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 */
 size_t qHash(const QByteArray::FromBase64Result &key, size_t seed) noexcept
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, key.decoded);
-    seed = hash(seed, static_cast<int>(key.decodingStatus));
-    return seed;
+    return qHashMulti(seed, key.decoded, static_cast<int>(key.decodingStatus));
 }
 
 QT_END_NAMESPACE

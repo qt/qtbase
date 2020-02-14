@@ -151,7 +151,7 @@ inline bool operator==(const Employee &e1, const Employee &e2)
 
 inline size_t qHash(const Employee &key, size_t seed)
 {
-    return qHash(key.name(), seed) ^ key.dateOfBirth().day();
+    return qHashMulti(seed, key.name(), key.dateOfBirth());
 }
 
 #endif // EMPLOYEE_H

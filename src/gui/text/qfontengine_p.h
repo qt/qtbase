@@ -410,12 +410,7 @@ inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId
 inline size_t qHash(const QFontEngine::FaceId &f, size_t seed = 0)
     noexcept(noexcept(qHash(f.filename)))
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, f.filename);
-    seed = hash(seed, f.uuid);
-    seed = hash(seed, f.index);
-    seed = hash(seed, f.encoding);
-    return seed;
+    return qHashMulti(seed, f.filename, f.uuid, f.index, f.encoding);
 }
 
 

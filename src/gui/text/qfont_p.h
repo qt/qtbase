@@ -138,20 +138,19 @@ struct QFontDef
 
 inline size_t qHash(const QFontDef &fd, size_t seed = 0) noexcept
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, qRound64(fd.pixelSize*10000)); // use only 4 fractional digits
-    seed = hash(seed, fd.weight);
-    seed = hash(seed, fd.style);
-    seed = hash(seed, fd.stretch);
-    seed = hash(seed, fd.styleHint);
-    seed = hash(seed, fd.styleStrategy);
-    seed = hash(seed, fd.ignorePitch);
-    seed = hash(seed, fd.fixedPitch);
-    seed = hash(seed, fd.family);
-    seed = hash(seed, fd.families);
-    seed = hash(seed, fd.styleName);
-    seed = hash(seed, fd.hintingPreference);
-    return seed;
+    return qHashMulti(seed,
+                      qRound64(fd.pixelSize*10000), // use only 4 fractional digits
+                      fd.weight,
+                      fd.style,
+                      fd.stretch,
+                      fd.styleHint,
+                      fd.styleStrategy,
+                      fd.ignorePitch,
+                      fd.fixedPitch,
+                      fd.family,
+                      fd.families,
+                      fd.styleName,
+                      fd.hintingPreference);
 }
 
 class QFontEngineData

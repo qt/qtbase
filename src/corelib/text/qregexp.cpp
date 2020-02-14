@@ -1030,11 +1030,7 @@ static bool operator==(const QRegExpEngineKey &key1, const QRegExpEngineKey &key
 
 static size_t qHash(const QRegExpEngineKey &key, size_t seed = 0) noexcept
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, key.pattern);
-    seed = hash(seed, key.patternSyntax);
-    seed = hash(seed, key.cs);
-    return seed;
+    return qHashMulti(seed, key.pattern, key.patternSyntax, key.cs);
 }
 
 class QRegExpEngine;

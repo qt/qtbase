@@ -596,6 +596,48 @@ uint qt_hash(QStringView key, uint chained) noexcept
     constraints, we cannot change the QPair algorithm to match the std::pair one before Qt 6.
 */
 
+/*!
+    \fn template <typename... T> size_t qHashMulti(size_t seed, const T &...args)
+    \relates QHash
+    \since 6.0
+
+    Returns the hash value for the \a{args}, using \a seed to seed
+    the calculation, by successively applying qHash() to each
+    element and combining the hash values into a single one.
+
+    Note that the order of the arguments is significant. If order does
+    not matter, use qHashMultiCommutative() instead. If you are hashing raw
+    memory, use qHashBits(); if you are hashing a range, use qHashRange().
+
+    This function is provided as a convenience to implement qHash() for
+    your own custom types. For example, here's how you could implement
+    a qHash() overload for a class \c{Employee}:
+
+    \snippet code/src_corelib_tools_qhash.cpp 13
+
+    \sa qHashMultiCommutative, qHashRange
+*/
+
+/*!
+    \fn template <typename... T> size_t qHashMultiCommutative(size_t seed, const T &...args)
+    \relates QHash
+    \since 6.0
+
+    Returns the hash value for the \a{args}, using \a seed to seed
+    the calculation, by successively applying qHash() to each
+    element and combining the hash values into a single one.
+
+    The order of the arguments is insignificant. If order does
+    matter, use qHashMulti() instead, as it may produce better quality
+    hashing. If you are hashing raw memory, use qHashBits(); if you are
+    hashing a range, use qHashRange().
+
+    This function is provided as a convenience to implement qHash() for
+    your own custom types.
+
+    \sa qHashMulti, qHashRange
+*/
+
 /*! \fn template <typename InputIterator> size_t qHashRange(InputIterator first, InputIterator last, size_t seed = 0)
     \relates QHash
     \since 5.5
@@ -1059,15 +1101,16 @@ size_t qHash(long double key, size_t seed) noexcept
     the documentation of each class.
 
     If you want to use other types as the key, make sure that you provide
-    operator==() and a qHash() implementation.
+    operator==() and a qHash() implementation. The convenience qHashMulti()
+    function can be used to implement qHash() for a custom type, where
+    one usually wants to produce a hash value from multiple fields:
 
     Example:
     \snippet code/src_corelib_tools_qhash.cpp 13
 
-    In the example above, we've relied on Qt's global qHash(const
-    QString &, uint) to give us a hash value for the employee's name, and
-    XOR'ed this with the day they were born to help produce unique
-    hashes for people with the same name.
+    In the example above, we've relied on Qt's own implementation of
+    qHash() for QString and QDate to give us a hash value for the
+    employee's name and date of birth respectively.
 
     Note that the implementation of the qHash() overloads offered by Qt
     may change at any time. You \b{must not} rely on the fact that qHash()

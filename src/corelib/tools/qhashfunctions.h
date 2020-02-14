@@ -190,7 +190,53 @@ struct QHashCombineCommutative {
     { return seed + qHash(t); } // don't use xor!
 };
 
+template <typename... T>
+using QHashMultiReturnType = decltype(
+    std::declval< std::enable_if_t<(sizeof...(T) > 0)> >(),
+    (qHash(std::declval<const T &>()), ...),
+    size_t{}
+);
+
+// workaround for a MSVC ICE,
+// https://developercommunity.visualstudio.com/content/problem/996540/internal-compiler-error-on-msvc-1924-when-doing-sf.html
+template <typename T>
+inline constexpr bool QNothrowHashableHelper_v = noexcept(qHash(std::declval<const T &>()));
+
+template <typename T, typename Enable = void>
+struct QNothrowHashable : std::false_type {};
+
+template <typename T>
+struct QNothrowHashable<T, std::enable_if_t<QNothrowHashableHelper_v<T>>> : std::true_type {};
+
 } // namespace QtPrivate
+
+template <typename... T>
+constexpr
+#ifdef Q_QDOC
+size_t
+#else
+QtPrivate::QHashMultiReturnType<T...>
+#endif
+qHashMulti(size_t seed, const T &... args)
+    noexcept(std::conjunction_v<QtPrivate::QNothrowHashable<T>...>)
+{
+    QtPrivate::QHashCombine hash;
+    return ((seed = hash(seed, args)), ...), seed;
+}
+
+template <typename... T>
+constexpr
+#ifdef Q_QDOC
+size_t
+#else
+QtPrivate::QHashMultiReturnType<T...>
+#endif
+qHashMultiCommutative(size_t seed, const T &... args)
+    noexcept(std::conjunction_v<QtPrivate::QNothrowHashable<T>...>)
+{
+    QtPrivate::QHashCombineCommutative hash;
+    return ((seed = hash(seed, args)), ...), seed;
+}
 
 template <typename InputIterator>
 inline size_t qHashRange(InputIterator first, InputIterator last, size_t seed = 0)
@@ -218,10 +264,7 @@ template <typename T1, typename T2> inline size_t qHash(const QPair<T1, T2> &key
 template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> &key, size_t seed = 0)
     noexcept(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
 {
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, key.first);
-    seed = hash(seed, key.second);
-    return seed;
+    return qHashMulti(seed, key.first, key.second);
 }
 
 #define QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH(Class, Arguments)      \
