@@ -1115,9 +1115,11 @@ public:
     inline typename QMap<Key, T>::iterator replace(const Key &key, const T &value)
     { return QMap<Key, T>::insert(key, value); }
     typename QMap<Key, T>::iterator insert(const Key &key, const T &value);
+    //! [qmultimap-insert-pos]
     typename QMap<Key, T>::iterator insert(typename QMap<Key, T>::const_iterator pos,
-                                           const Key &keyi, const T &value);
+                                           const Key &key, const T &value);
 
+    //! [qmultimap-unite]
     QMultiMap &unite(const QMultiMap &other);
     inline QMultiMap &operator+=(const QMultiMap &other)
     { return unite(other); }
@@ -1222,6 +1224,7 @@ Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMultiMap<Key, T>::insert(cons
     return typename QMap<Key, T>::iterator(z);
 }
 
+#ifndef Q_CLANG_QDOC
 template <class Key, class T>
 typename QMap<Key, T>::iterator QMultiMap<Key, T>::insert(typename QMap<Key, T>::const_iterator pos,
                                                           const Key &akey, const T &avalue)
@@ -1287,6 +1290,7 @@ Q_INLINE_TEMPLATE QMultiMap<Key, T> &QMultiMap<Key, T>::unite(const QMultiMap<Ke
     }
     return *this;
 }
+#endif // Q_CLANG_QDOC
 
 template <class Key, class T>
 Q_INLINE_TEMPLATE bool QMultiMap<Key, T>::contains(const Key &key, const T &value) const

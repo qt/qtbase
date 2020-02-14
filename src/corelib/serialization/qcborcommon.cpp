@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
    \brief The <QtCborCommon> header contains definitions common to both the
    streaming classes (QCborStreamReader and QCborStreamWriter) and to
    QCborValue.
+
+   \sa QCborError
  */
 
 /*!
@@ -203,7 +205,7 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
 /*!
    \class QCborError
    \inmodule QtCore
-   \relates <QtCborCommon>
+   \inheaderfile <QtCborCommon>
    \reentrant
    \since 5.12
 

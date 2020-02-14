@@ -3339,6 +3339,8 @@
 
   This is a dummy type, designed to help users transition from certain deprecated APIs to their replacement APIs.
 
+  \omitvalue ReturnByValue
+
   \sa QCursor::bitmap()
   \sa QCursor::mask()
   \sa QLabel::picture()

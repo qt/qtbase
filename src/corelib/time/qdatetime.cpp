@@ -1127,9 +1127,7 @@ static QString toStringIsoDate(QDate date)
     \overload
 
     Returns the date as a string. The \a format parameter determines the format
-    of the string. If \a cal is supplied, it determines the calendar used to
-    represent the date; it defaults to Gregorian and only affects the
-    locale-specific formats.
+    of the string.
 
     If the \a format is Qt::TextDate, the string is formatted in the default
     way. The day and month names will be localized names using the system
@@ -1236,7 +1234,7 @@ QT_WARNING_POP
     \fn QString QDate::toString(QStringView format, QCalendar cal) const
 
     Returns the date as a string. The \a format parameter determines the format
-    of the result string. If \cal is supplied, it determines the calendar used
+    of the result string. If \a cal is supplied, it determines the calendar used
     to represent the date; it defaults to Gregorian.
 
     These expressions may be used:
@@ -4437,7 +4435,7 @@ QT_WARNING_POP
     \fn QString QDateTime::toString(QStringView format, QCalendar cal) const
 
     Returns the datetime as a string. The \a format parameter determines the
-    format of the result string. If \cal is supplied, it determines the calendar
+    format of the result string. If \a cal is supplied, it determines the calendar
     used to represent the date; it defaults to Gregorian. See QTime::toString()
     and QDate::toString() for the supported specifiers for time and date,
     respectively.

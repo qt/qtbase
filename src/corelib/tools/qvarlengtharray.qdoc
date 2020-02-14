@@ -904,7 +904,7 @@
 */
 
 /*!
-    template <typename T, int Prealloc> uint qHash(const QVarLengthArray<T, Prealloc> &key, uint seed = 0)
+    \fn template <typename T, int Prealloc> uint qHash(const QVarLengthArray<T, Prealloc> &key, uint seed = 0)
     \relates QVarLengthArray
     \since 5.14
 
