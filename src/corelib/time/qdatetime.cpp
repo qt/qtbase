@@ -51,7 +51,6 @@
 #if QT_CONFIG(timezone)
 #include "qtimezoneprivate_p.h"
 #endif
-#include "qregexp.h"
 #include "qdebug.h"
 #ifndef Q_OS_WIN
 #include <locale.h>
@@ -135,8 +134,6 @@ static int qt_monthNumberFromShortName(QStringView shortName)
     }
     return -1;
 }
-static int qt_monthNumberFromShortName(const QString &shortName)
-{ return qt_monthNumberFromShortName(QStringView(shortName)); }
 
 static int fromShortMonthName(QStringView monthName, int year)
 {
@@ -153,43 +150,144 @@ static int fromShortMonthName(QStringView monthName, int year)
 }
 #endif // textdate
 
-#if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring) // depends on, so implies, textdate
 struct ParsedRfcDateTime {
     QDate date;
     QTime time;
     int utcOffset;
 };
 
+static int shortDayFromName(QStringView name)
+{
+    const char16_t shortDayNames[] = u"MonTueWedThuFriSatSun";
+    for (int i = 0; i < 7; i++) {
+        if (name == QStringView(shortDayNames + 3 * i, 3))
+            return i + 1;
+    }
+    return 0;
+}
+
 static ParsedRfcDateTime rfcDateImpl(const QString &s)
 {
+    // Matches "[ddd,] dd MMM yyyy[ hh:mm[:ss]] [±hhmm]" - correct RFC 822, 2822, 5322 format -
+    // or           "ddd MMM dd[ hh:mm:ss] yyyy [±hhmm]" - permissive RFC 850, 1036 (read only)
     ParsedRfcDateTime result;
 
-    // Matches "[ddd,] dd MMM yyyy[ hh:mm[:ss]] [±hhmm]" - correct RFC 822, 2822, 5322 format
-    QRegExp rex(QStringLiteral("^[ \\t]*(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
-    if (s.indexOf(rex) == 0) {
-        const QStringList cap = rex.capturedTexts();
-        result.date = QDate(cap[3].toInt(), qt_monthNumberFromShortName(cap[2]), cap[1].toInt());
-        if (!cap[4].isEmpty())
-            result.time = QTime(cap[4].toInt(), cap[5].toInt(), cap[6].toInt());
-        const bool positiveOffset = (cap[7] == QLatin1String("+"));
-        const int hourOffset = cap[8].toInt();
-        const int minOffset = cap[9].toInt();
-        result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
-    } else {
-        // Matches "ddd MMM dd[ hh:mm:ss] yyyy [±hhmm]" - permissive RFC 850, 1036 (read only)
-        QRegExp rex(QStringLiteral("^[ \\t]*[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
-        if (s.indexOf(rex) == 0) {
-            const QStringList cap = rex.capturedTexts();
-            result.date = QDate(cap[6].toInt(), qt_monthNumberFromShortName(cap[1]), cap[2].toInt());
-            if (!cap[3].isEmpty())
-                result.time = QTime(cap[3].toInt(), cap[4].toInt(), cap[5].toInt());
-            const bool positiveOffset = (cap[7] == QLatin1String("+"));
-            const int hourOffset = cap[8].toInt();
-            const int minOffset = cap[9].toInt();
-            result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+    auto words = s.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
+    if (words.size() < 3 || words.size() > 6)
+        return result;
+    const QChar colon(QLatin1Char(':'));
+    const QLocale C = QLocale::c();
+    bool ok = true;
+    QDate date;
+
+    const auto isShortName = [](QStringView name) {
+        return (name.length() == 3 && name.at(0).isUpper()
+                && name.at(1).isLower() && name.at(2).isLower());
+    };
+
+    /* Reject entirely (return) if the string is malformed; however, if the date
+     * is merely invalid, (break, so as to) go on to parsing of the time.
+     */
+    int yearIndex;
+    do { // "loop" so that we can use break on merely invalid, but "right shape" date.
+        QStringView dayName;
+        bool rfcX22 = true;
+        if (words.at(0).endsWith(QLatin1Char(','))) {
+            dayName = words.takeFirst().chopped(1);
+        } else if (!words.at(0).at(0).isDigit()) {
+            dayName = words.takeFirst();
+            rfcX22 = false;
+        } // else: dayName is not specified (so we can only be RFC *22)
+        if (words.size() < 3 || words.size() > 5)
+            return result;
+
+        // Don't break before setting yearIndex.
+        int dayIndex, monthIndex;
+        if (rfcX22) {
+            // dd MMM yyyy [hh:mm[:ss]] [±hhmm]
+            dayIndex = 0;
+            monthIndex = 1;
+            yearIndex = 2;
+        } else {
+            // MMM dd[ hh:mm:ss] yyyy [±hhmm]
+            dayIndex = 1;
+            monthIndex = 0;
+            yearIndex = words.size() > 3 && words.at(2).contains(colon) ? 3 : 2;
         }
+
+        int dayOfWeek = 0;
+        if (!dayName.isEmpty()) {
+            if (!isShortName(dayName))
+                return result;
+            dayOfWeek = shortDayFromName(dayName);
+            if (!dayOfWeek)
+                break;
+        }
+
+        const int day = words.at(dayIndex).toInt(&ok);
+        if (!ok)
+            return result;
+        const int year = words.at(yearIndex).toInt(&ok);
+        if (!ok)
+            return result;
+        const QStringView monthName = words.at(monthIndex);
+        if (!isShortName(monthName))
+            return result;
+        int month = fromShortMonthName(monthName, year);
+        if (month < 0)
+            break;
+
+        date = QDate(year, month, day);
+        if (dayOfWeek && date.dayOfWeek() != dayOfWeek)
+            date = QDate();
+    } while (false);
+    words.remove(yearIndex);
+    words.remove(0, 2); // month and day-of-month, in some order
+
+    // Time: [hh:mm[:ss]]
+    QTime time;
+    if (words.size() && words.at(0).contains(colon)) {
+        const QStringView when = words.takeFirst();
+        if (when.at(2) != colon || (when.size() == 8 ? when.at(5) != colon : when.size() > 5))
+            return result;
+        const int hour = C.toInt(when.left(2), &ok);
+        if (!ok)
+            return result;
+        const int minute = C.toInt(when.mid(3, 2), &ok);
+        if (!ok)
+            return result;
+        const auto secs = when.size() == 8 ? C.toInt(when.right(2), &ok) : 0;
+        if (!ok)
+            return result;
+        time = QTime(hour, minute, secs);
     }
 
+    // Offset: [±hhmm]
+    int offset = 0;
+    if (words.size()) {
+        const QStringView zone = words.takeFirst();
+        if (words.size() || !(zone.size() == 3 || zone.size() == 5))
+            return result;
+        bool negate = false;
+        if (zone.at(0) == QLatin1Char('-'))
+            negate = true;
+        else if (zone.at(0) != QLatin1Char('+'))
+            return result;
+        const int hour = C.toInt(zone.mid(1, 2), &ok);
+        if (!ok)
+            return result;
+        const auto minute = zone.size() > 3 ? C.toInt(zone.mid(3, 2), &ok) : 0;
+        if (!ok)
+            return result;
+        offset = (hour * 60 + minute) * 60;
+        if (negate)
+            offset = -offset;
+    }
+
+    result.date = date;
+    result.time = time;
+    result.utcOffset = offset;
     return result;
 }
 #endif // datestring
@@ -5285,7 +5383,7 @@ QT_WARNING_POP
             isoString.chop(1); // trim 'Z'
         } else {
             // the loop below is faster but functionally equal to:
-            // const int signIndex = isoString.indexOf(QRegExp(QStringLiteral("[+-]")));
+            // const int signIndex = isoString.indexOf(QRegulargExpression(QStringLiteral("[+-]")));
             int signIndex = isoString.size() - 1;
             Q_ASSERT(signIndex >= 0);
             bool found = false;

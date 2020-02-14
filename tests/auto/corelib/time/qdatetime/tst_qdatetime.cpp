@@ -2397,11 +2397,8 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     QTest::newRow("RFC 2822 with day +0000") << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34 +0000")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
-    // Should be invalid, but current implementation would just ignore the
-    // offset as trailing junk if we insist on the space:
     QTest::newRow("RFC 2822 missing space before +0100")
-        << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34+0100") << Qt::RFC2822Date
-        << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::OffsetFromUTC, 3600);
+        << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34+0100") << Qt::RFC2822Date << QDateTime();
     // No timezone assume UTC
     QTest::newRow("RFC 2822 no timezone") << QString::fromLatin1("01 Jan 1970 00:12:34")
         << Qt::RFC2822Date << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
@@ -2417,10 +2414,10 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << invalidDateTime();
     QTest::newRow("RFC 2822 invalid year") << QString::fromLatin1("13 Fev 0000 13:24:51 +0100")
         << Qt::RFC2822Date << invalidDateTime();
-    // Test invalid characters (currently ignoring trailing junk, but see QTBUG-80038).
+    // Test invalid characters.
     QTest::newRow("RFC 2822 invalid character at end")
         << QString::fromLatin1("01 Jan 2012 08:00:00 +0100!")
-        << Qt::RFC2822Date << QDateTime(QDate(2012, 1, 1), QTime(7, 0, 0, 0), Qt::UTC);
+        << Qt::RFC2822Date << QDateTime();
     QTest::newRow("RFC 2822 invalid character at front")
         << QString::fromLatin1("!01 Jan 2012 08:00:00 +0100")
         << Qt::RFC2822Date << invalidDateTime();
@@ -2458,10 +2455,10 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::newRow("RFC 850 and 1036 date only")
         << QString::fromLatin1("Fri Nov 01 2002")
         << Qt::RFC2822Date << invalidDateTime();
-    // Test invalid characters (currently ignoring trailing junk, but see QTBUG-80038).
+    // Test invalid characters.
     QTest::newRow("RFC 850 and 1036 invalid character at end")
         << QString::fromLatin1("Sun Jan 01 08:00:00 2012 +0100!")
-        << Qt::RFC2822Date << QDateTime(QDate(2012, 1, 1), QTime(7, 0, 0, 0), Qt::UTC);
+        << Qt::RFC2822Date << QDateTime();
     QTest::newRow("RFC 850 and 1036 invalid character at front")
         << QString::fromLatin1("!Sun Jan 01 08:00:00 2012 +0100")
         << Qt::RFC2822Date << invalidDateTime();

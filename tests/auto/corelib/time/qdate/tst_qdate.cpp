@@ -1159,10 +1159,8 @@ void tst_QDate::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDate();
     QTest::newRow("RFC 2822 invalid year") << QString::fromLatin1("13 Fev 0000 13:24:51 +0100")
         << Qt::RFC2822Date << QDate();
-    // Test invalid characters (currently ignoring trailing junk, but see QTBUG-80038).
     QTest::newRow("RFC 2822 invalid character at end")
-        << QString::fromLatin1("01 Jan 2012 08:00:00 +0100!")
-        << Qt::RFC2822Date << QDate(2012, 1, 1);
+        << QString::fromLatin1("01 Jan 2012 08:00:00 +0100!") << Qt::RFC2822Date << QDate();
     QTest::newRow("RFC 2822 invalid character at front")
         << QString::fromLatin1("!01 Jan 2012 08:00:00 +0100") << Qt::RFC2822Date << QDate();
     QTest::newRow("RFC 2822 invalid character both ends")
@@ -1189,10 +1187,10 @@ void tst_QDate::fromStringDateFormat_data()
     // No time specified
     QTest::newRow("RFC 850 and 1036 date only") << QString::fromLatin1("Fri Nov 01 2002")
         << Qt::RFC2822Date << QDate(2002, 11, 1);
-    // Test invalid characters (currently ignoring trailing junk, but see QTBUG-80038).
+    // Test invalid characters.
     QTest::newRow("RFC 850 and 1036 invalid character at end")
         << QString::fromLatin1("Sun Jan 01 08:00:00 2012 +0100!")
-        << Qt::RFC2822Date << QDate(2012, 1, 1);
+        << Qt::RFC2822Date << QDate();
     QTest::newRow("RFC 850 and 1036 invalid character at front")
         << QString::fromLatin1("!Sun Jan 01 08:00:00 2012 +0100")
         << Qt::RFC2822Date << QDate();
