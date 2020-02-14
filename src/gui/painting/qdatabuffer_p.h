@@ -116,7 +116,7 @@ public:
                 capacity = 1;
             while (capacity < size)
                 capacity *= 2;
-            buffer = (Type*) realloc(buffer, capacity * sizeof(Type));
+            buffer = (Type*) realloc(static_cast<void*>(buffer), capacity * sizeof(Type));
             Q_CHECK_PTR(buffer);
         }
     }
@@ -124,7 +124,7 @@ public:
     inline void shrink(int size) {
         capacity = size;
         if (size) {
-            buffer = (Type*) realloc(buffer, capacity * sizeof(Type));
+            buffer = (Type*) realloc(static_cast<void*>(buffer), capacity * sizeof(Type));
             Q_CHECK_PTR(buffer);
         } else {
             free(buffer);
