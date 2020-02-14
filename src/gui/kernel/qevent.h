@@ -312,8 +312,10 @@ public:
     inline qreal hiResGlobalX() const { return mGPos.x(); }
     QT_DEPRECATED_VERSION_X_5_15("use globalPosF().y()")
     inline qreal hiResGlobalY() const { return mGPos.y(); }
-#endif
+    QT_DEPRECATED_VERSION_X_5_15("Use deviceType()")
     inline TabletDevice device() const { return TabletDevice(mDev); }
+#endif
+    inline TabletDevice deviceType() const { return TabletDevice(mDev); }
     inline PointerType pointerType() const { return PointerType(mPointerType); }
     inline qint64 uniqueId() const { return mUnique; }
     inline qreal pressure() const { return mPress; }

@@ -2454,6 +2454,12 @@ Qt::MouseButtons QTabletEvent::buttons() const
 /*!
     \fn TabletDevices QTabletEvent::device() const
 
+    \deprecated Use deviceType().
+*/
+
+/*!
+    \fn TabletDevices QTabletEvent::deviceType() const
+
     Returns the type of device that generated the event.
 
     \sa TabletDevice

@@ -106,7 +106,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
             break;
         case QEvent::TabletMove:
 #ifndef Q_OS_IOS
-            if (event->device() == QTabletEvent::RotationStylus)
+            if (event->deviceType() == QTabletEvent::RotationStylus)
                 updateCursor(event);
 #endif
             if (m_deviceDown) {
@@ -161,7 +161,7 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
     static qreal maxPenRadius = pressureToWidth(1.0);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    switch (event->device()) {
+    switch (event->deviceType()) {
 //! [6]
         case QTabletEvent::Airbrush:
             {
@@ -251,7 +251,7 @@ void TabletCanvas::updateBrush(const QTabletEvent *event)
             m_color.setAlphaF(event->pressure());
             break;
         case TangentialPressureValuator:
-            if (event->device() == QTabletEvent::Airbrush)
+            if (event->deviceType() == QTabletEvent::Airbrush)
                 m_color.setAlphaF(qMax(0.01, (event->tangentialPressure() + 1.0) / 2.0));
             else
                 m_color.setAlpha(255);
@@ -312,7 +312,7 @@ void TabletCanvas::updateCursor(const QTabletEvent *event)
         if (event->pointerType() == QTabletEvent::Eraser) {
             cursor = QCursor(QPixmap(":/images/cursor-eraser.png"), 3, 28);
         } else {
-            switch (event->device()) {
+            switch (event->deviceType()) {
             case QTabletEvent::Stylus:
                 cursor = QCursor(QPixmap(":/images/cursor-pencil.png"), 0, 0);
                 break;

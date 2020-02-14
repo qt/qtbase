@@ -3299,7 +3299,7 @@ QT_WARNING_POP
             bool eventAccepted = tablet->isAccepted();
             while (w) {
                 QTabletEvent te(tablet->type(), relpos, tablet->globalPosF(),
-                                tablet->device(), tablet->pointerType(),
+                                tablet->deviceType(), tablet->pointerType(),
                                 tablet->pressure(), tablet->xTilt(), tablet->yTilt(),
                                 tablet->tangentialPressure(), tablet->rotation(), tablet->z(),
                                 tablet->modifiers(), tablet->uniqueId(), tablet->button(), tablet->buttons());
