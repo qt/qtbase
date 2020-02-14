@@ -1242,15 +1242,6 @@ namespace Qt {
     enum DateFormat {
         TextDate,      // default Qt
         ISODate,       // ISO 8601
-#if QT_DEPRECATED_SINCE(5, 15)
-        SystemLocaleDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
-        LocalDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale") = 2, // i.e. SystemLocaleDate
-        LocaleDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
-        SystemLocaleShortDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
-        SystemLocaleLongDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
-        DefaultLocaleShortDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
-        DefaultLocaleLongDate Q_DECL_ENUMERATOR_DEPRECATED_X("Use QLocale"),
-#endif
         RFC2822Date = 8, // RFC 2822 (+ 850 and 1036 during parsing)
         ISODateWithMs
     };
