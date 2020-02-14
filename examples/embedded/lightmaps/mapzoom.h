@@ -53,7 +53,6 @@
 
 #include <QMainWindow>
 
-class QNetworkSession;
 class LightMaps;
 
 class MapZoom : public QMainWindow
@@ -64,7 +63,6 @@ public:
     MapZoom();
 
 private slots:
-    void sessionOpened();
     void chooseOslo();
     void chooseBerlin();
     void chooseJakarta();
@@ -72,7 +70,6 @@ private slots:
 
 private:
     LightMaps *map;
-    QNetworkSession *networkSession;
 };
 
 #endif
