@@ -2368,52 +2368,6 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
 {
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-  Construct a tablet event of the given \a type.
-
-  The \a pos parameter indicates where the event occurred in the
-  widget; \a globalPos is the corresponding position in absolute
-  coordinates.
-
-  \a pressure contains the pressure exerted on the \a device.
-
-  \a pointerType describes the type of pen that is being used.
-
-  \a xTilt and \a yTilt contain the device's degree of tilt from the
-  x and y axes respectively.
-
-  \a keyState specifies which keyboard modifiers are pressed (e.g.,
-  \uicontrol{Ctrl}).
-
-  The \a uniqueID parameter contains the unique ID for the current device.
-
-  The \a z parameter contains the coordinate of the device on the tablet, this
-  is usually given by a wheel on 4D mouse. If the device does not support a
-  Z-axis, pass zero here.
-
-  The \a tangentialPressure parameter contins the tangential pressure of an air
-  brush. If the device does not support tangential pressure, pass 0 here.
-
-  \a rotation contains the device's rotation in degrees. 4D mice support
-  rotation. If the device does not support rotation, pass 0 here.
-
-  \sa pos(), globalPos(), device(), pressure(), xTilt(), yTilt(), uniqueId(), rotation(),
-      tangentialPressure(), z()
-
-  \deprecated in 5.4: use the constructor with MouseButton status
-*/
-
-QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalPos,
-                           int device, int pointerType,
-                           qreal pressure, int xTilt, int yTilt, qreal tangentialPressure,
-                           qreal rotation, int z, Qt::KeyboardModifiers keyState, qint64 uniqueID)
-    : QTabletEvent(type, pos, globalPos, device, pointerType, pressure, xTilt, yTilt,
-                   tangentialPressure, rotation, z, keyState, uniqueID, Qt::NoButton, Qt::NoButton)
-{
-}
-#endif
-
 /*!
     \internal
 */
@@ -2449,12 +2403,6 @@ Qt::MouseButtons QTabletEvent::buttons() const
 {
     return static_cast<QTabletEventPrivate *>(mExtra)->buttonState;
 }
-
-/*!
-    \fn TabletDevices QTabletEvent::device() const
-
-    \deprecated Use deviceType().
-*/
 
 /*!
     \fn TabletDevices QTabletEvent::deviceType() const
@@ -2584,7 +2532,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     Returns the global x position of the mouse pointer at the time of
     the event.
 
-    \sa globalY(), globalPos(), hiResGlobalX()
+    \sa globalY(), globalPos()
 */
 
 /*!
@@ -2593,7 +2541,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     Returns the global y position of the tablet device at the time of
     the event.
 
-    \sa globalX(), globalPos(), hiResGlobalY()
+    \sa globalX(), globalPos()
 */
 
 /*!
@@ -2617,22 +2565,6 @@ Qt::MouseButtons QTabletEvent::buttons() const
     the eraser-end versus the pen-end of the stylus on some OS's.
 
     \sa pointerType()
-*/
-
-/*!
-    \fn qreal &QTabletEvent::hiResGlobalX() const
-
-    The high precision x position of the tablet device.
-
-    \obsolete use globalPosF()
-*/
-
-/*!
-    \fn qreal &QTabletEvent::hiResGlobalY() const
-
-    The high precision y position of the tablet device.
-
-    \obsolete use globalPosF()
 */
 
 /*!
@@ -5018,9 +4950,8 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     The \a startPos is the position of a touch or mouse event that started the scrolling.
 */
 QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
-    : QEvent(QEvent::ScrollPrepare), m_target(nullptr), m_startPos(startPos)
+    : QEvent(QEvent::ScrollPrepare), m_startPos(startPos)
 {
-    Q_UNUSED(m_target);
 }
 
 /*!

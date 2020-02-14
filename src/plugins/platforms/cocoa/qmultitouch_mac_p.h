@@ -58,6 +58,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qhash.h>
 #include <QtCore>
+#include <QtGui/qtouchdevice.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -70,6 +70,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qopenglcontext.h>
+#include <QtGui/qtouchdevice.h>
 
 #include <QtCore/qset.h>
 #include <QtCore/qhash.h>

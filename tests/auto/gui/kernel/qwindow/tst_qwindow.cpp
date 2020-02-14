@@ -1717,7 +1717,7 @@ public:
         eventType = ev->type();
         eventGlobal = ev->globalPosF();
         eventLocal = ev->posF();
-        eventDevice = ev->device();
+        eventDevice = ev->deviceType();
     }
 
     QEvent::Type eventType = QEvent::None;
@@ -1730,7 +1730,7 @@ public:
                 || ev->type() == QEvent::TabletLeaveProximity) {
             eventType = ev->type();
             QTabletEvent *te = static_cast<QTabletEvent *>(ev);
-            eventDevice = te->device();
+            eventDevice = te->deviceType();
         }
         return QWindow::eventFilter(obj, ev);
     }

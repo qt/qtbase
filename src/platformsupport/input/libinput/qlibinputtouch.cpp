@@ -42,6 +42,7 @@
 #include <libinput.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
+#include <QtGui/QTouchDevice>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE

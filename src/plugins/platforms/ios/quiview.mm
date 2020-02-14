@@ -49,6 +49,7 @@
 #include "qiosmenu.h"
 #endif
 
+#include <QtGui/qtouchdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface_p.h>

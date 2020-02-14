@@ -52,6 +52,7 @@
 #include <QtCore/qmap.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/qtouchdevice.h>
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qwidget.h>
 #endif

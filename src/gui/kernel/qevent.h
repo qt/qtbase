@@ -41,31 +41,31 @@
 #define QEVENT_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtGui/qwindowdefs.h>
-#include <QtGui/qregion.h>
+
+#include <QtCore/qcoreevent.h>
+#include <QtCore/qiodevice.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/qvector.h>
+#include <QtCore/qurl.h>
+#include <QtGui/qregion.h>
+#include <QtGui/qvector2d.h>
+#include <QtGui/qwindowdefs.h>
+
 #if QT_CONFIG(shortcut)
 #  include <QtGui/qkeysequence.h>
 #endif
-#include <QtCore/qcoreevent.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qmap.h> // ### Qt 6: Remove
-#include <QtCore/qvector.h>
-#include <QtCore/qset.h> // ### Qt 6: Remove
-#include <QtCore/qurl.h>
-#include <QtCore/qfile.h> // ### Qt 6: Replace by <QtCore/qiodevice.h> and forward declare QFile
-#include <QtGui/qvector2d.h>
-#include <QtGui/qtouchdevice.h> // ### Qt 6: Replace by forward declaration
 
 QT_BEGIN_NAMESPACE
 
-
+class QFile;
 class QGuiAction;
-#ifndef QT_NO_GESTURES
+class QScreen;
+class QTouchDevice;
+#if QT_CONFIG(gestures)
 class QGesture;
 #endif
-class QScreen;
 
 class Q_GUI_EXPORT QInputEvent : public QEvent
 {
@@ -135,10 +135,6 @@ public:
     inline Qt::MouseButtons buttons() const { return mouseState; }
 
     inline void setLocalPos(const QPointF &localPosition) { l = localPosition; }
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline QPointF posF() const { return l; }
-#endif
 
     Qt::MouseEventSource source() const;
     Qt::MouseEventFlags flags() const;
@@ -281,14 +277,6 @@ public:
     enum PointerType { UnknownPointer, Pen, Cursor, Eraser };
     Q_ENUM(PointerType)
 
-#if QT_DEPRECATED_SINCE(5, 15)
-    // Actually deprecated since 5.4, in docs
-    QT_DEPRECATED_VERSION_X_5_15("Use the other QTabletEvent constructor")
-    QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
-                 int device, int pointerType, qreal pressure, int xTilt, int yTilt,
-                 qreal tangentialPressure, qreal rotation, int z,
-                 Qt::KeyboardModifiers keyState, qint64 uniqueID); // ### remove in Qt 6
-#endif
     QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
                  int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                  qreal tangentialPressure, qreal rotation, int z,
@@ -298,9 +286,6 @@ public:
 
     inline QPoint pos() const { return mPos.toPoint(); }
     inline QPoint globalPos() const { return mGPos.toPoint(); }
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED inline const QPointF &hiResGlobalPos() const { return mPos; }
-#endif
 
     inline const QPointF &posF() const { return mPos; }
     inline const QPointF &globalPosF() const { return mGPos; }
@@ -309,14 +294,6 @@ public:
     inline int y() const { return qRound(mPos.y()); }
     inline int globalX() const { return qRound(mGPos.x()); }
     inline int globalY() const { return qRound(mGPos.y()); }
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_X_5_15("use globalPosF().x()")
-    inline qreal hiResGlobalX() const { return mGPos.x(); }
-    QT_DEPRECATED_VERSION_X_5_15("use globalPosF().y()")
-    inline qreal hiResGlobalY() const { return mGPos.y(); }
-    QT_DEPRECATED_VERSION_X_5_15("Use deviceType()")
-    inline TabletDevice device() const { return TabletDevice(mDev); }
-#endif
     inline TabletDevice deviceType() const { return TabletDevice(mDev); }
     inline PointerType pointerType() const { return PointerType(mPointerType); }
     inline qint64 uniqueId() const { return mUnique; }
@@ -341,7 +318,7 @@ protected:
 };
 #endif // QT_CONFIG(tabletevent)
 
-#ifndef QT_NO_GESTURES
+#if QT_CONFIG(gestures)
 class Q_GUI_EXPORT QNativeGestureEvent : public QInputEvent
 {
 public:
@@ -375,7 +352,7 @@ protected:
     quint64 mIntValue;
     const QTouchDevice *mDevice;
 };
-#endif // QT_NO_GESTURES
+#endif // QT_CONFIG(gestures)
 
 class Q_GUI_EXPORT QKeyEvent : public QInputEvent
 {
@@ -399,22 +376,6 @@ public:
     inline quint32 nativeScanCode() const { return nScanCode; }
     inline quint32 nativeVirtualKey() const { return nVirtualKey; }
     inline quint32 nativeModifiers() const { return nModifiers; }
-
-    // Functions for the extended key event information
-#if QT_DEPRECATED_SINCE(5, 0)
-    static inline QKeyEvent *createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
-                                             quint32 nativeScanCode, quint32 nativeVirtualKey,
-                                             quint32 nativeModifiers,
-                                             const QString& text = QString(), bool autorep = false,
-                                             ushort count = 1)
-    {
-        return new QKeyEvent(type, key, modifiers,
-                             nativeScanCode, nativeVirtualKey, nativeModifiers,
-                             text, autorep, count);
-    }
-
-    inline bool hasExtendedInfo() const { return true; }
-#endif
 
 protected:
     QString txt;
@@ -976,13 +937,6 @@ public:
         friend class QQuickMultiPointTouchArea;
     };
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    enum DeviceType {
-        TouchScreen,
-        TouchPad
-    };
-#endif
-
     explicit QTouchEvent(QEvent::Type eventType,
                          QTouchDevice *device = nullptr,
                          Qt::KeyboardModifiers modifiers = Qt::NoModifier,
@@ -992,9 +946,6 @@ public:
 
     inline QWindow *window() const { return _window; }
     inline QObject *target() const { return _target; }
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline QTouchEvent::DeviceType deviceType() const { return static_cast<DeviceType>(int(_device->type())); }
-#endif
     inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
     inline QTouchDevice *device() const { return _device; }
@@ -1045,7 +996,6 @@ public:
     void setContentPos(const QPointF &pos);
 
 private:
-    QObject* m_target; // Qt 6 remove.
     QPointF m_startPos;
     QSizeF m_viewportSize;
     QRectF m_contentPosRange;

@@ -45,6 +45,7 @@
 #include "qandroidplatformintegration.h"
 
 #include <qpa/qwindowsysteminterface.h>
+#include <QTouchDevice>
 #include <QTouchEvent>
 #include <QPointer>
 

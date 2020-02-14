@@ -53,6 +53,7 @@
 #include "qiosservices.h"
 #include "qiosoptionalplugininterface.h"
 
+#include <QtGui/qtouchdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <qoffscreensurface.h>

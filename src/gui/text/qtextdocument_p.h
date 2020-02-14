@@ -65,6 +65,7 @@
 #include "QtGui/qtextcursor.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qvariant.h"
+#include "QtCore/qset.h"
 #include "QtCore/qurl.h"
 #include "private/qcssparser_p.h"
 

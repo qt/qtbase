@@ -46,8 +46,9 @@
 #if QT_CONFIG(opengl)
 #include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
 #endif
-#include <QThread>
 #include <QOffscreenSurface>
+#include <QThread>
+#include <QTouchDevice>
 
 #include <QtEglSupport/private/qeglpbuffer_p.h>
 #include <qpa/qwindowsysteminterface.h>

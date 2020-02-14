@@ -42,6 +42,7 @@
 #include "qwindowsfontdatabase_p.h"
 
 #include <QtCore/qendian.h>
+#include <QtCore/qfile.h>
 #include <QtCore/qstringbuilder.h>
 #include <QtCore/qvarlengtharray.h>
 

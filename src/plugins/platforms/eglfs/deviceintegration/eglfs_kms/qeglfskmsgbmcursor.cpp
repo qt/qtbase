@@ -43,6 +43,7 @@
 #include "qeglfskmsgbmscreen.h"
 #include "qeglfskmsgbmdevice.h"
 
+#include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
