@@ -3918,7 +3918,7 @@ QPair<int,int> QTreeViewPrivate::startAndEndColumns(const QRect &rect) const
         start = (start == -1 ? 0 : start);
         end = (end == -1 ? header->count() - 1 : end);
     }
-    return qMakePair<int,int>(qMin(start, end), qMax(start, end));
+    return qMakePair(qMin(start, end), qMax(start, end));
 }
 
 bool QTreeViewPrivate::hasVisibleChildren(const QModelIndex& parent) const

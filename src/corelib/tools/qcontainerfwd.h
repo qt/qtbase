@@ -50,7 +50,8 @@ template <class Key, class T> class QHash;
 template <class Key, class T> class QMap;
 template <class Key, class T> class QMultiHash;
 template <class Key, class T> class QMultiMap;
-template <class T1, class T2> struct QPair;
+template <typename T1, typename T2>
+using QPair = std::pair<T1, T2>;
 template <class T> class QQueue;
 template <class T> class QSet;
 template <class T> class QStack;

@@ -52,8 +52,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SSL
 
-template <typename A, typename B> struct QPair;
-
 class QIODevice;
 
 class QSslKeyPrivate;

@@ -252,15 +252,6 @@ inline size_t qHashRangeCommutative(InputIterator first, InputIterator last, siz
     return std::accumulate(first, last, seed, QtPrivate::QHashCombineCommutative());
 }
 
-template <typename T1, typename T2> inline size_t qHash(const QPair<T1, T2> &key, size_t seed = 0)
-    noexcept(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
-{
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, key.first);
-    seed = hash(seed, key.second);
-    return seed;
-}
-
 template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> &key, size_t seed = 0)
     noexcept(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
 {

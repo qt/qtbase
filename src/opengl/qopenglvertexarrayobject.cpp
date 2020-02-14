@@ -176,7 +176,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
         vaoFuncsType = NotSupported;
         QSurfaceFormat format = ctx->format();
 #if !QT_CONFIG(opengles2)
-        if (format.version() >= qMakePair<int, int>(3,2)) {
+        if (format.version() >= qMakePair(3,2)) {
             vaoFuncs.core_3_2 = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_2_Core>(ctx);
             vaoFuncsType = Core_3_2;
             vaoFuncs.core_3_2->glGenVertexArrays(1, &vao);

@@ -240,8 +240,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_2ARG(F) \
     F(QHash, class) \
-    F(QMap, class) \
-    F(QPair, struct)
+    F(QMap, class)
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(F) \
     F(QSharedPointer) \
@@ -1392,15 +1391,6 @@ template<typename From>
 struct QPairVariantInterfaceConvertFunctor;
 
 template<typename T, typename U>
-struct QPairVariantInterfaceConvertFunctor<QPair<T, U> >
-{
-    QPairVariantInterfaceImpl operator()(const QPair<T, U>& f) const
-    {
-        return QPairVariantInterfaceImpl(&f);
-    }
-};
-
-template<typename T, typename U>
 struct QPairVariantInterfaceConvertFunctor<std::pair<T, U> >
 {
     QPairVariantInterfaceImpl operator()(const std::pair<T, U>& f) const
@@ -1669,8 +1659,6 @@ namespace QtPrivate
             return false;
         }
     };
-    template<typename T, typename U>
-    struct IsPair<QPair<T, U> > : IsMetaTypePair<QPair<T, U> > {};
     template<typename T, typename U>
     struct IsPair<std::pair<T, U> > : IsMetaTypePair<std::pair<T, U> > {};
 
@@ -2209,7 +2197,6 @@ Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(QHash)
 Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(QMap)
 Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(std::map)
 
-Q_DECLARE_METATYPE_TEMPLATE_2ARG(QPair)
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(std::pair)
 
 #define Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER(TEMPLATENAME) \
@@ -2532,6 +2519,16 @@ public:
             // Replace QList by QVector
             appendStr("QVector");
         }
+
+        if (skipToken(begin, end, "QPair")) {
+            // replace QPair by std::pair
+#ifdef _LIBCPP_VERSION
+            appendStr("std::" QT_STRINGIFY(_LIBCPP_ABI_NAMESPACE) "::pair");
+#else
+            appendStr("std::pair");
+#endif
+        }
+
         if (!hasMiddleConst) {
             // Normalize the integer types
             int numLong = 0;

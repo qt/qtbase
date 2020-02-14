@@ -51,7 +51,6 @@ class QGraphicsItem;
 class QPointF;
 class QTimeLine;
 class QTransform;
-template <class T1, class T2> struct QPair;
 
 class QGraphicsItemAnimationPrivate;
 class Q_WIDGETS_EXPORT QGraphicsItemAnimation : public QObject

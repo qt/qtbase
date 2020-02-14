@@ -1640,7 +1640,7 @@ void tst_QMetaType::automaticTemplateRegistration()
     QCOMPARE(QVariant::fromValue(intIntPair).value<IntIntPair>().second, 2);
   }
   {
-    IntUIntPair intUIntPair = qMakePair<int, uint>(4, 2);
+    IntUIntPair intUIntPair = qMakePair(4, 2u);
     QCOMPARE(QVariant::fromValue(intUIntPair).value<IntUIntPair>().first, 4);
     QCOMPARE(QVariant::fromValue(intUIntPair).value<IntUIntPair>().second, (uint)2);
   }
@@ -1727,7 +1727,7 @@ void tst_QMetaType::automaticTemplateRegistration()
     #define FOR_EACH_2ARG_TEMPLATE_TYPE(F, RealName1, RealName2) \
         F(QHash, RealName1, RealName2) \
         F(QMap, RealName1, RealName2) \
-        F(QPair, RealName1, RealName2)
+        F(std::pair, RealName1, RealName2)
 
     #define PRINT_2ARG_TEMPLATE_INTERNAL(RealName1, RealName2) \
         FOR_EACH_2ARG_TEMPLATE_TYPE(CREATE_AND_VERIFY_CONTAINER, RealName1, RealName2)
@@ -1753,7 +1753,7 @@ void tst_QMetaType::automaticTemplateRegistration()
     CREATE_AND_VERIFY_CONTAINER(QVector, void*)
     CREATE_AND_VERIFY_CONTAINER(QVector, const void*)
     CREATE_AND_VERIFY_CONTAINER(QList, void*)
-    CREATE_AND_VERIFY_CONTAINER(QPair, void*, void*)
+    CREATE_AND_VERIFY_CONTAINER(std::pair, void*, void*)
     CREATE_AND_VERIFY_CONTAINER(QHash, void*, void*)
     CREATE_AND_VERIFY_CONTAINER(QHash, const void*, const void*)
 

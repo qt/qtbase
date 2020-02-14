@@ -44,115 +44,22 @@
 
 QT_BEGIN_NAMESPACE
 
-
-template <class T1, class T2>
-struct QPair
-{
-    typedef T1 first_type;
-    typedef T2 second_type;
-
-    Q_DECL_CONSTEXPR QPair()
-        noexcept((std::is_nothrow_default_constructible<T1>::value &&
-                              std::is_nothrow_default_constructible<T2>::value))
-        : first(), second() {}
-    Q_DECL_CONSTEXPR QPair(const T1 &t1, const T2 &t2)
-        noexcept((std::is_nothrow_copy_constructible<T1>::value &&
-                              std::is_nothrow_copy_constructible<T2>::value))
-        : first(t1), second(t2) {}
-    // compiler-generated copy/move ctor/assignment operators are fine!
-
-    template <typename TT1, typename TT2>
-    Q_DECL_CONSTEXPR QPair(const QPair<TT1, TT2> &p)
-        noexcept((std::is_nothrow_constructible<T1, TT1&>::value &&
-                              std::is_nothrow_constructible<T2, TT2&>::value))
-        : first(p.first), second(p.second) {}
-    template <typename TT1, typename TT2>
-    Q_DECL_RELAXED_CONSTEXPR QPair &operator=(const QPair<TT1, TT2> &p)
-        noexcept((std::is_nothrow_assignable<T1, TT1&>::value &&
-                              std::is_nothrow_assignable<T2, TT2&>::value))
-    { first = p.first; second = p.second; return *this; }
-    template <typename TT1, typename TT2>
-    Q_DECL_CONSTEXPR QPair(QPair<TT1, TT2> &&p)
-        noexcept((std::is_nothrow_constructible<T1, TT1>::value &&
-                              std::is_nothrow_constructible<T2, TT2>::value))
-        // can't use std::move here as it's not constexpr in C++11:
-        : first(static_cast<TT1 &&>(p.first)), second(static_cast<TT2 &&>(p.second)) {}
-    template <typename TT1, typename TT2>
-    Q_DECL_RELAXED_CONSTEXPR QPair &operator=(QPair<TT1, TT2> &&p)
-        noexcept((std::is_nothrow_assignable<T1, TT1>::value &&
-                              std::is_nothrow_assignable<T2, TT2>::value))
-    { first = std::move(p.first); second = std::move(p.second); return *this; }
-
-    Q_DECL_RELAXED_CONSTEXPR void swap(QPair &other)
-        noexcept(noexcept(qSwap(other.first, other.first)) && noexcept(qSwap(other.second, other.second)))
-    {
-        // use qSwap() to pick up ADL swaps automatically:
-        qSwap(first, other.first);
-        qSwap(second, other.second);
-    }
-
-    T1 first;
-    T2 second;
-};
-
-#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
-template<class T1, class T2>
-QPair(T1, T2) -> QPair<T1, T2>;
+#if 0
+#pragma qt_class(QPair)
 #endif
 
 template <typename T1, typename T2>
-void swap(QPair<T1, T2> &lhs, QPair<T1, T2> &rhs) noexcept(noexcept(lhs.swap(rhs)))
-{ lhs.swap(rhs); }
+using QPair = std::pair<T1, T2>;
 
-// mark QPair<T1,T2> as complex/movable/primitive depending on the
-// typeinfos of the constituents:
+template <typename T1, typename T2>
+constexpr decltype(auto) qMakePair(T1 &&value1, T2 &&value2)
+    noexcept(noexcept(std::make_pair(std::forward<T1>(value1), std::forward<T2>(value2))))
+{
+    return std::make_pair(std::forward<T1>(value1), std::forward<T2>(value2));
+}
+
 template<class T1, class T2>
-class QTypeInfo<QPair<T1, T2> > : public QTypeInfoMerger<QPair<T1, T2>, T1, T2> {}; // Q_DECLARE_TYPEINFO
-
-template <class T1, class T2>
-Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
-    noexcept(noexcept(p1.first == p2.first && p1.second == p2.second))
-{ return p1.first == p2.first && p1.second == p2.second; }
-
-template <class T1, class T2>
-Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator!=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
-    noexcept(noexcept(!(p1 == p2)))
-{ return !(p1 == p2); }
-
-template <class T1, class T2>
-Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator<(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
-    noexcept(noexcept(p1.first < p2.first || (!(p2.first < p1.first) && p1.second < p2.second)))
-{
-    return p1.first < p2.first || (!(p2.first < p1.first) && p1.second < p2.second);
-}
-
-template <class T1, class T2>
-Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator>(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
-    noexcept(noexcept(p2 < p1))
-{
-    return p2 < p1;
-}
-
-template <class T1, class T2>
-Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator<=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
-    noexcept(noexcept(!(p2 < p1)))
-{
-    return !(p2 < p1);
-}
-
-template <class T1, class T2>
-Q_DECL_CONSTEXPR Q_INLINE_TEMPLATE bool operator>=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
-    noexcept(noexcept(!(p1 < p2)))
-{
-    return !(p1 < p2);
-}
-
-template <class T1, class T2>
-Q_DECL_CONSTEXPR Q_OUTOFLINE_TEMPLATE QPair<T1, T2> qMakePair(const T1 &x, const T2 &y)
-    noexcept(noexcept(QPair<T1, T2>(x, y)))
-{
-    return QPair<T1, T2>(x, y);
-}
+class QTypeInfo<std::pair<T1, T2>> : public QTypeInfoMerger<std::pair<T1, T2>, T1, T2> {};
 
 QT_END_NAMESPACE
 

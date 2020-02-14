@@ -8,8 +8,8 @@
   <testcase result="pass" name="initTestCase"/>
   <testcase result="fail" name="testQPair">
     <failure message="Compared values are not the same
-   Actual   (pair1): &quot;QPair(1,1)&quot;
-   Expected (pair2): &quot;QPair(1,2)&quot;" result="fail"/>
+   Actual   (pair1): &quot;std::pair(1,1)&quot;
+   Expected (pair2): &quot;std::pair(1,2)&quot;" result="fail"/>
   </testcase>
   <testcase result="fail" name="testStdPair">
     <failure message="Compared values are not the same

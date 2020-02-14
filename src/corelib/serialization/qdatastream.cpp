@@ -1119,6 +1119,16 @@ int QDataStream::readRawData(char *s, int len)
     return readBlock(s, len);
 }
 
+/*! \fn template <class T1, class T2> QDataStream &operator>>(QDataStream &in, std::pair<T1, T2> &pair)
+    \since 6.0
+    \relates QDataStream
+
+    Reads a pair from stream \a in into \a pair.
+
+    This function requires the T1 and T2 types to implement \c operator>>().
+
+    \sa {Serializing Qt Data Types}
+*/
 
 /*****************************************************************************
   QDataStream write functions
@@ -1445,6 +1455,18 @@ int QDataStream::skipRawData(int len)
         setStatus(ReadPastEnd);
     return skipResult;
 }
+
+/*!
+    \fn template <class T1, class T2> QDataStream &operator<<(QDataStream &out, const std::pair<T1, T2> &pair)
+    \since 6.0
+    \relates QDataStream
+
+    Writes the pair \a pair to stream \a out.
+
+    This function requires the T1 and T2 types to implement \c operator<<().
+
+    \sa {Serializing Qt Data Types}
+*/
 
 QT_END_NAMESPACE
 

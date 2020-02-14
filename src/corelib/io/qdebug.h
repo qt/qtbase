@@ -45,7 +45,6 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvector.h>
@@ -316,15 +315,6 @@ template <class Key, class T>
 inline QDebug operator<<(QDebug debug, const QMultiHash<Key, T> &hash)
 {
     return QtPrivate::printAssociativeContainer(debug, "QMultiHash", hash);
-}
-
-template <class T1, class T2>
-inline QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
-{
-    const bool oldSetting = debug.autoInsertSpaces();
-    debug.nospace() << "QPair(" << pair.first << ',' << pair.second << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
 }
 
 template <class T1, class T2>

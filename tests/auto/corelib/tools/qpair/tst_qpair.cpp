@@ -39,7 +39,7 @@ private Q_SLOTS:
     void testConstexpr();
     void testConversions();
     void taskQTBUG_48780_pairContainingCArray();
-    void testDeducationRules();
+    void testDeductionRules();
 };
 
 class C { C() {} char _[4]; };
@@ -203,9 +203,9 @@ void tst_QPair::taskQTBUG_48780_pairContainingCArray()
     Q_UNUSED(pair);
 }
 
-void tst_QPair::testDeducationRules()
+void tst_QPair::testDeductionRules()
 {
-#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201907L
     QPair p1{1, 2};
     static_assert(std::is_same<decltype(p1)::first_type, decltype(1)>::value);
     static_assert(std::is_same<decltype(p1)::second_type, decltype(2)>::value);
@@ -224,7 +224,7 @@ void tst_QPair::testDeducationRules()
     QCOMPARE(p3.first, "string");
     QCOMPARE(p3.second, 2);
 #else
-    QSKIP("Unsupported");
+    QSKIP("Unsupported (requires C++20's CTAD for aliases)");
 #endif
 }
 

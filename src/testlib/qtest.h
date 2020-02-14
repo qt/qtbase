@@ -232,14 +232,6 @@ template<> inline char *toString(const QVariant &v)
 }
 
 template <typename T1, typename T2>
-inline char *toString(const QPair<T1, T2> &pair)
-{
-    const QScopedArrayPointer<char> first(toString(pair.first));
-    const QScopedArrayPointer<char> second(toString(pair.second));
-    return toString(QString::asprintf("QPair(%s,%s)", first.data(), second.data()));
-}
-
-template <typename T1, typename T2>
 inline char *toString(const std::pair<T1, T2> &pair)
 {
     const QScopedArrayPointer<char> first(toString(pair.first));

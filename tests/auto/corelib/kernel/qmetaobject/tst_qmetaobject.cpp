@@ -1381,7 +1381,12 @@ void tst_QMetaObject::normalizedType_data()
     QTest::newRow("template6") << "QVector<::Foo::Bar>" << "QVector<::Foo::Bar>";
     QTest::newRow("template7") << "QVector<QVector<int> >" << "QVector<QVector<int>>";
     QTest::newRow("template8") << "QMap<const int, const short*>" << "QMap<const int,const short*>";
-    QTest::newRow("template9") << "QPair<const QPair<int, int const *> , QPair<QHash<int, const char*>  >  >" << "QPair<const QPair<int,const int*>,QPair<QHash<int,const char*>>>";
+    QTest::newRow("template9") << "QPair<const QPair<int, int const *> , QPair<QHash<int, const char*>  >  >"
+#ifdef _LIBCPP_VERSION
+                               << "std::__1::pair<const std::__1::pair<int,const int*>,std::__1::pair<QHash<int,const char*>>>";
+#else
+                               << "std::pair<const std::pair<int,const int*>,std::pair<QHash<int,const char*>>>";
+#endif
     QTest::newRow("template10") << "QList<int const * const> const" << "QVector<const int*const>";
     QTest::newRow("template11") << " QSharedPointer<QVarLengthArray< QString const, ( 16>> 2 )> > const & "
         << "QSharedPointer<QVarLengthArray<const QString,(16>>2)>>";

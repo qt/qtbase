@@ -608,8 +608,6 @@
 
     \li QContiguousCache<T> provides an efficient way of caching data
     that is typically accessed in a contiguous way.
-
-    \li QPair<T1, T2> stores a pair of elements.
     \endlist
 
     Additional non-template types that compete with Qt's template

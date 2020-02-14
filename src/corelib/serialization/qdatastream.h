@@ -480,14 +480,14 @@ inline QDataStream &operator<<(QDataStream &s, const QMultiMap<Key, T> &map)
 
 #ifndef QT_NO_DATASTREAM
 template <class T1, class T2>
-inline QDataStream& operator>>(QDataStream& s, QPair<T1, T2>& p)
+inline QDataStream& operator>>(QDataStream& s, std::pair<T1, T2> &p)
 {
     s >> p.first >> p.second;
     return s;
 }
 
 template <class T1, class T2>
-inline QDataStream& operator<<(QDataStream& s, const QPair<T1, T2>& p)
+inline QDataStream& operator<<(QDataStream& s, const std::pair<T1, T2> &p)
 {
     s << p.first << p.second;
     return s;

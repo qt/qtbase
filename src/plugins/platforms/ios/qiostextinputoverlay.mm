@@ -67,7 +67,7 @@ static SelectionPair querySelection()
     QGuiApplication::sendEvent(QGuiApplication::focusObject(), &query);
     int anchorPos = query.value(Qt::ImAnchorPosition).toInt();
     int cursorPos = query.value(Qt::ImCursorPosition).toInt();
-    return qMakePair<int, int>(anchorPos, cursorPos);
+    return qMakePair(anchorPos, cursorPos);
 }
 
 static bool hasSelection()
