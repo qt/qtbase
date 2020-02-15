@@ -7462,6 +7462,12 @@ void tst_QObject::checkArgumentsForNarrowing()
     FITS(bool, const QObject *&);
     FITS(int (*)(bool), void (QObject::*)());
 
+    {
+        // wg21.link/P1957
+        NARROWS(char*, bool);
+        NARROWS(void (QObject::*)(), bool);
+    }
+
 #undef IS_UNSCOPED_ENUM_SIGNED
 
 #undef NARROWS_IF
