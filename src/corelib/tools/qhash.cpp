@@ -271,14 +271,6 @@ uint qHash(QLatin1String key, uint seed) noexcept
 
 /*!
     \internal
-
-    Creates the QHash random seed from various sources.
-    In order of decreasing precedence:
-    - under Unix, it attemps to read from /dev/urandom;
-    - under Unix, it attemps to read from /dev/random;
-    - under Windows, it attempts to use rand_s;
-    - as a general fallback, the application's PID, a timestamp and the
-      address of a stack-local variable are used.
 */
 static uint qt_create_qhash_seed()
 {
