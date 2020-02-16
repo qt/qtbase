@@ -769,6 +769,34 @@ uint qt_hash(QStringView key, uint chained) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
+/*! \fn size_t qHash(char8_t key, size_t seed = 0)
+    \relates QHash
+    \since 6.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn size_t qHash(char16_t key, size_t seed = 0)
+    \relates QHash
+    \since 6.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn size_t qHash(char32_t key, size_t seed = 0)
+    \relates QHash
+    \since 6.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn size_t qHash(wchar_t key, size_t seed = 0)
+    \relates QHash
+    \since 6.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
 /*! \fn size_t qHash(float key, size_t seed) noexcept
     \relates QHash
     \since 5.3
@@ -866,6 +894,13 @@ size_t qHash(long double key, size_t seed) noexcept
 /*! \fn template <class T> size_t qHash(const T *key, size_t seed = 0)
     \relates QHash
     \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn template <class T> size_t qHash(std::nullptr_t key, size_t seed = 0)
+    \relates QHash
+    \since 6.0
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
