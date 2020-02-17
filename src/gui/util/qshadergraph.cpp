@@ -44,13 +44,20 @@ QT_BEGIN_NAMESPACE
 
 namespace
 {
-    QVector<QShaderNode> copyOutputNodes(const QVector<QShaderNode> &nodes)
+    QVector<QShaderNode> copyOutputNodes(const QVector<QShaderNode> &nodes, const QVector<QShaderGraph::Edge> &edges)
     {
         auto res = QVector<QShaderNode>();
         std::copy_if(nodes.cbegin(), nodes.cend(),
                      std::back_inserter(res),
-                     [] (const QShaderNode &node) {
-                         return node.type() == QShaderNode::Output;
+                     [&edges] (const QShaderNode &node) {
+                         return node.type() == QShaderNode::Output ||
+                                (node.type() == QShaderNode::Function &&
+                                 !std::any_of(edges.cbegin(),
+                                              edges.cend(),
+                                              [&node] (const QShaderGraph::Edge &edge) {
+                                                  return edge.sourceNodeUuid ==
+                                                         node.uuid();
+                                              }));
                      });
         return res;
     }
@@ -210,8 +217,8 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
 
     auto result = QVector<Statement>();
     QVector<Edge> currentEdges = enabledEdges;
-    QVector<QUuid> currentUuids = [enabledNodes] {
-        const QVector<QShaderNode> inputs = copyOutputNodes(enabledNodes);
+    QVector<QUuid> currentUuids = [enabledNodes, enabledEdges] {
+        const QVector<QShaderNode> inputs = copyOutputNodes(enabledNodes, enabledEdges);
         auto res = QVector<QUuid>();
         std::transform(inputs.cbegin(), inputs.cend(),
                        std::back_inserter(res),
