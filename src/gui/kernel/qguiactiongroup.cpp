@@ -170,10 +170,7 @@ QGuiAction *QGuiActionGroup::addAction(QGuiAction* a)
         QObject::connect(a, &QGuiAction::changed, this, &QGuiActionGroup::_q_actionChanged);
         QObject::connect(a, &QGuiAction::hovered, this, &QGuiActionGroup::_q_actionHovered);
     }
-    if (!a->d_func()->forceDisabled) {
-        a->setEnabled(d->enabled);
-        a->d_func()->forceDisabled = false;
-    }
+    a->d_func()->setEnabled(d->enabled, true);
     if (!a->d_func()->forceInvisible) {
         a->setVisible(d->visible);
         a->d_func()->forceInvisible = false;
@@ -293,10 +290,7 @@ void QGuiActionGroup::setEnabled(bool b)
     Q_D(QGuiActionGroup);
     d->enabled = b;
     for (auto action : qAsConst(d->actions)) {
-        if (!action->d_func()->forceDisabled) {
-            action->setEnabled(b);
-            action->d_func()->forceDisabled = false;
-        }
+        action->d_func()->setEnabled(b, true);
     }
 }
 

@@ -63,7 +63,7 @@ class Q_GUI_EXPORT QGuiAction : public QObject
 
     Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable NOTIFY changed)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked NOTIFY toggled)
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY changed)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged RESET resetEnabled FINAL)
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon NOTIFY changed)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY changed)
     Q_PROPERTY(QString iconText READ iconText WRITE setIconText NOTIFY changed)
@@ -175,11 +175,13 @@ public Q_SLOTS:
     void setChecked(bool);
     void toggle();
     void setEnabled(bool);
+    void resetEnabled();
     inline void setDisabled(bool b) { setEnabled(!b); }
     void setVisible(bool);
 
 Q_SIGNALS:
     void changed();
+    void enabledChanged(bool changed);
     void triggered(bool checked = false);
     void hovered();
     void toggled(bool);

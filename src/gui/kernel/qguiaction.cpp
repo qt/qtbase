@@ -76,7 +76,7 @@ QGuiActionPrivate::QGuiActionPrivate() :
 #if QT_CONFIG(shortcut)
     autorepeat(1),
 #endif
-    enabled(1), forceDisabled(0), visible(1), forceInvisible(0), checkable(0),
+    enabled(1), explicitEnabled(0), explicitEnabledValue(1), visible(1), forceInvisible(0), checkable(0),
     checked(0), separator(0), fontSet(false),
     iconVisibleInMenu(-1), shortcutVisibleInContextMenu(-1)
 {
@@ -887,17 +887,45 @@ bool QGuiAction::isChecked() const
 void QGuiAction::setEnabled(bool b)
 {
     Q_D(QGuiAction);
-    if (b == d->enabled && b != d->forceDisabled)
+    if (d->explicitEnabledValue == b && d->explicitEnabled)
         return;
-    d->forceDisabled = !b;
-    if (b && (!d->visible || (d->group && !d->group->isEnabled())))
-        return;
+    d->explicitEnabledValue = b;
+    d->explicitEnabled = true;
     QAPP_CHECK("setEnabled");
-    d->enabled = b;
+    d->setEnabled(b, false);
+}
+
+bool QGuiActionPrivate::setEnabled(bool b, bool byGroup)
+{
+    Q_Q(QGuiAction);
+    if (b && !visible)
+        b = false;
+    if (b && !byGroup && (group && !group->isEnabled()))
+        b = false;
+    if (b && byGroup && explicitEnabled)
+        b = explicitEnabledValue;
+
+    if (b == enabled)
+        return false;
+
+    enabled = b;
 #if QT_CONFIG(shortcut)
-    d->setShortcutEnabled(b, QGuiApplicationPrivate::instance()->shortcutMap);
+    setShortcutEnabled(b, QGuiApplicationPrivate::instance()->shortcutMap);
 #endif
-    d->sendDataChanged();
+    QPointer guard(q);
+    sendDataChanged();
+    if (guard)
+        emit q->enabledChanged(b);
+    return true;
+}
+
+void QGuiAction::resetEnabled()
+{
+    Q_D(QGuiAction);
+    if (!d->explicitEnabled)
+        return;
+    d->explicitEnabled = false;
+    d->setEnabled(true, false);
 }
 
 bool QGuiAction::isEnabled() const
@@ -927,11 +955,11 @@ void QGuiAction::setVisible(bool b)
     QAPP_CHECK("setVisible");
     d->forceInvisible = !b;
     d->visible = b;
-    d->enabled = b && !d->forceDisabled && (!d->group || d->group->isEnabled()) ;
-#if QT_CONFIG(shortcut)
-    d->setShortcutEnabled(d->enabled, QGuiApplicationPrivate::instance()->shortcutMap);
-#endif
-    d->sendDataChanged();
+    bool enabled = d->visible;
+    if (enabled && d->explicitEnabled)
+        enabled = d->explicitEnabledValue;
+    if (!d->setEnabled(enabled, false))
+        d->sendDataChanged();
 }
 
 

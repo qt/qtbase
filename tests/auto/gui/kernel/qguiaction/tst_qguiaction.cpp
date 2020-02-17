@@ -56,6 +56,7 @@ private slots:
 #endif
     void task229128TriggeredSignalWithoutActiongroup();
     void setData();
+    void setEnabledSetVisible();
 
 private:
     const int m_keyboardScheme;
@@ -204,6 +205,30 @@ void tst_QGuiAction::setData() // QTBUG-62006
     QCOMPARE(spy.count(), 1);
     act.setData(-1);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QGuiAction::setEnabledSetVisible()
+{
+    QGuiAction action(nullptr);
+    QSignalSpy spy(&action, &QGuiAction::enabledChanged);
+    QVERIFY(action.isEnabled());
+    QVERIFY(action.isVisible());
+    QCOMPARE(spy.count(), 0);
+    action.setVisible(false);
+    QVERIFY(!action.isEnabled());
+    QVERIFY(!action.isVisible());
+    QCOMPARE(spy.count(), 1);
+    action.setEnabled(false);
+    QVERIFY(!action.isEnabled());
+    QVERIFY(!action.isVisible());
+    QCOMPARE(spy.count(), 1);
+    action.setVisible(true);
+    QVERIFY(!action.isEnabled());
+    QVERIFY(action.isVisible());
+    QCOMPARE(spy.count(), 1);
+    action.resetEnabled();
+    QVERIFY(action.isEnabled());
+    QCOMPARE(spy.count(), 2);
 }
 
 QTEST_MAIN(tst_QGuiAction)

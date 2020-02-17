@@ -81,6 +81,7 @@ public:
         return q->d_func();
     }
 
+    bool setEnabled(bool enable, bool byGroup);
 
     QPointer<QGuiActionGroup> group;
     QString text;
@@ -101,7 +102,7 @@ public:
     uint autorepeat : 1;
 #endif
     QFont font;
-    uint enabled : 1, forceDisabled : 1;
+    uint enabled : 1, explicitEnabled : 1, explicitEnabledValue : 1;
     uint visible : 1, forceInvisible : 1;
     uint checkable : 1;
     uint checked : 1;
