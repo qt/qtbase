@@ -194,7 +194,8 @@ void QWasmEventDispatcher::wakeUp()
 {
 #ifdef EMSCRIPTEN_HAS_ASYNC_RUN_IN_MAIN_RUNTIME_THREAD
     if (!emscripten_is_main_runtime_thread())
-        emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, (void*)(&QWasmEventDispatcher::mainThreadWakeUp), this);
+        if (m_hasMainLoop)
+            emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, (void*)(&QWasmEventDispatcher::mainThreadWakeUp), this);
 #endif
     QEventDispatcherUNIX::wakeUp();
 }
