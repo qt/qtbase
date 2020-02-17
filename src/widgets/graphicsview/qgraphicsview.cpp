@@ -123,6 +123,10 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 
     \image graphicsview-view.png
 
+    \note Using an OpenGL viewport limits the ability to use QGraphicsProxyWidget.
+    Not all combinations of widgets and styles can be supported with such a setup.
+    You should carefully test your UI and make the necessary adjustments.
+
     \sa QGraphicsScene, QGraphicsItem, QGraphicsSceneEvent
 */
 
