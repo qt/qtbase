@@ -38,9 +38,10 @@
 extern "C" {
 #endif
 
-#define FFD_CLOEXEC     1
-#define FFD_NONBLOCK    2
-#define FFD_USE_FORK    4
+#define FFD_CLOEXEC             1
+#define FFD_NONBLOCK            2
+#define FFD_USE_FORK            4
+#define FFD_VFORK_SEMANTICS     8
 
 #define FFD_CHILD_PROCESS (-2)
 

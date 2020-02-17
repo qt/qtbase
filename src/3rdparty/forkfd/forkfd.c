@@ -611,11 +611,17 @@ static int create_pipe(int filedes[], int flags)
  * descriptor. You probably want to set this flag, since forkfd() does not work
  * if the original parent process dies.
  *
- * @li @C FFD_USE_FORK Tell forkfd() to actually call fork() instead of a
+ * @li @c FFD_USE_FORK Tell forkfd() to actually call fork() instead of a
  * different system implementation that may be available. On systems where a
  * different implementation is available, its behavior may differ from that of
  * fork(), such as not calling the functions registered with pthread_atfork().
  * If that's necessary, pass this flag.
+ *
+ * @li @c FFD_VFORK_SEMANTICS Tell forkfd() to use semantics similar to
+ * vfork(), if that's available. For example, on Linux with pidfd support
+ * available, this will add the CLONE_VFORK option. On most other systems,
+ * including Linux without pidfd support, this option does nothing, as using
+ * the actual vfork() system call would cause a race condition.
  *
  * The file descriptor returned by forkfd() supports the following operations:
  *

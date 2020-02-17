@@ -147,7 +147,10 @@ int system_forkfd(int flags, pid_t *ppid, int *system)
     }
 
     *system = 1;
-    pid = sys_clone(CLONE_PIDFD, &pidfd);
+    unsigned long cloneflags = CLONE_PIDFD;
+    if (flags & FFD_VFORK_SEMANTICS)
+        cloneflags |= CLONE_VFORK;
+    pid = sys_clone(cloneflags, &pidfd);
     if (ppid)
         *ppid = pid;
 
