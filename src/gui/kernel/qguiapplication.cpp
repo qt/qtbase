@@ -610,7 +610,7 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
         \li \c {dialogs=[xp|none]}, \c xp uses XP-style native dialogs and
             \c none disables them.
 
-        \li \c {dpiawareness=[0|1|2} Sets the DPI awareness of the process
+        \li \c {dpiawareness=[0|1|2]} Sets the DPI awareness of the process
                (see \l{High DPI Displays}, since Qt 5.4).
         \li \c {fontengine=freetype}, uses the FreeType font engine.
         \li \c {menus=[native|none]}, controls the use of native menus.
