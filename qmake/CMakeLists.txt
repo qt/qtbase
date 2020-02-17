@@ -215,3 +215,6 @@ set_target_properties(qmake PROPERTIES
 )
 
 qt_internal_add_link_flags_gc_sections(qmake PRIVATE) # special case
+
+qt_enable_msvc_cplusplus_define(qmake PUBLIC) # special case
+

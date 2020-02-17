@@ -635,6 +635,7 @@ function(qt_config_compile_test name)
         if(NOT DEFINED HAVE_${name})
             set(_save_CMAKE_C_STANDARD "${CMAKE_C_STANDARD}")
             set(_save_CMAKE_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
+            set(_save_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
 
             if(arg_C_STANDARD)
                set(CMAKE_C_STANDARD "${arg_C_STANDARD}")
@@ -644,6 +645,16 @@ function(qt_config_compile_test name)
                set(CMAKE_CXX_STANDARD "${arg_CXX_STANDARD}")
             endif()
 
+            # For MSVC we need to explicitly pass -Zc:__cplusplus to get correct __cplusplus
+            # define values. According to common/msvc-version.conf the flag is supported starting
+            # with 1913.
+            # https://developercommunity.visualstudio.com/content/problem/139261/msvc-incorrectly-defines-cplusplus.html
+            # No support for the flag in upstream CMake as of 3.17.
+            # https://gitlab.kitware.com/cmake/cmake/issues/18837
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND MSVC_VERSION GREATER_EQUAL 1913)
+                set(CMAKE_REQUIRED_FLAGS "-Zc:__cplusplus")
+            endif()
+
             set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
             set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
             check_cxx_source_compiles("${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name})
@@ -651,6 +662,7 @@ function(qt_config_compile_test name)
 
             set(CMAKE_C_STANDARD "${_save_CMAKE_C_STANDARD}")
             set(CMAKE_CXX_STANDARD "${_save_CMAKE_CXX_STANDARD}")
+            set(CMAKE_REQUIRED_FLAGS "${_save_CMAKE_REQUIRED_FLAGS}")
         endif()
     endif()
 

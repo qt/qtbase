@@ -17,6 +17,8 @@ if (ANDROID)
     target_link_libraries(Platform INTERFACE log)
 endif()
 
+qt_enable_msvc_cplusplus_define(Platform INTERFACE)
+
 set(__GlobalConfig_path_suffix "${INSTALL_CMAKE_NAMESPACE}")
 qt_path_join(__GlobalConfig_build_dir ${QT_CONFIG_BUILD_DIR} ${__GlobalConfig_path_suffix})
 qt_path_join(__GlobalConfig_install_dir ${QT_CONFIG_INSTALL_DIR} ${__GlobalConfig_path_suffix})

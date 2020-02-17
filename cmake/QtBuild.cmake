@@ -4016,6 +4016,14 @@ function(qt_set_language_standards)
     endif()
 endfunction()
 
+function(qt_enable_msvc_cplusplus_define target visibility)
+    # For MSVC we need to explicitly pass -Zc:__cplusplus to get correct __cplusplus.
+    # Check qt_config_compile_test for more info.
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND MSVC_VERSION GREATER_EQUAL 1913)
+        target_compile_options("${target}" ${visibility} "-Zc:__cplusplus")
+    endif()
+endfunction()
+
 # Compatibility macros that should be removed once all their usages are removed.
 function(extend_target)
     qt_extend_target(${ARGV})

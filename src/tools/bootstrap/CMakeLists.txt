@@ -223,7 +223,9 @@ qt_extend_target(Bootstrap CONDITION WIN32 AND mingw
         uuid
 )
 
-# special case:
+# special case begin
 qt_internal_add_link_flags_gc_sections(Bootstrap PUBLIC)
 set_target_properties(Bootstrap PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 qt_internal_add_target_aliases(Bootstrap)
+qt_enable_msvc_cplusplus_define(Bootstrap PUBLIC)
+# special case end
