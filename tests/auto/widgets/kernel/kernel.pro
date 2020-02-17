@@ -20,7 +20,7 @@ SUBDIRS=\
 darwin:SUBDIRS -= \
    qgesturerecognizer \
 
-!qtConfig(action):SUBDIRS -= \
+qtConfig(action):SUBDIRS += \
    qaction \
    qactiongroup \
    qwidgetaction
