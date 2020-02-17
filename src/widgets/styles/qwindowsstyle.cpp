@@ -548,6 +548,8 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 
     switch (hint) {
     case SH_EtchDisabledText:
+        ret = d_func()->isDarkMode() ? 0 : 1;
+        break;
     case SH_Slider_SnapToValue:
     case SH_PrintDialog_RightAlignButtons:
     case SH_FontDialog_SelectAssociatedText:
