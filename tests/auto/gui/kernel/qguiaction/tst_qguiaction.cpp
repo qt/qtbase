@@ -57,6 +57,7 @@ private slots:
     void task229128TriggeredSignalWithoutActiongroup();
     void setData();
     void setEnabledSetVisible();
+    void setCheckabledSetChecked();
 
 private:
     const int m_keyboardScheme;
@@ -229,6 +230,47 @@ void tst_QGuiAction::setEnabledSetVisible()
     action.resetEnabled();
     QVERIFY(action.isEnabled());
     QCOMPARE(spy.count(), 2);
+}
+
+void tst_QGuiAction::setCheckabledSetChecked()
+{
+    QGuiAction action(nullptr);
+    QSignalSpy changedSpy(&action, &QGuiAction::changed);
+    QSignalSpy checkedSpy(&action, &QGuiAction::toggled);
+    QSignalSpy checkableSpy(&action, &QGuiAction::checkableChanged);
+    QVERIFY(!action.isCheckable());
+    QVERIFY(!action.isChecked());
+    QCOMPARE(changedSpy.count(), 0);
+    QCOMPARE(checkedSpy.count(), 0);
+    QCOMPARE(checkableSpy.count(), 0);
+
+    action.setCheckable(true);
+    QVERIFY(action.isCheckable());
+    QVERIFY(!action.isChecked());
+    QCOMPARE(changedSpy.count(), 1);
+    QCOMPARE(checkedSpy.count(), 0);
+    QCOMPARE(checkableSpy.count(), 1);
+
+    action.setChecked(true);
+    QVERIFY(action.isCheckable());
+    QVERIFY(action.isChecked());
+    QCOMPARE(changedSpy.count(), 2);
+    QCOMPARE(checkedSpy.count(), 1);
+    QCOMPARE(checkableSpy.count(), 1);
+
+    action.setCheckable(false);
+    QVERIFY(!action.isCheckable());
+    QVERIFY(!action.isChecked());
+    QCOMPARE(changedSpy.count(), 3);
+    QCOMPARE(checkedSpy.count(), 2);
+    QCOMPARE(checkableSpy.count(), 2);
+
+    action.setCheckable(true);
+    QVERIFY(action.isCheckable());
+    QVERIFY(action.isChecked());
+    QCOMPARE(changedSpy.count(), 4);
+    QCOMPARE(checkedSpy.count(), 3);
+    QCOMPARE(checkableSpy.count(), 3);
 }
 
 QTEST_MAIN(tst_QGuiAction)

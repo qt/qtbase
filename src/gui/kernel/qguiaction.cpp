@@ -802,8 +802,12 @@ void QGuiAction::setCheckable(bool b)
         return;
 
     d->checkable = b;
-    d->checked = false;
+    QPointer<QGuiAction> guard(this);
     d->sendDataChanged();
+    if (guard)
+        emit checkableChanged(b);
+    if (guard && d->checked)
+        emit toggled(b);
 }
 
 bool QGuiAction::isCheckable() const
@@ -839,11 +843,13 @@ void QGuiAction::toggle()
 void QGuiAction::setChecked(bool b)
 {
     Q_D(QGuiAction);
-    if (!d->checkable || d->checked == b)
+    if (d->checked == b)
         return;
 
-    QPointer<QGuiAction> guard(this);
     d->checked = b;
+    if (!d->checkable)
+        return;
+    QPointer<QGuiAction> guard(this);
     d->sendDataChanged();
     if (guard)
         emit toggled(b);
@@ -852,7 +858,7 @@ void QGuiAction::setChecked(bool b)
 bool QGuiAction::isChecked() const
 {
     Q_D(const QGuiAction);
-    return d->checked;
+    return d->checked && d->checkable;
 }
 
 /*!

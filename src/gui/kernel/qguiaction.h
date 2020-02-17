@@ -61,7 +61,7 @@ class Q_GUI_EXPORT QGuiAction : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGuiAction)
 
-    Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable NOTIFY changed)
+    Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable NOTIFY checkableChanged FINAL)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked NOTIFY toggled)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged RESET resetEnabled FINAL)
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon NOTIFY changed)
@@ -181,7 +181,8 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void changed();
-    void enabledChanged(bool changed);
+    void enabledChanged(bool enabled);
+    void checkableChanged(bool checkable);
     void triggered(bool checked = false);
     void hovered();
     void toggled(bool);
