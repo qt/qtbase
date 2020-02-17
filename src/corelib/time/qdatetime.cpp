@@ -1178,6 +1178,7 @@ QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
@@ -1188,6 +1189,7 @@ QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
         return QLocale().toString(*this, QLocale::ShortFormat, cal);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat, cal);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date:
         return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"), cal);
@@ -1643,6 +1645,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toDate(string, QLocale::ShortFormat);
@@ -1653,6 +1656,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toDate(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDate(string, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date:
         return rfcDateImpl(string).date;
@@ -2033,6 +2037,7 @@ QString QTime::toString(Qt::DateFormat format) const
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat);
@@ -2043,6 +2048,7 @@ QString QTime::toString(Qt::DateFormat format) const
         return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::ISODateWithMs:
         return QString::asprintf("%02d:%02d:%02d.%03d", hour(), minute(), second(), msec());
@@ -2434,6 +2440,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toTime(string, QLocale::ShortFormat);
@@ -2444,6 +2451,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toTime(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toTime(string, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date:
         return rfcDateImpl(string).time;
@@ -4340,6 +4348,7 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
@@ -4350,6 +4359,7 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
         return QLocale().toString(*this, QLocale::ShortFormat, cal);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat, cal);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date: {
         buf = QLocale::c().toString(*this, u"dd MMM yyyy hh:mm:ss ", cal);
@@ -5228,6 +5238,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toDateTime(string, QLocale::ShortFormat);
@@ -5238,6 +5249,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toDateTime(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDateTime(string, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date: {
         const ParsedRfcDateTime rfc = rfcDateImpl(string);
