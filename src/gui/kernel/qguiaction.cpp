@@ -1200,6 +1200,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QGuiAction *action)
 #endif
         d << " menuRole=";
         QtDebugUtils::formatQEnum(d, action->menuRole());
+        d << " enabled=" << action->isEnabled();
         d << " visible=" << action->isVisible();
     } else {
         d << '0';
