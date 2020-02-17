@@ -99,7 +99,7 @@ qtConfig(textodfwriter) {
 
 qtConfig(textmarkdownreader) {
     qtConfig(system-textmarkdownreader) {
-        QMAKE_USE += libmd4c
+        QMAKE_USE_PRIVATE += libmd4c
     } else {
         include($$PWD/../../3rdparty/md4c.pri)
     }
