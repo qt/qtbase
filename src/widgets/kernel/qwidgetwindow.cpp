@@ -727,19 +727,6 @@ bool QWidgetWindow::updateSize()
     return changed;
 }
 
-bool QWidgetWindow::updatePos()
-{
-    bool changed = false;
-    if (m_widget->testAttribute(Qt::WA_OutsideWSRange))
-        return changed;
-    if (m_widget->data->crect.topLeft() != geometry().topLeft()) {
-        changed = true;
-        m_widget->data->crect.moveTopLeft(geometry().topLeft());
-    }
-    updateMargins();
-    return changed;
-}
-
 void QWidgetWindow::updateMargins()
 {
     const QMargins margins = frameMargins();
@@ -800,8 +787,28 @@ void QWidgetWindow::updateNormalGeometry()
 
 void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 {
-    if (updatePos())
-        QGuiApplication::forwardEvent(m_widget, event);
+    if (m_widget->testAttribute(Qt::WA_OutsideWSRange))
+        return;
+
+    auto oldPosition = m_widget->data->crect.topLeft();
+    auto newPosition = geometry().topLeft();
+
+    if (!m_widget->isTopLevel()) {
+        if (auto *nativeParent = m_widget->nativeParentWidget())
+            newPosition = m_widget->parentWidget()->mapFrom(nativeParent, newPosition);
+    }
+
+    bool changed = newPosition != oldPosition;
+
+    if (changed)
+        m_widget->data->crect.moveTopLeft(newPosition);
+
+    updateMargins(); // FIXME: Only do when changed?
+
+    if (changed) {
+        QMoveEvent widgetEvent(newPosition, oldPosition);
+        QGuiApplication::forwardEvent(m_widget, &widgetEvent, event);
+    }
 }
 
 void QWidgetWindow::handleResizeEvent(QResizeEvent *event)

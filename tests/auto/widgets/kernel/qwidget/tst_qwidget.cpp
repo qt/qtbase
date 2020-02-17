@@ -310,6 +310,8 @@ private slots:
     void hideOpaqueChildWhileHidden();
     void updateWhileMinimized();
     void alienWidgets();
+    void nativeWindowPosition_data();
+    void nativeWindowPosition();
     void adjustSize();
     void adjustSize_data();
     void updateGeometry();
@@ -8209,6 +8211,40 @@ void tst_QWidget::alienWidgets()
         QVERIFY(dockWidget->testAttribute(Qt::WA_NativeWindow));
         QVERIFY(toolBar->testAttribute(Qt::WA_NativeWindow));
     }
+}
+
+using WidgetAttributes = QVector<Qt::WidgetAttribute>;
+
+void tst_QWidget::nativeWindowPosition_data()
+{
+    QTest::addColumn<WidgetAttributes>("attributes");
+
+    QTest::newRow("non-native all the way")
+        << WidgetAttributes{};
+    QTest::newRow("native all the way")
+        << WidgetAttributes{ Qt::WA_NativeWindow };
+    QTest::newRow("native with non-native ancestor")
+        << WidgetAttributes{ Qt::WA_NativeWindow, Qt::WA_DontCreateNativeAncestors };
+}
+
+void tst_QWidget::nativeWindowPosition()
+{
+    QWidget topLevel;
+    QWidget child(&topLevel);
+    child.move(5, 5);
+
+    QWidget grandChild(&child);
+    grandChild.move(10, 10);
+
+    QFETCH(WidgetAttributes, attributes);
+    for (auto attribute : attributes)
+        grandChild.setAttribute(attribute);
+
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+
+    QCOMPARE(child.pos(), QPoint(5, 5));
+    QCOMPARE(grandChild.pos(), QPoint(10, 10));
 }
 
 class ASWidget : public QWidget
