@@ -290,6 +290,11 @@ qt_add_resource(Gui "qpdf"
         ${qpdf_resource_files}
 )
 
+if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
+    target_link_options(Gui PRIVATE
+                        "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtGui.dynlist")
+endif()
+
 # special case begin
 # Replace arch_haswell with avx2 feature. That is what is used in the code requireing
 # this file, too!

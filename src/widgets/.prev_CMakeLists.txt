@@ -279,10 +279,13 @@ qt_add_resource(Widgets "qstyle1"
         ${qstyle1_resource_files}
 )
 
+if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
+    target_link_options(Widgets PRIVATE
+                        "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtWidgets.dynlist")
+endif()
 
 #### Keys ignored in scope 1:.:.:widgets.pro:<TRUE>:
 # MODULE_CONFIG = "uic"
-# QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtWidgets.dynlist"
 # QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
 
 ## Scopes:

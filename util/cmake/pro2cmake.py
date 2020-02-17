@@ -2519,6 +2519,19 @@ def write_simd_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
         cm_fh.write(extend_scope)
 
 
+def write_reduce_relocations_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+    ind = spaces(indent)
+    dynlist_file = scope.get_files("QMAKE_DYNAMIC_LIST_FILE")
+    if dynlist_file:
+        dynlist_path = "${CMAKE_CURRENT_LIST_DIR}/" + dynlist_file[0]
+        cm_fh.write(f'{ind}if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)\n')
+        ind = spaces(indent + 1)
+        cm_fh.write(f'{ind}target_link_options({target} PRIVATE\n')
+        cm_fh.write(f'{ind}                    "LINKER:--dynamic-list={dynlist_path}")\n')
+        ind = spaces(indent)
+        cm_fh.write(f'{ind}endif()\n')
+
+
 def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
     keys = [
         "ANDROID_BUNDLED_JAR_DEPENDENCIES",
@@ -2824,6 +2837,8 @@ def write_main_part(
     write_repc_files(cm_fh, name, scope, indent)
 
     write_simd_part(cm_fh, name, scope, indent)
+
+    write_reduce_relocations_part(cm_fh, name, scope, indent)
 
     write_android_part(cm_fh, name, scopes[0], indent)
 

@@ -358,6 +358,10 @@ qt_add_simd_part(Core SIMD mips_dsp
         text/qstring_mips_dsp_asm.S
 )
 
+if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
+    target_link_options(Core PRIVATE
+                        "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtCore.dynlist")
+endif()
 
 if(ANDROID)
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
@@ -380,7 +384,6 @@ endif()
 # MODULE = "core"
 # MODULE_CONFIG = "moc" "resources"
 # QMAKE_DSYM_DEBUG_SCRIPT = "$$PWD/debug_script.py"
-# QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtCore.dynlist"
 # QMAKE_PKGCONFIG_VARIABLES = "host_bins" "qt_conf"
 # QMAKE_SUBSTITUTES = "ctest_macros_file" "cmake_umbrella_config_file" "cmake_umbrella_config_module_location" "cmake_umbrella_config_module_location_for_install" "cmake_umbrella_config_version_file" "cmake_extras_mkspec_dir" "cmake_extras_mkspec_dir_for_install"
 # cmake_extras_mkspec_dir.input = "$$PWD/Qt5CoreConfigExtrasMkspecDir.cmake.in"

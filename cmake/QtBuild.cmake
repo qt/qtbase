@@ -1573,6 +1573,7 @@ function(qt_add_module target)
 
     ### Define Targets:
     set(is_interface_lib 0)
+    set(is_shared_lib 0)
     if(${arg_HEADER_MODULE})
         add_library("${target}" INTERFACE)
         set(is_interface_lib 1)
@@ -1580,6 +1581,7 @@ function(qt_add_module target)
         add_library("${target}" STATIC)
     elseif(${QT_BUILD_SHARED_LIBS})
         add_library("${target}" SHARED)
+        set(is_shared_lib 1)
     else()
         add_library("${target}" STATIC)
     endif()
@@ -1594,6 +1596,19 @@ function(qt_add_module target)
             MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION}
             MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
         )
+    endif()
+
+    if(QT_FEATURE_reduce_relocations AND UNIX AND NOT is_interface_lib)
+        # On x86 and x86-64 systems with ELF binaries (especially Linux), due to
+        # a new optimization in GCC 5.x in combination with a recent version of
+        # GNU binutils, compiling Qt applications with -fPIE is no longer
+        # enough.
+        # Applications now need to be compiled with the -fPIC option if the Qt option
+        # \"reduce relocations\" is active.
+        target_compile_options(${target} INTERFACE -fPIC)
+        if(GCC AND is_shared_lib)
+            target_link_options(${target} PRIVATE LINKER:-Bsymbolic-functions)
+        endif()
     endif()
 
     if (ANDROID)

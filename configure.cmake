@@ -447,6 +447,12 @@ qt_feature("reduce_exports" PRIVATE
 )
 qt_feature_definition("reduce_exports" "QT_VISIBILITY_AVAILABLE")
 qt_feature_config("reduce_exports" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("reduce_relocations" PRIVATE
+    LABEL "Reduce amount of relocations"
+    CONDITION NOT WIN32 AND TEST_reduce_relocations
+)
+qt_feature_definition("reduce_relocations" "QT_REDUCE_RELOCATIONS")
+qt_feature_config("reduce_relocations" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("signaling_nan" PUBLIC
     LABEL "Signaling NaN"
     CONDITION TEST_signaling_nan

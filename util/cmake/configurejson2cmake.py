@@ -742,7 +742,6 @@ def parseFeature(ctx, feature, data, cm_fh):
         "profile": None,
         "qmakeargs": None,
         "qpa_default_platform": None,  # Not a bool!
-        "reduce_relocations": None,
         "release": None,
         "release_tools": None,
         "rpath_dir": None,  # rpath related

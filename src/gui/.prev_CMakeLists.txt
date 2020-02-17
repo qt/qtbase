@@ -241,9 +241,12 @@ qt_add_resource(Gui "qpdf"
         ${qpdf_resource_files}
 )
 
+if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
+    target_link_options(Gui PRIVATE
+                        "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtGui.dynlist")
+endif()
 
 #### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
-# QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtGui.dynlist"
 # QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
 
 ## Scopes:
