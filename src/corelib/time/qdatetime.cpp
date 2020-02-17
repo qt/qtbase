@@ -1100,9 +1100,10 @@ QString QDate::longDayName(int weekday, MonthNameType type)
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 
-static QString toStringTextDate(QDate date, QCalendar cal)
+static QString toStringTextDate(QDate date)
 {
     if (date.isValid()) {
+        QCalendar cal; // Always Gregorian
         const auto parts = cal.partsFromDate(date);
         if (parts.isValid()) {
             const QLatin1Char sp(' ');
@@ -1123,14 +1124,12 @@ static QString toStringIsoDate(QDate date)
 }
 
 /*!
-    \fn QString QDate::toString(Qt::DateFormat format) const
-    \fn QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
-
     \overload
 
     Returns the date as a string. The \a format parameter determines the format
     of the string. If \a cal is supplied, it determines the calendar used to
-    represent the date; it defaults to Gregorian.
+    represent the date; it defaults to Gregorian and only affects the
+    locale-specific formats.
 
     If the \a format is Qt::TextDate, the string is formatted in the default
     way. The day and month names will be localized names using the system
@@ -1168,16 +1167,43 @@ static QString toStringIsoDate(QDate date)
 */
 QString QDate::toString(Qt::DateFormat format) const
 {
-    return toString(format, QCalendar());
+    if (!isValid())
+        return QString();
+
+    switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    case Qt::SystemLocaleDate:
+    case Qt::SystemLocaleShortDate:
+        return QLocale::system().toString(*this, QLocale::ShortFormat);
+    case Qt::SystemLocaleLongDate:
+        return QLocale::system().toString(*this, QLocale::LongFormat);
+    case Qt::LocaleDate:
+    case Qt::DefaultLocaleShortDate:
+        return QLocale().toString(*this, QLocale::ShortFormat);
+    case Qt::DefaultLocaleLongDate:
+        return QLocale().toString(*this, QLocale::LongFormat);
+QT_WARNING_POP
+#endif // 5.15
+    case Qt::RFC2822Date:
+        return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"));
+    default:
+    case Qt::TextDate:
+        return toStringTextDate(*this);
+    case Qt::ISODate:
+    case Qt::ISODateWithMs:
+        // No calendar dependence
+        return toStringIsoDate(*this);
+    }
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
 {
     if (!isValid())
         return QString();
 
     switch (format) {
-#if QT_DEPRECATED_SINCE(5, 15)
 QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
@@ -1190,18 +1216,18 @@ QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat, cal);
 QT_WARNING_POP
-#endif // 5.15
     case Qt::RFC2822Date:
         return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"), cal);
     default:
     case Qt::TextDate:
-        return toStringTextDate(*this, cal);
+        return toStringTextDate(*this);
     case Qt::ISODate:
     case Qt::ISODateWithMs:
         // No calendar dependence
         return toStringIsoDate(*this);
     }
 }
+#endif // 5.15
 
 /*!
     \fn QString QDate::toString(const QString &format) const
@@ -4287,14 +4313,9 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 /*!
-    \fn QString QDateTime::toString(Qt::DateFormat format) const
-    \fn QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
-
     \overload
 
-    Returns the datetime as a string in the \a format given. If \cal is
-    supplied, it determines the calendar used to represent the date; it defaults
-    to Gregorian.
+    Returns the datetime as a string in the \a format given.
 
     If the \a format is Qt::TextDate, the string is formatted in the default
     way. The day and month names will be localized names using the system
@@ -4337,11 +4358,6 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
 QString QDateTime::toString(Qt::DateFormat format) const
 {
-    return toString(format, QCalendar());
-}
-
-QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
-{
     QString buf;
     if (!isValid())
         return buf;
@@ -4351,25 +4367,25 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
 QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
-        return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
+        return QLocale::system().toString(*this, QLocale::ShortFormat);
     case Qt::SystemLocaleLongDate:
-        return QLocale::system().toString(*this, QLocale::LongFormat, cal);
+        return QLocale::system().toString(*this, QLocale::LongFormat);
     case Qt::LocaleDate:
     case Qt::DefaultLocaleShortDate:
-        return QLocale().toString(*this, QLocale::ShortFormat, cal);
+        return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
-        return QLocale().toString(*this, QLocale::LongFormat, cal);
+        return QLocale().toString(*this, QLocale::LongFormat);
 QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date: {
-        buf = QLocale::c().toString(*this, u"dd MMM yyyy hh:mm:ss ", cal);
+        buf = QLocale::c().toString(*this, u"dd MMM yyyy hh:mm:ss ");
         buf += toOffsetString(Qt::TextDate, offsetFromUtc());
         return buf;
     }
     default:
     case Qt::TextDate: {
         const QPair<QDate, QTime> p = getDateTime(d);
-        buf = toStringTextDate(p.first, cal);
+        buf = toStringTextDate(p.first);
         // Insert time between date's day and year:
         buf.insert(buf.lastIndexOf(QLatin1Char(' ')),
                    QLatin1Char(' ') + p.second.toString(Qt::TextDate));
@@ -4391,7 +4407,6 @@ QT_WARNING_POP
     }
     case Qt::ISODate:
     case Qt::ISODateWithMs: {
-        // No calendar dependence
         const QPair<QDate, QTime> p = getDateTime(d);
         buf = toStringIsoDate(p.first);
         if (buf.isEmpty())

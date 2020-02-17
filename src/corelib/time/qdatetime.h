@@ -111,7 +111,11 @@ public:
 #endif // textdate && deprecated
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    // Only the deprecated locale-dependent formats use the calendar.
+    QT_DEPRECATED_X("Use QLocale or omit the calendar")
     QString toString(Qt::DateFormat format, QCalendar cal) const;
+#endif
 
 #if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const;
@@ -334,7 +338,6 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-    QString toString(Qt::DateFormat format, QCalendar cal) const;
 #if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const;
     QString toString(const QString &format, QCalendar cal) const;
