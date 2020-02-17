@@ -53,7 +53,7 @@
 
 #define QAPP_CHECK(functionName) \
     if (Q_UNLIKELY(!QCoreApplication::instance())) { \
-        qWarning("QAction: Initialize Q(Gui)Application before calling '" functionName "'."); \
+        qWarning("QGuiAction: Initialize Q(Gui)Application before calling '" functionName "'."); \
         return; \
     }
 
@@ -444,7 +444,7 @@ bool QGuiAction::autoRepeat() const
     \brief the action's font
 
     The font property is used to render the text set on the
-    QAction. The font will can be considered a hint as it will not be
+    QGuiAction. The font will can be considered a hint as it will not be
     consulted in all cases based upon application and style.
 
     By default, this property contains the application's default font.
@@ -832,7 +832,7 @@ void QGuiAction::toggle()
     (the action is unchecked).
 
     \note The notifier signal for this property is toggled(). As toggling
-    a QAction changes its state, it will also emit a changed() signal.
+    a QGuiAction changes its state, it will also emit a changed() signal.
 
     \sa checkable, toggled()
 */
@@ -873,7 +873,7 @@ bool QGuiAction::isChecked() const
     be displayed using only shades of gray.
 
     \uicontrol{What's This?} help on disabled actions is still available, provided
-    that the QAction::whatsThis property is set.
+    that the QGuiAction::whatsThis property is set.
 
     An action will be disabled when all widgets to which it is added
     (with QWidget::addAction()) are disabled or not visible. When an
@@ -950,10 +950,10 @@ bool QGuiAction::event(QEvent *e)
     if (e->type() == QEvent::Shortcut) {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         Q_ASSERT_X(se->key() == d_func()->shortcut || d_func()->alternateShortcuts.contains(se->key()),
-                   "QAction::event",
+                   "QGuiAction::event",
                    "Received shortcut event from incorrect shortcut");
         if (se->isAmbiguous())
-            qWarning("QAction::event: Ambiguous shortcut overload: %s", se->key().toString(QKeySequence::NativeText).toLatin1().constData());
+            qWarning("QGuiAction::event: Ambiguous shortcut overload: %s", se->key().toString(QKeySequence::NativeText).toLatin1().constData());
         else
             activate(Trigger);
         return true;
@@ -963,7 +963,7 @@ bool QGuiAction::event(QEvent *e)
 }
 
 /*!
-  Returns the user data as set in QAction::setData.
+  Returns the user data as set in QGuiAction::setData.
 
   \sa setData()
 */
@@ -990,7 +990,7 @@ void QGuiAction::setData(const QVariant &data)
 /*!
   Sends the relevant signals for ActionEvent \a event.
 
-  Action based widgets use this API to cause the QAction
+  Action based widgets use this API to cause the QGuiAction
   to emit signals as well as emitting their own.
 */
 void QGuiAction::activate(ActionEvent event)
@@ -1037,7 +1037,7 @@ void QGuiAction::activate(ActionEvent event)
     This signal is emitted whenever a checkable action changes its
     isChecked() status. This can be the result of a user interaction,
     or because setChecked() was called. As setChecked() changes the
-    QAction, it emits changed() in addition to toggled().
+    QGuiAction, it emits changed() in addition to toggled().
 
     \a checked is true if the action is checked, or false if the
     action is unchecked.
@@ -1069,11 +1069,11 @@ void QGuiAction::activate(ActionEvent event)
 /*!
     \enum QGuiAction::ActionEvent
 
-    This enum type is used when calling QAction::activate()
+    This enum type is used when calling QGuiAction::activate()
 
-    \value Trigger this will cause the QAction::triggered() signal to be emitted.
+    \value Trigger this will cause the QGuiAction::triggered() signal to be emitted.
 
-    \value Hover this will cause the QAction::hovered() signal to be emitted.
+    \value Hover this will cause the QGuiAction::hovered() signal to be emitted.
 */
 
 /*!
@@ -1187,7 +1187,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QGuiAction *action)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "QAction(" << static_cast<const void *>(action);
+    d << "QGuiAction(" << static_cast<const void *>(action);
     if (action) {
         d << " text=" << action->text();
         if (!action->toolTip().isEmpty())
