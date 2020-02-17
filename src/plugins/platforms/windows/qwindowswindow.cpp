@@ -2629,7 +2629,7 @@ static inline DWORD edgesToWinOrientation(Qt::Edges edges)
 
 bool QWindowsWindow::startSystemResize(Qt::Edges edges)
 {
-    if (Q_UNLIKELY(!(window()->flags() & Qt::MSWindowsFixedSizeDialogHint)))
+    if (Q_UNLIKELY(window()->flags().testFlag(Qt::MSWindowsFixedSizeDialogHint)))
         return false;
 
     ReleaseCapture();
