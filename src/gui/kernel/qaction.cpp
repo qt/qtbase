@@ -1050,18 +1050,30 @@ bool QAction::isEnabled() const
 void QAction::setVisible(bool b)
 {
     Q_D(QAction);
-    if (b == d->visible && b != d->forceInvisible)
+    if (b != d->forceInvisible)
         return;
-    QAPP_CHECK("setVisible");
     d->forceInvisible = !b;
-    d->visible = b;
-    bool enabled = d->visible;
-    if (enabled && d->explicitEnabled)
-        enabled = d->explicitEnabledValue;
-    if (!d->setEnabled(enabled, false))
-        d->sendDataChanged();
+    if (b && d->group && !d->group->isVisible())
+        return;
+    d->setVisible(b);
 }
 
+void QActionPrivate::setVisible(bool b)
+{
+    Q_Q(QAction);
+    if (b == visible)
+        return;
+    QAPP_CHECK("setVisible");
+    visible = b;
+    bool enable = visible;
+    if (enable && explicitEnabled)
+        enable = explicitEnabledValue;
+    QPointer guard(q);
+    if (!setEnabled(enable, false))
+        sendDataChanged();
+    if (guard)
+        emit q->visibleChanged();
+}
 
 bool QAction::isVisible() const
 {

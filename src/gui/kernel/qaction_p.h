@@ -84,6 +84,7 @@ public:
     }
 
     bool setEnabled(bool enable, bool byGroup);
+    void setVisible(bool b);
 
     QPointer<QActionGroup> group;
     QString text;

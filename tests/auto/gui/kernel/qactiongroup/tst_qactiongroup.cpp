@@ -100,6 +100,9 @@ void tst_QActionGroup::visiblePropagation()
     QVERIFY( !childAction->isVisible() );
     QVERIFY( !anotherChildAction->isVisible() );
 
+    childAction->setVisible(true);
+    QVERIFY( !childAction->isVisible() );
+
     anotherChildAction->setVisible(false);
 
     testActionGroup.setVisible( true );

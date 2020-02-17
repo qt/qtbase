@@ -169,10 +169,8 @@ QAction *QActionGroup::addAction(QAction* a)
         QObject::connect(a, &QAction::hovered, this, &QActionGroup::_q_actionHovered);
     }
     a->d_func()->setEnabled(d->enabled, true);
-    if (!a->d_func()->forceInvisible) {
-        a->setVisible(d->visible);
-        a->d_func()->forceInvisible = false;
-    }
+    if (!a->d_func()->forceInvisible)
+        a->d_func()->setVisible(d->visible);
     if (a->isChecked())
         d->current = a;
     QActionGroup *oldGroup = a->d_func()->group;
@@ -350,10 +348,8 @@ void QActionGroup::setVisible(bool b)
     Q_D(QActionGroup);
     d->visible = b;
     for (auto action : qAsConst(d->actions)) {
-        if (!action->d_func()->forceInvisible) {
-            action->setVisible(b);
-            action->d_func()->forceInvisible = false;
-        }
+        if (!action->d_func()->forceInvisible)
+            action->d_func()->setVisible(b);
     }
 }
 
