@@ -450,12 +450,19 @@ void QProcessPrivate::startProcess()
         workingDirPtr = encodedWorkingDirectory.constData();
     }
 
-    // Start the process manager, and fork off the child process.
-    // ### Qt6: revisit whether the change in behavior due to not using fork()
-    // is acceptable for derived classes.
+    // Select FFD_USE_FORK and FFD_VFORK_SEMANTICS based on whether there's
+    // user code running in the child process: if there is, we don't know what
+    // the user will want to do, so we err on the safe side and request an
+    // actual fork() (for example, the user could attempt to do some
+    // synchronization with the parent process). But if there isn't, then our
+    // code in execChild() is just a handful of dup2() and a chdir(), so it's
+    // safe with vfork semantics: suspend the parent execution until the child
+    // either execve()s or _exit()s.
     int ffdflags = FFD_CLOEXEC;
     if (typeid(*q) != typeid(QProcess))
         ffdflags |= FFD_USE_FORK;
+    else
+        ffdflags |= FFD_VFORK_SEMANTICS;
     pid_t childPid;
     forkfd = ::forkfd(ffdflags , &childPid);
     int lastForkErrno = errno;
