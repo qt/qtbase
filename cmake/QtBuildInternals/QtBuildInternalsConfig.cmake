@@ -180,6 +180,11 @@ macro(qt_build_tests)
 
         # Of course we always need the test module as well.
         find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
+
+        # Set language standards after finding Core, because that's when the relevant
+        # feature variables are available, and the call in QtSetup is too early when building
+        # standalone tests, because Core was not find_package()'d yet.
+        qt_set_language_standards()
     endif()
 
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/auto/CMakeLists.txt")
