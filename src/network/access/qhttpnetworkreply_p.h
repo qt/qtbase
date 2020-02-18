@@ -115,6 +115,8 @@ public:
     QString errorString() const;
     void setErrorString(const QString &error);
 
+    QNetworkReply::NetworkError errorCode() const;
+
     QString reasonPhrase() const;
 
     qint64 bytesAvailable() const;
@@ -259,6 +261,7 @@ public:
     qint64 removedContentLength;
     QPointer<QHttpNetworkConnection> connection;
     QPointer<QHttpNetworkConnectionChannel> connectionChannel;
+    QNetworkReply::NetworkError httpErrorCode = QNetworkReply::NoError;
 
     bool autoDecompress;
 

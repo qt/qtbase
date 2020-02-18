@@ -428,6 +428,12 @@ void QHttpThreadDelegate::startRequest()
 
     connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
             this, SLOT(cacheCredentialsSlot(QHttpNetworkRequest,QAuthenticator*)));
+    if (httpReply->errorCode() != QNetworkReply::NoError) {
+        if (synchronous)
+            synchronousFinishedWithErrorSlot(httpReply->errorCode(), httpReply->errorString());
+        else
+            finishedWithErrorSlot(httpReply->errorCode(), httpReply->errorString());
+    }
 }
 
 // This gets called from the user thread or by the synchronous HTTP timeout timer

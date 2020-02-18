@@ -574,7 +574,8 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
 
         qCInfo(lcQpaBackingStore) << "Flushing" << subImage
             << "to" << flushedView.layer << "of subview" << flushedView;
-        QCFType<CGImageRef> cgImage = subImage.toCGImage();
+        QCFType<CGImageRef> cgImage = CGImageCreateCopyWithColorSpace(
+            QCFType<CGImageRef>(subImage.toCGImage()), colorSpace());
         flushedView.layer.contents = (__bridge id)static_cast<CGImageRef>(cgImage);
     }
 

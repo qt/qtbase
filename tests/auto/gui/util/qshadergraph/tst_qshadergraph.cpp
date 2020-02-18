@@ -114,6 +114,7 @@ private slots:
     void shouldSurviveCyclesDuringGraphSerialization();
     void shouldDealWithEdgesJumpingOverLayers();
     void shouldGenerateDifferentStatementsDependingOnActiveLayers();
+    void shouldDealWithBranchesWithoutOutput();
 };
 
 void tst_QShaderGraph::shouldHaveEdgeDefaultState()
@@ -772,6 +773,50 @@ void tst_QShaderGraph::shouldGenerateDifferentStatementsDependingOnActiveLayers(
         dumpStatementsIfNeeded(statements, expected);
         QCOMPARE(statements, expected);
     }
+}
+
+void tst_QShaderGraph::shouldDealWithBranchesWithoutOutput()
+{
+    // GIVEN
+    const auto input = createNode({
+        createPort(QShaderNodePort::Output, "input")
+    });
+    const auto output = createNode({
+        createPort(QShaderNodePort::Input, "output")
+    });
+    const auto danglingFunction = createNode({
+        createPort(QShaderNodePort::Input, "functionInput"),
+        createPort(QShaderNodePort::Output, "unbound")
+    });
+    const auto function = createNode({
+        createPort(QShaderNodePort::Input, "functionInput"),
+        createPort(QShaderNodePort::Output, "functionOutput")
+    });
+
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+        res.addNode(input);
+        res.addNode(function);
+        res.addNode(danglingFunction);
+        res.addNode(output);
+        res.addEdge(createEdge(input.uuid(), "input", function.uuid(), "functionInput"));
+        res.addEdge(createEdge(input.uuid(), "input", danglingFunction.uuid(), "functionInput"));
+        res.addEdge(createEdge(function.uuid(), "functionOutput", output.uuid(), "output"));
+        return res;
+    }();
+
+    // WHEN
+    const auto statements = graph.createStatements();
+
+    // THEN
+    // Note that no edge leads to the unbound input
+    const auto expected = QVector<QShaderGraph::Statement>()
+            << createStatement(input, {}, {0})
+            << createStatement(function, {0}, {1})
+            << createStatement(output, {1}, {})
+            << createStatement(danglingFunction, {0}, {2});
+    dumpStatementsIfNeeded(statements, expected);
+    QCOMPARE(statements, expected);
 }
 
 QTEST_MAIN(tst_QShaderGraph)
