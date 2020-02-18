@@ -383,4 +383,21 @@ __CRT_UUID_DECL(IWindowProvider, 0x987df77b, 0xdb06, 0x4d77, 0x8f,0x8a, 0x86,0xa
 #endif
 #endif
 
+
+#ifndef __IExpandCollapseProvider_INTERFACE_DEFINED__
+#define __IExpandCollapseProvider_INTERFACE_DEFINED__
+DEFINE_GUID(IID_IExpandCollapseProvider, 0xd847d3a5, 0xcab0, 0x4a98, 0x8c,0x32, 0xec,0xb4,0x5c,0x59,0xad,0x24);
+MIDL_INTERFACE("d847d3a5-cab0-4a98-8c32-ecb45c59ad24")
+IExpandCollapseProvider : public IUnknown
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE Expand() = 0;
+    virtual HRESULT STDMETHODCALLTYPE Collapse() = 0;
+    virtual HRESULT STDMETHODCALLTYPE get_ExpandCollapseState(__RPC__out enum ExpandCollapseState *pRetVal) = 0;
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(IExpandCollapseProvider, 0xd847d3a5, 0xcab0, 0x4a98, 0x8c,0x32, 0xec,0xb4,0x5c,0x59,0xad,0x24)
+#endif
+#endif
+
 #endif

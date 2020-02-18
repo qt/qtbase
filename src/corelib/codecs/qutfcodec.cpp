@@ -930,6 +930,7 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
         tuple[num++] = *chars++;
         if (num == 4) {
             if (!headerdone) {
+                headerdone = true;
                 if (endian == DetectEndianness) {
                     if (tuple[0] == 0xff && tuple[1] == 0xfe && tuple[2] == 0 && tuple[3] == 0 && endian != BigEndianness) {
                         endian = LittleEndianness;

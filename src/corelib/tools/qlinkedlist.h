@@ -70,14 +70,14 @@ QT_WARNING_DISABLE_DEPRECATED
 
 QT_BEGIN_NAMESPACE
 
-struct QT_DEPRECATED_VERSION_5_15 Q_CORE_EXPORT QLinkedListData
+struct QT_DEPRECATED_VERSION_5_15 QLinkedListData
 {
     QLinkedListData *n, *p;
     QtPrivate::RefCount ref;
     int size;
     uint sharable : 1;
 
-    static const QLinkedListData shared_null;
+    Q_CORE_EXPORT static const QLinkedListData shared_null;
 };
 
 template <typename T>

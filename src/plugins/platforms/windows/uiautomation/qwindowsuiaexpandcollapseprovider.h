@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,73 +37,33 @@
 **
 ****************************************************************************/
 
-#include "qharfbuzz_p.h"
+#ifndef QWINDOWSUIAEXPANDCOLLAPSEPROVIDER_H
+#define QWINDOWSUIAEXPANDCOLLAPSEPROVIDER_H
 
-#include "qunicodetables_p.h"
-#if QT_CONFIG(library)
-#include "qlibrary.h"
-#endif
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
 
-QT_USE_NAMESPACE
-
-extern "C" {
-
-void HB_GetUnicodeCharProperties(HB_UChar32 ch, HB_CharCategory *category, int *combiningClass)
-{
-    const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ch);
-    *category = (HB_CharCategory)prop->category;
-    *combiningClass = prop->combiningClass;
-}
-
-HB_CharCategory HB_GetUnicodeCharCategory(HB_UChar32 ch)
-{
-    return (HB_CharCategory)QChar::category(ch);
-}
-
-int HB_GetUnicodeCharCombiningClass(HB_UChar32 ch)
-{
-    return QChar::combiningClass(ch);
-}
-
-HB_UChar16 HB_GetMirroredChar(HB_UChar16 ch)
-{
-    return QChar::mirroredChar(ch);
-}
-
-void (*HB_Library_Resolve(const char *library, int version, const char *symbol))()
-{
-#if !QT_CONFIG(library) || defined(Q_OS_WASM)
-    Q_UNUSED(library);
-    Q_UNUSED(version);
-    Q_UNUSED(symbol);
-    return 0;
-#else
-    return QLibrary::resolve(QLatin1String(library), version, symbol);
-#endif
-}
-
-} // extern "C"
+#include "qwindowsuiabaseprovider.h"
 
 QT_BEGIN_NAMESPACE
 
-HB_Bool qShapeItem(HB_ShaperItem *item)
+// Implements the Expand/Collapse control pattern provider. Used for menu items with submenus.
+class QWindowsUiaExpandCollapseProvider : public QWindowsUiaBaseProvider,
+                                          public QWindowsComBase<IExpandCollapseProvider>
 {
-    return HB_ShapeItem(item);
-}
+    Q_DISABLE_COPY_MOVE(QWindowsUiaExpandCollapseProvider)
+public:
+    explicit QWindowsUiaExpandCollapseProvider(QAccessible::Id id);
+    virtual ~QWindowsUiaExpandCollapseProvider() override;
 
-HB_Face qHBNewFace(void *font, HB_GetFontTableFunc tableFunc)
-{
-    return HB_AllocFace(font, tableFunc);
-}
-
-HB_Face qHBLoadFace(HB_Face face)
-{
-    return HB_LoadFace(face);
-}
-
-void qHBFreeFace(HB_Face face)
-{
-    HB_FreeFace(face);
-}
+    // IExpandCollapseProvider
+    HRESULT STDMETHODCALLTYPE Expand() override;
+    HRESULT STDMETHODCALLTYPE Collapse() override;
+    HRESULT STDMETHODCALLTYPE get_ExpandCollapseState(__RPC__out ExpandCollapseState *pRetVal) override;
+};
 
 QT_END_NAMESPACE
+
+#endif // QT_CONFIG(accessibility)
+
+#endif // QWINDOWSUIAEXPANDCOLLAPSEPROVIDER_H

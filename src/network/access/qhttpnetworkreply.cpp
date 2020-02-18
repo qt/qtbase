@@ -158,6 +158,11 @@ QString QHttpNetworkReply::errorString() const
     return d_func()->errorString;
 }
 
+QNetworkReply::NetworkError QHttpNetworkReply::errorCode() const
+{
+    return d_func()->httpErrorCode;
+}
+
 QString QHttpNetworkReply::reasonPhrase() const
 {
     return d_func()->reasonPhrase;
