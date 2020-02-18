@@ -346,10 +346,9 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
     code << QByteArrayLiteral("void main()");
     code << QByteArrayLiteral("{");
 
-    const QRegularExpression localToGlobalRegExp(QStringLiteral("[^;]*\\s+(\\w+)\\s*=\\s*((?:\\w+\\(.*\\))|(?:\\w+))[^;]*;"));
     const QRegularExpression temporaryVariableToAssignmentRegExp(QStringLiteral("([^;]*\\s+(v\\d+))\\s*=\\s*([^;]*);"));
     const QRegularExpression temporaryVariableInAssignmentRegExp(QStringLiteral("\\W*(v\\d+)\\W*"));
-    const QRegularExpression outputToTemporaryAssignmentRegExp(QStringLiteral("\\s*(\\w+)\\s*=\\s*([^;]*);"));
+    const QRegularExpression statementRegExp(QStringLiteral("\\s*(\\w+)\\s*=\\s*([^;]*);"));
 
     struct Variable;
 
@@ -521,13 +520,11 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
 
         switch (node.type()) {
         case QShaderNode::Input:
-            matches = localToGlobalRegExp.globalMatch(QString::fromUtf8(substitutionedLine));
+        case QShaderNode::Output:
+            matches = statementRegExp.globalMatch(QString::fromUtf8(substitutionedLine));
             break;
         case QShaderNode::Function:
             matches = temporaryVariableToAssignmentRegExp.globalMatch(QString::fromUtf8(substitutionedLine));
-            break;
-        case QShaderNode::Output:
-            matches = outputToTemporaryAssignmentRegExp.globalMatch(QString::fromUtf8(substitutionedLine));
             break;
         case QShaderNode::Invalid:
             break;
