@@ -7914,7 +7914,17 @@ void tst_QWidget::updateWhileMinimized()
     QTest::qWait(10);
     if (m_platform == QStringLiteral("winrt"))
         QEXPECT_FAIL("", "WinRT: This fails. QTBUG-68297.", Abort);
-    QCOMPARE(widget.numPaintEvents, 0);
+    int count = 0;
+    // mutter/GNOME Shell doesn't unmap when minimizing window.
+    // More details at https://gitlab.gnome.org/GNOME/mutter/issues/185
+    if (m_platform == QStringLiteral("xcb")) {
+        const QString desktop = qgetenv("XDG_CURRENT_DESKTOP");
+        qDebug() << "xcb: XDG_CURRENT_DESKTOP=" << desktop;
+        if (desktop == QStringLiteral("ubuntu:GNOME")
+            || desktop == QStringLiteral("GNOME-Classic:GNOME"))
+            count = 1;
+    }
+    QCOMPARE(widget.numPaintEvents, count);
 
     // Restore window.
     widget.showNormal();
