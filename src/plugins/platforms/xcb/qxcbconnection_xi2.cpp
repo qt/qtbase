@@ -514,12 +514,10 @@ QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info
     return isTouchDevice ? &m_touchDevices[deviceinfo->deviceid] : nullptr;
 }
 
-#if QT_CONFIG(tabletevent)
 static inline qreal fixed1616ToReal(xcb_input_fp1616_t val)
 {
     return qreal(val) / 0x10000;
 }
-#endif // QT_CONFIG(tabletevent)
 
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
