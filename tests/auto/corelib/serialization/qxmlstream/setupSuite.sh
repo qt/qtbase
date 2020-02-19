@@ -42,7 +42,5 @@ cd XML-Test-Suite
 export CVSROOT=":pserver:anonymous@dev.w3.org:/sources/public"
 cvs -q up -C
 
-p4 edit ...
-p4 revert `find -name "Entries"` # They only contain CVS timestamps.
+git checkout -- `find -name "Entries"` # They only contain CVS timestamps.
 xmllint --valid --noent xmlconf/xmlconf.xml --output xmlconf/finalCatalog.xml
-p4 revert -a ...
