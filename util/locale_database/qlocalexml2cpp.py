@@ -40,7 +40,7 @@ import datetime
 import xml.dom.minidom
 from enumdata import language_aliases, country_aliases, script_aliases
 
-from localexml import Locale
+from qlocalexml import Locale
 
 # TODO: Make calendars a command-line parameter
 # map { CLDR name: Qt file name }
@@ -353,7 +353,7 @@ def main():
     if len(sys.argv) != 3:
         usage()
 
-    localexml = sys.argv[1]
+    qlocalexml = sys.argv[1]
     qtsrcdir = sys.argv[2]
 
     if not (os.path.isdir(qtsrcdir)
@@ -370,7 +370,7 @@ def main():
         s = qlocaledata_file.readline()
     data_temp_file.write(GENERATED_BLOCK_START)
 
-    doc = xml.dom.minidom.parse(localexml)
+    doc = xml.dom.minidom.parse(qlocalexml)
     language_map = loadMap(doc, 'language')
     script_map = loadMap(doc, 'script')
     country_map = loadMap(doc, 'country')

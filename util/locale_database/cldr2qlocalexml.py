@@ -61,7 +61,7 @@ import enumdata
 import xpathlite
 from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile
 from dateconverter import convert_date
-from localexml import Locale
+from qlocalexml import Locale
 
 # TODO: make calendars a command-line option
 calendars = ['gregorian', 'persian', 'islamic'] # 'hebrew'
