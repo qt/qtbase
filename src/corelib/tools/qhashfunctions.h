@@ -81,12 +81,13 @@ Q_DECL_CONST_FUNCTION constexpr size_t hash(size_t key, size_t seed) noexcept
         key ^= key >> 16;
         return key;
     } else {
-        key ^= key >> 32;
-        key *= UINT64_C(0xd6e8feb86659fd93);
-        key ^= key >> 32;
-        key *= UINT64_C(0xd6e8feb86659fd93);
-        key ^= key >> 32;
-        return key;
+        quint64 key64 = key;
+        key64 ^= key64 >> 32;
+        key64 *= UINT64_C(0xd6e8feb86659fd93);
+        key64 ^= key64 >> 32;
+        key64 *= UINT64_C(0xd6e8feb86659fd93);
+        key64 ^= key64 >> 32;
+        return size_t(key64);
     }
 }
 
