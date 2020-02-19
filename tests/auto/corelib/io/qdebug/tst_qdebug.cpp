@@ -66,6 +66,7 @@ private slots:
     void resetFormat() const;
     void defaultMessagehandler() const;
     void threadSafety() const;
+    void toString() const;
 };
 
 void tst_QDebug::assignment() const
@@ -737,6 +738,28 @@ void tst_QDebug::threadSafety() const
     QCOMPARE(s_messages.count(), numThreads);
     for (int i = 0; i < numThreads; ++i) {
         QCOMPARE(s_messages.at(i), QStringLiteral("doDebug"));
+    }
+}
+
+void tst_QDebug::toString() const
+{
+    // By reference.
+    {
+        MyPoint point(3, 4);
+        QString expectedString;
+        QDebug stream(&expectedString);
+        stream << point;
+        QCOMPARE(QDebug::toString(point), expectedString);
+    }
+
+    // By pointer.
+    {
+        QObject qobject;
+        qobject.setObjectName("test");
+        QString expectedString;
+        QDebug stream(&expectedString);
+        stream << &qobject;
+        QCOMPARE(QDebug::toString(&qobject), expectedString);
     }
 }
 

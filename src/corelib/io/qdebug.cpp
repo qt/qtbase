@@ -714,6 +714,20 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \fn template <class T> QString QDebug::toString(const T &object)
+    \since 6.0
+
+    \include qdebug-toString.qdocinc
+*/
+
+/*!
+    \fn template <class T> QString QDebug::toString(const T *object)
+    \since 6.0
+
+    \include qdebug-toString.qdocinc
+*/
+
+/*!
     \fn template <class T> QDebug operator<<(QDebug debug, const QList<T> &list)
     \relates QDebug
 

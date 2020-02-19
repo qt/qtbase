@@ -173,6 +173,24 @@ public:
 
     inline QDebug &operator<<(QTextStreamManipulator m)
     { stream->ts << m; return *this; }
+
+    template <typename T>
+    static QString toString(const T &object)
+    {
+        QString buffer;
+        QDebug stream(&buffer);
+        stream << object;
+        return buffer;
+    }
+
+    template <typename T>
+    static QString toString(const T *object)
+    {
+        QString buffer;
+        QDebug stream(&buffer);
+        stream << object;
+        return buffer;
+    }
 };
 
 Q_DECLARE_SHARED(QDebug)

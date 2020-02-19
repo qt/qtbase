@@ -93,3 +93,8 @@
     ba = QByteArray("a\0b", 3);
     qDebug() << ba               // prints: "\a\x00""b"
 //! [1]
+
+//! [toString]
+    QTRY_VERIFY2(list.isEmpty(), qPrintable(QString::fromLatin1(
+        "Expected list to be empty, but it has the following items: %1")).arg(QDebug::toString(list)));
+//! [toString]
