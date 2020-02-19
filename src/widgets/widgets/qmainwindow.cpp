@@ -1349,7 +1349,7 @@ bool QMainWindow::event(QEvent *event)
 
     Note that the Qt 5 implementation has several limitations compared to Qt 4:
     \list
-        \li Use in windows with OpenGL content is not supported. This includes QGLWidget and QOpenGLWidget.
+        \li Use in windows with OpenGL content is not supported. This includes QOpenGLWidget.
         \li Using dockable or movable toolbars may result in painting errors and is not recommended
     \endlist
 

@@ -60,8 +60,8 @@ QT_BEGIN_NAMESPACE
 
   QOpenGLWindow is an enhanced QWindow that allows easily creating windows that
   perform OpenGL rendering using an API that is compatible with QOpenGLWidget
-  and is similar to the legacy QGLWidget. Unlike QOpenGLWidget, QOpenGLWindow
-  has no dependency on the widgets module and offers better performance.
+  Unlike QOpenGLWidget, QOpenGLWindow has no dependency on the widgets module
+  and offers better performance.
 
   A typical application will subclass QOpenGLWindow and reimplement the following
   virtual functions:
@@ -100,8 +100,8 @@ QT_BEGIN_NAMESPACE
   QPainter-based drawing.
 
   QOpenGLWindow supports multiple update behaviors. The default,
-  \c NoPartialUpdate is equivalent to a regular, OpenGL-based QWindow or the
-  legacy QGLWidget. In contrast, \c PartialUpdateBlit and \c PartialUpdateBlend are
+  \c NoPartialUpdate is equivalent to a regular, OpenGL-based QWindow. In
+  contrast, \c PartialUpdateBlit and \c PartialUpdateBlend are
   more in line with QOpenGLWidget's way of working, where there is always an
   extra, dedicated framebuffer object present. These modes allow, by
   sacrificing some performance, redrawing only a smaller area on each paint and

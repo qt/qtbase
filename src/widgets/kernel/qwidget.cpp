@@ -4913,9 +4913,6 @@ void qt_qpa_set_cursor(QWidget *w, bool force)
 
     \note To obtain the contents of a QOpenGLWidget, use QOpenGLWidget::grabFramebuffer()
     instead.
-
-    \note To obtain the contents of a QGLWidget (deprecated), use
-    QGLWidget::grabFrameBuffer() or QGLWidget::renderPixmap() instead.
 */
 void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
                      const QRegion &sourceRegion, RenderFlags renderFlags)

@@ -545,7 +545,7 @@
     with OpenGL, but without OpenGL it avoids unnecessary re-scaling of the
     background pixmap.
     \li It sets render hints that increase rendering quality.
-    \li If OpenGL is supported, a QGLWidget viewport is assigned to the view.
+    \li If OpenGL is supported, a QOpenGLWidget viewport is assigned to the view.
     \endlist
 
     Finally, we start the state engine.
