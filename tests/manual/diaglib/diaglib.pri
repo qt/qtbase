@@ -38,7 +38,7 @@ contains(QT, opengl) {
     SOURCES += \
         $$PWD/glinfo.cpp
 
-    QT += opengl
+    QT += opengl openglwidgets
 }
 
 DEFINES += QT_DIAG_LIB

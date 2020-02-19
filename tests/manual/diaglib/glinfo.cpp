@@ -28,12 +28,11 @@
 
 #include "glinfo.h"
 
-#include <QtOpenGL/QGLFunctions>
-#include <QtOpenGL/QGLWidget>
+#include <QOpenGLFunctions>
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #if QT_VERSION > 0x050000
 #  if QT_VERSION >= 0x050400
-#    include <QtWidgets/QOpenGLWidget>
-#    include <QtGui/QOpenGLWindow>
+#    include <QtOpenGL/QOpenGLWindow>
 #  else // 5.4
 #    include <QtGui/QWindow>
 #  endif // 5.0..5.4
@@ -63,11 +62,6 @@ static QString glInfo(const QOpenGLContext *ctx)
         + getGlString(ctx, GL_RENDERER);
 }
 
-static QString glInfo(const QGLContext *ctx)
-{
-    return glInfo(ctx->contextHandle());
-}
-
 QString glInfo(const QObject *o)
 {
 #  if QT_VERSION >= 0x050400
@@ -76,11 +70,8 @@ QString glInfo(const QObject *o)
             return glInfo(oglw->context());
         return QString();
     }
-#  endif // 5.4
+
     if (o->isWidgetType()) {
-        if (const QGLWidget *g = qobject_cast<const QGLWidget *>(o))
-            return glInfo(g->context());
-#  if QT_VERSION >= 0x050400
         if (const QOpenGLWidget *g = qobject_cast<const QOpenGLWidget *>(o))
             return glInfo(g->context());
 #  endif // 5.4
