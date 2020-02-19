@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #############################################################################
 ##
-## Copyright (C) 2019 The Qt Company Ltd.
+## Copyright (C) 2020 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -35,7 +35,7 @@ script and the qtbase root directory as second parameter.  It shall
 update qtbase's src/corelib/time/qtimezoneprivate_data_p.h ready for
 use.
 
-The XML structure is as follows:
+The XML structure we read has the form:
 
  <supplementalData>
      <version number="$Revision:...$"/>
@@ -53,34 +53,18 @@ The XML structure is as follows:
 """
 
 import os
-import sys
 import re
 import datetime
-import tempfile
 
 import enumdata
-from localetools import unicode2hex, wrap_list, Error
+from localetools import unicode2hex, wrap_list, Error, SourceFileEditor
 from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile, \
     _findEntryInFile as findEntryInFile
 
-class ByteArrayData:
-    def __init__(self):
-        self.data = []
-        self.hash = {}
-    def append(self, s):
-        s = s + '\0'
-        if s in self.hash:
-            return self.hash[s]
+### Data that may need updates in response to new entries in the CLDR file ###
 
-        lst = unicode2hex(s)
-        index = len(self.data)
-        if index > 65535:
-            print "\n\n\n#error Data index is too big!"
-            sys.stderr.write ("\n\n\nERROR: index exceeds the uint16 range! index = %d\n" % index)
-            sys.exit(1)
-        self.hash[s] = index
-        self.data += lst
-        return index
+# This script shall report the update you need, if this arises.
+# However, you may need to research the relevant zone's standard offset.
 
 # List of currently known Windows IDs.
 # If this script reports missing IDs, please add them here.
@@ -227,12 +211,6 @@ windowsIdList = (
     (u'Yakutsk Standard Time',            32400),
 )
 
-def windowsIdToKey(windowsId):
-    for index, pair in enumerate(windowsIdList):
-        if pair[0] == windowsId:
-            return index + 1
-    return 0
-
 # List of standard UTC IDs to use.  Not public so may be safely changed.
 # Do not remove IDs, as each entry is part of the API/behavior guarantee.
 # ( UTC Id, Offset Seconds )
@@ -279,42 +257,143 @@ utcIdList = (
     (u'UTC+14:00',  50400),
 )
 
-def usage():
-    print "Usage: cldr2qtimezone.py <path to cldr core/common> <path to qtbase>"
-    sys.exit()
+### End of data that may need updates in response to CLDR ###
 
-if len(sys.argv) != 3:
-    usage()
+class ByteArrayData:
+    def __init__(self):
+        self.data = []
+        self.hash = {}
 
-cldrPath = sys.argv[1]
-qtPath = sys.argv[2]
+    def append(self, s):
+        s = s + '\0'
+        if s in self.hash:
+            return self.hash[s]
 
-if not os.path.isdir(cldrPath) or not os.path.isdir(qtPath):
-    usage()
+        lst = unicode2hex(s)
+        index = len(self.data)
+        if index > 0xffff:
+            raise Error('Index ({}) outside the uint16 range !'.format(index))
+        self.hash[s] = index
+        self.data += lst
+        return index
 
-windowsZonesPath = cldrPath + "/supplemental/windowsZones.xml"
-tempFileDir = qtPath
-dataFilePath = qtPath + "/src/corelib/time/qtimezoneprivate_data_p.h"
+    def write(self, out, name):
+        out('\nstatic const char {}[] = {{\n'.format(name))
+        out(wrap_list(self.data))
+        out('\n};\n')
 
-if not (os.path.isfile(windowsZonesPath) and os.path.isfile(dataFilePath)):
-    usage()
+class ZoneIdWriter (SourceFileEditor):
+    def write(self, version, defaults, windowsIds):
+        self.__writeWarning(version)
+        windows, iana = self.__writeTables(self.writer.write, defaults, windowsIds)
+        windows.write(self.writer.write, 'windowsIdData')
+        iana.write(self.writer.write, 'ianaIdData')
 
-cldr_version = 'unknown'
-ldml = open(cldrPath + "/dtd/ldml.dtd", "r")
-for line in ldml:
-    if 'version cldrVersion CDATA #FIXED' in line:
-        cldr_version = line.split('"')[1]
+    def __writeWarning(self, version):
+        self.writer.write("""
+/*
+    This part of the file was generated on {} from the
+    Common Locale Data Repository v{} file supplemental/windowsZones.xml
 
-# [[u'version', [(u'number', u'$Revision: 7825 $')]]]
-versionNumber = findTagsInFile(windowsZonesPath, "version")[0][1][0][1]
+    http://www.unicode.org/cldr/
 
-mapTimezones = findTagsInFile(windowsZonesPath, "windowsZones/mapTimezones")
+    Do not edit this code: run cldr2qtimezone.py on updated (or
+    edited) CLDR data; see qtbase/util/locale_database/.
+*/
 
-defaultDict = {}
-windowsIdDict = {}
+""".format(str(datetime.date.today()), version))
 
-if mapTimezones:
+    @staticmethod
+    def __writeTables(out, defaults, windowsIds):
+        windowsIdData, ianaIdData = ByteArrayData(), ByteArrayData()
+
+        # Write Windows/IANA table
+        out('// Windows ID Key, Country Enum, IANA ID Index\n')
+        out('static const QZoneData zoneDataTable[] = {\n')
+        for index, data in sorted(windowsIds.items()):
+            out('    {{ {:6d},{:6d},{:6d} }}, // {} / {}\n'.format(
+                    data['windowsKey'], data['countryId'],
+                    ianaIdData.append(data['ianaList']),
+                    data['windowsId'], data['country']))
+        out('    {      0,     0,     0 } // Trailing zeroes\n')
+        out('};\n\n')
+
+        # Write Windows ID key table
+        out('// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n')
+        out('static const QWindowsData windowsDataTable[] = {\n')
+        for index, pair in enumerate(windowsIdList, 1):
+            out('    {{ {:6d},{:6d},{:6d},{:6d} }}, // {}\n'.format(
+                    index,
+                    windowsIdData.append(pair[0]),
+                    ianaIdData.append(defaults[index]),
+                    pair[1], pair[0]))
+        out('    {      0,     0,     0,     0 } // Trailing zeroes\n')
+        out('};\n\n')
+
+        # Write UTC ID key table
+        out('// IANA ID Index, UTC Offset\n')
+        out('static const QUtcData utcDataTable[] = {\n')
+        for pair in utcIdList:
+            out('    {{ {:6d},{:6d} }}, // {}\n'.format(
+                    ianaIdData.append(pair[0]), pair[1], pair[0]))
+        out('    {     0,      0 } // Trailing zeroes\n')
+        out('};\n')
+
+        return windowsIdData, ianaIdData
+
+def usage(err, name, message=''):
+    err.write("""Usage: {} path/to/cldr/core/common path/to/qtbase
+""".format(name)) # TODO: more interesting message
+    if message:
+        err.write('\n' + message + '\n')
+
+def main(args, out, err):
+    """Parses CLDR's data and updates Qt's representation of it.
+
+    Takes sys.argv, sys.stdout, sys.stderr (or equivalents) as
+    arguments. Expects two command-line options: the common/
+    subdirectory of the unpacked CLDR data-file tree and the root of
+    the qtbase module's checkout. Updates QTimeZone's private data
+    about Windows time-zone IDs."""
+    name = args.pop(0)
+    if len(args) != 2:
+        usage(err, name, "Expected two arguments")
+        return 1
+
+    cldrPath = args.pop(0)
+    qtPath = args.pop(0)
+
+    if not os.path.isdir(qtPath):
+        usage(err, name, "No such Qt directory: " + qtPath)
+        return 1
+    if not os.path.isdir(cldrPath):
+        usage(err, name, "No such CLDR directory: " + cldrPath)
+        return 1
+
+    dataFilePath = os.path.join(qtPath, 'src', 'corelib', 'time', 'qtimezoneprivate_data_p.h')
+    if not os.path.isfile(dataFilePath):
+        usage(err, name, 'No such file: ' + dataFilePath)
+        return 1
+
+    windowsZonesPath = cldrPath + "/supplemental/windowsZones.xml"
+    if not os.path.isfile(windowsZonesPath):
+        usage(err, name, 'Failed to find CLDR data file: ' + windowsZonesPath)
+        return 1
+
+    cldrVersion = 'unknown'
+    ldml = open(cldrPath + "/dtd/ldml.dtd", "r")
+    for line in ldml:
+        if 'version cldrVersion CDATA #FIXED' in line:
+            cldrVersion = line.split('"')[1]
+
+    mapTimezones = findTagsInFile(windowsZonesPath, "windowsZones/mapTimezones")
+    if not mapTimezones:
+        err.write('Failed to find time-zone data - aborting !\n')
+        return 1
+
+    defaultDict, windowsIdDict = {}, {}
     badZones = set()
+    winIdToIndex = dict((name, ind + 1) for ind, name in enumerate(x[0] for x in windowsIdList))
     for mapZone in mapTimezones:
         # [u'mapZone', [(u'territory', u'MH'), (u'other', u'UTC+12'), (u'type', u'Pacific/Majuro Pacific/Kwajalein')]]
         if mapZone[0] == u'mapZone':
@@ -327,8 +406,9 @@ if mapTimezones:
                 if attribute[0] == u'type':
                     data['ianaList'] = attribute[1]
 
-            data['windowsKey'] = windowsIdToKey(data['windowsId'])
-            if data['windowsKey'] <= 0:
+            try:
+                data['windowsKey'] = winIdToIndex[data['windowsId']]
+            except KeyError:
                 badZones.add(data['windowsId'])
 
             countryId = 0
@@ -341,113 +421,28 @@ if mapTimezones:
                 data['country'] = enumdata.country_list[data['countryId']][0]
                 windowsIdDict[data['windowsKey'], data['countryId']] = data
     if badZones:
-        sys.stderr.write('\n\t'.join(["\nUnknown Windows ID, please add:"] + sorted(badZones))
-                         + "\nto the windowIdList in cldr2qtimezone.py\n\n")
-        raise Error('Unknown Windows IDs')
+        err.write('\n\t'.join(["\nUnknown Windows ID, please add:"] + sorted(badZones))
+                  + "\nto the windowsIdList in cldr2qtimezone.py\n\n")
+        return 1
 
-print "Input file parsed, now writing data"
+    out.write('Input file parsed, now writing data\n')
+    try:
+        writer = ZoneIdWriter(dataFilePath, qtPath)
+    except IOError as e:
+        err.write('Failed to open files to transcribe: {}'.format(e.message or e.args[1]))
+        return 1
 
-GENERATED_BLOCK_START = "// GENERATED PART STARTS HERE\n"
-GENERATED_BLOCK_END = "// GENERATED PART ENDS HERE\n"
+    try:
+        writer.write(cldrVersion, defaultDict, windowsIdDict)
+    except Error as e:
+        writer.cleanup()
+        err.write('\nError in Windows ID data: ' + e.message + '\n')
+        return 1
 
-# Create a temp file to write the new data into
-(newTempFile, newTempFilePath) = tempfile.mkstemp("qtimezone_data_p", dir=tempFileDir)
-newTempFile = os.fdopen(newTempFile, "w")
+    writer.close()
+    out.write('Data generation completed, please check the new file at ' + dataFilePath + '\n')
+    return 0
 
-# Open the old file and copy over the first non-generated section to the new file
-oldDataFile = open(dataFilePath, "r")
-s = oldDataFile.readline()
-while s and s != GENERATED_BLOCK_START:
-    newTempFile.write(s)
-    s = oldDataFile.readline()
-
-# Write out generated block start tag and warning
-newTempFile.write(GENERATED_BLOCK_START)
-newTempFile.write("""
-/*
-    This part of the file was generated on %s from the
-    Common Locale Data Repository v%s supplemental/windowsZones.xml file %s
-
-    http://www.unicode.org/cldr/
-
-    Do not edit this code: run cldr2qtimezone.py on updated (or
-    edited) CLDR data; see qtbase/util/locale_database/.
-*/
-
-""" % (str(datetime.date.today()), cldr_version, versionNumber) )
-
-windowsIdData = ByteArrayData()
-ianaIdData = ByteArrayData()
-
-# Write Windows/IANA table
-newTempFile.write("// Windows ID Key, Country Enum, IANA ID Index\n")
-newTempFile.write("static const QZoneData zoneDataTable[] = {\n")
-for index in sorted(windowsIdDict):
-    data = windowsIdDict[index]
-    newTempFile.write("    { %6d,%6d,%6d }, // %s / %s\n"
-                         % (data['windowsKey'],
-                            data['countryId'],
-                            ianaIdData.append(data['ianaList']),
-                            data['windowsId'],
-                            data['country']))
-newTempFile.write("    {      0,     0,     0 } // Trailing zeroes\n")
-newTempFile.write("};\n\n")
-
-print "Done Zone Data"
-
-# Write Windows ID key table
-newTempFile.write("// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n")
-newTempFile.write("static const QWindowsData windowsDataTable[] = {\n")
-for index, pair in enumerate(windowsIdList):
-    newTempFile.write("    { %6d,%6d,%6d,%6d }, // %s\n"
-                      % (index + 1, windowsIdData.append(pair[0]),
-                         ianaIdData.append(defaultDict[index + 1]), pair[1], pair[0]))
-newTempFile.write("    {      0,     0,     0,     0 } // Trailing zeroes\n")
-newTempFile.write("};\n\n")
-
-print "Done Windows Data Table"
-
-# Write UTC ID key table
-newTempFile.write("// IANA ID Index, UTC Offset\n")
-newTempFile.write("static const QUtcData utcDataTable[] = {\n")
-for pair in utcIdList:
-    newTempFile.write("    { %6d,%6d }, // %s\n"
-                      % (ianaIdData.append(pair[0]), pair[1], pair[0]))
-newTempFile.write("    {     0,      0 } // Trailing zeroes\n")
-newTempFile.write("};\n\n")
-
-print "Done UTC Data Table"
-
-# Write out Windows ID's data
-newTempFile.write("static const char windowsIdData[] = {\n")
-newTempFile.write(wrap_list(windowsIdData.data))
-newTempFile.write("\n};\n\n")
-
-# Write out IANA ID's data
-newTempFile.write("static const char ianaIdData[] = {\n")
-newTempFile.write(wrap_list(ianaIdData.data))
-newTempFile.write("\n};\n")
-
-print "Done ID Data Table"
-
-# Write out the end of generated block tag
-newTempFile.write(GENERATED_BLOCK_END)
-s = oldDataFile.readline()
-
-# Skip through the old generated data in the old file
-while s and s != GENERATED_BLOCK_END:
-    s = oldDataFile.readline()
-
-# Now copy the rest of the original file into the new file
-s = oldDataFile.readline()
-while s:
-    newTempFile.write(s)
-    s = oldDataFile.readline()
-
-# Now close the old and new file, delete the old file and copy the new file in its place
-newTempFile.close()
-oldDataFile.close()
-os.remove(dataFilePath)
-os.rename(newTempFilePath, dataFilePath)
-
-print "Data generation completed, please check the new file at " + dataFilePath
+if __name__ == '__main__':
+    import sys
+    sys.exit(main(sys.argv, sys.stdout, sys.stderr))
