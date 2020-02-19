@@ -39,11 +39,12 @@
 
 #include <qplatformdefs.h>
 #include <qdom.h>
-#include "qdom_p.h"
-#include "qdomhelpers_p.h"
 #include "private/qxmlutils_p.h"
 
 #ifndef QT_NO_DOM
+
+#include "qdom_p.h"
+#include "qdomhelpers_p.h"
 
 #include <qatomic.h>
 #include <qbuffer.h>
