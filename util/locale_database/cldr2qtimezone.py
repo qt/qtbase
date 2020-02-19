@@ -54,20 +54,14 @@ The XML structure is as follows:
 
 import os
 import sys
+import re
 import datetime
 import tempfile
-import enumdata
-import xpathlite
-from  xpathlite import DraftResolution
-import re
-import qlocalexml2cpp
 
-findAlias = xpathlite.findAlias
-findEntry = xpathlite.findEntry
-findEntryInFile = xpathlite._findEntryInFile
-findTagsInFile = xpathlite.findTagsInFile
-unicode2hex = qlocalexml2cpp.unicode2hex
-wrap_list = qlocalexml2cpp.wrap_list
+import enumdata
+from localetools import unicode2hex, wrap_list, Error
+from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile, \
+    _findEntryInFile as findEntryInFile
 
 class ByteArrayData:
     def __init__(self):
@@ -343,13 +337,13 @@ if mapTimezones:
             else:
                 data['countryId'] = enumdata.countryCodeToId(data['countryCode'])
                 if data['countryId'] < 0:
-                    raise xpathlite.Error("Unknown Country Code \"%s\"" % data['countryCode'])
+                    raise Error('Unknown Country Code "{}"'.format(data['countryCode']))
                 data['country'] = enumdata.country_list[data['countryId']][0]
                 windowsIdDict[data['windowsKey'], data['countryId']] = data
     if badZones:
         sys.stderr.write('\n\t'.join(["\nUnknown Windows ID, please add:"] + sorted(badZones))
                          + "\nto the windowIdList in cldr2qtimezone.py\n\n")
-        raise xpathlite.Error("Unknown Windows IDs")
+        raise Error('Unknown Windows IDs')
 
 print "Input file parsed, now writing data"
 

@@ -39,7 +39,7 @@ Support:
 from __future__ import print_function
 from xml.sax.saxutils import escape
 
-from xpathlite import Error
+from localetools import Error
 
 # Tools used by Locale:
 def camel(seq):

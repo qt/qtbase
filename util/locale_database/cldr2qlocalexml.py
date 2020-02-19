@@ -58,14 +58,14 @@ import re
 import textwrap
 
 import enumdata
-import xpathlite
-from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile
+from localetools import Error
+from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile, codeMapsFromFile, \
+    _findEntryInFile as findEntryInFile
 from dateconverter import convert_date
 from qlocalexml import Locale, QLocaleXmlWriter
 
 # TODO: make calendars a command-line option
 calendars = ['gregorian', 'persian', 'islamic'] # 'hebrew'
-findEntryInFile = xpathlite._findEntryInFile
 def wrappedwarn(err, prefix, tokens):
     return err.write(
         '\n'.join(textwrap.wrap(prefix + ', '.join(tokens),
@@ -116,19 +116,19 @@ def raiseUnknownCode(code, form, cache={}):
     type of code to look up.  Do not pass further parameters (the next
     will deprive you of the cache).
 
-    Raises xpathlite.Error with a suitable message, that includes the
-    unknown code's full name if found.
+    Raises localetools.Error with a suitable message, that includes
+    the unknown code's full name if found.
 
     Relies on global cldr_dir being set before it's called; see tail
     of this file.
     """
     if not cache:
-        cache.update(xpathlite.codeMapsFromFile(os.path.join(cldr_dir, 'en.xml')))
+        cache.update(codeMapsFromFile(os.path.join(cldr_dir, 'en.xml')))
     name = cache[form].get(code)
     msg = 'unknown %s code "%s"' % (form, code)
     if name:
         msg += ' - could use "%s"' % name
-    raise xpathlite.Error(msg)
+    raise Error(msg)
 
 def parse_list_pattern_part_format(pattern):
     # This is a very limited parsing of the format for list pattern part only.
@@ -182,7 +182,7 @@ def generateLocaleInfo(path):
     # skip legacy/compatibility ones
     alias = findAlias(path)
     if alias:
-        raise xpathlite.Error('alias to "%s"' % alias)
+        raise Error('Alias to "{}"'.format(alias))
 
     def code(tag):
         return findEntryInFile(path, 'identity/' + tag, attribute="type")[0]
@@ -224,7 +224,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     # ### actually there is only one locale with variant: en_US_POSIX
     #     does anybody care about it at all?
     if variant_code:
-        raise xpathlite.Error('we do not support variants ("%s")' % variant_code)
+        raise Error('We do not support variants ("{}")'.format(variant_code))
 
     language_id = enumdata.languageCodeToId(language_code)
     if language_id <= 0:
@@ -283,23 +283,23 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     numbering_system = None
     try:
         numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
-    except xpathlite.Error:
+    except Error:
         pass
     def findEntryDef(path, xpath, value=''):
         try:
             return findEntry(path, xpath)
-        except xpathlite.Error:
+        except Error:
             return value
     def get_number_in_system(path, xpath, numbering_system):
         if numbering_system:
             try:
                 return findEntry(path, xpath + "[numberSystem=" + numbering_system + "]")
-            except xpathlite.Error:
+            except Error:
                 # in CLDR 1.9 number system was refactored for numbers (but not for currency)
                 # so if previous findEntry doesn't work we should try this:
                 try:
                     return findEntry(path, xpath.replace("/symbols/", "/symbols[numberSystem=" + numbering_system + "]/"))
-                except xpathlite.Error:
+                except Error:
                     # fallback to default
                     pass
         return findEntry(path, xpath)
@@ -368,7 +368,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
         for count in ('many', 'few', 'two', 'other', 'zero', 'one'):
             try:
                 ans = findEntry(path, stem + 'unitPattern[count=%s]' % count)
-            except xpathlite.Error:
+            except Error:
                 continue
 
             # TODO: epxloit count-handling, instead of discarding placeholders
@@ -498,7 +498,7 @@ def _parseLocale(l):
     country = "AnyCountry"
 
     if l == "und":
-        raise xpathlite.Error("we are treating unknown locale like C")
+        raise Error('We treat unknown locale like C')
 
     parsed = splitLocale(l)
     language_code = parsed.next()
@@ -511,19 +511,19 @@ def _parseLocale(l):
     if language_code != "und":
         language_id = enumdata.languageCodeToId(language_code)
         if language_id == -1:
-            raise xpathlite.Error('unknown language code "%s"' % language_code)
+            raise Error('Unknown language code "{}"'.format(language_code))
         language = enumdata.language_list[language_id][0]
 
     if script_code:
         script_id = enumdata.scriptCodeToId(script_code)
         if script_id == -1:
-            raise xpathlite.Error('unknown script code "%s"' % script_code)
+            raise Error('Unknown script code "{}"'.format(script_code))
         script = enumdata.script_list[script_id][0]
 
     if country_code:
         country_id = enumdata.countryCodeToId(country_code)
         if country_id == -1:
-            raise xpathlite.Error('unknown country code "%s"' % country_code)
+            raise Error('Unknown country code "{}"'.format(country_code))
         country = enumdata.country_list[country_id][0]
 
     return (language, script, country)
@@ -538,11 +538,13 @@ def likelySubtags(root, err):
         try:
             from_language, from_script, from_country = _parseLocale(tmp[u"from"])
             to_language, to_script, to_country = _parseLocale(tmp[u"to"])
-        except xpathlite.Error as e:
-            if tmp[u'to'].startswith(tmp[u'from']) and str(e) == 'unknown language code "%s"' % tmp[u'from']:
-                skips.append(tmp[u'to'])
+        except Error as e:
+            if (tmp['to'].startswith(tmp['from'])
+                and e.message == 'Unknown language code "{}"'.format(tmp['from'])):
+                skips.append(tmp['to'])
             else:
-                sys.stderr.write('skipping likelySubtag "%s" -> "%s" (%s)\n' % (tmp[u"from"], tmp[u"to"], str(e)))
+                sys.stderr.write('skipping likelySubtag "{}" -> "{}" ({})\n'.format(
+                        tmp[u"from"], tmp[u"to"], e.message))
             continue
         # substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
         if to_country == "AnyCountry" and from_country != to_country:
@@ -612,8 +614,8 @@ def main(args, out, err):
             if not l:
                 skips.append(file)
                 continue
-        except xpathlite.Error as e:
-            sys.stderr.write('skipping defaultContent locale "{}" ({})\n'.format(file, str(e)))
+        except Error as e:
+            sys.stderr.write('skipping defaultContent locale "{}" ({})\n'.format(file, e.message))
             continue
 
         locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
@@ -628,8 +630,8 @@ def main(args, out, err):
             if not l:
                 skips.append(file)
                 continue
-        except xpathlite.Error as e:
-            sys.stderr.write('skipping file "{}" ({})\n'.format(file, str(e)))
+        except Error as e:
+            sys.stderr.write('skipping file "{}" ({})\n'.format(file, e.message))
             continue
 
         locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l

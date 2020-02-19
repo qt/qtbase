@@ -31,6 +31,8 @@ import sys
 import os
 import xml.dom.minidom
 
+from localetools import Error
+
 class DraftResolution:
     # See http://www.unicode.org/cldr/process.html for description
     unconfirmed = 'unconfirmed'
@@ -42,12 +44,6 @@ class DraftResolution:
         self.resolution = resolution
     def toInt(self):
         return DraftResolution._values[self.resolution]
-
-class Error:
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
 
 doc_cache = {}
 def parseDoc(file):

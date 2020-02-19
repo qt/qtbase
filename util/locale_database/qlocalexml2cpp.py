@@ -37,9 +37,10 @@ import os
 import sys
 import tempfile
 import datetime
-from enumdata import language_aliases, country_aliases, script_aliases
 
 from qlocalexml import QLocaleXmlReader
+from enumdata import language_aliases, country_aliases, script_aliases
+from localetools import unicode2hex, wrap_list, Error
 
 # TODO: Make calendars a command-line parameter
 # map { CLDR name: Qt file name }
@@ -58,19 +59,6 @@ generated_template = """
 */
 
 """
-
-class Error:
-    def __init__(self, msg):
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-
-def wrap_list(lst):
-    def split(lst, size):
-        while lst:
-            head, lst = lst[:size], lst[size:]
-            yield head
-    return ",\n".join(", ".join(x) for x in split(lst, 20))
 
 def fixedScriptName(name, dupes):
     # Don't .capitalize() as some names are already camel-case (see enumdata.py):
@@ -126,21 +114,6 @@ def compareLocaleKeys(key1, key2):
 
     return key1[1] - key2[1]
 
-
-def unicode2hex(s):
-    lst = []
-    for x in s:
-        v = ord(x)
-        if v > 0xFFFF:
-            # make a surrogate pair
-            # copied from qchar.h
-            high = (v >> 10) + 0xd7c0
-            low = (v % 0x400 + 0xdc00)
-            lst.append(hex(high))
-            lst.append(hex(low))
-        else:
-            lst.append(hex(v))
-    return lst
 
 class StringDataToken:
     def __init__(self, index, length):
