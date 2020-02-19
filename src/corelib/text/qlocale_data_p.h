@@ -77,7 +77,7 @@ static const int ImperialMeasurementSystemsCount =
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2019-10-24 from the
+    This part of the file was generated on 2020-03-18 from the
     Common Locale Data Repository v36
 
     http://www.unicode.org/cldr/
@@ -1870,7 +1870,7 @@ static const QLocaleData locale_data[] = {
     {    367,     7,   225,    46,    44,    59,    37,    48,    45,    43,   101,    8220,    8221,    8216,    8217,       0,6 ,       0,6 ,       0,6 ,       0,6 ,     53,10 ,     63,17 ,      37,5 ,      8,10 ,      0,28 ,      0,28 ,     85,14 ,      0,28 ,      0,28 ,     85,14 ,       0,2 ,       0,2 ,   45,4 ,   5,17 ,  22,23 , {85,83,68},      159,3 ,       0,7 ,       8,5 ,       4,0 ,       0,0 ,       0,0 ,     2,     1,     7,     6,     7 }, // Chickasaw/Latin/United States
     {    368,     7,   225,    46,    44,    59,    37,    48,    45,    43,   101,    8220,    8221,    8216,    8217,       0,6 ,       0,6 ,       0,6 ,       0,6 ,     53,10 ,     63,17 ,      37,5 ,      8,10 ,      0,28 ,      0,28 ,     85,14 ,      0,28 ,      0,28 ,     85,14 ,       0,2 ,       0,2 ,   45,4 ,   5,17 ,  22,23 , {85,83,68},      159,3 ,       0,7 ,       8,5 ,       4,0 ,       0,0 ,       0,0 ,     2,     1,     7,     6,     7 }, // Muscogee/Latin/United States
     {    369,     7,   172,    46,    44,    59,    37,    48,    45,    43,   101,    8220,    8221,    8216,    8217,       0,6 ,       0,6 ,       0,6 ,       0,6 ,     53,10 ,     63,17 ,      37,5 ,      8,10 ,      0,28 ,      0,28 ,     85,14 ,      0,28 ,      0,28 ,     85,14 ,       0,2 ,       0,2 ,   45,4 ,   5,17 ,  22,23 , {80,76,78},      273,2 ,       0,7 ,       8,5 ,       4,0 ,       0,0 ,       0,0 ,     2,     1,     1,     6,     7 }, // Silesian/Latin/Poland
-    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,       0,       0,       0,       0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,     0,0,     0,0,     0,0,    {0,0,0},         0,0,        0,0,        0,0,        0,0,        0,0,        0,0,     0,     0,     0,     0,     0 } // trailing 0s
+    {      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,       0,       0,       0,       0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,        0,0,     0,0,     0,0,     0,0,    {0,0,0},         0,0,        0,0,        0,0,        0,0,        0,0,        0,0,     0,     0,     0,     0,     0 } // trailing zeros
 };
 
 static const ushort list_pattern_part_data[] = {
@@ -6602,6 +6602,7 @@ static const unsigned char script_code_list[] =
 "Hanb" // Han with Bopomofo
 "Jamo" // Jamo
 ;
+
 static const unsigned char country_code_list[] =
 "ZZ\0" // AnyCountry
 "AF\0" // Afghanistan

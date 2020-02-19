@@ -34,51 +34,11 @@ the root of the qtbase check-out as second parameter.
 """
 
 import os
-import sys
-import tempfile
 import datetime
 
 from qlocalexml import QLocaleXmlReader
-from enumdata import language_aliases, country_aliases, script_aliases
-from localetools import unicode2hex, wrap_list, Error
-
-# TODO: Make calendars a command-line parameter
-# map { CLDR name: Qt file name }
-calendars = {'gregorian': 'roman', 'persian': 'jalali', 'islamic': 'hijri',} # 'hebrew': 'hebrew',
-
-generated_template = """
-/*
-    This part of the file was generated on %s from the
-    Common Locale Data Repository v%s
-
-    http://www.unicode.org/cldr/
-
-    Do not edit this section: instead regenerate it using
-    cldr2qlocalexml.py and qlocalexml2cpp.py on updated (or
-    edited) CLDR data; see qtbase/util/locale_database/.
-*/
-
-"""
-
-def fixedScriptName(name, dupes):
-    # Don't .capitalize() as some names are already camel-case (see enumdata.py):
-    name = ''.join(word[0].upper() + word[1:] for word in name.split())
-    if name[-6:] != "Script":
-        name = name + "Script"
-    if name in dupes:
-        sys.stderr.write("\n\n\nERROR: The script name '%s' is messy" % name)
-        sys.exit(1)
-    return name
-
-def fixedCountryName(name, dupes):
-    if name in dupes:
-        return name.replace(" ", "") + "Country"
-    return name.replace(" ", "")
-
-def fixedLanguageName(name, dupes):
-    if name in dupes:
-        return name.replace(" ", "") + "Language"
-    return name.replace(" ", "")
+from xml.dom import minidom
+from localetools import unicode2hex, wrap_list, Error, Transcriber, SourceFileEditor
 
 def compareLocaleKeys(key1, key2):
     if key1 == key2:
@@ -136,21 +96,17 @@ class StringData:
 
         lst = unicode2hex(s)
         index = len(self.data)
-        if index > 65535:
-            print "\n\n\n#error Data index is too big!"
-            sys.stderr.write ("\n\n\nERROR: index exceeds the uint16 range! index = %d\n" % index)
-            sys.exit(1)
+        if index > 0xffff:
+            raise Error('Data index {} is too big for uint16!'.format(index))
         size = len(lst)
-        if size >= 65535:
-            print "\n\n\n#error Data is too big!"
-            sys.stderr.write ("\n\n\nERROR: data size exceeds the uint16 range! size = %d\n" % size)
-            sys.exit(1)
+        if size >= 0xffff:
+            raise Error('Data is too big ({}) for uint16 size!'.format(size))
         token = None
         try:
             token = StringDataToken(index, size)
         except Error as e:
-            sys.stderr.write("\n\n\nERROR: %s: on data '%s'" % (e, s))
-            sys.exit(1)
+            e.message += '(on data "{}")'.format(s)
+            raise
         self.hash[s] = token
         self.data += lst
         return token
@@ -165,486 +121,460 @@ def currencyIsoCodeData(s):
         return '{' + ",".join(str(ord(x)) for x in s) + '}'
     return "{0,0,0}"
 
-def usage():
-    print "Usage: qlocalexml2cpp.py <path-to-locale.xml> <path-to-qtbase-src-tree>"
-    sys.exit(1)
+class LocaleSourceEditor (SourceFileEditor):
+    __upinit = SourceFileEditor.__init__
+    def __init__(self, path, temp, version):
+        self.__upinit(path, temp)
+        self.writer.write("""
+/*
+    This part of the file was generated on {} from the
+    Common Locale Data Repository v{}
 
-GENERATED_BLOCK_START = "// GENERATED PART STARTS HERE\n"
-GENERATED_BLOCK_END = "// GENERATED PART ENDS HERE\n"
+    http://www.unicode.org/cldr/
 
-def main():
-    if len(sys.argv) != 3:
-        usage()
+    Do not edit this section: instead regenerate it using
+    cldr2qlocalexml.py and qlocalexml2cpp.py on updated (or
+    edited) CLDR data; see qtbase/util/locale_database/.
+*/
 
-    qlocalexml = sys.argv[1]
-    qtsrcdir = sys.argv[2]
+""".format(datetime.date.today(), version))
+
+class LocaleDataWriter (LocaleSourceEditor):
+    def likelySubtags(self, likely):
+        self.writer.write('static const QLocaleId likely_subtags[] = {\n')
+        for had, have, got, give, last in likely:
+            self.writer.write('    {{ {:3d}, {:3d}, {:3d} }}'.format(*have))
+            self.writer.write(', {{ {:3d}, {:3d}, {:3d} }}'.format(*give))
+            self.writer.write(' ' if last else ',')
+            self.writer.write(' // {} -> {}\n'.format(had, got))
+        self.writer.write('};\n\n')
+
+    def localeIndex(self, indices):
+        self.writer.write('static const quint16 locale_index[] = {\n')
+        for pair in indices:
+            self.writer.write('{:6d}, // {}\n'.format(*pair))
+        self.writer.write('     0 // trailing 0\n')
+        self.writer.write('};\n\n')
+
+    def localeData(self, locales, names):
+        list_pattern_part_data = StringData('list_pattern_part_data')
+        date_format_data = StringData('date_format_data')
+        time_format_data = StringData('time_format_data')
+        days_data = StringData('days_data')
+        am_data = StringData('am_data')
+        pm_data = StringData('pm_data')
+        byte_unit_data = StringData('byte_unit_data')
+        currency_symbol_data = StringData('currency_symbol_data')
+        currency_display_name_data = StringData('currency_display_name_data')
+        currency_format_data = StringData('currency_format_data')
+        endonyms_data = StringData('endonyms_data')
+
+        # Locale data
+        self.writer.write('static const QLocaleData locale_data[] = {\n')
+        # Table headings: keep each label centred in its field, matching line_format:
+        self.writer.write('   // '
+                          # Width 6 + comma
+                          ' lang  ' # IDs
+                          'script '
+                          '  terr '
+                          '  dec  ' # Numeric punctuation
+                          ' group '
+                          ' list  ' # Delimiter for *numeric* lists
+                          ' prcnt ' # Arithmetic symbols
+                          '  zero '
+                          ' minus '
+                          ' plus  '
+                          '  exp  '
+                          # Width 8 + comma - to make space for these wide labels !
+                          ' quotOpn ' # Quotation marks
+                          ' quotEnd '
+                          'altQtOpn '
+                          'altQtEnd '
+                          # Width 11 + comma
+                          '  lpStart   ' # List pattern
+                          '   lpMid    '
+                          '   lpEnd    '
+                          '   lpTwo    '
+                          '   sDtFmt   ' # Date format
+                          '   lDtFmt   '
+                          '   sTmFmt   ' # Time format
+                          '   lTmFmt   '
+                          '   ssDays   ' # Days
+                          '   slDays   '
+                          '   snDays   '
+                          '    sDays   '
+                          '    lDays   '
+                          '    nDays   '
+                          '     am     ' # am/pm indicators
+                          '     pm     '
+                          # Width 8 + comma
+                          '  byte   '
+                          ' siQuant '
+                          'iecQuant '
+                          # Width 8+4 + comma
+                          '   currISO   '
+                          # Width 11 + comma
+                          '  currSym   ' # Currency formatting
+                          ' currDsply  '
+                          '  currFmt   '
+                          ' currFmtNeg '
+                          '  endoLang  ' # Name of language in itself, and of country
+                          '  endoCntry '
+                          # Width 6 + comma
+                          'curDgt ' # Currency number representation
+                          'curRnd '
+                          'dow1st ' # First day of week
+                          ' wknd+ ' # Week-end start/end days
+                          ' wknd-'
+                          # No trailing space on last entry (be sure to
+                          # pad before adding anything after it).
+                          '\n')
+
+        formatLine = ''.join((
+            '    {{ ',
+            # Locale-identifier
+            '{:6d},' * 3,
+            # Numeric formats, list delimiter
+            '{:6d},' * 8,
+            # Quotation marks
+            '{:8d},' * 4,
+            # List patterns, date/time formats, month/day names, am/pm
+            '{:>11s},' * 16,
+            # SI/IEC byte-unit abbreviations
+            '{:>8s},' * 3,
+            # Currency ISO code
+            ' {:>10s}, ',
+            # Currency and endonyms
+            '{:>11s},' * 6,
+            # Currency formatting
+            '{:6d},{:6d}',
+            # Day of week and week-end
+            ',{:6d}' * 3,
+            ' }}')).format
+        for key in names:
+            locale = locales[key]
+            self.writer.write(formatLine(
+                    key[0], key[1], key[2],
+                    locale.decimal,
+                    locale.group,
+                    locale.listDelim,
+                    locale.percent,
+                    locale.zero,
+                    locale.minus,
+                    locale.plus,
+                    locale.exp,
+                    locale.quotationStart,
+                    locale.quotationEnd,
+                    locale.alternateQuotationStart,
+                    locale.alternateQuotationEnd,
+                    list_pattern_part_data.append(locale.listPatternPartStart),
+                    list_pattern_part_data.append(locale.listPatternPartMiddle),
+                    list_pattern_part_data.append(locale.listPatternPartEnd),
+                    list_pattern_part_data.append(locale.listPatternPartTwo),
+                    date_format_data.append(locale.shortDateFormat),
+                    date_format_data.append(locale.longDateFormat),
+                    time_format_data.append(locale.shortTimeFormat),
+                    time_format_data.append(locale.longTimeFormat),
+                    days_data.append(locale.standaloneShortDays),
+                    days_data.append(locale.standaloneLongDays),
+                    days_data.append(locale.standaloneNarrowDays),
+                    days_data.append(locale.shortDays),
+                    days_data.append(locale.longDays),
+                    days_data.append(locale.narrowDays),
+                    am_data.append(locale.am),
+                    pm_data.append(locale.pm),
+                    byte_unit_data.append(locale.byte_unit),
+                    byte_unit_data.append(locale.byte_si_quantified),
+                    byte_unit_data.append(locale.byte_iec_quantified),
+                    currencyIsoCodeData(locale.currencyIsoCode),
+                    currency_symbol_data.append(locale.currencySymbol),
+                    currency_display_name_data.append(locale.currencyDisplayName),
+                    currency_format_data.append(locale.currencyFormat),
+                    currency_format_data.append(locale.currencyNegativeFormat),
+                    endonyms_data.append(locale.languageEndonym),
+                    endonyms_data.append(locale.countryEndonym),
+                    locale.currencyDigits,
+                    locale.currencyRounding, # unused (QTBUG-81343)
+                    locale.firstDayOfWeek,
+                    locale.weekendStart,
+                    locale.weekendEnd)
+                              + ', // {}/{}/{}\n'.format(
+                    locale.language, locale.script, locale.country))
+        self.writer.write(formatLine(*( # All zeros, matching the format:
+                    (0,) * (3 + 8 + 4) + ('0,0',) * (16 + 3)
+                    + (currencyIsoCodeData(0),)
+                    + ('0,0',) * 6 + (0,) * (2 + 3) ))
+                          + ' // trailing zeros\n')
+        self.writer.write('};\n')
+
+        # StringData tables:
+        for data in (list_pattern_part_data, date_format_data,
+                     time_format_data, days_data,
+                     byte_unit_data, am_data, pm_data, currency_symbol_data,
+                     currency_display_name_data, currency_format_data,
+                     endonyms_data):
+            data.write(self.writer)
+
+    @staticmethod
+    def __writeNameData(out, book, form):
+        out('static const char {}_name_list[] =\n'.format(form))
+        out('"Default\\0"\n')
+        for key, value in book.items():
+            if key == 0:
+                continue
+            out('"' + value[0] + '\\0"\n')
+        out(';\n\n')
+
+        out('static const quint16 {}_name_index[] = {{\n'.format(form))
+        out('     0, // Any{}\n'.format(form.capitalize()))
+        index = 8
+        for key, value in book.items():
+            if key == 0:
+                continue
+            name = value[0]
+            out('{:6d}, // {}\n'.format(index, name))
+            index += len(name) + 1
+        out('};\n\n')
+
+    @staticmethod
+    def __writeCodeList(out, book, form, width):
+        out('static const unsigned char {}_code_list[] =\n'.format(form))
+        for key, value in book.items():
+            code = value[1]
+            code += r'\0' * max(width - len(code), 0)
+            out('"{}" // {}\n'.format(code, value[0]))
+        out(';\n\n')
+
+    def languageNames(self, languages):
+        self.__writeNameData(self.writer.write, languages, 'language')
+
+    def scriptNames(self, scripts):
+        self.__writeNameData(self.writer.write, scripts, 'script')
+
+    def countryNames(self, countries):
+        self.__writeNameData(self.writer.write, countries, 'country')
+
+    # TODO: unify these next three into the previous three; kept
+    # separate for now to verify we're not changing data.
+
+    def languageCodes(self, languages):
+        self.__writeCodeList(self.writer.write, languages, 'language', 3)
+
+    def scriptCodes(self, scripts):
+        self.__writeCodeList(self.writer.write, scripts, 'script', 4)
+
+    def countryCodes(self, countries): # TODO: unify with countryNames()
+        self.__writeCodeList(self.writer.write, countries, 'country', 3)
+
+class CalendarDataWriter (LocaleSourceEditor):
+    formatCalendar = ''.join((
+        '      {{',
+        '{:6d}',
+        ',{:6d}' * 2,
+        ',{{{:>5s}}}' * 6,
+        '}}, ')).format
+    def write(self, calendar, locales, names):
+        months_data = StringData('months_data')
+
+        self.writer.write('static const QCalendarLocale locale_data[] = {\n')
+        self.writer.write('   // '
+                          # IDs, width 7 (6 + comma)
+                          + ' lang  '
+                          + ' script'
+                          + ' terr  '
+                          # Month-name start-end pairs, width 8 (5 plus '{},'):
+                          + ' sShort '
+                          + ' sLong  '
+                          + ' sNarrow'
+                          + ' short  '
+                          + ' long   '
+                          + ' narrow'
+                          # No trailing space on last; be sure
+                          # to pad before adding later entries.
+                          + '\n')
+        for key in names:
+            locale = locales[key]
+            self.writer.write(
+                self.formatCalendar(
+                    key[0], key[1], key[2],
+                    months_data.append(locale.standaloneShortMonths[calendar]),
+                    months_data.append(locale.standaloneLongMonths[calendar]),
+                    months_data.append(locale.standaloneNarrowMonths[calendar]),
+                    months_data.append(locale.shortMonths[calendar]),
+                    months_data.append(locale.longMonths[calendar]),
+                    months_data.append(locale.narrowMonths[calendar]))
+                + '// {}/{}/{}\n '.format(locale.language, locale.script, locale.country))
+        self.writer.write(self.formatCalendar(*( (0,) * 3 + ('0,0',) * 6 ))
+                          + '// trailing zeros\n')
+        self.writer.write('};\n')
+        months_data.write(self.writer)
+
+class LocaleHeaderWriter (SourceFileEditor):
+    __upinit = SourceFileEditor.__init__
+    def __init__(self, path, temp, dupes):
+        self.__upinit(path, temp)
+        self.__dupes = dupes
+
+    def languages(self, languages):
+        self.__enum('Language', languages, self.__language)
+        self.writer.write('\n')
+
+    def countries(self, countries):
+        self.__enum('Country', countries, self.__country)
+
+    def scripts(self, scripts):
+        self.__enum('Script', scripts, self.__script)
+        self.writer.write('\n')
+
+    # Implementation details
+    from enumdata import (language_aliases as __language,
+                          country_aliases as __country,
+                          script_aliases as __script)
+
+    def __enum(self, name, book, alias):
+        assert book
+        out, dupes = self.writer.write, self.__dupes
+        out('    enum {} {{\n'.format(name))
+        for key, value in book.items():
+            member = value[0]
+            if name == 'Script':
+                # Don't .capitalize() as some names are already camel-case (see enumdata.py):
+                member = ''.join(word[0].upper() + word[1:] for word in member.split())
+                if not member.endswith('Script'):
+                    member += 'Script'
+                if member in dupes:
+                    raise Error('The script name "{}" is messy'.format(member))
+            else:
+                member = ''.join(member.split())
+                member = member + name if member in dupes else member
+            out('        {} = {},\n'.format(member, key))
+
+        out('\n        '
+            + ',\n        '.join('{} = {}'.format(*pair)
+                                 for pair in sorted(alias.items()))
+            + ',\n\n        Last{} = {}\n    }};\n'.format(name, member))
+
+def usage(name, err, message = ''):
+    err.write("""Usage: {} path/to/qlocale.xml root/of/qtbase
+""".format(name)) # TODO: elaborate
+    if message:
+        err.write('\n' + message + '\n')
+
+def main(args, out, err):
+    # TODO: Make calendars a command-line parameter
+    # map { CLDR name: Qt file name }
+    calendars = {'gregorian': 'roman', 'persian': 'jalali', 'islamic': 'hijri',} # 'hebrew': 'hebrew',
+
+    name = args.pop(0)
+    if len(args) != 2:
+        usage(name, err, 'I expect two arguments')
+        return 1
+
+    qlocalexml = args.pop(0)
+    qtsrcdir = args.pop(0)
 
     if not (os.path.isdir(qtsrcdir)
             and all(os.path.isfile(os.path.join(qtsrcdir, 'src', 'corelib', 'text', leaf))
                     for leaf in ('qlocale_data_p.h', 'qlocale.h', 'qlocale.qdoc'))):
-        usage()
-
-    (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p", dir=qtsrcdir)
-    data_temp_file = os.fdopen(data_temp_file, "w")
-    qlocaledata_file = open(qtsrcdir + "/src/corelib/text/qlocale_data_p.h", "r")
-    s = qlocaledata_file.readline()
-    while s and s != GENERATED_BLOCK_START:
-        data_temp_file.write(s)
-        s = qlocaledata_file.readline()
-    data_temp_file.write(GENERATED_BLOCK_START)
+        usage(name, err, 'Missing expected files under qtbase source root ' + qtsrcdir)
+        return 1
 
     reader = QLocaleXmlReader(qlocalexml)
     locale_map = dict(reader.loadLocaleMap(calendars, sys.stderr.write))
-    data_temp_file.write(generated_template % (datetime.date.today(), reader.cldrVersion))
-
-    # Likely subtags map
-    data_temp_file.write("static const QLocaleId likely_subtags[] = {\n")
-    for had, have, got, give, last in reader.likelyMap():
-        data_temp_file.write('    {{ {:3d}, {:3d}, {:3d} }}'.format(*have))
-        data_temp_file.write(', {{ {:3d}, {:3d}, {:3d} }}'.format(*give))
-        data_temp_file.write(' ' if last else ',')
-        data_temp_file.write(' // {} -> {}\n'.format(had, got))
-    data_temp_file.write("};\n")
-
-    data_temp_file.write("\n")
-
-    # Locale index
-    data_temp_file.write("static const quint16 locale_index[] = {\n")
-    for index, name in reader.languageIndices(tuple(k[0] for k in locale_map)):
-        data_temp_file.write('{:6d}, // {}\n'.format(index, name))
-    data_temp_file.write("     0 // trailing 0\n")
-    data_temp_file.write("};\n\n")
-
-    list_pattern_part_data = StringData('list_pattern_part_data')
-    date_format_data = StringData('date_format_data')
-    time_format_data = StringData('time_format_data')
-    days_data = StringData('days_data')
-    am_data = StringData('am_data')
-    pm_data = StringData('pm_data')
-    byte_unit_data = StringData('byte_unit_data')
-    currency_symbol_data = StringData('currency_symbol_data')
-    currency_display_name_data = StringData('currency_display_name_data')
-    currency_format_data = StringData('currency_format_data')
-    endonyms_data = StringData('endonyms_data')
-
-    # Locale data
-    data_temp_file.write("static const QLocaleData locale_data[] = {\n")
-    # Table headings: keep each label centred in its field, matching line_format:
-    data_temp_file.write('   // '
-                         # Width 6 + comma:
-                         + ' lang  ' # IDs
-                         + 'script '
-                         + '  terr '
-                         + '  dec  ' # Numeric punctuation:
-                         + ' group '
-                         + ' list  ' # List delimiter
-                         + ' prcnt ' # Arithmetic symbols:
-                         + '  zero '
-                         + ' minus '
-                         + ' plus  '
-                         + '  exp  '
-                         # Width 8 + comma - to make space for these wide labels !
-                         + ' quotOpn ' # Quotation marks
-                         + ' quotEnd '
-                         + 'altQtOpn '
-                         + 'altQtEnd '
-                         # Width 11 + comma:
-                         + '  lpStart   ' # List pattern
-                         + '   lpMid    '
-                         + '   lpEnd    '
-                         + '   lpTwo    '
-                         + '   sDtFmt   ' # Date format
-                         + '   lDtFmt   '
-                         + '   sTmFmt   ' # Time format
-                         + '   lTmFmt   '
-                         + '   ssDays   ' # Days
-                         + '   slDays   '
-                         + '   snDays   '
-                         + '    sDays   '
-                         + '    lDays   '
-                         + '    nDays   '
-                         + '     am     ' # am/pm indicators
-                         + '     pm     '
-                         # Width 8 + comma
-                         + '  byte   '
-                         + ' siQuant '
-                         + 'iecQuant '
-                         # Width 8+4 + comma
-                         + '   currISO   '
-                         # Width 11 + comma:
-                         + '  currSym   ' # Currency formatting:
-                         + ' currDsply  '
-                         + '  currFmt   '
-                         + ' currFmtNeg '
-                         + '  endoLang  ' # Name of language in itself, and of country:
-                         + '  endoCntry '
-                         # Width 6 + comma:
-                         + 'curDgt ' # Currency number representation:
-                         + 'curRnd '
-                         + 'dow1st ' # First day of week
-                         + ' wknd+ ' # Week-end start/end days:
-                         + ' wknd-'
-                         # No trailing space on last entry (be sure to
-                         # pad before adding anything after it).
-                         + '\n')
 
     locale_keys = locale_map.keys()
     compareLocaleKeys.default_map = dict(reader.defaultMap())
     locale_keys.sort(compareLocaleKeys)
 
-    line_format = ('    { '
-                   # Locale-identifier:
-                   + '%6d,' * 3
-                   # Numeric formats, list delimiter:
-                   + '%6d,' * 8
-                   # Quotation marks:
-                   + '%8d,' * 4
-                   # List patterns, date/time formats, month/day names, am/pm:
-                   + '%11s,' * 16
-                   # SI/IEC byte-unit abbreviations:
-                   + '%8s,' * 3
-                   # Currency ISO code:
-                   + ' %10s, '
-                   # Currency and endonyms
-                   + '%11s,' * 6
-                   # Currency formatting:
-                   + '%6d,%6d'
-                   # Day of week and week-end:
-                   + ',%6d' * 3
-                   + ' }')
-    for key in locale_keys:
-        l = locale_map[key]
-        data_temp_file.write(line_format
-                    % (key[0], key[1], key[2],
-                        l.decimal,
-                        l.group,
-                        l.listDelim,
-                        l.percent,
-                        l.zero,
-                        l.minus,
-                        l.plus,
-                        l.exp,
-                        l.quotationStart,
-                        l.quotationEnd,
-                        l.alternateQuotationStart,
-                        l.alternateQuotationEnd,
-                        list_pattern_part_data.append(l.listPatternPartStart),
-                        list_pattern_part_data.append(l.listPatternPartMiddle),
-                        list_pattern_part_data.append(l.listPatternPartEnd),
-                        list_pattern_part_data.append(l.listPatternPartTwo),
-                        date_format_data.append(l.shortDateFormat),
-                        date_format_data.append(l.longDateFormat),
-                        time_format_data.append(l.shortTimeFormat),
-                        time_format_data.append(l.longTimeFormat),
-                        days_data.append(l.standaloneShortDays),
-                        days_data.append(l.standaloneLongDays),
-                        days_data.append(l.standaloneNarrowDays),
-                        days_data.append(l.shortDays),
-                        days_data.append(l.longDays),
-                        days_data.append(l.narrowDays),
-                        am_data.append(l.am),
-                        pm_data.append(l.pm),
-                        byte_unit_data.append(l.byte_unit),
-                        byte_unit_data.append(l.byte_si_quantified),
-                        byte_unit_data.append(l.byte_iec_quantified),
-                        currencyIsoCodeData(l.currencyIsoCode),
-                        currency_symbol_data.append(l.currencySymbol),
-                        currency_display_name_data.append(l.currencyDisplayName),
-                        currency_format_data.append(l.currencyFormat),
-                        currency_format_data.append(l.currencyNegativeFormat),
-                        endonyms_data.append(l.languageEndonym),
-                        endonyms_data.append(l.countryEndonym),
-                        l.currencyDigits,
-                        l.currencyRounding,
-                        l.firstDayOfWeek,
-                        l.weekendStart,
-                        l.weekendEnd)
-                             + ", // %s/%s/%s\n" % (l.language, l.script, l.country))
-    data_temp_file.write(line_format # All zeros, matching the format:
-                         % ( (0,) * (3 + 8 + 4) + ("0,0",) * (16 + 3)
-                             + (currencyIsoCodeData(0),)
-                             + ("0,0",) * 6 + (0,) * (2 + 3))
-                         + " // trailing 0s\n")
-    data_temp_file.write("};\n")
+    try:
+        writer = LocaleDataWriter(os.path.join(qtsrcdir,  'src', 'corelib', 'text',
+                                               'qlocale_data_p.h'),
+                                  qtsrcdir, reader.cldrVersion)
+    except IOError as e:
+        err.write('Failed to open files to transcribe locale data: ' + (e.message or e.args[1]))
+        return 1
 
-    # StringData tables:
-    for data in (list_pattern_part_data, date_format_data,
-                 time_format_data, days_data,
-                 byte_unit_data, am_data, pm_data, currency_symbol_data,
-                 currency_display_name_data, currency_format_data,
-                 endonyms_data):
-        data.write(data_temp_file)
+    try:
+        writer.likelySubtags(reader.likelyMap())
+        writer.localeIndex(reader.languageIndices(tuple(k[0] for k in locale_map)))
+        writer.localeData(locale_map, locale_keys)
+        writer.writer.write('\n')
+        writer.languageNames(reader.languages)
+        writer.scriptNames(reader.scripts)
+        writer.countryNames(reader.countries)
+        # TODO: merge the next three into the previous three
+        writer.languageCodes(reader.languages)
+        writer.scriptCodes(reader.scripts)
+        writer.countryCodes(reader.countries)
+    except Error as e:
+        writer.cleanup()
+        err.write('\nError updating locale data: ' + e.message + '\n')
+        return 1
 
-    data_temp_file.write("\n")
-
-    # Language name list
-    data_temp_file.write("static const char language_name_list[] =\n")
-    data_temp_file.write('"Default\\0"\n')
-    for key, value in reader.languages.items():
-        if key == 0:
-            continue
-        data_temp_file.write('"' + value[0] + '\\0"\n')
-    data_temp_file.write(";\n")
-
-    data_temp_file.write("\n")
-
-    # Language name index
-    data_temp_file.write("static const quint16 language_name_index[] = {\n")
-    data_temp_file.write("     0, // AnyLanguage\n")
-    index = 8
-    for key, value in reader.languages.items():
-        if key == 0:
-            continue
-        language = value[0]
-        data_temp_file.write("%6d, // %s\n" % (index, language))
-        index += len(language) + 1
-    data_temp_file.write("};\n")
-
-    data_temp_file.write("\n")
-
-    # Script name list
-    data_temp_file.write("static const char script_name_list[] =\n")
-    data_temp_file.write('"Default\\0"\n')
-    for key, value in reader.scripts.items():
-        if key == 0:
-            continue
-        data_temp_file.write('"' + value[0] + '\\0"\n')
-    data_temp_file.write(";\n")
-
-    data_temp_file.write("\n")
-
-    # Script name index
-    data_temp_file.write("static const quint16 script_name_index[] = {\n")
-    data_temp_file.write("     0, // AnyScript\n")
-    index = 8
-    for key, value in reader.scripts.items():
-        if key == 0:
-            continue
-        script = value[0]
-        data_temp_file.write("%6d, // %s\n" % (index, script))
-        index += len(script) + 1
-    data_temp_file.write("};\n")
-
-    data_temp_file.write("\n")
-
-    # Country name list
-    data_temp_file.write("static const char country_name_list[] =\n")
-    data_temp_file.write('"Default\\0"\n')
-    for key, value in reader.countries.items():
-        if key == 0:
-            continue
-        data_temp_file.write('"' + value[0] + '\\0"\n')
-    data_temp_file.write(";\n")
-
-    data_temp_file.write("\n")
-
-    # Country name index
-    data_temp_file.write("static const quint16 country_name_index[] = {\n")
-    data_temp_file.write("     0, // AnyCountry\n")
-    index = 8
-    for key, value in reader.countries.items():
-        if key == 0:
-            continue
-        country = value[0]
-        data_temp_file.write("%6d, // %s\n" % (index, country))
-        index += len(country) + 1
-    data_temp_file.write("};\n")
-
-    data_temp_file.write("\n")
-
-    # Language code list
-    data_temp_file.write("static const unsigned char language_code_list[] =\n")
-    for key, value in reader.languages.items():
-        code = value[1]
-        if len(code) == 2:
-            code += r"\0"
-        data_temp_file.write('"%2s" // %s\n' % (code, value[0]))
-    data_temp_file.write(";\n")
-
-    data_temp_file.write("\n")
-
-    # Script code list
-    data_temp_file.write("static const unsigned char script_code_list[] =\n")
-    for key, value in reader.scripts.items():
-        code = value[1]
-        for i in range(4 - len(code)):
-            code += "\\0"
-        data_temp_file.write('"%2s" // %s\n' % (code, value[0]))
-    data_temp_file.write(";\n")
-
-    # Country code list
-    data_temp_file.write("static const unsigned char country_code_list[] =\n")
-    for key, value in reader.countries.items():
-        code = value[1]
-        if len(code) == 2:
-            code += "\\0"
-        data_temp_file.write('"%2s" // %s\n' % (code, value[0]))
-    data_temp_file.write(";\n")
-
-    data_temp_file.write("\n")
-    data_temp_file.write(GENERATED_BLOCK_END)
-    s = qlocaledata_file.readline()
-    # skip until end of the old block
-    while s and s != GENERATED_BLOCK_END:
-        s = qlocaledata_file.readline()
-
-    s = qlocaledata_file.readline()
-    while s:
-        data_temp_file.write(s)
-        s = qlocaledata_file.readline()
-    data_temp_file.close()
-    qlocaledata_file.close()
-
-    os.remove(qtsrcdir + "/src/corelib/text/qlocale_data_p.h")
-    os.rename(data_temp_file_path, qtsrcdir + "/src/corelib/text/qlocale_data_p.h")
+    writer.close()
 
     # Generate calendar data
-    calendar_format = '      {%6d,%6d,%6d,{%5s},{%5s},{%5s},{%5s},{%5s},{%5s}}, '
     for calendar, stem in calendars.items():
-        months_data = StringData('months_data')
-        calendar_data_file = "q%scalendar_data_p.h" % stem
-        calendar_template_file = open(os.path.join(qtsrcdir, 'src', 'corelib', 'time',
-                                                   calendar_data_file), "r")
-        (calendar_temp_file, calendar_temp_file_path) = tempfile.mkstemp(calendar_data_file, dir=qtsrcdir)
-        calendar_temp_file = os.fdopen(calendar_temp_file, "w")
-        s = calendar_template_file.readline()
-        while s and s != GENERATED_BLOCK_START:
-            calendar_temp_file.write(s)
-            s = calendar_template_file.readline()
-        calendar_temp_file.write(GENERATED_BLOCK_START)
-        calendar_temp_file.write(generated_template % (datetime.date.today(), reader.cldrVersion))
-        calendar_temp_file.write("static const QCalendarLocale locale_data[] = {\n")
-        calendar_temp_file.write('   // '
-                                 # IDs, width 7 (6 + comma)
-                                 + ' lang  '
-                                 + ' script'
-                                 + ' terr  '
-                                 # Month-name start-end pairs, width 8 (5 plus '{},'):
-                                     + ' sShort '
-                                 + ' sLong  '
-                                 + ' sNarrow'
-                                 + ' short  '
-                                 + ' long   '
-                                 + ' narrow'
-                                 # No trailing space on last; be sure
-                                 # to pad before adding later entries.
-                                 + '\n')
-        for key in locale_keys:
-            l = locale_map[key]
-            calendar_temp_file.write(
-                calendar_format
-                % (key[0], key[1], key[2],
-                   months_data.append(l.standaloneShortMonths[calendar]),
-                   months_data.append(l.standaloneLongMonths[calendar]),
-                   months_data.append(l.standaloneNarrowMonths[calendar]),
-                   months_data.append(l.shortMonths[calendar]),
-                   months_data.append(l.longMonths[calendar]),
-                   months_data.append(l.narrowMonths[calendar]))
-                + "// %s/%s/%s\n " % (l.language, l.script, l.country))
-        calendar_temp_file.write(calendar_format % ( (0,) * 3 + ('0,0',) * 6 )
-                                      + '// trailing zeros\n')
-        calendar_temp_file.write("};\n")
-        months_data.write(calendar_temp_file)
-        s = calendar_template_file.readline()
-        while s and s != GENERATED_BLOCK_END:
-            s = calendar_template_file.readline()
-        while s:
-            calendar_temp_file.write(s)
-            s = calendar_template_file.readline()
-        os.rename(calendar_temp_file_path,
-                  os.path.join(qtsrcdir, 'src', 'corelib', 'time', calendar_data_file))
+        try:
+            writer = CalendarDataWriter(os.path.join(qtsrcdir, 'src', 'corelib', 'time',
+                                                     'q{}calendar_data_p.h'.format(stem)),
+                                        qtsrcdir, reader.cldrVersion)
+        except IOError as e:
+            err.write('Failed to open files to transcribe ' + calendar
+                             + ' data ' + (e.message or e.args[1]))
+            return 1
+
+        try:
+            writer.write(calendar, locale_map, locale_keys)
+        except Error as e:
+            writer.cleanup()
+            err.write('\nError updating ' + calendar + ' locale data: ' + e.message + '\n')
+            return 1
+
+        writer.close()
 
     # qlocale.h
+    try:
+        writer = LocaleHeaderWriter(os.path.join(qtsrcdir, 'src', 'corelib', 'text', 'qlocale.h'),
+                                    qtsrcdir, reader.dupes)
+    except IOError as e:
+        err.write('Failed to open files to transcribe qlocale.h: ' + (e.message or e.args[1]))
+        return 1
 
-    (qlocaleh_temp_file, qlocaleh_temp_file_path) = tempfile.mkstemp("qlocale.h", dir=qtsrcdir)
-    qlocaleh_temp_file = os.fdopen(qlocaleh_temp_file, "w")
-    qlocaleh_file = open(qtsrcdir + "/src/corelib/text/qlocale.h", "r")
-    s = qlocaleh_file.readline()
-    while s and s != GENERATED_BLOCK_START:
-        qlocaleh_temp_file.write(s)
-        s = qlocaleh_file.readline()
-    qlocaleh_temp_file.write(GENERATED_BLOCK_START)
-    qlocaleh_temp_file.write("// see qlocale_data_p.h for more info on generated data\n")
+    try:
+        writer.languages(reader.languages)
+        writer.scripts(reader.scripts)
+        writer.countries(reader.countries)
+    except Error as e:
+        writer.cleanup()
+        err.write('\nError updating qlocale.h: ' + e.message + '\n')
+        return 1
 
-    # Language enum
-    qlocaleh_temp_file.write("    enum Language {\n")
-    language = None
-    for key, value in reader.languages.items():
-        language = fixedLanguageName(value[0], reader.dupes)
-        qlocaleh_temp_file.write("        " + language + " = " + str(key) + ",\n")
-
-    qlocaleh_temp_file.write("\n        " +
-                             ",\n        ".join('%s = %s' % pair
-                                                for pair in sorted(language_aliases.items())) +
-                             ",\n")
-    qlocaleh_temp_file.write("\n")
-    qlocaleh_temp_file.write("        LastLanguage = " + language + "\n")
-    qlocaleh_temp_file.write("    };\n")
-
-    qlocaleh_temp_file.write("\n")
-
-    # Script enum
-    qlocaleh_temp_file.write("    enum Script {\n")
-    script = None
-    for key, value in reader.scripts.items():
-        script = fixedScriptName(value[0], reader.dupes)
-        qlocaleh_temp_file.write("        " + script + " = " + str(key) + ",\n")
-    qlocaleh_temp_file.write("\n        " +
-                             ",\n        ".join('%s = %s' % pair
-                                                for pair in sorted(script_aliases.items())) +
-                             ",\n")
-    qlocaleh_temp_file.write("\n")
-    qlocaleh_temp_file.write("        LastScript = " + script + "\n")
-    qlocaleh_temp_file.write("    };\n")
-
-    # Country enum
-    qlocaleh_temp_file.write("    enum Country {\n")
-    country = None
-    for key, value in reader.countries.items():
-        country = fixedCountryName(value[0], reader.dupes)
-        qlocaleh_temp_file.write("        " + country + " = " + str(key) + ",\n")
-    qlocaleh_temp_file.write("\n        " +
-                             ",\n        ".join('%s = %s' % pair
-                                                for pair in sorted(country_aliases.items())) +
-                             ",\n")
-    qlocaleh_temp_file.write("\n")
-    qlocaleh_temp_file.write("        LastCountry = " + country + "\n")
-    qlocaleh_temp_file.write("    };\n")
-
-    qlocaleh_temp_file.write(GENERATED_BLOCK_END)
-    s = qlocaleh_file.readline()
-    # skip until end of the old block
-    while s and s != GENERATED_BLOCK_END:
-        s = qlocaleh_file.readline()
-
-    s = qlocaleh_file.readline()
-    while s:
-        qlocaleh_temp_file.write(s)
-        s = qlocaleh_file.readline()
-    qlocaleh_temp_file.close()
-    qlocaleh_file.close()
-
-    os.remove(qtsrcdir + "/src/corelib/text/qlocale.h")
-    os.rename(qlocaleh_temp_file_path, qtsrcdir + "/src/corelib/text/qlocale.h")
+    writer.close()
 
     # qlocale.qdoc
+    try:
+        writer = Transcriber(os.path.join(qtsrcdir, 'src', 'corelib', 'text', 'qlocale.qdoc'),
+                             qtsrcdir)
+    except IOError as e:
+        err.write('Failed to open files to transcribe qlocale.qdoc: ' + (e.message or e.args[1]))
+        return 1
 
-    (qlocaleqdoc_temp_file, qlocaleqdoc_temp_file_path) = tempfile.mkstemp("qlocale.qdoc", dir=qtsrcdir)
-    qlocaleqdoc_temp_file = os.fdopen(qlocaleqdoc_temp_file, "w")
-    qlocaleqdoc_file = open(qtsrcdir + "/src/corelib/text/qlocale.qdoc", "r")
-    s = qlocaleqdoc_file.readline()
     DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
-    while s:
-        if DOCSTRING in s:
-            qlocaleqdoc_temp_file.write(DOCSTRING + "v" + reader.cldrVersion + ".\n")
-        else:
-            qlocaleqdoc_temp_file.write(s)
-        s = qlocaleqdoc_file.readline()
-    qlocaleqdoc_temp_file.close()
-    qlocaleqdoc_file.close()
+    try:
+        for line in writer.reader:
+            if DOCSTRING in line:
+                writer.writer.write(DOCSTRING + 'v' + reader.cldrVersion + '.\n')
+            else:
+                writer.writer.write(line)
+    except Error as e:
+        writer.cleanup()
+        err.write('\nError updating qlocale.qdoc: ' + e.message + '\n')
+        return 1
 
-    os.remove(qtsrcdir + "/src/corelib/text/qlocale.qdoc")
-    os.rename(qlocaleqdoc_temp_file_path, qtsrcdir + "/src/corelib/text/qlocale.qdoc")
+    writer.close()
+    return 0
 
 if __name__ == "__main__":
-    main()
+    import sys
+    sys.exit(main(sys.argv, sys.stdout, sys.stderr))

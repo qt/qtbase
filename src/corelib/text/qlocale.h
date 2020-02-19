@@ -73,8 +73,8 @@ class Q_CORE_EXPORT QLocale
     friend class QTextStreamPrivate;
 
 public:
-// GENERATED PART STARTS HERE
 // see qlocale_data_p.h for more info on generated data
+// GENERATED PART STARTS HERE
     enum Language {
         AnyLanguage = 0,
         C = 1,
@@ -614,6 +614,7 @@ public:
 
         LastScript = JamoScript
     };
+
     enum Country {
         AnyCountry = 0,
         Afghanistan = 1,
