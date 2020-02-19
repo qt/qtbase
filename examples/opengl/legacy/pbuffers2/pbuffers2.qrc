@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/res">
-   <file>bubbles.svg</file>
-   <file>designer.png</file>
-</qresource>
-</RCC>

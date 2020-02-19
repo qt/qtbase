@@ -1,4 +1,0 @@
-This directory contains legacy examples that use the fixed pipeline
-and thus are not compatible with OpenGL ES 2.0+ and the core profile of
-OpenGL 3.0+. They also rely on the Qt OpenGL module (e.g. QGLWidget) which
-is not advisable in new application.

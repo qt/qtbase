@@ -16,6 +16,3 @@ qtHaveModule(widgets) {
                hellogles3 \
                computegles31
 }
-
-EXAMPLE_FILES += \
-    legacy
