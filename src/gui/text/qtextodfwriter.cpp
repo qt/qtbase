@@ -1036,16 +1036,16 @@ bool QTextOdfWriter::writeAll()
     writer.writeAttribute(officeNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
 
     // add fragments. (for character formats)
-    QTextDocumentPrivate::FragmentIterator fragIt = m_document->docHandle()->begin();
+    QTextDocumentPrivate::FragmentIterator fragIt = QTextDocumentPrivate::get(m_document)->begin();
     QSet<int> formats;
-    while (fragIt != m_document->docHandle()->end()) {
+    while (fragIt != QTextDocumentPrivate::get(m_document)->end()) {
         const QTextFragmentData * const frag = fragIt.value();
         formats << frag->format;
         ++fragIt;
     }
 
     // add blocks (for blockFormats)
-    QTextDocumentPrivate::BlockMap &blocks = m_document->docHandle()->blockMap();
+    QTextDocumentPrivate::BlockMap &blocks = const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(m_document))->blockMap();
     QTextDocumentPrivate::BlockMap::Iterator blockIt = blocks.begin();
     while (blockIt != blocks.end()) {
         const QTextBlockData * const block = blockIt.value();

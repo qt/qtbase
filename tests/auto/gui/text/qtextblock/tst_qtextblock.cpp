@@ -89,7 +89,7 @@ void tst_QTextBlock::fragmentOverBlockBoundaries()
     // Block separators are always a fragment of their self. Thus:
     // |Hello|\b|World|\b|
 #if !defined(Q_OS_WIN)
-    QCOMPARE(doc->docHandle()->fragmentMap().numNodes(), 4);
+    QCOMPARE(QTextDocumentPrivate::get(doc)->fragmentMap().numNodes(), 4);
 #endif
     QCOMPARE(cursor.block().text(), QString("Hello"));
     cursor.movePosition(QTextCursor::NextBlock);

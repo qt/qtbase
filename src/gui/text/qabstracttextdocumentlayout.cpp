@@ -567,7 +567,7 @@ void QAbstractTextDocumentLayoutPrivate::_q_handlerDestroyed(QObject *obj)
 */
 int QAbstractTextDocumentLayout::formatIndex(int pos)
 {
-    QTextDocumentPrivate *pieceTable = qobject_cast<QTextDocument *>(parent())->docHandle();
+    QTextDocumentPrivate *pieceTable = QTextDocumentPrivate::get(qobject_cast<QTextDocument *>(parent()));
     return pieceTable->find(pos).value()->format;
 }
 
@@ -578,7 +578,7 @@ int QAbstractTextDocumentLayout::formatIndex(int pos)
 */
 QTextCharFormat QAbstractTextDocumentLayout::format(int pos)
 {
-    QTextDocumentPrivate *pieceTable = qobject_cast<QTextDocument *>(parent())->docHandle();
+    QTextDocumentPrivate *pieceTable = QTextDocumentPrivate::get(qobject_cast<QTextDocument *>(parent()));
     int idx = pieceTable->find(pos).value()->format;
     return pieceTable->formatCollection()->charFormat(idx);
 }
@@ -644,7 +644,7 @@ QTextFormat QAbstractTextDocumentLayout::formatAt(const QPointF &pos) const
         block = block.next();
     }
 
-    QTextDocumentPrivate *pieceTable = qobject_cast<const QTextDocument *>(parent())->docHandle();
+    const QTextDocumentPrivate *pieceTable = QTextDocumentPrivate::get(qobject_cast<const QTextDocument *>(parent()));
     QTextDocumentPrivate::FragmentIterator it = pieceTable->find(cursorPos);
     return pieceTable->formatCollection()->format(it->format);
 }

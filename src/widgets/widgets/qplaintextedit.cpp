@@ -1430,7 +1430,7 @@ QString QPlainTextEdit::anchorAt(const QPoint &pos) const
     if (cursorPos < 0)
         return QString();
 
-    QTextDocumentPrivate *pieceTable = document()->docHandle();
+    QTextDocumentPrivate *pieceTable = QTextDocumentPrivate::get(document());
     QTextDocumentPrivate::FragmentIterator it = pieceTable->find(cursorPos);
     QTextCharFormat fmt = pieceTable->formatCollection()->charFormat(it->format);
     return fmt.anchorHref();

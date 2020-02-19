@@ -295,6 +295,36 @@ public:
 
     bool ensureMaximumBlockCount();
 
+    static inline const QTextDocumentPrivate *get(const QTextDocument *document)
+    {
+        return document->d_func();
+    }
+
+    static inline QTextDocumentPrivate *get(QTextDocument *document)
+    {
+        return document->d_func();
+    }
+
+    static inline QTextDocumentPrivate *get(QTextBlock &block)
+    {
+        return block.p;
+    }
+
+    static inline const QTextDocumentPrivate *get(const QTextBlock &block)
+    {
+        return block.p;
+    }
+
+    static inline QTextDocumentPrivate *get(QTextObject *object)
+    {
+        return get(object->document());
+    }
+
+    static inline const QTextDocumentPrivate *get(const QTextObject *object)
+    {
+        return get(object->document());
+    }
+
 private:
     QTextDocumentPrivate(const QTextDocumentPrivate& m);
     QTextDocumentPrivate& operator= (const QTextDocumentPrivate& m);

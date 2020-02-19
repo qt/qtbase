@@ -304,7 +304,7 @@ void QTextList::remove(const QTextBlock &block)
     QTextBlockFormat fmt = block.blockFormat();
     fmt.setIndent(fmt.indent() + format().indent());
     fmt.setObjectIndex(-1);
-    block.docHandle()->setBlockFormat(block, block, fmt, QTextDocumentPrivate::SetFormat);
+    const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(block))->setBlockFormat(block, block, fmt, QTextDocumentPrivate::SetFormat);
 }
 
 /*!
@@ -316,7 +316,7 @@ void QTextList::add(const QTextBlock &block)
 {
     QTextBlockFormat fmt = block.blockFormat();
     fmt.setObjectIndex(objectIndex());
-    block.docHandle()->setBlockFormat(block, block, fmt, QTextDocumentPrivate::SetFormat);
+    const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(block))->setBlockFormat(block, block, fmt, QTextDocumentPrivate::SetFormat);
 }
 
 QT_END_NAMESPACE

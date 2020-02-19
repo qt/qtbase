@@ -224,13 +224,14 @@ QTextDocumentFragmentPrivate::QTextDocumentFragmentPrivate(const QTextCursor &_c
     if (!_cursor.hasSelection())
         return;
 
-    doc->docHandle()->beginEditBlock();
+    QTextDocumentPrivate *p = QTextDocumentPrivate::get(doc);
+    p->beginEditBlock();
     QTextCursor destCursor(doc);
     QTextCopyHelper(_cursor, destCursor).copy();
-    doc->docHandle()->endEditBlock();
+    p->endEditBlock();
 
     if (_cursor.d)
-        doc->docHandle()->mergeCachedResources(_cursor.d->priv);
+        p->mergeCachedResources(_cursor.d->priv);
 }
 
 void QTextDocumentFragmentPrivate::insert(QTextCursor &_cursor) const
@@ -353,7 +354,7 @@ QTextDocumentFragment::~QTextDocumentFragment()
 */
 bool QTextDocumentFragment::isEmpty() const
 {
-    return !d || !d->doc || d->doc->docHandle()->length() <= 1;
+    return d == nullptr || d->doc == nullptr || QTextDocumentPrivate::get(d->doc)->length() <= 1;
 }
 
 /*!

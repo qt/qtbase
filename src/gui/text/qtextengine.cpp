@@ -1984,7 +1984,7 @@ void QTextEngine::shape(int item) const
     auto &li = layoutData->items[item];
     if (li.analysis.flags == QScriptAnalysis::Object) {
         ensureSpace(1);
-        if (block.docHandle()) {
+        if (QTextDocumentPrivate::get(block) != nullptr) {
             docLayout()->resizeInlineObject(QTextInlineObject(item, const_cast<QTextEngine *>(this)),
                                             li.position + block.position(),
                                             format(&li));
@@ -2040,7 +2040,7 @@ void QTextEngine::validate() const
     if (layoutData)
         return;
     layoutData = new LayoutData();
-    if (block.docHandle()) {
+    if (QTextDocumentPrivate::get(block) != nullptr) {
         layoutData->string = block.text();
         const bool nextBlockValid = block.next().isValid();
         if (!nextBlockValid && option.flags() & QTextOption::ShowDocumentTerminator) {
@@ -2135,7 +2135,7 @@ void QTextEngine::itemize() const
 
     Itemizer itemizer(layoutData->string, scriptAnalysis.data(), layoutData->items);
 
-    const QTextDocumentPrivate *p = block.docHandle();
+    const QTextDocumentPrivate *p = QTextDocumentPrivate::get(block);
     if (p) {
         SpecialData *s = specialData;
 
@@ -2413,9 +2413,10 @@ QFont QTextEngine::font(const QScriptItem &si) const
         QTextCharFormat f = format(&si);
         font = f.font();
 
-        if (block.docHandle() && block.docHandle()->layout()) {
+        const QTextDocumentPrivate *document_d = QTextDocumentPrivate::get(block);
+        if (document_d != nullptr && document_d->layout() != nullptr) {
             // Make sure we get the right dpi on printers
-            QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
+            QPaintDevice *pdev = document_d->layout()->paintDevice();
             if (pdev)
                 font = QFont(font, pdev);
         } else {
@@ -2490,9 +2491,9 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 QTextCharFormat f = format(&si);
                 font = f.font();
 
-                if (block.docHandle() && block.docHandle()->layout()) {
+                if (QTextDocumentPrivate::get(block) != nullptr && QTextDocumentPrivate::get(block)->layout() != nullptr) {
                     // Make sure we get the right dpi on printers
-                    QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
+                    QPaintDevice *pdev = QTextDocumentPrivate::get(block)->layout()->paintDevice();
                     if (pdev)
                         font = QFont(font, pdev);
                 } else {
@@ -2789,10 +2790,10 @@ void QScriptLine::setDefaultHeight(QTextEngine *eng)
     QFont f;
     QFontEngine *e;
 
-    if (eng->block.docHandle() && eng->block.docHandle()->layout()) {
+    if (QTextDocumentPrivate::get(eng->block) != nullptr && QTextDocumentPrivate::get(eng->block)->layout() != nullptr) {
         f = eng->block.charFormat().font();
         // Make sure we get the right dpi on printers
-        QPaintDevice *pdev = eng->block.docHandle()->layout()->paintDevice();
+        QPaintDevice *pdev = QTextDocumentPrivate::get(eng->block)->layout()->paintDevice();
         if (pdev)
             f = QFont(f, pdev);
         e = f.d->engineForScript(QChar::Script_Common);
@@ -2954,7 +2955,7 @@ int QTextEngine::formatIndex(const QScriptItem *si) const
         return collection->indexForFormat(specialData->resolvedFormats.at(si - &layoutData->items.at(0)));
     }
 
-    QTextDocumentPrivate *p = block.docHandle();
+    const QTextDocumentPrivate *p = QTextDocumentPrivate::get(block);
     if (!p)
         return -1;
     int pos = si->position;
@@ -3079,7 +3080,7 @@ void QTextEngine::indexFormats()
 {
     QTextFormatCollection *collection = formatCollection();
     if (!collection) {
-        Q_ASSERT(!block.docHandle());
+        Q_ASSERT(QTextDocumentPrivate::get(block) == nullptr);
         specialData->formatCollection.reset(new QTextFormatCollection);
         collection = specialData->formatCollection.data();
     }
@@ -3341,8 +3342,8 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
     const QScriptItem &si = layoutData->items[item];
 
     QFixed dpiScale = 1;
-    if (block.docHandle() && block.docHandle()->layout()) {
-        QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
+    if (QTextDocumentPrivate::get(block) != nullptr && QTextDocumentPrivate::get(block)->layout() != nullptr) {
+        QPaintDevice *pdev = QTextDocumentPrivate::get(block)->layout()->paintDevice();
         if (pdev)
             dpiScale = QFixed::fromReal(pdev->logicalDpiY() / qreal(qt_defaultDpiY()));
     } else {
@@ -3504,8 +3505,8 @@ void QTextEngine::resolveFormats() const
         }
 
         QTextCharFormat &format = resolvedFormats[i];
-        if (block.docHandle()) {
-            // when we have a docHandle, formatIndex might still return a valid index based
+        if (QTextDocumentPrivate::get(block) != nullptr) {
+            // when we have a QTextDocumentPrivate, formatIndex might still return a valid index based
             // on the preeditPosition. for all other cases, we cleared the resolved format indices
             format = collection->charFormat(formatIndex(si));
         }

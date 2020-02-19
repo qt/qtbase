@@ -1373,7 +1373,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
 
         case QCss::QtForegroundTextureCacheKey:
         {
-            if (resourceProvider != nullptr && resourceProvider->docHandle() != nullptr) {
+            if (resourceProvider != nullptr && QTextDocumentPrivate::get(resourceProvider) != nullptr) {
                 bool ok;
                 qint64 searchKey = decl.d->values.first().variant.toLongLong(&ok);
                 if (ok)
@@ -1415,7 +1415,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
 
 void QTextHtmlParserNode::applyForegroundImage(qint64 searchKey, const QTextDocument *resourceProvider)
 {
-    QTextDocumentPrivate *priv = resourceProvider->docHandle();
+    const QTextDocumentPrivate *priv = QTextDocumentPrivate::get(resourceProvider);
     for (int i = 0; i < priv->formats.numFormats(); ++i) {
         QTextCharFormat format = priv->formats.charFormat(i);
         if (format.isValid()) {
@@ -2110,7 +2110,7 @@ QVector<QCss::Declaration> QTextHtmlParser::declarationsForNode(int node) const
                                 + externalStyleSheets.count()
                                 + inlineStyleSheets.count());
     if (resourceProvider)
-        selector.styleSheets[idx++] = resourceProvider->docHandle()->parsedDefaultStyleSheet;
+        selector.styleSheets[idx++] = QTextDocumentPrivate::get(resourceProvider)->parsedDefaultStyleSheet;
 
     for (int i = 0; i < externalStyleSheets.count(); ++i, ++idx)
         selector.styleSheets[idx] = externalStyleSheets.at(i).sheet;

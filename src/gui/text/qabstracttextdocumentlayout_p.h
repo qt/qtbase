@@ -53,6 +53,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include "private/qobject_p.h"
+#include "qtextdocument_p.h"
 #include "QtCore/qhash.h"
 
 QT_BEGIN_NAMESPACE
@@ -78,7 +79,7 @@ public:
         document = doc;
         docPrivate = nullptr;
         if (doc)
-            docPrivate = doc->docHandle();
+            docPrivate = QTextDocumentPrivate::get(doc);
     }
 
     inline int _q_dynamicPageCountSlot() const

@@ -1052,7 +1052,7 @@ QTextCursor::QTextCursor()
     Constructs a cursor pointing to the beginning of the \a document.
  */
 QTextCursor::QTextCursor(QTextDocument *document)
-    : d(new QTextCursorPrivate(document->docHandle()))
+    : d(new QTextCursorPrivate(QTextDocumentPrivate::get(document)))
 {
 }
 
@@ -1060,7 +1060,7 @@ QTextCursor::QTextCursor(QTextDocument *document)
     Constructs a cursor pointing to the beginning of the \a frame.
 */
 QTextCursor::QTextCursor(QTextFrame *frame)
-    : d(new QTextCursorPrivate(frame->document()->docHandle()))
+    : d(new QTextCursorPrivate(QTextDocumentPrivate::get(frame->document())))
 {
     d->adjusted_anchor = d->anchor = d->position = frame->firstPosition();
 }
@@ -1070,7 +1070,7 @@ QTextCursor::QTextCursor(QTextFrame *frame)
     Constructs a cursor pointing to the beginning of the \a block.
 */
 QTextCursor::QTextCursor(const QTextBlock &block)
-    : d(new QTextCursorPrivate(block.docHandle()))
+    : d(new QTextCursorPrivate(const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(block))))
 {
     d->adjusted_anchor = d->anchor = d->position = block.position();
 }
@@ -2264,7 +2264,7 @@ void QTextCursor::insertFragment(const QTextDocumentFragment &fragment)
     d->setX();
 
     if (fragment.d && fragment.d->doc)
-        d->priv->mergeCachedResources(fragment.d->doc->docHandle());
+        d->priv->mergeCachedResources(QTextDocumentPrivate::get(fragment.d->doc));
 }
 
 /*!

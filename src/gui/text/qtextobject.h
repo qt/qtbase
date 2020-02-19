@@ -75,8 +75,6 @@ public:
 
     int objectIndex() const;
 
-    QTextDocumentPrivate *docHandle() const;
-
 protected:
     QTextObject(QTextObjectPrivate &p, QTextDocument *doc);
 
@@ -287,7 +285,6 @@ public:
     QTextBlock next() const;
     QTextBlock previous() const;
 
-    inline QTextDocumentPrivate *docHandle() const { return p; }
     inline int fragmentIndex() const { return n; }
 
 private:

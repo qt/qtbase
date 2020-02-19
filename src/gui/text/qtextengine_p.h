@@ -525,14 +525,14 @@ public:
 
     int findItem(int strPos, int firstItem = 0) const;
     inline QTextFormatCollection *formatCollection() const {
-        if (block.docHandle())
-            return block.docHandle()->formatCollection();
+        if (QTextDocumentPrivate::get(block) != nullptr)
+            return const_cast<QTextFormatCollection *>(QTextDocumentPrivate::get(block)->formatCollection());
         return specialData ? specialData->formatCollection.data() : nullptr;
     }
     QTextCharFormat format(const QScriptItem *si) const;
     inline QAbstractTextDocumentLayout *docLayout() const {
-        Q_ASSERT(block.docHandle());
-        return block.docHandle()->document()->documentLayout();
+        Q_ASSERT(QTextDocumentPrivate::get(block) != nullptr);
+        return QTextDocumentPrivate::get(block)->document()->documentLayout();
     }
     int formatIndex(const QScriptItem *si) const;
 
@@ -589,14 +589,14 @@ public:
     ItemDecorationList overlineList;
 
     inline bool visualCursorMovement() const
-    { return visualMovement || (block.docHandle() && block.docHandle()->defaultCursorMoveStyle == Qt::VisualMoveStyle); }
+    { return visualMovement || (QTextDocumentPrivate::get(block) != nullptr && QTextDocumentPrivate::get(block)->defaultCursorMoveStyle == Qt::VisualMoveStyle); }
 
     inline int preeditAreaPosition() const { return specialData ? specialData->preeditPosition : -1; }
     inline QString preeditAreaText() const { return specialData ? specialData->preeditText : QString(); }
     void setPreeditArea(int position, const QString &text);
 
     inline bool hasFormats() const
-    { return block.docHandle() || (specialData && !specialData->formats.isEmpty()); }
+    { return QTextDocumentPrivate::get(block) != nullptr || (specialData && !specialData->formats.isEmpty()); }
     inline QVector<QTextLayout::FormatRange> formats() const
     { return specialData ? specialData->formats : QVector<QTextLayout::FormatRange>(); }
     void setFormats(const QVector<QTextLayout::FormatRange> &formats);
@@ -609,7 +609,7 @@ private:
         QString preeditText;
         QVector<QTextLayout::FormatRange> formats;
         QVector<QTextCharFormat> resolvedFormats;
-        // only used when no docHandle is available
+        // only used when no QTextDocumentPrivate is available
         QScopedPointer<QTextFormatCollection> formatCollection;
     };
     SpecialData *specialData;

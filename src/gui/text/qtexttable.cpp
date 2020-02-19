@@ -121,7 +121,7 @@ void QTextTableCell::setFormat(const QTextCharFormat &format)
     QTextCharFormat fmt = format;
     fmt.clearProperty(QTextFormat::ObjectIndex);
     fmt.setObjectType(QTextFormat::TableCellObject);
-    QTextDocumentPrivate *p = table->docHandle();
+    QTextDocumentPrivate *p = const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(table));
     QTextDocumentPrivate::FragmentIterator frag(&p->fragmentMap(), fragment);
 
     QTextFormatCollection *c = p->formatCollection();
@@ -137,8 +137,8 @@ void QTextTableCell::setFormat(const QTextCharFormat &format)
 */
 QTextCharFormat QTextTableCell::format() const
 {
-    QTextDocumentPrivate *p = table->docHandle();
-    QTextFormatCollection *c = p->formatCollection();
+    const QTextDocumentPrivate *p = QTextDocumentPrivate::get(table);
+    const QTextFormatCollection *c = p->formatCollection();
 
     QTextCharFormat fmt = c->charFormat(tableCellFormatIndex());
     fmt.setObjectType(QTextFormat::TableCellObject);
@@ -154,7 +154,7 @@ QTextCharFormat QTextTableCell::format() const
 */
 int QTextTableCell::tableCellFormatIndex() const
 {
-    QTextDocumentPrivate *p = table->docHandle();
+    const QTextDocumentPrivate *p = QTextDocumentPrivate::get(table);
     return QTextDocumentPrivate::FragmentIterator(&p->fragmentMap(), fragment)->format;
 }
 
@@ -248,7 +248,7 @@ QTextCursor QTextTableCell::lastCursorPosition() const
 */
 int QTextTableCell::firstPosition() const
 {
-    QTextDocumentPrivate *p = table->docHandle();
+    const QTextDocumentPrivate *p = QTextDocumentPrivate::get(table);
     return p->fragmentMap().position(fragment) + 1;
 }
 
@@ -259,7 +259,7 @@ int QTextTableCell::firstPosition() const
 */
 int QTextTableCell::lastPosition() const
 {
-    QTextDocumentPrivate *p = table->docHandle();
+    const QTextDocumentPrivate *p = QTextDocumentPrivate::get(table);
     const QTextTablePrivate *td = table->d_func();
     int index = table->d_func()->findCellIndex(fragment);
     int f;
@@ -278,7 +278,7 @@ int QTextTableCell::lastPosition() const
 */
 QTextFrame::iterator QTextTableCell::begin() const
 {
-    QTextDocumentPrivate *p = table->docHandle();
+    const QTextDocumentPrivate *p = QTextDocumentPrivate::get(table);
     int b = p->blockMap().findNode(firstPosition());
     int e = p->blockMap().findNode(lastPosition()+1);
     return QTextFrame::iterator(const_cast<QTextTable *>(table), b, b, e);
@@ -291,7 +291,7 @@ QTextFrame::iterator QTextTableCell::begin() const
 */
 QTextFrame::iterator QTextTableCell::end() const
 {
-    QTextDocumentPrivate *p = table->docHandle();
+    const QTextDocumentPrivate *p = QTextDocumentPrivate::get(table);
     int b = p->blockMap().findNode(firstPosition());
     int e = p->blockMap().findNode(lastPosition()+1);
     return QTextFrame::iterator(const_cast<QTextTable *>(table), e, b, e);

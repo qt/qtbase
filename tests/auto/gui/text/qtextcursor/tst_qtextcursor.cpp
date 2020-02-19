@@ -1280,7 +1280,7 @@ void tst_QTextCursor::anchorInitialized1()
 void tst_QTextCursor::anchorInitialized2()
 {
     cursor.insertBlock();
-    cursor = QTextCursorPrivate::fromPosition(cursor.block().docHandle(), 1);
+    cursor = QTextCursorPrivate::fromPosition(const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(cursor.block())), 1);
     QCOMPARE(cursor.position(), 1);
     QCOMPARE(cursor.anchor(), 1);
     QCOMPARE(cursor.selectionStart(), 1);

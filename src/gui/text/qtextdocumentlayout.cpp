@@ -3400,7 +3400,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
         } else {
             currentLazyLayoutPosition = checkPoints.constLast().positionInFrame;
             // #######
-            //checkPoints.last().positionInFrame = q->document()->docHandle()->length();
+            //checkPoints.last().positionInFrame = QTextDocumentPrivate::get(q->document())->length();
         }
     }
 
@@ -4146,7 +4146,7 @@ int QTextDocumentLayout::layoutStatus() const
     int pos = d->currentLazyLayoutPosition;
     if (pos == -1)
         return 100;
-    return pos * 100 / d->document->docHandle()->length();
+    return pos * 100 / QTextDocumentPrivate::get(d->document)->length();
 }
 
 void QTextDocumentLayout::timerEvent(QTimerEvent *e)

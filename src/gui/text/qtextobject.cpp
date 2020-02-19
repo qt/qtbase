@@ -171,14 +171,6 @@ QTextDocument *QTextObject::document() const
 }
 
 /*!
-  \internal
-*/
-QTextDocumentPrivate *QTextObject::docHandle() const
-{
-    return static_cast<const QTextDocument *>(parent())->docHandle();
-}
-
-/*!
     \class QTextBlockGroup
     \reentrant
 
@@ -270,7 +262,7 @@ void QTextBlockGroup::blockRemoved(const QTextBlock &block)
     d->blocks.removeAll(block);
     d->markBlocksDirty();
     if (d->blocks.isEmpty()) {
-        document()->docHandle()->deleteObject(this);
+        QTextDocumentPrivate::get(document())->deleteObject(this);
         return;
     }
 }
@@ -576,7 +568,7 @@ void QTextFramePrivate::remove_me()
     Q_Q(QTextFrame);
     if (fragment_start == 0 && fragment_end == 0
         && !parentFrame) {
-        q->document()->docHandle()->deleteObject(q);
+        QTextDocumentPrivate::get(q->document())->deleteObject(q);
         return;
     }
 
@@ -630,7 +622,7 @@ void QTextFramePrivate::remove_me()
 */
 QTextFrame::iterator QTextFrame::begin() const
 {
-    const QTextDocumentPrivate *priv = docHandle();
+    const QTextDocumentPrivate *priv = QTextDocumentPrivate::get(this);
     int b = priv->blockMap().findNode(firstPosition());
     int e = priv->blockMap().findNode(lastPosition()+1);
     return iterator(const_cast<QTextFrame *>(this), b, b, e);
@@ -643,7 +635,7 @@ QTextFrame::iterator QTextFrame::begin() const
 */
 QTextFrame::iterator QTextFrame::end() const
 {
-    const QTextDocumentPrivate *priv = docHandle();
+    const QTextDocumentPrivate *priv = QTextDocumentPrivate::get(this);
     int b = priv->blockMap().findNode(firstPosition());
     int e = priv->blockMap().findNode(lastPosition()+1);
     return iterator(const_cast<QTextFrame *>(this), e, b, e);
@@ -724,7 +716,7 @@ QTextBlock QTextFrame::iterator::currentBlock() const
 {
     if (!f)
         return QTextBlock();
-    return QTextBlock(f->docHandle(), cb);
+    return QTextBlock(QTextDocumentPrivate::get(f), cb);
 }
 
 /*!
@@ -734,7 +726,7 @@ QTextBlock QTextFrame::iterator::currentBlock() const
 */
 QTextFrame::iterator &QTextFrame::iterator::operator++()
 {
-    const QTextDocumentPrivate *priv = f->docHandle();
+    const QTextDocumentPrivate *priv = QTextDocumentPrivate::get(f);
     const QTextDocumentPrivate::BlockMap &map = priv->blockMap();
     if (cf) {
         int end = cf->lastPosition() + 1;
@@ -772,7 +764,7 @@ QTextFrame::iterator &QTextFrame::iterator::operator++()
 */
 QTextFrame::iterator &QTextFrame::iterator::operator--()
 {
-    const QTextDocumentPrivate *priv = f->docHandle();
+    const QTextDocumentPrivate *priv = QTextDocumentPrivate::get(f);
     const QTextDocumentPrivate::BlockMap &map = priv->blockMap();
     if (cf) {
         int start = cf->firstPosition() - 1;
@@ -1011,12 +1003,6 @@ bool QTextBlock::isValid() const
 
     The postfix -- operator (\c{i--}) makes the preceding item current and
     returns an iterator to the old current item.
-*/
-
-/*!
-    \fn QTextDocumentPrivate *QTextBlock::docHandle() const
-
-    \internal
 */
 
 /*!

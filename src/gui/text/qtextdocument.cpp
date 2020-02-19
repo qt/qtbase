@@ -40,6 +40,7 @@
 #include "qtextdocument.h"
 #include <qtextformat.h>
 #include "qtextcursor_p.h"
+#include "qtextdocument_p.h"
 #include "qtextdocumentlayout_p.h"
 #include "qtextdocumentfragment.h"
 #include "qtextdocumentfragment_p.h"
@@ -1328,7 +1329,8 @@ static bool findInBlock(const QTextBlock &block, const QString &expression, int 
             }
         }
         //we have a hit, return the cursor for that.
-        *cursor = QTextCursorPrivate::fromPosition(block.docHandle(), block.position() + idx);
+        *cursor = QTextCursorPrivate::fromPosition(const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(block)),
+                                                   block.position() + idx);
         cursor->setPosition(cursor->position() + expression.length(), QTextCursor::KeepAnchor);
         return true;
     }
@@ -1448,7 +1450,8 @@ static bool findInBlock(const QTextBlock &block, const QRegExp &expression, int 
             }
         }
         //we have a hit, return the cursor for that.
-        *cursor = QTextCursorPrivate::fromPosition(block.docHandle(), block.position() + idx);
+        *cursor = QTextCursorPrivate::fromPosition(const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(block)),
+                                                   block.position() + idx);
         cursor->setPosition(cursor->position() + expr.matchedLength(), QTextCursor::KeepAnchor);
         return true;
     }
@@ -1576,7 +1579,8 @@ static bool findInBlock(const QTextBlock &block, const QRegularExpression &expre
             }
         }
         //we have a hit, return the cursor for that.
-        *cursor = QTextCursorPrivate::fromPosition(block.docHandle(), block.position() + idx);
+        *cursor = QTextCursorPrivate::fromPosition(const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(block)),
+                                                   block.position() + idx);
         cursor->setPosition(cursor->position() + match.capturedLength(), QTextCursor::KeepAnchor);
         return true;
     }
@@ -1737,7 +1741,7 @@ QTextObject *QTextDocument::objectForFormat(const QTextFormat &f) const
 QTextBlock QTextDocument::findBlock(int pos) const
 {
     Q_D(const QTextDocument);
-    return QTextBlock(docHandle(), d->blockMap().findNode(pos));
+    return QTextBlock(const_cast<QTextDocumentPrivate *>(d), d->blockMap().findNode(pos));
 }
 
 /*!
@@ -1749,7 +1753,7 @@ QTextBlock QTextDocument::findBlock(int pos) const
 QTextBlock QTextDocument::findBlockByNumber(int blockNumber) const
 {
     Q_D(const QTextDocument);
-    return QTextBlock(docHandle(), d->blockMap().findNode(blockNumber, 1));
+    return QTextBlock(const_cast<QTextDocumentPrivate *>(d), d->blockMap().findNode(blockNumber, 1));
 }
 
 /*!
@@ -1761,7 +1765,7 @@ QTextBlock QTextDocument::findBlockByNumber(int blockNumber) const
 QTextBlock QTextDocument::findBlockByLineNumber(int lineNumber) const
 {
     Q_D(const QTextDocument);
-    return QTextBlock(docHandle(), d->blockMap().findNode(lineNumber, 2));
+    return QTextBlock(const_cast<QTextDocumentPrivate *>(d), d->blockMap().findNode(lineNumber, 2));
 }
 
 /*!
@@ -1772,7 +1776,7 @@ QTextBlock QTextDocument::findBlockByLineNumber(int lineNumber) const
 QTextBlock QTextDocument::begin() const
 {
     Q_D(const QTextDocument);
-    return QTextBlock(docHandle(), d->blockMap().begin().n);
+    return QTextBlock(const_cast<QTextDocumentPrivate *>(d), d->blockMap().begin().n);
 }
 
 /*!
@@ -1789,7 +1793,8 @@ QTextBlock QTextDocument::begin() const
 */
 QTextBlock QTextDocument::end() const
 {
-    return QTextBlock(docHandle(), 0);
+    Q_D(const QTextDocument);
+    return QTextBlock(const_cast<QTextDocumentPrivate *>(d), 0);
 }
 
 /*!
@@ -1799,7 +1804,7 @@ QTextBlock QTextDocument::end() const
 QTextBlock QTextDocument::firstBlock() const
 {
     Q_D(const QTextDocument);
-    return QTextBlock(docHandle(), d->blockMap().begin().n);
+    return QTextBlock(const_cast<QTextDocumentPrivate *>(d), d->blockMap().begin().n);
 }
 
 /*!
@@ -1809,7 +1814,7 @@ QTextBlock QTextDocument::firstBlock() const
 QTextBlock QTextDocument::lastBlock() const
 {
     Q_D(const QTextDocument);
-    return QTextBlock(docHandle(), d->blockMap().last().n);
+    return QTextBlock(const_cast<QTextDocumentPrivate *>(d), d->blockMap().last().n);
 }
 
 /*!
@@ -1893,12 +1898,14 @@ QFont QTextDocument::defaultFont() const
 
 bool QTextDocument::isModified() const
 {
-    return docHandle()->isModified();
+    Q_D(const QTextDocument);
+    return d->isModified();
 }
 
 void QTextDocument::setModified(bool m)
 {
-    docHandle()->setModified(m);
+    Q_D(QTextDocument);
+    d->setModified(m);
 }
 
 #ifndef QT_NO_PRINTER
@@ -2319,7 +2326,7 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
     html = QLatin1String("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
             "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
             "<html><head><meta name=\"qrichtext\" content=\"1\" />");
-    html.reserve(doc->docHandle()->length());
+    html.reserve(QTextDocumentPrivate::get(doc)->length());
 
     fragmentMarkers = (mode == ExportFragment);
 
@@ -2889,8 +2896,9 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
         int p = block.position();
         if (p > 0)
             --p;
-        QTextDocumentPrivate::FragmentIterator frag = doc->docHandle()->find(p);
-        QChar ch = doc->docHandle()->buffer().at(frag->stringPosition);
+
+        QTextDocumentPrivate::FragmentIterator frag = QTextDocumentPrivate::get(doc)->find(p);
+        QChar ch = QTextDocumentPrivate::get(doc)->buffer().at(frag->stringPosition);
         if (ch == QTextBeginningOfFrame
             || ch == QTextEndOfFrame)
             return;
@@ -3008,7 +3016,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
     for (; !it.atEnd(); ++it)
         emitFragment(it.fragment());
 
-    if (fragmentMarkers && block.position() + block.length() == doc->docHandle()->length())
+    if (fragmentMarkers && block.position() + block.length() == QTextDocumentPrivate::get(doc)->length())
         html += QLatin1String("<!--EndFragment-->");
 
     if (pre)
@@ -3046,26 +3054,26 @@ QString QTextHtmlExporter::findUrlForImage(const QTextDocument *doc, qint64 cach
     if (QTextDocument *parent = qobject_cast<QTextDocument *>(doc->parent()))
         return findUrlForImage(parent, cacheKey, isPixmap);
 
-    if (doc && doc->docHandle()) {
-        QTextDocumentPrivate *priv = doc->docHandle();
-        QMap<QUrl, QVariant>::const_iterator it = priv->cachedResources.constBegin();
-        for (; it != priv->cachedResources.constEnd(); ++it) {
+    const QTextDocumentPrivate *priv = QTextDocumentPrivate::get(doc);
+    Q_ASSERT(priv != nullptr);
 
-            const QVariant &v = it.value();
-            if (v.userType() == QMetaType::QImage && !isPixmap) {
-                if (qvariant_cast<QImage>(v).cacheKey() == cacheKey)
-                    break;
-            }
+    QMap<QUrl, QVariant>::const_iterator it = priv->cachedResources.constBegin();
+    for (; it != priv->cachedResources.constEnd(); ++it) {
 
-            if (v.userType() == QMetaType::QPixmap && isPixmap) {
-                if (qvariant_cast<QPixmap>(v).cacheKey() == cacheKey)
-                    break;
-            }
+        const QVariant &v = it.value();
+        if (v.userType() == QMetaType::QImage && !isPixmap) {
+            if (qvariant_cast<QImage>(v).cacheKey() == cacheKey)
+                break;
         }
 
-        if (it != priv->cachedResources.constEnd())
-            url = it.key().toString();
+        if (v.userType() == QMetaType::QPixmap && isPixmap) {
+            if (qvariant_cast<QPixmap>(v).cacheKey() == cacheKey)
+                break;
+        }
     }
+
+    if (it != priv->cachedResources.constEnd())
+        url = it.key().toString();
 
     return url;
 }
@@ -3433,18 +3441,6 @@ QVector<QTextFormat> QTextDocument::allFormats() const
 {
     Q_D(const QTextDocument);
     return d->formatCollection()->formats;
-}
-
-
-/*!
-  \internal
-
-  So that not all classes have to be friends of each other...
-*/
-QTextDocumentPrivate *QTextDocument::docHandle() const
-{
-    Q_D(const QTextDocument);
-    return const_cast<QTextDocumentPrivate *>(d);
 }
 
 /*!

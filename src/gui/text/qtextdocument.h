@@ -316,8 +316,6 @@ protected:
     Q_INVOKABLE virtual QVariant loadResource(int type, const QUrl &name);
 
     QTextDocument(QTextDocumentPrivate &dd, QObject *parent);
-public:
-    QTextDocumentPrivate *docHandle() const;
 private:
     Q_DISABLE_COPY(QTextDocument)
     Q_DECLARE_PRIVATE(QTextDocument)

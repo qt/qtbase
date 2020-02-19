@@ -491,8 +491,8 @@ void QTextLayout::setPreeditArea(int position, const QString &text)
         return;
     d->setPreeditArea(position, text);
 
-    if (d->block.docHandle())
-        d->block.docHandle()->documentChange(d->block.position(), d->block.length());
+    if (QTextDocumentPrivate::get(d->block) != nullptr)
+        QTextDocumentPrivate::get(d->block)->documentChange(d->block.position(), d->block.length());
 }
 
 /*!
@@ -538,8 +538,8 @@ void QTextLayout::setFormats(const QVector<FormatRange> &formats)
 {
     d->setFormats(formats);
 
-    if (d->block.docHandle())
-        d->block.docHandle()->documentChange(d->block.position(), d->block.length());
+    if (QTextDocumentPrivate::get(d->block) != nullptr)
+        QTextDocumentPrivate::get(d->block)->documentChange(d->block.position(), d->block.length());
 }
 
 #if QT_DEPRECATED_SINCE(5, 6)
@@ -1913,7 +1913,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             lbh.whiteSpaceOrObject = true;
             lbh.tmpData.length++;
 
-            if (eng->block.docHandle()) {
+            if (QTextDocumentPrivate::get(eng->block) != nullptr) {
                 QTextInlineObject inlineObject(item, eng);
                 QTextFormat f = inlineObject.format();
                 eng->docLayout()->positionInlineObject(inlineObject, eng->block.position() + current.position, f);
@@ -2062,7 +2062,7 @@ found:
         line += lbh.tmpData;
     }
 
-    if (hasInlineObject && eng->block.docHandle()) {
+    if (hasInlineObject && QTextDocumentPrivate::get(eng->block) != nullptr) {
         // position top/bottom aligned inline objects
         if (maxInlineObjectHeight > line.ascent + line.descent) {
             // extend line height if required
@@ -2568,7 +2568,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
 
             if (eng->hasFormats()) {
                 p->save();
-                if (si.analysis.flags == QScriptAnalysis::Object && eng->block.docHandle()) {
+                if (si.analysis.flags == QScriptAnalysis::Object && QTextDocumentPrivate::get(eng->block)) {
                     QFixed itemY = y - si.ascent;
                     if (format.verticalAlignment() == QTextCharFormat::AlignTop) {
                         itemY = y - lineBase;

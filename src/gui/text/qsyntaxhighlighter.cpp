@@ -173,7 +173,7 @@ void QSyntaxHighlighterPrivate::reformatBlocks(int from, int charsRemoved, int c
     if (lastBlock.isValid())
         endPosition = lastBlock.position() + lastBlock.length();
     else
-        endPosition = doc->docHandle()->length();
+        endPosition = QTextDocumentPrivate::get(doc)->length();
 
     bool forceHighlightOfNextBlock = false;
 

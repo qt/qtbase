@@ -42,7 +42,7 @@ public:
     virtual void documentChanged(int from, int oldLength, int length)
     {
         called = true;
-        lastDocumentLengths.append(document()->docHandle()->length());
+        lastDocumentLengths.append(QTextDocumentPrivate::get(document())->length());
 
         if (f < 0)
             return;
