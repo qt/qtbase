@@ -81,6 +81,9 @@ void tst_QPlugin::loadDebugPlugin()
         QObject *object = loader.instance();
         QVERIFY(object != 0);
 #else
+#  if defined(CMAKE_BUILD) && defined(QT_NO_DEBUG)
+    QSKIP("Skipping test as it is not possible to disable build targets based on configuration with CMake");
+#  endif
         // loading a plugin is dependent on which lib we are running against
 #  if defined(QT_NO_DEBUG)
         // release build, we cannot load debug plugins
@@ -111,6 +114,9 @@ void tst_QPlugin::loadReleasePlugin()
         QObject *object = loader.instance();
         QVERIFY(object != 0);
 #else
+#  if defined(CMAKE_BUILD) && !defined(QT_NO_DEBUG)
+    QSKIP("Skipping test as it is not possible to disable build targets based on configuration with CMake");
+#  endif
         // loading a plugin is dependent on which lib we are running against
 #  if defined(QT_NO_DEBUG)
         // release build, we can load debug plugins

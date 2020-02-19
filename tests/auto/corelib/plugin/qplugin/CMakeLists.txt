@@ -21,5 +21,7 @@ add_qt_test(tst_qplugin
     TESTDATA ${test_data}
 )
 
+target_compile_definitions(tst_qplugin PRIVATE CMAKE_BUILD=1)
+
 add_dependencies(tst_qplugin invalidplugin debugplugin releaseplugin)
 # special case end
