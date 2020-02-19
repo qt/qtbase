@@ -26,8 +26,6 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-
 #include "simplelistview.h"
 #include "scrollbar.h"
 #include "simplelistview.h"
@@ -35,6 +33,10 @@
 #include "listitem.h"
 #include "listitemcache.h"
 #include "theme.h"
+
+#include <QtGui>
+#include <QGraphicsGridLayout>
+#include <QGraphicsSceneResizeEvent>
 
 class SimpleListViewPrivate
 {

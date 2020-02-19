@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 QT += svg testlib
-qtHaveModule(opengl): QT += opengl
+qtHaveModule(opengl): QT += opengl openglwidgets
 
 HEADERS += widgets/gvbwidget.h \
         widgets/abstractscrollarea.h \

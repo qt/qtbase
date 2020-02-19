@@ -26,9 +26,11 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
 #include "button.h"
 #include "theme.h"
+
+#include <QtGui>
+#include <QGraphicsSceneMouseEvent>
 
 static const int MinTextWidthAsChars = 8;
 

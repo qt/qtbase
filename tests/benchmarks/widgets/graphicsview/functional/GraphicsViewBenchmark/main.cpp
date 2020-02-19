@@ -28,9 +28,8 @@
 
 
 #include <QtTest/QtTest>
-#include <QtGui/qgraphicsview.h>
 #include <QtGui/qpixmapcache.h>
-#include <QtGui/qdesktopwidget.h>
+#include <QtGui/QScreen>
 
 #include "mainview.h"
 #include "dummydatagen.h"
@@ -308,7 +307,8 @@ void tst_GraphicsViewBenchmark::initTestCase()
     if (mSettings->size().width() > 0 && mSettings->size().height() > 0) {
         mMainView->resize(mSettings->size().width(), mSettings->size().height());
         mMainView->show();
-    } else if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
+    } else if (QGuiApplication::primaryScreen()->geometry().width() < 360
+            || QGuiApplication::primaryScreen()->geometry().height() < 640) {
         mMainView->showFullScreen();
     } else {
         mMainView->resize(360, 640);
@@ -326,7 +326,7 @@ void tst_GraphicsViewBenchmark::initTestCase()
     currentListSize = -1;
     currentListType = None;
 
-    QVERIFY(QTest::qWaitForWindowShown(mMainView));
+    QVERIFY(QTest::qWaitForWindowExposed(mMainView));
 }
 
 void tst_GraphicsViewBenchmark::cleanupTestCase()
@@ -760,7 +760,8 @@ int main(int argc, char *argv[])
         if (settings.size().width() > 0 && settings.size().height() > 0) {
             view.resize(settings.size().width(), settings.size().height());
             view.show();
-        } else if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
+        } else if (QGuiApplication::primaryScreen()->geometry().width() < 360
+                || QApplication::primaryScreen()->geometry().height() < 640) {
             view.showFullScreen();
         } else {
             view.resize(360, 640);

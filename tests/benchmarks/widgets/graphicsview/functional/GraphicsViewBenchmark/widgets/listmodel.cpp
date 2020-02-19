@@ -78,7 +78,7 @@ bool ListModel::setData(const QModelIndex &index, const QVariant &value, int rol
 void ListModel::clear()
 {
     m_items.clear();
-    reset();
+    clear();
 }
 
 QModelIndex ListModel::index(int row, int column, const QModelIndex &parent) const

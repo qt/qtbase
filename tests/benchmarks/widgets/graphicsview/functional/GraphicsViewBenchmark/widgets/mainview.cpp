@@ -30,7 +30,7 @@
 #include <QApplication>
 #include <QGraphicsLinearLayout>
 #ifndef QT_NO_OPENGL
-#include <QGLWidget>
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #endif
 #include <QObject>
 
@@ -253,10 +253,10 @@ void MainView::construct()
     if (m_enableOpenGL) {
         qDebug() << "OpenGL enabled";
         m_scene->setSortCacheEnabled(false);
-        setViewport(new QGLWidget);
+        setViewport(new QOpenGLWidget);
 
         // Qt doc says: This is the preferred update mode for
-        // viewports that do not support partial updates, such as QGLWidget...
+        // viewports that do not support partial updates, such as QOpenGLWidget...
         setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     } else
 #endif
