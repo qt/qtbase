@@ -672,6 +672,7 @@ public:
     // Other variables.
     uint directFontResolveMask;
     uint inheritedFontResolveMask;
+    decltype(std::declval<QPalette>().resolve()) directPaletteResolveMask;
     uint inheritedPaletteResolveMask;
     short leftmargin;
     short topmargin;

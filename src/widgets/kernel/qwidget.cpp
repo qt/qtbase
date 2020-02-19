@@ -150,6 +150,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #endif
       , directFontResolveMask(0)
       , inheritedFontResolveMask(0)
+      , directPaletteResolveMask(0)
       , inheritedPaletteResolveMask(0)
       , leftmargin(0)
       , topmargin(0)
@@ -1845,7 +1846,9 @@ void QWidgetPrivate::propagatePaletteChange()
         if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedPaletteResolveMask = 0;
     }
-    int mask = data.pal.resolve() | inheritedPaletteResolveMask;
+
+    directPaletteResolveMask = data.pal.resolve();
+    auto mask = directPaletteResolveMask | inheritedPaletteResolveMask;
 
     const bool useStyleSheetPropagationInWidgetStyles =
         QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
@@ -10452,6 +10455,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     if (!useStyleSheetPropagationInWidgetStyles && !testAttribute(Qt::WA_StyleSheet)
         && (!parent || !parent->testAttribute(Qt::WA_StyleSheet))) {
+        // if the parent has a font set or inherited, then propagate the mask to the new child
+        if (parent) {
+            const auto pd = parent->d_func();
+            d->inheritedFontResolveMask = pd->directFontResolveMask | pd->inheritedFontResolveMask;
+            d->inheritedPaletteResolveMask = pd->directPaletteResolveMask | pd->inheritedPaletteResolveMask;
+        }
         d->resolveFont();
         d->resolvePalette();
     }
