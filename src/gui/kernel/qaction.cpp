@@ -1112,9 +1112,12 @@ void QAction::setData(const QVariant &data)
 void QAction::activate(ActionEvent event)
 {
     Q_D(QAction);
-    if(event == Trigger) {
+    if (event == Trigger) {
+        // Ignore even explicit triggers when explicitly disabled
+        if ((d->explicitEnabled && !d->explicitEnabledValue) || (d->group && !d->group->isEnabled()))
+            return;
         QPointer<QObject> guard = this;
-        if(d->checkable) {
+        if (d->checkable) {
             // the checked action of an exclusive group may not be unchecked
             if (d->checked && (d->group
                                && d->group->exclusionPolicy() == QActionGroup::ExclusionPolicy::Exclusive
