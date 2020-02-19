@@ -97,9 +97,7 @@ if (ANDROID)
     target_link_options(PlatformModuleInternal INTERFACE -fuse-ld=lld)
 endif()
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
-    target_compile_definitions(PlatformCommonInternal INTERFACE QT_NO_DEBUG)
-endif()
+target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
 if(APPLE_UIKIT)
     # Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for

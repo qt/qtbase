@@ -2534,7 +2534,7 @@ function(qt_add_executable name)
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES ${private_includes}
         DEFINES ${arg_DEFINES}
-        LIBRARIES ${arg_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES} Qt::PlatformCommonInternal
         PUBLIC_LIBRARIES ${extra_libraries} ${arg_PUBLIC_LIBRARIES}
         DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
         DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
