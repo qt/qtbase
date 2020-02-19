@@ -340,8 +340,8 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
         endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s_%s]" % (language_code, country_code))
     if not endonym:
         endonym = findEntryDef(path, "localeDisplayNames/languages/language[type=%s]" % (language_code))
-    result['language_endonym'] = endonym
-    result['country_endonym'] = findEntryDef(path, "localeDisplayNames/territories/territory[type=%s]" % (country_code))
+    result['languageEndonym'] = endonym
+    result['countryEndonym'] = findEntryDef(path, "localeDisplayNames/territories/territory[type=%s]" % (country_code))
 
     currency_format = get_number_in_system(path, "numbers/currencyFormats/currencyFormatLength/currencyFormat/pattern", numbering_system)
     currency_format = parse_number_format(currency_format, result)
