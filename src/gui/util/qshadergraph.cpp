@@ -123,6 +123,50 @@ namespace
         }
         return targetStatement;
     }
+
+    void removeNodesWithUnboundInputs(QVector<QShaderGraph::Statement> &statements,
+                                      const QVector<QShaderGraph::Edge> &allEdges)
+    {
+        // A node is invalid if any of its input ports is disconected
+        // or connected to the output port of another invalid node.
+
+        // Keeps track of the edges from the nodes we know to be valid
+        // to unvisited nodes
+        auto currentEdges = QVector<QShaderGraph::Edge>();
+
+        statements.erase(std::remove_if(statements.begin(),
+                                        statements.end(),
+                                        [&currentEdges, &allEdges] (const QShaderGraph::Statement &statement) {
+            const QShaderNode &node = statement.node;
+            const QVector<QShaderGraph::Edge> outgoing = outgoingEdges(currentEdges, node.uuid());
+            const QVector<QShaderNodePort> ports = node.ports();
+
+            bool allInputsConnected = true;
+            for (const QShaderNodePort &port : node.ports()) {
+                if (port.direction == QShaderNodePort::Output)
+                    continue;
+
+                const auto edgeIt = std::find_if(outgoing.cbegin(),
+                                                 outgoing.cend(),
+                                                 [&port] (const QShaderGraph::Edge &edge) {
+                    return edge.targetPortName == port.name;
+                });
+
+                if (edgeIt != outgoing.cend())
+                    currentEdges.removeAll(*edgeIt);
+                else
+                    allInputsConnected = false;
+            }
+
+            if (allInputsConnected) {
+                const QVector<QShaderGraph::Edge> incoming = incomingEdges(allEdges, node.uuid());
+                currentEdges.append(incoming);
+            }
+
+            return !allInputsConnected;
+        }),
+                         statements.end());
+    }
 }
 
 QUuid QShaderGraph::Statement::uuid() const Q_DECL_NOTHROW
@@ -248,6 +292,9 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
     }
 
     std::reverse(result.begin(), result.end());
+
+    removeNodesWithUnboundInputs(result, enabledEdges);
+
     return result;
 }
 
