@@ -171,4 +171,5 @@ add_qt_resource(lance "images"
 extend_target(lance CONDITION TARGET Qt::OpenGL
     PUBLIC_LIBRARIES
         Qt::OpenGL
+        Qt::OpenGLWidgets
 )

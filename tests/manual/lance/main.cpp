@@ -42,8 +42,9 @@
 #endif
 
 #ifndef QT_NO_OPENGL
-#include <qgl.h>
-#include <QGLPixelBuffer>
+#include <QtOpenGL/QOpenGLFramebufferObjectFormat>
+#include <QtOpenGL/QOpenGLPaintDevice>
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #endif
 
 // #define DO_QWS_DEBUGGING
@@ -89,7 +90,7 @@ static void printHelp()
            "    -imagemono      Paints the files to a monochrome image\n"
            "    -imagewidget    same as image, but with interacion...\n"
 #ifndef QT_NO_OPENGL
-           "    -opengl         Paints the files to a QGLWidget (Qt4 style) on screen\n"
+           "    -opengl         Paints the files to a QOpenGLWidget on screen\n"
            "    -glbuffer       Paints the files to a QOpenGLFrameBufferObject (Qt5 style) \n"
            "    -coreglbuffer   Paints the files to a Core Profile context QOpenGLFrameBufferObject\n"
 #endif
@@ -233,12 +234,11 @@ int main(int argc, char **argv)
     bool verboseMode = false;
 
 #ifndef QT_NO_OPENGL
-    QGLFormat f = QGLFormat::defaultFormat();
-    f.setSampleBuffers(true);
-    f.setStencil(true);
-    f.setAlpha(true);
+    QSurfaceFormat f = QSurfaceFormat::defaultFormat();
+    f.setSamples(1);
+    f.setStencilBufferSize(8);
     f.setAlphaBufferSize(8);
-    QGLFormat::setDefaultFormat(f);
+    QSurfaceFormat::setDefaultFormat(f);
 #endif
 
     char *arg;
@@ -447,14 +447,14 @@ int main(int argc, char **argv)
             }
             case OpenGLType:
             {
-                OnScreenWidget<QGLWidget> *qGLWidget = new OnScreenWidget<QGLWidget>(files.at(j));
-                qGLWidget->setVerboseMode(verboseMode);
-                qGLWidget->setType(type);
-                qGLWidget->setCheckersBackground(checkers_background);
-                qGLWidget->m_commands = content;
-                qGLWidget->resize(width, height);
-                qGLWidget->show();
-                activeWidget = qGLWidget;
+                OnScreenWidget<QOpenGLWidget> *qOpenGLWidget = new OnScreenWidget<QOpenGLWidget>(files.at(j));
+                qOpenGLWidget->setVerboseMode(verboseMode);
+                qOpenGLWidget->setType(type);
+                qOpenGLWidget->setCheckersBackground(checkers_background);
+                qOpenGLWidget->m_commands = content;
+                qOpenGLWidget->resize(width, height);
+                qOpenGLWidget->show();
+                activeWidget = qOpenGLWidget;
                 break;
             }
 #else
