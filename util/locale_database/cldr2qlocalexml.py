@@ -61,13 +61,13 @@ import enumdata
 import xpathlite
 from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile
 from dateconverter import convert_date
-from qlocalexml import Locale
+from qlocalexml import Locale, QLocaleXmlWriter
 
 # TODO: make calendars a command-line option
 calendars = ['gregorian', 'persian', 'islamic'] # 'hebrew'
 findEntryInFile = xpathlite._findEntryInFile
-def wrappedwarn(prefix, tokens):
-    return sys.stderr.write(
+def wrappedwarn(err, prefix, tokens):
+    return err.write(
         '\n'.join(textwrap.wrap(prefix + ', '.join(tokens),
                                 subsequent_indent=' ', width=80)) + '\n')
 
@@ -101,6 +101,7 @@ def parse_number_format(patterns, data):
         result.append(pattern)
     return result
 
+cldr_dir = None
 def raiseUnknownCode(code, form, cache={}):
     """Check whether an unknown code could be supported.
 
@@ -193,8 +194,8 @@ def getNumberSystems(cache={}):
     """Cached look-up of number system information.
 
     Pass no arguments.  Returns a mapping from number system names to,
-    for each system, a mapping with keys u'digits', u'type' and
-    u'id'\n"""
+    for each system, a mapping with keys 'digits', 'type' and 'id'.
+    Relies on global cldr_dir being set before it's first called.\n"""
     if not cache:
         for ns in findTagsInFile(os.path.join(cldr_dir, '..', 'supplemental',
                                               'numberingSystems.xml'),
@@ -419,26 +420,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
 
     return Locale(result)
 
-def addEscapes(s):
-    result = ''
-    for c in s:
-        n = ord(c)
-        if n < 128:
-            result += c
-        else:
-            result += "\\x"
-            result += "%02x" % (n)
-    return result
-
-def unicodeStr(s):
-    utf8 = s.encode('utf-8')
-    return "<size>" + str(len(utf8)) + "</size><data>" + addEscapes(utf8) + "</data>"
-
-def usage():
-    print "Usage: cldr2qlocalexml.py <path-to-cldr-main>"
-    sys.exit()
-
-def integrateWeekData(filePath):
+def integrateWeekData(filePath, locale_database):
     if not filePath.endswith(".xml"):
         return {}
 
@@ -510,111 +492,6 @@ def splitLocale(name):
     tag = (tag if tag else tags.next(),)
     sys.stderr.write('Ignoring unparsed cruft %s in %s\n' % ('_'.join(tag + tuple(tags)), name))
 
-if len(sys.argv) != 2:
-    usage()
-
-cldr_dir = sys.argv[1]
-
-if not os.path.isdir(cldr_dir):
-    usage()
-
-cldr_files = os.listdir(cldr_dir)
-
-locale_database = {}
-
-# see http://www.unicode.org/reports/tr35/tr35-info.html#Default_Content
-defaultContent_locales = []
-for ns in findTagsInFile(os.path.join(cldr_dir, '..', 'supplemental',
-                                      'supplementalMetadata.xml'),
-                         'metadata/defaultContent'):
-    for data in ns[1:][0]:
-        if data[0] == u"locales":
-            defaultContent_locales += data[1].split()
-
-skips = []
-for file in defaultContent_locales:
-    try:
-        language_code, script_code, country_code = splitLocale(file)
-    except ValueError:
-        sys.stderr.write('skipping defaultContent locale "' + file + '" [neither two nor three tags]\n')
-        continue
-
-    if not (script_code or country_code):
-        sys.stderr.write('skipping defaultContent locale "' + file + '" [second tag is neither script nor territory]\n')
-        continue
-
-    try:
-        l = _generateLocaleInfo(cldr_dir + "/" + file + ".xml", language_code, script_code, country_code)
-        if not l:
-            skips.append(file)
-            continue
-    except xpathlite.Error as e:
-        sys.stderr.write('skipping defaultContent locale "%s" (%s)\n' % (file, str(e)))
-        continue
-
-    locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
-
-if skips:
-    wrappedwarn('skipping defaultContent locales [no locale info generated]: ', skips)
-    skips = []
-
-for file in cldr_files:
-    try:
-        l = generateLocaleInfo(cldr_dir + "/" + file)
-        if not l:
-            skips.append(file)
-            continue
-    except xpathlite.Error as e:
-        sys.stderr.write('skipping file "%s" (%s)\n' % (file, str(e)))
-        continue
-
-    locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
-
-if skips:
-    wrappedwarn('skipping files [no locale info generated]: ', skips)
-
-integrateWeekData(cldr_dir+"/../supplemental/supplementalData.xml")
-locale_keys = locale_database.keys()
-locale_keys.sort()
-
-cldr_version = 'unknown'
-ldml = open(cldr_dir+"/../dtd/ldml.dtd", "r")
-for line in ldml:
-    if 'version cldrVersion CDATA #FIXED' in line:
-        cldr_version = line.split('"')[1]
-
-print "<localeDatabase>"
-print "    <version>" + cldr_version + "</version>"
-print "    <languageList>"
-for id in enumdata.language_list:
-    l = enumdata.language_list[id]
-    print "        <language>"
-    print "            <name>" + l[0] + "</name>"
-    print "            <id>" + str(id) + "</id>"
-    print "            <code>" + l[1] + "</code>"
-    print "        </language>"
-print "    </languageList>"
-
-print "    <scriptList>"
-for id in enumdata.script_list:
-    l = enumdata.script_list[id]
-    print "        <script>"
-    print "            <name>" + l[0] + "</name>"
-    print "            <id>" + str(id) + "</id>"
-    print "            <code>" + l[1] + "</code>"
-    print "        </script>"
-print "    </scriptList>"
-
-print "    <countryList>"
-for id in enumdata.country_list:
-    l = enumdata.country_list[id]
-    print "        <country>"
-    print "            <name>" + l[0] + "</name>"
-    print "            <id>" + str(id) + "</id>"
-    print "            <code>" + l[1] + "</code>"
-    print "        </country>"
-print "    </countryList>"
-
 def _parseLocale(l):
     language = "AnyLanguage"
     script = "AnyScript"
@@ -651,48 +528,135 @@ def _parseLocale(l):
 
     return (language, script, country)
 
-skips = []
-print "    <likelySubtags>"
-for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likelySubtags"):
-    tmp = {}
-    for data in ns[1:][0]: # ns looks like this: [u'likelySubtag', [(u'from', u'aa'), (u'to', u'aa_Latn_ET')]]
-        tmp[data[0]] = data[1]
+def likelySubtags(root, err):
+    skips = []
+    for ns in findTagsInFile(os.path.join(root, 'supplemental', 'likelySubtags.xml'), "likelySubtags"):
+        tmp = {}
+        for data in ns[1:][0]: # ns looks like this: [u'likelySubtag', [(u'from', u'aa'), (u'to', u'aa_Latn_ET')]]
+            tmp[data[0]] = data[1]
 
-    try:
-        from_language, from_script, from_country = _parseLocale(tmp[u"from"])
-        to_language, to_script, to_country = _parseLocale(tmp[u"to"])
-    except xpathlite.Error as e:
-        if tmp[u'to'].startswith(tmp[u'from']) and str(e) == 'unknown language code "%s"' % tmp[u'from']:
-            skips.append(tmp[u'to'])
-        else:
-            sys.stderr.write('skipping likelySubtag "%s" -> "%s" (%s)\n' % (tmp[u"from"], tmp[u"to"], str(e)))
-        continue
-    # substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
-    if to_country == "AnyCountry" and from_country != to_country:
-        to_country = from_country
-    if to_script == "AnyScript" and from_script != to_script:
-        to_script = from_script
+        try:
+            from_language, from_script, from_country = _parseLocale(tmp[u"from"])
+            to_language, to_script, to_country = _parseLocale(tmp[u"to"])
+        except xpathlite.Error as e:
+            if tmp[u'to'].startswith(tmp[u'from']) and str(e) == 'unknown language code "%s"' % tmp[u'from']:
+                skips.append(tmp[u'to'])
+            else:
+                sys.stderr.write('skipping likelySubtag "%s" -> "%s" (%s)\n' % (tmp[u"from"], tmp[u"to"], str(e)))
+            continue
+        # substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
+        if to_country == "AnyCountry" and from_country != to_country:
+            to_country = from_country
+        if to_script == "AnyScript" and from_script != to_script:
+            to_script = from_script
 
-    print "        <likelySubtag>"
-    print "            <from>"
-    print "                <language>" + from_language + "</language>"
-    print "                <script>" + from_script + "</script>"
-    print "                <country>" + from_country + "</country>"
-    print "            </from>"
-    print "            <to>"
-    print "                <language>" + to_language + "</language>"
-    print "                <script>" + to_script + "</script>"
-    print "                <country>" + to_country + "</country>"
-    print "            </to>"
-    print "        </likelySubtag>"
-print "    </likelySubtags>"
-if skips:
-    wrappedwarn('skipping likelySubtags (for unknown language codes): ', skips)
-print "    <localeList>"
+        yield ((from_language, from_script, from_country),
+               (to_language, to_script, to_country))
+    if skips:
+        wrappedwarn(err, 'skipping likelySubtags (for unknown language codes): ', skips)
 
-Locale.C(calendars).toXml(calendars)
-for key in locale_keys:
-    locale_database[key].toXml(calendars)
+def usage(err, name, message = ''):
+    err.write("""Usage: {} <path-to-cldr-main> [out-file.xml]
+""".format(name)) # TODO: expand
+    if message:
+        err.write('\n' + message + '\n')
 
-print "    </localeList>"
-print "</localeDatabase>"
+def main(args, out, err):
+    name = args.pop(0)
+
+    if len(args) < 1:
+        usage(err, name)
+        return 1
+
+    global cldr_dir
+    cldr_dir = args.pop(0)
+    if not os.path.isdir(cldr_dir):
+        usage(err, name, 'Where did you unpack the CLDR data files ?')
+        return 1
+
+    if len(args) > 1:
+        usage(err, name, 'Too many arguments passed')
+        return 1
+    if args:
+        qxml = open(args.pop(0), 'w')
+    else:
+        qxml = out
+
+    getNumberSystems(cldr_dir)
+    cldr_files = os.listdir(cldr_dir)
+    locale_database = {}
+
+    # see http://www.unicode.org/reports/tr35/tr35-info.html#Default_Content
+    defaultContent_locales = []
+    for ns in findTagsInFile(os.path.join(cldr_dir, '..', 'supplemental',
+                                          'supplementalMetadata.xml'),
+                             'metadata/defaultContent'):
+        for data in ns[1:][0]:
+            if data[0] == u"locales":
+                defaultContent_locales += data[1].split()
+
+    skips = []
+    for file in defaultContent_locales:
+        try:
+            language_code, script_code, country_code = splitLocale(file)
+        except ValueError:
+            sys.stderr.write('skipping defaultContent locale "' + file + '" [neither two nor three tags]\n')
+            continue
+
+        if not (script_code or country_code):
+            sys.stderr.write('skipping defaultContent locale "' + file + '" [second tag is neither script nor territory]\n')
+            continue
+
+        try:
+            l = _generateLocaleInfo(cldr_dir + "/" + file + ".xml", language_code, script_code, country_code)
+            if not l:
+                skips.append(file)
+                continue
+        except xpathlite.Error as e:
+            sys.stderr.write('skipping defaultContent locale "{}" ({})\n'.format(file, str(e)))
+            continue
+
+        locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
+
+    if skips:
+        wrappedwarn(err, 'skipping defaultContent locales [no locale info generated]: ', skips)
+        skips = []
+
+    for file in cldr_files:
+        try:
+            l = generateLocaleInfo(cldr_dir + "/" + file)
+            if not l:
+                skips.append(file)
+                continue
+        except xpathlite.Error as e:
+            sys.stderr.write('skipping file "{}" ({})\n'.format(file, str(e)))
+            continue
+
+        locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
+
+    if skips:
+        wrappedwarn(err, 'skipping files [no locale info generated]: ', skips)
+
+    integrateWeekData(cldr_dir + "/../supplemental/supplementalData.xml", locale_database)
+    cldr_version = 'unknown'
+    with open(cldr_dir+"/../dtd/ldml.dtd", "r") as ldml:
+        for line in ldml:
+            if 'version cldrVersion CDATA #FIXED' in line:
+                cldr_version = line.split('"')[1]
+
+    xmlOut = QLocaleXmlWriter(qxml.write)
+    xmlOut.version(cldr_version)
+    xmlOut.enumData(enumdata.language_list,
+                    enumdata.script_list,
+                    enumdata.country_list)
+    xmlOut.likelySubTags(likelySubtags(os.path.split(cldr_dir)[0], err))
+    xmlOut.locales(locale_database, calendars)
+    xmlOut.close()
+    if qxml is not out:
+        qxml.close()
+
+    return 0
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(main(sys.argv, sys.stdout, sys.stderr))
