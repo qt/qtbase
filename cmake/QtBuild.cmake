@@ -2740,7 +2740,9 @@ function(qt_add_test name)
     endif()
     # Get path to qtbase/bin, then prepend this path containing the shared libraries to PATH
     set(INSTALL_PREFIX_BIN "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
-    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}${INSTALL_PREFIX_BIN}${QT_PATH_SEPARATOR}$ENV{PATH}")
+    set(test_env_path "PATH=${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}${INSTALL_PREFIX_BIN}${QT_PATH_SEPARATOR}$ENV{PATH}")
+    string(REPLACE ";" "\;" test_env_path "${test_env_path}")
+    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "${test_env_path}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST=1")
 
     # Add the install prefix to list of plugin paths when doing a prefix build
