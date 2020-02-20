@@ -110,3 +110,27 @@ if(APPLE_UIKIT)
         target_compile_definitions(PlatformCommonInternal INTERFACE QT_COMPILER_SUPPORTS_SSE2)
     endif()
 endif()
+
+# Taken from mkspecs/common/msvc-version.conf and mkspecs/common/msvc-desktop.conf
+if (MSVC)
+    if (MSVC_VERSION GREATER_EQUAL 1799)
+        target_compile_options(PlatformCommonInternal INTERFACE
+            -FS
+            -Zc:rvalueCast
+            -Zc:inline
+    )
+    endif()
+    if (MSVC_VERSION GREATER_EQUAL 1899)
+        target_compile_options(PlatformCommonInternal INTERFACE
+            -Zc:strictStrings
+            -Zc:throwingNew
+        )
+    endif()
+    if (MSVC_VERSION GREATER_EQUAL 1909)
+        target_compile_options(PlatformCommonInternal INTERFACE
+            -Zc:referenceBinding
+        )
+    endif()
+
+    target_compile_options(PlatformCommonInternal INTERFACE -Zc:wchar_t -utf-8)
+endif()
