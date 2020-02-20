@@ -198,6 +198,7 @@ private slots:
     void shouldGenerateDifferentCodeDependingOnActiveLayers();
     void shouldUseGlobalVariableRatherThanTemporaries();
     void shouldGenerateTemporariesWisely();
+    void shouldHandlePortNamesPrefixingOneAnother();
 };
 
 void tst_QShaderGenerator::shouldHaveDefaultState()
@@ -1227,6 +1228,75 @@ void tst_QShaderGenerator::shouldGenerateTemporariesWisely()
             QCOMPARE(code, expected.join("\n"));
         }
     }
+}
+
+void tst_QShaderGenerator::shouldHandlePortNamesPrefixingOneAnother()
+{
+    // GIVEN
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    auto color1 = createNode({
+                                 createPort(QShaderNodePort::Output, "output")
+                             });
+    color1.addRule(gl4, QShaderNode::Rule("vec4 $output = color1;",
+                                          QByteArrayList() << "in vec4 color1;"));
+
+    auto color2 = createNode({
+                                 createPort(QShaderNodePort::Output, "output")
+                             });
+    color2.addRule(gl4, QShaderNode::Rule("vec4 $output = color2;",
+                                          QByteArrayList() << "in vec4 color2;"));
+
+    auto addColor = createNode({
+                                   createPort(QShaderNodePort::Output, "color"),
+                                   createPort(QShaderNodePort::Input, "color1"),
+                                   createPort(QShaderNodePort::Input, "color2"),
+                               });
+    addColor.addRule(gl4, QShaderNode::Rule("vec4 $color = $color1 + $color2;"));
+
+    auto shaderOutput = createNode({
+                                       createPort(QShaderNodePort::Input, "input")
+                                   });
+
+    shaderOutput.addRule(gl4, QShaderNode::Rule("shaderOutput = $input;",
+                                                QByteArrayList() << "out vec4 shaderOutput;"));
+
+    // WHEN
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+
+        res.addNode(color1);
+        res.addNode(color2);
+        res.addNode(addColor);
+        res.addNode(shaderOutput);
+
+        res.addEdge(createEdge(color1.uuid(), "output", addColor.uuid(), "color1"));
+        res.addEdge(createEdge(color2.uuid(), "output", addColor.uuid(), "color2"));
+        res.addEdge(createEdge(addColor.uuid(), "color", shaderOutput.uuid(), "input"));
+
+        return res;
+    }();
+
+    auto generator = QShaderGenerator();
+    generator.graph = graph;
+    generator.format = gl4;
+
+    const auto code = generator.createShaderCode();
+
+    // THEN
+    const auto expected = QByteArrayList()
+            << "#version 400 core"
+            << ""
+            << "in vec4 color1;"
+            << "in vec4 color2;"
+            << "out vec4 shaderOutput;"
+            << ""
+            << "void main()"
+            << "{"
+            << "    shaderOutput = ((color1 + color2));"
+            << "}"
+            << "";
+    QCOMPARE(code, expected.join("\n"));
 }
 
 QTEST_MAIN(tst_QShaderGenerator)
