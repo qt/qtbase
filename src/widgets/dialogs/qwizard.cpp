@@ -64,6 +64,7 @@
 #  include "qshortcut.h"
 #endif
 #include "qstyle.h"
+#include "qstyleoption.h"
 #include "qvarlengtharray.h"
 #if defined(Q_OS_MACX)
 #include <QtCore/QMetaMethod>
@@ -897,7 +898,9 @@ QWizardLayoutInfo QWizardPrivate::layoutInfoForCurrentPage()
 
     QWizardLayoutInfo info;
 
-    const int layoutHorizontalSpacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
+    QStyleOption option;
+    option.initFrom(q);
+    const int layoutHorizontalSpacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing, &option);
     info.topLevelMarginLeft = style->pixelMetric(QStyle::PM_LayoutLeftMargin, 0, q);
     info.topLevelMarginRight = style->pixelMetric(QStyle::PM_LayoutRightMargin, 0, q);
     info.topLevelMarginTop = style->pixelMetric(QStyle::PM_LayoutTopMargin, 0, q);
@@ -909,7 +912,7 @@ QWizardLayoutInfo QWizardPrivate::layoutInfoForCurrentPage()
     info.hspacing = (layoutHorizontalSpacing == -1)
         ? style->layoutSpacing(QSizePolicy::DefaultType, QSizePolicy::DefaultType, Qt::Horizontal)
         : layoutHorizontalSpacing;
-    info.vspacing = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
+    info.vspacing = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing, &option);
     info.buttonSpacing = (layoutHorizontalSpacing == -1)
         ? style->layoutSpacing(QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal)
         : layoutHorizontalSpacing;

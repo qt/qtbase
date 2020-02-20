@@ -1003,13 +1003,13 @@ QSize QPixmapStyle::pushButtonSizeFromContents(const QStyleOption *option,
     return d->computeSize(desc, w, h);
 }
 
-QSize QPixmapStyle::lineEditSizeFromContents(const QStyleOption *,
+QSize QPixmapStyle::lineEditSizeFromContents(const QStyleOption *option,
                                              const QSize &contentsSize, const QWidget *) const
 {
     Q_D(const QPixmapStyle);
 
     const QPixmapStyleDescriptor &desc = d->descriptors.value(LE_Enabled);
-    const int border = 2 * proxy()->pixelMetric(PM_DefaultFrameWidth);
+    const int border = 2 * proxy()->pixelMetric(PM_DefaultFrameWidth, option);
 
     int w = contentsSize.width() + border + desc.margins.left() + desc.margins.right();
     int h = contentsSize.height() + border + desc.margins.top() + desc.margins.bottom();

@@ -146,7 +146,7 @@ public:
         setAttribute(Qt::WA_NoMousePropagation);
     }
     QSize sizeHint() const override {
-        return QSize(20, style()->pixelMetric(QStyle::PM_MenuScrollerHeight));
+        return QSize(20, style()->pixelMetric(QStyle::PM_MenuScrollerHeight, nullptr, this));
     }
 
 protected:

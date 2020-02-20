@@ -2828,7 +2828,7 @@ void QMenu::paintEvent(QPaintEvent *e)
         frame.rect = rect();
         frame.palette = palette();
         frame.state = QStyle::State_None;
-        frame.lineWidth = style()->pixelMetric(QStyle::PM_MenuPanelWidth);
+        frame.lineWidth = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &frame);
         frame.midLineWidth = 0;
         style()->drawPrimitive(QStyle::PE_FrameMenu, &frame, &p, this);
     }

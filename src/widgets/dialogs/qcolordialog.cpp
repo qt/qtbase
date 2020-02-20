@@ -346,7 +346,8 @@ void QWellArray::paintCell(QPainter* p, int row, int col, const QRect &rect)
 
     const QPalette & g = palette();
     QStyleOptionFrame opt;
-    int dfw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
+    opt.initFrom(this);
+    int dfw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, &opt);
     opt.lineWidth = dfw;
     opt.midLineWidth = 1;
     opt.rect = rect.adjusted(b, b, -b, -b);

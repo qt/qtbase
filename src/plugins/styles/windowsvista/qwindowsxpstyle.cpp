@@ -3508,7 +3508,7 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
                 {
                     const int controlTop = 6;
                     const int controlHeight = height - controlTop - 3;
-                    const int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+                    const int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, option);
                     QSize iconSize = tb->icon.actualSize(QSize(iconExtent, iconExtent));
                     if (tb->icon.isNull())
                         iconSize = QSize(controlHeight, controlHeight);
@@ -3630,7 +3630,7 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
                     sz.rheight() += int(borderSize.bottom() + borderSize.top() - margin
                         + qreal(1) / factor - 1);
                 }
-                const int textMargins = 2*(proxy()->pixelMetric(PM_FocusFrameHMargin) + 1);
+                const int textMargins = 2*(proxy()->pixelMetric(PM_FocusFrameHMargin, option) + 1);
                 sz += QSize(qMax(pixelMetric(QStyle::PM_ScrollBarExtent, option, widget)
                                  + textMargins, 23), 0); //arrow button
             }

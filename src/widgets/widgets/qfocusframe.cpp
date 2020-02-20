@@ -86,8 +86,10 @@ void QFocusFramePrivate::updateSize()
     if (!widget)
         return;
 
-    int vmargin = q->style()->pixelMetric(QStyle::PM_FocusFrameVMargin),
-        hmargin = q->style()->pixelMetric(QStyle::PM_FocusFrameHMargin);
+    QStyleOption opt;
+    q->initStyleOption(&opt);
+    int vmargin = q->style()->pixelMetric(QStyle::PM_FocusFrameVMargin, &opt),
+        hmargin = q->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt);
     QPoint pos(widget->x(), widget->y());
     if (q->parentWidget() != widget->parentWidget())
         pos = widget->parentWidget()->mapTo(q->parentWidget(), pos);
@@ -98,8 +100,6 @@ void QFocusFramePrivate::updateSize()
 
     q->setGeometry(geom);
     QStyleHintReturnMask mask;
-    QStyleOption opt;
-    q->initStyleOption(&opt);
     if (q->style()->styleHint(QStyle::SH_FocusFrame_Mask, &opt, q, &mask))
         q->setMask(mask.region);
 }
@@ -263,8 +263,8 @@ QFocusFrame::paintEvent(QPaintEvent *)
     QStylePainter p(this);
     QStyleOption option;
     initStyleOption(&option);
-    int vmargin = style()->pixelMetric(QStyle::PM_FocusFrameVMargin);
-    int hmargin = style()->pixelMetric(QStyle::PM_FocusFrameHMargin);
+    const int vmargin = style()->pixelMetric(QStyle::PM_FocusFrameVMargin, &option);
+    const int hmargin = style()->pixelMetric(QStyle::PM_FocusFrameHMargin, &option);
     QWidgetPrivate *wd = qt_widget_private(d->widget);
     QRect rect = wd->clipRect().adjusted(0, 0, hmargin*2, vmargin*2);
     p.setClipRect(rect);

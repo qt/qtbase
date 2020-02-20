@@ -3347,8 +3347,8 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             switch (subControl) {
             case SC_SliderHandle: {
                 if (slider->orientation == Qt::Horizontal) {
-                    rect.setHeight(proxy()->pixelMetric(PM_SliderThickness));
-                    rect.setWidth(proxy()->pixelMetric(PM_SliderLength));
+                    rect.setHeight(proxy()->pixelMetric(PM_SliderThickness, option));
+                    rect.setWidth(proxy()->pixelMetric(PM_SliderLength, option));
                     int centerY = slider->rect.center().y() - rect.height() / 2;
                     if (slider->tickPosition & QSlider::TicksAbove)
                         centerY += tickSize;
@@ -3356,8 +3356,8 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                         centerY -= tickSize;
                     rect.moveTop(centerY);
                 } else {
-                    rect.setWidth(proxy()->pixelMetric(PM_SliderThickness));
-                    rect.setHeight(proxy()->pixelMetric(PM_SliderLength));
+                    rect.setWidth(proxy()->pixelMetric(PM_SliderThickness, option));
+                    rect.setHeight(proxy()->pixelMetric(PM_SliderLength, option));
                     int centerX = slider->rect.center().x() - rect.width() / 2;
                     if (slider->tickPosition & QSlider::TicksAbove)
                         centerX += tickSize;

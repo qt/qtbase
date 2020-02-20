@@ -2215,7 +2215,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
                 {
                     const int controlTop = int(6 * factor);
                     const int controlHeight = int(height - controlTop - 3 * factor);
-                    int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+                    int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, option);
                     QSize iconSize = tb->icon.actualSize(QSize(iconExtent, iconExtent));
                     if (tb->icon.isNull())
                         iconSize = QSize(controlHeight, controlHeight);

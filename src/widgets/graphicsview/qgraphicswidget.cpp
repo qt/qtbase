@@ -615,7 +615,7 @@ void QGraphicsWidget::unsetWindowFrameMargins()
         QStyleOptionTitleBar bar;
         d->initStyleOptionTitleBar(&bar);
         QStyle *style = this->style();
-        qreal margin = style->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth);
+        const qreal margin = style->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, &bar);
         qreal titleBarHeight  = d->titleBarHeight(bar);
         setWindowFrameMargins(margin, titleBarHeight, margin, margin);
     } else {
