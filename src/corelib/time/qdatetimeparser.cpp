@@ -1539,6 +1539,14 @@ QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValu
     text = scan.input = input;
     // Set spec *after* all checking, so validity is a property of the string:
     scan.value = scan.value.toTimeSpec(spec);
+
+    /*
+        However, even with a valid string we might have ended up with an invalid datetime:
+        the non-existent hour during dst changes, for instance.
+    */
+    if (!scan.value.isValid() && scan.state == Acceptable)
+        scan.state = Intermediate;
+
     return scan;
 }
 

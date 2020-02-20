@@ -294,6 +294,13 @@ private slots:
 
     void stepModifierPressAndHold_data();
     void stepModifierPressAndHold();
+
+    void springForward_data();
+    void springForward();
+
+    void stepIntoDSTGap_data();
+    void stepIntoDSTGap();
+
 private:
     EditorDateEdit* testWidget;
     QWidget *testFocusWidget;
@@ -4335,6 +4342,230 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
     const QDate expectedDate = startDate.addYears(spy.length() *
                                                   expectedStepModifier);
     QCOMPARE(value.toDate(), expectedDate);
+}
+
+/*
+    The following tests verify correct handling of the spring forward gap; which
+    hour is skipped, and on which day, depends on the local time zone. We try to
+    make it reasonably robust by discovering the first day of spring in a given
+    year, but we won't try to handle every situation.
+
+    If this function returns an invalid QDateTime, then the tests should be skipped.
+*/
+static QDateTime findSpring(int year, const QTimeZone &timeZone)
+{
+    if (!timeZone.hasTransitions())
+        return QDateTime();
+
+    // Southern hemisphere spring is after midsummer
+    const QDateTime midSummer = QDate(year, 6, 21).startOfDay();
+    const QTimeZone::OffsetData transition =
+        midSummer.isDaylightTime() ? timeZone.previousTransition(midSummer)
+                                   : timeZone.nextTransition(midSummer);
+    const QDateTime spring = transition.atUtc.toLocalTime();
+    // there might have been DST at some point, but not in the year we care about
+    if (spring.date().year() != year || !spring.isDaylightTime())
+        return QDateTime();
+
+    return spring;
+};
+
+/*!
+    Test that typing in a time that is invalid due to spring forward gap
+    produces reasonable results.
+*/
+void tst_QDateTimeEdit::springForward_data()
+{
+    QTest::addColumn<QDateTime>("start");
+    QTest::addColumn<QAbstractSpinBox::CorrectionMode>("correctionMode");
+    QTest::addColumn<QTime>("inputTime");
+    QTest::addColumn<QDateTime>("expected");
+
+    const QTimeZone timeZone = QTimeZone::systemTimeZone();
+    if (!timeZone.hasDaylightTime())
+        QSKIP("This test needs to run in a timezone that observes DST!");
+
+    const QDateTime springTransition = findSpring(2019, timeZone);
+    if (!springTransition.isValid())
+        QSKIP("Failed to obtain valid spring forward datetime for 2019!");
+
+    const QDate springDate = springTransition.date();
+    const int gapWidth = timeZone.daylightTimeOffset(springTransition.addDays(1));
+    const QTime springGap = springTransition.time().addSecs(-gapWidth);
+    const QTime springGapMiddle = springTransition.time().addSecs(-gapWidth/2);
+
+    QTest::addRow("forward to %s, correct to previous", qPrintable(springGap.toString("hh:mm")))
+        << QDateTime(springDate, springGap.addSecs(-gapWidth))
+        << QAbstractSpinBox::CorrectToPreviousValue
+        << springGap
+        << QDateTime(springDate, springGap.addSecs(-gapWidth));
+
+    QTest::addRow("back to %s, correct to previous", qPrintable(springGap.toString("hh:mm")))
+        << springTransition
+        << QAbstractSpinBox::CorrectToPreviousValue
+        << springGap
+        << springTransition;
+
+    QTest::addRow("forward to %s, correct to nearest", qPrintable(springGap.toString("hh:mm")))
+        << QDateTime(springDate, springGap.addSecs(-gapWidth))
+        << QAbstractSpinBox::CorrectToNearestValue
+        << springGapMiddle
+        << springTransition;
+
+    QTest::addRow("back to %s, correct to nearest", qPrintable(springGap.toString("hh:mm")))
+        << springTransition
+        << QAbstractSpinBox::CorrectToNearestValue
+        << springGapMiddle
+        << springTransition;
+
+    QTest::addRow("jump to %s, correct to nearest", qPrintable(springGapMiddle.toString("hh:mm")))
+        << QDateTime(QDate(1980, 5, 10), springGap)
+        << QAbstractSpinBox::CorrectToNearestValue
+        << springGapMiddle
+        << springTransition;
+}
+
+void tst_QDateTimeEdit::springForward()
+{
+    QFETCH(QDateTime, start);
+    QFETCH(QAbstractSpinBox::CorrectionMode, correctionMode);
+    QFETCH(QTime, inputTime);
+    QFETCH(QDateTime, expected);
+
+    QDateTimeEdit edit;
+    edit.setDisplayFormat(QLatin1String("dd.MM.yyyy hh:mm"));
+    edit.setCorrectionMode(correctionMode);
+
+    // we always want to start with a valid time
+    QVERIFY(start.isValid());
+    edit.setDateTime(start);
+
+    edit.setSelectedSection(QDateTimeEdit::DaySection);
+    const QDate date = expected.date();
+    const QString day = QString::number(date.day()).rightJustified(2, QLatin1Char('0'));
+    const QString month = QString::number(date.month()).rightJustified(2, QLatin1Char('0'));
+    const QString year = QString::number(date.year());
+    const QString hour = QString::number(inputTime.hour()).rightJustified(2, QLatin1Char('0'));
+    const QString minute = QString::number(inputTime.minute()).rightJustified(2, QLatin1Char('0'));
+    QTest::keyClicks(&edit, day);
+    QTest::keyClicks(&edit, month);
+    QTest::keyClicks(&edit, year);
+    QTest::keyClicks(&edit, hour);
+    QTest::keyClicks(&edit, minute);
+    QTest::keyClick(&edit, Qt::Key_Return, {});
+
+    QCOMPARE(edit.dateTime(), expected);
+}
+
+/*!
+    Test that using the up/down spinners to modify a valid time into a time that
+    is invalid due to daylight-saving changes produces reasonable results.
+
+    2007 is a year in which the DST transition in most tested places was not on the
+    last or first day of the month, which allows us to test the various steps.
+*/
+void tst_QDateTimeEdit::stepIntoDSTGap_data()
+{
+    QTest::addColumn<QDateTime>("start");
+    QTest::addColumn<QDateTimeEdit::Section>("section");
+    QTest::addColumn<int>("steps");
+    QTest::addColumn<QDateTime>("end");
+
+    const QTimeZone timeZone = QTimeZone::systemTimeZone();
+    if (!timeZone.hasDaylightTime())
+        QSKIP("This test needs to run in a timezone that observes DST!");
+
+    const QDateTime springTransition = findSpring(2007, timeZone);
+    if (!springTransition.isValid())
+        QSKIP("Failed to obtain valid spring forward datetime for 2007!");
+
+    const QDate spring = springTransition.date();
+    const int gapWidth = timeZone.daylightTimeOffset(springTransition.addDays(1));
+    const QTime springGap = springTransition.time().addSecs(-gapWidth);
+
+    // change hour
+    if (springGap.hour() != 0) {
+        QTest::addRow("hour up into %s gap", qPrintable(springGap.toString("hh:mm")))
+            << QDateTime(spring, springGap.addSecs(-3600))
+            << QDateTimeEdit::HourSection
+            << +1
+            << springTransition;
+
+        // 3:00:10 into 2:00:10 should get us to 1:00:10
+        QTest::addRow("hour down into %s gap", qPrintable(springGap.toString("hh:mm")))
+            << QDateTime(spring, springGap.addSecs(3610))
+            << QDateTimeEdit::HourSection
+            << -1
+            << QDateTime(spring, springGap.addSecs(-3590));
+    }
+
+    // change day
+    if (spring.day() != 1) {
+        // today's 2:05 is tomorrow's 3:05
+        QTest::addRow("day up into %s gap", qPrintable(springGap.toString("hh:mm")))
+            << QDateTime(spring.addDays(-1), springGap.addSecs(300))
+            << QDateTimeEdit::DaySection
+            << +1
+            << springTransition.addSecs(300);
+    }
+
+    if (spring.day() != spring.daysInMonth()) {
+        QTest::addRow("day down into %s gap", qPrintable(springGap.toString("hh:mm")))
+            << QDateTime(spring.addDays(1), springGap)
+            << QDateTimeEdit::DaySection
+            << -1
+            << springTransition;
+    }
+
+    // 2018-03-25 - change month
+    QTest::addRow("month up into %s gap", qPrintable(springGap.toString("hh:mm")))
+        << QDateTime(spring.addMonths(-1), springGap)
+        << QDateTimeEdit::MonthSection
+        << +1
+        << springTransition;
+    QTest::addRow("month down into %s gap", qPrintable(springGap.toString("hh:mm")))
+        << QDateTime(spring.addMonths(1), springGap)
+        << QDateTimeEdit::MonthSection
+        << -1
+        << springTransition;
+
+    // 2018-03-25 - change year
+    QTest::addRow("year up into %s gap", qPrintable(springGap.toString("hh:mm")))
+        << QDateTime(spring.addYears(-1), springGap)
+        << QDateTimeEdit::YearSection
+        << +1
+        << springTransition;
+    QTest::addRow("year down into %s gap", qPrintable(springGap.toString("hh:mm")))
+        << QDateTime(spring.addYears(1), springGap)
+        << QDateTimeEdit::YearSection
+        << -1
+        << springTransition;
+}
+
+void tst_QDateTimeEdit::stepIntoDSTGap()
+{
+    QFETCH(QDateTime, start);
+    QFETCH(QDateTimeEdit::Section, section);
+    QFETCH(int, steps);
+    QFETCH(QDateTime, end);
+
+    QDateTimeEdit edit;
+    edit.setDisplayFormat(QLatin1String("dd.MM.yyyy hh:mm"));
+
+    // we always want to start with a valid time
+    QVERIFY(start.isValid());
+    edit.setDateTime(start);
+
+    edit.setSelectedSection(section);
+
+    // we want to end with a valid value
+    QVERIFY(end.isValid());
+
+    const auto stepCount = qAbs(steps);
+    for (int step = 0; step < stepCount; ++step)
+        QTest::keyClick(&edit, steps > 0 ? Qt::Key_Up : Qt::Key_Down, {});
+
+    QCOMPARE(edit.dateTime(), end);
 }
 
 QTEST_MAIN(tst_QDateTimeEdit)

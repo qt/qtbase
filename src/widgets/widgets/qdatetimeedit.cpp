@@ -1442,7 +1442,16 @@ void QDateTimeEdit::fixup(QString &input) const
     QValidator::State state;
     int copy = d->edit->cursorPosition();
 
-    d->validateAndInterpret(input, copy, state, true);
+    QDateTime value = d->validateAndInterpret(input, copy, state, true);
+    /*
+        String was valid, but the datetime still is not; use the time that
+        has the same distance from epoch.
+        CorrectToPreviousValue correction is handled by QAbstractSpinBox.
+    */
+    if (!value.isValid() && d->correctionMode == QAbstractSpinBox::CorrectToNearestValue) {
+        value = QDateTime::fromMSecsSinceEpoch(value.toMSecsSinceEpoch(), value.timeSpec());
+        input = textFromDateTime(value);
+    }
 }
 
 
@@ -2060,6 +2069,17 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
     const int oldDay = v.date().day(calendar);
 
     setDigit(v, sectionIndex, val);
+    /*
+        Stepping into a daylight saving time that doesn't exist,
+        so use the time that has the same distance from epoch.
+    */
+    if (!v.isValid()) {
+        auto msecsSinceEpoch = v.toMSecsSinceEpoch();
+        // decreasing from e.g 3am to 2am would get us back to 3am, but we want 1am
+        if (steps < 0 && sn.type & HourSectionMask)
+            msecsSinceEpoch -= 3600 * 1000;
+        v = QDateTime::fromMSecsSinceEpoch(msecsSinceEpoch, v.timeSpec());
+    }
     // if this sets year or month it will make
     // sure that days are lowered if needed.
 
