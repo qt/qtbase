@@ -75,6 +75,8 @@ private slots:
     void nativeHandles();
     void nativeTexture_data();
     void nativeTexture();
+    void nativeBuffer_data();
+    void nativeBuffer();
     void resourceUpdateBatchBuffer_data();
     void resourceUpdateBatchBuffer();
     void resourceUpdateBatchRGBATextureUpload_data();
@@ -543,6 +545,86 @@ void tst_QRhi::nativeTexture()
 #endif
     default:
         Q_ASSERT(false);
+    }
+}
+
+void tst_QRhi::nativeBuffer_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::nativeBuffer()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing native buffer query");
+
+    const QRhiBuffer::Type types[3] = { QRhiBuffer::Immutable, QRhiBuffer::Static, QRhiBuffer::Dynamic };
+    const QRhiBuffer::UsageFlags usages[3] = { QRhiBuffer::VertexBuffer, QRhiBuffer::IndexBuffer, QRhiBuffer::UniformBuffer };
+    for (int typeUsageIdx = 0; typeUsageIdx < 3; ++typeUsageIdx) {
+        QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(types[typeUsageIdx], usages[typeUsageIdx], 256));
+        QVERIFY(buf->build());
+
+        const QRhiBuffer::NativeBuffer nativeBuf = buf->nativeBuffer();
+        QVERIFY(nativeBuf.slotCount <= rhi->resourceLimit(QRhi::FramesInFlight));
+
+        switch (impl) {
+        case QRhi::Null:
+            break;
+    #ifdef TST_VK
+        case QRhi::Vulkan:
+        {
+            QVERIFY(nativeBuf.slotCount >= 1); // always backed by native buffers
+            for (int i = 0; i < nativeBuf.slotCount; ++i) {
+                auto *buffer = static_cast<const VkBuffer *>(nativeBuf.objects[i]);
+                QVERIFY(buffer);
+                QVERIFY(*buffer);
+            }
+        }
+            break;
+    #endif
+    #ifdef TST_GL
+        case QRhi::OpenGLES2:
+        {
+            QVERIFY(nativeBuf.slotCount >= 0); // UniformBuffers are not backed by native buffers, so 0 is perfectly valid
+            for (int i = 0; i < nativeBuf.slotCount; ++i) {
+                auto *bufferId = static_cast<const uint *>(nativeBuf.objects[i]);
+                QVERIFY(bufferId);
+                QVERIFY(*bufferId);
+            }
+        }
+            break;
+    #endif
+    #ifdef TST_D3D11
+        case QRhi::D3D11:
+        {
+            QVERIFY(nativeBuf.slotCount >= 1); // always backed by native buffers
+            for (int i = 0; i < nativeBuf.slotCount; ++i) {
+                auto *buffer = static_cast<void * const *>(nativeBuf.objects[i]);
+                QVERIFY(buffer);
+                QVERIFY(*buffer);
+            }
+        }
+            break;
+    #endif
+    #ifdef TST_MTL
+        case QRhi::Metal:
+        {
+            QVERIFY(nativeBuf.slotCount >= 1); // always backed by native buffers
+            for (int i = 0; i < nativeBuf.slotCount; ++i) {
+                void * const * buffer = (void * const *) nativeBuf.objects[i];
+                QVERIFY(buffer);
+                QVERIFY(*buffer);
+            }
+        }
+            break;
+    #endif
+        default:
+            Q_ASSERT(false);
+        }
     }
 }
 

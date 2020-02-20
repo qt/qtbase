@@ -2200,6 +2200,19 @@ bool QMetalBuffer::build()
     return true;
 }
 
+QRhiBuffer::NativeBuffer QMetalBuffer::nativeBuffer()
+{
+    if (d->slotted) {
+        NativeBuffer b;
+        Q_ASSERT(sizeof(b.objects) / sizeof(b.objects[0]) >= size_t(QMTL_FRAMES_IN_FLIGHT));
+        for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
+            b.objects[i] = &d->buf[i];
+        b.slotCount = QMTL_FRAMES_IN_FLIGHT;
+        return b;
+    }
+    return { { &d->buf[0] }, 1 };
+}
+
 QMetalRenderBuffer::QMetalRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
                                        int sampleCount, QRhiRenderBuffer::Flags flags)
     : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags),

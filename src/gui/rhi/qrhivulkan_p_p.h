@@ -76,6 +76,7 @@ struct QVkBuffer : public QRhiBuffer
     ~QVkBuffer();
     void release() override;
     bool build() override;
+    QRhiBuffer::NativeBuffer nativeBuffer() override;
 
     VkBuffer buffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc allocations[QVK_FRAMES_IN_FLIGHT];

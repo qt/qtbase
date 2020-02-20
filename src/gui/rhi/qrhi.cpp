@@ -1960,6 +1960,40 @@ quint64 QRhiResource::globalResourceId() const
  */
 
 /*!
+    \class QRhiBuffer::NativeBuffer
+    \brief Contains information about the underlying native resources of a buffer.
+ */
+
+/*!
+    \variable QRhiBuffer::NativeBuffer::objects
+    \brief an array with pointers to the native object handles.
+
+    With OpenGL, the native handle is a GLuint value, so the elements in the \c
+    objects array are pointers to a GLuint. With Vulkan, the native handle is a
+    VkBuffer, so the elements of the array are pointers to a VkBuffer. With
+    Direct3D 11 and Metal the elements are pointers to a ID3D11Buffer or
+    MTLBuffer pointer, respectively.
+
+    \note Pay attention to the fact that the elements are always pointers to
+    the native buffer handle type, even if the native type itself is a pointer.
+ */
+
+/*!
+    \variable QRhiBuffer::NativeBuffer::slotCount
+    \brief Specifies the number of valid elements in the objects array.
+
+    The value can be 0, 1, 2, or 3 in practice. 0 indicates that the QRhiBuffer
+    is not backed by any native buffer objects. This can happen with
+    QRhiBuffers with the usage UniformBuffer when the underlying API does not
+    support (or the backend chooses not to use) native uniform buffers. 1 is
+    commonly used for Immutable and Static types (but some backends may
+    differ). 2 or 3 is typical when the type is Dynamic (but some backends may
+    differ).
+
+    \sa QRhi::currentFrameSlot(), QRhi::FramesInFlight
+ */
+
+/*!
     \internal
  */
 QRhiBuffer::QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, int size_)
@@ -1986,6 +2020,46 @@ QRhiResource::Type QRhiBuffer::resourceType() const
     \return \c true when successful, \c false when a graphics operation failed.
     Regardless of the return value, calling release() is always safe.
  */
+
+/*!
+    \return the underlying native resources for this buffer. The returned value
+    will be empty if exposing the underlying native resources is not supported by
+    the backend.
+
+    A QRhiBuffer may be backed by multiple native buffer objects, depending on
+    the type() and the QRhi backend in use. When this is the case, all of them
+    are returned in the objects array in the returned struct, with slotCount
+    specifying the number of native buffer objects. While
+    \l{QRhi::beginFrame()}{recording a frame}, QRhi::currentFrameSlot() can be
+    used to determine which of the native buffers QRhi is using for operations
+    that read or write from this QRhiBuffer within the frame being recorded.
+
+    In some cases a QRhiBuffer will not be backed by a native buffer object at
+    all. In this case slotCount will be set to 0 and no valid native objects
+    are returned. This is not an error, and is perfectly valid when a given
+    backend does not use native buffers for QRhiBuffers with certain types or
+    usages.
+
+    \note Be aware that QRhi backends may employ various buffer update
+    strategies. Unlike textures, where uploading image data always means
+    recording a buffer-to-image (or similar) copy command on the command
+    buffer, buffers, in particular Dynamic and UniformBuffer ones, can operate
+    in many different ways. For example, a QRhiBuffer with usage type
+    UniformBuffer may not even be backed by a native buffer object at all if
+    uniform buffers are not used or supported by a given backend and graphics
+    API. There are also differences to how data is written to the buffer and
+    the type of backing memory used, and, if host visible memory is involved,
+    when memory writes become available and visible. Therefore, in general it
+    is recommended to limit native buffer object access to vertex and index
+    buffers with types Static or Immutable, because these operate in a
+    relatively uniform manner with all backends.
+
+    \sa QRhi::currentFrameSlot(), QRhi::FramesInFlight
+ */
+QRhiBuffer::NativeBuffer QRhiBuffer::nativeBuffer()
+{
+    return {};
+}
 
 /*!
     \class QRhiRenderBuffer

@@ -5185,6 +5185,19 @@ bool QVkBuffer::build()
     return true;
 }
 
+QRhiBuffer::NativeBuffer QVkBuffer::nativeBuffer()
+{
+    if (m_type == Dynamic) {
+        NativeBuffer b;
+        Q_ASSERT(sizeof(b.objects) / sizeof(b.objects[0]) >= size_t(QVK_FRAMES_IN_FLIGHT));
+        for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+            b.objects[i] = &buffers[i];
+        b.slotCount = QVK_FRAMES_IN_FLIGHT;
+        return b;
+    }
+    return { { &buffers[0] }, 1 };
+}
+
 QVkRenderBuffer::QVkRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
                                  int sampleCount, Flags flags)
     : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags)

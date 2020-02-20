@@ -64,6 +64,7 @@ struct QGles2Buffer : public QRhiBuffer
     ~QGles2Buffer();
     void release() override;
     bool build() override;
+    QRhiBuffer::NativeBuffer nativeBuffer() override;
 
     GLuint buffer = 0;
     GLenum targetForDataOps;

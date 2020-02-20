@@ -3303,6 +3303,14 @@ bool QGles2Buffer::build()
     return true;
 }
 
+QRhiBuffer::NativeBuffer QGles2Buffer::nativeBuffer()
+{
+    if (m_usage.testFlag(QRhiBuffer::UniformBuffer))
+        return { {}, 0 };
+
+    return { { &buffer }, 1 };
+}
+
 QGles2RenderBuffer::QGles2RenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
                                        int sampleCount, QRhiRenderBuffer::Flags flags)
     : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags)

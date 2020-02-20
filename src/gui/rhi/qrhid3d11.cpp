@@ -2386,6 +2386,11 @@ bool QD3D11Buffer::build()
     return true;
 }
 
+QRhiBuffer::NativeBuffer QD3D11Buffer::nativeBuffer()
+{
+    return { { &buffer }, 1 };
+}
+
 ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()
 {
     if (uav)
