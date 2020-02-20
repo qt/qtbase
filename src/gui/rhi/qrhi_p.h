@@ -1448,7 +1448,8 @@ public:
         TextureSizeMin = 1,
         TextureSizeMax,
         MaxColorAttachments,
-        FramesInFlight
+        FramesInFlight,
+        MaxAsyncReadbackFrames
     };
 
     ~QRhi();

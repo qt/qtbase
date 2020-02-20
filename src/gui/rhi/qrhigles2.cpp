@@ -787,7 +787,11 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxColorAttachments:
         return caps.maxDrawBuffers;
     case QRhi::FramesInFlight:
-        return 2; // dummy
+        // From our perspective. What the GL impl does internally is another
+        // question, but that's out of our hands and does not concern us here.
+        return 1;
+    case QRhi::MaxAsyncReadbackFrames:
+        return 1;
     default:
         Q_UNREACHABLE();
         return 0;

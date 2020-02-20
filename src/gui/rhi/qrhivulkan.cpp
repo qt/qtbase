@@ -4009,6 +4009,8 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
         return int(physDevProperties.limits.maxColorAttachments);
     case QRhi::FramesInFlight:
         return QVK_FRAMES_IN_FLIGHT;
+    case QRhi::MaxAsyncReadbackFrames:
+        return QVK_FRAMES_IN_FLIGHT;
     default:
         Q_UNREACHABLE();
         return 0;

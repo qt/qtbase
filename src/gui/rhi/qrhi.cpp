@@ -627,18 +627,27 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     is what some OpenGL ES implementations provide.
 
     \value FramesInFlight The number of frames the backend may keep "in
-    flight". The value has no relevance, and is unspecified, with backends like
-    OpenGL and Direct3D 11. With backends like Vulkan or Metal, it is the
-    responsibility of QRhi to block whenever starting a new frame and finding
-    the CPU is already \c{N - 1} frames ahead of the GPU (because the command
-    buffer submitted in frame no. \c{current} - \c{N} has not yet completed).
-    The value N is what is returned from here, and is typically 2. This can be
-    relevant to applications that integrate rendering done directly with the
-    graphics API, as such rendering code may want to perform double (if the
-    value is 2) buffering for resources, such as, buffers, similarly to the
-    QRhi backends themselves. The current frame slot index (a value running 0,
-    1, .., N-1, then wrapping around) is retrievable from
-    QRhi::currentFrameSlot().
+    flight": with backends like Vulkan or Metal, it is the responsibility of
+    QRhi to block whenever starting a new frame and finding the CPU is already
+    \c{N - 1} frames ahead of the GPU (because the command buffer submitted in
+    frame no. \c{current} - \c{N} has not yet completed). The value N is what
+    is returned from here, and is typically 2. This can be relevant to
+    applications that integrate rendering done directly with the graphics API,
+    as such rendering code may want to perform double (if the value is 2)
+    buffering for resources, such as, buffers, similarly to the QRhi backends
+    themselves. The current frame slot index (a value running 0, 1, .., N-1,
+    then wrapping around) is retrievable from QRhi::currentFrameSlot(). The
+    value is 1 for backends where the graphics API offers no such low level
+    control over the command submission process. Note that pipelining may still
+    happen even when this value is 1 (some backends, such as D3D11, are
+    designed to attempt to enable this, for instance, by using an update
+    strategy for uniform buffers that does not stall the pipeline), but that is
+    then not controlled by QRhi and so not reflected here in the API.
+
+    \value MaxAsyncReadbackFrames The number of \l{QRhi::endFrame()}{submitted}
+    frames (including the one that contains the readback) after which an
+    asynchronous texture or buffer readback is guaranteed to complete upon
+    \l{QRhi::beginFrame()}{starting a new frame}.
  */
 
 /*!
@@ -4339,7 +4348,15 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
     is supported only when the QRhi::ReadBackNonUniformBuffer feature is
     reported as supported.
 
-    \a readBackTexture(), QRhi::isFeatureSupported()
+   \note The asynchronous readback is guaranteed to have completed when one of
+   the following conditions is met: \l{QRhi::finish()}{finish()} has been
+   called; or, at least \c N frames have been \l{QRhi::endFrame()}{submitted},
+   including the frame that issued the readback operation, and the
+   \l{QRhi::beginFrame()}{recording of a new frame} has been started, where \c
+   N is the \l{QRhi::resourceLimit()}{resource limit value} returned for
+   QRhi::MaxAsyncReadbackFrames.
+
+   \sa readBackTexture(), QRhi::isFeatureSupported(), QRhi::resourceLimit()
  */
 void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
 {
@@ -4430,6 +4447,16 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
    happens with a byte ordered format. A \l{QRhiTexture::RGBA8}{RGBA8} texture
    maps therefore to byte ordered QImage formats, such as,
    QImage::Format_RGBA8888.
+
+   \note The asynchronous readback is guaranteed to have completed when one of
+   the following conditions is met: \l{QRhi::finish()}{finish()} has been
+   called; or, at least \c N frames have been \l{QRhi::endFrame()}{submitted},
+   including the frame that issued the readback operation, and the
+   \l{QRhi::beginFrame()}{recording of a new frame} has been started, where \c
+   N is the \l{QRhi::resourceLimit()}{resource limit value} returned for
+   QRhi::MaxAsyncReadbackFrames.
+
+   \sa readBackBuffer(), QRhi::resourceLimit()
  */
 void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb, QRhiReadbackResult *result)
 {

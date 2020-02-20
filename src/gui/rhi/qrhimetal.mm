@@ -581,6 +581,8 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
         return 8;
     case QRhi::FramesInFlight:
         return QMTL_FRAMES_IN_FLIGHT;
+    case QRhi::MaxAsyncReadbackFrames:
+        return QMTL_FRAMES_IN_FLIGHT;
     default:
         Q_UNREACHABLE();
         return 0;

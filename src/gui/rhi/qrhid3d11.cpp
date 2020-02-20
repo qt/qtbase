@@ -482,7 +482,13 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxColorAttachments:
         return 8;
     case QRhi::FramesInFlight:
-        return 2; // dummy
+        // From our perspective. What D3D does internally is another question
+        // (there could be pipelining, helped f.ex. by our MAP_DISCARD based
+        // uniform buffer update strategy), but that's out of our hands and
+        // does not concern us here.
+        return 1;
+    case QRhi::MaxAsyncReadbackFrames:
+        return 1;
     default:
         Q_UNREACHABLE();
         return 0;

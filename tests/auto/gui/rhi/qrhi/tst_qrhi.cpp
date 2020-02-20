@@ -1672,9 +1672,9 @@ void tst_QRhi::renderToWindowSimple()
 
     QVERIFY(pipeline->build());
 
-    const int framesInFlight = rhi->resourceLimit(QRhi::FramesInFlight);
-    QVERIFY(framesInFlight >= 1);
-    const int FRAME_COUNT = framesInFlight + 1;
+    const int asyncReadbackFrames = rhi->resourceLimit(QRhi::MaxAsyncReadbackFrames);
+    // one frame issues the readback, then we do MaxAsyncReadbackFrames more to ensure the readback completes
+    const int FRAME_COUNT = asyncReadbackFrames + 1;
     bool readCompleted = false;
     QRhiReadbackResult readResult;
     QImage result;
@@ -1721,8 +1721,8 @@ void tst_QRhi::renderToWindowSimple()
     }
 
     // The readback is asynchronous here. However it is guaranteed that it
-    // finished at latest after rendering QRhi::FramesInFlight frames after the
-    // one that enqueues the readback.
+    // finished at latest after rendering QRhi::MaxAsyncReadbackFrames frames
+    // after the one that enqueues the readback.
     QVERIFY(readCompleted);
     QVERIFY(readbackWidth > 0);
 
