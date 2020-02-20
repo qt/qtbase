@@ -101,7 +101,13 @@ Q_WIDGETS_EXPORT qreal dpi(const QStyleOption *option)
     if (option)
         return option->fontMetrics.fontDpi();
 
+    // Fall back to historical Qt behavior: hardocded 72 DPI on mac,
+    // primary screen DPI on other platforms.
+#ifdef Q_OS_DARWIN
     return qstyleBaseDpi;
+#else
+    return qt_defaultDpiX();
+#endif
 }
 
 Q_WIDGETS_EXPORT qreal dpiScaled(qreal value, qreal dpi)
