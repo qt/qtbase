@@ -2431,11 +2431,11 @@ void tst_QImage::rgbSwapped()
         QCOMPARE(swappedColor.blue(), referenceColor.red());
     }
 
-    QImage imageSwappedTwice = imageSwapped.rgbSwapped();
+    imageSwapped.rgbSwap();
 
-    QCOMPARE(image, imageSwappedTwice);
+    QCOMPARE(image, imageSwapped);
 
-    QCOMPARE(memcmp(image.constBits(), imageSwappedTwice.constBits(), image.sizeInBytes()), 0);
+    QCOMPARE(memcmp(image.constBits(), imageSwapped.constBits(), image.sizeInBytes()), 0);
 }
 
 void tst_QImage::mirrored_data()
@@ -2543,16 +2543,16 @@ void tst_QImage::mirrored()
         }
     }
 
-    QImage imageMirroredTwice = imageMirrored.mirrored(swap_horizontal, swap_vertical);
+    imageMirrored.mirror(swap_horizontal, swap_vertical);
 
-    QCOMPARE(image, imageMirroredTwice);
+    QCOMPARE(image, imageMirrored);
 
     if (format != QImage::Format_Mono && format != QImage::Format_MonoLSB)
-        QCOMPARE(memcmp(image.constBits(), imageMirroredTwice.constBits(), image.sizeInBytes()), 0);
+        QCOMPARE(memcmp(image.constBits(), imageMirrored.constBits(), image.sizeInBytes()), 0);
     else {
         for (int i = 0; i < image.height(); ++i)
             for (int j = 0; j < image.width(); ++j)
-                QCOMPARE(image.pixel(j,i), imageMirroredTwice.pixel(j,i));
+                QCOMPARE(image.pixel(j,i), imageMirrored.pixel(j,i));
     }
 }
 

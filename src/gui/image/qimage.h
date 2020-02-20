@@ -170,6 +170,10 @@ public:
                                              Qt::ImageConversionFlags flags = Qt::AutoColor) const;
     bool reinterpretAsFormat(Format f);
 
+    Q_REQUIRED_RESULT QImage convertedTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) const &
+    { return convertToFormat(f, flags); }
+    Q_REQUIRED_RESULT QImage convertedTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) &&
+    { return convertToFormat(f, flags); }
     void convertTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor);
 
     int width() const;
@@ -245,14 +249,18 @@ public:
     QImage scaledToHeight(int h, Qt::TransformationMode mode = Qt::FastTransformation) const;
     QImage transformed(const QTransform &matrix, Qt::TransformationMode mode = Qt::FastTransformation) const;
     static QTransform trueMatrix(const QTransform &, int w, int h);
-    QImage mirrored(bool horizontally = false, bool vertically = true) const &
+    Q_REQUIRED_RESULT QImage mirrored(bool horizontally = false, bool vertically = true) const &
         { return mirrored_helper(horizontally, vertically); }
-    QImage &&mirrored(bool horizontally = false, bool vertically = true) &&
+    Q_REQUIRED_RESULT QImage mirrored(bool horizontally = false, bool vertically = true) &&
         { mirrored_inplace(horizontally, vertically); return std::move(*this); }
-    QImage rgbSwapped() const &
+    Q_REQUIRED_RESULT QImage rgbSwapped() const &
         { return rgbSwapped_helper(); }
-    QImage &&rgbSwapped() &&
+    Q_REQUIRED_RESULT QImage rgbSwapped() &&
         { rgbSwapped_inplace(); return std::move(*this); }
+    void mirror(bool horizontally = false, bool vertically = true)
+        { mirrored_inplace(horizontally, vertically); }
+    void rgbSwap()
+        { rgbSwapped_inplace(); }
     void invertPixels(InvertMode = InvertRgb);
 
     QColorSpace colorSpace() const;

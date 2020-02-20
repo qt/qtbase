@@ -2033,7 +2033,20 @@ QImage::Format QImage::format() const
     The specified image conversion \a flags control how the image data
     is handled during the conversion process.
 
-    \sa {Image Formats}
+    \sa convertTo(), {Image Formats}
+*/
+
+/*!
+    \fn QImage QImage::convertedTo(Format format, Qt::ImageConversionFlags flags) const &
+    \fn QImage QImage::convertedTo(Format format, Qt::ImageConversionFlags flags) &&
+    \since 6.0
+
+    Returns a copy of the image in the given \a format.
+
+    The specified image conversion \a flags control how the image data
+    is handled during the conversion process.
+
+    \sa convertTo(), {Image Formats}
 */
 
 /*!
@@ -2235,7 +2248,7 @@ bool QImage::reinterpretAsFormat(Format format)
     The specified image conversion \a flags control how the image data
     is handled during the conversion process.
 
-    \sa convertToFormat()
+    \sa convertedTo()
 */
 
 void QImage::convertTo(Format format, Qt::ImageConversionFlags flags)
@@ -3066,7 +3079,17 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 
     Note that the original image is not changed.
 
-    \sa {QImage#Image Transformations}{Image Transformations}
+    \sa mirror(), {QImage#Image Transformations}{Image Transformations}
+*/
+
+/*!
+    \fn void QImage::mirror(bool horizontal = false, bool vertical = true)
+    \since 6.0
+
+    Mirrors of the image in the horizontal and/or the vertical direction depending
+    on whether \a horizontal and \a vertical are set to true or false.
+
+    \sa mirrored(), {QImage#Image Transformations}{Image Transformations}
 */
 
 template<class T> inline void do_mirror_data(QImageData *dst, QImageData *src,
@@ -3278,7 +3301,17 @@ void QImage::mirrored_inplace(bool horizontal, bool vertical)
 
     The original QImage is not changed.
 
-    \sa {QImage#Image Transformations}{Image Transformations}
+    \sa rgbSwap(), {QImage#Image Transformations}{Image Transformations}
+*/
+
+/*!
+    \fn void QImage::rgbSwap()
+    \since 6.0
+
+    Swaps the values of the red and blue components of all pixels, effectively converting
+    an RGB image to an BGR image.
+
+    \sa rgbSwapped(), {QImage#Image Transformations}{Image Transformations}
 */
 
 static inline void rgbSwapped_generic(int width, int height, const QImage *src, QImage *dst, const QPixelLayout* layout)
