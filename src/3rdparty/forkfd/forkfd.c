@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -94,7 +94,7 @@
 
 static int system_has_forkfd(void);
 static int system_forkfd(int flags, pid_t *ppid, int *system);
-static int system_forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage);
+static int system_forkfd_wait(int ffd, struct forkfd_info *info, int ffdwoptions, struct rusage *rusage);
 
 #define CHILDREN_IN_SMALL_ARRAY     16
 #define CHILDREN_IN_BIG_ARRAY       256
@@ -223,6 +223,16 @@ static void convertStatusToForkfdInfo(int status, struct forkfd_info *info)
 #  endif
         info->status = WTERMSIG(status);
     }
+}
+
+static int convertForkfdWaitFlagsToWaitFlags(int ffdoptions)
+{
+    int woptions = WEXITED;
+    if (ffdoptions & FFDW_NOWAIT)
+        woptions |= WNOWAIT;
+    if (ffdoptions & FFDW_NOHANG)
+        woptions |= WNOHANG;
+    return woptions;
 }
 
 static int tryReaping(pid_t pid, struct pipe_payload *payload)
@@ -800,14 +810,13 @@ out:
 }
 #endif // _POSIX_SPAWN && !FORKFD_NO_SPAWNFD
 
-
-int forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
+int forkfd_wait4(int ffd, struct forkfd_info *info, int options, struct rusage *rusage)
 {
     struct pipe_payload payload;
     int ret;
 
     if (system_has_forkfd())
-        return system_forkfd_wait(ffd, info, rusage);
+        return system_forkfd_wait(ffd, info, options, rusage);
 
     ret = read(ffd, &payload, sizeof(payload));
     if (ret == -1)
@@ -846,10 +855,11 @@ int system_forkfd(int flags, pid_t *ppid, int *system)
     return -1;
 }
 
-int system_forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
+int system_forkfd_wait(int ffd, struct forkfd_info *info, int options, struct rusage *rusage)
 {
     (void)ffd;
     (void)info;
+    (void)options;
     (void)rusage;
     return -1;
 }

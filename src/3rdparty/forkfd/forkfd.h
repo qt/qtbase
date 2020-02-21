@@ -44,13 +44,20 @@ extern "C" {
 
 #define FFD_CHILD_PROCESS (-2)
 
+#define FFDW_NOHANG             1       /* WNOHANG */
+#define FFDW_NOWAIT             2       /* WNOWAIT */
+
 struct forkfd_info {
     int32_t code;
     int32_t status;
 };
 
 int forkfd(int flags, pid_t *ppid);
-int forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage);
+int forkfd_wait4(int ffd, struct forkfd_info *info, int options, struct rusage *rusage);
+static inline int forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
+{
+    return forkfd_wait4(ffd, info, 0, rusage);
+}
 int forkfd_close(int ffd);
 
 #if _POSIX_SPAWN > 0
