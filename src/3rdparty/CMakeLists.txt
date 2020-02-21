@@ -1,7 +1,6 @@
 # special case skip regeneration
 # The file is maintained manually
 add_subdirectory(harfbuzz)
-add_subdirectory(double-conversion)
 
 if(QT_FEATURE_png AND NOT QT_FEATURE_system_png)
     add_subdirectory(libpng)

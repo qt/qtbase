@@ -235,8 +235,6 @@ qt_add_module(Core
         ../3rdparty/md5
         ../3rdparty/sha3
         ../3rdparty/tinycbor/src
-    LIBRARIES
-        doubleconversion
     PRECOMPILED_HEADER
         "global/qt_pch.h"
     NO_PCH_SOURCES
@@ -629,6 +627,29 @@ qt_extend_target(Core CONDITION QT_FEATURE_commandlineparser
     SOURCES
         tools/qcommandlineoption.cpp tools/qcommandlineoption.h
         tools/qcommandlineparser.cpp tools/qcommandlineparser.h
+)
+
+qt_extend_target(Core CONDITION QT_FEATURE_system_doubleconversion
+    LIBRARIES
+        WrapDoubleConversion::WrapDoubleConversion
+)
+
+qt_extend_target(Core CONDITION QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
+    SOURCES
+        ../3rdparty/double-conversion/bignum.cc ../3rdparty/double-conversion/bignum.h
+        ../3rdparty/double-conversion/bignum-dtoa.cc ../3rdparty/double-conversion/bignum-dtoa.h
+        ../3rdparty/double-conversion/cached-powers.cc ../3rdparty/double-conversion/cached-powers.h
+        ../3rdparty/double-conversion/diy-fp.cc ../3rdparty/double-conversion/diy-fp.h
+        ../3rdparty/double-conversion/double-conversion.cc
+        ../3rdparty/double-conversion/fast-dtoa.cc ../3rdparty/double-conversion/fast-dtoa.h
+        ../3rdparty/double-conversion/fixed-dtoa.cc ../3rdparty/double-conversion/fixed-dtoa.h
+        ../3rdparty/double-conversion/ieee.h
+        ../3rdparty/double-conversion/include/double-conversion/double-conversion.h
+        ../3rdparty/double-conversion/include/double-conversion/utils.h
+        ../3rdparty/double-conversion/strtod.cc ../3rdparty/double-conversion/strtod.h
+    INCLUDE_DIRECTORIES
+        ../3rdparty/double-conversion/..
+        ../3rdparty/double-conversion/include
 )
 
 qt_extend_target(Core CONDITION QT_FEATURE_easingcurve

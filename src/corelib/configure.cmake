@@ -2,6 +2,10 @@
 
 #### Inputs
 
+# input doubleconversion
+set(INPUT_doubleconversion "undefined" CACHE STRING "")
+set_property(CACHE INPUT_doubleconversion PROPERTY STRINGS undefined no qt system)
+
 # input iconv
 set(INPUT_iconv "undefined" CACHE STRING "")
 set_property(CACHE INPUT_iconv PROPERTY STRINGS undefined no yes posix sun gnu)
@@ -10,6 +14,7 @@ set_property(CACHE INPUT_iconv PROPERTY STRINGS undefined no yes posix sun gnu)
 
 #### Libraries
 
+qt_find_package(WrapDoubleConversion PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion)
 qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2)
 qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data)
 qt_find_package(Libsystemd PROVIDED_TARGETS PkgConfig::Libsystemd)
@@ -529,6 +534,16 @@ qt_feature("clock-monotonic" PUBLIC
     CONDITION QT_FEATURE_clock_gettime AND TEST_clock_monotonic
 )
 qt_feature_definition("clock-monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
+qt_feature("doubleconversion" PUBLIC PRIVATE
+    LABEL "DoubleConversion"
+)
+qt_feature_definition("doubleconversion" "QT_NO_DOUBLECONVERSION" NEGATE VALUE "1")
+qt_feature("system-doubleconversion" PRIVATE
+    LABEL "  Using system DoubleConversion"
+    CONDITION QT_FEATURE_doubleconversion AND WrapDoubleConversion_FOUND
+    ENABLE INPUT_doubleconversion STREQUAL 'system'
+    DISABLE INPUT_doubleconversion STREQUAL 'qt'
+)
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
     CONDITION TEST_cxx11_future

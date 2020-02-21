@@ -461,7 +461,6 @@ def parseInput(ctx, sinput, data, cm_fh):
         "widgets",
         "xplatform",
         "zlib",
-        "doubleconversion",
         "eventfd",
         "glib",
         "icu",
@@ -772,7 +771,6 @@ def get_feature_mapping():
         },
         "debug": {"condition": "CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"},
         "dlopen": {"condition": "UNIX"},
-        "doubleconversion": None,
         "enable_gdb_index": None,
         "enable_new_dtags": None,
         "force_debug_info": {
@@ -838,7 +836,6 @@ def get_feature_mapping():
             "enable": "TEST_sun_iconv",
             "disable": "NOT TEST_sun_iconv",
         },
-        "system-doubleconversion": None,  # No system libraries anymore!
         "system-sqlite": None,
         "system-xcb": None,
         "tiff": {"condition": "QT_FEATURE_imageformatplugin AND TIFF_FOUND"},

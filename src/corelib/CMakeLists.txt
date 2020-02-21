@@ -2,15 +2,8 @@
 
 # special case begin
 qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
-qt_find_package(WrapDoubleConversion REQUIRED
-                                     PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion)
 qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
 
-if (NOT WrapDoubleConversion_FOUND)
-    message(FATAL_ERROR "Your C library does not provide \
-                         sscanf_l/snprintf_l _snprintf_l/_sscanf_l. \
-                         You need to use libdouble-conversion for double/string conversion.")
-endif()
 
 # compute the reverse relative path from QtCoreConfigExtras to the install prefix
 # this is used in QtCoreConfigExtras to make its install paths relocatable
@@ -251,11 +244,9 @@ qt_add_module(Core
     NO_PCH_SOURCES
         "text/qstring_compat.cpp"
     LIBRARIES
-        # double-conversion # special case remove
         Qt::GlobalConfigPrivate # special case
         QtHarfBuzz # special case
         Threads::Threads # special case
-        WrapDoubleConversion::WrapDoubleConversion # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
     # special case begin
@@ -728,6 +719,29 @@ qt_extend_target(Core CONDITION QT_FEATURE_commandlineparser
     SOURCES
         tools/qcommandlineoption.cpp tools/qcommandlineoption.h
         tools/qcommandlineparser.cpp tools/qcommandlineparser.h
+)
+
+qt_extend_target(Core CONDITION QT_FEATURE_system_doubleconversion
+    LIBRARIES
+        WrapDoubleConversion::WrapDoubleConversion
+)
+
+qt_extend_target(Core CONDITION QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
+    SOURCES
+        ../3rdparty/double-conversion/bignum.cc ../3rdparty/double-conversion/bignum.h
+        ../3rdparty/double-conversion/bignum-dtoa.cc ../3rdparty/double-conversion/bignum-dtoa.h
+        ../3rdparty/double-conversion/cached-powers.cc ../3rdparty/double-conversion/cached-powers.h
+        ../3rdparty/double-conversion/diy-fp.cc ../3rdparty/double-conversion/diy-fp.h
+        ../3rdparty/double-conversion/double-conversion.cc
+        ../3rdparty/double-conversion/fast-dtoa.cc ../3rdparty/double-conversion/fast-dtoa.h
+        ../3rdparty/double-conversion/fixed-dtoa.cc ../3rdparty/double-conversion/fixed-dtoa.h
+        ../3rdparty/double-conversion/ieee.h
+        ../3rdparty/double-conversion/include/double-conversion/double-conversion.h
+        ../3rdparty/double-conversion/include/double-conversion/utils.h
+        ../3rdparty/double-conversion/strtod.cc ../3rdparty/double-conversion/strtod.h
+    INCLUDE_DIRECTORIES
+        ../3rdparty/double-conversion/..
+        ../3rdparty/double-conversion/include
 )
 
 qt_extend_target(Core CONDITION QT_FEATURE_easingcurve

@@ -398,7 +398,7 @@ _library_map = [
     LibraryMapping("directfb", "DirectFB", "PkgConfig::DirectFB"),
     LibraryMapping("db2", "DB2", "DB2::DB2"),
     LibraryMapping("dbus", "WrapDBus1", "dbus-1", resultVariable="DBus1"),
-    LibraryMapping("doubleconversion", None, None),
+    LibraryMapping("doubleconversion", "WrapDoubleConversion", "WrapDoubleConversion::WrapDoubleConversion"),
     LibraryMapping("drm", "Libdrm", "Libdrm::Libdrm"),
     LibraryMapping("egl", "EGL", "EGL::EGL"),
     LibraryMapping("flite", "Flite", "Flite::Flite"),
