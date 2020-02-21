@@ -713,7 +713,7 @@ void QLCDNumber::paintEvent(QPaintEvent *)
 void QLCDNumberPrivate::internalSetString(const QString& s)
 {
     Q_Q(QLCDNumber);
-    QString buffer;
+    QString buffer(ndigits, QChar());
     int i;
     int len = s.length();
     QBitArray newPoints(ndigits);
