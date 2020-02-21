@@ -1943,10 +1943,8 @@ void QWindowsWindow::checkForScreenChanged(ScreenChangeMode mode)
     qCDebug(lcQpaWindows).noquote().nospace() << __FUNCTION__
         << ' ' << window() << " \"" << (currentScreen ? currentScreen->name() : QString())
         << "\"->\"" << newScreen->name() << '"';
-    if (mode == FromGeometryChange)
-        setFlag(SynchronousGeometryChangeEvent);
     updateFullFrameMargins();
-    QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+    QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), newScreen->screen());
 }
 
 void QWindowsWindow::handleGeometryChange()
