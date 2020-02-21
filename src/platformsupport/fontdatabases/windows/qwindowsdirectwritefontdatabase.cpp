@@ -52,6 +52,9 @@ QT_BEGIN_NAMESPACE
 
 #ifdef QT_USE_DIRECTWRITE3
 
+// Defined in gui/text/qfontdatabase.cpp
+Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int script);
+
 QWindowsDirectWriteFontDatabase::QWindowsDirectWriteFontDatabase()
 {
     qCDebug(lcQpaFonts) << "Creating DirectWrite database";
@@ -216,7 +219,6 @@ void QWindowsDirectWriteFontDatabase::populateFamily(const QString &familyName)
                                         for (uint i = 0; i < rangeCount; ++i) {
                                             QChar::Script script = QChar::script(ranges.at(i).first);
 
-                                            Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int script);
                                             QFontDatabase::WritingSystem writingSystem = qt_writing_system_for_script(script);
 
                                             if (writingSystem > QFontDatabase::Any && writingSystem < QFontDatabase::WritingSystemsCount)
