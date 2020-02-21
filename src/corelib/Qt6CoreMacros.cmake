@@ -488,6 +488,10 @@ function(add_qt_gui_executable target)
         target_link_libraries("${target}" PRIVATE Qt::Gui)
     endif()
 
+    if (WIN32)
+        qt6_gerate_win32_rc_file(${target})
+    endif()
+
     if(ANDROID)
         qt_android_generate_deployment_settings("${target}")
         qt_android_add_apk_target("${target}")
@@ -811,3 +815,151 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
         qt6_generate_meta_types_json_file(${ARGV})
     endfunction()
 endif()
+
+# Generate Win32 RC files for a target. All entries in the RC file are generated
+# from target prorties:
+#
+# QT_TARGET_COMPANY_NAME: RC Company name
+# QT_TARGET_DESCRIPTION: RC File Description
+# QT_TARGET_VERSION: RC File and Product Version
+# QT_TARGET_COPYRIGHT: RC LegalCopyright
+# QT_TARGET_PRODUCT_NAME: RC ProductName
+# QT_TARGET_RC_ICONS: List of paths to icon files
+#
+# If you don not wish to auto-generate rc files, it's possible to provide your
+# own RC file by setting the property QT_TARGET_WINDOWS_RC_FILE with a path to
+# an existing rc file.
+#
+function(qt6_generate_win32_rc_file target)
+
+    get_target_property(target_type ${target} TYPE)
+    if (target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
+    get_target_property(target_binary_dir ${target} BINARY_DIR)
+
+    get_target_property(target_rc_file ${target} QT_TARGET_WINDOWS_RC_FILE)
+    get_target_property(target_version ${target} QT_TARGET_VERSION)
+
+    if (NOT target_rc_file AND NOT target_version)
+        return()
+    endif()
+
+    if (NOT target_rc_file)
+        # Generate RC File
+        set(rc_file_output "${target_binary_dir}/${target}_resource.rc")
+        set(target_rc_file "${rc_file_output}")
+
+        set(company_name "")
+        get_target_property(target_company_name ${target} QT_TARGET_COMPANY_NAME)
+        if (target_company_name)
+            set(company_name "${target_company_name}")
+        endif()
+
+        set(file_description "")
+        get_target_property(target_description ${target} QT_TARGET_DESCRIPTION)
+        if (target_description)
+            set(file_description "${target_description}")
+        endif()
+
+        set(legal_copyright "")
+        get_target_property(target_copyright ${target} QT_TARGET_COPYRIGHT)
+        if (target_copyright)
+            set(legal_copyright "${target_copyright}")
+        endif()
+
+        set(product_name "")
+        get_target_property(target_product_name ${target} QT_TARGET_PRODUCT_NAME)
+        if (target_product_name)
+            set(product_name "${target_product_name}")
+        else()
+            set(product_name "${target}")
+        endif()
+
+        set(product_version "")
+        if (target_version)
+            if(target_version MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+")
+                # nothing to do
+            elseif(target_version MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+")
+                set(target_version "${target_version}.0")
+            elseif(target_version MATCHES "[0-9]+\\.[0-9]+")
+                set(target_version "${target_version}.0.0")
+            elseif (target_version MATCHES "[0-9]+")
+                set(target_version "${target_version}.0.0.0")
+            else()
+                message(FATAL_ERROR "Invalid version format")
+            endif()
+            set(product_version "${target_version}")
+        else()
+            set(product_version "0.0.0.0")
+        endif()
+
+        set(file_version "${product_version}")
+        set(original_file_name "$<TARGET_FILE_NAME:${target}>")
+        string(REPLACE "." "," version_comma ${product_version})
+
+        set(icons "")
+        get_target_property(target_icons ${target} QT_TARGET_RC_ICONS)
+        if (target_icons)
+            set(index 1)
+            foreach( icon IN LISTS target_icons)
+                string(APPEND icons "IDI_ICON${index}    ICON    DISCARDABLE   \"${icon}\"\n")
+                math(EXPR index "${index} +1")
+            endforeach()
+        endif()
+
+        set(contents "#include <windows.h>
+${incons}
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION ${version_comma}
+PRODUCTVERSION ${version_comma}
+FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+    FILEFLAGS VS_FF_DEBUG
+#else
+    FILEFLAGS 0x0L
+#endif
+FILEOS VOS__WINDOWS32
+FILETYPE VFT_DLL
+FILESUBTYPE 0x0L
+BEGIN
+    BLOCK \"StringFileInfo\"
+    BEGIN
+        BLOCK \"040904b0\"
+        BEGIN
+            VALUE \"CompanyName\", \"${company_name}\"
+            VALUE \"FileDescription\", \"${file_description}\"
+            VALUE \"FileVersion\", \"${file_version}\"
+            VALUE \"LegalCopyright\", \"${legal_copyright}\"
+            VALUE \"OriginalFilename\", \"${original_file_name}\"
+            VALUE \"ProductName\", \"${product_name}\"
+            VALUE \"ProductVersion\", \"${product_version}\"
+        END
+    END
+    BLOCK \"VarFileInfo\"
+    BEGIN
+        VALUE \"Translation\", 0x0409, 1200
+    END
+END
+/* End of Version info */\n"
+        )
+
+        # We can't use the output of file generate as source so we work around
+        # this by generating the file under a different name and then copying
+        # the file in place using add custom command.
+        file(GENERATE OUTPUT "${rc_file_output}.tmp"
+            CONTENT "${contents}"
+        )
+
+        add_custom_command(OUTPUT "${target_rc_file}"
+            DEPENDS "${rc_file_output}.tmp"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${target_rc_file}.tmp"
+                "${target_rc_file}"
+        )
+    endif()
+
+    target_sources(${target} PRIVATE ${target_rc_file})
+
+endfunction()

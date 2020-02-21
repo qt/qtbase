@@ -1631,6 +1631,11 @@ function(qt_add_module target)
             ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
             VERSION ${PROJECT_VERSION}
             SOVERSION ${PROJECT_VERSION_MAJOR}
+            QT_TARGET_VERSION "${PROJECT_VERSION}.0"
+            QT_TARGET_COMPANY_NAME "The Qt Company Ltd."
+            QT_TARGET_DESCRIPTION "C++ Application Development Framework"
+            QT_TARGET_COPYRIGHT "Copyright (C) 2020 The Qt Company Ltd."
+            QT_TARGET_PRODUCT_NAME "Qt6"
         )
         qt_handle_multi_config_output_dirs("${target}")
 
@@ -1642,6 +1647,10 @@ function(qt_add_module target)
             set_target_properties(${target} PROPERTIES
                 OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
             )
+        endif()
+
+        if (WIN32 AND BUILD_SHARED_LIBS)
+            qt6_generate_win32_rc_file(${target})
         endif()
     endif()
 
@@ -2517,7 +2526,7 @@ set(__qt_add_executable_optional_args
     "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS"
 )
 set(__qt_add_executable_single_args
-    "OUTPUT_DIRECTORY;INSTALL_DIRECTORY"
+    "OUTPUT_DIRECTORY;INSTALL_DIRECTORY;VERSION"
 )
 set(__qt_add_executable_multi_args
     "EXE_FLAGS;${__default_private_args};${__default_public_args}"
@@ -2557,6 +2566,27 @@ function(qt_add_executable name)
         set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
     else()
         add_executable("${name}" ${arg_EXE_FLAGS})
+    endif()
+
+    if (arg_VERSION)
+
+        if(arg_VERSION MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+")
+            # nothing to do
+        elseif(arg_VERSION MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+")
+            set(arg_VERSION "${arg_VERSION}.0")
+        elseif(arg_VERSION MATCHES "[0-9]+\\.[0-9]+")
+            set(arg_VERSION "${arg_VERSION}.0.0")
+        elseif (arg_VERSION MATCHES "[0-9]+")
+            set(arg_VERSION "${arg_VERSION}.0.0.0")
+        else()
+            message(FATAL_ERROR "Invalid version format")
+        endif()
+
+        set_target_properties(${name} PROPERTIES QT_TARGET_VERSION "${arg_VERSION}")
+    endif()
+
+    if (WIN32)
+        qt6_generate_win32_rc_file(${name})
     endif()
 
     qt_autogen_tools_initial_setup(${name})
@@ -2679,7 +2709,7 @@ endfunction()
 function(qt_add_test name)
     qt_parse_all_arguments(arg "qt_add_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
-        "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT"
+        "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT;VERSION"
         "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN}
     )
 
@@ -2695,6 +2725,10 @@ function(qt_add_test name)
         set(gui_text "GUI")
     endif()
 
+    if (arg_VERSION)
+        set(version_arg VERSION "${arg_VERSION}")
+    endif()
+
     # Handle cases where we have a qml test without source files
     if (arg_SOURCES)
         set(private_includes
@@ -2707,6 +2741,7 @@ function(qt_add_test name)
         qt_add_executable("${name}"
             ${exceptions_text}
             ${gui_text}
+            ${version_arg}
             NO_INSTALL
             OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
             SOURCES "${arg_SOURCES}"
