@@ -51,8 +51,6 @@
     \value M_2_SQRTPI Two divided by the square root of pi, 2 / \unicode{0x221A}\unicode{0x3C0}
     \value M_SQRT2 The square root of two, \unicode{0x221A}2
     \value M_SQRT1_2 The square roof of half, 1 / \unicode{0x221A}2
-
-    \pagekeywords math trigonometry qmath floor ceiling absolute sine cosine tangent inverse tan exponent power natural logarithm pi
 */
 
 /*!
