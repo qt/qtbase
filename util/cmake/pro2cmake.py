@@ -286,7 +286,11 @@ def find_qmake_conf(project_file_path: str = "") -> str:
         if os.path.isfile(maybe_file):
             return maybe_file
         else:
+            last_cwd = cwd
             cwd = os.path.dirname(cwd)
+            if last_cwd == cwd:
+                # reached the top level directory, stop looking
+                break
 
     print(f"Warning: could not find .qmake.conf file")
     return ""
