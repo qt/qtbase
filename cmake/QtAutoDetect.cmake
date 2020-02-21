@@ -179,7 +179,8 @@ function(qt_auto_detect_darwin)
         # to a value that we choose. This replicates the behavior
         # in mkspecs/common/macx.conf where
         # QMAKE_MACOSX_DEPLOYMENT_TARGET is set.
-        if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+        # Currently only set for macOS, and not the mobile platforms.
+        if(NOT CMAKE_OSX_DEPLOYMENT_TARGET AND NOT CMAKE_SYSTEM_NAME)
             set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING
                 "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value.")
         endif()
