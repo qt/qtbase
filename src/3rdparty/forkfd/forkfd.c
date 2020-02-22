@@ -29,6 +29,11 @@
 
 #include "forkfd.h"
 
+/* Macros fine-tuning the build: */
+//#define FORKFD_NO_FORKFD 1                /* disable the forkfd() function */
+//#define FORKFD_NO_SPAWNFD 1               /* disable the spawnfd() function */
+//#define FORKFD_DISABLE_FORK_FALLBACK 1    /* disable falling back to fork() from system_forkfd() */
+
 #include <sys/types.h>
 #if defined(__OpenBSD__) || defined(__NetBSD__)
 #  include <sys/param.h>
@@ -95,6 +100,16 @@
 static int system_has_forkfd(void);
 static int system_forkfd(int flags, pid_t *ppid, int *system);
 static int system_forkfd_wait(int ffd, struct forkfd_info *info, int ffdwoptions, struct rusage *rusage);
+
+static int disable_fork_fallback(void)
+{
+#ifdef FORKFD_DISABLE_FORK_FALLBACK
+    /* if there's no system forkfd, we have to use the fallback */
+    return system_has_forkfd();
+#else
+    return false;
+#endif
+}
 
 #define CHILDREN_IN_SMALL_ARRAY     16
 #define CHILDREN_IN_BIG_ARRAY       256
@@ -629,9 +644,12 @@ int forkfd(int flags, pid_t *ppid)
     int efd;
 #endif
 
+    if (disable_fork_fallback())
+        flags &= ~FFD_USE_FORK;
+
     if ((flags & FFD_USE_FORK) == 0) {
         fd = system_forkfd(flags, ppid, &ret);
-        if (ret)
+        if (ret || disable_fork_fallback())
             return fd;
     }
 
@@ -815,8 +833,12 @@ int forkfd_wait4(int ffd, struct forkfd_info *info, int options, struct rusage *
     struct pipe_payload payload;
     int ret;
 
-    if (system_has_forkfd())
-        return system_forkfd_wait(ffd, info, options, rusage);
+    if (system_has_forkfd()) {
+        /* if this is one of our pipes, not a procdesc/pidfd, we'll get an EBADF */
+        ret = system_forkfd_wait(ffd, info, options, rusage);
+        if (disable_fork_fallback() || ret != -1 || errno != EBADF)
+            return ret;
+    }
 
     ret = read(ffd, &payload, sizeof(payload));
     if (ret == -1)

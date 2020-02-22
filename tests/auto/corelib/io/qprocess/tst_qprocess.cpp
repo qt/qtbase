@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -40,6 +40,12 @@
 #include <QtCore/QDebug>
 #include <QtCore/QMetaType>
 #include <QtNetwork/QHostInfo>
+
+#include <qplatformdefs.h>
+#ifdef Q_OS_UNIX
+#  include <private/qcore_unix_p.h>
+#endif
+
 #include <stdlib.h>
 
 typedef void (QProcess::*QProcessFinishedSignal1)(int);
@@ -59,6 +65,7 @@ private slots:
     void getSetCheck();
     void constructing();
     void simpleStart();
+    void setupChildProcess();
     void startWithOpen();
     void startWithOldOpen();
     void execute();
@@ -275,6 +282,51 @@ void tst_QProcess::simpleStart()
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(0).at(0)), QProcess::Starting);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(1).at(0)), QProcess::Running);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(2).at(0)), QProcess::NotRunning);
+}
+
+void tst_QProcess::setupChildProcess()
+{
+    /* This test exists because in Qt 5.15, the Unix version of QProcess has
+     * some code that depends on whether it's an actual QProcess or a
+     * derived class */
+    static const char setupChildMessage[] = "Called from setupChildProcess()";
+    class DerivedProcessClass : public QProcess {
+    public:
+        int fd;
+        DerivedProcessClass(int fd) : fd(fd)
+        {
+        }
+
+    protected:
+        void setupChildProcess() override
+        {
+            QT_WRITE(fd, setupChildMessage, sizeof(setupChildMessage) - 1);
+            QT_CLOSE(fd);
+        }
+    };
+
+    int pipes[2] = { -1 , -1 };
+#ifdef Q_OS_UNIX
+    QVERIFY(qt_safe_pipe(pipes) == 0);
+#endif
+
+    DerivedProcessClass process(pipes[1]);
+    process.start("testProcessNormal/testProcessNormal");
+    if (process.state() != QProcess::Starting)
+        QCOMPARE(process.state(), QProcess::Running);
+    QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+
+#ifdef Q_OS_UNIX
+    char buf[sizeof setupChildMessage] = {};
+    qt_safe_close(pipes[1]);
+    QCOMPARE(qt_safe_read(pipes[0], buf, sizeof(buf)), qint64(sizeof(setupChildMessage) - 1));
+    QCOMPARE(buf, setupChildMessage);
+    qt_safe_close(pipes[0]);
+#endif
+
+    QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
 }
 
 void tst_QProcess::startWithOpen()
