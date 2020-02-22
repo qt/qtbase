@@ -1298,8 +1298,12 @@ QStringList QFileDialog::selectedFiles() const
     QStringList files;
     const QList<QUrl> userSelectedFiles = d->userSelectedFiles();
     files.reserve(userSelectedFiles.size());
-    for (const QUrl &file : userSelectedFiles)
-        files.append(file.toLocalFile());
+    for (const QUrl &file : userSelectedFiles) {
+        if (file.isLocalFile() || file.isEmpty())
+            files.append(file.toLocalFile());
+        else
+            files.append(file.toString());
+    }
     if (files.isEmpty() && d->usingWidgets()) {
         const FileMode fm = fileMode();
         if (fm != ExistingFile && fm != ExistingFiles)
