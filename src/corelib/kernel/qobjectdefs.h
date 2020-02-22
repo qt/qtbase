@@ -532,7 +532,7 @@ struct Q_CORE_EXPORT QMetaObject
     static typename std::enable_if<!QtPrivate::FunctionPointer<Func>::IsPointerToMemberFunction
                                    && QtPrivate::FunctionPointer<Func>::ArgumentCount == -1
                                    && !std::is_convertible<Func, const char*>::value, bool>::type
-    invokeMethod(QObject *context, Func function, typename std::result_of<Func()>::type *ret)
+    invokeMethod(QObject *context, Func function, decltype(function()) *ret)
     {
         return invokeMethodImpl(context,
                                 new QtPrivate::QFunctorSlotObjectWithNoArgs<Func, decltype(function())>(std::move(function)),
