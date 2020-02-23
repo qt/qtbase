@@ -301,11 +301,11 @@ public:
     static QVector<T> fromList(const QList<T> &list);
     QList<T> toList() const;
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    Q_DECL_DEPRECATED_X("Use QVector<T>(vector.begin(), vector.end()) instead.")
+#if QT_DEPRECATED_SINCE(5, 14) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QT_DEPRECATED_X("Use QVector<T>(vector.begin(), vector.end()) instead.")
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
     { return QVector<T>(vector.begin(), vector.end()); }
-    Q_DECL_DEPRECATED_X("Use std::vector<T>(vector.begin(), vector.end()) instead.")
+    QT_DEPRECATED_X("Use std::vector<T>(vector.begin(), vector.end()) instead.")
     inline std::vector<T> toStdVector() const
     { return std::vector<T>(d->begin(), d->end()); }
 #endif

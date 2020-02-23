@@ -246,10 +246,10 @@ public:
         { QSet<T> result = *this; result -= other; return result; }
 
     QList<T> values() const;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    Q_DECL_DEPRECATED_X("Use values() instead.")
+#if QT_DEPRECATED_SINCE(5, 14) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QT_DEPRECATED_X("Use values() instead.")
     QList<T> toList() const { return values(); }
-    Q_DECL_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
+    QT_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
     static QSet<T> fromList(const QList<T> &list);
 #endif
 
@@ -383,7 +383,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> QSet<T>::values() const
     return result;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#if QT_DEPRECATED_SINCE(5, 14) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QSet<T> QList<T>::toSet() const
 {
