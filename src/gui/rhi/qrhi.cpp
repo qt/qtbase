@@ -2048,11 +2048,9 @@ QRhiResource::Type QRhiBuffer::resourceType() const
     UniformBuffer may not even be backed by a native buffer object at all if
     uniform buffers are not used or supported by a given backend and graphics
     API. There are also differences to how data is written to the buffer and
-    the type of backing memory used, and, if host visible memory is involved,
-    when memory writes become available and visible. Therefore, in general it
-    is recommended to limit native buffer object access to vertex and index
-    buffers with types Static or Immutable, because these operate in a
-    relatively uniform manner with all backends.
+    the type of backing memory used. For buffers backed by host visible memory,
+    calling this function guarantees that pending host writes are executed for
+    all the returned native buffers.
 
     \sa QRhi::currentFrameSlot(), QRhi::FramesInFlight
  */

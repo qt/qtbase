@@ -778,7 +778,7 @@ public:
                              size_t *curOfs, void *mp,
                              BufferImageCopyList *copyInfos);
     void enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates);
-    void executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD);
+    void executeBufferHostWritesForSlot(QVkBuffer *bufD, int slot);
     void enqueueTransitionPassResources(QVkCommandBuffer *cbD);
     void recordPrimaryCommandBuffer(QVkCommandBuffer *cbD);
     void trackedRegisterBuffer(QRhiPassResourceTracker *passResTracker,

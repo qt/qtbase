@@ -643,7 +643,7 @@ public:
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);
     void updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD);
-    void executeBufferHostWritesForCurrentFrame(QD3D11Buffer *bufD);
+    void executeBufferHostWrites(QD3D11Buffer *bufD);
     void bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                              const uint *dynOfsPairs, int dynOfsPairCount,
                              bool offsetOnlyChange);

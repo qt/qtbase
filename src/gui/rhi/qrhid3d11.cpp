@@ -608,7 +608,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.ubuf.buf);
             if (bufD->m_type == QRhiBuffer::Dynamic)
-                executeBufferHostWritesForCurrentFrame(bufD);
+                executeBufferHostWrites(bufD);
 
             if (bufD->generation != bd.ubuf.generation || bufD->m_id != bd.ubuf.id) {
                 srbUpdate = true;
@@ -725,7 +725,7 @@ void QRhiD3D11::setVertexInput(QRhiCommandBuffer *cb,
         QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, bindings[i].first);
         Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::VertexBuffer));
         if (bufD->m_type == QRhiBuffer::Dynamic)
-            executeBufferHostWritesForCurrentFrame(bufD);
+            executeBufferHostWrites(bufD);
 
         if (cbD->currentVertexBuffers[inputSlot] != bufD->buffer
                 || cbD->currentVertexOffsets[inputSlot] != bindings[i].second)
@@ -757,7 +757,7 @@ void QRhiD3D11::setVertexInput(QRhiCommandBuffer *cb,
         QD3D11Buffer *ibufD = QRHI_RES(QD3D11Buffer, indexBuf);
         Q_ASSERT(ibufD->m_usage.testFlag(QRhiBuffer::IndexBuffer));
         if (ibufD->m_type == QRhiBuffer::Dynamic)
-            executeBufferHostWritesForCurrentFrame(ibufD);
+            executeBufferHostWrites(ibufD);
 
         const DXGI_FORMAT dxgiFormat = indexFormat == QRhiCommandBuffer::IndexUInt16 ? DXGI_FORMAT_R16_UINT
                                                                                      : DXGI_FORMAT_R32_UINT;
@@ -1920,7 +1920,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD)
     srbD->csUAVs.finish();
 }
 
-void QRhiD3D11::executeBufferHostWritesForCurrentFrame(QD3D11Buffer *bufD)
+void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
 {
     if (!bufD->hasPendingDynamicUpdates)
         return;
@@ -2388,6 +2388,10 @@ bool QD3D11Buffer::build()
 
 QRhiBuffer::NativeBuffer QD3D11Buffer::nativeBuffer()
 {
+    if (m_type == Dynamic) {
+        QRHI_RES_RHI(QRhiD3D11);
+        rhiD->executeBufferHostWrites(this);
+    }
     return { { &buffer }, 1 };
 }
 
