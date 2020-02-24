@@ -1,27 +1,5 @@
 # Generated from xcb.pro.
 
-# begin special case:
-qt_find_package(X11_XCB
-    PROVIDED_TARGETS
-        X11::XCB
-)
-qt_find_package(X11
-    PROVIDED_TARGETS
-        X11::X11
-)
-qt_find_package(XCB)
-qt_find_package(XKB)
-qt_find_package(PkgConfig)
-qt_find_package(WrapFreetype)
-qt_find_package(GLIB2
-    PROVIDED_TARGETS
-        GLIB2::GLIB2
-)
-qt_find_package(XRender PROVIDED_TARGETS PkgConfig::XRender)
-qt_find_package(XKB_COMMON_X11 PROVIDED_TARGETS PkgConfig::XKB_COMMON_X11)
-
-# end special case:
-
 #####################################################################
 ## XcbQpa Module:
 #####################################################################
@@ -61,6 +39,7 @@ qt_add_module(XcbQpa
     INCLUDE_DIRECTORIES
         gl_integrations
     PUBLIC_LIBRARIES
+        PkgConfig::XKB_COMMON_X11
         Qt::CorePrivate
         Qt::EdidSupportPrivate
         Qt::FontDatabaseSupportPrivate
@@ -68,7 +47,6 @@ qt_add_module(XcbQpa
         Qt::ServiceSupportPrivate
         Qt::ThemeSupportPrivate
         Qt::XkbCommonSupportPrivate
-        PkgConfig::XKB_COMMON_X11 # special case
         XCB::ICCCM
         XCB::IMAGE
         XCB::KEYSYMS
@@ -120,7 +98,12 @@ qt_extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop
 qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
     PUBLIC_LIBRARIES
         X11::XCB
-        X11::X11 # special case
+        # special case begin
+        # 'QMAKE_USE += xcb_xlib' in qmake implies also += xlib (aka X11)
+        # due to "use": "xcb xlib" in src/gui/configure.json.
+        # That's not yet handled by the conversion scripts unfortunately.
+        X11::X11
+        # special case end
 )
 
 qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_sm

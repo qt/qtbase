@@ -39,7 +39,7 @@ qt_extend_target(EglSupport CONDITION QT_FEATURE_egl_x11
     SOURCES
         qxlibeglintegration.cpp qxlibeglintegration_p.h
     LIBRARIES
-        X11::XCB
+        X11::X11
 )
 
 qt_extend_target(EglSupport CONDITION NOT QT_FEATURE_egl_x11

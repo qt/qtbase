@@ -16,7 +16,7 @@ qt_add_module(GlxSupport
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-        X11::X11 # special case
+        X11::X11
 )
 
 #### Keys ignored in scope 1:.:.:glxconvenience.pro:<TRUE>:

@@ -528,9 +528,9 @@ _library_map = [
     LibraryMapping("xcb_xlib", "X11_XCB", "X11::XCB"),
     LibraryMapping("xcomposite", "XComposite", "PkgConfig::XComposite"),
     LibraryMapping("xkbcommon_evdev", "XKB", "XKB::XKB", extra=["0.4.1"]),  # see also xkbcommon
-    LibraryMapping("xkbcommon_x11", "XKB", "XKB::XKB", extra=["0.4.1"]),  # see also xkbcommon
+    LibraryMapping("xkbcommon_x11", "XKB_COMMON_X11", "PkgConfig::XKB_COMMON_X11", extra=["0.4.1"]),
     LibraryMapping("xkbcommon", "XKB", "XKB::XKB", extra=["0.4.1"]),
-    LibraryMapping("xlib", "X11", "X11::XCB"),  # FIXME: Is this correct?
+    LibraryMapping("xlib", "X11", "X11::X11"),
     LibraryMapping("xrender", "XRender", "PkgConfig::XRender"),
     LibraryMapping("zlib", "ZLIB", "ZLIB::ZLIB", extra=["REQUIRED"]),
     LibraryMapping("zstd", "ZSTD", "ZSTD::ZSTD"),

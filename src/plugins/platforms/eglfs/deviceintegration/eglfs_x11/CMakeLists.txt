@@ -20,6 +20,7 @@ qt_add_plugin(QEglFSX11IntegrationPlugin
         Qt::EglFSDeviceIntegrationPrivate
         Qt::Gui
         Qt::GuiPrivate
+        X11::X11
         X11::XCB
         XCB::XCB
 )
