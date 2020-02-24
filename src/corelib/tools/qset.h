@@ -108,7 +108,7 @@ public:
         friend class QSet<T>;
 
     public:
-#if QT_DEPRECATED_SINCE(5, 15)
+#if QT_DEPRECATED_WARNINGS_SINCE < QT_VERSION_CHECK(5, 15, 0)
         typedef std::bidirectional_iterator_tag iterator_category;
 #else
         typedef std::forward_iterator_tag iterator_category;
@@ -133,13 +133,13 @@ public:
         inline iterator &operator++() { ++i; return *this; }
         inline iterator operator++(int) { iterator r = *this; ++i; return r; }
 #if QT_DEPRECATED_SINCE(5, 15)
-        inline QT_DEPRECATED iterator &operator--() { --i; return *this; }
-        inline QT_DEPRECATED iterator operator--(int) { iterator r = *this; --i; return r; }
-        inline QT_DEPRECATED iterator operator+(int j) const { return i + j; }
-        inline QT_DEPRECATED iterator operator-(int j) const { return i - j; }
-        friend inline QT_DEPRECATED iterator operator+(int j, iterator k) { return k + j; }
-        inline QT_DEPRECATED iterator &operator+=(int j) { i += j; return *this; }
-        inline QT_DEPRECATED iterator &operator-=(int j) { i -= j; return *this; }
+        inline QT_DEPRECATED_VERSION_5_15 iterator &operator--() { --i; return *this; }
+        inline QT_DEPRECATED_VERSION_5_15 iterator operator--(int) { iterator r = *this; --i; return r; }
+        inline QT_DEPRECATED_VERSION_5_15 iterator operator+(int j) const { return i + j; }
+        inline QT_DEPRECATED_VERSION_5_15 iterator operator-(int j) const { return i - j; }
+        friend inline QT_DEPRECATED_VERSION_5_15 iterator operator+(int j, iterator k) { return k + j; }
+        inline QT_DEPRECATED_VERSION_5_15 iterator &operator+=(int j) { i += j; return *this; }
+        inline QT_DEPRECATED_VERSION_5_15 iterator &operator-=(int j) { i -= j; return *this; }
 #endif
     };
 
@@ -151,7 +151,7 @@ public:
         friend class QSet<T>;
 
     public:
-#if QT_DEPRECATED_SINCE(5, 15)
+#if QT_DEPRECATED_WARNINGS_SINCE < QT_VERSION_CHECK(5, 15, 0)
         typedef std::bidirectional_iterator_tag iterator_category;
 #else
         typedef std::forward_iterator_tag iterator_category;
@@ -174,13 +174,13 @@ public:
         inline const_iterator &operator++() { ++i; return *this; }
         inline const_iterator operator++(int) { const_iterator r = *this; ++i; return r; }
 #if QT_DEPRECATED_SINCE(5, 15)
-        inline QT_DEPRECATED const_iterator &operator--() { --i; return *this; }
-        inline QT_DEPRECATED const_iterator operator--(int) { const_iterator r = *this; --i; return r; }
-        inline QT_DEPRECATED const_iterator operator+(int j) const { return i + j; }
-        inline QT_DEPRECATED const_iterator operator-(int j) const { return i - j; }
-        friend inline QT_DEPRECATED const_iterator operator+(int j, const_iterator k) { return k + j; }
-        inline QT_DEPRECATED const_iterator &operator+=(int j) { i += j; return *this; }
-        inline QT_DEPRECATED const_iterator &operator-=(int j) { i -= j; return *this; }
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator &operator--() { --i; return *this; }
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator operator--(int) { const_iterator r = *this; --i; return r; }
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator operator+(int j) const { return i + j; }
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator operator-(int j) const { return i - j; }
+        friend inline QT_DEPRECATED_VERSION_5_15 const_iterator operator+(int j, const_iterator k) { return k + j; }
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator &operator+=(int j) { i += j; return *this; }
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator &operator-=(int j) { i -= j; return *this; }
 #endif
     };
 
@@ -198,12 +198,12 @@ public:
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
-    reverse_iterator QT_DEPRECATED rbegin() { return reverse_iterator(end()); }
-    reverse_iterator QT_DEPRECATED rend() { return reverse_iterator(begin()); }
-    const_reverse_iterator QT_DEPRECATED rbegin() const noexcept { return const_reverse_iterator(end()); }
-    const_reverse_iterator QT_DEPRECATED rend() const noexcept { return const_reverse_iterator(begin()); }
-    const_reverse_iterator QT_DEPRECATED crbegin() const noexcept { return const_reverse_iterator(end()); }
-    const_reverse_iterator QT_DEPRECATED crend() const noexcept { return const_reverse_iterator(begin()); }
+    reverse_iterator QT_DEPRECATED_VERSION_5_15 rbegin() { return reverse_iterator(end()); }
+    reverse_iterator QT_DEPRECATED_VERSION_5_15 rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator QT_DEPRECATED_VERSION_5_15 rbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator QT_DEPRECATED_VERSION_5_15 rend() const noexcept { return const_reverse_iterator(begin()); }
+    const_reverse_iterator QT_DEPRECATED_VERSION_5_15 crbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator QT_DEPRECATED_VERSION_5_15 crend() const noexcept { return const_reverse_iterator(begin()); }
 #endif
 
     iterator erase(iterator i)
@@ -449,10 +449,10 @@ public:
     inline bool findNext(const T &t)
     { while (c->constEnd() != (n = i)) if (*i++ == t) return true; return false; }
 #if QT_DEPRECATED_SINCE(5, 15)
-    inline QT_DEPRECATED bool hasPrevious() const { return c->constBegin() != i; }
-    inline QT_DEPRECATED const T &previous() { n = --i; return *n; }
-    inline QT_DEPRECATED const T &peekPrevious() const { iterator p = i; return *--p; }
-    inline QT_DEPRECATED bool findPrevious(const T &t)
+    inline QT_DEPRECATED_VERSION_5_15 bool hasPrevious() const { return c->constBegin() != i; }
+    inline QT_DEPRECATED_VERSION_5_15 const T &previous() { n = --i; return *n; }
+    inline QT_DEPRECATED_VERSION_5_15 const T &peekPrevious() const { iterator p = i; return *--p; }
+    inline QT_DEPRECATED_VERSION_5_15 bool findPrevious(const T &t)
     { while (c->constBegin() != i) if (*(n = --i) == t) return true;
       n = c->end(); return false;  }
 #endif
