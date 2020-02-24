@@ -1431,6 +1431,20 @@ function(qt_disable_warnings target)
     set_target_properties("${target}" PROPERTIES QT_COMPILE_OPTIONS_DISABLE_WARNINGS ON)
 endfunction()
 
+function(qt_set_symbol_visibility_preset target value)
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
+    set_target_properties("${target}" PROPERTIES C_VISIBILITY_PRESET "${value}")
+    set_target_properties("${target}" PROPERTIES CXX_VISIBILITY_PRESET "${value}")
+endfunction()
+
+function(qt_set_symbol_visibility_hidden target)
+    qt_set_symbol_visibility_preset("${target}" "hidden")
+endfunction()
+
 function(qt_get_sanitized_plugin_type plugin_type out_var)
     # Used to handle some edge cases such as platforms/darwin
     string(REGEX REPLACE "[-/]" "_" plugin_type "${plugin_type}")
