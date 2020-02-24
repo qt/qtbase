@@ -8,7 +8,16 @@ endif()
 ## tst_qguiapplication Test:
 #####################################################################
 
+# special case begin
+if (WIN32)
+    set(target_version "1.2.3.4")
+else()
+    set(target_version "1.2.3")
+endif()
+# special case end
+
 add_qt_test(tst_qguiapplication
+    VERSION ${target_version}
     SOURCES
         ../../../corelib/kernel/qcoreapplication/tst_qcoreapplication.cpp ../../../corelib/kernel/qcoreapplication/tst_qcoreapplication.h # special case
         tst_qguiapplication.cpp
