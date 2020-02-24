@@ -1,15 +1,19 @@
 function(qt_feature_module_begin)
     qt_parse_all_arguments(arg "qt_feature_module_begin"
-        "NO_MODULE" "LIBRARY;PRIVATE_FILE;PUBLIC_FILE" "PUBLIC_DEPENDENCIES;PRIVATE_DEPENDENCIES" ${ARGN})
+        "NO_MODULE;ONLY_EVALUATE_FEATURES"
+        "LIBRARY;PRIVATE_FILE;PUBLIC_FILE" "PUBLIC_DEPENDENCIES;PRIVATE_DEPENDENCIES" ${ARGN})
 
-    if ("${arg_LIBRARY}" STREQUAL "" AND (NOT ${arg_NO_MODULE}))
-        message(FATAL_ERROR "qt_feature_begin_module needs a LIBRARY name! (or specify NO_MODULE)")
-    endif()
-    if ("${arg_PUBLIC_FILE}" STREQUAL "")
-        message(FATAL_ERROR "qt_feature_begin_module needs a PUBLIC_FILE name!")
-    endif()
-    if ("${arg_PRIVATE_FILE}" STREQUAL "")
-        message(FATAL_ERROR "qt_feature_begin_module needs a PRIVATE_FILE name!")
+    if(NOT arg_ONLY_EVALUATE_FEATURES)
+        if ("${arg_LIBRARY}" STREQUAL "" AND (NOT ${arg_NO_MODULE}))
+            message(FATAL_ERROR
+                    "qt_feature_begin_module needs a LIBRARY name! (or specify NO_MODULE)")
+        endif()
+        if ("${arg_PUBLIC_FILE}" STREQUAL "")
+            message(FATAL_ERROR "qt_feature_begin_module needs a PUBLIC_FILE name!")
+        endif()
+        if ("${arg_PRIVATE_FILE}" STREQUAL "")
+            message(FATAL_ERROR "qt_feature_begin_module needs a PRIVATE_FILE name!")
+        endif()
     endif()
 
     set(__QtFeature_library "${arg_LIBRARY}" PARENT_SCOPE)
@@ -412,8 +416,21 @@ function(qt_internal_feature_write_file file features extra)
     file(GENERATE OUTPUT "${file}" CONTENT "${contents}")
 endfunction()
 
+# Helper function which evaluates features from a given list of configure.cmake paths
+# and creates the feature cache entries.
+# Should not be used directly, unless features need to be available in a directory scope before the
+# associated module evaluates the features.
+# E.g. qtbase/src.pro needs access to Core features before src/corelib/CMakeLists.txt is parsed.
+function(qt_feature_evaluate_features list_of_paths)
+    qt_feature_module_begin(ONLY_EVALUATE_FEATURES)
+    foreach(path ${list_of_paths})
+        include("${path}")
+    endforeach()
+    qt_feature_module_end(ONLY_EVALUATE_FEATURES)
+endfunction()
+
 function(qt_feature_module_end)
-    set(flags)
+    set(flags ONLY_EVALUATE_FEATURES)
     set(options OUT_VAR_PREFIX)
     set(multiopts)
     cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
@@ -475,13 +492,15 @@ function(qt_feature_module_end)
         unset(_QT_FEATURE_DEFINITION_${feature} PARENT_SCOPE)
     endforeach()
 
-    qt_internal_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_private_file}"
-        "${__QtFeature_private_features}" "${__QtFeature_private_extra}"
-    )
+    if(NOT arg_ONLY_EVALUATE_FEATURES)
+        qt_internal_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_private_file}"
+            "${__QtFeature_private_features}" "${__QtFeature_private_extra}"
+        )
 
-    qt_internal_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_public_file}"
-        "${__QtFeature_public_features}" "${__QtFeature_public_extra}"
-    )
+        qt_internal_feature_write_file("${CMAKE_CURRENT_BINARY_DIR}/${__QtFeature_public_file}"
+            "${__QtFeature_public_features}" "${__QtFeature_public_extra}"
+        )
+    endif()
 
     # Extra header injections which have to have forwarding headers created by
     # qt_install_injections.
@@ -499,7 +518,7 @@ function(qt_feature_module_end)
         set(${arg_OUT_VAR_PREFIX}extra_library_injections ${injections} PARENT_SCOPE)
     endif()
 
-    if (NOT ("${target}" STREQUAL "NO_MODULE"))
+    if (NOT ("${target}" STREQUAL "NO_MODULE") AND NOT arg_ONLY_EVALUATE_FEATURES)
         get_target_property(targetType "${target}" TYPE)
         if("${targetType}" STREQUAL "INTERFACE_LIBRARY")
             set(propertyPrefix "INTERFACE_")
