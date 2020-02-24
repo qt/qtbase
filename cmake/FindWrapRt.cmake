@@ -5,6 +5,8 @@ if(TARGET WrapRt)
     return()
 endif()
 
+set(WrapRt_FOUND OFF)
+
 include(CheckCXXSourceCompiles)
 include(CMakePushCheckState)
 
@@ -25,10 +27,11 @@ int main(int argc, char *argv[]) {
 
 cmake_pop_check_state()
 
-add_library(WrapRt INTERFACE IMPORTED)
-if (LIBRT_FOUND)
-    target_link_libraries(WrapRt INTERFACE "${LIBRT}")
+
+if(HAVE_GETTIME)
+    set(WrapRt_FOUND ON)
+    add_library(WrapRt INTERFACE IMPORTED)
+    if (LIBRT_FOUND)
+        target_link_libraries(WrapRt INTERFACE "${LIBRT}")
+    endif()
 endif()
-
-set(WrapRt_FOUND "${HAVE_GETTIME}")
-
