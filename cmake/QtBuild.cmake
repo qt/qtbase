@@ -2969,7 +2969,7 @@ endfunction()
 function(qt_add_3rdparty_library target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_3rdparty_library"
-        "SHARED;MODULE;STATIC;INTERFACE;EXCEPTIONS"
+        "SHARED;MODULE;STATIC;INTERFACE;EXCEPTIONS;INSTALL"
         "OUTPUT_DIRECTORY"
         "${__default_private_args};${__default_public_args}"
         ${ARGN}
@@ -3062,7 +3062,7 @@ function(qt_add_3rdparty_library target)
         ${install_arguments}
     )
 
-    if(NOT BUILD_SHARED_LIBS OR arg_SHARED)
+    if(NOT BUILD_SHARED_LIBS OR arg_INSTALL)
         set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
         qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
         qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
@@ -3080,9 +3080,18 @@ function(qt_add_3rdparty_library target)
             COMPATIBILITY AnyNewerVersion
         )
 
+        qt_install(FILES
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
+            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
+            DESTINATION "${config_install_dir}"
+            COMPONENT Devel
+        )
+
         qt_install(TARGETS ${target}
             EXPORT "${export_name}"
-            DESTINATION "${config_install_dir}"
+            RUNTIME DESTINATION ${INSTALL_BINDIR}
+            LIBRARY DESTINATION ${INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${INSTALL_LIBDIR}
         )
 
         qt_install(EXPORT ${export_name}
