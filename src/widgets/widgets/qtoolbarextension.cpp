@@ -81,7 +81,9 @@ void QToolBarExtension::paintEvent(QPaintEvent *)
 
 QSize QToolBarExtension::sizeHint() const
 {
-    int ext = style()->pixelMetric(QStyle::PM_ToolBarExtensionExtent);
+    QStyleOption opt;
+    opt.initFrom(this);
+    const int ext = style()->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt);
     return QSize(ext, ext);
 }
 

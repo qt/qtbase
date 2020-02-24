@@ -2,7 +2,7 @@
  * MD4C: Markdown parser for C
  * (http://github.com/mity/md4c)
  *
- * Copyright (c) 2016-2019 Martin Mitas
+ * Copyright (c) 2016-2020 Martin Mitas
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -135,7 +135,16 @@ typedef enum MD_SPANTYPE {
      * Note: Recognized only when MD_FLAG_LATEXMATHSPANS is enabled.
      */
     MD_SPAN_LATEXMATH,
-    MD_SPAN_LATEXMATH_DISPLAY
+    MD_SPAN_LATEXMATH_DISPLAY,
+
+    /* Wiki links
+     * Note: Recognized only when MD_FLAG_WIKILINKS is enabled.
+     */
+    MD_SPAN_WIKILINK,
+
+    /* <u>...</u>
+     * Note: Recognized only when MD_FLAG_UNDERLINE is enabled. */
+    MD_SPAN_U
 } MD_SPANTYPE;
 
 /* Text is the actual textual contents of span. */
@@ -268,6 +277,10 @@ typedef struct MD_SPAN_IMG_DETAIL {
     MD_ATTRIBUTE title;
 } MD_SPAN_IMG_DETAIL;
 
+/* Detailed info for MD_SPAN_WIKILINK. */
+typedef struct MD_SPAN_WIKILINK {
+    MD_ATTRIBUTE target;
+} MD_SPAN_WIKILINK_DETAIL;
 
 /* Flags specifying extensions/deviations from CommonMark specification.
  *
@@ -286,6 +299,8 @@ typedef struct MD_SPAN_IMG_DETAIL {
 #define MD_FLAG_PERMISSIVEWWWAUTOLINKS      0x0400  /* Enable WWW autolinks (even without any scheme prefix, if they begin with 'www.') */
 #define MD_FLAG_TASKLISTS                   0x0800  /* Enable task list extension. */
 #define MD_FLAG_LATEXMATHSPANS              0x1000  /* Enable $ and $$ containing LaTeX equations. */
+#define MD_FLAG_WIKILINKS                   0x2000  /* Enable wiki links extension. */
+#define MD_FLAG_UNDERLINE                   0x4000  /* Enable underline extension (and disables '_' for normal emphasis). */
 
 #define MD_FLAG_PERMISSIVEAUTOLINKS         (MD_FLAG_PERMISSIVEEMAILAUTOLINKS | MD_FLAG_PERMISSIVEURLAUTOLINKS | MD_FLAG_PERMISSIVEWWWAUTOLINKS)
 #define MD_FLAG_NOHTML                      (MD_FLAG_NOHTMLBLOCKS | MD_FLAG_NOHTMLSPANS)

@@ -208,7 +208,7 @@ bool QCommandLinkButtonPrivate::usingVistaStyle() const
     //### This is a hack to detect if we are indeed running Vista style themed and not in classic
     // When we add api to query for this, we should change this implementation to use it.
     return q->style()->inherits("QWindowsVistaStyle")
-        && !q->style()->pixelMetric(QStyle::PM_ButtonShiftHorizontal);
+        && q->style()->pixelMetric(QStyle::PM_ButtonShiftHorizontal, nullptr) == 0;
 }
 
 void QCommandLinkButtonPrivate::init()
@@ -355,8 +355,10 @@ void QCommandLinkButton::paintEvent(QPaintEvent *)
     option.icon = QIcon(); //we draw this ourselves
     QSize pixmapSize = icon().actualSize(iconSize());
 
-    int vOffset = isDown() ? style()->pixelMetric(QStyle::PM_ButtonShiftVertical) : 0;
-    int hOffset = isDown() ? style()->pixelMetric(QStyle::PM_ButtonShiftHorizontal) : 0;
+    const int vOffset = isDown()
+        ? style()->pixelMetric(QStyle::PM_ButtonShiftVertical, &option) : 0;
+    const int hOffset = isDown()
+        ? style()->pixelMetric(QStyle::PM_ButtonShiftHorizontal, &option) : 0;
 
     //Draw icon
     p.drawControl(QStyle::CE_PushButton, option);

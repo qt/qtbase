@@ -431,7 +431,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                         QIcon::Active, QIcon::Off);
         }
 
-        int size = proxy()->pixelMetric(QStyle::PM_SmallIconSize);
+        const int size = proxy()->pixelMetric(QStyle::PM_SmallIconSize, opt);
         QIcon::Mode mode = opt->state & State_Enabled ?
                             (opt->state & State_Raised ? QIcon::Active : QIcon::Normal)
                             : QIcon::Disabled;
@@ -477,7 +477,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             int lw = frame->lineWidth;
             if (lw <= 0)
-                lw = proxy()->pixelMetric(PM_DockWidgetFrameWidth);
+                lw = proxy()->pixelMetric(PM_DockWidgetFrameWidth, opt);
 
             qDrawShadePanel(p, frame->rect, frame->palette, false, lw);
         }
@@ -563,8 +563,8 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         int bsx = 0;
         int bsy = 0;
         if (opt->state & State_Sunken) {
-            bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal);
-            bsy = proxy()->pixelMetric(PM_ButtonShiftVertical);
+            bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt);
+            bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt);
         }
         p->save();
         p->translate(sx + bsx, sy + bsy);
@@ -994,7 +994,7 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int 
             }
 
             if (wrapText && option->features & QStyleOptionViewItem::HasCheckIndicator)
-                bounds.setWidth(bounds.width() - proxyStyle->pixelMetric(QStyle::PM_IndicatorWidth) - 2 * textMargin);
+                bounds.setWidth(bounds.width() - proxyStyle->pixelMetric(QStyle::PM_IndicatorWidth, option) - 2 * textMargin);
 
             const int lineWidth = bounds.width();
             const QSizeF size = viewItemTextLayout(textLayout, lineWidth);
@@ -1240,7 +1240,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
     if (!opt->icon.isNull()) {
         QSize iconSize = opt->iconSize;
         if (!iconSize.isValid()) {
-            int iconExtent = proxyStyle->pixelMetric(QStyle::PM_SmallIconSize);
+            int iconExtent = proxyStyle->pixelMetric(QStyle::PM_SmallIconSize, opt);
             iconSize = QSize(iconExtent, iconExtent);
         }
         QSize tabIconSize = opt->icon.actualSize(iconSize,
@@ -1490,7 +1490,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                             | Qt::TextSingleLine;
             if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
                 alignment |= Qt::TextHideMnemonic;
-            int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+            int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, opt);
             QPixmap pix = mbi->icon.pixmap(qt_getWindow(widget), QSize(iconExtent, iconExtent), (mbi->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
             if (!pix.isNull())
                 proxy()->drawItemPixmap(p,mbi->rect, alignment, pix);
@@ -1646,7 +1646,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             QRect rect = header->rect;
             if (!header->icon.isNull()) {
-                int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+                int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, opt);
                 QPixmap pixmap
                     = header->icon.pixmap(qt_getWindow(widget), QSize(iconExtent, iconExtent), (header->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
                 int pixw = pixmap.width() / pixmap.devicePixelRatio();
@@ -3863,8 +3863,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 if (opt->activeSubControls & QStyle::SC_MdiCloseButton && (opt->state & State_Sunken)) {
                     btnOpt.state |= State_Sunken;
                     btnOpt.state &= ~State_Raised;
-                    bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal);
-                    bsy = proxy()->pixelMetric(PM_ButtonShiftVertical);
+                    bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt);
+                    bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt);
                 } else {
                     btnOpt.state |= State_Raised;
                     btnOpt.state &= ~State_Sunken;
@@ -3880,8 +3880,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 if (opt->activeSubControls & QStyle::SC_MdiNormalButton && (opt->state & State_Sunken)) {
                     btnOpt.state |= State_Sunken;
                     btnOpt.state &= ~State_Raised;
-                    bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal);
-                    bsy = proxy()->pixelMetric(PM_ButtonShiftVertical);
+                    bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt);
+                    bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt);
                 } else {
                     btnOpt.state |= State_Raised;
                     btnOpt.state &= ~State_Sunken;
@@ -3897,8 +3897,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 if (opt->activeSubControls & QStyle::SC_MdiMinButton && (opt->state & State_Sunken)) {
                     btnOpt.state |= State_Sunken;
                     btnOpt.state &= ~State_Raised;
-                    bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal);
-                    bsy = proxy()->pixelMetric(PM_ButtonShiftVertical);
+                    bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt);
+                    bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt);
                 } else {
                     btnOpt.state |= State_Raised;
                     btnOpt.state &= ~State_Sunken;
@@ -4781,12 +4781,12 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
             } else if (widget) {
                 isWindow = widget->isWindow();
             }
-            ret = proxy()->pixelMetric(isWindow ? PM_DefaultTopLevelMargin : PM_DefaultChildMargin);
+            ret = proxy()->pixelMetric(isWindow ? PM_DefaultTopLevelMargin : PM_DefaultChildMargin, opt);
         }
         break;
     case PM_LayoutHorizontalSpacing:
     case PM_LayoutVerticalSpacing:
-        ret = proxy()->pixelMetric(PM_DefaultLayoutSpacing);
+        ret = proxy()->pixelMetric(PM_DefaultLayoutSpacing, opt);
         break;
 
     case PM_DefaultTopLevelMargin:
@@ -4937,7 +4937,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             } else {
                 h =  mi->fontMetrics.height() + 8;
                 if (!mi->icon.isNull()) {
-                    int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+                    int iconExtent = proxy()->pixelMetric(PM_SmallIconSize, opt);
                     h = qMax(h, mi->icon.actualSize(QSize(iconExtent, iconExtent)).height() + 4);
                 }
             }
@@ -4963,7 +4963,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             int fw = cmb->frame ? proxy()->pixelMetric(PM_ComboBoxFrameWidth, opt, widget) * 2 : 0;
-            const int textMargins = 2*(proxy()->pixelMetric(PM_FocusFrameHMargin) + 1);
+            const int textMargins = 2*(proxy()->pixelMetric(PM_FocusFrameHMargin, opt) + 1);
             // QItemDelegate::sizeHint expands the textMargins two times, thus the 2*textMargins...
             int other = qMax(23, 2*textMargins + proxy()->pixelMetric(QStyle::PM_ScrollBarExtent, opt, widget));
             sz = QSize(sz.width() + fw + other, sz.height() + fw);
@@ -5214,8 +5214,8 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         if (widget) {
             if(QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
                 mask->region = widget->rect();
-                int vmargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin),
-                    hmargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin);
+                const int vmargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt);
+                const int hmargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt);
                 mask->region -= QRect(widget->rect().adjusted(hmargin, vmargin, -hmargin, -vmargin));
             }
         }
@@ -5228,7 +5228,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
                 ret = true;
                 if(QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
                     mask->region = opt->rect;
-                    int margin = proxy()->pixelMetric(PM_DefaultFrameWidth) * 2;
+                    const int margin = proxy()->pixelMetric(PM_DefaultFrameWidth, opt) * 2;
                     mask->region -= opt->rect.adjusted(margin, margin, -margin, -margin);
                 }
             }

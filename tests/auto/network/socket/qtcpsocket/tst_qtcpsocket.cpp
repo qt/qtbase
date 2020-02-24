@@ -556,8 +556,14 @@ void tst_QTcpSocket::bind_data()
 
     // try to bind to a privileged ports
     // we should fail if we're not root (unless the ports are in use!)
+#ifdef Q_OS_DARWIN
+    // Alas, some quirk (starting from macOS 10.14): bind with port number 1
+    // fails with IPv4 (not IPv6 though, see below).
+    QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << false << QString();
+#else
     QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << QtNetworkSettings::canBindToLowPorts()
                                  << (QtNetworkSettings::canBindToLowPorts() ? "127.0.0.1" : QString());
+#endif // Q_OS_DARWIN
     if (testIpv6)
         QTest::newRow("[::]:1") << "::" << 1 << QtNetworkSettings::canBindToLowPorts()
                                 << (QtNetworkSettings::canBindToLowPorts() ? "::" : QString());
@@ -579,7 +585,7 @@ void tst_QTcpSocket::bind()
     QTcpSocket dummySocket;     // used only to "use up" a file descriptor
     dummySocket.bind();
 
-    QTcpSocket *socket = newSocket();
+    std::unique_ptr<QTcpSocket> socket(newSocket());
     quint16 boundPort;
     qintptr fd;
 
@@ -645,9 +651,24 @@ void tst_QTcpSocket::bind()
         QCOMPARE(acceptedSocket->peerPort(), boundPort);
         QCOMPARE(socket->localAddress(), remoteAddr);
         QCOMPARE(socket->socketDescriptor(), fd);
+#ifdef Q_OS_DARWIN
+        // Normally, we don't see this problem: macOS sometimes does not
+        // allow us to immediately re-use a port, thinking connection is
+        // still alive. With fixed port 1 (we testing starting from
+        // macOS 10.14), this problem shows, making the test flaky:
+        // we run this 'bind' with port 1 several times (different
+        // test cases) and the problem manifests itself as
+        // "The bound address is already in use, tried port 1".
+        QTestEventLoop cleanupHelper;
+        auto client = socket.get();
+        connect(client, &QTcpSocket::disconnected, [&cleanupHelper, client](){
+            client->close();
+            cleanupHelper.exitLoop();
+        });
+        acceptedSocket->close();
+        cleanupHelper.enterLoopMSecs(100);
+#endif // Q_OS_DARWIN
     }
-
-    delete socket;
 }
 
 //----------------------------------------------------------------------------------

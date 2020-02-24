@@ -3235,8 +3235,10 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
         widget->installEventFilter(this);
         widget->show();
         dataChanged(index, index); // update the geometry
-        if (!d->delayedPendingLayout)
+        if (!d->delayedPendingLayout) {
             widget->setGeometry(visualRect(index));
+            d->doDelayedItemsLayout();  // relayout due to updated geometry
+        }
     }
 }
 

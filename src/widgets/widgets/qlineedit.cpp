@@ -2073,7 +2073,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     if (d->cursorVisible && !d->control->isReadOnly())
         flags |= QWidgetLineControl::DrawCursor;
 
-    d->control->setCursorWidth(style()->pixelMetric(QStyle::PM_TextCursorWidth));
+    d->control->setCursorWidth(style()->pixelMetric(QStyle::PM_TextCursorWidth, &panel));
     d->control->draw(&p, topLeft, r, flags);
 
 }

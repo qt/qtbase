@@ -80,7 +80,9 @@ qreal QGraphicsLayoutStyleInfo::perItemSpacing(QLayoutPolicy::ControlType contro
 qreal QGraphicsLayoutStyleInfo::spacing(Qt::Orientation orientation) const
 {
     Q_ASSERT(style());
-    return style()->pixelMetric(orientation == Qt::Horizontal ? QStyle::PM_LayoutHorizontalSpacing : QStyle::PM_LayoutVerticalSpacing);
+    return style()->pixelMetric(orientation == Qt::Horizontal
+        ? QStyle::PM_LayoutHorizontalSpacing : QStyle::PM_LayoutVerticalSpacing,
+        &m_styleOption);
 }
 
 qreal QGraphicsLayoutStyleInfo::windowMargin(Qt::Orientation orientation) const
