@@ -2331,14 +2331,15 @@ void tst_QSettings::testRegistry32And64Bit()
 
 void tst_QSettings::trailingWhitespace()
 {
+    const QString path = settingsPath("trailingWhitespace");
     {
-        QSettings s("tst_QSettings_trailingWhitespace");
+        QSettings s(path, QSettings::IniFormat);
         s.setValue("trailingSpace", "x  ");
         s.setValue("trailingTab", "x\t");
         s.setValue("trailingNewline", "x\n");
     }
     {
-        QSettings s("tst_QSettings_trailingWhitespace");
+        QSettings s(path, QSettings::IniFormat);
         QCOMPARE(s.value("trailingSpace").toString(), QLatin1String("x  "));
         QCOMPARE(s.value("trailingTab").toString(), QLatin1String("x\t"));
         QCOMPARE(s.value("trailingNewline").toString(), QLatin1String("x\n"));
