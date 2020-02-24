@@ -1561,7 +1561,7 @@ function(qt_add_module target)
 
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_CONFIG_HEADER_FILE"
         "CONFIG_MODULE_NAME;PRECOMPILED_HEADER"
         "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
@@ -1803,7 +1803,7 @@ function(qt_add_module target)
     endif()
 
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
-    if(EXISTS "${configureFile}")
+    if(EXISTS "${configureFile}" AND NOT arg_NO_CONFIG_HEADER_FILE)
         qt_feature_module_begin(
             LIBRARY "${target}"
             PUBLIC_FILE "qt${arg_CONFIG_MODULE_NAME}-config.h"
