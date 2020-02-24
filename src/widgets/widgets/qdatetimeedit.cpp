@@ -669,7 +669,8 @@ void QDateTimeEdit::setTimeRange(const QTime &min, const QTime &max)
   \brief The currently displayed fields of the date time edit.
 
   Returns a bit set of the displayed sections for this format.
-  \a setDisplayFormat(), displayFormat()
+
+  \sa setDisplayFormat(), displayFormat()
 */
 
 QDateTimeEdit::Sections QDateTimeEdit::displayedSections() const
@@ -682,7 +683,8 @@ QDateTimeEdit::Sections QDateTimeEdit::displayedSections() const
   \property QDateTimeEdit::currentSection
 
   \brief The current section of the spinbox.
-  \a setCurrentSection()
+
+  \sa setCurrentSection()
 */
 
 QDateTimeEdit::Section QDateTimeEdit::currentSection() const
@@ -762,8 +764,7 @@ int QDateTimeEdit::sectionCount() const
   the cursorPosition is 5, currentSectionIndex returns 1. If the
   cursorPosition is 3, currentSectionIndex is 0, and so on.
 
-  \a setCurrentSection()
-  \sa currentSection()
+  \sa setCurrentSection(), currentSection()
 */
 
 int QDateTimeEdit::currentSectionIndex() const
