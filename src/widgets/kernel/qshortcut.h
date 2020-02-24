@@ -95,7 +95,8 @@ public:
     template<class Obj1, typename Func1>
     QShortcut(const QKeySequence &key, QWidget *parent,
               const Obj1 *object1, Func1 slot1,
-              Qt::ShortcutContext context = Qt::WindowShortcut)
+              Qt::ShortcutContext context = Qt::WindowShortcut,
+              typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<Obj1*>::Value>::type* = 0)
         : QShortcut(key, parent, static_cast<const char*>(nullptr), static_cast<const char*>(nullptr), context)
     {
         connect(this, &QShortcut::activated, object1, std::move(slot1));
@@ -103,7 +104,8 @@ public:
     template<class Obj1, typename Func1, typename Func2>
     QShortcut(const QKeySequence &key, QWidget *parent,
               const Obj1 *object1, Func1 slot1, Func2 slot2,
-              Qt::ShortcutContext context = Qt::WindowShortcut)
+              Qt::ShortcutContext context = Qt::WindowShortcut,
+              typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<Obj1*>::Value>::type* = 0)
         : QShortcut(key, parent, static_cast<const char*>(nullptr), static_cast<const char*>(nullptr), context)
     {
         connect(this, &QShortcut::activated, object1, std::move(slot1));
@@ -113,7 +115,9 @@ public:
     QShortcut(const QKeySequence &key, QWidget *parent,
               const Obj1 *object1, Func1 slot1,
               const Obj2 *object2, Func2 slot2,
-              Qt::ShortcutContext context = Qt::WindowShortcut)
+              Qt::ShortcutContext context = Qt::WindowShortcut,
+              typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<Obj1*>::Value>::type* = 0,
+              typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<Obj2*>::Value>::type* = 0)
         : QShortcut(key, parent, static_cast<const char*>(nullptr), static_cast<const char*>(nullptr), context)
     {
         connect(this, &QShortcut::activated, object1, std::move(slot1));
