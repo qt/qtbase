@@ -2658,8 +2658,8 @@ public:
 // Workaround for https://bugs.llvm.org/show_bug.cgi?id=44554 : Every lambda used for initializing
 // static members need a different signature for explicit instentiation
 #define QT_METATYPE_CONSTEXPRLAMDA(...) [](std::integral_constant<int, __COUNTER__> = {}) constexpr __VA_ARGS__ ()
-#elif defined(Q_CC_MSVC) && Q_CC_MSVC < 1920
-// Workaround a bug with 'if constexpr' not working in lambda that are not generic in MSVC 2017
+#elif defined(Q_CC_MSVC)
+// Workaround a bug with 'if constexpr' not working in lambda that are not generic in MSVC
 #define QT_METATYPE_CONSTEXPRLAMDA(...) [](auto) constexpr __VA_ARGS__ (0)
 #else
 #define QT_METATYPE_CONSTEXPRLAMDA(...) []() constexpr __VA_ARGS__ ()
