@@ -1423,6 +1423,14 @@ function(qt_skip_warnings_are_errors_when_repo_unclean target)
     endif()
 endfunction()
 
+function(qt_disable_warnings target)
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+    set_target_properties("${target}" PROPERTIES QT_COMPILE_OPTIONS_DISABLE_WARNINGS ON)
+endfunction()
+
 function(qt_get_sanitized_plugin_type plugin_type out_var)
     # Used to handle some edge cases such as platforms/darwin
     string(REGEX REPLACE "[-/]" "_" plugin_type "${plugin_type}")
