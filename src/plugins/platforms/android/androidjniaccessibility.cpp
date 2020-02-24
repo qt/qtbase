@@ -72,20 +72,28 @@ namespace QtAndroidAccessibility
     static jmethodID m_setTextSelectionMethodID = 0;
     static jmethodID m_setVisibleToUserMethodID = 0;
 
+    static bool m_accessibilityActivated = false;
+
     void initialize()
     {
         QJNIObjectPrivate::callStaticMethod<void>(QtAndroid::applicationClass(),
                                                   "initializeAccessibility");
     }
 
+    bool isActive()
+    {
+        return m_accessibilityActivated;
+    }
+
     static void setActive(JNIEnv */*env*/, jobject /*thiz*/, jboolean active)
     {
         QMutexLocker lock(QtAndroid::platformInterfaceMutex());
         QAndroidPlatformIntegration *platformIntegration = QtAndroid::androidPlatformIntegration();
+        m_accessibilityActivated = active;
         if (platformIntegration)
             platformIntegration->accessibility()->setActive(active);
         else
-            __android_log_print(ANDROID_LOG_WARN, m_qtTag, "Could not activate platform accessibility.");
+            __android_log_print(ANDROID_LOG_WARN, m_qtTag, "Could not (yet) activate platform accessibility.");
     }
 
     QAccessibleInterface *interfaceFromId(jint objectId)

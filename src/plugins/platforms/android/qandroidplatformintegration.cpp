@@ -52,6 +52,7 @@
 #include <qpa/qplatformoffscreensurface.h>
 
 #include "androidjnimain.h"
+#include "androidjniaccessibility.h"
 #include "qabstracteventdispatcher.h"
 #include "qandroideventdispatcher.h"
 #include "qandroidplatformbackingstore.h"
@@ -151,6 +152,12 @@ void QAndroidPlatformNativeInterface::customEvent(QEvent *event)
     QMutexLocker lock(QtAndroid::platformInterfaceMutex());
     QAndroidPlatformIntegration *api = static_cast<QAndroidPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
     QtAndroid::setAndroidPlatformIntegration(api);
+
+#ifndef QT_NO_ACCESSIBILITY
+    // Android accessibility activation event might have been already received
+    api->accessibility()->setActive(QtAndroidAccessibility::isActive());
+#endif // QT_NO_ACCESSIBILITY
+
     api->flushPendingUpdates();
 }
 
