@@ -84,8 +84,8 @@ public:
         EmailAddress
     };
 
-    enum PatternSyntax {
-        RegExp,
+    enum class PatternSyntax {
+        RegularExpression,
         Wildcard,
         FixedString
     };

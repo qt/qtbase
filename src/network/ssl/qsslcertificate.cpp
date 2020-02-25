@@ -573,12 +573,12 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     int pos = -1;
 
 #if QT_CONFIG(regularexpression)
-    if (syntax == Wildcard)
+    if (syntax == PatternSyntax::Wildcard)
         pos = pathPrefix.indexOf(QRegularExpression(QLatin1String("[*?[]")));
-    else if (syntax == RegExp)
+    else if (syntax == PatternSyntax::RegularExpression)
         pos = sourcePath.indexOf(QRegularExpression(QLatin1String("[\\$\\(\\)\\*\\+\\.\\?\\[\\]\\^\\{\\}\\|]")));
 #else
-    if (syntax == Wildcard || syntax == RegExp)
+    if (syntax == PatternSyntax::Wildcard || syntax == PatternSyntax::RegExp)
         qWarning("Regular expression support is disabled in this build. Only fixed string can be searched");
         return QList<QSslCertificate>();
 #endif
@@ -615,7 +615,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     QList<QSslCertificate> certs;
 
 #if QT_CONFIG(regularexpression)
-    if (syntax == Wildcard)
+    if (syntax == PatternSyntax::Wildcard)
         sourcePath = QRegularExpression::wildcardToRegularExpression(sourcePath);
 
     QRegularExpression pattern(QRegularExpression::anchoredPattern(sourcePath));
