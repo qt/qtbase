@@ -31,6 +31,7 @@
 Provides classes:
   Locale -- common data-type representing one locale as a namespace
   QLocaleXmlWriter -- helper to write a QLocaleXML file
+  QLocaleXmlReader -- helper to read a QLocaleXML file back in
 
 Support:
   Spacer -- provides control over indentation of the output.
@@ -124,6 +125,157 @@ def convertFormat(format):
                 i += 1
 
     return result
+
+class QLocaleXmlReader (object):
+    def __init__(self, filename):
+        self.root = self.__parse(filename)
+        # Lists of (id, name, code) triples:
+        languages = tuple(self.__loadMap('language'))
+        scripts = tuple(self.__loadMap('script'))
+        countries = tuple(self.__loadMap('country'))
+        self.__likely = tuple(self.__likelySubtagsMap())
+        # Mappings {ID: (name, code)}
+        self.languages = dict((v[0], v[1:]) for v in languages)
+        self.scripts = dict((v[0], v[1:]) for v in scripts)
+        self.countries = dict((v[0], v[1:]) for v in countries)
+        # Private mappings {name: (ID, code)}
+        self.__langByName = dict((v[1], (v[0], v[2])) for v in languages)
+        self.__textByName = dict((v[1], (v[0], v[2])) for v in scripts)
+        self.__landByName = dict((v[1], (v[0], v[2])) for v in countries)
+        # Other properties:
+        self.dupes = set(v[1] for v in languages) & set(v[1] for v in countries)
+        self.cldrVersion = self.__firstChildText(self.root, "version")
+
+    def loadLocaleMap(self, calendars, grumble = lambda text: None):
+        kid = self.__firstChildText
+        likely = dict(self.__likely)
+        for elt in self.__eachEltInGroup(self.root, 'localeList', 'locale'):
+            locale = Locale.fromXmlData(lambda k: kid(elt, k), calendars)
+            language = self.__langByName[locale.language][0]
+            script = self.__textByName[locale.script][0]
+            country = self.__landByName[locale.country][0]
+
+            if language != 1: # C
+                if country == 0:
+                    grumble('loadLocaleMap: No country id for "{}"\n'.format(locale.language))
+
+                if script == 0:
+                    # Find default script for the given language and country - see:
+                    # http://www.unicode.org/reports/tr35/#Likely_Subtags
+                    try:
+                        try:
+                            to = likely[(locale.language, 'AnyScript', locale.country)]
+                        except KeyError:
+                            to = likely[(locale.language, 'AnyScript', 'AnyCountry')]
+                    except KeyError:
+                        pass
+                    else:
+                        locale.script = to[1]
+                        script = self.__textByName[locale.script][0]
+
+            yield (language, script, country), locale
+
+    def languageIndices(self, locales):
+        index = 0
+        for key, value in self.languages.iteritems():
+            i, count = 0, locales.count(key)
+            if count > 0:
+                i = index
+                index += count
+            yield i, value[0]
+
+    def likelyMap(self):
+        def tag(t):
+            lang, script, land = t
+            yield lang[1] if lang[0] else 'und'
+            if script[0]: yield script[1]
+            if land[0]: yield land[1]
+
+        def ids(t):
+            return tuple(x[0] for x in t)
+
+        for i, pair in enumerate(self.__likely, 1):
+            have = self.__fromNames(pair[0])
+            give = self.__fromNames(pair[1])
+            yield ('_'.join(tag(have)), ids(have),
+                   '_'.join(tag(give)), ids(give),
+                   i == len(self.__likely))
+
+    def defaultMap(self):
+        """Map language and script to their default country by ID.
+
+        Yields ((language, script), country) wherever the likely
+        sub-tags mapping says language's default locale uses the given
+        script and country."""
+        for have, give in self.__likely:
+            if have[1:] == ('AnyScript', 'AnyCountry') and give[2] != 'AnyCountry':
+                assert have[0] == give[0], (have, give)
+                yield ((self.__langByName[give[0]][0],
+                        self.__textByName[give[1]][0]),
+                       self.__landByName[give[2]][0])
+
+    # Implementation details:
+    def __loadMap(self, category):
+        kid = self.__firstChildText
+        for element in self.__eachEltInGroup(self.root, category + 'List', category):
+            yield int(kid(element, 'id')), kid(element, 'name'), kid(element, 'code')
+
+    def __likelySubtagsMap(self):
+        def triplet(element, keys=('language', 'script', 'country'), kid = self.__firstChildText):
+            return tuple(kid(element, key) for key in keys)
+
+        kid = self.__firstChildElt
+        for elt in self.__eachEltInGroup(self.root, 'likelySubtags', 'likelySubtag'):
+            yield triplet(kid(elt, "from")), triplet(kid(elt, "to"))
+
+    def __fromNames(self, names):
+        return self.__langByName[names[0]], self.__textByName[names[1]], self.__landByName[names[2]]
+
+    # DOM access:
+    from xml.dom import minidom
+    @staticmethod
+    def __parse(filename, read = minidom.parse):
+        return read(filename).documentElement
+
+    @staticmethod
+    def __isNodeNamed(elt, name, TYPE=minidom.Node.ELEMENT_NODE):
+        return elt.nodeType == TYPE and elt.nodeName == name
+    del minidom
+
+    @staticmethod
+    def __eltWords(elt):
+        child = elt.firstChild
+        while child:
+            if child.nodeType == elt.TEXT_NODE:
+                yield child.nodeValue
+            child = child.nextSibling
+
+    @classmethod
+    def __firstChildElt(cls, parent, name):
+        child = parent.firstChild
+        while child:
+            if cls.__isNodeNamed(child, name):
+                return child
+            child = child.nextSibling
+
+        raise Error('No {} child found'.format(name))
+
+    @classmethod
+    def __firstChildText(cls, elt, key):
+        return ' '.join(cls.__eltWords(cls.__firstChildElt(elt, key)))
+
+    @classmethod
+    def __eachEltInGroup(cls, parent, group, key):
+        try:
+            element = cls.__firstChildElt(parent, group).firstChild
+        except Error:
+            element = None
+
+        while element:
+            if cls.__isNodeNamed(element, key):
+                yield element
+            element = element.nextSibling
+
 
 class Spacer (object):
     def __init__(self, indent = None, initial = ''):
@@ -403,6 +555,9 @@ class Locale (object):
     @staticmethod
     def __monthNames(calendars,
                      known={ # Map calendar to (names, extractors...):
+            # TODO: do we even need these ?  CLDR's root.xml seems to
+            # have them, complete with yeartype="leap" handling for
+            # Hebrew's extra.
             'gregorian': (('January', 'February', 'March', 'April', 'May', 'June', 'July',
                            'August', 'September', 'October', 'November', 'December'),
                           # Extractor pairs, (plain, standalone)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #############################################################################
 ##
-## Copyright (C) 2018 The Qt Company Ltd.
+## Copyright (C) 2020 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -37,10 +37,9 @@ import os
 import sys
 import tempfile
 import datetime
-import xml.dom.minidom
 from enumdata import language_aliases, country_aliases, script_aliases
 
-from qlocalexml import Locale
+from qlocalexml import QLocaleXmlReader
 
 # TODO: Make calendars a command-line parameter
 # map { CLDR name: Qt file name }
@@ -73,55 +72,6 @@ def wrap_list(lst):
             yield head
     return ",\n".join(", ".join(x) for x in split(lst, 20))
 
-def isNodeNamed(elt, name, TYPE=xml.dom.minidom.Node.ELEMENT_NODE):
-    return elt.nodeType == TYPE and elt.nodeName == name
-
-def firstChildElt(parent, name):
-    child = parent.firstChild
-    while child:
-        if isNodeNamed(child, name):
-            return child
-        child = child.nextSibling
-
-    raise Error('No %s child found' % name)
-
-def eachEltInGroup(parent, group, key):
-    try:
-        element = firstChildElt(parent, group).firstChild
-    except Error:
-        element = None
-
-    while element:
-        if isNodeNamed(element, key):
-            yield element
-        element = element.nextSibling
-
-def eltWords(elt):
-    child = elt.firstChild
-    while child:
-        if child.nodeType == elt.TEXT_NODE:
-            yield child.nodeValue
-        child = child.nextSibling
-
-def firstChildText(elt, key):
-    return ' '.join(eltWords(firstChildElt(elt, key)))
-
-def loadMap(doc, category):
-    return dict((int(firstChildText(element, 'id')),
-                 (firstChildText(element, 'name'),
-                  firstChildText(element, 'code')))
-                for element in eachEltInGroup(doc.documentElement,
-                                              category + 'List', category))
-
-def loadLikelySubtagsMap(doc):
-    def triplet(element, keys=('language', 'script', 'country')):
-        return tuple(firstChildText(element, key) for key in keys)
-
-    return dict((i, {'from': triplet(firstChildElt(elt, "from")),
-                     'to': triplet(firstChildElt(elt, "to"))})
-                for i, elt in enumerate(eachEltInGroup(doc.documentElement,
-                                                       'likelySubtags', 'likelySubtag')))
-
 def fixedScriptName(name, dupes):
     # Don't .capitalize() as some names are already camel-case (see enumdata.py):
     name = ''.join(word[0].upper() + word[1:] for word in name.split())
@@ -142,106 +92,40 @@ def fixedLanguageName(name, dupes):
         return name.replace(" ", "") + "Language"
     return name.replace(" ", "")
 
-def findDupes(country_map, language_map):
-    country_set = set(v[0] for a, v in country_map.iteritems())
-    language_set = set(v[0] for a, v in language_map.iteritems())
-    return country_set & language_set
-
-def languageNameToId(name, language_map):
-    for key in language_map.keys():
-        if language_map[key][0] == name:
-            return key
-    return -1
-
-def scriptNameToId(name, script_map):
-    for key in script_map.keys():
-        if script_map[key][0] == name:
-            return key
-    return -1
-
-def countryNameToId(name, country_map):
-    for key in country_map.keys():
-        if country_map[key][0] == name:
-            return key
-    return -1
-
-def loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map):
-    result = {}
-
-    for locale_elt in eachEltInGroup(doc.documentElement, "localeList", "locale"):
-        locale = Locale.fromXmlData(lambda k: firstChildText(locale_elt, k), calendars.keys())
-        language_id = languageNameToId(locale.language, language_map)
-        if language_id == -1:
-            sys.stderr.write("Cannot find a language id for '%s'\n" % locale.language)
-        script_id = scriptNameToId(locale.script, script_map)
-        if script_id == -1:
-            sys.stderr.write("Cannot find a script id for '%s'\n" % locale.script)
-        country_id = countryNameToId(locale.country, country_map)
-        if country_id == -1:
-            sys.stderr.write("Cannot find a country id for '%s'\n" % locale.country)
-
-        if language_id != 1: # C
-            if country_id == 0:
-                sys.stderr.write("loadLocaleMap: No country id for '%s'\n" % locale.language)
-
-            if script_id == 0:
-                # find default script for a given language and country (see http://www.unicode.org/reports/tr35/#Likely_Subtags)
-                for key in likely_subtags_map.keys():
-                    tmp = likely_subtags_map[key]
-                    if tmp["from"][0] == locale.language and tmp["from"][1] == "AnyScript" and tmp["from"][2] == locale.country:
-                        locale.script = tmp["to"][1]
-                        script_id = scriptNameToId(locale.script, script_map)
-                        break
-            if script_id == 0 and country_id != 0:
-                # try with no country
-                for key in likely_subtags_map.keys():
-                    tmp = likely_subtags_map[key]
-                    if tmp["from"][0] == locale.language and tmp["from"][1] == "AnyScript" and tmp["from"][2] == "AnyCountry":
-                        locale.script = tmp["to"][1]
-                        script_id = scriptNameToId(locale.script, script_map)
-                        break
-
-        result[(language_id, script_id, country_id)] = locale
-
-    return result
-
 def compareLocaleKeys(key1, key2):
     if key1 == key2:
         return 0
 
-    if key1[0] == key2[0]:
-        l1 = compareLocaleKeys.locale_map[key1]
-        l2 = compareLocaleKeys.locale_map[key2]
-
-        if (l1.language, l1.script) in compareLocaleKeys.default_map.keys():
-            default = compareLocaleKeys.default_map[(l1.language, l1.script)]
-            if l1.country == default:
-                return -1
-            if l2.country == default:
-                return 1
-
-        if key1[1] != key2[1]:
-            if (l2.language, l2.script) in compareLocaleKeys.default_map.keys():
-                default = compareLocaleKeys.default_map[(l2.language, l2.script)]
-                if l2.country == default:
-                    return 1
-                if l1.country == default:
-                    return -1
-
-        if key1[1] != key2[1]:
-            return key1[1] - key2[1]
-    else:
+    if key1[0] != key2[0]: # First sort by language:
         return key1[0] - key2[0]
 
-    return key1[2] - key2[2]
+    defaults = compareLocaleKeys.default_map
+    # maps {(language, script): country} by ID
+    try:
+        country = defaults[key1[:2]]
+    except KeyError:
+        pass
+    else:
+        if key1[2] == country:
+            return -1
+        if key2[2] == country:
+            return 1
 
+    if key1[1] == key2[1]:
+        return key1[2] - key2[2]
 
-def languageCount(language_id, locale_map):
-    result = 0
-    for key in locale_map.keys():
-        if key[0] == language_id:
-            result += 1
-    return result
+    try:
+        country = defaults[key2[:2]]
+    except KeyError:
+        pass
+    else:
+        if key2[2] == country:
+            return 1
+        if key1[2] == country:
+            return -1
+
+    return key1[1] - key2[1]
+
 
 def unicode2hex(s):
     lst = []
@@ -303,40 +187,6 @@ class StringData:
         fd.write(wrap_list(self.data))
         fd.write("\n};\n")
 
-def escapedString(s):
-    result = ""
-    i = 0
-    while i < len(s):
-        if s[i] == '"':
-            result += '\\"'
-            i += 1
-        else:
-            result += s[i]
-            i += 1
-    s = result
-
-    line = ""
-    need_escape = False
-    result = ""
-    for c in s:
-        if ord(c) < 128 and (not need_escape or ord(c.lower()) < ord('a') or ord(c.lower()) > ord('f')):
-            line += c
-            need_escape = False
-        else:
-            line += "\\x%02x" % (ord(c))
-            need_escape = True
-        if len(line) > 80:
-            result = result + "\n" + '"' + line + '"'
-            line = ""
-    line += "\\0"
-    result = result + "\n" + '"' + line + '"'
-    if result[0] == "\n":
-        result = result[1:]
-    return result
-
-def printEscapedString(s):
-    print escapedString(s)
-
 def currencyIsoCodeData(s):
     if s:
         return '{' + ",".join(str(ord(x)) for x in s) + '}'
@@ -370,83 +220,25 @@ def main():
         s = qlocaledata_file.readline()
     data_temp_file.write(GENERATED_BLOCK_START)
 
-    doc = xml.dom.minidom.parse(qlocalexml)
-    language_map = loadMap(doc, 'language')
-    script_map = loadMap(doc, 'script')
-    country_map = loadMap(doc, 'country')
-    likely_subtags_map = loadLikelySubtagsMap(doc)
-    default_map = {}
-    for key in likely_subtags_map.keys():
-        tmp = likely_subtags_map[key]
-        if tmp["from"][1] == "AnyScript" and tmp["from"][2] == "AnyCountry" and tmp["to"][2] != "AnyCountry":
-            default_map[(tmp["to"][0], tmp["to"][1])] = tmp["to"][2]
-    locale_map = loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map)
-    dupes = findDupes(language_map, country_map)
-
-    cldr_version = firstChildText(doc.documentElement, "version")
-    data_temp_file.write(generated_template % (datetime.date.today(), cldr_version))
+    reader = QLocaleXmlReader(qlocalexml)
+    locale_map = dict(reader.loadLocaleMap(calendars, sys.stderr.write))
+    data_temp_file.write(generated_template % (datetime.date.today(), reader.cldrVersion))
 
     # Likely subtags map
     data_temp_file.write("static const QLocaleId likely_subtags[] = {\n")
-    index = 0
-    for key in likely_subtags_map.keys():
-        tmp = likely_subtags_map[key]
-        from_language = languageNameToId(tmp["from"][0], language_map)
-        from_script = scriptNameToId(tmp["from"][1], script_map)
-        from_country = countryNameToId(tmp["from"][2], country_map)
-        to_language = languageNameToId(tmp["to"][0], language_map)
-        to_script = scriptNameToId(tmp["to"][1], script_map)
-        to_country = countryNameToId(tmp["to"][2], country_map)
-
-        cmnt_from = ""
-        if from_language != 0:
-            cmnt_from = cmnt_from + language_map[from_language][1]
-        else:
-            cmnt_from = cmnt_from + "und"
-        if from_script != 0:
-            if cmnt_from:
-                cmnt_from = cmnt_from + "_"
-            cmnt_from = cmnt_from + script_map[from_script][1]
-        if from_country != 0:
-            if cmnt_from:
-                cmnt_from = cmnt_from + "_"
-            cmnt_from = cmnt_from + country_map[from_country][1]
-        cmnt_to = ""
-        if to_language != 0:
-            cmnt_to = cmnt_to + language_map[to_language][1]
-        else:
-            cmnt_to = cmnt_to + "und"
-        if to_script != 0:
-            if cmnt_to:
-                cmnt_to = cmnt_to + "_"
-            cmnt_to = cmnt_to + script_map[to_script][1]
-        if to_country != 0:
-            if cmnt_to:
-                cmnt_to = cmnt_to + "_"
-            cmnt_to = cmnt_to + country_map[to_country][1]
-
-        data_temp_file.write("    ")
-        data_temp_file.write("{ %3d, %3d, %3d }, { %3d, %3d, %3d }" % (from_language, from_script, from_country, to_language, to_script, to_country))
-        index += 1
-        if index != len(likely_subtags_map):
-            data_temp_file.write(",")
-        else:
-            data_temp_file.write(" ")
-        data_temp_file.write(" // %s -> %s\n" % (cmnt_from, cmnt_to))
+    for had, have, got, give, last in reader.likelyMap():
+        data_temp_file.write('    {{ {:3d}, {:3d}, {:3d} }}'.format(*have))
+        data_temp_file.write(', {{ {:3d}, {:3d}, {:3d} }}'.format(*give))
+        data_temp_file.write(' ' if last else ',')
+        data_temp_file.write(' // {} -> {}\n'.format(had, got))
     data_temp_file.write("};\n")
 
     data_temp_file.write("\n")
 
     # Locale index
     data_temp_file.write("static const quint16 locale_index[] = {\n")
-    index = 0
-    for key in language_map.keys():
-        i = 0
-        count = languageCount(key, locale_map)
-        if count > 0:
-            i = index
-            index += count
-        data_temp_file.write("%6d, // %s\n" % (i, language_map[key][0]))
+    for index, name in reader.languageIndices(tuple(k[0] for k in locale_map)):
+        data_temp_file.write('{:6d}, // {}\n'.format(index, name))
     data_temp_file.write("     0 // trailing 0\n")
     data_temp_file.write("};\n\n")
 
@@ -524,8 +316,7 @@ def main():
                          + '\n')
 
     locale_keys = locale_map.keys()
-    compareLocaleKeys.default_map = default_map
-    compareLocaleKeys.locale_map = locale_map
+    compareLocaleKeys.default_map = dict(reader.defaultMap())
     locale_keys.sort(compareLocaleKeys)
 
     line_format = ('    { '
@@ -616,10 +407,10 @@ def main():
     # Language name list
     data_temp_file.write("static const char language_name_list[] =\n")
     data_temp_file.write('"Default\\0"\n')
-    for key in language_map.keys():
+    for key, value in reader.languages.items():
         if key == 0:
             continue
-        data_temp_file.write('"' + language_map[key][0] + '\\0"\n')
+        data_temp_file.write('"' + value[0] + '\\0"\n')
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
@@ -628,10 +419,10 @@ def main():
     data_temp_file.write("static const quint16 language_name_index[] = {\n")
     data_temp_file.write("     0, // AnyLanguage\n")
     index = 8
-    for key in language_map.keys():
+    for key, value in reader.languages.items():
         if key == 0:
             continue
-        language = language_map[key][0]
+        language = value[0]
         data_temp_file.write("%6d, // %s\n" % (index, language))
         index += len(language) + 1
     data_temp_file.write("};\n")
@@ -641,10 +432,10 @@ def main():
     # Script name list
     data_temp_file.write("static const char script_name_list[] =\n")
     data_temp_file.write('"Default\\0"\n')
-    for key in script_map.keys():
+    for key, value in reader.scripts.items():
         if key == 0:
             continue
-        data_temp_file.write('"' + script_map[key][0] + '\\0"\n')
+        data_temp_file.write('"' + value[0] + '\\0"\n')
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
@@ -653,10 +444,10 @@ def main():
     data_temp_file.write("static const quint16 script_name_index[] = {\n")
     data_temp_file.write("     0, // AnyScript\n")
     index = 8
-    for key in script_map.keys():
+    for key, value in reader.scripts.items():
         if key == 0:
             continue
-        script = script_map[key][0]
+        script = value[0]
         data_temp_file.write("%6d, // %s\n" % (index, script))
         index += len(script) + 1
     data_temp_file.write("};\n")
@@ -666,10 +457,10 @@ def main():
     # Country name list
     data_temp_file.write("static const char country_name_list[] =\n")
     data_temp_file.write('"Default\\0"\n')
-    for key in country_map.keys():
+    for key, value in reader.countries.items():
         if key == 0:
             continue
-        data_temp_file.write('"' + country_map[key][0] + '\\0"\n')
+        data_temp_file.write('"' + value[0] + '\\0"\n')
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
@@ -678,10 +469,10 @@ def main():
     data_temp_file.write("static const quint16 country_name_index[] = {\n")
     data_temp_file.write("     0, // AnyCountry\n")
     index = 8
-    for key in country_map.keys():
+    for key, value in reader.countries.items():
         if key == 0:
             continue
-        country = country_map[key][0]
+        country = value[0]
         data_temp_file.write("%6d, // %s\n" % (index, country))
         index += len(country) + 1
     data_temp_file.write("};\n")
@@ -690,31 +481,31 @@ def main():
 
     # Language code list
     data_temp_file.write("static const unsigned char language_code_list[] =\n")
-    for key in language_map.keys():
-        code = language_map[key][1]
+    for key, value in reader.languages.items():
+        code = value[1]
         if len(code) == 2:
             code += r"\0"
-        data_temp_file.write('"%2s" // %s\n' % (code, language_map[key][0]))
+        data_temp_file.write('"%2s" // %s\n' % (code, value[0]))
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
 
     # Script code list
     data_temp_file.write("static const unsigned char script_code_list[] =\n")
-    for key in script_map.keys():
-        code = script_map[key][1]
+    for key, value in reader.scripts.items():
+        code = value[1]
         for i in range(4 - len(code)):
             code += "\\0"
-        data_temp_file.write('"%2s" // %s\n' % (code, script_map[key][0]))
+        data_temp_file.write('"%2s" // %s\n' % (code, value[0]))
     data_temp_file.write(";\n")
 
     # Country code list
     data_temp_file.write("static const unsigned char country_code_list[] =\n")
-    for key in country_map.keys():
-        code = country_map[key][1]
+    for key, value in reader.countries.items():
+        code = value[1]
         if len(code) == 2:
             code += "\\0"
-        data_temp_file.write('"%2s" // %s\n' % (code, country_map[key][0]))
+        data_temp_file.write('"%2s" // %s\n' % (code, value[0]))
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
@@ -748,7 +539,7 @@ def main():
             calendar_temp_file.write(s)
             s = calendar_template_file.readline()
         calendar_temp_file.write(GENERATED_BLOCK_START)
-        calendar_temp_file.write(generated_template % (datetime.date.today(), cldr_version))
+        calendar_temp_file.write(generated_template % (datetime.date.today(), reader.cldrVersion))
         calendar_temp_file.write("static const QCalendarLocale locale_data[] = {\n")
         calendar_temp_file.write('   // '
                                  # IDs, width 7 (6 + comma)
@@ -805,8 +596,8 @@ def main():
     # Language enum
     qlocaleh_temp_file.write("    enum Language {\n")
     language = None
-    for key, value in language_map.items():
-        language = fixedLanguageName(value[0], dupes)
+    for key, value in reader.languages.items():
+        language = fixedLanguageName(value[0], reader.dupes)
         qlocaleh_temp_file.write("        " + language + " = " + str(key) + ",\n")
 
     qlocaleh_temp_file.write("\n        " +
@@ -822,8 +613,8 @@ def main():
     # Script enum
     qlocaleh_temp_file.write("    enum Script {\n")
     script = None
-    for key, value in script_map.items():
-        script = fixedScriptName(value[0], dupes)
+    for key, value in reader.scripts.items():
+        script = fixedScriptName(value[0], reader.dupes)
         qlocaleh_temp_file.write("        " + script + " = " + str(key) + ",\n")
     qlocaleh_temp_file.write("\n        " +
                              ",\n        ".join('%s = %s' % pair
@@ -836,8 +627,8 @@ def main():
     # Country enum
     qlocaleh_temp_file.write("    enum Country {\n")
     country = None
-    for key, value in country_map.items():
-        country = fixedCountryName(value[0], dupes)
+    for key, value in reader.countries.items():
+        country = fixedCountryName(value[0], reader.dupes)
         qlocaleh_temp_file.write("        " + country + " = " + str(key) + ",\n")
     qlocaleh_temp_file.write("\n        " +
                              ",\n        ".join('%s = %s' % pair
@@ -872,7 +663,7 @@ def main():
     DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
     while s:
         if DOCSTRING in s:
-            qlocaleqdoc_temp_file.write(DOCSTRING + "v" + cldr_version + ".\n")
+            qlocaleqdoc_temp_file.write(DOCSTRING + "v" + reader.cldrVersion + ".\n")
         else:
             qlocaleqdoc_temp_file.write(s)
         s = qlocaleqdoc_file.readline()
