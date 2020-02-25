@@ -95,7 +95,7 @@ static bool containsTLDEntry(QStringView entry, TLDMatchType match)
 Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain)
 {
     const QString domainLower = domain.toLower();
-    QVector<QStringRef> sections = domainLower.splitRef(QLatin1Char('.'), QString::SkipEmptyParts);
+    QVector<QStringRef> sections = domainLower.splitRef(QLatin1Char('.'), Qt::SkipEmptyParts);
     if (sections.isEmpty())
         return QString();
 

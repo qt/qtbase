@@ -360,7 +360,7 @@ static inline QFileInfo findSh()
     QLatin1String sh("/sh");
     QByteArray pEnv = qgetenv("PATH");
     const QLatin1Char pathSep(':');
-    const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, QString::SkipEmptyParts);
+    const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, Qt::SkipEmptyParts);
     foreach (const QString &path, rawPaths) {
         if (QFile::exists(path + sh))
             return path + sh;

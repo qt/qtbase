@@ -2693,7 +2693,7 @@ QStringList QCoreApplication::libraryPathsLocked()
 
         auto setPathsFromEnv = [&](QString libPathEnv) {
             if (!libPathEnv.isEmpty()) {
-                QStringList paths = libPathEnv.split(QDir::listSeparator(), QString::SkipEmptyParts);
+                QStringList paths = libPathEnv.split(QDir::listSeparator(), Qt::SkipEmptyParts);
                 for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it) {
                     QString canonicalPath = QDir(*it).canonicalPath();
                     if (!canonicalPath.isEmpty()
