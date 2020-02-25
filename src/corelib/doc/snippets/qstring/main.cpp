@@ -766,7 +766,7 @@ void Widget::splitFunction()
 
     //! [60]
     str = "This time, a normal English sentence.";
-    list = str.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+    list = str.split(QRegExp("\\W+"), Qt::SkipEmptyParts);
     // list: [ "This", "time", "a", "normal", "English", "sentence" ]
     //! [60]
 
@@ -787,7 +787,7 @@ void Widget::splitFunction()
 
     //! [91]
     str = "This time, a normal English sentence.";
-    list = str.split(QRegularExpression("\\W+"), QString::SkipEmptyParts);
+    list = str.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
     // list: [ "This", "time", "a", "normal", "English", "sentence" ]
     //! [91]
 
@@ -801,24 +801,24 @@ void Widget::splitFunction()
 void Widget::splitCaseSensitiveFunction()
 {
     //! [62]
-    QString str = "a,,b,c";
+    QString str = QStringLiteral("a,,b,c");
 
-    QStringList list1 = str.split(',');
+    QStringList list1 = str.split(QLatin1Char(','));
     // list1: [ "a", "", "b", "c" ]
 
-    QStringList list2 = str.split(',', QString::SkipEmptyParts);
+    QStringList list2 = str.split(QLatin1Char(','), Qt::SkipEmptyParts);
     // list2: [ "a", "b", "c" ]
     //! [62]
 
     //! [62-empty]
     QString str = "abc";
-    auto parts = str.split("");
+    auto parts = str.split(QString());
     // parts: {"", "a", "b", "c", ""}
     //! [62-empty]
 
     //! [62-slashes]
     QString str = "/a/b/c/";
-    auto parts = str.split('/');
+    auto parts = str.split(QLatin1Char('/'));
     // parts: {"", "a", "b", "c", ""}
     //! [62-slashes]
 }

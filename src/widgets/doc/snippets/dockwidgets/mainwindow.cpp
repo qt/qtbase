@@ -79,7 +79,7 @@ void MainWindow::setupContents()
 
     do {
         QString line = titlesFile.readLine().trimmed();
-        QStringList parts = line.split("\t", QString::SkipEmptyParts);
+        QStringList parts = line.split(QLatin1Char('\t'), Qt::SkipEmptyParts);
         if (parts.size() != 2)
             break;
 

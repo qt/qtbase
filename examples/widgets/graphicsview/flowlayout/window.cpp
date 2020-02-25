@@ -59,7 +59,7 @@ Window::Window(QGraphicsItem *parent) : QGraphicsWidget(parent, Qt::Window)
     FlowLayout *lay = new FlowLayout;
     const QString sentence(QLatin1String("I am not bothered by the fact that I am unknown."
                                          " I am bothered when I do not know others. (Confucius)"));
-    const QVector<QStringRef> words = sentence.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
+    const QVector<QStringRef> words = sentence.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
     for (const QStringRef &word : words) {
         QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(this);
         QLabel *label = new QLabel(word.toString());
