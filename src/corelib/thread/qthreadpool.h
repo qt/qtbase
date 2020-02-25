@@ -72,8 +72,8 @@ public:
     void start(QRunnable *runnable, int priority = 0);
     bool tryStart(QRunnable *runnable);
 
-    void start(std::function<void()> fun, int priority = 0);
-    bool tryStart(std::function<void()> fun);
+    void start(std::function<void()> functionToRun, int priority = 0);
+    bool tryStart(std::function<void()> functionToRun);
 
     int expiryTimeout() const;
     void setExpiryTimeout(int expiryTimeout);
