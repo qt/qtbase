@@ -312,8 +312,8 @@ public:
     QList<Key> keys(const T &value) const;
     QList<T> values() const;
 #if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") QList<Key> uniqueKeys() const;
-    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") QList<T> values(const Key &key) const;
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiHash for hashes storing multiple values with the same key.") QList<Key> uniqueKeys() const;
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiHash for hashes storing multiple values with the same key.") QList<T> values(const Key &key) const;
 #endif
     int count(const Key &key) const;
 
@@ -531,8 +531,8 @@ public:
     iterator insert(const Key &key, const T &value);
     void insert(const QHash &hash);
 #if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") iterator insertMulti(const Key &key, const T &value);
-    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") QHash &unite(const QHash &other);
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiHash for hashes storing multiple values with the same key.") iterator insertMulti(const Key &key, const T &value);
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiHash for hashes storing multiple values with the same key.") QHash &unite(const QHash &other);
 #endif
 
     // STL compatibility
