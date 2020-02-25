@@ -405,7 +405,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             // The native OSK should be disbled if the Qt OSK is in use,
             // or if disabled via application attribute.
             static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
-            bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_MSWindowsDisableVirtualKeyboard);
+            bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_DisableNativeVirtualKeyboard);
 
             // If we want to disable the native OSK auto-showing
             // we have to report text fields as non-editable.

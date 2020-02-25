@@ -285,7 +285,7 @@ void QWindowsInputContext::showInputPanel()
         // the Surface seems unnecessary there anyway. But leave it hidden for IME.
         // Only trigger the native OSK if the Qt OSK is not in use.
         static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
-        bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_MSWindowsDisableVirtualKeyboard);
+        bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_DisableNativeVirtualKeyboard);
         if ((imModuleEmpty && !nativeVKDisabled)
                 && QOperatingSystemVersion::current()
                     >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 16299)) {

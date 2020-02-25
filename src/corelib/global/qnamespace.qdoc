@@ -293,10 +293,10 @@
            This attribute must be set before QGuiApplication is constructed.
            This value was added in 5.13
 
-    \value AA_MSWindowsDisableVirtualKeyboard When this attribute is set,
-           Windows' native on-screen virtual keyboard will not be shown
-           automatically when a text input widget gains focus on a system
-           without a physical keyboard.
+    \value AA_DisableNativeVirtualKeyboard When this attribute is set, the native
+           on-screen virtual keyboard will not be shown automatically when a
+           text input widget gains focus on a system without a physical keyboard.
+           Currently supported on the Windows platform only.
            This value was added in 5.15
 
     The following values are deprecated or obsolete:
