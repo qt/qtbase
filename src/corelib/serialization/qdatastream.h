@@ -340,6 +340,7 @@ QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
         --it;
         QT_WARNING_POP
         s << it.key() << it.value();
+    }
 #else
     auto it = c.constBegin();
     auto end = c.constEnd();
@@ -352,8 +353,8 @@ QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
             auto next = std::next(rangeStart, i);
             s << next.key() << next.value();
         }
-#endif
     }
+#endif
 
     return s;
 }
