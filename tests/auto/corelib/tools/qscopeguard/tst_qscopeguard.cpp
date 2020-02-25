@@ -100,8 +100,8 @@ void tst_QScopeGuard::construction()
     QScopeGuard fromFunctionPointer(&func);
     QScopeGuard fromNonVoidFunction(intFunc);
     QScopeGuard fromNoDiscardFunction(noDiscardFunc);
-    QScopeGuard fromStdFunction{std::function(func)};
-    std::function stdFunction(func);
+    QScopeGuard fromStdFunction{std::function<void()>(func)};
+    std::function<void()> stdFunction(func);
     QScopeGuard fromNamedStdFunction(stdFunction);
 #else
     QSKIP("This test requires C++17 Class Template Argument Deduction support enabled in the compiler.");
