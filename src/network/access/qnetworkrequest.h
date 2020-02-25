@@ -135,7 +135,7 @@ public:
     };
 
     enum TransferTimeoutConstant {
-        TransferTimeoutPreset = 30000
+        DefaultTransferTimeoutConstant = 30000
     };
 
     QNetworkRequest();
@@ -190,7 +190,7 @@ public:
     void setHttp2Configuration(const QHttp2Configuration &configuration);
 
     int transferTimeout() const;
-    void setTransferTimeout(int timeout = TransferTimeoutPreset);
+    void setTransferTimeout(int timeout = DefaultTransferTimeoutConstant);
 #endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;

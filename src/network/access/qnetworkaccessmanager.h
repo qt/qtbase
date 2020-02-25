@@ -171,7 +171,7 @@ public:
     void setAutoDeleteReplies(bool autoDelete);
 
     int transferTimeout() const;
-    void setTransferTimeout(int timeout = QNetworkRequest::TransferTimeoutPreset);
+    void setTransferTimeout(int timeout = QNetworkRequest::DefaultTransferTimeoutConstant);
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY

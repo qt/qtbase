@@ -432,9 +432,9 @@ QT_BEGIN_NAMESPACE
     A constant that can be used for enabling transfer
     timeouts with a preset value.
 
-    \value TransferTimeoutPreset      The transfer timeout in milliseconds.
-                                      Used if setTimeout() is called
-                                      without an argument.
+    \value DefaultTransferTimeoutConstant     The transfer timeout in milliseconds.
+                                              Used if setTimeout() is called
+                                              without an argument.
  */
 
 class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate
