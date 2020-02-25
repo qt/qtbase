@@ -772,7 +772,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         const auto vars = values(map(args.at(0)));
         for (const ProString &var : vars) {
             // FIXME: this is inconsistent with the "there are no empty strings" dogma.
-            const auto splits = var.toQStringRef().split(sep, QString::KeepEmptyParts);
+            const auto splits = var.toQStringRef().split(sep, Qt::KeepEmptyParts);
             for (const auto &splt : splits)
                 ret << ProString(splt).setSource(var);
         }
@@ -1576,7 +1576,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         if (args.count() == 1)
             return returnBool(isActiveConfig(args.at(0).toQStringRef()));
         const auto mutuals = args.at(1).toQStringRef().split(QLatin1Char('|'),
-                                                             QString::SkipEmptyParts);
+                                                             Qt::SkipEmptyParts);
         const ProStringList &configs = values(statics.strCONFIG);
 
         for (int i = configs.size() - 1; i >= 0; i--) {
@@ -1610,7 +1610,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             }
         } else {
             const auto mutuals = args.at(2).toQStringRef().split(QLatin1Char('|'),
-                                                                 QString::SkipEmptyParts);
+                                                                 Qt::SkipEmptyParts);
             for (int i = l.size() - 1; i >= 0; i--) {
                 const ProString &val = l[i];
                 for (int mut = 0; mut < mutuals.count(); mut++) {

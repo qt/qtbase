@@ -312,7 +312,7 @@ void Win32MakefileGenerator::processRcFileVar()
         QByteArray rcString;
         QTextStream ts(&rcString, QFile::WriteOnly);
 
-        QStringList vers = project->first("VERSION").toQString().split(".", QString::SkipEmptyParts);
+        QStringList vers = project->first("VERSION").toQString().split(".", Qt::SkipEmptyParts);
         for (int i = vers.size(); i < 4; i++)
             vers += "0";
         QString versionString = vers.join('.');
