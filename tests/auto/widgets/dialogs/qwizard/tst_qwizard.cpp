@@ -585,7 +585,7 @@ void tst_QWizard::addPage()
 #define CHECK_VISITED(wizard, list) \
     do { \
         QList<int> myList = list; \
-        QCOMPARE((wizard).visitedPages(), myList); \
+        QCOMPARE((wizard).visitedIds(), myList); \
         Q_FOREACH(int id, myList) \
             QVERIFY((wizard).hasVisitedPage(id)); \
     } while (0)
@@ -2292,7 +2292,7 @@ void tst_QWizard::removePage()
 
     wizard.restart();
     QCOMPARE(wizard.pageIds().size(), 4);
-    QCOMPARE(wizard.visitedPages().size(), 1);
+    QCOMPARE(wizard.visitedIds().size(), 1);
     QCOMPARE(spy.count(), 0);
 
     // Removing a non-existent page
@@ -2330,14 +2330,14 @@ void tst_QWizard::removePage()
     wizard.setPage(2, page2); // restore
     wizard.restart();
     wizard.next();
-    QCOMPARE(wizard.visitedPages().size(), 2);
+    QCOMPARE(wizard.visitedIds().size(), 2);
     QCOMPARE(wizard.currentPage(), page1);
     QCOMPARE(spy.count(), 0);
     wizard.removePage(2);
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toInt(), 2);
-    QCOMPARE(wizard.visitedPages().size(), 2);
+    QCOMPARE(wizard.visitedIds().size(), 2);
     QVERIFY(!wizard.pageIds().contains(2));
     QCOMPARE(wizard.currentPage(), page1);
 
@@ -2346,14 +2346,14 @@ void tst_QWizard::removePage()
     wizard.restart();
     wizard.next();
     QCOMPARE(spy.count(), 0);
-    QCOMPARE(wizard.visitedPages().size(), 2);
+    QCOMPARE(wizard.visitedIds().size(), 2);
     QCOMPARE(wizard.currentPage(), page1);
     wizard.removePage(0);
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toInt(), 0);
-    QCOMPARE(wizard.visitedPages().size(), 1);
-    QVERIFY(!wizard.visitedPages().contains(0));
+    QCOMPARE(wizard.visitedIds().size(), 1);
+    QVERIFY(!wizard.visitedIds().contains(0));
     QVERIFY(!wizard.pageIds().contains(0));
     QCOMPARE(wizard.currentPage(), page1);
 
@@ -2362,14 +2362,14 @@ void tst_QWizard::removePage()
     wizard.restart();
     wizard.next();
     QCOMPARE(spy.count(), 0);
-    QCOMPARE(wizard.visitedPages().size(), 2);
+    QCOMPARE(wizard.visitedIds().size(), 2);
     QCOMPARE(wizard.currentPage(), page1);
     wizard.removePage(1);
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toInt(), 1);
-    QCOMPARE(wizard.visitedPages().size(), 1);
-    QVERIFY(!wizard.visitedPages().contains(1));
+    QCOMPARE(wizard.visitedIds().size(), 1);
+    QVERIFY(!wizard.visitedIds().contains(1));
     QVERIFY(!wizard.pageIds().contains(1));
     QCOMPARE(wizard.currentPage(), page0);
 
@@ -2378,8 +2378,8 @@ void tst_QWizard::removePage()
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toInt(), 0);
-    QCOMPARE(wizard.visitedPages().size(), 1);
-    QVERIFY(!wizard.visitedPages().contains(0));
+    QCOMPARE(wizard.visitedIds().size(), 1);
+    QVERIFY(!wizard.visitedIds().contains(0));
     QCOMPARE(wizard.pageIds().size(), 2);
     QVERIFY(!wizard.pageIds().contains(0));
     QCOMPARE(wizard.currentPage(), page2);
@@ -2388,8 +2388,8 @@ void tst_QWizard::removePage()
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toInt(), 2);
-    QCOMPARE(wizard.visitedPages().size(), 1);
-    QVERIFY(!wizard.visitedPages().contains(2));
+    QCOMPARE(wizard.visitedIds().size(), 1);
+    QVERIFY(!wizard.visitedIds().contains(2));
     QCOMPARE(wizard.pageIds().size(), 1);
     QVERIFY(!wizard.pageIds().contains(2));
     QCOMPARE(wizard.currentPage(), page3);
@@ -2398,7 +2398,7 @@ void tst_QWizard::removePage()
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toInt(), 3);
-    QVERIFY(wizard.visitedPages().empty());
+    QVERIFY(wizard.visitedIds().empty());
     QVERIFY(wizard.pageIds().empty());
     QCOMPARE(wizard.currentPage(), nullptr);
 }
