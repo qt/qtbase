@@ -4553,7 +4553,9 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     view.show();
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    const bool isActiveWindow = QTest::qWaitForWindowActive(&view);
+    if (!isActiveWindow)
+        QSKIP("Window activation failed, skipping test", Abort);
     // This is highly unstable (observed to pass on Windows and some Linux configurations).
 #ifndef Q_OS_MAC
     for (int i = 0; i < 4; ++i) {
