@@ -314,8 +314,8 @@ public:
 #if QT_DEPRECATED_SINCE(5, 15)
     QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") QList<Key> uniqueKeys() const;
     QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") QList<T> values(const Key &key) const;
-    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") int count(const Key &key) const;
 #endif
+    int count(const Key &key) const;
 
     class const_iterator;
 
@@ -730,6 +730,19 @@ Q_OUTOFLINE_TEMPLATE QList<T> QHash<Key, T>::values() const
 }
 
 template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE int QHash<Key, T>::count(const Key &akey) const
+{
+    int cnt = 0;
+    Node *node = *findNode(akey);
+    if (node != e) {
+        do {
+            ++cnt;
+        } while ((node = node->next) != e && node->key == akey);
+    }
+    return cnt;
+}
+
+template <class Key, class T>
 Q_INLINE_TEMPLATE const T QHash<Key, T>::operator[](const Key &akey) const
 {
     return value(akey);
@@ -1072,7 +1085,6 @@ public:
 
     int remove(const Key &key, const T &value);
 
-    int count(const Key &key) const;
     int count(const Key &key, const T &value) const;
 
     QList<Key> uniqueKeys() const;
@@ -1226,12 +1238,6 @@ Q_OUTOFLINE_TEMPLATE QList<T> QHash<Key, T>::values(const Key &akey) const
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE int QHash<Key, T>::count(const Key &akey) const
-{
-    return static_cast<const QMultiHash<Key, T> *>(this)->count(akey);
-}
-
-template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE QList<Key> QHash<Key, T>::uniqueKeys() const
 {
     return static_cast<const QMultiHash<Key, T> *>(this)->uniqueKeys();
@@ -1249,19 +1255,6 @@ Q_OUTOFLINE_TEMPLATE QList<T> QMultiHash<Key, T>::values(const Key &akey) const
         } while ((node = node->next) != this->e && node->key == akey);
     }
     return res;
-}
-
-template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE int QMultiHash<Key, T>::count(const Key &akey) const
-{
-    int cnt = 0;
-    Node *node = *findNode(akey);
-    if (node != this->e) {
-        do {
-            ++cnt;
-        } while ((node = node->next) != this->e && node->key == akey);
-    }
-    return cnt;
 }
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
