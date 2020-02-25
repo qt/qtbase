@@ -896,7 +896,7 @@ bool readInputFile(Options *options)
     {
         const QJsonValue extraLibs = jsonObject.value(QLatin1String("android-extra-libs"));
         if (!extraLibs.isUndefined())
-            options->extraLibs = extraLibs.toString().split(QLatin1Char(','), QString::SkipEmptyParts);
+            options->extraLibs = extraLibs.toString().split(QLatin1Char(','), Qt::SkipEmptyParts);
     }
 
     {
@@ -980,7 +980,7 @@ bool readInputFile(Options *options)
     }
     {
         const QJsonValue qrcFiles = jsonObject.value(QLatin1String("qrcFiles"));
-        options->qrcFiles = qrcFiles.toString().split(QLatin1Char(','), QString::SkipEmptyParts);
+        options->qrcFiles = qrcFiles.toString().split(QLatin1Char(','), Qt::SkipEmptyParts);
     }
     options->packageName = packageNameFromAndroidManifest(options->androidSourceDirectory + QLatin1String("/AndroidManifest.xml"));
     if (options->packageName.isEmpty())

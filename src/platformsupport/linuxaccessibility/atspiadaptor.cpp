@@ -2050,10 +2050,10 @@ QVariantList AtSpiAdaptor::getAttributes(QAccessibleInterface *interface, int of
     int endOffset;
 
     QString joined = interface->textInterface()->attributes(offset, &startOffset, &endOffset);
-    const QStringList attributes = joined.split (QLatin1Char(';'), QString::SkipEmptyParts, Qt::CaseSensitive);
+    const QStringList attributes = joined.split (QLatin1Char(';'), Qt::SkipEmptyParts, Qt::CaseSensitive);
     for (const QString &attr : attributes) {
         QStringList items;
-        items = attr.split(QLatin1Char(':'), QString::SkipEmptyParts, Qt::CaseSensitive);
+        items = attr.split(QLatin1Char(':'), Qt::SkipEmptyParts, Qt::CaseSensitive);
         AtSpiAttribute attribute = atspiTextAttribute(items[0], items[1]);
         if (!attribute.isNull())
             set[attribute.name] = attribute.value;
@@ -2074,10 +2074,10 @@ QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, in
     int endOffset;
 
     joined = interface->textInterface()->attributes(offset, &startOffset, &endOffset);
-    const QStringList attributes = joined.split (QLatin1Char(';'), QString::SkipEmptyParts, Qt::CaseSensitive);
+    const QStringList attributes = joined.split (QLatin1Char(';'), Qt::SkipEmptyParts, Qt::CaseSensitive);
     for (const QString& attr : attributes) {
         QStringList items;
-        items = attr.split(QLatin1Char(':'), QString::SkipEmptyParts, Qt::CaseSensitive);
+        items = attr.split(QLatin1Char(':'), Qt::SkipEmptyParts, Qt::CaseSensitive);
         AtSpiAttribute attribute = atspiTextAttribute(items[0], items[1]);
         if (!attribute.isNull())
             map[attribute.name] = attribute.value;

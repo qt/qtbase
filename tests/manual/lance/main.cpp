@@ -364,7 +364,7 @@ int main(int argc, char **argv)
             if (file.open(QIODevice::ReadOnly)) {
                 QTextStream textFile(&file);
                 QString script = textFile.readAll();
-                content = script.split("\n", QString::SkipEmptyParts);
+                content = script.split("\n", Qt::SkipEmptyParts);
             } else {
                 printf("failed to read file: '%s'\n", qPrintable(fileinfo.absoluteFilePath()));
                 continue;

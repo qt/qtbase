@@ -285,7 +285,7 @@ QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo, con
                 interface.prepend(QLatin1Char('.')).prepend(QCoreApplication::instance()->applicationName());
                 QStringList domainName =
                     QCoreApplication::instance()->organizationDomain().split(QLatin1Char('.'),
-                                                                             QString::SkipEmptyParts);
+                                                                             Qt::SkipEmptyParts);
                 if (domainName.isEmpty())
                     interface.prepend(QLatin1String("local."));
                 else

@@ -296,8 +296,7 @@ Provider parseProvider(const QString &filename)
         if (tracedef.exactMatch(line)) {
             const QString name = tracedef.cap(1);
             const QString argsString = tracedef.cap(2);
-            const QStringList args = argsString.split(QLatin1Char(','),
-                                                      QString::SkipEmptyParts);
+            const QStringList args = argsString.split(QLatin1Char(','), Qt::SkipEmptyParts);
 
             provider.tracepoints << parseTracepoint(name, args, filename, lineNumber);
         } else {

@@ -95,7 +95,7 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
          } else {
             interface.prepend(QLatin1Char('.')).prepend(QCoreApplication::instance()->applicationName());
             const QString organizationDomain = QCoreApplication::instance()->organizationDomain();
-            const auto domainName = organizationDomain.splitRef(QLatin1Char('.'), QString::SkipEmptyParts);
+            const auto domainName = organizationDomain.splitRef(QLatin1Char('.'), Qt::SkipEmptyParts);
             if (domainName.isEmpty()) {
                  interface.prepend(QLatin1String("local."));
             } else {

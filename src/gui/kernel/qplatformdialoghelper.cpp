@@ -788,7 +788,7 @@ QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
     filter.indexOf(regexp, 0, &match);
     if (match.hasMatch())
         f = match.captured(2);
-    return f.split(QLatin1Char(' '), QString::SkipEmptyParts);
+    return f.split(QLatin1Char(' '), Qt::SkipEmptyParts);
 #else
     return QStringList();
 #endif
