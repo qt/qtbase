@@ -191,7 +191,7 @@ public:
         PE_IndicatorItemViewItemDrop,
 
         PE_PanelItemViewItem,
-        PE_PanelItemViewRow, // ### Qt 6: remove
+        PE_PanelItemViewRow,
 
         PE_PanelStatusBar,
 
@@ -332,8 +332,10 @@ public:
         SE_CheckBoxLayoutItem,
         SE_ComboBoxLayoutItem,
         SE_DateTimeEditLayoutItem,
-        SE_DialogButtonBoxLayoutItem, // ### Qt 6: remove
-        SE_LabelLayoutItem,
+#if QT_DEPRECATED_SINCE(5, 15) // ### Qt 6: remove
+        SE_DialogButtonBoxLayoutItem Q_DECL_ENUMERATOR_DEPRECATED,
+#endif
+        SE_LabelLayoutItem = SE_DateTimeEditLayoutItem + 2,
         SE_ProgressBarLayoutItem,
         SE_PushButtonLayoutItem,
         SE_RadioButtonLayoutItem,
@@ -535,11 +537,13 @@ public:
 
         PM_SpinBoxSliderHeight,
 
-        PM_DefaultTopLevelMargin, // ### Qt 6: remove
-        PM_DefaultChildMargin,    // ### Qt 6: remove
-        PM_DefaultLayoutSpacing,  // ### Qt 6: remove
+#if QT_DEPRECATED_SINCE(5, 15) // ### Qt 6: remove
+        PM_DefaultTopLevelMargin Q_DECL_ENUMERATOR_DEPRECATED,
+        PM_DefaultChildMargin Q_DECL_ENUMERATOR_DEPRECATED,
+        PM_DefaultLayoutSpacing Q_DECL_ENUMERATOR_DEPRECATED,
+#endif
 
-        PM_ToolBarIconSize,
+        PM_ToolBarIconSize = PM_SpinBoxSliderHeight + 4,
         PM_ListViewIconSize,
         PM_IconViewIconSize,
         PM_SmallIconSize,
