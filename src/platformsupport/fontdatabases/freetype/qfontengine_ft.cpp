@@ -1672,6 +1672,9 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
     QFixed ymax = 0;
     QFixed xmax = 0;
     for (int i = 0; i < glyphs.numGlyphs; i++) {
+        // If shaping has found this should be ignored, ignore it.
+        if (!glyphs.advances[i] || glyphs.attributes[i].dontPrint)
+            continue;
         Glyph *g = cacheEnabled ? defaultGlyphSet.getGlyph(glyphs.glyphs[i]) : 0;
         if (!g) {
             if (!face)
