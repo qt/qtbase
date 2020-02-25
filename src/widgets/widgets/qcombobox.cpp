@@ -894,7 +894,7 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
 
     \value AdjustToContents              The combobox will always adjust to the contents
     \value AdjustToContentsOnFirstShow   The combobox will adjust to its contents the first time it is shown.
-    \value AdjustToMinimumContentsLength Use AdjustToContents or AdjustToContentsOnFirstShow instead.
+    \omitvalue AdjustToMinimumContentsLength
     \value AdjustToMinimumContentsLengthWithIcon The combobox will adjust to \l minimumContentsLength plus space for an icon. For performance reasons use this policy on large models.
 */
 
