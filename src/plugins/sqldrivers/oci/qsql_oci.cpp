@@ -2230,7 +2230,7 @@ bool QOCIDriver::hasFeature(DriverFeature f) const
 
 static void qParseOpts(const QString &options, QOCIDriverPrivate *d)
 {
-    const QStringList opts(options.split(QLatin1Char(';'), QString::SkipEmptyParts));
+    const QStringList opts(options.split(QLatin1Char(';'), Qt::SkipEmptyParts));
     for (int i = 0; i < opts.count(); ++i) {
         const QString tmp(opts.at(i));
         int idx;

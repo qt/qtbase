@@ -1270,7 +1270,7 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
 
     QString protocol;
     // Set connection attributes
-    const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
+    const QStringList opts(connOpts.split(QLatin1Char(';'), Qt::SkipEmptyParts));
     for (int i = 0; i < opts.count(); ++i) {
         const QString tmp(opts.at(i));
         int idx;

@@ -1477,7 +1477,7 @@ bool QIBaseDriver::open(const QString & db,
     if (isOpen())
         close();
 
-    const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
+    const QStringList opts(connOpts.split(QLatin1Char(';'), Qt::SkipEmptyParts));
 
     QString encString;
     QByteArray role;
