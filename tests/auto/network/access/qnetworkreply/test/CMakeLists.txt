@@ -18,6 +18,7 @@ list(APPEND test_data "../index.html")
 list(APPEND test_data "../smb-file.txt")
 
 add_qt_test(tst_qnetworkreply
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../../../../../shared/emulationdetector.h
         ../tst_qnetworkreply.cpp
