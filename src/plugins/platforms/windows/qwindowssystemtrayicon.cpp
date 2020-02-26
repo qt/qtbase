@@ -424,8 +424,12 @@ bool QWindowsSystemTrayIcon::winEvent(const MSG &message, long *result)
             if (screen) {
                 emit contextMenuRequested(globalPos, screen);
                 emit activated(Context);
-                if (m_menu)
+                if (m_menu) {
+                    // Set the foreground window to the controlling window so that clicking outside
+                    // of the menu or window will cause the menu to close
+                    SetForegroundWindow(m_hwnd);
                     m_menu->trackPopupMenu(message.hwnd, globalPos.x(), globalPos.y());
+                }
             }
         }
             break;
