@@ -234,6 +234,8 @@ qt_copy_or_install(FILES
                    cmake/QtPlatformSupport.cmake
                    cmake/QtPlatformAndroid.cmake
                    cmake/QtPostProcess.cmake
+                   cmake/QtSeparateDebugInfo.Info.plist.in
+                   cmake/QtSeparateDebugInfo.cmake
                    cmake/QtSetup.cmake
                    cmake/QtModuleConfig.cmake.in
                    cmake/QtModuleDependencies.cmake.in

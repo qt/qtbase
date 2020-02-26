@@ -460,17 +460,7 @@
         },
         "separate_debug_info": {
             "label": "separate debug information support",
-            "type": "compile",
-            "test": {
-                "qmake": [
-                    "TARGET = objcopytest",
-                    "load(resolve_target)",
-                    "QMAKE_POST_LINK += \\",
-                    "    $$QMAKE_OBJCOPY --only-keep-debug $$QMAKE_RESOLVED_TARGET objcopytest.debug && \\",
-                    "    $$QMAKE_OBJCOPY --strip-debug $$QMAKE_RESOLVED_TARGET && \\",
-                    "    $$QMAKE_OBJCOPY --add-gnu-debuglink=objcopytest.debug $$QMAKE_RESOLVED_TARGET"
-                ]
-            }
+            "type": "compile"
         },
         "gc_binaries": {
             "label": "support for split sections and linker garbage collection",

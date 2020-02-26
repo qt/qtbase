@@ -1,4 +1,5 @@
 include(CMakePackageConfigHelpers)
+include(QtSeparateDebugInfo)
 
 # Install locations:
 set(INSTALL_BINDIR "bin" CACHE STRING "Executables [PREFIX/bin]")
@@ -1609,6 +1610,10 @@ function(qt_add_module target)
         if(GCC AND is_shared_lib)
             target_link_options(${target} PRIVATE LINKER:-Bsymbolic-functions)
         endif()
+    endif()
+
+    if(QT_FEATURE_separate_debug_info AND is_shared_lib AND (UNIX OR MINGW))
+        qt_enable_separate_debug_info(${target} ${INSTALL_LIBDIR})
     endif()
 
     if (ANDROID)
@@ -3338,6 +3343,10 @@ function(qt_add_tool name)
         qt_install(TARGETS "${name}"
                    EXPORT "${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}ToolsTargets"
                    DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
+    endif()
+
+    if(QT_FEATURE_separate_debug_info AND (UNIX OR MINGW))
+        qt_enable_separate_debug_info(${name} ${INSTALL_BINDIR})
     endif()
 endfunction()
 

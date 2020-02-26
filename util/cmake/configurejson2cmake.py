@@ -696,7 +696,6 @@ def parseTest(ctx, test, data, cm_fh):
         "sun-iconv",
         "precomile_header",
         "reduce_exports",
-        "separate_debug_info",  # FIXME: see if cmake can do this
         "gc_binaries",
         "libinput_axis_api",
         "wayland-scanner",
@@ -827,7 +826,6 @@ def parseFeature(ctx, feature, data, cm_fh):
         "sanitizer": None,
         "sanitize_thread": None,
         "sanitize_undefined": None,
-        "separate_debug_info": None,
         "shared": {"condition": "BUILD_SHARED_LIBS"},
         "silent": None,
         "sql-sqlite": {"condition": "QT_FEATURE_datestring AND SQLite3_FOUND"},
