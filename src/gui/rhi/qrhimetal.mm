@@ -562,6 +562,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ReadBackNonBaseMipLevel:
         return true;
+    case QRhi::TexelFetch:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -578,6 +580,8 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxColorAttachments:
         return 8;
     case QRhi::FramesInFlight:
+        return QMTL_FRAMES_IN_FLIGHT;
+    case QRhi::MaxAsyncReadbackFrames:
         return QMTL_FRAMES_IN_FLIGHT;
     default:
         Q_UNREACHABLE();
@@ -2194,6 +2198,19 @@ bool QMetalBuffer::build()
     generation += 1;
     rhiD->registerResource(this);
     return true;
+}
+
+QRhiBuffer::NativeBuffer QMetalBuffer::nativeBuffer()
+{
+    if (d->slotted) {
+        NativeBuffer b;
+        Q_ASSERT(sizeof(b.objects) / sizeof(b.objects[0]) >= size_t(QMTL_FRAMES_IN_FLIGHT));
+        for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
+            b.objects[i] = &d->buf[i];
+        b.slotCount = QMTL_FRAMES_IN_FLIGHT;
+        return b;
+    }
+    return { { &d->buf[0] }, 1 };
 }
 
 QMetalRenderBuffer::QMetalRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,

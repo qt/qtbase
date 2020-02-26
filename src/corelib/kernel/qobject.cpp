@@ -47,6 +47,7 @@
 #include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
+#include "qloggingcategory.h"
 #include "qvariant.h"
 #include "qmetaobject.h"
 #include <qregexp.h>
@@ -77,6 +78,8 @@
 QT_BEGIN_NAMESPACE
 
 static int DIRECT_CONNECTION_ONLY = 0;
+
+Q_LOGGING_CATEGORY(lcConnections, "qt.core.qmetaobject.connectslotsbyname")
 
 Q_CORE_EXPORT QBasicAtomicPointer<QSignalSpyCallbackSet> qt_signal_spy_callback_set = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 
@@ -183,15 +186,7 @@ QMetaObject *QObjectData::dynamicMetaObject() const
 QObjectPrivate::QObjectPrivate(int version)
     : threadData(nullptr), currentChildBeingDeleted(nullptr)
 {
-#ifdef QT_BUILD_INTERNAL
-    // Don't check the version parameter in internal builds.
-    // This allows incompatible versions to be loaded, possibly for testing.
-    Q_UNUSED(version);
-#else
-    if (Q_UNLIKELY(version != QObjectPrivateVersion))
-        qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
-                version, QObjectPrivateVersion);
-#endif
+    checkForIncompatibleLibraryVersion(version);
 
     // QObjectData initialization
     q_ptr = nullptr;
@@ -3555,6 +3550,37 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
     return success;
 }
 
+// Helpers for formatting the connect statements of connectSlotsByName()'s debug mode
+static QByteArray formatConnectionSignature(const char *className, const QMetaMethod &method)
+{
+    const auto signature = method.methodSignature();
+    Q_ASSERT(signature.endsWith(')'));
+    const int openParen = signature.indexOf('(');
+    const bool hasParameters = openParen >= 0 && openParen < signature.size() - 2;
+    QByteArray result;
+    if (hasParameters) {
+        result += "qOverload<"
+            + signature.mid(openParen + 1, signature.size() - openParen - 2) + ">(";
+    }
+    result += '&';
+    result += className + QByteArrayLiteral("::") + method.name();
+    if (hasParameters)
+        result += ')';
+    return result;
+}
+
+static QByteArray msgConnect(const QMetaObject *senderMo, const QByteArray &senderName,
+                             const QMetaMethod &signal, const QObject *receiver, int receiverIndex)
+{
+    const auto receiverMo = receiver->metaObject();
+    const auto slot = receiverMo->method(receiverIndex);
+    QByteArray message = QByteArrayLiteral("QObject::connect(")
+        + senderName + ", " + formatConnectionSignature(senderMo->className(), signal)
+        + ", " + receiver->objectName().toLatin1() + ", "
+        + formatConnectionSignature(receiverMo->className(), slot) + ");";
+    return message;
+}
+
 /*!
     \fn void QMetaObject::connectSlotsByName(QObject *object)
 
@@ -3636,6 +3662,8 @@ void QMetaObject::connectSlotsByName(QObject *o)
             // we connect it...
             if (Connection(QMetaObjectPrivate::connect(co, sigIndex, smeta, o, i))) {
                 foundIt = true;
+                qCDebug(lcConnections, "%s",
+                        msgConnect(smeta, coName, QMetaObjectPrivate::signal(smeta, sigIndex), o,  i).constData());
                 // ...and stop looking for further objects with the same name.
                 // Note: the Designer will make sure each object name is unique in the above
                 // 'list' but other code may create two child objects with the same name. In

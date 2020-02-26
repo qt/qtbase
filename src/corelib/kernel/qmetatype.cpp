@@ -714,7 +714,7 @@ QMetaType &QMetaType::operator=(const QMetaType &other)
     as the QMetaType \a b, otherwise returns \c false.
 */
 
-/*! \fn bool operator!=(const QMetaType &a, const QMetaType &c)
+/*! \fn bool operator!=(const QMetaType &a, const QMetaType &b)
     \since 5.15
     \relates QMetaType
     \overload

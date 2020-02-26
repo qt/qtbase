@@ -523,7 +523,7 @@ void tst_QTcpSocket::bind_data()
                 continue; // link-local bind will fail, at least on Linux, so skip it.
 
             QString ip(entry.ip().toString());
-            QTest::newRow(ip.toLatin1().constData()) << ip << 0 << true << ip;
+            QTest::addRow("%s:0", ip.toLatin1().constData()) << ip << 0 << true << ip;
 
             if (!testIpv6 && entry.ip().protocol() == QAbstractSocket::IPv6Protocol)
                 testIpv6 = true;
@@ -531,9 +531,9 @@ void tst_QTcpSocket::bind_data()
     }
 
     // test binding to localhost
-    QTest::newRow("0.0.0.0") << "0.0.0.0" << 0 << true << "0.0.0.0";
+    QTest::newRow("0.0.0.0:0") << "0.0.0.0" << 0 << true << "0.0.0.0";
     if (testIpv6)
-        QTest::newRow("[::]") << "::" << 0 << true << "::";
+        QTest::newRow("[::]:0") << "::" << 0 << true << "::";
 
     // and binding with a port number...
     // Since we want to test that we got the port number we asked for, we need a random port number.
@@ -551,26 +551,22 @@ void tst_QTcpSocket::bind_data()
     knownBad << "198.51.100.1";
     knownBad << "2001:0DB8::1";
     foreach (const QString &badAddress, knownBad) {
-        QTest::newRow(badAddress.toLatin1().constData()) << badAddress << 0 << false << QString();
+        QTest::addRow("%s:0", badAddress.toLatin1().constData()) << badAddress << 0 << false << QString();
     }
 
-#ifdef Q_OS_UNIX
     // try to bind to a privileged ports
     // we should fail if we're not root (unless the ports are in use!)
-    QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << !geteuid() << (geteuid() ? QString() : "127.0.0.1");
-    if (testIpv6) {
 #ifdef Q_OS_DARWIN
-        // This case is faling in different ways, first, it manages to bind to
-        // port 1 on macOS >= 10.14, but if we change the logic to not fail,
-        // it's becoming flaky and sometimes fails to bind, with error 'port in use'
-        // (apparently inflicted by the previous test row with 127.0.0.1). Amen.
-        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
-            QTest::qWarn("Skipping [::]:1, see QTBUG-81905", __FILE__, __LINE__);
-        else
+    // Alas, some quirk (starting from macOS 10.14): bind with port number 1
+    // fails with IPv4 (not IPv6 though, see below).
+    QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << false << QString();
+#else
+    QTest::newRow("127.0.0.1:1") << "127.0.0.1" << 1 << QtNetworkSettings::canBindToLowPorts()
+                                 << (QtNetworkSettings::canBindToLowPorts() ? "127.0.0.1" : QString());
 #endif // Q_OS_DARWIN
-        QTest::newRow("[::]:1") << "::" << 1 << !geteuid() << (geteuid() ? QString() : "::");
-    }
-#endif
+    if (testIpv6)
+        QTest::newRow("[::]:1") << "::" << 1 << QtNetworkSettings::canBindToLowPorts()
+                                << (QtNetworkSettings::canBindToLowPorts() ? "::" : QString());
 }
 
 void tst_QTcpSocket::bind()
@@ -589,13 +585,13 @@ void tst_QTcpSocket::bind()
     QTcpSocket dummySocket;     // used only to "use up" a file descriptor
     dummySocket.bind();
 
-    QTcpSocket *socket = newSocket();
+    std::unique_ptr<QTcpSocket> socket(newSocket());
     quint16 boundPort;
     qintptr fd;
 
     if (successExpected) {
         bool randomPort = port == -1;
-        int attemptsLeft = 5;     // only used with randomPort
+        int attemptsLeft = 5;     // only used with randomPort or Windows
         do {
             if (randomPort) {
                 // try to get a random port number
@@ -655,9 +651,24 @@ void tst_QTcpSocket::bind()
         QCOMPARE(acceptedSocket->peerPort(), boundPort);
         QCOMPARE(socket->localAddress(), remoteAddr);
         QCOMPARE(socket->socketDescriptor(), fd);
+#ifdef Q_OS_DARWIN
+        // Normally, we don't see this problem: macOS sometimes does not
+        // allow us to immediately re-use a port, thinking connection is
+        // still alive. With fixed port 1 (we testing starting from
+        // macOS 10.14), this problem shows, making the test flaky:
+        // we run this 'bind' with port 1 several times (different
+        // test cases) and the problem manifests itself as
+        // "The bound address is already in use, tried port 1".
+        QTestEventLoop cleanupHelper;
+        auto client = socket.get();
+        connect(client, &QTcpSocket::disconnected, [&cleanupHelper, client](){
+            client->close();
+            cleanupHelper.exitLoop();
+        });
+        acceptedSocket->close();
+        cleanupHelper.enterLoopMSecs(100);
+#endif // Q_OS_DARWIN
     }
-
-    delete socket;
 }
 
 //----------------------------------------------------------------------------------

@@ -7397,6 +7397,8 @@ float QString::toFloat(bool *ok) const
    The formatting always uses QLocale::C, i.e., English/UnitedStates.
    To get a localized string representation of a number, use
    QLocale::toString() with the appropriate locale.
+
+   \sa number()
 */
 
 /*! \fn QString &QString::setNum(uint n, int base)
@@ -7454,6 +7456,8 @@ QString &QString::setNum(qulonglong n, int base)
     The formatting always uses QLocale::C, i.e., English/UnitedStates.
     To get a localized string representation of a number, use
     QLocale::toString() with the appropriate locale.
+
+    \sa number()
 */
 
 QString &QString::setNum(double n, char f, int prec)
@@ -7472,6 +7476,8 @@ QString &QString::setNum(double n, char f, int prec)
     The formatting always uses QLocale::C, i.e., English/UnitedStates.
     To get a localized string representation of a number, use
     QLocale::toString() with the appropriate locale.
+
+    \sa number()
 */
 
 

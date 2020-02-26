@@ -3224,6 +3224,7 @@ const uint qt_inv_premul_factor[256] = {
 /*!
     \namespace QColorConstants
     \inmodule QtGui
+    \since 5.14
 
     \brief The QColorConstants namespace contains QColor predefined constants.
 

@@ -37,6 +37,10 @@
 **
 ****************************************************************************/
 
+#include <QtXml/qtxmlglobal.h>
+
+#ifndef QT_NO_DOM
+
 #include "qdomhelpers_p.h"
 #include "qdom_p.h"
 #include "qxmlstream.h"
@@ -661,3 +665,5 @@ bool QDomParser::parseMarkupDecl()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DOM

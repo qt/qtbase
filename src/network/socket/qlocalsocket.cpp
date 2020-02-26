@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
     On Windows this is a named pipe and on Unix this is a local domain socket.
 
-    If an error occurs, socketError() returns the type of error, and
+    If an error occurs, error() returns the type of error, and
     errorString() can be called to get a human readable description
     of what happened.
 

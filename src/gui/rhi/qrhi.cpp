@@ -577,6 +577,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     specifying a non-zero level in QRhiReadbackDescription leads to returning
     an all-zero image. In practice this feature will be unsupported with OpenGL
     ES 2.0, while it will likely be supported everywhere else.
+
+    \value TexelFetch Indicates that texelFetch() is available in shaders. In
+    practice this will be reported as unsupported with OpenGL ES 2.0 and OpenGL
+    2.x contexts, because GLSL 100 es and versions before 130 do not support
+    this function.
  */
 
 /*!
@@ -622,18 +627,27 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     is what some OpenGL ES implementations provide.
 
     \value FramesInFlight The number of frames the backend may keep "in
-    flight". The value has no relevance, and is unspecified, with backends like
-    OpenGL and Direct3D 11. With backends like Vulkan or Metal, it is the
-    responsibility of QRhi to block whenever starting a new frame and finding
-    the CPU is already \c{N - 1} frames ahead of the GPU (because the command
-    buffer submitted in frame no. \c{current} - \c{N} has not yet completed).
-    The value N is what is returned from here, and is typically 2. This can be
-    relevant to applications that integrate rendering done directly with the
-    graphics API, as such rendering code may want to perform double (if the
-    value is 2) buffering for resources, such as, buffers, similarly to the
-    QRhi backends themselves. The current frame slot index (a value running 0,
-    1, .., N-1, then wrapping around) is retrievable from
-    QRhi::currentFrameSlot().
+    flight": with backends like Vulkan or Metal, it is the responsibility of
+    QRhi to block whenever starting a new frame and finding the CPU is already
+    \c{N - 1} frames ahead of the GPU (because the command buffer submitted in
+    frame no. \c{current} - \c{N} has not yet completed). The value N is what
+    is returned from here, and is typically 2. This can be relevant to
+    applications that integrate rendering done directly with the graphics API,
+    as such rendering code may want to perform double (if the value is 2)
+    buffering for resources, such as, buffers, similarly to the QRhi backends
+    themselves. The current frame slot index (a value running 0, 1, .., N-1,
+    then wrapping around) is retrievable from QRhi::currentFrameSlot(). The
+    value is 1 for backends where the graphics API offers no such low level
+    control over the command submission process. Note that pipelining may still
+    happen even when this value is 1 (some backends, such as D3D11, are
+    designed to attempt to enable this, for instance, by using an update
+    strategy for uniform buffers that does not stall the pipeline), but that is
+    then not controlled by QRhi and so not reflected here in the API.
+
+    \value MaxAsyncReadbackFrames The number of \l{QRhi::endFrame()}{submitted}
+    frames (including the one that contains the readback) after which an
+    asynchronous texture or buffer readback is guaranteed to complete upon
+    \l{QRhi::beginFrame()}{starting a new frame}.
  */
 
 /*!
@@ -1946,6 +1960,40 @@ quint64 QRhiResource::globalResourceId() const
  */
 
 /*!
+    \class QRhiBuffer::NativeBuffer
+    \brief Contains information about the underlying native resources of a buffer.
+ */
+
+/*!
+    \variable QRhiBuffer::NativeBuffer::objects
+    \brief an array with pointers to the native object handles.
+
+    With OpenGL, the native handle is a GLuint value, so the elements in the \c
+    objects array are pointers to a GLuint. With Vulkan, the native handle is a
+    VkBuffer, so the elements of the array are pointers to a VkBuffer. With
+    Direct3D 11 and Metal the elements are pointers to a ID3D11Buffer or
+    MTLBuffer pointer, respectively.
+
+    \note Pay attention to the fact that the elements are always pointers to
+    the native buffer handle type, even if the native type itself is a pointer.
+ */
+
+/*!
+    \variable QRhiBuffer::NativeBuffer::slotCount
+    \brief Specifies the number of valid elements in the objects array.
+
+    The value can be 0, 1, 2, or 3 in practice. 0 indicates that the QRhiBuffer
+    is not backed by any native buffer objects. This can happen with
+    QRhiBuffers with the usage UniformBuffer when the underlying API does not
+    support (or the backend chooses not to use) native uniform buffers. 1 is
+    commonly used for Immutable and Static types (but some backends may
+    differ). 2 or 3 is typical when the type is Dynamic (but some backends may
+    differ).
+
+    \sa QRhi::currentFrameSlot(), QRhi::FramesInFlight
+ */
+
+/*!
     \internal
  */
 QRhiBuffer::QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, int size_)
@@ -1972,6 +2020,46 @@ QRhiResource::Type QRhiBuffer::resourceType() const
     \return \c true when successful, \c false when a graphics operation failed.
     Regardless of the return value, calling release() is always safe.
  */
+
+/*!
+    \return the underlying native resources for this buffer. The returned value
+    will be empty if exposing the underlying native resources is not supported by
+    the backend.
+
+    A QRhiBuffer may be backed by multiple native buffer objects, depending on
+    the type() and the QRhi backend in use. When this is the case, all of them
+    are returned in the objects array in the returned struct, with slotCount
+    specifying the number of native buffer objects. While
+    \l{QRhi::beginFrame()}{recording a frame}, QRhi::currentFrameSlot() can be
+    used to determine which of the native buffers QRhi is using for operations
+    that read or write from this QRhiBuffer within the frame being recorded.
+
+    In some cases a QRhiBuffer will not be backed by a native buffer object at
+    all. In this case slotCount will be set to 0 and no valid native objects
+    are returned. This is not an error, and is perfectly valid when a given
+    backend does not use native buffers for QRhiBuffers with certain types or
+    usages.
+
+    \note Be aware that QRhi backends may employ various buffer update
+    strategies. Unlike textures, where uploading image data always means
+    recording a buffer-to-image (or similar) copy command on the command
+    buffer, buffers, in particular Dynamic and UniformBuffer ones, can operate
+    in many different ways. For example, a QRhiBuffer with usage type
+    UniformBuffer may not even be backed by a native buffer object at all if
+    uniform buffers are not used or supported by a given backend and graphics
+    API. There are also differences to how data is written to the buffer and
+    the type of backing memory used, and, if host visible memory is involved,
+    when memory writes become available and visible. Therefore, in general it
+    is recommended to limit native buffer object access to vertex and index
+    buffers with types Static or Immutable, because these operate in a
+    relatively uniform manner with all backends.
+
+    \sa QRhi::currentFrameSlot(), QRhi::FramesInFlight
+ */
+QRhiBuffer::NativeBuffer QRhiBuffer::nativeBuffer()
+{
+    return {};
+}
 
 /*!
     \class QRhiRenderBuffer
@@ -4334,7 +4422,15 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
     is supported only when the QRhi::ReadBackNonUniformBuffer feature is
     reported as supported.
 
-    \a readBackTexture(), QRhi::isFeatureSupported()
+   \note The asynchronous readback is guaranteed to have completed when one of
+   the following conditions is met: \l{QRhi::finish()}{finish()} has been
+   called; or, at least \c N frames have been \l{QRhi::endFrame()}{submitted},
+   including the frame that issued the readback operation, and the
+   \l{QRhi::beginFrame()}{recording of a new frame} has been started, where \c
+   N is the \l{QRhi::resourceLimit()}{resource limit value} returned for
+   QRhi::MaxAsyncReadbackFrames.
+
+   \sa readBackTexture(), QRhi::isFeatureSupported(), QRhi::resourceLimit()
  */
 void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
 {
@@ -4425,6 +4521,16 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
    happens with a byte ordered format. A \l{QRhiTexture::RGBA8}{RGBA8} texture
    maps therefore to byte ordered QImage formats, such as,
    QImage::Format_RGBA8888.
+
+   \note The asynchronous readback is guaranteed to have completed when one of
+   the following conditions is met: \l{QRhi::finish()}{finish()} has been
+   called; or, at least \c N frames have been \l{QRhi::endFrame()}{submitted},
+   including the frame that issued the readback operation, and the
+   \l{QRhi::beginFrame()}{recording of a new frame} has been started, where \c
+   N is the \l{QRhi::resourceLimit()}{resource limit value} returned for
+   QRhi::MaxAsyncReadbackFrames.
+
+   \sa readBackBuffer(), QRhi::resourceLimit()
  */
 void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb, QRhiReadbackResult *result)
 {

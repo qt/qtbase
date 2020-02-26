@@ -134,6 +134,22 @@ public:
         return true;
     }
 
+    static bool canBindToLowPorts()
+    {
+#ifdef Q_OS_UNIX
+        if (geteuid() == 0)
+            return true;
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave)
+            return true;
+        // ### Which versions of iOS, watchOS and such does Apple's opening of
+        // all ports apply to?
+        return false;
+#else
+        // Windows
+        return true;
+#endif
+    }
+
 
 #ifdef QT_NETWORK_LIB
     static bool verifyTestNetworkSettings()

@@ -198,6 +198,9 @@ private slots:
     void shouldGenerateDifferentCodeDependingOnActiveLayers();
     void shouldUseGlobalVariableRatherThanTemporaries();
     void shouldGenerateTemporariesWisely();
+    void shouldHandlePortNamesPrefixingOneAnother();
+    void shouldHandleNodesWithMultipleOutputPorts();
+    void shouldHandleExpressionsInInputNodes();
 };
 
 void tst_QShaderGenerator::shouldHaveDefaultState()
@@ -1227,6 +1230,196 @@ void tst_QShaderGenerator::shouldGenerateTemporariesWisely()
             QCOMPARE(code, expected.join("\n"));
         }
     }
+}
+
+void tst_QShaderGenerator::shouldHandlePortNamesPrefixingOneAnother()
+{
+    // GIVEN
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    auto color1 = createNode({
+                                 createPort(QShaderNodePort::Output, "output")
+                             });
+    color1.addRule(gl4, QShaderNode::Rule("vec4 $output = color1;",
+                                          QByteArrayList() << "in vec4 color1;"));
+
+    auto color2 = createNode({
+                                 createPort(QShaderNodePort::Output, "output")
+                             });
+    color2.addRule(gl4, QShaderNode::Rule("vec4 $output = color2;",
+                                          QByteArrayList() << "in vec4 color2;"));
+
+    auto addColor = createNode({
+                                   createPort(QShaderNodePort::Output, "color"),
+                                   createPort(QShaderNodePort::Input, "color1"),
+                                   createPort(QShaderNodePort::Input, "color2"),
+                               });
+    addColor.addRule(gl4, QShaderNode::Rule("vec4 $color = $color1 + $color2;"));
+
+    auto shaderOutput = createNode({
+                                       createPort(QShaderNodePort::Input, "input")
+                                   });
+
+    shaderOutput.addRule(gl4, QShaderNode::Rule("shaderOutput = $input;",
+                                                QByteArrayList() << "out vec4 shaderOutput;"));
+
+    // WHEN
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+
+        res.addNode(color1);
+        res.addNode(color2);
+        res.addNode(addColor);
+        res.addNode(shaderOutput);
+
+        res.addEdge(createEdge(color1.uuid(), "output", addColor.uuid(), "color1"));
+        res.addEdge(createEdge(color2.uuid(), "output", addColor.uuid(), "color2"));
+        res.addEdge(createEdge(addColor.uuid(), "color", shaderOutput.uuid(), "input"));
+
+        return res;
+    }();
+
+    auto generator = QShaderGenerator();
+    generator.graph = graph;
+    generator.format = gl4;
+
+    const auto code = generator.createShaderCode();
+
+    // THEN
+    const auto expected = QByteArrayList()
+            << "#version 400 core"
+            << ""
+            << "in vec4 color1;"
+            << "in vec4 color2;"
+            << "out vec4 shaderOutput;"
+            << ""
+            << "void main()"
+            << "{"
+            << "    shaderOutput = ((color1 + color2));"
+            << "}"
+            << "";
+    QCOMPARE(code, expected.join("\n"));
+}
+
+void tst_QShaderGenerator::shouldHandleNodesWithMultipleOutputPorts()
+{
+    // GIVEN
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    auto input = createNode({
+                                createPort(QShaderNodePort::Output, "output0"),
+                                createPort(QShaderNodePort::Output, "output1")
+                            });
+    input.addRule(gl4, QShaderNode::Rule("vec4 $output0 = globalIn0;"
+                                         "float $output1 = globalIn1;",
+                                         QByteArrayList() << "in vec4 globalIn0;" << "in float globalIn1;"));
+
+    auto function = createNode({
+                                   createPort(QShaderNodePort::Input, "input0"),
+                                   createPort(QShaderNodePort::Input, "input1"),
+                                   createPort(QShaderNodePort::Output, "output0"),
+                                   createPort(QShaderNodePort::Output, "output1")
+                               });
+    function.addRule(gl4, QShaderNode::Rule("vec4 $output0 = $input0;"
+                                            "float $output1 = $input1;"));
+
+    auto output = createNode({
+                                 createPort(QShaderNodePort::Input, "input0"),
+                                 createPort(QShaderNodePort::Input, "input1")
+                             });
+
+    output.addRule(gl4, QShaderNode::Rule("globalOut0 = $input0;"
+                                          "globalOut1 = $input1;",
+                                          QByteArrayList() << "out vec4 globalOut0;" << "out float globalOut1;"));
+
+    // WHEN
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+
+        res.addNode(input);
+        res.addNode(function);
+        res.addNode(output);
+
+        res.addEdge(createEdge(input.uuid(), "output0", function.uuid(), "input0"));
+        res.addEdge(createEdge(input.uuid(), "output1", function.uuid(), "input1"));
+
+        res.addEdge(createEdge(function.uuid(), "output0", output.uuid(), "input0"));
+        res.addEdge(createEdge(function.uuid(), "output1", output.uuid(), "input1"));
+
+        return res;
+    }();
+
+    auto generator = QShaderGenerator();
+    generator.graph = graph;
+    generator.format = gl4;
+
+    const auto code = generator.createShaderCode();
+
+    // THEN
+    const auto expected = QByteArrayList()
+            << "#version 400 core"
+            << ""
+            << "in vec4 globalIn0;"
+            << "in float globalIn1;"
+            << "out vec4 globalOut0;"
+            << "out float globalOut1;"
+            << ""
+            << "void main()"
+            << "{"
+            << "    globalOut0 = globalIn0;"
+            << "    globalOut1 = globalIn1;"
+            << "}"
+            << "";
+    QCOMPARE(code, expected.join("\n"));
+}
+
+void tst_QShaderGenerator::shouldHandleExpressionsInInputNodes()
+{
+    // GIVEN
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    auto input = createNode({
+                                createPort(QShaderNodePort::Output, "output")
+                            });
+    input.addRule(gl4, QShaderNode::Rule("float $output = 3 + 4;"));
+
+    auto output = createNode({
+                                 createPort(QShaderNodePort::Input, "input")
+                             });
+
+    output.addRule(gl4, QShaderNode::Rule("globalOut = $input;",
+                                          QByteArrayList() << "out float globalOut;"));
+
+    // WHEN
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+
+        res.addNode(input);
+        res.addNode(output);
+
+        res.addEdge(createEdge(input.uuid(), "output", output.uuid(), "input"));
+
+        return res;
+    }();
+
+    auto generator = QShaderGenerator();
+    generator.graph = graph;
+    generator.format = gl4;
+
+    const auto code = generator.createShaderCode();
+
+    // THEN
+    const auto expected = QByteArrayList()
+            << "#version 400 core"
+            << ""
+            << "out float globalOut;"
+            << ""
+            << "void main()"
+            << "{"
+            << "    globalOut = 3 + 4;"
+            << "}"
+            << "";
+    QCOMPARE(code, expected.join("\n"));
 }
 
 QTEST_MAIN(tst_QShaderGenerator)

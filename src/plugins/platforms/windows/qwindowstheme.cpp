@@ -248,8 +248,7 @@ enum DarkModeColors : QRgb  {
     darkModeBtnHighlightRgb = 0xc0c0c0,
     darkModeBtnShadowRgb = 0x808080,
     darkModeHighlightRgb = 0x0055ff, // deviating from 0x800080
-    darkModeMenuHighlightRgb = darkModeHighlightRgb,
-    darkModeGrayTextRgb = 0x00ff00
+    darkModeMenuHighlightRgb = darkModeHighlightRgb
 };
 
 // from QStyle::standardPalette
@@ -386,7 +385,7 @@ static inline QPalette menuPalette(const QPalette &systemPalette, bool light)
     const QColor menuColor = light ? getSysColor(COLOR_MENU) : QColor(Qt::black);
     const QColor menuTextColor = light ? getSysColor(COLOR_MENUTEXT) : QColor(Qt::white);
     const QColor disabled = light
-        ? getSysColor(COLOR_GRAYTEXT) : QColor(darkModeGrayTextRgb);
+        ? getSysColor(COLOR_GRAYTEXT) : QColor(darkModeBtnHighlightRgb);
     // we might need a special color group for the result.
     result.setColor(QPalette::Active, QPalette::Button, menuColor);
     result.setColor(QPalette::Active, QPalette::Text, menuTextColor);

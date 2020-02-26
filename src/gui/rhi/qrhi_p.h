@@ -681,6 +681,11 @@ public:
     };
     Q_DECLARE_FLAGS(UsageFlags, UsageFlag)
 
+    struct NativeBuffer {
+        const void *objects[3];
+        int slotCount;
+    };
+
     QRhiResource::Type resourceType() const override;
 
     Type type() const { return m_type; }
@@ -693,6 +698,8 @@ public:
     void setSize(int sz) { m_size = sz; }
 
     virtual bool build() = 0;
+
+    virtual NativeBuffer nativeBuffer();
 
 protected:
     QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, int size_);
@@ -1430,7 +1437,8 @@ public:
         BaseInstance,
         TriangleFanTopology,
         ReadBackNonUniformBuffer,
-        ReadBackNonBaseMipLevel
+        ReadBackNonBaseMipLevel,
+        TexelFetch
     };
 
     enum BeginFrameFlag {
@@ -1447,7 +1455,8 @@ public:
         TextureSizeMin = 1,
         TextureSizeMax,
         MaxColorAttachments,
-        FramesInFlight
+        FramesInFlight,
+        MaxAsyncReadbackFrames
     };
 
     ~QRhi();

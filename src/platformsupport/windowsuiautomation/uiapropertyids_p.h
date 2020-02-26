@@ -219,5 +219,6 @@
 #define UIA_CenterPointPropertyId                              30165
 #define UIA_RotationPropertyId                                 30166
 #define UIA_SizePropertyId                                     30167
+#define UIA_IsDialogPropertyId                                 30174
 
 #endif

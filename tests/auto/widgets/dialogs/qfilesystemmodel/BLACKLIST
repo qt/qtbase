@@ -8,9 +8,5 @@ b2qt
 b2qt
 [dirsBeforeFiles]
 winrt
-b2qt
-ubuntu
-windows-10
-rhel
 [drives]
 winrt

@@ -149,26 +149,17 @@ class QPSQLDriverPrivate final : public QSqlDriverPrivate
 {
     Q_DECLARE_PUBLIC(QPSQLDriver)
 public:
-    QPSQLDriverPrivate() : QSqlDriverPrivate(),
-        connection(nullptr),
-        isUtf8(false),
-        pro(QPSQLDriver::Version6),
-        sn(nullptr),
-        pendingNotifyCheck(false),
-        hasBackslashEscape(false),
-        stmtCount(0),
-        currentStmtId(InvalidStatementId)
-    { dbmsType = QSqlDriver::PostgreSQL; }
+    QPSQLDriverPrivate() : QSqlDriverPrivate(QSqlDriver::PostgreSQL) {}
 
-    PGconn *connection;
-    bool isUtf8;
-    QPSQLDriver::Protocol pro;
-    QSocketNotifier *sn;
     QStringList seid;
-    mutable bool pendingNotifyCheck;
-    bool hasBackslashEscape;
-    int stmtCount;
-    StatementId currentStmtId;
+    PGconn *connection = nullptr;
+    QSocketNotifier *sn = nullptr;
+    QPSQLDriver::Protocol pro = QPSQLDriver::Version6;
+    StatementId currentStmtId = InvalidStatementId;
+    int stmtCount = 0;
+    mutable bool pendingNotifyCheck = false;
+    bool hasBackslashEscape = false;
+    bool isUtf8 = false;
 
     void appendTables(QStringList &tl, QSqlQuery &t, QChar type);
     PGresult *exec(const char *stmt);
@@ -297,25 +288,18 @@ class QPSQLResultPrivate : public QSqlResultPrivate
     Q_DECLARE_PUBLIC(QPSQLResult)
 public:
     Q_DECLARE_SQLDRIVER_PRIVATE(QPSQLDriver)
-    QPSQLResultPrivate(QPSQLResult *q, const QPSQLDriver *drv)
-      : QSqlResultPrivate(q, drv),
-        result(nullptr),
-        stmtId(InvalidStatementId),
-        currentSize(-1),
-        canFetchMoreRows(false),
-        preparedQueriesEnabled(false)
-    { }
+    using QSqlResultPrivate::QSqlResultPrivate;
 
     QString fieldSerial(int i) const override { return QLatin1Char('$') + QString::number(i + 1); }
     void deallocatePreparedStmt();
 
-    PGresult *result;
     std::queue<PGresult*> nextResultSets;
     QString preparedStmtId;
-    StatementId stmtId;
-    int currentSize;
-    bool canFetchMoreRows;
-    bool preparedQueriesEnabled;
+    PGresult *result = nullptr;
+    StatementId stmtId = InvalidStatementId;
+    int currentSize = -1;
+    bool canFetchMoreRows = false;
+    bool preparedQueriesEnabled = false;
 
     bool processResults();
 };

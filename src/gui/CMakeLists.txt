@@ -599,7 +599,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_system_textmarkdownreader AND QT_FEATURE_textmarkdownreader
-    PUBLIC_LIBRARIES
+    LIBRARIES
         libmd4c
 )
 

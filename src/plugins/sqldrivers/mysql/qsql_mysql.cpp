@@ -78,17 +78,14 @@ class QMYSQLDriverPrivate : public QSqlDriverPrivate
     Q_DECLARE_PUBLIC(QMYSQLDriver)
 
 public:
-    QMYSQLDriverPrivate() : QSqlDriverPrivate(), mysql(0),
+    QMYSQLDriverPrivate() : QSqlDriverPrivate(QSqlDriver::MySqlServer)
 #if QT_CONFIG(textcodec)
-        tc(QTextCodec::codecForLocale()),
-#else
-        tc(0),
+        , tc(QTextCodec::codecForLocale())
 #endif
-        preparedQuerysEnabled(false) { dbmsType = QSqlDriver::MySqlServer; }
-    MYSQL *mysql;
-    QTextCodec *tc;
-
-    bool preparedQuerysEnabled;
+    {}
+    MYSQL *mysql = nullptr;
+    QTextCodec *tc = nullptr;
+    bool preparedQuerysEnabled = false;
 };
 
 static inline QString toUnicode(QTextCodec *tc, const char *str)
@@ -201,46 +198,34 @@ class QMYSQLResultPrivate: public QSqlResultPrivate
 public:
     Q_DECLARE_SQLDRIVER_PRIVATE(QMYSQLDriver)
 
-    QMYSQLResultPrivate(QMYSQLResult *q, const QMYSQLDriver *drv)
-        : QSqlResultPrivate(q, drv),
-          result(0),
-          rowsAffected(0),
-          hasBlobs(false)
-        , stmt(0), meta(0), inBinds(0), outBinds(0)
-        , preparedQuery(false)
-        { }
-
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-
-    int rowsAffected;
+    using QSqlResultPrivate::QSqlResultPrivate;
 
     bool bindInValues();
     void bindBlobs();
 
-    bool hasBlobs;
+    MYSQL_RES *result = nullptr;
+    MYSQL_ROW row;
+
     struct QMyField
     {
-        QMyField()
-            : outField(0), nullIndicator(false), bufLength(0ul),
-              myField(0), type(QMetaType::UnknownType)
-        {}
-        char *outField;
-        my_bool nullIndicator;
-        ulong bufLength;
-        MYSQL_FIELD *myField;
-        QMetaType::Type type;
+        char *outField = nullptr;
+        MYSQL_FIELD *myField = nullptr;
+        QMetaType::Type type = QMetaType::UnknownType;
+        my_bool nullIndicator = false;
+        ulong bufLength = 0ul;
     };
 
     QVector<QMyField> fields;
 
-    MYSQL_STMT* stmt;
-    MYSQL_RES* meta;
+    MYSQL_STMT *stmt = nullptr;
+    MYSQL_RES *meta = nullptr;
 
-    MYSQL_BIND *inBinds;
-    MYSQL_BIND *outBinds;
+    MYSQL_BIND *inBinds = nullptr;
+    MYSQL_BIND *outBinds = nullptr;
 
-    bool preparedQuery;
+    int rowsAffected = 0;
+    bool hasBlobs = false;
+    bool preparedQuery = false;
 };
 
 #if QT_CONFIG(textcodec)

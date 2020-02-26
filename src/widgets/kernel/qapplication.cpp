@@ -1904,9 +1904,12 @@ bool QApplication::event(QEvent *e)
     }
 
     if(e->type() == QEvent::LanguageChange) {
+        // QGuiApplication::event does not account for the cases where
+        // there is a top level widget without a window handle. So they
+        // need to have the event posted here
         const QWidgetList list = topLevelWidgets();
         for (auto *w : list) {
-            if (!(w->windowType() == Qt::Desktop))
+            if (!w->windowHandle() && (w->windowType() != Qt::Desktop))
                 postEvent(w, new QEvent(QEvent::LanguageChange));
         }
     }
@@ -3299,7 +3302,7 @@ QT_WARNING_POP
             bool eventAccepted = tablet->isAccepted();
             while (w) {
                 QTabletEvent te(tablet->type(), relpos, tablet->globalPosF(),
-                                tablet->device(), tablet->pointerType(),
+                                tablet->deviceType(), tablet->pointerType(),
                                 tablet->pressure(), tablet->xTilt(), tablet->yTilt(),
                                 tablet->tangentialPressure(), tablet->rotation(), tablet->z(),
                                 tablet->modifiers(), tablet->uniqueId(), tablet->button(), tablet->buttons());

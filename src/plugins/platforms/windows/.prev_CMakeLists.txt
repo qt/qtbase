@@ -95,6 +95,7 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
         uiautomation/qwindowsuiaaccessibility.cpp uiautomation/qwindowsuiaaccessibility.h
         uiautomation/qwindowsuiabaseprovider.cpp uiautomation/qwindowsuiabaseprovider.h
+        uiautomation/qwindowsuiaexpandcollapseprovider.cpp uiautomation/qwindowsuiaexpandcollapseprovider.h
         uiautomation/qwindowsuiagriditemprovider.cpp uiautomation/qwindowsuiagriditemprovider.h
         uiautomation/qwindowsuiagridprovider.cpp uiautomation/qwindowsuiagridprovider.h
         uiautomation/qwindowsuiainvokeprovider.cpp uiautomation/qwindowsuiainvokeprovider.h

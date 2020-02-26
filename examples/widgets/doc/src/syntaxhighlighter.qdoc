@@ -246,11 +246,7 @@
 
     \section1 Other Code Editor Features
 
-    It is possible to implement parenthesis matching with
-    QSyntaxHighlighter. The "Matching Parentheses with
-    QSyntaxHighlighter" article in Qt Quarterly 31
-    (\l{http://doc.qt.io/archives/qq/}) implements this. We also have
-    the \l{Code Editor Example}, which shows how to implement line
+    The \l{Code Editor Example} shows how to implement line
     numbers and how to highlight the current line.
 
 */

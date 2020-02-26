@@ -1100,9 +1100,10 @@ QString QDate::longDayName(int weekday, MonthNameType type)
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 
-static QString toStringTextDate(QDate date, QCalendar cal)
+static QString toStringTextDate(QDate date)
 {
     if (date.isValid()) {
+        QCalendar cal; // Always Gregorian
         const auto parts = cal.partsFromDate(date);
         if (parts.isValid()) {
             const QLatin1Char sp(' ');
@@ -1123,14 +1124,10 @@ static QString toStringIsoDate(QDate date)
 }
 
 /*!
-    \fn QString QDate::toString(Qt::DateFormat format) const
-    \fn QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
-
     \overload
 
     Returns the date as a string. The \a format parameter determines the format
-    of the string. If \a cal is supplied, it determines the calendar used to
-    represent the date; it defaults to Gregorian.
+    of the string.
 
     If the \a format is Qt::TextDate, the string is formatted in the default
     way. The day and month names will be localized names using the system
@@ -1168,16 +1165,44 @@ static QString toStringIsoDate(QDate date)
 */
 QString QDate::toString(Qt::DateFormat format) const
 {
-    return toString(format, QCalendar());
+    if (!isValid())
+        return QString();
+
+    switch (format) {
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    case Qt::SystemLocaleDate:
+    case Qt::SystemLocaleShortDate:
+        return QLocale::system().toString(*this, QLocale::ShortFormat);
+    case Qt::SystemLocaleLongDate:
+        return QLocale::system().toString(*this, QLocale::LongFormat);
+    case Qt::LocaleDate:
+    case Qt::DefaultLocaleShortDate:
+        return QLocale().toString(*this, QLocale::ShortFormat);
+    case Qt::DefaultLocaleLongDate:
+        return QLocale().toString(*this, QLocale::LongFormat);
+QT_WARNING_POP
+#endif // 5.15
+    case Qt::RFC2822Date:
+        return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"));
+    default:
+    case Qt::TextDate:
+        return toStringTextDate(*this);
+    case Qt::ISODate:
+    case Qt::ISODateWithMs:
+        // No calendar dependence
+        return toStringIsoDate(*this);
+    }
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
 {
     if (!isValid())
         return QString();
 
     switch (format) {
-#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
@@ -1188,18 +1213,19 @@ QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
         return QLocale().toString(*this, QLocale::ShortFormat, cal);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat, cal);
-#endif // 5.15
+QT_WARNING_POP
     case Qt::RFC2822Date:
         return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"), cal);
     default:
     case Qt::TextDate:
-        return toStringTextDate(*this, cal);
+        return toStringTextDate(*this);
     case Qt::ISODate:
     case Qt::ISODateWithMs:
         // No calendar dependence
         return toStringIsoDate(*this);
     }
 }
+#endif // 5.15
 
 /*!
     \fn QString QDate::toString(const QString &format) const
@@ -1208,7 +1234,7 @@ QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
     \fn QString QDate::toString(QStringView format, QCalendar cal) const
 
     Returns the date as a string. The \a format parameter determines the format
-    of the result string. If \cal is supplied, it determines the calendar used
+    of the result string. If \a cal is supplied, it determines the calendar used
     to represent the date; it defaults to Gregorian.
 
     These expressions may be used:
@@ -1643,6 +1669,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toDate(string, QLocale::ShortFormat);
@@ -1653,6 +1680,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toDate(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDate(string, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date:
         return rfcDateImpl(string).date;
@@ -2033,6 +2061,7 @@ QString QTime::toString(Qt::DateFormat format) const
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toString(*this, QLocale::ShortFormat);
@@ -2043,6 +2072,7 @@ QString QTime::toString(Qt::DateFormat format) const
         return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::ISODateWithMs:
         return QString::asprintf("%02d:%02d:%02d.%03d", hour(), minute(), second(), msec());
@@ -2434,6 +2464,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toTime(string, QLocale::ShortFormat);
@@ -2444,6 +2475,7 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toTime(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toTime(string, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date:
         return rfcDateImpl(string).time;
@@ -4279,14 +4311,9 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
 /*!
-    \fn QString QDateTime::toString(Qt::DateFormat format) const
-    \fn QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
-
     \overload
 
-    Returns the datetime as a string in the \a format given. If \cal is
-    supplied, it determines the calendar used to represent the date; it defaults
-    to Gregorian.
+    Returns the datetime as a string in the \a format given.
 
     If the \a format is Qt::TextDate, the string is formatted in the default
     way. The day and month names will be localized names using the system
@@ -4329,37 +4356,34 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
 QString QDateTime::toString(Qt::DateFormat format) const
 {
-    return toString(format, QCalendar());
-}
-
-QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
-{
     QString buf;
     if (!isValid())
         return buf;
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
-        return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
+        return QLocale::system().toString(*this, QLocale::ShortFormat);
     case Qt::SystemLocaleLongDate:
-        return QLocale::system().toString(*this, QLocale::LongFormat, cal);
+        return QLocale::system().toString(*this, QLocale::LongFormat);
     case Qt::LocaleDate:
     case Qt::DefaultLocaleShortDate:
-        return QLocale().toString(*this, QLocale::ShortFormat, cal);
+        return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
-        return QLocale().toString(*this, QLocale::LongFormat, cal);
+        return QLocale().toString(*this, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date: {
-        buf = QLocale::c().toString(*this, u"dd MMM yyyy hh:mm:ss ", cal);
+        buf = QLocale::c().toString(*this, u"dd MMM yyyy hh:mm:ss ");
         buf += toOffsetString(Qt::TextDate, offsetFromUtc());
         return buf;
     }
     default:
     case Qt::TextDate: {
         const QPair<QDate, QTime> p = getDateTime(d);
-        buf = toStringTextDate(p.first, cal);
+        buf = toStringTextDate(p.first);
         // Insert time between date's day and year:
         buf.insert(buf.lastIndexOf(QLatin1Char(' ')),
                    QLatin1Char(' ') + p.second.toString(Qt::TextDate));
@@ -4381,7 +4405,6 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
     }
     case Qt::ISODate:
     case Qt::ISODateWithMs: {
-        // No calendar dependence
         const QPair<QDate, QTime> p = getDateTime(d);
         buf = toStringIsoDate(p.first);
         if (buf.isEmpty())
@@ -4412,7 +4435,7 @@ QString QDateTime::toString(Qt::DateFormat format, QCalendar cal) const
     \fn QString QDateTime::toString(QStringView format, QCalendar cal) const
 
     Returns the datetime as a string. The \a format parameter determines the
-    format of the result string. If \cal is supplied, it determines the calendar
+    format of the result string. If \a cal is supplied, it determines the calendar
     used to represent the date; it defaults to Gregorian. See QTime::toString()
     and QDate::toString() for the supported specifiers for time and date,
     respectively.
@@ -5228,6 +5251,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 
     switch (format) {
 #if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
         return QLocale::system().toDateTime(string, QLocale::ShortFormat);
@@ -5238,6 +5262,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         return QLocale().toDateTime(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toDateTime(string, QLocale::LongFormat);
+QT_WARNING_POP
 #endif // 5.15
     case Qt::RFC2822Date: {
         const ParsedRfcDateTime rfc = rfcDateImpl(string);

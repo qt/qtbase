@@ -512,6 +512,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.nonBaseLevelFramebufferTexture = true;
 
+    caps.texelFetch = caps.ctxMajor >= 3; // 3.0 or ES 3.0
+
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         f->glEnable(GL_POINT_SPRITE);
@@ -765,6 +767,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return !caps.gles || caps.properMapBuffer;
     case QRhi::ReadBackNonBaseMipLevel:
         return caps.nonBaseLevelFramebufferTexture;
+    case QRhi::TexelFetch:
+        return caps.texelFetch;
     default:
         Q_UNREACHABLE();
         return false;
@@ -781,7 +785,11 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxColorAttachments:
         return caps.maxDrawBuffers;
     case QRhi::FramesInFlight:
-        return 2; // dummy
+        // From our perspective. What the GL impl does internally is another
+        // question, but that's out of our hands and does not concern us here.
+        return 1;
+    case QRhi::MaxAsyncReadbackFrames:
+        return 1;
     default:
         Q_UNREACHABLE();
         return 0;
@@ -3291,6 +3299,14 @@ bool QGles2Buffer::build()
     QRHI_PROF_F(newBuffer(this, uint(nonZeroSize), 1, 0));
     rhiD->registerResource(this);
     return true;
+}
+
+QRhiBuffer::NativeBuffer QGles2Buffer::nativeBuffer()
+{
+    if (m_usage.testFlag(QRhiBuffer::UniformBuffer))
+        return { {}, 0 };
+
+    return { { &buffer }, 1 };
 }
 
 QGles2RenderBuffer::QGles2RenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,

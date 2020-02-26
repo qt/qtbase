@@ -47,11 +47,13 @@ import java.util.concurrent.Semaphore;
 
 import android.app.Activity;
 import android.app.Service;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ActivityInfo;
+import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -73,6 +75,7 @@ import java.lang.reflect.Method;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
+import java.util.List;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -152,35 +155,79 @@ public class QtNative
         }
     }
 
-    public static boolean openURL(String url, String mime)
+    private static Uri getUriWithValidPermission(Context context, String uri, String openMode)
     {
-        boolean ok = true;
-
         try {
-            Uri uri = Uri.parse(url);
-            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            if (!mime.isEmpty())
-                intent.setDataAndType(uri, mime);
-            activity().startActivity(intent);
-        } catch (Exception e) {
+            List<UriPermission> permissions = context.getContentResolver().getPersistedUriPermissions();
+            String uriStr = Uri.parse(uri).getPath();
+
+            for (int i = 0; i < permissions.size(); ++i) {
+                Uri iterUri = permissions.get(i).getUri();
+                boolean isRightPermission = permissions.get(i).isReadPermission();
+
+                if (!openMode.equals("r"))
+                   isRightPermission = permissions.get(i).isWritePermission();
+
+                if (iterUri.getPath().equals(uriStr) && isRightPermission)
+                    return iterUri;
+            }
+
+            return null;
+        } catch (SecurityException e) {
             e.printStackTrace();
-            ok = false;
+            return null;
+        }
+    }
+
+    public static boolean openURL(Context context, String url, String mime)
+    {
+        Uri uri = getUriWithValidPermission(context, url, "r");
+
+        if (uri == null) {
+            Log.e(QtTAG, "openURL(): No permissions to open Uri");
+            return false;
         }
 
-        return ok;
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            if (!mime.isEmpty())
+                intent.setDataAndType(uri, mime);
+
+            activity().startActivity(intent);
+
+            return true;
+        } catch (IllegalArgumentException e) {
+            Log.e(QtTAG, "openURL(): Invalid Uri");
+            return false;
+        } catch (UnsupportedOperationException e) {
+            Log.e(QtTAG, "openURL(): Unsupported operation for given Uri");
+            return false;
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public static int openFdForContentUrl(Context context, String contentUrl, String openMode)
     {
+        Uri uri = getUriWithValidPermission(context, contentUrl, openMode);
+        int error = -1;
+
+        if (uri == null) {
+            Log.e(QtTAG, "openFdForContentUrl(): No permissions to open Uri");
+            return error;
+        }
+
         try {
             ContentResolver resolver = context.getContentResolver();
-            ParcelFileDescriptor fdDesc = resolver.openFileDescriptor(Uri.parse(contentUrl), openMode);
+            ParcelFileDescriptor fdDesc = resolver.openFileDescriptor(uri, openMode);
             return fdDesc.detachFd();
         } catch (FileNotFoundException e) {
-            return -1;
-        } catch (SecurityException e) {
-            Log.e(QtTAG, "Exception when opening file", e);
-            return -1;
+            return error;
+        } catch (IllegalArgumentException e) {
+            Log.e(QtTAG, "openFdForContentUrl(): Invalid Uri");
+            return error;
         }
     }
 

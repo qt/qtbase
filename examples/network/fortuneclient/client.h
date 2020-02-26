@@ -61,7 +61,6 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QTcpSocket;
-class QNetworkSession;
 QT_END_NAMESPACE
 
 //! [0]
@@ -77,7 +76,6 @@ private slots:
     void readFortune();
     void displayError(QAbstractSocket::SocketError socketError);
     void enableGetFortuneButton();
-    void sessionOpened();
 
 private:
     QComboBox *hostCombo = nullptr;
@@ -88,8 +86,6 @@ private:
     QTcpSocket *tcpSocket = nullptr;
     QDataStream in;
     QString currentFortune;
-
-    QNetworkSession *networkSession = nullptr;
 };
 //! [0]
 

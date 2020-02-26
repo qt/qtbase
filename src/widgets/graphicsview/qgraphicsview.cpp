@@ -123,6 +123,10 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 
     \image graphicsview-view.png
 
+    \note Using an OpenGL viewport limits the ability to use QGraphicsProxyWidget.
+    Not all combinations of widgets and styles can be supported with such a setup.
+    You should carefully test your UI and make the necessary adjustments.
+
     \sa QGraphicsScene, QGraphicsItem, QGraphicsSceneEvent
 */
 
@@ -781,6 +785,27 @@ void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
     selectionArea.closeSubpath();
     if (scene)
         scene->setSelectionArea(selectionArea, rubberBandSelectionOperation, rubberBandSelectionMode, q->viewportTransform());
+}
+
+void QGraphicsViewPrivate::clearRubberBand()
+{
+    Q_Q(QGraphicsView);
+    if (dragMode != QGraphicsView::RubberBandDrag || !sceneInteractionAllowed || !rubberBanding)
+        return;
+
+    if (viewportUpdateMode != QGraphicsView::NoViewportUpdate) {
+        if (viewportUpdateMode != QGraphicsView::FullViewportUpdate)
+            q->viewport()->update(rubberBandRegion(q->viewport(), rubberBandRect));
+        else
+            updateAll();
+    }
+
+    rubberBanding = false;
+    rubberBandSelectionOperation = Qt::ReplaceSelection;
+    if (!rubberBandRect.isNull()) {
+        rubberBandRect = QRect();
+        emit q->rubberBandChanged(rubberBandRect, QPointF(), QPointF());
+    }
 }
 #endif
 
@@ -1484,6 +1509,10 @@ void QGraphicsView::setDragMode(DragMode mode)
     Q_D(QGraphicsView);
     if (d->dragMode == mode)
         return;
+
+#if QT_CONFIG(rubberband)
+    d->clearRubberBand();
+#endif
 
 #ifndef QT_NO_CURSOR
     if (d->dragMode == ScrollHandDrag)
@@ -3354,20 +3383,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 
 #if QT_CONFIG(rubberband)
     if (d->dragMode == QGraphicsView::RubberBandDrag && d->sceneInteractionAllowed && !event->buttons()) {
-        if (d->rubberBanding) {
-            if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate){
-                if (d->viewportUpdateMode != FullViewportUpdate)
-                    viewport()->update(d->rubberBandRegion(viewport(), d->rubberBandRect));
-                else
-                    d->updateAll();
-            }
-            d->rubberBanding = false;
-            d->rubberBandSelectionOperation = Qt::ReplaceSelection;
-            if (!d->rubberBandRect.isNull()) {
-                d->rubberBandRect = QRect();
-                emit rubberBandChanged(d->rubberBandRect, QPointF(), QPointF());
-            }
-        }
+        d->clearRubberBand();
     } else
 #endif
     if (d->dragMode == QGraphicsView::ScrollHandDrag && event->button() == Qt::LeftButton) {

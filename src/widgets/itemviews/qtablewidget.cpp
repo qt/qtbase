@@ -247,8 +247,8 @@ void QTableModel::removeItem(QTableWidgetItem *item)
 {
     int i = tableItems.indexOf(item);
     if (i != -1) {
-        tableItems[i] = 0;
         QModelIndex idx = index(item);
+        tableItems[i] = nullptr;
         emit dataChanged(idx, idx);
         return;
     }

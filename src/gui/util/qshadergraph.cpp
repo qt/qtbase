@@ -44,13 +44,20 @@ QT_BEGIN_NAMESPACE
 
 namespace
 {
-    QVector<QShaderNode> copyOutputNodes(const QVector<QShaderNode> &nodes)
+    QVector<QShaderNode> copyOutputNodes(const QVector<QShaderNode> &nodes, const QVector<QShaderGraph::Edge> &edges)
     {
         auto res = QVector<QShaderNode>();
         std::copy_if(nodes.cbegin(), nodes.cend(),
                      std::back_inserter(res),
-                     [] (const QShaderNode &node) {
-                         return node.type() == QShaderNode::Output;
+                     [&edges] (const QShaderNode &node) {
+                         return node.type() == QShaderNode::Output ||
+                                (node.type() == QShaderNode::Function &&
+                                 !std::any_of(edges.cbegin(),
+                                              edges.cend(),
+                                              [&node] (const QShaderGraph::Edge &edge) {
+                                                  return edge.sourceNodeUuid ==
+                                                         node.uuid();
+                                              }));
                      });
         return res;
     }
@@ -115,6 +122,50 @@ namespace
             targetInputs[targetPortIndex] = sourceOutputs[sourcePortIndex];
         }
         return targetStatement;
+    }
+
+    void removeNodesWithUnboundInputs(QVector<QShaderGraph::Statement> &statements,
+                                      const QVector<QShaderGraph::Edge> &allEdges)
+    {
+        // A node is invalid if any of its input ports is disconected
+        // or connected to the output port of another invalid node.
+
+        // Keeps track of the edges from the nodes we know to be valid
+        // to unvisited nodes
+        auto currentEdges = QVector<QShaderGraph::Edge>();
+
+        statements.erase(std::remove_if(statements.begin(),
+                                        statements.end(),
+                                        [&currentEdges, &allEdges] (const QShaderGraph::Statement &statement) {
+            const QShaderNode &node = statement.node;
+            const QVector<QShaderGraph::Edge> outgoing = outgoingEdges(currentEdges, node.uuid());
+            const QVector<QShaderNodePort> ports = node.ports();
+
+            bool allInputsConnected = true;
+            for (const QShaderNodePort &port : node.ports()) {
+                if (port.direction == QShaderNodePort::Output)
+                    continue;
+
+                const auto edgeIt = std::find_if(outgoing.cbegin(),
+                                                 outgoing.cend(),
+                                                 [&port] (const QShaderGraph::Edge &edge) {
+                    return edge.targetPortName == port.name;
+                });
+
+                if (edgeIt != outgoing.cend())
+                    currentEdges.removeAll(*edgeIt);
+                else
+                    allInputsConnected = false;
+            }
+
+            if (allInputsConnected) {
+                const QVector<QShaderGraph::Edge> incoming = incomingEdges(allEdges, node.uuid());
+                currentEdges.append(incoming);
+            }
+
+            return !allInputsConnected;
+        }),
+                         statements.end());
     }
 }
 
@@ -210,8 +261,8 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
 
     auto result = QVector<Statement>();
     QVector<Edge> currentEdges = enabledEdges;
-    QVector<QUuid> currentUuids = [enabledNodes] {
-        const QVector<QShaderNode> inputs = copyOutputNodes(enabledNodes);
+    QVector<QUuid> currentUuids = [enabledNodes, enabledEdges] {
+        const QVector<QShaderNode> inputs = copyOutputNodes(enabledNodes, enabledEdges);
         auto res = QVector<QUuid>();
         std::transform(inputs.cbegin(), inputs.cend(),
                        std::back_inserter(res),
@@ -241,6 +292,9 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringLis
     }
 
     std::reverse(result.begin(), result.end());
+
+    removeNodesWithUnboundInputs(result, enabledEdges);
+
     return result;
 }
 

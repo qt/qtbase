@@ -140,6 +140,7 @@ public:
     QRect rubberBandRect;
     QRegion rubberBandRegion(const QWidget *widget, const QRect &rect) const;
     void updateRubberBand(const QMouseEvent *event);
+    void clearRubberBand();
     bool rubberBanding;
     Qt::ItemSelectionMode rubberBandSelectionMode;
     Qt::ItemSelectionOperation rubberBandSelectionOperation;

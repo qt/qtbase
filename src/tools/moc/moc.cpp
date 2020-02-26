@@ -943,7 +943,7 @@ void Moc::parse()
         ClassDef def;
         static_cast<BaseDef &>(def) = static_cast<BaseDef>(n);
         def.qualified += def.classname;
-        def.hasQGadget = true;
+        def.hasQNamespace = true;
         auto it = std::find_if(classList.begin(), classList.end(), [&def](const ClassDef &val) {
             return def.classname == val.classname && def.qualified == val.qualified;
         });
@@ -1867,8 +1867,12 @@ QJsonObject ClassDef::toJson() const
     if (!props.isEmpty())
         cls[QLatin1String("properties")] = props;
 
+    if (hasQObject)
+        cls[QLatin1String("object")] = true;
     if (hasQGadget)
         cls[QLatin1String("gadget")] = true;
+    if (hasQNamespace)
+        cls[QLatin1String("namespace")] = true;
 
     QJsonArray superClasses;
 

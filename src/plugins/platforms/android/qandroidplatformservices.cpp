@@ -43,6 +43,7 @@
 #include <QDebug>
 #include <QMimeDatabase>
 #include <QtCore/private/qjni_p.h>
+#include <private/qjnihelpers_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,20 +58,20 @@ bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
 
     // if the file is local, we need to pass the MIME type, otherwise Android
     // does not start an Intent to view this file
-    if ((url.scheme().isEmpty() && QFile::exists(url.path())) || url.isLocalFile()) {
+    QLatin1String fileScheme("file");
+    if ((url.scheme().isEmpty() || url.scheme() == fileScheme) && QFile::exists(url.path())) {
         // a real URL including the scheme is needed, else the Intent can not be started
-        url.setScheme(QLatin1String("file"));
-
+        url.setScheme(fileScheme);
         QMimeDatabase mimeDb;
         mime = mimeDb.mimeTypeForUrl(url).name();
     }
 
     QJNIObjectPrivate urlString = QJNIObjectPrivate::fromString(url.toString());
     QJNIObjectPrivate mimeString = QJNIObjectPrivate::fromString(mime);
-    return QJNIObjectPrivate::callStaticMethod<jboolean>(QtAndroid::applicationClass(),
-                                                         "openURL",
-                                                         "(Ljava/lang/String;Ljava/lang/String;)Z",
-                                                         urlString.object(), mimeString.object());
+    return QJNIObjectPrivate::callStaticMethod<jboolean>(
+            QtAndroid::applicationClass(), "openURL",
+            "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Z",
+            QtAndroidPrivate::context(), urlString.object(), mimeString.object());
 }
 
 bool QAndroidPlatformServices::openDocument(const QUrl &url)

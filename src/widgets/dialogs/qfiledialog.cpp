@@ -2200,8 +2200,12 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
                                Options options)
 {
     const QStringList schemes = QStringList(QStringLiteral("file"));
-    const QUrl selectedUrl = getOpenFileUrl(parent, caption, QUrl::fromLocalFile(dir), filter, selectedFilter, options, schemes);
-    return selectedUrl.toLocalFile();
+    const QUrl selectedUrl = getOpenFileUrl(parent, caption, QUrl::fromLocalFile(dir), filter,
+                                            selectedFilter, options, schemes);
+    if (selectedUrl.isLocalFile() || selectedUrl.isEmpty())
+        return selectedUrl.toLocalFile();
+    else
+        return selectedUrl.toString();
 }
 
 /*!
@@ -2310,11 +2314,16 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
                                           Options options)
 {
     const QStringList schemes = QStringList(QStringLiteral("file"));
-    const QList<QUrl> selectedUrls = getOpenFileUrls(parent, caption, QUrl::fromLocalFile(dir), filter, selectedFilter, options, schemes);
+    const QList<QUrl> selectedUrls = getOpenFileUrls(parent, caption, QUrl::fromLocalFile(dir),
+                                                     filter, selectedFilter, options, schemes);
     QStringList fileNames;
     fileNames.reserve(selectedUrls.size());
-    for (const QUrl &url : selectedUrls)
-        fileNames << url.toLocalFile();
+    for (const QUrl &url : selectedUrls) {
+        if (url.isLocalFile() || url.isEmpty())
+            fileNames << url.toLocalFile();
+        else
+            fileNames << url.toString();
+    }
     return fileNames;
 }
 
@@ -2556,8 +2565,12 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
                                      Options options)
 {
     const QStringList schemes = QStringList(QStringLiteral("file"));
-    const QUrl selectedUrl = getSaveFileUrl(parent, caption, QUrl::fromLocalFile(dir), filter, selectedFilter, options, schemes);
-    return selectedUrl.toLocalFile();
+    const QUrl selectedUrl = getSaveFileUrl(parent, caption, QUrl::fromLocalFile(dir), filter,
+                                            selectedFilter, options, schemes);
+    if (selectedUrl.isLocalFile() || selectedUrl.isEmpty())
+        return selectedUrl.toLocalFile();
+    else
+        return selectedUrl.toString();
 }
 
 /*!
@@ -2664,8 +2677,12 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
                                           Options options)
 {
     const QStringList schemes = QStringList(QStringLiteral("file"));
-    const QUrl selectedUrl = getExistingDirectoryUrl(parent, caption, QUrl::fromLocalFile(dir), options, schemes);
-    return selectedUrl.toLocalFile();
+    const QUrl selectedUrl =
+            getExistingDirectoryUrl(parent, caption, QUrl::fromLocalFile(dir), options, schemes);
+    if (selectedUrl.isLocalFile() || selectedUrl.isEmpty())
+        return selectedUrl.toLocalFile();
+    else
+        return selectedUrl.toString();
 }
 
 /*!

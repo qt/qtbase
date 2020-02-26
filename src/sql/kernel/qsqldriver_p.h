@@ -63,10 +63,10 @@ class QSqlDriverPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QSqlDriver)
 
 public:
-    QSqlDriverPrivate(QSqlDriver::DbmsType dbmstype = QSqlDriver::UnknownDbms)
-      : QObjectPrivate()
-      , dbmsType(dbmstype)
-    {}
+    QSqlDriverPrivate(QSqlDriver::DbmsType type = QSqlDriver::UnknownDbms)
+      : QObjectPrivate(),
+        dbmsType(type)
+    { }
 
     QSqlError error;
     QSql::NumericalPrecisionPolicy precisionPolicy = QSql::LowPrecisionDouble;

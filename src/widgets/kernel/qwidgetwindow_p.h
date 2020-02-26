@@ -125,7 +125,6 @@ private slots:
 private:
     void repaintWindow();
     bool updateSize();
-    bool updatePos();
     void updateMargins();
     void updateNormalGeometry();
 

@@ -343,7 +343,10 @@ QT_BEGIN_NAMESPACE
     OS configuration, locale, or they may change in future Qt versions.
 
     \note On Android, applications with open files on the external storage (<USER> locations),
-          will be killed if the external storage is unmounted.
+        will be killed if the external storage is unmounted.
+
+    \note On Android 6.0 (API 23) or higher, the "WRITE_EXTERNAL_STORAGE" permission must be
+        requested at runtime when using QStandardPaths::writableLocation or QStandardPaths::standardLocations.
 
     \note On Android, reading/writing to GenericDataLocation needs the READ_EXTERNAL_STORAGE/WRITE_EXTERNAL_STORAGE permission granted.
 

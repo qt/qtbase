@@ -2230,8 +2230,16 @@ void QProcessPrivate::start(QIODevice::OpenMode mode)
     startProcess();
 }
 
+/*!
+    \since 5.15
 
-static QStringList parseCombinedArgString(const QString &program)
+    Splits the string \a command into a list of tokens, and returns
+    the list.
+
+    Tokens with spaces can be surrounded by double quotes; three
+    consecutive double quotes represent the quote character itself.
+*/
+QStringList QProcess::splitCommand(const QString &command)
 {
     QStringList args;
     QString tmp;
@@ -2241,13 +2249,13 @@ static QStringList parseCombinedArgString(const QString &program)
     // handle quoting. tokens can be surrounded by double quotes
     // "hello world". three consecutive double quotes represent
     // the quote character itself.
-    for (int i = 0; i < program.size(); ++i) {
-        if (program.at(i) == QLatin1Char('"')) {
+    for (int i = 0; i < command.size(); ++i) {
+        if (command.at(i) == QLatin1Char('"')) {
             ++quoteCount;
             if (quoteCount == 3) {
                 // third consecutive quote
                 quoteCount = 0;
-                tmp += program.at(i);
+                tmp += command.at(i);
             }
             continue;
         }
@@ -2256,13 +2264,13 @@ static QStringList parseCombinedArgString(const QString &program)
                 inQuote = !inQuote;
             quoteCount = 0;
         }
-        if (!inQuote && program.at(i).isSpace()) {
+        if (!inQuote && command.at(i).isSpace()) {
             if (!tmp.isEmpty()) {
                 args += tmp;
                 tmp.clear();
             }
         } else {
-            tmp += program.at(i);
+            tmp += command.at(i);
         }
     }
     if (!tmp.isEmpty())
@@ -2272,6 +2280,7 @@ static QStringList parseCombinedArgString(const QString &program)
 }
 
 /*!
+    \obsolete
     \overload
 
     Starts the command \a command in a new process.
@@ -2308,11 +2317,13 @@ static QStringList parseCombinedArgString(const QString &program)
     list-based API. In these rare cases you need to use setProgram() and
     setNativeArguments() instead of this function.
 
+    \sa splitCommand()
+
 */
 #if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
 void QProcess::start(const QString &command, OpenMode mode)
 {
-    QStringList args = parseCombinedArgString(command);
+    QStringList args = splitCommand(command);
     if (args.isEmpty()) {
         Q_D(QProcess);
         d->setErrorAndEmit(QProcess::FailedToStart, tr("No program defined"));
@@ -2477,6 +2488,7 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
 }
 
 /*!
+    \obsolete
     \overload
 
     Starts the program \a command in a new process, waits for it to finish,
@@ -2487,7 +2499,7 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
     After the \a command string has been split and unquoted, this function
     behaves like the overload which takes the arguments as a string list.
 
-    \sa start()
+    \sa start(), splitCommand()
 */
 int QProcess::execute(const QString &command)
 {
@@ -2543,6 +2555,7 @@ bool QProcess::startDetached(const QString &program,
 }
 
 /*!
+    \obsolete
     \overload startDetached()
 
     Starts the command \a command in a new process, and detaches from it.
@@ -2553,11 +2566,11 @@ bool QProcess::startDetached(const QString &program,
     After the \a command string has been split and unquoted, this function
     behaves like the overload which takes the arguments as a string list.
 
-    \sa start(const QString &command, QIODevice::OpenMode mode)
+    \sa start(const QString &command, QIODevice::OpenMode mode), splitCommand()
 */
 bool QProcess::startDetached(const QString &command)
 {
-    QStringList args = parseCombinedArgString(command);
+    QStringList args = splitCommand(command);
     if (args.isEmpty())
         return false;
 

@@ -2463,7 +2463,7 @@ void QWidgetTextControl::setCursorWidth(int width)
     Q_UNUSED(width);
 #else
     if (width == -1)
-        width = QApplication::style()->pixelMetric(QStyle::PM_TextCursorWidth);
+        width = QApplication::style()->pixelMetric(QStyle::PM_TextCursorWidth, nullptr);
     d->doc->documentLayout()->setProperty("cursorWidth", width);
 #endif
     d->repaintCursor();

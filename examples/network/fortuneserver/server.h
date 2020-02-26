@@ -58,7 +58,6 @@
 QT_BEGIN_NAMESPACE
 class QLabel;
 class QTcpServer;
-class QNetworkSession;
 QT_END_NAMESPACE
 
 //! [0]
@@ -70,14 +69,14 @@ public:
     explicit Server(QWidget *parent = nullptr);
 
 private slots:
-    void sessionOpened();
     void sendFortune();
 
 private:
+    void initServer();
+
     QLabel *statusLabel = nullptr;
     QTcpServer *tcpServer = nullptr;
     QVector<QString> fortunes;
-    QNetworkSession *networkSession = nullptr;
 };
 //! [0]
 

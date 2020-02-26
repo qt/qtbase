@@ -464,6 +464,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ReadBackNonBaseMipLevel:
         return true;
+    case QRhi::TexelFetch:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -480,7 +482,13 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxColorAttachments:
         return 8;
     case QRhi::FramesInFlight:
-        return 2; // dummy
+        // From our perspective. What D3D does internally is another question
+        // (there could be pipelining, helped f.ex. by our MAP_DISCARD based
+        // uniform buffer update strategy), but that's out of our hands and
+        // does not concern us here.
+        return 1;
+    case QRhi::MaxAsyncReadbackFrames:
+        return 1;
     default:
         Q_UNREACHABLE();
         return 0;
@@ -2376,6 +2384,11 @@ bool QD3D11Buffer::build()
     generation += 1;
     rhiD->registerResource(this);
     return true;
+}
+
+QRhiBuffer::NativeBuffer QD3D11Buffer::nativeBuffer()
+{
+    return { { &buffer }, 1 };
 }
 
 ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()

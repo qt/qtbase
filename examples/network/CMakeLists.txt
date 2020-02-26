@@ -20,7 +20,6 @@ if(TARGET Qt::Widgets)
     add_subdirectory(multicastsender)
 
     if(QT_FEATURE_bearermanagement)
-        add_subdirectory(bearermonitor)
         add_subdirectory(fortuneclient)
         add_subdirectory(fortuneserver)
 

@@ -476,6 +476,9 @@ information about a particular change.
 
  - MinGW:
    * [QTBUG-4155] Added a suffix to debug mode pkgconfig files.
+   * MinGW does not built with -debug-and-release mode anymore.
+     Instead, the binaries are built with -release -force-debug-info
+     -separate-debug-info.
 
  - macOS:
    * The drawableSize of Metal layers is no longer updated automatically on

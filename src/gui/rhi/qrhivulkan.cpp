@@ -3990,6 +3990,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ReadBackNonBaseMipLevel:
         return true;
+    case QRhi::TexelFetch:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -4006,6 +4008,8 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxColorAttachments:
         return int(physDevProperties.limits.maxColorAttachments);
     case QRhi::FramesInFlight:
+        return QVK_FRAMES_IN_FLIGHT;
+    case QRhi::MaxAsyncReadbackFrames:
         return QVK_FRAMES_IN_FLIGHT;
     default:
         Q_UNREACHABLE();
@@ -5179,6 +5183,19 @@ bool QVkBuffer::build()
     generation += 1;
     rhiD->registerResource(this);
     return true;
+}
+
+QRhiBuffer::NativeBuffer QVkBuffer::nativeBuffer()
+{
+    if (m_type == Dynamic) {
+        NativeBuffer b;
+        Q_ASSERT(sizeof(b.objects) / sizeof(b.objects[0]) >= size_t(QVK_FRAMES_IN_FLIGHT));
+        for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+            b.objects[i] = &buffers[i];
+        b.slotCount = QVK_FRAMES_IN_FLIGHT;
+        return b;
+    }
+    return { { &buffers[0] }, 1 };
 }
 
 QVkRenderBuffer::QVkRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,

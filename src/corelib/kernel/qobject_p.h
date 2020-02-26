@@ -310,6 +310,8 @@ public:
     virtual ~QObjectPrivate();
     void deleteChildren();
 
+    inline void checkForIncompatibleLibraryVersion(int version) const;
+
     void setParent_helper(QObject *);
     void moveToThread_helper();
     void setThreadData_helper(QThreadData *currentData, QThreadData *targetData);
@@ -383,6 +385,28 @@ public:
 };
 
 Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_MOVABLE_TYPE);
+
+/*
+    Catch mixing of incompatible library versions.
+
+    Should be called from the constructor of every non-final subclass
+    of QObjectPrivate, to ensure we catch incompatibilities between
+    the intermediate base and subclasses thereof.
+*/
+inline void QObjectPrivate::checkForIncompatibleLibraryVersion(int version) const
+{
+#if defined(QT_BUILD_INTERNAL)
+    // Don't check the version parameter in internal builds.
+    // This allows incompatible versions to be loaded, possibly for testing.
+    Q_UNUSED(version);
+#else
+    if (Q_UNLIKELY(version != QObjectPrivateVersion)) {
+        qFatal("Cannot mix incompatible Qt library (%d.%d.%d) with this library (%d.%d.%d)",
+                (version >> 16) & 0xff, (version >> 8) & 0xff, version & 0xff,
+                (QObjectPrivateVersion >> 16) & 0xff, (QObjectPrivateVersion >> 8) & 0xff, QObjectPrivateVersion & 0xff);
+    }
+#endif
+}
 
 inline bool QObjectPrivate::isDeclarativeSignalConnected(uint signal_index) const
 {

@@ -529,18 +529,11 @@ void tst_PlatformSocketEngine::tooManySockets()
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::bind()
 {
-#if !defined Q_OS_WIN
-#if defined Q_OS_MACOS
-    // On macOS >= 10.14 the bind on this port is successful.
-    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSMojave)
-#endif // Q_OS_MACOS
-    {
-        PLATFORMSOCKETENGINE binder;
-        QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
-        QVERIFY(!binder.bind(QHostAddress::AnyIPv4, 82));
+    PLATFORMSOCKETENGINE binder;
+    QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
+    QCOMPARE(binder.bind(QHostAddress::AnyIPv4, 82), QtNetworkSettings::canBindToLowPorts());
+    if (!QtNetworkSettings::canBindToLowPorts())
         QCOMPARE(binder.error(), QAbstractSocket::SocketAccessError);
-    }
-#endif // Q_OS_WIN
 
     PLATFORMSOCKETENGINE binder2;
     QVERIFY(binder2.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
@@ -552,6 +545,12 @@ void tst_PlatformSocketEngine::bind()
     QCOMPARE(binder3.error(), QAbstractSocket::AddressInUseError);
 
     if (QtNetworkSettings::hasIPv6()) {
+        PLATFORMSOCKETENGINE binder;
+        QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv6Protocol));
+        QCOMPARE(binder.bind(QHostAddress::AnyIPv6, 82), QtNetworkSettings::canBindToLowPorts());
+        if (!QtNetworkSettings::canBindToLowPorts())
+            QCOMPARE(binder.error(), QAbstractSocket::SocketAccessError);
+
         PLATFORMSOCKETENGINE binder4;
         QVERIFY(binder4.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv6Protocol));
         QVERIFY(binder4.bind(QHostAddress::AnyIPv6, 31180));

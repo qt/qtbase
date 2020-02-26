@@ -1465,13 +1465,8 @@ QAbstractSocket::QAbstractSocket(SocketType socketType,
     \sa socketType(), QTcpSocket, QUdpSocket
 */
 QAbstractSocket::QAbstractSocket(SocketType socketType, QObject *parent)
-    : QIODevice(*new QAbstractSocketPrivate, parent)
+    : QAbstractSocket(socketType, *new QAbstractSocketPrivate, parent)
 {
-    Q_D(QAbstractSocket);
-#if defined(QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::QAbstractSocket(%p)", parent);
-#endif
-    d->socketType = socketType;
 }
 
 /*!

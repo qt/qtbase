@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,68 +37,33 @@
 **
 ****************************************************************************/
 
-#include "qtoolbarextension_p.h"
-#include <qevent.h>
-#include <qstyle.h>
-#include <qstylepainter.h>
-#include <qstyleoption.h>
+#ifndef QWINDOWSUIAEXPANDCOLLAPSEPROVIDER_H
+#define QWINDOWSUIAEXPANDCOLLAPSEPROVIDER_H
+
+#include <QtGui/qtguiglobal.h>
+#if QT_CONFIG(accessibility)
+
+#include "qwindowsuiabaseprovider.h"
 
 QT_BEGIN_NAMESPACE
 
-QToolBarExtension::QToolBarExtension(QWidget *parent)
-    : QToolButton(parent)
-    , m_orientation(Qt::Horizontal)
+// Implements the Expand/Collapse control pattern provider. Used for menu items with submenus.
+class QWindowsUiaExpandCollapseProvider : public QWindowsUiaBaseProvider,
+                                          public QWindowsComBase<IExpandCollapseProvider>
 {
-    setObjectName(QLatin1String("qt_toolbar_ext_button"));
-    setAutoRaise(true);
-    setOrientation(m_orientation);
-    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    setCheckable(true);
-}
+    Q_DISABLE_COPY_MOVE(QWindowsUiaExpandCollapseProvider)
+public:
+    explicit QWindowsUiaExpandCollapseProvider(QAccessible::Id id);
+    virtual ~QWindowsUiaExpandCollapseProvider() override;
 
-void QToolBarExtension::setOrientation(Qt::Orientation o)
-{
-    QStyleOption opt;
-    opt.init(this);
-    if (o == Qt::Horizontal) {
-        setIcon(style()->standardIcon(QStyle::SP_ToolBarHorizontalExtensionButton, &opt));
-    } else {
-        setIcon(style()->standardIcon(QStyle::SP_ToolBarVerticalExtensionButton, &opt));
-    }
-    m_orientation = o;
-}
-
-void QToolBarExtension::paintEvent(QPaintEvent *)
-{
-    QStylePainter p(this);
-    QStyleOptionToolButton opt;
-    initStyleOption(&opt);
-    // We do not need to draw both extension arrows
-    opt.features &= ~QStyleOptionToolButton::HasMenu;
-    p.drawComplexControl(QStyle::CC_ToolButton, opt);
-}
-
-
-QSize QToolBarExtension::sizeHint() const
-{
-    QStyleOption opt;
-    opt.initFrom(this);
-    const int ext = style()->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt);
-    return QSize(ext, ext);
-}
-
-bool QToolBarExtension::event(QEvent *event)
-{
-    switch (event->type()) {
-    case QEvent::LayoutDirectionChange:
-        setOrientation(m_orientation);
-        break;
-    default:
-        break;
-    }
-    return QToolButton::event(event);
-}
+    // IExpandCollapseProvider
+    HRESULT STDMETHODCALLTYPE Expand() override;
+    HRESULT STDMETHODCALLTYPE Collapse() override;
+    HRESULT STDMETHODCALLTYPE get_ExpandCollapseState(__RPC__out ExpandCollapseState *pRetVal) override;
+};
 
 QT_END_NAMESPACE
 
-#include "moc_qtoolbarextension_p.cpp"
+#endif // QT_CONFIG(accessibility)
+
+#endif // QWINDOWSUIAEXPANDCOLLAPSEPROVIDER_H

@@ -61,29 +61,7 @@ Server::Server(QWidget *parent)
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     statusLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
-    QNetworkConfigurationManager manager;
-    if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
-        // Get saved network configuration
-        QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-        settings.beginGroup(QLatin1String("QtNetwork"));
-        const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
-        settings.endGroup();
-
-        // If the saved network configuration is not currently discovered use the system default
-        QNetworkConfiguration config = manager.configurationFromIdentifier(id);
-        if ((config.state() & QNetworkConfiguration::Discovered) !=
-            QNetworkConfiguration::Discovered) {
-            config = manager.defaultConfiguration();
-        }
-
-        networkSession = new QNetworkSession(config, this);
-        connect(networkSession, &QNetworkSession::opened, this, &Server::sessionOpened);
-
-        statusLabel->setText(tr("Opening network session."));
-        networkSession->open();
-    } else {
-        sessionOpened();
-    }
+    initServer();
 
     //! [2]
     fortunes << tr("You've been leading a dog's life. Stay off the furniture.")
@@ -128,23 +106,8 @@ Server::Server(QWidget *parent)
     setWindowTitle(QGuiApplication::applicationDisplayName());
 }
 
-void Server::sessionOpened()
+void Server::initServer()
 {
-    // Save the used configuration
-    if (networkSession) {
-        QNetworkConfiguration config = networkSession->configuration();
-        QString id;
-        if (config.type() == QNetworkConfiguration::UserChoice)
-            id = networkSession->sessionProperty(QLatin1String("UserChoiceConfiguration")).toString();
-        else
-            id = config.identifier();
-
-        QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-        settings.beginGroup(QLatin1String("QtNetwork"));
-        settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
-        settings.endGroup();
-    }
-
 //! [0] //! [1]
     tcpServer = new QTcpServer(this);
     if (!tcpServer->listen()) {

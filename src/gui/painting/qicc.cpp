@@ -87,6 +87,11 @@ constexpr quint32 IccTag(uchar a, uchar b, uchar c, uchar d)
     return (a << 24) | (b << 16) | (c << 8) | d;
 }
 
+enum class ColorSpaceType : quint32 {
+    Rgb       = IccTag('R', 'G', 'B', ' '),
+    Gray      = IccTag('G', 'R', 'A', 'Y'),
+};
+
 enum class ProfileClass : quint32 {
     Input       = IccTag('s', 'c', 'r', 'n'),
     Display     = IccTag('m', 'n', 't', 'r'),
@@ -105,6 +110,7 @@ enum class Tag : quint32 {
     rTRC = IccTag('r', 'T', 'R', 'C'),
     gTRC = IccTag('g', 'T', 'R', 'C'),
     bTRC = IccTag('b', 'T', 'R', 'C'),
+    kTRC = IccTag('k', 'T', 'R', 'C'),
     A2B0 = IccTag('A', '2', 'B', '0'),
     A2B1 = IccTag('A', '2', 'B', '1'),
     B2A0 = IccTag('B', '2', 'A', '0'),
@@ -219,8 +225,10 @@ static bool isValidIccProfile(const ICCProfileHeader &header)
     }
 
     // Don't overflow 32bit integers:
-    if (header.tagCount >= INT32_MAX / sizeof(TagTableEntry))
+    if (header.tagCount >= INT32_MAX / sizeof(TagTableEntry)) {
+        qCWarning(lcIcc, "Failed tag count sanity");
         return false;
+    }
     if (header.profileSize - sizeof(ICCProfileHeader) < header.tagCount * sizeof(TagTableEntry)) {
         qCWarning(lcIcc, "Failed basic size sanity");
         return false;
@@ -231,7 +239,8 @@ static bool isValidIccProfile(const ICCProfileHeader &header)
         qCWarning(lcIcc, "Unsupported ICC profile class %x", quint32(header.profileClass));
         return false;
     }
-    if (header.inputColorSpace != 0x52474220 /* 'RGB '*/) {
+    if (header.inputColorSpace != uint(ColorSpaceType::Rgb)
+        && header.inputColorSpace != uint(ColorSpaceType::Gray)) {
         qCWarning(lcIcc, "Unsupported ICC input color space %x", quint32(header.inputColorSpace));
         return false;
     }
@@ -610,10 +619,8 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         return false;
     }
     const ICCProfileHeader *header = (const ICCProfileHeader *)data.constData();
-    if (!isValidIccProfile(*header)) {
-        qCWarning(lcIcc) << "fromIccProfile: failed general sanity check";
-        return false;
-    }
+    if (!isValidIccProfile(*header))
+        return false; // if failed we already printing a warning
     if (qsizetype(header->profileSize) > data.size()) {
         qCWarning(lcIcc) << "fromIccProfile: failed size sanity 2";
         return false;
@@ -658,39 +665,74 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     }
 
     // Check the profile is three-component matrix based (what we currently support):
-    if (!tagIndex.contains(Tag::rXYZ) || !tagIndex.contains(Tag::gXYZ) || !tagIndex.contains(Tag::bXYZ) ||
-        !tagIndex.contains(Tag::rTRC) || !tagIndex.contains(Tag::gTRC) || !tagIndex.contains(Tag::bTRC) ||
-        !tagIndex.contains(Tag::wtpt)) {
-        qCWarning(lcIcc) << "fromIccProfile: Unsupported ICC profile - not three component matrix based";
-        return false;
+    if (header->inputColorSpace == uint(ColorSpaceType::Rgb)) {
+        if (!tagIndex.contains(Tag::rXYZ) || !tagIndex.contains(Tag::gXYZ) || !tagIndex.contains(Tag::bXYZ) ||
+            !tagIndex.contains(Tag::rTRC) || !tagIndex.contains(Tag::gTRC) || !tagIndex.contains(Tag::bTRC) ||
+            !tagIndex.contains(Tag::wtpt)) {
+            qCWarning(lcIcc) << "fromIccProfile: Unsupported ICC profile - not three component matrix based";
+            return false;
+        }
+    } else {
+        Q_ASSERT(header->inputColorSpace == uint(ColorSpaceType::Gray));
+        if (!tagIndex.contains(Tag::kTRC) || !tagIndex.contains(Tag::wtpt)) {
+            qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - not valid gray scale based";
+            return false;
+        }
     }
 
     QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::getWritable(*colorSpace);
 
-    // Parse XYZ tags
-    if (!parseXyzData(data, tagIndex[Tag::rXYZ], colorspaceDPtr->toXyz.r))
-        return false;
-    if (!parseXyzData(data, tagIndex[Tag::gXYZ], colorspaceDPtr->toXyz.g))
-        return false;
-    if (!parseXyzData(data, tagIndex[Tag::bXYZ], colorspaceDPtr->toXyz.b))
-        return false;
-    if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
-        return false;
+    if (header->inputColorSpace == uint(ColorSpaceType::Rgb)) {
+        // Parse XYZ tags
+        if (!parseXyzData(data, tagIndex[Tag::rXYZ], colorspaceDPtr->toXyz.r))
+            return false;
+        if (!parseXyzData(data, tagIndex[Tag::gXYZ], colorspaceDPtr->toXyz.g))
+            return false;
+        if (!parseXyzData(data, tagIndex[Tag::bXYZ], colorspaceDPtr->toXyz.b))
+            return false;
+        if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
+            return false;
 
-    colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
-    if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromSRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: sRGB primaries detected";
-        colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
-    } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromAdobeRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: Adobe RGB primaries detected";
-        colorspaceDPtr->primaries = QColorSpace::Primaries::AdobeRgb;
-    } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromDciP3D65()) {
-        qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 primaries detected";
-        colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
-    }
-    if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB primaries detected";
-        colorspaceDPtr->primaries = QColorSpace::Primaries::ProPhotoRgb;
+        colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
+        if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromSRgb()) {
+            qCDebug(lcIcc) << "fromIccProfile: sRGB primaries detected";
+            colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
+        } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromAdobeRgb()) {
+            qCDebug(lcIcc) << "fromIccProfile: Adobe RGB primaries detected";
+            colorspaceDPtr->primaries = QColorSpace::Primaries::AdobeRgb;
+        } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromDciP3D65()) {
+            qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 primaries detected";
+            colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
+        }
+        if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
+            qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB primaries detected";
+            colorspaceDPtr->primaries = QColorSpace::Primaries::ProPhotoRgb;
+        }
+    } else {
+        // We will use sRGB primaries and fit to match the given white-point if
+        // it doesn't match sRGB's.
+        QColorVector whitePoint;
+        if (!parseXyzData(data, tagIndex[Tag::wtpt], whitePoint))
+            return false;
+        if (!qFuzzyCompare(whitePoint.y, 1.0f) || (1.0f + whitePoint.z - whitePoint.x) == 0.0f) {
+            qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - gray white-point not normalized";
+            return false;
+        }
+        if (whitePoint == QColorVector::D65()) {
+            colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
+        } else {
+            colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
+            // Calculate chromaticity from xyz (assuming y == 1.0f).
+            float y = 1.0f / (1.0f + whitePoint.z - whitePoint.x);
+            float x = whitePoint.x * y;
+            QColorSpacePrimaries primaries(QColorSpace::Primaries::SRgb);
+            primaries.whitePoint = QPointF(x,y);
+            if (!primaries.areValid()) {
+                qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - invalid white-point";
+                return false;
+            }
+            colorspaceDPtr->toXyz = primaries.toXyzMatrix();
+        }
     }
     // Reset the matrix to our canonical values:
     if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
@@ -700,7 +742,11 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     TagEntry rTrc;
     TagEntry gTrc;
     TagEntry bTrc;
-    if (tagIndex.contains(Tag::aarg) && tagIndex.contains(Tag::aagg) && tagIndex.contains(Tag::aabg)) {
+    if (header->inputColorSpace == uint(ColorSpaceType::Gray)) {
+        rTrc = tagIndex[Tag::kTRC];
+        gTrc = tagIndex[Tag::kTRC];
+        bTrc = tagIndex[Tag::kTRC];
+    } else if (tagIndex.contains(Tag::aarg) && tagIndex.contains(Tag::aagg) && tagIndex.contains(Tag::aabg)) {
         // Apple extension for parametric version of TRCs in ICCv2:
         rTrc = tagIndex[Tag::aarg];
         gTrc = tagIndex[Tag::aagg];

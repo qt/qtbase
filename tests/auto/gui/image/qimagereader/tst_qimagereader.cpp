@@ -45,6 +45,8 @@
 
 #include <algorithm>
 
+// #define DEBUG_WRITE_OUTPUT
+
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImage::Format)
@@ -462,24 +464,24 @@ void tst_QImageReader::setScaledClipRect_data()
     QTest::addColumn<QRect>("newRect");
     QTest::addColumn<QByteArray>("format");
 
-    QTest::newRow("BMP: colorful") << "colorful" << QRect(0, 0, 50, 50) << QByteArray("bmp");
-    QTest::newRow("BMP: test32bfv4") << "test32bfv4" << QRect(0, 0, 50, 50) << QByteArray("bmp");
-    QTest::newRow("BMP: test32v5") << "test32v5" << QRect(0, 0, 50, 50) << QByteArray("bmp");
-    QTest::newRow("BMP: font") << "font" << QRect(0, 0, 50, 50) << QByteArray("bmp");
-    QTest::newRow("XPM: marble") << "marble" << QRect(0, 0, 50, 50) << QByteArray("xpm");
-    QTest::newRow("PNG: kollada") << "kollada" << QRect(0, 0, 50, 50) << QByteArray("png");
-    QTest::newRow("PPM: teapot") << "teapot" << QRect(0, 0, 50, 50) << QByteArray("ppm");
-    QTest::newRow("PPM: runners") << "runners.ppm" << QRect(0, 0, 50, 50) << QByteArray("ppm");
-    QTest::newRow("PPM: test") << "test.ppm" << QRect(0, 0, 50, 50) << QByteArray("ppm");
-    QTest::newRow("XBM: gnus") << "gnus" << QRect(0, 0, 50, 50) << QByteArray("xbm");
+    QTest::newRow("BMP: colorful") << "colorful" << QRect(50, 20, 50, 50) << QByteArray("bmp");
+    QTest::newRow("BMP: test32bfv4") << "test32bfv4" << QRect(50, 20, 50, 50) << QByteArray("bmp");
+    QTest::newRow("BMP: test32v5") << "test32v5" << QRect(50, 20, 50, 50) << QByteArray("bmp");
+    QTest::newRow("BMP: font") << "font" << QRect(50, 20, 50, 50) << QByteArray("bmp");
+    QTest::newRow("XPM: marble") << "marble" << QRect(50, 20, 50, 50) << QByteArray("xpm");
+    QTest::newRow("PNG: kollada") << "kollada" << QRect(50, 20, 50, 50) << QByteArray("png");
+    QTest::newRow("PPM: teapot") << "teapot" << QRect(50, 20, 50, 50) << QByteArray("ppm");
+    QTest::newRow("PPM: runners") << "runners.ppm" << QRect(50, 20, 50, 50) << QByteArray("ppm");
+    QTest::newRow("PPM: test") << "test.ppm" << QRect(50, 20, 50, 50) << QByteArray("ppm");
+    QTest::newRow("XBM: gnus") << "gnus" << QRect(50, 20, 50, 50) << QByteArray("xbm");
 
-    QTest::newRow("JPEG: beavis") << "beavis" << QRect(0, 0, 50, 50) << QByteArray("jpeg");
+    QTest::newRow("JPEG: beavis") << "beavis" << QRect(50, 20, 50, 50) << QByteArray("jpeg");
 
-    QTest::newRow("GIF: earth") << "earth" << QRect(0, 0, 50, 50) << QByteArray("gif");
-    QTest::newRow("GIF: trolltech") << "trolltech" << QRect(0, 0, 50, 50) << QByteArray("gif");
+    QTest::newRow("GIF: earth") << "earth" << QRect(50, 20, 50, 50) << QByteArray("gif");
+    QTest::newRow("GIF: trolltech") << "trolltech" << QRect(50, 20, 50, 50) << QByteArray("gif");
 
-    QTest::newRow("SVG: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svg");
-    QTest::newRow("SVGZ: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svgz");
+    QTest::newRow("SVG: rect") << "rect" << QRect(50, 20, 50, 50) << QByteArray("svg");
+    QTest::newRow("SVGZ: rect") << "rect" << QRect(50, 20, 50, 50) << QByteArray("svgz");
 }
 
 void tst_QImageReader::setScaledClipRect()
@@ -495,7 +497,11 @@ void tst_QImageReader::setScaledClipRect()
     reader.setScaledClipRect(newRect);
     QImage image = reader.read();
     QVERIFY(!image.isNull());
-    QCOMPARE(image.rect(), newRect);
+    QCOMPARE(image.rect().translated(50, 20), newRect);
+#ifdef DEBUG_WRITE_OUTPUT
+    QString tempPath = QDir::temp().filePath(fileName) + QLatin1String(".png");
+    image.save(tempPath);
+#endif
 
     QImageReader originalReader(prefix + fileName);
     originalReader.setScaledSize(QSize(300, 300));

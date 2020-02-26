@@ -162,8 +162,10 @@ private slots:
     void fontPropagation();
     void fontPropagation2();
     void fontPropagation3();
+    void fontPropagationDynamic();
     void palettePropagation();
     void palettePropagation2();
+    void palettePropagationDynamic();
     void enabledPropagation();
     void ignoreKeyEventsWhenDisabled_QTBUG27417();
     void properTabHandlingWhenDisabled_QTBUG27417();
@@ -310,6 +312,8 @@ private slots:
     void hideOpaqueChildWhileHidden();
     void updateWhileMinimized();
     void alienWidgets();
+    void nativeWindowPosition_data();
+    void nativeWindowPosition();
     void adjustSize();
     void adjustSize_data();
     void updateGeometry();
@@ -410,6 +414,7 @@ private slots:
     void closeWithChildWindow();
 
     void winIdAfterClose();
+    void receivesLanguageChangeEvent();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -828,6 +833,66 @@ void tst_QWidget::fontPropagation3()
     QCOMPARE(p.font().pointSize(), child->font().pointSize());
 }
 
+/*!
+    This tests that children that are added to a widget with an explicitly
+    defined font inherit that font correctly, merging (and overriding)
+    with the font that might be defined by the platform theme.
+*/
+void tst_QWidget::fontPropagationDynamic()
+{
+    // override side effects from previous tests
+    QFont themedFont;
+    themedFont.setBold(true);
+    themedFont.setPointSize(42);
+    QApplication::setFont(themedFont, "QPropagationTestWidget");
+
+    QWidget parent;
+    QWidget firstChild(&parent);
+
+    const QFont defaultFont = parent.font();
+    QFont appFont = defaultFont;
+    appFont.setPointSize(72);
+
+    // sanity check
+    QVERIFY(themedFont != defaultFont);
+    QVERIFY(themedFont != appFont);
+
+    // palette propagates to existing children
+    parent.setFont(appFont);
+    QCOMPARE(firstChild.font().pointSize(), appFont.pointSize());
+
+    // palatte propagates to children added later
+    QWidget secondChild(&parent);
+    QCOMPARE(secondChild.font().pointSize(), appFont.pointSize());
+    QWidget thirdChild;
+    QCOMPARE(thirdChild.font().pointSize(), defaultFont.pointSize());
+    thirdChild.setParent(&parent);
+    QCOMPARE(thirdChild.font().pointSize(), appFont.pointSize());
+
+    // even if the child has an override in QApplication::font
+    QPropagationTestWidget themedChild;
+    themedChild.ensurePolished(); // needed for default font to be set up
+    QCOMPARE(themedChild.font().pointSize(), themedFont.pointSize());
+    QCOMPARE(themedChild.font().bold(), themedFont.bold());
+    themedChild.setParent(&parent);
+    QCOMPARE(themedChild.font().pointSize(), appFont.pointSize());
+    QCOMPARE(themedChild.font().bold(), themedFont.bold());
+
+    // grand children as well
+    QPropagationTestWidget themedGrandChild;
+    themedGrandChild.setParent(&themedChild);
+    QCOMPARE(themedGrandChild.font().pointSize(), appFont.pointSize());
+    QCOMPARE(themedGrandChild.font().bold(), themedFont.bold());
+
+    // child with own font attribute does not inherit from parent
+    QFont childFont = defaultFont;
+    childFont.setPointSize(9);
+    QWidget modifiedChild;
+    modifiedChild.setFont(childFont);
+    modifiedChild.setParent(&parent);
+    QCOMPARE(modifiedChild.font().pointSize(), childFont.pointSize());
+}
+
 void tst_QWidget::palettePropagation()
 {
     QScopedPointer<QWidget> testWidget(new QWidget);
@@ -872,8 +937,8 @@ void tst_QWidget::palettePropagation2()
 
     // ! Note, the code below is executed in tst_QWidget's constructor.
     // QPalette palette;
-    // font.setColor(QPalette::ToolTipBase, QColor(12, 13, 14));
-    // font.setColor(QPalette::Text, QColor(21, 22, 23));
+    // palette.setColor(QPalette::ToolTipBase, QColor(12, 13, 14));
+    // palette.setColor(QPalette::Text, QColor(21, 22, 23));
     // qApp->setPalette(palette, "QPropagationTestWidget");
 
     QScopedPointer<QWidget> root(new QWidget);
@@ -970,6 +1035,68 @@ void tst_QWidget::palettePropagation2()
     QCOMPARE(child5->palette().color(QPalette::Text), overridePalText);
     QCOMPARE(child5->palette().color(QPalette::ToolTipBase), overridePalToolTipBase);
     QCOMPARE(child5->palette().color(QPalette::ToolTipText), sysPalButton);
+}
+
+/*!
+    This tests that children that are added to a widget with an explicitly
+    defined palette inherit that palette correctly, merging (and overriding)
+    with the palette that might be defined by the platform theme.
+*/
+void tst_QWidget::palettePropagationDynamic()
+{
+    // override side effects from previous tests
+    QPalette themedPalette;
+    themedPalette.setColor(QPalette::ToolTipBase, QColor(12, 13, 14));
+    themedPalette.setColor(QPalette::Text, QColor(21, 22, 23));
+    QApplication::setPalette(themedPalette, "QPropagationTestWidget");
+
+    QWidget parent;
+    QWidget firstChild(&parent);
+
+    const QPalette defaultPalette = parent.palette();
+    QPalette appPalette = defaultPalette;
+    const QColor appColor(1, 2, 3);
+    appPalette.setColor(QPalette::Text, appColor);
+
+    // sanity check
+    QVERIFY(themedPalette != defaultPalette);
+    QVERIFY(themedPalette != appPalette);
+
+    // palette propagates to existing children
+    parent.setPalette(appPalette);
+    QCOMPARE(firstChild.palette().color(QPalette::Text), appPalette.color(QPalette::Text));
+
+    // palatte propagates to children added later
+    QWidget secondChild(&parent);
+    QCOMPARE(secondChild.palette().color(QPalette::Text), appPalette.color(QPalette::Text));
+    QWidget thirdChild;
+    QCOMPARE(thirdChild.palette().color(QPalette::Text), defaultPalette.color(QPalette::Text));
+    thirdChild.setParent(&parent);
+    QCOMPARE(thirdChild.palette().color(QPalette::Text), appPalette.color(QPalette::Text));
+
+    // even if the child has an override in QApplication::palette
+    QPropagationTestWidget themedChild;
+    themedChild.ensurePolished(); // needed for default palette to be set up
+    QCOMPARE(themedChild.palette().color(QPalette::Text), themedPalette.color(QPalette::Text));
+    QCOMPARE(themedChild.palette().color(QPalette::ToolTipBase), themedPalette.color(QPalette::ToolTipBase));
+    themedChild.setParent(&parent);
+    QCOMPARE(themedChild.palette().color(QPalette::Text), appPalette.color(QPalette::Text));
+    QCOMPARE(themedChild.palette().color(QPalette::ToolTipBase), themedPalette.color(QPalette::ToolTipBase));
+
+    // grand children as well
+    QPropagationTestWidget themedGrandChild;
+    themedGrandChild.setParent(&themedChild);
+    QCOMPARE(themedGrandChild.palette().color(QPalette::Text), appPalette.color(QPalette::Text));
+    QCOMPARE(themedGrandChild.palette().color(QPalette::ToolTipBase), themedPalette.color(QPalette::ToolTipBase));
+
+    // child with own color does not inherit from parent
+    QPalette childPalette = defaultPalette;
+    childPalette.setColor(QPalette::Text, Qt::red);
+    QWidget modifiedChild;
+    modifiedChild.setPalette(childPalette);
+    modifiedChild.setParent(&parent);
+    QCOMPARE(modifiedChild.palette().color(QPalette::Text), childPalette.color(QPalette::Text));
+
 }
 
 void tst_QWidget::enabledPropagation()
@@ -8210,6 +8337,40 @@ void tst_QWidget::alienWidgets()
     }
 }
 
+using WidgetAttributes = QVector<Qt::WidgetAttribute>;
+
+void tst_QWidget::nativeWindowPosition_data()
+{
+    QTest::addColumn<WidgetAttributes>("attributes");
+
+    QTest::newRow("non-native all the way")
+        << WidgetAttributes{};
+    QTest::newRow("native all the way")
+        << WidgetAttributes{ Qt::WA_NativeWindow };
+    QTest::newRow("native with non-native ancestor")
+        << WidgetAttributes{ Qt::WA_NativeWindow, Qt::WA_DontCreateNativeAncestors };
+}
+
+void tst_QWidget::nativeWindowPosition()
+{
+    QWidget topLevel;
+    QWidget child(&topLevel);
+    child.move(5, 5);
+
+    QWidget grandChild(&child);
+    grandChild.move(10, 10);
+
+    QFETCH(WidgetAttributes, attributes);
+    for (auto attribute : attributes)
+        grandChild.setAttribute(attribute);
+
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+
+    QCOMPARE(child.pos(), QPoint(5, 5));
+    QCOMPARE(grandChild.pos(), QPoint(10, 10));
+}
+
 class ASWidget : public QWidget
 {
 public:
@@ -11358,6 +11519,56 @@ void tst_QWidget::winIdAfterClose()
 
     QCOMPARE(spy->winId, WId(0));
     delete spy;
+}
+
+class LanguageChangeEventWidget : public QWidget
+{
+public:
+    LanguageChangeEventWidget(QWidget *parent = nullptr) : QWidget(parent) {}
+    int languageChangeCount = 0;
+protected:
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::LanguageChange)
+            languageChangeCount++;
+        return QWidget::event(e);
+    }
+};
+
+class LanguageChangeEventWindow : public QWindow
+{
+public:
+    LanguageChangeEventWindow(QWindow *parent = nullptr) : QWindow(parent) {}
+    int languageChangeCount = 0;
+protected:
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::LanguageChange)
+            languageChangeCount++;
+        return QWindow::event(e);
+    }
+};
+
+void tst_QWidget::receivesLanguageChangeEvent()
+{
+    // Confirm that any QWindow or QWidget only gets a single
+    // LanguageChange event when a translator is installed
+    LanguageChangeEventWidget topLevel;
+    auto childWidget = new LanguageChangeEventWidget(&topLevel);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    LanguageChangeEventWindow ww;
+    ww.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&ww));
+    LanguageChangeEventWidget topLevelNotShown;
+    QTranslator t;
+    QVERIFY(t.load("hellotr_la.qm", ":/"));
+    QVERIFY(qApp->installTranslator(&t));
+    QCoreApplication::sendPostedEvents(0, QEvent::LanguageChange);
+    QCOMPARE(topLevel.languageChangeCount, 1);
+    QCOMPARE(topLevelNotShown.languageChangeCount, 1);
+    QCOMPARE(childWidget->languageChangeCount, 1);
+    QCOMPARE(ww.languageChangeCount, 1);
 }
 
 QTEST_MAIN(tst_QWidget)

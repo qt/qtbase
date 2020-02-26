@@ -2368,6 +2368,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
 {
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
   Construct a tablet event of the given \a type.
 
@@ -2411,6 +2412,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
                    tangentialPressure, rotation, z, keyState, uniqueID, Qt::NoButton, Qt::NoButton)
 {
 }
+#endif
 
 /*!
     \internal
@@ -2450,6 +2452,12 @@ Qt::MouseButtons QTabletEvent::buttons() const
 
 /*!
     \fn TabletDevices QTabletEvent::device() const
+
+    \deprecated Use deviceType().
+*/
+
+/*!
+    \fn TabletDevices QTabletEvent::deviceType() const
 
     Returns the type of device that generated the event.
 
@@ -2615,12 +2623,16 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \fn qreal &QTabletEvent::hiResGlobalX() const
 
     The high precision x position of the tablet device.
+
+    \obsolete use globalPosF()
 */
 
 /*!
     \fn qreal &QTabletEvent::hiResGlobalY() const
 
     The high precision y position of the tablet device.
+
+    \obsolete use globalPosF()
 */
 
 /*!

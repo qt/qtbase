@@ -528,9 +528,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QString QStringView::arg(Args &&...args) const
-    \fn QString QLatin1String::arg(Args &&...args) const
-    \fn QString QString::arg(Args &&...args) const
+    \fn template <typename...Args> QString QStringView::arg(Args &&...args) const
+    \fn template <typename...Args> QString QLatin1String::arg(Args &&...args) const
+    \fn template <typename...Args> QString QString::arg(Args &&...args) const
     \since 5.14
 
     Replaces occurrences of \c{%N} in this string with the corresponding

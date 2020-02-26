@@ -183,7 +183,9 @@ QT_BEGIN_NAMESPACE
 
     \warning This class is provided for convenience when bridging
     QWidgets and QGraphicsItems, it should not be used for
-    high-performance scenarios.
+    high-performance scenarios. In particular, embedding widgets into a scene
+    that is then displayed through a QGraphicsView that uses an OpenGL viewport
+    will not work for all combinations.
 
     \sa QGraphicsScene::addWidget(), QGraphicsWidget
 */

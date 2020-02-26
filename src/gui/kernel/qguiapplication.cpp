@@ -610,7 +610,7 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
         \li \c {dialogs=[xp|none]}, \c xp uses XP-style native dialogs and
             \c none disables them.
 
-        \li \c {dpiawareness=[0|1|2} Sets the DPI awareness of the process
+        \li \c {dpiawareness=[0|1|2]} Sets the DPI awareness of the process
                (see \l{High DPI Displays}, since Qt 5.4).
         \li \c {fontengine=freetype}, uses the FreeType font engine.
         \li \c {fontengine=directwrite}, uses the experimental DirectWrite
@@ -1738,6 +1738,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     window_list.clear();
     screen_list.clear();
+
+    self = nullptr;
 }
 
 #if 0
@@ -1891,6 +1893,10 @@ bool QGuiApplication::event(QEvent *e)
 {
     if(e->type() == QEvent::LanguageChange) {
         setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
+        for (auto *topLevelWindow : QGuiApplication::topLevelWindows()) {
+            if (topLevelWindow->flags() != Qt::Desktop)
+                postEvent(topLevelWindow, new QEvent(QEvent::LanguageChange));
+        }
     } else if (e->type() == QEvent::Quit) {
         // Close open windows. This is done in order to deliver de-expose
         // events while the event loop is still running.
@@ -3412,8 +3418,11 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 */
 QFont QGuiApplication::font()
 {
-    Q_ASSERT_X(QGuiApplicationPrivate::self, "QGuiApplication::font()", "no QGuiApplication instance");
     const auto locker = qt_scoped_lock(applicationFontMutex);
+    if (!QGuiApplicationPrivate::self && !QGuiApplicationPrivate::app_font) {
+        qWarning("QGuiApplication::font(): no QGuiApplication instance and no application font set.");
+        return QFont();  // in effect: QFont((QFontPrivate*)nullptr), so no recursion
+    }
     initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;
 }

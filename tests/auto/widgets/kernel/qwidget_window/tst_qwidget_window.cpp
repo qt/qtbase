@@ -968,6 +968,7 @@ void tst_QWidget_window::tst_resize_count()
 {
     {
         ResizeWidget resize;
+        resize.setWindowFlags(Qt::X11BypassWindowManagerHint);
         resize.show();
         QVERIFY(QTest::qWaitForWindowExposed(&resize));
 #ifdef Q_OS_WINRT
@@ -1000,6 +1001,7 @@ void tst_QWidget_window::tst_resize_count()
     }
     {
         ResizeWidget parent;
+        parent.setWindowFlag(Qt::X11BypassWindowManagerHint);
         ResizeWidget child(&parent);
         child.resize(m_testWidgetSize);
         child.winId();

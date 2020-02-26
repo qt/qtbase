@@ -1098,6 +1098,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 
         if (reply) {
             reply->d_func()->errorString = errorString;
+            reply->d_func()->httpErrorCode = errorCode;
             emit reply->finishedWithError(errorCode, errorString);
             reply = nullptr;
             if (protocolHandler)

@@ -53,6 +53,7 @@
 #include "qwindowsuiagridprovider.h"
 #include "qwindowsuiagriditemprovider.h"
 #include "qwindowsuiawindowprovider.h"
+#include "qwindowsuiaexpandcollapseprovider.h"
 #include "qwindowscombase.h"
 #include "qwindowscontext.h"
 #include "qwindowsuiautils.h"
@@ -341,6 +342,14 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
             *pRetVal = new QWindowsUiaInvokeProvider(id());
         }
         break;
+    case UIA_ExpandCollapsePatternId:
+        // Menu items with submenus.
+        if (accessible->role() == QAccessible::MenuItem
+                && accessible->childCount() > 0
+                && accessible->child(0)->role() == QAccessible::PopupMenu) {
+            *pRetVal = new QWindowsUiaExpandCollapseProvider(id());
+        }
+        break;
     default:
         break;
     }
@@ -396,7 +405,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             // The native OSK should be disbled if the Qt OSK is in use,
             // or if disabled via application attribute.
             static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
-            bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_MSWindowsDisableVirtualKeyboard);
+            bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_DisableNativeVirtualKeyboard);
 
             // If we want to disable the native OSK auto-showing
             // we have to report text fields as non-editable.
@@ -447,6 +456,10 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             const Qt::WindowType wt = window->type();
             setVariantBool(wt == Qt::Popup || wt == Qt::ToolTip || wt == Qt::SplashScreen, pRetVal);
         }
+        break;
+    case UIA_IsDialogPropertyId:
+        setVariantBool(accessible->role() == QAccessible::Dialog
+                       || accessible->role() == QAccessible::AlertMessage, pRetVal);
         break;
     case UIA_FullDescriptionPropertyId:
         setVariantString(accessible->text(QAccessible::Description), pRetVal);
