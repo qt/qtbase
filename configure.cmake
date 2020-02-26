@@ -283,6 +283,7 @@ alloca(1);
 # stack_protector
 qt_config_compile_test(stack_protector
     LABEL "stack protection"
+    COMPILE_OPTIONS -fstack-protector-strong
     CODE
 "#ifdef __QNXNTO__
 #  include <sys/neutrino.h>
@@ -300,8 +301,7 @@ int main(int argc, char **argv)
     /* END TEST: */
     return 0;
 }
-"# FIXME: qmake: QMAKE_CXXFLAGS += -fstack-protector-strong
-)
+")
 
 
 
@@ -618,6 +618,10 @@ qt_feature("alloca_malloc_h" PRIVATE
 qt_feature("alloca" PRIVATE
     LABEL "alloca()"
     CONDITION QT_FEATURE_alloca_h OR QT_FEATURE_alloca_malloc_h OR TEST_alloca_stdlib_h
+)
+qt_feature("stack-protector-strong" PRIVATE
+    LABEL "stack protection"
+    CONDITION QNX AND TEST_stack_protector
 )
 qt_feature("system-zlib" PRIVATE
     LABEL "Using system zlib"

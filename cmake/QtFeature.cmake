@@ -625,7 +625,8 @@ function(qt_config_compile_test name)
         return()
     endif()
 
-    cmake_parse_arguments(arg "" "LABEL;PROJECT_PATH;C_STANDARD;CXX_STANDARD" "LIBRARIES;CODE" ${ARGN})
+    cmake_parse_arguments(arg "" "LABEL;PROJECT_PATH;C_STANDARD;CXX_STANDARD"
+        "COMPILE_OPTIONS;LIBRARIES;CODE" ${ARGN})
 
     if(arg_PROJECT_PATH)
         message(STATUS "Performing Test ${arg_LABEL}")
@@ -664,6 +665,8 @@ function(qt_config_compile_test name)
                set(CMAKE_CXX_STANDARD "${arg_CXX_STANDARD}")
             endif()
 
+            set(CMAKE_REQUIRED_FLAGS ${arg_COMPILE_OPTIONS})
+
             # For MSVC we need to explicitly pass -Zc:__cplusplus to get correct __cplusplus
             # define values. According to common/msvc-version.conf the flag is supported starting
             # with 1913.
@@ -671,7 +674,7 @@ function(qt_config_compile_test name)
             # No support for the flag in upstream CMake as of 3.17.
             # https://gitlab.kitware.com/cmake/cmake/issues/18837
             if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND MSVC_VERSION GREATER_EQUAL 1913)
-                set(CMAKE_REQUIRED_FLAGS "-Zc:__cplusplus")
+                list(APPEND CMAKE_REQUIRED_FLAGS "-Zc:__cplusplus")
             endif()
 
             set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")

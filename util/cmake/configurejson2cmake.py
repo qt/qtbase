@@ -584,6 +584,7 @@ endif()
 
         librariesCmakeName = ""
         languageStandard = ""
+        compileOptions = ""
         qmakeFixme = ""
 
         cm_fh.write(f"# {test}\n")
@@ -612,6 +613,8 @@ endif()
                 languageStandard = "CXX_STANDARD 17"
             elif details["qmake"] == "CONFIG += c++11 c++14 c++17 c++2a":
                 languageStandard = "CXX_STANDARD 20"
+            elif details["qmake"] == "QMAKE_CXXFLAGS += -fstack-protector-strong":
+                compileOptions = details["qmake"][18:]
             else:
                 qmakeFixme = f"# FIXME: qmake: {details['qmake']}\n"
 
@@ -637,6 +640,8 @@ endif()
                 cm_fh.write("        ")
                 cm_fh.write("\n        ".join(library_list))
                 cm_fh.write("\n")
+        if compileOptions != "":
+            cm_fh.write(f"    COMPILE_OPTIONS {compileOptions}\n")
         cm_fh.write("    CODE\n")
         cm_fh.write('"' + sourceCode + '"')
         if qmakeFixme != "":
@@ -755,7 +760,6 @@ def parseFeature(ctx, feature, data, cm_fh):
         "shared": None,
         "silent": None,
         "sql-sqlite": {"condition": "QT_FEATURE_datestring AND SQLite3_FOUND"},
-        "stack-protector-strong": None,
         "static": None,
         "static_runtime": None,
         "stl": None,  # Do we really need to test for this in 2018?!
