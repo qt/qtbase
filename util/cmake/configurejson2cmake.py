@@ -701,7 +701,7 @@ def parseFeature(ctx, feature, data, cm_fh):
         "compiler-flags": None,
         "cross_compile": None,
         "debug_and_release": None,
-        "debug": None,
+        "debug": {"condition": "Debug STREQUAL CMAKE_BUILD_TYPE OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"},
         "dlopen": {"condition": "UNIX"},
         "doubleconversion": None,
         "enable_gdb_index": None,

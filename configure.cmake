@@ -344,6 +344,11 @@ qt_feature_definition("developer-build" "QT_BUILD_INTERNAL")
 qt_feature_config("developer-build" QMAKE_PUBLIC_QT_CONFIG
     NAME "private_tests"
 )
+qt_feature("debug"
+    LABEL "Build for debugging"
+    AUTODETECT QT_FEATURE_developer_build OR ( WIN32 AND NOT GCC ) OR APPLE
+    CONDITION Debug STREQUAL CMAKE_BUILD_TYPE OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES
+)
 qt_feature("appstore-compliant" PUBLIC
     LABEL "App store compliance"
     PURPOSE "Disables code that is not allowed in platform app stores"
