@@ -406,16 +406,16 @@ public:
     static QList<T> fromVector(const QVector<T> &vector);
     QVector<T> toVector() const;
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    Q_DECL_DEPRECATED_X("Use QList<T>(set.begin(), set.end()) instead.")
+#if QT_DEPRECATED_SINCE(5, 14) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QT_DEPRECATED_X("Use QList<T>(set.begin(), set.end()) instead.")
     static QList<T> fromSet(const QSet<T> &set);
-    Q_DECL_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
+    QT_DEPRECATED_X("Use QSet<T>(list.begin(), list.end()) instead.")
     QSet<T> toSet() const;
 
-    Q_DECL_DEPRECATED_X("Use QList<T>(list.begin(), list.end()) instead.")
+    QT_DEPRECATED_X("Use QList<T>(list.begin(), list.end()) instead.")
     static inline QList<T> fromStdList(const std::list<T> &list)
     { return QList<T>(list.begin(), list.end()); }
-    Q_DECL_DEPRECATED_X("Use std::list<T>(list.begin(), list.end()) instead.")
+    QT_DEPRECATED_X("Use std::list<T>(list.begin(), list.end()) instead.")
     inline std::list<T> toStdList() const
     { return std::list<T>(begin(), end()); }
 #endif
