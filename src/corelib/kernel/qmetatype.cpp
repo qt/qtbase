@@ -2255,7 +2255,7 @@ QMetaType QMetaType::typeInfo(const int type)
 
      Constructs a QMetaType object that contains all information about type \a typeId.
 
-     \note: The default parameter was added in Qt 5.15
+     \note The default parameter was added in Qt 5.15.
 */
 QMetaType::QMetaType(const int typeId)
     : m_typeId(typeId)
