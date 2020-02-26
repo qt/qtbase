@@ -2750,7 +2750,7 @@ QT_WARNING_POP
 #endif
 
 template<typename T>
-constexpr QMetaTypeInterface *qMetaTypeIntefaceForType()
+constexpr QMetaTypeInterface *qMetaTypeInterfaceForType()
 {
     using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
     if constexpr (std::is_same_v<Ty, void>) {
@@ -2765,12 +2765,12 @@ constexpr QMetaTypeInterface *qMetaTypeIntefaceForType()
 template<typename T>
 QMetaType QMetaType::fromType()
 {
-    return QMetaType(QtPrivate::qMetaTypeIntefaceForType<T>());
+    return QMetaType(QtPrivate::qMetaTypeInterfaceForType<T>());
 }
 
 template<typename... T>
 QtPrivate::QMetaTypeInterface *const qt_metaTypeArray[] = {
-    QtPrivate::qMetaTypeIntefaceForType<T>()...
+    QtPrivate::qMetaTypeInterfaceForType<T>()...
 };
 
 QT_END_NAMESPACE
