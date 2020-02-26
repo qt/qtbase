@@ -732,7 +732,7 @@ const uchar *QResource::data() const
     \note If the data was compressed, this function will decompress every time
     it is called. The result is not cached between calls.
 
-    \sa uncompressedData(), size(), isCompressed(), isFile()
+    \sa uncompressedSize(), size(), isCompressed(), isFile()
 */
 
 QByteArray QResource::uncompressedData() const
