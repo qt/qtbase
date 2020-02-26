@@ -700,7 +700,10 @@ def parseFeature(ctx, feature, data, cm_fh):
         "ccache": None,
         "compiler-flags": None,
         "cross_compile": None,
-        "debug_and_release": None,
+        "debug_and_release": {
+            "autoDetect": "1",     # Setting this to None has weird effects...
+            "condition": "QT_GENERATOR_IS_MULTI_CONFIG"
+        },
         "debug": {"condition": "Debug STREQUAL CMAKE_BUILD_TYPE OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"},
         "dlopen": {"condition": "UNIX"},
         "doubleconversion": None,

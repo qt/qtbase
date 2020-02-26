@@ -13,6 +13,9 @@ endif()
 # Reset content of extra build internal vars for each inclusion of QtSetup.
 unset(QT_EXTRA_BUILD_INTERNALS_VARS)
 
+# Save the global property in a variable to make it available to feature conditions.
+get_property(QT_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${_default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${_default_build_type}" CACHE STRING "Choose the type of build." FORCE)

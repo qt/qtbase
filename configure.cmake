@@ -356,6 +356,12 @@ qt_feature("debug"
     AUTODETECT QT_FEATURE_developer_build OR ( WIN32 AND NOT GCC ) OR APPLE
     CONDITION Debug STREQUAL CMAKE_BUILD_TYPE OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES
 )
+qt_feature("debug_and_release" PUBLIC
+    LABEL "Compile libs in debug and release mode"
+    AUTODETECT 1
+    CONDITION QT_GENERATOR_IS_MULTI_CONFIG
+)
+qt_feature_config("debug_and_release" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("appstore-compliant" PUBLIC
     LABEL "App store compliance"
     PURPOSE "Disables code that is not allowed in platform app stores"
