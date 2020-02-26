@@ -48,6 +48,9 @@
 #include <QtCore/qrunnable.h>
 #include <QtCore/qthreadpool.h>
 
+#include <type_traits>
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -123,7 +126,11 @@ public:
         }
 #endif
 
-        this->reportResult(result);
+        if constexpr (std::is_move_constructible_v<T>)
+            this->reportAndMoveResult(std::move(result));
+        else if constexpr (std::is_copy_constructible_v<T>)
+            this->reportResult(result);
+
         this->reportFinished();
     }
     T result;

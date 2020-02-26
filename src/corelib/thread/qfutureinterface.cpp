@@ -114,6 +114,7 @@ void QFutureInterfaceBase::cancel()
     d->waitCondition.wakeAll();
     d->pausedWaitCondition.wakeAll();
     d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
+    d->isValid = false;
 }
 
 void QFutureInterfaceBase::setPaused(bool paused)
@@ -191,6 +192,12 @@ bool QFutureInterfaceBase::isResultReadyAt(int index) const
     return d->internal_isResultReadyAt(index);
 }
 
+bool QFutureInterfaceBase::isValid() const
+{
+    const QMutexLocker lock(&d->m_mutex);
+    return d->isValid;
+}
+
 bool QFutureInterfaceBase::isRunningOrPending() const
 {
     return queryState(static_cast<State>(Running | Pending));
@@ -263,9 +270,9 @@ void QFutureInterfaceBase::reportStarted()
     QMutexLocker locker(&d->m_mutex);
     if (d->state.loadRelaxed() & (Started|Canceled|Finished))
         return;
-
     d->setState(State(Started | Running));
     d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Started));
+    d->isValid = true;
 }
 
 void QFutureInterfaceBase::reportCanceled()
@@ -471,6 +478,16 @@ bool QFutureInterfaceBase::refT() const
 bool QFutureInterfaceBase::derefT() const
 {
     return d->refCount.derefT();
+}
+
+void QFutureInterfaceBase::reset()
+{
+    d->m_progressValue = 0;
+    d->m_progressMinimum = 0;
+    d->m_progressMaximum = 0;
+    d->setState(QFutureInterfaceBase::NoState);
+    d->progressTime.invalidate();
+    d->isValid = false;
 }
 
 QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState)

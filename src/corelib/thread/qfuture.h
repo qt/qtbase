@@ -47,6 +47,9 @@
 
 #include <QtCore/qfuture_impl.h>
 
+#include <type_traits>
+#include <vector>
+
 QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
@@ -57,6 +60,10 @@ class QFutureWatcher;
 template <typename T>
 class QFuture
 {
+    static_assert (std::is_copy_constructible_v<T>
+                   || std::is_move_constructible_v<T>
+                   || std::is_same_v<T, void>,
+                   "Type with copy or move constructors or type void is required");
 public:
     QFuture()
         : d(QFutureInterface<T>::canceledResult())
@@ -134,6 +141,14 @@ public:
 
     template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     QList<T> results() const { return d.results(); }
+
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
+    T takeResult() { return d.takeResult(); }
+
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
+    std::vector<T> takeResults() { return d.takeResults(); }
+
+    bool isValid() const { return d.isValid(); }
 
     template<class Function>
     using ResultType = typename QtPrivate::ResultTypeHelper<Function, T>::ResultType;

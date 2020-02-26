@@ -43,6 +43,8 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qdebug.h>
 
+#include <utility>
+
 QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
@@ -97,6 +99,19 @@ public:
         return *pointer<T>();
     }
 
+    template<typename T>
+    T &value()
+    {
+        return *pointer<T>();
+    }
+
+    template <typename T>
+    T *pointer()
+    {
+        const T *p = qAsConst(*this).pointer<T>();
+        return const_cast<T *>(p);
+    }
+
     template <typename T>
     const T *pointer() const
     {
@@ -144,8 +159,14 @@ public:
     {
         if (result == nullptr)
             return addResult(index, static_cast<void *>(nullptr));
-        else
-            return addResult(index, static_cast<void *>(new T(*result)));
+
+        return addResult(index, static_cast<void *>(new T(*result)));
+    }
+
+    template <typename T>
+    int moveResult(int index, T &&result)
+    {
+        return addResult(index, static_cast<void *>(new T(std::move_if_noexcept(result))));
     }
 
     template <typename T>
@@ -159,8 +180,8 @@ public:
     {
         if (m_filterMode == true && results->count() != totalCount && 0 == results->count())
             return addResults(index, nullptr, 0, totalCount);
-        else
-            return addResults(index, new QVector<T>(*results), results->count(), totalCount);
+
+        return addResults(index, new QVector<T>(*results), results->count(), totalCount);
     }
 
     int addCanceledResult(int index)

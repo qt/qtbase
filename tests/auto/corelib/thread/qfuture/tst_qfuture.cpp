@@ -37,7 +37,11 @@
 #include <qthreadpool.h>
 #include <qexception.h>
 #include <qrandom.h>
+#include <QtConcurrent/qtconcurrentrun.h>
 #include <private/qfutureinterface_p.h>
+
+#include <vector>
+#include <memory>
 
 // COM interface macro.
 #if defined(Q_OS_WIN) && defined(interface)
@@ -101,6 +105,23 @@ private slots:
     void thenOnExceptionFuture();
     void thenThrows();
 #endif
+    void takeResults();
+    void takeResult();
+    void runAndTake();
+    void resultsReadyAt_data();
+    void resultsReadyAt();
+private:
+    using size_type = std::vector<int>::size_type;
+    using UniquePtr = std::unique_ptr<int>;
+
+    static void testSingleResult(const UniquePtr &p);
+    static void testSingleResult(const std::vector<int> &v);
+    template<class T>
+    static void testSingleResult(const T &unknown);
+    template<class T>
+    static void testFutureTaken(QFuture<T> &noMoreFuture);
+    template<class T>
+    static  void testTakeResults(QFuture<T> future, size_type resultCount);
 };
 
 void tst_QFuture::resultStore()
@@ -1173,7 +1194,6 @@ void tst_QFuture::iterators()
 void tst_QFuture::iteratorsThread()
 {
     const int expectedResultCount = 10;
-    const int delay = 10;
     QFutureInterface<int> futureInterface;
 
     // Create result producer thread. The results are
@@ -2060,6 +2080,209 @@ void tst_QFuture::thenThrows()
     }
 }
 #endif
+
+void tst_QFuture::testSingleResult(const UniquePtr &p)
+{
+    QVERIFY(p.get() != nullptr);
+}
+
+void tst_QFuture::testSingleResult(const std::vector<int> &v)
+{
+    QVERIFY(!v.empty());
+}
+
+template<class T>
+void tst_QFuture::testSingleResult(const T &unknown)
+{
+    Q_UNUSED(unknown);
+}
+
+
+template<class T>
+void tst_QFuture::testFutureTaken(QFuture<T> &noMoreFuture)
+{
+    QCOMPARE(noMoreFuture.isValid(), false);
+    QCOMPARE(noMoreFuture.resultCount(), 0);
+    QCOMPARE(noMoreFuture.isStarted(), false);
+    QCOMPARE(noMoreFuture.isRunning(), false);
+    QCOMPARE(noMoreFuture.isPaused(), false);
+    QCOMPARE(noMoreFuture.isFinished(), false);
+    QCOMPARE(noMoreFuture.progressValue(), 0);
+}
+
+template<class T>
+void tst_QFuture::testTakeResults(QFuture<T> future, size_type resultCount)
+{
+    auto copy = future;
+    QVERIFY(future.isFinished());
+    QVERIFY(future.isValid());
+    QCOMPARE(size_type(future.resultCount()), resultCount);
+    QVERIFY(copy.isFinished());
+    QVERIFY(copy.isValid());
+    QCOMPARE(size_type(copy.resultCount()), resultCount);
+
+    auto vec = future.takeResults();
+    QCOMPARE(vec.size(), resultCount);
+
+    for (const auto &r : vec) {
+        testSingleResult(r);
+        if (QTest::currentTestFailed())
+            return;
+    }
+
+    testFutureTaken(future);
+    if (QTest::currentTestFailed())
+        return;
+    testFutureTaken(copy);
+}
+
+void tst_QFuture::takeResults()
+{
+    // Test takeResults() for movable types (whether or not copyable).
+
+    // std::unique_ptr<int> supports only move semantics:
+    QFutureInterface<UniquePtr> moveIface;
+    moveIface.reportStarted();
+
+    // std::vector<int> supports both copy and move:
+    QFutureInterface<std::vector<int>> copyIface;
+    copyIface.reportStarted();
+
+    const int expectedCount = 10;
+
+    for (int i = 0; i < expectedCount; ++i) {
+        moveIface.reportAndMoveResult(UniquePtr{new int(0b101010)}, i);
+        copyIface.reportAndMoveResult(std::vector<int>{1,2,3,4,5}, i);
+    }
+
+    moveIface.reportFinished();
+    copyIface.reportFinished();
+
+    testTakeResults(moveIface.future(), size_type(expectedCount));
+    if (QTest::currentTestFailed())
+        return;
+
+    testTakeResults(copyIface.future(), size_type(expectedCount));
+}
+
+void tst_QFuture::takeResult()
+{
+    QFutureInterface<UniquePtr> iface;
+    iface.reportStarted();
+    iface.reportAndMoveResult(UniquePtr{new int(0b101010)}, 0);
+    iface.reportFinished();
+
+    auto future = iface.future();
+    QVERIFY(future.isFinished());
+    QVERIFY(future.isValid());
+    QCOMPARE(future.resultCount(), 1);
+
+    auto result = future.takeResult();
+    testFutureTaken(future);
+    if (QTest::currentTestFailed())
+        return;
+    testSingleResult(result);
+}
+
+void tst_QFuture::runAndTake()
+{
+    // Test if a 'moving' future can be used by
+    // QtConcurrent::run.
+
+    auto rabbit = [](){
+        // Let's wait a bit to give the test below some time
+        // to sync up with us with its watcher.
+        QThread::currentThread()->msleep(100);
+        return UniquePtr(new int(10));
+    };
+
+    QTestEventLoop loop;
+    QFutureWatcher<UniquePtr> watcha;
+    connect(&watcha, &QFutureWatcher<UniquePtr>::finished, [&loop](){
+        loop.exitLoop();
+    });
+
+    auto gotcha = QtConcurrent::run(rabbit);
+    watcha.setFuture(gotcha);
+
+    loop.enterLoopMSecs(500);
+    if (loop.timeout())
+        QSKIP("Failed to run the task, nothing to test");
+
+    gotcha = watcha.future();
+    testTakeResults(gotcha, size_type(1));
+}
+
+void tst_QFuture::resultsReadyAt_data()
+{
+    QTest::addColumn<bool>("testMove");
+
+    QTest::addRow("reportResult") << false;
+    QTest::addRow("reportAndMoveResult") << true;
+}
+
+void tst_QFuture::resultsReadyAt()
+{
+    QFETCH(const bool, testMove);
+
+    QFutureInterface<int> iface;
+    QFutureWatcher<int> watcher;
+    watcher.setFuture(iface.future());
+
+    QTestEventLoop eventProcessor;
+    connect(&watcher, &QFutureWatcher<int>::finished, &eventProcessor, &QTestEventLoop::exitLoop);
+
+    const int nExpectedResults = 4;
+    int reported = 0;
+    int taken = 0;
+    connect(&watcher, &QFutureWatcher<int>::resultsReadyAt,
+            [&iface, &reported, &taken](int begin, int end)
+    {
+        auto future = iface.future();
+        QVERIFY(end - begin > 0);
+        for (int i = begin; i < end; ++i, ++reported) {
+            QVERIFY(future.isResultReadyAt(i));
+            taken |= 1 << i;
+        }
+    });
+
+    auto report = [&iface, testMove](int index)
+    {
+        int dummyResult = 0b101010;
+        if (testMove)
+            iface.reportAndMoveResult(std::move(dummyResult), index);
+        else
+            iface.reportResult(&dummyResult, index);
+    };
+
+    const QSignalSpy readyCounter(&watcher, &QFutureWatcher<int>::resultsReadyAt);
+    QTimer::singleShot(0, [&iface, &report]{
+        // With filter mode == true, the result may go into the pending results.
+        // Reporting it as ready will allow an application to try and access the
+        // result, crashing on invalid (store.end()) iterator dereferenced.
+        iface.setFilterMode(true);
+        iface.reportStarted();
+        report(0);
+        report(1);
+        // This one - should not be reported (it goes into pending):
+        report(3);
+        // Let's close the 'gap' and make them all ready:
+        report(-1);
+        iface.reportFinished();
+    });
+
+    // Run event loop, QCoreApplication::postEvent is in use
+    // in QFutureInterface:
+    eventProcessor.enterLoopMSecs(2000);
+    QVERIFY(!eventProcessor.timeout());
+    if (QTest::currentTestFailed()) // Failed in our lambda observing 'ready at'
+        return;
+
+    QCOMPARE(reported, nExpectedResults);
+    QCOMPARE(nExpectedResults, iface.future().resultCount());
+    QCOMPARE(readyCounter.count(), 3);
+    QCOMPARE(taken, 0b1111);
+}
 
 QTEST_MAIN(tst_QFuture)
 #include "tst_qfuture.moc"

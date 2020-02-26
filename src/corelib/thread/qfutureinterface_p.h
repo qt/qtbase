@@ -197,6 +197,7 @@ public:
     QBasicMutex continuationMutex;
 
     bool launchAsync = false;
+    bool isValid = false;
 };
 
 QT_END_NAMESPACE

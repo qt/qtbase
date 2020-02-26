@@ -45,6 +45,8 @@
 #include <QtCore/qexception.h>
 #include <QtCore/qresultstore.h>
 
+#include <utility>
+#include <vector>
 #include <mutex>
 
 QT_REQUIRE_CONFIG(future);
@@ -116,6 +118,7 @@ public:
     bool isPaused() const;
     bool isThrottled() const;
     bool isResultReadyAt(int index) const;
+    bool isValid() const;
 
     void cancel();
     void setPaused(bool paused);
@@ -139,6 +142,7 @@ public:
 protected:
     bool refT() const;
     bool derefT() const;
+    void reset();
 public:
 
 #ifndef QFUTURE_TEST
@@ -198,13 +202,22 @@ public:
     inline QFuture<T> future(); // implemented in qfuture.h
 
     inline void reportResult(const T *result, int index = -1);
+    inline void reportAndMoveResult(T &&result, int index = -1);
     inline void reportResult(const T &result, int index = -1);
     inline void reportResults(const QVector<T> &results, int beginIndex = -1, int count = -1);
-    inline void reportFinished(const T *result = nullptr);
+    inline void reportFinished(const T *result);
+    void reportFinished()
+    {
+        QFutureInterfaceBase::reportFinished();
+        QFutureInterfaceBase::runContinuation();
+    }
 
     inline const T &resultReference(int index) const;
     inline const T *resultPointer(int index) const;
     inline QList<T> results();
+
+    T takeResult();
+    std::vector<T> takeResults();
 };
 
 template <typename T>
@@ -220,11 +233,26 @@ inline void QFutureInterface<T>::reportResult(const T *result, int index)
     if (store.filterMode()) {
         const int resultCountBefore = store.count();
         store.addResult<T>(index, result);
-        this->reportResultsReady(resultCountBefore, resultCountBefore + store.count());
+        this->reportResultsReady(resultCountBefore, store.count());
     } else {
         const int insertIndex = store.addResult<T>(index, result);
         this->reportResultsReady(insertIndex, insertIndex + 1);
     }
+}
+
+template<typename T>
+void QFutureInterface<T>::reportAndMoveResult(T &&result, int index)
+{
+    std::lock_guard<QMutex> locker{mutex()};
+    if (queryState(Canceled) || queryState(Finished))
+        return;
+
+    QtPrivate::ResultStoreBase &store = resultStoreBase();
+
+    const int oldResultCount = store.count();
+    const int insertIndex = store.moveResult(index, std::forward<T>(result));
+    if (!store.filterMode() || oldResultCount < store.count()) // Let's make sure it's not in pending results.
+        reportResultsReady(insertIndex, store.count());
 }
 
 template <typename T>
@@ -258,8 +286,7 @@ inline void QFutureInterface<T>::reportFinished(const T *result)
 {
     if (result)
         reportResult(result);
-    QFutureInterfaceBase::reportFinished();
-    QFutureInterfaceBase::runContinuation();
+    reportFinished();
 }
 
 template <typename T>
@@ -283,6 +310,7 @@ inline QList<T> QFutureInterface<T>::results()
         exceptionStore().throwPossibleException();
         return QList<T>();
     }
+
     QFutureInterfaceBase::waitForResult(-1);
 
     QList<T> res;
@@ -293,6 +321,56 @@ inline QList<T> QFutureInterface<T>::results()
         res.append(it.value<T>());
         ++it;
     }
+
+    return res;
+}
+
+template<typename T>
+T QFutureInterface<T>::takeResult()
+{
+    if (isCanceled()) {
+        exceptionStore().throwPossibleException();
+        return {};
+    }
+
+    if (!isValid())
+        return {};
+    // Note: we wait for all, this is intentional,
+    // not to mess with other unready results.
+    waitForResult(-1);
+
+    const std::lock_guard<QMutex> locker{mutex()};
+    QtPrivate::ResultIteratorBase position = resultStoreBase().resultAt(0);
+    T ret(std::move_if_noexcept(position.value<T>()));
+    reset();
+    resultStoreBase().template clear<T>();
+
+    return ret;
+}
+
+template<typename T>
+std::vector<T> QFutureInterface<T>::takeResults()
+{
+    if (isCanceled()) {
+        exceptionStore().throwPossibleException();
+        return {};
+    }
+
+    if (!isValid())
+        return {};
+
+    waitForResult(-1);
+    std::vector<T> res;
+    res.reserve(resultCount());
+
+    const std::lock_guard<QMutex> locker{mutex()};
+
+    QtPrivate::ResultIteratorBase it = resultStoreBase().begin();
+    for (auto endIt = resultStoreBase().end(); it != endIt; ++it)
+        res.push_back(std::move_if_noexcept(it.value<T>()));
+
+    reset();
+    resultStoreBase().template clear<T>();
 
     return res;
 }
