@@ -301,7 +301,7 @@ void QMapDataBase::recalcMostLeftNode()
         mostLeftNode = mostLeftNode->left;
 }
 
-static inline int qMapAlignmentThreshold()
+static inline size_t qMapAlignmentThreshold()
 {
     // malloc on 32-bit platforms should return pointers that are 8-byte
     // aligned or more while on 64-bit platforms they should be 16-byte aligned
@@ -309,14 +309,14 @@ static inline int qMapAlignmentThreshold()
     return 2 * sizeof(void*);
 }
 
-static inline void *qMapAllocate(int alloc, int alignment)
+static inline void *qMapAllocate(size_t alloc, size_t alignment)
 {
     return alignment > qMapAlignmentThreshold()
         ? qMallocAligned(alloc, alignment)
         : ::malloc(alloc);
 }
 
-static inline void qMapDeallocate(QMapNodeBase *node, int alignment)
+static inline void qMapDeallocate(QMapNodeBase *node, size_t alignment)
 {
     if (alignment > qMapAlignmentThreshold())
         qFreeAligned(node);
@@ -324,7 +324,7 @@ static inline void qMapDeallocate(QMapNodeBase *node, int alignment)
         ::free(node);
 }
 
-QMapNodeBase *QMapDataBase::createNode(int alloc, int alignment, QMapNodeBase *parent, bool left)
+QMapNodeBase *QMapDataBase::createNode(size_t alloc, size_t alignment, QMapNodeBase *parent, bool left)
 {
     QMapNodeBase *node = static_cast<QMapNodeBase *>(qMapAllocate(alloc, alignment));
     Q_CHECK_PTR(node);
@@ -346,7 +346,7 @@ QMapNodeBase *QMapDataBase::createNode(int alloc, int alignment, QMapNodeBase *p
     return node;
 }
 
-void QMapDataBase::freeTree(QMapNodeBase *root, int alignment)
+void QMapDataBase::freeTree(QMapNodeBase *root, size_t alignment)
 {
     if (root->left)
         freeTree(root->left, alignment);
@@ -619,7 +619,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator==()
 */
 
-/*! \fn template <class Key, class T> int QMap<Key, T>::size() const
+/*! \fn template <class Key, class T> qsizetype QMap<Key, T>::size() const
 
     Returns the number of (key, value) pairs in the map.
 
@@ -672,7 +672,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa remove()
 */
 
-/*! \fn template <class Key, class T> int QMap<Key, T>::remove(const Key &key)
+/*! \fn template <class Key, class T> qsizetype QMap<Key, T>::remove(const Key &key)
 
     Removes all the items that have the key \a key from the map.
     Returns the number of items removed which will be 1 if the key
@@ -813,14 +813,14 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa QMultiMap::values()
 */
 
-/*! \fn template <class Key, class T> int QMap<Key, T>::count(const Key &key) const
+/*! \fn template <class Key, class T> qsizetype QMap<Key, T>::count(const Key &key) const
 
     Returns the number of items associated with key \a key.
 
     \sa contains(), QMultiMap::count()
 */
 
-/*! \fn template <class Key, class T> int QMap<Key, T>::count() const
+/*! \fn template <class Key, class T> qsizetype QMap<Key, T>::count() const
 
     \overload
 
@@ -1467,7 +1467,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     current item.
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator+(int j) const
+/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator+(qsizetype j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. (If \a j is negative, the iterator goes backward.)
@@ -1478,7 +1478,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator-(int j) const
+/*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator-(qsizetype j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. (If \a j is negative, the iterator goes forward.)
@@ -1488,7 +1488,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator+()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator+=(int j)
+/*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator+=(qsizetype j)
 
     Advances the iterator by \a j items. (If \a j is negative, the
     iterator goes backward.)
@@ -1496,7 +1496,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator-=(), operator+()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator-=(int j)
+/*! \fn template <class Key, class T> QMap<Key, T>::iterator &QMap<Key, T>::iterator::operator-=(qsizetype j)
 
     Makes the iterator go back by \a j items. (If \a j is negative,
     the iterator goes forward.)
@@ -1681,7 +1681,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     current item.
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator+(int j) const
+/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator+(qsizetype j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. (If \a j is negative, the iterator goes backward.)
@@ -1691,7 +1691,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator-()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator-(int j) const
+/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator-(qsizetype j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. (If \a j is negative, the iterator goes forward.)
@@ -1701,7 +1701,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator+()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator+=(int j)
+/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator+=(qsizetype j)
 
     Advances the iterator by \a j items. (If \a j is negative, the
     iterator goes backward.)
@@ -1711,7 +1711,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa operator-=(), operator+()
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator-=(int j)
+/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator-=(qsizetype j)
 
     Makes the iterator go back by \a j items. (If \a j is negative,
     the iterator goes forward.)
@@ -2043,7 +2043,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*!
-    \fn template <class Key, class T> int QMultiMap<Key, T>::remove(const Key &key, const T &value)
+    \fn template <class Key, class T> qsizetype QMultiMap<Key, T>::remove(const Key &key, const T &value)
     \since 4.3
 
     Removes all the items that have the key \a key and the value \a
@@ -2053,7 +2053,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*!
-    \fn template <class Key, class T> int QMultiMap<Key, T>::count(const Key &key, const T &value) const
+    \fn template <class Key, class T> qsizetype QMultiMap<Key, T>::count(const Key &key, const T &value) const
     \since 4.3
 
     Returns the number of items with key \a key and value \a value.
