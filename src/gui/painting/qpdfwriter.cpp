@@ -300,7 +300,7 @@ QByteArray QPdfWriter::documentXmpMetadata() const
 /*!
     \since 5.15
 
-    Adds \a fileName attachment to the PDF with (optional) \a mimeType
+    Adds \a fileName attachment to the PDF with (optional) \a mimeType.
     \a data contains the raw file data to embed into the PDF file.
 */
 
