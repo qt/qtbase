@@ -76,6 +76,20 @@ QFuture<ResultType> filteredReduced(const Sequence &sequence,
     return startFilteredReduced<ResultType>(sequence, QtPrivate::createFunctionWrapper(keep), QtPrivate::createFunctionWrapper(reduce), options);
 }
 
+template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+QFuture<ResultType> filteredReduced(const Sequence &sequence, KeepFunctor keep,
+                                    ReduceFunctor reduce, InitialValueType &&initialValue,
+                                    ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                          | SequentialReduce))
+{
+    return startFilteredReduced<ResultType>(
+            sequence, QtPrivate::createFunctionWrapper(keep),
+            QtPrivate::createFunctionWrapper(reduce),
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
+}
+
 #ifndef Q_CLANG_QDOC
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
 QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(const Sequence &sequence,
@@ -89,6 +103,21 @@ QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filtere
              QtPrivate::createFunctionWrapper(reduce),
              options);
 }
+
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+QFuture<ResultType> filteredReduced(const Sequence &sequence, KeepFunctor keep,
+                                    ReduceFunctor reduce, InitialValueType &&initialValue,
+                                    ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                          | SequentialReduce))
+{
+    return startFilteredReduced<ResultType>(
+            sequence, QtPrivate::createFunctionWrapper(keep),
+            QtPrivate::createFunctionWrapper(reduce),
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
+}
 #endif
 
 // filteredReduced() on iterators
@@ -100,6 +129,20 @@ QFuture<ResultType> filteredReduced(Iterator begin,
                                     ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
    return startFilteredReduced<ResultType>(begin, end, QtPrivate::createFunctionWrapper(keep), QtPrivate::createFunctionWrapper(reduce), options);
+}
+
+template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+QFuture<ResultType> filteredReduced(Iterator begin, Iterator end, KeepFunctor keep,
+                                    ReduceFunctor reduce, InitialValueType &&initialValue,
+                                    ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                          | SequentialReduce))
+{
+    return startFilteredReduced<ResultType>(
+            begin, end, QtPrivate::createFunctionWrapper(keep),
+            QtPrivate::createFunctionWrapper(reduce),
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
 }
 
 #ifndef Q_CLANG_QDOC
@@ -115,6 +158,21 @@ QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filtere
             QtPrivate::createFunctionWrapper(keep),
             QtPrivate::createFunctionWrapper(reduce),
             options);
+}
+
+template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+QFuture<ResultType> filteredReduced(Iterator begin, Iterator end, KeepFunctor keep,
+                                    ReduceFunctor reduce, InitialValueType &&initialValue,
+                                    ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                          | SequentialReduce))
+{
+    return startFilteredReduced<ResultType>(
+            begin, end, QtPrivate::createFunctionWrapper(keep),
+            QtPrivate::createFunctionWrapper(reduce),
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
 }
 #endif
 
@@ -150,6 +208,21 @@ ResultType blockingFilteredReduced(const Sequence &sequence,
         .startBlocking();
 }
 
+template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+ResultType blockingFilteredReduced(const Sequence &sequence, KeepFunctor keep, ReduceFunctor reduce,
+                                   InitialValueType &&initialValue,
+                                   ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                         | SequentialReduce))
+{
+    return startFilteredReduced<ResultType>(
+                   sequence, QtPrivate::createFunctionWrapper(keep),
+                   QtPrivate::createFunctionWrapper(reduce),
+                   ResultType(std::forward<InitialValueType>(initialValue)), options)
+            .startBlocking();
+}
+
 #ifndef Q_CLANG_QDOC
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
 typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(const Sequence &sequence,
@@ -162,6 +235,21 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFiltered
          QtPrivate::createFunctionWrapper(keep),
          QtPrivate::createFunctionWrapper(reduce),
          options);
+}
+
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+ResultType blockingFilteredReduced(const Sequence &sequence, KeepFunctor keep, ReduceFunctor reduce,
+                                   InitialValueType &&initialValue,
+                                   ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                         | SequentialReduce))
+{
+    return blockingFilteredReduced<ResultType>(
+            sequence, QtPrivate::createFunctionWrapper(keep),
+            QtPrivate::createFunctionWrapper(reduce),
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
 }
 #endif
 
@@ -181,6 +269,21 @@ ResultType blockingFilteredReduced(Iterator begin,
         .startBlocking();
 }
 
+template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+ResultType blockingFilteredReduced(Iterator begin, Iterator end, KeepFunctor keep,
+                                   ReduceFunctor reduce, InitialValueType &&initialValue,
+                                   ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                         | SequentialReduce))
+{
+    return startFilteredReduced<ResultType>(
+                   begin, end, QtPrivate::createFunctionWrapper(keep),
+                   QtPrivate::createFunctionWrapper(reduce),
+                   ResultType(std::forward<InitialValueType>(initialValue)), options)
+            .startBlocking();
+}
+
 #ifndef Q_CLANG_QDOC
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
 typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(Iterator begin,
@@ -195,6 +298,22 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFiltered
          QtPrivate::createFunctionWrapper(reduce),
          options)
         .startBlocking();
+}
+
+template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+ResultType blockingFilteredReduced(Iterator begin, Iterator end, KeepFunctor keep,
+                                   ReduceFunctor reduce, InitialValueType &&initialValue,
+                                   ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                         | SequentialReduce))
+{
+    return startFilteredReduced<ResultType>(
+                   begin, end, QtPrivate::createFunctionWrapper(keep),
+                   QtPrivate::createFunctionWrapper(reduce),
+                   ResultType(std::forward<InitialValueType>(initialValue)), options)
+            .startBlocking();
 }
 #endif
 

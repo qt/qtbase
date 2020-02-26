@@ -83,6 +83,21 @@ QFuture<ResultType> mappedReduced(const Sequence &sequence,
          options);
 }
 
+template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+QFuture<ResultType> mappedReduced(const Sequence &sequence, MapFunctor map, ReduceFunctor reduce,
+                                  InitialValueType &&initialValue,
+                                  ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                        | SequentialReduce))
+{
+    return startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType,
+                              ResultType>(sequence, QtPrivate::createFunctionWrapper(map),
+                                          QtPrivate::createFunctionWrapper(reduce),
+                                          ResultType(std::forward<InitialValueType>(initialValue)),
+                                          options);
+}
+
 template <typename Sequence, typename MapFunctor, typename ReduceFunctor>
 QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> mappedReduced(const Sequence &sequence,
                                   MapFunctor map,
@@ -94,6 +109,22 @@ QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> mappedR
          QtPrivate::createFunctionWrapper(map),
          QtPrivate::createFunctionWrapper(reduce),
          options);
+}
+
+template <typename Sequence, typename MapFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+QFuture<ResultType> mappedReduced(const Sequence &sequence, MapFunctor map, ReduceFunctor reduce,
+                                  InitialValueType &&initialValue,
+                                  ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                        | SequentialReduce))
+{
+    return startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType,
+                              typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>(
+            sequence, QtPrivate::createFunctionWrapper(map),
+            QtPrivate::createFunctionWrapper(reduce),
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
 }
 
 // mappedReduced() for iterators
@@ -111,6 +142,21 @@ QFuture<ResultType> mappedReduced(Iterator begin,
          options);
 }
 
+template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+QFuture<ResultType> mappedReduced(Iterator begin, Iterator end, MapFunctor map,
+                                  ReduceFunctor reduce, InitialValueType &&initialValue,
+                                  ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                        | SequentialReduce))
+{
+    return startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType,
+                              ResultType>(begin, end, QtPrivate::createFunctionWrapper(map),
+                                          QtPrivate::createFunctionWrapper(reduce),
+                                          ResultType(std::forward<InitialValueType>(initialValue)),
+                                          options);
+}
+
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor>
 QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> mappedReduced(Iterator begin,
                                   Iterator end,
@@ -123,6 +169,22 @@ QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> mappedR
          QtPrivate::createFunctionWrapper(map),
          QtPrivate::createFunctionWrapper(reduce),
          options);
+}
+
+template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> mappedReduced(
+        Iterator begin, Iterator end, MapFunctor map, ReduceFunctor reduce,
+        InitialValueType &&initialValue,
+        ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
+{
+    return startMappedReduced<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType,
+                              typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>(
+            begin, end, QtPrivate::createFunctionWrapper(map),
+            QtPrivate::createFunctionWrapper(reduce),
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
 }
 
 // mapped() for sequences
@@ -168,6 +230,22 @@ ResultType blockingMappedReduced(const Sequence &sequence,
         .startBlocking();
 }
 
+template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+ResultType blockingMappedReduced(const Sequence &sequence, MapFunctor map, ReduceFunctor reduce,
+                                 InitialValueType &&initialValue,
+                                 ReduceOptions options = ReduceOptions(UnorderedReduce
+                                                                       | SequentialReduce))
+{
+    return QtConcurrent::startMappedReduced<
+                   typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, ResultType>(
+                   sequence, QtPrivate::createFunctionWrapper(map),
+                   QtPrivate::createFunctionWrapper(reduce),
+                   ResultType(std::forward<InitialValueType>(initialValue)), options)
+            .startBlocking();
+}
+
 template <typename MapFunctor, typename ReduceFunctor, typename Sequence>
 typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedReduced(const Sequence &sequence,
                                  MapFunctor map,
@@ -180,6 +258,24 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedRe
          QtPrivate::createFunctionWrapper(reduce),
          options)
         .startBlocking();
+}
+
+template <typename MapFunctor, typename ReduceFunctor, typename Sequence,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedReduced(
+        const Sequence &sequence, MapFunctor map, ReduceFunctor reduce,
+        InitialValueType &&initialValue,
+        ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
+{
+    return QtConcurrent::startMappedReduced<
+                   typename QtPrivate::MapResultType<void, MapFunctor>::ResultType,
+                   typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>(
+                   sequence, QtPrivate::createFunctionWrapper(map),
+                   QtPrivate::createFunctionWrapper(reduce),
+                   ResultType(std::forward<InitialValueType>(initialValue)), options)
+            .startBlocking();
 }
 
 // blockingMappedReduced() for iterator ranges
@@ -198,6 +294,23 @@ ResultType blockingMappedReduced(Iterator begin,
         .startBlocking();
 }
 
+template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+ResultType blockingMappedReduced(Iterator begin, Iterator end, MapFunctor map, ReduceFunctor reduce,
+                                 InitialValueType &&initialValue,
+                                 QtConcurrent::ReduceOptions options = QtConcurrent::ReduceOptions(
+                                         QtConcurrent::UnorderedReduce
+                                         | QtConcurrent::SequentialReduce))
+{
+    return QtConcurrent::startMappedReduced<
+                   typename QtPrivate::MapResultType<void, MapFunctor>::ResultType, ResultType>(
+                   begin, end, QtPrivate::createFunctionWrapper(map),
+                   QtPrivate::createFunctionWrapper(reduce),
+                   ResultType(std::forward<InitialValueType>(initialValue)), options)
+            .startBlocking();
+}
+
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor>
 typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedReduced(Iterator begin,
                                  Iterator end,
@@ -211,6 +324,25 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedRe
          QtPrivate::createFunctionWrapper(reduce),
          options)
         .startBlocking();
+}
+
+template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
+          typename InitialValueType,
+          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedReduced(
+        Iterator begin, Iterator end, MapFunctor map, ReduceFunctor reduce,
+        InitialValueType &&initialValue,
+        QtConcurrent::ReduceOptions options = QtConcurrent::ReduceOptions(
+                QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce))
+{
+    return QtConcurrent::startMappedReduced<
+                   typename QtPrivate::MapResultType<void, MapFunctor>::ResultType,
+                   typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>(
+                   begin, end, QtPrivate::createFunctionWrapper(map),
+                   QtPrivate::createFunctionWrapper(reduce),
+                   ResultType(std::forward<InitialValueType>(initialValue)), options)
+            .startBlocking();
 }
 
 // mapped() for sequences with a different putput sequence type.

@@ -93,7 +93,7 @@
     \section1 Concurrent Filter-Reduce
 
     QtConcurrent::filteredReduced() is similar to QtConcurrent::filtered(),
-    but instead of returing a sequence with the filtered results, the results
+    but instead of returning a sequence with the filtered results, the results
     are combined into a single value using a reduce function.
 
     The reduce function must be of the form:
@@ -267,12 +267,54 @@
 */
 
 /*!
+    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::filteredReduced(const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+
+    Calls \a filterFunction once for each item in \a sequence. If
+    \a filterFunction returns \c true for an item, that item is then passed to
+    \a reduceFunction. In other words, the return value is the result of
+    \a reduceFunction for each item where \a filterFunction returns \c true.
+    The result value is initialized to \a initialValue when the function is
+    called, and the first call to \a reduceFunction will operate on
+    this value.
+
+    Note that while \a filterFunction is called concurrently, only one thread
+    at a time will call \a reduceFunction. The order in which \a reduceFunction
+    is called is undefined if \a reduceOptions is
+    QtConcurrent::UnorderedReduce. If \a reduceOptions is
+    QtConcurrent::OrderedReduce, \a reduceFunction is called in the order of
+    the original sequence.
+
+    \sa {Concurrent Filter and Filter-Reduce}
+*/
+
+/*!
     \fn template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::filteredReduced(Iterator begin, Iterator end, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a filterFunction once for each item from \a begin to \a end. If
     \a filterFunction returns \c true for an item, that item is then passed to
     \a reduceFunction. In other words, the return value is the result of
     \a reduceFunction for each item where \a filterFunction returns \c true.
+
+    Note that while \a filterFunction is called concurrently, only one thread
+    at a time will call \a reduceFunction. The order in which
+    \a reduceFunction is called is undefined if \a reduceOptions is
+    QtConcurrent::UnorderedReduce. If \a reduceOptions is
+    QtConcurrent::OrderedReduce, the \a reduceFunction is called in the order
+    of the original sequence.
+
+    \sa {Concurrent Filter and Filter-Reduce}
+*/
+
+/*!
+    \fn template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::filteredReduced(Iterator begin, Iterator end, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+
+    Calls \a filterFunction once for each item from \a begin to \a end. If
+    \a filterFunction returns \c true for an item, that item is then passed to
+    \a reduceFunction. In other words, the return value is the result of
+    \a reduceFunction for each item where \a filterFunction returns \c true.
+    The result value is initialized to \a initialValue when the function is
+    called, and the first call to \a reduceFunction will operate on
+    this value.
 
     Note that while \a filterFunction is called concurrently, only one thread
     at a time will call \a reduceFunction. The order in which
@@ -344,12 +386,59 @@
 */
 
 /*!
+  \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingFilteredReduced(const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+
+  Calls \a filterFunction once for each item in \a sequence. If
+  \a filterFunction returns \c true for an item, that item is then passed to
+  \a reduceFunction. In other words, the return value is the result of
+  \a reduceFunction for each item where \a filterFunction returns \c true.
+  The result value is initialized to \a initialValue when the function is
+  called, and the first call to \a reduceFunction will operate on
+  this value.
+
+  Note that while \a filterFunction is called concurrently, only one thread
+  at a time will call \a reduceFunction. The order in which \a reduceFunction
+  is called is undefined if \a reduceOptions is
+  QtConcurrent::UnorderedReduce. If \a reduceOptions is
+  QtConcurrent::OrderedReduce, \a reduceFunction is called in the order of
+  the original sequence.
+
+  \note This function will block until all items in the sequence have been processed.
+
+  \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
+*/
+
+/*!
   \fn template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingFilteredReduced(Iterator begin, Iterator end, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a filterFunction once for each item from \a begin to \a end. If
   \a filterFunction returns \c true for an item, that item is then passed to
   \a reduceFunction. In other words, the return value is the result of
   \a reduceFunction for each item where \a filterFunction returns \c true.
+
+  Note that while \a filterFunction is called concurrently, only one thread
+  at a time will call \a reduceFunction. The order in which
+  \a reduceFunction is called is undefined if \a reduceOptions is
+  QtConcurrent::UnorderedReduce. If \a reduceOptions is
+  QtConcurrent::OrderedReduce, the \a reduceFunction is called in the order
+  of the original sequence.
+
+  \note This function will block until the iterator reaches the end of the
+  sequence being processed.
+
+  \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
+*/
+
+/*!
+  \fn template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingFilteredReduced(Iterator begin, Iterator end, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+
+  Calls \a filterFunction once for each item from \a begin to \a end. If
+  \a filterFunction returns \c true for an item, that item is then passed to
+  \a reduceFunction. In other words, the return value is the result of
+  \a reduceFunction for each item where \a filterFunction returns \c true.
+  The result value is initialized to \a initialValue when the function is
+  called, and the first call to \a reduceFunction will operate on
+  this value.
 
   Note that while \a filterFunction is called concurrently, only one thread
   at a time will call \a reduceFunction. The order in which
@@ -384,3 +473,12 @@
   \internal
 */
 
+/*!
+  \fn [QtConcurrent-6] ThreadEngineStarter<ResultType> QtConcurrent::startFilteredReduced(Iterator begin, Iterator end, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ResultType initialValue, ReduceOptions options)
+  \internal
+*/
+
+/*!
+  \fn [QtConcurrent-7] ThreadEngineStarter<ResultType> QtConcurrent::startFilteredReduced(Iterator begin, Iterator end, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ResultType initialValue, ReduceOptions options)
+  \internal
+*/

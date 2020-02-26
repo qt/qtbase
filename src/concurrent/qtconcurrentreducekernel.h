@@ -232,6 +232,16 @@ struct SequenceHolder2 : public Base
           sequence(_sequence)
     { }
 
+    template <typename InitialValueType>
+    SequenceHolder2(const Sequence &_sequence,
+                    Functor1 functor1,
+                    Functor2 functor2,
+                    InitialValueType &&initialValue,
+                    ReduceOptions reduceOptions)
+        : Base(_sequence.begin(), _sequence.end(), functor1, functor2, std::forward<InitialValueType>(initialValue), reduceOptions),
+          sequence(_sequence)
+    { }
+
     Sequence sequence;
 
     void finish() override

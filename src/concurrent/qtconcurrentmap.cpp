@@ -119,6 +119,16 @@
 */
 
 /*!
+  \fn [qtconcurrentmapkernel-6] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(const Sequence & sequence, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ResultType &&initialValue, ReduceOptions options)
+  \internal
+*/
+
+/*!
+  \fn [qtconcurrentmapkernel-7] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Iterator begin, Iterator end, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ResultType &&initialValue, ReduceOptions options)
+  \internal
+*/
+
+/*!
     \enum QtConcurrent::ReduceOption
     This enum specifies the order of which results from the map or filter
     function are passed to the reduce function.
@@ -344,10 +354,44 @@
 */
 
 /*!
+    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(const Sequence &sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+
+    Calls \a mapFunction once for each item in \a sequence. The return value of
+    each \a mapFunction is passed to \a reduceFunction.
+    The result value is initialized to \a initialValue when the function is
+    called, and the first call to \a reduceFunction will operate on
+    this value.
+
+    Note that while \a mapFunction is called concurrently, only one thread at a
+    time will call \a reduceFunction. The order in which \a reduceFunction is
+    called is determined by \a reduceOptions.
+
+    \sa {Concurrent Map and Map-Reduce}
+*/
+
+/*!
     \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end. The return
     value of each \a mapFunction is passed to \a reduceFunction.
+
+    Note that while \a mapFunction is called concurrently, only one thread at a
+    time will call \a reduceFunction. By default, the order in which
+    \a reduceFunction is called is undefined.
+
+    \note QtConcurrent::OrderedReduce results in the ordered reduction.
+
+    \sa {Concurrent Map and Map-Reduce}
+*/
+
+/*!
+    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+
+    Calls \a mapFunction once for each item from \a begin to \a end. The return
+    value of each \a mapFunction is passed to \a reduceFunction.
+    The result value is initialized to \a initialValue when the function is
+    called, and the first call to \a reduceFunction will operate on
+    this value.
 
     Note that while \a mapFunction is called concurrently, only one thread at a
     time will call \a reduceFunction. By default, the order in which
@@ -427,10 +471,47 @@
 */
 
 /*!
+  \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(const Sequence &sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+
+  Calls \a mapFunction once for each item in \a sequence. The return value of
+  each \a mapFunction is passed to \a reduceFunction.
+  The result value is initialized to \a initialValue when the function is
+  called, and the first call to \a reduceFunction will operate on
+  this value.
+
+  Note that while \a mapFunction is called concurrently, only one thread at a
+  time will call \a reduceFunction. The order in which \a reduceFunction is
+  called is determined by \a reduceOptions.
+
+  \note This function will block until all items in the sequence have been processed.
+
+  \sa mapped(), {Concurrent Map and Map-Reduce}
+*/
+
+/*!
   \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a mapFunction once for each item from \a begin to \a end. The return
   value of each \a mapFunction is passed to \a reduceFunction.
+
+  Note that while \a mapFunction is called concurrently, only one thread at a
+  time will call \a reduceFunction. The order in which \a reduceFunction is
+  called is undefined.
+
+  \note This function will block until the iterator reaches the end of the
+  sequence being processed.
+
+  \sa blockingMappedReduced(), {Concurrent Map and Map-Reduce}
+*/
+
+/*!
+  \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+
+  Calls \a mapFunction once for each item from \a begin to \a end. The return
+  value of each \a mapFunction is passed to \a reduceFunction.
+  The result value is initialized to \a initialValue when the function is
+  called, and the first call to \a reduceFunction will operate on
+  this value.
 
   Note that while \a mapFunction is called concurrently, only one thread at a
   time will call \a reduceFunction. The order in which \a reduceFunction is
