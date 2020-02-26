@@ -50,6 +50,7 @@ private slots:
 #endif
     void functor();
     void lambda();
+    void callableObjectWithState();
 };
 
 void light()
@@ -152,24 +153,24 @@ void tst_QtConcurrentRun::returnValue()
     QCOMPARE(f.result(), 10);
 
     A a;
-    f = run(&a, &A::member0);
+    f = run(&A::member0, &a);
     QCOMPARE(f.result(), 10);
-    f = run(&pool, &a, &A::member0);
-    QCOMPARE(f.result(), 10);
-
-    f = run(&a, &A::member1, 20);
-    QCOMPARE(f.result(), 20);
-    f = run(&pool, &a, &A::member1, 20);
-    QCOMPARE(f.result(), 20);
-
-    f = run(a, &A::member0);
-    QCOMPARE(f.result(), 10);
-    f = run(&pool, a, &A::member0);
+    f = run(&pool, &A::member0, &a);
     QCOMPARE(f.result(), 10);
 
-    f = run(a, &A::member1, 20);
+    f = run(&A::member1, &a, 20);
     QCOMPARE(f.result(), 20);
-    f = run(&pool, a, &A::member1, 20);
+    f = run(&pool, &A::member1, &a, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(&A::member0, a);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &A::member0, a);
+    QCOMPARE(f.result(), 10);
+
+    f = run(&A::member1, a, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &A::member1, a, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(a);
@@ -177,9 +178,9 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, a);
     QCOMPARE(f.result(), 10);
 
-    f = run(&a);
+    f = run(a);
     QCOMPARE(f.result(), 10);
-    f = run(&pool, &a);
+    f = run(&pool, std::ref(a));
     QCOMPARE(f.result(), 10);
 
     f = run(a, 20);
@@ -187,30 +188,30 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, a, 20);
     QCOMPARE(f.result(), 20);
 
-    f = run(&a, 20);
+    f = run(std::ref(a), 20);
     QCOMPARE(f.result(), 20);
-    f = run(&pool, &a, 20);
+    f = run(&pool, std::ref(a), 20);
     QCOMPARE(f.result(), 20);
 
     const AConst aConst = AConst();
-    f = run(&aConst, &AConst::member0);
+    f = run(&AConst::member0, &aConst);
     QCOMPARE(f.result(), 10);
-    f = run(&pool, &aConst, &AConst::member0);
-    QCOMPARE(f.result(), 10);
-
-    f = run(&aConst, &AConst::member1, 20);
-    QCOMPARE(f.result(), 20);
-    f = run(&pool, &aConst, &AConst::member1, 20);
-    QCOMPARE(f.result(), 20);
-
-    f = run(aConst, &AConst::member0);
-    QCOMPARE(f.result(), 10);
-    f = run(&pool, aConst, &AConst::member0);
+    f = run(&pool, &AConst::member0, &aConst);
     QCOMPARE(f.result(), 10);
 
-    f = run(aConst, &AConst::member1, 20);
+    f = run(&AConst::member1, &aConst, 20);
     QCOMPARE(f.result(), 20);
-    f = run(&pool, aConst, &AConst::member1, 20);
+    f = run(&pool, &AConst::member1, &aConst, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(&AConst::member0, aConst);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &AConst::member0, aConst);
+    QCOMPARE(f.result(), 10);
+
+    f = run(&AConst::member1, aConst, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &AConst::member1, aConst, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(aConst);
@@ -218,9 +219,9 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, aConst);
     QCOMPARE(f.result(), 10);
 
-    f = run(&aConst);
+    f = run(std::ref(a));
     QCOMPARE(f.result(), 10);
-    f = run(&pool, &aConst);
+    f = run(&pool, std::ref(a));
     QCOMPARE(f.result(), 10);
 
     f = run(aConst, 20);
@@ -228,30 +229,30 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, aConst, 20);
     QCOMPARE(f.result(), 20);
 
-    f = run(&aConst, 20);
+    f = run(std::ref(aConst), 20);
     QCOMPARE(f.result(), 20);
-    f = run(&pool, &aConst, 20);
+    f = run(&pool, std::ref(aConst), 20);
     QCOMPARE(f.result(), 20);
 
     ANoExcept aNoExcept;
-    f = run(&aNoExcept, &ANoExcept::member0);
+    f = run(&ANoExcept::member0, &aNoExcept);
     QCOMPARE(f.result(), 10);
-    f = run(&pool, &aNoExcept, &ANoExcept::member0);
-    QCOMPARE(f.result(), 10);
-
-    f = run(&aNoExcept, &ANoExcept::member1, 20);
-    QCOMPARE(f.result(), 20);
-    f = run(&pool, &aNoExcept, &ANoExcept::member1, 20);
-    QCOMPARE(f.result(), 20);
-
-    f = run(aNoExcept, &ANoExcept::member0);
-    QCOMPARE(f.result(), 10);
-    f = run(&pool, aNoExcept, &ANoExcept::member0);
+    f = run(&pool, &ANoExcept::member0, &aNoExcept);
     QCOMPARE(f.result(), 10);
 
-    f = run(aNoExcept, &ANoExcept::member1, 20);
+    f = run(&ANoExcept::member1, &aNoExcept, 20);
     QCOMPARE(f.result(), 20);
-    f = run(&pool, aNoExcept, &ANoExcept::member1, 20);
+    f = run(&pool, &ANoExcept::member1, &aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(&ANoExcept::member0, aNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &ANoExcept::member0, aNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = run(&ANoExcept::member1, aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &ANoExcept::member1, aNoExcept, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(aNoExcept);
@@ -259,9 +260,9 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, aNoExcept);
     QCOMPARE(f.result(), 10);
 
-    f = run(&aNoExcept);
+    f = run(std::ref(aNoExcept));
     QCOMPARE(f.result(), 10);
-    f = run(&pool, &aNoExcept);
+    f = run(&pool, std::ref(aNoExcept));
     QCOMPARE(f.result(), 10);
 
     f = run(aNoExcept, 20);
@@ -269,30 +270,30 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, aNoExcept, 20);
     QCOMPARE(f.result(), 20);
 
-    f = run(&aNoExcept, 20);
+    f = run(std::ref(aNoExcept), 20);
     QCOMPARE(f.result(), 20);
-    f = run(&pool, &aNoExcept, 20);
+    f = run(&pool, std::ref(aNoExcept), 20);
     QCOMPARE(f.result(), 20);
 
     const AConstNoExcept aConstNoExcept = AConstNoExcept();
-    f = run(&aConstNoExcept, &AConstNoExcept::member0);
+    f = run(&AConstNoExcept::member0, &aConstNoExcept);
     QCOMPARE(f.result(), 10);
-    f = run(&pool, &aConstNoExcept, &AConstNoExcept::member0);
-    QCOMPARE(f.result(), 10);
-
-    f = run(&aConstNoExcept, &AConstNoExcept::member1, 20);
-    QCOMPARE(f.result(), 20);
-    f = run(&pool, &aConstNoExcept, &AConstNoExcept::member1, 20);
-    QCOMPARE(f.result(), 20);
-
-    f = run(aConstNoExcept, &AConstNoExcept::member0);
-    QCOMPARE(f.result(), 10);
-    f = run(&pool, aConstNoExcept, &AConstNoExcept::member0);
+    f = run(&pool, &AConstNoExcept::member0, &aConstNoExcept);
     QCOMPARE(f.result(), 10);
 
-    f = run(aConstNoExcept, &AConstNoExcept::member1, 20);
+    f = run(&AConstNoExcept::member1, &aConstNoExcept, 20);
     QCOMPARE(f.result(), 20);
-    f = run(&pool, aConstNoExcept, &AConstNoExcept::member1, 20);
+    f = run(&pool, &AConstNoExcept::member1, &aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(&AConstNoExcept::member0, aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &AConstNoExcept::member0, aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = run(&AConstNoExcept::member1, aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &AConstNoExcept::member1, aConstNoExcept, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(aConstNoExcept);
@@ -300,9 +301,9 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, aConstNoExcept);
     QCOMPARE(f.result(), 10);
 
-    f = run(&aConstNoExcept);
+    f = run(std::ref(aConstNoExcept));
     QCOMPARE(f.result(), 10);
-    f = run(&pool, &aConstNoExcept);
+    f = run(&pool, std::ref(aConstNoExcept));
     QCOMPARE(f.result(), 10);
 
     f = run(aConstNoExcept, 20);
@@ -310,9 +311,9 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&pool, aConstNoExcept, 20);
     QCOMPARE(f.result(), 20);
 
-    f = run(&aConstNoExcept, 20);
+    f = run(std::ref(aConstNoExcept), 20);
     QCOMPARE(f.result(), 20);
-    f = run(&pool, &aConstNoExcept, 20);
+    f = run(&pool, std::ref(aConstNoExcept), 20);
     QCOMPARE(f.result(), 20);
 }
 
@@ -341,25 +342,25 @@ void tst_QtConcurrentRun::functionObject()
     TestClass c;
 
     f = run(c);
-    f = run(&c);
+    f = run(std::ref(c));
     f = run(c, 10);
-    f = run(&c, 10);
+    f = run(std::ref(c), 10);
 
     f = run(&pool, c);
-    f = run(&pool, &c);
+    f = run(&pool, std::ref(c));
     f = run(&pool, c, 10);
-    f = run(&pool, &c, 10);
+    f = run(&pool, std::ref(c), 10);
 
     const TestConstClass cc = TestConstClass();
     f = run(cc);
-    f = run(&cc);
+    f = run(std::ref(c));
     f = run(cc, 10);
-    f = run(&cc, 10);
+    f = run(std::ref(c), 10);
 
     f = run(&pool, cc);
-    f = run(&pool, &cc);
+    f = run(&pool, std::ref(c));
     f = run(&pool, cc, 10);
-    f = run(&pool, &cc, 10);
+    f = run(&pool, std::ref(c), 10);
 }
 
 
@@ -369,26 +370,26 @@ void tst_QtConcurrentRun::memberFunctions()
 
     TestClass c;
 
-    run(c, &TestClass::foo).waitForFinished();
-    run(&c, &TestClass::foo).waitForFinished();
-    run(c, &TestClass::fooInt, 10).waitForFinished();
-    run(&c, &TestClass::fooInt, 10).waitForFinished();
+    run(&TestClass::foo, c).waitForFinished();
+    run(&TestClass::foo, &c).waitForFinished();
+    run(&TestClass::fooInt, c, 10).waitForFinished();
+    run(&TestClass::fooInt, &c, 10).waitForFinished();
 
-    run(&pool, c, &TestClass::foo).waitForFinished();
-    run(&pool, &c, &TestClass::foo).waitForFinished();
-    run(&pool, c, &TestClass::fooInt, 10).waitForFinished();
-    run(&pool, &c, &TestClass::fooInt, 10).waitForFinished();
+    run(&pool, &TestClass::foo, c).waitForFinished();
+    run(&pool, &TestClass::foo, &c).waitForFinished();
+    run(&pool, &TestClass::fooInt, c, 10).waitForFinished();
+    run(&pool, &TestClass::fooInt, &c, 10).waitForFinished();
 
     const TestConstClass cc = TestConstClass();
-    run(cc, &TestConstClass::foo).waitForFinished();
-    run(&cc, &TestConstClass::foo).waitForFinished();
-    run(cc, &TestConstClass::fooInt, 10).waitForFinished();
-    run(&cc, &TestConstClass::fooInt, 10).waitForFinished();
+    run(&TestConstClass::foo, cc).waitForFinished();
+    run(&TestConstClass::foo, &cc).waitForFinished();
+    run(&TestConstClass::fooInt, cc, 10).waitForFinished();
+    run(&TestConstClass::fooInt, &cc, 10).waitForFinished();
 
-    run(&pool, cc, &TestConstClass::foo).waitForFinished();
-    run(&pool, &cc, &TestConstClass::foo).waitForFinished();
-    run(&pool, cc, &TestConstClass::fooInt, 10).waitForFinished();
-    run(&pool, &cc, &TestConstClass::fooInt, 10).waitForFinished();
+    run(&pool, &TestConstClass::foo, cc).waitForFinished();
+    run(&pool, &TestConstClass::foo, &cc).waitForFinished();
+    run(&pool, &TestConstClass::fooInt, cc, 10).waitForFinished();
+    run(&pool, &TestConstClass::fooInt, &cc, 10).waitForFinished();
 }
 
 
@@ -437,8 +438,8 @@ void tst_QtConcurrentRun::implicitConvertibleTypes()
     run(stringConstRefFunction, QLatin1String("Foo")).waitForFinished();
     run(&pool, stringConstRefFunction, QLatin1String("Foo")).waitForFinished();
     QString string;
-    run(stringRefFunction, string).waitForFinished();
-    run(&pool, stringRefFunction, string).waitForFinished();
+    run(stringRefFunction, std::ref(string)).waitForFinished();
+    run(&pool, stringRefFunction, std::ref(string)).waitForFinished();
 }
 
 void fn() { }
@@ -730,6 +731,35 @@ void tst_QtConcurrentRun::lambda()
         auto r = f1.result();
         QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
     }
+}
+
+struct CallableWithState
+{
+    void setNewState(int newState) { state = newState; }
+    int operator()(int newState) { return (state = newState); }
+
+    static constexpr int defaultState() { return 42; }
+    int state = defaultState();
+};
+
+void tst_QtConcurrentRun::callableObjectWithState()
+{
+    CallableWithState o;
+
+    // Run method setNewState explicitly
+    run(&CallableWithState::setNewState, &o, CallableWithState::defaultState() + 1).waitForFinished();
+    QCOMPARE(o.state, CallableWithState::defaultState() + 1);
+
+    // Run operator()(int) explicitly
+    run(std::ref(o), CallableWithState::defaultState() + 2).waitForFinished();
+    QCOMPARE(o.state, CallableWithState::defaultState() + 2);
+
+    // Run on a copy of object (original object remains unchanged)
+    run(o, CallableWithState::defaultState() + 3).waitForFinished();
+    QCOMPARE(o.state, CallableWithState::defaultState() + 2);
+
+    // Explicitly run on a temporary object
+    QCOMPARE(run(CallableWithState(), 15).result(), 15);
 }
 
 QTEST_MAIN(tst_QtConcurrentRun)

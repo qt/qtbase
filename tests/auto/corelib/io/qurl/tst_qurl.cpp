@@ -4067,7 +4067,7 @@ void tst_QUrl::testThreading()
     QThreadPool::globalInstance()->setMaxThreadCount(100);
     QFutureSynchronizer<void> sync;
     for (int i = 0; i < 100; ++i)
-        sync.addFuture(QtConcurrent::run(this, &tst_QUrl::testThreadingHelper));
+        sync.addFuture(QtConcurrent::run(&tst_QUrl::testThreadingHelper, this));
     sync.waitForFinished();
     delete s_urlStorage;
 }

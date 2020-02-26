@@ -112,6 +112,14 @@
     Calling a lambda function is done like this:
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 6
+
+    Calling a function modifies an object passed by reference is done like this:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 7
+
+    Using callable object is done like this:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 8
 */
 
 /*!

@@ -93,7 +93,7 @@ QString result = future.result();
 //! [4]
 // call 'QList<QByteArray>  QByteArray::split(char sep) const' in a separate thread
 QByteArray bytearray = "hello world";
-QFuture<QList<QByteArray> > future = QtConcurrent::run(bytearray, &QByteArray::split, ',');
+QFuture<QList<QByteArray> > future = QtConcurrent::run(&QByteArray::split, bytearray, ',');
 ...
 QList<QByteArray> result = future.result();
 //! [4]
@@ -101,12 +101,11 @@ QList<QByteArray> result = future.result();
 //! [5]
 // call 'void QImage::invertPixels(InvertMode mode)' in a separate thread
 QImage image = ...;
-QFuture<void> future = QtConcurrent::run(&image, &QImage::invertPixels, QImage::InvertRgba);
+QFuture<void> future = QtConcurrent::run(&QImage::invertPixels, &image, QImage::InvertRgba);
 ...
 future.waitForFinished();
 // At this point, the pixels in 'image' have been inverted
 //! [5]
-
 
 //! [6]
 QFuture<void> future = QtConcurrent::run([=]() {
@@ -114,3 +113,34 @@ QFuture<void> future = QtConcurrent::run([=]() {
 });
 ...
 //! [6]
+
+//! [7]
+static void addOne(int &n) { ++n; }
+...
+int n = 42;
+QtConcurrent::run(&addOne, std::ref(n)).waitForFinished(); // n == 43
+//! [7]
+
+//! [8]
+struct TestClass
+{
+    void operator()(int s1) { s = s1; }
+    int s = 42;
+};
+
+...
+
+TestClass o;
+
+// Modify original object
+QtConcurrent::run(std::ref(o), 15).waitForFinished(); // o.s == 15
+
+// Modify a copy of the original object
+QtConcurrent::run(o, 42).waitForFinished(); // o.s == 15
+
+// Use a temporary object
+QtConcurrent::run(TestClass(), 42).waitForFinished();
+
+// Ill-formed
+QtConcurrent::run(&o, 42).waitForFinished(); // compilation error
+//! [8]
