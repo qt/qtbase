@@ -74,16 +74,16 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs an enter event object.
 
-    The points \a localPos, \a windowPos and \a screenPos specify the
+    The points \a localPos, \a scenePos and \a globalPos specify the
     mouse cursor's position relative to the receiving widget or item,
-    window, and screen, respectively.
+    window, and screen or desktop, respectively.
 */
 
-QEnterEvent::QEnterEvent(const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos)
+QEnterEvent::QEnterEvent(const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos)
     : QEvent(QEvent::Enter)
     , l(localPos)
-    , w(windowPos)
-    , s(screenPos)
+    , s(scenePos)
+    , g(globalPos)
 {
 }
 
@@ -226,10 +226,10 @@ QInputEvent::~QInputEvent()
     \l{QInputEvent::modifiers()}{modifiers()} function, inherited from
     QInputEvent.
 
-    The functions pos(), x(), and y() give the cursor position
-    relative to the widget that receives the mouse event. If you
-    move the widget as a result of the mouse event, use the global
-    position returned by globalPos() to avoid a shaking motion.
+    The position() function gives the cursor position
+    relative to the widget or item that receives the mouse event.
+    If you move the widget as a result of the mouse event, use the
+    global position returned by globalPosition() to avoid a shaking motion.
 
     The QWidget::setEnabled() function can be used to enable or
     disable mouse and keyboard events for a widget.
@@ -259,7 +259,7 @@ QInputEvent::~QInputEvent()
     The mouse and keyboard states at the time of the event are specified by
     \a buttons and \a modifiers.
 
-    The screenPos() is initialized to QCursor::pos(), which may not
+    The globalPosition() is initialized to QCursor::pos(), which may not
     be appropriate. Use the other constructor to specify the global
     position explicitly.
 */
@@ -268,7 +268,7 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton but
     : QInputEvent(type, modifiers), l(localPos), w(localPos), b(button), mouseState(buttons), caps(0)
 {
 #ifndef QT_NO_CURSOR
-    s = QCursor::pos();
+    g = QCursor::pos();
 #endif
 }
 
@@ -282,7 +282,7 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton but
 
     The \a localPos is the mouse cursor's position relative to the
     receiving widget or item. The cursor's position in screen coordinates is
-    specified by \a screenPos. The window position is set to the same value
+    specified by \a globalPos. The window position is set to the same value
     as \a localPos. The \a button that caused the event is
     given as a value from the \l Qt::MouseButton enum. If the event \a
     type is \l MouseMove, the appropriate button for this event is
@@ -291,10 +291,10 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton but
     modifiers.
 
 */
-QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &screenPos,
+QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &globalPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
-    : QMouseEvent(type, localPos, localPos, screenPos, button, buttons, modifiers)
+    : QMouseEvent(type, localPos, localPos, globalPos, button, buttons, modifiers)
 {}
 
 /*!
@@ -304,9 +304,9 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &scre
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
     or QEvent::MouseMove.
 
-    The points \a localPos, \a windowPos and \a screenPos specify the
+    The points \a localPos, \a scenePos and \a globalPos specify the
     mouse cursor's position relative to the receiving widget or item,
-    window, and screen, respectively.
+    window, and screen or desktop, respectively.
 
     The \a button that caused the event is
     given as a value from the \l Qt::MouseButton enum. If the event \a
@@ -316,10 +316,10 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &scre
     modifiers.
 
 */
-QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
+QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), l(localPos), w(windowPos), s(screenPos), b(button), mouseState(buttons), caps(0)
+    : QInputEvent(type, modifiers), l(localPos), w(scenePos), g(globalPos), b(button), mouseState(buttons), caps(0)
 {}
 
 /*!
@@ -331,9 +331,9 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &wind
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
     or QEvent::MouseMove.
 
-    The points \a localPos, \a windowPos and \a screenPos specify the
+    The points \a localPos, \a scenePos and \a globalPos specify the
     mouse cursor's position relative to the receiving widget or item,
-    window, and screen, respectively.
+    window, and screen or desktop, respectively.
 
     The \a button that caused the event is given as a value from the
     \l Qt::MouseButton enum. If the event \a type is \l MouseMove,
@@ -344,10 +344,10 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &wind
     The source of the event is specified by \a source.
 
 */
-QMouseEvent::QMouseEvent(QEvent::Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
+QMouseEvent::QMouseEvent(QEvent::Type type, const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source)
-    : QMouseEvent(type, localPos, windowPos, screenPos, button, buttons, modifiers)
+    : QMouseEvent(type, localPos, scenePos, globalPos, button, buttons, modifiers)
 {
     QGuiApplicationPrivate::setMouseEventSource(this, source);
 }
@@ -852,7 +852,7 @@ QWheelEvent::~QWheelEvent()
     \since 5.14
 
     Returns the position of the mouse cursor relative to the widget
-    that received the event.
+    or item that received the event.
 
     If you move your widgets around in response to mouse events,
     use globalPosition() instead of this function.
@@ -2472,17 +2472,17 @@ Qt::MouseButtons QTabletEvent::buttons() const
 /*!
     Constructs a native gesture event of type \a type originating from \a device.
 
-    The points \a localPos, \a windowPos and \a screenPos specify the
+    The points \a localPos, \a scenePos and \a globalPos specify the
     gesture position relative to the receiving widget or item,
-    window, and screen, respectively.
+    window, and screen or desktop, respectively.
 
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
     \since 5.10
 */
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *device, const QPointF &localPos, const QPointF &windowPos,
-                                         const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *device, const QPointF &localPos, const QPointF &scenePos,
+                                         const QPointF &globalPos, qreal realValue, ulong sequenceId, quint64 intValue)
     : QInputEvent(QEvent::NativeGesture), mGestureType(type),
-      mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
+      mLocalPos(localPos), mScenePos(scenePos), mGlobalPos(globalPos), mRealValue(realValue),
       mSequenceId(sequenceId), mIntValue(intValue), mDevice(device)
 {
 }
@@ -4237,42 +4237,63 @@ Qt::TouchPointState QTouchEvent::TouchPoint::state() const
 }
 
 /*!
+    \fn QPointF QTouchEvent::pos() const
+    \deprecated in Qt 6.0. Use position() instead.
+
     Returns the position of this touch point, relative to the widget
-    or QGraphicsItem that received the event.
+    or item that received the event.
 
     \sa startPos(), lastPos(), screenPos(), scenePos(), normalizedPos()
 */
-QPointF QTouchEvent::TouchPoint::pos() const
+
+/*!
+    Returns the position of this touch point, relative to the widget
+    or item that received the event.
+
+    \sa startPos(), lastPos(), screenPos(), scenePos(), normalizedPos()
+*/
+QPointF QTouchEvent::TouchPoint::position() const
 {
     return d->pos;
 }
 
 /*!
-    Returns the scene position of this touch point.
-
-    The scene position is the position in QGraphicsScene coordinates
-    if the QTouchEvent is handled by a QGraphicsItem::touchEvent()
-    reimplementation, and identical to the screen position for
-    widgets.
-
-    \sa startScenePos(), lastScenePos(), pos()
+    \fn QPointF QTouchEvent::scenePos() const
+    \deprecated in Qt 6.0. Use scenePosition() instead.
 */
-QPointF QTouchEvent::TouchPoint::scenePos() const
+
+/*!
+    Returns the position of this touch point relative to the window or scene.
+
+    The scene position is the position relative to QQuickWindow if handled in QQuickItem::event(),
+    in QGraphicsScene coordinates if handled by an override of QGraphicsItem::touchEvent(),
+    or the window position in widget applications.
+
+    \sa scenePressPosition(), position(), globalPosition()
+*/
+QPointF QTouchEvent::TouchPoint::scenePosition() const
 {
     return d->scenePos;
 }
 
 /*!
-    Returns the screen position of this touch point.
-
-    \sa startScreenPos(), lastScreenPos(), pos()
+    \fn QPointF QTouchEvent::screenPos() const
+    \deprecated in Qt 6.0. Use globalPosition() instead.
 */
-QPointF QTouchEvent::TouchPoint::screenPos() const
+
+/*!
+    Returns the position of this touch point on the screen or virtual desktop.
+
+    \sa globalPressPosition(), position(), scenePosition()
+*/
+QPointF QTouchEvent::TouchPoint::globalPosition() const
 {
     return d->screenPos;
 }
 
 /*!
+    \deprecated in Qt 6.0. Use globalPosition() instead.
+
     Returns the normalized position of this touch point.
 
     The coordinates are normalized to the size of the touch device,
@@ -4286,43 +4307,58 @@ QPointF QTouchEvent::TouchPoint::normalizedPos() const
 }
 
 /*!
-    Returns the starting position of this touch point, relative to the
-    widget or QGraphicsItem that received the event.
-
-    \sa pos(), lastPos()
+    \fn QPointF QTouchEvent::startPos() const
+    \deprecated in Qt 6.0. Use pressPosition() instead.
 */
-QPointF QTouchEvent::TouchPoint::startPos() const
+
+/*!
+    Returns the position at which this touch point was pressed, relative to the
+    widget or item that received the event.
+
+    \sa position()
+*/
+QPointF QTouchEvent::TouchPoint::pressPosition() const
 {
     return d->startPos;
 }
 
 /*!
-    Returns the starting scene position of this touch point.
-
-    The scene position is the position in QGraphicsScene coordinates
-    if the QTouchEvent is handled by a QGraphicsItem::touchEvent()
-    reimplementation, and identical to the screen position for
-    widgets.
-
-    \sa scenePos(), lastScenePos()
+    \fn QPointF QTouchEvent::sceneStartPos() const
+    \deprecated in Qt 6.0. Use scenePressPosition() instead.
 */
-QPointF QTouchEvent::TouchPoint::startScenePos() const
+
+/*!
+    Returns the scene position at which this touch point was pressed.
+
+    The scene position is the position relative to QQuickWindow if handled in QQuickItem::event(),
+    in QGraphicsScene coordinates if handled by an override of QGraphicsItem::touchEvent(),
+    or the window position in widget applications.
+
+    \sa scenePosition(), pressPosition(), globalPressPosition()
+*/
+QPointF QTouchEvent::TouchPoint::scenePressPosition() const
 {
     return d->startScenePos;
 }
 
 /*!
+    \fn QPointF QTouchEvent::startScreenPos() const
+    \deprecated in Qt 6.0. Use globalPressPosition() instead.
+*/
+
+/*!
     Returns the starting screen position of this touch point.
 
-    \sa screenPos(), lastScreenPos()
+    \sa globalPosition(), pressPosition(), scenePressPosition()
 */
-QPointF QTouchEvent::TouchPoint::startScreenPos() const
+QPointF QTouchEvent::TouchPoint::globalPressPosition() const
 {
     return d->startScreenPos;
 }
 
 /*!
-    Returns the normalized starting position of this touch point.
+    \deprecated in Qt 6.0. Use globalPressPosition() instead.
+    Returns the normalized press position of this touch point.
 
     The coordinates are normalized to the size of the touch device,
     i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.

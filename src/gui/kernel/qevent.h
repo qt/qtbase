@@ -84,23 +84,38 @@ protected:
 class Q_GUI_EXPORT QEnterEvent : public QEvent
 {
 public:
-    QEnterEvent(const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos);
+    QEnterEvent(const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos);
     ~QEnterEvent();
 
+#if QT_DEPRECATED_SINCE(6, 0)
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
-    inline QPoint pos() const { return l.toPoint(); }
-    inline QPoint globalPos() const { return s.toPoint(); }
-    inline int x() const { return qRound(l.x()); }
-    inline int y() const { return qRound(l.y()); }
-    inline int globalX() const { return qRound(s.x()); }
-    inline int globalY() const { return qRound(s.y()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline QPoint pos() const { return position().toPoint(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    inline QPoint globalPos() const { return globalPosition().toPoint(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline int x() const { return qRound(position().x()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline int y() const { return qRound(position().y()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    inline int globalX() const { return qRound(globalPosition().x()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    inline int globalY() const { return qRound(globalPosition().y()); }
 #endif
-    const QPointF &localPos() const { return l; }
-    const QPointF &windowPos() const { return w; }
-    const QPointF &screenPos() const { return s; }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    QPointF localPos() const { return position(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use scenePosition()")
+    QPointF windowPos() const { return scenePosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    QPointF screenPos() const { return globalPosition(); }
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
+    QPointF position() const { return l; }
+    QPointF scenePosition() const { return s; }
+    QPointF globalPosition() const { return g; }
 
 protected:
-    QPointF l, w, s;
+    QPointF l, s, g;
 };
 
 class Q_GUI_EXPORT QMouseEvent : public QInputEvent
@@ -108,28 +123,44 @@ class Q_GUI_EXPORT QMouseEvent : public QInputEvent
 public:
     QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-    QMouseEvent(Type type, const QPointF &localPos, const QPointF &screenPos,
+    QMouseEvent(Type type, const QPointF &localPos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
-    QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
+    QMouseEvent(Type type, const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
-    QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
+    QMouseEvent(Type type, const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
     ~QMouseEvent();
 
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
-    inline QPoint pos() const { return l.toPoint(); }
-    inline QPoint globalPos() const { return s.toPoint(); }
-    inline int x() const { return qRound(l.x()); }
-    inline int y() const { return qRound(l.y()); }
-    inline int globalX() const { return qRound(s.x()); }
-    inline int globalY() const { return qRound(s.y()); }
+    inline QPoint pos() const { return position().toPoint(); }
 #endif
-    const QPointF &localPos() const { return l; }
-    const QPointF &windowPos() const { return w; }
-    const QPointF &screenPos() const { return s; }
+#if QT_DEPRECATED_SINCE(6, 0)
+#ifndef QT_NO_INTEGER_EVENT_COORDINATES
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    inline QPoint globalPos() const { return globalPosition().toPoint(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline int x() const { return qRound(position().x()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline int y() const { return qRound(position().y()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    inline int globalX() const { return qRound(globalPosition().x()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    inline int globalY() const { return qRound(globalPosition().y()); }
+#endif // QT_NO_INTEGER_EVENT_COORDINATES
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    QPointF localPos() const { return position(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use scenePosition()")
+    QPointF windowPos() const { return scenePosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    QPointF screenPos() const { return globalPosition(); }
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
+    QPointF position() const { return l; }
+    QPointF scenePosition() const { return w; }
+    QPointF globalPosition() const { return g; }
 
     inline Qt::MouseButton button() const { return b; }
     inline Qt::MouseButtons buttons() const { return mouseState; }
@@ -140,7 +171,7 @@ public:
     Qt::MouseEventFlags flags() const;
 
 protected:
-    QPointF l, w, s;
+    QPointF l, w, g;
     Qt::MouseButton b;
     Qt::MouseButtons mouseState;
     int caps;
@@ -155,13 +186,21 @@ public:
     QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     ~QHoverEvent();
 
+#if QT_DEPRECATED_SINCE(6, 0)
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
-    inline QPoint pos() const { return p.toPoint(); }
-    inline QPoint oldPos() const { return op.toPoint(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline QPoint pos() const { return position().toPoint(); }
 #endif
 
-    inline const QPointF &posF() const { return p; }
-    inline const QPointF &oldPosF() const { return op; }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline QPointF posF() const { return position(); }
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
+    // TODO deprecate when we figure out an actual replacement (point history?)
+    inline QPoint oldPos() const { return op.toPoint(); }
+    inline QPointF oldPosF() const { return op; }
+
+    QPointF position() const { return p; }
 
 protected:
     QPointF p, op;
@@ -224,16 +263,31 @@ public:
                  Qt::MouseButton button, Qt::MouseButtons buttons);
     ~QTabletEvent();
 
-    inline QPoint pos() const { return mPos.toPoint(); }
-    inline QPoint globalPos() const { return mGPos.toPoint(); }
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline QPoint pos() const { return position().toPoint(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    inline QPoint globalPos() const { return globalPosition().toPoint(); }
 
-    inline const QPointF &posF() const { return mPos; }
-    inline const QPointF &globalPosF() const { return mGPos; }
-
-    inline int x() const { return qRound(mPos.x()); }
-    inline int y() const { return qRound(mPos.y()); }
-    inline int globalX() const { return qRound(mGPos.x()); }
-    inline int globalY() const { return qRound(mGPos.y()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline const QPointF posF() const { return position(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    inline const QPointF globalPosF() const { return globalPosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position().x()")
+    inline int x() const { return qRound(position().x()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position().y()")
+    inline int y() const { return qRound(position().y()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition().x()")
+    inline int globalX() const { return qRound(globalPosition().x()); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition().y()")
+    inline int globalY() const { return qRound(globalPosition().y()); }
+    QT_DEPRECATED_VERSION_X_6_0("use globalPosition().x()")
+    inline qreal hiResGlobalX() const { return globalPosition().x(); }
+    QT_DEPRECATED_VERSION_X_6_0("use globalPosition().y()")
+    inline qreal hiResGlobalY() const { return globalPosition().y(); }
+#endif
+    inline QPointF position() const { return mPos; }
+    inline QPointF globalPosition() const { return mGPos; }
     inline TabletDevice deviceType() const { return TabletDevice(mDev); }
     inline PointerType pointerType() const { return PointerType(mPointerType); }
     inline qint64 uniqueId() const { return mUnique; }
@@ -262,27 +316,38 @@ protected:
 class Q_GUI_EXPORT QNativeGestureEvent : public QInputEvent
 {
 public:
-    QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
-                        const QPointF &screenPos, qreal value, ulong sequenceId, quint64 intArgument);
+    QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &scenePos,
+                        const QPointF &globalPos, qreal value, ulong sequenceId, quint64 intArgument);
     ~QNativeGestureEvent();
     Qt::NativeGestureType gestureType() const { return mGestureType; }
     qreal value() const { return mRealValue; }
 
+#if QT_DEPRECATED_SINCE(6, 0)
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
-    inline const QPoint pos() const { return mLocalPos.toPoint(); }
-    inline const QPoint globalPos() const { return mScreenPos.toPoint(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position().toPoint()")
+    inline const QPoint pos() const { return position().toPoint(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition().toPoint()")
+    inline const QPoint globalPos() const { return globalPosition().toPoint(); }
 #endif
-    const QPointF &localPos() const { return mLocalPos; }
-    const QPointF &windowPos() const { return mWindowPos; }
-    const QPointF &screenPos() const { return mScreenPos; }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    QPointF localPos() const { return position(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use scenePosition()")
+    QPointF windowPos() const { return scenePosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    QPointF screenPos() const { return globalPosition(); }
+#endif
+
+    QPointF position() const { return mLocalPos; }
+    QPointF scenePosition() const { return mScenePos; }
+    QPointF globalPosition() const { return mGlobalPos; }
 
     const QTouchDevice *device() const { return mDevice; }
 
 protected:
     Qt::NativeGestureType mGestureType;
     QPointF mLocalPos;
-    QPointF mWindowPos;
-    QPointF mScreenPos;
+    QPointF mScenePos;
+    QPointF mGlobalPos;
     qreal mRealValue;
     ulong mSequenceId;
     quint64 mIntValue;
@@ -551,10 +616,20 @@ public:
                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type = Drop);
     ~QDropEvent();
 
-    inline QPoint pos() const { return p.toPoint(); }
-    inline const QPointF &posF() const { return p; }
-    inline Qt::MouseButtons mouseButtons() const { return mouseState; }
-    inline Qt::KeyboardModifiers keyboardModifiers() const { return modState; }
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use position().toPoint()")
+    inline QPoint pos() const { return position().toPoint(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    inline QPointF posF() const { return position(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use buttons()")
+    inline Qt::MouseButtons mouseButtons() const { return buttons(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use modifiers()")
+    inline Qt::KeyboardModifiers keyboardModifiers() const { return modifiers(); }
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
+    QPointF position() const { return p; }
+    inline Qt::MouseButtons buttons() const { return mouseState; }
+    inline Qt::KeyboardModifiers modifiers() const { return modState; }
 
     inline Qt::DropActions possibleActions() const { return act; }
     inline Qt::DropAction proposedAction() const { return default_action; }
@@ -809,21 +884,39 @@ public:
 
         Qt::TouchPointState state() const;
 
-        QPointF pos() const;
-        QPointF startPos() const;
-        QPointF lastPos() const;
+#if QT_DEPRECATED_SINCE(6, 0)
+        QT_DEPRECATED_VERSION_X_6_0("Use position()")
+        QPointF pos() const { return position(); }
+        QT_DEPRECATED_VERSION_X_6_0("Use pressPosition()")
+        QPointF startPos() const { return pressPosition(); }
 
-        QPointF scenePos() const;
-        QPointF startScenePos() const;
-        QPointF lastScenePos() const;
+        QT_DEPRECATED_VERSION_X_6_0("Use scenePosition()")
+        QPointF scenePos() const { return scenePosition(); }
+        QT_DEPRECATED_VERSION_X_6_0("Use scenePressPosition()")
+        QPointF startScenePos() const { return scenePressPosition(); }
 
-        QPointF screenPos() const;
-        QPointF startScreenPos() const;
-        QPointF lastScreenPos() const;
+        QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+        QPointF screenPos() const { return globalPosition(); }
+        QT_DEPRECATED_VERSION_X_6_0("Use globalPressPosition()")
+        QPointF startScreenPos() const { return globalPressPosition(); }
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
+        // TODO deprecate these after finding good replacements (use QPointingDevice::globalArea?)
         QPointF normalizedPos() const;
         QPointF startNormalizedPos() const;
+
+        // TODO deprecate these after finding good replacements (store longer history perhaps?)
+        QPointF lastPos() const;
+        QPointF lastScenePos() const;
+        QPointF lastScreenPos() const;
         QPointF lastNormalizedPos() const;
+
+        QPointF position() const;
+        QPointF pressPosition() const;
+        QPointF scenePosition() const;
+        QPointF scenePressPosition() const;
+        QPointF globalPosition() const;
+        QPointF globalPressPosition() const;
 
         qreal pressure() const;
         qreal rotation() const;
@@ -834,6 +927,8 @@ public:
         QVector<QPointF> rawScreenPositions() const;
 
         // internal
+        // ### Qt 6: move private, rename appropriately, only friends can call them
+#if QT_DEPRECATED_SINCE(6, 0)
         void setId(int id);
         void setUniqueId(qint64 uid);
         void setState(Qt::TouchPointStates state);
@@ -855,6 +950,7 @@ public:
         void setVelocity(const QVector2D &v);
         void setFlags(InfoFlags flags);
         void setRawScreenPositions(const QVector<QPointF> &positions);
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
     private:
         QTouchEventTouchPointPrivate *d;
@@ -879,12 +975,14 @@ public:
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
     inline QTouchDevice *device() const { return _device; }
 
-    // internal
+    // ### Qt 6: move private, rename appropriately, only friends can call them; or just let friends modify variables directly
+#if QT_DEPRECATED_SINCE(6, 0)
     inline void setWindow(QWindow *awindow) { _window = awindow; }
     inline void setTarget(QObject *atarget) { _target = atarget; }
     inline void setTouchPointStates(Qt::TouchPointStates aTouchPointStates) { _touchPointStates = aTouchPointStates; }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
     inline void setDevice(QTouchDevice *adevice) { _device = adevice; }
+#endif // QT_DEPRECATED_SINCE(6, 0)
 
 protected:
     QWindow *_window;
