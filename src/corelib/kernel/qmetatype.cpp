@@ -528,7 +528,7 @@ struct DefinedTypesFilter {
     \relates QMetaType
     \overload
 
-    Returns \c true if the QMetaType \a a represents a difference type
+    Returns \c true if the QMetaType \a a represents a different type
     than the QMetaType \a b, otherwise returns \c false.
 */
 
