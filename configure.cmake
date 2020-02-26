@@ -312,6 +312,13 @@ qt_feature("android-style-assets" PRIVATE
     LABEL "Android Style Assets"
     CONDITION ANDROID
 )
+qt_feature("shared" PUBLIC
+    LABEL "Building shared libraries"
+    AUTODETECT NOT APPLE_UIKIT
+    CONDITION BUILD_SHARED_LIBS
+)
+qt_feature_config("shared" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature_config("shared" QMAKE_PUBLIC_CONFIG)
 qt_feature("use_bfd_linker"
     LABEL "bfd"
     AUTODETECT false

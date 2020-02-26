@@ -756,7 +756,7 @@ def parseFeature(ctx, feature, data, cm_fh):
         "sanitize_thread": None,
         "sanitize_undefined": None,
         "separate_debug_info": None,
-        "shared": None,
+        "shared": {"condition": "BUILD_SHARED_LIBS"},
         "silent": None,
         "sql-sqlite": {"condition": "QT_FEATURE_datestring AND SQLite3_FOUND"},
         "static": None,
