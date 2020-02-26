@@ -51,6 +51,7 @@ private slots:
     void integerForSize();
     void buildAbiEndianness();
     void testqOverload();
+    void testqMinMax();
 };
 
 extern "C" {        // functions in qglobal.c
@@ -573,6 +574,32 @@ void tst_QGlobal::testqOverload()
 #endif
 
 #endif
+}
+
+// enforce that types are identical when comparing
+template<typename T>
+void compare(T a, T b)
+{ QCOMPARE(a, b); }
+
+void tst_QGlobal::testqMinMax()
+{
+    // signed types
+    compare(qMin(float(1), double(-1)), double(-1));
+    compare(qMin(double(1), float(-1)), double(-1));
+    compare(qMin(short(1), int(-1)), int(-1));
+    compare(qMin(short(1), long(-1)), long(-1));
+    compare(qMin(qint64(1), short(-1)), qint64(-1));
+
+    compare(qMax(float(1), double(-1)), double(1));
+    compare(qMax(short(1), long(-1)), long(1));
+    compare(qMax(qint64(1), short(-1)), qint64(1));
+
+    // unsigned types
+    compare(qMin(ushort(1), ulong(2)), ulong(1));
+    compare(qMin(quint64(1), ushort(2)), quint64(1));
+
+    compare(qMax(ushort(1), ulong(2)), ulong(2));
+    compare(qMax(quint64(1), ushort(2)), quint64(2));
 }
 
 

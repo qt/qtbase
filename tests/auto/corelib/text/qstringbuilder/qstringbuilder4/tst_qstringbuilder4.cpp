@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
 
 // SCENARIO 4
 // this is the "full" version. Operator+ is replaced by a QStringBuilder

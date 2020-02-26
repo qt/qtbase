@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
 
 // SCENARIO 1
 // this is the "no harm done" version. Only operator% is active,
