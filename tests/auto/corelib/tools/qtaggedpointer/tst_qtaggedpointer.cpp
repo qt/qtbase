@@ -43,6 +43,7 @@ private Q_SLOTS:
     void tag();
     void objectMember();
     void customTagType();
+    void taggedLinkedList();
 };
 
 void tst_QTaggedPointer::construction()
@@ -394,6 +395,33 @@ void tst_QTaggedPointer::customTagType()
     p.setTag(Bar::FirstTag | Bar::SecondTag);
     QCOMPARE(p->value, 5);
     QCOMPARE(p.tag(), Bar::FirstTag | Bar::SecondTag);
+}
+
+// Compile-only test to ensure it's possible to use tagged pointers
+// with incomplete types.
+struct LinkedListItem
+{
+    enum Tag {
+        NoTag = 0,
+        FirstTag = 1
+    };
+    Q_DECLARE_FLAGS(Tags, Tag)
+
+    QTaggedPointer<LinkedListItem, Tag> next;
+
+    ~LinkedListItem()
+    {
+        delete next.pointer();
+    }
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(LinkedListItem::Tags)
+
+void tst_QTaggedPointer::taggedLinkedList()
+{
+    QScopedPointer<LinkedListItem> lli(new LinkedListItem);
+    lli->next = QTaggedPointer<LinkedListItem, LinkedListItem::Tag>(new LinkedListItem);
+    lli->next.setTag(LinkedListItem::FirstTag);
 }
 
 QTEST_MAIN(tst_QTaggedPointer)

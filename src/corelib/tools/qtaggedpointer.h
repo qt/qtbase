@@ -73,10 +73,8 @@ namespace QtPrivate {
 template <typename T, typename Tag = typename QtPrivate::TagInfo<T>::TagType>
 class QTaggedPointer
 {
-    static constexpr quintptr tagMask = QtPrivate::TagInfo<T>::alignment - 1;
-    static constexpr quintptr pointerMask = ~tagMask;
-
-    using TagInternalType = typename QtPrivate::TagInfo<T>::TagType;
+    static constexpr quintptr tagMask() { return QtPrivate::TagInfo<T>::alignment - 1; }
+    static constexpr quintptr pointerMask() { return ~tagMask(); }
 
 public:
     using Type = T;
@@ -87,7 +85,7 @@ public:
     {
         Q_STATIC_ASSERT(sizeof(Type*) == sizeof(QTaggedPointer<Type>));
 
-        Q_ASSERT_X((quintptr(pointer) & tagMask) == 0,
+        Q_ASSERT_X((quintptr(pointer) & tagMask()) == 0,
             "QTaggedPointer<T, Tag>", "Pointer is not aligned");
 
         setTag(tag);
@@ -111,37 +109,37 @@ public:
 
     QTaggedPointer<T, Tag> &operator=(T *other) noexcept
     {
-        d = reinterpret_cast<quintptr>(other) | (d & tagMask);
+        d = reinterpret_cast<quintptr>(other) | (d & tagMask());
         return *this;
     }
 
     QTaggedPointer<T, Tag> &operator=(std::nullptr_t) noexcept
     {
-        d &= tagMask;
+        d &= tagMask();
         return *this;
     }
 
     static constexpr TagType maximumTag() noexcept
     {
-        return TagType(TagInternalType(tagMask));
+        return TagType(typename QtPrivate::TagInfo<T>::TagType(tagMask()));
     }
 
     void setTag(TagType tag)
     {
-        Q_ASSERT_X((static_cast<TagInternalType>(tag) & pointerMask) == 0,
+        Q_ASSERT_X((static_cast<typename QtPrivate::TagInfo<T>::TagType>(tag) & pointerMask()) == 0,
             "QTaggedPointer<T, Tag>::setTag", "Tag is larger than allowed by number of available tag bits");
 
-        d = (d & pointerMask) | (static_cast<TagInternalType>(tag) & tagMask);
+        d = (d & pointerMask()) | (static_cast<typename QtPrivate::TagInfo<T>::TagType>(tag) & tagMask());
     }
 
     TagType tag() const noexcept
     {
-        return TagType(TagInternalType(d & tagMask));
+        return TagType(typename QtPrivate::TagInfo<T>::TagType(d & tagMask()));
     }
 
     Type* pointer() const noexcept
     {
-        return reinterpret_cast<T*>(d & pointerMask);
+        return reinterpret_cast<T*>(d & pointerMask());
     }
 
     bool isNull() const noexcept
