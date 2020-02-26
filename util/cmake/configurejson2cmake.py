@@ -709,7 +709,9 @@ def parseFeature(ctx, feature, data, cm_fh):
         "doubleconversion": None,
         "enable_gdb_index": None,
         "enable_new_dtags": None,
-        "force_debug_info": None,
+        "force_debug_info": {
+            "autoDetect": "CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo OR RelWithDebInfo IN_LIST CMAKE_CONFIGURATION_TYPES"
+        },
         "framework": {"condition": "APPLE AND BUILD_SHARED_LIBS"},
         "gc_binaries": None,
         "gcc-sysroot": None,

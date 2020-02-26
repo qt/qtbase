@@ -362,6 +362,11 @@ qt_feature("debug_and_release" PUBLIC
     CONDITION QT_GENERATOR_IS_MULTI_CONFIG
 )
 qt_feature_config("debug_and_release" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("force_debug_info"
+    LABEL "Add debug info in release mode"
+    AUTODETECT CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo OR RelWithDebInfo IN_LIST CMAKE_CONFIGURATION_TYPES
+)
+qt_feature_config("force_debug_info" QMAKE_PRIVATE_CONFIG)
 qt_feature("appstore-compliant" PUBLIC
     LABEL "App store compliance"
     PURPOSE "Disables code that is not allowed in platform app stores"
