@@ -582,7 +582,7 @@ public:
     { return replace(re, QString()); }
 #endif
 
-    enum SplitBehavior { KeepEmptyParts, SkipEmptyParts };
+    enum SplitBehavior { KeepEmptyParts, SkipEmptyParts }; // ### Qt 6: replace with Qt:: version
 
     Q_REQUIRED_RESULT QStringList split(const QString &sep, SplitBehavior behavior = KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -601,26 +601,22 @@ public:
     Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const;
 #endif
 
-private:
-    static Q_DECL_CONSTEXPR SplitBehavior _sb(Qt::SplitBehavior sb) Q_DECL_NOTHROW
-    { return sb & Qt::SkipEmptyParts ? SkipEmptyParts : KeepEmptyParts; }
 public:
-
-    Q_REQUIRED_RESULT inline QStringList split(const QString &sep, Qt::SplitBehavior behavior,
-                                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT inline QVector<QStringRef> splitRef(const QString &sep, Qt::SplitBehavior behavior,
-                                                          Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT inline QStringList split(QChar sep, Qt::SplitBehavior behavior,
-                                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT inline QVector<QStringRef> splitRef(QChar sep, Qt::SplitBehavior behavior,
-                                                          Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QStringList split(const QString &sep, Qt::SplitBehavior behavior,
+                                        Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QString &sep, Qt::SplitBehavior behavior,
+                                                   Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QStringList split(QChar sep, Qt::SplitBehavior behavior,
+                                        Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(QChar sep, Qt::SplitBehavior behavior,
+                                                   Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #ifndef QT_NO_REGEXP
-    Q_REQUIRED_RESULT inline QStringList split(const QRegExp &sep, Qt::SplitBehavior behavior) const;
-    Q_REQUIRED_RESULT inline QVector<QStringRef> splitRef(const QRegExp &sep, Qt::SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT QStringList split(const QRegExp &sep, Qt::SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegExp &sep, Qt::SplitBehavior behavior) const;
 #endif
 #ifndef QT_NO_REGULAREXPRESSION
-    Q_REQUIRED_RESULT inline QStringList split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
-    Q_REQUIRED_RESULT inline QVector<QStringRef> splitRef(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT QStringList split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
 #endif
 
 
@@ -1624,10 +1620,10 @@ public:
     Q_REQUIRED_RESULT QVector<QStringRef> split(QChar sep, QString::SplitBehavior behavior = QString::KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
-    Q_REQUIRED_RESULT inline QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior,
-                                                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT inline QVector<QStringRef> split(QChar sep, Qt::SplitBehavior behavior,
-                                                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior,
+                                                Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QVector<QStringRef> split(QChar sep, Qt::SplitBehavior behavior,
+                                                Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     Q_REQUIRED_RESULT QStringRef left(int n) const;
     Q_REQUIRED_RESULT QStringRef right(int n) const;

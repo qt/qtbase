@@ -1133,24 +1133,6 @@ extern template class Q_CORE_EXPORT QVector<QPoint>;
 
 QVector<uint> QStringView::toUcs4() const { return QtPrivate::convertToUcs4(*this); }
 
-QVector<QStringRef> QString::splitRef(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{ return splitRef(sep, _sb(behavior), cs); }
-QVector<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{ return splitRef(sep, _sb(behavior), cs); }
-#ifndef QT_NO_REGEXP
-QVector<QStringRef> QString::splitRef(const QRegExp &sep, Qt::SplitBehavior behavior) const
-{ return splitRef(sep, _sb(behavior)); }
-#endif
-#if QT_CONFIG(regularexpression)
-QVector<QStringRef> QString::splitRef(const QRegularExpression &sep, Qt::SplitBehavior behavior) const
-{ return splitRef(sep, _sb(behavior)); }
-#endif
-QVector<QStringRef> QStringRef::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{ return split(sep, QString::_sb(behavior), cs); }
-QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{ return split(sep, QString::_sb(behavior), cs); }
-
-
 QT_END_NAMESPACE
 
 #endif // QVECTOR_H

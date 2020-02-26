@@ -384,23 +384,6 @@ inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) cons
 #endif // QT_CONFIG(regularexpression)
 #endif // Q_QDOC
 
-//
-// QString inline functions:
-//
-
-QStringList QString::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{ return split(sep, _sb(behavior), cs); }
-QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{ return split(sep, _sb(behavior), cs); }
-#ifndef QT_NO_REGEXP
-QStringList QString::split(const QRegExp &sep, Qt::SplitBehavior behavior) const
-{ return split(sep, _sb(behavior)); }
-#endif
-#if QT_CONFIG(regularexpression)
-QStringList QString::split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const
-{ return split(sep, _sb(behavior)); }
-#endif
-
 QT_END_NAMESPACE
 
 #endif // QSTRINGLIST_H
