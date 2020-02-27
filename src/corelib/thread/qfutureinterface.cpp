@@ -191,6 +191,11 @@ bool QFutureInterfaceBase::isResultReadyAt(int index) const
     return d->internal_isResultReadyAt(index);
 }
 
+bool QFutureInterfaceBase::isRunningOrPending() const
+{
+    return queryState(static_cast<State>(Running | Pending));
+}
+
 bool QFutureInterfaceBase::waitForNextResult()
 {
     QMutexLocker lock(&d->m_mutex);
@@ -315,7 +320,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
     d->m_exceptionStore.throwPossibleException();
 
     QMutexLocker lock(&d->m_mutex);
-    if (!isRunning())
+    if (!isRunningOrPending())
         return;
     lock.unlock();
 
@@ -326,7 +331,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
     lock.relock();
 
     const int waitIndex = (resultIndex == -1) ? INT_MAX : resultIndex;
-    while (isRunning() && !d->internal_isResultReadyAt(waitIndex))
+    while (isRunningOrPending() && !d->internal_isResultReadyAt(waitIndex))
         d->waitCondition.wait(&d->m_mutex);
 
     d->m_exceptionStore.throwPossibleException();
@@ -335,7 +340,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 void QFutureInterfaceBase::waitForFinished()
 {
     QMutexLocker lock(&d->m_mutex);
-    const bool alreadyFinished = !isRunning();
+    const bool alreadyFinished = !isRunningOrPending();
     lock.unlock();
 
     if (!alreadyFinished) {
@@ -343,7 +348,7 @@ void QFutureInterfaceBase::waitForFinished()
 
         lock.relock();
 
-        while (isRunning())
+        while (isRunningOrPending())
             d->waitCondition.wait(&d->m_mutex);
     }
 
@@ -384,6 +389,11 @@ void QFutureInterfaceBase::setRunnable(QRunnable *runnable)
 void QFutureInterfaceBase::setThreadPool(QThreadPool *pool)
 {
     d->m_pool = pool;
+}
+
+QThreadPool *QFutureInterfaceBase::threadPool() const
+{
+    return d->m_pool;
 }
 
 void QFutureInterfaceBase::setFilterMode(bool enable)
@@ -602,6 +612,38 @@ void QFutureInterfaceBasePrivate::disconnectOutputInterface(QFutureCallOutInterf
 void QFutureInterfaceBasePrivate::setState(QFutureInterfaceBase::State newState)
 {
     state.storeRelaxed(newState);
+}
+
+void QFutureInterfaceBase::setContinuation(std::function<void()> func)
+{
+    QMutexLocker lock(&d->continuationMutex);
+    // If the state is ready, run continuation immediately,
+    // otherwise save it for later.
+    if (isFinished()) {
+        lock.unlock();
+        func();
+    } else {
+        d->continuation = std::move(func);
+    }
+}
+
+void QFutureInterfaceBase::runContinuation() const
+{
+    QMutexLocker lock(&d->continuationMutex);
+    if (d->continuation) {
+        lock.unlock();
+        d->continuation();
+    }
+}
+
+void QFutureInterfaceBase::setLaunchAsync(bool value)
+{
+    d->launchAsync = value;
+}
+
+bool QFutureInterfaceBase::launchAsync() const
+{
+    return d->launchAsync;
 }
 
 QT_END_NAMESPACE

@@ -66,6 +66,7 @@ qtConfig(future) {
     HEADERS += \
         thread/qexception.h \
         thread/qfuture.h \
+        thread/qfuture_impl.h \
         thread/qfutureinterface.h \
         thread/qfutureinterface_p.h \
         thread/qfuturesynchronizer.h \

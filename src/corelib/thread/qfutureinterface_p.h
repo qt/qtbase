@@ -191,6 +191,12 @@ public:
     void disconnectOutputInterface(QFutureCallOutInterface *iface);
 
     void setState(QFutureInterfaceBase::State state);
+
+    // Wrapper for continuation
+    std::function<void()> continuation;
+    QBasicMutex continuationMutex;
+
+    bool launchAsync = false;
 };
 
 QT_END_NAMESPACE

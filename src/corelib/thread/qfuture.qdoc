@@ -682,3 +682,144 @@
 
     \sa findNext()
 */
+
+/*!
+    \namespace QtFuture
+
+    \inmodule QtCore
+    \brief Contains miscellaneous identifiers used by the QFuture class.
+*/
+
+
+/*!
+  \enum QtFuture::Launch
+
+  \since 6.0
+
+  Represents execution policies for running a QFuture continuation.
+
+  \value Sync           The continuation will be launched in the same thread in
+                        which the parent has been executing.
+
+  \value Async          The continuation will be launched in in a separate thread taken from
+                        the global QThreadPool.
+
+  \value Inherit        The continuation will inherit the launch policy of the parent or its
+                        thread pool, if it was using a custom one.
+
+  \sa QFuture::then(), QThreadPool::globalInstance()
+
+*/
+
+/*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(Function &&function)
+
+    \since 6.0
+    \overload
+
+    Attaches a continuation to this future, allowing to chain multiple asynchronous
+    computations if desired. When the asynchronous computation represented by this
+    future finishes, \a function will be invoked in the same thread in which this
+    future has been running. A new QFuture representing the result of the continuation
+    is returned.
+
+    \note Use other overloads of this method if you need to launch the continuation in
+    a separate thread.
+
+    If this future has a result (is not a QFuture<void>), \a function takes the result
+    of this future as its argument.
+
+    You can chain multiple operations like this:
+
+    \code
+    QFuture<int> future = ...;
+    future.then([](int res1){ ... }).then([](int res2){ ... })...
+    \endcode
+
+    Or:
+    \code
+    QFuture<void> future = ...;
+    future.then([](){ ... }).then([](){ ... })...
+    \endcode
+
+    The continuation can also take a QFuture argument (instead of its value), representing
+    the previous future. This can be useful if, for example, QFuture has multiple results,
+    and the user wants to access them inside the continuation. Or the user needs to handle
+    the exception of the previous future inside the continuation, to not interrupt the chain
+    of multiple continuations. For example:
+
+    \code
+    QFuture<int> future = ...;
+    future.then([](QFuture<int> f) {
+        try {
+            ...
+            auto result = f.result();
+            ...
+        } catch (QException &e) {
+            // handle the exception
+        }
+    }).then(...);
+    \endcode
+
+    If the previous future throws an exception and it is not handled inside the
+    continuation, the exception will be propagated to the continuation future, to
+    allow the caller to handle it:
+
+    \code
+    QFuture<int> parentFuture = ...;
+    auto continuation = parentFuture.then([](int res1){ ... }).then([](int res2){ ... })...
+    ...
+    // parentFuture throws an exception
+    try {
+        auto result = continuation.result();
+    } catch (QException &e) {
+        // handle the exception
+    }
+    \endcode
+
+    In this case the whole chain of continuations will be interrupted.
+
+    \note If the parent future gets canceled, its continuations will
+    also be canceled.
+*/
+
+/*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(QtFuture::Launch policy, Function &&function)
+
+    \since 6.0
+    \overload
+
+    Attaches a continuation to this future, allowing to chain multiple asynchronous
+    computations. When the asynchronous computation represented by this future
+    finishes, \a function will be invoked according to the given launch \a policy.
+    A new QFuture representing the result of the continuation is returned.
+
+    Depending on the \a policy, continuation will run in the same thread as the parent,
+    run in a new thread, or inherit the launch policy and thread pool of the parent.
+
+    In the following example both continuations will run in a new thread (but in
+    the same one).
+
+    \code
+    QFuture<int> future = ...;
+    future.then(QtFuture::Launch::Async, [](int res){ ... }).then([](int res2){ ... });
+    \endcode
+
+    In the following example both continuations will run in new threads using the same
+    thread pool.
+
+    \code
+    QFuture<int> future = ...;
+    future.then(QtFuture::Launch::Async, [](int res){ ... })
+          .then(QtFuture::Launch::Inherit, [](int res2){ ... });
+    \endcode
+*/
+
+/*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(QThreadPool *pool, Function &&function)
+
+    \since 6.0
+    \overload
+
+    Attaches a continuation to this future, allowing to chain multiple asynchronous
+    computations if desired. When the asynchronous computation represented by this
+    future finishes, \a function will be invoked in a separate thread taken from the
+    QThreadPool \a pool.
+*/

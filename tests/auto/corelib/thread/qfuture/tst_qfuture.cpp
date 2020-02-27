@@ -94,6 +94,13 @@ private slots:
     void nestedExceptions();
 #endif
     void nonGlobalThreadPool();
+
+    void then();
+    void thenOnCanceledFuture();
+#ifndef QT_NO_EXCEPTIONS
+    void thenOnExceptionFuture();
+    void thenThrows();
+#endif
 };
 
 void tst_QFuture::resultStore()
@@ -1556,6 +1563,503 @@ void tst_QFuture::nonGlobalThreadPool()
         QCOMPARE(future.result(), Answer);
     }
 }
+
+void tst_QFuture::then()
+{
+    {
+        struct Add
+        {
+
+            static int addTwo(int arg) { return arg + 2; }
+
+            int operator()(int arg) const { return arg + 3; }
+        };
+
+        QFutureInterface<int> promise;
+        QFuture<int> then = promise.future()
+                                    .then([](int res) { return res + 1; }) // lambda
+                                    .then(Add::addTwo) // function
+                                    .then(Add()); // functor
+
+        promise.reportStarted();
+        QVERIFY(!then.isStarted());
+        QVERIFY(!then.isFinished());
+
+        const int result = 0;
+        promise.reportResult(result);
+        promise.reportFinished();
+
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QCOMPARE(then.result(), result + 6);
+    }
+
+    // then() on a ready future
+    {
+        QFutureInterface<int> promise;
+        promise.reportStarted();
+
+        const int result = 0;
+        promise.reportResult(result);
+        promise.reportFinished();
+
+        QFuture<int> then = promise.future()
+                                    .then([](int res1) { return res1 + 1; })
+                                    .then([](int res2) { return res2 + 2; })
+                                    .then([](int res3) { return res3 + 3; });
+
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QCOMPARE(then.result(), result + 6);
+    }
+
+    // Continuation of QFuture<void>
+    {
+        int result = 0;
+        QFutureInterface<void> promise;
+        QFuture<void> then = promise.future()
+                                     .then([&]() { result += 1; })
+                                     .then([&]() { result += 2; })
+                                     .then([&]() { result += 3; });
+
+        promise.reportStarted();
+        QVERIFY(!then.isStarted());
+        QVERIFY(!then.isFinished());
+        promise.reportFinished();
+
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QCOMPARE(result, 6);
+    }
+
+    // Continuation returns QFuture<void>
+    {
+        QFutureInterface<int> promise;
+        int value;
+        QFuture<void> then =
+                promise.future().then([](int res) { return res * 2; }).then([&](int prevResult) {
+                    value = prevResult;
+                });
+
+        promise.reportStarted();
+        QVERIFY(!then.isStarted());
+        QVERIFY(!then.isFinished());
+
+        const int result = 5;
+        promise.reportResult(result);
+        promise.reportFinished();
+
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QCOMPARE(value, result * 2);
+    }
+
+    // Continuations taking a QFuture argument.
+    {
+        int value = 0;
+        QFutureInterface<int> promise;
+        QFuture<void> then = promise.future()
+                                     .then([](QFuture<int> f1) { return f1.result() + 1; })
+                                     .then([&](QFuture<int> f2) { value = f2.result() + 2; })
+                                     .then([&](QFuture<void> f3) {
+                                         QVERIFY(f3.isFinished());
+                                         value += 3;
+                                     });
+
+        promise.reportStarted();
+        QVERIFY(!then.isStarted());
+        QVERIFY(!then.isFinished());
+
+        const int result = 0;
+        promise.reportResult(result);
+        promise.reportFinished();
+
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QCOMPARE(value, 6);
+    }
+
+    // Continuations use a new thread
+    {
+        Qt::HANDLE threadId1 = nullptr;
+        Qt::HANDLE threadId2 = nullptr;
+        QFutureInterface<void> promise;
+        QFuture<void> then = promise.future()
+                                     .then(QtFuture::Launch::Async,
+                                           [&]() { threadId1 = QThread::currentThreadId(); })
+                                     .then([&]() { threadId2 = QThread::currentThreadId(); });
+
+        promise.reportStarted();
+        QVERIFY(!then.isStarted());
+        QVERIFY(!then.isFinished());
+
+        promise.reportFinished();
+
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QVERIFY(threadId1 != QThread::currentThreadId());
+        QVERIFY(threadId2 != QThread::currentThreadId());
+        QVERIFY(threadId1 == threadId2);
+    }
+
+    // Continuation inherits the launch policy of its parent (QtFuture::Launch::Sync)
+    {
+        Qt::HANDLE threadId1 = nullptr;
+        Qt::HANDLE threadId2 = nullptr;
+        QFutureInterface<void> promise;
+        QFuture<void> then = promise.future()
+                                     .then(QtFuture::Launch::Sync,
+                                           [&]() { threadId1 = QThread::currentThreadId(); })
+                                     .then(QtFuture::Launch::Inherit,
+                                           [&]() { threadId2 = QThread::currentThreadId(); });
+
+        promise.reportStarted();
+        QVERIFY(!then.isStarted());
+        QVERIFY(!then.isFinished());
+
+        promise.reportFinished();
+
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QVERIFY(threadId1 == QThread::currentThreadId());
+        QVERIFY(threadId2 == QThread::currentThreadId());
+        QVERIFY(threadId1 == threadId2);
+    }
+
+    // Continuation inherits the launch policy of its parent (QtFuture::Launch::Async)
+    {
+        Qt::HANDLE threadId1 = nullptr;
+        Qt::HANDLE threadId2 = nullptr;
+        QFutureInterface<void> promise;
+        QFuture<void> then = promise.future()
+                                     .then(QtFuture::Launch::Async,
+                                           [&]() { threadId1 = QThread::currentThreadId(); })
+                                     .then(QtFuture::Launch::Inherit,
+                                           [&]() { threadId2 = QThread::currentThreadId(); });
+
+        promise.reportStarted();
+        QVERIFY(!then.isStarted());
+        QVERIFY(!then.isFinished());
+
+        promise.reportFinished();
+
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QVERIFY(threadId1 != QThread::currentThreadId());
+        QVERIFY(threadId2 != QThread::currentThreadId());
+    }
+
+    // Continuations use a custom thread pool
+    {
+        QFutureInterface<void> promise;
+        QThreadPool pool;
+        QVERIFY(pool.waitForDone(0)); // pool is not busy yet
+        QSemaphore semaphore;
+        QFuture<void> then = promise.future().then(&pool, [&]() { semaphore.acquire(); });
+
+        promise.reportStarted();
+        promise.reportFinished();
+
+        // Make sure the custom thread pool is busy on running the continuation
+        QVERIFY(!pool.waitForDone(0));
+        semaphore.release();
+        then.waitForFinished();
+
+        QVERIFY(then.isStarted());
+        QVERIFY(then.isFinished());
+        QCOMPARE(then.d.threadPool(), &pool);
+    }
+
+    // Continuation inherits parent's thread pool
+    {
+        Qt::HANDLE threadId1 = nullptr;
+        Qt::HANDLE threadId2 = nullptr;
+        QFutureInterface<void> promise;
+
+        QThreadPool pool;
+        QFuture<void> then1 = promise.future().then(&pool, [&]() {
+            threadId1 = QThread::currentThreadId();
+        });
+
+        promise.reportStarted();
+        promise.reportFinished();
+
+        then1.waitForFinished();
+        QVERIFY(pool.waitForDone()); // The pool is not busy after the first continuation is done
+
+        QSemaphore semaphore;
+        QFuture<void> then2 = then1.then(QtFuture::Launch::Inherit, [&]() {
+            semaphore.acquire();
+            threadId2 = QThread::currentThreadId();
+        });
+
+        QVERIFY(!pool.waitForDone(0)); // The pool is busy running the 2nd continuation
+
+        semaphore.release();
+        then2.waitForFinished();
+
+        QVERIFY(then2.isStarted());
+        QVERIFY(then2.isFinished());
+        QCOMPARE(then1.d.threadPool(), then2.d.threadPool());
+        QCOMPARE(then2.d.threadPool(), &pool);
+        QVERIFY(threadId1 != QThread::currentThreadId());
+        QVERIFY(threadId2 != QThread::currentThreadId());
+    }
+}
+
+void tst_QFuture::thenOnCanceledFuture()
+{
+    // Continuations on a canceled future
+    {
+        QFutureInterface<void> promise;
+        promise.reportStarted();
+        promise.reportCanceled();
+        promise.reportFinished();
+
+        int thenResult = 0;
+        QFuture<void> then =
+                promise.future().then([&]() { ++thenResult; }).then([&]() { ++thenResult; });
+
+        QVERIFY(then.isCanceled());
+        QCOMPARE(thenResult, 0);
+    }
+
+    // QFuture gets canceled after continuations are set
+    {
+        QFutureInterface<void> promise;
+
+        int thenResult = 0;
+        QFuture<void> then =
+                promise.future().then([&]() { ++thenResult; }).then([&]() { ++thenResult; });
+
+        promise.reportStarted();
+        promise.reportCanceled();
+        promise.reportFinished();
+
+        QVERIFY(then.isCanceled());
+        QCOMPARE(thenResult, 0);
+    }
+
+    // Same with QtFuture::Launch::Async
+
+    // Continuations on a canceled future
+    {
+        QFutureInterface<void> promise;
+        promise.reportStarted();
+        promise.reportCanceled();
+        promise.reportFinished();
+
+        int thenResult = 0;
+        QFuture<void> then =
+                promise.future().then(QtFuture::Launch::Async, [&]() { ++thenResult; }).then([&]() {
+                    ++thenResult;
+                });
+
+        QVERIFY(then.isCanceled());
+        QCOMPARE(thenResult, 0);
+    }
+
+    // QFuture gets canceled after continuations are set
+    {
+        QFutureInterface<void> promise;
+
+        int thenResult = 0;
+        QFuture<void> then =
+                promise.future().then(QtFuture::Launch::Async, [&]() { ++thenResult; }).then([&]() {
+                    ++thenResult;
+                });
+
+        promise.reportStarted();
+        promise.reportCanceled();
+        promise.reportFinished();
+
+        QVERIFY(then.isCanceled());
+        QCOMPARE(thenResult, 0);
+    }
+}
+
+#ifndef QT_NO_EXCEPTIONS
+void tst_QFuture::thenOnExceptionFuture()
+{
+    {
+        QFutureInterface<int> promise;
+
+        int thenResult = 0;
+        QFuture<void> then = promise.future().then([&](int res) { thenResult = res; });
+
+        promise.reportStarted();
+        QException e;
+        promise.reportException(e);
+        promise.reportFinished();
+
+        bool caught = false;
+        try {
+            then.waitForFinished();
+        } catch (QException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+        QCOMPARE(thenResult, 0);
+    }
+
+    // Exception handled inside the continuation
+    {
+        QFutureInterface<int> promise;
+
+        bool caught = false;
+        bool caughtByContinuation = false;
+        bool success = false;
+        int thenResult = 0;
+        QFuture<void> then = promise.future()
+                                     .then([&](QFuture<int> res) {
+                                         try {
+                                             thenResult = res.result();
+                                         } catch (QException &) {
+                                             caughtByContinuation = true;
+                                         }
+                                     })
+                                     .then([&]() { success = true; });
+
+        promise.reportStarted();
+        QException e;
+        promise.reportException(e);
+        promise.reportFinished();
+
+        try {
+            then.waitForFinished();
+        } catch (QException &) {
+            caught = true;
+        }
+
+        QCOMPARE(thenResult, 0);
+        QVERIFY(!caught);
+        QVERIFY(caughtByContinuation);
+        QVERIFY(success);
+    }
+
+    // Exception future
+    {
+        QFutureInterface<int> promise;
+        promise.reportStarted();
+        QException e;
+        promise.reportException(e);
+        promise.reportFinished();
+
+        int thenResult = 0;
+        QFuture<void> then = promise.future().then([&](int res) { thenResult = res; });
+
+        bool caught = false;
+        try {
+            then.waitForFinished();
+        } catch (QException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+        QCOMPARE(thenResult, 0);
+    }
+
+    // Same with QtFuture::Launch::Async
+    {
+        QFutureInterface<int> promise;
+
+        int thenResult = 0;
+        QFuture<void> then =
+                promise.future().then(QtFuture::Launch::Async, [&](int res) { thenResult = res; });
+
+        promise.reportStarted();
+        QException e;
+        promise.reportException(e);
+        promise.reportFinished();
+
+        bool caught = false;
+        try {
+            then.waitForFinished();
+        } catch (QException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+        QCOMPARE(thenResult, 0);
+    }
+
+    // Exception future
+    {
+        QFutureInterface<int> promise;
+        promise.reportStarted();
+        QException e;
+        promise.reportException(e);
+        promise.reportFinished();
+
+        int thenResult = 0;
+        QFuture<void> then =
+                promise.future().then(QtFuture::Launch::Async, [&](int res) { thenResult = res; });
+
+        bool caught = false;
+        try {
+            then.waitForFinished();
+        } catch (QException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+        QCOMPARE(thenResult, 0);
+    }
+}
+
+void tst_QFuture::thenThrows()
+{
+    // Continuation throws an exception
+    {
+        QFutureInterface<void> promise;
+
+        QFuture<void> then = promise.future().then([]() { throw QException(); });
+
+        promise.reportStarted();
+        promise.reportFinished();
+
+        bool caught = false;
+        try {
+            then.waitForFinished();
+        } catch (QException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
+
+    // Same with QtFuture::Launch::Async
+    {
+        QFutureInterface<void> promise;
+
+        QFuture<void> then =
+                promise.future().then(QtFuture::Launch::Async, []() { throw QException(); });
+
+        promise.reportStarted();
+        promise.reportFinished();
+
+        bool caught = false;
+        try {
+            then.waitForFinished();
+        } catch (QException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
+}
+#endif
 
 QTEST_MAIN(tst_QFuture)
 #include "tst_qfuture.moc"

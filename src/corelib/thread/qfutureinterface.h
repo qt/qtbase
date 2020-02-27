@@ -58,6 +58,11 @@ class QFutureInterfaceBasePrivate;
 class QFutureWatcherBase;
 class QFutureWatcherBasePrivate;
 
+namespace QtPrivate {
+template<typename Function, typename ResultType, typename ParentResultType>
+class Continuation;
+}
+
 class Q_CORE_EXPORT QFutureInterfaceBase
 {
 public:
@@ -68,7 +73,9 @@ public:
         Finished  = 0x04,
         Canceled  = 0x08,
         Paused    = 0x10,
-        Throttled = 0x20
+        Throttled = 0x20,
+        // Pending means that the future depends on another one, which is not finished yet
+        Pending   = 0x40
     };
 
     QFutureInterfaceBase(State initialState = NoState);
@@ -86,6 +93,7 @@ public:
 
     void setRunnable(QRunnable *runnable);
     void setThreadPool(QThreadPool *pool);
+    QThreadPool *threadPool() const;
     void setFilterMode(bool enable);
     void setProgressRange(int minimum, int maximum);
     int progressMinimum() const;
@@ -141,6 +149,18 @@ private:
 private:
     friend class QFutureWatcherBase;
     friend class QFutureWatcherBasePrivate;
+
+    template<typename Function, typename ResultType, typename ParentResultType>
+    friend class QtPrivate::Continuation;
+
+protected:
+    void setContinuation(std::function<void()> func);
+    void runContinuation() const;
+
+    void setLaunchAsync(bool value);
+    bool launchAsync() const;
+
+    bool isRunningOrPending() const;
 };
 
 template <typename T>
@@ -239,6 +259,7 @@ inline void QFutureInterface<T>::reportFinished(const T *result)
     if (result)
         reportResult(result);
     QFutureInterfaceBase::reportFinished();
+    QFutureInterfaceBase::runContinuation();
 }
 
 template <typename T>
@@ -292,7 +313,11 @@ public:
 
     void reportResult(const void *, int) { }
     void reportResults(const QVector<void> &, int) { }
-    void reportFinished(const void * = nullptr) { QFutureInterfaceBase::reportFinished(); }
+    void reportFinished(const void * = nullptr)
+    {
+        QFutureInterfaceBase::reportFinished();
+        QFutureInterfaceBase::runContinuation();
+    }
 };
 
 QT_END_NAMESPACE

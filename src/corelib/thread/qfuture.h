@@ -45,10 +45,11 @@
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qstring.h>
 
+#include <QtCore/qfuture_impl.h>
+
 QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
-
 
 template <typename T>
 class QFutureWatcher;
@@ -100,6 +101,18 @@ public:
 
     operator T() const { return result(); }
     QList<T> results() const { return d.results(); }
+
+    template<class Function>
+    using ResultType = typename QtPrivate::ResultTypeHelper<Function, T>::ResultType;
+
+    template<class Function>
+    QFuture<ResultType<Function>> then(Function &&function);
+
+    template<class Function>
+    QFuture<ResultType<Function>> then(QtFuture::Launch policy, Function &&function);
+
+    template<class Function>
+    QFuture<ResultType<Function>> then(QThreadPool *pool, Function &&function);
 
     class const_iterator
     {
@@ -199,6 +212,7 @@ private:
     friend class QFutureWatcher<T>;
 
 public: // Warning: the d pointer is not documented and is considered private.
+    // TODO: make this private
     mutable QFutureInterface<T> d;
 };
 
@@ -220,6 +234,35 @@ template <typename T>
 inline QFuture<T> QFutureInterface<T>::future()
 {
     return QFuture<T>(this);
+}
+
+template<class T>
+template<class Function>
+QFuture<typename QFuture<T>::template ResultType<Function>> QFuture<T>::then(Function &&function)
+{
+    return then(QtFuture::Launch::Sync, std::forward<Function>(function));
+}
+
+template<class T>
+template<class Function>
+QFuture<typename QFuture<T>::template ResultType<Function>>
+QFuture<T>::then(QtFuture::Launch policy, Function &&function)
+{
+    QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
+    QtPrivate::Continuation<Function, ResultType<Function>, T>::create(
+            std::forward<Function>(function), this, promise, policy);
+    return promise.future();
+}
+
+template<class T>
+template<class Function>
+QFuture<typename QFuture<T>::template ResultType<Function>> QFuture<T>::then(QThreadPool *pool,
+                                                                             Function &&function)
+{
+    QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
+    QtPrivate::Continuation<Function, ResultType<Function>, T>::create(
+            std::forward<Function>(function), this, promise, pool);
+    return promise.future();
 }
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Future)
@@ -272,6 +315,18 @@ public:
     QString progressText() const { return d.progressText(); }
     void waitForFinished() { d.waitForFinished(); }
 
+    template<class Function>
+    using ResultType = typename QtPrivate::ResultTypeHelper<Function, void>::ResultType;
+
+    template<class Function>
+    QFuture<ResultType<Function>> then(Function &&function);
+
+    template<class Function>
+    QFuture<ResultType<Function>> then(QtFuture::Launch policy, Function &&function);
+
+    template<class Function>
+    QFuture<ResultType<Function>> then(QThreadPool *pool, Function &&function);
+
 private:
     friend class QFutureWatcher<void>;
 
@@ -279,6 +334,9 @@ private:
 public:
 #endif
     mutable QFutureInterfaceBase d;
+
+    template<typename Function, typename ResultType, typename ParentResultType>
+    friend class QtPrivate::Continuation;
 };
 
 inline QFuture<void> QFutureInterface<void>::future()
@@ -290,6 +348,32 @@ template <typename T>
 QFuture<void> qToVoidFuture(const QFuture<T> &future)
 {
     return QFuture<void>(future.d);
+}
+
+template<class Function>
+QFuture<QFuture<void>::ResultType<Function>> QFuture<void>::then(Function &&function)
+{
+    return then(QtFuture::Launch::Sync, std::forward<Function>(function));
+}
+
+template<class Function>
+QFuture<QFuture<void>::ResultType<Function>> QFuture<void>::then(QtFuture::Launch policy,
+                                                                 Function &&function)
+{
+    QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
+    QtPrivate::Continuation<Function, ResultType<Function>, void>::create(
+            std::forward<Function>(function), this, promise, policy);
+    return promise.future();
+}
+
+template<class Function>
+QFuture<QFuture<void>::ResultType<Function>> QFuture<void>::then(QThreadPool *pool,
+                                                                 Function &&function)
+{
+    QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
+    QtPrivate::Continuation<Function, ResultType<Function>, void>::create(
+            std::forward<Function>(function), this, promise, pool);
+    return promise.future();
 }
 
 QT_END_NAMESPACE
