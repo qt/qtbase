@@ -140,7 +140,7 @@ public:
     enum : bool { InternalDatabaseAvailable = false };
     QMimeXMLProvider(QMimeDatabasePrivate *db, InternalDatabaseEnum)
         : QMimeProviderBase(db, QString())
-    { Q_UNREACHABLE() };
+    { Q_UNREACHABLE(); };
 #endif
     QMimeXMLProvider(QMimeDatabasePrivate *db, const QString &directory);
     ~QMimeXMLProvider();
