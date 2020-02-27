@@ -448,11 +448,11 @@ QT_END_NAMESPACE
 
 bool reallocTestProceed = true;
 
-template <class T, int PreAlloc>
-int countMoved(QVarLengthArray<T, PreAlloc> const &c)
+template <class T, qsizetype PreAlloc>
+qsizetype countMoved(QVarLengthArray<T, PreAlloc> const &c)
 {
-    int result = 0;
-    for (int i = 0; i < c.size(); ++i)
+    qsizetype result = 0;
+    for (qsizetype i = 0; i < c.size(); ++i)
         if (c[i].hasMoved())
             ++result;
 

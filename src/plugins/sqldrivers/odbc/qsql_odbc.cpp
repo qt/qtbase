@@ -68,7 +68,7 @@ static const SQLSMALLINT TABLENAMESIZE = 128;
 //Map Qt parameter types to ODBC types
 static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
 
-inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, int size=-1)
+inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, qsizetype size=-1)
 {
     QString result;
 
@@ -491,7 +491,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
                 // more data can be fetched, the length indicator does NOT
                 // contain the number of bytes returned - it contains the
                 // total number of bytes that CAN be fetched
-                int rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator;
+                qsizetype rSize = (r == SQL_SUCCESS_WITH_INFO) ? colSize : lengthIndicator;
                 // Remove any trailing \0 as some drivers misguidedly append one
                 int realsize = qMin(rSize, buf.size());
                 if (realsize > 0 && buf[realsize - 1] == 0)

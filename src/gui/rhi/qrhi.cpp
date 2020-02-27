@@ -1252,7 +1252,7 @@ uint qHash(const QRhiVertexInputLayout &v, uint seed) Q_DECL_NOTHROW
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-template<typename T, int N>
+template<typename T, qsizetype N>
 QDebug operator<<(QDebug dbg, const QVarLengthArray<T, N> &vla)
 {
     return QtPrivate::printSequentialContainer(dbg, "VLA", vla);

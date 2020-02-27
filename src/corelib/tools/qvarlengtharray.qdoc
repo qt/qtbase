@@ -90,7 +90,7 @@
     \sa QVector, QList
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(int size)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype size)
 
     Constructs an array with an initial size of \a size elements.
 
@@ -101,7 +101,7 @@
 */
 
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(std::initializer_list<T> args)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(std::initializer_list<T> args)
     \since 5.5
 
     Constructs an array from the std::initializer_list given by \a args.
@@ -110,7 +110,7 @@
     lists.
 */
 
-/*! \fn template<class T, int Prealloc> template<typename InputIterator> QVarLengthArray<T, Prealloc>::QVarLengthArray(InputIterator first, InputIterator last)
+/*! \fn template<class T, qsizetype Prealloc> template<typename InputIterator> QVarLengthArray<T, Prealloc>::QVarLengthArray(InputIterator first, InputIterator last)
     \since 5.14
 
     Constructs an array with the contents in the iterator range [\a first, \a last).
@@ -119,26 +119,26 @@
 */
 
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::~QVarLengthArray()
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::~QVarLengthArray()
 
     Destroys the array.
 */
 
-/*! \fn template<class T, int Prealloc> int QVarLengthArray<T, Prealloc>::size() const
+/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::size() const
 
     Returns the number of elements in the array.
 
     \sa isEmpty(), resize()
 */
 
-/*! \fn template<class T, int Prealloc> int QVarLengthArray<T, Prealloc>::count() const
+/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::count() const
 
     Same as size().
 
     \sa isEmpty(), resize()
 */
 
-/*! \fn template<class T, int Prealloc> int QVarLengthArray<T, Prealloc>::length() const
+/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::length() const
     \since 5.0
 
     Same as size().
@@ -146,7 +146,7 @@
     \sa isEmpty(), resize()
 */
 
-/*! \fn template<class T, int Prealloc> T& QVarLengthArray<T, Prealloc>::first()
+/*! \fn template<class T, qsizetype Prealloc> T& QVarLengthArray<T, Prealloc>::first()
 
     Returns a reference to the first item in the array. The array must
     not be empty. If the array can be empty, check isEmpty() before
@@ -155,24 +155,24 @@
     \sa last(), isEmpty()
 */
 
-/*! \fn template<class T, int Prealloc> const T& QVarLengthArray<T, Prealloc>::first() const
+/*! \fn template<class T, qsizetype Prealloc> const T& QVarLengthArray<T, Prealloc>::first() const
 
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> T& QVarLengthArray<T, Prealloc>::front()
+/*! \fn template<class T, qsizetype Prealloc> T& QVarLengthArray<T, Prealloc>::front()
     \since 5.0
 
     Same as first(). Provided for STL-compatibility.
 */
 
-/*! \fn template<class T, int Prealloc> const T& QVarLengthArray<T, Prealloc>::front() const
+/*! \fn template<class T, qsizetype Prealloc> const T& QVarLengthArray<T, Prealloc>::front() const
     \since 5.0
 
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> T& QVarLengthArray<T, Prealloc>::last()
+/*! \fn template<class T, qsizetype Prealloc> T& QVarLengthArray<T, Prealloc>::last()
 
     Returns a reference to the last item in the array.  The array must
     not be empty. If the array can be empty, check isEmpty() before
@@ -181,37 +181,37 @@
     \sa first(), isEmpty()
 */
 
-/*! \fn template<class T, int Prealloc> const T& QVarLengthArray<T, Prealloc>::last() const
+/*! \fn template<class T, qsizetype Prealloc> const T& QVarLengthArray<T, Prealloc>::last() const
 
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> T& QVarLengthArray<T, Prealloc>::back()
+/*! \fn template<class T, qsizetype Prealloc> T& QVarLengthArray<T, Prealloc>::back()
     \since 5.0
 
     Same as last(). Provided for STL-compatibility.
 */
 
-/*! \fn template<class T, int Prealloc> const T& QVarLengthArray<T, Prealloc>::back() const
+/*! \fn template<class T, qsizetype Prealloc> const T& QVarLengthArray<T, Prealloc>::back() const
     \since 5.0
 
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::shrink_to_fit()
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::shrink_to_fit()
     \since 5.10
 
     Same as squeeze(). Provided for STL-compatibility.
 */
 
-/*! \fn template<class T, int Prealloc> bool QVarLengthArray<T, Prealloc>::isEmpty() const
+/*! \fn template<class T, qsizetype Prealloc> bool QVarLengthArray<T, Prealloc>::isEmpty() const
 
     Returns \c true if the array has size 0; otherwise returns \c false.
 
     \sa size(), resize()
 */
 
-/*! \fn template<class T, int Prealloc> bool QVarLengthArray<T, Prealloc>::empty() const
+/*! \fn template<class T, qsizetype Prealloc> bool QVarLengthArray<T, Prealloc>::empty() const
     \since 5.0
 
     Returns \c true if the array has size 0; otherwise returns \c false.
@@ -219,14 +219,14 @@
     Same as isEmpty(). Provided for STL-compatibility.
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::clear()
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::clear()
 
     Removes all the elements from the array.
 
     Same as resize(0).
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::resize(int size)
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::resize(qsizetype size)
 
     Sets the size of the array to \a size. If \a size is greater than
     the current size, elements are added to the end. If \a size is
@@ -240,7 +240,7 @@
     \sa size(), squeeze()
 */
 
-/*! \fn template<class T, int Prealloc> int QVarLengthArray<T, Prealloc>::capacity() const
+/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::capacity() const
 
     Returns the maximum number of elements that can be stored in the
     array without forcing a reallocation.
@@ -253,7 +253,7 @@
     \sa reserve(), squeeze()
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::reserve(int size)
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::reserve(qsizetype size)
 
     Attempts to allocate memory for at least \a size elements. If you
     know in advance how large the array can get, you can call this
@@ -270,7 +270,7 @@
     \sa capacity(), squeeze()
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::squeeze()
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::squeeze()
     \since 5.1
 
     Releases any memory not required to store the items.
@@ -284,7 +284,7 @@
     \sa reserve(), capacity(), resize()
 */
 
-/*! \fn template<class T, int Prealloc> T &QVarLengthArray<T, Prealloc>::operator[](int i)
+/*! \fn template<class T, qsizetype Prealloc> T &QVarLengthArray<T, Prealloc>::operator[](qsizetype i)
 
     Returns a reference to the item at index position \a i.
 
@@ -294,14 +294,14 @@
     \sa data(), at()
 */
 
-/*! \fn template<class T, int Prealloc> const T &QVarLengthArray<T, Prealloc>::operator[](int i) const
+/*! \fn template<class T, qsizetype Prealloc> const T &QVarLengthArray<T, Prealloc>::operator[](qsizetype i) const
 
     \overload
 */
 
 
 /*!
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::append(const T &t)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::append(const T &t)
 
     Appends item \a t to the array, extending the array if necessary.
 
@@ -309,7 +309,7 @@
 */
 
 /*!
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::push_back(const T &t)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::push_back(const T &t)
     \since 5.0
 
     Appends item \a t to the array, extending the array if necessary.
@@ -317,7 +317,7 @@
 */
 
 /*!
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::append(T &&t)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::append(T &&t)
     \overload append
     \since 5.9
 
@@ -331,7 +331,7 @@
 */
 
 /*!
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::push_back(T &&t)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::push_back(T &&t)
     \overload push_back
     \since 5.9
 
@@ -345,7 +345,7 @@
 */
 
 /*!
-    \fn template<class T, int Prealloc> inline void QVarLengthArray<T, Prealloc>::removeLast()
+    \fn template<class T, qsizetype Prealloc> inline void QVarLengthArray<T, Prealloc>::removeLast()
     \since 4.5
 
     Decreases the size of the array by one.  The allocated size is not changed.
@@ -354,20 +354,20 @@
 */
 
 /*!
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::pop_back()
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::pop_back()
     \since 5.0
 
     Same as removeLast(). Provided for STL-compatibility.
 */
 
 /*!
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::append(const T *buf, int size)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::append(const T *buf, qsizetype size)
 
     Appends \a size amount of items referenced by \a buf to this array.
 */
 
 
-/*! \fn template<class T, int Prealloc> T *QVarLengthArray<T, Prealloc>::data()
+/*! \fn template<class T, qsizetype Prealloc> T *QVarLengthArray<T, Prealloc>::data()
 
     Returns a pointer to the data stored in the array. The pointer can
     be used to access and modify the items in the array.
@@ -383,12 +383,12 @@
     \sa constData(), operator[]()
 */
 
-/*! \fn template<class T, int Prealloc> const T *QVarLengthArray<T, Prealloc>::data() const
+/*! \fn template<class T, qsizetype Prealloc> const T *QVarLengthArray<T, Prealloc>::data() const
 
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> const T *QVarLengthArray<T, Prealloc>::constData() const
+/*! \fn template<class T, qsizetype Prealloc> const T *QVarLengthArray<T, Prealloc>::constData() const
 
     Returns a const pointer to the data stored in the array. The
     pointer can be used to access the items in the array. The
@@ -400,11 +400,11 @@
     \sa data(), operator[]()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator=(const QVarLengthArray<T, Prealloc> &other)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator=(const QVarLengthArray<T, Prealloc> &other)
     Assigns \a other to this array and returns a reference to this array.
  */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator=(std::initializer_list<T> list)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator=(std::initializer_list<T> list)
     \since 5.5
 
     Assigns the values of \a list to this array, and returns a reference to this array.
@@ -413,11 +413,11 @@
     lists.
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(const QVarLengthArray<T, Prealloc> &other)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(const QVarLengthArray<T, Prealloc> &other)
     Constructs a copy of \a other.
  */
 
-/*! \fn template<class T, int Prealloc> const T &QVarLengthArray<T, Prealloc>::at(int i) const
+/*! \fn template<class T, qsizetype Prealloc> const T &QVarLengthArray<T, Prealloc>::at(qsizetype i) const
 
     Returns a reference to the item at index position \a i.
 
@@ -427,7 +427,7 @@
     \sa value(), operator[]()
 */
 
-/*! \fn template<class T, int Prealloc> T QVarLengthArray<T, Prealloc>::value(int i) const
+/*! \fn template<class T, qsizetype Prealloc> T QVarLengthArray<T, Prealloc>::value(qsizetype i) const
 
     Returns the value at index position \a i.
 
@@ -439,7 +439,7 @@
     \sa at(), operator[]()
 */
 
-/*! \fn template<class T, int Prealloc> T QVarLengthArray<T, Prealloc>::value(int i, const T &defaultValue) const
+/*! \fn template<class T, qsizetype Prealloc> T QVarLengthArray<T, Prealloc>::value(qsizetype i, const T &defaultValue) const
 
     \overload
 
@@ -525,8 +525,8 @@
 */
 
 /*!
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::prepend(const T &value)
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::prepend(T &&value)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::prepend(const T &value)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::prepend(T &&value)
 
     \since 4.8
     Inserts \a value at the beginning of the array.
@@ -542,7 +542,7 @@
     \sa append(), insert()
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::replace(int i, const T &value)
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::replace(qsizetype i, const T &value)
 
     \since 4.8
     Replaces the item at index position \a i with \a value.
@@ -553,7 +553,7 @@
     \sa operator[](), remove()
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::remove(int i)
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::remove(qsizetype i)
 
     \overload
     \since 4.8
@@ -563,7 +563,7 @@
     \sa insert(), replace()
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::remove(int i, int count)
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::remove(qsizetype i, qsizetype count)
 
     \overload
     \since 4.8
@@ -574,7 +574,7 @@
     \sa insert(), replace()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::begin()
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::begin()
     \since 4.8
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
@@ -583,12 +583,12 @@
     \sa constBegin(), end()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::begin() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::begin() const
     \since 4.8
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::cbegin() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::cbegin() const
     \since 5.0
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
@@ -597,7 +597,7 @@
     \sa begin(), cend()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::constBegin() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::constBegin() const
     \since 4.8
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
@@ -606,7 +606,7 @@
     \sa begin(), constEnd()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::end()
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::end()
     \since 4.8
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
@@ -615,13 +615,13 @@
     \sa begin(), constEnd()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::end() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::end() const
     \since 4.8
 
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::cend() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::cend() const
     \since 5.0
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
@@ -630,7 +630,7 @@
     \sa cbegin(), end()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::constEnd() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_iterator QVarLengthArray<T, Prealloc>::constEnd() const
     \since 4.8
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
@@ -639,7 +639,7 @@
     \sa constBegin(), end()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::reverse_iterator QVarLengthArray<T, Prealloc>::rbegin()
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::reverse_iterator QVarLengthArray<T, Prealloc>::rbegin()
     \since 5.6
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
@@ -648,12 +648,12 @@
     \sa begin(), crbegin(), rend()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_reverse_iterator QVarLengthArray<T, Prealloc>::rbegin() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_reverse_iterator QVarLengthArray<T, Prealloc>::rbegin() const
     \since 5.6
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_reverse_iterator QVarLengthArray<T, Prealloc>::crbegin() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_reverse_iterator QVarLengthArray<T, Prealloc>::crbegin() const
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
@@ -662,7 +662,7 @@
     \sa begin(), rbegin(), rend()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::reverse_iterator QVarLengthArray<T, Prealloc>::rend()
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::reverse_iterator QVarLengthArray<T, Prealloc>::rend()
     \since 5.6
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
@@ -671,12 +671,12 @@
     \sa end(), crend(), rbegin()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_reverse_iterator QVarLengthArray<T, Prealloc>::rend() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_reverse_iterator QVarLengthArray<T, Prealloc>::rend() const
     \since 5.6
     \overload
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::const_reverse_iterator QVarLengthArray<T, Prealloc>::crend() const
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::const_reverse_iterator QVarLengthArray<T, Prealloc>::crend() const
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
@@ -685,7 +685,7 @@
     \sa end(), rend(), rbegin()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::erase(const_iterator pos)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::erase(const_iterator pos)
     \since 4.8
 
     Removes the item pointed to by the iterator \a pos from the
@@ -695,7 +695,7 @@
     \sa insert(), remove()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::erase(const_iterator begin, const_iterator end)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::erase(const_iterator begin, const_iterator end)
 
     \overload
     \since 4.8
@@ -706,8 +706,8 @@
 */
 
 /*!
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::insert(int i, const T &value)
-    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::insert(int i, T &&value)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::insert(qsizetype i, const T &value)
+    \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::insert(qsizetype i, T &&value)
     \since 4.8
 
     Inserts \a value at index position \a i in the array. If \a i is
@@ -723,7 +723,7 @@
     \sa remove()
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::insert(int i, int count, const T &value)
+/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::insert(qsizetype i, qsizetype count, const T &value)
 
     \overload
     \since 4.8
@@ -732,8 +732,8 @@
     vector.
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, const T &value)
-    \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, T &&value)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, const T &value)
+    \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, T &&value)
 
     \overload
     \since 4.8
@@ -742,7 +742,7 @@
     \a before. Returns an iterator pointing at the inserted item.
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, int count, const T &value)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, qsizetype count, const T &value)
 
     \since 4.8
     Inserts \a count copies of \a value in front of the item pointed to
@@ -752,7 +752,7 @@
 
 
 
-/*! \fn template<class T, int Prealloc1, int Prealloc2> bool operator==(const QVarLengthArray<T, Prealloc1> &left, const QVarLengthArray<T, Prealloc2> &right)
+/*! \fn template<class T, qsizetype Prealloc1, qsizetype Prealloc2> bool operator==(const QVarLengthArray<T, Prealloc1> &left, const QVarLengthArray<T, Prealloc2> &right)
 
     \relates QVarLengthArray
     \since 4.8
@@ -767,7 +767,7 @@
     \sa operator!=()
 */
 
-/*! \fn template<typename T, int Prealloc1, int Prealloc2> bool operator!=(const QVarLengthArray<T, Prealloc1> &left, const QVarLengthArray<T, Prealloc2> &right)
+/*! \fn template<typename T, qsizetype Prealloc1, qsizetype Prealloc2> bool operator!=(const QVarLengthArray<T, Prealloc1> &left, const QVarLengthArray<T, Prealloc2> &right)
 
     \relates QVarLengthArray
     \since 4.8
@@ -782,7 +782,7 @@
     \sa operator==()
 */
 
-/*! \fn template<typename T, int Prealloc1, int Prealloc2> bool operator<(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+/*! \fn template<typename T, qsizetype Prealloc1, qsizetype Prealloc2> bool operator<(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
     \since 5.6
     \relates QVarLengthArray
 
@@ -794,7 +794,7 @@
     of \c operator<().
 */
 
-/*! \fn template<typename T, int Prealloc1, int Prealloc2> bool operator<=(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+/*! \fn template<typename T, qsizetype Prealloc1, qsizetype Prealloc2> bool operator<=(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
     \since 5.6
     \relates QVarLengthArray
 
@@ -806,7 +806,7 @@
     of \c operator<().
 */
 
-/*! \fn template<typename T, int Prealloc1, int Prealloc2> bool operator>(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+/*! \fn template<typename T, qsizetype Prealloc1, qsizetype Prealloc2> bool operator>(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
     \since 5.6
     \relates QVarLengthArray
 
@@ -818,7 +818,7 @@
     of \c operator<().
 */
 
-/*! \fn template<typename T, int Prealloc1, int Prealloc2> bool operator>=(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
+/*! \fn template<typename T, qsizetype Prealloc1, qsizetype Prealloc2> bool operator>=(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
     \since 5.6
     \relates QVarLengthArray
 
@@ -830,7 +830,7 @@
     of \c operator<().
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator<<(const T &value)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator<<(const T &value)
 
     \since 4.8
     Appends \a value to the array and returns a reference to this
@@ -839,7 +839,7 @@
     \sa append(), operator+=()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator<<(T &&value)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator<<(T &&value)
     \since 5.11
 
     \overload
@@ -847,7 +847,7 @@
     \sa append(), operator+=()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator+=(const T &value)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator+=(const T &value)
 
     \since 4.8
     Appends \a value to the array and returns a reference to this vector.
@@ -855,7 +855,7 @@
     \sa append(), operator<<()
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator+=(T &&value)
+/*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc> &QVarLengthArray<T, Prealloc>::operator+=(T &&value)
     \since 5.11
 
     \overload
@@ -863,7 +863,7 @@
     \sa append(), operator<<()
 */
 
-/*! \fn template<class T, int Prealloc> int QVarLengthArray<T, Prealloc>::indexOf(const T &value, int from = 0) const
+/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::indexOf(const T &value, qsizetype from = 0) const
 
     \since 5.3
     Returns the index position of the first occurrence of \a value in
@@ -876,7 +876,7 @@
     \sa lastIndexOf(), contains()
 */
 
-/*! \fn template<class T, int Prealloc> int QVarLengthArray<T, Prealloc>::lastIndexOf(const T &value, int from = -1) const
+/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::lastIndexOf(const T &value, qsizetype from = -1) const
 
     \since 5.3
     Returns the index position of the last occurrence of the value \a
@@ -890,7 +890,7 @@
     \sa indexOf(), contains()
 */
 
-/*! \fn template<class T, int Prealloc> bool QVarLengthArray<T, Prealloc>::contains(const T &value) const
+/*! \fn template<class T, qsizetype Prealloc> bool QVarLengthArray<T, Prealloc>::contains(const T &value) const
 
     \since 5.3
     Returns \c true if the array contains an occurrence of \a value;
@@ -903,7 +903,7 @@
 */
 
 /*!
-    \fn template <typename T, int Prealloc> uint qHash(const QVarLengthArray<T, Prealloc> &key, uint seed = 0)
+    \fn template <typename T, qsizetype Prealloc> uint qHash(const QVarLengthArray<T, Prealloc> &key, uint seed = 0)
     \relates QVarLengthArray
     \since 5.14
 

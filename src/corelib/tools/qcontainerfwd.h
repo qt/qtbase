@@ -54,7 +54,7 @@ template <class T1, class T2> struct QPair;
 template <class T> class QQueue;
 template <class T> class QSet;
 template <class T> class QStack;
-template<class T, int Prealloc = 256> class QVarLengthArray;
+template<class T, qsizetype Prealloc = 256> class QVarLengthArray;
 template <class T> class QVector;
 template<typename T> using QList = QVector<T>;
 

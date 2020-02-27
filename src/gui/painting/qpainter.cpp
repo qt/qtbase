@@ -1929,8 +1929,7 @@ bool QPainter::end()
     }
 
     if (d->states.size() > 1) {
-        qWarning("QPainter::end: Painter ended with %d saved states",
-                 d->states.size());
+        qWarning("QPainter::end: Painter ended with %d saved states", int(d->states.size()));
     }
 
     if (d->engine->autoDestruct()) {

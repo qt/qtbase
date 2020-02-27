@@ -391,7 +391,7 @@ int QDBusMetaObjectGenerator::aggregateParameterCount(const QMap<QByteArray, Met
     QMap<QByteArray, Method>::const_iterator it;
     for (it = map.constBegin(); it != map.constEnd(); ++it) {
         const Method &m = it.value();
-        sum += m.inputTypes.size() + qMax(1, m.outputTypes.size());
+        sum += m.inputTypes.size() + qMax(qsizetype(1), m.outputTypes.size());
     }
     return sum;
 }
@@ -460,7 +460,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
              it != map.constEnd(); ++it) {
             const Method &mm = it.value();
 
-            int argc = mm.inputTypes.size() + qMax(0, mm.outputTypes.size() - 1);
+            int argc = mm.inputTypes.size() + qMax(qsizetype(0), mm.outputTypes.size() - 1);
 
             idata[offset++] = strings.enter(mm.name);
             idata[offset++] = argc;

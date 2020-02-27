@@ -3561,7 +3561,7 @@ static void PtsToRegion(int numFullPtBlocks, int iCurPtBlock,
     int extendTo = 0;
     bool needsExtend = false;
     QVarLengthArray<QRegionSpan> row;
-    int rowSize = 0;
+    qsizetype rowSize = 0;
 
     reg->extents.setLeft(INT_MAX);
     reg->extents.setRight(INT_MIN);
