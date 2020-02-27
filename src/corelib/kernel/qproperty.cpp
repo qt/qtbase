@@ -51,7 +51,7 @@ QPropertyBase::QPropertyBase(QPropertyBase &&other, void *propertyDataPtr)
 {
     std::swap(d_ptr, other.d_ptr);
     QPropertyBasePointer d{this};
-    d.firstObserverPtr().set(nullptr);
+    d.setFirstObserver(nullptr);
     if (auto binding = d.bindingPtr())
         binding->propertyDataPtr = propertyDataPtr;
 }
@@ -63,7 +63,7 @@ void QPropertyBase::moveAssign(QPropertyBase &&other, void *propertyDataPtr)
 
     QPropertyBasePointer d{this};
     auto observer = d.firstObserver();
-    d.firstObserverPtr().set(nullptr);
+    d.setFirstObserver(nullptr);
 
     if (auto binding = d.bindingPtr()) {
         binding->unlinkAndDeref();
@@ -75,7 +75,7 @@ void QPropertyBase::moveAssign(QPropertyBase &&other, void *propertyDataPtr)
     if (auto binding = d.bindingPtr())
         binding->propertyDataPtr = propertyDataPtr;
 
-    d.firstObserverPtr().set(const_cast<QPropertyObserver*>(observer.ptr));
+    d.setFirstObserver(observer.ptr);
 
     // The caller will have to notify observers.
 }
@@ -137,11 +137,31 @@ QPropertyBindingPrivate *QPropertyBasePointer::bindingPtr() const
     return nullptr;
 }
 
-QtPrivate::QPropertyTagPreservingPointerToPointer<QPropertyObserver> QPropertyBasePointer::firstObserverPtr() const
+void QPropertyBasePointer::addObserver(QPropertyObserver *observer)
 {
-    if (auto *binding = bindingPtr())
-        return const_cast<QPropertyObserver**>(&binding->firstObserver.ptr);
-    return &ptr->d_ptr;
+    if (auto *binding = bindingPtr()) {
+        observer->prev = &binding->firstObserver.ptr;
+        observer->next = binding->firstObserver.ptr;
+        if (observer->next)
+            observer->next->prev = &observer->next;
+        binding->firstObserver.ptr = observer;
+    } else {
+        auto firstObserver = reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QPropertyBase::FlagMask);
+        observer->prev = reinterpret_cast<QPropertyObserver**>(&ptr->d_ptr);
+        observer->next = firstObserver;
+        if (observer->next)
+            observer->next->prev = &observer->next;
+    }
+    setFirstObserver(observer);
+}
+
+void QPropertyBasePointer::setFirstObserver(QPropertyObserver *observer)
+{
+    if (auto *binding = bindingPtr()) {
+        binding->firstObserver.ptr = observer;
+        return;
+    }
+    ptr->d_ptr = reinterpret_cast<quintptr>(observer) | (ptr->d_ptr & QPropertyBase::FlagMask);
 }
 
 QPropertyObserverPointer QPropertyBasePointer::firstObserver() const
@@ -249,9 +269,9 @@ QPropertyObserver::QPropertyObserver(QPropertyObserver &&other)
     std::swap(next, other.next);
     std::swap(prev, other.prev);
     if (next)
-        next->prev = reinterpret_cast<quintptr*>(&next);
+        next->prev = &next;
     if (prev)
-        prev.set(this);
+        prev.setPointer(this);
 }
 
 QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other)
@@ -267,9 +287,9 @@ QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other)
     std::swap(next, other.next);
     std::swap(prev, other.prev);
     if (next)
-        next->prev = reinterpret_cast<quintptr*>(&next);
+        next->prev = &next;
     if (prev)
-        prev.set(this);
+        prev.setPointer(this);
 
     return *this;
 }
@@ -279,7 +299,7 @@ void QPropertyObserverPointer::unlink()
     if (ptr->next)
         ptr->next->prev = ptr->prev;
     if (ptr->prev)
-        ptr->prev.set(ptr->next.data());
+        ptr->prev.setPointer(ptr->next.pointer());
     ptr->next = nullptr;
     ptr->prev.clear();
 }
@@ -287,13 +307,13 @@ void QPropertyObserverPointer::unlink()
 void QPropertyObserverPointer::setChangeHandler(void (*changeHandler)(QPropertyObserver *))
 {
     ptr->changeHandler = changeHandler;
-    ptr->next.setFlag(true);
+    ptr->next.setTag(QPropertyObserver::ObserverNotifiesChangeHandler);
 }
 
 void QPropertyObserverPointer::setBindingToMarkDirty(QPropertyBindingPrivate *binding)
 {
     ptr->bindingToMarkDirty = binding;
-    ptr->next.setFlag(false);
+    ptr->next.setTag(QPropertyObserver::ObserverNotifiesBinding);
 }
 
 void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding)
@@ -303,8 +323,8 @@ void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding
 
     auto observer = const_cast<QPropertyObserver*>(ptr);
     while (observer) {
-        auto * const next = observer->next.data();
-        if (observer->next.flag()) {
+        auto * const next = observer->next.pointer();
+        if (observer->next.tag() == QPropertyObserver::ObserverNotifiesChangeHandler) {
             if (!knownIfPropertyChanged && triggeringBinding) {
                 knownIfPropertyChanged = true;
 
@@ -328,12 +348,7 @@ void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding
 void QPropertyObserverPointer::observeProperty(QPropertyBasePointer property)
 {
     unlink();
-    auto firstObserverPtr = property.firstObserverPtr();
-    ptr->prev = firstObserverPtr;
-    ptr->next = firstObserverPtr.get();
-    if (ptr->next)
-        ptr->next->prev = &ptr->next;
-    firstObserverPtr.set(ptr);
+    property.addObserver(ptr);
 }
 
 void QPropertyObserverPointer::prependToBinding(QPropertyBindingPrivate *binding)

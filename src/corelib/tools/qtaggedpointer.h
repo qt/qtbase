@@ -73,12 +73,12 @@ namespace QtPrivate {
 template <typename T, typename Tag = typename QtPrivate::TagInfo<T>::TagType>
 class QTaggedPointer
 {
-    static constexpr quintptr tagMask() { return QtPrivate::TagInfo<T>::alignment - 1; }
-    static constexpr quintptr pointerMask() { return ~tagMask(); }
-
 public:
     using Type = T;
     using TagType = Tag;
+
+    static constexpr quintptr tagMask() { return QtPrivate::TagInfo<T>::alignment - 1; }
+    static constexpr quintptr pointerMask() { return ~tagMask(); }
 
     explicit QTaggedPointer(Type *pointer = nullptr, TagType tag = TagType()) noexcept
         : d(quintptr(pointer))

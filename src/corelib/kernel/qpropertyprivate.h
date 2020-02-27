@@ -53,6 +53,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/QExplicitlySharedDataPointer>
+#include <QtCore/qtaggedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -161,85 +162,50 @@ struct QPropertyValueStorage<bool>
     }
 };
 
-template <typename T> class QTaggedPointer;
-
-template <typename T, quintptr Mask = 0x3>
-class QPropertyTagPreservingPointerToPointer
+template <typename T, typename Tag>
+class QTagPreservingPointerToPointer
 {
-    quintptr *data = nullptr;
-
 public:
-    QPropertyTagPreservingPointerToPointer() = default;
-    QPropertyTagPreservingPointerToPointer(T **ptr)
-        : data(reinterpret_cast<quintptr*>(ptr))
-    {}
-    QPropertyTagPreservingPointerToPointer(quintptr *ptr)
-        : data(ptr)
+    QTagPreservingPointerToPointer() = default;
+
+    QTagPreservingPointerToPointer(T **ptr)
+        : d(reinterpret_cast<quintptr*>(ptr))
     {}
 
-    QPropertyTagPreservingPointerToPointer<T> &operator=(T **ptr)
+    QTagPreservingPointerToPointer<T, Tag> &operator=(T **ptr)
     {
-        data = reinterpret_cast<quintptr*>(ptr);
+        d = reinterpret_cast<quintptr*>(ptr);
         return *this;
     }
 
-    QPropertyTagPreservingPointerToPointer<T> &operator=(QTaggedPointer<T> *ptr)
+    QTagPreservingPointerToPointer<T, Tag> &operator=(QTaggedPointer<T, Tag> *ptr)
     {
-        data = reinterpret_cast<quintptr*>(ptr);
+        d = reinterpret_cast<quintptr*>(ptr);
         return *this;
     }
 
     void clear()
     {
-        data = nullptr;
+        d = nullptr;
     }
 
-    void set(T *ptr)
+    void setPointer(T *ptr)
     {
-        *data = (*data & Mask) | (reinterpret_cast<quintptr>(ptr) & ~Mask);
+        *d = (reinterpret_cast<quintptr>(ptr) & QTaggedPointer<T, Tag>::pointerMask()) | (*d & QTaggedPointer<T, Tag>::tagMask());
     }
 
     T *get() const
     {
-        return reinterpret_cast<T*>(*data & ~Mask);
+        return reinterpret_cast<T*>(*d & QTaggedPointer<T, Tag>::pointerMask());
     }
 
-    explicit operator bool() const { return data != nullptr; }
-};
-
-template <typename T>
-class QTaggedPointer
-{
-public:
-    QTaggedPointer() = default;
-    QTaggedPointer(T *ptr) : tagAndPointer(reinterpret_cast<quintptr>(ptr)) {}
-
-    void setFlag(bool b)
+    explicit operator bool() const
     {
-        if (b)
-            tagAndPointer |= Flag1Mask;
-        else
-            tagAndPointer &= ~Flag1Mask;
+        return d != nullptr;
     }
-
-    bool flag() const { return tagAndPointer & Flag1Mask; }
-
-    QTaggedPointer &operator=(T *ptr)
-    {
-        quintptr tag = tagAndPointer & TagMask;
-        tagAndPointer = reinterpret_cast<quintptr>(ptr) | tag;
-        return *this;
-    }
-
-    T *data() const { return reinterpret_cast<T*>(tagAndPointer & ~TagMask); }
-
-    explicit operator bool() const { return tagAndPointer & ~TagMask; }
-    T *operator->() const { return data(); }
 
 private:
-    quintptr tagAndPointer = 0;
-    static const quintptr Flag1Mask = 0x1;
-    static const quintptr TagMask = 0x3;
+    quintptr *d = nullptr;
 };
 
 } // namespace QtPrivate

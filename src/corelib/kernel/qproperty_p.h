@@ -65,7 +65,8 @@ struct Q_AUTOTEST_EXPORT QPropertyBasePointer
 
     QPropertyBindingPrivate *bindingPtr() const;
 
-    QtPrivate::QPropertyTagPreservingPointerToPointer<QPropertyObserver> firstObserverPtr() const;
+    void addObserver(QPropertyObserver *observer);
+    void setFirstObserver(QPropertyObserver *observer);
     QPropertyObserverPointer firstObserver() const;
 
     int observerCount() const;
@@ -93,7 +94,7 @@ struct QPropertyObserverPointer
 
     explicit operator bool() const { return ptr != nullptr; }
 
-    QPropertyObserverPointer nextObserver() const { return {ptr->next.data()}; }
+    QPropertyObserverPointer nextObserver() const { return {ptr->next.pointer()}; }
 };
 
 class QPropertyBindingErrorPrivate : public QSharedData

@@ -387,6 +387,13 @@ struct QPropertyObserverPointer;
 
 struct Q_CORE_EXPORT QPropertyObserver
 {
+    // Internal
+    enum ObserverTag {
+        ObserverNotifiesBinding = 0x0,
+        ObserverNotifiesChangeHandler = 0x1,
+    };
+    Q_DECLARE_FLAGS(ObserverTags, ObserverTag)
+
     QPropertyObserver() = default;
     QPropertyObserver(QPropertyObserver &&other);
     QPropertyObserver &operator=(QPropertyObserver &&other);
@@ -402,10 +409,10 @@ protected:
 private:
     void setSource(QtPrivate::QPropertyBase &property);
 
-    QtPrivate::QTaggedPointer<QPropertyObserver> next;
+    QTaggedPointer<QPropertyObserver, ObserverTags> next;
     // prev is a pointer to the "next" element within the previous node, or to the "firstObserverPtr" if it is the
     // first node.
-    QtPrivate::QPropertyTagPreservingPointerToPointer<QPropertyObserver> prev;
+    QtPrivate::QTagPreservingPointerToPointer<QPropertyObserver, ObserverTags> prev;
 
     union {
         QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
@@ -416,7 +423,10 @@ private:
     QPropertyObserver &operator=(const QPropertyObserver &) = delete;
 
     friend struct QPropertyObserverPointer;
+    friend struct QPropertyBasePointer;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPropertyObserver::ObserverTags)
 
 template <typename Functor>
 class QPropertyChangeHandler : public QPropertyObserver
