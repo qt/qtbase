@@ -48,6 +48,7 @@ private Q_SLOTS:
     void validity();
     void basics();
     void elapsed();
+    void msecsTo();
 };
 
 void tst_QElapsedTimer::statics()
@@ -108,30 +109,42 @@ void tst_QElapsedTimer::elapsed()
     t1.start();
 
     QTest::qSleep(2*minResolution);
+
+    auto nsecs = t1.nsecsElapsed();
+    auto msecs = t1.elapsed();
+    QVERIFY(nsecs > 0);
+    QVERIFY(msecs > 0);
+    // the number of elapsed nanoseconds and milliseconds should match
+    QVERIFY(nsecs - msecs * 1000000 < 1000000);
+
+    if (msecs > 8 * minResolution)
+        QSKIP("Sampling timer took too long, aborting test");
+
+    QVERIFY(t1.hasExpired(minResolution));
+    QVERIFY(!t1.hasExpired(8*minResolution));
+    QVERIFY(!t1.hasExpired(-1));
+
+    qint64 elapsed = t1.restart();
+    QVERIFY(elapsed >= msecs);
+    QVERIFY(elapsed < msecs + 3*minResolution);
+}
+
+void tst_QElapsedTimer::msecsTo()
+{
+    QElapsedTimer t1;
+    t1.start();
+    QTest::qSleep(minResolution);
     QElapsedTimer t2;
     t2.start();
 
     QVERIFY(t1 != t2);
     QVERIFY(!(t1 == t2));
     QVERIFY(t1 < t2);
-    QVERIFY(t1.msecsTo(t2) > 0);
 
-    QVERIFY(t1.nsecsElapsed() > 0);
-    QVERIFY(t1.elapsed() > 0);
-    // the number of elapsed nanoseconds and milliseconds should match
-    QVERIFY(t1.nsecsElapsed() - t1.elapsed() * 1000000 < 1000000);
-    QVERIFY(t1.hasExpired(minResolution));
-    QVERIFY(!t1.hasExpired(8*minResolution));
-    QVERIFY(!t2.hasExpired(minResolution));
-
-    QVERIFY(!t1.hasExpired(-1));
-    QVERIFY(!t2.hasExpired(-1));
-
-    qint64 elapsed = t1.restart();
-    QVERIFY(elapsed > minResolution);
-    QVERIFY(elapsed < 3*minResolution);
-    qint64 diff = t2.msecsTo(t1);
-    QVERIFY(diff < minResolution);
+    auto diff = t1.msecsTo(t2);
+    QVERIFY2(diff > 0, QString("difference t1 and t2 is %1").arg(diff).toLatin1());
+    diff = t2.msecsTo(t1);
+    QVERIFY2(diff < 0, QString("difference t2 and t1 is %1").arg(diff).toLatin1());
 }
 
 QTEST_MAIN(tst_QElapsedTimer);
