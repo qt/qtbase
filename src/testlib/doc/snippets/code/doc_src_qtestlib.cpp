@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 #include <QtTest>
-
+#include "src_qtestlib_qtestcase.cpp"
 //! [0]
 class MyFirstTest: public QObject
 {
@@ -95,13 +95,15 @@ void TestQString::toUpper()
 }
 //! [8]
 
-
+void TestQString::Compare()
+{
 //! [11]
 QCOMPARE(QString("hello").toUpper(), QString("HELLO"));
 QCOMPARE(QString("Hello").toUpper(), QString("HELLO"));
 QCOMPARE(QString("HellO").toUpper(), QString("HELLO"));
 QCOMPARE(QString("HELLO").toUpper(), QString("HELLO"));
 //! [11]
+}
 
 //! [12]
 class MyFirstBenchmark: public QObject

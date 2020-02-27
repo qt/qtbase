@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -47,27 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest>
-
-// dummy class
-class MyObject
-{
-    public:
-        int isReady();
-};
-
-// dummy function
-int myNetworkServerNotResponding()
-{
-    return 1;
-}
-
-int MyObject::isReady()
-{
-//! [1]
-    int i = 0;
-    while (myNetworkServerNotResponding() && i++ < 50)
-        QTest::qWait(250);
-//! [1]
-return 1;
-}
+//! [0]
+if (tst_Databases::getMySqlVersion(db).section(QChar('.'), 0, 0).toInt() < 5)
+    QSKIP("Test requires MySQL >= 5.0");
+//! [0]

@@ -475,7 +475,7 @@
     For example, to test each number provided by \c {roundTripInt_data()} with
     each locale provided by \c {initTestCase_data()}:
 
-    \snippet code/src_qtestlib_qtestcase.cpp 31
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 31
 */
 
 /*!
@@ -902,7 +902,7 @@
 
     Example of QSKIP in a test function:
 
-    \snippet code/doc_src_qtqskip.cpp 0
+    \snippet code/doc_src_qtqskip_snippet.cpp 0
 
     In a data-driven test, each call to QSKIP() skips only the current
     row of test data. If the data-driven test contains an unconditional
