@@ -1596,19 +1596,6 @@ bool QVulkanWindow::event(QEvent *e)
  */
 
 /*!
-    Return a previously set queue create info modification function.
-
-    \sa setQueueCreateInfoModifier()
-
-    \since 5.15
- */
-QVulkanWindow::QueueCreateInfoModifier QVulkanWindow::queueCreateInfoModifier() const
-{
-    Q_D(const QVulkanWindow);
-    return d->queueCreateInfoModifier;
-}
-
-/*!
     Set a queue create info modification function.
 
     \sa queueCreateInfoModifier()
