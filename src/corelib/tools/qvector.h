@@ -371,8 +371,8 @@ public:
     const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
     const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
-    iterator erase(iterator begin, iterator end);
-    inline iterator erase(iterator pos) { return erase(pos, pos+1); }
+    iterator erase(const_iterator begin, const_iterator end);
+    inline iterator erase(const_iterator pos) { return erase(pos, pos+1); }
 
     // more Qt
     inline T& first() { Q_ASSERT(!isEmpty()); return *begin(); }
@@ -626,14 +626,13 @@ QVector<T>::emplace(int i, Args&&... args)
 }
 
 template <typename T>
-typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
+typename QVector<T>::iterator QVector<T>::erase(const_iterator abegin, const_iterator aend)
 {
-    Q_ASSERT_X(isValidIterator(const_iterator(abegin)), "QVector::erase", "The specified iterator argument 'abegin' is invalid");
-    Q_ASSERT_X(isValidIterator(const_iterator(aend)), "QVector::erase", "The specified iterator argument 'aend' is invalid");
+    Q_ASSERT_X(isValidIterator(abegin), "QVector::erase", "The specified iterator argument 'abegin' is invalid");
+    Q_ASSERT_X(isValidIterator(aend), "QVector::erase", "The specified iterator argument 'aend' is invalid");
     Q_ASSERT(aend >= abegin);
 
-    // d.begin() so we don't detach just yet
-    int i = std::distance(d.begin(), abegin);
+    int i = std::distance(d.constBegin(), abegin);
     int n = std::distance(abegin, aend);
     remove(i, n);
 
