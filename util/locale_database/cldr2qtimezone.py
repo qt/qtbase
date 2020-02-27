@@ -34,32 +34,15 @@ the CLDR data.  Pass its common/ directory as first parameter to this
 script and the qtbase root directory as second parameter.  It shall
 update qtbase's src/corelib/time/qtimezoneprivate_data_p.h ready for
 use.
-
-The XML structure we read has the form:
-
- <supplementalData>
-     <version number="$Revision:...$"/>
-     <generation date="$Date:...$"/>
-     <windowsZones>
-         <mapTimezones otherVersion="..." typeVersion="...">
-             <!-- (UTC-08:00) Pacific Time (US & Canada) -->
-             <mapZone other="Pacific Standard Time" territory="001" type="America/Los_Angeles"/>
-             <mapZone other="Pacific Standard Time" territory="CA" type="America/Vancouver America/Dawson America/Whitehorse"/>
-             <mapZone other="Pacific Standard Time" territory="US" type="America/Los_Angeles America/Metlakatla"/>
-             <mapZone other="Pacific Standard Time" territory="ZZ" type="PST8PDT"/>
-         </mapTimezones>
-     </windowsZones>
- </supplementalData>
 """
 
 import os
 import re
 import datetime
+import textwrap
 
-import enumdata
 from localetools import unicode2hex, wrap_list, Error, SourceFileEditor
-from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile, \
-    _findEntryInFile as findEntryInFile
+from cldr import CldrAccess
 
 ### Data that may need updates in response to new entries in the CLDR file ###
 
@@ -351,10 +334,10 @@ def main(args, out, err):
     """Parses CLDR's data and updates Qt's representation of it.
 
     Takes sys.argv, sys.stdout, sys.stderr (or equivalents) as
-    arguments. Expects two command-line options: the common/
-    subdirectory of the unpacked CLDR data-file tree and the root of
-    the qtbase module's checkout. Updates QTimeZone's private data
-    about Windows time-zone IDs."""
+    arguments. Expects two command-line options: the root of the
+    unpacked CLDR data-file tree and the root of the qtbase module's
+    checkout. Updates QTimeZone's private data about Windows time-zone
+    IDs."""
     name = args.pop(0)
     if len(args) != 2:
         usage(err, name, "Expected two arguments")
@@ -375,54 +358,17 @@ def main(args, out, err):
         usage(err, name, 'No such file: ' + dataFilePath)
         return 1
 
-    windowsZonesPath = cldrPath + "/supplemental/windowsZones.xml"
-    if not os.path.isfile(windowsZonesPath):
-        usage(err, name, 'Failed to find CLDR data file: ' + windowsZonesPath)
+    try:
+        version, defaults, winIds = CldrAccess(cldrPath).readWindowsTimeZones(
+            dict((name, ind) for ind, name in enumerate((x[0] for x in windowsIdList), 1)))
+    except IOError as e:
+        usage(err, name,
+              'Failed to open common/supplemental/windowsZones.xml: ' + (e.message or e.args[1]))
         return 1
-
-    cldrVersion = 'unknown'
-    ldml = open(cldrPath + "/dtd/ldml.dtd", "r")
-    for line in ldml:
-        if 'version cldrVersion CDATA #FIXED' in line:
-            cldrVersion = line.split('"')[1]
-
-    mapTimezones = findTagsInFile(windowsZonesPath, "windowsZones/mapTimezones")
-    if not mapTimezones:
-        err.write('Failed to find time-zone data - aborting !\n')
-        return 1
-
-    defaultDict, windowsIdDict = {}, {}
-    badZones = set()
-    winIdToIndex = dict((name, ind + 1) for ind, name in enumerate(x[0] for x in windowsIdList))
-    for mapZone in mapTimezones:
-        # [u'mapZone', [(u'territory', u'MH'), (u'other', u'UTC+12'), (u'type', u'Pacific/Majuro Pacific/Kwajalein')]]
-        if mapZone[0] == u'mapZone':
-            data = {}
-            for attribute in mapZone[1]:
-                if attribute[0] == u'other':
-                    data['windowsId'] = attribute[1]
-                if attribute[0] == u'territory':
-                    data['countryCode'] = attribute[1]
-                if attribute[0] == u'type':
-                    data['ianaList'] = attribute[1]
-
-            try:
-                data['windowsKey'] = winIdToIndex[data['windowsId']]
-            except KeyError:
-                badZones.add(data['windowsId'])
-
-            countryId = 0
-            if data['countryCode'] == u'001':
-                defaultDict[data['windowsKey']] = data['ianaList']
-            else:
-                data['countryId'] = enumdata.countryCodeToId(data['countryCode'])
-                if data['countryId'] < 0:
-                    raise Error('Unknown Country Code "{}"'.format(data['countryCode']))
-                data['country'] = enumdata.country_list[data['countryId']][0]
-                windowsIdDict[data['windowsKey'], data['countryId']] = data
-    if badZones:
-        err.write('\n\t'.join(["\nUnknown Windows ID, please add:"] + sorted(badZones))
-                  + "\nto the windowsIdList in cldr2qtimezone.py\n\n")
+    except Error as e:
+        err.write('\n'.join(textwrap.wrap(
+                    'Failed to read windowsZones.xml: ' + (e.message or e.args[1]),
+                    subsequent_indent=' ', width=80)) + '\n')
         return 1
 
     out.write('Input file parsed, now writing data\n')
@@ -433,7 +379,7 @@ def main(args, out, err):
         return 1
 
     try:
-        writer.write(cldrVersion, defaultDict, windowsIdDict)
+        writer.write(version, defaults, winIds)
     except Error as e:
         writer.cleanup()
         err.write('\nError in Windows ID data: ' + e.message + '\n')
