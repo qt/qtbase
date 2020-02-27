@@ -179,7 +179,7 @@ public:
     {
         QString buffer;
         QDebug stream(&buffer);
-        stream << object;
+        stream.nospace() << object;
         return buffer;
     }
 
@@ -188,7 +188,7 @@ public:
     {
         QString buffer;
         QDebug stream(&buffer);
-        stream << object;
+        stream.nospace() << object;
         return buffer;
     }
 };

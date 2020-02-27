@@ -5,3 +5,5 @@ This function is useful for cases where you need the textual representation
 of an object for debugging, but cannot use \c {operator<<}. For example:
 
 \snippet code/src_corelib_io_qdebug.cpp toString
+
+The string is streamed using \l nospace().

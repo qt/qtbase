@@ -748,7 +748,7 @@ void tst_QDebug::toString() const
         MyPoint point(3, 4);
         QString expectedString;
         QDebug stream(&expectedString);
-        stream << point;
+        stream.nospace() << point;
         QCOMPARE(QDebug::toString(point), expectedString);
     }
 
@@ -758,7 +758,7 @@ void tst_QDebug::toString() const
         qobject.setObjectName("test");
         QString expectedString;
         QDebug stream(&expectedString);
-        stream << &qobject;
+        stream.nospace() << &qobject;
         QCOMPARE(QDebug::toString(&qobject), expectedString);
     }
 }
