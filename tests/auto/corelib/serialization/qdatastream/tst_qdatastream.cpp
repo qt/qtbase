@@ -302,7 +302,8 @@ static int NColorRoles[] = {
     QPalette::ToolTipText + 1,     // Qt_5_4, Qt_5_5
     QPalette::ToolTipText + 1,     // Qt_5_6, Qt_5_7, Qt_5_8, Qt_5_9, Qt_5_10, Qt_5_11
     QPalette::PlaceholderText + 1, // Qt_5_12
-    QPalette::PlaceholderText + 1, // Qt_5_13
+    QPalette::PlaceholderText + 1, // Qt_5_13, Qt_5_14, Qt_5_15
+    QPalette::PlaceholderText + 1, // Qt_6_0
     0                              // add the correct value for Qt_5_14 here later
 };
 
