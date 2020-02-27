@@ -582,41 +582,68 @@ public:
     { return replace(re, QString()); }
 #endif
 
-    enum SplitBehavior { KeepEmptyParts, SkipEmptyParts }; // ### Qt 6: replace with Qt:: version
+#if QT_DEPRECATED_SINCE(5, 15)
+    enum SplitBehavior // ### Qt 6: replace with Qt:: version
+    {
+        KeepEmptyParts Q_DECL_ENUMERATOR_DEPRECATED,
+        SkipEmptyParts Q_DECL_ENUMERATOR_DEPRECATED
+    };
 
-    Q_REQUIRED_RESULT QStringList split(const QString &sep, SplitBehavior behavior = KeepEmptyParts,
-                      Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QString &sep, SplitBehavior behavior = KeepEmptyParts,
-                      Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QStringList split(QChar sep, SplitBehavior behavior = KeepEmptyParts,
-                      Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(QChar sep, SplitBehavior behavior = KeepEmptyParts,
-                      Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QStringList split(const QString &sep, SplitBehavior behavior,
+                                        Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QVector<QStringRef> splitRef(const QString &sep, SplitBehavior behavior,
+                                                   Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QStringList split(QChar sep, SplitBehavior behavior,
+                                        Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QVector<QStringRef> splitRef(QChar sep, SplitBehavior behavior,
+                                                   Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #ifndef QT_NO_REGEXP
-    Q_REQUIRED_RESULT QStringList split(const QRegExp &sep, SplitBehavior behavior = KeepEmptyParts) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegExp &sep, SplitBehavior behavior = KeepEmptyParts) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QStringList split(const QRegExp &sep, SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QVector<QStringRef> splitRef(const QRegExp &sep, SplitBehavior behavior) const;
 #endif
 #if QT_CONFIG(regularexpression)
-    Q_REQUIRED_RESULT QStringList split(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QStringList split(const QRegularExpression &sep, SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QVector<QStringRef> splitRef(const QRegularExpression &sep, SplitBehavior behavior) const;
 #endif
+#endif // 5.15 deprecations
 
 public:
-    Q_REQUIRED_RESULT QStringList split(const QString &sep, Qt::SplitBehavior behavior,
-                                        Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QString &sep, Qt::SplitBehavior behavior,
-                                                   Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QStringList split(QChar sep, Qt::SplitBehavior behavior,
-                                        Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(QChar sep, Qt::SplitBehavior behavior,
-                                                   Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT
+    QStringList split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                      Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT
+    QVector<QStringRef> splitRef(const QString &sep,
+                                 Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                                 Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT
+    QStringList split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                      Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT
+    QVector<QStringRef> splitRef(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                                 Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #ifndef QT_NO_REGEXP
-    Q_REQUIRED_RESULT QStringList split(const QRegExp &sep, Qt::SplitBehavior behavior) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegExp &sep, Qt::SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT
+    QStringList split(const QRegExp &sep,
+                      Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
+    Q_REQUIRED_RESULT
+    QVector<QStringRef> splitRef(const QRegExp &sep,
+                                 Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
 #endif
 #ifndef QT_NO_REGULAREXPRESSION
-    Q_REQUIRED_RESULT QStringList split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
+    Q_REQUIRED_RESULT
+    QStringList split(const QRegularExpression &sep,
+                      Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
+    Q_REQUIRED_RESULT
+    QVector<QStringRef> splitRef(const QRegularExpression &sep,
+                                 Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
 #endif
 
 
@@ -1615,15 +1642,21 @@ public:
     int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
-    Q_REQUIRED_RESULT QVector<QStringRef> split(const QString &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts,
-                      Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> split(QChar sep, QString::SplitBehavior behavior = QString::KeepEmptyParts,
-                      Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QVector<QStringRef> split(const QString &sep, QString::SplitBehavior behavior,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    QVector<QStringRef> split(QChar sep, QString::SplitBehavior behavior,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+#endif // 5.15 deprecations
 
-    Q_REQUIRED_RESULT QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior,
-                                                Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QVector<QStringRef> split(QChar sep, Qt::SplitBehavior behavior,
-                                                Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT
+    QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT
+    QVector<QStringRef> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     Q_REQUIRED_RESULT QStringRef left(int n) const;
     Q_REQUIRED_RESULT QStringRef right(int n) const;

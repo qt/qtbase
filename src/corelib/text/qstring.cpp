@@ -1779,6 +1779,9 @@ const QString::Null QString::null = { };
 /*!
     \enum QString::SplitBehavior
 
+    \obsolete
+    Use Qt::SplitBehavior instead.
+
     This enum specifies how the split() function should behave with
     respect to empty strings.
 
@@ -4700,7 +4703,7 @@ int QString::count(const QRegularExpression &re) const
 
 QString QString::section(const QString &sep, int start, int end, SectionFlags flags) const
 {
-    const QVector<QStringRef> sections = splitRef(sep, KeepEmptyParts,
+    const QVector<QStringRef> sections = splitRef(sep, Qt::KeepEmptyParts,
                                                   (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
     const int sectionsSize = sections.size();
     if (!(flags & SectionSkipEmpty)) {
@@ -7742,10 +7745,12 @@ static ResultList splitString(const StringSource &source, const QChar *sep,
     return list;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 Qt::SplitBehavior mapSplitBehavior(QString::SplitBehavior sb)
 {
     return sb & QString::SkipEmptyParts ? Qt::SkipEmptyParts : Qt::KeepEmptyParts;
 }
+#endif
 
 } // namespace
 
@@ -7784,13 +7789,16 @@ QStringList QString::split(const QString &sep, Qt::SplitBehavior behavior, Qt::C
     return splitString<QStringList>(*this, sep.constData(), behavior, cs, sep.size());
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
+    \obsolete
 */
 QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return split(sep, mapSplitBehavior(behavior), cs);
 }
+#endif
 
 /*!
     Splits the string into substring references wherever \a sep occurs, and
@@ -7812,14 +7820,17 @@ QVector<QStringRef> QString::splitRef(const QString &sep, Qt::SplitBehavior beha
                                             cs, sep.size());
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
+    \obsolete
     \since 5.4
 */
 QVector<QStringRef> QString::splitRef(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return splitRef(sep, mapSplitBehavior(behavior), cs);
 }
+#endif
 
 /*!
     \overload
@@ -7830,13 +7841,16 @@ QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensit
     return splitString<QStringList>(*this, &sep, behavior, cs, 1);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
+    \obsolete
 */
 QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return split(sep, mapSplitBehavior(behavior), cs);
 }
+#endif
 
 /*!
     \overload
@@ -7848,6 +7862,7 @@ QVector<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior,
     return splitString<QVector<QStringRef> >(QStringRef(this), &sep, behavior, cs, 1);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
     \since 5.4
@@ -7856,6 +7871,7 @@ QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::Cas
 {
     return splitRef(sep, mapSplitBehavior(behavior), cs);
 }
+#endif
 
 /*!
     Splits the string into substrings references wherever \a sep occurs, and
@@ -7874,14 +7890,17 @@ QVector<QStringRef> QStringRef::split(const QString &sep, Qt::SplitBehavior beha
     return splitString<QVector<QStringRef> >(*this, sep.constData(), behavior, cs, sep.size());
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
     \since 5.4
+    \obsolete
 */
 QVector<QStringRef> QStringRef::split(const QString &sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return split(sep, mapSplitBehavior(behavior), cs);
 }
+#endif
 
 /*!
     \overload
@@ -7892,14 +7911,17 @@ QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt:
     return splitString<QVector<QStringRef> >(*this, &sep, behavior, cs, 1);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
     \since 5.4
+    \obsolete
 */
 QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return split(sep, mapSplitBehavior(behavior), cs);
 }
+#endif
 
 #ifndef QT_NO_REGEXP
 namespace {
@@ -7956,13 +7978,16 @@ QStringList QString::split(const QRegExp &rx, Qt::SplitBehavior behavior) const
     return splitString<QStringList>(*this, &QString::mid, rx, behavior);
 }
 
+#  if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
+    \obsolete
 */
 QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 {
     return split(rx, mapSplitBehavior(behavior));
 }
+#  endif
 
 /*!
     \overload
@@ -7983,14 +8008,17 @@ QVector<QStringRef> QString::splitRef(const QRegExp &rx, Qt::SplitBehavior behav
     return splitString<QVector<QStringRef> >(*this, &QString::midRef, rx, behavior);
 }
 
+#  if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
     \since 5.4
+    \obsolete
 */
 QVector<QStringRef> QString::splitRef(const QRegExp &rx, SplitBehavior behavior) const
 {
     return splitRef(rx, mapSplitBehavior(behavior));
 }
+#  endif
 #endif // QT_NO_REGEXP
 
 #if QT_CONFIG(regularexpression)
@@ -8055,14 +8083,17 @@ QStringList QString::split(const QRegularExpression &re, Qt::SplitBehavior behav
     return splitString<QStringList>(*this, &QString::mid, re, behavior);
 }
 
+#  if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
     \since 5.0
+    \obsolete
 */
 QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior) const
 {
     return split(re, mapSplitBehavior(behavior));
 }
+#  endif
 
 /*!
     \overload
@@ -8083,14 +8114,17 @@ QVector<QStringRef> QString::splitRef(const QRegularExpression &re, Qt::SplitBeh
     return splitString<QVector<QStringRef> >(*this, &QString::midRef, re, behavior);
 }
 
+#  if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
     \since 5.4
+    \obsolete
 */
 QVector<QStringRef> QString::splitRef(const QRegularExpression &re, SplitBehavior behavior) const
 {
     return splitRef(re, mapSplitBehavior(behavior));
 }
+#  endif
 #endif // QT_CONFIG(regularexpression)
 
 /*!
