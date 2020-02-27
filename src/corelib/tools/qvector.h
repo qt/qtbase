@@ -738,31 +738,35 @@ uint qHash(const QVector<T> &key, uint seed = 0)
 }
 
 template <typename T>
-bool operator<(const QVector<T> &lhs, const QVector<T> &rhs)
+auto operator<(const QVector<T> &lhs, const QVector<T> &rhs)
     noexcept(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
-                                                               rhs.begin(), rhs.end())))
+                                                   rhs.begin(), rhs.end())))
+    -> decltype(std::declval<T>() < std::declval<T>())
 {
     return std::lexicographical_compare(lhs.begin(), lhs.end(),
                                         rhs.begin(), rhs.end());
 }
 
 template <typename T>
-inline bool operator>(const QVector<T> &lhs, const QVector<T> &rhs)
+auto operator>(const QVector<T> &lhs, const QVector<T> &rhs)
     noexcept(noexcept(lhs < rhs))
+    -> decltype(lhs < rhs)
 {
     return rhs < lhs;
 }
 
 template <typename T>
-inline bool operator<=(const QVector<T> &lhs, const QVector<T> &rhs)
+auto operator<=(const QVector<T> &lhs, const QVector<T> &rhs)
     noexcept(noexcept(lhs < rhs))
+    -> decltype(lhs < rhs)
 {
     return !(lhs > rhs);
 }
 
 template <typename T>
-inline bool operator>=(const QVector<T> &lhs, const QVector<T> &rhs)
+auto operator>=(const QVector<T> &lhs, const QVector<T> &rhs)
     noexcept(noexcept(lhs < rhs))
+    -> decltype(lhs < rhs)
 {
     return !(lhs < rhs);
 }
