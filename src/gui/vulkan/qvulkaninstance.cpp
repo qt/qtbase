@@ -781,6 +781,8 @@ bool QVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice, uint32_t 
     system dependent synchronization. For example, on Wayland this will
     add send a wl_surface.frame request in order to prevent the driver from
     blocking for minimized windows.
+
+    \since 5.15
  */
 void QVulkanInstance::presentAboutToBeQueued(QWindow *window)
 {
