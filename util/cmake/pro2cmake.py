@@ -86,7 +86,7 @@ cmake_api_version = 2
 def _parse_commandline():
     parser = ArgumentParser(
         description="Generate CMakeLists.txt files from ." "pro files.",
-        epilog="Requirements: pip install sympy pyparsing",
+        epilog="Requirements: pip install -r requirements.txt",
     )
     parser.add_argument(
         "--debug", dest="debug", action="store_true", help="Turn on all debug output"
