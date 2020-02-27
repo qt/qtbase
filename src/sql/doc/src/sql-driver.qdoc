@@ -183,7 +183,7 @@
     Run the installer,
     select custom installation and install the MySQL C Connector
     which matches your Qt installation (x86 or x64).
-    After installation make sure that the needed files are there:
+    After installation check that the needed files are there:
     \list
     \li \c {<MySQL dir>/lib/libmysql.lib}
     \li \c {<MySQL dir>/lib/libmysql.dll}
@@ -196,16 +196,20 @@
     \li \c {<MariaDB dir>/include/mysql.h}
     \endlist
 
-    Build the plugin as follows (here it is assumed that the MySQL
-    C Connector is installed in
+    \note As of MySQL 8.0.19, the C Connector is no longer offered as a standalone
+    installable component. Instead, you can get \c{mysql.h} and \c{libmysql.*} by
+    installing the full MySQL Server (x64 only) or the
+    \l{https://downloads.mariadb.org/connector-c/}{MariaDB C Connector}.
+
+    Build the plugin as follows (here it is assumed that \c{<MySQL dir>} is
     \c{C:/Program Files/MySQL/MySQL Connector C 6.1}):
 
     \snippet code/doc_src_sql-driver.qdoc 5
 
     If you are not using a Microsoft compiler, replace \c nmake with \c
-    mingw32-make in the line above.
+    mingw32-make above.
 
-    When you distribute your application, remember to include libmysql.dll / libmariadb.dll
+    When you distribute your application, remember to include \e libmysql.dll / \e libmariadb.dll
     in your installation package. It must be placed in the same folder
     as the application executable. \e libmysql.dll additionally needs the
     MSVC runtime libraries which can be installed with

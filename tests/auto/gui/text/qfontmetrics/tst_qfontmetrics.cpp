@@ -59,6 +59,7 @@ private slots:
     void mnemonicTextWidth();
     void leadingBelowLine();
     void elidedMetrics();
+    void zeroWidthMetrics();
 };
 
 void tst_QFontMetrics::same()
@@ -356,6 +357,29 @@ void tst_QFontMetrics::elidedMetrics()
     QCOMPARE(boundingRect.y(), elidedBoundingRect.y());
 
     QFontDatabase::removeApplicationFont(id);
+}
+
+void tst_QFontMetrics::zeroWidthMetrics()
+{
+    QString zwnj(QChar(0x200c));
+    QString zwsp(QChar(0x200b));
+
+    QFont font;
+    QFontMetricsF fm(font);
+    QCOMPARE(fm.horizontalAdvance(zwnj), 0);
+    QCOMPARE(fm.horizontalAdvance(zwsp), 0);
+    QCOMPARE(fm.boundingRect(zwnj).width(), 0);
+    QCOMPARE(fm.boundingRect(zwsp).width(), 0);
+
+    QString string1 = QStringLiteral("(") + zwnj + QStringLiteral(")");
+    QString string2 = QStringLiteral("(") + zwnj + zwnj + QStringLiteral(")");
+    QString string3 = QStringLiteral("(") + zwsp + QStringLiteral(")");
+    QString string4 = QStringLiteral("(") + zwsp + zwsp + QStringLiteral(")");
+
+    QCOMPARE(fm.horizontalAdvance(string1), fm.horizontalAdvance(string2));
+    QCOMPARE(fm.horizontalAdvance(string3), fm.horizontalAdvance(string4));
+    QCOMPARE(fm.boundingRect(string1).width(), fm.boundingRect(string2).width());
+    QCOMPARE(fm.boundingRect(string3).width(), fm.boundingRect(string4).width());
 }
 
 QTEST_MAIN(tst_QFontMetrics)
