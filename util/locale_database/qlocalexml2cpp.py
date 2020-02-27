@@ -480,7 +480,7 @@ def main(args, out, err):
         return 1
 
     reader = QLocaleXmlReader(qlocalexml)
-    locale_map = dict(reader.loadLocaleMap(calendars, sys.stderr.write))
+    locale_map = dict(reader.loadLocaleMap(calendars, err.write))
 
     locale_keys = locale_map.keys()
     compareLocaleKeys.default_map = dict(reader.defaultMap())

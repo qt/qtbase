@@ -39,10 +39,12 @@ returned by minidom.parse() and their child-nodes:
   Node -- wraps any node in the DOM tree
   XmlScanner -- wraps the root element of a stand-alone XML file
   Supplement -- specializes XmlScanner for supplemental data files
+  LocaleScanner -- wraps a locale's inheritance-chain of file roots
 
 See individual classes for further detail.
 """
 from localetools import Error
+from dateconverter import convert_date
 
 class Node (object):
     """Wrapper for an arbitrary DOM node.
@@ -51,11 +53,20 @@ class Node (object):
     nodes are returned wrapped as Node objects.  A Node exposes the
     raw DOM node it wraps via its .dom attribute."""
 
-    def __init__(self, elt):
+    def __init__(self, elt, draft = 0):
         """Wraps a DOM node for ease of access.
 
-        Single argument, elt, is the DOM node to wrap."""
+        First argument, elt, is the DOM node to wrap. (Optional second
+        argument, draft, should only be supplied by this class's
+        creation of child nodes; it is the maximum draft score of any
+        ancestor of the new node.)"""
         self.dom = elt
+        try:
+            attr = elt.attributes['draft'].nodeValue
+        except KeyError:
+            self.draft = draft
+        else:
+            self.draft = max(draft, self.draftScore(attr))
 
     def findAllChildren(self, tag, wanted = None):
         """All children that do have the given tag and attributes.
@@ -65,34 +76,60 @@ class Node (object):
 
         Optional second argument, wanted, should either be None or map
         attribute names to the values they must have. Only child nodes
-        with these attributes set to the given values are yielded."""
+        with thes attributes set to the given values are yielded."""
 
-        cutoff = 4 # Only accept approved, for now
         for child in self.dom.childNodes:
             if child.nodeType != child.ELEMENT_NODE:
                 continue
             if child.nodeName != tag:
                 continue
 
-            try:
-                draft = child.attributes['draft']
-            except KeyError:
-                pass
-            else:
-                if self.__draftScores.get(draft, 0) < cutoff:
-                    continue
-
-            if wanted is not None:
+            if wanted:
                 try:
-                    if wanted and any(child.attributes[k].nodeValue != v for k, v in wanted.items()):
+                    if any(child.attributes[k].nodeValue != v
+                           for k, v in wanted.items()):
                         continue
                 except KeyError: # Some wanted attribute is missing
                     continue
 
-            yield Node(child)
+            yield Node(child, self.draft)
 
-    __draftScores = dict(true = 0, unconfirmed = 1, provisional = 2,
-                         contributed = 3, approved = 4, false = 4)
+    def findUniqueChild(self, tag):
+        """Returns the single child with the given nodeName.
+
+        Raises Error if there is no such child or there is more than
+        one."""
+        seq = self.findAllChildren(tag)
+        try:
+            node = seq.next()
+        except StopIteration:
+            raise Error('No child found where one was expected', tag)
+        for it in seq:
+            raise Error('Many children found where only one was expected', tag)
+        return node
+
+    @classmethod
+    def draftScore(cls, level):
+        """Maps draft level names to numeric scores.
+
+        Single parameter, level, is the least sure value of the draft
+        attribute on a node that you're willing to accept; returns a
+        numeric value (lower is less drafty).
+
+        Tempting as it is to insist on low draft scores, there are
+        many locales in which pretty much every leaf is
+        unconfirmed. It may make sense to actually check each
+        XmlScanner object, or each node in each LocaleScanner's nodes
+        list, to see what its distribution of draft level looks like,
+        so as to set the acceptable draft score for its elements
+        accordingly. However, for the moment, we mostly just accept
+        all elements, regardless of draft values (the one exception is
+        am/pm indicators)."""
+        return cls.__draftScores.get(level, 5) if level else 0
+
+    # Implementation details:
+    __draftScores = dict(true = 4, unconfirmed = 3, provisional = 2,
+                         contributed = 1, approved = 0, false = 0)
 
 def _parseXPath(selector):
     # Split "tag[attr=val][...]" into tag-name and attribute mapping
@@ -129,7 +166,6 @@ class XmlScanner (object):
         return elts
 
 class Supplement (XmlScanner):
-    # Replaces xpathlite.findTagsInFile()
     def find(self, xpath):
         elts = self.findNodes(xpath)
         for elt in _iterateEach(e.dom.childNodes if e.dom.childNodes else (e.dom,)
@@ -138,3 +174,381 @@ class Supplement (XmlScanner):
                 yield (elt.nodeName,
                        dict((k, v if isinstance(v, basestring) else v.nodeValue)
                             for k, v in elt.attributes.items()))
+
+class LocaleScanner (object):
+    def __init__(self, name, nodes, root):
+        self.name, self.nodes, self.base = name, nodes, root
+
+    def find(self, xpath, draft = None):
+        tags = xpath.split('/')
+        while True:
+            replace = None
+            for elt in self.nodes:
+                for selector in tags:
+                    tag, attrs = _parseXPath(selector)
+                    for elt in elt.findAllChildren(tag, attrs):
+                        if draft is None or elt.draft <= draft:
+                            break # and process the next selector
+                    else:
+                        break # no child, try next elt in self.nodes
+                else:
+                    # processed all selectors
+                    try:
+                        return elt.dom.firstChild.nodeValue
+                    except (AttributeError, KeyError):
+                        pass # move on to next elt in self.nodes
+
+            # No match in self.nodes; check root
+            elt = self.base.root
+            for i, selector in enumerate(tags):
+                tag, attrs = _parseXPath(selector)
+                for alias in elt.findAllChildren('alias'):
+                    if alias.dom.attributes['source'].nodeValue == 'locale':
+                        replace = alias.dom.attributes['path'].nodeValue.split('/')
+                        tags = self.__xpathJoin(tags[:i], replace, tags[i:])
+                        break
+                else:
+                    for elt in elt.findAllChildren(tag, attrs):
+                        if draft is None or elt.draft <= draft:
+                            break # and process the next selector
+                    else:
+                        break
+                if replace:
+                    break
+            else:
+                # processed all selectors
+                try:
+                    return elt.dom.firstChild.nodeValue
+                except (AttributeError, KeyError):
+                    # No match
+                    pass
+            if not replace:
+                break
+
+        sought = '/'.join(tags)
+        if sought != xpath:
+            sought += ' (for {})'.format(xpath)
+        raise Error('No {} in {}'.format(sought, self.name))
+
+    def findOr(self, xpath, fallback = ''):
+        """Use a fall-back value if we don't find data.
+
+        Like find, but takes a fall-back value to return instead of
+        raising Error on failure."""
+        try:
+            return self.find(xpath)
+        except Error:
+            return fallback
+
+    def tagCodes(self):
+        """Yields four tag codes
+
+        The tag codes are language, script, country and variant; an
+        empty value for any of them indicates that no value was
+        provided.  The values are obtained from the primary file's
+        top-level <identity> element.  An Error is raised if any
+        top-level <alias> element of this file has a non-empty source
+        attribute; that attribute value is mentioned in the error's
+        message."""
+        root = self.nodes[0]
+        for alias in root.findAllChildren('alias'):
+            try:
+                source = alias.dom.attributes['source'].nodeValue
+            except (KeyError, AttributeError):
+                pass
+            else:
+                raise Error('Alias to {}'.format(source))
+
+        ids = root.findUniqueChild('identity')
+        for code in ('language', 'script', 'territory', 'variant'):
+            for node in ids.findAllChildren(code):
+                try:
+                    yield node.dom.attributes['type'].nodeValue
+                except (KeyError, AttributeError):
+                    pass
+                else:
+                    break # only want one value for each code
+            else: # No value for this code, use empty
+                yield ''
+
+    def currencyData(self, isoCode):
+        """Fetches currency data for this locale.
+
+        Single argument, isoCode, is the ISO currency code for the
+        currency in use in the country. See also numericData, which
+        includes some currency formats.
+        """
+        if isoCode:
+            stem = 'numbers/currencies/currency[{}]/'.format(isoCode)
+            symbol = self.findOr(stem + 'symbol')
+            name = ';'.join(
+                self.findOr(stem + 'displayName' + tail)
+                for tail in ('',) + tuple(
+                    '[count={}]'.format(x) for x in ('zero', 'one', 'two', 'few', 'many', 'other')
+                )) + ';'
+        else:
+            symbol = name = ''
+        yield 'currencySymbol', symbol
+        yield 'currencyDisplayName', name
+
+    def numericData(self, lookup, complain = lambda text: None):
+        """Generate assorted numeric data for the locale.
+
+        First argument, lookup, is a callable that maps a numbering
+        system's name to certain data about the system, as a mapping;
+        we expect this to have u'digits' as a key.
+        """
+        system = self.find('numbers/defaultNumberingSystem')
+        stem = 'numbers/symbols[numberSystem={}]/'.format(system)
+        decimal = self.find(stem + 'decimal')
+        group = self.find(stem + 'group')
+        assert decimal != group, (self.name, system, decimal)
+        yield 'decimal', decimal
+        yield 'group', group
+        yield 'percent', self.find(stem + 'percentSign')
+        yield 'list', self.find(stem + 'list')
+        # FIXME: don't lower-case:
+        yield 'exp', self.find(stem + 'exponential').lower()
+
+        digits = lookup(system)['digits']
+        assert len(digits) == 10
+        zero = digits[0]
+        # Qt's number-formatting code assumes digits are consecutive:
+        assert all(ord(c) == i for i, c in enumerate(digits, ord(zero)))
+        yield 'zero', zero
+
+        plus = self.find(stem + 'plusSign')
+        minus = self.find(stem + 'minusSign')
+        yield 'plus', plus
+        yield 'minus', minus
+
+        # Currency formatting (currencyFormat may have a type field):
+        money = self.find('numbers/currencyFormats/currencyFormatLength/currencyFormat/pattern')
+        money = self.__currencyFormats(money, plus, minus)
+        yield 'currencyFormat', money.next()
+        neg = ''
+        for it in money:
+            assert not neg, 'There should be at most one more pattern'
+            neg = it
+        yield 'currencyNegativeFormat', neg
+
+    def textPatternData(self):
+        for key in ('quotationStart', 'alternateQuotationEnd',
+                    'quotationEnd', 'alternateQuotationStart'):
+            yield key, self.find('delimiters/' + key)
+
+        for key in ('start', 'middle', 'end'):
+            yield ('listPatternPart' + key.capitalize(),
+                   self.__fromLdmlListPattern(self.find(
+                        'listPatterns/listPattern/listPatternPart[{}]'.format(key))))
+        yield ('listPatternPartTwo',
+               self.__fromLdmlListPattern(self.find(
+                    'listPatterns/listPattern/listPatternPart[2]')))
+
+        stem = 'dates/calendars/calendar[gregorian]/'
+        # TODO: is wide really the right width to use here ?
+        # abbreviated might be an option ... or try both ?
+        meridiem = stem + 'dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/'
+        for key in ('am', 'pm'):
+            yield key, self.find(meridiem + 'dayPeriod[{}]'.format(key),
+                                 draft = Node.draftScore('contributed'))
+
+        for pair in (('long', 'full'), ('short', 'short')):
+            for key in ('time', 'date'):
+                yield (pair[0] + key.capitalize() + 'Format',
+                       convert_date(self.find(
+                            stem + '{}Formats/{}FormatLength[{}]/{}Format/pattern'.format(
+                                key, key, pair[1], key))))
+
+    def endonyms(self, language, script, country, variant):
+        # TODO: take variant into account ?
+        for seq in ((language, script, country),
+                    (language, script), (language, country), (language,)):
+            if not all(seq):
+                continue
+            try:
+                yield ('languageEndonym',
+                       self.find('localeDisplayNames/languages/language[{}]'
+                                 .format('_'.join(seq))))
+            except Error:
+                pass
+            else:
+                break
+        else:
+            # grumble(failed to find endonym for language)
+            yield 'languageEndonym', ''
+
+        yield ('countryEndonym',
+               self.findOr('localeDisplayNames/territories/territory[{}]'
+                           .format(country)))
+
+    def unitData(self):
+        yield ('byte_unit',
+               self.findOr('units/unitLength[long]/unit[digital-byte]/displayName',
+                           'bytes'))
+
+        unit = self.__findUnit('', 'B')
+        cache = [] # Populated by the SI call, to give hints to the IEC call
+        yield ('byte_si_quantified',
+               ';'.join(self.__unitCount('', unit, cache)))
+        # IEC 60027-2
+        # http://physics.nist.gov/cuu/Units/binary.html
+        yield ('byte_iec_quantified',
+               ';'.join(self.__unitCount('bi', 'iB', cache)))
+
+    def calendarNames(self, calendars):
+        namings = self.__nameForms
+        for cal in calendars:
+            stem = 'dates/calendars/calendar[' + cal + ']/months/'
+            for key, mode, size in namings:
+                prop = 'monthContext[' + mode + ']/monthWidth[' + size + ']/'
+                yield (key + 'Months_' + cal,
+                       ';'.join(self.find(stem + prop + 'month[{}]'.format(i))
+                                for i in range(1, 13)) + ';')
+
+        # Day data (for Gregorian, at least):
+        stem = 'dates/calendars/calendar[gregorian]/days/'
+        days = ('sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat')
+        for (key, mode, size) in namings:
+            prop = 'dayContext[' + mode + ']/dayWidth[' + size + ']/day'
+            yield (key + 'Days',
+                   ';'.join(self.find(stem + prop + '[' + day + ']')
+                            for day in days) + ';')
+
+    # Implementation details
+    __nameForms = (
+        ('standaloneLong', 'stand-alone', 'wide'),
+        ('standaloneShort', 'stand-alone', 'abbreviated'),
+        ('standaloneNarrow', 'stand-alone', 'narrow'),
+        ('long', 'format', 'wide'),
+        ('short', 'format', 'abbreviated'),
+        ('narrow', 'format', 'narrow'),
+        ) # Used for month and day names
+
+    def __findUnit(self, keySuffix, quantify, fallback=''):
+        # The displayName for a quantified unit in en.xml is kByte
+        # (even for unitLength[narrow]) instead of kB (etc.), so
+        # prefer any unitPattern provided, but prune its placeholder:
+        for size in ('short', 'narrow'): # TODO: reverse order ?
+            stem = 'units/unitLength[{}]/unit[digital-{}byte]/'.format(size + keySuffix, quantify)
+            for count in ('many', 'few', 'two', 'other', 'zero', 'one'):
+                try:
+                    ans = self.find(stem + 'unitPattern[count={}]'.format(count))
+                except Error:
+                    continue
+
+                # TODO: do count-handling, instead of discarding placeholders
+                if False: # TODO: do it this way, instead !
+                    ans = ans.replace('{0}', '').strip()
+                elif ans.startswith('{0}'):
+                    ans = ans[3:].lstrip()
+                if ans:
+                    return ans
+
+            try:
+                return self.find(stem + 'displayName')
+            except Error:
+                pass
+
+        return fallback
+
+    def __unitCount(self, keySuffix, suffix, cache,
+                    # Stop at exa/exbi: 16 exbi = 2^{64} < zetta =
+                    # 1000^7 < zebi = 2^{70}, the next quantifiers up:
+                    siQuantifiers = ('kilo', 'mega', 'giga', 'tera', 'peta', 'exa')):
+        """Work out the unit quantifiers.
+
+        Unfortunately, the CLDR data only go up to terabytes and we
+        want all the way to exabytes; but we can recognize the SI
+        quantifiers as prefixes, strip and identify the tail as the
+        localized translation for 'B' (e.g. French has 'octet' for
+        'byte' and uses ko, Mo, Go, To from which we can extrapolate
+        Po, Eo).
+
+        Should be called first for the SI quantifiers, with suffix =
+        'B', then for the IEC ones, with suffix = 'iB'; the list cache
+        (initially empty before first call) is used to let the second
+        call know what the first learned about the localized unit.
+        """
+        if suffix == 'iB': # second call, re-using first's cache
+            if cache:
+                byte = cache.pop()
+                if all(byte == k for k in cache):
+                    suffix = 'i' + byte
+            for q in siQuantifiers:
+                # Those don't (yet, v36) exist in CLDR, so we always get the fall-back:
+                yield self.__findUnit(keySuffix, q[:2], q[0].upper() + suffix)
+        else: # first call
+            tail = suffix = suffix or 'B'
+            for q in siQuantifiers:
+                it = self.__findUnit(keySuffix, q)
+                # kB for kilobyte, in contrast with KiB for IEC:
+                q = q[0] if q == 'kilo' else q[0].upper()
+                if not it:
+                    it = q + tail
+                elif it.startswith(q):
+                    rest = it[1:]
+                    tail = rest if all(rest == k for k in cache) else suffix
+                    cache.append(rest)
+                yield it
+
+    @staticmethod
+    def __currencyFormats(patterns, plus, minus):
+        for p in patterns.split(';'):
+            p = p.replace('0', '#').replace(',', '').replace('.', '')
+            try:
+                cut = p.find('#') + 1
+            except ValueError:
+                pass
+            else:
+                p = p[:cut] + p[cut:].replace('#', '')
+            p = p.replace('#', "%1")
+            # According to http://www.unicode.org/reports/tr35/#Number_Format_Patterns
+            # there can be doubled or trippled currency sign, however none of the
+            # locales use that.
+            p = p.replace(u'\xa4', "%2")
+            # Single quote goes away, but double goes to single:
+            p = p.replace("''", '###').replace("'", '').replace('###', "'")
+            # Use number system's signs:
+            p = p.replace('+', plus).replace('-', minus)
+            yield p
+
+    @staticmethod
+    def __fromLdmlListPattern(pattern):
+        # This is a very limited parsing of the format for list pattern part only.
+        return pattern.replace('{0}', '%1').replace('{1}', '%2').replace('{2}', '%3')
+
+    @staticmethod
+    def __fromLdmlPath(seq): # tool function for __xpathJoin()
+        """Convert LDML's [@name='value'] to our [name=value] form."""
+        for it in seq:
+            # First dismember it:
+            attrs = it.split('[')
+            tag = attrs.pop(0)
+            if not attrs: # Short-cut the easy case:
+                yield it
+                continue
+
+            assert all(x.endswith(']') for x in attrs)
+            attrs = [x[:-1].split('=') for x in attrs]
+            # Then fix each attribute specification in it:
+            attrs = [(x[0][1:] if x[0].startswith('@') else x[0],
+                      x[1][1:-1] if x[1].startswith("'") and x[1].endswith("'") else x[1])
+                     for x in attrs]
+            # Finally, put it all back together:
+            attrs = ['='.join(x) + ']' for x in attrs]
+            attrs.insert(0, tag)
+            yield '['.join(attrs)
+
+    @classmethod
+    def __xpathJoin(cls, head, insert, tail):
+        """Join three lists of XPath selectors.
+
+        Each of head, insert and tail is a sequence of selectors but
+        insert may start with some uses of '..', that we want to
+        resolve away, and may use LDML's attribute format, that we
+        want to convert to our format."""
+        while insert and insert[0] == '..':
+            insert.pop(0)
+            head.pop()
+        return head + list(cls.__fromLdmlPath(insert)) + tail
