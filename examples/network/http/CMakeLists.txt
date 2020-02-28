@@ -28,6 +28,16 @@ target_link_libraries(http PUBLIC
     Qt::Widgets
 )
 
+if(ANDROID AND TARGET Qt::AndroidExtras)
+    target_compile_definitions(http PUBLIC
+        REQUEST_PERMISSIONS_ON_ANDROID
+    )
+
+    target_link_libraries(http PUBLIC
+        Qt::AndroidExtras
+    )
+endif()
+
 install(TARGETS http
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

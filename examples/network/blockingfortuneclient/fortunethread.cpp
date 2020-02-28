@@ -103,7 +103,7 @@ void FortuneThread::run()
 //! [6] //! [8]
 
         if (!socket.waitForConnected(Timeout)) {
-            emit error(socket.socketError(), socket.errorString());
+            emit error(socket.error(), socket.errorString());
             return;
         }
 //! [8] //! [11]
@@ -115,7 +115,7 @@ void FortuneThread::run()
 
         do {
             if (!socket.waitForReadyRead(Timeout)) {
-                emit error(socket.socketError(), socket.errorString());
+                emit error(socket.error(), socket.errorString());
                 return;
             }
 

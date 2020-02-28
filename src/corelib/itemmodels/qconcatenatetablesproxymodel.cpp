@@ -448,6 +448,17 @@ QSize QConcatenateTablesProxyModel::span(const QModelIndex &index) const
 }
 
 /*!
+    Returns a list of models that were added as source models for this proxy model.
+
+    \since 5.15
+*/
+QList<QAbstractItemModel *> QConcatenateTablesProxyModel::sourceModels() const
+{
+    Q_D(const QConcatenateTablesProxyModel);
+    return d->m_models.toList();
+}
+
+/*!
     Adds a source model \a sourceModel, below all previously added source models.
 
     The ownership of \a sourceModel is not affected by this.

@@ -8,11 +8,6 @@ b2qt
 opensuse-42.3
 [restoreVersion1Geometry]
 ubuntu-16.04
-[updateWhileMinimized]
-ubuntu-18.04
-rhel-7.4
-ubuntu-16.04
-rhel-7.6
 [focusProxyAndInputMethods]
 rhel-7.6
 opensuse-leap

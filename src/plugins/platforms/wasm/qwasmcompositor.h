@@ -124,11 +124,13 @@ public:
     static QWasmTitleBarOptions makeTitleBarOptions(const QWasmWindow *window);
     static QRect titlebarRect(QWasmTitleBarOptions tb, QWasmCompositor::SubControls subcontrol);
 
+    QWasmScreen *screen();
+    QOpenGLContext *context();
+
 private slots:
     void frame();
 
 private:
-    QWasmScreen *screen();
     void notifyTopWindowChanged(QWasmWindow *window);
     void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
     void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
@@ -137,7 +139,6 @@ private:
     void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
     void drwPanelButton();
 
-    QImage *m_frameBuffer;
     QScopedPointer<QOpenGLContext> m_context;
     QScopedPointer<QOpenGLTextureBlitter> m_blitter;
 

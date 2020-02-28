@@ -130,7 +130,7 @@ private:
     Q_DISABLE_COPY_MOVE(QSocks5SocketEngine)
     Q_PRIVATE_SLOT(d_func(), void _q_controlSocketConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_controlSocketReadNotification())
-    Q_PRIVATE_SLOT(d_func(), void _q_controlSocketError(QAbstractSocket::SocketError))
+    Q_PRIVATE_SLOT(d_func(), void _q_controlSocketErrorOccurred(QAbstractSocket::SocketError))
 #ifndef QT_NO_UDPSOCKET
     Q_PRIVATE_SLOT(d_func(), void _q_udpSocketReadNotification())
 #endif
@@ -246,7 +246,7 @@ public:
 
     void _q_controlSocketConnected();
     void _q_controlSocketReadNotification();
-    void _q_controlSocketError(QAbstractSocket::SocketError);
+    void _q_controlSocketErrorOccurred(QAbstractSocket::SocketError);
 #ifndef QT_NO_UDPSOCKET
     void _q_udpSocketReadNotification();
 #endif

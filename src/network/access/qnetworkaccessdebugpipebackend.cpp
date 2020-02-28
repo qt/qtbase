@@ -98,7 +98,7 @@ void QNetworkAccessDebugPipeBackend::open()
 
     // socket ready read -> we can push from socket to downstream
     connect(&socket, SIGNAL(readyRead()), SLOT(socketReadyRead()));
-    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(socketError()));
+    connect(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)), SLOT(socketError()));
     connect(&socket, SIGNAL(disconnected()), SLOT(socketDisconnected()));
     connect(&socket, SIGNAL(connected()), SLOT(socketConnected()));
     // socket bytes written -> we can push more from upstream to socket
@@ -242,9 +242,9 @@ void QNetworkAccessDebugPipeBackend::closeDownstreamChannel()
 
 void QNetworkAccessDebugPipeBackend::socketError()
 {
-    qWarning("QNetworkAccessDebugPipeBackend::socketError() %d",socket.socketError());
+    qWarning("QNetworkAccessDebugPipeBackend::socketError() %d",socket.error());
     QNetworkReply::NetworkError code;
-    switch (socket.socketError()) {
+    switch (socket.error()) {
     case QAbstractSocket::RemoteHostClosedError:
         return;                 // socketDisconnected will be called
 

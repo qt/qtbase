@@ -322,10 +322,10 @@ void tst_QAbstractNetworkCache::runTest()
 
     QByteArray secondData = reply2->readAll();
     if (!fetchFromCache && cacheLoadControl == QNetworkRequest::AlwaysCache) {
-        QCOMPARE(reply2->networkError(), QNetworkReply::ContentNotFoundError);
+        QCOMPARE(reply2->error(), QNetworkReply::ContentNotFoundError);
         QCOMPARE(secondData, QByteArray());
     } else {
-        QCOMPARE(reply2->networkError(), QNetworkReply::NoError);
+        QCOMPARE(reply2->error(), QNetworkReply::NoError);
         QCOMPARE(QString(secondData), QString(goodData));
         QCOMPARE(secondData, goodData);
         QCOMPARE(reply2->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
@@ -375,12 +375,12 @@ void tst_QAbstractNetworkCache::checkSynchronous()
 
     QByteArray secondData = reply2->readAll();
     if (!fetchFromCache && cacheLoadControl == QNetworkRequest::AlwaysCache) {
-        QCOMPARE(reply2->networkError(), QNetworkReply::ContentNotFoundError);
+        QCOMPARE(reply2->error(), QNetworkReply::ContentNotFoundError);
         QCOMPARE(secondData, QByteArray());
     } else {
-        if (reply2->networkError() != QNetworkReply::NoError)
+        if (reply2->error() != QNetworkReply::NoError)
             qDebug() << reply2->errorString();
-        QCOMPARE(reply2->networkError(), QNetworkReply::NoError);
+        QCOMPARE(reply2->error(), QNetworkReply::NoError);
         QCOMPARE(QString(secondData), QString(goodData));
         QCOMPARE(secondData, goodData);
         QCOMPARE(reply2->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);

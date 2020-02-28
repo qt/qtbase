@@ -409,7 +409,7 @@ private:
 
     static QString certDirPath;
 
-    void (QSslSocket::*socketErrorSignal)(QAbstractSocket::SocketError) = &QAbstractSocket::error;
+    void (QSslSocket::*socketErrorSignal)(QAbstractSocket::SocketError) = &QAbstractSocket::errorOccurred;
     void (QSslSocket::*tlsErrorsSignal)(const QList<QSslError> &) = &QSslSocket::sslErrors;
     void (QTestEventLoop::*exitLoopSlot)() = &QTestEventLoop::exitLoop;
 
@@ -605,7 +605,7 @@ void tst_QOcsp::malformedResponse()
     loop.enterLoopMSecs(handshakeTimeoutMS);
 
     QVERIFY(!clientSocket.isEncrypted());
-    QCOMPARE(clientSocket.socketError(), QAbstractSocket::SslHandshakeFailedError);
+    QCOMPARE(clientSocket.error(), QAbstractSocket::SslHandshakeFailedError);
 }
 
 void tst_QOcsp::expiredResponse_data()

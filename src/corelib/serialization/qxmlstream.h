@@ -426,6 +426,8 @@ public:
     QStringRef dtdPublicId() const;
     QStringRef dtdSystemId() const;
 
+    int entityExpansionLimit() const;
+    void setEntityExpansionLimit(int limit);
 
     enum Error {
         NoError,

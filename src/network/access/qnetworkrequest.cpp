@@ -931,7 +931,7 @@ int QNetworkRequest::transferTimeout() const
     Transfers are aborted if no bytes are transferred before
     the timeout expires. Zero means no timer is set. If no
     argument is provided, the timeout is
-    QNetworkRequest::TransferTimeoutPreset. If this function
+    QNetworkRequest::DefaultTransferTimeoutConstant. If this function
     is not called, the timeout is disabled and has the
     value zero.
 

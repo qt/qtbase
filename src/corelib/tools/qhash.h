@@ -324,7 +324,7 @@ public:
         QHashData::Node *i;
 
     public:
-#if QT_DEPRECATED_SINCE(5, 15)
+#if QT_DEPRECATED_WARNINGS_SINCE < QT_VERSION_CHECK(5, 15, 0)
         typedef std::bidirectional_iterator_tag iterator_category;
 #else
         typedef std::forward_iterator_tag iterator_category;
@@ -354,23 +354,23 @@ public:
             return r;
         }
 #if QT_DEPRECATED_SINCE(5, 15)
-        inline QT_DEPRECATED iterator &operator--()
+        inline QT_DEPRECATED_VERSION_5_15 iterator &operator--()
         {
             i = QHashData::previousNode(i);
             return *this;
         }
-        inline QT_DEPRECATED iterator operator--(int)
+        inline QT_DEPRECATED_VERSION_5_15 iterator operator--(int)
         {
             iterator r = *this;
             i = QHashData::previousNode(i);
             return r;
         }
-        inline QT_DEPRECATED iterator operator+(int j) const
+        inline QT_DEPRECATED_VERSION_5_15 iterator operator+(int j) const
         { iterator r = *this; if (j > 0) while (j--) ++r; else while (j++) --r; return r; }
-        inline QT_DEPRECATED iterator operator-(int j) const { return operator+(-j); }
-        inline QT_DEPRECATED iterator &operator+=(int j) { return *this = *this + j; }
-        inline QT_DEPRECATED iterator &operator-=(int j) { return *this = *this - j; }
-        friend inline QT_DEPRECATED iterator operator+(int j, iterator k) { return k + j; }
+        inline QT_DEPRECATED_VERSION_5_15 iterator operator-(int j) const { return operator+(-j); }
+        inline QT_DEPRECATED_VERSION_5_15 iterator &operator+=(int j) { return *this = *this + j; }
+        inline QT_DEPRECATED_VERSION_5_15 iterator &operator-=(int j) { return *this = *this - j; }
+        friend inline QT_DEPRECATED_VERSION_5_15 iterator operator+(int j, iterator k) { return k + j; }
 #endif
 
         inline bool operator==(const const_iterator &o) const { return i == o.i; }
@@ -387,7 +387,7 @@ public:
         QHashData::Node *i;
 
     public:
-#if QT_DEPRECATED_SINCE(5, 15)
+#if QT_DEPRECATED_WARNINGS_SINCE < QT_VERSION_CHECK(5, 15, 0)
         typedef std::bidirectional_iterator_tag iterator_category;
 #else
         typedef std::forward_iterator_tag iterator_category;
@@ -420,23 +420,23 @@ public:
             return r;
         }
 #if QT_DEPRECATED_SINCE(5, 15)
-        inline QT_DEPRECATED const_iterator &operator--()
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator &operator--()
         {
             i = QHashData::previousNode(i);
             return *this;
         }
-        inline QT_DEPRECATED const_iterator operator--(int)
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator operator--(int)
         {
             const_iterator r = *this;
             i = QHashData::previousNode(i);
             return r;
         }
-        inline QT_DEPRECATED const_iterator operator+(int j) const
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator operator+(int j) const
         { const_iterator r = *this; if (j > 0) while (j--) ++r; else while (j++) --r; return r; }
-        inline QT_DEPRECATED const_iterator operator-(int j) const { return operator+(-j); }
-        inline QT_DEPRECATED const_iterator &operator+=(int j) { return *this = *this + j; }
-        inline QT_DEPRECATED const_iterator &operator-=(int j) { return *this = *this - j; }
-        friend inline QT_DEPRECATED const_iterator operator+(int j, const_iterator k)
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator operator-(int j) const { return operator+(-j); }
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator &operator+=(int j) { return *this = *this + j; }
+        inline QT_DEPRECATED_VERSION_5_15 const_iterator &operator-=(int j) { return *this = *this - j; }
+        friend inline QT_DEPRECATED_VERSION_5_15 const_iterator operator+(int j, const_iterator k)
         {
             return k + j;
         }
@@ -466,12 +466,12 @@ public:
         inline key_iterator &operator++() { ++i; return *this; }
         inline key_iterator operator++(int) { return key_iterator(i++);}
 #if QT_DEPRECATED_SINCE(5, 15)
-        inline QT_DEPRECATED key_iterator &operator--()
+        inline QT_DEPRECATED_VERSION_5_15 key_iterator &operator--()
         {
             --i;
             return *this;
         }
-        inline QT_DEPRECATED key_iterator operator--(int) { return key_iterator(i--); }
+        inline QT_DEPRECATED_VERSION_5_15 key_iterator operator--(int) { return key_iterator(i--); }
 #endif
         const_iterator base() const { return i; }
     };
@@ -1302,18 +1302,18 @@ public:
         return false;
     }
 #if QT_DEPRECATED_SINCE(5, 15)
-    inline QT_DEPRECATED bool hasPrevious() const { return i != c.constBegin(); }
-    inline QT_DEPRECATED Item previous()
+    inline QT_DEPRECATED_VERSION_5_15 bool hasPrevious() const { return i != c.constBegin(); }
+    inline QT_DEPRECATED_VERSION_5_15 Item previous()
     {
         n = --i;
         return n;
     }
-    inline QT_DEPRECATED Item peekPrevious() const
+    inline QT_DEPRECATED_VERSION_5_15 Item peekPrevious() const
     {
         const_iterator p = i;
         return --p;
     }
-    inline bool QT_DEPRECATED findPrevious(const T &t)
+    inline bool QT_DEPRECATED_VERSION_5_15 findPrevious(const T &t)
     {
         while (i != c.constBegin())
             if (*(n = --i) == t)
@@ -1399,18 +1399,18 @@ public:
         return false;
     }
 #if QT_DEPRECATED_SINCE(5, 15)
-    inline QT_DEPRECATED bool hasPrevious() const { return const_iterator(i) != c->constBegin(); }
-    inline QT_DEPRECATED Item previous()
+    inline QT_DEPRECATED_VERSION_5_15 bool hasPrevious() const { return const_iterator(i) != c->constBegin(); }
+    inline QT_DEPRECATED_VERSION_5_15 Item previous()
     {
         n = --i;
         return n;
     }
-    inline QT_DEPRECATED Item peekPrevious() const
+    inline QT_DEPRECATED_VERSION_5_15 Item peekPrevious() const
     {
         iterator p = i;
         return --p;
     }
-    inline QT_DEPRECATED bool findPrevious(const T &t)
+    inline QT_DEPRECATED_VERSION_5_15 bool findPrevious(const T &t)
     {
         while (const_iterator(i) != c->constBegin())
             if (*(n = --i) == t)

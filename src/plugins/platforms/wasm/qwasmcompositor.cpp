@@ -58,7 +58,6 @@ QWasmCompositedWindow::QWasmCompositedWindow()
 
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
     :QObject(screen)
-    , m_frameBuffer(nullptr)
     , m_blitter(new QOpenGLTextureBlitter)
     , m_needComposit(false)
     , m_inFlush(false)
@@ -70,7 +69,6 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
 
 QWasmCompositor::~QWasmCompositor()
 {
-    delete m_frameBuffer;
     destroy();
 }
 
@@ -746,4 +744,9 @@ void QWasmCompositor::notifyTopWindowChanged(QWasmWindow *window)
 QWasmScreen *QWasmCompositor::screen()
 {
     return static_cast<QWasmScreen *>(parent());
+}
+
+QOpenGLContext *QWasmCompositor::context()
+{
+    return m_context.data();
 }

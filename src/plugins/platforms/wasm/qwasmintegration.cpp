@@ -189,6 +189,11 @@ QPlatformBackingStore *QWasmIntegration::createPlatformBackingStore(QWindow *win
 #endif
 }
 
+void QWasmIntegration::removeBackingStore(QWindow* window)
+{
+    m_backingStores.remove(window);
+}
+
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {

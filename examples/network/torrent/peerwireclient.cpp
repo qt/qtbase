@@ -107,8 +107,8 @@ PeerWireClient::PeerWireClient(const QByteArray &peerId, QObject *parent)
             this, &PeerWireClient::readyRead);
     connect(&socket, &QTcpSocket::disconnected,
             this, &PeerWireClient::disconnected);
-    connect(&socket, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error),
-            this, QOverload<QAbstractSocket::SocketError>::of(&PeerWireClient::error));
+    connect(&socket, &QTcpSocket::errorOccurred,
+            this, &PeerWireClient::errorOccurred);
     connect(&socket, &QTcpSocket::bytesWritten,
             this, &PeerWireClient::bytesWritten);
     connect(&socket, &QTcpSocket::stateChanged,

@@ -65,7 +65,7 @@ void FortuneThread::run()
     QTcpSocket tcpSocket;
 //! [1] //! [2]
     if (!tcpSocket.setSocketDescriptor(socketDescriptor)) {
-        emit error(tcpSocket.socketError());
+        emit error(tcpSocket.error());
         return;
     }
 //! [2] //! [3]

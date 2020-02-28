@@ -93,7 +93,7 @@ bool QHttpSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstractSo
     connect(d->socket, SIGNAL(bytesWritten(qint64)),
             this, SLOT(slotSocketBytesWritten()),
             Qt::DirectConnection);
-    connect(d->socket, SIGNAL(error(QAbstractSocket::SocketError)),
+    connect(d->socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
             this, SLOT(slotSocketError(QAbstractSocket::SocketError)),
             Qt::DirectConnection);
     connect(d->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
@@ -370,8 +370,8 @@ bool QHttpSocketEngine::waitForRead(int msecs, bool *timedOut)
         if (!d->socket->waitForReadyRead(qt_subtract_from_timeout(msecs, stopWatch.elapsed()))) {
             if (d->socket->state() == QAbstractSocket::UnconnectedState)
                 return true;
-            setError(d->socket->socketError(), d->socket->errorString());
-            if (timedOut && d->socket->socketError() == QAbstractSocket::SocketTimeoutError)
+            setError(d->socket->error(), d->socket->errorString());
+            if (timedOut && d->socket->error() == QAbstractSocket::SocketTimeoutError)
                 *timedOut = true;
             return false;
         }
@@ -385,8 +385,8 @@ bool QHttpSocketEngine::waitForRead(int msecs, bool *timedOut)
 
     // Report any error that may occur.
     if (d->state != Connected) {
-        setError(d->socket->socketError(), d->socket->errorString());
-        if (timedOut && d->socket->socketError() == QAbstractSocket::SocketTimeoutError)
+        setError(d->socket->error(), d->socket->errorString());
+        if (timedOut && d->socket->error() == QAbstractSocket::SocketTimeoutError)
             *timedOut = true;
         return false;
     }
@@ -401,7 +401,7 @@ bool QHttpSocketEngine::waitForWrite(int msecs, bool *timedOut)
     if (d->state == Connected) {
         if (d->socket->bytesToWrite()) {
             if (!d->socket->waitForBytesWritten(msecs)) {
-                if (d->socket->socketError() == QAbstractSocket::SocketTimeoutError && timedOut)
+                if (d->socket->error() == QAbstractSocket::SocketTimeoutError && timedOut)
                     *timedOut = true;
                 return false;
             }
@@ -421,7 +421,8 @@ bool QHttpSocketEngine::waitForWrite(int msecs, bool *timedOut)
 
     // Report any error that may occur.
     if (d->state != Connected) {
-        if (timedOut && d->socket->socketError() == QAbstractSocket::SocketTimeoutError)
+//        setError(d->socket->error(), d->socket->errorString());
+        if (timedOut && d->socket->error() == QAbstractSocket::SocketTimeoutError)
             *timedOut = true;
     }
 

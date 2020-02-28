@@ -149,7 +149,7 @@ public slots:
 
     void requestFinished(QNetworkReply *reply)
     {
-        QCOMPARE(reply->networkError(), QNetworkReply::NoError);
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
         reply->deleteLater();
     }
 

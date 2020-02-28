@@ -2041,6 +2041,42 @@ QStringRef QXmlStreamReader::dtdSystemId() const
    return QStringRef();
 }
 
+/*!
+  \since 5.15
+
+  Returns the maximum amount of characters a single entity is
+  allowed to expand into. If a single entity expands past the
+  given limit, the document is not considered well formed.
+
+  \sa setEntityExpansionLimit
+*/
+int QXmlStreamReader::entityExpansionLimit() const
+{
+    Q_D(const QXmlStreamReader);
+    return d->entityExpansionLimit;
+}
+
+/*!
+  \since 5.15
+
+  Sets the maximum amount of characters a single entity is
+  allowed to expand into to \a limit. If a single entity expands
+  past the given limit, the document is not considered well formed.
+
+  The limit is there to prevent DoS attacks when loading unknown
+  XML documents where recursive entity expansion could otherwise
+  exhaust all available memory.
+
+  The default value for this property is 4096 characters.
+
+  \sa entityExpansionLimit
+*/
+void QXmlStreamReader::setEntityExpansionLimit(int limit)
+{
+    Q_D(QXmlStreamReader);
+    d->entityExpansionLimit = limit;
+}
+
 /*!  If the tokenType() is \l StartElement, this function returns the
   element's namespace declarations. Otherwise an empty vector is
   returned.

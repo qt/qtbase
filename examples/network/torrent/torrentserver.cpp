@@ -80,7 +80,7 @@ void TorrentServer::incomingConnection(qintptr socketDescriptor)
         if (ConnectionManager::instance()->canAddConnection() && !clients.isEmpty()) {
             connect(client, &PeerWireClient::infoHashReceived,
                     this, &TorrentServer::processInfoHash);
-            connect(client, QOverload<QAbstractSocket::SocketError>::of(&PeerWireClient::error),
+            connect(client, &PeerWireClient::errorOccurred,
                     this, QOverload<>::of(&TorrentServer::removeClient));
             RateController::instance()->addSocket(client);
             ConnectionManager::instance()->addConnection(client);

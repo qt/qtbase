@@ -337,7 +337,7 @@ void tst_QUdpSocket::constructing()
     QCOMPARE(socket.canReadLine(), false);
     QCOMPARE(socket.readLine(), QByteArray());
     QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
-    QCOMPARE(socket.socketError(), QUdpSocket::UnknownSocketError);
+    QCOMPARE(socket.error(), QUdpSocket::UnknownSocketError);
     QCOMPARE(socket.errorString(), QString("Unknown error"));
 
     // Check the state of the socket api
@@ -575,7 +575,7 @@ void tst_QUdpSocket::ipv6Loop()
     int paulPort;
 
     if (!peter.bind(QHostAddress(QHostAddress::LocalHostIPv6), 0)) {
-        QCOMPARE(peter.socketError(), QUdpSocket::UnsupportedSocketOperationError);
+        QCOMPARE(peter.error(), QUdpSocket::UnsupportedSocketOperationError);
         return;
     }
 
@@ -883,7 +883,7 @@ void tst_QUdpSocket::writeDatagram()
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
 
     for(int i=0;;i++) {
-        QSignalSpy errorspy(&client, SIGNAL(error(QAbstractSocket::SocketError)));
+        QSignalSpy errorspy(&client, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
         QSignalSpy bytesspy(&client, SIGNAL(bytesWritten(qint64)));
 
         qint64 written = client.writeDatagram(QByteArray(i * 1024, 'w'), serverAddress,
@@ -897,7 +897,7 @@ void tst_QUdpSocket::writeDatagram()
             QCOMPARE(errorspy.count(), 1);
             QCOMPARE(*static_cast<const int *>(errorspy.at(0).at(0).constData()),
                     int(QUdpSocket::DatagramTooLargeError));
-            QCOMPARE(client.socketError(), QUdpSocket::DatagramTooLargeError);
+            QCOMPARE(client.error(), QUdpSocket::DatagramTooLargeError);
             break;
         }
         QCOMPARE(bytesspy.count(), 1);
@@ -1044,7 +1044,7 @@ void tst_QUdpSocket::writeToNonExistingPeer()
 
     QUdpSocket sConnected;
     QSignalSpy sConnectedReadyReadSpy(&sConnected, SIGNAL(readyRead()));
-    QSignalSpy sConnectedErrorSpy(&sConnected, SIGNAL(error(QAbstractSocket::SocketError)));
+    QSignalSpy sConnectedErrorSpy(&sConnected, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
     sConnected.connectToHost(peerAddress, peerPort, QIODevice::ReadWrite);
     QVERIFY(sConnected.waitForConnected(10000));
 
@@ -1054,14 +1054,14 @@ void tst_QUdpSocket::writeToNonExistingPeer()
     // the second one should fail!
     QTest::qSleep(1000);                   // do not process events
     QCOMPARE(sConnected.write("", 1), qint64(-1));
-    QCOMPARE(int(sConnected.socketError()), int(QUdpSocket::ConnectionRefusedError));
+    QCOMPARE(int(sConnected.error()), int(QUdpSocket::ConnectionRefusedError));
 
     // the third one will succeed...
     QCOMPARE(sConnected.write("", 1), qint64(1));
     QTestEventLoop::instance().enterLoop(1);
     QCOMPARE(sConnectedReadyReadSpy.count(), 0);
     QCOMPARE(sConnectedErrorSpy.count(), 1);
-    QCOMPARE(int(sConnected.socketError()), int(QUdpSocket::ConnectionRefusedError));
+    QCOMPARE(int(sConnected.error()), int(QUdpSocket::ConnectionRefusedError));
 
     // we should now get a read error
     QCOMPARE(sConnected.write("", 1), qint64(1));
@@ -1071,12 +1071,12 @@ void tst_QUdpSocket::writeToNonExistingPeer()
     QCOMPARE(sConnected.bytesAvailable(), Q_INT64_C(0));
     QCOMPARE(sConnected.pendingDatagramSize(), Q_INT64_C(-1));
     QCOMPARE(sConnected.readDatagram(buf, 2), Q_INT64_C(-1));
-    QCOMPARE(int(sConnected.socketError()), int(QUdpSocket::ConnectionRefusedError));
+    QCOMPARE(int(sConnected.error()), int(QUdpSocket::ConnectionRefusedError));
 
     QCOMPARE(sConnected.write("", 1), qint64(1));
     QTest::qSleep(1000);                   // do not process events
     QCOMPARE(sConnected.read(buf, 2), Q_INT64_C(0));
-    QCOMPARE(int(sConnected.socketError()), int(QUdpSocket::ConnectionRefusedError));
+    QCOMPARE(int(sConnected.error()), int(QUdpSocket::ConnectionRefusedError));
 
     // we should still be connected
     QCOMPARE(int(sConnected.state()), int(QUdpSocket::ConnectedState));

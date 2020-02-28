@@ -676,7 +676,7 @@ bool QSslSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state
         d->createPlainSocket(openMode);
     bool retVal = d->plainSocket->setSocketDescriptor(socketDescriptor, state, openMode);
     d->cachedSocketDescriptor = d->plainSocket->socketDescriptor();
-    d->setError(d->plainSocket->socketError(), d->plainSocket->errorString());
+    d->setError(d->plainSocket->error(), d->plainSocket->errorString());
     setSocketState(state);
     setOpenMode(openMode);
     setLocalPort(d->plainSocket->localPort());
@@ -1784,7 +1784,7 @@ bool QSslSocket::waitForConnected(int msecs)
     bool retVal = d->plainSocket->waitForConnected(msecs);
     if (!retVal) {
         setSocketState(d->plainSocket->state());
-        d->setError(d->plainSocket->socketError(), d->plainSocket->errorString());
+        d->setError(d->plainSocket->error(), d->plainSocket->errorString());
     }
     return retVal;
 }
@@ -1953,7 +1953,7 @@ bool QSslSocket::waitForDisconnected(int msecs)
     bool retVal = d->plainSocket->waitForDisconnected(qt_subtract_from_timeout(msecs, stopWatch.elapsed()));
     if (!retVal) {
         setSocketState(d->plainSocket->state());
-        d->setError(d->plainSocket->socketError(), d->plainSocket->errorString());
+        d->setError(d->plainSocket->error(), d->plainSocket->errorString());
     }
     return retVal;
 }
@@ -2681,7 +2681,7 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->connect(plainSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
                q, SLOT(_q_stateChangedSlot(QAbstractSocket::SocketState)),
                Qt::DirectConnection);
-    q->connect(plainSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+    q->connect(plainSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
                q, SLOT(_q_errorSlot(QAbstractSocket::SocketError)),
                Qt::DirectConnection);
     q->connect(plainSocket, SIGNAL(readyRead()),
@@ -2857,7 +2857,7 @@ void QSslSocketPrivate::_q_errorSlot(QAbstractSocket::SocketError error)
         readBufferMaxSize = tmpReadBufferMaxSize;
     }
 
-    setErrorAndEmit(plainSocket->socketError(), plainSocket->errorString());
+    setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
 }
 
 /*!

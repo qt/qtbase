@@ -89,6 +89,7 @@ public:
     void resizeScreen(const emscripten::val &canvas);
     void resizeAllScreens();
     void updateDpi();
+    void removeBackingStore(QWindow* window);
 
 private:
     mutable QWasmFontDatabase *m_fontDb;

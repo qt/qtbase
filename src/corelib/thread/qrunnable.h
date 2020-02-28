@@ -60,7 +60,7 @@ public:
 
     QRunnable() : ref(0) { }
     virtual ~QRunnable();
-    static QRunnable *create(std::function<void()> fun);
+    static QRunnable *create(std::function<void()> functionToRun);
 
     bool autoDelete() const { return ref != -1; }
     void setAutoDelete(bool _autoDelete) { ref = _autoDelete ? 0 : -1; }

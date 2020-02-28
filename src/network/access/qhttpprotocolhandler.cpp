@@ -233,7 +233,7 @@ void QHttpProtocolHandler::_q_readyRead()
         char c;
         qint64  ret = m_socket->peek(&c, 1);
         if (ret < 0) {
-            m_channel->_q_error(m_socket->socketError());
+            m_channel->_q_error(m_socket->error());
             // We still need to handle the reply so it emits its signals etc.
             if (m_reply)
                 _q_receiveReply();

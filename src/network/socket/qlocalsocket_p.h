@@ -127,7 +127,7 @@ public:
     QString generateErrorString(QLocalSocket::LocalSocketError, const QString &function) const;
     void setErrorAndEmit(QLocalSocket::LocalSocketError, const QString &function);
     void _q_stateChanged(QAbstractSocket::SocketState newState);
-    void _q_error(QAbstractSocket::SocketError newError);
+    void _q_errorOccurred(QAbstractSocket::SocketError newError);
 #elif defined(Q_OS_WIN)
     ~QLocalSocketPrivate();
     void destroyPipeHandles();
@@ -144,7 +144,7 @@ public:
     QString generateErrorString(QLocalSocket::LocalSocketError, const QString &function) const;
     void setErrorAndEmit(QLocalSocket::LocalSocketError, const QString &function);
     void _q_stateChanged(QAbstractSocket::SocketState newState);
-    void _q_error(QAbstractSocket::SocketError newError);
+    void _q_errorOccurred(QAbstractSocket::SocketError newError);
     void _q_connectToSocket();
     void _q_abortConnectionAttempt();
     void cancelDelayedConnect();

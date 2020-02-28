@@ -1125,7 +1125,7 @@ qint64 QDtlsPrivateOpenSSL::writeDatagramEncrypted(QUdpSocket *socket,
         // some errors can be just ignored (it's UDP, not TCP after all).
         // Unlike QSslSocket we do not abort though.
         QString description(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
-        if (socket->socketError() != QAbstractSocket::UnknownSocketError && description.isEmpty()) {
+        if (socket->error() != QAbstractSocket::UnknownSocketError && description.isEmpty()) {
             setDtlsError(QDtlsError::UnderlyingSocketError, socket->errorString());
         } else {
             setDtlsError(QDtlsError::TlsFatalError,

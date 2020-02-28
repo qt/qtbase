@@ -56,6 +56,7 @@ public:
     explicit QConcatenateTablesProxyModel(QObject *parent = nullptr);
     ~QConcatenateTablesProxyModel();
 
+    QList<QAbstractItemModel *> sourceModels() const;
     Q_SCRIPTABLE void addSourceModel(QAbstractItemModel *sourceModel);
     Q_SCRIPTABLE void removeSourceModel(QAbstractItemModel *sourceModel);
 
