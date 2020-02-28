@@ -285,6 +285,13 @@ QDataStream &readListBasedContainer(QDataStream &s, Container &c)
     return s;
 }
 
+template <typename T>
+struct MultiContainer { using type = T; };
+template <typename K, typename V>
+struct MultiContainer<QMap<K, V>> { using type = QMultiMap<K, V>; };
+template <typename K, typename V>
+struct MultiContainer<QHash<K, V>> { using type = QMultiHash<K, V>; };
+
 template <typename Container>
 QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
 {
@@ -301,10 +308,7 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
             c.clear();
             break;
         }
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        c.insertMulti(k, t);
-QT_WARNING_POP
+        static_cast<typename MultiContainer<Container>::type &>(c).insert(k, t);
     }
 
     return s;
