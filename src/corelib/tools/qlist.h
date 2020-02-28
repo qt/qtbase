@@ -583,10 +583,13 @@ inline void QList<T>::removeAt(int i)
 {
 #if !QT_DEPRECATED_SINCE(5, 15)
     Q_ASSERT_X(i >= 0 && i < p.size(), "QList<T>::removeAt", "index out of range");
-#elif !defined(QT_NO_DEBUG)
-    if (i < 0 || i >= p.size())
+#endif
+    if (i < 0 || i >= p.size()) {
+#if !defined(QT_NO_DEBUG)
         qWarning("QList::removeAt(): Index out of range.");
 #endif
+        return;
+    }
     detach();
     node_destruct(reinterpret_cast<Node *>(p.at(i))); p.remove(i);
 }
