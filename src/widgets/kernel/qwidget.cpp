@@ -395,7 +395,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     Every widget's constructor accepts one or two standard arguments:
 
     \list 1
-        \li  \c{QWidget *parent = \nullptr} is the parent of the new widget.
+        \li  \c{QWidget *parent = nullptr} is the parent of the new widget.
             If it is \nullptr (the default), the new widget will be a window.
             If not, it will be a child of \e parent, and be constrained by
             \e parent's geometry (unless you specify Qt::Window as window flag).

@@ -710,7 +710,7 @@ void QScreenPrivate::updatePrimaryOrientation()
 
     \since 5.15
 */
-QScreen *QScreen::virtualSiblingAt(const QPoint &point)
+QScreen *QScreen::virtualSiblingAt(QPoint point)
 {
     const auto &siblings = virtualSiblings();
     for (QScreen *sibling : siblings) {

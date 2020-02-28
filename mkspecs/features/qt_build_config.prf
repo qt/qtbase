@@ -91,10 +91,13 @@ android|uikit|winrt: \
 # Prevent warnings about object files without any symbols
 macos: CONFIG += no_warn_empty_obj_files
 
+# Make sure the doc features are loaded last since they depend on other
+# features setting up things like includepaths to find everything.
+CONFIG = prepare_docs qt_docs_targets $$CONFIG
+
 CONFIG += \
     utf8_source \
     create_prl link_prl \
-    prepare_docs qt_docs_targets \
     no_private_qt_headers_warning QTDIR_build \
     qt_example_installs \
     # Qt modules get compiled without exceptions enabled by default.

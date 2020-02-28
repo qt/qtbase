@@ -78,7 +78,7 @@ Dialog::Dialog(QWidget *parent)
     connect(&tcpClient, &QAbstractSocket::connected, this, &Dialog::startTransfer);
     connect(&tcpClient, &QIODevice::bytesWritten,
             this, &Dialog::updateClientProgress);
-    connect(&tcpClient, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),
+    connect(&tcpClient, &QAbstractSocket::errorOccurred,
             this, &Dialog::displayError);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -131,8 +131,7 @@ void Dialog::acceptConnection()
 
     connect(tcpServerConnection, &QIODevice::readyRead,
             this, &Dialog::updateServerProgress);
-    connect(tcpServerConnection,
-            QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),
+    connect(tcpServerConnection, &QAbstractSocket::errorOccurred,
             this, &Dialog::displayError);
     connect(tcpServerConnection, &QTcpSocket::disconnected,
             tcpServerConnection, &QTcpSocket::deleteLater);

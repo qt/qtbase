@@ -125,7 +125,7 @@ public:
     QRect availableGeometry() const;
 
     QList<QScreen *> virtualSiblings() const;
-    QScreen *virtualSiblingAt(const QPoint &point);
+    QScreen *virtualSiblingAt(QPoint point);
 
     QSize virtualSize() const;
     QRect virtualGeometry() const;

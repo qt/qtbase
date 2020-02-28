@@ -36,7 +36,7 @@
 #include <QtGui/qpainter.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformscreen.h>
-
+#include <QtGui/qoffscreensurface.h>
 #include <QtGui/qbackingstore.h>
 
 QT_BEGIN_NAMESPACE
@@ -53,12 +53,29 @@ QWasmBackingStore::QWasmBackingStore(QWasmCompositor *compositor, QWindow *windo
 
 QWasmBackingStore::~QWasmBackingStore()
 {
+    auto window = this->window();
+    QWasmIntegration::get()->removeBackingStore(window);
+    destroy();
+    QWasmWindow *wasmWindow = static_cast<QWasmWindow *>(window->handle());
+    if (wasmWindow)
+        wasmWindow->setBackingStore(nullptr);
 }
 
 void QWasmBackingStore::destroy()
 {
-    if (m_texture->isCreated())
-        m_texture->destroy();
+    if (m_texture->isCreated()) {
+        auto context = m_compositor->context();
+        auto currentContext = QOpenGLContext::currentContext();
+        if (!currentContext || !QOpenGLContext::areSharing(context, currentContext)) {
+            QOffscreenSurface offScreenSurface(m_compositor->screen()->screen());
+            offScreenSurface.setFormat(context->format());
+            offScreenSurface.create();
+            context->makeCurrent(&offScreenSurface);
+            m_texture->destroy();
+        } else {
+            m_texture->destroy();
+        }
+    }
 }
 
 QPaintDevice *QWasmBackingStore::paintDevice()
@@ -81,9 +98,9 @@ void QWasmBackingStore::updateTexture()
     if (m_dirty.isNull())
         return;
 
-    if (m_recreateTexture && m_texture->isCreated()) {
+    if (m_recreateTexture) {
         m_recreateTexture = false;
-        m_texture->destroy();
+        destroy();
     }
 
     if (!m_texture->isCreated()) {

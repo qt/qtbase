@@ -115,29 +115,29 @@ QRunnable::~QRunnable()
 
 class FunctionRunnable : public QRunnable
 {
-    std::function<void()> m_functor;
+    std::function<void()> m_functionToRun;
 public:
-    FunctionRunnable(std::function<void()> functor) : m_functor(std::move(functor))
+    FunctionRunnable(std::function<void()> functionToRun) : m_functionToRun(std::move(functionToRun))
     {
     }
     void run() override
     {
-        m_functor();
+        m_functionToRun();
     }
 };
 
 /*!
     \since 5.15
 
-    Creates a QRunnable that calls \a fun in run().
+    Creates a QRunnable that calls \a functionToRun in run().
 
     Auto-deletion is enabled by default.
 
     \sa run(), autoDelete()
 */
-QRunnable *QRunnable::create(std::function<void()> fun)
+QRunnable *QRunnable::create(std::function<void()> functionToRun)
 {
-    return new FunctionRunnable(std::move(fun));
+    return new FunctionRunnable(std::move(functionToRun));
 }
 
 QT_END_NAMESPACE

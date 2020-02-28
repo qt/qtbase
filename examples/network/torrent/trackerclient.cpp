@@ -165,8 +165,8 @@ void TrackerClient::httpRequestDone(QNetworkReply *reply)
         return;
     }
 
-    if (reply->networkError() != QNetworkReply::NoError) {
-        emit connectionError(reply->networkError());
+    if (reply->error() != QNetworkReply::NoError) {
+        emit connectionError(reply->error());
         return;
     }
 

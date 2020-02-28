@@ -515,16 +515,16 @@ void QThreadPool::start(QRunnable *runnable, int priority)
     \overload
     \since 5.15
 
-    Reserves a thread and uses it to run \a fun, unless this thread will
+    Reserves a thread and uses it to run \a functionToRun, unless this thread will
     make the current thread count exceed maxThreadCount().  In that case,
-    \a fun is added to a run queue instead. The \a priority argument can
+    \a functionToRun is added to a run queue instead. The \a priority argument can
     be used to control the run queue's order of execution.
 */
-void QThreadPool::start(std::function<void()> fun, int priority)
+void QThreadPool::start(std::function<void()> functionToRun, int priority)
 {
-    if (!fun)
+    if (!functionToRun)
         return;
-    start(QRunnable::create(std::move(fun)), priority);
+    start(QRunnable::create(std::move(functionToRun)), priority);
 }
 
 /*!
@@ -561,17 +561,17 @@ bool QThreadPool::tryStart(QRunnable *runnable)
 /*!
     \overload
     \since 5.15
-    Attempts to reserve a thread to run \a fun.
+    Attempts to reserve a thread to run \a functionToRun.
 
     If no threads are available at the time of calling, then this function
-    does nothing and returns \c false.  Otherwise, \a fun is run immediately
+    does nothing and returns \c false.  Otherwise, \a functionToRun is run immediately
     using one available thread and this function returns \c true.
 */
-bool QThreadPool::tryStart(std::function<void()> fun)
+bool QThreadPool::tryStart(std::function<void()> functionToRun)
 {
-    if (!fun)
+    if (!functionToRun)
         return false;
-    return tryStart(QRunnable::create(std::move(fun)));
+    return tryStart(QRunnable::create(std::move(functionToRun)));
 }
 
 /*! \property QThreadPool::expiryTimeout

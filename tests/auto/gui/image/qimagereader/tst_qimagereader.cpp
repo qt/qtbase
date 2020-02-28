@@ -1081,7 +1081,7 @@ private slots:
     void acceptNewConnection()
     {
         serverSocket = server.nextPendingConnection();
-        connect(serverSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+        connect(serverSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
                 this, SLOT(remoteHostClosed()));
     }
 

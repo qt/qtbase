@@ -1202,8 +1202,8 @@ QMargins QLineEdit::textMargins() const
 
     The input mask is an input template string. It can contain the following elements:
     \table
-    \row \li Mask Characters \li Defines the class of input characters that are
-    considered valid in this position
+    \row \li Mask Characters \li Defines the \l {QChar::} {Category} of input characters
+    that are considered valid in this position
     \row \li Meta Characters \li Various special meanings
     \row \li Separators \li All other characters are regarded as immutable separators
     \endtable
@@ -1212,17 +1212,21 @@ QMargins QLineEdit::textMargins() const
 
     \table
     \header \li Mask Character \li Meaning
-    \row \li \c A \li ASCII alphabetic character required. A-Z, a-z.
-    \row \li \c a \li ASCII alphabetic character permitted but not required.
-    \row \li \c N \li ASCII alphanumeric character required. A-Z, a-z, 0-9.
-    \row \li \c n \li ASCII alphanumeric character permitted but not required.
+    \row \li \c A \li character of the Letter category required, such as A-Z, a-z.
+    \row \li \c a \li character of the Letter category permitted but not required.
+    \row \li \c N \li character of the Letter or Number category required, such as
+                      A-Z, a-z, 0-9.
+    \row \li \c n \li character of the Letter or Number category permitted but not required.
     \row \li \c X \li Any non-blank character required.
     \row \li \c x \li Any non-blank character permitted but not required.
-    \row \li \c 9 \li ASCII digit required. 0-9.
-    \row \li \c 0 \li ASCII digit permitted but not required.
-    \row \li \c D \li ASCII digit required. 1-9.
-    \row \li \c d \li ASCII digit permitted but not required (1-9).
-    \row \li \c # \li ASCII digit or plus/minus sign permitted but not required.
+    \row \li \c 9 \li character of the Number category required, e.g 0-9.
+    \row \li \c 0 \li character of the Number category permitted but not required.
+    \row \li \c D \li character of the Number category and larger than zero required,
+                      such as 1-9
+    \row \li \c d \li character of the Number category and larger than zero permitted but not
+                      required, such as 1-9.
+    \row \li \c # \li character of the Number category, or plus/minus sign permitted but not
+                      required.
     \row \li \c H \li Hexadecimal character required. A-F, a-f, 0-9.
     \row \li \c h \li Hexadecimal character permitted but not required.
     \row \li \c B \li Binary character required. 0-1.
@@ -1264,7 +1268,7 @@ QMargins QLineEdit::textMargins() const
     To get range control (e.g., for an IP address) use masks together
     with \l{setValidator()}{validators}.
 
-    \sa maxLength
+    \sa maxLength, QChar::isLetter(), QChar::isNumber(), QChar::digitValue()
 */
 QString QLineEdit::inputMask() const
 {

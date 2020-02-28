@@ -2384,11 +2384,21 @@ bool QWizard::hasVisitedPage(int theid) const
 
     \sa hasVisitedPage()
 */
-QList<int> QWizard::visitedPages() const
+QList<int> QWizard::visitedIds() const
 {
     Q_D(const QWizard);
     return d->history;
 }
+
+/*!
+    \obsolete Use visitedIds() instead
+*/
+#if QT_DEPRECATED_SINCE(5, 15)
+QList<int> QWizard::visitedPages() const
+{
+    return visitedIds();
+}
+#endif
 
 /*!
     Returns the list of page IDs.

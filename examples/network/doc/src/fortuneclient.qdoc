@@ -89,7 +89,7 @@
 
     The only QTcpSocket signals we need in this example are
     QTcpSocket::readyRead(), signifying that data has been received, and
-    QTcpSocket::error(), which we will use to catch any connection errors:
+    QTcpSocket::errorOccurred(), which we will use to catch any connection errors:
 
     \dots
     \snippet fortuneclient/client.cpp 3
@@ -118,11 +118,11 @@
 
     \li \e{An error occurs.} We need to inform the user if the connection
     failed or was broken. In this case, QTcpSocket will emit
-    \l{QTcpSocket::error()}{error()}, and \c Client::displayError() will be
+    \l{QTcpSocket::errorOccurred()}{errorOccurred()}, and \c Client::displayError() will be
     called.
     \endlist
 
-    Let's go through the \l{QTcpSocket::error()}{error()} case first:
+    Let's go through the \l{QTcpSocket::errorOccurred()}{errorOccurred()} case first:
 
     \snippet fortuneclient/client.cpp 13
 

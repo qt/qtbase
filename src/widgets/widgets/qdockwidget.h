@@ -78,7 +78,10 @@ public:
         DockWidgetVerticalTitleBar = 0x08,
 
         DockWidgetFeatureMask = 0x0f,
-        AllDockWidgetFeatures = DockWidgetClosable|DockWidgetMovable|DockWidgetFloatable, // ### Qt 6: remove
+#if QT_DEPRECATED_SINCE(5, 15)
+        AllDockWidgetFeatures Q_DECL_ENUMERATOR_DEPRECATED =
+            DockWidgetClosable|DockWidgetMovable|DockWidgetFloatable, // ### Qt 6: remove
+#endif
         NoDockWidgetFeatures  = 0x00,
 
         Reserved              = 0xff

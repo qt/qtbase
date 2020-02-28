@@ -712,9 +712,8 @@ struct QBidiAlgorithm {
                         analysis[pos].bidiDirection = QChar::DirEN;
                         ++it;
                     }
-                } else {
-                    lastETPosition.clear();
                 }
+                lastETPosition.clear();
             }
             last = current;
             lastPos = pos;

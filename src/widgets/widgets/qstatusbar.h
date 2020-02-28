@@ -83,7 +83,6 @@ protected:
     void paintEvent(QPaintEvent *) override;
     void resizeEvent(QResizeEvent *) override;
 
-    // ### Qt 6: consider making reformat() and hideOrShow() private
     void reformat();
     void hideOrShow();
     bool event(QEvent *) override;

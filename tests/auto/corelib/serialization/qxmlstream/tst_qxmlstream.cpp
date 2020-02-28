@@ -397,8 +397,6 @@ public:
                 return true;
             }
 
-            QXmlStreamReader reader(&inputFile);
-
             /* See testcases.dtd which reads: 'Nonvalidating parsers
              * must also accept "invalid" testcases, but validating ones must reject them.' */
             if(type == QLatin1String("invalid") || type == QLatin1String("valid"))
@@ -582,6 +580,8 @@ private slots:
     void readBack() const;
     void roundTrip() const;
     void roundTrip_data() const;
+
+    void entityExpansionLimit() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -1753,6 +1753,46 @@ void tst_QXmlStream::roundTrip_data() const
                 "<child xmlns:unknown=\"http://mydomain\">Text</child>"
             "</father>"
         "</root>\n";
+}
+
+void tst_QXmlStream::entityExpansionLimit() const
+{
+    QString xml = QStringLiteral("<?xml version=\"1.0\"?>"
+                                 "<!DOCTYPE foo ["
+                                 "<!ENTITY a \"0123456789\" >"
+                                 "<!ENTITY b \"&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;\" >"
+                                 "<!ENTITY c \"&b;&b;&b;&b;&b;&b;&b;&b;&b;&b;\" >"
+                                 "<!ENTITY d \"&c;&c;&c;&c;&c;&c;&c;&c;&c;&c;\" >"
+                                 "]>"
+                                 "<foo>&d;&d;&d;</foo>");
+    {
+        QXmlStreamReader reader(xml);
+        QCOMPARE(reader.entityExpansionLimit(), 4096);
+        do {
+            reader.readNext();
+        } while (!reader.atEnd());
+        QCOMPARE(reader.error(), QXmlStreamReader::NotWellFormedError);
+    }
+
+    // &d; expands to 10k characters, minus the 3 removed (&d;) means it should fail
+    // with a limit of 9996 chars and pass with 9997
+    {
+        QXmlStreamReader reader(xml);
+        reader.setEntityExpansionLimit(9996);
+        do {
+            reader.readNext();
+        } while (!reader.atEnd());
+
+        QCOMPARE(reader.error(), QXmlStreamReader::NotWellFormedError);
+    }
+    {
+        QXmlStreamReader reader(xml);
+        reader.setEntityExpansionLimit(9997);
+        do {
+            reader.readNext();
+        } while (!reader.atEnd());
+        QCOMPARE(reader.error(), QXmlStreamReader::NoError);
+    }
 }
 
 void tst_QXmlStream::roundTrip() const

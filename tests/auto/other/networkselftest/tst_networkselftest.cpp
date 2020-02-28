@@ -428,7 +428,7 @@ void tst_NetworkSelfTest::serverReachability()
     QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");
 
     QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
-    QVERIFY2(socket.socketError() == QAbstractSocket::ConnectionRefusedError,
+    QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
              QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
 }
 
@@ -458,7 +458,7 @@ void tst_NetworkSelfTest::remotePortsOpen()
     socket.connectToHost(QtNetworkSettings::serverName(), portNumber);
 
     if (!socket.waitForConnected(10000)) {
-        if (socket.socketError() == QAbstractSocket::SocketTimeoutError)
+        if (socket.error() == QAbstractSocket::SocketTimeoutError)
             QFAIL(QString("Network timeout connecting to the server on port %1").arg(portNumber).toLocal8Bit());
         else
             QFAIL(QString("Error connecting to server on port %1: %2").arg(portNumber).arg(socket.errorString()).toLocal8Bit());
