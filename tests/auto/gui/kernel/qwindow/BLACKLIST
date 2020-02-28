@@ -33,8 +33,6 @@ osx-10.12 ci
 [testInputEvents]
 rhel-7.4
 [isActive]
-# QTBUG-67768
-ubuntu
 # QTBUG-69157
 android
 
