@@ -1,0 +1,206 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \class QTaggedPointer
+    \internal
+    \inmodule QtCore
+    \brief The QTaggedPointer class provides a low-level wrapper around raw
+    pointers that makes it possible to store additional information in otherwise unused bits.
+
+    \ingroup tools
+    \reentrant
+
+
+    Data structures in C++ tend to have a natural alignment in memory, based on
+    the alignment requirements of the members fields. For example a structure
+    containing an integer tends to be aligned to a 4-byte boundary in memory. That
+    means a pointer holding the address of an instance will always have the lower
+    two bits set to zero. QTaggedPointer makes it possible to store information
+    in these bits, such as a user provided enum. This is called a tag. The API allows
+    reading and writing the tag. When asked for the raw pointer, it will always return
+    a valid address with the bits used for the tag set to zero.
+
+    This pattern may be useful when creating low-level data structures that
+    need to be as dense as possible.
+
+    The first template parameter is the type the tagged pointer should point
+    to. The second template parameter is the type of the tag. If not specified it will
+    default to an unsigned integral. A more powerful pattern though is to define a
+    flag enum and use that as a tag type:
+
+    \code
+    struct LinkedListItem
+    {
+        enum MyFlag {
+            NoOption           = 0x0,
+            SomeOption         = 0x1,
+            ThirdWay           = 0x2
+        };
+        Q_DECLARE_FLAGS(MyFlags, MyFlag)
+
+        QTaggedPointer<LinkedListItem, MyFlag> next;
+
+        ...
+    };
+
+    Q_DECLARE_OPERATORS_FOR_FLAGS(LinkedListItem::MyFlags)
+
+    LinkedListItem &listItem = ...
+    listItem.next = new LinkedListItem;
+    listItem.next.setTag(LinkedListItem::SomeOption | LinkedListItem::ThirdWay);
+    \endcode
+
+    \note QTaggedPointer does not provide ownership. You are responsible for deleting
+    the data the pointer points to.
+*/
+
+/*!
+    \typedef QTaggedPointer::Type
+
+    Typedef for T.
+*/
+
+/*!
+    \typedef QTaggedPointer::TagType
+
+    Typedef for Tag.
+*/
+
+
+/*!
+    \fn template <typename T, typename Tag> explicit QTaggedPointer<T, Tag>::QTaggedPointer(T *pointer = nullptr, Tag tag = Tag()) noexcept
+
+    Creates a tagged pointer that points to \a pointer and stores the specified \a tag.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> T &QTaggedPointer<T, Tag>::operator*() const noexcept
+
+    Provides access to the pointer's members.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> T *QTaggedPointer<T, Tag>::operator->() const noexcept
+
+    Provides access to the pointer's members.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator!() const noexcept
+
+    Returns \c true if the pointer is \nullptr.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> explicit QTaggedPointer<T, Tag>::operator bool() const noexcept
+
+    Returns \c true if the pointer is \e not null.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> QTaggedPointer<T, Tag> &QTaggedPointer<T, Tag>::operator=(T *other) noexcept
+
+    Sets the pointer of this to \a other. The tag remains unchanged.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> void QTaggedPointer<T, Tag>::setTag(Tag tag)
+
+    Sets the tag value to the specified \a tag. The pointer remains unchanged.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> Tag QTaggedPointer<T, Tag>::tag() const noexcept
+
+    Returns the tag stored in the tagged pointer.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> Tag QTaggedPointer<T, Tag>::pointer() const noexcept
+
+    Returns the pointer stored in the tagged pointer.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::isNull() const noexcept
+
+    Returns \c true if the pointer is \nullptr; otherwise returns \c false.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> void QTaggedPointer<T, Tag>::swap(QTaggedPointer<T, Tag> &other) noexcept
+
+    Swaps this instance's pointer and tag with the pointer and tag in \a other.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> inline bool operator==(const QTaggedPointer<T, Tag> &lhs, const QTaggedPointer<T, Tag> &rhs) noexcept
+    \relates QTaggedPointer
+
+    Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
+
+    Two tagged pointers are considered equal if they point to the same object. Their tags are not compared.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> inline bool operator!=(const QTaggedPointer<T, Tag> &lhs, const QTaggedPointer<T, Tag> &rhs) noexcept
+    \relates QTaggedPointer
+
+    Returns \c true if \a lhs is not equal to \a rhs; otherwise returns \c false.
+
+    Two tagged pointers are considered equal if they point to the same object. Their tags are not compared.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> inline bool operator==(const QTaggedPointer<T, Tag> &lhs, std::nullptr_t) noexcept
+    \relates QTaggedPointer
+
+    Returns \c true if \a lhs refers to \c nullptr.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> inline bool operator==(std::nullptr_t, const QTaggedPointer<T, Tag> &rhs) noexcept
+    \relates QTaggedPointer
+
+    Returns \c true if \a rhs refers to \c nullptr.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> inline bool operator!=(const QTaggedPointer<T, Tag> &lhs, std::nullptr_t) noexcept
+    \relates QTaggedPointer
+
+    Returns \c true if \a lhs refers to a valid (i.e. non-null) pointer.
+*/
+
+/*!
+    \fn template <typename T, typename Tag> inline bool operator!=(std::nullptr_t, const QTaggedPointer<T, Tag> &rhs) noexcept
+    \relates QTaggedPointer
+
+    Returns \c true if \a rhs refers to a valid (i.e. non-null) pointer.
+*/
+

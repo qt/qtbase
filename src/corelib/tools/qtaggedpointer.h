@@ -80,7 +80,7 @@ public:
     static constexpr quintptr tagMask() { return QtPrivate::TagInfo<T>::alignment - 1; }
     static constexpr quintptr pointerMask() { return ~tagMask(); }
 
-    explicit QTaggedPointer(Type *pointer = nullptr, TagType tag = TagType()) noexcept
+    explicit QTaggedPointer(T *pointer = nullptr, Tag tag = Tag()) noexcept
         : d(quintptr(pointer))
     {
         Q_STATIC_ASSERT(sizeof(Type*) == sizeof(QTaggedPointer<Type>));
@@ -91,7 +91,7 @@ public:
         setTag(tag);
     }
 
-    Type &operator*() const
+    Type &operator*() const noexcept
     {
         Q_ASSERT(pointer());
         return *pointer();
@@ -102,7 +102,7 @@ public:
         return pointer();
     }
 
-    explicit operator bool() const
+    explicit operator bool() const noexcept
     {
         return !isNull();
     }
@@ -119,12 +119,12 @@ public:
         return *this;
     }
 
-    static constexpr TagType maximumTag() noexcept
+    static constexpr Tag maximumTag() noexcept
     {
         return TagType(typename QtPrivate::TagInfo<T>::TagType(tagMask()));
     }
 
-    void setTag(TagType tag)
+    void setTag(Tag tag)
     {
         Q_ASSERT_X((static_cast<typename QtPrivate::TagInfo<T>::TagType>(tag) & pointerMask()) == 0,
             "QTaggedPointer<T, Tag>::setTag", "Tag is larger than allowed by number of available tag bits");
@@ -132,12 +132,12 @@ public:
         d = (d & pointerMask()) | (static_cast<typename QtPrivate::TagInfo<T>::TagType>(tag) & tagMask());
     }
 
-    TagType tag() const noexcept
+    Tag tag() const noexcept
     {
         return TagType(typename QtPrivate::TagInfo<T>::TagType(d & tagMask()));
     }
 
-    Type* pointer() const noexcept
+    T* pointer() const noexcept
     {
         return reinterpret_cast<T*>(d & pointerMask());
     }
@@ -147,7 +147,7 @@ public:
         return !pointer();
     }
 
-    void swap(QTaggedPointer<Type, Tag> &other) noexcept
+    void swap(QTaggedPointer<T, Tag> &other) noexcept
     {
         qSwap(d, other.d);
     }
