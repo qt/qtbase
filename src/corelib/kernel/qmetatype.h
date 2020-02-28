@@ -2719,7 +2719,10 @@ QMetaTypeInterface QMetaTypeForType<T>::metaType = {
         }
     }),
     /*.dtor=*/ QT_METATYPE_CONSTEXPRLAMDA( -> QMetaTypeInterface::DtorFn {
-        return [](const QMetaTypeInterface *, void *addr) { reinterpret_cast<T *>(addr)->~T(); };
+        if constexpr (std::is_destructible_v<T>)
+            return [](const QMetaTypeInterface *, void *addr) { reinterpret_cast<T *>(addr)->~T(); };
+        else
+            return nullptr;
     }),
     /*.legacyRegisterOp=*/ QT_METATYPE_CONSTEXPRLAMDA( -> QMetaTypeInterface::LegacyRegisterOp {
         if constexpr (QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn) {

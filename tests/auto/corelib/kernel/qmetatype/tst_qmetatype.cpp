@@ -126,6 +126,7 @@ private slots:
     void fromType();
     void operatorEq_data();
     void operatorEq();
+    void typesWithInaccessibleDTors();
 };
 
 struct BaseGenericType
@@ -2572,6 +2573,21 @@ void tst_QMetaType::operatorEq()
     QCOMPARE(typeB == typeA, eq);
     QCOMPARE(typeA != typeB, !eq);
     QCOMPARE(typeB != typeA, !eq);
+}
+
+class WithPrivateDTor {
+    ~WithPrivateDTor(){};
+};
+
+struct WithDeletedDtor {
+    ~WithDeletedDtor() = delete;
+};
+
+void tst_QMetaType::typesWithInaccessibleDTors()
+{
+    // should compile
+    Q_UNUSED(QMetaType::fromType<WithPrivateDTor>());
+    Q_UNUSED(QMetaType::fromType<WithDeletedDtor>());
 }
 
 // Compile-time test, it should be possible to register function pointer types
