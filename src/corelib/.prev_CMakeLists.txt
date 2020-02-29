@@ -29,6 +29,7 @@ qt_add_module(Core
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
         global/qprocessordetection.h
         global/qrandom.cpp global/qrandom.h global/qrandom_p.h
+        global/qsimd.cpp global/qsimd_p.h
         global/qsysinfo.h
         global/qsystemdetection.h
         global/qtypeinfo.h
@@ -211,7 +212,6 @@ qt_add_module(Core
         tools/qshareddata.cpp tools/qshareddata.h
         tools/qsharedpointer.cpp tools/qsharedpointer.h
         tools/qsharedpointer_impl.h
-        tools/qsimd.cpp tools/qsimd_p.h
         tools/qsize.cpp tools/qsize.h
         tools/qstack.h
         tools/qtaggedpointer.h

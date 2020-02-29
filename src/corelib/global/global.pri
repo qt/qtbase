@@ -20,6 +20,7 @@ HEADERS +=  \
         global/qtypeinfo.h \
         global/qsysinfo.h \
         global/qisenum.h \
+        global/qsimd_p.h \
         global/qtypetraits.h \
         global/qflags.h \
         global/qrandom.h \
@@ -38,6 +39,7 @@ SOURCES += \
         global/qoperatingsystemversion.cpp \
         global/qlogging.cpp \
         global/qrandom.cpp \
+        global/qsimd.cpp \
         global/qhooks.cpp
 
 # To get listed in IDEs

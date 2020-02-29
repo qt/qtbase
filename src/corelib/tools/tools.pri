@@ -40,7 +40,6 @@ HEADERS +=  \
         tools/qsharedpointer.h \
         tools/qsharedpointer_impl.h \
         tools/qset.h \
-        tools/qsimd_p.h \
         tools/qsize.h \
         tools/qstack.h \
         tools/qtools_p.h \
@@ -67,7 +66,6 @@ SOURCES += \
         tools/qringbuffer.cpp \
         tools/qshareddata.cpp \
         tools/qsharedpointer.cpp \
-        tools/qsimd.cpp \
         tools/qsize.cpp \
         tools/qversionnumber.cpp
 
