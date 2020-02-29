@@ -131,6 +131,8 @@ void WriteImports::acceptCustomWidget(DomCustomWidget *node)
             output << "import " << className << '\n';
         } else { // When we do have elementHeader, we know it's a relative import.
             QString modulePath = node->elementHeader()->text();
+            // Replace the '/' by '.'
+            modulePath.replace(QLatin1Char('/'), QLatin1Char('.'));
             // '.h' is added by default on headers for <customwidget>
             if (modulePath.endsWith(QLatin1String(".h")))
                 modulePath.chop(2);

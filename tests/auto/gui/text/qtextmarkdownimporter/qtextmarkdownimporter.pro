@@ -5,5 +5,7 @@ SOURCES += tst_qtextmarkdownimporter.cpp
 TESTDATA += \
     data/thematicBreaks.md \
     data/headingBulletsContinuations.md \
+    data/fuzz20450.md \
+    data/fuzz20580.md \
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
