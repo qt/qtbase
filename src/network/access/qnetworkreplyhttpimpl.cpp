@@ -2265,7 +2265,7 @@ void QNetworkReplyHttpImplPrivate::error(QNetworkReplyImpl::NetworkError code, c
     // note: might not be a good idea, since users could decide to delete us
     // which would delete the backend too...
     // maybe we should protect the backend
-    emit q->error(code);
+    emit q->errorOccurred(code);
 }
 
 void QNetworkReplyHttpImplPrivate::_q_metaDataChanged()

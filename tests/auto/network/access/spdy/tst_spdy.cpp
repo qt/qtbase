@@ -581,7 +581,7 @@ void tst_Spdy::errors()
     if (ignoreSslErrors)
         reply->ignoreSslErrors();
     QSignalSpy finishedSpy(reply, SIGNAL(finished()));
-    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy errorSpy(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QObject::connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
