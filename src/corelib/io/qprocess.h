@@ -205,6 +205,10 @@ public:
     CreateProcessArgumentModifier createProcessArgumentsModifier() const;
     void setCreateProcessArgumentsModifier(CreateProcessArgumentModifier modifier);
 #endif // Q_OS_WIN || Q_CLANG_QDOC
+#if defined(Q_OS_UNIX) || defined(Q_CLANG_QDOC)
+    std::function<void(void)> childProcessModifier() const;
+    void setChildProcessModifier(const std::function<void(void)> &modifier);
+#endif
 
     QString workingDirectory() const;
     void setWorkingDirectory(const QString &dir);
@@ -263,8 +267,6 @@ Q_SIGNALS:
 protected:
     void setProcessState(ProcessState state);
 
-    virtual void setupChildProcess();
-
     // QIODevice
     qint64 readData(char *data, qint64 maxlen) override;
     qint64 writeData(const char *data, qint64 len) override;
@@ -272,6 +274,15 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QProcess)
     Q_DISABLE_COPY(QProcess)
+
+#if QT_VERSION < QT_VERSION_CHECK(7,0,0)
+    // ### Qt7: Remove this struct and the virtual function; they're here only
+    // to cause build errors in Qt 5 code that wasn't updated to Qt 6's
+    // setChildProcessModifier()
+    struct Use_setChildProcessModifier_Instead {};
+    QT_DEPRECATED_X("Use setChildProcessModifier() instead")
+    virtual Use_setChildProcessModifier_Instead setupChildProcess();
+#endif
 
     Q_PRIVATE_SLOT(d_func(), bool _q_canReadStandardOutput())
     Q_PRIVATE_SLOT(d_func(), bool _q_canReadStandardError())

@@ -322,6 +322,8 @@ public:
 #if defined(Q_OS_WIN)
     QString nativeArguments;
     QProcess::CreateProcessArgumentModifier modifyCreateProcessArgs;
+#else
+    std::function<void(void)> childProcessModifier;
 #endif
     QProcessEnvironment environment;
 

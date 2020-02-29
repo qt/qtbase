@@ -90,28 +90,22 @@ process2.start("command2");
 
 
 //! [4]
-class SandboxProcess : public QProcess
+void runSandboxed(const QString &name, const QStringList &arguments)
 {
-    ...
- protected:
-     void setupChildProcess() override;
-    ...
-};
-
-void SandboxProcess::setupChildProcess()
-{
-    // Drop all privileges in the child process, and enter
-    // a chroot jail.
-#if defined Q_OS_UNIX
-    ::setgroups(0, 0);
-    ::chroot("/etc/safe");
-    ::chdir("/");
-    ::setgid(safeGid);
-    ::setuid(safeUid);
-    ::umask(0);
-#endif
+    QProcess proc;
+    proc.setChildProcessModifier([] {
+        // Drop all privileges in the child process, and enter
+        // a chroot jail.
+        ::setgroups(0, 0);
+        ::chroot("/etc/safe");
+        ::chdir("/");
+        ::setgid(safeGid);
+        ::setuid(safeUid);
+        ::umask(0);
+    });
+    proc.start(name, arguments);
+    proc.waitForFinished();
 }
-
 //! [4]
 
 

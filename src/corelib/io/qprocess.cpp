@@ -1529,7 +1529,7 @@ QProcess::CreateProcessArgumentModifier QProcess::createProcessArgumentsModifier
     \note This function is available only on the Windows platform and requires
     C++11.
 
-    \sa QProcess::CreateProcessArgumentModifier
+    \sa QProcess::CreateProcessArgumentModifier, setChildProcessModifier()
 */
 void QProcess::setCreateProcessArgumentsModifier(CreateProcessArgumentModifier modifier)
 {
@@ -1537,6 +1537,59 @@ void QProcess::setCreateProcessArgumentsModifier(CreateProcessArgumentModifier m
     d->modifyCreateProcessArgs = modifier;
 }
 
+#endif
+
+#if defined(Q_OS_UNIX) || defined(Q_QDOC)
+/*!
+    \since 6.0
+
+    Returns the modifier function previously set by calling
+    setChildProcessModifier().
+
+    \note This function is only available on Unix platforms.
+
+    \sa setChildProcessModifier()
+*/
+std::function<void(void)> QProcess::childProcessModifier() const
+{
+    Q_D(const QProcess);
+    return d->childProcessModifier;
+}
+
+/*!
+    \since 6.0
+
+    Sets the \a modifier function for the child process, for Unix systems
+    (including \macos; for Windows, see setCreateProcessArgumentsModifier()).
+    The function contained by the \a modifier argument will be invoked in the
+    child process after \c{fork()} is completed and QProcess has set up the
+    standard file descriptors for the child process, but before \c{execve()},
+    inside start(). The modifier is useful to change certain properties of the
+    child process, such as setting up additional file descriptors or closing
+    others, changing the nice level, disconnecting from the controlling TTY,
+    etc.
+
+    The following shows an example of setting up a child process to run without
+    privileges:
+
+    \snippet code/src_corelib_io_qprocess.cpp 4
+
+    If the modifier function needs to exit the process, remember to use
+    \c{_exit()}, not \c{exit()}.
+
+    \note In multithreaded applications, this function must be careful not to
+    call any functions that may lock mutexes that may have been in use in
+    other threads (in general, using only functions defined by POSIX as
+    "async-signal-safe" is advised). Most of the Qt API is unsafe inside this
+    callback, including qDebug(), and may lead to deadlocks.
+
+    \sa childProcessModifier()
+*/
+void QProcess::setChildProcessModifier(const std::function<void(void)> &modifier)
+{
+    Q_D(QProcess);
+    d->childProcessModifier = modifier;
+}
 #endif
 
 /*!
@@ -1843,25 +1896,16 @@ void QProcess::setProcessState(ProcessState state)
     emit stateChanged(state, QPrivateSignal());
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7,0,0)
 /*!
-  This function is called in the child process context just before the
-    program is executed on Unix or \macos (i.e., after \c fork(), but before
-    \c execve()). Reimplement this function to do last minute initialization
-    of the child process. Example:
-
-    \snippet code/src_corelib_io_qprocess.cpp 4
-
-    You cannot exit the process (by calling exit(), for instance) from
-    this function. If you need to stop the program before it starts
-    execution, your workaround is to emit finished() and then call
-    exit().
-
-    \warning This function is called by QProcess on Unix and \macos
-    only. On Windows and QNX, it is not called.
+    \internal
 */
-void QProcess::setupChildProcess()
+auto QProcess::setupChildProcess() -> Use_setChildProcessModifier_Instead
 {
+    Q_UNREACHABLE();
+    return {};
 }
+#endif
 
 /*! \reimp
 */

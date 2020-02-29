@@ -459,7 +459,7 @@ void QProcessPrivate::startProcess()
     // safe with vfork semantics: suspend the parent execution until the child
     // either execve()s or _exit()s.
     int ffdflags = FFD_CLOEXEC;
-    if (typeid(*q) != typeid(QProcess))
+    if (childProcessModifier)
         ffdflags |= FFD_USE_FORK;
     pid_t childPid;
     forkfd = ::forkfd(ffdflags , &childPid);
@@ -544,7 +544,6 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
 {
     ::signal(SIGPIPE, SIG_DFL);         // reset the signal that we ignored
 
-    Q_Q(QProcess);
     ChildError error = { 0, {} };       // force zeroing of function[8]
 
     // copy the stdin socket if asked to (without closing on exec)
@@ -574,8 +573,8 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
         goto report_errno;
     }
 
-    // this is a virtual call, and it base behavior is to do nothing.
-    q->setupChildProcess();
+    if (childProcessModifier)
+        childProcessModifier();
 
     // execute the process
     if (!envp) {
