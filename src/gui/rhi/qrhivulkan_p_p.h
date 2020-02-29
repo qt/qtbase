@@ -123,6 +123,7 @@ struct QVkTexture : public QRhiTexture
     bool build() override;
     bool buildFrom(NativeTexture src) override;
     NativeTexture nativeTexture() override;
+    void setNativeLayout(int layout) override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
     bool finishBuild();

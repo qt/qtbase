@@ -5563,6 +5563,11 @@ QRhiTexture::NativeTexture QVkTexture::nativeTexture()
     return {&image, usageState.layout};
 }
 
+void QVkTexture::setNativeLayout(int layout)
+{
+    usageState.layout = VkImageLayout(layout);
+}
+
 VkImageView QVkTexture::imageViewForLevel(int level)
 {
     Q_ASSERT(level >= 0 && level < int(mipLevelCount));

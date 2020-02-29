@@ -2340,6 +2340,31 @@ bool QRhiTexture::buildFrom(QRhiTexture::NativeTexture src)
 }
 
 /*!
+    With some graphics APIs, such as Vulkan, integrating custom rendering code
+    that uses the graphics API directly needs special care when it comes to
+    image layouts. This function allows communicating the expected layout the
+    image backing the QRhiTexture is in after the native rendering commands.
+
+    For example, consider rendering into a QRhiTexture's VkImage directly with
+    Vulkan in a code block enclosed by QRhiCommandBuffer::beginExternal() and
+    QRhiCommandBuffer::endExternal(), followed by using the image for texture
+    sampling in a QRhi-based render pass. To avoid potentially incorrect image
+    layout transitions, this function can be used to indicate what the image
+    layout will be once the commands recorded in said code block complete.
+
+    Calling this function makes sense only after
+    QRhiCommandBuffer::endExternal() and before a subsequent
+    QRhiCommandBuffer::beginPass().
+
+    This function has no effect with QRhi backends where the underlying
+    graphics API does not expose a concept of image layouts.
+ */
+void QRhiTexture::setNativeLayout(int layout)
+{
+    Q_UNUSED(layout);
+}
+
+/*!
     \class QRhiSampler
     \internal
     \inmodule QtGui
