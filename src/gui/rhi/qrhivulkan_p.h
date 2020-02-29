@@ -57,6 +57,7 @@ struct Q_GUI_EXPORT QRhiVulkanInitParams : public QRhiInitParams
 {
     QVulkanInstance *inst = nullptr;
     QWindow *window = nullptr;
+    QByteArrayList deviceExtensions;
 };
 
 struct Q_GUI_EXPORT QRhiVulkanNativeHandles : public QRhiNativeHandles

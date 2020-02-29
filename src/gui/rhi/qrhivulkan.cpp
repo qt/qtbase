@@ -149,6 +149,10 @@ QT_BEGIN_NAMESPACE
     for other windows as well, as long as they all have their
     QWindow::surfaceType() set to QSurface::VulkanSurface.
 
+    To request additional extensions to be enabled on the Vulkan device, list them
+    in deviceExtensions. This can be relevant when integrating with native Vulkan
+    rendering code.
+
     \section2 Working with existing Vulkan devices
 
     When interoperating with another graphics engine, it may be necessary to
@@ -299,6 +303,7 @@ QRhiVulkan::QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *im
 {
     inst = params->inst;
     maybeWindow = params->window; // may be null
+    requestedDeviceExtensions = params->deviceExtensions;
 
     importedDevice = importDevice != nullptr;
     if (importedDevice) {
@@ -463,38 +468,57 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         if (inst->layers().contains("VK_LAYER_LUNARG_standard_validation"))
             devLayers.append("VK_LAYER_LUNARG_standard_validation");
 
+        QVulkanInfoVector<QVulkanExtension> devExts;
         uint32_t devExtCount = 0;
         f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, nullptr);
-        QVector<VkExtensionProperties> devExts(devExtCount);
-        f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, devExts.data());
+        if (devExtCount) {
+            QVector<VkExtensionProperties> extProps(devExtCount);
+            f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, extProps.data());
+            for (const VkExtensionProperties &p : qAsConst(extProps))
+                devExts.append({ p.extensionName, p.specVersion });
+        }
         qCDebug(QRHI_LOG_INFO, "%d device extensions available", devExts.count());
 
         QVector<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
 
         debugMarkersAvailable = false;
+        if (devExts.contains(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+            requestedDevExts.append(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+            debugMarkersAvailable = true;
+        }
+
         vertexAttribDivisorAvailable = false;
-        for (const VkExtensionProperties &ext : devExts) {
-            if (!strcmp(ext.extensionName, VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
-                requestedDevExts.append(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-                debugMarkersAvailable = true;
-            } else if (!strcmp(ext.extensionName, VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
-                if (inst->extensions().contains(QByteArrayLiteral("VK_KHR_get_physical_device_properties2"))) {
-                    requestedDevExts.append(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
-                    vertexAttribDivisorAvailable = true;
-                }
+        if (devExts.contains(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
+            if (inst->extensions().contains(QByteArrayLiteral("VK_KHR_get_physical_device_properties2"))) {
+                requestedDevExts.append(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
+                vertexAttribDivisorAvailable = true;
             }
         }
 
-        QByteArrayList envExtList;
-        if (qEnvironmentVariableIsSet("QT_VULKAN_DEVICE_EXTENSIONS")) {
-            envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
-            for (auto ext : requestedDevExts)
-                envExtList.removeAll(ext);
-            for (const QByteArray &ext : envExtList) {
-                if (!ext.isEmpty())
+        for (const QByteArray &ext : requestedDeviceExtensions) {
+            if (!ext.isEmpty()) {
+                if (devExts.contains(ext))
                     requestedDevExts.append(ext.constData());
+                else
+                    qWarning("Device extension %s is not supported", ext.constData());
             }
+        }
+
+        QByteArrayList envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
+        for (const QByteArray &ext : envExtList) {
+            if (!ext.isEmpty() && !requestedDevExts.contains(ext)) {
+                if (devExts.contains(ext))
+                    requestedDevExts.append(ext.constData());
+                else
+                    qWarning("Device extension %s is not supported", ext.constData());
+            }
+        }
+
+        if (QRHI_LOG_INFO().isEnabled(QtDebugMsg)) {
+            qCDebug(QRHI_LOG_INFO, "Enabling device extensions:");
+            for (const char *ext : requestedDevExts)
+                qCDebug(QRHI_LOG_INFO, "  %s", ext);
         }
 
         VkDeviceCreateInfo devInfo;

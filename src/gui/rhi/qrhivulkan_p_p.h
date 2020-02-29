@@ -810,6 +810,7 @@ public:
 
     QVulkanInstance *inst = nullptr;
     QWindow *maybeWindow = nullptr;
+    QByteArrayList requestedDeviceExtensions;
     bool importedDevice = false;
     VkPhysicalDevice physDev = VK_NULL_HANDLE;
     VkDevice dev = VK_NULL_HANDLE;
