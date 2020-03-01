@@ -205,9 +205,6 @@ private:
     float m[4][4];          // Column-major order to match OpenGL.
     Flags flagBits;
 
-    // Construct without initializing identity matrix.
-    explicit QMatrix4x4(int) { }
-
     QMatrix4x4 orthonormalInverse() const;
 };
 
@@ -587,7 +584,7 @@ inline bool QMatrix4x4::operator!=(const QMatrix4x4& other) const
 
 inline QMatrix4x4 operator+(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
-    QMatrix4x4 m(1);
+    QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = m1.m[0][0] + m2.m[0][0];
     m.m[0][1] = m1.m[0][1] + m2.m[0][1];
     m.m[0][2] = m1.m[0][2] + m2.m[0][2];
@@ -604,13 +601,12 @@ inline QMatrix4x4 operator+(const QMatrix4x4& m1, const QMatrix4x4& m2)
     m.m[3][1] = m1.m[3][1] + m2.m[3][1];
     m.m[3][2] = m1.m[3][2] + m2.m[3][2];
     m.m[3][3] = m1.m[3][3] + m2.m[3][3];
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
 inline QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2)
 {
-    QMatrix4x4 m(1);
+    QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = m1.m[0][0] - m2.m[0][0];
     m.m[0][1] = m1.m[0][1] - m2.m[0][1];
     m.m[0][2] = m1.m[0][2] - m2.m[0][2];
@@ -627,7 +623,6 @@ inline QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2)
     m.m[3][1] = m1.m[3][1] - m2.m[3][1];
     m.m[3][2] = m1.m[3][2] - m2.m[3][2];
     m.m[3][3] = m1.m[3][3] - m2.m[3][3];
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
@@ -647,7 +642,7 @@ inline QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2)
         return m;
     }
 
-    QMatrix4x4 m(1);
+    QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = m1.m[0][0] * m2.m[0][0]
               + m1.m[1][0] * m2.m[0][1]
               + m1.m[2][0] * m2.m[0][2]
@@ -947,7 +942,7 @@ inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
 
 inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
 {
-    QMatrix4x4 m(1);
+    QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = -matrix.m[0][0];
     m.m[0][1] = -matrix.m[0][1];
     m.m[0][2] = -matrix.m[0][2];
@@ -964,13 +959,12 @@ inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
     m.m[3][1] = -matrix.m[3][1];
     m.m[3][2] = -matrix.m[3][2];
     m.m[3][3] = -matrix.m[3][3];
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
 inline QMatrix4x4 operator*(float factor, const QMatrix4x4& matrix)
 {
-    QMatrix4x4 m(1);
+    QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = matrix.m[0][0] * factor;
     m.m[0][1] = matrix.m[0][1] * factor;
     m.m[0][2] = matrix.m[0][2] * factor;
@@ -987,13 +981,12 @@ inline QMatrix4x4 operator*(float factor, const QMatrix4x4& matrix)
     m.m[3][1] = matrix.m[3][1] * factor;
     m.m[3][2] = matrix.m[3][2] * factor;
     m.m[3][3] = matrix.m[3][3] * factor;
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
 inline QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor)
 {
-    QMatrix4x4 m(1);
+    QMatrix4x4 m(Qt::Uninitialized);
     m.m[0][0] = matrix.m[0][0] * factor;
     m.m[0][1] = matrix.m[0][1] * factor;
     m.m[0][2] = matrix.m[0][2] * factor;
@@ -1010,7 +1003,6 @@ inline QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor)
     m.m[3][1] = matrix.m[3][1] * factor;
     m.m[3][2] = matrix.m[3][2] * factor;
     m.m[3][3] = matrix.m[3][3] * factor;
-    m.flagBits = QMatrix4x4::General;
     return m;
 }
 
