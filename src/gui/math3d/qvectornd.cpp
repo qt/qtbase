@@ -397,6 +397,10 @@ QT_BEGIN_NAMESPACE
     Returns \c true if \a v1 and \a v2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
+bool qFuzzyCompare(QVector2D v1, QVector2D v2) noexcept
+{
+    return qFuzzyCompare(v1.v[0], v2.v[0]) && qFuzzyCompare(v1.v[1], v2.v[1]);
+}
 
 #ifndef QT_NO_VECTOR3D
 /*!
@@ -994,6 +998,12 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     Returns \c true if \a v1 and \a v2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
+bool qFuzzyCompare(QVector3D v1, QVector3D v2) noexcept
+{
+    return qFuzzyCompare(v1.v[0], v2.v[0]) &&
+            qFuzzyCompare(v1.v[1], v2.v[1]) &&
+            qFuzzyCompare(v1.v[2], v2.v[2]);
+}
 
 #ifndef QT_NO_VECTOR2D
 
@@ -1502,6 +1512,13 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     Returns \c true if \a v1 and \a v2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
+bool qFuzzyCompare(QVector4D v1, QVector4D v2) noexcept
+{
+    return qFuzzyCompare(v1.v[0], v2.v[0]) &&
+            qFuzzyCompare(v1.v[1], v2.v[1]) &&
+            qFuzzyCompare(v1.v[2], v2.v[2]) &&
+            qFuzzyCompare(v1.v[3], v2.v[3]);
+}
 
 #ifndef QT_NO_VECTOR2D
 

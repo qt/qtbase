@@ -155,7 +155,7 @@ QT_WARNING_POP
         return QVector2D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1]);
     }
 
-    constexpr friend inline bool qFuzzyCompare(QVector2D v1, QVector2D v2) noexcept;
+    friend Q_GUI_EXPORT bool qFuzzyCompare(QVector2D v1, QVector2D v2) noexcept;
 
 #ifndef QT_NO_VECTOR3D
     constexpr QVector3D toVector3D() const noexcept;
@@ -296,7 +296,7 @@ QT_WARNING_POP
         return QVector3D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1], vector.v[2] / divisor.v[2]);
     }
 
-    constexpr friend inline bool qFuzzyCompare(QVector3D v1, QVector3D v2) noexcept;
+    friend Q_GUI_EXPORT bool qFuzzyCompare(QVector3D v1, QVector3D v2) noexcept;
 
 #ifndef QT_NO_VECTOR2D
     constexpr QVector2D toVector2D() const noexcept;
@@ -430,7 +430,7 @@ QT_WARNING_POP
         return QVector4D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1], vector.v[2] / divisor.v[2], vector.v[3] / divisor.v[3]);
     }
 
-    constexpr friend inline bool qFuzzyCompare(QVector4D v1, QVector4D v2) noexcept;
+    friend Q_GUI_EXPORT bool qFuzzyCompare(QVector4D v1, QVector4D v2) noexcept;
 
 #ifndef QT_NO_VECTOR2D
     constexpr QVector2D toVector2D() const noexcept;
@@ -451,6 +451,7 @@ private:
 
     friend class QVector2D;
     friend class QVector3D;
+    friend class QMatrix4x4;
 #ifndef QT_NO_MATRIX4X4
     friend QVector4D operator*(const QVector4D& vector, const QMatrix4x4& matrix);
     friend QVector4D operator*(const QMatrix4x4& matrix, const QVector4D& vector);
@@ -605,11 +606,6 @@ constexpr inline QVector2D &QVector2D::operator/=(QVector2D vector)
 constexpr inline float QVector2D::dotProduct(QVector2D v1, QVector2D v2) noexcept
 {
     return v1.v[0] * v2.v[0] + v1.v[1] * v2.v[1];
-}
-
-constexpr inline bool qFuzzyCompare(QVector2D v1, QVector2D v2) noexcept
-{
-    return qFuzzyCompare(v1.v[0], v2.v[0]) && qFuzzyCompare(v1.v[1], v2.v[1]);
 }
 
 #ifndef QT_NO_VECTOR3D
@@ -835,13 +831,6 @@ inline float QVector3D::distanceToLine(QVector3D point, QVector3D direction) con
     return (*this - p).length();
 }
 
-constexpr inline bool qFuzzyCompare(QVector3D v1, QVector3D v2) noexcept
-{
-    return qFuzzyCompare(v1.v[0], v2.v[0]) &&
-           qFuzzyCompare(v1.v[1], v2.v[1]) &&
-           qFuzzyCompare(v1.v[2], v2.v[2]);
-}
-
 #ifndef QT_NO_VECTOR2D
 constexpr inline QVector2D QVector3D::toVector2D() const noexcept
 {
@@ -1036,14 +1025,6 @@ constexpr inline QVector4D &QVector4D::operator/=(QVector4D vector)
 constexpr float QVector4D::dotProduct(QVector4D v1, QVector4D v2) noexcept
 {
     return v1.v[0] * v2.v[0] + v1.v[1] * v2.v[1] + v1.v[2] * v2.v[2] + v1.v[3] * v2.v[3];
-}
-
-constexpr inline bool qFuzzyCompare(QVector4D v1, QVector4D v2) noexcept
-{
-    return qFuzzyCompare(v1.v[0], v2.v[0]) &&
-           qFuzzyCompare(v1.v[1], v2.v[1]) &&
-           qFuzzyCompare(v1.v[2], v2.v[2]) &&
-           qFuzzyCompare(v1.v[3], v2.v[3]);
 }
 
 #ifndef QT_NO_VECTOR2D
