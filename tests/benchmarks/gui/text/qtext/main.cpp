@@ -123,7 +123,7 @@ void tst_QText::shaping_data()
     QVERIFY(file.open(QFile::ReadOnly));
     QByteArray data = file.readAll();
     QVERIFY(data.count() > 1000);
-    QStringList list = QString::fromUtf8(data.data()).split(QLatin1Char('\n'), QString::SkipEmptyParts);
+    QStringList list = QString::fromUtf8(data.data()).split(QLatin1Char('\n'), Qt::SkipEmptyParts);
     QVERIFY(list.count() %2 == 0); // even amount as we have title and then content.
     for (int i=0; i < list.count(); i+=2) {
         QTest::newRow(list.at(i).toLatin1()) << list.at(i+1);

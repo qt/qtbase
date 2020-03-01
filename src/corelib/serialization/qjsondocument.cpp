@@ -239,6 +239,8 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 
 #if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
 /*!
+ \deprecated
+
  Creates a QJsonDocument that uses the first \a size bytes from
  \a data. It assumes \a data contains a binary encoded JSON document.
  The created document does not take ownership of \a data. The data is
@@ -253,7 +255,7 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 
  Returns a QJsonDocument representing the data.
 
- \deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
+ \note Deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
  compatibility. It is undocumented and restrictive in the maximum size of JSON
  documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
  which can in turn be serialized into the CBOR binary format and vice versa. The
@@ -285,13 +287,15 @@ QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidat
 }
 
 /*!
+  \deprecated
+
   Returns the raw binary representation of the data
   \a size will contain the size of the returned data.
 
   This method is useful to e.g. stream the JSON document
   in its binary form to a file.
 
-  \deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
+  \note Deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
   compatibility. It is undocumented and restrictive in the maximum size of JSON
   documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
   which can in turn be serialized into the CBOR binary format and vice versa. The
@@ -325,13 +329,14 @@ const char *QJsonDocument::rawData(int *size) const
 }
 
 /*!
+ \deprecated
  Creates a QJsonDocument from \a data.
 
  \a validation decides whether the data is checked for validity before being used.
  By default the data is validated. If the \a data is not valid, the method returns
  a null document.
 
- \deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
+ \note Deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
  compatibility. It is undocumented and restrictive in the maximum size of JSON
  documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
  which can in turn be serialized into the CBOR binary format and vice versa. The
@@ -364,6 +369,7 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
 }
 
 /*!
+ \deprecated
  Returns a binary representation of the document.
 
  The binary representation is also the native format used internally in Qt,
@@ -373,7 +379,7 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
  or computers. fromBinaryData() can be used to convert it back into a
  JSON document.
 
- \deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
+ \note Deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
  compatibility. It is undocumented and restrictive in the maximum size of JSON
  documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
  which can in turn be serialized into the CBOR binary format and vice versa. The

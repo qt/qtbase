@@ -103,10 +103,10 @@ public:
     void moveTab(int from, int to);
 
     bool isTabEnabled(int index) const;
-    void setTabEnabled(int index, bool);
+    void setTabEnabled(int index, bool enabled);
 
     bool isTabVisible(int index) const;
-    void setTabVisible(int index, bool);
+    void setTabVisible(int index, bool visible);
 
     QString tabText(int index) const;
     void setTabText(int index, const QString &text);
@@ -118,7 +118,7 @@ public:
     void setTabIcon(int index, const QIcon &icon);
 
     Qt::TextElideMode elideMode() const;
-    void setElideMode(Qt::TextElideMode);
+    void setElideMode(Qt::TextElideMode mode);
 
 #ifndef QT_NO_TOOLTIP
     void setTabToolTip(int index, const QString &tip);

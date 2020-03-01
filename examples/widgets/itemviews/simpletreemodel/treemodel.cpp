@@ -194,7 +194,8 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
 
         if (!lineData.isEmpty()) {
             // Read the column data from the rest of the line.
-            const QStringList columnStrings = lineData.split('\t', QString::SkipEmptyParts);
+            const QStringList columnStrings =
+                lineData.split(QLatin1Char('\t'), Qt::SkipEmptyParts);
             QVector<QVariant> columnData;
             columnData.reserve(columnStrings.count());
             for (const QString &columnString : columnStrings)

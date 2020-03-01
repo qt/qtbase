@@ -1456,7 +1456,7 @@ void QSslSocket::setCiphers(const QString &ciphers)
 {
     Q_D(QSslSocket);
     d->configuration.ciphers.clear();
-    const auto cipherNames = ciphers.split(QLatin1Char(':'), QString::SkipEmptyParts);
+    const auto cipherNames = ciphers.split(QLatin1Char(':'), Qt::SkipEmptyParts);
     for (const QString &cipherName : cipherNames) {
         QSslCipher cipher(cipherName);
         if (!cipher.isNull())

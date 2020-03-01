@@ -1073,7 +1073,7 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
     if (widget) {
         QPointF delta = event->globalPosF() - event->globalPos();
         QPointF mapped = widget->mapFromGlobal(event->globalPos()) + delta;
-        QTabletEvent ev(event->type(), mapped, event->globalPosF(), event->device(), event->pointerType(),
+        QTabletEvent ev(event->type(), mapped, event->globalPosF(), event->deviceType(), event->pointerType(),
                         event->pressure(), event->xTilt(), event->yTilt(), event->tangentialPressure(),
                         event->rotation(), event->z(), event->modifiers(), event->uniqueId(), event->button(), event->buttons());
         ev.setTimestamp(event->timestamp());

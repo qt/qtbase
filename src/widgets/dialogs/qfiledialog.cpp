@@ -4370,7 +4370,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
     QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
 
 #if defined(Q_OS_WIN)
-    QStringList parts = pathCopy.split(re, QString::SkipEmptyParts);
+    QStringList parts = pathCopy.split(re, Qt::SkipEmptyParts);
     if (!doubleSlash.isEmpty() && !parts.isEmpty())
         parts[0].prepend(doubleSlash);
     if (pathCopy.endsWith(sep))

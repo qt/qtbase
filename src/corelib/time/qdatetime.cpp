@@ -173,7 +173,7 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
     // or           "ddd MMM dd[ hh:mm:ss] yyyy [±hhmm]" - permissive RFC 850, 1036 (read only)
     ParsedRfcDateTime result;
 
-    auto words = s.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
+    auto words = s.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
     if (words.size() < 3 || words.size() > 6)
         return result;
     const QChar colon(QLatin1Char(':'));
@@ -1784,7 +1784,7 @@ QT_WARNING_POP
         return rfcDateImpl(string).date;
     default:
     case Qt::TextDate: {
-        QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
+        QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
 
         if (parts.count() != 4)
             return QDate();
@@ -5417,7 +5417,7 @@ QT_WARNING_POP
         return QDateTime(date, time, spec, offset);
     }
     case Qt::TextDate: {
-        QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
+        QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
 
         if ((parts.count() < 5) || (parts.count() > 6))
             return QDateTime();

@@ -80,13 +80,13 @@ public:
     void removeTab(int index);
 
     bool isTabEnabled(int index) const;
-    void setTabEnabled(int index, bool);
+    void setTabEnabled(int index, bool enabled);
 
     bool isTabVisible(int index) const;
-    void setTabVisible(int index, bool);
+    void setTabVisible(int index, bool visible);
 
     QString tabText(int index) const;
-    void setTabText(int index, const QString &);
+    void setTabText(int index, const QString &text);
 
     QIcon tabIcon(int index) const;
     void setTabIcon(int index, const QIcon & icon);
@@ -110,7 +110,7 @@ public:
     enum TabPosition { North, South, West, East };
     Q_ENUM(TabPosition)
     TabPosition tabPosition() const;
-    void setTabPosition(TabPosition);
+    void setTabPosition(TabPosition position);
 
     bool tabsClosable() const;
     void setTabsClosable(bool closeable);
@@ -132,7 +132,7 @@ public:
     QWidget * cornerWidget(Qt::Corner corner = Qt::TopRightCorner) const;
 
     Qt::TextElideMode elideMode() const;
-    void setElideMode(Qt::TextElideMode);
+    void setElideMode(Qt::TextElideMode mode);
 
     QSize iconSize() const;
     void setIconSize(const QSize &size);

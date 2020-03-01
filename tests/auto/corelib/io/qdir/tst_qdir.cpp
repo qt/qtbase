@@ -1786,9 +1786,9 @@ void tst_QDir::searchPaths()
 {
     QFETCH(QString, filename);
     QFETCH(QString, searchPathPrefixes);
-    QStringList searchPathPrefixList = searchPathPrefixes.split(";", QString::SkipEmptyParts);
+    QStringList searchPathPrefixList = searchPathPrefixes.split(";", Qt::SkipEmptyParts);
     QFETCH(QString, searchPaths);
-    QStringList searchPathsList = searchPaths.split(";", QString::SkipEmptyParts);
+    QStringList searchPathsList = searchPaths.split(";", Qt::SkipEmptyParts);
     QFETCH(QString, expectedAbsolutePath);
     bool exists = !expectedAbsolutePath.isEmpty();
 

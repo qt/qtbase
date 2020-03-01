@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
@@ -1756,6 +1756,9 @@ const QString::Null QString::null = { };
 
 /*!
     \enum QString::SplitBehavior
+
+    \obsolete
+    Use Qt::SplitBehavior instead.
 
     This enum specifies how the split() function should behave with
     respect to empty strings.
@@ -4612,7 +4615,7 @@ int QString::count(const QRegularExpression &re) const
 
 QString QString::section(const QString &sep, int start, int end, SectionFlags flags) const
 {
-    const QVector<QStringRef> sections = splitRef(sep, KeepEmptyParts,
+    const QVector<QStringRef> sections = splitRef(sep, Qt::KeepEmptyParts,
                                                   (flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive : Qt::CaseSensitive);
     const int sectionsSize = sections.size();
     if (!(flags & SectionSkipEmpty)) {
@@ -7603,22 +7606,29 @@ QString QString::number(double n, char f, int prec)
 namespace {
 template<class ResultList, class StringSource>
 static ResultList splitString(const StringSource &source, const QChar *sep,
-                              QString::SplitBehavior behavior, Qt::CaseSensitivity cs, const int separatorSize)
+                              Qt::SplitBehavior behavior, Qt::CaseSensitivity cs, const int separatorSize)
 {
     ResultList list;
     typename StringSource::size_type start = 0;
     typename StringSource::size_type end;
     typename StringSource::size_type extra = 0;
     while ((end = QtPrivate::findString(QStringView(source.constData(), source.size()), start + extra, QStringView(sep, separatorSize), cs)) != -1) {
-        if (start != end || behavior == QString::KeepEmptyParts)
+        if (start != end || behavior == Qt::KeepEmptyParts)
             list.append(source.mid(start, end - start));
         start = end + separatorSize;
         extra = (separatorSize == 0 ? 1 : 0);
     }
-    if (start != source.size() || behavior == QString::KeepEmptyParts)
+    if (start != source.size() || behavior == Qt::KeepEmptyParts)
         list.append(source.mid(start, -1));
     return list;
 }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+Qt::SplitBehavior mapSplitBehavior(QString::SplitBehavior sb)
+{
+    return sb & QString::SkipEmptyParts ? Qt::SkipEmptyParts : Qt::KeepEmptyParts;
+}
+#endif
 
 } // namespace
 
@@ -7649,11 +7659,24 @@ static ResultList splitString(const StringSource &source, const QChar *sep,
     \snippet qstring/main.cpp 62-slashes
 
     \sa QStringList::join(), section()
+
+    \since 5.14
 */
-QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
+QStringList QString::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return splitString<QStringList>(*this, sep.constData(), behavior, cs, sep.size());
 }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+/*!
+    \overload
+    \obsolete
+*/
+QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return split(sep, mapSplitBehavior(behavior), cs);
+}
+#endif
 
 /*!
     Splits the string into substring references wherever \a sep occurs, and
@@ -7665,29 +7688,68 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
     \note All references are valid as long this string is alive. Destroying this
     string will cause all references to be dangling pointers.
 
-    \since 5.4
+    \since 5.14
     \sa QStringRef split()
+*/
+QVector<QStringRef> QString::splitRef(const QString &sep, Qt::SplitBehavior behavior,
+                                      Qt::CaseSensitivity cs) const
+{
+    return splitString<QVector<QStringRef>>(QStringRef(this), sep.constData(), behavior,
+                                            cs, sep.size());
+}
+
+#if QT_DEPRECATED_SINCE(5, 15)
+/*!
+    \overload
+    \obsolete
+    \since 5.4
 */
 QVector<QStringRef> QString::splitRef(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(QStringRef(this), sep.constData(), behavior, cs, sep.size());
+    return splitRef(sep, mapSplitBehavior(behavior), cs);
 }
+#endif
+
 /*!
     \overload
+    \since 5.14
 */
-QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
+QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return splitString<QStringList>(*this, &sep, behavior, cs, 1);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+/*!
+    \overload
+    \obsolete
+*/
+QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return split(sep, mapSplitBehavior(behavior), cs);
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+QVector<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior,
+                                      Qt::CaseSensitivity cs) const
+{
+    return splitString<QVector<QStringRef> >(QStringRef(this), &sep, behavior, cs, 1);
+}
+
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
     \since 5.4
 */
 QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(QStringRef(this), &sep, behavior, cs, 1);
+    return splitRef(sep, mapSplitBehavior(behavior), cs);
 }
+#endif
 
 /*!
     Splits the string into substrings references wherever \a sep occurs, and
@@ -7699,26 +7761,50 @@ QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::Cas
     \note All references are valid as long this string is alive. Destroying this
     string will cause all references to be dangling pointers.
 
-    \since 5.4
+    \since 5.14
 */
-QVector<QStringRef> QStringRef::split(const QString &sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+QVector<QStringRef> QStringRef::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return splitString<QVector<QStringRef> >(*this, sep.constData(), behavior, cs, sep.size());
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
     \since 5.4
+    \obsolete
 */
-QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+QVector<QStringRef> QStringRef::split(const QString &sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return split(sep, mapSplitBehavior(behavior), cs);
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return splitString<QVector<QStringRef> >(*this, &sep, behavior, cs, 1);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+/*!
+    \overload
+    \since 5.4
+    \obsolete
+*/
+QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return split(sep, mapSplitBehavior(behavior), cs);
+}
+#endif
+
 #ifndef QT_NO_REGEXP
 namespace {
 template<class ResultList, typename MidMethod>
-static ResultList splitString(const QString &source, MidMethod mid, const QRegExp &rx, QString::SplitBehavior behavior)
+static ResultList splitString(const QString &source, MidMethod mid, const QRegExp &rx, Qt::SplitBehavior behavior)
 {
     QRegExp rx2(rx);
     ResultList list;
@@ -7727,12 +7813,12 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegEx
     int end;
     while ((end = rx2.indexIn(source, start + extra)) != -1) {
         int matchedLen = rx2.matchedLength();
-        if (start != end || behavior == QString::KeepEmptyParts)
+        if (start != end || behavior == Qt::KeepEmptyParts)
             list.append((source.*mid)(start, end - start));
         start = end + matchedLen;
         extra = (matchedLen == 0) ? 1 : 0;
     }
-    if (start != source.size() || behavior == QString::KeepEmptyParts)
+    if (start != source.size() || behavior == Qt::KeepEmptyParts)
         list.append((source.*mid)(start, -1));
     return list;
 }
@@ -7740,6 +7826,7 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegEx
 
 /*!
     \overload
+    \since 5.14
 
     Splits the string into substrings wherever the regular expression
     \a rx matches, and returns the list of those strings. If \a rx
@@ -7764,14 +7851,25 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegEx
 
     \sa QStringList::join(), section()
 */
-QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
+QStringList QString::split(const QRegExp &rx, Qt::SplitBehavior behavior) const
 {
     return splitString<QStringList>(*this, &QString::mid, rx, behavior);
 }
 
+#  if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
-    \since 5.4
+    \obsolete
+*/
+QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
+{
+    return split(rx, mapSplitBehavior(behavior));
+}
+#  endif
+
+/*!
+    \overload
+    \since 5.14
 
     Splits the string into substring references wherever the regular expression
     \a rx matches, and returns the list of those strings. If \a rx
@@ -7783,17 +7881,29 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 
     \sa QStringRef split()
 */
-QVector<QStringRef> QString::splitRef(const QRegExp &rx, SplitBehavior behavior) const
+QVector<QStringRef> QString::splitRef(const QRegExp &rx, Qt::SplitBehavior behavior) const
 {
     return splitString<QVector<QStringRef> >(*this, &QString::midRef, rx, behavior);
 }
-#endif
+
+#  if QT_DEPRECATED_SINCE(5, 15)
+/*!
+    \overload
+    \since 5.4
+    \obsolete
+*/
+QVector<QStringRef> QString::splitRef(const QRegExp &rx, SplitBehavior behavior) const
+{
+    return splitRef(rx, mapSplitBehavior(behavior));
+}
+#  endif
+#endif // QT_NO_REGEXP
 
 #if QT_CONFIG(regularexpression)
 namespace {
 template<class ResultList, typename MidMethod>
 static ResultList splitString(const QString &source, MidMethod mid, const QRegularExpression &re,
-                              QString::SplitBehavior behavior)
+                              Qt::SplitBehavior behavior)
 {
     ResultList list;
     if (!re.isValid()) {
@@ -7807,12 +7917,12 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegul
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         end = match.capturedStart();
-        if (start != end || behavior == QString::KeepEmptyParts)
+        if (start != end || behavior == Qt::KeepEmptyParts)
             list.append((source.*mid)(start, end - start));
         start = match.capturedEnd();
     }
 
-    if (start != source.size() || behavior == QString::KeepEmptyParts)
+    if (start != source.size() || behavior == Qt::KeepEmptyParts)
         list.append((source.*mid)(start, -1));
 
     return list;
@@ -7821,7 +7931,7 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegul
 
 /*!
     \overload
-    \since 5.0
+    \since 5.14
 
     Splits the string into substrings wherever the regular expression
     \a re matches, and returns the list of those strings. If \a re
@@ -7846,14 +7956,26 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegul
 
     \sa QStringList::join(), section()
 */
-QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior) const
+QStringList QString::split(const QRegularExpression &re, Qt::SplitBehavior behavior) const
 {
     return splitString<QStringList>(*this, &QString::mid, re, behavior);
 }
 
+#  if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
-    \since 5.4
+    \since 5.0
+    \obsolete
+*/
+QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior) const
+{
+    return split(re, mapSplitBehavior(behavior));
+}
+#  endif
+
+/*!
+    \overload
+    \since 5.14
 
     Splits the string into substring references wherever the regular expression
     \a re matches, and returns the list of those strings. If \a re
@@ -7865,10 +7987,22 @@ QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior)
 
     \sa split() QStringRef
 */
-QVector<QStringRef> QString::splitRef(const QRegularExpression &re, SplitBehavior behavior) const
+QVector<QStringRef> QString::splitRef(const QRegularExpression &re, Qt::SplitBehavior behavior) const
 {
     return splitString<QVector<QStringRef> >(*this, &QString::midRef, re, behavior);
 }
+
+#  if QT_DEPRECATED_SINCE(5, 15)
+/*!
+    \overload
+    \since 5.4
+    \obsolete
+*/
+QVector<QStringRef> QString::splitRef(const QRegularExpression &re, SplitBehavior behavior) const
+{
+    return splitRef(re, mapSplitBehavior(behavior));
+}
+#  endif
 #endif // QT_CONFIG(regularexpression)
 
 /*!

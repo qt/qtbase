@@ -705,6 +705,7 @@ qt_feature("dlopen" PRIVATE
 )
 qt_feature("relocatable" PRIVATE
     LABEL "Relocatable"
+    PURPOSE "Enable the Qt installation to be relocated."
     AUTODETECT QT_FEATURE_shared
     CONDITION QT_FEATURE_dlopen OR WIN32 OR NOT QT_FEATURE_shared
 )

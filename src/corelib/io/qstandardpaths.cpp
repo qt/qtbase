@@ -512,7 +512,8 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
         }
 
         // Remove trailing slashes, which occur on Windows.
-        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(QDir::listSeparator(), QString::SkipEmptyParts);
+        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(
+            QDir::listSeparator(), Qt::SkipEmptyParts);
         searchPaths.reserve(rawPaths.size());
         for (const QString &rawPath : rawPaths) {
             QString cleanPath = QDir::cleanPath(rawPath);

@@ -40,6 +40,10 @@
 #ifndef QNETWORKCONFIGURATION_H
 #define QNETWORKCONFIGURATION_H
 
+#if 0
+#pragma qt_class(QNetworkConfiguration)
+#endif
+
 #include <QtNetwork/qtnetworkglobal.h>
 
 #include <QtCore/qshareddata.h>
@@ -47,10 +51,21 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmetatype.h>
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
-class Q_NETWORK_EXPORT QNetworkConfiguration
+// We work around an issue in ICC where it errors out during compilation of Qt by not marking it
+// deprecated if ICC is used
+#ifdef Q_CC_INTEL
+#define QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC
+#else
+#define QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC QT_DEPRECATED_VERSION_5_15
+#endif
+class QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC Q_NETWORK_EXPORT QNetworkConfiguration
+#undef QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC
 {
 public:
     QNetworkConfiguration();
@@ -134,5 +149,7 @@ Q_DECLARE_SHARED(QNetworkConfiguration)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkConfiguration)
+
+QT_WARNING_POP
 
 #endif // QNETWORKCONFIGURATION_H

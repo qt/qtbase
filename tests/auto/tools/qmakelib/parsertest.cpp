@@ -2028,7 +2028,7 @@ void tst_qmakelib::proParser()
 
     bool verified = true;
     QMakeTestHandler handler;
-    handler.setExpectedMessages(msgs.split('\n', QString::SkipEmptyParts));
+    handler.setExpectedMessages(msgs.split('\n', Qt::SkipEmptyParts));
     QMakeVfs vfs;
     QMakeParser parser(0, &vfs, &handler);
     ProFile *pro = parser.parsedProBlock(QStringRef(&in), 0, "in", 1, QMakeParser::FullGrammar);

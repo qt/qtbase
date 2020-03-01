@@ -124,7 +124,7 @@ static void generateDataFromFile(const QString &fname)
 
         QString testString;
         QList<int> expectedBreakPositions;
-        foreach (const QString &part, test.simplified().split(QLatin1Char(' '), QString::SkipEmptyParts)) {
+        foreach (const QString &part, test.simplified().split(QLatin1Char(' '), Qt::SkipEmptyParts)) {
             if (part.size() == 1) {
                 if (part.at(0).unicode() == 0xf7)
                     expectedBreakPositions.append(testString.size());
@@ -146,7 +146,7 @@ static void generateDataFromFile(const QString &fname)
         QVERIFY(!expectedBreakPositions.isEmpty());
 
         if (!comments.isEmpty()) {
-            const QStringList lst = comments.simplified().split(QLatin1Char(' '), QString::SkipEmptyParts);
+            const QStringList lst = comments.simplified().split(QLatin1Char(' '), Qt::SkipEmptyParts);
             comments.clear();
             foreach (const QString &part, lst) {
                 if (part.size() == 1) {

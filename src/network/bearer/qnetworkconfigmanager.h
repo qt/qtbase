@@ -40,16 +40,31 @@
 #ifndef QNETWORKCONFIGMANAGER_H
 #define QNETWORKCONFIGMANAGER_H
 
+#if 0
+#pragma qt_class(QNetworkConfigurationManager)
+#endif
+
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qobject.h>
 #include <QtNetwork/qnetworkconfiguration.h>
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationManagerPrivate;
-class Q_NETWORK_EXPORT QNetworkConfigurationManager : public QObject
+// We work around an issue in ICC where it errors out during compilation of Qt by not marking it
+// deprecated if ICC is used
+#ifdef Q_CC_INTEL
+#define QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC
+#else
+#define QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC QT_DEPRECATED_VERSION_5_15
+#endif
+class QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC Q_NETWORK_EXPORT QNetworkConfigurationManager : public QObject
+#undef QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC
 {
     Q_OBJECT
 
@@ -96,5 +111,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkConfigurationManager::Capabilities)
 QT_END_NAMESPACE
 
 #endif // QT_NO_BEARERMANAGEMENT
+
+QT_WARNING_POP
 
 #endif // QNETWORKCONFIGMANAGER_H

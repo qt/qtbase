@@ -1813,7 +1813,7 @@ static QStringList splitDeps(const QString &indeps, bool lineMode)
 {
     if (!lineMode)
         return indeps.simplified().split(' ');
-    QStringList deps = indeps.split('\n', QString::SkipEmptyParts);
+    QStringList deps = indeps.split('\n', Qt::SkipEmptyParts);
 #ifdef Q_OS_WIN
     for (auto &dep : deps) {
         if (dep.endsWith(QLatin1Char('\r')))

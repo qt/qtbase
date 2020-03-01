@@ -61,7 +61,7 @@ Message::Message(const QString &body, const QStringList &headers)
 QDebug operator<<(QDebug dbg, const Message &message)
 {
     const QString body = message.body();
-    QVector<QStringRef> pieces = body.splitRef("\r\n", QString::SkipEmptyParts);
+    QVector<QStringRef> pieces = body.splitRef(QLatin1String("\r\n"), Qt::SkipEmptyParts);
     if (pieces.isEmpty())
         dbg.nospace() << "Message()";
     else if (pieces.size() == 1)

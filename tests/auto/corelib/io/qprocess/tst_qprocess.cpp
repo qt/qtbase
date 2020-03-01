@@ -2401,7 +2401,7 @@ void tst_QProcess::finishProcessBeforeReadingDone()
     QVERIFY(process.waitForStarted());
     loop.exec();
     QStringList lines = QString::fromLocal8Bit(process.readAllStandardOutput()).split(
-            QRegExp(QStringLiteral("[\r\n]")), QString::SkipEmptyParts);
+            QRegExp(QStringLiteral("[\r\n]")), Qt::SkipEmptyParts);
     QVERIFY(!lines.isEmpty());
     QCOMPARE(lines.last(), QStringLiteral("10239 -this is a number"));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
@@ -2599,7 +2599,7 @@ void tst_QProcess::finishProcessBeforeReadingDone_deprecated()
     QVERIFY(process.waitForStarted());
     loop.exec();
     QStringList lines = QString::fromLocal8Bit(process.readAllStandardOutput()).split(
-            QRegExp(QStringLiteral("[\r\n]")), QString::SkipEmptyParts);
+            QRegExp(QStringLiteral("[\r\n]")), Qt::SkipEmptyParts);
     QVERIFY(!lines.isEmpty());
     QCOMPARE(lines.last(), QStringLiteral("10239 -this is a number"));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);

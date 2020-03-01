@@ -405,7 +405,7 @@ void AccessibilitySceneManager::addGraphicsItems(AccessibilitySceneManager::Tree
     QString text;
     text += item.name + "\n";
     text += item.role + "\n";
-    text += item.description.split(" ", QString::SkipEmptyParts).join("\n") + "\n";
+    text += item.description.split(QLatin1Char(' '), Qt::SkipEmptyParts).join("\n") + "\n";
     text += "P:" + QString::number(item.rect.x()) + " " + QString::number(item.rect.y()) + " ";
     text += "S:" + QString::number(item.rect.width()) + " " + QString::number(item.rect.height()) + "\n";
 

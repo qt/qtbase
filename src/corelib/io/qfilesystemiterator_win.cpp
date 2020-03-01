@@ -101,7 +101,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
                                          FINDEX_SEARCH_OPS(searchOps), 0, dwAdditionalFlags);
         if (findFileHandle == INVALID_HANDLE_VALUE) {
             if (nativePath.startsWith(QLatin1String("\\\\?\\UNC\\"))) {
-                const QVector<QStringRef> parts = nativePath.splitRef(QLatin1Char('\\'), QString::SkipEmptyParts);
+                const QVector<QStringRef> parts = nativePath.splitRef(QLatin1Char('\\'), Qt::SkipEmptyParts);
                 if (parts.count() == 4 && QFileSystemEngine::uncListSharesOnServer(
                         QLatin1String("\\\\") + parts.at(2), &uncShares)) {
                     if (uncShares.isEmpty())

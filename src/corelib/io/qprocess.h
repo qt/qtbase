@@ -282,7 +282,7 @@ public:
 
     static QString nullDevice();
 
-    static QStringList splitCommand(const QString &command);
+    static QStringList splitCommand(QStringView command);
 
 public Q_SLOTS:
     void terminate();

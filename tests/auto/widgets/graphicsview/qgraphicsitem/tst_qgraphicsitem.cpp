@@ -11732,7 +11732,7 @@ public:
         QGraphicsLinearLayout *lay = new QGraphicsLinearLayout(Qt::Vertical);
         QLatin1String wiseWords("AZ BUKI VEDI");
         QString sentence(wiseWords);
-        QStringList words = sentence.split(QLatin1Char(' '), QString::SkipEmptyParts);
+        QStringList words = sentence.split(QLatin1Char(' '), Qt::SkipEmptyParts);
         for (int i = 0; i < words.count(); ++i) {
             QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(this);
             QLabel *label = new QLabel(words.at(i));
