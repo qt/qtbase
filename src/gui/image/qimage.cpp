@@ -2118,7 +2118,7 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
     dest.setColorTable(clut);
 
     QString textsKeys = src.text();
-    const auto textKeyList = textsKeys.splitRef(QLatin1Char('\n'), QString::SkipEmptyParts);
+    const auto textKeyList = textsKeys.splitRef(QLatin1Char('\n'), Qt::SkipEmptyParts);
     for (const auto &textKey : textKeyList) {
         const auto textKeySplitted = textKey.split(QLatin1String(": "));
         dest.setText(textKeySplitted[0].toString(), textKeySplitted[1].toString());

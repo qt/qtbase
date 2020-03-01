@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkSession
+    \obsolete
 
     \brief The QNetworkSession class provides control over the system's access points
     and enables session management for cases when multiple clients access the same access point.

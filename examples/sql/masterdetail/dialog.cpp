@@ -86,7 +86,7 @@ void Dialog::submit()
         int albumId = addNewAlbum(title, artistId);
 
         QStringList tracks;
-        tracks = tracksEditor->text().split(',', QString::SkipEmptyParts);
+        tracks = tracksEditor->text().split(QLatin1Char(','), Qt::SkipEmptyParts);
         addTracks(albumId, tracks);
 
         increaseAlbumCount(indexOfArtist(artist));

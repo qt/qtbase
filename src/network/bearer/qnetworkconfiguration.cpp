@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkConfiguration
+    \obsolete
 
     \brief The QNetworkConfiguration class provides an abstraction of one or more access point configurations.
 

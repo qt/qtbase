@@ -3852,8 +3852,8 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
 
     d << eventClassName(type)  << '(';
     QtDebugUtils::formatQEnum(d, type);
-    d << ", device=";
-    QtDebugUtils::formatQEnum(d, e->device());
+    d << ", deviceType=";
+    QtDebugUtils::formatQEnum(d, e->deviceType());
     d << ", pointerType=";
     QtDebugUtils::formatQEnum(d, e->pointerType());
     d << ", uniqueId=" << e->uniqueId()
@@ -3865,9 +3865,9 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
     QtDebugUtils::formatQFlags(d, e->buttons());
     if (type == QEvent::TabletPress || type == QEvent::TabletMove)
         d << ", pressure=" << e->pressure();
-    if (e->device() == QTabletEvent::RotationStylus || e->device() == QTabletEvent::FourDMouse)
+    if (e->deviceType() == QTabletEvent::RotationStylus || e->deviceType() == QTabletEvent::FourDMouse)
         d << ", rotation=" << e->rotation();
-    if (e->device() == QTabletEvent::Airbrush)
+    if (e->deviceType() == QTabletEvent::Airbrush)
         d << ", tangentialPressure=" << e->tangentialPressure();
 }
 

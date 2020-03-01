@@ -4969,7 +4969,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
     \snippet code/src_corelib_tools_qbytearray.cpp 44ter
 
-    In alternative, it is possible to access the conversion status
+    Alternatively, it is possible to access the conversion status
     and the decoded data directly:
 
     \snippet code/src_corelib_tools_qbytearray.cpp 44quater

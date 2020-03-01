@@ -110,6 +110,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 
 /*!
     \class QNetworkConfigurationManager
+    \obsolete
 
     \brief The QNetworkConfigurationManager class manages the network configurations provided
     by the system.

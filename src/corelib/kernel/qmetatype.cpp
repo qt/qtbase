@@ -718,7 +718,7 @@ QMetaType &QMetaType::operator=(const QMetaType &other)
     \relates QMetaType
     \overload
 
-    Returns \c true if the QMetaType \a a represents a difference type
+    Returns \c true if the QMetaType \a a represents a different type
     than the QMetaType \a b, otherwise returns \c false.
 */
 
@@ -1750,7 +1750,7 @@ static QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 
      Constructs a QMetaType object that contains all information about type \a typeId.
 
-     \note: The default parameter was added in Qt 5.15
+     \note The default parameter was added in Qt 5.15.
 */
 QMetaType::QMetaType(int typeId) : QMetaType(interfaceForType(typeId)) {}
 

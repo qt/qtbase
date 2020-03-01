@@ -307,7 +307,7 @@ QFileDialog::Options FileDialogPanel::options() const
 
 QStringList FileDialogPanel::allowedSchemes() const
 {
-    return m_allowedSchemes->text().simplified().split(' ', QString::SkipEmptyParts);
+    return m_allowedSchemes->text().simplified().split(' ', Qt::SkipEmptyParts);
 }
 
 void FileDialogPanel::getOpenFileNames()
@@ -468,7 +468,7 @@ void FileDialogPanel::applySettings(QFileDialog *d) const
     if (!file.isEmpty())
        d->selectFile(file);
     const QString filter = m_selectedNameFilter->text().trimmed();
-    const QStringList filters = m_nameFilters->toPlainText().trimmed().split(QLatin1Char('\n'), QString::SkipEmptyParts);
+    const QStringList filters = m_nameFilters->toPlainText().trimmed().split(QLatin1Char('\n'), Qt::SkipEmptyParts);
     if (!m_useMimeTypeFilters->isChecked()) {
         d->setNameFilters(filters);
         if (!filter.isEmpty())

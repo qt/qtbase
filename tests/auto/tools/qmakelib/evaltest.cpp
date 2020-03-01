@@ -2859,7 +2859,7 @@ void tst_qmakelib::proEval()
     QString infile = m_indir + "/test.pro";
     bool verified = true;
     QMakeTestHandler handler;
-    handler.setExpectedMessages(msgs.replace("##:", infile + ':').split('\n', QString::SkipEmptyParts));
+    handler.setExpectedMessages(msgs.replace("##:", infile + ':').split('\n', Qt::SkipEmptyParts));
     QMakeVfs vfs;
     ProFileCache cache;
     QMakeParser parser(&cache, &vfs, &handler);

@@ -189,7 +189,6 @@ public:
                             int decimals = 1, bool *ok = nullptr, Qt::WindowFlags flags = Qt::WindowFlags(),
                             double step = 1);
 #else
-    // ### Qt 6: merge overloads
     static double getDouble(QWidget *parent, const QString &title, const QString &label, double value,
                             double minValue, double maxValue, int decimals, bool *ok, Qt::WindowFlags flags,
                             double step);

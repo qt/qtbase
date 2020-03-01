@@ -767,7 +767,7 @@ QChar QODBCDriverPrivate::quoteChar()
 bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
 {
     // Set any connection attributes
-    const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
+    const QStringList opts(connOpts.split(QLatin1Char(';'), Qt::SkipEmptyParts));
     SQLRETURN r = SQL_SUCCESS;
     for (int i = 0; i < opts.count(); ++i) {
         const QString tmp(opts.at(i));

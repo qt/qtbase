@@ -766,7 +766,7 @@ void tst_QAccessibility::textAttributes()
 
     QCOMPARE(startOffset, startOffsetResult);
     QCOMPARE(endOffset, endOffsetResult);
-    QStringList attrList = attributes.split(QChar(';'), QString::SkipEmptyParts);
+    QStringList attrList = attributes.split(QChar(';'), Qt::SkipEmptyParts);
     attributeResult.sort();
     attrList.sort();
     QCOMPARE(attrList, attributeResult);

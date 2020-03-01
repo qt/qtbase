@@ -646,7 +646,7 @@ IApplicationDataContainer *QWinRTSettingsPrivate::getContainer(IApplicationDataC
     IApplicationDataContainer *current = parent;
     if (group.isEmpty())
         return current;
-    const QStringList groupPath = group.split(QLatin1Char('/'), QString::SkipEmptyParts);
+    const QStringList groupPath = group.split(QLatin1Char('/'), Qt::SkipEmptyParts);
 
     for (const QString &subGroup : groupPath) {
         ComPtr<IApplicationDataContainer> sub = subContainer(current, subGroup);

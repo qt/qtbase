@@ -883,7 +883,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProVariable(
             return ReturnTrue;
         }
         QChar sep = val.at(1);
-        auto func = val.split(sep, QString::KeepEmptyParts);
+        auto func = val.split(sep, Qt::KeepEmptyParts);
         if (func.count() < 3 || func.count() > 4) {
             evalError(fL1S("The s/// function expects 3 or 4 arguments."));
             return ReturnTrue;
@@ -1022,7 +1022,7 @@ static ProString msvcArchitecture(const QString &vcInstallDir, const QString &pa
     QString vcBinDir = vcInstallDir;
     if (vcBinDir.endsWith(QLatin1Char('\\')))
         vcBinDir.chop(1);
-    const auto dirs = pathVar.split(QLatin1Char(';'), QString::SkipEmptyParts);
+    const auto dirs = pathVar.split(QLatin1Char(';'), Qt::SkipEmptyParts);
     for (const QString &dir : dirs) {
         if (!dir.startsWith(vcBinDir, Qt::CaseInsensitive))
             continue;

@@ -413,7 +413,7 @@ void AddressBook::exportAsVCard()
     int index = name.indexOf(" ");
 
     if (index != -1) {
-        nameList = name.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+        nameList = name.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
         firstName = nameList.first();
         lastName = nameList.last();
     } else {

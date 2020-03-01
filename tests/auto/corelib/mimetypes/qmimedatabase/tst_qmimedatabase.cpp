@@ -427,7 +427,7 @@ void tst_QMimeDatabase::listAliases()
     QFETCH(QString, inputMime);
     QFETCH(QString, expectedAliases);
     QMimeDatabase db;
-    QStringList expectedAliasesList = expectedAliases.split(',', QString::SkipEmptyParts);
+    QStringList expectedAliasesList = expectedAliases.split(',', Qt::SkipEmptyParts);
     expectedAliasesList.sort();
     QMimeType mime = db.mimeTypeForName(inputMime);
     QVERIFY(mime.isValid());
@@ -715,7 +715,7 @@ void tst_QMimeDatabase::findByFileName_data()
             continue;
 
         QString string = QString::fromLatin1(line.constData(), len - 1).trimmed();
-        QStringList list = string.split(QLatin1Char(' '), QString::SkipEmptyParts);
+        QStringList list = string.split(QLatin1Char(' '), Qt::SkipEmptyParts);
         QVERIFY(list.size() >= 2);
 
         QString filePath = list.at(0);

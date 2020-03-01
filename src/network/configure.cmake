@@ -320,7 +320,7 @@ qt_feature("networkdiskcache" PUBLIC
 qt_feature_definition("networkdiskcache" "QT_NO_NETWORKDISKCACHE" NEGATE VALUE "1")
 qt_feature("bearermanagement" PUBLIC
     SECTION "Networking"
-    LABEL "Bearer management"
+    LABEL "Bearer management (deprecated)"
     PURPOSE "Provides bearer management for the network stack."
     CONDITION QT_FEATURE_thread AND QT_FEATURE_library AND QT_FEATURE_networkinterface AND QT_FEATURE_properties
 )

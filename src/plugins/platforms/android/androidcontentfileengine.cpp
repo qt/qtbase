@@ -44,9 +44,10 @@
 
 #include <QDebug>
 
-AndroidContentFileEngine::AndroidContentFileEngine(const QString &fileName)
-    : QFSFileEngine(fileName)
+AndroidContentFileEngine::AndroidContentFileEngine(const QString &f)
+    : m_file(f)
 {
+    setFileName(f);
 }
 
 bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
@@ -78,6 +79,48 @@ bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
     return QFSFileEngine::open(openMode, fd, QFile::AutoCloseHandle);
 }
 
+qint64 AndroidContentFileEngine::size() const
+{
+    const jlong size = QJNIObjectPrivate::callStaticMethod<jlong>(
+            "org/qtproject/qt5/android/QtNative", "getSize",
+            "(Landroid/content/Context;Ljava/lang/String;)J", QtAndroidPrivate::context(),
+            QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
+    return (qint64)size;
+}
+
+AndroidContentFileEngine::FileFlags AndroidContentFileEngine::fileFlags(FileFlags type) const
+{
+    FileFlags commonFlags(ReadOwnerPerm|ReadUserPerm|ReadGroupPerm|ReadOtherPerm|ExistsFlag);
+    FileFlags flags;
+    const bool exists = QJNIObjectPrivate::callStaticMethod<jboolean>(
+            "org/qtproject/qt5/android/QtNative", "checkFileExists",
+            "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
+            QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
+    if (!exists)
+        return flags;
+    flags = FileType | commonFlags;
+    return type & flags;
+}
+
+QString AndroidContentFileEngine::fileName(FileName f) const
+{
+    switch (f) {
+        case PathName:
+        case AbsolutePathName:
+        case CanonicalPathName:
+        case DefaultName:
+        case AbsoluteName:
+        case CanonicalName:
+            return m_file;
+        case BaseName:
+        {
+            const int pos = m_file.lastIndexOf(QChar(QLatin1Char('/')));
+            return m_file.mid(pos);
+        }
+        default:
+            return QString();
+    }
+}
 
 AndroidContentFileEngineHandler::AndroidContentFileEngineHandler() = default;
 AndroidContentFileEngineHandler::~AndroidContentFileEngineHandler() = default;

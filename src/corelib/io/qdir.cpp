@@ -867,8 +867,8 @@ QString QDir::relativeFilePath(const QString &fileName) const
 #endif
 
     QString result;
-    QVector<QStringRef> dirElts = dir.splitRef(QLatin1Char('/'), QString::SkipEmptyParts);
-    QVector<QStringRef> fileElts = file.splitRef(QLatin1Char('/'), QString::SkipEmptyParts);
+    QVector<QStringRef> dirElts = dir.splitRef(QLatin1Char('/'), Qt::SkipEmptyParts);
+    QVector<QStringRef> fileElts = file.splitRef(QLatin1Char('/'), Qt::SkipEmptyParts);
 
     int i = 0;
     while (i < dirElts.size() && i < fileElts.size() &&

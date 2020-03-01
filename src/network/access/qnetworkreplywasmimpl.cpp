@@ -510,7 +510,7 @@ void QNetworkReplyWasmImplPrivate::headersReceived(const QString &bufferString)
     Q_Q(QNetworkReplyWasmImpl);
 
     if (!bufferString.isEmpty()) {
-        QStringList headers = bufferString.split(QString::fromUtf8("\r\n"), QString::SkipEmptyParts);
+        QStringList headers = bufferString.split(QString::fromUtf8("\r\n"), Qt::SkipEmptyParts);
 
         for (int i = 0; i < headers.size(); i++) {
             QString headerName = headers.at(i).split(QString::fromUtf8(": ")).at(0);

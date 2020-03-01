@@ -54,7 +54,7 @@ struct testDataSet
 QString charHexCsv2String(const QString &csv)
 {
     QString result;
-    foreach (const QString &charString, csv.split(QLatin1Char(','), QString::SkipEmptyParts)) {
+    foreach (const QString &charString, csv.split(QLatin1Char(','), Qt::SkipEmptyParts)) {
         bool isOk;
         const uint charUInt = charString.toUInt(&isOk, 16);
         Q_ASSERT(isOk);
