@@ -527,7 +527,10 @@ def parseTest(ctx, test, data, cm_fh):
     if data["type"] == "compile":
         knownTests.add(test)
 
-        details = data["test"]
+        if "test" in data:
+            details = data["test"]
+        else:
+            details = test
 
         if isinstance(details, str):
             if not ctx["test_dir"]:
