@@ -37,6 +37,7 @@ if(WIN32)
     set(CMAKE_DEBUG_POSTFIX "d")
 elseif(APPLE)
     set(CMAKE_DEBUG_POSTFIX "_debug")
+    set(CMAKE_FRAMEWORK_MULTI_CONFIG_POSTFIX_DEBUG "_debug")
 endif()
 
 ## Position independent code:
