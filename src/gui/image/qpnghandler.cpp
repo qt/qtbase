@@ -1296,13 +1296,6 @@ void QPngHandler::setOption(ImageOption option, const QVariant &value)
         d->scaledSize = value.toSize();
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QByteArray QPngHandler::name() const
-{
-    return "png";
-}
-#endif
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_IMAGEFORMAT_PNG
