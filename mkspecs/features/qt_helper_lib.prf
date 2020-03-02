@@ -60,7 +60,7 @@ win32|CONFIG(static, static|shared) {
         "QMAKE_DEFINES_$${ucmodule} = $$val_escape(MODULE_DEFINES)"
     android {
         MODULE_PRI_CONT += "QMAKE_LIBS_$${ucmodule} ="
-    } else: qtConfig(debug_and_release): {
+    } else: if(msvc|qtConfig(debug_and_release)): {
         win32: \
             MODULE_DEBUG_LIBS = $$DESTDIR/$$prefix$${TARGET}d.$$suffix
         else: darwin: \
