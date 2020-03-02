@@ -728,7 +728,7 @@ qt_feature("libudev" PRIVATE
 qt_feature("qt_libinfix_plugins"
     LABEL "Use QT_LIBINFIX for Plugins"
     AUTODETECT OFF
-    ENABLE ( NOT INPUT_qt_libinfix STREQUAL '' AND INPUT_qt_libinfix_plugins STREQUAL 'yes' )
+    ENABLE ( NOT INPUT_qt_libinfix STREQUAL '' ) AND INPUT_qt_libinfix_plugins STREQUAL 'yes'
 )
 qt_feature_config("qt_libinfix_plugins" QMAKE_PRIVATE_CONFIG)
 qt_feature("compile_examples"
@@ -745,6 +745,150 @@ qt_feature("relocatable" PRIVATE
     PURPOSE "Enable the Qt installation to be relocated."
     AUTODETECT QT_FEATURE_shared
     CONDITION QT_FEATURE_dlopen OR WIN32 OR NOT QT_FEATURE_shared
+)
+qt_configure_add_summary_build_type_and_config()
+qt_configure_add_summary_section(NAME "Build options")
+qt_configure_add_summary_build_mode(Mode)
+qt_configure_add_summary_entry(
+    ARGS "optimize_debug"
+    CONDITION NOT MSVC AND NOT CLANG AND ( QT_FEATURE_debug OR QT_FEATURE_debug_and_release )
+)
+qt_configure_add_summary_entry(
+    ARGS "optimize_size"
+    CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
+)
+qt_configure_add_summary_entry(ARGS "shared")
+qt_configure_add_summary_entry(
+    TYPE "firstAvailableFeature"
+    ARGS "c++2a c++17 c++14 c++11"
+    MESSAGE "Using C++ standard"
+)
+qt_configure_add_summary_entry(
+    ARGS "ccache"
+    CONDITION UNIX
+)
+qt_configure_add_summary_entry(
+    ARGS "enable_new_dtags"
+    CONDITION LINUX
+)
+qt_configure_add_summary_entry(
+    ARGS "enable_gdb_index"
+    CONDITION GCC AND NOT CLANG AND ( QT_FEATURE_debug OR QT_FEATURE_force_debug_info OR QT_FEATURE_debug_and_release )
+)
+qt_configure_add_summary_entry(ARGS "relocatable")
+qt_configure_add_summary_entry(ARGS "precompile_header")
+qt_configure_add_summary_entry(ARGS "ltcg")
+qt_configure_add_summary_section(NAME "Target compiler supports")
+qt_configure_add_summary_entry(
+    TYPE "featureList"
+    ARGS "sse2 sse3 ssse3 sse4_1 sse4_2"
+    MESSAGE "SSE"
+    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
+)
+qt_configure_add_summary_entry(
+    TYPE "featureList"
+    ARGS "avx avx2"
+    MESSAGE "AVX"
+    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
+)
+qt_configure_add_summary_entry(
+    TYPE "featureList"
+    ARGS "avx512f avx512er avx512cd avx512pf avx512dq avx512bw avx512vl avx512ifma avx512vbmi"
+    MESSAGE "AVX512"
+    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
+)
+qt_configure_add_summary_entry(
+    TYPE "featureList"
+    ARGS "aesni f16c rdrnd shani"
+    MESSAGE "Other x86"
+    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
+)
+qt_configure_add_summary_entry(
+    ARGS "x86SimdAlways"
+    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND NOT MSVC
+)
+qt_configure_add_summary_entry(
+    ARGS "neon"
+    CONDITION ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 )
+)
+qt_configure_add_summary_entry(
+    ARGS "mips_dsp"
+    CONDITION ( TEST_architecture_arch STREQUAL mips )
+)
+qt_configure_add_summary_entry(
+    ARGS "mips_dspr2"
+    CONDITION ( TEST_architecture_arch STREQUAL mips )
+)
+qt_configure_end_summary_section() # end of "Target compiler supports" section
+qt_configure_add_summary_section(NAME "Sanitizers")
+qt_configure_add_summary_entry(ARGS "sanitize_address")
+qt_configure_add_summary_entry(ARGS "sanitize_thread")
+qt_configure_add_summary_entry(ARGS "sanitize_memory")
+qt_configure_add_summary_entry(ARGS "sanitize_fuzzer_no_link")
+qt_configure_add_summary_entry(ARGS "sanitize_undefined")
+qt_configure_end_summary_section() # end of "Sanitizers" section
+qt_configure_add_summary_entry(
+    TYPE "firstAvailableFeature"
+    ARGS "coverage_trace_pc_guard coverage_source_based"
+    MESSAGE "Code Coverage Instrumentation"
+    CONDITION QT_FEATURE_coverage
+)
+qt_configure_add_summary_entry(
+    ARGS "appstore-compliant"
+    CONDITION APPLE OR ANDROID OR WINRT OR WIN32
+)
+qt_configure_end_summary_section() # end of "Build options" section
+qt_configure_add_summary_section(NAME "Qt modules and options")
+qt_configure_add_summary_entry(ARGS "concurrent")
+qt_configure_add_summary_entry(ARGS "dbus")
+qt_configure_add_summary_entry(ARGS "dbus-linked")
+qt_configure_add_summary_entry(ARGS "gui")
+qt_configure_add_summary_entry(ARGS "network")
+qt_configure_add_summary_entry(ARGS "sql")
+qt_configure_add_summary_entry(ARGS "testlib")
+qt_configure_add_summary_entry(ARGS "widgets")
+qt_configure_add_summary_entry(ARGS "xml")
+qt_configure_end_summary_section() # end of "Qt modules and options" section
+qt_configure_add_summary_section(NAME "Support enabled for")
+qt_configure_add_summary_entry(ARGS "pkg-config")
+qt_configure_add_summary_entry(ARGS "libudev")
+qt_configure_add_summary_entry(ARGS "system-zlib")
+qt_configure_add_summary_entry(ARGS "zstd")
+qt_configure_end_summary_section() # end of "Support enabled for" section
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "Using static linking will disable the use of dynamically loaded plugins. Make sure to import all needed static plugins, or compile needed modules into the library."
+    CONDITION NOT QT_FEATURE_shared
+)
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "Qt is using double for qreal on this system. This is binary-incompatible against Qt 5.1.  Configure with '-qreal float' to create a build that is binary-compatible with 5.1."
+    CONDITION INPUT_qreal STREQUAL 'double' AND ( TEST_architecture_arch STREQUAL arm )
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Debug build wihtout Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
+    CONDITION APPLE_IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "-debug-and-release is only supported on Darwin and Windows platforms.  Qt can be built in release mode with separate debug information, so -debug-and-release is no longer necessary."
+    CONDITION INPUT_debug_and_release STREQUAL 'yes' AND NOT APPLE AND NOT WIN32
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "debug-only framework builds are not supported. Configure with -no-framework if you want a pure debug build."
+    CONDITION QT_FEATURE_framework AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Command line option -coverage is only supported with clang compilers."
+    CONDITION QT_FEATURE_coverage AND NOT CLANG
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Command line option -sanitize fuzzer-no-link is only supported with clang compilers."
+    CONDITION QT_FEATURE_sanitize_fuzzer_no_link AND NOT CLANG
 )
 
 qt_extra_definition("QT_VERSION_STR" "\"${PROJECT_VERSION}\"" PUBLIC)

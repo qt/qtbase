@@ -1141,3 +1141,149 @@ qt_feature("raster-64bit" PRIVATE
     LABEL "QPainter - 64 bit raster"
     PURPOSE "Internal painting support for 64 bit (16 bpc) rasterization."
 )
+qt_configure_add_summary_section(NAME "Qt Gui")
+qt_configure_add_summary_entry(ARGS "accessibility")
+qt_configure_add_summary_entry(ARGS "freetype")
+qt_configure_add_summary_entry(ARGS "system-freetype")
+qt_configure_add_summary_entry(ARGS "harfbuzz")
+qt_configure_add_summary_entry(ARGS "system-harfbuzz")
+qt_configure_add_summary_entry(ARGS "fontconfig")
+qt_configure_add_summary_section(NAME "Image formats")
+qt_configure_add_summary_entry(ARGS "gif")
+qt_configure_add_summary_entry(ARGS "ico")
+qt_configure_add_summary_entry(ARGS "jpeg")
+qt_configure_add_summary_entry(ARGS "system-jpeg")
+qt_configure_add_summary_entry(ARGS "png")
+qt_configure_add_summary_entry(ARGS "system-png")
+qt_configure_end_summary_section() # end of "Image formats" section
+qt_configure_add_summary_section(NAME "Text formats")
+qt_configure_add_summary_entry(ARGS "texthtmlparser")
+qt_configure_add_summary_entry(ARGS "cssparser")
+qt_configure_add_summary_entry(ARGS "textodfwriter")
+qt_configure_add_summary_entry(ARGS "textmarkdownreader")
+qt_configure_add_summary_entry(ARGS "system-textmarkdownreader")
+qt_configure_add_summary_entry(ARGS "textmarkdownwriter")
+qt_configure_end_summary_section() # end of "Text formats" section
+qt_configure_add_summary_entry(ARGS "egl")
+qt_configure_add_summary_entry(ARGS "openvg")
+qt_configure_add_summary_section(NAME "OpenGL")
+qt_configure_add_summary_entry(
+    ARGS "angle"
+    CONDITION WIN32
+)
+qt_configure_add_summary_entry(
+    ARGS "combined-angle-lib"
+    CONDITION QT_FEATURE_angle
+)
+qt_configure_add_summary_entry(ARGS "opengl-desktop")
+qt_configure_add_summary_entry(
+    ARGS "opengl-dynamic"
+    CONDITION WIN32
+)
+qt_configure_add_summary_entry(ARGS "opengles2")
+qt_configure_add_summary_entry(ARGS "opengles3")
+qt_configure_add_summary_entry(ARGS "opengles31")
+qt_configure_add_summary_entry(ARGS "opengles32")
+qt_configure_end_summary_section() # end of "OpenGL" section
+qt_configure_add_summary_entry(ARGS "vulkan")
+qt_configure_add_summary_entry(ARGS "sessionmanager")
+qt_configure_end_summary_section() # end of "Qt Gui" section
+qt_configure_add_summary_section(NAME "Features used by QPA backends")
+qt_configure_add_summary_entry(ARGS "evdev")
+qt_configure_add_summary_entry(ARGS "libinput")
+qt_configure_add_summary_entry(ARGS "integrityhid")
+qt_configure_add_summary_entry(ARGS "mtdev")
+qt_configure_add_summary_entry(ARGS "tslib")
+qt_configure_add_summary_entry(ARGS "xkbcommon")
+qt_configure_add_summary_section(NAME "X11 specific")
+qt_configure_add_summary_entry(ARGS "xlib")
+qt_configure_add_summary_entry(ARGS "xcb-xlib")
+qt_configure_add_summary_entry(ARGS "egl_x11")
+qt_configure_add_summary_entry(ARGS "xkbcommon-x11")
+qt_configure_end_summary_section() # end of "X11 specific" section
+qt_configure_end_summary_section() # end of "Features used by QPA backends" section
+qt_configure_add_summary_section(NAME "QPA backends")
+qt_configure_add_summary_entry(ARGS "directfb")
+qt_configure_add_summary_entry(ARGS "eglfs")
+qt_configure_add_summary_section(NAME "EGLFS details")
+qt_configure_add_summary_entry(ARGS "eglfs_openwfd")
+qt_configure_add_summary_entry(ARGS "eglfs_viv")
+qt_configure_add_summary_entry(ARGS "eglfs_viv_wl")
+qt_configure_add_summary_entry(ARGS "eglfs_rcar")
+qt_configure_add_summary_entry(ARGS "eglfs_egldevice")
+qt_configure_add_summary_entry(ARGS "eglfs_gbm")
+qt_configure_add_summary_entry(ARGS "eglfs_vsp2")
+qt_configure_add_summary_entry(ARGS "eglfs_mali")
+qt_configure_add_summary_entry(ARGS "eglfs_brcm")
+qt_configure_add_summary_entry(ARGS "eglfs_x11")
+qt_configure_end_summary_section() # end of "EGLFS details" section
+qt_configure_add_summary_entry(ARGS "linuxfb")
+qt_configure_add_summary_entry(ARGS "vnc")
+qt_configure_add_summary_entry(
+    ARGS "integrityfb"
+    CONDITION INTEGRITY
+)
+qt_configure_add_summary_section(NAME "QNX")
+qt_configure_add_summary_entry(ARGS "lgmon")
+qt_configure_add_summary_entry(ARGS "qqnx_imf")
+qt_configure_end_summary_section() # end of "QNX" section
+qt_configure_add_summary_section(NAME "XCB")
+qt_configure_add_summary_entry(ARGS "system-xcb-xinput")
+qt_configure_add_summary_entry(ARGS "xcb-native-painting")
+qt_configure_add_summary_section(NAME "GL integrations")
+qt_configure_add_summary_entry(ARGS "xcb-glx-plugin")
+qt_configure_add_summary_entry(ARGS "xcb-glx")
+qt_configure_add_summary_entry(ARGS "xcb-egl-plugin")
+qt_configure_end_summary_section() # end of "GL integrations" section
+qt_configure_end_summary_section() # end of "XCB" section
+qt_configure_add_summary_section(NAME "Windows")
+qt_configure_add_summary_entry(ARGS "direct2d")
+qt_configure_add_summary_entry(ARGS "directwrite")
+qt_configure_add_summary_entry(ARGS "directwrite2")
+qt_configure_end_summary_section() # end of "Windows" section
+qt_configure_end_summary_section() # end of "QPA backends" section
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "XCB support on macOS is minimal and untested. Some features will not work properly or at all (e.g. OpenGL, desktop services or accessibility), or may depend on your system and XQuartz setup."
+    CONDITION QT_FEATURE_xcb AND APPLE
+)
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "Disabling X11 Accessibility Bridge: D-Bus or AT-SPI is missing."
+    CONDITION QT_FEATURE_accessibility AND QT_FEATURE_xcb AND NOT QT_FEATURE_accessibility_atspi_bridge
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "The [-no]-qpa-platform-guard argument is deprecated and has no effect."
+    CONDITION ( NOT INPUT_qpa_platform_guard STREQUAL '' )
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "No QPA platform plugin enabled! This will produce a Qt that cannot run GUI applications.  See \"Platform backends\" in the output of --help."
+    CONDITION QT_FEATURE_gui AND LINUX AND NOT ANDROID AND NOT QT_FEATURE_xcb AND NOT QT_FEATURE_eglfs AND NOT QT_FEATURE_directfb AND NOT QT_FEATURE_linuxfb
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "Using OpenGL ES 2.0 on Windows without ANGLE.  The build will most likely fail.  Specify -opengl desktop to use regular OpenGL."
+    CONDITION WIN32 AND ( QT_FEATURE_opengles2 OR QT_FEATURE_opengl_dynamic ) AND NOT QT_FEATURE_angle
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "On OS X, AAT is supported only with -qt-harfbuzz."
+    CONDITION APPLE AND QT_FEATURE_system_harfbuzz
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "The OpenGL functionality tests failed!  You might need to modify the include and library search paths by editing QMAKE_INCDIR_OPENGL[_ES2], QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your platform."
+    CONDITION QT_FEATURE_gui AND NOT APPLE_WATCHOS AND ( NOT INPUT_opengl STREQUAL 'no' ) AND NOT QT_FEATURE_opengl_desktop AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_opengl_dynamic
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "Accessibility disabled. This configuration of Qt is unsupported."
+    CONDITION NOT QT_FEATURE_accessibility
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "XCB plugin requires xkbcommon and xkbcommon-x11, but -no-xkbcommon was provided."
+    CONDITION ( NOT INPUT_xcb STREQUAL '' ) AND ( NOT INPUT_xcb STREQUAL 'no' ) AND INPUT_xkbcommon STREQUAL 'no'
+)

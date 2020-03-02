@@ -561,3 +561,11 @@ qt_feature("undoview" PUBLIC
     CONDITION QT_FEATURE_undostack AND QT_FEATURE_listview
 )
 qt_feature_definition("undoview" "QT_NO_UNDOVIEW" NEGATE VALUE "1")
+qt_configure_add_summary_section(NAME "Qt Widgets")
+qt_configure_add_summary_entry(ARGS "gtk3")
+qt_configure_add_summary_entry(
+    TYPE "featureList"
+    ARGS "style-fusion style-mac style-windows style-windowsvista style-android"
+    MESSAGE "Styles"
+)
+qt_configure_end_summary_section() # end of "Qt Widgets" section

@@ -56,3 +56,6 @@ qt_feature("printpreviewdialog" PUBLIC
     CONDITION QT_FEATURE_printpreviewwidget AND QT_FEATURE_printdialog AND QT_FEATURE_toolbar AND QT_FEATURE_formlayout
 )
 qt_feature_definition("printpreviewdialog" "QT_NO_PRINTPREVIEWDIALOG" NEGATE VALUE "1")
+qt_configure_add_summary_section(NAME "Qt PrintSupport")
+qt_configure_add_summary_entry(ARGS "cups")
+qt_configure_end_summary_section() # end of "Qt PrintSupport" section

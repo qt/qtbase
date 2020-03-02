@@ -411,3 +411,43 @@ qt_feature("topleveldomain" PUBLIC
     LABEL "qTopLevelDomain()"
     PURPOSE "Provides support for extracting the top level domain from URLs.  If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org, Mozilla License) is included. The data is then also used in QNetworkCookieJar::validateCookie."
 )
+qt_configure_add_summary_section(NAME "Qt Network")
+qt_configure_add_summary_entry(
+    ARGS "corewlan"
+    CONDITION APPLE
+)
+qt_configure_add_summary_entry(ARGS "getifaddrs")
+qt_configure_add_summary_entry(ARGS "ipv6ifname")
+qt_configure_add_summary_entry(ARGS "libproxy")
+qt_configure_add_summary_entry(
+    ARGS "linux-netlink"
+    CONDITION LINUX
+)
+qt_configure_add_summary_entry(
+    ARGS "securetransport"
+    CONDITION APPLE
+)
+qt_configure_add_summary_entry(
+    ARGS "schannel"
+    CONDITION WIN32 AND NOT WINRT
+)
+qt_configure_add_summary_entry(ARGS "openssl")
+qt_configure_add_summary_entry(ARGS "openssl-linked")
+qt_configure_add_summary_entry(ARGS "opensslv11")
+qt_configure_add_summary_entry(ARGS "dtls")
+qt_configure_add_summary_entry(ARGS "ocsp")
+qt_configure_add_summary_entry(ARGS "ftp")
+qt_configure_add_summary_entry(ARGS "sctp")
+qt_configure_add_summary_entry(ARGS "system-proxies")
+qt_configure_add_summary_entry(ARGS "gssapi")
+qt_configure_end_summary_section() # end of "Qt Network" section
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "When linking against OpenSSL, you can override the default library names through OPENSSL_LIBS. For example: OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
+    CONDITION NOT ANDROID AND QT_FEATURE_openssl_linked AND OpenSSL_FOUND.source NOT = 0 AND INPUT_openssl.prefix STREQUAL '' AND INPUT_openssl.libs STREQUAL '' AND INPUT_openssl.libs.debug STREQUAL '' OR FIXME
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "Some of libproxy's plugins may use incompatible Qt versions.  Some platforms and distributions ship libproxy with plugins, such as config_kde4.so, that are linked against old versions of Qt, and libproxy loads these plugins automatically when initialized. If Qt is not in a namespace, that loading causes a crash. Even if the systems on which you build and test have no such plugins, your users' systems may have them. We therefore recommend that you combine -libproxy with -qtnamespace when configuring Qt."
+    CONDITION QT_FEATURE_libproxy AND INPUT_qt_namespace STREQUAL ''
+)

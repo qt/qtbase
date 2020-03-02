@@ -29,3 +29,6 @@ qt_feature("valgrind" PUBLIC
     PURPOSE "Profiling support with callgrind."
     CONDITION ( LINUX OR APPLE ) AND QT_FEATURE_process AND QT_FEATURE_regularexpression
 )
+qt_configure_add_summary_section(NAME "Qt Testlib")
+qt_configure_add_summary_entry(ARGS "itemmodeltester")
+qt_configure_end_summary_section() # end of "Qt Testlib" section

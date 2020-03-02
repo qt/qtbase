@@ -980,3 +980,52 @@ qt_feature("binaryjson" PUBLIC
     LABEL "Binary JSON (deprecated)"
     PURPOSE "Provides support for the deprecated binary JSON format."
 )
+qt_configure_add_summary_section(NAME "Qt Core")
+qt_configure_add_summary_entry(ARGS "doubleconversion")
+qt_configure_add_summary_entry(ARGS "system-doubleconversion")
+qt_configure_add_summary_entry(ARGS "glib")
+qt_configure_add_summary_entry(ARGS "iconv")
+qt_configure_add_summary_entry(ARGS "icu")
+qt_configure_add_summary_entry(ARGS "mimetype-database")
+qt_configure_add_summary_entry(
+    TYPE "firstAvailableFeature"
+    ARGS "etw lttng"
+    MESSAGE "Tracing backend"
+)
+qt_configure_add_summary_section(NAME "Logging backends")
+qt_configure_add_summary_entry(ARGS "journald")
+qt_configure_add_summary_entry(ARGS "syslog")
+qt_configure_add_summary_entry(ARGS "slog2")
+qt_configure_end_summary_section() # end of "Logging backends" section
+qt_configure_add_summary_entry(
+    ARGS "qqnx_pps"
+    CONDITION QNX
+)
+qt_configure_add_summary_entry(ARGS "pcre2")
+qt_configure_add_summary_entry(ARGS "system-pcre2")
+qt_configure_end_summary_section() # end of "Qt Core" section
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "journald, syslog or slog2 integration is enabled.  If your users intend to develop applications against this build, ensure that the IDEs they use either set QT_FORCE_STDERR_LOGGING to 1 or are able to read the logged output from journald, syslog or slog2."
+    CONDITION QT_FEATURE_journald OR QT_FEATURE_syslog OR ( QNX AND QT_FEATURE_slog2 )
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "C++11 <random> is required and is missing or failed to compile."
+    CONDITION NOT TEST_cxx11_random
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Your C library does not provide sscanf_l or snprintf_l.  You need to use libdouble-conversion for double/string conversion."
+    CONDITION INPUT_doubleconversion STREQUAL 'no' AND NOT TEST_xlocalescanprint
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "detected a std::atomic implementation that fails for function pointers.  Please apply the patch corresponding to your Standard Library vendor, found in qtbase/config.tests/atomicfptr"
+    CONDITION NOT TEST_atomicfptr
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Qt requires poll(), ppoll(), poll_ts() or select() on this platform"
+    CONDITION ( UNIX OR INTEGRITY ) AND ( NOT QT_FEATURE_poll_ppoll ) AND ( NOT QT_FEATURE_poll_pollts ) AND ( NOT QT_FEATURE_poll_poll ) AND ( NOT QT_FEATURE_poll_select )
+)
