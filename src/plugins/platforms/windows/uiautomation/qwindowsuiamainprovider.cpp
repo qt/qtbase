@@ -166,11 +166,27 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
         }
         if (event->value().type() == QVariant::String) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
-                // Notifies changes in string values.
-                VARIANT oldVal, newVal;
-                clearVariant(&oldVal);
-                setVariantString(event->value().toString(), &newVal);
-                QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_ValueValuePropertyId, oldVal, newVal);
+
+                // Tries to notify the change using UiaRaiseNotificationEvent(), which is only available on
+                // Windows 10 version 1709 or newer. Otherwise uses UiaRaiseAutomationPropertyChangedEvent().
+
+                BSTR displayString = bStrFromQString(event->value().toString());
+                BSTR activityId = bStrFromQString(QString());
+
+                HRESULT hr = QWindowsUiaWrapper::instance()->raiseNotificationEvent(provider, NotificationKind_Other,
+                                                                                    NotificationProcessing_ImportantMostRecent,
+                                                                                    displayString, activityId);
+
+                ::SysFreeString(displayString);
+                ::SysFreeString(activityId);
+
+                if (hr == static_cast<HRESULT>(UIA_E_NOTSUPPORTED)) {
+                    VARIANT oldVal, newVal;
+                    clearVariant(&oldVal);
+                    setVariantString(event->value().toString(), &newVal);
+                    QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_ValueValuePropertyId, oldVal, newVal);
+                    ::SysFreeString(newVal.bstrVal);
+                }
             }
         } else if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
