@@ -533,19 +533,15 @@ def parseTest(ctx, test, data, cm_fh):
             details = test
 
         if isinstance(details, str):
-            if not ctx["test_dir"]:
-                print(f"    XXXX UNHANDLED TEST SUB-TYPE {details} in test description")
-                return
-
-            cm_fh.write(
-                f"""
-if(EXISTS "${{CMAKE_CURRENT_SOURCE_DIR}}/{ctx['test_dir']}/{data['test']}/CMakeLists.txt")
-    qt_config_compile_test("{data['test']}"
-                           LABEL "{data['label']}"
-                           PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{ctx['test_dir']}/{data['test']}")
-endif()
+            rel_test_project_path = f"{ctx['test_dir']}/{details}"
+            if posixpath.exists(f"{ctx['project_dir']}/{rel_test_project_path}/CMakeLists.txt"):
+                cm_fh.write(
+                    f"""
+qt_config_compile_test("{details}"
+                       LABEL "{data['label']}"
+                       PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{rel_test_project_path}")
 """
-            )
+                )
             return
 
         head = details.get("head", "")
@@ -1077,8 +1073,9 @@ def processSubconfigs(path, ctx, data):
 
 
 def processJson(path, ctx, data):
+    ctx["project_dir"] = path
     ctx["module"] = data.get("module", "global")
-    ctx["test_dir"] = data.get("testDir", "")
+    ctx["test_dir"] = data.get("testDir", "config.tests")
 
     ctx = processFiles(ctx, data)
 
