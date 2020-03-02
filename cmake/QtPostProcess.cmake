@@ -319,7 +319,7 @@ function(qt_generate_build_internals_extra_cmake_code)
         endif()
         if(CMAKE_CONFIGURATION_TYPES)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_CONFIGURATION_TYPES \"${CMAKE_CONFIGURATION_TYPES}\")\n")
+                "set(CMAKE_CONFIGURATION_TYPES \"${CMAKE_CONFIGURATION_TYPES}\" CACHE STRING \"\" FORCE)\n")
         endif()
         if(CMAKE_TRY_COMPILE_CONFIGURATION)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
@@ -329,13 +329,13 @@ function(qt_generate_build_internals_extra_cmake_code)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(QT_MULTI_CONFIG_FIRST_CONFIG \"${QT_MULTI_CONFIG_FIRST_CONFIG}\")\n")
         endif()
-        if(CMAKE_NINJA_MULTI_CROSS_CONFIG_ENABLE)
+        if(CMAKE_CROSS_CONFIGS)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_NINJA_MULTI_CROSS_CONFIG_ENABLE \"${CMAKE_NINJA_MULTI_CROSS_CONFIG_ENABLE}\")\n")
+                "set(CMAKE_CROSS_CONFIGS \"${CMAKE_CROSS_CONFIGS}\" CACHE STRING \"\")\n")
         endif()
-        if(CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE)
+        if(CMAKE_DEFAULT_BUILD_TYPE)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE \"${CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE}\")\n")
+                "set(CMAKE_DEFAULT_BUILD_TYPE \"${CMAKE_DEFAULT_BUILD_TYPE}\" CACHE STRING \"\")\n")
         endif()
 
         configure_file(
