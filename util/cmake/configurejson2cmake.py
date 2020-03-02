@@ -717,7 +717,6 @@ def parseFeature(ctx, feature, data, cm_fh):
             "disable": "NOT TEST_posix_iconv OR TEST_iconv_needlib",
         },
         "GNUmake": None,
-        "harfbuzz": {"condition": "harfbuzz_FOUND"},
         "host-dbus": None,
         "iconv": {
             "condition": "NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND ( TEST_posix_iconv OR TEST_sun_iconv )"

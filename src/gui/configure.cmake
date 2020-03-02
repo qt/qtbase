@@ -635,7 +635,6 @@ qt_feature("gbm"
 qt_feature_config("gbm" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("harfbuzz" PUBLIC PRIVATE
     LABEL "HarfBuzz"
-    CONDITION harfbuzz_FOUND
 )
 qt_feature_definition("harfbuzz" "QT_NO_HARFBUZZ" NEGATE VALUE "1")
 qt_feature("system-harfbuzz" PRIVATE
