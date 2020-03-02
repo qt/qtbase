@@ -783,6 +783,8 @@ QDebug operator<<(QDebug dbg, const QShaderDescription::InOutVariable &var)
         dbg.nospace() << " imageFormat=" << imageFormatStr(var.imageFormat);
     if (var.imageFlags)
         dbg.nospace() << " imageFlags=" << var.imageFlags;
+    if (!var.arrayDims.isEmpty())
+        dbg.nospace() << " array=" << var.arrayDims;
     dbg.nospace() << ')';
     return dbg;
 }
@@ -878,6 +880,12 @@ static void addDeco(QJsonObject *obj, const QShaderDescription::InOutVariable &v
         (*obj)[imageFormatKey] = imageFormatStr(v.imageFormat);
     if (v.imageFlags)
         (*obj)[imageFlagsKey] = int(v.imageFlags);
+    if (!v.arrayDims.isEmpty()) {
+        QJsonArray dimArr;
+        for (int dim : v.arrayDims)
+            dimArr.append(dim);
+        (*obj)[arrayDimsKey] = dimArr;
+    }
 }
 
 static void serializeDecorations(QDataStream *stream, const QShaderDescription::InOutVariable &v)
@@ -887,6 +895,9 @@ static void serializeDecorations(QDataStream *stream, const QShaderDescription::
     (*stream) << v.descriptorSet;
     (*stream) << int(v.imageFormat);
     (*stream) << int(v.imageFlags);
+    (*stream) << v.arrayDims.count();
+    for (int dim : v.arrayDims)
+        (*stream) << dim;
 }
 
 static QJsonObject inOutObject(const QShaderDescription::InOutVariable &v)
@@ -1124,6 +1135,11 @@ static QShaderDescription::InOutVariable inOutVar(const QJsonObject &obj)
         var.imageFormat = mapImageFormat(obj[imageFormatKey].toString());
     if (obj.contains(imageFlagsKey))
         var.imageFlags = QShaderDescription::ImageFlags(obj[imageFlagsKey].toInt());
+    if (obj.contains(arrayDimsKey)) {
+        QJsonArray dimArr = obj[arrayDimsKey].toArray();
+        for (int i = 0; i < dimArr.count(); ++i)
+            var.arrayDims.append(dimArr.at(i).toInt());
+    }
     return var;
 }
 
@@ -1137,6 +1153,10 @@ static void deserializeDecorations(QDataStream *stream, QShaderDescription::InOu
     v->imageFormat = QShaderDescription::ImageFormat(f);
     (*stream) >> f;
     v->imageFlags = QShaderDescription::ImageFlags(f);
+    (*stream) >> f;
+    v->arrayDims.resize(f);
+    for (int i = 0; i < f; ++i)
+        (*stream) >> v->arrayDims[i];
 }
 
 static QShaderDescription::InOutVariable deserializeInOutVar(QDataStream *stream)
@@ -1420,7 +1440,8 @@ bool operator==(const QShaderDescription::InOutVariable &lhs, const QShaderDescr
             && lhs.binding == rhs.binding
             && lhs.descriptorSet == rhs.descriptorSet
             && lhs.imageFormat == rhs.imageFormat
-            && lhs.imageFlags == rhs.imageFlags;
+            && lhs.imageFlags == rhs.imageFlags
+            && lhs.arrayDims == rhs.arrayDims;
 }
 
 /*!

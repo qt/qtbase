@@ -216,6 +216,7 @@ public:
         int descriptorSet = -1;
         ImageFormat imageFormat = ImageFormatUnknown;
         ImageFlags imageFlags;
+        QVector<int> arrayDims;
     };
 
     struct BlockVariable {
