@@ -57,12 +57,11 @@ void QCocoaVulkanInstance::createOrAdoptInstance()
     initInstance(m_instance, QByteArrayList() << QByteArrayLiteral("VK_MVK_macos_surface"));
 }
 
-VkSurfaceKHR *QCocoaVulkanInstance::createSurface(QWindow *window)
+VkSurfaceKHR *QCocoaVulkanInstance::surface(QWindow *window)
 {
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
-    if (cocoaWindow->m_vulkanSurface)
-        destroySurface(cocoaWindow->m_vulkanSurface);
-    cocoaWindow->m_vulkanSurface = createSurface(cocoaWindow->m_view);
+    if (!cocoaWindow->m_vulkanSurface)
+        cocoaWindow->m_vulkanSurface = createSurface(cocoaWindow->m_view);
     return &cocoaWindow->m_vulkanSurface;
 }
 

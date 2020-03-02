@@ -107,7 +107,7 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
 #if QT_CONFIG(vulkan)
     } else if (resourceString == "vkSurface") {
         if (QVulkanInstance *instance = window->vulkanInstance())
-            return static_cast<QCocoaVulkanInstance *>(instance->handle())->createSurface(window);
+            return static_cast<QCocoaVulkanInstance *>(instance->handle())->surface(window);
 #endif
     }
     return nullptr;
