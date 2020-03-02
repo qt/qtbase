@@ -417,17 +417,6 @@ QByteArray QImageIOHandler::format() const
 */
 
 /*!
-    \obsolete
-
-    Use format() instead.
-*/
-
-QByteArray QImageIOHandler::name() const // ### Qt6: remove
-{
-    return format();
-}
-
-/*!
     Writes the image \a image to the assigned device. Returns \c true on
     success; otherwise returns \c false.
 

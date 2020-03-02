@@ -69,9 +69,6 @@ public:
     void setFormat(const QByteArray &format) const;
     QByteArray format() const;
 
-    QT_DEPRECATED_X("Use QImageIOHandler::format() instead")
-    virtual QByteArray name() const;
-
     virtual bool canRead() const = 0;
     virtual bool read(QImage *image) = 0;
     virtual bool write(const QImage &image);
