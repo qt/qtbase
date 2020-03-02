@@ -82,7 +82,7 @@ function(qt_run_config_test_architecture)
     set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT ${QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT} CACHE INTERNAL "Test variables that should be exported")
 
     list(JOIN _sub_architecture " " subarch_summary)
-    message(STATUS "Building for: ${QT_QMAKE_TARGET_MKSPEC} (${TEST_architecture_arch}, CPU features: ${subarch_summary})")
+    set_property(GLOBAL PROPERTY qt_configure_subarch_summary "${subarch_summary}")
 endfunction()
 
 

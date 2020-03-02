@@ -94,8 +94,6 @@ macro(qt_build_repo_begin)
 endmacro()
 
 macro(qt_build_repo_end)
-    include(QtBuildInformation)
-
     if(NOT QT_BUILD_STANDALONE_TESTS)
         # Delayed actions on some of the Qt targets:
         include(QtPostProcess)

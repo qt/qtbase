@@ -255,7 +255,7 @@ def map_condition(condition):
     mapped_features = {"gbm": "gbm_FOUND", "system-xcb": "ON"}
 
     # Turn foo != "bar" into (NOT foo STREQUAL 'bar')
-    condition = re.sub(r"(.+)\s*!=\s*('.+')", "(! \\1 == \\2)", condition)
+    condition = re.sub(r"([^ ]+)\s*!=\s*('.*?')", "(! \\1 == \\2)", condition)
 
     condition = condition.replace("!", "NOT ")
     condition = condition.replace("&&", " AND ")
@@ -753,7 +753,7 @@ def parseTest(ctx, test, data, cm_fh):
         print(f"    XXXX UNHANDLED TEST TYPE {data['type']} in test description")
 
 
-def parseFeature(ctx, feature, data, cm_fh):
+def get_feature_mapping():
     # This is *before* the feature name gets normalized! So keep - and + chars, etc.
     feature_mapping = {
         "alloc_h": None,  # handled by alloc target
@@ -848,7 +848,11 @@ def parseFeature(ctx, feature, data, cm_fh):
         "webp": {"condition": "QT_FEATURE_imageformatplugin AND WrapWebP_FOUND"},
         "xkbcommon-system": None,  # another system library, just named a bit different from the rest
     }
+    return feature_mapping
 
+
+def parseFeature(ctx, feature, data, cm_fh):
+    feature_mapping = get_feature_mapping()
     mapping = feature_mapping.get(feature, {})
 
     if mapping is None:
@@ -1087,6 +1091,110 @@ def parseFeature(ctx, feature, data, cm_fh):
         cm_fh.write(")\n")
 
 
+def processSummaryHelper(ctx, entries, cm_fh):
+    for entry in entries:
+        if isinstance(entry, str):
+            name = entry
+            cm_fh.write(f'qt_configure_add_summary_entry(ARGS "{name}")\n')
+        elif "type" in entry \
+                and entry["type"] in ["feature", "firstAvailableFeature", "featureList"]:
+            function_args = []
+            entry_type = entry["type"]
+
+            if entry_type in ["firstAvailableFeature", "featureList"]:
+                feature_mapping = get_feature_mapping()
+                unhandled_feature = False
+                for feature_name, value in feature_mapping.items():
+                    # Skip entries that mention a feature which is
+                    # skipped by configurejson2cmake in the feature
+                    # mapping. This is not ideal, but prevents errors at
+                    # CMake configuration time.
+                    if not value and f"{feature_name}" in entry["args"]:
+                        unhandled_feature = True
+                        break
+
+                if unhandled_feature:
+                    print(f"    XXXX UNHANDLED FEATURE in SUMMARY TYPE {entry}.")
+                    continue
+
+            if entry_type != "feature":
+                function_args.append(lineify("TYPE", entry_type))
+            if "args" in entry:
+                args = entry["args"]
+                function_args.append(lineify("ARGS", args))
+            if "message" in entry:
+                message = entry["message"]
+                function_args.append(lineify("MESSAGE", message))
+            if "condition" in entry:
+                condition = map_condition(entry["condition"])
+                function_args.append(lineify("CONDITION", condition, quote=False))
+            entry_args_string = "".join(function_args)
+            cm_fh.write(f'qt_configure_add_summary_entry(\n{entry_args_string})\n')
+        elif "type" in entry and entry["type"] == "buildTypeAndConfig":
+            cm_fh.write(f'qt_configure_add_summary_build_type_and_config()\n')
+        elif "type" in entry and entry["type"] == "buildMode":
+            message = entry["message"]
+            cm_fh.write(f'qt_configure_add_summary_build_mode({message})\n')
+        elif "section" in entry:
+            section = entry["section"]
+            cm_fh.write(f'qt_configure_add_summary_section(NAME "{section}")\n')
+            processSummaryHelper(ctx, entry["entries"], cm_fh)
+            cm_fh.write(f'qt_configure_end_summary_section() # end of "{section}" section\n')
+        else:
+            print(f"    XXXX UNHANDLED SUMMARY TYPE {entry}.")
+
+
+def processReportHelper(ctx, entries, cm_fh):
+    feature_mapping = get_feature_mapping()
+
+    for entry in entries:
+        if isinstance(entry, dict):
+            entry_args = []
+            if "type" not in entry:
+                print(f"    XXXX UNHANDLED REPORT TYPE missing type in {entry}.")
+                continue
+
+            report_type = entry["type"]
+            if report_type not in ["note", "warning", "error"]:
+                print(f"    XXXX UNHANDLED REPORT TYPE unknown type in {entry}.")
+                continue
+
+            report_type = report_type.upper()
+            entry_args.append(lineify("TYPE", report_type, quote=False))
+            message = entry["message"]
+
+            # Replace semicolons, qt_parse_all_arguments can't handle
+            # them due to an escaping bug in CMake regarding escaping
+            # macro arguments.
+            # https://gitlab.kitware.com/cmake/cmake/issues/19972
+            message = message.replace(";", ",")
+
+            entry_args.append(lineify("MESSAGE", message))
+            # Need to overhaul everything to fix conditions.
+            if "condition" in entry:
+                condition = entry["condition"]
+
+                unhandled_condition = False
+                for feature_name, value in feature_mapping.items():
+                    # Skip reports that mention a feature which is
+                    # skipped by configurejson2cmake in the feature
+                    # mapping. This is not ideal, but prevents errors at
+                    # CMake configuration time.
+                    if not value and f"features.{feature_name}" in condition:
+                        unhandled_condition = True
+                        break
+
+                if unhandled_condition:
+                    print(f"    XXXX UNHANDLED CONDITION in REPORT TYPE {entry}.")
+                    continue
+                condition = map_condition(condition)
+                entry_args.append(lineify("CONDITION", condition, quote=False))
+            entry_args_string = "".join(entry_args)
+            cm_fh.write(f'qt_configure_add_report_entry(\n{entry_args_string})\n')
+        else:
+            print(f"    XXXX UNHANDLED REPORT TYPE {entry}.")
+
+
 def processInputs(ctx, data, cm_fh):
     print("  inputs:")
     if "commandline" not in data:
@@ -1128,6 +1236,18 @@ def processLibraries(ctx, data, cm_fh):
         parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set)
 
 
+def processReports(ctx, data, cm_fh):
+    if "summary" in data:
+        print("  summary:")
+        processSummaryHelper(ctx, data["summary"], cm_fh)
+    if "report" in data:
+        print("  report:")
+        processReportHelper(ctx, data["report"], cm_fh)
+    if "earlyReport" in data:
+        print("  earlyReport:")
+        processReportHelper(ctx, data["earlyReport"], cm_fh)
+
+
 def processSubconfigs(path, ctx, data):
     assert ctx is not None
     if "subconfigs" in data:
@@ -1161,6 +1281,8 @@ def processJson(path, ctx, data):
         cm_fh.write("\n\n#### Features\n\n")
 
         processFeatures(ctx, data, cm_fh)
+
+        processReports(ctx, data, cm_fh)
 
         if ctx.get("module") == "global":
             cm_fh.write(

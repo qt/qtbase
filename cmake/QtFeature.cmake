@@ -14,6 +14,9 @@ function(qt_feature_module_begin)
         if ("${arg_PRIVATE_FILE}" STREQUAL "")
             message(FATAL_ERROR "qt_feature_begin_module needs a PRIVATE_FILE name!")
         endif()
+        set(__QtFeature_only_evaluate_features OFF PARENT_SCOPE)
+    else()
+        set(__QtFeature_only_evaluate_features ON PARENT_SCOPE)
     endif()
 
     set(__QtFeature_library "${arg_LIBRARY}" PARENT_SCOPE)
@@ -278,6 +281,9 @@ function(qt_evaluate_feature feature)
 
     qt_feature_set_cache_value(cache "${feature}" "${emit_if}" "${result}" "${arg_LABEL}")
     qt_feature_set_value("${feature}" "${cache}" "${emit_if}" "${condition}" "${arg_LABEL}")
+
+    # Store each feature's label for summary info.
+    set(QT_FEATURE_LABEL_${feature} "${arg_LABEL}" CACHE INTERNAL "")
 endfunction()
 
 function(qt_feature_config feature config_var_name)
@@ -581,6 +587,7 @@ function(qt_feature_module_end)
     unset(__QtFeature_define_definitions PARENT_SCOPE)
     unset(__QtFeature_custom_enabled_features PARENT_SCOPE)
     unset(__QtFeature_custom_disabled_features PARENT_SCOPE)
+    unset(__QtFeature_only_evaluate_features PARENT_SCOPE)
 endfunction()
 
 function(qt_feature_copy_global_config_features_to_core target)

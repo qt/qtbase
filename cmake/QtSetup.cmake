@@ -148,6 +148,7 @@ endif()
 include(QtBuild)
 
 ## Qt Feature support:
+include(QtBuildInformation)
 include(QtFeature)
 
 ## Compiler optimization flags:
