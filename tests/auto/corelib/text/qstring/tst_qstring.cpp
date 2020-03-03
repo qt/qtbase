@@ -5824,6 +5824,8 @@ void tst_QString::split(const QString &string, const QString &sep, QStringList r
         QVERIFY(list == result);
     }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     list = str.split(sep, QString::KeepEmptyParts);
     QVERIFY(list == result);
     list = str.split(rx, QString::KeepEmptyParts);
@@ -5846,6 +5848,7 @@ void tst_QString::split(const QString &string, const QString &sep, QStringList r
         list = str.split(sep.at(0), QString::SkipEmptyParts);
         QVERIFY(list == result);
     }
+QT_WARNING_POP
 }
 
 void tst_QString::split()
