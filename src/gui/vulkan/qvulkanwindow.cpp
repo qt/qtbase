@@ -1602,7 +1602,7 @@ bool QVulkanWindow::event(QEvent *e)
 
     \since 5.15
  */
-void QVulkanWindow::setQueueCreateInfoModifier(QueueCreateInfoModifier modifier)
+void QVulkanWindow::setQueueCreateInfoModifier(const QueueCreateInfoModifier &modifier)
 {
     Q_D(QVulkanWindow);
     d->queueCreateInfoModifier = modifier;
