@@ -627,18 +627,25 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.stex.tex);
-            QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, b->u.stex.sampler);
-            if (texD->generation != bd.stex.texGeneration
-                    || texD->m_id != bd.stex.texId
-                    || samplerD->generation != bd.stex.samplerGeneration
-                    || samplerD->m_id != bd.stex.samplerId)
-            {
+            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            if (bd.stex.count != data->count) {
+                bd.stex.count = data->count;
                 srbUpdate = true;
-                bd.stex.texId = texD->m_id;
-                bd.stex.texGeneration = texD->generation;
-                bd.stex.samplerId = samplerD->m_id;
-                bd.stex.samplerGeneration = samplerD->generation;
+            }
+            for (int elem = 0; elem < data->count; ++elem) {
+                QD3D11Texture *texD = QRHI_RES(QD3D11Texture, data->texSamplers[elem].tex);
+                QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, data->texSamplers[elem].sampler);
+                if (texD->generation != bd.stex.d[elem].texGeneration
+                        || texD->m_id != bd.stex.d[elem].texId
+                        || samplerD->generation != bd.stex.d[elem].samplerGeneration
+                        || samplerD->m_id != bd.stex.d[elem].samplerId)
+                {
+                    srbUpdate = true;
+                    bd.stex.d[elem].texId = texD->m_id;
+                    bd.stex.d[elem].texGeneration = texD->generation;
+                    bd.stex.d[elem].samplerId = samplerD->m_id;
+                    bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                }
             }
         }
             break;
@@ -1894,31 +1901,38 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.stex.tex);
-            QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, b->u.stex.sampler);
-            bd.stex.texId = texD->m_id;
-            bd.stex.texGeneration = texD->generation;
-            bd.stex.samplerId = samplerD->m_id;
-            bd.stex.samplerGeneration = samplerD->generation;
-            if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
-                if (nativeBinding.first >= 0 && nativeBinding.second >= 0) {
-                    res[RBM_VERTEX].textures.append({ nativeBinding.first, texD->srv });
-                    res[RBM_VERTEX].samplers.append({ nativeBinding.second, samplerD->samplerState });
+            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            bd.stex.count = data->count;
+            const QPair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
+            const QPair<int, int> nativeBindingFrag = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
+            const QPair<int, int> nativeBindingComp = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+            // if SPIR-V binding b is mapped to tN and sN in HLSL, and it
+            // is an array, then it will use tN, tN+1, tN+2, ..., and sN,
+            // sN+1, sN+2, ...
+            for (int elem = 0; elem < data->count; ++elem) {
+                QD3D11Texture *texD = QRHI_RES(QD3D11Texture, data->texSamplers[elem].tex);
+                QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, data->texSamplers[elem].sampler);
+                bd.stex.d[elem].texId = texD->m_id;
+                bd.stex.d[elem].texGeneration = texD->generation;
+                bd.stex.d[elem].samplerId = samplerD->m_id;
+                bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
+                    if (nativeBindingVert.first >= 0 && nativeBindingVert.second >= 0) {
+                        res[RBM_VERTEX].textures.append({ nativeBindingVert.first + elem, texD->srv });
+                        res[RBM_VERTEX].samplers.append({ nativeBindingVert.second + elem, samplerD->samplerState });
+                    }
                 }
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
-                if (nativeBinding.first >= 0 && nativeBinding.second >= 0) {
-                    res[RBM_FRAGMENT].textures.append({ nativeBinding.first, texD->srv });
-                    res[RBM_FRAGMENT].samplers.append({ nativeBinding.second, samplerD->samplerState });
+                if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
+                    if (nativeBindingFrag.first >= 0 && nativeBindingFrag.second >= 0) {
+                        res[RBM_FRAGMENT].textures.append({ nativeBindingFrag.first + elem, texD->srv });
+                        res[RBM_FRAGMENT].samplers.append({ nativeBindingFrag.second + elem, samplerD->samplerState });
+                    }
                 }
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
-                if (nativeBinding.first >= 0 && nativeBinding.second >= 0) {
-                    res[RBM_COMPUTE].textures.append({ nativeBinding.first, texD->srv });
-                    res[RBM_COMPUTE].samplers.append({ nativeBinding.second, samplerD->samplerState });
+                if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
+                    if (nativeBindingComp.first >= 0 && nativeBindingComp.second >= 0) {
+                        res[RBM_COMPUTE].textures.append({ nativeBindingComp.first + elem, texD->srv });
+                        res[RBM_COMPUTE].samplers.append({ nativeBindingComp.second + elem, samplerD->samplerState });
+                    }
                 }
             }
         }
@@ -3529,11 +3543,15 @@ static pD3DCompile resolveD3DCompile()
 
 static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, QString *error, QShaderKey *usedShaderKey)
 {
-    QShaderCode dxbc = shader.shader({ QShader::DxbcShader, 50, shaderVariant });
-    if (!dxbc.shader().isEmpty())
+    QShaderKey key = { QShader::DxbcShader, 50, shaderVariant };
+    QShaderCode dxbc = shader.shader(key);
+    if (!dxbc.shader().isEmpty()) {
+        if (usedShaderKey)
+            *usedShaderKey = key;
         return dxbc.shader();
+    }
 
-    const QShaderKey key = { QShader::HlslShader, 50, shaderVariant };
+    key = { QShader::HlslShader, 50, shaderVariant };
     QShaderCode hlslSource = shader.shader(key);
     if (hlslSource.shader().isEmpty()) {
         qWarning() << "No HLSL (shader model 5.0) code found in baked shader" << shader;

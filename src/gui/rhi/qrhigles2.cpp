@@ -919,10 +919,12 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 hasDynamicOffsetInSrb = true;
             break;
         case QRhiShaderResourceBinding::SampledTexture:
-            trackedRegisterTexture(&passResTracker,
-                                   QRHI_RES(QGles2Texture, b->u.stex.tex),
-                                   QRhiPassResourceTracker::TexSample,
-                                   QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
+            for (int elem = 0; elem < b->u.stex.count; ++elem) {
+                trackedRegisterTexture(&passResTracker,
+                                       QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex),
+                                       QRhiPassResourceTracker::TexSample,
+                                       QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
+            }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
         case QRhiShaderResourceBinding::ImageStore:
@@ -2574,36 +2576,37 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.tex);
-            QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.sampler);
             QVector<QGles2SamplerDescription> &samplers(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->samplers
                                                                         : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->samplers);
+            for (int elem = 0; elem < b->u.stex.count; ++elem) {
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
+                QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.texSamplers[elem].sampler);
+                for (QGles2SamplerDescription &sampler : samplers) {
+                    if (sampler.binding == b->binding) {
+                        f->glActiveTexture(GL_TEXTURE0 + uint(texUnit));
+                        f->glBindTexture(texD->target, texD->texture);
 
-            for (QGles2SamplerDescription &sampler : samplers) {
-                if (sampler.binding == b->binding) {
-                    f->glActiveTexture(GL_TEXTURE0 + uint(texUnit));
-                    f->glBindTexture(texD->target, texD->texture);
-
-                    if (texD->samplerState != samplerD->d) {
-                        f->glTexParameteri(texD->target, GL_TEXTURE_MIN_FILTER, GLint(samplerD->d.glminfilter));
-                        f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
-                        f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
-                        f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, GLint(samplerD->d.glwrapt));
-                        // 3D textures not supported by GLES 2.0 or by us atm...
-                        //f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, samplerD->d.glwrapr);
-                        if (caps.textureCompareMode) {
-                            if (samplerD->d.gltexcomparefunc != GL_NEVER) {
-                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, GLint(samplerD->d.gltexcomparefunc));
-                            } else {
-                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+                        if (texD->samplerState != samplerD->d) {
+                            f->glTexParameteri(texD->target, GL_TEXTURE_MIN_FILTER, GLint(samplerD->d.glminfilter));
+                            f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
+                            f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
+                            f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, GLint(samplerD->d.glwrapt));
+                            // 3D textures not supported by GLES 2.0 or by us atm...
+                            //f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, samplerD->d.glwrapr);
+                            if (caps.textureCompareMode) {
+                                if (samplerD->d.gltexcomparefunc != GL_NEVER) {
+                                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, GLint(samplerD->d.gltexcomparefunc));
+                                } else {
+                                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+                                }
                             }
+                            texD->samplerState = samplerD->d;
                         }
-                        texD->samplerState = samplerD->d;
-                    }
 
-                    f->glUniform1i(sampler.glslLocation, texUnit);
-                    ++texUnit;
+                        f->glUniform1i(sampler.glslLocation + elem, texUnit);
+                        ++texUnit;
+                    }
                 }
             }
         }

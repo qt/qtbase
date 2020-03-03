@@ -2487,7 +2487,8 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
     QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, srb);
 
     QVarLengthArray<VkDescriptorBufferInfo, 8> bufferInfos;
-    QVarLengthArray<VkDescriptorImageInfo, 8> imageInfos;
+    using ArrayOfImageDesc = QVarLengthArray<VkDescriptorImageInfo, 8>;
+    QVarLengthArray<ArrayOfImageDesc, 8> imageInfos;
     QVarLengthArray<VkWriteDescriptorSet, 12> writeInfos;
     QVarLengthArray<QPair<int, int>, 12> infoIndices;
 
@@ -2530,17 +2531,22 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
                 break;
             case QRhiShaderResourceBinding::SampledTexture:
             {
-                QVkTexture *texD = QRHI_RES(QVkTexture, b->u.stex.tex);
-                QVkSampler *samplerD = QRHI_RES(QVkSampler, b->u.stex.sampler);
+                const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+                writeInfo.descriptorCount = data->count; // arrays of combined image samplers are supported
                 writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                bd.stex.texId = texD->m_id;
-                bd.stex.texGeneration = texD->generation;
-                bd.stex.samplerId = samplerD->m_id;
-                bd.stex.samplerGeneration = samplerD->generation;
-                VkDescriptorImageInfo imageInfo;
-                imageInfo.sampler = samplerD->sampler;
-                imageInfo.imageView = texD->imageView;
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                ArrayOfImageDesc imageInfo(data->count);
+                for (int elem = 0; elem < data->count; ++elem) {
+                    QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
+                    QVkSampler *samplerD = QRHI_RES(QVkSampler, data->texSamplers[elem].sampler);
+                    bd.stex.d[elem].texId = texD->m_id;
+                    bd.stex.d[elem].texGeneration = texD->generation;
+                    bd.stex.d[elem].samplerId = samplerD->m_id;
+                    bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                    imageInfo[elem].sampler = samplerD->sampler;
+                    imageInfo[elem].imageView = texD->imageView;
+                    imageInfo[elem].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                }
+                bd.stex.count = data->count;
                 imageInfoIndex = imageInfos.count();
                 imageInfos.append(imageInfo);
             }
@@ -2555,10 +2561,10 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
                     writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                     bd.simage.id = texD->m_id;
                     bd.simage.generation = texD->generation;
-                    VkDescriptorImageInfo imageInfo;
-                    imageInfo.sampler = VK_NULL_HANDLE;
-                    imageInfo.imageView = view;
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    ArrayOfImageDesc imageInfo(1);
+                    imageInfo[0].sampler = VK_NULL_HANDLE;
+                    imageInfo[0].imageView = view;
+                    imageInfo[0].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                     imageInfoIndex = imageInfos.count();
                     imageInfos.append(imageInfo);
                 }
@@ -2596,7 +2602,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
         if (bufferInfoIndex >= 0)
             writeInfos[i].pBufferInfo = &bufferInfos[bufferInfoIndex];
         else if (imageInfoIndex >= 0)
-            writeInfos[i].pImageInfo = &imageInfos[imageInfoIndex];
+            writeInfos[i].pImageInfo = imageInfos[imageInfoIndex].constData();
     }
 
     df->vkUpdateDescriptorSets(dev, uint32_t(writeInfos.count()), writeInfos.constData(), 0, nullptr);
@@ -4210,24 +4216,30 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QVkTexture *texD = QRHI_RES(QVkTexture, b->u.stex.tex);
-            QVkSampler *samplerD = QRHI_RES(QVkSampler, b->u.stex.sampler);
-            texD->lastActiveFrameSlot = currentFrameSlot;
-            samplerD->lastActiveFrameSlot = currentFrameSlot;
-            trackedRegisterTexture(&passResTracker, texD,
-                                   QRhiPassResourceTracker::TexSample,
-                                   QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
-
-            if (texD->generation != bd.stex.texGeneration
-                    || texD->m_id != bd.stex.texId
-                    || samplerD->generation != bd.stex.samplerGeneration
-                    || samplerD->m_id != bd.stex.samplerId)
-            {
+            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            if (bd.stex.count != data->count) {
+                bd.stex.count = data->count;
                 rewriteDescSet = true;
-                bd.stex.texId = texD->m_id;
-                bd.stex.texGeneration = texD->generation;
-                bd.stex.samplerId = samplerD->m_id;
-                bd.stex.samplerGeneration = samplerD->generation;
+            }
+            for (int elem = 0; elem < data->count; ++elem) {
+                QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
+                QVkSampler *samplerD = QRHI_RES(QVkSampler, data->texSamplers[elem].sampler);
+                texD->lastActiveFrameSlot = currentFrameSlot;
+                samplerD->lastActiveFrameSlot = currentFrameSlot;
+                trackedRegisterTexture(&passResTracker, texD,
+                                       QRhiPassResourceTracker::TexSample,
+                                       QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
+                if (texD->generation != bd.stex.d[elem].texGeneration
+                        || texD->m_id != bd.stex.d[elem].texId
+                        || samplerD->generation != bd.stex.d[elem].samplerGeneration
+                        || samplerD->m_id != bd.stex.d[elem].samplerId)
+                {
+                    rewriteDescSet = true;
+                    bd.stex.d[elem].texId = texD->m_id;
+                    bd.stex.d[elem].texGeneration = texD->generation;
+                    bd.stex.d[elem].samplerId = samplerD->m_id;
+                    bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                }
             }
         }
             break;
@@ -6065,7 +6077,10 @@ bool QVkShaderResourceBindings::build()
         memset(&vkbinding, 0, sizeof(vkbinding));
         vkbinding.binding = uint32_t(b->binding);
         vkbinding.descriptorType = toVkDescriptorType(b);
-        vkbinding.descriptorCount = 1; // no array support yet
+        if (b->type == QRhiShaderResourceBinding::SampledTexture)
+            vkbinding.descriptorCount = b->u.stex.count;
+        else
+            vkbinding.descriptorCount = 1;
         vkbinding.stageFlags = toVkShaderStageFlags(b->stage);
         vkbindings.append(vkbinding);
     }

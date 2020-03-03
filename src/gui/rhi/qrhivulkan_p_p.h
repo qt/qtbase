@@ -254,10 +254,13 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
         uint generation;
     };
     struct BoundSampledTextureData {
-        quint64 texId;
-        uint texGeneration;
-        quint64 samplerId;
-        uint samplerGeneration;
+        int count;
+        struct {
+            quint64 texId;
+            uint texGeneration;
+            quint64 samplerId;
+            uint samplerGeneration;
+        } d[QRhiShaderResourceBinding::Data::MAX_TEX_SAMPLER_ARRAY_SIZE];
     };
     struct BoundStorageImageData {
         quint64 id;
