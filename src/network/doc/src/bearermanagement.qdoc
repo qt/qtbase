@@ -31,6 +31,8 @@
 \title Bearer Management
 \brief An API to control the system's connectivity state.
 
+\warning Bearer management is deprecated and will be removed in Qt 6.0.
+
 Bearer Management controls the connectivity state of the system so that
 the user can start or stop interfaces or roam transparently between
 access points.

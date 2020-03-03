@@ -92,12 +92,15 @@ public:
     };
 
 #ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    enum NetworkAccessibility {
+    enum QT_DEPRECATED_VERSION_5_15 NetworkAccessibility {
         UnknownAccessibility = -1,
         NotAccessible = 0,
         Accessible = 1
     };
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     Q_ENUM(NetworkAccessibility)
+QT_WARNING_POP
 #endif
 
     explicit QNetworkAccessManager(QObject *parent = nullptr);
@@ -151,8 +154,11 @@ public:
     QT_DEPRECATED_VERSION_5_15 QNetworkConfiguration configuration() const;
     QT_DEPRECATED_VERSION_5_15 QNetworkConfiguration activeConfiguration() const;
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QT_DEPRECATED_VERSION_5_15 void setNetworkAccessible(NetworkAccessibility accessible);
     QT_DEPRECATED_VERSION_5_15 NetworkAccessibility networkAccessible() const;
+QT_WARNING_POP
 #endif
 
 #ifndef QT_NO_SSL
@@ -188,7 +194,14 @@ Q_SIGNALS:
 #ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
     QT_DEPRECATED_VERSION_5_15 void networkSessionConnected();
 
+#ifndef Q_MOC_RUN // moc has trouble with the expansion of these macros
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+#endif
     QT_DEPRECATED_VERSION_5_15 void networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
+#ifndef Q_MOC_RUN // moc has trouble with the expansion of these macros
+QT_WARNING_POP
+#endif
 #endif
 
 protected:
