@@ -2718,6 +2718,10 @@
         \li QStyle::SP_DirHomeIcon
 
     \row
+        \li lineedit-clear-button-icon
+        \li QStyle::SP_LineEditClearButton
+
+    \row
         \li leftarrow-icon
         \li QStyle::SP_ArrowLeft
 

@@ -691,6 +691,7 @@ static const char knownStyleHints[][45] = {
     "gridline-color",
     "harddisk-icon",
     "home-icon",
+    "lineedit-clear-button-icon",
     "icon-size",
     "leftarrow-icon",
     "lineedit-password-character",
@@ -5311,6 +5312,7 @@ static QLatin1String propertyNameForStandardPixmap(QStyle::StandardPixmap sp)
         case QStyle::SP_ArrowBack: return QLatin1String("backward-icon");
         case QStyle::SP_ArrowForward: return QLatin1String("forward-icon");
         case QStyle::SP_DirHomeIcon: return QLatin1String("home-icon");
+        case QStyle::SP_LineEditClearButton: return QLatin1String("lineedit-clear-button-icon");
         default: return QLatin1String("");
     }
 }
