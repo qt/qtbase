@@ -368,7 +368,7 @@ void tst_QShader::serializeShaderDesc()
             QBuffer buf(&data);
             QDataStream ds(&buf);
             QVERIFY(buf.open(QIODevice::ReadOnly));
-            QShaderDescription desc2 = QShaderDescription::deserialize(&ds);
+            QShaderDescription desc2 = QShaderDescription::deserialize(&ds, QShaderPrivate::QSB_VERSION);
             QVERIFY(!desc2.isValid());
         }
     }
@@ -400,7 +400,7 @@ void tst_QShader::serializeShaderDesc()
             QBuffer buf(&data);
             QDataStream ds(&buf);
             QVERIFY(buf.open(QIODevice::ReadOnly));
-            QShaderDescription desc2 = QShaderDescription::deserialize(&ds);
+            QShaderDescription desc2 = QShaderDescription::deserialize(&ds, QShaderPrivate::QSB_VERSION);
             QVERIFY(desc2.isValid());
             QCOMPARE(desc, desc2);
         }

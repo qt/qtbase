@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "qshaderdescription_p_p.h"
+#include "qshader_p_p.h"
 #include <QDebug>
 #include <QDataStream>
 #include <QJsonObject>
@@ -402,10 +403,10 @@ QShaderDescription QShaderDescription::fromCbor(const QByteArray &data)
     return desc;
 }
 
-QShaderDescription QShaderDescription::deserialize(QDataStream *stream)
+QShaderDescription QShaderDescription::deserialize(QDataStream *stream, int version)
 {
     QShaderDescription desc;
-    QShaderDescriptionPrivate::get(&desc)->loadFromStream(stream);
+    QShaderDescriptionPrivate::get(&desc)->loadFromStream(stream, version);
     return desc;
 }
 
@@ -1143,7 +1144,7 @@ static QShaderDescription::InOutVariable inOutVar(const QJsonObject &obj)
     return var;
 }
 
-static void deserializeDecorations(QDataStream *stream, QShaderDescription::InOutVariable *v)
+static void deserializeDecorations(QDataStream *stream, int version, QShaderDescription::InOutVariable *v)
 {
     (*stream) >> v->location;
     (*stream) >> v->binding;
@@ -1153,20 +1154,23 @@ static void deserializeDecorations(QDataStream *stream, QShaderDescription::InOu
     v->imageFormat = QShaderDescription::ImageFormat(f);
     (*stream) >> f;
     v->imageFlags = QShaderDescription::ImageFlags(f);
-    (*stream) >> f;
-    v->arrayDims.resize(f);
-    for (int i = 0; i < f; ++i)
-        (*stream) >> v->arrayDims[i];
+
+    if (version > QShaderPrivate::QSB_VERSION_WITHOUT_VAR_ARRAYDIMS) {
+        (*stream) >> f;
+        v->arrayDims.resize(f);
+        for (int i = 0; i < f; ++i)
+            (*stream) >> v->arrayDims[i];
+    }
 }
 
-static QShaderDescription::InOutVariable deserializeInOutVar(QDataStream *stream)
+static QShaderDescription::InOutVariable deserializeInOutVar(QDataStream *stream, int version)
 {
     QShaderDescription::InOutVariable var;
     (*stream) >> var.name;
     int t;
     (*stream) >> t;
     var.type = QShaderDescription::VariableType(t);
-    deserializeDecorations(stream, &var);
+    deserializeDecorations(stream, version, &var);
     return var;
 }
 
@@ -1196,7 +1200,7 @@ static QShaderDescription::BlockVariable blockVar(const QJsonObject &obj)
     return var;
 }
 
-static QShaderDescription::BlockVariable deserializeBlockMemberVar(QDataStream *stream)
+static QShaderDescription::BlockVariable deserializeBlockMemberVar(QDataStream *stream, int version)
 {
     QShaderDescription::BlockVariable var;
     (*stream) >> var.name;
@@ -1216,7 +1220,7 @@ static QShaderDescription::BlockVariable deserializeBlockMemberVar(QDataStream *
     (*stream) >> count;
     var.structMembers.resize(count);
     for (int i = 0; i < count; ++i)
-        var.structMembers[i] = deserializeBlockMemberVar(stream);
+        var.structMembers[i] = deserializeBlockMemberVar(stream, version);
     return var;
 }
 
@@ -1324,7 +1328,7 @@ void QShaderDescriptionPrivate::loadDoc(const QJsonDocument &doc)
     }
 }
 
-void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream)
+void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
 {
     Q_ASSERT(ref.loadRelaxed() == 1); // must be detached
 
@@ -1332,12 +1336,12 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream)
     (*stream) >> count;
     inVars.resize(count);
     for (int i = 0; i < count; ++i)
-        inVars[i] = deserializeInOutVar(stream);
+        inVars[i] = deserializeInOutVar(stream, version);
 
     (*stream) >> count;
     outVars.resize(count);
     for (int i = 0; i < count; ++i)
-        outVars[i] = deserializeInOutVar(stream);
+        outVars[i] = deserializeInOutVar(stream, version);
 
     (*stream) >> count;
     uniformBlocks.resize(count);
@@ -1351,7 +1355,7 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream)
         (*stream) >> memberCount;
         uniformBlocks[i].members.resize(memberCount);
         for (int memberIdx = 0; memberIdx < memberCount; ++memberIdx)
-            uniformBlocks[i].members[memberIdx] = deserializeBlockMemberVar(stream);
+            uniformBlocks[i].members[memberIdx] = deserializeBlockMemberVar(stream, version);
     }
 
     (*stream) >> count;
@@ -1363,7 +1367,7 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream)
         (*stream) >> memberCount;
         pushConstantBlocks[i].members.resize(memberCount);
         for (int memberIdx = 0; memberIdx < memberCount; ++memberIdx)
-            pushConstantBlocks[i].members[memberIdx] = deserializeBlockMemberVar(stream);
+            pushConstantBlocks[i].members[memberIdx] = deserializeBlockMemberVar(stream, version);
     }
 
     (*stream) >> count;
@@ -1378,7 +1382,7 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream)
         (*stream) >> memberCount;
         storageBlocks[i].members.resize(memberCount);
         for (int memberIdx = 0; memberIdx < memberCount; ++memberIdx)
-            storageBlocks[i].members[memberIdx] = deserializeBlockMemberVar(stream);
+            storageBlocks[i].members[memberIdx] = deserializeBlockMemberVar(stream, version);
     }
 
     (*stream) >> count;
@@ -1388,7 +1392,7 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream)
         int t;
         (*stream) >> t;
         combinedImageSamplers[i].type = QShaderDescription::VariableType(t);
-        deserializeDecorations(stream, &combinedImageSamplers[i]);
+        deserializeDecorations(stream, version, &combinedImageSamplers[i]);
     }
 
     (*stream) >> count;
@@ -1398,7 +1402,7 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream)
         int t;
         (*stream) >> t;
         storageImages[i].type = QShaderDescription::VariableType(t);
-        deserializeDecorations(stream, &storageImages[i]);
+        deserializeDecorations(stream, version, &storageImages[i]);
     }
 
     for (size_t i = 0; i < 3; ++i)
