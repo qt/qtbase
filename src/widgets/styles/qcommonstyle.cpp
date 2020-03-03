@@ -6125,7 +6125,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                     const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size.width());
                     if (standardIcon >= QStyle::SP_CustomBase) {
                         mainIcon = theme->standardPixmap(sp, QSizeF(size));
-                    } else if (QPixmapCache::find(cacheKey, mainIcon) == false) {
+                    } else if (QPixmapCache::find(cacheKey, &mainIcon) == false) {
                         mainIcon = theme->standardPixmap(sp, QSizeF(size));
                         QPixmapCache::insert(cacheKey, mainIcon);
                     }
