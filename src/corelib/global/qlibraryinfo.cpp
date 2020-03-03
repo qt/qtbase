@@ -661,7 +661,7 @@ static QString getHostPrefixFromHostBinDir()
 #endif
 
 #ifndef QT_BUILD_QMAKE_BOOTSTRAP
-static const char *getPrefix(
+static QString getPrefix(
 #ifdef QT_BUILD_QMAKE
         QLibraryInfo::PathGroup group
 #endif
@@ -670,15 +670,13 @@ static const char *getPrefix(
 #if defined(QT_BUILD_QMAKE)
 #  if QT_CONFIGURE_CROSSBUILD
     if (group == QLibraryInfo::DevicePaths)
-        return QT_CONFIGURE_PREFIX_PATH;
+        return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
 #  endif
-    static QByteArray extPrefixPath = getExtPrefixFromHostBinDir().toLatin1();
-    return extPrefixPath.constData();
+    return getExtPrefixFromHostBinDir();
 #elif QT_CONFIG(relocatable)
-    static QByteArray prefixPath = getRelocatablePrefix().toLatin1();
-    return prefixPath.constData();
+    return getRelocatablePrefix();
 #else
-    return QT_CONFIGURE_PREFIX_PATH;
+    return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
 #endif
 }
 #endif // QT_BUILD_QMAKE_BOOTSTRAP
@@ -794,7 +792,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     if (!fromConf) {
         const char * volatile path = 0;
         if (loc == PrefixPath) {
-            path = getPrefix(
+            ret = getPrefix(
 #ifdef QT_BUILD_QMAKE
                         group
 #endif
