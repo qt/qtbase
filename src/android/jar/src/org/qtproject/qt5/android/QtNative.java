@@ -160,8 +160,13 @@ public class QtNative
     private static Uri getUriWithValidPermission(Context context, String uri, String openMode)
     {
         try {
+            Uri parsedUri = Uri.parse(uri);
+            String scheme = parsedUri.getScheme();
+            // We only want to check permissions for files and content Uris
+            if (scheme.compareTo("file") != 0 && scheme.compareTo("content") != 0)
+                return parsedUri;
             List<UriPermission> permissions = context.getContentResolver().getPersistedUriPermissions();
-            String uriStr = Uri.parse(uri).getPath();
+            String uriStr = parsedUri.getPath();
 
             for (int i = 0; i < permissions.size(); ++i) {
                 Uri iterUri = permissions.get(i).getUri();
