@@ -96,7 +96,9 @@ private slots:
     void typeinfo();
     void qstring();
     void list();
+#if QT_DEPRECATED_SINCE(5, 15)
     void linkedList();
+#endif
     void vector();
     void byteArray();
     void stack();
@@ -109,7 +111,9 @@ private slots:
 #endif
     void pair();
     void sharableQList();
+#if QT_DEPRECATED_SINCE(5, 15)
     void sharableQLinkedList();
+#endif
     void sharableQVector();
     void sharableQMap();
     void sharableQHash();
@@ -121,8 +125,10 @@ private slots:
     void vector_stl();
     void list_stl_data();
     void list_stl();
+#if QT_DEPRECATED_SINCE(5, 15)
     void linkedlist_stl_data();
     void linkedlist_stl();
+#endif
     void q_init();
     void pointersize();
     void containerInstantiation();
@@ -736,8 +742,11 @@ void tst_Collections::list()
     }
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 void tst_Collections::linkedList()
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     {
         QLinkedList<int> list;
         QVERIFY(list.isEmpty());
@@ -955,7 +964,9 @@ void tst_Collections::linkedList()
         QCOMPARE(a.endsWith(1), false);
         QCOMPARE(a.endsWith(2), true);
     }
+QT_WARNING_POP
 };
+#endif
 
 
 void tst_Collections::vector()
@@ -2330,11 +2341,16 @@ void populate(QList<int> &container)
     container << 1 << 2 << 4 << 8;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 template <>
 void populate(QLinkedList<int> &container)
 {
     container << 1 << 2 << 4 << 8;
 }
+QT_WARNING_POP
+#endif
 
 template <>
 void populate(QVector<int> &container)
@@ -2431,10 +2447,15 @@ void tst_Collections::sharableQList()
     TEST_SEQUENTIAL_CONTAINER(List);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_Collections::sharableQLinkedList()
 {
     TEST_SEQUENTIAL_CONTAINER(LinkedList);
 }
+QT_WARNING_POP
+#endif
 
 void tst_Collections::sharableQVector()
 {
@@ -2755,7 +2776,12 @@ void tst_Collections::constAndNonConstStlIterators()
 {
     testListLikeStlIterators<QList<int> >();
     testListLikeStlIterators<QStringList >();
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     testLinkedListLikeStlIterators<QLinkedList<int> >();
+QT_WARNING_POP
+#endif
     testListLikeStlIterators<QVector<int> >();
     testMapLikeStlIterators<QMap<QString, QString> >();
     testMapLikeStlIterators<QMultiMap<QString, QString> >();
@@ -2798,6 +2824,7 @@ void tst_Collections::vector_stl()
     QCOMPARE(QVector<QString>(stdVector.begin(), stdVector.end()), vector);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 void tst_Collections::linkedlist_stl_data()
 {
     list_stl_data();
@@ -2805,6 +2832,8 @@ void tst_Collections::linkedlist_stl_data()
 
 void tst_Collections::linkedlist_stl()
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QFETCH(QStringList, elements);
 
     QLinkedList<QString> list;
@@ -2821,7 +2850,9 @@ void tst_Collections::linkedlist_stl()
         QCOMPARE(*it, *it2);
 
     QCOMPARE(QLinkedList<QString>::fromStdList(stdList), list);
+QT_WARNING_POP
 }
+#endif
 
 void tst_Collections::list_stl_data()
 {
@@ -3070,6 +3101,10 @@ void tst_Collections::containerInstantiation()
     typedef QSet<EqualsComparable> Set;
     instantiateAssociative<Set, EqualsComparable>();
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
     //Instantiate QLinkedList member functions.
     typedef QLinkedList<EqualsComparable> LinkedList;
     instantiateSequence<LinkedList, EqualsComparable> ();
@@ -3078,6 +3113,8 @@ void tst_Collections::containerInstantiation()
         LinkedList list;
         list.removeAll(value);
     }
+QT_WARNING_POP
+#endif
 
     //Instantiate QList member functions.
     typedef QList<EqualsComparable> List;
@@ -3185,7 +3222,12 @@ void tst_Collections::containerTypedefs()
     testContainerTypedefs(QVector<int>());
     testContainerTypedefs(QStack<int>());
     testContainerTypedefs(QList<int>());
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     testContainerTypedefs(QLinkedList<int>());
+QT_WARNING_POP
+#endif
     testContainerTypedefs(QQueue<int>());
 
     testPairAssociativeContainerTypedefs(QMap<int, int>());
@@ -3207,7 +3249,12 @@ void tst_Collections::forwardDeclared()
     { typedef QMultiMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QPair<T1, T2> C; C *x = 0; Q_UNUSED(x) }
     { typedef QList<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     { typedef QLinkedList<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
+QT_WARNING_POP
+#endif
     { typedef QVector<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) Q_UNUSED(i) Q_UNUSED(j) }
     { typedef QStack<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) Q_UNUSED(i) Q_UNUSED(j) }
     { typedef QQueue<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
@@ -3441,7 +3488,12 @@ void tst_Collections::QTBUG13079_collectionInsideCollection()
     QTBUG13079_collectionInsideCollectionImpl<QVector>();
     QTBUG13079_collectionInsideCollectionImpl<QStack>();
     QTBUG13079_collectionInsideCollectionImpl<QList>();
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QTBUG13079_collectionInsideCollectionImpl<QLinkedList>();
+QT_WARNING_POP
+#endif
     QTBUG13079_collectionInsideCollectionImpl<QQueue>();
 
     {

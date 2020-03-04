@@ -3885,12 +3885,17 @@ void tst_QVariant::moreCustomTypes()
         PLAY_WITH_VARIANT(data, false, QString(), 0, false);
     }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     {
         QList<QLinkedList<int> > data;
         PLAY_WITH_VARIANT(data, false, QString(), 0, false);
         data << (QLinkedList<int>() << 42);
         PLAY_WITH_VARIANT(data, false, QString(), 0, false);
     }
+QT_WARNING_POP
+#endif
 }
 
 void tst_QVariant::movabilityTest()

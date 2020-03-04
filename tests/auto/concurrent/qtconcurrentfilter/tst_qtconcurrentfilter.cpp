@@ -63,18 +63,6 @@ void tst_QtConcurrentFilter::filter()
         QCOMPARE(list, QList<int>() << 2 << 4);
     }
     {
-        QLinkedList<int> linkedList;
-        linkedList << 1 << 2 << 3 << 4;
-        QtConcurrent::filter(linkedList, KeepEvenIntegers()).waitForFinished();
-        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
-    }
-    {
-        QLinkedList<int> linkedList;
-        linkedList << 1 << 2 << 3 << 4;
-        QtConcurrent::blockingFilter(linkedList, KeepEvenIntegers());
-        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
-    }
-    {
         QVector<int> vector;
         vector << 1 << 2 << 3 << 4;
         QtConcurrent::filter(vector, KeepEvenIntegers()).waitForFinished();
@@ -100,18 +88,6 @@ void tst_QtConcurrentFilter::filter()
         QtConcurrent::blockingFilter(list, keepEvenIntegers);
         QCOMPARE(list, QList<int>() << 2 << 4);
     }
-    {
-        QLinkedList<int> linkedList;
-        linkedList << 1 << 2 << 3 << 4;
-        QtConcurrent::filter(linkedList, keepEvenIntegers).waitForFinished();
-        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
-    }
-    {
-        QLinkedList<int> linkedList;
-        linkedList << 1 << 2 << 3 << 4;
-        QtConcurrent::blockingFilter(linkedList, keepEvenIntegers);
-        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
-    }
 
     // bound function
     {
@@ -125,18 +101,6 @@ void tst_QtConcurrentFilter::filter()
         list << 1 << 2 << 3 << 4;
         QtConcurrent::blockingFilter(list, keepEvenIntegers);
         QCOMPARE(list, QList<int>() << 2 << 4);
-    }
-    {
-        QLinkedList<int> linkedList;
-        linkedList << 1 << 2 << 3 << 4;
-        QtConcurrent::filter(linkedList, keepEvenIntegers).waitForFinished();
-        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
-    }
-    {
-        QLinkedList<int> linkedList;
-        linkedList << 1 << 2 << 3 << 4;
-        QtConcurrent::blockingFilter(linkedList, keepEvenIntegers);
-        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
     }
 
     // member
@@ -152,6 +116,54 @@ void tst_QtConcurrentFilter::filter()
         QtConcurrent::blockingFilter(list, &Number::isEven);
         QCOMPARE(list, QList<Number>() << 2 << 4);
     }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
+    // functor
+    {
+        QLinkedList<int> linkedList;
+        linkedList << 1 << 2 << 3 << 4;
+        QtConcurrent::filter(linkedList, KeepEvenIntegers()).waitForFinished();
+        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
+    }
+    {
+        QLinkedList<int> linkedList;
+        linkedList << 1 << 2 << 3 << 4;
+        QtConcurrent::blockingFilter(linkedList, KeepEvenIntegers());
+        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
+    }
+
+    // function
+    {
+        QLinkedList<int> linkedList;
+        linkedList << 1 << 2 << 3 << 4;
+        QtConcurrent::filter(linkedList, keepEvenIntegers).waitForFinished();
+        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
+    }
+    {
+        QLinkedList<int> linkedList;
+        linkedList << 1 << 2 << 3 << 4;
+        QtConcurrent::blockingFilter(linkedList, keepEvenIntegers);
+        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
+    }
+
+    // bound function
+    {
+        QLinkedList<int> linkedList;
+        linkedList << 1 << 2 << 3 << 4;
+        QtConcurrent::filter(linkedList, keepEvenIntegers).waitForFinished();
+        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
+    }
+    {
+        QLinkedList<int> linkedList;
+        linkedList << 1 << 2 << 3 << 4;
+        QtConcurrent::blockingFilter(linkedList, keepEvenIntegers);
+        QCOMPARE(linkedList, QLinkedList<int>() << 2 << 4);
+    }
+
+    // member
     {
         QLinkedList<Number> linkedList;
         linkedList << 1 << 2 << 3 << 4;
@@ -164,6 +176,9 @@ void tst_QtConcurrentFilter::filter()
         QtConcurrent::blockingFilter(linkedList, &Number::isEven);
         QCOMPARE(linkedList, QLinkedList<Number>() << 2 << 4);
     }
+
+QT_WARNING_POP
+#endif
 }
 
 void tst_QtConcurrentFilter::filtered()
@@ -216,19 +231,6 @@ void tst_QtConcurrentFilter::filtered()
         QVector<int> vector;
         vector << 1 << 2 << 3 << 4;
         QFuture<int> f = QtConcurrent::filtered(vector, KeepEvenIntegers());
-        QCOMPARE(f.results(), QList<int>() << 2 << 4);
-    }
-
-    {
-        QLinkedList<int> linkedList;
-        linkedList << 1 << 2 << 3 << 4;
-        QLinkedList<int> linkedList2 = QtConcurrent::blockingFiltered(linkedList, KeepEvenIntegers());
-        QCOMPARE(linkedList2, QLinkedList<int>() << 2 << 4);
-    }
-    {
-        QLinkedList<int> linkedList;
-        linkedList << 1 << 2 << 3 << 4;
-        QFuture<int> f = QtConcurrent::filtered(linkedList, KeepEvenIntegers());
         QCOMPARE(f.results(), QList<int>() << 2 << 4);
     }
 
@@ -351,6 +353,10 @@ void tst_QtConcurrentFilter::filtered()
                                                            &Number::isEven);
         QCOMPARE(list2, QList<Number>() << 2 << 4);
     }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
     // same thing on linked lists
 
@@ -517,6 +523,9 @@ void tst_QtConcurrentFilter::filtered()
                                                                  &Number::isEven);
         QCOMPARE(linkedList2, QLinkedList<Number>() << 2 << 4);
     }
+
+QT_WARNING_POP
+#endif
 }
 
 void tst_QtConcurrentFilter::filteredReduced()
@@ -952,6 +961,10 @@ void tst_QtConcurrentFilter::filteredReduced()
         QCOMPARE(sum, 6);
     }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
     // same as above on linked lists
     QLinkedList<int> linkedList;
     linkedList << 1 << 2 << 3 << 4;
@@ -1377,6 +1390,9 @@ void tst_QtConcurrentFilter::filteredReduced()
                                                         numberSumReduce);
         QCOMPARE(sum, 6);
     }
+
+QT_WARNING_POP
+#endif
 
     // ### the same as above, with an initial result value
 }

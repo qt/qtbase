@@ -164,6 +164,9 @@ void tst_QtConcurrentMap::map()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
     }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     // Linked lists and forward iterators
     {
         QLinkedList<int> list;
@@ -195,6 +198,8 @@ void tst_QtConcurrentMap::map()
         QtConcurrent::map(numberList.begin(), numberList.end(), &Number::multiplyBy2).waitForFinished();
         QCOMPARE(numberList, QLinkedList<Number>() << 4 << 8 << 12);
     }
+QT_WARNING_POP
+#endif
 
 #if 0
     // not allowed: map() with immutable sequences makes no sense
@@ -296,6 +301,9 @@ void tst_QtConcurrentMap::blocking_map()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
     }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     // Linked lists and forward iterators
     {
         QLinkedList<int> list;
@@ -327,6 +335,8 @@ void tst_QtConcurrentMap::blocking_map()
         QtConcurrent::blockingMap(numberList.begin(), numberList.end(), &Number::multiplyBy2);
         QCOMPARE(numberList, QLinkedList<Number>() << 4 << 8 << 12);
     }
+QT_WARNING_POP
+#endif
 
 #if 0
     // not allowed: map() with immutable sequences makes no sense
@@ -424,12 +434,8 @@ void tst_QtConcurrentMap::mapped()
 {
     QList<int> list;
     list << 1 << 2 << 3;
-    QLinkedList<int> linkedList;
-    linkedList << 1 << 2 << 3;
     QList<Number> numberList;
     numberList << 1 << 2 << 3;
-    QLinkedList<Number> numberLinkedList;
-    numberLinkedList << 1 << 2 << 3;
 
     // functor
     {
@@ -445,22 +451,6 @@ void tst_QtConcurrentMap::mapped()
 
         QList<int> list4 = QtConcurrent::mapped(QList<int>(list), MultiplyBy2()).results();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
-    }
-    {
-        QList<int> list2 = QtConcurrent::mapped(linkedList, MultiplyBy2()).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<int>() << 2 << 4 << 6);
-
-        QList<int> list3 = QtConcurrent::mapped(linkedList.constBegin(),
-                                                linkedList.constEnd(),
-                                                MultiplyBy2()).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<int>() << 2 << 4 << 6);
-
-        QList<int> list4 =
-            QtConcurrent::mapped(QLinkedList<int>(linkedList), MultiplyBy2()).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
     }
 
@@ -480,22 +470,6 @@ void tst_QtConcurrentMap::mapped()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
     }
-    {
-        QList<int> list2 = QtConcurrent::mapped(linkedList, multiplyBy2).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<int>() << 2 << 4 << 6);
-
-        QList<int> list3 = QtConcurrent::mapped(linkedList.constBegin(),
-                                                linkedList.constEnd(),
-                                                multiplyBy2).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<int>() << 2 << 4 << 6);
-
-        QList<int> list4 =
-            QtConcurrent::mapped(QLinkedList<int>(linkedList), multiplyBy2).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
-    }
 
     // bound function
     {
@@ -511,23 +485,6 @@ void tst_QtConcurrentMap::mapped()
 
         QList<int> list4 = QtConcurrent::mapped(QList<int>(list), multiplyBy2).results();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
-    }
-    {
-        QList<int> list2 = QtConcurrent::mapped(linkedList, multiplyBy2).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<int>() << 2 << 4 << 6);
-
-        QList<int> list3 = QtConcurrent::mapped(linkedList.constBegin(),
-                                                linkedList.constEnd(),
-                                                multiplyBy2)
-                           .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<int>() << 2 << 4 << 6);
-
-        QList<int> list4 = QtConcurrent::mapped(QLinkedList<int>(linkedList), multiplyBy2)
-                           .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
     }
 
@@ -549,25 +506,6 @@ void tst_QtConcurrentMap::mapped()
                                                          &Number::multipliedBy2)
                                     .results();
         QCOMPARE(numberList, QList<Number>() << 1 << 2 << 3);
-        QCOMPARE(numberList4, QList<Number>() << 2 << 4 << 6);
-    }
-    {
-        QList<Number> numberList2 = QtConcurrent::mapped(numberLinkedList, &Number::multipliedBy2)
-                                    .results();
-        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
-        QCOMPARE(numberList2, QList<Number>() << 2 << 4 << 6);
-
-        QList<Number> numberList3 = QtConcurrent::mapped(numberLinkedList.constBegin(),
-                                                         numberLinkedList.constEnd(),
-                                                         &Number::multipliedBy2)
-                                    .results();
-        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
-        QCOMPARE(numberList3, QList<Number>() << 2 << 4 << 6);
-
-        QList<Number> numberList4 = QtConcurrent::mapped(QLinkedList<Number>(numberLinkedList),
-                                                         &Number::multipliedBy2)
-                                    .results();
-        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
         QCOMPARE(numberList4, QList<Number>() << 2 << 4 << 6);
     }
 
@@ -592,24 +530,6 @@ void tst_QtConcurrentMap::mapped()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
     }
-    {
-        QList<double> list2 = QtConcurrent::mapped(linkedList, IntToDouble()).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<double>() << 1.0 << 2.0 << 3.0);
-
-        QList<double> list3 = QtConcurrent::mapped(linkedList.constBegin(),
-                                                   linkedList.constEnd(),
-                                                   IntToDouble())
-                              .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<double>() << 1.0 << 2.0 << 3.0);
-
-        QList<double> list4 = QtConcurrent::mapped(QLinkedList<int>(linkedList),
-                                                   IntToDouble())
-                              .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
-    }
 
     // function
     {
@@ -626,23 +546,6 @@ void tst_QtConcurrentMap::mapped()
 
         QList<double> list4 = QtConcurrent::mapped(QList<int>(list), intToDouble).results();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
-    }
-    {
-        QList<double> list2 = QtConcurrent::mapped(linkedList, intToDouble).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<double>() << 1.0 << 2.0 << 3.0);
-
-        QList<double> list3 = QtConcurrent::mapped(linkedList.constBegin(),
-                                                   linkedList.constEnd(),
-                                                   intToDouble)
-                              .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<double>() << 1.0 << 2.0 << 3.0);
-
-        QList<double> list4 = QtConcurrent::mapped(QLinkedList<int>(linkedList), intToDouble)
-                              .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
     }
 
@@ -666,25 +569,6 @@ void tst_QtConcurrentMap::mapped()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
     }
-    {
-        QList<double> list2 = QtConcurrent::mapped(linkedList, intToDouble).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<double>() << 1.0 << 2.0 << 3.0);
-
-        QList<double> list3 = QtConcurrent::mapped(linkedList.constBegin(),
-                                                   linkedList.constEnd(),
-                                                   intToDouble)
-                              .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<double>() << 1.0 << 2.0 << 3.0);
-
-
-        QList<double> list4 = QtConcurrent::mapped(QLinkedList<int>(linkedList),
-                                                   intToDouble)
-                              .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
-    }
 
     // const member function
     {
@@ -702,24 +586,6 @@ void tst_QtConcurrentMap::mapped()
         QList<QString> list4 = QtConcurrent::mapped(QList<Number>(numberList), &Number::toString)
                                .results();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<QString>() << "1" << "2" << "3");
-    }
-    {
-        QList<QString> list2 = QtConcurrent::mapped(numberLinkedList, &Number::toString).results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<QString>() << "1" << "2" << "3");
-
-        QList<QString> list3 = QtConcurrent::mapped(numberLinkedList.constBegin(),
-                                                    numberLinkedList.constEnd(),
-                                                    &Number::toString)
-                               .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<QString>() << "1" << "2" << "3");
-
-        QList<QString> list4 = QtConcurrent::mapped(QLinkedList<Number>(numberLinkedList),
-                                                    &Number::toString)
-                               .results();
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<QString>() << "1" << "2" << "3");
     }
 
@@ -780,18 +646,183 @@ void tst_QtConcurrentMap::mapped()
                            .results();
         QCOMPARE(list2, QList<int>() << 1 << 2 << 3);
     }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
+    QLinkedList<int> linkedList;
+    linkedList << 1 << 2 << 3;
+    QLinkedList<Number> numberLinkedList;
+    numberLinkedList << 1 << 2 << 3;
+
+    // functor
+    {
+        QList<int> list2 = QtConcurrent::mapped(linkedList, MultiplyBy2()).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<int>() << 2 << 4 << 6);
+
+        QList<int> list3 = QtConcurrent::mapped(linkedList.constBegin(),
+                                                linkedList.constEnd(),
+                                                MultiplyBy2()).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<int>() << 2 << 4 << 6);
+
+        QList<int> list4 =
+            QtConcurrent::mapped(QLinkedList<int>(linkedList), MultiplyBy2()).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
+    }
+
+    // function
+    {
+        QList<int> list2 = QtConcurrent::mapped(linkedList, multiplyBy2).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<int>() << 2 << 4 << 6);
+
+        QList<int> list3 = QtConcurrent::mapped(linkedList.constBegin(),
+                                                linkedList.constEnd(),
+                                                multiplyBy2).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<int>() << 2 << 4 << 6);
+
+        QList<int> list4 =
+            QtConcurrent::mapped(QLinkedList<int>(linkedList), multiplyBy2).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
+    }
+
+    // bound function
+    {
+        QList<int> list2 = QtConcurrent::mapped(linkedList, multiplyBy2).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<int>() << 2 << 4 << 6);
+
+        QList<int> list3 = QtConcurrent::mapped(linkedList.constBegin(),
+                                                linkedList.constEnd(),
+                                                multiplyBy2)
+                           .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<int>() << 2 << 4 << 6);
+
+        QList<int> list4 = QtConcurrent::mapped(QLinkedList<int>(linkedList), multiplyBy2)
+                           .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
+    }
+
+    // const member function
+    {
+        QList<Number> numberList2 = QtConcurrent::mapped(numberLinkedList, &Number::multipliedBy2)
+                                    .results();
+        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
+        QCOMPARE(numberList2, QList<Number>() << 2 << 4 << 6);
+
+        QList<Number> numberList3 = QtConcurrent::mapped(numberLinkedList.constBegin(),
+                                                         numberLinkedList.constEnd(),
+                                                         &Number::multipliedBy2)
+                                    .results();
+        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
+        QCOMPARE(numberList3, QList<Number>() << 2 << 4 << 6);
+
+        QList<Number> numberList4 = QtConcurrent::mapped(QLinkedList<Number>(numberLinkedList),
+                                                         &Number::multipliedBy2)
+                                    .results();
+        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
+        QCOMPARE(numberList4, QList<Number>() << 2 << 4 << 6);
+    }
+
+    // change the value_type, same container
+
+    // functor
+    {
+        QList<double> list2 = QtConcurrent::mapped(linkedList, IntToDouble()).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<double>() << 1.0 << 2.0 << 3.0);
+
+        QList<double> list3 = QtConcurrent::mapped(linkedList.constBegin(),
+                                                   linkedList.constEnd(),
+                                                   IntToDouble())
+                              .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<double>() << 1.0 << 2.0 << 3.0);
+
+        QList<double> list4 = QtConcurrent::mapped(QLinkedList<int>(linkedList),
+                                                   IntToDouble())
+                              .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
+    }
+
+    // function
+    {
+        QList<double> list2 = QtConcurrent::mapped(linkedList, intToDouble).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<double>() << 1.0 << 2.0 << 3.0);
+
+        QList<double> list3 = QtConcurrent::mapped(linkedList.constBegin(),
+                                                   linkedList.constEnd(),
+                                                   intToDouble)
+                              .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<double>() << 1.0 << 2.0 << 3.0);
+
+        QList<double> list4 = QtConcurrent::mapped(QLinkedList<int>(linkedList), intToDouble)
+                              .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
+    }
+
+    // bound function
+    {
+        QList<double> list2 = QtConcurrent::mapped(linkedList, intToDouble).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<double>() << 1.0 << 2.0 << 3.0);
+
+        QList<double> list3 = QtConcurrent::mapped(linkedList.constBegin(),
+                                                   linkedList.constEnd(),
+                                                   intToDouble)
+                              .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<double>() << 1.0 << 2.0 << 3.0);
+
+
+        QList<double> list4 = QtConcurrent::mapped(QLinkedList<int>(linkedList),
+                                                   intToDouble)
+                              .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
+    }
+
+    // const member function
+    {
+        QList<QString> list2 = QtConcurrent::mapped(numberLinkedList, &Number::toString).results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<QString>() << "1" << "2" << "3");
+
+        QList<QString> list3 = QtConcurrent::mapped(numberLinkedList.constBegin(),
+                                                    numberLinkedList.constEnd(),
+                                                    &Number::toString)
+                               .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<QString>() << "1" << "2" << "3");
+
+        QList<QString> list4 = QtConcurrent::mapped(QLinkedList<Number>(numberLinkedList),
+                                                    &Number::toString)
+                               .results();
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<QString>() << "1" << "2" << "3");
+    }
+QT_WARNING_POP
+#endif
 }
 
 void tst_QtConcurrentMap::blocking_mapped()
 {
     QList<int> list;
     list << 1 << 2 << 3;
-    QLinkedList<int> linkedList;
-    linkedList << 1 << 2 << 3;
     QList<Number> numberList;
     numberList << 1 << 2 << 3;
-    QLinkedList<Number> numberLinkedList;
-    numberLinkedList << 1 << 2 << 3;
 
     // functor
     {
@@ -808,21 +839,6 @@ void tst_QtConcurrentMap::blocking_mapped()
         QList<int> list4 = QtConcurrent::blockingMapped(QList<int>(list), MultiplyBy2());
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
-    }
-    {
-        QLinkedList<int> linkedList2 = QtConcurrent::blockingMapped(linkedList, MultiplyBy2());
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList2, QLinkedList<int>() << 2 << 4 << 6);
-
-        QLinkedList<int> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<int> >(linkedList.constBegin(),
-                                                                       linkedList.constEnd(),
-                                                                       MultiplyBy2());
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList3, QLinkedList<int>() << 2 << 4 << 6);
-
-        QLinkedList<int> linkedList4 = QtConcurrent::blockingMapped(QLinkedList<int>(linkedList), MultiplyBy2());
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList4, QLinkedList<int>() << 2 << 4 << 6);
     }
 
     // function
@@ -841,21 +857,6 @@ void tst_QtConcurrentMap::blocking_mapped()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
     }
-    {
-        QLinkedList<int> linkedList2 = QtConcurrent::blockingMapped(linkedList, multiplyBy2);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList2, QLinkedList<int>() << 2 << 4 << 6);
-
-        QLinkedList<int> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<int> >(linkedList.constBegin(),
-                                                             linkedList.constEnd(),
-                                                             multiplyBy2);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList3, QLinkedList<int>() << 2 << 4 << 6);
-
-        QLinkedList<int> linkedList4 = QtConcurrent::blockingMapped(QLinkedList<int>(linkedList), multiplyBy2);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList4, QLinkedList<int>() << 2 << 4 << 6);
-    }
 
     // bound function
     {
@@ -872,21 +873,6 @@ void tst_QtConcurrentMap::blocking_mapped()
         QList<int> list4 = QtConcurrent::blockingMapped(QList<int>(list), multiplyBy2);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 2 << 4 << 6);
-    }
-    {
-        QLinkedList<int> linkedList2 = QtConcurrent::blockingMapped(linkedList, multiplyBy2);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList2, QLinkedList<int>() << 2 << 4 << 6);
-
-        QLinkedList<int> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<int> >(linkedList.constBegin(),
-                                                             linkedList.constEnd(),
-                                                             multiplyBy2);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList3, QLinkedList<int>() << 2 << 4 << 6);
-
-        QLinkedList<int> linkedList4 = QtConcurrent::blockingMapped(QLinkedList<int>(linkedList), multiplyBy2);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList4, QLinkedList<int>() << 2 << 4 << 6);
     }
 
     // const member function
@@ -905,22 +891,6 @@ void tst_QtConcurrentMap::blocking_mapped()
                                                          &Number::multipliedBy2);
         QCOMPARE(numberList, QList<Number>() << 1 << 2 << 3);
         QCOMPARE(numberList4, QList<Number>() << 2 << 4 << 6);
-    }
-    {
-        QLinkedList<Number> numberLinkedList2 = QtConcurrent::blockingMapped(numberLinkedList, &Number::multipliedBy2);
-        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
-        QCOMPARE(numberLinkedList2, QLinkedList<Number>() << 2 << 4 << 6);
-
-        QLinkedList<Number> numberLinkedList3 = QtConcurrent::blockingMapped<QLinkedList<Number> >(numberLinkedList.constBegin(),
-                                                                         numberLinkedList.constEnd(),
-                                                                         &Number::multipliedBy2);
-        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
-        QCOMPARE(numberLinkedList3, QLinkedList<Number>() << 2 << 4 << 6);
-
-        QLinkedList<Number> numberLinkedList4 = QtConcurrent::blockingMapped(QLinkedList<Number>(numberLinkedList),
-                                                         &Number::multipliedBy2);
-        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
-        QCOMPARE(numberLinkedList4, QLinkedList<Number>() << 2 << 4 << 6);
     }
 
     // change the value_type, same container
@@ -942,22 +912,6 @@ void tst_QtConcurrentMap::blocking_mapped()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
     }
-    {
-        QLinkedList<double> linkedList2 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList, IntToDouble());
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList2, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
-
-        QLinkedList<double> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList.constBegin(),
-                                                                   linkedList.constEnd(),
-                                                                   IntToDouble());
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList3, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
-
-        QLinkedList<double> linkedList4 = QtConcurrent::blockingMapped<QLinkedList<double> >(QLinkedList<int>(linkedList),
-                                                                   IntToDouble());
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList4, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
-    }
 
     // function
     {
@@ -974,21 +928,6 @@ void tst_QtConcurrentMap::blocking_mapped()
         QList<double> list4 = QtConcurrent::blockingMapped<QList<double> >(QList<int>(list), intToDouble);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
-    }
-    {
-        QLinkedList<double> linkedList2 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList, intToDouble);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList2, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
-
-        QLinkedList<double> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList.constBegin(),
-                                                                   linkedList.constEnd(),
-                                                                   intToDouble);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList3, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
-
-        QLinkedList<double> linkedList4 = QtConcurrent::blockingMapped<QLinkedList<double> >(QLinkedList<int>(linkedList), intToDouble);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList4, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
     }
 
     // bound function
@@ -1009,23 +948,6 @@ void tst_QtConcurrentMap::blocking_mapped()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<double>() << 1.0 << 2.0 << 3.0);
     }
-    {
-        QLinkedList<double> linkedList2 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList, intToDouble);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList2, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
-
-        QLinkedList<double> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList.constBegin(),
-                                                                   linkedList.constEnd(),
-                                                                   intToDouble);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList3, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
-
-
-        QLinkedList<double> linkedList4 = QtConcurrent::blockingMapped<QLinkedList<double> >(QLinkedList<int>(linkedList),
-                                                                   intToDouble);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList4, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
-    }
 
     // const member function
     {
@@ -1044,23 +966,6 @@ void tst_QtConcurrentMap::blocking_mapped()
             QtConcurrent::blockingMapped<QList<QString> >(QList<Number>(numberList), &Number::toString);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<QString>() << "1" << "2" << "3");
-    }
-    {
-        QLinkedList<QString> linkedList2 =
-            QtConcurrent::blockingMapped<QLinkedList<QString> >(numberLinkedList, &Number::toString);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList2, QLinkedList<QString>() << "1" << "2" << "3");
-
-        QLinkedList<QString> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<QString> >(numberLinkedList.constBegin(),
-                                                                     numberLinkedList.constEnd()
-                                                                     , &Number::toString);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList3, QLinkedList<QString>() << "1" << "2" << "3");
-
-        QLinkedList<QString> linkedList4 =
-            QtConcurrent::blockingMapped<QLinkedList<QString> >(QLinkedList<Number>(numberLinkedList), &Number::toString);
-        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
-        QCOMPARE(linkedList4, QLinkedList<QString>() << "1" << "2" << "3");
     }
 
     // change the value_type
@@ -1218,6 +1123,162 @@ void tst_QtConcurrentMap::blocking_mapped()
         QCOMPARE(list5, QVector<int>() << 1 << 2 << 3);
 #endif
     }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
+    QLinkedList<int> linkedList;
+    linkedList << 1 << 2 << 3;
+    QLinkedList<Number> numberLinkedList;
+    numberLinkedList << 1 << 2 << 3;
+
+    // functor
+    {
+        QLinkedList<int> linkedList2 = QtConcurrent::blockingMapped(linkedList, MultiplyBy2());
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList2, QLinkedList<int>() << 2 << 4 << 6);
+
+        QLinkedList<int> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<int> >(linkedList.constBegin(),
+                                                                       linkedList.constEnd(),
+                                                                       MultiplyBy2());
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList3, QLinkedList<int>() << 2 << 4 << 6);
+
+        QLinkedList<int> linkedList4 = QtConcurrent::blockingMapped(QLinkedList<int>(linkedList), MultiplyBy2());
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList4, QLinkedList<int>() << 2 << 4 << 6);
+    }
+
+    // function
+    {
+        QLinkedList<int> linkedList2 = QtConcurrent::blockingMapped(linkedList, multiplyBy2);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList2, QLinkedList<int>() << 2 << 4 << 6);
+
+        QLinkedList<int> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<int> >(linkedList.constBegin(),
+                                                             linkedList.constEnd(),
+                                                             multiplyBy2);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList3, QLinkedList<int>() << 2 << 4 << 6);
+
+        QLinkedList<int> linkedList4 = QtConcurrent::blockingMapped(QLinkedList<int>(linkedList), multiplyBy2);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList4, QLinkedList<int>() << 2 << 4 << 6);
+    }
+
+    // bound function
+    {
+        QLinkedList<int> linkedList2 = QtConcurrent::blockingMapped(linkedList, multiplyBy2);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList2, QLinkedList<int>() << 2 << 4 << 6);
+
+        QLinkedList<int> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<int> >(linkedList.constBegin(),
+                                                             linkedList.constEnd(),
+                                                             multiplyBy2);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList3, QLinkedList<int>() << 2 << 4 << 6);
+
+        QLinkedList<int> linkedList4 = QtConcurrent::blockingMapped(QLinkedList<int>(linkedList), multiplyBy2);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList4, QLinkedList<int>() << 2 << 4 << 6);
+    }
+
+    // const member function
+    {
+        QLinkedList<Number> numberLinkedList2 = QtConcurrent::blockingMapped(numberLinkedList, &Number::multipliedBy2);
+        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
+        QCOMPARE(numberLinkedList2, QLinkedList<Number>() << 2 << 4 << 6);
+
+        QLinkedList<Number> numberLinkedList3 = QtConcurrent::blockingMapped<QLinkedList<Number> >(numberLinkedList.constBegin(),
+                                                                         numberLinkedList.constEnd(),
+                                                                         &Number::multipliedBy2);
+        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
+        QCOMPARE(numberLinkedList3, QLinkedList<Number>() << 2 << 4 << 6);
+
+        QLinkedList<Number> numberLinkedList4 = QtConcurrent::blockingMapped(QLinkedList<Number>(numberLinkedList),
+                                                         &Number::multipliedBy2);
+        QCOMPARE(numberLinkedList, QLinkedList<Number>() << 1 << 2 << 3);
+        QCOMPARE(numberLinkedList4, QLinkedList<Number>() << 2 << 4 << 6);
+    }
+
+    // change the value_type, same container
+
+    // functor
+    {
+        QLinkedList<double> linkedList2 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList, IntToDouble());
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList2, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+
+        QLinkedList<double> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList.constBegin(),
+                                                                   linkedList.constEnd(),
+                                                                   IntToDouble());
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList3, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+
+        QLinkedList<double> linkedList4 = QtConcurrent::blockingMapped<QLinkedList<double> >(QLinkedList<int>(linkedList),
+                                                                   IntToDouble());
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList4, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+    }
+
+    // function
+    {
+        QLinkedList<double> linkedList2 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList, intToDouble);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList2, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+
+        QLinkedList<double> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList.constBegin(),
+                                                                   linkedList.constEnd(),
+                                                                   intToDouble);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList3, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+
+        QLinkedList<double> linkedList4 = QtConcurrent::blockingMapped<QLinkedList<double> >(QLinkedList<int>(linkedList), intToDouble);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList4, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+    }
+
+    // bound function
+    {
+        QLinkedList<double> linkedList2 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList, intToDouble);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList2, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+
+        QLinkedList<double> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<double> >(linkedList.constBegin(),
+                                                                   linkedList.constEnd(),
+                                                                   intToDouble);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList3, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+
+
+        QLinkedList<double> linkedList4 = QtConcurrent::blockingMapped<QLinkedList<double> >(QLinkedList<int>(linkedList),
+                                                                   intToDouble);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList4, QLinkedList<double>() << 1.0 << 2.0 << 3.0);
+    }
+
+    // const member function
+    {
+        QLinkedList<QString> linkedList2 =
+            QtConcurrent::blockingMapped<QLinkedList<QString> >(numberLinkedList, &Number::toString);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList2, QLinkedList<QString>() << "1" << "2" << "3");
+
+        QLinkedList<QString> linkedList3 = QtConcurrent::blockingMapped<QLinkedList<QString> >(numberLinkedList.constBegin(),
+                                                                     numberLinkedList.constEnd()
+                                                                     , &Number::toString);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList3, QLinkedList<QString>() << "1" << "2" << "3");
+
+        QLinkedList<QString> linkedList4 =
+            QtConcurrent::blockingMapped<QLinkedList<QString> >(QLinkedList<Number>(numberLinkedList), &Number::toString);
+        QCOMPARE(linkedList, QLinkedList<int>() << 1 << 2 << 3);
+        QCOMPARE(linkedList4, QLinkedList<QString>() << "1" << "2" << "3");
+    }
+
+QT_WARNING_POP
+#endif
 }
 
 int intSquare(int x)
@@ -1240,12 +1301,8 @@ void tst_QtConcurrentMap::mappedReduced()
 {
     QList<int> list;
     list << 1 << 2 << 3;
-    QLinkedList<int> linkedList;
-    linkedList << 1 << 2 << 3;
     QList<Number> numberList;
     numberList << 1 << 2 << 3;
-    QLinkedList<Number> numberLinkedList;
-    numberLinkedList << 1 << 2 << 3;
 
     // test Q_DECLARE_OPERATORS_FOR_FLAGS
     QtConcurrent::ReduceOptions opt = (QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce);
@@ -1277,6 +1334,164 @@ void tst_QtConcurrentMap::mappedReduced()
                                                     intSumReduce);
         QCOMPARE(sum6, 14);
     }
+
+    // function-functor
+    {
+        int sum = QtConcurrent::mappedReduced<int>(list, intSquare, IntSumReduce());
+        QCOMPARE(sum, 14);
+        int sum2 = QtConcurrent::mappedReduced<int>(list.constBegin(),
+                                                    list.constEnd(),
+                                                    intSquare,
+                                                    IntSumReduce());
+        QCOMPARE(sum2, 14);
+
+        int sum3 = QtConcurrent::mappedReduced<int>(QList<int>(list), intSquare, IntSumReduce());
+        QCOMPARE(sum3, 14);
+    }
+
+    // functor-function
+    {
+        int sum = QtConcurrent::mappedReduced(list, IntSquare(), intSumReduce);
+        QCOMPARE(sum, 14);
+        int sum2 = QtConcurrent::mappedReduced(list.constBegin(),
+                                               list.constEnd(),
+                                               IntSquare(),
+                                               intSumReduce);
+        QCOMPARE(sum2, 14);
+
+        int sum3 = QtConcurrent::mappedReduced(QList<int>(list), IntSquare(), intSumReduce);
+        QCOMPARE(sum3, 14);
+    }
+
+    // function-function
+    {
+        int sum = QtConcurrent::mappedReduced(list, intSquare, intSumReduce);
+        QCOMPARE(sum, 14);
+        int sum2 = QtConcurrent::mappedReduced(list.constBegin(),
+                                               list.constEnd(),
+                                               intSquare,
+                                               intSumReduce);
+        QCOMPARE(sum2, 14);
+
+        int sum3 = QtConcurrent::mappedReduced(QList<int>(list), intSquare, intSumReduce);
+        QCOMPARE(sum3, 14);
+    }
+
+    // functor-member
+    {
+        QList<int> list2 = QtConcurrent::mappedReduced(list,
+                                                       IntSquare(),
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
+
+        QList<int> list3 = QtConcurrent::mappedReduced(list.constBegin(),
+                                                       list.constEnd(),
+                                                       IntSquare(),
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
+
+        QList<int> list4 = QtConcurrent::mappedReduced(QList<int>(list),
+                                                       IntSquare(),
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
+    }
+
+    // member-functor
+    {
+        int sum = QtConcurrent::mappedReduced<int>(numberList, &Number::toInt, IntSumReduce());
+        QCOMPARE(sum, 6);
+        int sum2 = QtConcurrent::mappedReduced<int>(numberList.constBegin(),
+                                                    numberList.constEnd(),
+                                                    &Number::toInt,
+                                                    IntSumReduce());
+        QCOMPARE(sum2, 6);
+
+        int sum3 = QtConcurrent::mappedReduced<int>(QList<Number>(numberList),
+                                                    &Number::toInt,
+                                                    IntSumReduce());
+        QCOMPARE(sum3, 6);
+    }
+
+    // member-member
+    {
+        QList<int> list2 = QtConcurrent::mappedReduced(numberList,
+                                                       &Number::toInt,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list2, QList<int>() << 1 << 2 << 3);
+
+        QList<int> list3 = QtConcurrent::mappedReduced(numberList.constBegin(),
+                                                       numberList.constEnd(),
+                                                       &Number::toInt,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list3, QList<int>() << 1 << 2 << 3);
+
+        QList<int> list4 = QtConcurrent::mappedReduced(QList<Number>(numberList),
+                                                       &Number::toInt,
+                                                       &QList<int>::push_back, OrderedReduce);
+        QCOMPARE(list4, QList<int>() << 1 << 2 << 3);
+    }
+
+    // function-member
+    {
+        QList<int> list2 = QtConcurrent::mappedReduced(list,
+                                                       intSquare,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
+
+        QList<int> list3 = QtConcurrent::mappedReduced(list.constBegin(),
+                                                       list.constEnd(),
+                                                       intSquare,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
+
+        QList<int> list4 = QtConcurrent::mappedReduced(QList<int>(list),
+                                                       intSquare,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
+    }
+
+    // member-function
+    {
+        int sum = QtConcurrent::mappedReduced(numberList,
+                                              &Number::toInt,
+                                              intSumReduce);
+        QCOMPARE(sum, 6);
+        int sum2 = QtConcurrent::mappedReduced(numberList.constBegin(),
+                                               numberList.constEnd(),
+                                              &Number::toInt,
+                                              intSumReduce);
+        QCOMPARE(sum2, 6);
+
+        int sum3 = QtConcurrent::mappedReduced(QList<Number>(numberList),
+                                               &Number::toInt,
+                                               intSumReduce);
+        QCOMPARE(sum3, 6);
+    }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
+    QLinkedList<int> linkedList;
+    linkedList << 1 << 2 << 3;
+    QLinkedList<Number> numberLinkedList;
+    numberLinkedList << 1 << 2 << 3;
+
+    // functor-functor
     {
         int sum = QtConcurrent::mappedReduced<int>(linkedList, IntSquare(), IntSumReduce());
         QCOMPARE(sum, 14);
@@ -1305,18 +1520,6 @@ void tst_QtConcurrentMap::mappedReduced()
 
     // function-functor
     {
-        int sum = QtConcurrent::mappedReduced<int>(list, intSquare, IntSumReduce());
-        QCOMPARE(sum, 14);
-        int sum2 = QtConcurrent::mappedReduced<int>(list.constBegin(),
-                                                    list.constEnd(),
-                                                    intSquare,
-                                                    IntSumReduce());
-        QCOMPARE(sum2, 14);
-
-        int sum3 = QtConcurrent::mappedReduced<int>(QList<int>(list), intSquare, IntSumReduce());
-        QCOMPARE(sum3, 14);
-    }
-    {
         int sum = QtConcurrent::mappedReduced<int>(linkedList, intSquare, IntSumReduce());
         QCOMPARE(sum, 14);
         int sum2 = QtConcurrent::mappedReduced<int>(linkedList.constBegin(),
@@ -1330,18 +1533,6 @@ void tst_QtConcurrentMap::mappedReduced()
     }
 
     // functor-function
-    {
-        int sum = QtConcurrent::mappedReduced(list, IntSquare(), intSumReduce);
-        QCOMPARE(sum, 14);
-        int sum2 = QtConcurrent::mappedReduced(list.constBegin(),
-                                               list.constEnd(),
-                                               IntSquare(),
-                                               intSumReduce);
-        QCOMPARE(sum2, 14);
-
-        int sum3 = QtConcurrent::mappedReduced(QList<int>(list), IntSquare(), intSumReduce);
-        QCOMPARE(sum3, 14);
-    }
     {
         int sum = QtConcurrent::mappedReduced(linkedList, IntSquare(), intSumReduce);
         QCOMPARE(sum, 14);
@@ -1357,18 +1548,6 @@ void tst_QtConcurrentMap::mappedReduced()
 
     // function-function
     {
-        int sum = QtConcurrent::mappedReduced(list, intSquare, intSumReduce);
-        QCOMPARE(sum, 14);
-        int sum2 = QtConcurrent::mappedReduced(list.constBegin(),
-                                               list.constEnd(),
-                                               intSquare,
-                                               intSumReduce);
-        QCOMPARE(sum2, 14);
-
-        int sum3 = QtConcurrent::mappedReduced(QList<int>(list), intSquare, intSumReduce);
-        QCOMPARE(sum3, 14);
-    }
-    {
         int sum = QtConcurrent::mappedReduced(linkedList, intSquare, intSumReduce);
         QCOMPARE(sum, 14);
         int sum2 = QtConcurrent::mappedReduced(linkedList.constBegin(),
@@ -1382,29 +1561,6 @@ void tst_QtConcurrentMap::mappedReduced()
     }
 
     // functor-member
-    {
-        QList<int> list2 = QtConcurrent::mappedReduced(list,
-                                                       IntSquare(),
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
-
-        QList<int> list3 = QtConcurrent::mappedReduced(list.constBegin(),
-                                                       list.constEnd(),
-                                                       IntSquare(),
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
-
-        QList<int> list4 = QtConcurrent::mappedReduced(QList<int>(list),
-                                                       IntSquare(),
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
-    }
     {
         QLinkedList<int> linkedList2 = QtConcurrent::mappedReduced(linkedList,
                                                        IntSquare(),
@@ -1431,20 +1587,6 @@ void tst_QtConcurrentMap::mappedReduced()
 
     // member-functor
     {
-        int sum = QtConcurrent::mappedReduced<int>(numberList, &Number::toInt, IntSumReduce());
-        QCOMPARE(sum, 6);
-        int sum2 = QtConcurrent::mappedReduced<int>(numberList.constBegin(),
-                                                    numberList.constEnd(),
-                                                    &Number::toInt,
-                                                    IntSumReduce());
-        QCOMPARE(sum2, 6);
-
-        int sum3 = QtConcurrent::mappedReduced<int>(QList<Number>(numberList),
-                                                    &Number::toInt,
-                                                    IntSumReduce());
-        QCOMPARE(sum3, 6);
-    }
-    {
         int sum = QtConcurrent::mappedReduced<int>(numberLinkedList, &Number::toInt, IntSumReduce());
         QCOMPARE(sum, 6);
         int sum2 = QtConcurrent::mappedReduced<int>(numberLinkedList.constBegin(),
@@ -1460,25 +1602,6 @@ void tst_QtConcurrentMap::mappedReduced()
     }
 
     // member-member
-    {
-        QList<int> list2 = QtConcurrent::mappedReduced(numberList,
-                                                       &Number::toInt,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list2, QList<int>() << 1 << 2 << 3);
-
-        QList<int> list3 = QtConcurrent::mappedReduced(numberList.constBegin(),
-                                                       numberList.constEnd(),
-                                                       &Number::toInt,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list3, QList<int>() << 1 << 2 << 3);
-
-        QList<int> list4 = QtConcurrent::mappedReduced(QList<Number>(numberList),
-                                                       &Number::toInt,
-                                                       &QList<int>::push_back, OrderedReduce);
-        QCOMPARE(list4, QList<int>() << 1 << 2 << 3);
-    }
     {
         QLinkedList<int> linkedList2 = QtConcurrent::mappedReduced(numberLinkedList,
                                                        &Number::toInt,
@@ -1500,29 +1623,6 @@ void tst_QtConcurrentMap::mappedReduced()
     }
 
     // function-member
-    {
-        QList<int> list2 = QtConcurrent::mappedReduced(list,
-                                                       intSquare,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
-
-        QList<int> list3 = QtConcurrent::mappedReduced(list.constBegin(),
-                                                       list.constEnd(),
-                                                       intSquare,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
-
-        QList<int> list4 = QtConcurrent::mappedReduced(QList<int>(list),
-                                                       intSquare,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
-    }
     {
         QLinkedList<int> linkedList2 = QtConcurrent::mappedReduced(linkedList,
                                                        intSquare,
@@ -1548,22 +1648,6 @@ void tst_QtConcurrentMap::mappedReduced()
     }
 
     // member-function
-    {
-        int sum = QtConcurrent::mappedReduced(numberList,
-                                              &Number::toInt,
-                                              intSumReduce);
-        QCOMPARE(sum, 6);
-        int sum2 = QtConcurrent::mappedReduced(numberList.constBegin(),
-                                               numberList.constEnd(),
-                                              &Number::toInt,
-                                              intSumReduce);
-        QCOMPARE(sum2, 6);
-
-        int sum3 = QtConcurrent::mappedReduced(QList<Number>(numberList),
-                                               &Number::toInt,
-                                               intSumReduce);
-        QCOMPARE(sum3, 6);
-    }
     {
         int sum = QtConcurrent::mappedReduced(numberLinkedList,
                                               &Number::toInt,
@@ -1615,6 +1699,9 @@ void tst_QtConcurrentMap::mappedReduced()
         QCOMPARE(sum6, 14);
     }
 
+QT_WARNING_POP
+#endif
+
     // ### the same as above, with an initial result value
 }
 
@@ -1622,12 +1709,8 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
 {
     QList<int> list;
     list << 1 << 2 << 3;
-    QLinkedList<int> linkedList;
-    linkedList << 1 << 2 << 3;
     QList<Number> numberList;
     numberList << 1 << 2 << 3;
-    QLinkedList<Number> numberLinkedList;
-    numberLinkedList << 1 << 2 << 3;
 
     // functor-functor
     {
@@ -1655,6 +1738,165 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
                                                     intSumReduce);
         QCOMPARE(sum6, 14);
     }
+
+    // function-functor
+    {
+        int sum = QtConcurrent::blockingMappedReduced<int>(list, intSquare, IntSumReduce());
+        QCOMPARE(sum, 14);
+        int sum2 = QtConcurrent::blockingMappedReduced<int>(list.constBegin(),
+                                                    list.constEnd(),
+                                                    intSquare,
+                                                    IntSumReduce());
+        QCOMPARE(sum2, 14);
+
+        int sum3 = QtConcurrent::blockingMappedReduced<int>(QList<int>(list), intSquare, IntSumReduce());
+        QCOMPARE(sum3, 14);
+    }
+
+    // functor-function
+    {
+        int sum = QtConcurrent::blockingMappedReduced(list, IntSquare(), intSumReduce);
+        QCOMPARE(sum, 14);
+        int sum2 = QtConcurrent::blockingMappedReduced(list.constBegin(),
+                                               list.constEnd(),
+                                               IntSquare(),
+                                               intSumReduce);
+        QCOMPARE(sum2, 14);
+
+        int sum3 = QtConcurrent::blockingMappedReduced(QList<int>(list), IntSquare(), intSumReduce);
+        QCOMPARE(sum3, 14);
+    }
+
+    // function-function
+    {
+        int sum = QtConcurrent::blockingMappedReduced(list, intSquare, intSumReduce);
+        QCOMPARE(sum, 14);
+        int sum2 = QtConcurrent::blockingMappedReduced(list.constBegin(),
+                                                         list.constEnd(),
+                                                         intSquare,
+                                                         intSumReduce);
+        QCOMPARE(sum2, 14);
+
+        int sum3 = QtConcurrent::blockingMappedReduced(QList<int>(list), intSquare, intSumReduce);
+        QCOMPARE(sum3, 14);
+    }
+
+    // functor-member
+    {
+        QList<int> list2 = QtConcurrent::blockingMappedReduced(list,
+                                                       IntSquare(),
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
+
+        QList<int> list3 = QtConcurrent::blockingMappedReduced(list.constBegin(),
+                                                       list.constEnd(),
+                                                       IntSquare(),
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
+
+        QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<int>(list),
+                                                       IntSquare(),
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
+    }
+
+    // member-functor
+    {
+        int sum = QtConcurrent::blockingMappedReduced<int>(numberList, &Number::toInt,
+                                                             IntSumReduce());
+        QCOMPARE(sum, 6);
+        int sum2 = QtConcurrent::blockingMappedReduced<int>(numberList.constBegin(),
+                                                              numberList.constEnd(),
+                                                              &Number::toInt,
+                                                              IntSumReduce());
+        QCOMPARE(sum2, 6);
+
+        int sum3 = QtConcurrent::blockingMappedReduced<int>(QList<Number>(numberList),
+                                                              &Number::toInt,
+                                                              IntSumReduce());
+        QCOMPARE(sum3, 6);
+    }
+
+    // member-member
+    {
+        QList<int> list2 = QtConcurrent::blockingMappedReduced(numberList,
+                                                       &Number::toInt,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list2, QList<int>() << 1 << 2 << 3);
+
+        QList<int> list3 = QtConcurrent::blockingMappedReduced(numberList.constBegin(),
+                                                       numberList.constEnd(),
+                                                       &Number::toInt,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list3, QList<int>() << 1 << 2 << 3);
+
+        QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<Number>(numberList),
+                                                       &Number::toInt,
+                                                       &QList<int>::push_back, OrderedReduce);
+        QCOMPARE(list4, QList<int>() << 1 << 2 << 3);
+    }
+
+    // function-member
+    {
+        QList<int> list2 = QtConcurrent::blockingMappedReduced(list,
+                                                       intSquare,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
+
+        QList<int> list3 = QtConcurrent::blockingMappedReduced(list.constBegin(),
+                                                       list.constEnd(),
+                                                       intSquare,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
+
+        QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<int>(list),
+                                                       intSquare,
+                                                       &QList<int>::push_back,
+                                                       OrderedReduce);
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
+    }
+
+    // member-function
+    {
+        int sum = QtConcurrent::blockingMappedReduced(numberList,
+                                              &Number::toInt,
+                                              intSumReduce);
+        QCOMPARE(sum, 6);
+        int sum2 = QtConcurrent::blockingMappedReduced(numberList.constBegin(),
+                                               numberList.constEnd(),
+                                              &Number::toInt,
+                                              intSumReduce);
+        QCOMPARE(sum2, 6);
+
+        int sum3 = QtConcurrent::blockingMappedReduced(QList<Number>(numberList),
+                                               &Number::toInt,
+                                               intSumReduce);
+        QCOMPARE(sum3, 6);
+    }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
+    QLinkedList<int> linkedList;
+    linkedList << 1 << 2 << 3;
+    QLinkedList<Number> numberLinkedList;
+    numberLinkedList << 1 << 2 << 3;
+
+    // functor-functor
     {
         int sum = QtConcurrent::blockingMappedReduced<int>(linkedList, IntSquare(), IntSumReduce());
         QCOMPARE(sum, 14);
@@ -1683,18 +1925,6 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
 
     // function-functor
     {
-        int sum = QtConcurrent::blockingMappedReduced<int>(list, intSquare, IntSumReduce());
-        QCOMPARE(sum, 14);
-        int sum2 = QtConcurrent::blockingMappedReduced<int>(list.constBegin(),
-                                                    list.constEnd(),
-                                                    intSquare,
-                                                    IntSumReduce());
-        QCOMPARE(sum2, 14);
-
-        int sum3 = QtConcurrent::blockingMappedReduced<int>(QList<int>(list), intSquare, IntSumReduce());
-        QCOMPARE(sum3, 14);
-    }
-    {
         int sum = QtConcurrent::blockingMappedReduced<int>(linkedList, intSquare, IntSumReduce());
         QCOMPARE(sum, 14);
         int sum2 = QtConcurrent::blockingMappedReduced<int>(linkedList.constBegin(),
@@ -1708,18 +1938,6 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
     }
 
     // functor-function
-    {
-        int sum = QtConcurrent::blockingMappedReduced(list, IntSquare(), intSumReduce);
-        QCOMPARE(sum, 14);
-        int sum2 = QtConcurrent::blockingMappedReduced(list.constBegin(),
-                                               list.constEnd(),
-                                               IntSquare(),
-                                               intSumReduce);
-        QCOMPARE(sum2, 14);
-
-        int sum3 = QtConcurrent::blockingMappedReduced(QList<int>(list), IntSquare(), intSumReduce);
-        QCOMPARE(sum3, 14);
-    }
     {
         int sum = QtConcurrent::blockingMappedReduced(linkedList, IntSquare(), intSumReduce);
         QCOMPARE(sum, 14);
@@ -1735,18 +1953,6 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
 
     // function-function
     {
-        int sum = QtConcurrent::blockingMappedReduced(list, intSquare, intSumReduce);
-        QCOMPARE(sum, 14);
-        int sum2 = QtConcurrent::blockingMappedReduced(list.constBegin(),
-                                                         list.constEnd(),
-                                                         intSquare,
-                                                         intSumReduce);
-        QCOMPARE(sum2, 14);
-
-        int sum3 = QtConcurrent::blockingMappedReduced(QList<int>(list), intSquare, intSumReduce);
-        QCOMPARE(sum3, 14);
-    }
-    {
         int sum = QtConcurrent::blockingMappedReduced(linkedList, intSquare, intSumReduce);
         QCOMPARE(sum, 14);
         int sum2 = QtConcurrent::blockingMappedReduced(linkedList.constBegin(),
@@ -1760,29 +1966,6 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
     }
 
     // functor-member
-    {
-        QList<int> list2 = QtConcurrent::blockingMappedReduced(list,
-                                                       IntSquare(),
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
-
-        QList<int> list3 = QtConcurrent::blockingMappedReduced(list.constBegin(),
-                                                       list.constEnd(),
-                                                       IntSquare(),
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
-
-        QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<int>(list),
-                                                       IntSquare(),
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
-    }
     {
         QLinkedList<int> linkedList2 = QtConcurrent::blockingMappedReduced(linkedList,
                                                        IntSquare(),
@@ -1809,21 +1992,6 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
 
     // member-functor
     {
-        int sum = QtConcurrent::blockingMappedReduced<int>(numberList, &Number::toInt,
-                                                             IntSumReduce());
-        QCOMPARE(sum, 6);
-        int sum2 = QtConcurrent::blockingMappedReduced<int>(numberList.constBegin(),
-                                                              numberList.constEnd(),
-                                                              &Number::toInt,
-                                                              IntSumReduce());
-        QCOMPARE(sum2, 6);
-
-        int sum3 = QtConcurrent::blockingMappedReduced<int>(QList<Number>(numberList),
-                                                              &Number::toInt,
-                                                              IntSumReduce());
-        QCOMPARE(sum3, 6);
-    }
-    {
         int sum = QtConcurrent::blockingMappedReduced<int>(numberLinkedList, &Number::toInt, IntSumReduce());
         QCOMPARE(sum, 6);
         int sum2 = QtConcurrent::blockingMappedReduced<int>(numberLinkedList.constBegin(),
@@ -1839,25 +2007,6 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
     }
 
     // member-member
-    {
-        QList<int> list2 = QtConcurrent::blockingMappedReduced(numberList,
-                                                       &Number::toInt,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list2, QList<int>() << 1 << 2 << 3);
-
-        QList<int> list3 = QtConcurrent::blockingMappedReduced(numberList.constBegin(),
-                                                       numberList.constEnd(),
-                                                       &Number::toInt,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list3, QList<int>() << 1 << 2 << 3);
-
-        QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<Number>(numberList),
-                                                       &Number::toInt,
-                                                       &QList<int>::push_back, OrderedReduce);
-        QCOMPARE(list4, QList<int>() << 1 << 2 << 3);
-    }
     {
         QLinkedList<int> linkedList2 = QtConcurrent::blockingMappedReduced(numberLinkedList,
                                                        &Number::toInt,
@@ -1879,29 +2028,6 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
     }
 
     // function-member
-    {
-        QList<int> list2 = QtConcurrent::blockingMappedReduced(list,
-                                                       intSquare,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
-
-        QList<int> list3 = QtConcurrent::blockingMappedReduced(list.constBegin(),
-                                                       list.constEnd(),
-                                                       intSquare,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
-
-        QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<int>(list),
-                                                       intSquare,
-                                                       &QList<int>::push_back,
-                                                       OrderedReduce);
-        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
-        QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
-    }
     {
         QLinkedList<int> linkedList2 = QtConcurrent::blockingMappedReduced(linkedList,
                                                        intSquare,
@@ -1927,22 +2053,6 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
     }
 
     // member-function
-    {
-        int sum = QtConcurrent::blockingMappedReduced(numberList,
-                                              &Number::toInt,
-                                              intSumReduce);
-        QCOMPARE(sum, 6);
-        int sum2 = QtConcurrent::blockingMappedReduced(numberList.constBegin(),
-                                               numberList.constEnd(),
-                                              &Number::toInt,
-                                              intSumReduce);
-        QCOMPARE(sum2, 6);
-
-        int sum3 = QtConcurrent::blockingMappedReduced(QList<Number>(numberList),
-                                               &Number::toInt,
-                                               intSumReduce);
-        QCOMPARE(sum3, 6);
-    }
     {
         int sum = QtConcurrent::blockingMappedReduced(numberLinkedList,
                                               &Number::toInt,
@@ -1993,6 +2103,9 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
                                                     intSumReduce);
         QCOMPARE(sum6, 14);
     }
+
+QT_WARNING_POP
+#endif
 
     // ### the same as above, with an initial result value
 }

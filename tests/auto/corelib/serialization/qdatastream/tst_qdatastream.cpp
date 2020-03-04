@@ -3064,24 +3064,6 @@ void tst_QDataStream::status_QHash_QMap()
             } \
         } \
         { \
-            LinkedList expectedLinkedList; \
-            for (int i = 0; i < expectedList.count(); ++i) \
-                expectedLinkedList << expectedList.at(i); \
-            QByteArray ba = byteArray; \
-            QDataStream stream(&ba, QIODevice::ReadOnly); \
-            if (inTransaction) \
-                stream.startTransaction(); \
-            stream.setStatus(initialStatus); \
-            stream >> linkedList; \
-            QCOMPARE((int)stream.status(), (int)expectedStatus); \
-            if (!inTransaction || stream.commitTransaction()) { \
-                QCOMPARE(linkedList.size(), expectedLinkedList.size()); \
-                QCOMPARE(linkedList, expectedLinkedList); \
-            } else { \
-                QVERIFY(linkedList.isEmpty()); \
-            } \
-        } \
-        { \
             Vector expectedVector; \
             for (int i = 0; i < expectedList.count(); ++i) \
                 expectedVector << expectedList.at(i); \
@@ -3103,12 +3085,34 @@ void tst_QDataStream::status_QHash_QMap()
             break; \
     }
 
+#define LINKED_LIST_TEST(byteArray, initialStatus, expectedStatus, expectedList) \
+    for (bool inTransaction = false;; inTransaction = true) { \
+        { \
+            LinkedList expectedLinkedList; \
+            for (int i = 0; i < expectedList.count(); ++i) \
+                expectedLinkedList << expectedList.at(i); \
+            QByteArray ba = byteArray; \
+            QDataStream stream(&ba, QIODevice::ReadOnly); \
+            if (inTransaction) \
+                stream.startTransaction(); \
+            stream.setStatus(initialStatus); \
+            stream >> linkedList; \
+            QCOMPARE((int)stream.status(), (int)expectedStatus); \
+            if (!inTransaction || stream.commitTransaction()) { \
+                QCOMPARE(linkedList.size(), expectedLinkedList.size()); \
+                QCOMPARE(linkedList, expectedLinkedList); \
+            } else { \
+                QVERIFY(linkedList.isEmpty()); \
+            } \
+        } \
+        if (inTransaction) \
+            break; \
+    }
+
 void tst_QDataStream::status_QLinkedList_QList_QVector()
 {
-    typedef QLinkedList<QString> LinkedList;
     typedef QList<QString> List;
     typedef QVector<QString> Vector;
-    LinkedList linkedList;
     List list;
     Vector vector;
 
@@ -3155,6 +3159,61 @@ void tst_QDataStream::status_QLinkedList_QList_QVector()
         LIST_TEST(QByteArray("\x00\x00\x00\x01", 4), QDataStream::ReadCorruptData, QDataStream::ReadCorruptData, List());
         LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::ReadPastEnd, QDataStream::ReadPastEnd, List());
     }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    // The same as above with QLinkedList
+
+    typedef QLinkedList<QString> LinkedList;
+    LinkedList linkedList;
+
+    // ok
+    {
+        List listWithEmptyString;
+        listWithEmptyString.append("");
+
+        List someList;
+        someList.append("J");
+        someList.append("MN");
+
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x00", 4), QDataStream::Ok, QDataStream::Ok, List());
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00", 8), QDataStream::Ok, QDataStream::Ok, listWithEmptyString);
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x02\x00J"
+                                    "\x00\x00\x00\x04\x00M\x00N", 18), QDataStream::Ok, QDataStream::Ok, someList);
+    }
+
+    // past end
+    {
+        LINKED_LIST_TEST(QByteArray(), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        LINKED_LIST_TEST(QByteArray("\x00", 1), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        LINKED_LIST_TEST(QByteArray("\x00\x00", 2), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00", 3), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x01", 4), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        for (int i = 4; i < 12; ++i) {
+            LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00", i), QDataStream::Ok, QDataStream::ReadPastEnd, List());
+        }
+    }
+
+    // corrupt data
+    {
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::Ok, QDataStream::ReadCorruptData, List());
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x01\x00J"
+                                    "\x00\x00\x00\x02\x00M\x00N", 18), QDataStream::Ok, QDataStream::ReadCorruptData, List());
+    }
+
+    // test the previously latched error status is not affected by reading
+    {
+        List listWithEmptyString;
+        listWithEmptyString.append("");
+
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00", 8), QDataStream::ReadPastEnd, QDataStream::ReadPastEnd, listWithEmptyString);
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x01", 4), QDataStream::ReadCorruptData, QDataStream::ReadCorruptData, List());
+        LINKED_LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x01", 8), QDataStream::ReadPastEnd, QDataStream::ReadPastEnd, List());
+    }
+
+QT_WARNING_POP
+#endif
 }
 
 void tst_QDataStream::streamToAndFromQByteArray()

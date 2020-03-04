@@ -324,11 +324,12 @@ private Q_SLOTS:
 #endif
     }
 
-    void ranged_ctor_QLinkedList_int() { ranged_ctor_non_associative_impl<QLinkedList<int>>(); }
-    void ranged_ctor_QLinkedList_Movable() { ranged_ctor_non_associative_impl<QLinkedList<Movable>>(); }
-    void ranged_ctor_QLinkedList_Complex() { ranged_ctor_non_associative_impl<QLinkedList<Complex>>(); }
-    void ranged_ctor_QLinkedList_duplicates_strategy() { non_associative_container_duplicates_strategy<QLinkedList>(); }
-
+#if QT_DEPRECATED_SINCE(5, 15)
+    void ranged_ctor_QLinkedList_int();
+    void ranged_ctor_QLinkedList_Movable();
+    void ranged_ctor_QLinkedList_Complex();
+    void ranged_ctor_QLinkedList_duplicates_strategy();
+#endif
     void ranged_ctor_std_set_int() { ranged_ctor_non_associative_impl<std::set<int>>(); }
     void ranged_ctor_std_set_Movable() { ranged_ctor_non_associative_impl<std::set<Movable>>(); }
     void ranged_ctor_std_set_Complex() { ranged_ctor_non_associative_impl<std::set<Complex>>(); }
@@ -482,7 +483,9 @@ private Q_SLOTS:
     void front_back_std_vector() { front_back_impl<std::vector<int>>(); }
     void front_back_QVector() { front_back_impl<QVector<int>>(); }
     void front_back_QList() { front_back_impl<QList<qintptr>>(); }
-    void front_back_QLinkedList() { front_back_impl<QLinkedList<int>>(); }
+#if QT_DEPRECATED_SINCE(5, 15)
+    void front_back_QLinkedList();
+#endif
     void front_back_QVarLengthArray() { front_back_impl<QVarLengthArray<int>>(); }
     void front_back_QString() { front_back_impl<QString>(); }
     void front_back_QStringRef() { front_back_impl<QStringRef>(); }
@@ -590,8 +593,13 @@ template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::forward_list<T...>> : ContainerAcceptsDuplicateValues {};
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<QLinkedList<T...>> : ContainerAcceptsDuplicateValues {};
+QT_WARNING_POP
+#endif
 
 // assuming https://cplusplus.github.io/LWG/lwg-active.html#2844 resolution
 template<typename ... T>
@@ -818,6 +826,36 @@ void tst_ContainerApiSymmetry::front_back_impl() const
     QCOMPARE(clean(qAsConst(c2).front()), V(1));
     QCOMPARE(clean(qAsConst(c2).back()), V(2));
 }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+void tst_ContainerApiSymmetry::ranged_ctor_QLinkedList_int()
+{
+    ranged_ctor_non_associative_impl<QLinkedList<int>>();
+}
+
+void tst_ContainerApiSymmetry::ranged_ctor_QLinkedList_Movable()
+{
+    ranged_ctor_non_associative_impl<QLinkedList<Movable>>();
+}
+
+void tst_ContainerApiSymmetry::ranged_ctor_QLinkedList_Complex()
+{
+    ranged_ctor_non_associative_impl<QLinkedList<Complex>>();
+}
+
+void tst_ContainerApiSymmetry::ranged_ctor_QLinkedList_duplicates_strategy()
+{
+    non_associative_container_duplicates_strategy<QLinkedList>();
+}
+
+void tst_ContainerApiSymmetry::front_back_QLinkedList()
+{
+    front_back_impl<QLinkedList<int>>();
+}
+QT_WARNING_POP
+#endif
 
 QTEST_APPLESS_MAIN(tst_ContainerApiSymmetry)
 #include "tst_containerapisymmetry.moc"

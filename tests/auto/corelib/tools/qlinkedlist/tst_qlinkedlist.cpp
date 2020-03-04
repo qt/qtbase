@@ -29,6 +29,10 @@
 #include <QtTest/QtTest>
 #include <QLinkedList>
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 struct Movable
 {
     Movable(char input = 'j') : i(input), state(Constructed)
@@ -1128,6 +1132,17 @@ void tst_QLinkedList::setSharableInt() const
     QCOMPARE(list.size(), size);
 #endif
 }
+
+QT_WARNING_POP
+#else
+class tst_QLinkedList : public QObject
+{
+    Q_OBJECT
+private slots:
+    void initTestCase() { QSKIP("Deprecated APIs are disabled, skipping this test."); }
+};
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 QTEST_APPLESS_MAIN(tst_QLinkedList)
 #include "tst_qlinkedlist.moc"
