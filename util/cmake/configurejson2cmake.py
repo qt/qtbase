@@ -222,6 +222,15 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
 
     cm_fh.write(generate_find_package_info(newlib, **find_package_kwargs))
 
+    run_library_test = False
+    mapped_library = find_3rd_party_library_mapping(lib)
+    if mapped_library:
+        run_library_test = mapped_library.run_library_test
+
+    if run_library_test and "test" in data["libraries"][lib]:
+        test = data["libraries"][lib]["test"]
+        write_compile_test(ctx, lib, test, data, cm_fh, manual_library_list=[lib], is_library_test = True)
+
 
 def lineify(label, value, quote=True):
     if value:
@@ -491,6 +500,180 @@ def parseInput(ctx, sinput, data, cm_fh):
     return
 
 
+def write_compile_test(ctx, name, details, data, cm_fh, manual_library_list = None, is_library_test = False):
+
+    if manual_library_list == None:
+        manual_library_list = []
+
+    inherited_test_name = details["inherit"] if "inherit" in details else None
+    inherit_details = None
+    if inherited_test_name and is_library_test:
+        inherit_details = data["libraries"][inherited_test_name]["test"]
+        if not inherit_details:
+            print(f"    XXXX Failed to locate inherited library test {inherit}")
+
+    if isinstance(details, str):
+        rel_test_project_path = f"{ctx['test_dir']}/{details}"
+        if posixpath.exists(f"{ctx['project_dir']}/{rel_test_project_path}/CMakeLists.txt"):
+            cm_fh.write(
+                f"""
+qt_config_compile_test("{details}"
+                   LABEL "{data['label']}"
+                   PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{rel_test_project_path}")
+"""
+            )
+        return
+
+    def resolve_head(detail):
+        head = detail.get("head", "")
+        if isinstance(head, list):
+            head = "\n".join(head)
+        return head
+
+    head = ""
+    if inherit_details:
+        head += resolve_head(inherit_details)
+    head += resolve_head(details)
+
+    sourceCode = head + "\n"
+
+    def resolve_include(detail, keyword):
+        include = detail.get(keyword, "")
+        if isinstance(include, list):
+            include = "#include <" + ">\n#include <".join(include) + ">"
+        elif include:
+            include = f"#include <{include}>"
+        return include
+
+    include =""
+    if is_library_test:
+        if inherit_details:
+            inherited_lib_data = data["libraries"][inherited_test_name]
+            include += resolve_include(inherited_lib_data, "headers")
+        this_lib_data = data["libraries"][name]
+        include += resolve_include(this_lib_data, "headers")
+    else:
+        if inherit_details:
+            include += resolve_include(inherit_details, "include")
+        include += resolve_include(details, "include")
+
+    sourceCode += include + "\n"
+
+    def resolve_tail(detail):
+        tail = detail.get("tail", "")
+        if isinstance(tail, list):
+            tail = "\n".join(tail)
+        return tail
+
+    tail =""
+    if inherit_details:
+        tail += resolve_tail(inherit_details)
+    tail += resolve_tail(details)
+
+    sourceCode += tail + "\n"
+
+    sourceCode += "int main(int argc, char **argv)\n"
+    sourceCode += "{\n"
+    sourceCode += "    (void)argc; (void)argv;\n"
+    sourceCode += "    /* BEGIN TEST: */\n"
+
+    def resolve_main(detail):
+        main = detail.get("main", "")
+        if isinstance(main, list):
+            main = "\n".join(main)
+        return main
+
+    main = ""
+    if inherit_details:
+        main += resolve_main(inherit_details)
+    main += resolve_main(details)
+
+    sourceCode += main + "\n"
+
+    sourceCode += "    /* END TEST: */\n"
+    sourceCode += "    return 0;\n"
+    sourceCode += "}\n"
+
+    sourceCode = sourceCode.replace('"', '\\"')
+
+    librariesCmakeName = ""
+    languageStandard = ""
+    compileOptions = ""
+    qmakeFixme = ""
+
+    cm_fh.write(f"# {name}\n")
+
+    if "qmake" in details:  # We don't really have many so we can just enumerate them all
+        if details["qmake"] == "unix:LIBS += -lpthread":
+            librariesCmakeName = format(featureName(name)) + "_TEST_LIBRARIES"
+            cm_fh.write("if (UNIX)\n")
+            cm_fh.write("    set(" + librariesCmakeName + " pthread)\n")
+            cm_fh.write("endif()\n")
+        elif details["qmake"] == "linux: LIBS += -lpthread -lrt":
+            librariesCmakeName = format(featureName(name)) + "_TEST_LIBRARIES"
+            cm_fh.write("if (LINUX)\n")
+            cm_fh.write("    set(" + librariesCmakeName + " pthread rt)\n")
+            cm_fh.write("endif()\n")
+        elif details["qmake"] == "!winrt: LIBS += runtimeobject.lib":
+            librariesCmakeName = format(featureName(name)) + "_TEST_LIBRARIES"
+            cm_fh.write("if (NOT WINRT)\n")
+            cm_fh.write("    set(" + librariesCmakeName + " runtimeobject)\n")
+            cm_fh.write("endif()\n")
+        elif details["qmake"] == "CONFIG += c++11":
+            # do nothing we're always in c++11 mode
+            pass
+        elif details["qmake"] == "CONFIG += c++11 c++14":
+            languageStandard = "CXX_STANDARD 14"
+        elif details["qmake"] == "CONFIG += c++11 c++14 c++17":
+            languageStandard = "CXX_STANDARD 17"
+        elif details["qmake"] == "CONFIG += c++11 c++14 c++17 c++2a":
+            languageStandard = "CXX_STANDARD 20"
+        elif details["qmake"] == "QMAKE_CXXFLAGS += -fstack-protector-strong":
+            compileOptions = details["qmake"][18:]
+        else:
+            qmakeFixme = f"# FIXME: qmake: {details['qmake']}\n"
+
+    library_list = []
+    test_libraries = manual_library_list
+
+    if "use" in data:
+        test_libraries += data["use"].split(" ")
+
+    for library in test_libraries:
+        if len(library) == 0:
+            continue
+
+        mapped_library = find_3rd_party_library_mapping(library)
+        if not mapped_library:
+            qmakeFixme += f"# FIXME: use: unmapped library: {library}\n"
+            continue
+        if mapped_library.test_library_overwrite:
+            library_list.append(mapped_library.test_library_overwrite)
+        else:
+            library_list.append(mapped_library.targetName)
+
+    cm_fh.write(f"qt_config_compile_test({featureName(name)}\n")
+    cm_fh.write(lineify("LABEL", data.get("label", "")))
+    if librariesCmakeName != "" or len(library_list) != 0:
+        cm_fh.write("    LIBRARIES\n")
+        if librariesCmakeName != "":
+            cm_fh.write(lineify("", "${" + librariesCmakeName + "}"))
+        if len(library_list) != 0:
+            cm_fh.write("        ")
+            cm_fh.write("\n        ".join(library_list))
+            cm_fh.write("\n")
+    if compileOptions != "":
+        cm_fh.write(f"    COMPILE_OPTIONS {compileOptions}\n")
+    cm_fh.write("    CODE\n")
+    cm_fh.write('"' + sourceCode + '"')
+    if qmakeFixme != "":
+        cm_fh.write(qmakeFixme)
+    if languageStandard != "":
+        cm_fh.write(f"\n    {languageStandard}\n")
+    cm_fh.write(")\n\n")
+
+
+
 #  "tests": {
 #        "cxx11_future": {
 #            "label": "C++11 <future>",
@@ -532,122 +715,7 @@ def parseTest(ctx, test, data, cm_fh):
         else:
             details = test
 
-        if isinstance(details, str):
-            rel_test_project_path = f"{ctx['test_dir']}/{details}"
-            if posixpath.exists(f"{ctx['project_dir']}/{rel_test_project_path}/CMakeLists.txt"):
-                cm_fh.write(
-                    f"""
-qt_config_compile_test("{details}"
-                       LABEL "{data['label']}"
-                       PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{rel_test_project_path}")
-"""
-                )
-            return
-
-        head = details.get("head", "")
-        if isinstance(head, list):
-            head = "\n".join(head)
-
-        sourceCode = head + "\n"
-
-        include = details.get("include", "")
-        if isinstance(include, list):
-            include = "#include <" + ">\n#include <".join(include) + ">"
-        elif include:
-            include = f"#include <{include}>"
-
-        sourceCode += include + "\n"
-
-        tail = details.get("tail", "")
-        if isinstance(tail, list):
-            tail = "\n".join(tail)
-
-        sourceCode += tail + "\n"
-
-        sourceCode += "int main(int argc, char **argv)\n"
-        sourceCode += "{\n"
-        sourceCode += "    (void)argc; (void)argv;\n"
-        sourceCode += "    /* BEGIN TEST: */\n"
-
-        main = details.get("main", "")
-        if isinstance(main, list):
-            main = "\n".join(main)
-
-        sourceCode += main + "\n"
-
-        sourceCode += "    /* END TEST: */\n"
-        sourceCode += "    return 0;\n"
-        sourceCode += "}\n"
-
-        sourceCode = sourceCode.replace('"', '\\"')
-
-        librariesCmakeName = ""
-        languageStandard = ""
-        compileOptions = ""
-        qmakeFixme = ""
-
-        cm_fh.write(f"# {test}\n")
-        if "qmake" in details:  # We don't really have many so we can just enumerate them all
-            if details["qmake"] == "unix:LIBS += -lpthread":
-                librariesCmakeName = format(featureName(test)) + "_TEST_LIBRARIES"
-                cm_fh.write("if (UNIX)\n")
-                cm_fh.write("    set(" + librariesCmakeName + " pthread)\n")
-                cm_fh.write("endif()\n")
-            elif details["qmake"] == "linux: LIBS += -lpthread -lrt":
-                librariesCmakeName = format(featureName(test)) + "_TEST_LIBRARIES"
-                cm_fh.write("if (LINUX)\n")
-                cm_fh.write("    set(" + librariesCmakeName + " pthread rt)\n")
-                cm_fh.write("endif()\n")
-            elif details["qmake"] == "!winrt: LIBS += runtimeobject.lib":
-                librariesCmakeName = format(featureName(test)) + "_TEST_LIBRARIES"
-                cm_fh.write("if (NOT WINRT)\n")
-                cm_fh.write("    set(" + librariesCmakeName + " runtimeobject)\n")
-                cm_fh.write("endif()\n")
-            elif details["qmake"] == "CONFIG += c++11":
-                # do nothing we're always in c++11 mode
-                pass
-            elif details["qmake"] == "CONFIG += c++11 c++14":
-                languageStandard = "CXX_STANDARD 14"
-            elif details["qmake"] == "CONFIG += c++11 c++14 c++17":
-                languageStandard = "CXX_STANDARD 17"
-            elif details["qmake"] == "CONFIG += c++11 c++14 c++17 c++2a":
-                languageStandard = "CXX_STANDARD 20"
-            elif details["qmake"] == "QMAKE_CXXFLAGS += -fstack-protector-strong":
-                compileOptions = details["qmake"][18:]
-            else:
-                qmakeFixme = f"# FIXME: qmake: {details['qmake']}\n"
-
-        library_list = []
-        if "use" in data:
-            for library in data["use"].split(" "):
-                if len(library) == 0:
-                    continue
-
-                mapped_library = find_3rd_party_library_mapping(library)
-                if not mapped_library:
-                    qmakeFixme += f"# FIXME: use: unmapped library: {library}\n"
-                    continue
-                library_list.append(mapped_library.targetName)
-
-        cm_fh.write(f"qt_config_compile_test({featureName(test)}\n")
-        cm_fh.write(lineify("LABEL", data.get("label", "")))
-        if librariesCmakeName != "" or len(library_list) != 0:
-            cm_fh.write("    LIBRARIES\n")
-            if librariesCmakeName != "":
-                cm_fh.write(lineify("", "${" + librariesCmakeName + "}"))
-            if len(library_list) != 0:
-                cm_fh.write("        ")
-                cm_fh.write("\n        ".join(library_list))
-                cm_fh.write("\n")
-        if compileOptions != "":
-            cm_fh.write(f"    COMPILE_OPTIONS {compileOptions}\n")
-        cm_fh.write("    CODE\n")
-        cm_fh.write('"' + sourceCode + '"')
-        if qmakeFixme != "":
-            cm_fh.write(qmakeFixme)
-        if languageStandard != "":
-            cm_fh.write(f"\n    {languageStandard}\n")
-        cm_fh.write(")\n\n")
+        write_compile_test(ctx, test, details, data, cm_fh)
 
     elif data["type"] == "libclang":
         knownTests.add(test)

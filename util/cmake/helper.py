@@ -42,6 +42,8 @@ class LibraryMapping:
         appendFoundSuffix: bool = True,
         emit_if: str = "",
         is_bundled_with_qt: bool = False,
+        test_library_overwrite: str = "",
+        run_library_test: bool = False
     ) -> None:
         self.soName = soName
         self.packageName = packageName
@@ -56,6 +58,13 @@ class LibraryMapping:
         # if emit_if is non-empty, the generated find_package call
         # for a library will be surrounded by this condition.
         self.emit_if = emit_if
+
+        # Allow overwriting library name when used with tests. E.g.: _nolink
+        # targets do not exist when used during compile tests
+        self.test_library_overwrite = test_library_overwrite
+
+        # Run the library compile test of configure.json
+        self.run_library_test = run_library_test
 
     def is_qt(self) -> bool:
         return self.packageName == "Qt" or self.packageName == "Qt5" or self.packageName == "Qt6"
@@ -437,10 +446,12 @@ _library_map = [
         "openssl_headers",
         "OpenSSL",
         "OpenSSL::SSL_nolink",
-        resultVariable="OPENSSL_INCLUDE_DIR",
+        resultVariable="TEST_openssl_headers",
         appendFoundSuffix=False,
+        test_library_overwrite = "OpenSSL::SSL",
+        run_library_test=True
     ),
-    LibraryMapping("openssl", "OpenSSL", "OpenSSL::SSL"),
+    LibraryMapping("openssl", "OpenSSL", "OpenSSL::SSL", resultVariable="TEST_openssl", appendFoundSuffix=False, run_library_test=True),
     LibraryMapping("oci", "Oracle", "Oracle::OCI"),
     LibraryMapping(
         "pcre2", "WrapPCRE2", "WrapPCRE2::WrapPCRE2", extra=["REQUIRED"], is_bundled_with_qt=True
