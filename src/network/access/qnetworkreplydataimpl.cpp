@@ -88,7 +88,7 @@ QNetworkReplyDataImpl::QNetworkReplyDataImpl(QObject *parent, const QNetworkRequ
         const QString msg = QCoreApplication::translate("QNetworkAccessDataBackend",
                                                         "Invalid URI: %1").arg(url.toString());
         setError(QNetworkReply::ProtocolFailure, msg);
-        QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+        QMetaObject::invokeMethod(this, "errorOccurred", Qt::QueuedConnection,
                                   Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProtocolFailure));
         QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
     }

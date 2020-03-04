@@ -814,11 +814,10 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn template <class Key, class T> int QMap<Key, T>::count(const Key &key) const
-    \obsolete
 
     Returns the number of items associated with key \a key.
 
-    \sa QMultiMap::count()
+    \sa contains(), QMultiMap::count()
 */
 
 /*! \fn template <class Key, class T> int QMap<Key, T>::count() const
@@ -2113,11 +2112,6 @@ void QMapDataBase::freeData(QMapDataBase *d)
     Returns a list containing all the values associated with key
     \a key, from the most recently inserted to the least recently
     inserted one.
-*/
-
-/*! \fn template <class Key, class T> int QMultiMap<Key, T>::count(const Key &key) const
-
-    Returns the number of items associated with key \a key.
 */
 
 /*! \fn template <class Key, class T> QList<Key> QMultiMap<Key, T>::uniqueKeys() const

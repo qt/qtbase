@@ -20,11 +20,11 @@ qtConfig(c++1z): CONFIG += c++1z
 qtConfig(c++2a): CONFIG += c++2a
 qtConfig(c99): CONFIG += c99
 qtConfig(c11): CONFIG += c11
+qtConfig(separate_debug_info): CONFIG += separate_debug_info
 qtConfig(stack-protector-strong): CONFIG += stack_protector_strong
 contains(TEMPLATE, .*lib) {
     # module and plugins
     unix:qtConfig(reduce_relocations): CONFIG += bsymbolic_functions
-    qtConfig(separate_debug_info): CONFIG += separate_debug_info
 
     !isEmpty(_QMAKE_SUPER_CACHE_): \
         rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*

@@ -57,6 +57,8 @@ private slots:
     void lists();
     void avoidBlankLineAtBeginning_data();
     void avoidBlankLineAtBeginning();
+    void pathological_data();
+    void pathological();
 };
 
 void tst_QTextMarkdownImporter::headingBulletsContinuations()
@@ -254,6 +256,28 @@ void tst_QTextMarkdownImporter::avoidBlankLineAtBeginning() // QTBUG-81060
         ++i;
     }
     QCOMPARE(i, expectedNumberOfParagraphs);
+}
+
+void tst_QTextMarkdownImporter::pathological_data()
+{
+    QTest::addColumn<QString>("warning");
+    QTest::newRow("fuzz20450") << "attempted to insert into a list that no longer exists";
+    QTest::newRow("fuzz20580") << "";
+}
+
+void tst_QTextMarkdownImporter::pathological() // avoid crashing on crazy input
+{
+    QFETCH(QString, warning);
+    QString filename = QLatin1String("data/") + QTest::currentDataTag() + QLatin1String(".md");
+    QFile f(QFINDTESTDATA(filename));
+    QVERIFY(f.open(QFile::ReadOnly));
+#ifdef QT_NO_DEBUG
+    Q_UNUSED(warning)
+#else
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
+#endif
+    QTextDocument().setMarkdown(f.readAll());
 }
 
 QTEST_MAIN(tst_QTextMarkdownImporter)

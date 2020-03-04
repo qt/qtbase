@@ -147,7 +147,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \since 5.15
-    \fn qfloat16::copySign(qfloat16 sign) const noexcept
+    \fn qfloat16 qfloat16::copySign(qfloat16 sign) const noexcept
 
     Returns a qfloat16 with the sign of \a sign but the rest of its value taken
     from this qfloat16. Serves as qfloat16's equivalent of std::copysign().

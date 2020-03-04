@@ -1473,6 +1473,9 @@ void QMenuPrivate::_q_actionTriggered()
                 }
             }
             activateCausedStack(list, action, QAction::Trigger, false);
+            // if a widget action fires, we need to hide the menu explicitly
+            if (qobject_cast<QWidgetAction*>(action))
+                hideUpToMenuBar();
         }
     }
 }
@@ -1640,10 +1643,8 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
 
     Widgets can be inserted into menus with the QWidgetAction class.
     Instances of this class are used to hold widgets, and are inserted
-    into menus with the addAction() overload that takes a QAction.
-
-    Conversely, actions can be added to widgets with the addAction(),
-    addActions() and insertAction() functions.
+    into menus with the addAction() overload that takes a QAction. If the
+    QWidgetAction fires the triggered() signal, the menu will close.
 
     \warning To make QMenu visible on the screen, exec() or popup() should be
     used instead of show().

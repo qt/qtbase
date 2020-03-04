@@ -169,7 +169,7 @@ class Locale:
         for key in ('decimal', 'group', 'zero', 'list', 'percent', 'minus', 'plus', 'exp'):
             print inner + "<%s>" % key + get(key) + "</%s>" % key
 
-        for key in ('language_endonym', 'country_endonym',
+        for key in ('languageEndonym', 'countryEndonym',
                     'quotationStart', 'quotationEnd',
                     'alternateQuotationStart', 'alternateQuotationEnd',
                     'listPatternPartStart', 'listPatternPartMiddle',
@@ -187,8 +187,7 @@ class Locale:
                 '_'.join((k, cal))
                 for k in self.propsMonthDay('months')
                 for cal in calendars):
-            ent = camelCase(key.split('_')) if key.endswith('_endonym') else key
-            print inner + "<%s>%s</%s>" % (ent, escape(get(key)).encode('utf-8'), ent)
+            print inner + "<%s>%s</%s>" % (key, escape(get(key)).encode('utf-8'), key)
 
         for key in ('currencyDigits', 'currencyRounding'):
             print inner + "<%s>%d</%s>" % (key, get(key), key)
@@ -262,9 +261,9 @@ class Locale:
           quantifiers=('k', 'M', 'G', 'T', 'P', 'E')):
         """Returns an object representing the C locale."""
         return cls(dict(cls.__monthNames(calendars)),
-                   language='C', language_code='0', language_endonym='',
+                   language='C', language_code='0', languageEndonym='',
                    script='AnyScript', script_code='0',
-                   country='AnyCountry', country_code='0', country_endonym='',
+                   country='AnyCountry', country_code='0', countryEndonym='',
                    decimal='.', group=',', list=';', percent='%',
                    zero='0', minus='-', plus='+', exp='e',
                    quotationStart='"', quotationEnd='"',

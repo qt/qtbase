@@ -664,7 +664,15 @@ QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db, InternalDatabaseEnu
 
     load(data, size);
 }
-#endif
+#else // !QT_CONFIG(mimetype_database)
+// never called in release mode, but some debug builds may need
+// this to be defined.
+QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db, InternalDatabaseEnum)
+    : QMimeProviderBase(db, QString())
+{
+    Q_UNREACHABLE();
+}
+#endif // QT_CONFIG(mimetype_database)
 
 QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db, const QString &directory)
     : QMimeProviderBase(db, directory)

@@ -437,6 +437,7 @@ public:
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc,
                              qsizetype *curOfs);
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);
+    void executeBufferHostWritesForSlot(QMetalBuffer *bufD, int slot);
     void executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD);
     static const int SUPPORTED_STAGES = 3;
     void enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD,

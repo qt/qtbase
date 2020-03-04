@@ -855,7 +855,7 @@ void QNetworkReplyImplPrivate::error(QNetworkReplyImpl::NetworkError code, const
     // note: might not be a good idea, since users could decide to delete us
     // which would delete the backend too...
     // maybe we should protect the backend
-    emit q->error(code);
+    emit q->errorOccurred(code);
 }
 
 void QNetworkReplyImplPrivate::metaDataChanged()
@@ -1128,7 +1128,7 @@ QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
                                               "Network access is disabled.");
     setError(UnknownNetworkError, msg);
 
-    QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+    QMetaObject::invokeMethod(this, "errorOccurred", Qt::QueuedConnection,
         Q_ARG(QNetworkReply::NetworkError, UnknownNetworkError));
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
 }

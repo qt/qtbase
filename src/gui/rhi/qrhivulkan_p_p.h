@@ -123,6 +123,7 @@ struct QVkTexture : public QRhiTexture
     bool build() override;
     bool buildFrom(NativeTexture src) override;
     NativeTexture nativeTexture() override;
+    void setNativeLayout(int layout) override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
     bool finishBuild();
@@ -778,7 +779,7 @@ public:
                              size_t *curOfs, void *mp,
                              BufferImageCopyList *copyInfos);
     void enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates);
-    void executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD);
+    void executeBufferHostWritesForSlot(QVkBuffer *bufD, int slot);
     void enqueueTransitionPassResources(QVkCommandBuffer *cbD);
     void recordPrimaryCommandBuffer(QVkCommandBuffer *cbD);
     void trackedRegisterBuffer(QRhiPassResourceTracker *passResTracker,
@@ -810,6 +811,7 @@ public:
 
     QVulkanInstance *inst = nullptr;
     QWindow *maybeWindow = nullptr;
+    QByteArrayList requestedDeviceExtensions;
     bool importedDevice = false;
     VkPhysicalDevice physDev = VK_NULL_HANDLE;
     VkDevice dev = VK_NULL_HANDLE;

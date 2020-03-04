@@ -1574,7 +1574,6 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> int QHash<Key, T>::count(const Key &key) const
-    \obsolete
 
     Returns the number of items associated with the \a key.
 
@@ -2691,13 +2690,6 @@ uint qHash(long double key, uint seed) noexcept
     value from the hash. Returns the number of items removed.
 
     \sa QHash::remove()
-*/
-
-/*! \fn template <class Key, class T> int QMultiHash<Key, T>::count(const Key &key) const
-
-    Returns the number of items associated with the \a key.
-
-    \sa contains(), insert()
 */
 
 /*!

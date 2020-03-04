@@ -32,84 +32,103 @@ manifestmeta.filters                =   highlighted android thumbnail ios
 
 manifestmeta.highlighted.attributes =   isHighlighted:true
 
-manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Calqlatr" \
-                                       "QtWidgets/Application Chooser Example" \
-                                       "QtWidgets/Stickman Example" \
-                                       "QtWidgets/Move Blocks Example" \
-                                       "QtWidgets/Border Layout Example" \
-                                       "QtWidgets/Flow Layout Example" \
-                                       "QtWidgets/Dock Widgets Example" \
-                                       "QtWidgets/Recent Files Example" \
-                                       "QtWidgets/Concentric Circles Example" \
-                                       "QtWidgets/Gradients" \
-                                       "QtWidgets/Font Sampler Example" \
-                                       "QtWidgets/Path Stroking" \
-                                       "QtWidgets/Transformations Example" \
-                                       "QtWidgets/Syntax Highlighter Example" \
-                                       "QtWidgets/Calendar Example" \
-                                       "QtWidgets/Analog Clock Example" \
-                                       "QtWidgets/Calculator Example" \
-                                       "QtWidgets/Mouse Button Tester" \
-                                       "QtWidgets/Character Map Example" \
-                                       "QtWidgets/Digital Clock Example" \
-                                       "QtWidgets/Elided Label Example" \
-                                       "QtWidgets/Sliders Example" \
-                                       "QtWidgets/Tetrix Example" \
-                                       "QtWidgets/Group Box Example" \
-                                       "QtWidgets/Undo Framework" \
-                                       "QtWidgets/Colliding Mice Example" \
-                                       "QtWidgets/Diagram Scene Example" \
-                                       "QtWidgets/Elastic Nodes Example" \
-                                       "QtWidgets/Weather Anchor Layout Example" \
-                                       "QtNetwork/Torrent Example" \
-                                       "QtNetwork/Network Chat Example" \
-                                       "QtSQL/Master Detail Example" \
-                                       "QtLinguist/Arrow Pad Example" \
-                                       "QtGui/Raster Window Example" \
-                                       "QtGui/Analog Clock Window Example" \
-                                       "QtAndroidExtras/Qt Notifier" \
-                                       "QtMultimedia/QML Video Shader Effects Example" \
-                                       "QtMultimedia/QML Video Example" \
-                                       "QtMultimedia/QML Camera Example" \
-                                       "QtSVG/Text Object Example" \
-                                       "QtQML/Qt Quick Examples - XMLHttpRequest" \
-                                       "QtQuick/Qt Quick Particles Examples - *" \
-                                       "QtQuick/Qt Quick Examples - Touch Interaction" \
-                                       "QtQuick/Scene Graph - Custom Geometry" \
-                                       "QtQuick/Scene Graph - Graph" \
-                                       "QtQuick/Scene Graph - OpenGL Under QML" \
-                                       "QtQuick/Scene Graph - Painted Item" \
-                                       "QtQuick/Scene Graph - Rendering FBOs" \
-                                       "QtQuick/Scene Graph - Simple Material" \
-                                       "QtQuick/Qt Quick Examples - Image Elements" \
-                                       "QtQuick/Qt Quick Examples - Key Interaction" \
-                                       "QtQuick/Qt Quick Examples - Text" \
-                                       "QtQuick/Qt Quick Examples - Animation" \
-                                       "QtQuick/Qt Quick Examples - Shader Effects" \
-                                       "QtQuick/Qt Quick Examples - Canvas" \
-                                       "QtQuick/Qt Quick Examples - MouseArea" \
-                                       "QtQuick/Qt Quick Examples - Positioners" \
-                                       "QtQuick/Qt Quick Examples - Right to Left" \
-                                       "QtWidgets/Interview" \
-                                       "QtWidgets/Spreadsheet" \
-                                       "QtWidgets/Pixelator Example" \
-                                       "QtWidgets/Animated Tiles Example" \
-                                       "QtWidgets/Affine Transformations" \
-                                       "QtWidgets/Image Composition Example" \
-                                       "QtWidgets/Basic Drawing Example" \
-                                       "QtWidgets/Vector Deformation" \
-                                       "QtWidgets/Painter Paths Example" \
-                                       "QtWidgets/Style Sheet Example" \
-                                       "QtWidgets/Code Editor Example" \
-                                       "QtWidgets/Scribble Example" \
-                                       "QtWidgets/Line Edits Example" \
-                                       "QtWidgets/Calendar Widget Example" \
-                                       "QtWidgets/Completer Example" \
-                                       "QtWidgets/I18N Example" \
-                                       "QtQML/Extending QML - Grouped Properties Example" \
-                                       "QtQML/Extending QML - Methods Example" \
-                                       "QtQML/Extending QML - Signal Support Example" \
-                                       "QtQML/Extending QML - Attached Properties Example"
+manifestmeta.android.names          =   "Qt3D/Qt 3D: Basic Shapes C++ Example" \
+                                        "Qt3D/Qt 3D: Planets QML Example" \
+                                        "Qt3D/Qt 3D: Simple Custom Material QML Example" \
+                                        "QtAndroidExtras/Qt Notifier" \
+                                        "QtBluetooth/Bluetooth Low Energy Scanner Example" \
+                                        "QtBluetooth/Bluetooth Scanner Example" \
+                                        "QtBluetooth/QML Bluetooth Scanner Example" \
+                                        "QtCharts/*" \
+                                        "QtConcurrent/QtConcurrent Progress Dialog Example" \
+                                        "QtDataVisualization/Audiolevels Example" \
+                                        "QtDataVisualization/Qt Quick 2 Scatter Example" \
+                                        "QtDataVisualization/Qt Quick 2 Surface Multiseries Example" \
+                                        "QtGui/Analog Clock Window Example" \
+                                        "QtGui/OpenGL Window Example" \
+                                        "QtGui/Raster Window Example" \
+                                        "QtLinguist/Arrow Pad Example" \
+                                        "QtLinguistManual/Hello tr() Example" \
+                                        "QtLocation/Map Viewer (QML)" \
+                                        "QtLocation/Places Map (QML)" \
+                                        "QtLocation/Plane Spotter (QML)" \
+                                        "QtMultimedia/AudioEngine Example" \
+                                        "QtMultimedia/Camera Example" \
+                                        "QtMultimedia/QML Camera Example" \
+                                        "QtMultimedia/QML Video Example" \
+                                        "QtMultimedia/QML Video Shader Effects Example" \
+                                        "QtNFC/Annotated URL Example" \
+                                        "QtNFC/QML Poster Example" \
+                                        "QtOpenGL/2D Painting Example" \
+                                        "QtOpenGL/Hello GLES3 Example" \
+                                        "QtOpenGL/Textures Example" \
+                                        "QtPositioning/SatelliteInfo (C++/QML)" \
+                                        "QtPositioning/Weather Info (C++/QML)" \
+                                        "QtPurchasing/Qt Purchasing Examples - QtHangman" \
+                                        "QtQML/Extending QML - Attached Properties Example" \
+                                        "QtQML/Extending QML - Grouped Properties Example" \
+                                        "QtQML/Extending QML - Methods Example" \
+                                        "QtQML/Extending QML - Signal Support Example" \
+                                        "QtQML/Qt Quick Examples - XMLHttpRequest" \
+                                        "QtQml/Qt Quick Examples - XMLHttpRequest" \
+                                        "QtQuick/*" \
+                                        "QtQuickControls/*" \
+                                        "QtQuickControls1/Qt Quick Controls 1 - Calendar Example" \
+                                        "QtQuickControls1/Qt Quick Controls 1 - Gallery" \
+                                        "QtQuickControls1/Qt Quick Controls 1 - Styles Example" \
+                                        "QtQuickControls1/Qt Quick Controls 1 - Table View Example" \
+                                        "QtQuickControls1/Qt Quick Controls 1 - Touch Gallery" \
+                                        "QtQuickDialogs/*" \
+                                        "QtQuickExtras/*" \
+                                        "QtSCXML/Qt SCXML Calculator QML Example" \
+                                        "QtSCXML/Qt SCXML Sudoku Example" \
+                                        "QtSCXML/Qt SCXML Traffic Light Example (Dynamic)" \
+                                        "QtSCXML/Qt SCXML Traffic Light QML Example (Dynamic)" \
+                                        "QtSQL/Master Detail Example" \
+                                        "QtSVG/Text Object Example" \
+                                        "QtUiTools/Text Finder Example" \
+                                        "QtWebView/Qt WebView Examples - Minibrowser" \
+                                        "QtWidgets/Address Book Example" \
+                                        "QtWidgets/Affine Transformations" \
+                                        "QtWidgets/Analog Clock Example" \
+                                        "QtWidgets/Animated Tiles Example" \
+                                        "QtWidgets/Application Chooser Example" \
+                                        "QtWidgets/Basic Layouts Example" \
+                                        "QtWidgets/Border Layout Example" \
+                                        "QtWidgets/Code Editor Example" \
+                                        "QtWidgets/Colliding Mice Example" \
+                                        "QtWidgets/Concentric Circles Example" \
+                                        "QtWidgets/Digital Clock Example" \
+                                        "QtWidgets/Dynamic Layouts Example" \
+                                        "QtWidgets/Easing Curves Example" \
+                                        "QtWidgets/Editable Tree Model Example" \
+                                        "QtWidgets/Elided Label Example" \
+                                        "QtWidgets/Event Transitions Example" \
+                                        "QtWidgets/Fade Message Effect Example" \
+                                        "QtWidgets/Flow Layout Example" \
+                                        "QtWidgets/Font Sampler Example" \
+                                        "QtWidgets/Frozen Column Example" \
+                                        "QtWidgets/Gradients" \
+                                        "QtWidgets/Group Box Example" \
+                                        "QtWidgets/Image Composition Example" \
+                                        "QtWidgets/Line Edits Example" \
+                                        "QtWidgets/Mouse Button Tester" \
+                                        "QtWidgets/Move Blocks Example" \
+                                        "QtWidgets/Painter Paths Example" \
+                                        "QtWidgets/Painter Paths Example" \
+                                        "QtWidgets/Path Stroking" \
+                                        "QtWidgets/Pixelator Example" \
+                                        "QtWidgets/Recent Files Example" \
+                                        "QtWidgets/SDI Example" \
+                                        "QtWidgets/Scribble Example" \
+                                        "QtWidgets/Simple Tree Model Example" \
+                                        "QtWidgets/Sliders Example" \
+                                        "QtWidgets/Spreadsheet" \
+                                        "QtWidgets/Touch Dials Example" \
+                                        "QtWidgets/Transformations Example" \
+                                        "QtWidgets/Undo Framework" \
+                                        "QtWidgets/Vector Deformation" \
+                                        "QtWidgets/Wiggly Example"
 
 manifestmeta.android.tags              =   android
 

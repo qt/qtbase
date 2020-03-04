@@ -7626,7 +7626,10 @@ static ResultList splitString(const StringSource &source, const QChar *sep,
 #if QT_DEPRECATED_SINCE(5, 15)
 Qt::SplitBehavior mapSplitBehavior(QString::SplitBehavior sb)
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return sb & QString::SkipEmptyParts ? Qt::SkipEmptyParts : Qt::KeepEmptyParts;
+QT_WARNING_POP
 }
 #endif
 

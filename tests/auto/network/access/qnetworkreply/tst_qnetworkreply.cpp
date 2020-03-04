@@ -1381,7 +1381,7 @@ QString tst_QNetworkReply::runMultipartRequest(const QNetworkRequest &request,
     // the code below is copied from tst_QNetworkReply::runSimpleRequest, see below
     reply->setParent(this);
     connect(reply, SIGNAL(finished()), SLOT(finished()));
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
+    connect(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), SLOT(gotError()));
     multiPart->setParent(reply.data());
 
     returnCode = Timeout;
@@ -1441,7 +1441,7 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
             code = Failure;
     } else {
         connect(reply, SIGNAL(finished()), SLOT(finished()));
-        connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
+        connect(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), SLOT(gotError()));
 
         int count = 0;
         loop = new QEventLoop;
@@ -1476,7 +1476,7 @@ QString tst_QNetworkReply::runCustomRequest(const QNetworkRequest &request,
     reply.reset(manager.sendCustomRequest(request, verb, data));
     reply->setParent(this);
     connect(reply, SIGNAL(finished()), SLOT(finished()));
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
+    connect(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), SLOT(gotError()));
 
     returnCode = Timeout;
     loop = new QEventLoop;
@@ -1513,7 +1513,7 @@ int tst_QNetworkReply::waitForFinish(QNetworkReplyPtr &reply)
     int count = 0;
 
     connect(reply, SIGNAL(finished()), SLOT(finished()));
-    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
+    connect(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), SLOT(gotError()));
     returnCode = Success;
     loop = new QEventLoop;
     QSignalSpy spy(reply.data(), SIGNAL(downloadProgress(qint64,qint64)));
@@ -1901,7 +1901,7 @@ void tst_QNetworkReply::getFromFtpAfterError()
     QNetworkRequest invalidRequest(QUrl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/invalid.txt"));
     QNetworkReplyPtr invalidReply;
     invalidReply.reset(manager.get(invalidRequest));
-    QSignalSpy spy(invalidReply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy(invalidReply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
     QVERIFY(spy.wait());
     QCOMPARE(invalidReply->error(), QNetworkReply::ContentNotFoundError);
 
@@ -3927,7 +3927,7 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer()
 
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
-    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply), int(Failure));
 
@@ -5475,7 +5475,7 @@ void tst_QNetworkReply::rateControl()
     QNetworkRequest request("debugpipe://localhost:" + QString::number(sender.serverPort()));
     QNetworkReplyPtr reply(manager.get(request));
     reply->setReadBufferSize(32768);
-    QSignalSpy errorSpy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy errorSpy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     RateControlledReader reader(sender, reply.data(), rate, 20);
 
@@ -5889,7 +5889,7 @@ void tst_QNetworkReply::nestedEventLoops()
     QNetworkReplyPtr reply(manager.get(request));
 
     QSignalSpy finishedspy(reply.data(), SIGNAL(finished()));
-    QSignalSpy errorspy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy errorspy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     connect(reply, SIGNAL(finished()), SLOT(nestedEventLoops_slot()));
     QTestEventLoop::instance().enterLoop(20);
@@ -6122,7 +6122,7 @@ void tst_QNetworkReply::authorizationError()
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
-    QSignalSpy errorSpy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy errorSpy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
     QSignalSpy finishedSpy(reply.data(), SIGNAL(finished()));
     // now run the request:
     QCOMPARE(waitForFinish(reply), int(Failure));
@@ -7078,7 +7078,7 @@ void tst_QNetworkReply::qtbug4121unknownAuthentication()
 
     QSignalSpy authSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy finishedSpy(&manager, SIGNAL(finished(QNetworkReply*)));
-    QSignalSpy errorSpy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy errorSpy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
     QTestEventLoop::instance().enterLoop(10);
@@ -7399,7 +7399,7 @@ void tst_QNetworkReply::httpWithNoCredentialUsage()
         request.setAttribute(QNetworkRequest::AuthenticationReuseAttribute, QNetworkRequest::Manual);
         QNetworkReplyPtr reply(manager.get(request));
 
-        QSignalSpy errorSpy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+        QSignalSpy errorSpy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
         connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
         QTestEventLoop::instance().enterLoop(10);
@@ -8115,7 +8115,7 @@ void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
         QNetworkRequest request(urls.at(a));
         QNetworkReply *reply = manager.get(request);
         replies.append(reply);
-        QSignalSpy *errorSpy = new QSignalSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+        QSignalSpy *errorSpy = new QSignalSpy(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
         errorSpies.append(errorSpy);
         QSignalSpy *finishedSpy = new QSignalSpy(reply, SIGNAL(finished()));
         finishedSpies.append(finishedSpy);
@@ -8517,7 +8517,7 @@ void tst_QNetworkReply::ioHttpChangeMaxRedirects()
 
     QNetworkReplyPtr reply(manager.get(request));
     QSignalSpy redSpy(reply.data(), SIGNAL(redirected(QUrl)));
-    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply), int(Failure));
 
@@ -8581,7 +8581,7 @@ void tst_QNetworkReply::ioHttpRedirectErrors()
     QTimer watchDog;
     watchDog.setSingleShot(true);
 
-    reply->connect(reply.data(), QOverload<QNetworkReply::NetworkError>().of(&QNetworkReply::error),
+    reply->connect(reply.data(), &QNetworkReply::errorOccurred,
                    [&eventLoop](QNetworkReply::NetworkError){
                         eventLoop.exit(Failure);
                    });
@@ -8747,7 +8747,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
     if (ssl)
         reply->ignoreSslErrors();
 
-    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply), int(Failure));
     QCOMPARE(spy.count(), 1);
@@ -9397,7 +9397,7 @@ void tst_QNetworkReply::getWithTimeout()
 
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
-    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply), int(Success));
 
@@ -9408,7 +9408,7 @@ void tst_QNetworkReply::getWithTimeout()
     server.stopTransfer = true;
 
     QNetworkReplyPtr reply2(manager.get(request));
-    QSignalSpy spy2(reply2.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy2(reply2.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply2), int(Failure));
 
@@ -9419,7 +9419,7 @@ void tst_QNetworkReply::getWithTimeout()
     manager.setTransferTimeout(1000);
 
     QNetworkReplyPtr reply3(manager.get(request));
-    QSignalSpy spy3(reply3.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy3(reply3.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply3), int(Failure));
 
@@ -9437,7 +9437,7 @@ void tst_QNetworkReply::postWithTimeout()
     request.setRawHeader("Content-Type", "application/octet-stream");
     QByteArray postData("Just some nonsense");
     QNetworkReplyPtr reply(manager.post(request, postData));
-    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy(reply.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply), int(Success));
 
@@ -9448,7 +9448,7 @@ void tst_QNetworkReply::postWithTimeout()
     server.stopTransfer = true;
 
     QNetworkReplyPtr reply2(manager.post(request, postData));
-    QSignalSpy spy2(reply2.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy2(reply2.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply2), int(Failure));
 
@@ -9459,7 +9459,7 @@ void tst_QNetworkReply::postWithTimeout()
     manager.setTransferTimeout(1000);
 
     QNetworkReplyPtr reply3(manager.post(request, postData));
-    QSignalSpy spy3(reply3.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy spy3(reply3.data(), SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
 
     QCOMPARE(waitForFinish(reply3), int(Failure));
 

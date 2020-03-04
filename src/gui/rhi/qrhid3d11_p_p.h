@@ -270,8 +270,14 @@ struct QD3D11GraphicsPipeline : public QRhiGraphicsPipeline
 
     ID3D11DepthStencilState *dsState = nullptr;
     ID3D11BlendState *blendState = nullptr;
-    ID3D11VertexShader *vs = nullptr;
-    ID3D11PixelShader *fs = nullptr;
+    struct {
+        ID3D11VertexShader *shader = nullptr;
+        QShader::NativeResourceBindingMap nativeResourceBindingMap;
+    } vs;
+    struct {
+        ID3D11PixelShader *shader = nullptr;
+        QShader::NativeResourceBindingMap nativeResourceBindingMap;
+    } fs;
     ID3D11InputLayout *inputLayout = nullptr;
     D3D11_PRIMITIVE_TOPOLOGY d3dTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     ID3D11RasterizerState *rastState = nullptr;
@@ -286,7 +292,10 @@ struct QD3D11ComputePipeline : public QRhiComputePipeline
     void release() override;
     bool build() override;
 
-    ID3D11ComputeShader *cs = nullptr;
+    struct {
+        ID3D11ComputeShader *shader = nullptr;
+        QShader::NativeResourceBindingMap nativeResourceBindingMap;
+    } cs;
     uint generation = 0;
     friend class QRhiD3D11;
 };
@@ -642,8 +651,9 @@ public:
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);
-    void updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD);
-    void executeBufferHostWritesForCurrentFrame(QD3D11Buffer *bufD);
+    void updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
+                                      const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[]);
+    void executeBufferHostWrites(QD3D11Buffer *bufD);
     void bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                              const uint *dynOfsPairs, int dynOfsPairCount,
                              bool offsetOnlyChange);
@@ -701,9 +711,11 @@ public:
 
     struct Shader {
         Shader() = default;
-        Shader(IUnknown *s, const QByteArray &bytecode) : s(s), bytecode(bytecode) { }
+        Shader(IUnknown *s, const QByteArray &bytecode, const QShader::NativeResourceBindingMap &rbm)
+            : s(s), bytecode(bytecode), nativeResourceBindingMap(rbm) { }
         IUnknown *s;
         QByteArray bytecode;
+        QShader::NativeResourceBindingMap nativeResourceBindingMap;
     };
     QHash<QRhiShaderStage, Shader> m_shaderCache;
 

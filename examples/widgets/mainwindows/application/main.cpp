@@ -58,6 +58,9 @@
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(application);
+#ifdef Q_OS_ANDROID
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
 
     QApplication app(argc, argv);
     QCoreApplication::setOrganizationName("QtProject");

@@ -55,6 +55,9 @@
 //! [0]
 int main( int argc, char *argv[] )
 {
+#ifdef Q_OS_ANDROID
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
     QApplication application( argc, argv );
     TestWidget w;
     w.showFullScreen();

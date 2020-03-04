@@ -78,7 +78,7 @@ public:
     static QShaderDescription fromBinaryJson(const QByteArray &data);
 #endif
     static QShaderDescription fromCbor(const QByteArray &data);
-    static QShaderDescription deserialize(QDataStream *stream);
+    static QShaderDescription deserialize(QDataStream *stream, int version);
 
     enum VariableType {
         Unknown = 0,
@@ -216,6 +216,7 @@ public:
         int descriptorSet = -1;
         ImageFormat imageFormat = ImageFormatUnknown;
         ImageFlags imageFlags;
+        QVector<int> arrayDims;
     };
 
     struct BlockVariable {
