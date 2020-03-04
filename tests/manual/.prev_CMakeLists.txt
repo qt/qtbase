@@ -1,24 +1,13 @@
 # Generated from manual.pro.
 
-# special case begin
-# Don't build manual tests when targeting iOS.
-if(UIKIT)
-    return()
-endif()
-# special case end
-
 add_subdirectory(filetest)
-# special case begin
-# diaglib is broken in dev due to missing
-# QtOpenGL/QGLFunctions headers
-# add_subdirectory(embeddedintoforeignwindow)
-# add_subdirectory(foreignwindows)
-# special case end
+add_subdirectory(embeddedintoforeignwindow)
+add_subdirectory(foreignwindows)
 add_subdirectory(gestures)
-# add_subdirectory(highdpi) special case broken in dev
+add_subdirectory(highdpi)
 add_subdirectory(inputmethodhints)
 add_subdirectory(keypadnavigation)
-#add_subdirectory(lance) # special case qgl.h missing
+add_subdirectory(lance)
 add_subdirectory(qcursor)
 add_subdirectory(qdesktopservices)
 add_subdirectory(qdesktopwidget)
@@ -32,11 +21,7 @@ add_subdirectory(qlocale)
 add_subdirectory(qmimedatabase)
 add_subdirectory(qnetconmonitor)
 add_subdirectory(qnetworkaccessmanager/qget)
-#special case begin
-if (QT_FEATURE_openssl AND UNIX)
-    add_subdirectory(qnetworkreply)
-endif()
-#special case end
+add_subdirectory(qnetworkreply)
 add_subdirectory(qstorageinfo)
 add_subdirectory(qscreen)
 add_subdirectory(qsslsocket)
@@ -73,10 +58,10 @@ if(QT_FEATURE_openssl)
     add_subdirectory(qssloptions)
 endif()
 if(QT_FEATURE_opengl)
-    # add_subdirectory(qopengltextureblitter) special case broken in dev
+    add_subdirectory(qopengltextureblitter)
 endif()
 if(QT_FEATURE_egl AND QT_FEATURE_opengl)
-    # add_subdirectory(qopenglcontext) # special case broken in dev
+    add_subdirectory(qopenglcontext)
 endif()
 if(QT_FEATURE_vulkan)
     add_subdirectory(qvulkaninstance)

@@ -387,17 +387,6 @@
             "condition": "features.temporaryfile",
             "output": [ "publicFeature", "feature" ]
         },
-        "bearermanagement": {
-            "label": "Bearer management (deprecated)",
-            "purpose": "Provides bearer management for the network stack.",
-            "section": "Networking",
-            "condition": "features.thread && features.library && features.networkinterface && features.properties",
-            "output": [
-                "publicFeature",
-                "feature",
-                { "type": "define", "negative": true, "name": "QT_NO_BEARERMANAGEMENT" }
-            ]
-        },
         "localserver": {
             "label": "QLocalServer",
             "purpose": "Provides a local socket based server.",

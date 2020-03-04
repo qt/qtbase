@@ -269,8 +269,6 @@ QT_BEGIN_NAMESPACE
         Indicates that this is a background transfer, rather than a user initiated
         transfer. Depending on the platform, background transfers may be subject
         to different policies.
-        The QNetworkSession ConnectInBackground property will be set according to
-        this attribute.
 
     \value Http2AllowedAttribute
         Requests only, type: QMetaType::Bool (default: false)

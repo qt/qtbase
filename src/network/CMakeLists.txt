@@ -70,30 +70,6 @@ qt_extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i3
         "/BASE:0x64000000"
 )
 
-if(ANDROID AND (QT_FEATURE_bearermanagement))
-    set_property(TARGET Network APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
-        jar/QtAndroidBearer.jar
-    )
-    set_property(TARGET Network APPEND PROPERTY QT_ANDROID_LIB_DEPENDENCIES
-        plugins/bearer/libplugins_bearer_qandroidbearer.so
-    )
-    set_property(TARGET Network APPEND PROPERTY QT_ANDROID_PERMISSIONS
-        android.permission.ACCESS_NETWORK_STATE
-    )
-endif()
-
-qt_extend_target(Network CONDITION QT_FEATURE_bearermanagement
-    SOURCES
-        bearer/qbearerengine.cpp bearer/qbearerengine_p.h
-        bearer/qbearerengine_impl_p.h
-        bearer/qbearerplugin.cpp bearer/qbearerplugin_p.h
-        bearer/qnetworkconfigmanager.cpp bearer/qnetworkconfigmanager.h bearer/qnetworkconfigmanager_p.cpp bearer/qnetworkconfigmanager_p.h
-        bearer/qnetworkconfiguration.cpp bearer/qnetworkconfiguration.h bearer/qnetworkconfiguration_p.h
-        bearer/qnetworksession.cpp bearer/qnetworksession.h bearer/qnetworksession_p.h
-        bearer/qnetworksession_impl.cpp bearer/qnetworksession_impl_p.h
-        bearer/qsharednetworksession.cpp bearer/qsharednetworksession_p.h
-)
-
 qt_extend_target(Network CONDITION QT_FEATURE_ftp
     SOURCES
         access/qftp.cpp access/qftp_p.h

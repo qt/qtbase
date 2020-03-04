@@ -55,12 +55,10 @@
 #include <qstringlist.h>
 #include <qplatformdefs.h>
 #include <qhostinfo.h>
+#include <qnetworkinterface.h>
 
 #include <QNetworkProxy>
 
-#include <QNetworkSession>
-#include <QNetworkConfiguration>
-#include <QNetworkConfigurationManager>
 #include "../../../network-settings.h"
 
 #if defined(Q_OS_LINUX)
@@ -123,9 +121,6 @@ private:
     bool ipv6GetsockoptionMissing(int level, int optname);
 #endif
 
-#ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkSession *networkSession;
-#endif
     QString crashingServerDir;
 };
 
@@ -168,12 +163,6 @@ void tst_QTcpServer::initTestCase()
 #else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
-#endif
-#ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfigurationManager man;
-    networkSession = new QNetworkSession(man.defaultConfiguration(), this);
-    networkSession->open();
-    QVERIFY(networkSession->waitForOpened());
 #endif
 }
 

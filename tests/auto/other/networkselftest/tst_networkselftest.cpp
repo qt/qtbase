@@ -35,12 +35,6 @@
 #include <QtCore/QStandardPaths>
 #include <QtCore/private/qiodevice_p.h>
 
-#ifndef QT_NO_BEARERMANAGEMENT
-#include <QtNetwork/qnetworkconfigmanager.h>
-#include <QtNetwork/qnetworkconfiguration.h>
-#include <QtNetwork/qnetworksession.h>
-#endif
-
 #include "../../network-settings.h"
 
 class tst_NetworkSelfTest: public QObject
@@ -83,12 +77,6 @@ private slots:
 
     // ssl supported test
     void supportsSsl();
-private:
-#ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfigurationManager *netConfMan;
-    QNetworkConfiguration networkConfiguration;
-    QScopedPointer<QNetworkSession> networkSession;
-#endif
 };
 
 class Chat
@@ -372,15 +360,6 @@ void tst_NetworkSelfTest::initTestCase()
 {
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
-#ifndef QT_NO_BEARERMANAGEMENT
-    netConfMan = new QNetworkConfigurationManager(this);
-    networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession.reset(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
-    }
-#endif
 }
 
 void tst_NetworkSelfTest::hostTest()

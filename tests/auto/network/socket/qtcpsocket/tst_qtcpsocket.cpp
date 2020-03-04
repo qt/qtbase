@@ -52,6 +52,7 @@
 #include <QFile>
 #include <QHostAddress>
 #include <QHostInfo>
+#include <QNetworkInterface>
 #include <QMap>
 #include <QPointer>
 #if QT_CONFIG(process)

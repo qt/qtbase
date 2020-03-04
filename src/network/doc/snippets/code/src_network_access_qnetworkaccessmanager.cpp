@@ -70,15 +70,6 @@ connect(reply, &QNetworkReply::sslErrors,
         this, &MyClass::slotSslErrors);
 //! [1]
 
-//! [2]
-QNetworkConfigurationManager manager;
-networkAccessManager->setConfiguration(manager.defaultConfiguration());
-//! [2]
-
-//! [3]
-networkAccessManager->setConfiguration(QNetworkConfiguration());
-//! [3]
-
 //! [4]
 networkAccessManager->setNetworkAccessible(QNetworkAccessManager::NotAccessible);
 //! [4]

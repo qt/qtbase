@@ -70,7 +70,6 @@
 #include <QElapsedTimer>
 #include <QCache>
 
-#include <QNetworkSession>
 #include <QSharedPointer>
 
 #include <atomic>

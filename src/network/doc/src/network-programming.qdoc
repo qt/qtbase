@@ -43,9 +43,6 @@
     QTcpServer and QUdpSocket that represent low level network concepts,
     and high level classes such as QNetworkRequest, QNetworkReply and
     QNetworkAccessManager to perform network operations using common protocols.
-    It also offers classes such as QNetworkConfiguration,
-    QNetworkConfigurationManager and QNetworkSession that implement bearer
-    management.
 
     \tableofcontents
 

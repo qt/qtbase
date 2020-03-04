@@ -37,10 +37,6 @@
 #include <time.h>
 #include <stdlib.h>
 #include <QNetworkProxy>
-#include <QNetworkConfiguration>
-#include <qnetworkconfigmanager.h>
-#include <QNetworkSession>
-#include <QtNetwork/private/qnetworksession_p.h>
 #include <QTcpServer>
 #include <QHostInfo>
 #include <QElapsedTimer>
@@ -66,7 +62,6 @@ public:
 private slots:
     void initTestCase_data();
     void initTestCase();
-    void cleanupTestCase();
     void init();
     void cleanup();
     void connectToHost_data();
@@ -138,10 +133,6 @@ private:
     void renameCleanup( const QString &host, const QString &user, const QString &password, const QString &fileToDelete );
 
     QFtp *ftp;
-#ifndef QT_NO_BEARERMANAGEMENT
-    QSharedPointer<QNetworkSession> networkSessionExplicit;
-    QSharedPointer<QNetworkSession> networkSessionImplicit;
-#endif
 
     QList<int> ids; // helper to make sure that all expected signals are emitted
     int current_id;
@@ -190,21 +181,13 @@ void tst_QFtp::initTestCase_data()
 {
     QTest::addColumn<bool>("setProxy");
     QTest::addColumn<int>("proxyType");
-    QTest::addColumn<bool>("setSession");
 
-    QTest::newRow("WithoutProxy") << false << 0 << false;
+    QTest::newRow("WithoutProxy") << false << 0;
 #if QT_CONFIG(socks5)
-    QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy) << false;
+    QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
 #endif
     //### doesn't work well yet.
     //QTest::newRow("WithHttpProxy") << true << int(QNetworkProxy::HttpProxy);
-
-#ifndef QT_NO_BEARERMANAGEMENT
-    QTest::newRow("WithoutProxyWithSession") << false << 0 << true;
-#if QT_CONFIG(socks5)
-    QTest::newRow("WithSocks5ProxyAndSession") << true << int(QNetworkProxy::Socks5Proxy) << true;
-#endif
-#endif
 }
 
 void tst_QFtp::initTestCase()
@@ -218,29 +201,14 @@ void tst_QFtp::initTestCase()
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
 #endif
-#ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfigurationManager manager;
-    networkSessionImplicit = QSharedPointer<QNetworkSession>::create(manager.defaultConfiguration());
-    networkSessionImplicit->open();
-    QVERIFY(networkSessionImplicit->waitForOpened(60000)); //there may be user prompt on 1st connect
-#endif
     rfc3252File = QFINDTESTDATA("rfc3252.txt");
     QVERIFY(!rfc3252File.isEmpty());
-}
-
-void tst_QFtp::cleanupTestCase()
-{
-#ifndef QT_NO_BEARERMANAGEMENT
-    networkSessionExplicit.clear();
-    networkSessionImplicit.clear();
-#endif
 }
 
 void tst_QFtp::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH_GLOBAL(int, proxyType);
-    QFETCH_GLOBAL(bool, setSession);
     if (setProxy) {
 #ifndef QT_NO_NETWORKPROXY
         if (proxyType == QNetworkProxy::Socks5Proxy) {
@@ -253,19 +221,6 @@ void tst_QFtp::init()
         QSKIP("No proxy support");
 #endif // QT_NO_NETWORKPROXY
     }
-#ifndef QT_NO_BEARERMANAGEMENT
-    if (setSession) {
-        networkSessionExplicit = networkSessionImplicit;
-        if (!networkSessionExplicit->isOpen()) {
-            networkSessionExplicit->open();
-            QVERIFY(networkSessionExplicit->waitForOpened(30000));
-        }
-    } else {
-        networkSessionExplicit.clear();
-    }
-#else
-    Q_UNUSED(setSession);
-#endif
 
     delete ftp;
     ftp = 0;
@@ -314,9 +269,6 @@ void tst_QFtp::cleanup()
 
     delete ftp;
     ftp = 0;
-#ifndef QT_NO_BEARERMANAGEMENT
-    networkSessionExplicit.clear();
-#endif
 }
 
 void tst_QFtp::connectToHost_data()
@@ -1947,11 +1899,6 @@ void tst_QFtp::dataTransferProgress( qint64 done, qint64 total )
 QFtp *tst_QFtp::newFtp()
 {
     QFtp *nFtp = new QFtp( this );
-#ifndef QT_NO_BEARERMANAGEMENT
-    if (networkSessionExplicit) {
-        nFtp->setProperty("_q_networksession", QVariant::fromValue(networkSessionExplicit));
-    }
-#endif
     connect( nFtp, SIGNAL(commandStarted(int)),
              SLOT(commandStarted(int)) );
     connect( nFtp, SIGNAL(commandFinished(int,bool)),

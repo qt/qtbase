@@ -148,7 +148,6 @@ qt*-config.pri
 /tests/auto/dbus/qdbusinterface/qmyserver/qmyserver
 /tests/auto/gui/kernel/qfileopenevent/qfileopeneventexternal/qfileopeneventexternal
 /tests/auto/gui/kernel/qguivariant/no_application/no_application
-/tests/auto/network/bearer/qnetworksession/lackey/lackey
 /tests/auto/network/socket/qlocalsocket/socketprocess/socketprocess
 /tests/auto/other/qobjectrace/qobjectrace
 /tests/auto/other/qprocess_and_guieventloop/write-read-write/write-read-write

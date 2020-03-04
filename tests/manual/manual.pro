@@ -1,7 +1,7 @@
 TEMPLATE=subdirs
 QT_FOR_CONFIG += network-private gui-private
 
-SUBDIRS = bearerex \
+SUBDIRS = \
 filetest \
 embeddedintoforeignwindow \
 foreignwindows \
@@ -25,8 +25,6 @@ qlocale \
 qmimedatabase \
 qnetconmonitor \
 qnetworkaccessmanager/qget \
-qnetworkconfigurationmanager \
-qnetworkconfiguration \
 qnetworkreply \
 qstorageinfo \
 qscreen \

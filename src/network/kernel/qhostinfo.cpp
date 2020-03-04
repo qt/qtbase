@@ -51,7 +51,6 @@
 #include <qstringlist.h>
 #include <qthread.h>
 #include <qurl.h>
-#include <private/qnetworksession_p.h>
 
 #include <algorithm>
 

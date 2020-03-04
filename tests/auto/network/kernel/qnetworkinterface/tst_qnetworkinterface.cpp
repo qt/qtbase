@@ -33,10 +33,6 @@
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>
 #include <qudpsocket.h>
-#ifndef QT_NO_BEARERMANAGEMENT
-#include <QNetworkConfigurationManager>
-#include <QNetworkSession>
-#endif
 #include "../../../network-settings.h"
 #include "emulationdetector.h"
 
@@ -54,7 +50,6 @@ public:
 
 private slots:
     void initTestCase();
-    void cleanupTestCase();
     void dump();
     void consistencyCheck();
     void loopbackIPv4();
@@ -64,13 +59,6 @@ private slots:
     void interfaceFromXXX_data();
     void interfaceFromXXX();
     void copyInvalidInterface();
-
-private:
-#ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfigurationManager *netConfMan;
-    QNetworkConfiguration networkConfiguration;
-    QScopedPointer<QNetworkSession> networkSession;
-#endif
 };
 
 tst_QNetworkInterface::tst_QNetworkInterface()
@@ -92,27 +80,6 @@ void tst_QNetworkInterface::initTestCase()
 {
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
-#ifndef QT_NO_BEARERMANAGEMENT
-    netConfMan = new QNetworkConfigurationManager(this);
-    if (netConfMan->capabilities()
-            & QNetworkConfigurationManager::NetworkSessionRequired) {
-        networkConfiguration = netConfMan->defaultConfiguration();
-        networkSession.reset(new QNetworkSession(networkConfiguration));
-        if (!networkSession->isOpen()) {
-            networkSession->open();
-            QVERIFY(networkSession->waitForOpened(30000));
-        }
-    }
-#endif
-}
-
-void tst_QNetworkInterface::cleanupTestCase()
-{
-#ifndef QT_NO_BEARERMANAGEMENT
-    if (networkSession && networkSession->isOpen()) {
-        networkSession->close();
-    }
-#endif
 }
 
 void tst_QNetworkInterface::dump()

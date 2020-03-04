@@ -15,23 +15,11 @@ msvc:equals(QT_ARCH, i386): QMAKE_LFLAGS += /BASE:0x64000000
 QMAKE_DOCS = $$PWD/doc/qtnetwork.qdocconf
 
 include(access/access.pri)
-qtConfig(bearermanagement): include(bearer/bearer.pri)
 include(kernel/kernel.pri)
 include(socket/socket.pri)
 include(ssl/ssl.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_NETWORK
-
-qtConfig(bearermanagement) {
-    ANDROID_BUNDLED_JAR_DEPENDENCIES = \
-        jar/QtAndroidBearer.jar
-    ANDROID_LIB_DEPENDENCIES = \
-        plugins/bearer/libplugins_bearer_qandroidbearer.so
-    MODULE_PLUGIN_TYPES = \
-        bearer
-    ANDROID_PERMISSIONS += \
-        android.permission.ACCESS_NETWORK_STATE
-}
 
 MODULE_WINRT_CAPABILITIES = \
     internetClient \

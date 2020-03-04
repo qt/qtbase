@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QUrl;
-class QNetworkConfiguration;
 
 class QNetworkProxyQueryPrivate;
 class Q_NETWORK_EXPORT QNetworkProxyQuery

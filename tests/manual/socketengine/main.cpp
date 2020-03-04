@@ -36,9 +36,6 @@
 #include <QDebug>
 #include <private/qabstractsocketengine_p.h>
 #include <cstdio>
-#include <QNetworkConfigurationManager>
-#include <QNetworkConfiguration>
-#include <QNetworkSession>
 #include <QCoreApplication>
 
 const int bufsize = 16*1024;

@@ -33,9 +33,6 @@
 #include <QCoreApplication>
 #include <QList>
 #include <QStringList>
-#include <QNetworkConfiguration>
-#include <QNetworkConfigurationManager>
-#include <QNetworkSession>
 
 void printShortUsage()
 {

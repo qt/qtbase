@@ -47,12 +47,6 @@
 #include <private/qthread_p.h>
 #include <QTcpServer>
 
-#ifndef QT_NO_BEARERMANAGEMENT
-#include <QtNetwork/qnetworkconfigmanager.h>
-#include <QtNetwork/qnetworkconfiguration.h>
-#include <QtNetwork/qnetworksession.h>
-#endif
-
 #include <time.h>
 #if defined(Q_OS_WIN)
 #include <windows.h>
@@ -121,11 +115,6 @@ private:
     bool lookupDone;
     int lookupsDoneCounter;
     QHostInfo lookupResults;
-#ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfigurationManager *netConfMan;
-    QNetworkConfiguration networkConfiguration;
-    QScopedPointer<QNetworkSession> networkSession;
-#endif
 };
 
 void tst_QHostInfo::swapFunction()
@@ -180,17 +169,6 @@ void tst_QHostInfo::staticInformation()
 
 void tst_QHostInfo::initTestCase()
 {
-#ifndef QT_NO_BEARERMANAGEMENT
-    //start the default network
-    netConfMan = new QNetworkConfigurationManager(this);
-    networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession.reset(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        networkSession->waitForOpened(30000);
-    }
-#endif
-
     ipv6Available = false;
     ipv6LookupsAvailable = false;
 
