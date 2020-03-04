@@ -683,19 +683,46 @@ function(qt6_generate_meta_types_json_file target)
         set(cmake_autogen_info_file
             "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
 
-        add_custom_target(${target}_automoc_json_extraction
-            DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
-            BYPRODUCTS ${type_list_file}
-            COMMAND
-                ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
-                --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
-                --cmake-autogen-info-file "${cmake_autogen_info_file}"
-                --output-file-path "${type_list_file}"
-                ${mutli_config_args}
-            COMMENT "Running Automoc file extraction"
-            COMMAND_EXPAND_LISTS
-        )
-        add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
+        set (use_dep_files FALSE)
+        if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.17") # Requires automoc changes present only in 3.17
+            if(CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+                set(use_dep_files TRUE)
+            endif()
+        endif()
+
+        if (NOT use_dep_files)
+            add_custom_target(${target}_automoc_json_extraction
+                DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+                BYPRODUCTS ${type_list_file}
+                COMMAND
+                    ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+                    --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
+                    --cmake-autogen-info-file "${cmake_autogen_info_file}"
+                    --output-file-path "${type_list_file}"
+                    ${mutli_config_args}
+                COMMENT "Running Automoc file extraction"
+                COMMAND_EXPAND_LISTS
+            )
+            add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
+        else()
+            set(cmake_autogen_timestamp_file
+                "${target_binary_dir}/${target}_autogen/timestamp"
+            )
+
+            add_custom_command(OUTPUT ${type_list_file}
+                DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+                    ${cmake_autogen_timestamp_file}
+                COMMAND
+                    ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+                    --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
+                    --cmake-autogen-info-file "${cmake_autogen_info_file}"
+                    --output-file-path "${type_list_file}"
+                    ${mutli_config_args}
+                COMMENT "Running Automoc file extraction"
+                COMMAND_EXPAND_LISTS
+            )
+
+        endif()
         set(automoc_args "@${type_list_file}")
         set(automoc_dependencies "${type_list_file}")
     endif()
