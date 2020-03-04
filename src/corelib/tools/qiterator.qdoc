@@ -57,7 +57,7 @@
     \internal
 */
 
-/*! \typedef QKeyValueIterator::pointer
+/*! \struct QKeyValueIterator::pointer
     \internal
 */
 
@@ -75,9 +75,18 @@
     Constructs a QKeyValueIterator on top of \a o.
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> const T &QKeyValueIterator<Key, T, Iterator>::operator*() const
+/*! \fn template<typename Key, typename T, class Iterator> std::pair<Key, T> QKeyValueIterator<Key, T, Iterator>::operator*() const
 
     Returns the current entry as a pair.
+*/
+
+/*! \fn template<typename Key, typename T, class Iterator> pointer QKeyValueIterator<Key, T, Iterator>::operator->() const
+
+    Returns the current entry as a pointer-like object to the pair.
+
+    \since 5.15
+
+    \sa operator*()
 */
 
 /*! \fn template<typename Key, typename T, class Iterator> bool operator==(QKeyValueIterator<Key, T, Iterator> lhs, QKeyValueIterator<Key, T, Iterator> rhs)

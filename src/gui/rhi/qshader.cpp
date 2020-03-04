@@ -428,6 +428,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
     ds >> intVal;
     d->qsbVersion = intVal;
     if (d->qsbVersion != QShaderPrivate::QSB_VERSION
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_VAR_ARRAYDIMS
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_CBOR
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_BINDINGS)
@@ -439,7 +440,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
     ds >> intVal;
     d->stage = Stage(intVal);
     if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_CBOR) {
-        d->desc = QShaderDescription::deserialize(&ds);
+        d->desc = QShaderDescription::deserialize(&ds, d->qsbVersion);
     } else if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON) {
         QByteArray descBin;
         ds >> descBin;

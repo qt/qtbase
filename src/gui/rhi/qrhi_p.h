@@ -791,6 +791,7 @@ public:
     virtual bool build() = 0;
     virtual NativeTexture nativeTexture();
     virtual bool buildFrom(NativeTexture src);
+    virtual void setNativeLayout(int layout);
 
 protected:
     QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_,

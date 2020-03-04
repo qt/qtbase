@@ -373,10 +373,10 @@ public:
     QList<Key> keys(const T &value) const;
     QList<T> values() const;
 #if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") QList<Key> uniqueKeys() const;
-    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") QList<T> values(const Key &key) const;
-    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") int count(const Key &key) const;
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiMap for maps storing multiple values with the same key.") QList<Key> uniqueKeys() const;
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiMap for maps storing multiple values with the same key.") QList<T> values(const Key &key) const;
 #endif
+    int count(const Key &key) const;
 
 
     inline const Key &firstKey() const { Q_ASSERT(!isEmpty()); return constBegin().key(); }
@@ -559,9 +559,9 @@ public:
     iterator insert(const_iterator pos, const Key &key, const T &value);
     void insert(const QMap<Key, T> &map);
 #if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") iterator insertMulti(const Key &key, const T &value);
-    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") iterator insertMulti(const_iterator pos, const Key &akey, const T &avalue);
-    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") QMap<Key, T> &unite(const QMap<Key, T> &other);
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiMap for maps storing multiple values with the same key.") iterator insertMulti(const Key &key, const T &value);
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiMap for maps storing multiple values with the same key.") iterator insertMulti(const_iterator pos, const Key &akey, const T &avalue);
+    QT_DEPRECATED_VERSION_X_5_15("Use QMultiMap for maps storing multiple values with the same key.") QMap<Key, T> &unite(const QMap<Key, T> &other);
 #endif
 
     // STL compatibility
@@ -652,6 +652,23 @@ Q_INLINE_TEMPLATE T &QMap<Key, T>::operator[](const Key &akey)
     if (!n)
         return *insert(akey, T());
     return n->value;
+}
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE int QMap<Key, T>::count(const Key &akey) const
+{
+    Node *firstNode;
+    Node *lastNode;
+    d->nodeRange(akey, &firstNode, &lastNode);
+
+    const_iterator ci_first(firstNode);
+    const const_iterator ci_last(lastNode);
+    int cnt = 0;
+    while (ci_first != ci_last) {
+        ++cnt;
+        ++ci_first;
+    }
+    return cnt;
 }
 
 template <class Key, class T>
@@ -1116,7 +1133,6 @@ public:
 
     int remove(const Key &key, const T &value);
 
-    int count(const Key &key) const;
     int count(const Key &key, const T &value) const;
 
     typename QMap<Key, T>::iterator find(const Key &key, const T &value) {
@@ -1290,23 +1306,6 @@ Q_INLINE_TEMPLATE int QMultiMap<Key, T>::remove(const Key &key, const T &value)
 }
 
 template <class Key, class T>
-Q_INLINE_TEMPLATE int QMultiMap<Key, T>::count(const Key &akey) const
-{
-    QMultiMap::Node *firstNode;
-    QMultiMap::Node *lastNode;
-    this->d->nodeRange(akey, &firstNode, &lastNode);
-
-    typename QMap<Key, T>::const_iterator ci_first(firstNode);
-    const typename QMap<Key, T>::const_iterator ci_last(lastNode);
-    int cnt = 0;
-    while (ci_first != ci_last) {
-        ++cnt;
-        ++ci_first;
-    }
-    return cnt;
-}
-
-template <class Key, class T>
 Q_INLINE_TEMPLATE int QMultiMap<Key, T>::count(const Key &key, const T &value) const
 {
     int n = 0;
@@ -1331,12 +1330,6 @@ template<class Key, class T>
 QList<T> QMap<Key, T>::values(const Key &key) const
 {
     return static_cast<const QMultiMap<Key, T> *>(this)->values(key);
-}
-
-template<class Key, class T>
-int QMap<Key, T>::count(const Key &key) const
-{
-    return static_cast<const QMultiMap<Key, T> *>(this)->count(key);
 }
 
 template<class Key, class T>

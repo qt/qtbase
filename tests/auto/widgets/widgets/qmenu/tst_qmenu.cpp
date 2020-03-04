@@ -116,6 +116,7 @@ private slots:
     void QTBUG20403_nested_popup_on_shortcut_trigger();
     void QTBUG47515_widgetActionEnterLeave();
     void QTBUG8122_widgetActionCrashOnClose();
+    void widgetActionTriggerClosesMenu();
 
     void QTBUG_10735_crashWithDialog();
 #ifdef Q_OS_MAC
@@ -1407,6 +1408,84 @@ void tst_QMenu::QTBUG8122_widgetActionCrashOnClose()
     QTRY_VERIFY(menu->isHidden());
 }
 
+/*!
+    Test that a QWidgetAction that fires closes the menus that it is in.
+*/
+void tst_QMenu::widgetActionTriggerClosesMenu()
+{
+    class ButtonAction : public QWidgetAction
+    {
+    public:
+        ButtonAction()
+        : QWidgetAction(nullptr)
+        {}
+
+        void click()
+        {
+            if (pushButton)
+                pushButton->click();
+        }
+
+    protected:
+        QWidget *createWidget(QWidget *parent)
+        {
+            QPushButton *button = new QPushButton(QLatin1String("Button"), parent);
+            connect(button, &QPushButton::clicked, this, &QAction::trigger);
+
+            if (!pushButton)
+                pushButton = button;
+            return button;
+        }
+
+    private:
+        QPointer<QPushButton> pushButton;
+    };
+
+    QMenu menu;
+    QMenu submenu;
+
+    int menuTriggeredCount = 0;
+    int menuAboutToHideCount = 0;
+    QAction *actionTriggered = nullptr;
+
+    connect(&menu, &QMenu::triggered, this, [&](QAction *action){
+        ++menuTriggeredCount;
+        actionTriggered = action;
+    });
+    connect (&menu, &QMenu::aboutToHide, this, [&](){
+        ++menuAboutToHideCount;
+    });
+
+    QAction regularAction(QLatin1String("Action"));
+    ButtonAction widgetAction;
+
+    submenu.addAction(&regularAction);
+    submenu.addAction(&widgetAction);
+
+    menu.addMenu(&submenu);
+    menu.addAction(&regularAction);
+    menu.addAction(&widgetAction);
+
+    menu.popup(QPoint(200,200));
+    submenu.popup(QPoint(250,250));
+    if (!QTest::qWaitForWindowExposed(&menu) || !QTest::qWaitForWindowExposed(&submenu))
+        QSKIP("Failed to show menus, aborting test");
+
+    regularAction.trigger();
+    QVERIFY(menu.isVisible());
+    QVERIFY(submenu.isVisible());
+    QCOMPARE(menuTriggeredCount, 1);
+    QCOMPARE(actionTriggered, &regularAction);
+    menuTriggeredCount = 0;
+    actionTriggered = nullptr;
+
+    widgetAction.click();
+    QVERIFY(!menu.isVisible());
+    QVERIFY(!submenu.isVisible());
+    QCOMPARE(menuTriggeredCount, 1);
+    QCOMPARE(menuAboutToHideCount, 1);
+    QCOMPARE(actionTriggered, &widgetAction);
+}
 
 class MyMenu : public QMenu
 {

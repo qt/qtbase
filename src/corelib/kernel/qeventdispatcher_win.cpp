@@ -884,7 +884,11 @@ void QEventDispatcherWin32::unregisterEventNotifier(QWinEventNotifier *notifier)
         return;
     }
 #endif
+    doUnregisterEventNotifier(notifier);
+}
 
+void QEventDispatcherWin32::doUnregisterEventNotifier(QWinEventNotifier *notifier)
+{
     Q_D(QEventDispatcherWin32);
 
     int i = d->winEventNotifierList.indexOf(notifier);
@@ -995,6 +999,10 @@ void QEventDispatcherWin32::closingDown()
     while (!d->sn_except.isEmpty())
         doUnregisterSocketNotifier((*(d->sn_except.begin()))->obj);
     Q_ASSERT(d->active_fd.isEmpty());
+
+    // clean up any eventnotifiers
+    while (!d->winEventNotifierList.isEmpty())
+        doUnregisterEventNotifier(d->winEventNotifierList.first());
 
     // clean up any timers
     for (int i = 0; i < d->timerVec.count(); ++i)

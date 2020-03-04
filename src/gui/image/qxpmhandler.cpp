@@ -1280,13 +1280,6 @@ void QXpmHandler::setOption(ImageOption option, const QVariant &value)
         fileName = value.toString();
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QByteArray QXpmHandler::name() const
-{
-    return "xpm";
-}
-#endif
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_IMAGEFORMAT_XPM

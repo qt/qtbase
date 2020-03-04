@@ -56,6 +56,7 @@
 #include <QtGui/qpalette.h>
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextlist.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qstack.h>
 
 QT_BEGIN_NAMESPACE
@@ -113,7 +114,7 @@ private:
 #endif
     QString m_blockCodeLanguage;
     QVector<int> m_nonEmptyTableCells; // in the current row
-    QStack<QTextList *> m_listStack;
+    QStack<QPointer<QTextList>> m_listStack;
     QStack<QTextCharFormat> m_spanFormatStack;
     QFont m_monoFont;
     QPalette m_palette;

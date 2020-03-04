@@ -1383,6 +1383,10 @@ QT_WARNING_POP
 
     If the datetime is invalid, an empty string will be returned.
 
+    \note If localized month and day names are desired, please switch to using
+    QLocale::system().toString() as QDate methods shall change to use English (C
+    locale) names at Qt 6.
+
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
 
 */
@@ -1884,6 +1888,10 @@ QT_WARNING_POP
 
     \snippet code/src_corelib_tools_qdatetime.cpp 3
 
+    \note If localized month and day names are used, please switch to using
+    QLocale::system().toDate() as QDate methods shall change to only recognize
+    English (C locale) names at Qt 6.
+
     \sa toString(), QDateTime::fromString(), QTime::fromString(),
         QLocale::toDate()
 */
@@ -2243,6 +2251,10 @@ QT_WARNING_POP
 
     If the time is invalid, an empty string will be returned.
     If \a format is empty, the default format "hh:mm:ss" is used.
+
+    \note If localized forms of am or pm (the AP, ap, A or a formats) are
+    desired, please switch to using QLocale::system().toString() as QTime
+    methods shall change to use English (C locale) at Qt 6.
 
     \sa fromString(), QDate::toString(), QDateTime::toString(), QLocale::toString()
 */
@@ -2640,6 +2652,10 @@ QT_WARNING_POP
     For example:
 
     \snippet code/src_corelib_tools_qdatetime.cpp 8
+
+    \note If localized forms of am or pm (the AP, ap, A or a formats) are used,
+    please switch to using QLocale::system().toTime() as QTime methods shall
+    change to only recognize English (C locale) at Qt 6.
 
     \sa toString(), QDateTime::fromString(), QDate::fromString(),
     QLocale::toTime()
@@ -4541,6 +4557,10 @@ QT_WARNING_POP
 
     If the datetime is invalid, an empty string will be returned.
 
+    \note If localized month and day names are desired, please switch to using
+    QLocale::system().toString() as QDateTime methods shall change to use
+    English (C locale) names at Qt 6.
+
     \sa fromString(), QDate::toString(), QTime::toString(), QLocale::toString()
 */
 QString QDateTime::toString(QStringView format) const
@@ -5579,6 +5599,10 @@ QT_WARNING_POP
     For example:
 
     \snippet code/src_corelib_tools_qdatetime.cpp 14
+
+    \note If localized month and day names are used, please switch to using
+    QLocale::system().toDateTime() as QDateTime methods shall change to only
+    recognize English (C locale) names at Qt 6.
 
     \sa toString(), QDate::fromString(), QTime::fromString(),
     QLocale::toDateTime()

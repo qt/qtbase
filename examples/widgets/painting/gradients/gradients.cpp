@@ -282,7 +282,8 @@ GradientWidget::GradientWidget(QWidget *parent)
 
     m_renderer = new GradientRenderer(this);
 
-    QGroupBox *mainGroup = new QGroupBox(this);
+    QWidget *mainContentWidget = new QWidget();
+    QGroupBox *mainGroup = new QGroupBox(mainContentWidget);
     mainGroup->setTitle(tr("Gradients"));
 
     QGroupBox *editorGroup = new QGroupBox(mainGroup);
@@ -327,11 +328,6 @@ GradientWidget::GradientWidget(QWidget *parent)
     whatsThisButton->setText(tr("What's This?"));
     whatsThisButton->setCheckable(true);
 
-    // Layouts
-    QHBoxLayout *mainLayout = new QHBoxLayout(this);
-    mainLayout->addWidget(m_renderer);
-    mainLayout->addWidget(mainGroup);
-
     mainGroup->setFixedWidth(200);
     QVBoxLayout *mainGroupLayout = new QVBoxLayout(mainGroup);
     mainGroupLayout->addWidget(editorGroup);
@@ -369,6 +365,21 @@ GradientWidget::GradientWidget(QWidget *parent)
     defaultsGroupLayout->addWidget(default2Button);
     defaultsGroupLayout->addWidget(default3Button);
     editorGroupLayout->addWidget(default4Button);
+
+    mainGroup->setLayout(mainGroupLayout);
+
+    QVBoxLayout *mainContentLayout = new QVBoxLayout();
+    mainContentLayout->addWidget(mainGroup);
+    mainContentWidget->setLayout(mainContentLayout);
+
+    QScrollArea *mainScrollArea = new QScrollArea();
+    mainScrollArea->setWidget(mainContentWidget);
+    mainScrollArea->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+
+    // Layouts
+    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    mainLayout->addWidget(m_renderer);
+    mainLayout->addWidget(mainScrollArea);
 
     connect(m_editor, &GradientEditor::gradientStopsChanged,
             m_renderer, &GradientRenderer::setGradientStops);

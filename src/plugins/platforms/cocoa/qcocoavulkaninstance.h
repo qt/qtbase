@@ -61,9 +61,11 @@ public:
 
     void createOrAdoptInstance() override;
 
-    VkSurfaceKHR *createSurface(QWindow *window);
-    VkSurfaceKHR createSurface(NSView *view);
+    VkSurfaceKHR *surface(QWindow *window);
+
 private:
+    VkSurfaceKHR createSurface(NSView *view);
+
     QVulkanInstance *m_instance = nullptr;
     QLibrary m_lib;
     VkSurfaceKHR m_nullSurface = nullptr;

@@ -1115,6 +1115,12 @@ void tst_QHash::keyValueIterator()
 
         entry_type pair(it.key(), it.value());
         QCOMPARE(*key_value_it, pair);
+        QCOMPARE(key_value_it->first, pair.first);
+        QCOMPARE(key_value_it->second, pair.second);
+        QCOMPARE(&(*key_value_it).first, &it.key());
+        QCOMPARE(&key_value_it->first,   &it.key());
+        QCOMPARE(&(*key_value_it).second, &it.value());
+        QCOMPARE(&key_value_it->second,   &it.value());
         ++key_value_it;
         ++it;
     }

@@ -1827,16 +1827,15 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 }
 
 // this handles all types of buffers, not just Dynamic
-void QRhiMetal::executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD)
+void QRhiMetal::executeBufferHostWritesForSlot(QMetalBuffer *bufD, int slot)
 {
-    const int idx = bufD->d->slotted ? currentFrameSlot : 0;
-    if (bufD->d->pendingUpdates[idx].isEmpty())
+    if (bufD->d->pendingUpdates[slot].isEmpty())
         return;
 
-    void *p = [bufD->d->buf[idx] contents];
+    void *p = [bufD->d->buf[slot] contents];
     int changeBegin = -1;
     int changeEnd = -1;
-    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->d->pendingUpdates[idx])) {
+    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->d->pendingUpdates[slot])) {
         Q_ASSERT(bufD == QRHI_RES(QMetalBuffer, u.buf));
         memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
         if (changeBegin == -1 || u.offset < changeBegin)
@@ -1846,10 +1845,15 @@ void QRhiMetal::executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD)
     }
 #ifdef Q_OS_MACOS
     if (changeBegin >= 0 && bufD->d->managed)
-        [bufD->d->buf[idx] didModifyRange: NSMakeRange(NSUInteger(changeBegin), NSUInteger(changeEnd - changeBegin))];
+        [bufD->d->buf[slot] didModifyRange: NSMakeRange(NSUInteger(changeBegin), NSUInteger(changeEnd - changeBegin))];
 #endif
 
-    bufD->d->pendingUpdates[idx].clear();
+    bufD->d->pendingUpdates[slot].clear();
+}
+
+void QRhiMetal::executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD)
+{
+    executeBufferHostWritesForSlot(bufD, bufD->d->slotted ? currentFrameSlot : 0);
 }
 
 void QRhiMetal::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -2205,8 +2209,11 @@ QRhiBuffer::NativeBuffer QMetalBuffer::nativeBuffer()
     if (d->slotted) {
         NativeBuffer b;
         Q_ASSERT(sizeof(b.objects) / sizeof(b.objects[0]) >= size_t(QMTL_FRAMES_IN_FLIGHT));
-        for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
+        for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
+            QRHI_RES_RHI(QRhiMetal);
+            rhiD->executeBufferHostWritesForSlot(this, i);
             b.objects[i] = &d->buf[i];
+        }
         b.slotCount = QMTL_FRAMES_IN_FLIGHT;
         return b;
     }

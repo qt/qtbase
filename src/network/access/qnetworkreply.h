@@ -156,7 +156,11 @@ public Q_SLOTS:
 Q_SIGNALS:
     void metaDataChanged();
     void finished();
+#if QT_DEPRECATED_SINCE(5,15)
+    QT_DEPRECATED_X("Use QNetworkReply::errorOccurred(QNetworkReply::NetworkError) instead")
     void error(QNetworkReply::NetworkError);
+#endif
+    void errorOccurred(QNetworkReply::NetworkError);
 #if QT_CONFIG(ssl)
     void encrypted();
     void sslErrors(const QList<QSslError> &errors);

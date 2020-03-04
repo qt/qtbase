@@ -68,10 +68,6 @@ public:
 
     static bool canRead(QIODevice *device);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QByteArray name() const override;
-#endif
-
     QVariant option(ImageOption option) const override;
     void setOption(ImageOption option, const QVariant &value) override;
     bool supportsOption(ImageOption option) const override;

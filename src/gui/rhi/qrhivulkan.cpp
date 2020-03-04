@@ -149,6 +149,10 @@ QT_BEGIN_NAMESPACE
     for other windows as well, as long as they all have their
     QWindow::surfaceType() set to QSurface::VulkanSurface.
 
+    To request additional extensions to be enabled on the Vulkan device, list them
+    in deviceExtensions. This can be relevant when integrating with native Vulkan
+    rendering code.
+
     \section2 Working with existing Vulkan devices
 
     When interoperating with another graphics engine, it may be necessary to
@@ -299,6 +303,7 @@ QRhiVulkan::QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *im
 {
     inst = params->inst;
     maybeWindow = params->window; // may be null
+    requestedDeviceExtensions = params->deviceExtensions;
 
     importedDevice = importDevice != nullptr;
     if (importedDevice) {
@@ -463,38 +468,57 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         if (inst->layers().contains("VK_LAYER_LUNARG_standard_validation"))
             devLayers.append("VK_LAYER_LUNARG_standard_validation");
 
+        QVulkanInfoVector<QVulkanExtension> devExts;
         uint32_t devExtCount = 0;
         f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, nullptr);
-        QVector<VkExtensionProperties> devExts(devExtCount);
-        f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, devExts.data());
+        if (devExtCount) {
+            QVector<VkExtensionProperties> extProps(devExtCount);
+            f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, extProps.data());
+            for (const VkExtensionProperties &p : qAsConst(extProps))
+                devExts.append({ p.extensionName, p.specVersion });
+        }
         qCDebug(QRHI_LOG_INFO, "%d device extensions available", devExts.count());
 
         QVector<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
 
         debugMarkersAvailable = false;
+        if (devExts.contains(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+            requestedDevExts.append(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+            debugMarkersAvailable = true;
+        }
+
         vertexAttribDivisorAvailable = false;
-        for (const VkExtensionProperties &ext : devExts) {
-            if (!strcmp(ext.extensionName, VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
-                requestedDevExts.append(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-                debugMarkersAvailable = true;
-            } else if (!strcmp(ext.extensionName, VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
-                if (inst->extensions().contains(QByteArrayLiteral("VK_KHR_get_physical_device_properties2"))) {
-                    requestedDevExts.append(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
-                    vertexAttribDivisorAvailable = true;
-                }
+        if (devExts.contains(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
+            if (inst->extensions().contains(QByteArrayLiteral("VK_KHR_get_physical_device_properties2"))) {
+                requestedDevExts.append(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
+                vertexAttribDivisorAvailable = true;
             }
         }
 
-        QByteArrayList envExtList;
-        if (qEnvironmentVariableIsSet("QT_VULKAN_DEVICE_EXTENSIONS")) {
-            envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
-            for (auto ext : requestedDevExts)
-                envExtList.removeAll(ext);
-            for (const QByteArray &ext : envExtList) {
-                if (!ext.isEmpty())
+        for (const QByteArray &ext : requestedDeviceExtensions) {
+            if (!ext.isEmpty()) {
+                if (devExts.contains(ext))
                     requestedDevExts.append(ext.constData());
+                else
+                    qWarning("Device extension %s is not supported", ext.constData());
             }
+        }
+
+        QByteArrayList envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
+        for (const QByteArray &ext : envExtList) {
+            if (!ext.isEmpty() && !requestedDevExts.contains(ext)) {
+                if (devExts.contains(ext))
+                    requestedDevExts.append(ext.constData());
+                else
+                    qWarning("Device extension %s is not supported", ext.constData());
+            }
+        }
+
+        if (QRHI_LOG_INFO().isEnabled(QtDebugMsg)) {
+            qCDebug(QRHI_LOG_INFO, "Enabling device extensions:");
+            for (const char *ext : requestedDevExts)
+                qCDebug(QRHI_LOG_INFO, "  %s", ext);
         }
 
         VkDeviceCreateInfo devInfo;
@@ -2903,7 +2927,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
             if (bufD->m_type == QRhiBuffer::Dynamic) {
-                executeBufferHostWritesForCurrentFrame(bufD);
+                executeBufferHostWritesForSlot(bufD, currentFrameSlot);
                 void *p = nullptr;
                 VmaAllocation a = toVmaAllocation(bufD->allocations[currentFrameSlot]);
                 VkResult err = vmaMapMemory(toVmaAllocator(allocator), a, &p);
@@ -3300,14 +3324,14 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
     ud->free();
 }
 
-void QRhiVulkan::executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD)
+void QRhiVulkan::executeBufferHostWritesForSlot(QVkBuffer *bufD, int slot)
 {
-    if (bufD->pendingDynamicUpdates[currentFrameSlot].isEmpty())
+    if (bufD->pendingDynamicUpdates[slot].isEmpty())
         return;
 
     Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
     void *p = nullptr;
-    VmaAllocation a = toVmaAllocation(bufD->allocations[currentFrameSlot]);
+    VmaAllocation a = toVmaAllocation(bufD->allocations[slot]);
     // The vmaMap/Unmap are basically a no-op when persistently mapped since it
     // refcounts; this is great because we don't need to care if the allocation
     // was created as persistently mapped or not.
@@ -3318,7 +3342,7 @@ void QRhiVulkan::executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD)
     }
     int changeBegin = -1;
     int changeEnd = -1;
-    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->pendingDynamicUpdates[currentFrameSlot])) {
+    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->pendingDynamicUpdates[slot])) {
         Q_ASSERT(bufD == QRHI_RES(QVkBuffer, u.buf));
         memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
         if (changeBegin == -1 || u.offset < changeBegin)
@@ -3330,7 +3354,7 @@ void QRhiVulkan::executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD)
     if (changeBegin >= 0)
         vmaFlushAllocation(toVmaAllocator(allocator), a, VkDeviceSize(changeBegin), VkDeviceSize(changeEnd - changeBegin));
 
-    bufD->pendingDynamicUpdates[currentFrameSlot].clear();
+    bufD->pendingDynamicUpdates[slot].clear();
 }
 
 static void qrhivk_releaseBuffer(const QRhiVulkan::DeferredReleaseEntry &e, void *allocator)
@@ -4166,7 +4190,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer));
 
             if (bufD->m_type == QRhiBuffer::Dynamic)
-                executeBufferHostWritesForCurrentFrame(bufD);
+                executeBufferHostWritesForSlot(bufD, currentFrameSlot);
 
             bufD->lastActiveFrameSlot = currentFrameSlot;
             trackedRegisterBuffer(&passResTracker, bufD, bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0,
@@ -4240,7 +4264,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
 
             if (bufD->m_type == QRhiBuffer::Dynamic)
-                executeBufferHostWritesForCurrentFrame(bufD);
+                executeBufferHostWritesForSlot(bufD, currentFrameSlot);
 
             bufD->lastActiveFrameSlot = currentFrameSlot;
             QRhiPassResourceTracker::BufferAccess access;
@@ -4349,7 +4373,7 @@ void QRhiVulkan::setVertexInput(QRhiCommandBuffer *cb,
         Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::VertexBuffer));
         bufD->lastActiveFrameSlot = currentFrameSlot;
         if (bufD->m_type == QRhiBuffer::Dynamic)
-            executeBufferHostWritesForCurrentFrame(bufD);
+            executeBufferHostWritesForSlot(bufD, currentFrameSlot);
 
         const VkBuffer vkvertexbuf = bufD->buffers[bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0];
         if (cbD->currentVertexBuffers[inputSlot] != vkvertexbuf
@@ -4395,7 +4419,7 @@ void QRhiVulkan::setVertexInput(QRhiCommandBuffer *cb,
         Q_ASSERT(ibufD->m_usage.testFlag(QRhiBuffer::IndexBuffer));
         ibufD->lastActiveFrameSlot = currentFrameSlot;
         if (ibufD->m_type == QRhiBuffer::Dynamic)
-            executeBufferHostWritesForCurrentFrame(ibufD);
+            executeBufferHostWritesForSlot(ibufD, currentFrameSlot);
 
         const int slot = ibufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0;
         const VkBuffer vkindexbuf = ibufD->buffers[slot];
@@ -5188,10 +5212,13 @@ bool QVkBuffer::build()
 QRhiBuffer::NativeBuffer QVkBuffer::nativeBuffer()
 {
     if (m_type == Dynamic) {
+        QRHI_RES_RHI(QRhiVulkan);
         NativeBuffer b;
         Q_ASSERT(sizeof(b.objects) / sizeof(b.objects[0]) >= size_t(QVK_FRAMES_IN_FLIGHT));
-        for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+        for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
+            rhiD->executeBufferHostWritesForSlot(this, i);
             b.objects[i] = &buffers[i];
+        }
         b.slotCount = QVK_FRAMES_IN_FLIGHT;
         return b;
     }
@@ -5534,6 +5561,11 @@ bool QVkTexture::buildFrom(QRhiTexture::NativeTexture src)
 QRhiTexture::NativeTexture QVkTexture::nativeTexture()
 {
     return {&image, usageState.layout};
+}
+
+void QVkTexture::setNativeLayout(int layout)
+{
+    usageState.layout = VkImageLayout(layout);
 }
 
 VkImageView QVkTexture::imageViewForLevel(int level)

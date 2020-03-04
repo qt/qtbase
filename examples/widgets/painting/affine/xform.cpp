@@ -787,8 +787,8 @@ XFormWidget::XFormWidget(QWidget *parent)
     view = new XFormView(this);
     view->setMinimumSize(200, 200);
 
-    QGroupBox *mainGroup = new QGroupBox(this);
-    mainGroup->setFixedWidth(180);
+    QWidget *mainContentWidget = new QWidget();
+    QGroupBox *mainGroup = new QGroupBox(mainContentWidget);
     mainGroup->setTitle(tr("Affine Transformations"));
 
     QGroupBox *rotateGroup = new QGroupBox(mainGroup);
@@ -837,10 +837,6 @@ XFormWidget::XFormWidget(QWidget *parent)
     whatsThisButton->setText(tr("What's This?"));
     whatsThisButton->setCheckable(true);
 
-    QHBoxLayout *viewLayout = new QHBoxLayout(this);
-    viewLayout->addWidget(view);
-    viewLayout->addWidget(mainGroup);
-
     QVBoxLayout *rotateGroupLayout = new QVBoxLayout(rotateGroup);
     rotateGroupLayout->addWidget(rotateSlider);
 
@@ -870,6 +866,20 @@ XFormWidget::XFormWidget(QWidget *parent)
     mainGroupLayout->addWidget(enableOpenGLButton);
 #endif
     mainGroupLayout->addWidget(whatsThisButton);
+
+    mainGroup->setLayout(mainGroupLayout);
+
+    QVBoxLayout *mainContentLayout = new QVBoxLayout();
+    mainContentLayout->addWidget(mainGroup);
+    mainContentWidget->setLayout(mainContentLayout);
+
+    QScrollArea *mainScrollArea = new QScrollArea();
+    mainScrollArea->setWidget(mainContentWidget);
+    mainScrollArea->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+
+    QHBoxLayout *viewLayout = new QHBoxLayout(this);
+    viewLayout->addWidget(view);
+    viewLayout->addWidget(mainScrollArea);
 
     connect(rotateSlider, &QSlider::valueChanged, view, &XFormView::changeRotation);
     connect(shearSlider, &QSlider::valueChanged, view, &XFormView::changeShear);

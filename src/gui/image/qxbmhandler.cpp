@@ -357,13 +357,6 @@ void QXbmHandler::setOption(ImageOption option, const QVariant &value)
         fileName = value.toString();
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QByteArray QXbmHandler::name() const
-{
-    return "xbm";
-}
-#endif
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_IMAGEFORMAT_XBM

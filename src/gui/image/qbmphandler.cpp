@@ -870,13 +870,6 @@ void QBmpHandler::setOption(ImageOption option, const QVariant &value)
     Q_UNUSED(value);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QByteArray QBmpHandler::name() const
-{
-    return formatName();
-}
-#endif
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_IMAGEFORMAT_BMP
