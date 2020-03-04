@@ -335,8 +335,9 @@ public:
     template<typename Integer, if_valid_segment_type<Integer> = true>
     static constexpr bool isValidSegment(Integer segment)
     {
+        // using extra parentheses around max to avoid expanding it if it is a macro
         return segment >= Integer(0)
-                && (std::numeric_limits<Integer>::max() < Integer(SegmentUnknown)
+                && ((std::numeric_limits<Integer>::max)() < Integer(SegmentUnknown)
                     || segment < Integer(SegmentUnknown));
     }
 
