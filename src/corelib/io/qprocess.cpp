@@ -1660,17 +1660,6 @@ qint64 QProcess::processId() const
 #endif
 }
 
-/*! \reimp
-
-    This function operates on the current read channel.
-
-    \sa readChannel(), setReadChannel()
-*/
-bool QProcess::canReadLine() const
-{
-    return QIODevice::canReadLine();
-}
-
 /*!
     Closes all communication with the process and kills it. After calling this
     function, QProcess will no longer emit readyRead(), and data can no
@@ -1689,27 +1678,10 @@ void QProcess::close()
 }
 
 /*! \reimp
-
-   Returns \c true if the process is not running, and no more data is available
-   for reading; otherwise returns \c false.
-*/
-bool QProcess::atEnd() const
-{
-    return QIODevice::atEnd();
-}
-
-/*! \reimp
 */
 bool QProcess::isSequential() const
 {
     return true;
-}
-
-/*! \reimp
-*/
-qint64 QProcess::bytesAvailable() const
-{
-    return QIODevice::bytesAvailable();
 }
 
 /*! \reimp

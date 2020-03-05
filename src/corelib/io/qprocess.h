@@ -248,12 +248,9 @@ public:
     QProcess::ExitStatus exitStatus() const;
 
     // QIODevice
-    qint64 bytesAvailable() const override; // ### Qt6: remove trivial override
     qint64 bytesToWrite() const override;
     bool isSequential() const override;
-    bool canReadLine() const override; // ### Qt6: remove trivial override
     void close() override;
-    bool atEnd() const override; // ### Qt6: remove trivial override
 
     static int execute(const QString &program, const QStringList &arguments);
 #if QT_DEPRECATED_SINCE(5, 15)
