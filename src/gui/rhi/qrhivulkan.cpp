@@ -345,6 +345,15 @@ static bool qvk_debug_filter(VkDebugReportFlagsEXT flags, VkDebugReportObjectTyp
         return true;
     }
 
+    // In certain cases allocateDescriptorSet() will attempt to allocate from a
+    // pool that does not have enough descriptors of a certain type. This makes
+    // the validation layer shout. However, this is not an error since we will
+    // then move on to another pool. If there is a real error, a qWarning
+    // message is shown by allocateDescriptorSet(), so the validation warning
+    // does not have any value and is just noise.
+    if (strstr(pMessage, "VUID-VkDescriptorSetAllocateInfo-descriptorPool-00307"))
+        return true;
+
     return false;
 }
 
