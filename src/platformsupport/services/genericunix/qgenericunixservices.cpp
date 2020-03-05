@@ -166,7 +166,8 @@ static inline bool launch(const QString &launcher, const QUrl &url)
 #if !QT_CONFIG(process)
     const bool ok = ::system(qPrintable(command + QLatin1String(" &")));
 #else
-    const bool ok = QProcess::startDetached(command);
+    QStringList args = QProcess::splitCommand(command);
+    const bool ok = !args.isEmpty() && QProcess::startDetached(args.takeFirst(), args);
 #endif
     if (!ok)
         qWarning("Launch failed (%s)", qPrintable(command));
