@@ -50,6 +50,7 @@
 
 #include <QRasterWindow>
 #include <QPainter>
+#include <QPainterPath>
 #include <QGuiApplication>
 #include <QMatrix4x4>
 #include <QTimer>

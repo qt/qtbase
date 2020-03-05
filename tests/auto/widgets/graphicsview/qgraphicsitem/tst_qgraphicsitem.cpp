@@ -59,6 +59,7 @@
 #include <QSharedPointer>
 #include <float.h>
 #include <QStyleHints>
+#include <QPainterPath>
 
 using AbstractGraphicsShapeItemPtr = QSharedPointer<QAbstractGraphicsShapeItem>;
 using GraphicsItems = QVector<QGraphicsItem *>;

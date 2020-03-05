@@ -28,12 +28,13 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/QBitmap>
-#include <QtGui/QPalette>
-#include <QtGui/QPixmap>
-#include <QtGui/QPicture>
-#include <QtGui/QTextLength>
 #include <QtGui/QPainter>
+#include <QtGui/QPainterPath>
+#include <QtGui/QPalette>
 #include <QtGui/QPen>
+#include <QtGui/QPicture>
+#include <QtGui/QPixmap>
+#include <QtGui/QTextLength>
 
 class tst_QDataStream : public QObject
 {

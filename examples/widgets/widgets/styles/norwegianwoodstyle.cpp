@@ -52,6 +52,7 @@
 
 #include <QComboBox>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPushButton>
 #include <QStyleFactory>
 

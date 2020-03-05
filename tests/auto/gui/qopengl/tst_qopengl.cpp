@@ -36,6 +36,7 @@
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QOpenGLTexture>
 #include <QtGui/QPainter>
+#include <QtGui/QPainterPath>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QOffscreenSurface>

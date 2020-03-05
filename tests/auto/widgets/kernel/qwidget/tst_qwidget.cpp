@@ -58,6 +58,7 @@
 #include <qtoolbutton.h>
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qpaintengine.h>
+#include <QtGui/qpainterpath.h>
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qpa/qplatformwindow.h>

@@ -28,10 +28,10 @@
 
 
 #include <QtTest/QtTest>
-#include "qtransform.h"
+#include <qpainterpath.h>
 #include <qpolygon.h>
+#include <qtransform.h>
 #include <qdebug.h>
-
 
 class tst_QTransform : public QObject
 {

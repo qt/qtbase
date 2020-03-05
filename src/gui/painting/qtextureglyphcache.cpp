@@ -43,6 +43,8 @@
 #include "private/qfontengine_p.h"
 #include "private/qnumeric_p.h"
 
+#include <QtGui/qpainterpath.h>
+
 QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG

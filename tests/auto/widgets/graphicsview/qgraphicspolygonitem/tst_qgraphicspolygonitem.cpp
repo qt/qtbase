@@ -29,6 +29,7 @@
 
 #include <QtTest/QtTest>
 #include <qgraphicsitem.h>
+#include <qpainterpath.h>
 #include <qpen.h>
 
 

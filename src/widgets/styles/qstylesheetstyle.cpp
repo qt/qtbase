@@ -118,6 +118,7 @@
 #include <QtWidgets/qtoolbar.h>
 #endif
 
+#include <QtGui/qpainterpath.h>
 #include <QtGui/qscreen.h>
 
 QT_BEGIN_NAMESPACE

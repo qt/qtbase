@@ -46,6 +46,7 @@
 
 #include <private/qdrawhelper_p.h>
 #include <qpainter.h>
+#include <qpainterpath.h>
 #include <qqueue.h>
 #include <qscreen.h>
 

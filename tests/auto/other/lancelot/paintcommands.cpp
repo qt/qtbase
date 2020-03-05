@@ -31,6 +31,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qpainter.h>
+#include <qpainterpath.h>
 #include <qbitmap.h>
 #include <qtextstream.h>
 #include <qtextlayout.h>

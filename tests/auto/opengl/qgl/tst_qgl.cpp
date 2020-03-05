@@ -36,6 +36,7 @@
 #include <qglframebufferobject.h>
 #include <qglcolormap.h>
 #include <qpaintengine.h>
+#include <qpainterpath.h>
 #include <qopenglfunctions.h>
 #include <qopenglframebufferobject.h>
 #include <qopenglpaintdevice.h>
