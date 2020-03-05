@@ -442,6 +442,7 @@
                     "#  include <OpenGL/gl.h>",
                     "#else",
                     "#  define GL_GLEXT_PROTOTYPES",
+                    "#  include <GL/gl.h>",
                     "#endif"
                 ],
                 "main": [
@@ -452,12 +453,6 @@
                     "glEnd();"
                 ]
             },
-            "headers": [
-                {
-                    "condition": "!config.darwin",
-                    "headers": "GL/gl.h"
-                }
-            ],
             "sources": [
                 { "type": "pkgConfig", "args": "gl", "condition": "!config.darwin" },
                 { "type": "makeSpec", "spec": "OPENGL" }
@@ -471,6 +466,7 @@
                     "#  include <OpenGLES/ES2/gl.h>",
                     "#else",
                     "#  define GL_GLEXT_PROTOTYPES",
+                    "#  include <GLES2/gl2.h>",
                     "#endif"
                 ],
                 "main": [
@@ -478,12 +474,6 @@
                     "glClear(GL_COLOR_BUFFER_BIT);"
                 ]
             },
-            "headers": [
-                {
-                    "condition": "!config.darwin",
-                    "headers": "GLES2/gl2.h"
-                }
-            ],
             "sources": [
                 { "type": "pkgConfig", "args": "glesv2", "condition": "!config.darwin" },
                 { "type": "makeSpec", "spec": "OPENGL_ES2" }
