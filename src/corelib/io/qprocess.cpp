@@ -2543,18 +2543,6 @@ bool QProcess::startDetached(const QString &program,
 }
 
 /*!
-    \internal
-*/
-bool QProcess::startDetached(const QString &program,
-                             const QStringList &arguments)
-{
-    QProcess process;
-    process.setProgram(program);
-    process.setArguments(arguments);
-    return process.startDetached();
-}
-
-/*!
     \obsolete
     \overload startDetached()
 

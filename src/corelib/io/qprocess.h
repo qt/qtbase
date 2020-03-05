@@ -263,14 +263,7 @@ public:
     static int execute(const QString &command);
 #endif
     static bool startDetached(const QString &program, const QStringList &arguments,
-                              const QString &workingDirectory
-#if defined(Q_QDOC)
-                              = QString()
-#endif
-                              , qint64 *pid = nullptr);
-#if !defined(Q_QDOC)
-    static bool startDetached(const QString &program, const QStringList &arguments); // ### Qt6: merge overloads
-#endif
+                              const QString &workingDirectory = QString(), qint64 *pid = nullptr);
 #if QT_DEPRECATED_SINCE(5, 15)
     QT_DEPRECATED_X(
         "Use QProcess::startDetached(const QString &program, const QStringList &arguments) instead"
