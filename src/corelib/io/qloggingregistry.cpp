@@ -43,6 +43,7 @@
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/private/qlocking_p.h>
 #include <QtCore/qstandardpaths.h>
+#include <QtCore/qstringtokenizer.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qcoreapplication.h>
@@ -186,11 +187,10 @@ void QLoggingRule::parse(QStringView pattern)
     \internal
     Parses configuration from \a content.
 */
-void QLoggingSettingsParser::setContent(const QString &content)
+void QLoggingSettingsParser::setContent(QStringView content)
 {
     _rules.clear();
-    const auto lines = QStringView{content}.split(QLatin1Char('\n'));
-    for (const auto &line : lines)
+    for (auto line : qTokenize(content, u'\n'))
         parseNextLine(line);
 }
 

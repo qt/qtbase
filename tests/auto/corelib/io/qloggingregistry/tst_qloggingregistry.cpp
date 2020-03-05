@@ -182,24 +182,24 @@ private slots:
         // default category, and optional ...
         //
         QLoggingSettingsParser parser;
-        parser.setContent("[Rules]\n"
-                          "default=false\n"
-                          "default=true");
+        parser.setContent(u"[Rules]\n"
+                           "default=false\n"
+                           "default=true");
         QCOMPARE(parser.rules().size(), 2);
 
-        parser.setContent("[Rules]\n"
-                          "default=false");
+        parser.setContent(u"[Rules]\n"
+                           "default=false");
         QCOMPARE(parser.rules().size(), 1);
 
         // QSettings escapes * to %2A when writing.
-        parser.setContent("[Rules]\n"
-                          "module.%2A=false");
+        parser.setContent(u"[Rules]\n"
+                           "module.%2A=false");
         QCOMPARE(parser.rules().size(), 1);
         QCOMPARE(parser.rules().first().category, QString("module."));
         QCOMPARE(parser.rules().first().flags, QLoggingRule::LeftFilter);
 
-        parser.setContent("[OtherSection]\n"
-                          "default=false");
+        parser.setContent(u"[OtherSection]\n"
+                           "default=false");
         QCOMPARE(parser.rules().size(), 0);
     }
 
@@ -290,7 +290,7 @@ private slots:
 
         // set Config rule
         QLoggingSettingsParser parser;
-        parser.setContent("[Rules]\nDigia.*=false");
+        parser.setContent(u"[Rules]\nDigia.*=false");
         registry->ruleSets[QLoggingRegistry::ConfigRules] = parser.rules();
         registry->updateRules();
 
@@ -302,7 +302,7 @@ private slots:
         QVERIFY(cat.isWarningEnabled());
 
         // set Env rule, should overwrite Config one
-        parser.setContent("Digia.*=false");
+        parser.setContent(u"Digia.*=false");
         registry->ruleSets[QLoggingRegistry::EnvironmentRules] = parser.rules();
         registry->updateRules();
 
@@ -316,10 +316,10 @@ private slots:
         QTest::ignoreMessage(QtWarningMsg, "Ignoring malformed logging rule: '***=false'");
         QTest::ignoreMessage(QtWarningMsg, "Ignoring malformed logging rule: '*=0'");
         QTest::ignoreMessage(QtWarningMsg, "Ignoring malformed logging rule: '*=TRUE'");
-        parser.setContent("[Rules]\n"
-                          "***=false\n"
-                          "*=0\n"
-                          "*=TRUE\n");
+        parser.setContent(u"[Rules]\n"
+                           "***=false\n"
+                           "*=0\n"
+                           "*=TRUE\n");
         QVERIFY(parser.rules().isEmpty());
     }
 };
