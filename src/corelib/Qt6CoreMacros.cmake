@@ -489,7 +489,7 @@ function(add_qt_gui_executable target)
     endif()
 
     if (WIN32)
-        qt6_gerate_win32_rc_file(${target})
+        qt6_generate_win32_rc_file(${target})
     endif()
 
     if(ANDROID)
