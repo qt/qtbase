@@ -24,3 +24,7 @@ osx
 linux
 [readyReadForEmptyDatagram]
 linux
+[outOfProcessConnectedClientServerTest]
+windows
+[outOfProcessUnconnectedClientServerTest]
+windows
