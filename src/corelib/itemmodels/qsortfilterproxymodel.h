@@ -143,6 +143,8 @@ protected:
     QT_DEPRECATED_X("Use QSortFilterProxyModel::invalidateFilter") void filterChanged();
 #endif
     void invalidateFilter();
+    void invalidateRowsFilter();
+    void invalidateColumnsFilter();
 
 public:
     using QObject::parent;

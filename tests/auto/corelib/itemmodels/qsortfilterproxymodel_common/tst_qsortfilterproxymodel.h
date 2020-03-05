@@ -159,6 +159,8 @@ private slots:
     void removeIntervals_data();
     void removeIntervals();
 
+    void invalidateColumnsOrRowsFilter();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);

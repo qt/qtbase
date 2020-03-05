@@ -4940,4 +4940,84 @@ void tst_QSortFilterProxyModel::filterAndInsertRow()
     }
 }
 
+void tst_QSortFilterProxyModel::invalidateColumnsOrRowsFilter()
+{
+    class FilterProxy : public QSortFilterProxyModel
+    {
+    public:
+        FilterProxy()
+        {}
+        bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override
+        {
+            rowFiltered++;
+
+            if (sourceModel()->data(sourceModel()->index(source_row, 0, source_parent)).toString() == QLatin1String("A1"))
+                return !rejectA1;
+            return true;
+        }
+        bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const override
+        {
+            Q_UNUSED(source_column)
+            Q_UNUSED(source_parent)
+
+            columnFiltered++;
+            return true;
+        }
+
+        mutable int rowFiltered = 0;
+        mutable int columnFiltered = 0;
+        bool rejectA1 = false;
+
+        using QSortFilterProxyModel::invalidateFilter;
+        using QSortFilterProxyModel::invalidateRowsFilter;
+        using QSortFilterProxyModel::invalidateColumnsFilter;
+    };
+    QStandardItemModel model(10, 4);
+    for (int i = 0; i < model.rowCount(); ++i) {
+        for (int j = 0; j < model.columnCount(); ++j) {
+            model.setItem(i, j, new QStandardItem(QString('A' + j) + QString::number(i + 1)));
+            model.item(i, 0)->appendColumn({ new QStandardItem(QString("child col %0").arg(j)) });
+        }
+    }
+    FilterProxy proxy;
+    proxy.setSourceModel(&model);
+
+    QTreeView view;
+    view.setModel(&proxy);
+    view.expandAll();
+
+    QCOMPARE(proxy.rowFiltered, 20); //10 parents + 10 children
+    QCOMPARE(proxy.columnFiltered, 44); // 4 parents + 4 * 10 children
+
+    proxy.rowFiltered = proxy.columnFiltered = 0;
+    proxy.invalidateFilter();
+
+    QCOMPARE(proxy.rowFiltered, 20);
+    QCOMPARE(proxy.columnFiltered, 44);
+
+    proxy.rowFiltered = proxy.columnFiltered = 0;
+    proxy.invalidateRowsFilter();
+
+    QCOMPARE(proxy.rowFiltered, 20);
+    QCOMPARE(proxy.columnFiltered, 0);
+
+    proxy.rowFiltered = proxy.columnFiltered = 0;
+    proxy.invalidateColumnsFilter();
+
+    QCOMPARE(proxy.rowFiltered, 0);
+    QCOMPARE(proxy.columnFiltered, 44);
+
+    QCOMPARE(proxy.rowCount(), 10);
+    proxy.rejectA1 = true;
+    proxy.rowFiltered = proxy.columnFiltered = 0;
+    proxy.invalidateRowsFilter();
+    QCOMPARE(proxy.rowCount(), 9);
+    QCOMPARE(proxy.rowFiltered, 19); // it will not check the child row of A1
+
+    proxy.rowFiltered = proxy.columnFiltered = 0;
+    proxy.setRecursiveFilteringEnabled(true); // this triggers invalidateRowsFilter()
+    QCOMPARE(proxy.rowCount(), 10);
+    QCOMPARE(proxy.rowFiltered, 20);
+}
+
 #include "tst_qsortfilterproxymodel.moc"

@@ -274,6 +274,12 @@ class QSortFilterProxyModelPrivate : public QAbstractProxyModelPrivate
     Q_DECLARE_PUBLIC(QSortFilterProxyModel)
 
 public:
+    enum class Direction {
+        Rows = 1,
+        Columns = 2,
+        All = Rows | Columns
+    };
+
     struct Mapping {
         QVector<int> source_rows;
         QVector<int> source_columns;
@@ -413,7 +419,7 @@ public:
     void update_persistent_indexes(const QModelIndexPairList &source_indexes);
 
     void filter_about_to_be_changed(const QModelIndex &source_parent = QModelIndex());
-    void filter_changed(const QModelIndex &source_parent = QModelIndex());
+    void filter_changed(Direction dir, const QModelIndex &source_parent = QModelIndex());
     QSet<int> handle_filter_changed(
         QVector<int> &source_to_proxy, QVector<int> &proxy_to_source,
         const QModelIndex &source_parent, Qt::Orientation orient);
@@ -430,6 +436,11 @@ public:
 };
 
 typedef QHash<QModelIndex, QSortFilterProxyModelPrivate::Mapping *> IndexMap;
+
+static bool operator&(QSortFilterProxyModelPrivate::Direction a, QSortFilterProxyModelPrivate::Direction b)
+{
+    return int(a) & int(b);
+}
 
 void QSortFilterProxyModelPrivate::_q_sourceModelDestroyed()
 {
@@ -1269,14 +1280,14 @@ void QSortFilterProxyModelPrivate::filter_about_to_be_changed(const QModelIndex 
   Updates the proxy model (adds/removes rows) based on the
   new filter.
 */
-void QSortFilterProxyModelPrivate::filter_changed(const QModelIndex &source_parent)
+void QSortFilterProxyModelPrivate::filter_changed(Direction dir, const QModelIndex &source_parent)
 {
     IndexMap::const_iterator it = source_index_mapping.constFind(source_parent);
     if (it == source_index_mapping.constEnd())
         return;
     Mapping *m = it.value();
-    QSet<int> rows_removed = handle_filter_changed(m->proxy_rows, m->source_rows, source_parent, Qt::Vertical);
-    QSet<int> columns_removed = handle_filter_changed(m->proxy_columns, m->source_columns, source_parent, Qt::Horizontal);
+    const QSet<int> rows_removed = (dir & Direction::Rows) ? handle_filter_changed(m->proxy_rows, m->source_rows, source_parent, Qt::Vertical) : QSet<int>();
+    const QSet<int> columns_removed = (dir & Direction::Columns) ? handle_filter_changed(m->proxy_columns, m->source_columns, source_parent, Qt::Horizontal) : QSet<int>();
 
     // We need to iterate over a copy of m->mapped_children because otherwise it may be changed by other code, invalidating
     // the iterator it2.
@@ -1290,7 +1301,7 @@ void QSortFilterProxyModelPrivate::filter_changed(const QModelIndex &source_pare
             indexesToRemove.push_back(i);
             remove_from_mapping(source_child_index);
         } else {
-            filter_changed(source_child_index);
+            filter_changed(dir, source_child_index);
         }
     }
     QVector<int>::const_iterator removeIt = indexesToRemove.constEnd();
@@ -2605,7 +2616,7 @@ void QSortFilterProxyModel::setFilterRegExp(const QRegExp &regExp)
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
     d->filter_data.setRegExp(regExp);
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 
 #if QT_CONFIG(regularexpression)
@@ -2634,7 +2645,7 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QRegularExpression 
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
     d->filter_data.setRegularExpression(regularExpression);
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 #endif
 
@@ -2657,7 +2668,7 @@ void QSortFilterProxyModel::setFilterKeyColumn(int column)
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
     d->filter_column = column;
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 
 /*!
@@ -2683,7 +2694,7 @@ void QSortFilterProxyModel::setFilterCaseSensitivity(Qt::CaseSensitivity cs)
         return;
     d->filter_about_to_be_changed();
     d->filter_data.setCaseSensitivity(cs);
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
     emit filterCaseSensitivityChanged(cs);
 }
 
@@ -2754,7 +2765,7 @@ void QSortFilterProxyModel::setFilterRegExp(const QString &pattern)
     QRegExp rx(pattern);
     rx.setCaseSensitivity(d->filter_data.caseSensitivity());
     d->filter_data.setRegExp(rx);
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 
 #if QT_CONFIG(regularexpression)
@@ -2775,7 +2786,7 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QString &pattern)
     d->filter_about_to_be_changed();
     QRegularExpression rx(pattern);
     d->filter_data.setRegularExpression(rx);
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 #endif
 
@@ -2791,7 +2802,7 @@ void QSortFilterProxyModel::setFilterWildcard(const QString &pattern)
     d->filter_about_to_be_changed();
     QRegExp rx(pattern, d->filter_data.caseSensitivity(), QRegExp::Wildcard);
     d->filter_data.setRegExp(rx);
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 
 /*!
@@ -2806,7 +2817,7 @@ void QSortFilterProxyModel::setFilterFixedString(const QString &pattern)
     d->filter_about_to_be_changed();
     QRegExp rx(pattern, d->filter_data.caseSensitivity(), QRegExp::FixedString);
     d->filter_data.setRegExp(rx);
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 
 /*!
@@ -2886,7 +2897,7 @@ void QSortFilterProxyModel::setFilterRole(int role)
         return;
     d->filter_about_to_be_changed();
     d->filter_role = role;
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
     emit filterRoleChanged(role);
 }
 
@@ -2913,7 +2924,7 @@ void QSortFilterProxyModel::setRecursiveFilteringEnabled(bool recursive)
         return;
     d->filter_about_to_be_changed();
     d->filter_recursive = recursive;
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
     emit recursiveFilteringEnabledChanged(recursive);
 }
 
@@ -2964,11 +2975,57 @@ void QSortFilterProxyModel::filterChanged()
    (e.g. filterAcceptsRow()), and your filter parameters have changed.
 
    \sa invalidate()
+   \sa invalidateColumnsFilter()
+   \sa invalidateRowsFilter()
 */
 void QSortFilterProxyModel::invalidateFilter()
 {
     Q_D(QSortFilterProxyModel);
-    d->filter_changed();
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::All);
+}
+
+/*!
+   \since 6.0
+
+   Invalidates the current filtering for the columns.
+
+   This function should be called if you are implementing custom filtering
+   (by filterAcceptsColumn()), and your filter parameters have changed.
+   This differs from invalidateFilter() in that it will not invoke
+   filterAcceptsRow(), but only filterAcceptsColumn(). You can use this
+   instead of invalidateFilter() if you want to hide or show a column where
+   the rows don't change.
+
+   \sa invalidate()
+   \sa invalidateFilter()
+   \sa invalidateRowsFilter()
+*/
+void QSortFilterProxyModel::invalidateColumnsFilter()
+{
+    Q_D(QSortFilterProxyModel);
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Columns);
+}
+
+/*!
+   \since 6.0
+
+   Invalidates the current filtering for the rows.
+
+   This function should be called if you are implementing custom filtering
+   (by filterAcceptsRow()), and your filter parameters have changed.
+   This differs from invalidateFilter() in that it will not invoke
+   filterAcceptsColumn(), but only filterAcceptsRow(). You can use this
+   instead of invalidateFilter() if you want to hide or show a row where
+   the columns don't change.
+
+   \sa invalidate()
+   \sa invalidateFilter()
+   \sa invalidateColumnsFilter()
+*/
+void QSortFilterProxyModel::invalidateRowsFilter()
+{
+    Q_D(QSortFilterProxyModel);
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 
 /*!
