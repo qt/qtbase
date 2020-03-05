@@ -638,7 +638,7 @@ QString encode_pos(int row, int col)
 
 void SpreadSheet::print()
 {
-#if QT_CONFIG(printpreviewdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printpreviewdialog)
     QPrinter printer(QPrinter::ScreenResolution);
     QPrintPreviewDialog dlg(&printer);
     PrintView view;
