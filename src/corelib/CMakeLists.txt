@@ -27,10 +27,6 @@ file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR ${_clean_prefix} ${CMAKE_INSTAL
 ## Core Module:
 #####################################################################
 
-# special case begin
-add_library(Core_qobject OBJECT)
-# special case end
-
 qt_add_module(Core
     GENERATE_METATYPES
     QMAKE_MODULE_CONFIG moc resources
@@ -260,7 +256,6 @@ qt_add_module(Core
         QtHarfBuzz # special case
         Threads::Threads # special case
         WrapDoubleConversion::WrapDoubleConversion # special case
-        Core_qobject
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
     # special case begin
@@ -285,6 +280,13 @@ qt_generate_qconfig_cpp()
 
 # Handle QObject: Automoc does not work for this as it would
 # require to spill internals into users:
+qt_add_module(Core_qobject STATIC
+    NO_SYNC_QT
+    NO_CONFIG_HEADER_FILE
+    NO_MODULE_HEADERS
+    INTERNAL_MODULE
+    SKIP_DEPENDS_INCLUDE
+)
 set_target_properties(Core_qobject PROPERTIES AUTOMOC OFF)
 qt_manual_moc(qobject_moc_files OUTPUT_MOC_JSON_FILES core_qobject_metatypes_json_list  kernel/qobject.h global/qnamespace.h)
 set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
@@ -298,7 +300,8 @@ set_target_properties(Core_qobject PROPERTIES
 )
 target_include_directories(Core_qobject PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/kernel") # for moc_qobject.cpp
 target_link_libraries(Core_qobject PRIVATE Qt::Platform Qt::GlobalConfig)
-target_link_libraries(Core PRIVATE Core_qobject)
+extend_target(Core LIBRARIES Qt::Core_qobject)
+add_dependencies(Core_qobject ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
 
 set(core_qobject_metatypes_json_args)
 if (NOT QT_WILL_INSTALL)
@@ -309,13 +312,6 @@ qt6_generate_meta_types_json_file(Core_qobject
     MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list}
     ${core_qobject_metatypes_json_args}
 )
-
-if(NOT BUILD_SHARED_LIBS)
-    install(
-      TARGETS Core_qobject
-      EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets"
-    )
-endif()
 
 # Core_qobject is never exported so we need to duplicate the metatypes file
 # interface on Core
