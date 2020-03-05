@@ -19,7 +19,6 @@ macro(qt_find_package_system_or_bundled _unique_prefix)
         BUNDLED_PACKAGE_TARGET
         SYSTEM_PACKAGE_NAME
         SYSTEM_PACKAGE_TARGET
-        USE_BUNDLED_PACKAGE
         )
     set(_multioptions "")
 
@@ -36,11 +35,20 @@ macro(qt_find_package_system_or_bundled _unique_prefix)
 
     set(${_qfwrap_${_unique_prefix}_WRAP_PACKAGE_FOUND_VAR_NAME} OFF)
 
-    if(_qfwrap_${_unique_prefix}_USE_BUNDLED_PACKAGE)
+    include("FindWrap${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_TARGET}ConfigExtra" OPTIONAL)
+
+    if(NOT DEFINED "QT_USE_BUNDLED_${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_TARGET}")
+        message(FATAL_ERROR
+            "Can't find cache variable "
+            "QT_USE_BUNDLED_${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_TARGET} "
+            "to decide whether to use bundled or system library.")
+    endif()
+
+    if("${QT_USE_BUNDLED_${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_TARGET}}")
         set(${_unique_prefix}_qt_package_name_to_use
-            "${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_NAME}")
+            "Qt6${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_NAME}")
         set(${_unique_prefix}_qt_package_target_to_use
-            "${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_TARGET}")
+            "Qt6::${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_TARGET}")
         set(${_unique_prefix}_qt_package_success_message
             "Using Qt bundled ${_qfwrap_${_unique_prefix}_FRIENDLY_PACKAGE_NAME}.")
         set(${_unique_prefix}_qt_package_type "bundled")
@@ -69,6 +77,6 @@ macro(qt_find_package_system_or_bundled _unique_prefix)
                               INTERFACE_QT_3RD_PARTY_PACKAGE_TYPE
                               "${${_unique_prefix}_qt_package_type}")
     elseif(${_unique_prefix}_qt_package_type STREQUAL "bundled")
-        message(FATAL_ERROR "Can't find ${_qfwrap_${_unique_prefix}_BUNDLED_PACKAGE_TARGET}.")
+        message(FATAL_ERROR "Can't find ${${_unique_prefix}_qt_package_target_to_use}.")
     endif()
 endmacro()

@@ -3163,6 +3163,28 @@ function(qt_add_3rdparty_library target)
     endif()
 endfunction()
 
+function(qt_install_3rdparty_library_wrap_config_extra_file target)
+    if(TARGET "${target}")
+        set(use_bundled "ON")
+    else()
+        set(use_bundled "OFF")
+    endif()
+
+    set(QT_USE_BUNDLED_${target} "${use_bundled}" CACHE BOOL "" FORCE)
+    set(extra_cmake_code "set(QT_USE_BUNDLED_${target} ${use_bundled} CACHE BOOL \"\" FORCE)")
+    configure_file(
+        "${QT_CMAKE_DIR}/QtFindWrapConfigExtra.cmake.in"
+        "${QT_CONFIG_BUILD_DIR}/${INSTALL_CMAKE_NAMESPACE}/FindWrap${target}ConfigExtra.cmake"
+         @ONLY
+    )
+
+    qt_install(FILES
+        "${QT_CONFIG_BUILD_DIR}/${INSTALL_CMAKE_NAMESPACE}/FindWrap${target}ConfigExtra.cmake"
+        DESTINATION "${QT_CONFIG_INSTALL_DIR}/${INSTALL_CMAKE_NAMESPACE}"
+        COMPONENT Devel
+    )
+endfunction()
+
 function(qt_get_tool_cmake_configuration out_var)
     qt_get_main_cmake_configuration("${out_var}")
     string(TOUPPER "${${out_var}}" upper_config)

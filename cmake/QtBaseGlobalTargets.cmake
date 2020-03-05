@@ -230,6 +230,7 @@ qt_copy_or_install(FILES
                    cmake/QtCompilerOptimization.cmake
                    cmake/QtFeature.cmake
                    cmake/QtFindWrapHelper.cmake
+                   cmake/QtFindWrapConfigExtra.cmake.in
                    cmake/QtPlatformSupport.cmake
                    cmake/QtPlatformAndroid.cmake
                    cmake/QtPostProcess.cmake
