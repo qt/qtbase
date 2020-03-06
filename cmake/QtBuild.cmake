@@ -1,14 +1,43 @@
 include(CMakePackageConfigHelpers)
 include(QtSeparateDebugInfo)
 
+function(qt_configure_process_path name default docstring)
+    # Values are computed once for qtbase, and then exported and reused for other projects.
+    if(NOT PROJECT_NAME STREQUAL "QtBase")
+        return()
+    endif()
+
+    # No value provided, set the default.
+    if(NOT DEFINED "${name}")
+        set("${name}" "${default}" CACHE STRING "${docstring}")
+    else()
+        get_filename_component(given_path_as_abs "${${name}}" ABSOLUTE BASE_DIR
+                               "${CMAKE_INSTALL_PREFIX}")
+        file(RELATIVE_PATH rel_path "${CMAKE_INSTALL_PREFIX}" "${given_path_as_abs}")
+
+        # If absolute path given, check that it's inside the prefix (error out if not).
+        # TODO: Figure out if we need to support paths that are outside the prefix.
+        #
+        # If relative path given, it's relative to the install prefix (rather than the binary dir,
+        # which is what qmake does for some reason).
+        # In both cases, store the value as a relative path.
+        if(rel_path MATCHES "^\.\./")
+            message(FATAL_ERROR
+                "Path component '${name}' is outside computed install prefix: ${rel_path} ")
+        endif()
+        set("${name}" "${rel_path}" CACHE STRING "${docstring}" FORCE)
+    endif()
+endfunction()
+
 # Install locations:
-set(INSTALL_BINDIR "bin" CACHE STRING "Executables [PREFIX/bin]")
-set(INSTALL_INCLUDEDIR "include" CACHE STRING "Header files [PREFIX/include]")
-set(INSTALL_LIBDIR "lib" CACHE STRING "Libraries [PREFIX/lib]")
-set(INSTALL_MKSPECSDIR "mkspecs" CACHE STRING "Mkspecs files [PREFIX/mkspecs]")
-set(INSTALL_ARCHDATADIR "." CACHE STRING "Arch-dependent data [PREFIX]")
-set(INSTALL_PLUGINSDIR "${INSTALL_ARCHDATADIR}/plugins" CACHE STRING
-    "Plugins [ARCHDATADIR/plugins]")
+qt_configure_process_path(INSTALL_BINDIR "bin" "Executables [PREFIX/bin]")
+qt_configure_process_path(INSTALL_INCLUDEDIR "include" "Header files [PREFIX/include]")
+qt_configure_process_path(INSTALL_LIBDIR "lib" "Libraries [PREFIX/lib]")
+qt_configure_process_path(INSTALL_MKSPECSDIR "mkspecs" "Mkspecs files [PREFIX/mkspecs]")
+qt_configure_process_path(INSTALL_ARCHDATADIR "." "Arch-dependent data [PREFIX]")
+qt_configure_process_path(INSTALL_PLUGINSDIR
+                          "${INSTALL_ARCHDATADIR}/plugins"
+                          "Plugins [ARCHDATADIR/plugins]")
 
 set(INSTALL_TARGETS_DEFAULT_ARGS
     RUNTIME DESTINATION "${INSTALL_BINDIR}"
@@ -23,20 +52,25 @@ else()
     set(_default_libexec "${INSTALL_ARCHDATADIR}/libexec")
 endif()
 
-set(INSTALL_LIBEXECDIR "${_default_libexec}" CACHE STRING
+qt_configure_process_path(
+    INSTALL_LIBEXECDIR
+    "${_default_libexec}"
     "Helper programs [ARCHDATADIR/bin on Windows, ARCHDATADIR/libexec otherwise]")
-set(INSTALL_QMLDIR "${INSTALL_ARCHDATADIR}/qml" CACHE STRING
-    "QML2 imports [ARCHDATADIR/qml]")
-set(INSTALL_DATADIR "." CACHE STRING  "Arch-independent data [PREFIX]")
-set(INSTALL_DOCDIR "${INSTALL_DATADIR}/doc" CACHE STRING "Documentation [DATADIR/doc]")
-set(INSTALL_TRANSLATIONSDIR "${INSTALL_DATADIR}/translations" CACHE STRING
+qt_configure_process_path(INSTALL_QMLDIR
+                          "${INSTALL_ARCHDATADIR}/qml"
+                           "QML2 imports [ARCHDATADIR/qml]")
+qt_configure_process_path(INSTALL_DATADIR "." "Arch-independent data [PREFIX]")
+qt_configure_process_path(INSTALL_DOCDIR "${INSTALL_DATADIR}/doc" "Documentation [DATADIR/doc]")
+qt_configure_process_path(INSTALL_TRANSLATIONSDIR "${INSTALL_DATADIR}/translations"
     "Translations [DATADIR/translations]")
-set(INSTALL_SYSCONFDIR "etc/xdg" CACHE STRING
-    "Settings used by Qt programs [PREFIX/etc/xdg]")
-set(INSTALL_EXAMPLESDIR "examples" CACHE STRING "Examples [PREFIX/examples]")
-set(INSTALL_TESTSDIR "tests" CACHE STRING "Tests [PREFIX/tests]")
-set(INSTALL_DESCRIPTIONSDIR "${INSTALL_DATADIR}/modules" CACHE STRING
-    "Module description files directory")
+qt_configure_process_path(INSTALL_SYSCONFDIR
+                          "etc/xdg"
+                          "Settings used by Qt programs [PREFIX/etc/xdg]")
+qt_configure_process_path(INSTALL_EXAMPLESDIR "examples" "Examples [PREFIX/examples]")
+qt_configure_process_path(INSTALL_TESTSDIR "tests" "Tests [PREFIX/tests]")
+qt_configure_process_path(INSTALL_DESCRIPTIONSDIR
+                         "${INSTALL_DATADIR}/modules"
+                          "Module description files directory")
 
 # The variables might have already been set in QtBuildInternalsExtra.cmake if the file is included
 # while building a new module and not QtBase. In that case, stop overriding the value.
@@ -4047,18 +4081,18 @@ function(qt_generate_qconfig_cpp)
     set(QT_CONFIG_STRS "")
 
     # Start first part.
-    qt_add_string_to_qconfig_cpp("doc")
-    qt_add_string_to_qconfig_cpp("include")
-    qt_add_string_to_qconfig_cpp("lib")
-    qt_add_string_to_qconfig_cpp("libexec")
-    qt_add_string_to_qconfig_cpp("bin")
-    qt_add_string_to_qconfig_cpp("plugins")
-    qt_add_string_to_qconfig_cpp("qml")
-    qt_add_string_to_qconfig_cpp(".")
-    qt_add_string_to_qconfig_cpp(".")
-    qt_add_string_to_qconfig_cpp("translations")
-    qt_add_string_to_qconfig_cpp("examples")
-    qt_add_string_to_qconfig_cpp("tests")
+    qt_add_string_to_qconfig_cpp("${INSTALL_DOCDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_INCLUDEDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_LIBDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_LIBEXECDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_BINDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_PLUGINSDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_QMLDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_ARCHDATADIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_DATADIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_TRANSLATIONSDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_EXAMPLESDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_TESTSDIR}")
 
     # Save first part.
     set(QT_CONFIG_STR_OFFSETS_FIRST "${QT_CONFIG_STR_OFFSETS}")
@@ -4068,11 +4102,11 @@ function(qt_generate_qconfig_cpp)
     set(QT_CONFIG_STR_OFFSETS "")
     set(QT_CONFIG_STRS "")
 
-    qt_add_string_to_qconfig_cpp("")
-    qt_add_string_to_qconfig_cpp("false")
-    qt_add_string_to_qconfig_cpp("bin")
-    qt_add_string_to_qconfig_cpp("lib")
-    qt_add_string_to_qconfig_cpp(".")
+    qt_add_string_to_qconfig_cpp("") # config.input.sysroot
+    qt_add_string_to_qconfig_cpp("false") # qmake_sysrootify
+    qt_add_string_to_qconfig_cpp("${INSTALL_BINDIR}") # TODO: Host-specific
+    qt_add_string_to_qconfig_cpp("${INSTALL_LIBDIR}") # TODO: Host-specific
+    qt_add_string_to_qconfig_cpp("${INSTALL_DATADIR}") # TODO: Host-specific
     qt_add_string_to_qconfig_cpp("${QT_QMAKE_TARGET_MKSPEC}")
     qt_add_string_to_qconfig_cpp("${QT_QMAKE_HOST_MKSPEC}")
 

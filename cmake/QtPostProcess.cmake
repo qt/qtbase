@@ -307,6 +307,21 @@ function(qt_internal_create_plugins_files)
     endforeach()
 endfunction()
 
+function(qt_generate_install_prefixes out_var)
+    set(content "\n")
+    set(vars INSTALL_BINDIR INSTALL_INCLUDEDIR INSTALL_LIBDIR INSTALL_MKSPECSDIR INSTALL_ARCHDATADIR
+        INSTALL_PLUGINSDIR INSTALL_LIBEXECDIR INSTALL_QMLDIR INSTALL_DATADIR INSTALL_DOCDIR
+        INSTALL_TRANSLATIONSDIR INSTALL_SYSCONFDIR INSTALL_EXAMPLESDIR INSTALL_TESTSDIR
+        INSTALL_DESCRIPTIONSDIR)
+
+    foreach(var ${vars})
+        get_property(docstring CACHE "${var}" PROPERTY HELPSTRING)
+        string(APPEND content "set(${var} \"${${var}}\" CACHE STRING \"${docstring}\" FORCE)\n")
+    endforeach()
+
+    set(${out_var} "${content}" PARENT_SCOPE)
+endfunction()
+
 function(qt_generate_build_internals_extra_cmake_code)
     if(PROJECT_NAME STREQUAL "QtBase")
         foreach(var IN LISTS QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT)
@@ -346,6 +361,10 @@ function(qt_generate_build_internals_extra_cmake_code)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(CMAKE_DEFAULT_BUILD_TYPE \"${CMAKE_DEFAULT_BUILD_TYPE}\" CACHE STRING \"\")\n")
         endif()
+
+        qt_generate_install_prefixes(install_prefix_content)
+
+        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${install_prefix_content}")
 
         configure_file(
             "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake.in"
