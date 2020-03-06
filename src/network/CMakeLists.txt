@@ -1,18 +1,5 @@
 # Generated from network.pro.
 
-# special case begin
-# Temporary fix for OpenSSL feature detection until we can provide a
-# proper implementation of additional compile tests for library dependencies
-# in configure.json
-
-find_package(OpenSSL)
-if (NOT OPENSSL_FOUND OR NOT OPENSSL_VERSION VERSION_GREATER_EQUAL "1.1.0")
-    set(QT_FEATURE_openssl_runtime OFF CACHE BOOL "" FORCE)
-    set(QT_FEATURE_openssl_linked OFF CACHE BOOL "" FORCE)
-    set(QT_FEATURE_openssl OFF CACHE BOOL "" FORCE)
-endif()
-# special case end
-
 #####################################################################
 ## Network Module:
 #####################################################################

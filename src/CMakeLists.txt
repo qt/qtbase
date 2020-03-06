@@ -1,16 +1,5 @@
 # special case skip regeneration
 
-# Temporary fix for OpenSSL feature detection until we can provide a
-# proper implementation of additional compile tests for library dependencies
-# in configure.json
-
-find_package(OpenSSL)
-if (NOT OPENSSL_FOUND OR NOT OPENSSL_VERSION VERSION_GREATER_EQUAL "1.1.0")
-    set(QT_FEATURE_openssl_runtime OFF CACHE BOOL "" FORCE)
-    set(QT_FEATURE_openssl_linked OFF CACHE BOOL "" FORCE)
-    set(QT_FEATURE_openssl OFF CACHE BOOL "" FORCE)
-endif()
-
 # We need to include the features of a few modules before they are actually declared.
 # The feature values are used as conditions for deciding whether bundled 3rd party libraries
 # should be built.

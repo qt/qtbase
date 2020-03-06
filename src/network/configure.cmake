@@ -8,7 +8,55 @@
 
 qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy)
 qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::SSL)
+# openssl_headers
+qt_config_compile_test(openssl_headers
+    LIBRARIES
+        OpenSSL::SSL
+    CODE
+"
+#include <openssl/ssl.h>
+#include <openssl/opensslv.h>
+#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L
+#  error OpenSSL >= 1.1.0 is required
+#endif
+#if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
+#  error OpenSSL was reported as >= 1.1.0 but is missing required features, possibly it's libressl which is unsupported
+#endif
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+
+    /* END TEST: */
+    return 0;
+}
+")
+
 qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::SSL)
+# openssl
+qt_config_compile_test(openssl
+    LIBRARIES
+        OpenSSL::SSL
+    CODE
+"
+#include <openssl/ssl.h>
+#include <openssl/opensslv.h>
+#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L
+#  error OpenSSL >= 1.1.0 is required
+#endif
+#if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
+#  error OpenSSL was reported as >= 1.1.0 but is missing required features, possibly it's libressl which is unsupported
+#endif
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+SSL_free(SSL_new(0));
+    /* END TEST: */
+    return 0;
+}
+")
+
 qt_find_package(GSSAPI PROVIDED_TARGETS GSSAPI::GSSAPI)
 
 
@@ -217,14 +265,14 @@ qt_feature_definition("openssl" "QT_NO_OPENSSL" NEGATE)
 qt_feature_config("openssl" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("openssl-runtime"
     AUTODETECT NOT WINRT AND NOT WASM
-    CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND OPENSSL_INCLUDE_DIR
+    CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND TEST_openssl_headers
     ENABLE INPUT_openssl STREQUAL 'yes' OR INPUT_openssl STREQUAL 'runtime'
     DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_openssl STREQUAL 'linked' OR INPUT_ssl STREQUAL 'no'
 )
 qt_feature("openssl-linked" PRIVATE
     LABEL "  Qt directly linked to OpenSSL"
     AUTODETECT OFF
-    CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND OpenSSL_FOUND
+    CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND TEST_openssl
     ENABLE INPUT_openssl STREQUAL 'linked'
 )
 qt_feature_definition("openssl-linked" "QT_LINKED_OPENSSL")
