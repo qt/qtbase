@@ -175,16 +175,30 @@ endfunction()
 
 function(qt_auto_detect_darwin)
     if(APPLE)
-        # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default
-        # to a value that we choose. This replicates the behavior
-        # in mkspecs/common/macx.conf where
+        # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default to a value that Qt defines.
+        # This replicates the behavior in mkspecs/common/macx.conf where
         # QMAKE_MACOSX_DEPLOYMENT_TARGET is set.
-        # Currently only set for macOS, and not the mobile platforms.
-        if(NOT CMAKE_OSX_DEPLOYMENT_TARGET AND NOT CMAKE_SYSTEM_NAME)
-            set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING
-                "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value.")
+        set(description
+            "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value.")
+        if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+            if(NOT CMAKE_SYSTEM_NAME)
+                # macOS
+                set(version "10.14")
+            elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
+                set(version "12.0")
+            elseif(CMAKE_SYSTEM_NAME STREQUAL watchOS)
+                set(version "5.0")
+            elseif(CMAKE_SYSTEM_NAME STREQUAL tvOS)
+                set(version "12.0")
+            endif()
+            if(version)
+                set(CMAKE_OSX_DEPLOYMENT_TARGET "${version}" CACHE STRING "${description}")
+            endif()
         endif()
-        message(STATUS "CMAKE_OSX_DEPLOYMENT_TARGET set to: \"${CMAKE_OSX_DEPLOYMENT_TARGET}\".")
+        if(CMAKE_OSX_DEPLOYMENT_TARGET)
+            message(STATUS
+                "CMAKE_OSX_DEPLOYMENT_TARGET set to: \"${CMAKE_OSX_DEPLOYMENT_TARGET}\".")
+        endif()
     endif()
 endfunction()
 
