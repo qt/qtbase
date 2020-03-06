@@ -1,4 +1,4 @@
-QT = core testlib
+QT = core-private testlib
 TARGET = tst_qcborstreamreader
 CONFIG += testcase
 SOURCES += \

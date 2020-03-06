@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,6 +46,7 @@
 
 #include <qendian.h>
 #include <qlocale.h>
+#include <private/qbytearray_p.h>
 #include <private/qnumeric_p.h>
 #include <private/qsimd_p.h>
 
@@ -1534,6 +1535,8 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         // and calculate the final size
         if (add_overflow(offset, increment, &newSize))
             return -1;
+        if (newSize > MaxByteArraySize)
+            return -1;
 
         // since usedData <= data.size(), this can't overflow
         usedData += increment;
@@ -1608,13 +1611,6 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         setErrorInReader(reader, { QCborError::DataTooLarge });
     }
 
-    if (r.status == QCborStreamReader::Error) {
-        // There can only be errors if there was data to be read.
-        Q_ASSERT(e.flags & Element::HasByteData);
-        data.truncate(e.value);
-        return;
-    }
-
     // update size
     if (e.flags & Element::HasByteData) {
         auto b = new (dataPtr() + e.value) ByteData;
@@ -1626,6 +1622,21 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
             Q_ASSERT(e.type == QCborValue::String);
             e.flags |= Element::StringIsAscii;
         }
+
+        // check that this UTF-8 text string can be loaded onto a QString
+        if (e.type == QCborValue::String) {
+            if (Q_UNLIKELY(b->len > MaxStringSize)) {
+                setErrorInReader(reader, { QCborError::DataTooLarge });
+                r.status = QCborStreamReader::Error;
+            }
+        }
+    }
+
+    if (r.status == QCborStreamReader::Error) {
+        // There can only be errors if there was data to be read.
+        Q_ASSERT(e.flags & Element::HasByteData);
+        data.truncate(e.value);
+        return;
     }
 
     elements.append(e);
