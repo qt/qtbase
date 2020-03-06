@@ -2522,7 +2522,8 @@ int QProcess::execute(const QString &command)
     QStringList args = splitCommand(command);
     if (args.isEmpty())
         return -2;
-    return execute(args.takeFirst(), args);
+    QString program = args.takeFirst();
+    return execute(program, args);
 }
 
 /*!
