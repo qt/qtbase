@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -40,6 +40,8 @@
 #include <QtCore/qcborstream.h>
 #include <QtTest>
 
+#include <QtCore/private/qbytearray_p.h>
+
 class tst_QCborStreamReader : public QObject
 {
     Q_OBJECT
@@ -73,6 +75,8 @@ private Q_SLOTS:
     void next();
     void validation_data();
     void validation();
+    void hugeDeviceValidation_data();
+    void hugeDeviceValidation();
     void recursionLimit_data();
     void recursionLimit();
 
@@ -902,16 +906,26 @@ void tst_QCborStreamReader::next()
     QVERIFY(doit("\xbf\x9f\1\xff\x9f" + data + "\xff\xff"));
 }
 
+#include "../cborlargedatavalidation.cpp"
+
 void tst_QCborStreamReader::validation_data()
 {
+    // Add QCborStreamReader-specific limitations due to use of QByteArray and
+    // QString, which are allocated by QArrayData::allocate().
+    const qsizetype MaxInvalid = std::numeric_limits<QByteArray::size_type>::max();
+    const qsizetype MinInvalid = MaxByteArraySize + 1;
+
     addValidationColumns();
-    addValidationData();
+    addValidationData(MinInvalid);
+    addValidationLargeData(MinInvalid, MaxInvalid);
 }
 
 void tst_QCborStreamReader::validation()
 {
     QFETCH_GLOBAL(bool, useDevice);
     QFETCH(QByteArray, data);
+    QFETCH(CborError, expectedError);
+    QCborError error = { QCborError::Code(expectedError) };
 
     QBuffer buffer(&data);
     QCborStreamReader reader(data);
@@ -920,12 +934,39 @@ void tst_QCborStreamReader::validation()
         reader.setDevice(&buffer);
     }
     parse(reader, data);
-    QVERIFY(reader.lastError() != QCborError::NoError);
+    QCOMPARE(reader.lastError(), error);
 
     // next() should fail
     reader.reset();
     QVERIFY(!reader.next());
-    QVERIFY(reader.lastError() != QCborError::NoError);
+    QCOMPARE(reader.lastError(), error);
+}
+
+void tst_QCborStreamReader::hugeDeviceValidation_data()
+{
+    addValidationHugeDevice(MaxByteArraySize + 1, MaxStringSize + 1);
+}
+
+void tst_QCborStreamReader::hugeDeviceValidation()
+{
+    QFETCH_GLOBAL(bool, useDevice);
+    if (!useDevice)
+        return;
+
+    QFETCH(QSharedPointer<QIODevice>, device);
+    QFETCH(CborError, expectedError);
+    QCborError error = { QCborError::Code(expectedError) };
+
+    device->open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+    QCborStreamReader reader(device.data());
+
+    QVERIFY(parseOne(reader).isEmpty());
+    QCOMPARE(reader.lastError(), error);
+
+    // next() should fail
+    reader.reset();
+    QVERIFY(!reader.next());
+    QCOMPARE(reader.lastError(), error);
 }
 
 static const int Recursions = 3;
