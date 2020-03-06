@@ -771,7 +771,7 @@ def parseFeature(ctx, feature, data, cm_fh):
             "autoDetect": "1",     # Setting this to None has weird effects...
             "condition": "QT_GENERATOR_IS_MULTI_CONFIG"
         },
-        "debug": {"condition": "Debug STREQUAL CMAKE_BUILD_TYPE OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"},
+        "debug": {"condition": "CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"},
         "dlopen": {"condition": "UNIX"},
         "doubleconversion": None,
         "enable_gdb_index": None,

@@ -354,7 +354,7 @@ qt_feature_config("developer-build" QMAKE_PUBLIC_QT_CONFIG
 qt_feature("debug"
     LABEL "Build for debugging"
     AUTODETECT QT_FEATURE_developer_build OR ( WIN32 AND NOT GCC ) OR APPLE
-    CONDITION Debug STREQUAL CMAKE_BUILD_TYPE OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES
+    CONDITION CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES
 )
 qt_feature("debug_and_release" PUBLIC
     LABEL "Compile libs in debug and release mode"
