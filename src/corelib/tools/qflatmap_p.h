@@ -60,6 +60,7 @@
 #include <numeric>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
