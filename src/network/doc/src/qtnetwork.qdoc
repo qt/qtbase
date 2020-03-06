@@ -34,19 +34,16 @@
     TCP/IP. Operations such as requests, cookies, and sending data over HTTP
     are handled by various C++ classes.
 
-    \section1 Getting Started
+    \include module-use.qdocinc using qt module
+    \snippet CMakeLists.txt 0
 
-    To use Qt Network classes,add this directive into the C++ files:
-    \code
-    #include <QtNetwork>
-    \endcode
+    See also the \l{Build with CMake} overview.
 
-    \if !defined(qtforpython)
-    To link against the Qt Network module, add this line to the project file:
-    \code
-    QT += network
-    \endcode
-    \endif
+    \section2 Building with qmake
+
+    Add \c network to the \c QT variable:
+
+    \snippet snippets.pro 0
 
     \section1 Articles and Guides
 
@@ -100,13 +97,6 @@
     \qtvariable network
     \brief Provides classes to make network programming easier and portable.
 
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qtnetwork.cpp 1
-
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
-
-    \snippet code/doc_src_qtnetwork.pro 0
+    Qt Network provides a set of APIs for programming applications that use
+    TCP/IP. See the \l{Qt Network} overview for more information.
 */
