@@ -3477,6 +3477,31 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     return plugin_name
 
 
+def get_qml_import_version(scope: Scope, target: str) -> str:
+    import_version = scope.get_string("IMPORT_VERSION")
+    if not import_version:
+        import_version = scope.get_string("QML_IMPORT_VERSION")
+    if not import_version:
+        import_major_version = scope.get_string("QML_IMPORT_MAJOR_VERSION")
+        import_minor_version = scope.get_string("QML_IMPORT_MINOR_VERSION")
+
+        if not import_major_version and not import_minor_version:
+            raise RuntimeError(f"No QML_IMPORT_VERSION info found for target {target}.")
+
+        if not import_minor_version:
+            import_minor_version = str(0)
+        import_version = f"{import_major_version}.{import_minor_version}"
+
+    if import_version:
+        replacements = [
+            ("$$QT_MINOR_VERSION", "${CMAKE_PROJECT_VERSION_MINOR}"),
+            ("$$QT_VERSION", "${CMAKE_PROJECT_VERSION}"),
+        ]
+        for needle, replacement in replacements:
+            import_version = import_version.replace(needle, replacement)
+    return import_version
+
+
 def write_qml_plugin(
     cm_fh: IO[str],
     target: str,
@@ -3507,11 +3532,8 @@ def write_qml_plugin(
             uri = re.sub("\\.\\d+", "", uri)
             extra_lines.append(f'URI "{uri}"')
 
-    import_version = scope.get_string("IMPORT_VERSION")
+    import_version = get_qml_import_version(scope, target)
     if import_version:
-        import_version = import_version.replace(
-            "$$QT_MINOR_VERSION", "${CMAKE_PROJECT_VERSION_MINOR}"
-        )
         extra_lines.append(f'VERSION "{import_version}"')
 
     plugindump_dep = scope.get_string("QML_PLUGINDUMP_DEPENDENCIES")
@@ -3678,24 +3700,8 @@ def handle_app_or_lib(
         cm_fh.write(f"\n{spaces(indent)}set_target_properties({target} PROPERTIES\n")
         cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_INSTALL_QMLTYPES TRUE\n")
 
-        import_version = scope.get_string("IMPORT_VERSION")
-        if not import_version:
-            import_version = scope.get_string("QML_IMPORT_VERSION")
-        if not import_version:
-            import_major_version = scope.get_string("QML_IMPORT_MAJOR_VERSION")
-            import_minor_version = scope.get_string("QML_IMPORT_MINOR_VERSION")
-
-            if not import_major_version and not import_minor_version:
-                raise RuntimeError(f"No QML_IMPORT_VERSION info found for target {target}.")
-
-            if not import_minor_version:
-                import_minor_version = str(0)
-            import_version = f"{import_major_version}.{import_minor_version}"
-
+        import_version = get_qml_import_version(scope, target)
         if import_version:
-            import_version = import_version.replace(
-                "$$QT_MINOR_VERSION", "${CMAKE_PROJECT_VERSION_MINOR}"
-            )
             cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_VERSION {import_version}\n")
 
         import_name = scope.expandString("QML_IMPORT_NAME")
