@@ -1166,20 +1166,6 @@ function(qt_extend_target target)
             endif()
         endforeach()
 
-        # Find dependencies to internal libraries
-        get_target_property(target_deps "${target}" _qt_target_deps)
-        if(NOT target_deps)
-            set(target_deps "")
-        endif()
-
-        foreach(lib ${arg_LIBRARIES})
-            if (TARGET "${lib}")
-                get_target_property(_is_exported "${lib}" INTERFACE_QT_EXPORTED_LIBRARY)
-                if("${_is_exported}")
-                    list(APPEND target_deps "${lib}\;${PROJECT_VERSION}")
-                endif()
-            endif()
-        endforeach()
         # Set-up the target
         target_sources("${target}" PRIVATE ${arg_SOURCES} ${dbus_sources})
         if (arg_COMPILE_FLAGS)
@@ -1212,9 +1198,6 @@ function(qt_extend_target target)
             set_property (TARGET "${target}" APPEND PROPERTY
                 AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
             )
-            set_property(TARGET "${target}" PROPERTY
-                _qt_target_deps "${target_deps}"
-           )
         endif()
 
         # When computing the private library dependencies, we need to check not only the known
@@ -3909,85 +3892,6 @@ macro(qt_find_package)
         endforeach()
     endif()
 endmacro()
-
-# Creates a simple export set for the various Find* dependencies
-# which are needed when creating a static build of Qt.
-# This introduces a custom target property: INTERFACE_QT_EXPORTED_LIBRARY
-# This target property indicates that Qt modules / plugins using this 3rd party library
-# must add it to their list of dependencies when creating their own ${qtmodule}Config.cmake
-function(qt_install_static_target_export target)
-    if(BUILD_SHARED_LIBS)
-        return()
-    endif()
-
-    qt_parse_all_arguments(arg "qt_install_3rdparty_config_files" "" "EXPORT" "" ${ARGN})
-    # TODO mark EXPORT as required
-
-    set_target_properties(${target}
-        PROPERTIES
-            INTERFACE_QT_EXPORTED_LIBRARY 1)
-
-    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${arg_EXPORT})
-
-    set(export_name "${arg_EXPORT}Targets")
-    qt_install(
-        TARGETS ${target}
-        EXPORT ${export_name}
-        LIBRARY DESTINATION ${INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${INSTALL_LIBDIR})
-
-    qt_install(
-        EXPORT ${export_name}
-        DESTINATION "${config_install_dir}"
-    )
-endfunction()
-
-# Create a set of ${target}Config.cmake and ${target}Version.cmake for a
-# third-party library so that it can be found by client code linking statically.
-function(qt_install_3rdparty_config_files target)
-    if(BUILD_SHARED_LIBS)
-       return()
-    endif()
-
-    qt_parse_all_arguments(arg "qt_install_3rdparty_config_files" "" "EXPORT" "PACKAGES;ADDITIONAL_FILES" ${ARGN})
-    # TODO mark EXPORT as required
-
-    set(3RDPARTY_ADDITIONAL_SETUP_CODE)
-    foreach(package ${arg_PACKAGES})
-      list(APPEND 3RDPARTY_ADDITIONAL_SETUP_CODE "find_package(${package})\n")
-    endforeach()
-
-    set(path_suffix "${arg_EXPORT}")
-    qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
-    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
-
-    configure_package_config_file(
-        "${PROJECT_SOURCE_DIR}/cmake/3rdpartyConfig.cmake.in"
-        "${config_build_dir}/${target}Config.cmake"
-        INSTALL_DESTINATION "${config_install_dir}"
-    )
-
-    write_basic_package_version_file(
-        "${config_build_dir}/${target}ConfigVersion.cmake"
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY AnyNewerVersion
-    )
-
-    qt_install(FILES
-        "${config_build_dir}/${target}Config.cmake"
-        "${config_build_dir}/${target}ConfigVersion.cmake"
-        ${arg_ADDITIONAL_FILES}
-        DESTINATION "${config_install_dir}"
-        COMPONENT Devel
-    )
-endfunction()
-
-# Call this function in 3rdparty find modules that ought to be installed alongside
-# Qt modules and must be found when linking statically.
-function(qt_install_3rdparty_library target)
-    qt_install_static_target_export(${target} EXPORT ${target})
-    qt_install_3rdparty_config_files(${target} EXPORT ${target} ${ARGN})
-endfunction()
 
 macro(qt_find_apple_system_frameworks)
     if(APPLE)
