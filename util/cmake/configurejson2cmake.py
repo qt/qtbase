@@ -412,7 +412,6 @@ def parseInput(ctx, sinput, data, cm_fh):
         "gcov",
         "gnumake",
         "gui",
-        "harfbuzz",
         "headersclean",
         "incredibuild-xge",
         "libudev",

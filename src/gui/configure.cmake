@@ -6,6 +6,10 @@
 set(INPUT_freetype "undefined" CACHE STRING "")
 set_property(CACHE INPUT_freetype PROPERTY STRINGS undefined no qt system)
 
+# input harfbuzz
+set(INPUT_harfbuzz "undefined" CACHE STRING "")
+set_property(CACHE INPUT_harfbuzz PROPERTY STRINGS undefined no qt system)
+
 # input libjpeg
 set(INPUT_libjpeg "undefined" CACHE STRING "")
 set_property(CACHE INPUT_libjpeg PROPERTY STRINGS undefined no qt system)

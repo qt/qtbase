@@ -25,7 +25,15 @@ qt_add_module(Core
     QMAKE_MODULE_CONFIG moc resources
     EXCEPTIONS
     SOURCES
-        # special case: remove ../3rdparty/harfbuzz
+        ../3rdparty/harfbuzz/src/harfbuzz.h
+        ../3rdparty/harfbuzz/src/harfbuzz-buffer.c
+        ../3rdparty/harfbuzz/src/harfbuzz-gdef.c
+        ../3rdparty/harfbuzz/src/harfbuzz-gpos.c
+        ../3rdparty/harfbuzz/src/harfbuzz-gsub.c
+        ../3rdparty/harfbuzz/src/harfbuzz-impl.c
+        ../3rdparty/harfbuzz/src/harfbuzz-open.c
+        ../3rdparty/harfbuzz/src/harfbuzz-shaper-all.cpp
+        ../3rdparty/harfbuzz/src/harfbuzz-stream.c
         codecs/qtextcodec_p.h
         codecs/qutfcodec.cpp codecs/qutfcodec_p.h
         global/archdetect.cpp
@@ -238,6 +246,10 @@ qt_add_module(Core
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES
         "${CMAKE_CURRENT_BINARY_DIR}/global" # special case
+        ../3rdparty/harfbuzz/src
+        # ../3rdparty/md4 # special case remove
+        # ../3rdparty/md5 # special case remove
+        # ../3rdparty/sha3 # special case remove
         ../3rdparty/tinycbor/src
     PRECOMPILED_HEADER
         global/qt_pch.h
@@ -245,7 +257,6 @@ qt_add_module(Core
         "text/qstring_compat.cpp"
     LIBRARIES
         Qt::GlobalConfigPrivate # special case
-        QtHarfBuzz # special case
         Threads::Threads # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
