@@ -474,6 +474,17 @@ qt_feature("c++2a" PUBLIC
     CONDITION QT_FEATURE_cxx17 AND TEST_cxx2a
 )
 qt_feature_config("c++2a" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c89"
+    LABEL "C89"
+)
+qt_feature("c99" PUBLIC
+    LABEL "C99"
+    CONDITION c_std_99 IN_LIST CMAKE_C_COMPILE_FEATURES
+)
+qt_feature("c11" PUBLIC
+    LABEL "C11"
+    CONDITION QT_FEATURE_c99 AND c_std_11 IN_LIST CMAKE_C_COMPILE_FEATURES
+)
 qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
     CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
