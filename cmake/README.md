@@ -1,11 +1,16 @@
 # Status
 
-Initial port is on-going. Some modules of QtBase are ported, incl. some of the platform modules.
-Many libraries, tests and examples are still missing.
+Port is still on-going.
+Most of qtbase and qtsvg is ported.
+Other repositories are ported, but not under CI control yet.
+Some libraries, tests and examples are still missing.
 
-Basic functionality is there (moc, uic, etc.), but documentation, translations, etc. are missing.
-
-NOTE: YOU NEED CMAKE 3.15 or later.
+Note:
+You need CMake 3.15.0 or later for most platforms.
+You need CMake 3.16.0 to build Qt for iOS.
+You need CMake 3.17.0 to build Qt for iOS with the simulator_and_device feature.
+You need CMake 3.17.0 + Ninja to build Qt in debug_and_release mode on Windows / Linux.
+You need CMake 3.18.0 + Ninja to build Qt on macOS in debug_and_release mode when using frameworks.
 
 # Intro
 
@@ -17,34 +22,19 @@ years.
   decision to do this was reached independent of cmake: This does save resources on build machines
   as the host tools will only get built once.
 
-* 3rd-party dependencies are no longer built as part of Qt. zlib, libpng, etc. from src/3rdparty
-  need to be supplied from the outside to the build now. You may find apt-get/brew/etc. useful for
-  this. Otherwise you may consider using vcpkg as in the next section. The decision to remove 3rd
-  party dependencies from Qt repositories was reached independent of the decision to use cmake, we
-  just use the opportunity to implement this decision.
+* For now Qt still ships and builds bundled 3rd party code, due to time constraints on getting
+  all the necessary pieces together in order to remove the bundled code (changes are necessary
+  not only in the build system but in other parts of the SDK like the Qt Installer).
 
 * There is less need for bootstrapping. Only moc and rcc (plus the lesser known tracegen and
   qfloat16-tables) are linking against the bootstrap Qt library. Everything else can link against
-  the full QtCore. This will include qmake, which is currently missing from a cmake build. This will
-  change: Qmake is supported as a build system for applications *using* Qt going forward and will
+  the full QtCore. This will include qmake.
+  Qmake is supported as a build system for applications *using* Qt going forward and will
   not go away anytime soon.
 
-* For the time being we try to keep qmake working so that we do not interfere too much with ongoing
+* We keep the qmake-based Qt build system working so that we do not interfere too much with ongoing
   development.
 
-
-# Building against VCPKG on Windows
-
-You may use vcpkg to install dependencies needed to build QtBase.
-
-  * ```git clone -b qt https://github.com/tronical/vcpkg```
-  * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
-  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``qt-x64-windows-static`` or
-    ``qt-x86-windows-static``
-  * Set the ``VCPKG_ROOT`` environment variable to the path where you cloned vcpkg
-  * Build Qt dependencies:  ``vcpkg install @qt-packages-windows.txt``
-  * When running cmake in qtbase, support for vcpkg will be picked up automatically when the
-    VCPKG_ROOT/VCPKG_DEFAULT_TRIPLET environment variable is set.
 
 # Building against homebrew on macOS
 
@@ -76,8 +66,8 @@ make sure to pass the same install prefix.
 generated a build system for. It works with any supported build backend supported by cmake, but you
 can also use the backend build tool directly, e.g. by running ``make``.
 
-CMake has a ninja backend that works quite well and is noticeably faster than make, so you may want
-to use that:
+CMake has a ninja backend that works quite well and is noticeably faster (and more featureful) than
+make, so you may want to use that:
 
 ```
     cd {build directory}
@@ -123,25 +113,6 @@ feature in CMake with a -D flag on the CMake command line. So for example -DFEAT
 CMakeCache.txt file and reconfigure with CMake. And even then you might stumble on some issues when
 reusing an existing build, because of an automoc bug in upstream CMake.
 
-## Ninja reconfiguration bug
-
-If you use the Ninja generator, there's a bug that after the first CMake configuration, if you run
-ninja, it will do the reconfiguration step again. This is quite annoying and time consuming.
-
-There is an open pull request that fixes the issue at
-https://github.com/ninja-build/ninja/pull/1527. You can build your own Ninja executable until the
-request is merged.
-
-```
-    cd {some directory}
-    git clone https://github.com/ninja-build/ninja.git
-    cd ninja && mkdir build && cd build
-    git remote add fix git@github.com:mathstuf/ninja.git && git fetch --all
-    git cherry-pick 29a565f18e01ce83ca14801f4684cd2acaf00d4c
-    ../configure.py --bootstrap
-    cp ninja /usr/local/bin/ninja
-```
-
 ## Building with CCache
 
 You can pass ``-DQT_USE_CCACHE=ON`` to make the build system look for ``ccache`` in your ``PATH``
@@ -182,22 +153,12 @@ The specified path needs to point to a directory that contains an installed host
 ### Cross Compiling for Android
 
 In order to cross-compile Qt to Android, you need a host build (see instructions above) and an
-Android build. In addition, it is necessary to install the Android NDK as well as vcpkg. Vcpkg is
-needed to supply third-party libraries that Qt requires but that are not part of the Android NDK.
+Android build. In addition, it is necessary to install the Android NDK.
 
-Vcpkg for Android can be set up using the following steps:
+The environment for Android can be set up using the following steps:
 
-  * ```git clone -b qt https://github.com/tronical/vcpkg```
-  * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
-  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to one of the following values:
-    * ``arm-android`` (armeabi-v7a)
-    * ``arm64-android`` (arm64v8)
-    * ``x86-android`` (x86)
-    * ``x64-android`` (x86_64)
-  * Set the ``VCPKG_ROOT`` environment variable to the path where you cloned vcpkg
   * Set the ``ANDROID_NDK_HOME`` environment variable to the path where you have installed the Android NDK.
   * Set the ``ANDROID_SDK_HOME`` environment variable to the path where you have installed the Android SDK.
-  * Build Qt dependencies:  ``vcpkg install @qt-packages-android.txt``
 
 When running cmake in qtbase, pass
 ``-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
@@ -214,21 +175,6 @@ configuration argument to the above CMake call: ``-DANDROID_NATIVE_API_LEVEL=${A
 ### Cross compiling for iOS
 
 In order to cross-compile Qt to iOS, you need a host macOS build.
-In addition, it is necessary to install a custom version of vcpkg. Vcpkg is
-needed to supply third-party libraries that Qt requires, but that are not part of the iOS SDK.
-
-Vcpkg for iOS can be set up using the following steps:
-
-  * ```git clone -b qt https://github.com/alcroito/vcpkg```
-  * Run ```bootstrap-vcpkg.sh```
-  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to one of the following values:
-    * ``x64-ios``   (simulator x86_64)
-    * ``x86-ios``   (simulator i386)
-    * ``arm64-ios`` (device arm64)
-    * ``arm-ios``   (device armv7)
-    * ``fat-ios``   (simulator_and_device x86_64 and arm64* - special considedrations)
-  * Set the ``VCPKG_ROOT`` environment variable to the path where you cloned vcpkg
-  * Build Qt dependencies:  ``vcpkg install @qt-packages-ios.txt``
 
 When running cmake in qtbase, pass
 ``-DCMAKE_SYSTEM_NAME=iOS -DQT_HOST_PATH=/path/to/your/host/build -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
@@ -251,22 +197,14 @@ Note that if you choose different architectures compared to the default ones, th
 Only do it if you know what you are doing.
 
 ####  simulator_and_device special considerations
-To do a simulator_and_device build, a custom version of CMake is required in addition to the vcpkg
-fork. The merge request can be found here:
-https://gitlab.kitware.com/cmake/cmake/merge_requests/3617
-
-After you build your own copy of CMake using this merge request, you need to use it for both
-vcpkg and Qt.
-
-Note that vcpkg prefers its own version of CMake when building packages.
-Make sure to put your custom built CMake in PATH, and force vcpkg to use this CMake by running
-``export VCPKG_FORCE_SYSTEM_BINARIES=1`` in your shell.
+To do a simulator_and_device build, an unreleased version of CMake is required (3.17.0).
 
 # Debugging CMake files
 
 CMake allows specifying the ``--trace`` and ``--trace-expand`` options, which work like
 ``qmake -d -d``: As the cmake code is evaluated, the values of parameters and variables is shown.
-This can be a lot of output, so you may want to redirect it to a file.
+This can be a lot of output, so you may want to redirect it to a file using the
+``--trace-redirect=log.txt`` option.
 
 # Porting Help
 
@@ -297,6 +235,15 @@ the resulting CMakeLists.txt file, but e.g. the list of files, etc. should be ex
 convert all the unit tests for a Qt module over to cmake;-)
 
 ``run_pro2cmake.py`` is run like this: ``path_to_qtbase_source/util/cmake/run_pro2cmake.py some_dir``.
+
+
+## vcpkg support
+The initial port used vcpkg to provide 3rd party packages that Qt requires.
+
+At the moment the Qt CI does not use vcpkg anymore, and instead builds bundled 3rd party sources
+if no relevant system package is found.
+
+While the supporting code for building with vcpkg is still there, it is not tested at this time.
 
 
 ## How to convert certain constructs
