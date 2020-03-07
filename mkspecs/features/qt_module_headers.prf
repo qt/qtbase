@@ -230,7 +230,7 @@ headersclean:!internal_module {
                 hcleanFLAGS += -Wcast-align
 
             clang_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-            versionAtLeast(clang_ver, 3.8): hcleanFLAGS += -Wdouble-promotion
+            versionAtLeast(clang_ver, 3.8): hcleanFLAGS += -Wdouble-promotion -Wshorten-64-to-32
 
             !clang {
                 # options accepted only by GCC

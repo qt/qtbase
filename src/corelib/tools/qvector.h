@@ -671,7 +671,7 @@ int indexOf(const QVector<T> &vector, const U &u, int from)
         auto e = vector.end();
         while (++n != e)
             if (*n == u)
-                return n - vector.begin();
+                return int(n - vector.begin());
     }
     return -1;
 }
@@ -688,7 +688,7 @@ int lastIndexOf(const QVector<T> &vector, const U &u, int from)
         auto n = vector.begin() + from + 1;
         while (n != b) {
             if (*--n == u)
-                return n - b;
+                return int(n - b);
         }
     }
     return -1;

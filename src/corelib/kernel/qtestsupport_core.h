@@ -76,14 +76,14 @@ Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
         QCoreApplication::processEvents(QEventLoop::AllEvents);
         QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
-        remaining = deadline.remainingTime();
+        remaining = int(deadline.remainingTime());
         if (remaining > 0)
             QTestPrivate::qSleep(qMin(10, remaining));
 
         if (predicate())
             return true;
 
-        remaining = deadline.remainingTime();
+        remaining = int(deadline.remainingTime());
     } while (remaining > 0);
 
     return predicate(); // Last chance

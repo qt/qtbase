@@ -120,7 +120,7 @@ private:
         if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && int(len) != d - start) {
             // this resize is necessary since we allocate a bit too much
             // when dealing with variable sized 8-bit encodings
-            s.resize(d - start);
+            s.resize(int(d - start));
         }
         return s;
     }
