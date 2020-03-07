@@ -392,6 +392,7 @@ public:
     void decodeValueFromCbor(QCborStreamReader &reader);
     void decodeFromCbor(QCborStreamReader &reader);
     void decodeStringFromCbor(QCborStreamReader &reader);
+    static inline void setErrorInReader(QCborStreamReader &reader, QCborError error);
 };
 
 QT_END_NAMESPACE
