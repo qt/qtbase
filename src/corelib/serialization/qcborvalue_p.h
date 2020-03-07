@@ -389,8 +389,8 @@ public:
         elements.remove(idx);
     }
 
-    void decodeValueFromCbor(QCborStreamReader &reader);
-    void decodeFromCbor(QCborStreamReader &reader);
+    void decodeValueFromCbor(QCborStreamReader &reader, int remainiingStackDepth);
+    void decodeContainerFromCbor(QCborStreamReader &reader, int remainingStackDepth);
     void decodeStringFromCbor(QCborStreamReader &reader);
     static inline void setErrorInReader(QCborStreamReader &reader, QCborError error);
 };

@@ -101,6 +101,8 @@ private slots:
     void fromCborStreamReaderIODevice();
     void validation_data();
     void validation();
+    void recursionLimit_data();
+    void recursionLimit();
     void toDiagnosticNotation_data();
     void toDiagnosticNotation();
 };
@@ -1579,6 +1581,58 @@ void tst_QCborValue::validation()
         decoded = QCborValue::fromCbor(data.mid(1), &error);
         QVERIFY(error.error != QCborError{});
     }
+}
+
+void tst_QCborValue::recursionLimit_data()
+{
+    constexpr int RecursionAttempts = 4096;
+    QTest::addColumn<QByteArray>("data");
+    QByteArray arrays(RecursionAttempts, char(0x81));
+    QByteArray _arrays(RecursionAttempts, char(0x9f));
+    QByteArray maps(RecursionAttempts, char(0xa1));
+    QByteArray _maps(RecursionAttempts, char(0xbf));
+    QByteArray tags(RecursionAttempts, char(0xc0));
+
+    QTest::newRow("array-nesting-too-deep") << arrays;
+    QTest::newRow("_array-nesting-too-deep") << _arrays;
+    QTest::newRow("map-nesting-too-deep") << maps;
+    QTest::newRow("_map-nesting-too-deep") << _maps;
+    QTest::newRow("tag-nesting-too-deep") << tags;
+
+    QByteArray mixed(5 * RecursionAttempts, Qt::Uninitialized);
+    char *ptr = mixed.data();
+    for (int i = 0; i < RecursionAttempts; ++i) {
+        quint8 type = qBound(quint8(QCborStreamReader::Array), quint8(i & 0x80), quint8(QCborStreamReader::Tag));
+        quint8 additional_info = i & 0x1f;
+        if (additional_info == 0x1f)
+            (void)additional_info;      // leave it
+        else if (additional_info > 0x1a)
+            additional_info = 0x1a;
+        else if (additional_info < 1)
+            additional_info = 1;
+
+        *ptr++ = type | additional_info;
+        if (additional_info == 0x18) {
+            *ptr++ = uchar(i);
+        } else if (additional_info == 0x19) {
+            qToBigEndian(ushort(i), ptr);
+            ptr += 2;
+        } else if (additional_info == 0x1a) {
+            qToBigEndian(uint(i), ptr);
+            ptr += 4;
+        }
+    }
+
+    QTest::newRow("mixed-nesting-too-deep") << mixed;
+}
+
+void tst_QCborValue::recursionLimit()
+{
+    QFETCH(QByteArray, data);
+
+    QCborParserError error;
+    QCborValue decoded = QCborValue::fromCbor(data, &error);
+    QCOMPARE(error.error, QCborError::NestingTooDeep);
 }
 
 void tst_QCborValue::toDiagnosticNotation_data()
