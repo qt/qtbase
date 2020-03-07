@@ -88,7 +88,7 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(cons
     EmscriptenWebGLContextAttributes attributes;
     emscripten_webgl_init_context_attributes(&attributes); // Populate with default attributes
 
-    attributes.preferLowPowerToHighPerformance = false;
+    attributes.powerPreference = EM_WEBGL_POWER_PREFERENCE_HIGH_PERFORMANCE;
     attributes.failIfMajorPerformanceCaveat = false;
     attributes.antialias = true;
     attributes.enableExtensionsByDefault = true;
