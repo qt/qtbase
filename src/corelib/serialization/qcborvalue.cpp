@@ -1438,23 +1438,33 @@ static Element decodeBasicValueFromCbor(QCborStreamReader &reader)
     return e;
 }
 
-static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &reader)
+static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
 {
+    if (Q_UNLIKELY(remainingRecursionDepth == 0)) {
+        QCborContainerPrivate::setErrorInReader(reader, { QCborError::NestingTooDeep });
+        return nullptr;
+    }
+
     auto d = new QCborContainerPrivate;
     d->ref.storeRelaxed(1);
-    d->decodeFromCbor(reader);
+    d->decodeContainerFromCbor(reader, remainingRecursionDepth - 1);
     return d;
 }
 
-static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
+static QCborValue taggedValueFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
 {
+    if (Q_UNLIKELY(remainingRecursionDepth == 0)) {
+        QCborContainerPrivate::setErrorInReader(reader, { QCborError::NestingTooDeep });
+        return QCborValue::Invalid;
+    }
+
     auto d = new QCborContainerPrivate;
     d->append(reader.toTag());
     reader.next();
 
     if (reader.lastError() == QCborError::NoError) {
         // decode tagged value
-        d->decodeValueFromCbor(reader);
+        d->decodeValueFromCbor(reader, remainingRecursionDepth - 1);
     }
 
     QCborValue::Type type;
@@ -1595,9 +1605,10 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     elements.append(e);
 }
 
-void QCborContainerPrivate::decodeValueFromCbor(QCborStreamReader &reader)
+void QCborContainerPrivate::decodeValueFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
 {
-    switch (reader.type()) {
+    QCborStreamReader::Type t = reader.type();
+    switch (t) {
     case QCborStreamReader::UnsignedInteger:
     case QCborStreamReader::NegativeInteger:
     case QCborStreamReader::SimpleType:
@@ -1614,15 +1625,19 @@ void QCborContainerPrivate::decodeValueFromCbor(QCborStreamReader &reader)
 
     case QCborStreamReader::Array:
     case QCborStreamReader::Map:
+        return append(makeValue(t == QCborStreamReader::Array ? QCborValue::Array : QCborValue::Map, -1,
+                                createContainerFromCbor(reader, remainingRecursionDepth),
+                                MoveContainer));
+
     case QCborStreamReader::Tag:
-        return append(QCborValue::fromCbor(reader));
+        return append(taggedValueFromCbor(reader, remainingRecursionDepth));
 
     case QCborStreamReader::Invalid:
         return;                 // probably a decode error
     }
 }
 
-void QCborContainerPrivate::decodeFromCbor(QCborStreamReader &reader)
+void QCborContainerPrivate::decodeContainerFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
 {
     int mapShift = reader.isMap() ? 1 : 0;
     if (reader.isLengthKnown()) {
@@ -1640,7 +1655,7 @@ void QCborContainerPrivate::decodeFromCbor(QCborStreamReader &reader)
         return;
 
     while (reader.hasNext() && reader.lastError() == QCborError::NoError)
-        decodeValueFromCbor(reader);
+        decodeValueFromCbor(reader, remainingRecursionDepth);
 
     if (reader.lastError() == QCborError::NoError)
         reader.leaveContainer();
@@ -2340,6 +2355,8 @@ QCborValueRef QCborValue::operator[](qint64 key)
     return { container, index };
 }
 
+enum { MaximumRecursionDepth = 1024 };
+
 /*!
     Decodes one item from the CBOR stream found in \a reader and returns the
     equivalent representation. This function is recursive: if the item is a map
@@ -2400,12 +2417,12 @@ QCborValue QCborValue::fromCbor(QCborStreamReader &reader)
     case QCborStreamReader::Map:
         result.n = -1;
         result.t = reader.isArray() ? Array : Map;
-        result.container = createContainerFromCbor(reader);
+        result.container = createContainerFromCbor(reader, MaximumRecursionDepth);
         break;
 
     // tag
     case QCborStreamReader::Tag:
-        result = taggedValueFromCbor(reader);
+        result = taggedValueFromCbor(reader, MaximumRecursionDepth);
         break;
     }
 
