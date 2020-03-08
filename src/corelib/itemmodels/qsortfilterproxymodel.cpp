@@ -1949,8 +1949,9 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     example.)
 
     If you are working with large amounts of filtering and have to invoke
-    invalidateFilter() repeatedly, using reset() may be more efficient,
-    depending on the implementation of your model. However, reset() returns the
+    invalidateFilter() repeatedly, using beginResetModel() / endResetModel() may
+    be more efficient, depending on the implementation of your model. However,
+    beginResetModel() / endResetModel() returns the
     proxy model to its original state, losing selection information, and will
     cause the proxy model to be repopulated.
 
