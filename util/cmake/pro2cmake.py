@@ -1432,7 +1432,7 @@ def map_condition(condition: str) -> str:
     )
     condition = re.sub(
         r"qtConfig\(opengl\(es1\|es2\)\?\)",
-        r"QT_FEATURE_opengl OR QT_FEATURE_opengles2 OR QT_FEATURE_opengles3",
+        r"(QT_FEATURE_opengl OR QT_FEATURE_opengles2 OR QT_FEATURE_opengles3)",
         condition,
     )
     condition = re.sub(r"qtConfig\(opengl\.\*\)", r"QT_FEATURE_opengl", condition)
