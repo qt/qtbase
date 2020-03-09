@@ -6,8 +6,7 @@ Other repositories are ported, but not under CI control yet.
 Some libraries, tests and examples are still missing.
 
 Note:
-You need CMake 3.15.0 or later for most platforms.
-You need CMake 3.16.0 to build Qt for iOS.
+You need CMake 3.16.0 or later for most platforms (due to new AUTOMOC json feature).
 You need CMake 3.17.0 to build Qt for iOS with the simulator_and_device feature.
 You need CMake 3.17.0 + Ninja to build Qt in debug_and_release mode on Windows / Linux.
 You need CMake 3.18.0 + Ninja to build Qt on macOS in debug_and_release mode when using frameworks.
