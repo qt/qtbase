@@ -1240,7 +1240,9 @@ void QCocoaWindow::windowDidOrderOffScreen()
 
 void QCocoaWindow::windowDidChangeOcclusionState()
 {
-    if (m_view.window.occlusionState & NSWindowOcclusionStateVisible)
+    bool visible = m_view.window.occlusionState & NSWindowOcclusionStateVisible;
+    qCDebug(lcQpaWindow) << "QCocoaWindow::windowDidChangeOcclusionState" << window() << "is now" << (visible ? "visible" : "occluded");
+    if (visible)
         [m_view setNeedsDisplay:YES];
     else
         handleExposeEvent(QRegion());
