@@ -228,10 +228,9 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
         p.drawPixmap(r, pixmap);
     }
 
-    NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(fullHeightPixmap));
+    auto *nsimage = [NSImage imageFromQImage:fullHeightPixmap.toImage()];
     [nsimage setTemplate:icon.isMask()];
     [(NSImageView*)[[m_sys->item item] view] setImage: nsimage];
-    [nsimage release];
 }
 
 void QCocoaSystemTrayIcon::updateMenu(QPlatformMenu *menu)

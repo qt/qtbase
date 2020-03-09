@@ -47,6 +47,8 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qoperatingsystemversion.h>
 
+QT_USE_NAMESPACE
+
 QT_BEGIN_NAMESPACE
 
 // ---------------------- Images ----------------------
@@ -124,23 +126,34 @@ QImage qt_mac_toQImage(CGImageRef image)
 
 #ifdef Q_OS_MACOS
 
-static NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
-{
-    NSImage *newImage = [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
-    return newImage;
-}
+QT_END_NAMESPACE
 
-NSImage *qt_mac_create_nsimage(const QPixmap &pm)
+@implementation NSImage (QtExtras)
++ (instancetype)imageFromQImage:(const QImage &)image
 {
-    if (pm.isNull())
-        return 0;
-    QImage image = pm.toImage();
-    CGImageRef cgImage = qt_mac_toCGImage(image);
-    NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
-    nsImage.size = (pm.size() / pm.devicePixelRatioF()).toCGSize();
-    CGImageRelease(cgImage);
-    return nsImage;
+    if (image.isNull())
+        return nil;
+
+    QCFType<CGImageRef> cgImage = image.toCGImage();
+    if (!cgImage)
+        return nil;
+
+    // We set up the NSImage using an explicit NSBitmapImageRep, instead of
+    // [NSImage initWithCGImage:size:], as the former allows us to correctly
+    // set the size of the representation to account for the device pixel
+    // ratio of the original image, which in turn will be reflected by the
+    // NSImage.
+    auto nsImage = [[NSImage alloc] initWithSize:NSZeroSize];
+    auto *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
+    imageRep.size = (image.size() / image.devicePixelRatioF()).toCGSize();
+    [nsImage addRepresentation:[imageRep autorelease]];
+    Q_ASSERT(CGSizeEqualToSize(nsImage.size, imageRep.size));
+
+    return [nsImage autorelease];
 }
+@end
+
+QT_BEGIN_NAMESPACE
 
 NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize)
 {

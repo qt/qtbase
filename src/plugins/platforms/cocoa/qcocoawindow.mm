@@ -899,8 +899,7 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
         [iconButton setImage:[workspace iconForFile:m_view.window.representedFilename]];
     } else {
         QPixmap pixmap = icon.pixmap(QSize(22, 22));
-        NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(pixmap));
-        [iconButton setImage:[image autorelease]];
+        iconButton.image = [NSImage imageFromQImage:pixmap.toImage()];
     }
 }
 

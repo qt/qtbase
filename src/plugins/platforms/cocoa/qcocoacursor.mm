@@ -340,19 +340,12 @@ NSCursor *QCocoaCursor::createCursorFromPixmap(const QPixmap pixmap, const QPoin
         QSize layoutSize = pixmap.size() / pixmap.devicePixelRatio();
         QPixmap scaledPixmap = pixmap.scaled(layoutSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         scaledPixmap.setDevicePixelRatio(1.0);
-        nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(scaledPixmap));
-        CGImageRef cgImage = qt_mac_toCGImage(pixmap.toImage());
-        NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
-        [nsimage addRepresentation:imageRep];
-        [imageRep release];
-        CGImageRelease(cgImage);
+        nsimage = [NSImage imageFromQImage:scaledPixmap.toImage()];
     } else {
-        nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(pixmap));
+        nsimage = [NSImage imageFromQImage:pixmap.toImage()];
     }
 
-    NSCursor *nsCursor = [[NSCursor alloc] initWithImage:nsimage hotSpot: hotSpot];
-    [nsimage release];
-    return nsCursor;
+    return [[NSCursor alloc] initWithImage:nsimage hotSpot:hotSpot];
 }
 
 QT_END_NAMESPACE

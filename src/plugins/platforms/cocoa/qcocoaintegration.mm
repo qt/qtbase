@@ -476,10 +476,9 @@ void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const
     if (!icon.isNull()) {
         NSSize size = [[[NSApplication sharedApplication] dockTile] size];
         QPixmap pixmap = icon.pixmap(size.width, size.height);
-        image = static_cast<NSImage *>(qt_mac_create_nsimage(pixmap));
+        image = [NSImage imageFromQImage:pixmap.toImage()];
     }
     [[NSApplication sharedApplication] setApplicationIconImage:image];
-    [image release];
 }
 
 void QCocoaIntegration::beep() const
