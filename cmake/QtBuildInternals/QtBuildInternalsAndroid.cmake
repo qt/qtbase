@@ -175,8 +175,8 @@ function(qt_android_dependencies target)
 
     # Bundled files
     if(arg_BUNDLED_FILES)
-        foreach(file IN LISTS arg_BUNDLED_FILES)
-            file(TO_NATIVE_PATH ${lib_file} file_native)
+        foreach(bundled_file IN LISTS arg_BUNDLED_FILES)
+            file(TO_NATIVE_PATH ${bundled_file} file_native)
             string(APPEND file_contents "<bundled file=\"${file_native}\" />\n")
         endforeach()
     endif()
