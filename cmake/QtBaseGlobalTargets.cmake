@@ -281,10 +281,14 @@ configure_file(
 qt_install(FILES
     "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
     "${__build_internals_build_dir}/QtBuildInternalsExtra.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsAndroid.cmake"
     DESTINATION "${__build_internals_install_dir}"
     COMPONENT Devel
 )
+qt_copy_or_install(
+    FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsAndroid.cmake"
+    DESTINATION "${__build_internals_install_dir}")
+
 
 # Generate the new resource API
 set(QT_CORE_RESOURCE_GENERATED_FILE_NAME "${INSTALL_CMAKE_NAMESPACE}CoreResource.cmake" CACHE INTERNAL "")
