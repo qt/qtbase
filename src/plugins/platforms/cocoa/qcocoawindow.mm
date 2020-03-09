@@ -894,13 +894,10 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
 
     QMacAutoReleasePool pool;
 
-    if (icon.isNull()) {
-        NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-        [iconButton setImage:[workspace iconForFile:m_view.window.representedFilename]];
-    } else {
-        QPixmap pixmap = icon.pixmap(QSize(22, 22));
-        iconButton.image = [NSImage imageFromQImage:pixmap.toImage()];
-    }
+    if (icon.isNull())
+        iconButton.image = [NSWorkspace.sharedWorkspace iconForFile:m_view.window.representedFilename];
+    else
+        iconButton.image = [NSImage imageFromQIcon:icon];
 }
 
 void QCocoaWindow::setAlertState(bool enabled)

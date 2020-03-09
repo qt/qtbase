@@ -472,13 +472,7 @@ QList<QCocoaWindow *> *QCocoaIntegration::popupWindowStack()
 
 void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const
 {
-    NSImage *image = nil;
-    if (!icon.isNull()) {
-        NSSize size = [[[NSApplication sharedApplication] dockTile] size];
-        QPixmap pixmap = icon.pixmap(size.width, size.height);
-        image = [NSImage imageFromQImage:pixmap.toImage()];
-    }
-    [[NSApplication sharedApplication] setApplicationIconImage:image];
+    NSApp.applicationIconImage = [NSImage imageFromQIcon:icon];
 }
 
 void QCocoaIntegration::beep() const
