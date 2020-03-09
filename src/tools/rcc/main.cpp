@@ -180,6 +180,9 @@ int runRcc(int argc, char *argv[])
     QCommandLineOption nocompressOption(QStringLiteral("no-compress"), QStringLiteral("Disable all compression. Same as --compress-algo=none."));
     parser.addOption(nocompressOption);
 
+    QCommandLineOption noZstdOption(QStringLiteral("no-zstd"), QStringLiteral("Disable usage of zstd compression."));
+    parser.addOption(noZstdOption);
+
     QCommandLineOption thresholdOption(QStringLiteral("threshold"), QStringLiteral("Threshold to consider compressing files."), QStringLiteral("level"));
     parser.addOption(thresholdOption);
 
@@ -252,6 +255,8 @@ int runRcc(int argc, char *argv[])
         errorMsg = QLatin1String("Zstandard compression requires format version 3 or higher");
     if (parser.isSet(nocompressOption))
         library.setCompressionAlgorithm(RCCResourceLibrary::CompressionAlgorithm::None);
+    if (parser.isSet(noZstdOption))
+        library.setNoZstd(true);
     if (parser.isSet(compressOption) && errorMsg.isEmpty()) {
         int level = library.parseCompressionLevel(library.compressionAlgorithm(), parser.value(compressOption), &errorMsg);
         library.setCompressLevel(level);

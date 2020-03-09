@@ -109,6 +109,9 @@ public:
 
     int formatVersion() const { return m_formatVersion; }
 
+    void setNoZstd(bool v) { m_noZstd = v; }
+    bool noZstd() const { return m_noZstd; }
+
 private:
     struct Strings {
         Strings();
@@ -170,6 +173,7 @@ private:
     QIODevice *m_outDevice;
     QByteArray m_out;
     quint8 m_formatVersion;
+    bool m_noZstd;
 };
 
 QT_END_NAMESPACE

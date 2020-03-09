@@ -113,7 +113,8 @@ public:
                 uint flags = NoFlags,
                 RCCResourceLibrary::CompressionAlgorithm compressAlgo = CONSTANT_COMPRESSALGO_DEFAULT,
                 int compressLevel = CONSTANT_COMPRESSLEVEL_DEFAULT,
-                int compressThreshold = CONSTANT_COMPRESSTHRESHOLD_DEFAULT);
+                int compressThreshold = CONSTANT_COMPRESSTHRESHOLD_DEFAULT,
+                bool noZstd = false);
     ~RCCFileInfo();
 
     QString resourceName() const;
@@ -137,11 +138,13 @@ public:
     qint64 m_nameOffset;
     qint64 m_dataOffset;
     qint64 m_childOffset;
+    bool m_noZstd;
 };
 
 RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo,
     QLocale::Language language, QLocale::Country country, uint flags,
-    RCCResourceLibrary::CompressionAlgorithm compressAlgo, int compressLevel, int compressThreshold)
+    RCCResourceLibrary::CompressionAlgorithm compressAlgo, int compressLevel, int compressThreshold,
+    bool noZstd)
 {
     m_name = name;
     m_fileInfo = fileInfo;
@@ -155,6 +158,7 @@ RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo,
     m_compressAlgo = compressAlgo;
     m_compressLevel = compressLevel;
     m_compressThreshold = compressThreshold;
+    m_noZstd = noZstd;
 }
 
 RCCFileInfo::~RCCFileInfo()
@@ -267,11 +271,11 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
     // Check if compression is useful for this file
     if (data.size() != 0) {
 #if QT_CONFIG(zstd)
-        if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Best) {
+        if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Best && !m_noZstd) {
             m_compressAlgo = RCCResourceLibrary::CompressionAlgorithm::Zstd;
             m_compressLevel = 19;   // not ZSTD_maxCLevel(), as 20+ are experimental
         }
-        if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Zstd) {
+        if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Zstd && !m_noZstd) {
             if (lib.m_zstdCCtx == nullptr)
                 lib.m_zstdCCtx = ZSTD_createCCtx();
             qsizetype size = data.size();
@@ -471,7 +475,8 @@ RCCResourceLibrary::RCCResourceLibrary(quint8 formatVersion)
     m_useNameSpace(CONSTANT_USENAMESPACE),
     m_errorDevice(0),
     m_outDevice(0),
-    m_formatVersion(formatVersion)
+    m_formatVersion(formatVersion),
+    m_noZstd(false)
 {
     m_out.reserve(30 * 1000 * 1000);
 #if QT_CONFIG(zstd)
@@ -651,7 +656,8 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                                     child.isDir() ? RCCFileInfo::Directory : RCCFileInfo::NoFlags,
                                                     compressAlgo,
                                                     compressLevel,
-                                                    compressThreshold)
+                                                    compressThreshold,
+                                                    m_noZstd)
                                         );
                             if (!arc)
                                 m_failedResources.push_back(child.fileName());
@@ -667,7 +673,8 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                             RCCFileInfo::NoFlags,
                                             compressAlgo,
                                             compressLevel,
-                                            compressThreshold)
+                                            compressThreshold,
+                                            m_noZstd)
                                 );
                     if (!arc)
                         m_failedResources.push_back(absFileName);

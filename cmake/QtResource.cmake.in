@@ -272,6 +272,16 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
         list(APPEND rccArgs ${rcc_OPTIONS})
     endif()
 
+    # When cross-building, we use host tools to generate target code. If the host rcc was compiled
+    # with zstd support, it expects the target QtCore to be able to decompress zstd compressed
+    # content. This might be true with qmake where host tools are built as part of the
+    # cross-compiled Qt, but with CMake we build tools separate from the cross-compiled Qt.
+    # If the target does not support zstd (feature is disabled), tell rcc not to generate
+    # zstd related code.
+    if(NOT QT_FEATURE_zstd)
+        list(APPEND rccArgs "--no-zstd")
+    endif()
+
     # Process .qrc file:
     add_custom_command(OUTPUT "${generatedSourceCode}"
                        COMMAND "@QT_CMAKE_EXPORT_NAMESPACE@::rcc"
