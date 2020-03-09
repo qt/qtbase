@@ -370,6 +370,7 @@ private:
     void handleWindowStateChange(Qt::WindowStates state);
     inline void destroyIcon();
     void fireExpose(const QRegion &region, bool force=false);
+    void calculateFullFrameMargins();
 
     mutable QWindowsWindowData m_data;
     QPointer<QWindowsMenuBar> m_menuBar;
