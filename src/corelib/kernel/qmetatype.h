@@ -1648,7 +1648,6 @@ namespace QtPrivate
         static bool registerConverter(int) { return false; }
     };
 
-    template<class T>
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
 
