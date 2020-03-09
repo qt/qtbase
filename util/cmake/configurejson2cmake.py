@@ -778,7 +778,7 @@ def get_feature_mapping():
         "force_debug_info": {
             "autoDetect": "CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo OR RelWithDebInfo IN_LIST CMAKE_CONFIGURATION_TYPES"
         },
-        "framework": {"condition": "APPLE AND BUILD_SHARED_LIBS"},
+        "framework": {"condition": "APPLE AND BUILD_SHARED_LIBS AND NOT CMAKE_BUILD_TYPE STREQUAL Debug"},
         "gc_binaries": None,
         "gcc-sysroot": None,
         "gcov": None,
