@@ -28,6 +28,9 @@
 #############################################################################
 
 
+# Requires Python 3.7. The import statement needs to be the first line of code
+# so it's not possible to conditionally check the version and raise an
+# exception.
 from __future__ import annotations
 
 import copy
