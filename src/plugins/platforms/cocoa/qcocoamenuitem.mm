@@ -341,13 +341,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         m_native.keyEquivalentModifierMask = NSEventModifierFlagCommand;
     }
 
-    NSImage *img = nil;
-    if (!m_icon.isNull()) {
-        img = qt_mac_create_nsimage(m_icon, m_iconSize);
-        img.size = CGSizeMake(m_iconSize, m_iconSize);
-    }
-    m_native.image = img;
-    [img release];
+    m_native.image = [NSImage imageFromQIcon:m_icon withSize:m_iconSize];
 
     m_native.state = m_checked ?  NSOnState : NSOffState;
     return m_native;

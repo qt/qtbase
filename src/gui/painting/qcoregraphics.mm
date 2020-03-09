@@ -151,32 +151,47 @@ QT_END_NAMESPACE
 
     return [nsImage autorelease];
 }
-@end
 
-QT_BEGIN_NAMESPACE
++ (instancetype)imageFromQIcon:(const QIcon &)icon
+{
+    return [NSImage imageFromQIcon:icon withSize:0];
+}
 
-NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize)
++ (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(int)size
 {
     if (icon.isNull())
         return nil;
 
-    NSImage *nsImage = [[NSImage alloc] init];
-    QList<QSize> availableSizes = icon.availableSizes();
-    if (availableSizes.isEmpty() && defaultSize > 0)
-        availableSizes << QSize(defaultSize, defaultSize);
+    auto nsImage = [[NSImage alloc] initWithSize:NSZeroSize];
+
+    auto availableSizes = icon.availableSizes();
+    if (availableSizes.isEmpty() && size > 0)
+        availableSizes << QSize(size, size);
+
     for (QSize size : qAsConst(availableSizes)) {
-        QPixmap pm = icon.pixmap(size);
-        if (pm.isNull())
+        QImage image = icon.pixmap(size).toImage();
+        if (image.isNull())
             continue;
-        QImage image = pm.toImage();
-        CGImageRef cgImage = qt_mac_toCGImage(image);
-        NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
-        [nsImage addRepresentation:imageRep];
-        [imageRep release];
-        CGImageRelease(cgImage);
+
+        QCFType<CGImageRef> cgImage = image.toCGImage();
+        if (!cgImage)
+            continue;
+
+        auto *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
+        imageRep.size = (image.size() / image.devicePixelRatioF()).toCGSize();
+        [nsImage addRepresentation:[imageRep autorelease]];
     }
-    return nsImage;
+
+    [nsImage setTemplate:icon.isMask()];
+
+    if (size)
+        nsImage.size = CGSizeMake(size, size);
+
+    return [nsImage autorelease];
 }
+@end
+
+QT_BEGIN_NAMESPACE
 
 QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
 {
