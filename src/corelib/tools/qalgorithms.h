@@ -744,11 +744,9 @@ Q_DECL_CONST_FUNCTION QT_POPCOUNT_CONSTEXPR inline uint qPopulationCount(long un
 #endif
 #undef QT_POPCOUNT_CONSTEXPR
 
-Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint32 v) noexcept
+namespace QtPrivate {
+constexpr inline uint qConstexprCountTrailingZeroBits(quint32 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CTZ)
-    return v ? QAlgorithmsPrivate::qt_builtin_ctz(v) : 32U;
-#else
     // see http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel
     unsigned int c = 32; // c will be the number of zero bits on the right
     v &= -signed(v);
@@ -759,14 +757,17 @@ Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint32 v) noexcept
     if (v & 0x33333333) c -= 2;
     if (v & 0x55555555) c -= 1;
     return c;
-#endif
 }
 
-Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint8 v) noexcept
+constexpr inline uint qConstexprCountTrailingZeroBits(quint64 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CTZ)
-    return v ? QAlgorithmsPrivate::qt_builtin_ctz(v) : 8U;
-#else
+    quint32 x = static_cast<quint32>(v);
+    return x ? qConstexprCountTrailingZeroBits(x)
+             : 32 + qConstexprCountTrailingZeroBits(static_cast<quint32>(v >> 32));
+}
+
+constexpr inline uint qConstexprCountTrailingZeroBits(quint8 v) noexcept
+{
     unsigned int c = 8; // c will be the number of zero bits on the right
     v &= -signed(v);
     if (v) c--;
@@ -774,14 +775,10 @@ Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint8 v) noexcept
     if (v & 0x00000033) c -= 2;
     if (v & 0x00000055) c -= 1;
     return c;
-#endif
 }
 
-Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint16 v) noexcept
+constexpr inline uint qConstexprCountTrailingZeroBits(quint16 v) noexcept
 {
-#if defined(QT_HAS_BUILTIN_CTZS)
-    return v ? QAlgorithmsPrivate::qt_builtin_ctzs(v) : 16U;
-#else
     unsigned int c = 16; // c will be the number of zero bits on the right
     v &= -signed(v);
     if (v) c--;
@@ -790,21 +787,51 @@ Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint16 v) noexcept
     if (v & 0x00003333) c -= 2;
     if (v & 0x00005555) c -= 1;
     return c;
+}
+
+constexpr inline uint qConstexprCountTrailingZeroBits(unsigned long v) noexcept
+{
+    return qConstexprCountTrailingZeroBits(QIntegerForSizeof<long>::Unsigned(v));
+}
+}
+
+constexpr inline uint qCountTrailingZeroBits(quint32 v) noexcept
+{
+#if defined(QT_HAS_BUILTIN_CTZ)
+    return v ? QAlgorithmsPrivate::qt_builtin_ctz(v) : 32U;
+#else
+    return QtPrivate::qConstexprCountTrailingZeroBits(v);
 #endif
 }
 
-Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(quint64 v) noexcept
+constexpr inline uint qCountTrailingZeroBits(quint8 v) noexcept
+{
+#if defined(QT_HAS_BUILTIN_CTZ)
+    return v ? QAlgorithmsPrivate::qt_builtin_ctz(v) : 8U;
+#else
+    return QtPrivate::qConstexprCountTrailingZeroBits(v);
+#endif
+}
+
+constexpr inline uint qCountTrailingZeroBits(quint16 v) noexcept
+{
+#if defined(QT_HAS_BUILTIN_CTZS)
+    return v ? QAlgorithmsPrivate::qt_builtin_ctzs(v) : 16U;
+#else
+    return QtPrivate::qConstexprCountTrailingZeroBits(v);
+#endif
+}
+
+constexpr inline uint qCountTrailingZeroBits(quint64 v) noexcept
 {
 #if defined(QT_HAS_BUILTIN_CTZLL)
     return v ? QAlgorithmsPrivate::qt_builtin_ctzll(v) : 64;
 #else
-    quint32 x = static_cast<quint32>(v);
-    return x ? qCountTrailingZeroBits(x)
-             : 32 + qCountTrailingZeroBits(static_cast<quint32>(v >> 32));
+    return QtPrivate::qConstexprCountTrailingZeroBits(v);
 #endif
 }
 
-Q_DECL_RELAXED_CONSTEXPR inline uint qCountTrailingZeroBits(unsigned long v) noexcept
+constexpr inline uint qCountTrailingZeroBits(unsigned long v) noexcept
 {
     return qCountTrailingZeroBits(QIntegerForSizeof<long>::Unsigned(v));
 }
