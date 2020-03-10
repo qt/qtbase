@@ -101,7 +101,7 @@ struct DefinedTypesFilter {
     };
 };
 
-struct QMetaTypeCustomRegistery
+struct QMetaTypeCustomRegistry
 {
     QReadWriteLock lock;
     QVector<QtPrivate::QMetaTypeInterface *> registry;
@@ -180,7 +180,7 @@ struct QMetaTypeCustomRegistery
     }
 };
 
-Q_GLOBAL_STATIC(QMetaTypeCustomRegistery, customTypeRegistery)
+Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
 
 } // namespace
 
@@ -483,7 +483,7 @@ int QMetaType::id() const
     if (d_ptr) {
         if (d_ptr->typeId)
             return d_ptr->typeId;
-        auto reg = customTypeRegistery();
+        auto reg = customTypeRegistry();
         if (reg) {
             return reg->registerCustomType(d_ptr);
         }
@@ -662,7 +662,7 @@ void QMetaType::destruct(void *data) const
 void QtMetaTypePrivate::derefAndDestroy(QtPrivate::QMetaTypeInterface *d_ptr)
 {
     if (d_ptr && !d_ptr->ref.deref()) {
-        if (auto reg = customTypeRegistery())
+        if (auto reg = customTypeRegistry())
             reg->unregisterDynamicType(d_ptr->typeId.loadRelaxed());
         Q_ASSERT(d_ptr->deleteSelf);
         d_ptr->deleteSelf(d_ptr);
@@ -671,7 +671,7 @@ void QtMetaTypePrivate::derefAndDestroy(QtPrivate::QMetaTypeInterface *d_ptr)
 
 Q_CORE_EXPORT void QtMetaTypePrivate::unsafeUnregister(QtPrivate::QMetaTypeInterface *d_ptr)
 {
-    if (auto reg = customTypeRegistery())
+    if (auto reg = customTypeRegistry())
         reg->unregisterDynamicType(d_ptr->typeId.loadRelaxed());
     d_ptr->typeId = 0;
 }
@@ -1049,7 +1049,7 @@ void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
     if (idx < User)
         return; //builtin types should not be registered;
 
-    if (auto reg = customTypeRegistery()) {
+    if (auto reg = customTypeRegistry()) {
         QWriteLocker locker(&reg->lock);
         reg->dataStreamOp[idx] = { saveOp, loadOp };
     }
@@ -1151,7 +1151,7 @@ const char *QMetaType::typeName(int typeId)
         return nullptr; // It can happen when someone cast int to QVariant::Type, we should not crash...
     }
 
-    if (auto reg = customTypeRegistery()) {
+    if (auto reg = customTypeRegistry()) {
         if (auto ti = reg->getCustomType(typeId))
             return ti->name;
     }
@@ -1192,7 +1192,7 @@ static inline int qMetaTypeStaticType(const char *typeName, int length)
 */
 static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 {
-    if (auto reg = customTypeRegistery()) {
+    if (auto reg = customTypeRegistry()) {
 #if QT_CONFIG(thread)
         Q_ASSERT(!reg->lock.tryLockForWrite());
 #endif
@@ -1215,7 +1215,7 @@ void QMetaType::registerNormalizedTypedef(const NS(QByteArray) & normalizedTypeN
 {
     if (!metaType.isValid())
         return;
-    if (auto reg = customTypeRegistery()) {
+    if (auto reg = customTypeRegistry()) {
         QWriteLocker lock(&reg->lock);
         auto &al = reg->aliases[normalizedTypeName];
         if (al)
@@ -1242,7 +1242,7 @@ static inline int qMetaTypeTypeImpl(const char *typeName, int length)
         return QMetaType::UnknownType;
     int type = qMetaTypeStaticType(typeName, length);
     if (type == QMetaType::UnknownType) {
-        QReadLocker locker(&customTypeRegistery()->lock);
+        QReadLocker locker(&customTypeRegistry()->lock);
         type = qMetaTypeCustomType_unlocked(typeName, length);
 #ifndef QT_NO_QOBJECT
         if ((type == QMetaType::UnknownType) && tryNormalizedType) {
@@ -1397,7 +1397,7 @@ public:
     }
     bool delegate(const QMetaTypeSwitcher::NotBuiltinType *data)
     {
-        auto ct = customTypeRegistery();
+        auto ct = customTypeRegistry();
         if (!ct)
             return false;
         QMetaType::SaveOperator op = nullptr;
@@ -1448,7 +1448,7 @@ public:
     }
     bool delegate(const QMetaTypeSwitcher::NotBuiltinType *data)
     {
-        auto ct = customTypeRegistery();
+        auto ct = customTypeRegistry();
         if (!ct)
             return false;
         QMetaType::LoadOperator op = nullptr;
@@ -1734,7 +1734,7 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
 static QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 {
     if (typeId >= QMetaType::User) {
-        if (auto reg = customTypeRegistery())
+        if (auto reg = customTypeRegistry())
             return reg->getCustomType(typeId);
     }
     if (auto moduleHelper = qModuleHelperForType(typeId))
