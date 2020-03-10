@@ -72,6 +72,8 @@
 // RVCT compiles also unused inline methods
 # include <QNetworkProxy>
 
+#include <memory>
+
 #include <time.h>
 #ifdef Q_OS_LINUX
 #include <stdio.h>
@@ -2587,12 +2589,21 @@ void tst_QTcpSocket::moveToThread0()
 
 void tst_QTcpSocket::increaseReadBufferSize()
 {
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    // Let's make sure we don't have close notify events
+    // unprocessed from the previous run of the same test,
+    // may happen that the server socket's descriptor gets
+    // reused by a client here and ... surprise! The buffer
+    // limit set to 256, but we read 512 (since closeNotify
+    // tries to read whatever we got, unsetting read limit).
+    QCoreApplication::processEvents();
+#endif // Q_OS_WIN
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return; //proxy not useful for localhost test case
     QTcpServer server;
-    QTcpSocket *active = newSocket();
-    connect(active, SIGNAL(readyRead()), SLOT(exitLoopSlot()));
+    std::unique_ptr<QTcpSocket> active(newSocket());
+    connect(active.get(), SIGNAL(readyRead()), SLOT(exitLoopSlot()));
 
     // connect two sockets to each other:
     QVERIFY(server.listen(QHostAddress::LocalHost));
@@ -2641,8 +2652,6 @@ void tst_QTcpSocket::increaseReadBufferSize()
     QVERIFY2(!timeout(), "Network timeout");
     QCOMPARE(active->bytesAvailable(), qint64(data.size()));
     QCOMPARE(active->readAll(), data);
-
-    delete active;
 }
 
 void tst_QTcpSocket::increaseReadBufferSizeFromSlot() // like KIO's socketconnectionbackend
