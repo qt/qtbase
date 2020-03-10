@@ -1956,6 +1956,18 @@ def write_defines(
         d.replace('=\\\\\\"$$PWD/\\\\\\"', '="${CMAKE_CURRENT_SOURCE_DIR}/"') for d in defines
     ]
 
+    # Handle LIBS_SUFFIX='\\"_$${QT_ARCH}.so\\"'.
+    # The escaping of backslashes is still needed even if it's a raw
+    # string, because backslashes have a special meaning for regular
+    # expressions (escape next char). So we actually expect to match
+    # 2 backslashes in the input string.
+    pattern = r"""([^ ]+)='\\\\"([^ ]*)\\\\"'"""
+
+    # Replace with regular quotes, CMake will escape the quotes when
+    # passing the define to the compiler.
+    replacement = r'\1="\2"'
+    defines = [re.sub(pattern, replacement, d) for d in defines]
+
     if "qml_debug" in scope.get("CONFIG"):
         defines.append("QT_QML_DEBUG")
 
