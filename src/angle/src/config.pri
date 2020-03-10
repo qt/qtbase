@@ -12,14 +12,6 @@ isEmpty(ANGLE_DIR) {
     error("$$ANGLE_DIR does not contain ANGLE")
 }
 
-equals(QMAKE_HOST.os, Windows) {
-    gnutools.value = $$absolute_path(../../../../gnuwin32/bin)
-    exists($$gnutools.value/gperf.exe) {
-        gnutools.name = PATH
-        gnutools.CONFIG = always_prepend
-    }
-}
-
 defineReplace(addGnuPath) {
     gnuPath = $$1
     !isEmpty(gnuPath):!isEmpty(gnutools.name) {
