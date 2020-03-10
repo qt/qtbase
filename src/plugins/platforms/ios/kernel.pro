@@ -57,13 +57,15 @@ HEADERS = \
         qiosmenu.mm \
         qiosfiledialog.mm \
         qiosmessagedialog.mm \
-        qiostextinputoverlay.mm
+        qiostextinputoverlay.mm \
+        qiosdocumentpickercontroller.mm
     HEADERS += \
         qiosclipboard.h \
         qiosmenu.h \
         qiosfiledialog.h \
         qiosmessagedialog.h \
-        qiostextinputoverlay.h
+        qiostextinputoverlay.h \
+        qiosdocumentpickercontroller.h
 }
 
 OTHER_FILES = \
