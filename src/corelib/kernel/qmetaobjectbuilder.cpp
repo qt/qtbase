@@ -1486,7 +1486,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                 types++;
             }
         }
-        size += sizeof(QMetaType) * d->properties.size();
+        size += static_cast<int>(sizeof(QMetaType) * d->properties.size());
     }
 
     // Align the final size and return it.
