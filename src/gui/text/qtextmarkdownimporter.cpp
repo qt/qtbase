@@ -577,7 +577,10 @@ void QTextMarkdownImporter::insertBlock()
     QTextBlockFormat blockFormat;
     if (!m_listStack.isEmpty() && !m_needsInsertList && m_listItem) {
         QTextList *list = m_listStack.top();
-        blockFormat = list->item(list->count() - 1).blockFormat();
+        if (list)
+            blockFormat = list->item(list->count() - 1).blockFormat();
+        else
+            qWarning() << "attempted to insert into a list that no longer exists";
     }
     if (m_blockQuoteDepth) {
         blockFormat.setProperty(QTextFormat::BlockQuoteLevel, m_blockQuoteDepth);
@@ -607,7 +610,7 @@ void QTextMarkdownImporter::insertBlock()
     }
     if (m_needsInsertList) {
         m_listStack.push(m_cursor->createList(m_listFormat));
-    } else if (!m_listStack.isEmpty() && m_listItem) {
+    } else if (!m_listStack.isEmpty() && m_listItem && m_listStack.top()) {
         m_listStack.top()->add(m_cursor->block());
     }
     m_needsInsertList = false;

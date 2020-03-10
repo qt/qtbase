@@ -296,14 +296,21 @@ QWindowSystemInterfacePrivate::GeometryChangeEvent::GeometryChangeEvent(QWindow 
     , window(window)
     , newGeometry(newGeometry)
 {
-    if (const QPlatformWindow *pw = window->handle())
-        requestedGeometry = QHighDpi::fromNativePixels(pw->QPlatformWindow::geometry(), window);
+    if (const QPlatformWindow *pw = window->handle()) {
+        const auto nativeGeometry = pw->QPlatformWindow::geometry();
+        requestedGeometry = window->isTopLevel()
+            ? QHighDpi::fromNativePixels(nativeGeometry, window)
+            : QHighDpi::fromNativeLocalPosition(nativeGeometry, window);
+    }
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *window, const QRect &newRect)
 {
     Q_ASSERT(window);
-    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(window, QHighDpi::fromNativePixels(newRect, window));
+    const auto newRectDi = window->isTopLevel()
+        ? QHighDpi::fromNativePixels(newRect, window)
+        : QHighDpi::fromNativeLocalPosition(newRect, window);
+    auto e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(window, newRectDi);
     if (window->handle()) {
         // Persist the new geometry so that QWindow::geometry() can be queried in the resize event
         window->handle()->QPlatformWindow::setGeometry(newRect);

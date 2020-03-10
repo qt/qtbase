@@ -589,7 +589,8 @@ QMetaTypeComparatorRegistry;
 typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractDebugStreamFunction,int>
 QMetaTypeDebugStreamRegistry;
 
-Q_STATIC_ASSERT(std::is_pod<QMetaTypeInterface>::value);
+Q_STATIC_ASSERT(std::is_trivial<QMetaTypeInterface>::value);
+Q_STATIC_ASSERT(std::is_standard_layout<QMetaTypeInterface>::value);
 
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
 Q_GLOBAL_STATIC(QVector<QCustomTypeInfo>, customTypes)

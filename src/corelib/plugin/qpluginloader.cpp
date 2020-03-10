@@ -196,9 +196,7 @@ QObject *QPluginLoader::instance()
 {
     if (!isLoaded() && !load())
         return 0;
-    if (!d->inst && d->instance)
-        d->inst = d->instance();
-    return d->inst.data();
+    return d->pluginInstance();
 }
 
 /*!
@@ -233,7 +231,7 @@ bool QPluginLoader::load()
     if (!d || d->fileName.isEmpty())
         return false;
     if (did_load)
-        return d->pHnd && d->instance;
+        return d->pHnd && d->instanceFactory.loadAcquire();
     if (!d->isPlugin())
         return false;
     did_load = true;
@@ -275,7 +273,7 @@ bool QPluginLoader::unload()
  */
 bool QPluginLoader::isLoaded() const
 {
-    return d && d->pHnd && d->instance;
+    return d && d->pHnd && d->instanceFactory.loadRelaxed();
 }
 
 #if defined(QT_SHARED)

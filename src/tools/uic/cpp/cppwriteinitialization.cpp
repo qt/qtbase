@@ -546,12 +546,19 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     m_output << m_option.indent << language::endFunctionDefinition("setupUi");
 
-    if (!m_mainFormUsedInRetranslateUi && language::language() == Language::Cpp) {
-        // Mark varName as unused to avoid compiler warnings.
-        m_refreshInitialization += m_indent;
-        m_refreshInitialization += QLatin1String("(void)");
-        m_refreshInitialization += varName ;
-        m_refreshInitialization += language::eol;
+    if (!m_mainFormUsedInRetranslateUi) {
+        if (language::language() == Language::Cpp) {
+            // Mark varName as unused to avoid compiler warnings.
+            m_refreshInitialization += m_indent;
+            m_refreshInitialization += QLatin1String("(void)");
+            m_refreshInitialization += varName ;
+            m_refreshInitialization += language::eol;
+        } else if (language::language() == Language::Python) {
+            // output a 'pass' to have an empty function
+            m_refreshInitialization += m_indent;
+            m_refreshInitialization += QLatin1String("pass");
+            m_refreshInitialization += language::eol;
+        }
     }
 
     m_output << m_option.indent

@@ -54,10 +54,10 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include "QtCore/qlibrary.h"
+#include "QtCore/qmutex.h"
 #include "QtCore/qpointer.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qplugin.h"
-#include "QtCore/qsharedpointer.h"
 #ifdef Q_OS_WIN
 #  include "QtCore/qt_windows.h"
 #endif
@@ -72,21 +72,18 @@ class QLibraryStore;
 class QLibraryPrivate
 {
 public:
-
 #ifdef Q_OS_WIN
-    HINSTANCE
+    using Handle = HINSTANCE;
 #else
-    void *
+    using Handle = void *;
 #endif
-    pHnd;
-
     enum UnloadFlag { UnloadSys, NoUnloadSys };
 
-    QString fileName, qualifiedFileName;
-    QString fullVersion;
+    const QString fileName;
+    const QString fullVersion;
 
     bool load();
-    bool loadPlugin(); // loads and resolves instance
+    QtPluginInstanceFunction loadPlugin(); // loads and resolves instance
     bool unload(UnloadFlag flag = UnloadSys);
     void release();
     QFunctionPointer resolve(const char *);
@@ -94,17 +91,22 @@ public:
     QLibrary::LoadHints loadHints() const
     { return QLibrary::LoadHints(loadHintsInt.loadRelaxed()); }
     void setLoadHints(QLibrary::LoadHints lh);
+    QObject *pluginInstance();
 
     static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString(),
                                          QLibrary::LoadHints loadHints = nullptr);
     static QStringList suffixes_sys(const QString &fullVersion);
     static QStringList prefixes_sys();
 
-    QPointer<QObject> inst;
-    QtPluginInstanceFunction instance;
-    QJsonObject metaData;
+    QAtomicPointer<std::remove_pointer<QtPluginInstanceFunction>::type> instanceFactory;
+    QAtomicPointer<std::remove_pointer<Handle>::type> pHnd;
 
+    // the mutex protects the fields below
+    QMutex mutex;
+    QPointer<QObject> inst;         // used by QFactoryLoader
+    QJsonObject metaData;
     QString errorString;
+    QString qualifiedFileName;
 
     void updatePluginState();
     bool isPlugin();

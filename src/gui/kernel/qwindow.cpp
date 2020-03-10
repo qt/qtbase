@@ -1666,7 +1666,7 @@ void QWindow::setGeometry(const QRect &rect)
         if (newScreen && isTopLevel())
             nativeRect = QHighDpi::toNativePixels(rect, newScreen);
         else
-            nativeRect = QHighDpi::toNativePixels(rect, this);
+            nativeRect = QHighDpi::toNativeLocalPosition(rect, newScreen);
         d->platformWindow->setGeometry(nativeRect);
     } else {
         d->geometry = rect;
@@ -1717,8 +1717,12 @@ QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry) const
 QRect QWindow::geometry() const
 {
     Q_D(const QWindow);
-    if (d->platformWindow)
-        return QHighDpi::fromNativePixels(d->platformWindow->geometry(), this);
+    if (d->platformWindow) {
+        const auto nativeGeometry = d->platformWindow->geometry();
+        return isTopLevel()
+            ? QHighDpi::fromNativePixels(nativeGeometry, this)
+            : QHighDpi::fromNativeLocalPosition(nativeGeometry, this);
+    }
     return d->geometry;
 }
 

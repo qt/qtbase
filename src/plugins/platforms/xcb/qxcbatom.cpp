@@ -122,6 +122,7 @@ static const char *xcb_atomnames = {
     "_NET_WM_STATE_MODAL\0"
     "_NET_WM_STATE_STAYS_ON_TOP\0"
     "_NET_WM_STATE_DEMANDS_ATTENTION\0"
+    "_NET_WM_STATE_HIDDEN\0"
 
     "_NET_WM_USER_TIME\0"
     "_NET_WM_USER_TIME_WINDOW\0"
