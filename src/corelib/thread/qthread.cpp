@@ -67,7 +67,9 @@ QThreadData::QThreadData(int initialRefCount)
 
 QThreadData::~QThreadData()
 {
+#if QT_CONFIG(thread)
     Q_ASSERT(_ref.loadRelaxed() == 0);
+#endif
 
     // In the odd case that Qt is running on a secondary thread, the main
     // thread instance will have been dereffed asunder because of the deref in
