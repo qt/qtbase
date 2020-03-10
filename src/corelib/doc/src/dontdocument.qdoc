@@ -34,7 +34,7 @@
                  QMetaTypeId2 QObjectData QObjectUserData QMapNodeBase QMapNode QMapDataBase
                  QMapData QHashData QHashNode QArrayDataPointer QTextStreamManipulator
                  QContiguousCacheData QContiguousCacheTypedData QNoDebug QUrlTwoFlags
-                 QCborValueRef qfloat16 QDeferredDeleteEvent QSpecialInteger QLittleEndianStorageType
+                 QCborValueRef QDeferredDeleteEvent QSpecialInteger QLittleEndianStorageType
                  QBigEndianStorageType QFactoryInterface QFutureWatcherBase QJsonValuePtr
                  QJsonValueRefPtr QLinkedListNode QAbstractConcatenable QStringBuilderCommon
                  QTextCodec::ConverterState QThreadStorageData QTextStreamManipulator)
