@@ -796,16 +796,6 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_scroller
         util/qscrollerproperties.cpp util/qscrollerproperties.h util/qscrollerproperties_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_undocommand
-    SOURCES
-        util/qundostack.cpp util/qundostack.h util/qundostack_p.h
-)
-
-qt_extend_target(Widgets CONDITION QT_FEATURE_undogroup
-    SOURCES
-        util/qundogroup.cpp util/qundogroup.h
-)
-
 qt_extend_target(Widgets CONDITION QT_FEATURE_undoview
     SOURCES
         util/qundoview.cpp util/qundoview.h

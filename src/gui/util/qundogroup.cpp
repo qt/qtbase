@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -253,6 +253,85 @@ QUndoStack *QUndoGroup::activeStack() const
     return d->active;
 }
 
+#ifndef QT_NO_ACTION
+
+/*!
+    Creates an undo QAction object with parent \a parent.
+
+    Triggering this action will cause a call to QUndoStack::undo() on the active stack.
+    The text of this action will always be the text of the command which will be undone
+    in the next call to undo(), prefixed by \a prefix. If there is no command available
+    for undo, if the group is empty or if none of the stacks are active, this action will
+    be disabled.
+
+    If \a prefix is empty, the default template "Undo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Undo" was used by default.
+
+    \sa createRedoAction(), canUndo(), QUndoCommand::text()
+*/
+
+QAction *QUndoGroup::createUndoAction(QObject *parent, const QString &prefix) const
+{
+    QAction *action = new QAction(parent);
+    action->setEnabled(canUndo());
+
+    QString effectivePrefix = prefix;
+    QString defaultText;
+    if (prefix.isEmpty()) {
+        effectivePrefix = tr("Undo %1");
+        defaultText = tr("Undo", "Default text for undo action");
+    }
+
+    QUndoStackPrivate::setPrefixedText(action, effectivePrefix, defaultText, undoText());
+
+    connect(this, &QUndoGroup::canUndoChanged, action, &QAction::setEnabled);
+    connect(this, &QUndoGroup::undoTextChanged, action, [=](const QString &text) {
+        QUndoStackPrivate::setPrefixedText(action, effectivePrefix, defaultText, text);
+    });
+    connect(action, &QAction::triggered, this, &QUndoGroup::undo);
+
+    return action;
+}
+
+/*!
+    Creates an redo QAction object with parent \a parent.
+
+    Triggering this action will cause a call to QUndoStack::redo() on the active stack.
+    The text of this action will always be the text of the command which will be redone
+    in the next call to redo(), prefixed by \a prefix. If there is no command available
+    for redo, if the group is empty or if none of the stacks are active, this action will
+    be disabled.
+
+    If \a prefix is empty, the default template "Redo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Redo" was used by default.
+
+    \sa createUndoAction(), canRedo(), QUndoCommand::text()
+*/
+
+QAction *QUndoGroup::createRedoAction(QObject *parent, const QString &prefix) const
+{
+    QAction *action = new QAction(parent);
+    action->setEnabled(canRedo());
+
+    QString effectivePrefix = prefix;
+    QString defaultText;
+    if (prefix.isEmpty()) {
+        effectivePrefix = tr("Redo %1");
+        defaultText = tr("Redo", "Default text for redo action");
+    }
+
+    QUndoStackPrivate::setPrefixedText(action, effectivePrefix, defaultText, redoText());
+
+    connect(this, &QUndoGroup::canRedoChanged, action, &QAction::setEnabled);
+    connect(this, &QUndoGroup::redoTextChanged, action, [=](const QString &text) {
+        QUndoStackPrivate::setPrefixedText(action, effectivePrefix, defaultText, text);
+    });
+    connect(action, &QAction::triggered, this, &QUndoGroup::redo);
+    return action;
+}
+
+#endif // QT_NO_ACTION
+
 /*!
     Calls QUndoStack::undo() on the active stack.
 
@@ -360,72 +439,6 @@ bool QUndoGroup::isClean() const
     Q_D(const QUndoGroup);
     return d->active == nullptr || d->active->isClean();
 }
-
-#ifndef QT_NO_ACTION
-
-/*!
-    Creates an undo QAction object with parent \a parent.
-
-    Triggering this action will cause a call to QUndoStack::undo() on the active stack.
-    The text of this action will always be the text of the command which will be undone
-    in the next call to undo(), prefixed by \a prefix. If there is no command available
-    for undo, if the group is empty or if none of the stacks are active, this action will
-    be disabled.
-
-    If \a prefix is empty, the default template "Undo %1" is used instead of prefix.
-    Before Qt 4.8, the prefix "Undo" was used by default.
-
-    \sa createRedoAction(), canUndo(), QUndoCommand::text()
-*/
-
-QAction *QUndoGroup::createUndoAction(QObject *parent, const QString &prefix) const
-{
-    QUndoAction *result = new QUndoAction(prefix, parent);
-    if (prefix.isEmpty())
-        result->setTextFormat(tr("Undo %1"), tr("Undo", "Default text for undo action"));
-
-    result->setEnabled(canUndo());
-    result->setPrefixedText(undoText());
-    connect(this, SIGNAL(canUndoChanged(bool)),
-            result, SLOT(setEnabled(bool)));
-    connect(this, SIGNAL(undoTextChanged(QString)),
-            result, SLOT(setPrefixedText(QString)));
-    connect(result, SIGNAL(triggered()), this, SLOT(undo()));
-    return result;
-}
-
-/*!
-    Creates an redo QAction object with parent \a parent.
-
-    Triggering this action will cause a call to QUndoStack::redo() on the active stack.
-    The text of this action will always be the text of the command which will be redone
-    in the next call to redo(), prefixed by \a prefix. If there is no command available
-    for redo, if the group is empty or if none of the stacks are active, this action will
-    be disabled.
-
-    If \a prefix is empty, the default template "Redo %1" is used instead of prefix.
-    Before Qt 4.8, the prefix "Redo" was used by default.
-
-    \sa createUndoAction(), canRedo(), QUndoCommand::text()
-*/
-
-QAction *QUndoGroup::createRedoAction(QObject *parent, const QString &prefix) const
-{
-    QUndoAction *result = new QUndoAction(prefix, parent);
-    if (prefix.isEmpty())
-        result->setTextFormat(tr("Redo %1"), tr("Redo", "Default text for redo action"));
-
-    result->setEnabled(canRedo());
-    result->setPrefixedText(redoText());
-    connect(this, SIGNAL(canRedoChanged(bool)),
-            result, SLOT(setEnabled(bool)));
-    connect(this, SIGNAL(redoTextChanged(QString)),
-            result, SLOT(setPrefixedText(QString)));
-    connect(result, SIGNAL(triggered()), this, SLOT(redo()));
-    return result;
-}
-
-#endif // QT_NO_ACTION
 
 /*! \fn void QUndoGroup::activeStackChanged(QUndoStack *stack)
 

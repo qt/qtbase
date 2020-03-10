@@ -1,4 +1,4 @@
 CONFIG += testcase
-QT += widgets testlib
+QT += gui testlib
 SOURCES += tst_qundostack.cpp
 TARGET = tst_qundostack

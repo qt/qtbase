@@ -1,4 +1,4 @@
 CONFIG += testcase
-QT += widgets testlib
+QT += testlib
 SOURCES += tst_qundogroup.cpp
 TARGET = tst_qundogroup

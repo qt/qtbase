@@ -3,5 +3,3 @@
 add_subdirectory(qcompleter)
 add_subdirectory(qscroller)
 add_subdirectory(qsystemtrayicon)
-add_subdirectory(qundogroup)
-add_subdirectory(qundostack)

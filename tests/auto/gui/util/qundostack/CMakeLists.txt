@@ -1,13 +1,12 @@
-# Generated from qundogroup.pro.
+# Generated from qundostack.pro.
 
 #####################################################################
-## tst_qundogroup Test:
+## tst_qundostack Test:
 #####################################################################
 
-add_qt_test(tst_qundogroup
+add_qt_test(tst_qundostack
     SOURCES
-        tst_qundogroup.cpp
+        tst_qundostack.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
-        Qt::Widgets
 )

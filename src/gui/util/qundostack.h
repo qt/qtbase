@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -40,7 +40,7 @@
 #ifndef QUNDOSTACK_H
 #define QUNDOSTACK_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
+#include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 
@@ -52,7 +52,7 @@ class QAction;
 class QUndoCommandPrivate;
 class QUndoStackPrivate;
 
-class Q_WIDGETS_EXPORT QUndoCommand
+class Q_GUI_EXPORT QUndoCommand
 {
     QUndoCommandPrivate *d;
 
@@ -84,7 +84,7 @@ private:
 
 #if QT_CONFIG(undostack)
 
-class Q_WIDGETS_EXPORT QUndoStack : public QObject
+class Q_GUI_EXPORT QUndoStack : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QUndoStack)
@@ -113,10 +113,8 @@ public:
     QString text(int idx) const;
 
 #ifndef QT_NO_ACTION
-    QAction *createUndoAction(QObject *parent,
-                                const QString &prefix = QString()) const;
-    QAction *createRedoAction(QObject *parent,
-                                const QString &prefix = QString()) const;
+    QAction *createUndoAction(QObject *parent, const QString &prefix = QString()) const;
+    QAction *createRedoAction(QObject *parent, const QString &prefix = QString()) const;
 #endif // QT_NO_ACTION
 
     bool isActive() const;

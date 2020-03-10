@@ -793,6 +793,15 @@ qt_extend_target(Gui CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL
         "painting/qdrawhelper.cpp"
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_undocommand
+    SOURCES
+        util/qundostack.cpp util/qundostack.h util/qundostack_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_undogroup
+    SOURCES
+        util/qundogroup.cpp util/qundogroup.h
+)
 
 qt_create_tracepoints(Gui qtgui.tracepoints)
 qt_add_docs(Gui

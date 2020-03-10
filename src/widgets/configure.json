@@ -633,26 +633,6 @@
             "condition": "features.filesystemmodel && features.completer",
             "output": [ "publicFeature", "feature" ]
         },
-        "undocommand": {
-            "label": "QUndoCommand",
-            "purpose": "Applies (redo or) undo of a single change in a document.",
-            "section": "Utilities",
-            "output": [ "publicFeature", "feature" ]
-        },
-        "undostack": {
-            "label": "QUndoStack",
-            "purpose": "Provides the ability to (redo or) undo a list of changes in a document.",
-            "section": "Utilities",
-            "condition": "features.undocommand",
-            "output": [ "publicFeature", "feature" ]
-        },
-        "undogroup": {
-            "label": "QUndoGroup",
-            "purpose": "Provides the ability to cluster QUndoCommands.",
-            "section": "Utilities",
-            "condition": "features.undostack",
-            "output": [ "publicFeature", "feature" ]
-        },
         "undoview": {
             "label": "QUndoView",
             "purpose": "Provides a widget which shows the contents of an undo stack.",

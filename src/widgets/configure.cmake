@@ -534,26 +534,6 @@ qt_feature("fscompleter" PUBLIC
     CONDITION QT_FEATURE_filesystemmodel AND QT_FEATURE_completer
 )
 qt_feature_definition("fscompleter" "QT_NO_FSCOMPLETER" NEGATE VALUE "1")
-qt_feature("undocommand" PUBLIC
-    SECTION "Utilities"
-    LABEL "QUndoCommand"
-    PURPOSE "Applies (redo or) undo of a single change in a document."
-)
-qt_feature_definition("undocommand" "QT_NO_UNDOCOMMAND" NEGATE VALUE "1")
-qt_feature("undostack" PUBLIC
-    SECTION "Utilities"
-    LABEL "QUndoStack"
-    PURPOSE "Provides the ability to (redo or) undo a list of changes in a document."
-    CONDITION QT_FEATURE_undocommand
-)
-qt_feature_definition("undostack" "QT_NO_UNDOSTACK" NEGATE VALUE "1")
-qt_feature("undogroup" PUBLIC
-    SECTION "Utilities"
-    LABEL "QUndoGroup"
-    PURPOSE "Provides the ability to cluster QUndoCommands."
-    CONDITION QT_FEATURE_undostack
-)
-qt_feature_definition("undogroup" "QT_NO_UNDOGROUP" NEGATE VALUE "1")
 qt_feature("undoview" PUBLIC
     SECTION "Utilities"
     LABEL "QUndoView"

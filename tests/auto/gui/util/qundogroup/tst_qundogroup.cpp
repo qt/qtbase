@@ -359,8 +359,8 @@ static QString glue(const QString &s1, const QString &s2)
 void tst_QUndoGroup::checkSignals()
 {
     QUndoGroup group;
-    const QScopedPointer<QAction> undo_action(group.createUndoAction(0, QString("foo")));
-    const QScopedPointer<QAction> redo_action(group.createRedoAction(0, QString("bar")));
+    QScopedPointer<QAction> undo_action(group.createUndoAction(nullptr, QString("foo")));
+    QScopedPointer<QAction> redo_action(group.createRedoAction(nullptr, QString("bar")));
     QSignalSpy indexChangedSpy(&group, &QUndoGroup::indexChanged);
     QSignalSpy cleanChangedSpy(&group, &QUndoGroup::cleanChanged);
     QSignalSpy canUndoChangedSpy(&group, &QUndoGroup::canUndoChanged);
@@ -608,8 +608,8 @@ void tst_QUndoGroup::commandTextFormat()
     qApp->installTranslator(&translator);
 
     QUndoGroup group;
-    const QScopedPointer<QAction> undo_action(group.createUndoAction(0));
-    const QScopedPointer<QAction> redo_action(group.createRedoAction(0));
+    QScopedPointer<QAction> undo_action(group.createUndoAction(nullptr));
+    QScopedPointer<QAction> redo_action(group.createRedoAction(nullptr));
 
     QCOMPARE(undo_action->text(), QString("Undo-default-text"));
     QCOMPARE(redo_action->text(), QString("Redo-default-text"));

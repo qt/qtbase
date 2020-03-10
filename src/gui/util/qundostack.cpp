@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -215,7 +215,7 @@ int QUndoCommand::id() const
 
 bool QUndoCommand::mergeWith(const QUndoCommand *command)
 {
-    Q_UNUSED(command);
+    Q_UNUSED(command)
     return false;
 }
 
@@ -442,38 +442,6 @@ const QUndoCommand *QUndoCommand::child(int index) const
 
     \sa QUndoCommand, QUndoView
 */
-
-#if QT_CONFIG(action)
-
-QUndoAction::QUndoAction(const QString &prefix, QObject *parent)
-    : QAction(parent)
-{
-    m_prefix = prefix;
-}
-
-void QUndoAction::setPrefixedText(const QString &text)
-{
-    if (m_defaultText.isEmpty()) {
-        QString s = m_prefix;
-        if (!m_prefix.isEmpty() && !text.isEmpty())
-            s.append(QLatin1Char(' '));
-        s.append(text);
-        setText(s);
-    } else {
-        if (text.isEmpty())
-            setText(m_defaultText);
-        else
-            setText(m_prefix.arg(text));
-    }
-}
-
-void QUndoAction::setTextFormat(const QString &textFormat, const QString &defaultText)
-{
-    m_prefix = textFormat;
-    m_defaultText = defaultText;
-}
-
-#endif // QT_CONFIG(action)
 
 /*! \internal
     Sets the current index to \a idx, emitting appropriate signals. If \a clean is true,
@@ -1067,6 +1035,27 @@ QString QUndoStack::redoText() const
 #ifndef QT_NO_ACTION
 
 /*!
+    \internal
+
+    Sets the text property of \a action to \a text, applying \a prefix, and falling back to \a defaultText if \a text is empty.
+*/
+void QUndoStackPrivate::setPrefixedText(QAction *action, const QString &prefix, const QString &defaultText, const QString &text)
+{
+    if (defaultText.isEmpty()) {
+        QString s = prefix;
+        if (!prefix.isEmpty() && !text.isEmpty())
+            s.append(QLatin1Char(' '));
+        s.append(text);
+        action->setText(s);
+    } else {
+        if (text.isEmpty())
+            action->setText(defaultText);
+        else
+            action->setText(prefix.arg(text));
+    }
+};
+
+/*!
     Creates an undo QAction object with the given \a parent.
 
     Triggering this action will cause a call to undo(). The text of this action
@@ -1082,18 +1071,25 @@ QString QUndoStack::redoText() const
 
 QAction *QUndoStack::createUndoAction(QObject *parent, const QString &prefix) const
 {
-    QUndoAction *result = new QUndoAction(prefix, parent);
-    if (prefix.isEmpty())
-        result->setTextFormat(tr("Undo %1"), tr("Undo", "Default text for undo action"));
+    QAction *action = new QAction(parent);
+    action->setEnabled(canUndo());
 
-    result->setEnabled(canUndo());
-    result->setPrefixedText(undoText());
-    connect(this, SIGNAL(canUndoChanged(bool)),
-            result, SLOT(setEnabled(bool)));
-    connect(this, SIGNAL(undoTextChanged(QString)),
-            result, SLOT(setPrefixedText(QString)));
-    connect(result, SIGNAL(triggered()), this, SLOT(undo()));
-    return result;
+    QString effectivePrefix = prefix;
+    QString defaultText;
+    if (prefix.isEmpty()) {
+        effectivePrefix = tr("Undo %1");
+        defaultText = tr("Undo", "Default text for undo action");
+    }
+
+    QUndoStackPrivate::setPrefixedText(action, effectivePrefix, defaultText, undoText());
+
+    connect(this, &QUndoStack::canUndoChanged, action, &QAction::setEnabled);
+    connect(this, &QUndoStack::undoTextChanged, action, [=](const QString &text) {
+        QUndoStackPrivate::setPrefixedText(action, effectivePrefix, defaultText, text);
+    });
+    connect(action, &QAction::triggered, this, &QUndoStack::undo);
+
+    return action;
 }
 
 /*!
@@ -1112,18 +1108,25 @@ QAction *QUndoStack::createUndoAction(QObject *parent, const QString &prefix) co
 
 QAction *QUndoStack::createRedoAction(QObject *parent, const QString &prefix) const
 {
-    QUndoAction *result = new QUndoAction(prefix, parent);
-    if (prefix.isEmpty())
-        result->setTextFormat(tr("Redo %1"), tr("Redo", "Default text for redo action"));
+    QAction *action = new QAction(parent);
+    action->setEnabled(canRedo());
 
-    result->setEnabled(canRedo());
-    result->setPrefixedText(redoText());
-    connect(this, SIGNAL(canRedoChanged(bool)),
-            result, SLOT(setEnabled(bool)));
-    connect(this, SIGNAL(redoTextChanged(QString)),
-            result, SLOT(setPrefixedText(QString)));
-    connect(result, SIGNAL(triggered()), this, SLOT(redo()));
-    return result;
+    QString effectivePrefix = prefix;
+    QString defaultText;
+    if (prefix.isEmpty()) {
+        effectivePrefix = tr("Redo %1");
+        defaultText = tr("Redo", "Default text for redo action");
+    }
+
+    QUndoStackPrivate::setPrefixedText(action, effectivePrefix, defaultText, redoText());
+
+    connect(this, &QUndoStack::canRedoChanged, action, &QAction::setEnabled);
+    connect(this, &QUndoStack::redoTextChanged, action, [=](const QString &text) {
+        QUndoStackPrivate::setPrefixedText(action, effectivePrefix, defaultText, text);
+    });
+    connect(action, &QAction::triggered, this, &QUndoStack::redo);
+
+    return action;
 }
 
 #endif // QT_NO_ACTION
@@ -1383,6 +1386,5 @@ bool QUndoStack::isActive() const
 QT_END_NAMESPACE
 
 #include "moc_qundostack.cpp"
-#include "moc_qundostack_p.cpp"
 
 #endif // QT_CONFIG(undostack)

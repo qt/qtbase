@@ -46,3 +46,16 @@ qtConfig(regularexpression) {
     SOURCES += \
         util/qshadergenerator.cpp
 }
+
+qtConfig(undocommand) {
+    HEADERS += \
+        util/qundostack.h \
+        util/qundostack_p.h
+
+    SOURCES += util/qundostack.cpp
+}
+
+qtConfig(undogroup) {
+    HEADERS += util/qundogroup.h
+    SOURCES += util/qundogroup.cpp
+}

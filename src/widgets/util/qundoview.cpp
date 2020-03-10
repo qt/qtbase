@@ -37,12 +37,12 @@
 **
 ****************************************************************************/
 
-#include "qundostack.h"
 #include "qundoview.h"
 
 #if QT_CONFIG(undogroup)
-#include "qundogroup.h"
+#include <QtGui/qundogroup.h>
 #endif
+#include <QtGui/qundostack.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qpointer.h>
 #include <QtGui/qicon.h>

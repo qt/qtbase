@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -37,79 +37,64 @@
 **
 ****************************************************************************/
 
-#ifndef QUNDOSTACK_P_H
-#define QUNDOSTACK_P_H
+#ifndef QUNDOGROUP_H
+#define QUNDOGROUP_H
 
-#include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <private/qobject_p.h>
-#include <QtCore/qlist.h>
+#include <QtGui/qtguiglobal.h>
+#include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
-#if QT_CONFIG(action)
-#  include <QtGui/qaction.h>
-#endif
 
-#include "qundostack.h"
+QT_REQUIRE_CONFIG(undogroup);
 
 QT_BEGIN_NAMESPACE
-class QUndoCommand;
-class QUndoGroup;
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+class QUndoGroupPrivate;
+class QUndoStack;
+class QAction;
 
-class QUndoCommandPrivate
-{
-public:
-    QUndoCommandPrivate() : id(-1), obsolete(false) {}
-    QList<QUndoCommand*> child_list;
-    QString text;
-    QString actionText;
-    int id;
-    bool obsolete;
-};
-
-#if QT_CONFIG(undostack)
-
-class QUndoStackPrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QUndoStack)
-public:
-    QUndoStackPrivate() : index(0), clean_index(0), group(nullptr), undo_limit(0) {}
-
-    QList<QUndoCommand*> command_list;
-    QList<QUndoCommand*> macro_stack;
-    int index;
-    int clean_index;
-    QUndoGroup *group;
-    int undo_limit;
-
-    void setIndex(int idx, bool clean);
-    bool checkUndoLimit();
-};
-
-#ifndef QT_NO_ACTION
-class QUndoAction : public QAction
+class Q_GUI_EXPORT QUndoGroup : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QUndoGroup)
+
 public:
-    explicit QUndoAction(const QString &prefix, QObject *parent = nullptr);
-    void setTextFormat(const QString &textFormat, const QString &defaultText);
-public Q_SLOTS:
-    void setPrefixedText(const QString &text);
-private:
-    QString m_prefix;
-    QString m_defaultText;
-};
+    explicit QUndoGroup(QObject *parent = nullptr);
+    ~QUndoGroup();
+
+    void addStack(QUndoStack *stack);
+    void removeStack(QUndoStack *stack);
+    QList<QUndoStack*> stacks() const;
+    QUndoStack *activeStack() const;
+
+#ifndef QT_NO_ACTION
+    QAction *createUndoAction(QObject *parent, const QString &prefix = QString()) const;
+    QAction *createRedoAction(QObject *parent, const QString &prefix = QString()) const;
 #endif // QT_NO_ACTION
 
+    bool canUndo() const;
+    bool canRedo() const;
+    QString undoText() const;
+    QString redoText() const;
+    bool isClean() const;
+
+public Q_SLOTS:
+    void undo();
+    void redo();
+    void setActiveStack(QUndoStack *stack);
+
+Q_SIGNALS:
+    void activeStackChanged(QUndoStack *stack);
+    void indexChanged(int idx);
+    void cleanChanged(bool clean);
+    void canUndoChanged(bool canUndo);
+    void canRedoChanged(bool canRedo);
+    void undoTextChanged(const QString &undoText);
+    void redoTextChanged(const QString &redoText);
+
+private:
+    Q_DISABLE_COPY(QUndoGroup)
+};
+
 QT_END_NAMESPACE
-#endif // QT_CONFIG(undostack)
-#endif // QUNDOSTACK_P_H
+
+#endif // QUNDOGROUP_H

@@ -113,7 +113,7 @@
     The \c createActions() function sets up all the examples actions
     in the manner shown above. The
     \l{QUndoStack::}{createUndoAction()} and
-    \l{QUndoStack::}{createRedoAction()} helps us crate actions that
+    \l{QUndoStack::}{createRedoAction()} methods help us create actions that
     are disabled and enabled based on the state of the stack.  Also,
     the text of the action will be updated automatically based on the
     \l{QUndoCommand::}{text()} of the undo commands. For the other
