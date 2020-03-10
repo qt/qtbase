@@ -1295,10 +1295,9 @@ void tst_QSequentialAnimationGroup::startGroupWithRunningChild()
     QCOMPARE(anim1->state(), QAnimationGroup::Running);
     QCOMPARE(anim2->state(), QAnimationGroup::Paused);
 
-    QTest::qWait(300);
-
+    // Wait until anim1 finishes (anim2 should be still running)
+    QTRY_COMPARE(anim1->state(), QAnimationGroup::Stopped);
     QCOMPARE(group.state(), QAnimationGroup::Running);
-    QCOMPARE(anim1->state(), QAnimationGroup::Stopped);
     QCOMPARE(anim2->state(), QAnimationGroup::Running);
 
     QCOMPARE(stateChangedSpy2.count(), 4);
@@ -1615,7 +1614,7 @@ void tst_QSequentialAnimationGroup::clear()
     group.start();
     QTest::qWait(anim1->duration() + 100);
     QTRY_COMPARE(group.state(), QAbstractAnimation::Running);
-    QVERIFY(anim1 == 0); //anim1 should have been deleted
+    QTRY_COMPARE(anim1, nullptr); // anim1 should have been deleted
 }
 
 void tst_QSequentialAnimationGroup::pauseResume()
