@@ -1,5 +1,5 @@
 #
-# Collection of auto dection routines to improve the user eperience when
+# Collection of auto detection routines to improve the user experience when
 # building Qt from source.
 #
 # Make sure to not run detection when building standalone tests, because the detection was already
