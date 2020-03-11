@@ -126,8 +126,8 @@ private:
     }
 
     typedef QConcatenable<QStringBuilder<A, B> > Concatenable;
-    typedef typename Concatenable::ConvertTo ConvertTo;
 public:
+    typedef typename Concatenable::ConvertTo ConvertTo;
     operator ConvertTo() const { return convertTo<ConvertTo>(); }
 
     int size() const { return Concatenable::size(*this); }
