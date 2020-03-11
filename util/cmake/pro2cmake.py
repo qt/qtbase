@@ -191,6 +191,10 @@ def _parse_commandline():
     )
     return parser.parse_args()
 
+def get_top_level_repo_project_path(project_file_path: str = "") -> str:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    return qmake_conf_dir_path
 
 def is_top_level_repo_project(project_file_path: str = "") -> bool:
     qmake_conf_path = find_qmake_conf(project_file_path)
@@ -3977,6 +3981,9 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
     for include_index, include_file in enumerate(scope.get_files("_INCLUDED", is_include=True)):
         if not include_file:
             continue
+        if include_file.startswith("${QT_SOURCE_TREE}"):
+            root_source_dir = get_top_level_repo_project_path(scope.file_absolute_path)
+            include_file = include_file.replace("${QT_SOURCE_TREE}", root_source_dir)
         if not os.path.isfile(include_file):
             generated_config_pri_pattern = re.compile(r"qt.+?-config\.pri$")
             match_result = re.search(generated_config_pri_pattern, include_file)
