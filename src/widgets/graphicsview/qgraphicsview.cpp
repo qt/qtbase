@@ -293,6 +293,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtWidgets/qlayout.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qpainterpath.h>
 #include <QtWidgets/qscrollbar.h>
 #include <QtWidgets/qstyleoption.h>
 

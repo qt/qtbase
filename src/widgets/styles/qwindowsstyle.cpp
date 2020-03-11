@@ -78,6 +78,7 @@
 #endif
 #include <private/qmath_p.h>
 #include <qmath.h>
+#include <QtGui/qpainterpath.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <qpa/qplatformtheme.h>

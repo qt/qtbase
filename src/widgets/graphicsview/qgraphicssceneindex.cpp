@@ -60,6 +60,7 @@
 #include "qgraphicswidget.h"
 #include "qgraphicssceneindex_p.h"
 #include "qgraphicsscenebsptreeindex_p.h"
+#include <QtGui/qpainterpath.h>
 
 QT_BEGIN_NAMESPACE
 

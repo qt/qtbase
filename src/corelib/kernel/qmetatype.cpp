@@ -337,7 +337,7 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \value QPolygon QPolygon
     \value QPolygonF QPolygonF
     \value QColor QColor
-    \value QColorSpace QColorSpace
+    \value QColorSpace QColorSpace (introduced in Qt 5.15)
     \value QSizeF QSizeF
     \value QRectF QRectF
     \value QLine QLine
@@ -383,7 +383,7 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \value QCborMap QCborMap
     \value QCborSimpleType QCborSimpleType
     \value QModelIndex QModelIndex
-    \value QPersistentModelIndex QPersistentModelIndex (since 5.5)
+    \value QPersistentModelIndex QPersistentModelIndex (introduced in Qt 5.5)
     \value QUuid QUuid
     \value QByteArrayList QByteArrayList
 

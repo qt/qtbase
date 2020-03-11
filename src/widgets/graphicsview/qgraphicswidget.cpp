@@ -59,6 +59,7 @@
 #include <QtWidgets/qgraphicsview.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qpalette.h>
+#include <QtGui/qpainterpath.h>
 #include <QtWidgets/qstyleoption.h>
 
 #include <qdebug.h>

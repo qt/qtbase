@@ -30,6 +30,7 @@
 #include <QtTest/QtTest>
 #include <qgraphicsscene.h>
 #include <qgraphicsitem.h>
+#include <qpainterpath.h>
 
 class tst_QGraphicsPixmapItem : public QObject
 {

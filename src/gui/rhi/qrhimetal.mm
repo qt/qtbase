@@ -748,30 +748,33 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.tex);
-            QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.sampler);
-            if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                const int nativeBindingTexture = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
-                const int nativeBindingSampler = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler);
-                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                    res[VERTEX].textures.append({ nativeBindingTexture, texD->d->tex });
-                    res[VERTEX].samplers.append({ nativeBindingSampler, samplerD->d->samplerState });
+            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            for (int elem = 0; elem < data->count; ++elem) {
+                QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.texSamplers[elem].tex);
+                QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.texSamplers[elem].sampler);
+                if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
+                    const int nativeBindingTexture = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
+                    const int nativeBindingSampler = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler);
+                    if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                        res[VERTEX].textures.append({ nativeBindingTexture + elem, texD->d->tex });
+                        res[VERTEX].samplers.append({ nativeBindingSampler + elem, samplerD->d->samplerState });
+                    }
                 }
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                const int nativeBindingTexture = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
-                const int nativeBindingSampler = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler);
-                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                    res[FRAGMENT].textures.append({ nativeBindingTexture, texD->d->tex });
-                    res[FRAGMENT].samplers.append({ nativeBindingSampler, samplerD->d->samplerState });
+                if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
+                    const int nativeBindingTexture = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
+                    const int nativeBindingSampler = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler);
+                    if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                        res[FRAGMENT].textures.append({ nativeBindingTexture + elem, texD->d->tex });
+                        res[FRAGMENT].samplers.append({ nativeBindingSampler + elem, samplerD->d->samplerState });
+                    }
                 }
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                const int nativeBindingTexture = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
-                const int nativeBindingSampler = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler);
-                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                    res[COMPUTE].textures.append({ nativeBindingTexture, texD->d->tex });
-                    res[COMPUTE].samplers.append({ nativeBindingSampler, samplerD->d->samplerState });
+                if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
+                    const int nativeBindingTexture = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
+                    const int nativeBindingSampler = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler);
+                    if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                        res[COMPUTE].textures.append({ nativeBindingTexture + elem, texD->d->tex });
+                        res[COMPUTE].samplers.append({ nativeBindingSampler + elem, samplerD->d->samplerState });
+                    }
                 }
             }
         }
@@ -1020,21 +1023,28 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.tex);
-            QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.sampler);
-            if (texD->generation != bd.stex.texGeneration
-                    || texD->m_id != bd.stex.texId
-                    || samplerD->generation != bd.stex.samplerGeneration
-                    || samplerD->m_id != bd.stex.samplerId)
-            {
+            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            if (bd.stex.count != data->count) {
+                bd.stex.count = data->count;
                 resNeedsRebind = true;
-                bd.stex.texId = texD->m_id;
-                bd.stex.texGeneration = texD->generation;
-                bd.stex.samplerId = samplerD->m_id;
-                bd.stex.samplerGeneration = samplerD->generation;
             }
-            texD->lastActiveFrameSlot = currentFrameSlot;
-            samplerD->lastActiveFrameSlot = currentFrameSlot;
+            for (int elem = 0; elem < data->count; ++elem) {
+                QMetalTexture *texD = QRHI_RES(QMetalTexture, data->texSamplers[elem].tex);
+                QMetalSampler *samplerD = QRHI_RES(QMetalSampler, data->texSamplers[elem].sampler);
+                if (texD->generation != bd.stex.d[elem].texGeneration
+                        || texD->m_id != bd.stex.d[elem].texId
+                        || samplerD->generation != bd.stex.d[elem].samplerGeneration
+                        || samplerD->m_id != bd.stex.d[elem].samplerId)
+                {
+                    resNeedsRebind = true;
+                    bd.stex.d[elem].texId = texD->m_id;
+                    bd.stex.d[elem].texGeneration = texD->generation;
+                    bd.stex.d[elem].samplerId = samplerD->m_id;
+                    bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                }
+                texD->lastActiveFrameSlot = currentFrameSlot;
+                samplerD->lastActiveFrameSlot = currentFrameSlot;
+            }
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
@@ -2981,12 +2991,16 @@ bool QMetalShaderResourceBindings::build()
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.tex);
-            QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.sampler);
-            bd.stex.texId = texD->m_id;
-            bd.stex.texGeneration = texD->generation;
-            bd.stex.samplerId = samplerD->m_id;
-            bd.stex.samplerGeneration = samplerD->generation;
+            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            bd.stex.count = data->count;
+            for (int elem = 0; elem < data->count; ++elem) {
+                QMetalTexture *texD = QRHI_RES(QMetalTexture, data->texSamplers[elem].tex);
+                QMetalSampler *samplerD = QRHI_RES(QMetalSampler, data->texSamplers[elem].sampler);
+                bd.stex.d[elem].texId = texD->m_id;
+                bd.stex.d[elem].texGeneration = texD->generation;
+                bd.stex.d[elem].samplerId = samplerD->m_id;
+                bd.stex.d[elem].samplerGeneration = samplerD->generation;
+            }
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
@@ -3241,8 +3255,12 @@ static inline MTLCullMode toMetalCullMode(QRhiGraphicsPipeline::CullMode c)
 id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
                                              QString *error, QByteArray *entryPoint, QShaderKey *activeKey)
 {
-    QShaderKey key = { QShader::MetalLibShader, 12, shaderVariant };
+    QShaderKey key = { QShader::MetalLibShader, 20, shaderVariant };
     QShaderCode mtllib = shader.shader(key);
+    if (mtllib.shader().isEmpty()) {
+        key.setSourceVersion(12);
+        mtllib = shader.shader(key);
+    }
     if (!mtllib.shader().isEmpty()) {
         dispatch_data_t data = dispatch_data_create(mtllib.shader().constData(),
                                                     size_t(mtllib.shader().size()),
@@ -3261,16 +3279,20 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
         }
     }
 
-    key = { QShader::MslShader, 12, shaderVariant };
+    key = { QShader::MslShader, 20, shaderVariant };
     QShaderCode mslSource = shader.shader(key);
     if (mslSource.shader().isEmpty()) {
-        qWarning() << "No MSL 1.2 code found in baked shader" << shader;
+        key.setSourceVersion(12);
+        mslSource = shader.shader(key);
+    }
+    if (mslSource.shader().isEmpty()) {
+        qWarning() << "No MSL 2.0 or 1.2 code found in baked shader" << shader;
         return nil;
     }
 
     NSString *src = [NSString stringWithUTF8String: mslSource.shader().constData()];
     MTLCompileOptions *opts = [[MTLCompileOptions alloc] init];
-    opts.languageVersion = MTLLanguageVersion1_2;
+    opts.languageVersion = key.sourceVersion() == 20 ? MTLLanguageVersion2_0 : MTLLanguageVersion1_2;
     NSError *err = nil;
     id<MTLLibrary> lib = [dev newLibraryWithSource: src options: opts error: &err];
     [opts release];

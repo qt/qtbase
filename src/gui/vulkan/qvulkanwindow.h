@@ -106,7 +106,7 @@ public:
     typedef std::function<void(const VkQueueFamilyProperties *,
                                uint32_t,
                                QVector<VkDeviceQueueCreateInfo> &)> QueueCreateInfoModifier;
-    void setQueueCreateInfoModifier(QueueCreateInfoModifier modifier);
+    void setQueueCreateInfoModifier(const QueueCreateInfoModifier &modifier);
 
     bool isValid() const;
 

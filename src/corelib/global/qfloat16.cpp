@@ -45,18 +45,20 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \headerfile <QFloat16>
-    \title 16-bit Floating Point Support
+    \class qfloat16
+    \keyword 16-bit Floating Point Support
     \ingroup funclists
-    \brief The <QFloat16> header file provides 16-bit floating point support.
+    \inmodule QtCore
+    \inheaderfile QFloat16
+    \brief Provides 16-bit floating point support.
 
-    This header file provides support for half-precision (16-bit) floating
-    point data with the class \c qfloat16.  It is fully compliant with IEEE
-    754 as a storage type.  This implies that any arithmetic operation on a
-    \c qfloat16 instance results in the value first being converted to a
-    \c float.  This conversion to and from \c float is performed by hardware
-    when possible, but on processors that do not natively support half-precision,
-    the conversion is performed through a sequence of lookup table operations.
+    The \c qfloat16 class provides support for half-precision (16-bit) floating
+    point data.  It is fully compliant with IEEE 754 as a storage type.  This
+    implies that any arithmetic operation on a \c qfloat16 instance results in
+    the value first being converted to a \c float.  This conversion to and from
+    \c float is performed by hardware when possible, but on processors that do
+    not natively support half-precision, the conversion is performed through a
+    sequence of lookup table operations.
 
     \c qfloat16 should be treated as if it were a POD (plain old data) type.
     Consequently, none of the supported operations need any elaboration beyond
@@ -68,7 +70,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \macro QT_NO_FLOAT16_OPERATORS
-    \relates <QFloat16>
+    \relates qfloat16
     \since 5.12.4
 
     Defining this macro disables the arithmetic operators for qfloat16.
@@ -81,7 +83,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn bool qIsInf(qfloat16 f)
-    \relates <QFloat16>
+    \relates qfloat16
 
     Returns true if the \c qfloat16 \a {f} is equivalent to infinity.
 
@@ -90,7 +92,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn bool qIsNaN(qfloat16 f)
-    \relates <QFloat16>
+    \relates qfloat16
 
     Returns true if the \c qfloat16 \a {f} is not a number (NaN).
 
@@ -99,7 +101,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn bool qIsFinite(qfloat16 f)
-    \relates <QFloat16>
+    \relates qfloat16
 
     Returns true if the \c qfloat16 \a {f} is a finite number.
 
@@ -130,7 +132,7 @@ QT_BEGIN_NAMESPACE
     \since 5.14
     \fn bool qfloat16::isNormal() const noexcept
 
-    Tests whether this \c qfloat16 value is finite and in normal form.
+    Returns \c true if this \c qfloat16 value is finite and in normal form.
 
     \sa qFpClassify()
 */
@@ -167,7 +169,7 @@ int qfloat16::fpClassify() const noexcept
 }
 
 /*! \fn int qRound(qfloat16 value)
-    \relates <QFloat16>
+    \relates qfloat16
 
     Rounds \a value to the nearest integer.
 
@@ -175,7 +177,7 @@ int qfloat16::fpClassify() const noexcept
 */
 
 /*! \fn qint64 qRound64(qfloat16 value)
-    \relates <QFloat16>
+    \relates qfloat16
 
     Rounds \a value to the nearest 64-bit integer.
 
@@ -183,7 +185,7 @@ int qfloat16::fpClassify() const noexcept
 */
 
 /*! \fn bool qFuzzyCompare(qfloat16 p1, qfloat16 p2)
-    \relates <QFloat16>
+    \relates qfloat16
 
     Compares the floating point value \a p1 and \a p2 and
     returns \c true if they are considered equal, otherwise \c false.
@@ -256,7 +258,7 @@ static void qFloatFromFloat16_fast(float *, const quint16 *, qsizetype) noexcept
 #endif
 /*!
     \since 5.11
-    \relates <QFloat16>
+    \relates qfloat16
 
     Converts \a len floats from \a in to qfloat16 and stores them in \a out.
     Both \a in and \a out must have \a len allocated entries.
@@ -272,7 +274,7 @@ Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *out, const float *in, qsizetype len
 
 /*!
     \since 5.11
-    \relates <QFloat16>
+    \relates qfloat16
 
     Converts \a len qfloat16 from \a in to floats and stores them in \a out.
     Both \a in and \a out must have \a len allocated entries.

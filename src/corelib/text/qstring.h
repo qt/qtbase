@@ -110,6 +110,15 @@ public:
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char front() const { return at(0); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char back() const { return at(size() - 1); }
 
+    Q_REQUIRED_RESULT int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::compareStrings(*this, other, cs); }
+    Q_REQUIRED_RESULT int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::compareStrings(*this, other, cs); }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR int compare(QChar c) const noexcept
+    { return isEmpty() || front() == c ? size() - 1 : uchar(m_data[0]) - c.unicode() ; }
+    Q_REQUIRED_RESULT int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
+    { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
+
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
     Q_REQUIRED_RESULT bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
@@ -232,6 +241,8 @@ Q_DECL_CONSTEXPR bool QtPrivate::isLatin1(QLatin1String) noexcept
 //
 // QStringView members that require QLatin1String:
 //
+int QStringView::compare(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
+{ return QtPrivate::compareStrings(*this, s, cs); }
 bool QStringView::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
 { return QtPrivate::startsWith(*this, s, cs); }
 bool QStringView::endsWith(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
@@ -729,6 +740,8 @@ public:
 #endif
     int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
     inline int compare(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    int compare(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return compare(QStringView{&ch, 1}, cs); }
 
     static inline int compare(const QString &s1, const QString &s2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept
@@ -1615,6 +1628,8 @@ public:
 
     int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
     int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    int compare(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
     int compare(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     int compare(const QByteArray &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const

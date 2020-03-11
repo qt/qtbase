@@ -51,6 +51,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/qpainterpath.h>
 
 #if defined(QT_USE_DIRECTWRITE2)
 #  include <dwrite_2.h>

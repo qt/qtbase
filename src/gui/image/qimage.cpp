@@ -68,6 +68,11 @@
 #include <private/qimage_p.h>
 #include <private/qfont_p.h>
 
+#if QT_CONFIG(thread)
+#include "qsemaphore.h"
+#include "qthreadpool.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static inline bool isLocked(QImageData *data)
@@ -4861,17 +4866,42 @@ void QImage::applyColorTransform(const QColorTransform &transform)
         Q_UNREACHABLE();
     }
 
+    std::function<void(int,int)> transformSegment;
+
     if (depth() > 32) {
-        for (int i = 0; i < height(); ++i) {
-            QRgba64 *scanline = reinterpret_cast<QRgba64 *>(scanLine(i));
-            transform.d->apply(scanline, scanline, width(), flags);
-        }
+        transformSegment = [&](int yStart, int yEnd) {
+            for (int y = yStart; y < yEnd; ++y) {
+                QRgba64 *scanline = reinterpret_cast<QRgba64 *>(scanLine(y));
+                transform.d->apply(scanline, scanline, width(), flags);
+            }
+        };
     } else {
-        for (int i = 0; i < height(); ++i) {
-            QRgb *scanline = reinterpret_cast<QRgb *>(scanLine(i));
-            transform.d->apply(scanline, scanline, width(), flags);
-        }
+        transformSegment = [&](int yStart, int yEnd) {
+            for (int y = yStart; y < yEnd; ++y) {
+                QRgb *scanline = reinterpret_cast<QRgb *>(scanLine(y));
+                transform.d->apply(scanline, scanline, width(), flags);
+            }
+        };
     }
+
+#if QT_CONFIG(thread)
+    int segments = sizeInBytes() / (1<<16);
+    segments = std::min(segments, height());
+    if (segments > 1) {
+        QSemaphore semaphore;
+        int y = 0;
+        for (int i = 0; i < segments; ++i) {
+            int yn = (height() - y) / (segments - i);
+            QThreadPool::globalInstance()->start([&, y, yn]() {
+                transformSegment(y, y + yn);
+                semaphore.release(1);
+            });
+            y += yn;
+        }
+        semaphore.acquire(segments);
+    } else
+#endif
+        transformSegment(0, height());
 
     if (oldFormat != format())
         *this = std::move(*this).convertToFormat(oldFormat);

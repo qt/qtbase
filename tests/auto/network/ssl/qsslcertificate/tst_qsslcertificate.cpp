@@ -436,7 +436,7 @@ void tst_QSslCertificate::subjectAlternativeNames()
 void tst_QSslCertificate::utf8SubjectNames()
 {
     QSslCertificate cert = QSslCertificate::fromPath(testDataDir + "certificates/cert-ss-san-utf8.pem", QSsl::Pem,
-                                                     QSslCertificate::FixedString).first();
+                                                     QSslCertificate::PatternSyntax::FixedString).first();
     QVERIFY(!cert.isNull());
 
     // O is "Heavy Metal Records" with heavy use of "decorations" like accents, umlauts etc.,
@@ -634,66 +634,66 @@ void tst_QSslCertificate::fromPath_qregularexpression_data()
     QTest::addColumn<bool>("pemencoding");
     QTest::addColumn<int>("numCerts");
 
-    QTest::newRow("empty fixed pem") << QString() << int(QSslCertificate::FixedString) << true << 0;
-    QTest::newRow("empty fixed der") << QString() << int(QSslCertificate::FixedString) << false << 0;
-    QTest::newRow("empty regexp pem") << QString() << int(QSslCertificate::RegExp) << true << 0;
-    QTest::newRow("empty regexp der") << QString() << int(QSslCertificate::RegExp) << false << 0;
-    QTest::newRow("empty wildcard pem") << QString() << int(QSslCertificate::Wildcard) << true << 0;
-    QTest::newRow("empty wildcard der") << QString() << int(QSslCertificate::Wildcard) << false << 0;
-    QTest::newRow("\"certificates\" fixed pem") << (testDataDir + "certificates") << int(QSslCertificate::FixedString) << true << 0;
-    QTest::newRow("\"certificates\" fixed der") << (testDataDir + "certificates") << int(QSslCertificate::FixedString) << false << 0;
-    QTest::newRow("\"certificates\" regexp pem") << (testDataDir + "certificates") << int(QSslCertificate::RegExp) << true << 0;
-    QTest::newRow("\"certificates\" regexp der") << (testDataDir + "certificates") << int(QSslCertificate::RegExp) << false << 0;
-    QTest::newRow("\"certificates\" wildcard pem") << (testDataDir + "certificates") << int(QSslCertificate::Wildcard) << true << 0;
-    QTest::newRow("\"certificates\" wildcard der") << (testDataDir + "certificates") << int(QSslCertificate::Wildcard) << false << 0;
-    QTest::newRow("\"certificates/cert.pem\" fixed pem") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::FixedString) << true << 1;
-    QTest::newRow("\"certificates/cert.pem\" fixed der") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::FixedString) << false << 0;
-    QTest::newRow("\"certificates/cert.pem\" regexp pem") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::RegExp) << true << 1;
-    QTest::newRow("\"certificates/cert.pem\" regexp der") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::RegExp) << false << 0;
-    QTest::newRow("\"certificates/cert.pem\" wildcard pem") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::Wildcard) << true << 1;
-    QTest::newRow("\"certificates/cert.pem\" wildcard der") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::Wildcard) << false << 0;
-    QTest::newRow("\"certificates/*\" fixed pem") << (testDataDir + "certificates/*") << int(QSslCertificate::FixedString) << true << 0;
-    QTest::newRow("\"certificates/*\" fixed der") << (testDataDir + "certificates/*") << int(QSslCertificate::FixedString) << false << 0;
-    QTest::newRow("\"certificates/*\" regexp pem") << (testDataDir + "certificates/*") << int(QSslCertificate::RegExp) << true << 0;
-    QTest::newRow("\"certificates/*\" regexp der") << (testDataDir + "certificates/*") << int(QSslCertificate::RegExp) << false << 0;
-    QTest::newRow("\"certificates/*\" wildcard pem") << (testDataDir + "certificates/*") << int(QSslCertificate::Wildcard) << true << 7;
-    QTest::newRow("\"certificates/ca*\" wildcard pem") << (testDataDir + "certificates/ca*") << int(QSslCertificate::Wildcard) << true << 1;
-    QTest::newRow("\"certificates/cert*\" wildcard pem") << (testDataDir + "certificates/cert*") << int(QSslCertificate::Wildcard) << true << 4;
-    QTest::newRow("\"certificates/cert-[sure]*\" wildcard pem") << (testDataDir + "certificates/cert-[sure]*") << int(QSslCertificate::Wildcard) << true << 3;
-    QTest::newRow("\"certificates/cert-[not]*\" wildcard pem") << (testDataDir + "certificates/cert-[not]*") << int(QSslCertificate::Wildcard) << true << 0;
-    QTest::newRow("\"certificates/*\" wildcard der") << (testDataDir + "certificates/*") << int(QSslCertificate::Wildcard) << false << 2;
-    QTest::newRow("\"c*/c*.pem\" fixed pem") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::FixedString) << true << 0;
-    QTest::newRow("\"c*/c*.pem\" fixed der") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::FixedString) << false << 0;
-    QTest::newRow("\"c*/c*.pem\" regexp pem") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::RegExp) << true << 0;
-    QTest::newRow("\"c*/c*.pem\" regexp der") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::RegExp) << false << 0;
-    QTest::newRow("\"c*/c*.pem\" wildcard pem") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::Wildcard) << true << 5;
-    QTest::newRow("\"c*/c*.pem\" wildcard der") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::Wildcard) << false << 0;
-    QTest::newRow("\"d*/c*.pem\" fixed pem") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::FixedString) << true << 0;
-    QTest::newRow("\"d*/c*.pem\" fixed der") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::FixedString) << false << 0;
-    QTest::newRow("\"d*/c*.pem\" regexp pem") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::RegExp) << true << 0;
-    QTest::newRow("\"d*/c*.pem\" regexp der") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::RegExp) << false << 0;
-    QTest::newRow("\"d*/c*.pem\" wildcard pem") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::Wildcard) << true << 0;
-    QTest::newRow("\"d*/c*.pem\" wildcard der") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::Wildcard) << false << 0;
-    QTest::newRow("\"c.*/c.*.pem\" fixed pem") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::FixedString) << true << 0;
-    QTest::newRow("\"c.*/c.*.pem\" fixed der") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::FixedString) << false << 0;
-    QTest::newRow("\"c.*/c.*.pem\" regexp pem") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::RegExp) << true << 5;
-    QTest::newRow("\"c.*/c.*.pem\" regexp der") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::RegExp) << false << 0;
-    QTest::newRow("\"c.*/c.*.pem\" wildcard pem") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::Wildcard) << true << 0;
-    QTest::newRow("\"c.*/c.*.pem\" wildcard der") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::Wildcard) << false << 0;
-    QTest::newRow("\"d.*/c.*.pem\" fixed pem") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::FixedString) << true << 0;
-    QTest::newRow("\"d.*/c.*.pem\" fixed der") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::FixedString) << false << 0;
-    QTest::newRow("\"d.*/c.*.pem\" regexp pem") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::RegExp) << true << 0;
-    QTest::newRow("\"d.*/c.*.pem\" regexp der") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::RegExp) << false << 0;
-    QTest::newRow("\"d.*/c.*.pem\" wildcard pem") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::Wildcard) << true << 0;
-    QTest::newRow("\"d.*/c.*.pem\" wildcard der") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::Wildcard) << false << 0;
+    QTest::newRow("empty fixed pem") << QString() << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
+    QTest::newRow("empty fixed der") << QString() << int(QSslCertificate::PatternSyntax::FixedString) << false << 0;
+    QTest::newRow("empty regexp pem") << QString() << int(QSslCertificate::PatternSyntax::RegularExpression) << true << 0;
+    QTest::newRow("empty regexp der") << QString() << int(QSslCertificate::PatternSyntax::RegularExpression) << false << 0;
+    QTest::newRow("empty wildcard pem") << QString() << int(QSslCertificate::PatternSyntax::Wildcard) << true << 0;
+    QTest::newRow("empty wildcard der") << QString() << int(QSslCertificate::PatternSyntax::Wildcard) << false << 0;
+    QTest::newRow("\"certificates\" fixed pem") << (testDataDir + "certificates") << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
+    QTest::newRow("\"certificates\" fixed der") << (testDataDir + "certificates") << int(QSslCertificate::PatternSyntax::FixedString) << false << 0;
+    QTest::newRow("\"certificates\" regexp pem") << (testDataDir + "certificates") << int(QSslCertificate::PatternSyntax::RegularExpression) << true << 0;
+    QTest::newRow("\"certificates\" regexp der") << (testDataDir + "certificates") << int(QSslCertificate::PatternSyntax::RegularExpression) << false << 0;
+    QTest::newRow("\"certificates\" wildcard pem") << (testDataDir + "certificates") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 0;
+    QTest::newRow("\"certificates\" wildcard der") << (testDataDir + "certificates") << int(QSslCertificate::PatternSyntax::Wildcard) << false << 0;
+    QTest::newRow("\"certificates/cert.pem\" fixed pem") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 1;
+    QTest::newRow("\"certificates/cert.pem\" fixed der") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::PatternSyntax::FixedString) << false << 0;
+    QTest::newRow("\"certificates/cert.pem\" regexp pem") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << true << 1;
+    QTest::newRow("\"certificates/cert.pem\" regexp der") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << false << 0;
+    QTest::newRow("\"certificates/cert.pem\" wildcard pem") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 1;
+    QTest::newRow("\"certificates/cert.pem\" wildcard der") << (testDataDir + "certificates/cert.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << false << 0;
+    QTest::newRow("\"certificates/*\" fixed pem") << (testDataDir + "certificates/*") << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
+    QTest::newRow("\"certificates/*\" fixed der") << (testDataDir + "certificates/*") << int(QSslCertificate::PatternSyntax::FixedString) << false << 0;
+    QTest::newRow("\"certificates/*\" regexp pem") << (testDataDir + "certificates/*") << int(QSslCertificate::PatternSyntax::RegularExpression) << true << 0;
+    QTest::newRow("\"certificates/*\" regexp der") << (testDataDir + "certificates/*") << int(QSslCertificate::PatternSyntax::RegularExpression) << false << 0;
+    QTest::newRow("\"certificates/*\" wildcard pem") << (testDataDir + "certificates/*") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 7;
+    QTest::newRow("\"certificates/ca*\" wildcard pem") << (testDataDir + "certificates/ca*") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 1;
+    QTest::newRow("\"certificates/cert*\" wildcard pem") << (testDataDir + "certificates/cert*") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 4;
+    QTest::newRow("\"certificates/cert-[sure]*\" wildcard pem") << (testDataDir + "certificates/cert-[sure]*") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 3;
+    QTest::newRow("\"certificates/cert-[not]*\" wildcard pem") << (testDataDir + "certificates/cert-[not]*") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 0;
+    QTest::newRow("\"certificates/*\" wildcard der") << (testDataDir + "certificates/*") << int(QSslCertificate::PatternSyntax::Wildcard) << false << 2;
+    QTest::newRow("\"c*/c*.pem\" fixed pem") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
+    QTest::newRow("\"c*/c*.pem\" fixed der") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::PatternSyntax::FixedString) << false << 0;
+    QTest::newRow("\"c*/c*.pem\" regexp pem") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << true << 0;
+    QTest::newRow("\"c*/c*.pem\" regexp der") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << false << 0;
+    QTest::newRow("\"c*/c*.pem\" wildcard pem") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 5;
+    QTest::newRow("\"c*/c*.pem\" wildcard der") << (testDataDir + "c*/c*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << false << 0;
+    QTest::newRow("\"d*/c*.pem\" fixed pem") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
+    QTest::newRow("\"d*/c*.pem\" fixed der") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::PatternSyntax::FixedString) << false << 0;
+    QTest::newRow("\"d*/c*.pem\" regexp pem") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << true << 0;
+    QTest::newRow("\"d*/c*.pem\" regexp der") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << false << 0;
+    QTest::newRow("\"d*/c*.pem\" wildcard pem") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 0;
+    QTest::newRow("\"d*/c*.pem\" wildcard der") << (testDataDir + "d*/c*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << false << 0;
+    QTest::newRow("\"c.*/c.*.pem\" fixed pem") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
+    QTest::newRow("\"c.*/c.*.pem\" fixed der") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::PatternSyntax::FixedString) << false << 0;
+    QTest::newRow("\"c.*/c.*.pem\" regexp pem") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << true << 5;
+    QTest::newRow("\"c.*/c.*.pem\" regexp der") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << false << 0;
+    QTest::newRow("\"c.*/c.*.pem\" wildcard pem") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 0;
+    QTest::newRow("\"c.*/c.*.pem\" wildcard der") << (testDataDir + "c.*/c.*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << false << 0;
+    QTest::newRow("\"d.*/c.*.pem\" fixed pem") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
+    QTest::newRow("\"d.*/c.*.pem\" fixed der") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::PatternSyntax::FixedString) << false << 0;
+    QTest::newRow("\"d.*/c.*.pem\" regexp pem") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << true << 0;
+    QTest::newRow("\"d.*/c.*.pem\" regexp der") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::PatternSyntax::RegularExpression) << false << 0;
+    QTest::newRow("\"d.*/c.*.pem\" wildcard pem") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 0;
+    QTest::newRow("\"d.*/c.*.pem\" wildcard der") << (testDataDir + "d.*/c.*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << false << 0;
 #ifdef Q_OS_LINUX
-    QTest::newRow("absolute path wildcard pem") << (testDataDir + "certificates/*.pem") << int(QSslCertificate::Wildcard) << true << 7;
+    QTest::newRow("absolute path wildcard pem") << (testDataDir + "certificates/*.pem") << int(QSslCertificate::PatternSyntax::Wildcard) << true << 7;
 #endif
 
-    QTest::newRow("trailing-whitespace") << (testDataDir + "more-certificates/trailing-whitespace.pem") << int(QSslCertificate::FixedString) << true << 1;
-    QTest::newRow("no-ending-newline") << (testDataDir + "more-certificates/no-ending-newline.pem") << int(QSslCertificate::FixedString) << true << 1;
-    QTest::newRow("malformed-just-begin") << (testDataDir + "more-certificates/malformed-just-begin.pem") << int(QSslCertificate::FixedString) << true << 0;
-    QTest::newRow("malformed-just-begin-no-newline") << (testDataDir + "more-certificates/malformed-just-begin-no-newline.pem") << int(QSslCertificate::FixedString) << true << 0;
+    QTest::newRow("trailing-whitespace") << (testDataDir + "more-certificates/trailing-whitespace.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 1;
+    QTest::newRow("no-ending-newline") << (testDataDir + "more-certificates/no-ending-newline.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 1;
+    QTest::newRow("malformed-just-begin") << (testDataDir + "more-certificates/malformed-just-begin.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
+    QTest::newRow("malformed-just-begin-no-newline") << (testDataDir + "more-certificates/malformed-just-begin-no-newline.pem") << int(QSslCertificate::PatternSyntax::FixedString) << true << 0;
 }
 
 void tst_QSslCertificate::fromPath_qregularexpression()
@@ -795,7 +795,7 @@ void tst_QSslCertificate::certInfo()
         "55:ba:e7:fb:95:5d:91";
 
     QSslCertificate cert =  QSslCertificate::fromPath(testDataDir + "certificates/cert.pem", QSsl::Pem,
-                                                      QSslCertificate::FixedString).first();
+                                                      QSslCertificate::PatternSyntax::FixedString).first();
     QVERIFY(!cert.isNull());
 
     QCOMPARE(cert.issuerInfo(QSslCertificate::Organization)[0], QString("CryptSoft Pty Ltd"));
@@ -852,7 +852,7 @@ void tst_QSslCertificate::certInfo()
 void tst_QSslCertificate::certInfoQByteArray()
 {
     QSslCertificate cert =  QSslCertificate::fromPath(testDataDir + "certificates/cert.pem", QSsl::Pem,
-                                                      QSslCertificate::FixedString).first();
+                                                      QSslCertificate::PatternSyntax::FixedString).first();
     QVERIFY(!cert.isNull());
 
     // in this test, check the bytearray variants before the enum variants to see if
@@ -904,7 +904,7 @@ void tst_QSslCertificate::nulInCN()
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "more-certificates/badguy-nul-cn.crt", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "more-certificates/badguy-nul-cn.crt", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QCOMPARE(certList.size(), 1);
 
     const QSslCertificate &cert = certList.at(0);
@@ -923,7 +923,7 @@ void tst_QSslCertificate::nulInSan()
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "more-certificates/badguy-nul-san.crt", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "more-certificates/badguy-nul-san.crt", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QCOMPARE(certList.size(), 1);
 
     const QSslCertificate &cert = certList.at(0);
@@ -943,7 +943,7 @@ void tst_QSslCertificate::nulInSan()
 void tst_QSslCertificate::largeSerialNumber()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-serial-number.pem", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-serial-number.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
 
     QCOMPARE(certList.size(), 1);
 
@@ -955,7 +955,7 @@ void tst_QSslCertificate::largeSerialNumber()
 void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-expiration-date.pem", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-expiration-date.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
 
     QCOMPARE(certList.size(), 1);
 
@@ -968,7 +968,7 @@ void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
 
 void tst_QSslCertificate::blacklistedCertificates()
 {
-    QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath(testDataDir + "more-certificates/blacklisted*.pem", QSsl::Pem, QSslCertificate::Wildcard);
+    QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath(testDataDir + "more-certificates/blacklisted*.pem", QSsl::Pem, QSslCertificate::PatternSyntax::Wildcard);
     QVERIFY(blacklistedCerts.count() > 0);
     for (int a = 0; a < blacklistedCerts.count(); a++) {
         QVERIFY(blacklistedCerts.at(a).isBlacklisted());
@@ -977,15 +977,15 @@ void tst_QSslCertificate::blacklistedCertificates()
 
 void tst_QSslCertificate::selfsignedCertificates()
 {
-    QVERIFY(QSslCertificate::fromPath(testDataDir + "certificates/cert-ss.pem", QSsl::Pem, QSslCertificate::FixedString).first().isSelfSigned());
-    QVERIFY(!QSslCertificate::fromPath(testDataDir + "certificates/cert.pem", QSsl::Pem, QSslCertificate::FixedString).first().isSelfSigned());
+    QVERIFY(QSslCertificate::fromPath(testDataDir + "certificates/cert-ss.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString).first().isSelfSigned());
+    QVERIFY(!QSslCertificate::fromPath(testDataDir + "certificates/cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString).first().isSelfSigned());
     QVERIFY(!QSslCertificate().isSelfSigned());
 }
 
 void tst_QSslCertificate::toText()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-expiration-date.pem", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-expiration-date.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
 
     QCOMPARE(certList.size(), 1);
     const QSslCertificate &cert = certList.at(0);
@@ -1027,7 +1027,7 @@ void tst_QSslCertificate::toText()
 void tst_QSslCertificate::multipleCommonNames()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-two-cns-cert.pem", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-two-cns-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QVERIFY(certList.count() > 0);
 
     QStringList commonNames = certList[0].subjectInfo(QSslCertificate::CommonName);
@@ -1038,14 +1038,14 @@ void tst_QSslCertificate::multipleCommonNames()
 void tst_QSslCertificate::subjectAndIssuerAttributes()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-with-drink-cert.pem", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-with-drink-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QVERIFY(certList.count() > 0);
 
     QList<QByteArray> attributes = certList[0].subjectInfoAttributes();
     QVERIFY(attributes.contains(QByteArray("favouriteDrink")));
     attributes.clear();
 
-    certList = QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem", QSsl::Pem, QSslCertificate::FixedString);
+    certList = QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QVERIFY(certList.count() > 0);
 
     QByteArray shortName("1.3.6.1.4.1.311.60.2.1.3");
@@ -1080,17 +1080,17 @@ void tst_QSslCertificate::verify()
     errors.clear();
 
     // Verify a valid cert signed by a CA
-    QList<QSslCertificate> caCerts = QSslCertificate::fromPath(testDataDir + "verify-certs/cacert.pem", QSsl::Pem, QSslCertificate::FixedString);
+    QList<QSslCertificate> caCerts = QSslCertificate::fromPath(testDataDir + "verify-certs/cacert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QSslSocket::addDefaultCaCertificate(caCerts.first());
 
-    toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::FixedString);
+    toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
 
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.count() == 0);
     errors.clear();
 
     // Test a blacklisted certificate
-    toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem", QSsl::Pem, QSslCertificate::FixedString);
+    toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     errors = QSslCertificate::verify(toVerify);
     bool foundBlack = false;
     foreach (const QSslError &error, errors) {
@@ -1103,7 +1103,7 @@ void tst_QSslCertificate::verify()
     errors.clear();
 
     // This one is expired and untrusted
-    toVerify = QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-serial-number.pem", QSsl::Pem, QSslCertificate::FixedString);
+    toVerify = QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-serial-number.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.contains(QSslError(QSslError::SelfSignedCertificate, toVerify[0])));
     VERIFY_VERBOSE(errors.contains(QSslError(QSslError::CertificateExpired, toVerify[0])));
@@ -1111,15 +1111,15 @@ void tst_QSslCertificate::verify()
     toVerify.clear();
 
     // This one is signed by a valid cert, but the signer is not a valid CA
-    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-not-ca-cert.pem", QSsl::Pem, QSslCertificate::FixedString).first();
-    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::FixedString).first();
+    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-not-ca-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString).first();
+    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString).first();
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.contains(QSslError(QSslError::InvalidCaCertificate, toVerify[1])));
     toVerify.clear();
 
     // This one is signed by a valid cert, and the signer is a valid CA
-    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-is-ca-cert.pem", QSsl::Pem, QSslCertificate::FixedString).first();
-    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-ca-cert.pem", QSsl::Pem, QSslCertificate::FixedString).first();
+    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-is-ca-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString).first();
+    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-ca-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString).first();
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.count() == 0);
 
@@ -1149,7 +1149,7 @@ QString tst_QSslCertificate::toString(const QList<QSslError>& errors)
 void tst_QSslCertificate::extensions()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QVERIFY(certList.count() > 0);
 
     QSslCertificate cert = certList[0];
@@ -1247,7 +1247,7 @@ void tst_QSslCertificate::extensions()
 void tst_QSslCertificate::extensionsCritical()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem", QSsl::Pem, QSslCertificate::FixedString);
+        QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QVERIFY(certList.count() > 0);
 
     QSslCertificate cert = certList[0];
@@ -1368,12 +1368,12 @@ void tst_QSslCertificate::version_data()
     QTest::newRow("null certificate") << QSslCertificate() << QByteArray();
 
     QList<QSslCertificate> certs;
-    certs << QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::FixedString);
+    certs << QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
 
     QTest::newRow("v3 certificate") << certs.first() << QByteArrayLiteral("3");
 
     certs.clear();
-    certs << QSslCertificate::fromPath(testDataDir + "certificates/cert.pem", QSsl::Pem, QSslCertificate::FixedString);
+    certs << QSslCertificate::fromPath(testDataDir + "certificates/cert.pem", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QTest::newRow("v1 certificate") << certs.first() << QByteArrayLiteral("1");
 }
 
@@ -1410,7 +1410,7 @@ void tst_QSslCertificate::pkcs12()
     QVERIFY(ok);
     f.close();
 
-    QList<QSslCertificate> leafCert = QSslCertificate::fromPath(testDataDir + QLatin1String("pkcs12/leaf.crt"), QSsl::Pem, QSslCertificate::FixedString);
+    QList<QSslCertificate> leafCert = QSslCertificate::fromPath(testDataDir + QLatin1String("pkcs12/leaf.crt"), QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QVERIFY(!leafCert.isEmpty());
 
     QCOMPARE(cert, leafCert.first());
@@ -1425,7 +1425,7 @@ void tst_QSslCertificate::pkcs12()
     QVERIFY(!leafKey.isNull());
     QCOMPARE(key, leafKey);
 
-    QList<QSslCertificate> caCert = QSslCertificate::fromPath(testDataDir + QLatin1String("pkcs12/inter.crt"), QSsl::Pem, QSslCertificate::FixedString);
+    QList<QSslCertificate> caCert = QSslCertificate::fromPath(testDataDir + QLatin1String("pkcs12/inter.crt"), QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QVERIFY(!caCert.isEmpty());
 
     QVERIFY(!caCerts.isEmpty());

@@ -30,6 +30,7 @@
 #include <QtCore/QRectF>
 #include <QtGui/QTransform>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QPainterPath>
 #include <QtGui/QScreen>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleFactory>

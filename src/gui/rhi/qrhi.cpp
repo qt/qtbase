@@ -2885,16 +2885,57 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOff
     \return a shader resource binding for the given binding number, pipeline
     stages, texture, and sampler specified by \a binding, \a stage, \a tex,
     \a sampler.
+
+    \note This function is equivalent to calling sampledTextures() with a
+    \c count of 1.
+
+    \sa sampledTextures()
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
         int binding, StageFlags stage, QRhiTexture *tex, QRhiSampler *sampler)
 {
+    const TextureAndSampler texSampler = { tex, sampler };
+    return sampledTextures(binding, stage, 1, &texSampler);
+}
+
+/*!
+    \return a shader resource binding for the given binding number, pipeline
+    stages, and the array of texture-sampler pairs specified by \a binding, \a
+    stage, \a count, and \a texSamplers.
+
+    \note \a count must be at least 1, and not larger than 16.
+
+    \note When \a count is 1, this function is equivalent to sampledTexture().
+
+    This function is relevant when arrays of combined image samplers are
+    involved. For example, in GLSL \c{layout(binding = 5) uniform sampler2D
+    shadowMaps[8];} declares an array of combined image samplers. The
+    application is then expected provide a QRhiShaderResourceBinding for
+    binding point 5, set up by calling this function with \a count set to 8 and
+    a valid texture and sampler for each element of the array.
+
+    \warning All elements of the array must be specified. With the above
+    example, the only valid, portable approach is calling this function with a
+    \a count of 8. Additionally, all QRhiTexture and QRhiSampler instances must
+    be valid, meaning nullptr is not an accepted value. This is due to some of
+    the underlying APIs, such as, Vulkan, that require a valid image and
+    sampler object for each element in descriptor arrays. Applications are
+    advised to provide "dummy" samplers and textures if some array elements are
+    not relevant (due to not being accessed in the shader).
+
+    \sa sampledTexture()
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
+        int binding, StageFlags stage, int count, const TextureAndSampler *texSamplers)
+{
+    Q_ASSERT(count >= 1 && count <= Data::MAX_TEX_SAMPLER_ARRAY_SIZE);
     QRhiShaderResourceBinding b;
     b.d.binding = binding;
     b.d.stage = stage;
     b.d.type = SampledTexture;
-    b.d.u.stex.tex = tex;
-    b.d.u.stex.sampler = sampler;
+    b.d.u.stex.count = count;
+    for (int i = 0; i < count; ++i)
+        b.d.u.stex.texSamplers[i] = texSamplers[i];
     return b;
 }
 
@@ -3084,10 +3125,14 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
         }
         break;
     case QRhiShaderResourceBinding::SampledTexture:
-        if (da->u.stex.tex != db->u.stex.tex
-                || da->u.stex.sampler != db->u.stex.sampler)
-        {
+        if (da->u.stex.count != db->u.stex.count)
             return false;
+        for (int i = 0; i < da->u.stex.count; ++i) {
+            if (da->u.stex.texSamplers[i].tex != db->u.stex.texSamplers[i].tex
+                    || da->u.stex.texSamplers[i].sampler != db->u.stex.texSamplers[i].sampler)
+            {
+                return false;
+            }
         }
         break;
     case QRhiShaderResourceBinding::ImageLoad:
@@ -3162,10 +3207,13 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
                       << ')';
         break;
     case QRhiShaderResourceBinding::SampledTexture:
-        dbg.nospace() << " SampledTexture("
-                      << "texture=" << d->u.stex.tex
-                      << " sampler=" << d->u.stex.sampler
-                      << ')';
+        dbg.nospace() << " SampledTextures("
+                      << "count=" << d->u.stex.count;
+        for (int i = 0; i < d->u.stex.count; ++i) {
+            dbg.nospace() << " texture=" << d->u.stex.texSamplers[i].tex
+                          << " sampler=" << d->u.stex.texSamplers[i].sampler;
+        }
+        dbg.nospace() << ')';
         break;
     case QRhiShaderResourceBinding::ImageLoad:
         dbg.nospace() << " ImageLoad("

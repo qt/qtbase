@@ -66,6 +66,8 @@ namespace QImageScale {
         int *xapoints{nullptr};
         int *yapoints{nullptr};
         int xup_yup{0};
+        int sh = 0;
+        int sw = 0;
     };
 }
 

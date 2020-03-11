@@ -1111,6 +1111,15 @@
     \row \li designer \li The target is a plugin for \QD.
     \row \li no_lflags_merge \li Ensures that the list of libraries stored in the
          \c LIBS variable is not reduced to a list of unique values before it is used.
+    \row \li metatypes \li Create a \c {<name>_metatypes.json} file for the
+         current project. \c {<name>} is the all lowercase base name of
+         \l TARGET.
+    \row \li qmltypes \li Automatically register QML types defined in C++.
+         For more information, see \l {Defining QML Types from C++}.
+         Also, create a \c {<template>.qmltypes} file for the current
+         project. \c <template> will be \c plugins (plural, for historical
+         reasons) if \c plugin is set, or the value of \l TEMPLATE otherwise.
+         \c qmltypes implies \c metatypes.
     \endtable
 
     These options define specific features on Windows only:
@@ -2578,6 +2587,32 @@
     Specifies the hard minimum version of watchOS that the application supports.
 
     For more information, see \l {Expressing Supported iOS Versions}.
+
+    \section1 QML_IMPORT_MAJOR_VERSION
+
+    Specifies the major version to be used for automatically generated QML type
+    registrations. For more information, see \l {Defining QML Types from C++}.
+
+    \section1 QML_IMPORT_MINOR_VERSION
+
+    When automatically registering QML types defined in C++, register an
+    additional version of the module using this minor version. Generally,
+    minor versions to be registered are inferred from the meta objects.
+
+    You can use this variable if the meta objects have not changed and you
+    still want to import a QML module with a newer minor version number. For
+    example, \c MyModule metaobjects are at \c 1.1 level, but you want to import
+    the module as \c 1.3.
+
+    \section1 QML_IMPORT_VERSION
+
+    Specifies \l QML_IMPORT_MAJOR_VERSION and \l QML_IMPORT_MINOR_VERSION as a
+    \c {<major>.<minor>} version string.
+
+    \section1 QML_IMPORT_NAME
+
+    Specifies the module name to be used for automatically generated QML type
+    registrations. For more information, see \l {Defining QML Types from C++}.
 
     \section1 QT
 

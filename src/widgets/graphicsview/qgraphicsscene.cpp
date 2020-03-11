@@ -233,6 +233,7 @@
 #include <QtWidgets/qgraphicswidget.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qpainterpath.h>
 #include <QtGui/qpixmapcache.h>
 #include <QtGui/qpolygon.h>
 #include <QtGui/qtouchdevice.h>

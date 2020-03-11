@@ -37,6 +37,7 @@
 #include <QDebug>
 #include <QStaticText>
 #include <QPainter>
+#include <QPainterPath>
 #include <QRandomGenerator>
 
 class Benchmark

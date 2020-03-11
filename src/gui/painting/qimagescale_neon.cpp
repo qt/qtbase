@@ -41,6 +41,11 @@
 #include "qimage.h"
 #include <private/qsimd_p.h>
 
+#if QT_CONFIG(thread)
+#include "qsemaphore.h"
+#include "qthreadpool.h"
+#endif
+
 #if defined(__ARM_NEON__)
 
 QT_BEGIN_NAMESPACE
@@ -76,33 +81,54 @@ void qt_qimageScaleAARGBA_up_x_down_y_neon(QImageScaleInfo *isi, unsigned int *d
     int *yapoints = isi->yapoints;
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
-        int Cy = yapoints[y] >> 16;
-        int yap = yapoints[y] & 0xffff;
+    auto scaleSection = [&] (int yStart, int yEnd) {
+        for (int y = yStart; y < yEnd; ++y) {
+            int Cy = yapoints[y] >> 16;
+            int yap = yapoints[y] & 0xffff;
 
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
-            uint32x4_t vx = qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow);
+            unsigned int *dptr = dest + (y * dow);
+            for (int x = 0; x < dw; x++) {
+                const unsigned int *sptr = ypoints[y] + xpoints[x];
+                uint32x4_t vx = qt_qimageScaleAARGBA_helper(sptr, yap, Cy, sow);
 
-            int xap = xapoints[x];
-            if (xap > 0) {
-                uint32x4_t vr = qt_qimageScaleAARGBA_helper(sptr + 1, yap, Cy, sow);
+                int xap = xapoints[x];
+                if (xap > 0) {
+                    uint32x4_t vr = qt_qimageScaleAARGBA_helper(sptr + 1, yap, Cy, sow);
 
-                vx = vmulq_n_u32(vx, 256 - xap);
-                vr = vmulq_n_u32(vr, xap);
-                vx = vaddq_u32(vx, vr);
-                vx = vshrq_n_u32(vx, 8);
+                    vx = vmulq_n_u32(vx, 256 - xap);
+                    vr = vmulq_n_u32(vr, xap);
+                    vx = vaddq_u32(vx, vr);
+                    vx = vshrq_n_u32(vx, 8);
+                }
+                vx = vshrq_n_u32(vx, 14);
+                const uint16x4_t vx16 = vmovn_u32(vx);
+                const uint8x8_t vx8 = vmovn_u16(vcombine_u16(vx16, vx16));
+                *dptr = vget_lane_u32(vreinterpret_u32_u8(vx8), 0);
+                if (RGB)
+                    *dptr |= 0xff000000;
+                dptr++;
             }
-            vx = vshrq_n_u32(vx, 14);
-            const uint16x4_t vx16 = vmovn_u32(vx);
-            const uint8x8_t vx8 = vmovn_u16(vcombine_u16(vx16, vx16));
-            *dptr = vget_lane_u32(vreinterpret_u32_u8(vx8), 0);
-            if (RGB)
-                *dptr |= 0xff000000;
-            dptr++;
         }
+    };
+#if QT_CONFIG(thread)
+    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
+    segments = std::min(segments, dh);
+    if (segments > 1) {
+        QSemaphore semaphore;
+        int y = 0;
+        for (int i = 0; i < segments; ++i) {
+            int yn = (dh - y) / (segments - i);
+            QThreadPool::globalInstance()->start([&, y, yn]() {
+                scaleSection(y, y + yn);
+                semaphore.release(1);
+            });
+            y += yn;
+        }
+        semaphore.acquire(segments);
+        return;
     }
+#endif
+    scaleSection(0, dh);
 }
 
 template<bool RGB>
@@ -115,33 +141,54 @@ void qt_qimageScaleAARGBA_down_x_up_y_neon(QImageScaleInfo *isi, unsigned int *d
     int *yapoints = isi->yapoints;
 
     /* go through every scanline in the output buffer */
-    for (int y = 0; y < dh; y++) {
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            int Cx = xapoints[x] >> 16;
-            int xap = xapoints[x] & 0xffff;
+    auto scaleSection = [&] (int yStart, int yEnd) {
+        for (int y = yStart; y < yEnd; ++y) {
+            unsigned int *dptr = dest + (y * dow);
+            for (int x = 0; x < dw; x++) {
+                int Cx = xapoints[x] >> 16;
+                int xap = xapoints[x] & 0xffff;
 
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
-            uint32x4_t vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1);
+                const unsigned int *sptr = ypoints[y] + xpoints[x];
+                uint32x4_t vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1);
 
-            int yap = yapoints[y];
-            if (yap > 0) {
-                uint32x4_t vr = qt_qimageScaleAARGBA_helper(sptr + sow, xap, Cx, 1);
+                int yap = yapoints[y];
+                if (yap > 0) {
+                    uint32x4_t vr = qt_qimageScaleAARGBA_helper(sptr + sow, xap, Cx, 1);
 
-                vx = vmulq_n_u32(vx, 256 - yap);
-                vr = vmulq_n_u32(vr, yap);
-                vx = vaddq_u32(vx, vr);
-                vx = vshrq_n_u32(vx, 8);
+                    vx = vmulq_n_u32(vx, 256 - yap);
+                    vr = vmulq_n_u32(vr, yap);
+                    vx = vaddq_u32(vx, vr);
+                    vx = vshrq_n_u32(vx, 8);
+                }
+                vx = vshrq_n_u32(vx, 14);
+                const uint16x4_t vx16 = vmovn_u32(vx);
+                const uint8x8_t vx8 = vmovn_u16(vcombine_u16(vx16, vx16));
+                *dptr = vget_lane_u32(vreinterpret_u32_u8(vx8), 0);
+                if (RGB)
+                    *dptr |= 0xff000000;
+                dptr++;
             }
-            vx = vshrq_n_u32(vx, 14);
-            const uint16x4_t vx16 = vmovn_u32(vx);
-            const uint8x8_t vx8 = vmovn_u16(vcombine_u16(vx16, vx16));
-            *dptr = vget_lane_u32(vreinterpret_u32_u8(vx8), 0);
-            if (RGB)
-                *dptr |= 0xff000000;
-            dptr++;
         }
+    };
+#if QT_CONFIG(thread)
+    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
+    segments = std::min(segments, dh);
+    if (segments > 1) {
+        QSemaphore semaphore;
+        int y = 0;
+        for (int i = 0; i < segments; ++i) {
+            int yn = (dh - y) / (segments - i);
+            QThreadPool::globalInstance()->start([&, y, yn]() {
+                scaleSection(y, y + yn);
+                semaphore.release(1);
+            });
+            y += yn;
+        }
+        semaphore.acquire(segments);
+        return;
     }
+#endif
+    scaleSection(0, dh);
 }
 
 template<bool RGB>
@@ -153,43 +200,64 @@ void qt_qimageScaleAARGBA_down_xy_neon(QImageScaleInfo *isi, unsigned int *dest,
     int *xapoints = isi->xapoints;
     int *yapoints = isi->yapoints;
 
-    for (int y = 0; y < dh; y++) {
-        int Cy = yapoints[y] >> 16;
-        int yap = yapoints[y] & 0xffff;
+    auto scaleSection = [&] (int yStart, int yEnd) {
+        for (int y = yStart; y < yEnd; ++y) {
+            int Cy = yapoints[y] >> 16;
+            int yap = yapoints[y] & 0xffff;
 
-        unsigned int *dptr = dest + (y * dow);
-        for (int x = 0; x < dw; x++) {
-            const int Cx = xapoints[x] >> 16;
-            const int xap = xapoints[x] & 0xffff;
+            unsigned int *dptr = dest + (y * dow);
+            for (int x = 0; x < dw; x++) {
+                const int Cx = xapoints[x] >> 16;
+                const int xap = xapoints[x] & 0xffff;
 
-            const unsigned int *sptr = ypoints[y] + xpoints[x];
-            uint32x4_t vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1);
-            vx = vshrq_n_u32(vx, 4);
-            uint32x4_t vr = vmulq_n_u32(vx, yap);
+                const unsigned int *sptr = ypoints[y] + xpoints[x];
+                uint32x4_t vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1);
+                vx = vshrq_n_u32(vx, 4);
+                uint32x4_t vr = vmulq_n_u32(vx, yap);
 
-            int j;
-            for (j = (1 << 14) - yap; j > Cy; j -= Cy) {
+                int j;
+                for (j = (1 << 14) - yap; j > Cy; j -= Cy) {
+                    sptr += sow;
+                    vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1);
+                    vx = vshrq_n_u32(vx, 4);
+                    vx = vmulq_n_u32(vx, Cy);
+                    vr = vaddq_u32(vr, vx);
+                }
                 sptr += sow;
                 vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1);
                 vx = vshrq_n_u32(vx, 4);
-                vx = vmulq_n_u32(vx, Cy);
+                vx = vmulq_n_u32(vx, j);
                 vr = vaddq_u32(vr, vx);
-            }
-            sptr += sow;
-            vx = qt_qimageScaleAARGBA_helper(sptr, xap, Cx, 1);
-            vx = vshrq_n_u32(vx, 4);
-            vx = vmulq_n_u32(vx, j);
-            vr = vaddq_u32(vr, vx);
 
-            vx = vshrq_n_u32(vr, 24);
-            const uint16x4_t vx16 = vmovn_u32(vx);
-            const uint8x8_t vx8 = vmovn_u16(vcombine_u16(vx16, vx16));
-            *dptr = vget_lane_u32(vreinterpret_u32_u8(vx8), 0);
-            if (RGB)
-                *dptr |= 0xff000000;
-            dptr++;
+                vx = vshrq_n_u32(vr, 24);
+                const uint16x4_t vx16 = vmovn_u32(vx);
+                const uint8x8_t vx8 = vmovn_u16(vcombine_u16(vx16, vx16));
+                *dptr = vget_lane_u32(vreinterpret_u32_u8(vx8), 0);
+                if (RGB)
+                    *dptr |= 0xff000000;
+                dptr++;
+            }
         }
+    };
+#if QT_CONFIG(thread)
+    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
+    segments = std::min(segments, dh);
+    if (segments > 1) {
+        QSemaphore semaphore;
+        int y = 0;
+        for (int i = 0; i < segments; ++i) {
+            int yn = (dh - y) / (segments - i);
+            QThreadPool::globalInstance()->start([&, y, yn]() {
+                scaleSection(y, y + yn);
+                semaphore.release(1);
+            });
+            y += yn;
+        }
+        semaphore.acquire(segments);
+        return;
     }
+#endif
+    scaleSection(0, dh);
 }
 
 template void qt_qimageScaleAARGBA_up_x_down_y_neon<false>(QImageScaleInfo *isi, unsigned int *dest,

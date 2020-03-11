@@ -46,6 +46,8 @@
 #include <private/qdatabuffer_p.h>
 #include <private/qdrawhelper_p.h>
 
+#include <QtGui/qpainterpath.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE

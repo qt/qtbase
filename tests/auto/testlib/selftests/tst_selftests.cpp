@@ -422,9 +422,9 @@ void tst_Selftests::initTestCase()
 {
     QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     //Detect the location of the sub programs
-    QString subProgram = QLatin1String("float/float");
+    QString subProgram = QLatin1String("pass/pass");
 #if defined(Q_OS_WIN)
-    subProgram = QLatin1String("float/float.exe");
+    subProgram = QLatin1String("pass/pass.exe");
 #endif
     QString testdataDir = QFINDTESTDATA(subProgram);
     if (testdataDir.lastIndexOf(subProgram) > 0)
@@ -487,6 +487,7 @@ void tst_Selftests::runSubTest_data()
         << "longstring"
         << "maxwarnings"
         << "multiexec"
+        << "pass"
         << "pairdiagnostics"
         << "printdatatags"
         << "printdatatagswithglobaltags"

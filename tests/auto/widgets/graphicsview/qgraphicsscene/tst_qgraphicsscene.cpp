@@ -37,6 +37,7 @@
 #include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QVBoxLayout>
 
+#include <QtGui/QPainterPath>
 #include <QtGui/QScreen>
 
 #include <QtTest/QtTest>

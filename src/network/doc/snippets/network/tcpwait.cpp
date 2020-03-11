@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QCoreApplication>
 #include <QTcpSocket>
 
 int main(int argv, char **args)

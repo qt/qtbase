@@ -28,6 +28,7 @@
 
 #include <qtest.h>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPixmap>
 #include <QImage>
 #include <QPaintEngine>

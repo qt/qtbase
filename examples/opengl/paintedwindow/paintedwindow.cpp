@@ -54,6 +54,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLPaintDevice>
 #include <QPainter>
+#include <QPainterPath>
 #include <QScreen>
 #include <QTimer>
 

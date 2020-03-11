@@ -52,6 +52,7 @@
 #include <qabstractbutton.h>
 #endif
 #include <qpainter.h>
+#include <qpainterpath.h>
 #include <qdir.h>
 #include <qstyleoption.h>
 #include <qapplication.h>

@@ -41,6 +41,7 @@
 #define QPAINTERPATH_H
 
 #include <QtGui/qtguiglobal.h>
+#include <QtGui/qtransform.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qline.h>
@@ -176,12 +177,9 @@ public:
 
     Q_REQUIRED_RESULT QPainterPath toReversed() const;
 
-    QList<QPolygonF> toSubpathPolygons() const;
-    QList<QPolygonF> toSubpathPolygons(const QTransform &matrix) const;
-    QList<QPolygonF> toFillPolygons() const;
-    QList<QPolygonF> toFillPolygons(const QTransform &matrix) const;
-    QPolygonF toFillPolygon() const;
-    QPolygonF toFillPolygon(const QTransform &matrix) const;
+    QList<QPolygonF> toSubpathPolygons(const QTransform &matrix = QTransform()) const;
+    QList<QPolygonF> toFillPolygons(const QTransform &matrix = QTransform()) const;
+    QPolygonF toFillPolygon(const QTransform &matrix = QTransform()) const;
 
     int elementCount() const;
     QPainterPath::Element elementAt(int i) const;
@@ -356,6 +354,8 @@ inline void QPainterPath::translate(const QPointF &offset)
 inline QPainterPath QPainterPath::translated(const QPointF &offset) const
 { return translated(offset.x(), offset.y()); }
 
+inline QPainterPath operator *(const QPainterPath &p, const QTransform &m)
+{ return m.map(p); }
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QPainterPath &);
