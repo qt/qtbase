@@ -211,7 +211,7 @@ public:
 #endif
 
     template <typename StdBasicString, if_compatible_string<StdBasicString> = true>
-    QStringView(const StdBasicString &str) noexcept
+    Q_DECL_CONSTEXPR QStringView(const StdBasicString &str) noexcept
         : QStringView(str.data(), qsizetype(str.size())) {}
 
     Q_REQUIRED_RESULT inline QString toString() const; // defined in qstring.h
