@@ -115,7 +115,8 @@ struct ByteData
     QStringView asStringView() const{ return QStringView(utf16(), len / 2); }
     QString asQStringRaw() const    { return QString::fromRawData(utf16(), len / 2); }
 };
-Q_STATIC_ASSERT(std::is_pod<ByteData>::value);
+Q_STATIC_ASSERT(std::is_trivial<ByteData>::value);
+Q_STATIC_ASSERT(std::is_standard_layout<ByteData>::value);
 } // namespace QtCbor
 
 Q_DECLARE_TYPEINFO(QtCbor::Element, Q_PRIMITIVE_TYPE);

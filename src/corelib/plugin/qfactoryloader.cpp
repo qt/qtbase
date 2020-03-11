@@ -389,15 +389,10 @@ QObject *QFactoryLoader::instance(int index) const
     QMutexLocker lock(&d->mutex);
     if (index < d->libraryList.size()) {
         QLibraryPrivate *library = d->libraryList.at(index);
-        if (library->instance || library->loadPlugin()) {
-            if (!library->inst)
-                library->inst = library->instance();
-            QObject *obj = library->inst.data();
-            if (obj) {
-                if (!obj->parent())
-                    obj->moveToThread(QCoreApplicationPrivate::mainThread());
-                return obj;
-            }
+        if (QObject *obj = library->pluginInstance()) {
+            if (!obj->parent())
+                obj->moveToThread(QCoreApplicationPrivate::mainThread());
+            return obj;
         }
         return nullptr;
     }
