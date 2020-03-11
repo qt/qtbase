@@ -86,9 +86,14 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     file(GLOB mkspecs_subdirs
         LIST_DIRECTORIES TRUE
         "${PROJECT_SOURCE_DIR}/mkspecs/*")
-    foreach(directory IN LISTS mkspecs_subdirs)
-        qt_copy_or_install(DIRECTORY "${directory}"
-                          DESTINATION ${mkspecs_install_dir})
+    foreach(entry IN LISTS mkspecs_subdirs)
+        if (IS_DIRECTORY ${entry})
+            qt_copy_or_install(DIRECTORY "${entry}"
+                               DESTINATION ${mkspecs_install_dir})
+        else()
+            qt_copy_or_install(FILES "${entry}"
+                               DESTINATION ${mkspecs_install_dir})
+        endif()
     endforeach()
 endif()
 
