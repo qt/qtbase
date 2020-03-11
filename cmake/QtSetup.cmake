@@ -93,7 +93,7 @@ if(FEATURE_developer_build)
 
     # Tests are not built by default with qmake for iOS and friends, and thus the overall build
     # tends to fail. Disable them by default when targeting uikit.
-    if(APPLE_UIKIT)
+    if(APPLE_UIKIT OR ANDROID)
         set(QT_BUILD_TESTING OFF)
     endif()
 
@@ -129,7 +129,7 @@ enable_testing()
 set(QT_BUILD_EXAMPLES ON)
 # Examples are not built by default with qmake for iOS and friends, and thus the overall build
 # tends to fail. Disable them by default when targeting uikit.
-if(APPLE_UIKIT)
+if(APPLE_UIKIT OR ANDROID)
     set(QT_BUILD_EXAMPLES OFF)
 endif()
 
