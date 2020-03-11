@@ -3,9 +3,9 @@ instructions:
   - type: ChangeDirectory
     directory: "{{.SourceDir}}"
   - type: MakeDirectory
-    directory: "standalone_tests"
+    directory: "{{.SourceDir}}_standalone_tests"
   - type: SetBuildDirectory
-    directory: "{{.SourceDir}}/standalone_tests"
+    directory: "{{.SourceDir}}_standalone_tests"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
   - type: EnvironmentVariable
