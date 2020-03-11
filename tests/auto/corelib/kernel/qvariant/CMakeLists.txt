@@ -8,7 +8,6 @@ add_qt_test(tst_qvariant
     SOURCES
         tst_qvariant.cpp
     DEFINES
-        # -QT_NO_LINKED_LIST # special case remove until we fix this
         QT_DISABLE_DEPRECATED_BEFORE=0
     INCLUDE_DIRECTORIES
         ../../../other/qvariant_common
@@ -32,3 +31,8 @@ add_qt_resource(tst_qvariant "qvariant"
 
 ## Scopes:
 #####################################################################
+
+extend_target(tst_qvariant CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
+    DEFINES
+        QT_NO_DOUBLECONVERSION
+)

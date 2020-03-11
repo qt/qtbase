@@ -7,6 +7,8 @@
 # Collect test data
 list(APPEND test_data "data/thematicBreaks.md")
 list(APPEND test_data "data/headingBulletsContinuations.md")
+list(APPEND test_data "data/fuzz20450.md")
+list(APPEND test_data "data/fuzz20580.md")
 
 add_qt_test(tst_qtextmarkdownimporter
     SOURCES

@@ -1,10 +1,10 @@
 # Generated from deleteLater.pro.
 
 #####################################################################
-## tst_deleteLater Binary:
+## deleteLater Binary:
 #####################################################################
 
-add_qt_executable(tst_deleteLater
+add_qt_executable(deleteLater
     SOURCES
         tst_deleteLater.cpp
     PUBLIC_LIBRARIES

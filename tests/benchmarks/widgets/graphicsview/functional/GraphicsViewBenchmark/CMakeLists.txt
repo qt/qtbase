@@ -364,4 +364,5 @@ add_qt_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark3"
 extend_target(tst_GraphicsViewBenchmark CONDITION TARGET Qt::OpenGL
     PUBLIC_LIBRARIES
         Qt::OpenGL
+        Qt::OpenGLWidgets
 )

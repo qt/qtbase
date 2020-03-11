@@ -21,6 +21,7 @@ set(qwidget_resource_files
     "geometry-fullscreen.dat"
     "geometry-maximized.dat"
     "geometry.dat"
+    "hellotr_la.qm"
 )
 
 add_qt_resource(tst_qwidget "qwidget"

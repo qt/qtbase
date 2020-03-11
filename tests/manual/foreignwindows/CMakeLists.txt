@@ -19,6 +19,7 @@ add_qt_manual_test(foreignwindows
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+        Qt::OpenGL
         Qt::Widgets
 )
 
@@ -54,4 +55,5 @@ extend_target(foreignwindows CONDITION QT_FEATURE_opengl
         ../diaglib/glinfo.cpp ../diaglib/glinfo.h
     PUBLIC_LIBRARIES
         Qt::OpenGL
+        Qt::OpenGLWidgets
 )

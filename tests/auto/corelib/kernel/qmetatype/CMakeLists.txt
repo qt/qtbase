@@ -11,7 +11,6 @@ add_qt_test(tst_qmetatype
     SOURCES
         tst_qmetatype.cpp
     DEFINES
-        # -QT_NO_LINKED_LIST # special case remove until we fix this
         QT_DISABLE_DEPRECATED_BEFORE=0
     INCLUDE_DIRECTORIES
         ../../../other/qvariant_common

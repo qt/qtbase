@@ -7,6 +7,8 @@
 add_qt_executable(verbose2
     SOURCES
         ../counting/tst_counting.cpp
+    DEFINES
+        TESTLIB_VERBOSITY_ARG="-v2"
     PUBLIC_LIBRARIES
         Qt::Test
 )

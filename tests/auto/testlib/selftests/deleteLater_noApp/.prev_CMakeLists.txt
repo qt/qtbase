@@ -1,10 +1,10 @@
 # Generated from deleteLater_noApp.pro.
 
 #####################################################################
-## tst_deleteLater_noApp Binary:
+## deleteLater_noApp Binary:
 #####################################################################
 
-add_qt_executable(tst_deleteLater_noApp
+add_qt_executable(deleteLater_noApp
     SOURCES
         tst_deleteLater_noApp.cpp
     PUBLIC_LIBRARIES

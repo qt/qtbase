@@ -54,4 +54,5 @@ extend_target(embeddedintoforeignwindow CONDITION QT_FEATURE_opengl
         ../diaglib/glinfo.cpp ../diaglib/glinfo.h
     PUBLIC_LIBRARIES
         Qt::OpenGL
+        Qt::OpenGLWidgets
 )

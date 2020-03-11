@@ -34,3 +34,8 @@ if(ANDROID)
             ${json_resource_files}
     )
 endif()
+
+extend_target(tst_json CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
+    DEFINES
+        QT_NO_DOUBLECONVERSION
+)

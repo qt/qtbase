@@ -1,17 +1,18 @@
-# Generated from verbose1.pro.
+# Generated from copier.pro.
 
 #####################################################################
-## verbose1 Binary:
+## copier Binary:
 #####################################################################
 
-add_qt_executable(verbose1
+add_qt_executable(copier
     SOURCES
-        ../counting/tst_counting.cpp
-    DEFINES
-        TESTLIB_VERBOSITY_ARG="-v1"
+        main.cpp
     PUBLIC_LIBRARIES
-        Qt::Test
+        Qt::Gui
 )
 
 ## Scopes:
 #####################################################################
+
+#### Keys ignored in scope 2:.:.:copier.pro:WIN32:
+# DESTDIR = "../copier"

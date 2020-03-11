@@ -17,6 +17,7 @@ add_qt_manual_test(lance
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+        Qt::OpenGLWidgets
         Qt::PrintSupport
         Qt::Widgets
 )
@@ -171,5 +172,4 @@ add_qt_resource(lance "images"
 extend_target(lance CONDITION TARGET Qt::OpenGL
     PUBLIC_LIBRARIES
         Qt::OpenGL
-        Qt::OpenGLWidgets
 )

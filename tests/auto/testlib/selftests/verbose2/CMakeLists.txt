@@ -9,6 +9,8 @@ add_qt_executable(verbose2
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         ../counting/tst_counting.cpp
+    DEFINES
+        TESTLIB_VERBOSITY_ARG="-v2"
     PUBLIC_LIBRARIES
         Qt::Test
 )
