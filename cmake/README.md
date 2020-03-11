@@ -94,7 +94,7 @@ install:
 
 ```
     cd {build directory}
-    cmake -GNinja -DCMAKE_INSTALL_PREFIX=/path/to/qtbase_build -DFEATURE_developer_build=ON {path to source directory}
+    cmake -GNinja -DFEATURE_developer_build=ON {path to source directory}
     cmake --build .
     # do NOT make install
 ```
