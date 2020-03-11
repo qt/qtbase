@@ -138,11 +138,8 @@ win32:SOURCES += ../../corelib/global/qoperatingsystemversion_win.cpp \
 mac {
     SOURCES += \
         ../../corelib/kernel/qcoreapplication_mac.cpp \
-        ../../corelib/kernel/qcore_mac.cpp
-
-    OBJECTIVE_SOURCES += \
+        ../../corelib/kernel/qcore_mac.mm \
         ../../corelib/global/qoperatingsystemversion_darwin.mm \
-        ../../corelib/kernel/qcore_mac_objc.mm \
         ../../corelib/kernel/qcore_foundation.mm
 
     LIBS += -framework Foundation

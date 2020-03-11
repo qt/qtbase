@@ -114,13 +114,11 @@ mac {
     SOURCES += \
         kernel/qcfsocketnotifier.cpp \
         kernel/qcoreapplication_mac.cpp \
-        kernel/qcore_mac.cpp \
-        kernel/qcore_foundation.mm
-    !nacl: SOURCES += kernel/qelapsedtimer_mac.cpp
-
-    OBJECTIVE_SOURCES += \
-        kernel/qcore_mac_objc.mm \
+        kernel/qcore_foundation.mm \
+        kernel/qcore_mac.mm \
         kernel/qeventdispatcher_cf.mm
+
+    !nacl: SOURCES += kernel/qelapsedtimer_mac.cpp
 
     LIBS_PRIVATE += -framework Foundation
 

@@ -231,7 +231,7 @@ unix {
     macos {
         SOURCES += \
             qcore_foundation.mm \
-            qcore_mac.cpp \
+            qcore_mac.mm \
             qoperatingsystemversion_darwin.mm \
             qsettings_mac.cpp
         LIBS += \

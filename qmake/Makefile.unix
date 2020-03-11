@@ -37,7 +37,6 @@ QOBJS = \
 	$(QTOBJS) $(QTOBJS2)
 # QTOBJS and QTOBJS2 are populated by Makefile.unix.* as for QTSRC (see below).
 # Note: qlibraryinfo.o omitted deliberately - see below.
-# Note: qcore_mac_objc.o is in SOURCES (see qmake.pri) but not QOBJS.
 
 #all sources, used for the depend target (please keep alphabetic in each block)
 DEPEND_SRC = \
@@ -92,7 +91,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp \
-	   $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm \
 	   $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
@@ -326,7 +324,7 @@ qbytearraymatcher.o: $(SOURCE_PATH)/src/corelib/text/qbytearraymatcher.cpp
 qmetatype.o: $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-qcore_mac.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp
+qcore_mac.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.mm
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qcore_unix.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_unix.cpp
@@ -339,9 +337,6 @@ qoperatingsystemversion_win.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsyste
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qoperatingsystemversion_darwin.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_darwin.mm
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qcore_mac_objc.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qcore_foundation.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm
