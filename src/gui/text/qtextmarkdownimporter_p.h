@@ -56,6 +56,7 @@
 #include <QtGui/qpalette.h>
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextlist.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qstack.h>
 
 QT_BEGIN_NAMESPACE

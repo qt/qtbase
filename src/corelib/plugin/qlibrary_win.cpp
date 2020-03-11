@@ -95,26 +95,27 @@ bool QLibraryPrivate::load_sys()
         attempts.prepend(QDir::rootPath() + fileName);
 #endif
 
+    Handle hnd = nullptr;
     for (const QString &attempt : qAsConst(attempts)) {
 #ifndef Q_OS_WINRT
-        pHnd = LoadLibrary(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(attempt).utf16()));
+        hnd = LoadLibrary(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(attempt).utf16()));
 #else // Q_OS_WINRT
         QString path = QDir::toNativeSeparators(QDir::current().relativeFilePath(attempt));
-        pHnd = LoadPackagedLibrary(reinterpret_cast<LPCWSTR>(path.utf16()), 0);
-        if (pHnd)
+        hnd = LoadPackagedLibrary(reinterpret_cast<LPCWSTR>(path.utf16()), 0);
+        if (hnd)
             qualifiedFileName = attempt;
 #endif // !Q_OS_WINRT
 
         // If we have a handle or the last error is something other than "unable
         // to find the module", then bail out
-        if (pHnd || ::GetLastError() != ERROR_MOD_NOT_FOUND)
+        if (hnd || ::GetLastError() != ERROR_MOD_NOT_FOUND)
             break;
     }
 
 #ifndef Q_OS_WINRT
     SetErrorMode(oldmode);
 #endif
-    if (!pHnd) {
+    if (!hnd) {
         errorString = QLibrary::tr("Cannot load library %1: %2").arg(
                     QDir::toNativeSeparators(fileName), qt_error_string());
     } else {
@@ -123,7 +124,7 @@ bool QLibraryPrivate::load_sys()
 
 #ifndef Q_OS_WINRT
         wchar_t buffer[MAX_PATH];
-        ::GetModuleFileName(pHnd, buffer, MAX_PATH);
+        ::GetModuleFileName(hnd, buffer, MAX_PATH);
 
         QString moduleFileName = QString::fromWCharArray(buffer);
         moduleFileName.remove(0, 1 + moduleFileName.lastIndexOf(QLatin1Char('\\')));
@@ -138,19 +139,20 @@ bool QLibraryPrivate::load_sys()
             HMODULE hmod;
             bool ok = GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN |
                                         GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                                        reinterpret_cast<const wchar_t *>(pHnd),
+                                        reinterpret_cast<const wchar_t *>(hnd),
                                         &hmod);
-            Q_ASSERT(!ok || hmod == pHnd);
+            Q_ASSERT(!ok || hmod == hnd);
             Q_UNUSED(ok);
         }
 #endif // !Q_OS_WINRT
     }
-    return (pHnd != 0);
+    pHnd.storeRelaxed(hnd);
+    return (pHnd != nullptr);
 }
 
 bool QLibraryPrivate::unload_sys()
 {
-    if (!FreeLibrary(pHnd)) {
+    if (!FreeLibrary(pHnd.loadAcquire())) {
         errorString = QLibrary::tr("Cannot unload library %1: %2").arg(
                     QDir::toNativeSeparators(fileName),  qt_error_string());
         return false;
@@ -161,13 +163,7 @@ bool QLibraryPrivate::unload_sys()
 
 QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 {
-    FARPROC address = GetProcAddress(pHnd, symbol);
-    if (!address) {
-        errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(
-            QString::fromLatin1(symbol), QDir::toNativeSeparators(fileName), qt_error_string());
-    } else {
-        errorString.clear();
-    }
+    FARPROC address = GetProcAddress(pHnd.loadAcquire(), symbol);
     return QFunctionPointer(address);
 }
 QT_END_NAMESPACE
