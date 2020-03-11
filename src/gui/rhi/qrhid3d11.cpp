@@ -113,6 +113,10 @@ QT_BEGIN_NAMESPACE
 #define DXGI_ADAPTER_FLAG_SOFTWARE 2
 #endif
 
+#ifndef D3D11_1_UAV_SLOT_COUNT
+#define D3D11_1_UAV_SLOT_COUNT 64
+#endif
+
 QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *importDevice)
     : ofr(this),
       deviceCurse(this)
@@ -627,18 +631,25 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.stex.tex);
-            QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, b->u.stex.sampler);
-            if (texD->generation != bd.stex.texGeneration
-                    || texD->m_id != bd.stex.texId
-                    || samplerD->generation != bd.stex.samplerGeneration
-                    || samplerD->m_id != bd.stex.samplerId)
-            {
+            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            if (bd.stex.count != data->count) {
+                bd.stex.count = data->count;
                 srbUpdate = true;
-                bd.stex.texId = texD->m_id;
-                bd.stex.texGeneration = texD->generation;
-                bd.stex.samplerId = samplerD->m_id;
-                bd.stex.samplerGeneration = samplerD->generation;
+            }
+            for (int elem = 0; elem < data->count; ++elem) {
+                QD3D11Texture *texD = QRHI_RES(QD3D11Texture, data->texSamplers[elem].tex);
+                QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, data->texSamplers[elem].sampler);
+                if (texD->generation != bd.stex.d[elem].texGeneration
+                        || texD->m_id != bd.stex.d[elem].texId
+                        || samplerD->generation != bd.stex.d[elem].samplerGeneration
+                        || samplerD->m_id != bd.stex.d[elem].samplerId)
+                {
+                    srbUpdate = true;
+                    bd.stex.d[elem].texId = texD->m_id;
+                    bd.stex.d[elem].texGeneration = texD->generation;
+                    bd.stex.d[elem].samplerId = samplerD->m_id;
+                    bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                }
             }
         }
             break;
@@ -1894,31 +1905,38 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.stex.tex);
-            QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, b->u.stex.sampler);
-            bd.stex.texId = texD->m_id;
-            bd.stex.texGeneration = texD->generation;
-            bd.stex.samplerId = samplerD->m_id;
-            bd.stex.samplerGeneration = samplerD->generation;
-            if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
-                if (nativeBinding.first >= 0 && nativeBinding.second >= 0) {
-                    res[RBM_VERTEX].textures.append({ nativeBinding.first, texD->srv });
-                    res[RBM_VERTEX].samplers.append({ nativeBinding.second, samplerD->samplerState });
+            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            bd.stex.count = data->count;
+            const QPair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
+            const QPair<int, int> nativeBindingFrag = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
+            const QPair<int, int> nativeBindingComp = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+            // if SPIR-V binding b is mapped to tN and sN in HLSL, and it
+            // is an array, then it will use tN, tN+1, tN+2, ..., and sN,
+            // sN+1, sN+2, ...
+            for (int elem = 0; elem < data->count; ++elem) {
+                QD3D11Texture *texD = QRHI_RES(QD3D11Texture, data->texSamplers[elem].tex);
+                QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, data->texSamplers[elem].sampler);
+                bd.stex.d[elem].texId = texD->m_id;
+                bd.stex.d[elem].texGeneration = texD->generation;
+                bd.stex.d[elem].samplerId = samplerD->m_id;
+                bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
+                    if (nativeBindingVert.first >= 0 && nativeBindingVert.second >= 0) {
+                        res[RBM_VERTEX].textures.append({ nativeBindingVert.first + elem, texD->srv });
+                        res[RBM_VERTEX].samplers.append({ nativeBindingVert.second + elem, samplerD->samplerState });
+                    }
                 }
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
-                if (nativeBinding.first >= 0 && nativeBinding.second >= 0) {
-                    res[RBM_FRAGMENT].textures.append({ nativeBinding.first, texD->srv });
-                    res[RBM_FRAGMENT].samplers.append({ nativeBinding.second, samplerD->samplerState });
+                if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
+                    if (nativeBindingFrag.first >= 0 && nativeBindingFrag.second >= 0) {
+                        res[RBM_FRAGMENT].textures.append({ nativeBindingFrag.first + elem, texD->srv });
+                        res[RBM_FRAGMENT].samplers.append({ nativeBindingFrag.second + elem, samplerD->samplerState });
+                    }
                 }
-            }
-            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
-                if (nativeBinding.first >= 0 && nativeBinding.second >= 0) {
-                    res[RBM_COMPUTE].textures.append({ nativeBinding.first, texD->srv });
-                    res[RBM_COMPUTE].samplers.append({ nativeBinding.second, samplerD->samplerState });
+                if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
+                    if (nativeBindingComp.first >= 0 && nativeBindingComp.second >= 0) {
+                        res[RBM_COMPUTE].textures.append({ nativeBindingComp.first + elem, texD->srv });
+                        res[RBM_COMPUTE].samplers.append({ nativeBindingComp.second + elem, samplerD->samplerState });
+                    }
                 }
             }
         }
@@ -2077,102 +2095,156 @@ static void applyDynamicOffsets(QVarLengthArray<UINT, 4> *offsets,
     }
 }
 
+static inline uint clampedResourceCount(uint startSlot, int countSlots, uint maxSlots, const char *resType)
+{
+    if (startSlot + countSlots > maxSlots) {
+        qWarning("Not enough D3D11 %s slots to bind %d resources starting at slot %d, max slots is %d",
+                 resType, countSlots, startSlot, maxSlots);
+        countSlots = maxSlots > startSlot ? maxSlots - startSlot : 0;
+    }
+    return countSlots;
+}
+
 void QRhiD3D11::bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                                     const uint *dynOfsPairs, int dynOfsPairCount,
                                     bool offsetOnlyChange)
 {
     if (!offsetOnlyChange) {
-        for (const auto &batch : srbD->vssamplers.batches)
-            context->VSSetSamplers(batch.startBinding, UINT(batch.resources.count()), batch.resources.constData());
+        for (const auto &batch : srbD->vssamplers.batches) {
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                    D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "VS sampler");
+            if (count)
+                context->VSSetSamplers(batch.startBinding, count, batch.resources.constData());
+        }
 
         for (const auto &batch : srbD->vsshaderresources.batches) {
-            context->VSSetShaderResources(batch.startBinding, UINT(batch.resources.count()), batch.resources.constData());
-            contextState.vsHighestActiveSrvBinding = qMax<int>(contextState.vsHighestActiveSrvBinding,
-                                                               int(batch.startBinding) + batch.resources.count() - 1);
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                    D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "VS SRV");
+            if (count) {
+                context->VSSetShaderResources(batch.startBinding, count, batch.resources.constData());
+                contextState.vsHighestActiveSrvBinding = qMax(contextState.vsHighestActiveSrvBinding,
+                                                            int(batch.startBinding + count) - 1);
+            }
         }
 
-        for (const auto &batch : srbD->fssamplers.batches)
-            context->PSSetSamplers(batch.startBinding, UINT(batch.resources.count()), batch.resources.constData());
+        for (const auto &batch : srbD->fssamplers.batches) {
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                    D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "PS sampler");
+            if (count)
+                context->PSSetSamplers(batch.startBinding, count, batch.resources.constData());
+        }
 
         for (const auto &batch : srbD->fsshaderresources.batches) {
-            context->PSSetShaderResources(batch.startBinding, UINT(batch.resources.count()), batch.resources.constData());
-            contextState.fsHighestActiveSrvBinding = qMax<int>(contextState.fsHighestActiveSrvBinding,
-                                                               int(batch.startBinding) + batch.resources.count() - 1);
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                    D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "PS SRV");
+            if (count) {
+                context->PSSetShaderResources(batch.startBinding, count, batch.resources.constData());
+                contextState.fsHighestActiveSrvBinding = qMax(contextState.fsHighestActiveSrvBinding,
+                                                            int(batch.startBinding + count) - 1);
+            }
         }
 
-        for (const auto &batch : srbD->cssamplers.batches)
-            context->CSSetSamplers(batch.startBinding, UINT(batch.resources.count()), batch.resources.constData());
+        for (const auto &batch : srbD->cssamplers.batches) {
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                    D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "CS sampler");
+            if (count)
+                context->CSSetSamplers(batch.startBinding, count, batch.resources.constData());
+        }
 
         for (const auto &batch : srbD->csshaderresources.batches) {
-            context->CSSetShaderResources(batch.startBinding, UINT(batch.resources.count()), batch.resources.constData());
-            contextState.csHighestActiveSrvBinding = qMax<int>(contextState.csHighestActiveSrvBinding,
-                                                               int(batch.startBinding) + batch.resources.count() - 1);
+            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                    D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "CS SRV");
+            if (count) {
+                context->CSSetShaderResources(batch.startBinding, count, batch.resources.constData());
+                contextState.csHighestActiveSrvBinding = qMax(contextState.csHighestActiveSrvBinding,
+                                                              int(batch.startBinding + count) - 1);
+            }
         }
     }
 
     for (int i = 0, ie = srbD->vsubufs.batches.count(); i != ie; ++i) {
-        if (!dynOfsPairCount) {
-            context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
-                                           UINT(srbD->vsubufs.batches[i].resources.count()),
-                                           srbD->vsubufs.batches[i].resources.constData(),
-                                           srbD->vsubufoffsets.batches[i].resources.constData(),
-                                           srbD->vsubufsizes.batches[i].resources.constData());
-        } else {
-            QVarLengthArray<UINT, 4> offsets;
-            applyDynamicOffsets(&offsets, i, &srbD->vsubufs, &srbD->vsubufoffsets, dynOfsPairs, dynOfsPairCount);
-            context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
-                                           UINT(srbD->vsubufs.batches[i].resources.count()),
-                                           srbD->vsubufs.batches[i].resources.constData(),
-                                           offsets.constData(),
-                                           srbD->vsubufsizes.batches[i].resources.constData());
+        const uint count = clampedResourceCount(srbD->vsubufs.batches[i].startBinding,
+                                                srbD->vsubufs.batches[i].resources.count(),
+                                                D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
+                                                "VS cbuf");
+        if (count) {
+            if (!dynOfsPairCount) {
+                context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
+                                               count,
+                                               srbD->vsubufs.batches[i].resources.constData(),
+                                               srbD->vsubufoffsets.batches[i].resources.constData(),
+                                               srbD->vsubufsizes.batches[i].resources.constData());
+            } else {
+                QVarLengthArray<UINT, 4> offsets;
+                applyDynamicOffsets(&offsets, i, &srbD->vsubufs, &srbD->vsubufoffsets, dynOfsPairs, dynOfsPairCount);
+                context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
+                                               count,
+                                               srbD->vsubufs.batches[i].resources.constData(),
+                                               offsets.constData(),
+                                               srbD->vsubufsizes.batches[i].resources.constData());
+            }
         }
     }
 
     for (int i = 0, ie = srbD->fsubufs.batches.count(); i != ie; ++i) {
-        if (!dynOfsPairCount) {
-            context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
-                                           UINT(srbD->fsubufs.batches[i].resources.count()),
-                                           srbD->fsubufs.batches[i].resources.constData(),
-                                           srbD->fsubufoffsets.batches[i].resources.constData(),
-                                           srbD->fsubufsizes.batches[i].resources.constData());
-        } else {
-            QVarLengthArray<UINT, 4> offsets;
-            applyDynamicOffsets(&offsets, i, &srbD->fsubufs, &srbD->fsubufoffsets, dynOfsPairs, dynOfsPairCount);
-            context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
-                                           UINT(srbD->fsubufs.batches[i].resources.count()),
-                                           srbD->fsubufs.batches[i].resources.constData(),
-                                           offsets.constData(),
-                                           srbD->fsubufsizes.batches[i].resources.constData());
+        const uint count = clampedResourceCount(srbD->fsubufs.batches[i].startBinding,
+                                                srbD->fsubufs.batches[i].resources.count(),
+                                                D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
+                                                "PS cbuf");
+        if (count) {
+            if (!dynOfsPairCount) {
+                context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
+                                               count,
+                                               srbD->fsubufs.batches[i].resources.constData(),
+                                               srbD->fsubufoffsets.batches[i].resources.constData(),
+                                               srbD->fsubufsizes.batches[i].resources.constData());
+            } else {
+                QVarLengthArray<UINT, 4> offsets;
+                applyDynamicOffsets(&offsets, i, &srbD->fsubufs, &srbD->fsubufoffsets, dynOfsPairs, dynOfsPairCount);
+                context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
+                                               count,
+                                               srbD->fsubufs.batches[i].resources.constData(),
+                                               offsets.constData(),
+                                               srbD->fsubufsizes.batches[i].resources.constData());
+            }
         }
     }
 
     for (int i = 0, ie = srbD->csubufs.batches.count(); i != ie; ++i) {
-        if (!dynOfsPairCount) {
-            context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
-                                           UINT(srbD->csubufs.batches[i].resources.count()),
-                                           srbD->csubufs.batches[i].resources.constData(),
-                                           srbD->csubufoffsets.batches[i].resources.constData(),
-                                           srbD->csubufsizes.batches[i].resources.constData());
-        } else {
-            QVarLengthArray<UINT, 4> offsets;
-            applyDynamicOffsets(&offsets, i, &srbD->csubufs, &srbD->csubufoffsets, dynOfsPairs, dynOfsPairCount);
-            context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
-                                           UINT(srbD->csubufs.batches[i].resources.count()),
-                                           srbD->csubufs.batches[i].resources.constData(),
-                                           offsets.constData(),
-                                           srbD->csubufsizes.batches[i].resources.constData());
+        const uint count = clampedResourceCount(srbD->csubufs.batches[i].startBinding,
+                                                srbD->csubufs.batches[i].resources.count(),
+                                                D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
+                                                "CS cbuf");
+        if (count) {
+            if (!dynOfsPairCount) {
+                context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
+                                               count,
+                                               srbD->csubufs.batches[i].resources.constData(),
+                                               srbD->csubufoffsets.batches[i].resources.constData(),
+                                               srbD->csubufsizes.batches[i].resources.constData());
+            } else {
+                QVarLengthArray<UINT, 4> offsets;
+                applyDynamicOffsets(&offsets, i, &srbD->csubufs, &srbD->csubufoffsets, dynOfsPairs, dynOfsPairCount);
+                context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
+                                               count,
+                                               srbD->csubufs.batches[i].resources.constData(),
+                                               offsets.constData(),
+                                               srbD->csubufsizes.batches[i].resources.constData());
+            }
         }
     }
 
-    for (int i = 0, ie = srbD->csUAVs.batches.count(); i != ie; ++i) {
-        const uint startBinding = srbD->csUAVs.batches[i].startBinding;
-        const uint count = uint(srbD->csUAVs.batches[i].resources.count());
-        context->CSSetUnorderedAccessViews(startBinding,
-                                           count,
-                                           srbD->csUAVs.batches[i].resources.constData(),
-                                           nullptr);
-        contextState.csHighestActiveUavBinding = qMax<int>(contextState.csHighestActiveUavBinding,
-                                                           int(startBinding + count - 1));
+    for (const auto &batch : srbD->csUAVs.batches) {
+        const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                D3D11_1_UAV_SLOT_COUNT, "CS UAV");
+        if (count) {
+            context->CSSetUnorderedAccessViews(batch.startBinding,
+                                               count,
+                                               batch.resources.constData(),
+                                               nullptr);
+            contextState.csHighestActiveUavBinding = qMax(contextState.csHighestActiveUavBinding,
+                                                          int(batch.startBinding + count) - 1);
+        }
     }
 }
 
@@ -3529,11 +3601,15 @@ static pD3DCompile resolveD3DCompile()
 
 static QByteArray compileHlslShaderSource(const QShader &shader, QShader::Variant shaderVariant, QString *error, QShaderKey *usedShaderKey)
 {
-    QShaderCode dxbc = shader.shader({ QShader::DxbcShader, 50, shaderVariant });
-    if (!dxbc.shader().isEmpty())
+    QShaderKey key = { QShader::DxbcShader, 50, shaderVariant };
+    QShaderCode dxbc = shader.shader(key);
+    if (!dxbc.shader().isEmpty()) {
+        if (usedShaderKey)
+            *usedShaderKey = key;
         return dxbc.shader();
+    }
 
-    const QShaderKey key = { QShader::HlslShader, 50, shaderVariant };
+    key = { QShader::HlslShader, 50, shaderVariant };
     QShaderCode hlslSource = shader.shader(key);
     if (hlslSource.shader().isEmpty()) {
         qWarning() << "No HLSL (shader model 5.0) code found in baked shader" << shader;

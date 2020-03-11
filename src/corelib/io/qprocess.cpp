@@ -2475,12 +2475,11 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
 */
 int QProcess::execute(const QString &command)
 {
-    QProcess process;
-    process.setProcessChannelMode(ForwardedChannels);
-    process.start(command);
-    if (!process.waitForFinished(-1) || process.error() == FailedToStart)
+    QStringList args = splitCommand(command);
+    if (args.isEmpty())
         return -2;
-    return process.exitStatus() == QProcess::NormalExit ? process.exitCode() : -1;
+    QString program = args.takeFirst();
+    return execute(program, args);
 }
 
 /*!

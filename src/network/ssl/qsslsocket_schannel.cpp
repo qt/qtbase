@@ -1306,7 +1306,8 @@ void QSslSocketBackendPrivate::transmit()
         int totalRead = 0;
         bool hadIncompleteData = false;
         while (!readBufferMaxSize || buffer.size() < readBufferMaxSize) {
-            if (missingData > plainSocket->bytesAvailable()) {
+            if (missingData > plainSocket->bytesAvailable()
+                && (!readBufferMaxSize || readBufferMaxSize >= missingData)) {
 #ifdef QSSLSOCKET_DEBUG
                 qCDebug(lcSsl, "We're still missing %lld bytes, will check later.", missingData);
 #endif

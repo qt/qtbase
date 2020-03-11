@@ -40,7 +40,6 @@
 #define QTRANSFORM_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtGui/qpainterpath.h>
 #include <QtGui/qpolygon.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qwindowdefs.h>
@@ -50,8 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QVariant;
+class QPainterPath;
 
 class Q_GUI_EXPORT QTransform
 {
@@ -406,8 +405,6 @@ inline QPolygonF operator *(const QPolygonF &a, const QTransform &m)
 { return m.map(a); }
 inline QRegion operator *(const QRegion &r, const QTransform &m)
 { return m.map(r); }
-inline QPainterPath operator *(const QPainterPath &p, const QTransform &m)
-{ return m.map(p); }
 
 inline QTransform operator *(const QTransform &a, qreal n)
 { QTransform t(a); t *= n; return t; }

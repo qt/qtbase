@@ -253,6 +253,7 @@ static void ensureInitialized()
 
 /*!
     \enum QNetworkAccessManager::NetworkAccessibility
+    \obsolete
 
     Indicates whether the network is accessible via this network access manager.
 
@@ -268,6 +269,7 @@ static void ensureInitialized()
 /*!
     \property QNetworkAccessManager::networkAccessible
     \brief whether the network is currently accessible via this network access manager.
+    \obsolete
 
     \since 4.7
 

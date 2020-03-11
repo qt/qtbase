@@ -219,8 +219,8 @@ public:
     int count(const char *a) const;
     int count(const QByteArray &a) const;
 
-    inline int compare(const char *c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline int compare(const QByteArray &a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline int compare(const char *c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    inline int compare(const QByteArray &a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
     Q_REQUIRED_RESULT QByteArray left(int len) const;
     Q_REQUIRED_RESULT QByteArray right(int len) const;
@@ -555,12 +555,12 @@ inline bool QByteArray::contains(const QByteArray &a) const
 { return indexOf(a) != -1; }
 inline bool QByteArray::contains(char c) const
 { return indexOf(c) != -1; }
-inline int QByteArray::compare(const char *c, Qt::CaseSensitivity cs) const
+inline int QByteArray::compare(const char *c, Qt::CaseSensitivity cs) const noexcept
 {
     return cs == Qt::CaseSensitive ? qstrcmp(*this, c) :
                                      qstrnicmp(data(), size(), c, -1);
 }
-inline int QByteArray::compare(const QByteArray &a, Qt::CaseSensitivity cs) const
+inline int QByteArray::compare(const QByteArray &a, Qt::CaseSensitivity cs) const noexcept
 {
     return cs == Qt::CaseSensitive ? qstrcmp(*this, a) :
                                      qstrnicmp(data(), size(), a.data(), a.size());

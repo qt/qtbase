@@ -18,6 +18,8 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
       option(ANDROID_BUILD_ABI_${abi} "Enable the build for Android ${abi}" ${abi_initial_value})
     endif()
   endforeach()
+  option(ANDROID_MIN_SDK_VERSION "Android minimum SDK version" "21")
+  option(ANDROID_TARGET_SDK_VERSION "Android target SDK version" "28")
 
   # Make sure to delete the "android-build" directory, which contains all the
   # build artefacts, and also the androiddeployqt/gradle artefacts
@@ -101,6 +103,9 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
   generate_json_variable(ANDROID_VERSION_NAME "android-version-name")
   generate_json_variable_list(ANDROID_EXTRA_LIBS "android-extra-libs")
   generate_json_variable_list(QML_IMPORT_PATH "qml-import-paths")
+  generate_json_variable_list(ANDROID_MIN_SDK_VERSION "android-min-sdk-version")
+  generate_json_variable_list(ANDROID_TARGET_SDK_VERSION "android-target-sdk-version")
+
 
   configure_file(
     "${CMAKE_BINARY_DIR}/android_deployment_settings.json.in"

@@ -56,29 +56,28 @@
 #include <math.h>
 
 //! [0]
-const double DefaultCenterX = -0.637011f;
-const double DefaultCenterY = -0.0395159f;
-const double DefaultScale = 0.00403897f;
+const double DefaultCenterX = -0.637011;
+const double DefaultCenterY = -0.0395159;
+const double DefaultScale = 0.00403897;
 
-const double ZoomInFactor = 0.8f;
+const double ZoomInFactor = 0.8;
 const double ZoomOutFactor = 1 / ZoomInFactor;
 const int ScrollStep = 20;
 //! [0]
 
 //! [1]
-MandelbrotWidget::MandelbrotWidget(QWidget *parent)
-    : QWidget(parent)
+MandelbrotWidget::MandelbrotWidget(QWidget *parent) :
+    QWidget(parent),
+    centerX(DefaultCenterX),
+    centerY(DefaultCenterY),
+    pixmapScale(DefaultScale),
+    curScale(DefaultScale)
 {
-    centerX = DefaultCenterX;
-    centerY = DefaultCenterY;
-    pixmapScale = DefaultScale;
-    curScale = DefaultScale;
-
     connect(&thread, &RenderThread::renderedImage,
             this, &MandelbrotWidget::updatePixmap);
 
     setWindowTitle(tr("Mandelbrot"));
-#ifndef QT_NO_CURSOR
+#if QT_CONFIG(cursor)
     setCursor(Qt::CrossCursor);
 #endif
     resize(550, 400);
@@ -102,7 +101,7 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
 //! [4]
 
 //! [5]
-    if (curScale == pixmapScale) {
+    if (qFuzzyCompare(curScale, pixmapScale)) {
 //! [5] //! [6]
         painter.drawPixmap(pixmapOffset, pixmap);
 //! [6] //! [7]
@@ -176,8 +175,8 @@ void MandelbrotWidget::keyPressEvent(QKeyEvent *event)
 //! [12]
 void MandelbrotWidget::wheelEvent(QWheelEvent *event)
 {
-    int numDegrees = event->angleDelta().y() / 8;
-    double numSteps = numDegrees / 15.0f;
+    const int numDegrees = event->angleDelta().y() / 8;
+    const double numSteps = numDegrees / double(15);
     zoom(pow(ZoomInFactor, numSteps));
 }
 //! [12]

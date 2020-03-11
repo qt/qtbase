@@ -48,6 +48,7 @@
 #include <qscreen.h>
 #include <qpa/qplatformscreen.h>
 #include <QtCore/QUuid>
+#include <QtGui/QPainterPath>
 
 #ifndef QT_NO_FREETYPE
 

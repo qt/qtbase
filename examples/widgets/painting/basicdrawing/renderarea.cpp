@@ -51,6 +51,7 @@
 #include "renderarea.h"
 
 #include <QPainter>
+#include <QPainterPath>
 
 //! [0]
 RenderArea::RenderArea(QWidget *parent)

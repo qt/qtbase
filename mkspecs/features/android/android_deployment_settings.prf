@@ -53,6 +53,12 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
     !isEmpty(ANDROID_VERSION_CODE): \
         FILE_CONTENT += "   \"android-version-code\": $$emitString($$ANDROID_VERSION_CODE),"
 
+    !isEmpty(ANDROID_MIN_SDK_VERSION): \
+        FILE_CONTENT += "   \"android-min-sdk-version\": $$emitString($$ANDROID_MIN_SDK_VERSION),"
+
+    !isEmpty(ANDROID_TARGET_SDK_VERSION): \
+        FILE_CONTENT += "   \"android-target-sdk-version\": $$emitString($$ANDROID_TARGET_SDK_VERSION),"
+
     !isEmpty(ANDROID_EXTRA_LIBS): \
         FILE_CONTENT += "   \"android-extra-libs\": $$emitString($$join(ANDROID_EXTRA_LIBS, ",")),"
 

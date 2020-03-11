@@ -348,6 +348,12 @@ public:
 
     static QRhiShaderResourceBinding sampledTexture(int binding, StageFlags stage, QRhiTexture *tex, QRhiSampler *sampler);
 
+    struct TextureAndSampler {
+        QRhiTexture *tex;
+        QRhiSampler *sampler;
+    };
+    static QRhiShaderResourceBinding sampledTextures(int binding, StageFlags stage, int count, const TextureAndSampler *texSamplers);
+
     static QRhiShaderResourceBinding imageLoad(int binding, StageFlags stage, QRhiTexture *tex, int level);
     static QRhiShaderResourceBinding imageStore(int binding, StageFlags stage, QRhiTexture *tex, int level);
     static QRhiShaderResourceBinding imageLoadStore(int binding, StageFlags stage, QRhiTexture *tex, int level);
@@ -370,9 +376,10 @@ public:
             int maybeSize;
             bool hasDynamicOffset;
         };
+        static const int MAX_TEX_SAMPLER_ARRAY_SIZE = 16;
         struct SampledTextureData {
-            QRhiTexture *tex;
-            QRhiSampler *sampler;
+            int count;
+            TextureAndSampler texSamplers[MAX_TEX_SAMPLER_ARRAY_SIZE];
         };
         struct StorageImageData {
             QRhiTexture *tex;

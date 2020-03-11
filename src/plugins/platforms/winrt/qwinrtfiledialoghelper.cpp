@@ -397,7 +397,15 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
             RETURN_FALSE_IF_FAILED_WITH_ARGS("Failed to set default file extension \"%s\"", qPrintable(suffix));
         }
 
-        const QString suggestedName = QFileInfo(d->saveFileName.toLocalFile()).fileName();
+        QString suggestedName = QFileInfo(d->saveFileName.toLocalFile()).fileName();
+        if (suggestedName.isEmpty() && dialogOptions->initiallySelectedFiles().size() > 0)
+            suggestedName = QFileInfo(dialogOptions->initiallySelectedFiles().first().toLocalFile())
+                                    .fileName();
+        if (suggestedName.isEmpty()) {
+            const auto fileInfo = QFileInfo(dialogOptions->initialDirectory().toLocalFile());
+            if (!fileInfo.isDir())
+                suggestedName = fileInfo.fileName();
+        }
         if (!suggestedName.isEmpty()) {
             HStringReference nativeSuggestedName(reinterpret_cast<const wchar_t *>(suggestedName.utf16()),
                                                  uint(suggestedName.length()));

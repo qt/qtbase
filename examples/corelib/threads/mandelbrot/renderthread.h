@@ -78,7 +78,7 @@ protected:
     void run() override;
 
 private:
-    uint rgbFromWaveLength(double wave);
+    static uint rgbFromWaveLength(double wave);
 
     QMutex mutex;
     QWaitCondition condition;
@@ -86,8 +86,8 @@ private:
     double centerY;
     double scaleFactor;
     QSize resultSize;
-    bool restart;
-    bool abort;
+    bool restart = false;
+    bool abort = false;
 
     enum { ColormapSize = 512 };
     uint colormap[ColormapSize];

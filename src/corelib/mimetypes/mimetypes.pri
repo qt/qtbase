@@ -26,9 +26,12 @@ qtConfig(mimetype) {
 
     qtConfig(mimetype-database) {
         outpath = .rcc
+        android {
+            outpath = $$outpath/$${QT_ARCH}
+        }
         debug_and_release {
-            CONFIG(debug, debug|release): outpath = .rcc/debug
-            else:                         outpath = .rcc/release
+            CONFIG(debug, debug|release): outpath = $$outpath/debug
+            else:                         outpath = $$outpath/release
         }
 
         mimedb.depends = $$PWD/mime/generate.pl

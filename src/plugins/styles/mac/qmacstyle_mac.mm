@@ -56,6 +56,7 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 
+#include <QtGui/qpainterpath.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qpa/qplatformfontdatabase.h>
 #include <QtGui/qpa/qplatformtheme.h>

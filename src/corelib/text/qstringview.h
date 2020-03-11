@@ -257,6 +257,11 @@ public:
 
     Q_REQUIRED_RESULT int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::compareStrings(*this, other, cs); }
+    Q_REQUIRED_RESULT inline int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR int compare(QChar c) const noexcept
+    { return empty() || front() == c ? size() - 1 : *utf16() - c.unicode() ; }
+    Q_REQUIRED_RESULT int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
+    { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
 
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }

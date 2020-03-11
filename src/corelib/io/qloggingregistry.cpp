@@ -75,7 +75,7 @@ QLoggingRule::QLoggingRule() :
     \internal
     Constructs a logging rule.
 */
-QLoggingRule::QLoggingRule(const QStringRef &pattern, bool enabled) :
+QLoggingRule::QLoggingRule(QStringView pattern, bool enabled) :
     messageType(-1),
     enabled(enabled)
 {
@@ -87,7 +87,7 @@ QLoggingRule::QLoggingRule(const QStringRef &pattern, bool enabled) :
     Return value 1 means filter passed, 0 means filter doesn't influence this
     category, -1 means category doesn't pass this filter.
  */
-int QLoggingRule::pass(const QString &cat, QtMsgType msgType) const
+int QLoggingRule::pass(QLatin1String cat, QtMsgType msgType) const
 {
     // check message type
     if (messageType > -1 && messageType != msgType)
@@ -113,7 +113,7 @@ int QLoggingRule::pass(const QString &cat, QtMsgType msgType) const
                 return (enabled ? 1 : -1);
         } else if (flags == RightFilter) {
             // matches right
-            if (idx == (cat.count() - category.count()))
+            if (idx == (cat.size() - category.count()))
                 return (enabled ? 1 : -1);
         }
     }
@@ -129,26 +129,22 @@ int QLoggingRule::pass(const QString &cat, QtMsgType msgType) const
              *.io.warning          RightFilter, QtWarningMsg
              *.core.*              MidFilter
  */
-void QLoggingRule::parse(const QStringRef &pattern)
+void QLoggingRule::parse(QStringView pattern)
 {
-    QStringRef p;
+    QStringView p;
 
     // strip trailing ".messagetype"
     if (pattern.endsWith(QLatin1String(".debug"))) {
-        p = QStringRef(pattern.string(), pattern.position(),
-                       pattern.length() - 6); // strlen(".debug")
+        p = pattern.chopped(6); // strlen(".debug")
         messageType = QtDebugMsg;
     } else if (pattern.endsWith(QLatin1String(".info"))) {
-        p = QStringRef(pattern.string(), pattern.position(),
-                       pattern.length() - 5); // strlen(".info")
+        p = pattern.chopped(5); // strlen(".info")
         messageType = QtInfoMsg;
     } else if (pattern.endsWith(QLatin1String(".warning"))) {
-        p = QStringRef(pattern.string(), pattern.position(),
-                       pattern.length() - 8); // strlen(".warning")
+        p = pattern.chopped(8); // strlen(".warning")
         messageType = QtWarningMsg;
     } else if (pattern.endsWith(QLatin1String(".critical"))) {
-        p = QStringRef(pattern.string(), pattern.position(),
-                       pattern.length() - 9); // strlen(".critical")
+        p = pattern.chopped(9); // strlen(".critical")
         messageType = QtCriticalMsg;
     } else {
         p = pattern;
@@ -159,11 +155,11 @@ void QLoggingRule::parse(const QStringRef &pattern)
     } else {
         if (p.endsWith(QLatin1Char('*'))) {
             flags |= LeftFilter;
-            p = QStringRef(p.string(), p.position(), p.length() - 1);
+            p = p.chopped(1);
         }
         if (p.startsWith(QLatin1Char('*'))) {
             flags |= RightFilter;
-            p = QStringRef(p.string(), p.position() + 1, p.length() - 1);
+            p = p.mid(1);
         }
         if (p.contains(QLatin1Char('*'))) // '*' only supported at start/end
             flags = PatternFlags();
@@ -208,7 +204,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
     _rules.clear();
     QString line;
     while (stream.readLineInto(&line))
-        parseNextLine(QStringRef(&line));
+        parseNextLine(qToStringViewIgnoringNull(line));
 }
 
 /*!
@@ -216,7 +212,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
     Parses one line of the configuation file
 */
 
-void QLoggingSettingsParser::parseNextLine(QStringRef line)
+void QLoggingSettingsParser::parseNextLine(QStringView line)
 {
     // Remove whitespace at start and end of line:
     line = line.trimmed();
@@ -227,7 +223,7 @@ void QLoggingSettingsParser::parseNextLine(QStringRef line)
 
     if (line.startsWith(QLatin1Char('[')) && line.endsWith(QLatin1Char(']'))) {
         // new section
-        auto sectionName = line.mid(1, line.size() - 2).trimmed();
+        auto sectionName = line.mid(1).chopped(1).trimmed();
         m_inRulesSection = sectionName.compare(QLatin1String("rules"), Qt::CaseInsensitive) == 0;
         return;
     }
@@ -240,9 +236,9 @@ void QLoggingSettingsParser::parseNextLine(QStringRef line)
 #if QT_CONFIG(settings)
                 QString tmp;
                 QSettingsPrivate::iniUnescapedKey(key.toUtf8(), 0, key.length(), tmp);
-                QStringRef pattern = QStringRef(&tmp, 0, tmp.length());
+                QStringView pattern = qToStringViewIgnoringNull(tmp);
 #else
-                QStringRef pattern = key;
+                QStringView pattern = key;
 #endif
                 const auto valueStr = line.mid(equalPos + 1).trimmed();
                 int value = -1;
@@ -252,7 +248,7 @@ void QLoggingSettingsParser::parseNextLine(QStringRef line)
                     value = 0;
                 QLoggingRule rule(pattern, (value == 1));
                 if (rule.flags != 0 && (value != -1))
-                    _rules.append(rule);
+                    _rules.append(std::move(rule));
                 else
                     warnMsg("Ignoring malformed logging rule: '%s'", line.toUtf8().constData());
             } else {
@@ -460,7 +456,7 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
             debug = false;
     }
 
-    QString categoryName = QLatin1String(cat->categoryName());
+    const auto categoryName = QLatin1String(cat->categoryName());
 
     for (const auto &ruleSet : reg->ruleSets) {
         for (const auto &rule : ruleSet) {

@@ -1632,6 +1632,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     nsWindow.restorable = NO;
     nsWindow.level = windowLevel(flags);
+    nsWindow.tabbingMode = NSWindowTabbingModeDisallowed;
 
     if (shouldBePanel) {
         // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set

@@ -45,6 +45,7 @@
 #include <QtCore/qsettings.h>
 #endif
 #include <QtCore/qoperatingsystemversion.h>
+#include <QtGui/qpainterpath.h>
 #include <private/qcoregraphics_p.h>
 #include <private/qimage_p.h>
 

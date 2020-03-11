@@ -51,6 +51,7 @@
 
 #include <QtCore/qendian.h>
 #include <QtCore/qfile.h>
+#include <QtGui/qpainterpath.h>
 
 QT_BEGIN_NAMESPACE
 

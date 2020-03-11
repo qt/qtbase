@@ -1603,25 +1603,6 @@ QPainterPath QPainterPath::toReversed() const
 }
 
 /*!
-    \overload
-
-    Converts the path into a list of polygons without any transformation,
-    and returns the list.
-
-    This function creates one polygon for each subpath regardless of
-    intersecting subpaths (i.e. overlapping bounding rectangles). To
-    make sure that such overlapping subpaths are filled correctly, use
-    the toFillPolygons() function instead.
-
-    \sa toFillPolygons(), toFillPolygon(), {QPainterPath#QPainterPath
-    Conversion}{QPainterPath Conversion}
-*/
-QList<QPolygonF> QPainterPath::toSubpathPolygons() const
-{
-    return toSubpathPolygons(QTransform());
-}
-
-/*!
     Converts the path into a list of polygons using the QTransform
     \a matrix, and returns the list.
 
@@ -1676,35 +1657,6 @@ QList<QPolygonF> QPainterPath::toSubpathPolygons(const QTransform &matrix) const
         flatCurves += current;
 
     return flatCurves;
-}
-
-/*!
-    \overload
-
-    Converts the path into a list of polygons without any transformation,
-    and returns the list.
-
-    The function differs from the toFillPolygon() function in that it
-    creates several polygons. It is provided because it is usually
-    faster to draw several small polygons than to draw one large
-    polygon, even though the total number of points drawn is the same.
-
-    The toFillPolygons() function differs from the toSubpathPolygons()
-    function in that it create only polygon for subpaths that have
-    overlapping bounding rectangles.
-
-    Like the toFillPolygon() function, this function uses a rewinding
-    technique to make sure that overlapping subpaths can be filled
-    using the correct fill rule. Note that rewinding inserts addition
-    lines in the polygons so the outline of the fill polygon does not
-    match the outline of the path.
-
-    \sa toSubpathPolygons(), toFillPolygon(),
-    {QPainterPath#QPainterPath Conversion}{QPainterPath Conversion}
-*/
-QList<QPolygonF> QPainterPath::toFillPolygons() const
-{
-    return toFillPolygons(QTransform());
 }
 
 /*!
@@ -2900,28 +2852,6 @@ qreal QPainterPathStroker::dashOffset() const
 void QPainterPathStroker::setDashOffset(qreal offset)
 {
     d_func()->dashOffset = offset;
-}
-
-/*!
-  \overload
-
-  Converts the path into a polygon without any transformation,
-  and returns the polygon.
-
-  The polygon is created by first converting all subpaths to
-  polygons, then using a rewinding technique to make sure that
-  overlapping subpaths can be filled using the correct fill rule.
-
-  Note that rewinding inserts addition lines in the polygon so
-  the outline of the fill polygon does not match the outline of
-  the path.
-
-  \sa toSubpathPolygons(), toFillPolygons(),
-  {QPainterPath#QPainterPath Conversion}{QPainterPath Conversion}
-*/
-QPolygonF QPainterPath::toFillPolygon() const
-{
-    return toFillPolygon(QTransform());
 }
 
 /*!

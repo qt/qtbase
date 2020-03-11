@@ -28,6 +28,7 @@
 
 #include <qtest.h>
 #include <QTransform>
+#include <QPainterPath>
 
 class tst_QTransform : public QObject
 {

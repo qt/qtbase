@@ -2379,7 +2379,7 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     }
 
     while (r == SQL_SUCCESS) {
-        QString fieldVal = qGetStringData(hStmt, 2, -1, false);
+        QString fieldVal = qGetStringData(hStmt, 2, -1, d->unicode);
         tl.append(fieldVal);
 
         if (d->hasSQLFetchScroll)

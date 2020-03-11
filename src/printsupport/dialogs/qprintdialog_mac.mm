@@ -42,6 +42,7 @@
 #include "qprintdialog.h"
 #include "qabstractprintdialog_p.h"
 
+#include <QtCore/qtemporarydir.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtPrintSupport/qprinter.h>
@@ -127,21 +128,36 @@ QT_USE_NAMESPACE
         PMDestinationType dest;
         PMSessionGetDestinationType(session, settings, &dest);
         if (dest == kPMDestinationFile) {
-            // QTBUG-38820
-            // If user selected Print to File, leave OSX to generate the PDF,
-            // otherwise setting PdfFormat would prevent us showing dialog again.
-            // TODO Restore this when QTBUG-36112 is fixed.
-            /*
             QCFType<CFURLRef> file;
             PMSessionCopyDestinationLocation(session, settings, &file);
             UInt8 localFile[2048];  // Assuming there's a POSIX file system here.
             CFURLGetFileSystemRepresentation(file, true, localFile, sizeof(localFile));
-            printer->setOutputFileName(QString::fromUtf8(reinterpret_cast<const char *>(localFile)));
-            */
-        } else {
+            auto outputFile = QFileInfo(QString::fromUtf8(reinterpret_cast<const char *>(localFile)));
+            if (outputFile.suffix() == QLatin1String("pdf"))
+                printer->setOutputFileName(outputFile.absoluteFilePath());
+            else
+                qWarning() << "Can not print to file type" << outputFile.suffix();
+        } else if (dest == kPMDestinationPreview) {
+            static QTemporaryDir printPreviews;
+            auto documentName = printer->docName();
+            if (documentName.isEmpty())
+                documentName = QGuiApplication::applicationDisplayName();
+            auto fileName = printPreviews.filePath(QString(QLatin1String("%1.pdf")).arg(documentName));
+            printer->setOutputFileName(fileName);
+            // Ideally we would have a callback when the PDF engine is done writing
+            // to the file, and open Preview in response to that. Lacking that, we
+            // use the quick and dirty assumption that the the print operation will
+            // happen synchronously after the dialog is accepted, so we can defer
+            // the opening of the file to the next runloop pass.
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [NSWorkspace.sharedWorkspace openFile:fileName.toNSString()];
+            });
+        } else if (dest == kPMDestinationProcessPDF) {
+            qWarning("Printing workflows are not supported");
+        } else if (dest == kPMDestinationPrinter) {
             PMPrinter macPrinter;
             PMSessionGetCurrentPrinter(session, &macPrinter);
-            QString printerId = QString::fromCFString(PMPrinterGetID(macPrinter));
+            QString printerId = QString::fromCFString(PMPrinterGetID(macPrinter)).trimmed();
             if (printer->printerName() != printerId)
                 printer->setPrinterName(printerId);
         }
@@ -199,14 +215,18 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
 {
     Q_Q(QPrintDialog);
 
-    // get the NSPrintInfo from the print engine in the platform plugin
-    void *voidp = 0;
-    (void) QMetaObject::invokeMethod(qApp->platformNativeInterface(),
-                                     "NSPrintInfoForPrintEngine",
-                                     Q_RETURN_ARG(void *, voidp),
-                                     Q_ARG(QPrintEngine *, printer->printEngine()));
-    printInfo = static_cast<NSPrintInfo *>(voidp);
-    [printInfo retain];
+    if (printer->outputFormat() == QPrinter::NativeFormat) {
+        // get the NSPrintInfo from the print engine in the platform plugin
+        void *voidp = 0;
+        (void) QMetaObject::invokeMethod(qApp->platformNativeInterface(),
+                                         "NSPrintInfoForPrintEngine",
+                                         Q_RETURN_ARG(void *, voidp),
+                                         Q_ARG(QPrintEngine *, printer->printEngine()));
+        printInfo = static_cast<NSPrintInfo *>(voidp);
+        [printInfo retain];
+    } else {
+        printInfo = [NSPrintInfo.sharedPrintInfo retain];
+    }
 
     // It seems the only way that PM lets you use all is if the minimum
     // for the page range is 1. This _kind of_ makes sense if you think about
@@ -269,31 +289,15 @@ void QPrintDialogPrivate::closeCocoaPrintPanel()
     printPanel = 0;
 }
 
-static bool warnIfNotNative(QPrinter *printer)
-{
-    if (printer->outputFormat() != QPrinter::NativeFormat) {
-        qWarning("QPrintDialog: Cannot be used on non-native printers");
-        return false;
-    }
-    return true;
-}
-
-
 QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), printer, parent)
 {
-    Q_D(QPrintDialog);
-    if (!warnIfNotNative(d->printer))
-        return;
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 QPrintDialog::QPrintDialog(QWidget *parent)
     : QAbstractPrintDialog(*(new QPrintDialogPrivate), 0, parent)
 {
-    Q_D(QPrintDialog);
-    if (!warnIfNotNative(d->printer))
-        return;
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 
@@ -304,8 +308,6 @@ QPrintDialog::~QPrintDialog()
 int QPrintDialog::exec()
 {
     Q_D(QPrintDialog);
-    if (!warnIfNotNative(d->printer))
-        return QDialog::Rejected;
 
     QDialog::setVisible(true);
 

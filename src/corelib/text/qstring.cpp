@@ -6154,6 +6154,16 @@ QString& QString::fill(QChar ch, int size)
     sensitivity setting \a cs.
 */
 
+/*!
+    \fn int QString::compare(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+
+    \since 5.14
+    \overload compare()
+
+    Performs a comparison of this with \a ch, using the case
+    sensitivity setting \a cs.
+*/
+
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
     \overload compare()
@@ -9576,6 +9586,23 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \fn int QLatin1String::compare(QStringView str, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::compare(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::compare(QChar ch) const
+    \fn int QLatin1String::compare(QChar ch, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns an integer that compares to zero as this Latin-1 string compares to the
+    string-view \a str, Latin-1 string \a l1, or character \a ch, respectively.
+
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
+    otherwise the comparison is case-insensitive.
+
+    \sa operator==(), operator<(), operator>()
+*/
+
+
+/*!
     \fn bool QLatin1String::startsWith(QStringView str, Qt::CaseSensitivity cs) const
     \since 5.10
     \fn bool QLatin1String::startsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
@@ -10939,6 +10966,19 @@ QStringRef QStringRef::appendTo(QString *string) const
     otherwise the comparison is case insensitive.
 
     Equivalent to \c {compare(*this, other, cs)}.
+*/
+
+/*!
+    \overload
+    \fn int QStringRef::compare(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 5.14
+
+    Compares this string with \a ch and returns an
+    integer less than, equal to, or greater than zero if this string
+    is less than, equal to, or greater than \a ch, interpreted as a string of length one.
+
+    If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
+    otherwise the comparison is case insensitive.
 */
 
 /*!

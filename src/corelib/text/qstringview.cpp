@@ -692,15 +692,29 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int QStringView::compare(QStringView other, Qt::CaseSensitivity cs) const
+    \fn int QStringView::compare(QStringView str, Qt::CaseSensitivity cs) const
     \since 5.12
 
-    Compares this string-view with the \a other string-view and returns an
-    integer less than, equal to, or greater than zero if this string-view
-    is less than, equal to, or greater than the other string-view.
+    Returns an integer that compares to zero as this string-view compares to the
+    string-view \a str.
 
-    If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
-    otherwise the comparison is case insensitive.
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
+    otherwise the comparison is case-insensitive.
+
+    \sa operator==(), operator<(), operator>()
+*/
+
+/*!
+    \fn int QStringView::compare(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn int QStringView::compare(QChar ch) const
+    \fn int QStringView::compare(QChar ch, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns an integer that compares to zero as this string-view compares to the
+    Latin-1 string \a l1, or character \a ch, respectively.
+
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
+    otherwise the comparison is case-insensitive.
 
     \sa operator==(), operator<(), operator>()
 */

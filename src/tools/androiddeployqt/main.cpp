@@ -170,6 +170,8 @@ struct Options
     // Versioning
     QString versionName;
     QString versionCode;
+    QByteArray minSdkVersion{"21"};
+    QByteArray targetSdkVersion{"28"};
 
     // lib c++ path
     QString stdCppPath;
@@ -857,6 +859,18 @@ bool readInputFile(Options *options)
             options->versionCode = androidVersionCode.toString();
         else
             options->versionCode = QStringLiteral("1");
+    }
+
+    {
+        const QJsonValue ver = jsonObject.value(QLatin1String("android-min-sdk-version"));
+        if (!ver.isUndefined())
+            options->minSdkVersion = ver.toString().toUtf8();
+    }
+
+    {
+        const QJsonValue ver = jsonObject.value(QLatin1String("android-target-sdk-version"));
+        if (!ver.isUndefined())
+            options->targetSdkVersion = ver.toString().toUtf8();
     }
 
     {
@@ -2319,6 +2333,8 @@ bool buildAndroidProject(const Options &options)
     gradleProperties["buildDir"] = "build";
     gradleProperties["qt5AndroidDir"] = (options.qtInstallDirectory + QLatin1String("/src/android/java")).toUtf8();
     gradleProperties["androidCompileSdkVersion"] = options.androidPlatform.split(QLatin1Char('-')).last().toLocal8Bit();
+    gradleProperties["qtMinSdkVersion"] = options.minSdkVersion;
+    gradleProperties["qtTargetSdkVersion"] = options.targetSdkVersion;
     if (gradleProperties["androidBuildToolsVersion"].isEmpty())
         gradleProperties["androidBuildToolsVersion"] = options.sdkBuildToolsVersion.toLocal8Bit();
 

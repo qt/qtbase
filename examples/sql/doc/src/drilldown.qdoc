@@ -437,6 +437,9 @@
 
     \snippet drilldown/imageitem.h 0
 
+    We declare a \c Type enum value for our custom item and reimplement
+    \l{QGreaphicsItem::}{type()}. This is done so we can safely use
+    qgraphicsitem_cast().
     In addition, we implement a public \c id() function to be able to
     identify the associated location and a public \c adjust() function
     that can be called to ensure that the image item is given the

@@ -130,8 +130,9 @@ public:
     // Certificate Authority (CA) settings
     QList<QSslCertificate> caCertificates() const;
     void setCaCertificates(const QList<QSslCertificate> &certificates);
-    bool addCaCertificates(const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
-                           QSslCertificate::PatternSyntax syntax = QSslCertificate::FixedString);
+    bool addCaCertificates(
+            const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
+            QSslCertificate::PatternSyntax syntax = QSslCertificate::PatternSyntax::FixedString);
     void addCaCertificate(const QSslCertificate &certificate);
     void addCaCertificates(const QList<QSslCertificate> &certificates);
 

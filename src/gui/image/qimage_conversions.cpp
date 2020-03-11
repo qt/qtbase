@@ -43,7 +43,12 @@
 #include <private/qendian_p.h>
 #include <private/qsimd_p.h>
 #include <private/qimage_p.h>
+
 #include <qendian.h>
+#if QT_CONFIG(thread)
+#include <qsemaphore.h>
+#include <qthreadpool.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -159,12 +164,8 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     // Cannot be used with indexed formats.
     Q_ASSERT(dest->format > QImage::Format_Indexed8);
     Q_ASSERT(src->format > QImage::Format_Indexed8);
-    uint buf[BufferSize];
-    uint *buffer = buf;
     const QPixelLayout *srcLayout = &qPixelLayouts[src->format];
     const QPixelLayout *destLayout = &qPixelLayouts[dest->format];
-    const uchar *srcData = src->data;
-    uchar *destData = dest->data;
 
     FetchAndConvertPixelsFunc fetch = srcLayout->fetchToARGB32PM;
     ConvertAndStorePixelsFunc store = destLayout->storeFromARGB32PM;
@@ -197,59 +198,110 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
         else
             store = destLayout->storeFromRGB32;
     }
-    QDitherInfo dither;
-    QDitherInfo *ditherPtr = nullptr;
-    if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
-        ditherPtr = &dither;
 
-    for (int y = 0; y < src->height; ++y) {
-        dither.y = y;
-        int x = 0;
-        while (x < src->width) {
-            dither.x = x;
-            int l = src->width - x;
-            if (destLayout->bpp == QPixelLayout::BPP32)
-                buffer = reinterpret_cast<uint *>(destData) + x;
-            else
-                l = qMin(l, BufferSize);
-            const uint *ptr = fetch(buffer, srcData, x, l, nullptr, ditherPtr);
-            store(destData, ptr, x, l, nullptr, ditherPtr);
-            x += l;
+    auto convertSegment = [=](int yStart, int yEnd) {
+        uint buf[BufferSize];
+        uint *buffer = buf;
+        const uchar *srcData = src->data + src->bytes_per_line * yStart;
+        uchar *destData = dest->data + dest->bytes_per_line * yStart;
+        QDitherInfo dither;
+        QDitherInfo *ditherPtr = nullptr;
+        if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
+            ditherPtr = &dither;
+        for (int y = yStart; y < yEnd; ++y) {
+            dither.y = y;
+            int x = 0;
+            while (x < src->width) {
+                dither.x = x;
+                int l = src->width - x;
+                if (destLayout->bpp == QPixelLayout::BPP32)
+                    buffer = reinterpret_cast<uint *>(destData) + x;
+                else
+                    l = qMin(l, BufferSize);
+                const uint *ptr = fetch(buffer, srcData, x, l, 0, ditherPtr);
+                store(destData, ptr, x, l, 0, ditherPtr);
+                x += l;
+            }
+            srcData += src->bytes_per_line;
+            destData += dest->bytes_per_line;
         }
-        srcData += src->bytes_per_line;
-        destData += dest->bytes_per_line;
+    };
+
+#if QT_CONFIG(thread)
+    int segments = src->nbytes / (1<<16);
+    segments = std::min(segments, src->height);
+
+    if (segments <= 1)
+        return convertSegment(0, src->height);
+
+    QSemaphore semaphore;
+    int y = 0;
+    for (int i = 0; i < segments; ++i) {
+        int yn = (src->height - y) / (segments - i);
+        QThreadPool::globalInstance()->start([&, y, yn]() {
+            convertSegment(y, y + yn);
+            semaphore.release(1);
+        });
+        y += yn;
     }
+    semaphore.acquire(segments);
+#else
+    convertSegment(0, src->height);
+#endif
 }
 
 void convert_generic_to_rgb64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(dest->format > QImage::Format_Indexed8);
     Q_ASSERT(src->format > QImage::Format_Indexed8);
-    QRgba64 buf[BufferSize];
-    QRgba64 *buffer = buf;
     const QPixelLayout *srcLayout = &qPixelLayouts[src->format];
     const QPixelLayout *destLayout = &qPixelLayouts[dest->format];
-    const uchar *srcData = src->data;
-    uchar *destData = dest->data;
 
     const FetchAndConvertPixelsFunc64 fetch = srcLayout->fetchToRGBA64PM;
     const ConvertAndStorePixelsFunc64 store = qStoreFromRGBA64PM[dest->format];
 
-    for (int y = 0; y < src->height; ++y) {
-        int x = 0;
-        while (x < src->width) {
-            int l = src->width - x;
-            if (destLayout->bpp == QPixelLayout::BPP64)
-                buffer = reinterpret_cast<QRgba64 *>(destData) + x;
-            else
-                l = qMin(l, BufferSize);
-            const QRgba64 *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
-            store(destData, ptr, x, l, nullptr, nullptr);
-            x += l;
+    auto convertSegment = [=](int yStart, int yEnd) {
+        QRgba64 buf[BufferSize];
+        QRgba64 *buffer = buf;
+        const uchar *srcData = src->data + yStart * src->bytes_per_line;
+        uchar *destData = dest->data + yStart * dest->bytes_per_line;
+        for (int y = yStart; y < yEnd; ++y) {
+            int x = 0;
+            while (x < src->width) {
+                int l = src->width - x;
+                if (destLayout->bpp == QPixelLayout::BPP64)
+                    buffer = reinterpret_cast<QRgba64 *>(destData) + x;
+                else
+                    l = qMin(l, BufferSize);
+                const QRgba64 *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
+                store(destData, ptr, x, l, nullptr, nullptr);
+                x += l;
+            }
+            srcData += src->bytes_per_line;
+            destData += dest->bytes_per_line;
         }
-        srcData += src->bytes_per_line;
-        destData += dest->bytes_per_line;
+    };
+#if QT_CONFIG(thread)
+    int segments = src->nbytes / (1<<16);
+    segments = std::min(segments, src->height);
+
+    if (segments <= 1)
+        return convertSegment(0, src->height);
+
+    QSemaphore semaphore;
+    int y = 0;
+    for (int i = 0; i < segments; ++i) {
+        int yn = (src->height - y) / (segments - i);
+        QThreadPool::globalInstance()->start([&, y, yn]() {
+            convertSegment(y, y + yn);
+            semaphore.release(1);
+        });
+        y += yn;
     }
+    semaphore.acquire(segments);
+#else
+    convertSegment(0, src->height);
+#endif
 }
 
 bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags flags)
@@ -269,11 +321,6 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     if (qt_highColorPrecision(data->format, !destLayout->hasAlphaChannel)
             && qt_highColorPrecision(dst_format, !srcLayout->hasAlphaChannel))
         return false;
-
-    uint buf[BufferSize];
-    uint *buffer = buf;
-    uchar *srcData = data->data;
-    uchar *destData = data->data;
 
     QImageData::ImageSizeParameters params = { data->bytes_per_line, data->nbytes };
     if (data->depth != destDepth) {
@@ -313,28 +360,52 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         else
             store = destLayout->storeFromRGB32;
     }
-    QDitherInfo dither;
-    QDitherInfo *ditherPtr = nullptr;
-    if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
-        ditherPtr = &dither;
 
-    for (int y = 0; y < data->height; ++y) {
-        dither.y = y;
-        int x = 0;
-        while (x < data->width) {
-            dither.x = x;
-            int l = data->width - x;
-            if (srcLayout->bpp == QPixelLayout::BPP32)
-                buffer = reinterpret_cast<uint *>(srcData) + x;
-            else
-                l = qMin(l, BufferSize);
-            const uint *ptr = fetch(buffer, srcData, x, l, nullptr, ditherPtr);
-            store(destData, ptr, x, l, nullptr, ditherPtr);
-            x += l;
+    auto convertSegment = [=](int yStart, int yEnd) {
+        uint buf[BufferSize];
+        uint *buffer = buf;
+        uchar *srcData = data->data + data->bytes_per_line * yStart;
+        uchar *destData = srcData;
+        QDitherInfo dither;
+        QDitherInfo *ditherPtr = nullptr;
+        if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
+            ditherPtr = &dither;
+        for (int y = yStart; y < yEnd; ++y) {
+            dither.y = y;
+            int x = 0;
+            while (x < data->width) {
+                dither.x = x;
+                int l = data->width - x;
+                if (srcLayout->bpp == QPixelLayout::BPP32)
+                    buffer = reinterpret_cast<uint *>(srcData) + x;
+                else
+                    l = qMin(l, BufferSize);
+                const uint *ptr = fetch(buffer, srcData, x, l, nullptr, ditherPtr);
+                store(destData, ptr, x, l, nullptr, ditherPtr);
+                x += l;
+            }
+            srcData += data->bytes_per_line;
+            destData += params.bytesPerLine;
         }
-        srcData += data->bytes_per_line;
-        destData += params.bytesPerLine;
-    }
+    };
+#if QT_CONFIG(thread)
+    int segments = data->nbytes / (1<<16);
+    segments = std::min(segments, data->height);
+    if (segments > 1) {
+        QSemaphore semaphore;
+        int y = 0;
+        for (int i = 0; i < segments; ++i) {
+            int yn = (data->height - y) / (segments - i);
+            QThreadPool::globalInstance()->start([&, y, yn]() {
+                convertSegment(y, y + yn);
+                semaphore.release(1);
+            });
+            y += yn;
+        }
+        semaphore.acquire(segments);
+    } else
+#endif
+        convertSegment(0, data->height);
     if (params.totalSize != data->nbytes) {
         Q_ASSERT(params.totalSize < data->nbytes);
         void *newData = realloc(data->data, params.totalSize);

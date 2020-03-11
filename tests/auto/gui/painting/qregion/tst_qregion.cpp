@@ -32,6 +32,7 @@
 
 #include <qbitmap.h>
 #include <qpainter.h>
+#include <qpainterpath.h>
 #include <qpolygon.h>
 
 class tst_QRegion : public QObject

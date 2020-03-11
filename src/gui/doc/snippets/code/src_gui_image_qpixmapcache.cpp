@@ -49,9 +49,8 @@
 ****************************************************************************/
 
 //! [0]
-QPixmap* pp;
 QPixmap p;
-if ((pp=QPixmapCache::find("my_big_image", pm))) {
+if (QPixmap *pp = QPixmapCache::find("my_big_image"))) {
     p = *pp;
 } else {
     p.load("bigimage.png");
