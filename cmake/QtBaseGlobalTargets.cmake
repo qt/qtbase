@@ -200,6 +200,10 @@ target_include_directories(GlobalConfigPrivate INTERFACE
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
+# Propagate minimum C++ 17 via Platform to Qt consumers (apps), after the global features
+# are computed.
+qt_set_language_standards_interface_compile_features(Platform)
+
 # defines PlatformCommonInternal PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
 include(QtInternalTargets)
 
