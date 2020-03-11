@@ -43,7 +43,7 @@ class LibraryMapping:
         emit_if: str = "",
         is_bundled_with_qt: bool = False,
         test_library_overwrite: str = "",
-        run_library_test: bool = False
+        run_library_test: bool = False,
     ) -> None:
         self.soName = soName
         self.packageName = packageName
@@ -226,7 +226,9 @@ _qt_library_map = [
         "openglextensions", "Qt6", "Qt::OpenGLExtensions", extra=["COMPONENTS", "OpenGLExtensions"]
     ),
     LibraryMapping("opengl", "Qt6", "Qt::OpenGL", extra=["COMPONENTS", "OpenGL"]),
-    LibraryMapping("openglwidgets", "Qt6", "Qt::OpenGLWidgets", extra=["COMPONENTS", "OpenGLWidgets"]),
+    LibraryMapping(
+        "openglwidgets", "Qt6", "Qt::OpenGLWidgets", extra=["COMPONENTS", "OpenGLWidgets"]
+    ),
     LibraryMapping(
         "package-lib", "Qt6", "Qt::AppManPackage", extra=["COMPONENTS", "AppManPackage"]
     ),
@@ -383,9 +385,7 @@ _qt_library_map = [
     LibraryMapping(
         "webkitwidgets", "Qt6", "Qt::WebKitWidgets", extra=["COMPONENTS", "WebKitWidgets"]
     ),
-    LibraryMapping(
-        "zlib", "Qt6", "Qt::Zlib", extra=["COMPONENTS", "Zlib"]
-    )
+    LibraryMapping("zlib", "Qt6", "Qt::Zlib", extra=["COMPONENTS", "Zlib"]),
 ]
 
 # Note that the library map is adjusted dynamically further down.
@@ -398,7 +398,9 @@ _library_map = [
     LibraryMapping("directfb", "DirectFB", "PkgConfig::DirectFB"),
     LibraryMapping("db2", "DB2", "DB2::DB2"),
     LibraryMapping("dbus", "WrapDBus1", "dbus-1", resultVariable="DBus1"),
-    LibraryMapping("doubleconversion", "WrapDoubleConversion", "WrapDoubleConversion::WrapDoubleConversion"),
+    LibraryMapping(
+        "doubleconversion", "WrapDoubleConversion", "WrapDoubleConversion::WrapDoubleConversion"
+    ),
     LibraryMapping("drm", "Libdrm", "Libdrm::Libdrm"),
     LibraryMapping("egl", "EGL", "EGL::EGL"),
     LibraryMapping("flite", "Flite", "Flite::Flite"),
@@ -448,10 +450,17 @@ _library_map = [
         "OpenSSL::SSL_nolink",
         resultVariable="TEST_openssl_headers",
         appendFoundSuffix=False,
-        test_library_overwrite = "OpenSSL::SSL",
-        run_library_test=True
+        test_library_overwrite="OpenSSL::SSL",
+        run_library_test=True,
     ),
-    LibraryMapping("openssl", "OpenSSL", "OpenSSL::SSL", resultVariable="TEST_openssl", appendFoundSuffix=False, run_library_test=True),
+    LibraryMapping(
+        "openssl",
+        "OpenSSL",
+        "OpenSSL::SSL",
+        resultVariable="TEST_openssl",
+        appendFoundSuffix=False,
+        run_library_test=True,
+    ),
     LibraryMapping("oci", "Oracle", "Oracle::OCI"),
     LibraryMapping(
         "pcre2", "WrapPCRE2", "WrapPCRE2::WrapPCRE2", extra=["REQUIRED"], is_bundled_with_qt=True

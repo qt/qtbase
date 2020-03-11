@@ -229,7 +229,9 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
 
     if run_library_test and "test" in data["libraries"][lib]:
         test = data["libraries"][lib]["test"]
-        write_compile_test(ctx, lib, test, data, cm_fh, manual_library_list=[lib], is_library_test = True)
+        write_compile_test(
+            ctx, lib, test, data, cm_fh, manual_library_list=[lib], is_library_test=True
+        )
 
 
 def lineify(label, value, quote=True):
@@ -498,9 +500,11 @@ def parseInput(ctx, sinput, data, cm_fh):
     return
 
 
-def write_compile_test(ctx, name, details, data, cm_fh, manual_library_list = None, is_library_test = False):
+def write_compile_test(
+    ctx, name, details, data, cm_fh, manual_library_list=None, is_library_test=False
+):
 
-    if manual_library_list == None:
+    if manual_library_list is None:
         manual_library_list = []
 
     inherited_test_name = details["inherit"] if "inherit" in details else None
@@ -508,7 +512,7 @@ def write_compile_test(ctx, name, details, data, cm_fh, manual_library_list = No
     if inherited_test_name and is_library_test:
         inherit_details = data["libraries"][inherited_test_name]["test"]
         if not inherit_details:
-            print(f"    XXXX Failed to locate inherited library test {inherit}")
+            print(f"    XXXX Failed to locate inherited library test {inherited_test_name}")
 
     if isinstance(details, str):
         rel_test_project_path = f"{ctx['test_dir']}/{details}"
@@ -543,7 +547,7 @@ qt_config_compile_test("{details}"
             include = f"#include <{include}>"
         return include
 
-    include =""
+    include = ""
     if is_library_test:
         if inherit_details:
             inherited_lib_data = data["libraries"][inherited_test_name]
@@ -563,7 +567,7 @@ qt_config_compile_test("{details}"
             tail = "\n".join(tail)
         return tail
 
-    tail =""
+    tail = ""
     if inherit_details:
         tail += resolve_tail(inherit_details)
     tail += resolve_tail(details)
@@ -671,7 +675,6 @@ qt_config_compile_test("{details}"
     cm_fh.write(")\n\n")
 
 
-
 #  "tests": {
 #        "cxx11_future": {
 #            "label": "C++11 <future>",
@@ -765,17 +768,21 @@ def get_feature_mapping():
         "compiler-flags": None,
         "cross_compile": None,
         "debug_and_release": {
-            "autoDetect": "1",     # Setting this to None has weird effects...
-            "condition": "QT_GENERATOR_IS_MULTI_CONFIG"
+            "autoDetect": "1",  # Setting this to None has weird effects...
+            "condition": "QT_GENERATOR_IS_MULTI_CONFIG",
         },
-        "debug": {"condition": "CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"},
+        "debug": {
+            "condition": "CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"
+        },
         "dlopen": {"condition": "UNIX"},
         "enable_gdb_index": None,
         "enable_new_dtags": None,
         "force_debug_info": {
             "autoDetect": "CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo OR RelWithDebInfo IN_LIST CMAKE_CONFIGURATION_TYPES"
         },
-        "framework": {"condition": "APPLE AND BUILD_SHARED_LIBS AND NOT CMAKE_BUILD_TYPE STREQUAL Debug"},
+        "framework": {
+            "condition": "APPLE AND BUILD_SHARED_LIBS AND NOT CMAKE_BUILD_TYPE STREQUAL Debug"
+        },
         "gc_binaries": None,
         "gcc-sysroot": None,
         "gcov": None,
@@ -1092,8 +1099,11 @@ def processSummaryHelper(ctx, entries, cm_fh):
         if isinstance(entry, str):
             name = entry
             cm_fh.write(f'qt_configure_add_summary_entry(ARGS "{name}")\n')
-        elif "type" in entry \
-                and entry["type"] in ["feature", "firstAvailableFeature", "featureList"]:
+        elif "type" in entry and entry["type"] in [
+            "feature",
+            "firstAvailableFeature",
+            "featureList",
+        ]:
             function_args = []
             entry_type = entry["type"]
 
@@ -1125,12 +1135,12 @@ def processSummaryHelper(ctx, entries, cm_fh):
                 condition = map_condition(entry["condition"])
                 function_args.append(lineify("CONDITION", condition, quote=False))
             entry_args_string = "".join(function_args)
-            cm_fh.write(f'qt_configure_add_summary_entry(\n{entry_args_string})\n')
+            cm_fh.write(f"qt_configure_add_summary_entry(\n{entry_args_string})\n")
         elif "type" in entry and entry["type"] == "buildTypeAndConfig":
-            cm_fh.write(f'qt_configure_add_summary_build_type_and_config()\n')
+            cm_fh.write(f"qt_configure_add_summary_build_type_and_config()\n")
         elif "type" in entry and entry["type"] == "buildMode":
             message = entry["message"]
-            cm_fh.write(f'qt_configure_add_summary_build_mode({message})\n')
+            cm_fh.write(f"qt_configure_add_summary_build_mode({message})\n")
         elif "section" in entry:
             section = entry["section"]
             cm_fh.write(f'qt_configure_add_summary_section(NAME "{section}")\n')
@@ -1186,7 +1196,7 @@ def processReportHelper(ctx, entries, cm_fh):
                 condition = map_condition(condition)
                 entry_args.append(lineify("CONDITION", condition, quote=False))
             entry_args_string = "".join(entry_args)
-            cm_fh.write(f'qt_configure_add_report_entry(\n{entry_args_string})\n')
+            cm_fh.write(f"qt_configure_add_report_entry(\n{entry_args_string})\n")
         else:
             print(f"    XXXX UNHANDLED REPORT TYPE {entry}.")
 
