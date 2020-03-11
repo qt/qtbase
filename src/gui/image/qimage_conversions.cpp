@@ -365,7 +365,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         uint buf[BufferSize];
         uint *buffer = buf;
         uchar *srcData = data->data + data->bytes_per_line * yStart;
-        uchar *destData = srcData;
+        uchar *destData = srcData; // This can be temporarily wrong if we doing a shrinking conversion
         QDitherInfo dither;
         QDitherInfo *ditherPtr = nullptr;
         if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
@@ -403,6 +403,18 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             y += yn;
         }
         semaphore.acquire(segments);
+        if (data->bytes_per_line != params.bytesPerLine) {
+            // Compress segments to a continuous block
+            y = 0;
+            for (int i = 0; i < segments; ++i) {
+                int yn = (data->height - y) / (segments - i);
+                uchar *srcData = data->data + data->bytes_per_line * y;
+                uchar *destData = data->data + params.bytesPerLine * y;
+                if (srcData != destData)
+                    memmove(destData, srcData, params.bytesPerLine * yn);
+                y += yn;
+            }
+        }
     } else
 #endif
         convertSegment(0, data->height);
