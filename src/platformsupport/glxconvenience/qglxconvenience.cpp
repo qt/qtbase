@@ -224,6 +224,8 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
             }
 
             QXlibPointer<XVisualInfo> visual(glXGetVisualFromFBConfig(display, candidate));
+            if (!visual)
+                continue;
             int actualRed;
             int actualGreen;
             int actualBlue;
