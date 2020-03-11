@@ -200,8 +200,6 @@ class Locale:
                     'weekendStart', 'weekendEnd',
                     'longDateFormat', 'shortDateFormat',
                     'longTimeFormat', 'shortTimeFormat',
-                    'longDays', 'shortDays', 'narrowDays',
-                    'standaloneLongDays', 'standaloneShortDays', 'standaloneNarrowDays',
                     'currencyIsoCode', 'currencySymbol', 'currencyDisplayName',
                     'currencyFormat', 'currencyNegativeFormat'
                     ) + tuple(self.propsMonthDay('days')) + tuple(
