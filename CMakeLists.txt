@@ -19,6 +19,11 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/kwin"
     )
 
+    if(APPLE_OSX)
+        # Add module directory to pick up custom Info.plist template
+        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos")
+    endif()
+
     ## Find the build internals package.
     set(QT_BUILD_INTERNALS_SKIP_CMAKE_MODULE_PATH_ADDITION TRUE)
     list(PREPEND CMAKE_PREFIX_PATH

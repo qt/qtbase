@@ -267,6 +267,13 @@ qt_copy_or_install(DIRECTORY cmake/
     PATTERN "3rdparty" EXCLUDE
 )
 
+if(APPLE_OSX)
+    qt_copy_or_install(FILES
+        cmake/macos/MacOSXBundleInfo.plist.in
+        DESTINATION "${__GlobalConfig_install_dir}/macos"
+    )
+endif()
+
 # Configure and install the QtBuildInternals package.
 set(__build_internals_path_suffix "${INSTALL_CMAKE_NAMESPACE}BuildInternals")
 qt_path_join(__build_internals_build_dir ${QT_CONFIG_BUILD_DIR} ${__build_internals_path_suffix})
