@@ -15,7 +15,7 @@ SOURCES += \
         qtconcurrentmap.cpp \
         qtconcurrentrun.cpp \
         qtconcurrentthreadengine.cpp \
-        qtconcurrentiteratekernel.cpp \
+        qtconcurrentiteratekernel.cpp
 
 HEADERS += \
         qtconcurrent_global.h \
@@ -32,7 +32,9 @@ HEADERS += \
         qtconcurrentrun.h \
         qtconcurrentrunbase.h \
         qtconcurrentstoredfunctioncall.h \
-        qtconcurrentthreadengine.h
+        qtconcurrentthreadengine.h \
+        qtaskbuilder.h \
+        qtconcurrenttask.h
 
 # private headers
 HEADERS += \

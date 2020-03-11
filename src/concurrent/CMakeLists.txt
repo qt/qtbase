@@ -22,6 +22,8 @@ qt_add_module(Concurrent
         qtconcurrentrunbase.h
         qtconcurrentstoredfunctioncall.h
         qtconcurrentthreadengine.cpp qtconcurrentthreadengine.h
+        qtaskbuilder.h
+        qtconcurrenttask.h
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE

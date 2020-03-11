@@ -48,7 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 #ifndef Q_QDOC
 
 namespace QtConcurrent {
@@ -65,14 +64,18 @@ struct InvokeResult
 template <class Function, class ...Args>
 using InvokeResultType = typename InvokeResult<Function, Args...>::Type;
 
+template <class ...Types>
+using DecayedTuple = std::tuple<std::decay_t<Types>...>;
+
 template <class Function, class ...Args>
 struct StoredFunctionCall : public RunFunctionTask<InvokeResultType<Function, Args...>>
 {
-    template <class ...Types>
-    using DecayedTuple = std::tuple<std::decay_t<Types>...>;
-
     StoredFunctionCall(Function &&f, Args &&...args)
         : data{std::forward<Function>(f), std::forward<Args>(args)...}
+    {}
+
+    StoredFunctionCall(DecayedTuple<Function, Args...> &&_data)
+        : data(std::move(_data))
     {}
 
     void runFunctor() override

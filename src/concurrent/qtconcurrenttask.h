@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtConcurrent module of the Qt Toolkit.
@@ -37,29 +37,22 @@
 **
 ****************************************************************************/
 
-#ifndef QTCONCURRENT_RUN_H
-#define QTCONCURRENT_RUN_H
+#ifndef QTCONCURRENTTASK_H
+#define QTCONCURRENTTASK_H
 
-#include <QtConcurrent/qtconcurrentcompilertest.h>
+#if !defined(QT_NO_CONCURRENT)
 
-#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
-
-#include <QtConcurrent/qtconcurrentrunbase.h>
-#include <QtConcurrent/qtconcurrentstoredfunctioncall.h>
+#include <QtConcurrent/qtaskbuilder.h>
 
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_CLANG_QDOC
 
-typedef int Function;
-
 namespace QtConcurrent {
 
-    template <typename T>
-    QFuture<T> run(Function function, ...);
-
-    template <typename T>
-    QFuture<T> run(QThreadPool *pool, Function function, ...);
+template <class Task>
+[[nodiscard]]
+QTaskBuilder<Task> task(Task &&task);
 
 } // namespace QtConcurrent
 
@@ -67,28 +60,16 @@ namespace QtConcurrent {
 
 namespace QtConcurrent {
 
-template <class Function, class ...Args>
+template <class Task>
 [[nodiscard]]
-auto run(QThreadPool *pool, Function &&f, Args &&...args)
-{
-    return (new StoredFunctionCall<Function, Args...>(
-                std::forward<Function>(f), std::forward<Args>(args)...))
-                    ->start(pool);
-}
+constexpr auto task(Task &&t) { return QTaskBuilder(std::forward<Task>(t)); }
 
-template <class Function, class ...Args>
-[[nodiscard]]
-auto run(Function &&f, Args &&...args)
-{
-    return run(QThreadPool::globalInstance(), std::forward<Function>(f), std::forward<Args>(args)...);
-}
-
-} //namespace QtConcurrent
+} // namespace QtConcurrent
 
 #endif // Q_CLANG_QDOC
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_CONCURRENT
+#endif // !defined(QT_NO_CONCURRENT)
 
-#endif
+#endif // QTCONCURRENTTASK_H

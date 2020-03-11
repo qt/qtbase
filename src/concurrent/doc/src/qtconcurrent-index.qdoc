@@ -79,6 +79,13 @@
             another thread.
     \endlist
 
+    \li \l {Concurrent Task}
+    \list
+        \li \l {QtConcurrent::task}{QtConcurrent::task()} creates an instance
+            of QtConcurrent::QTaskBuilder. This object can be used for adjusting
+            parameters and for kicking off a task in a separate thread.
+    \endlist
+
     \li QFuture represents the result of an asynchronous computation.
 
     \li QFutureIterator allows iterating through results available via QFuture.

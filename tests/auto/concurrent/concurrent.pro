@@ -5,5 +5,6 @@ SUBDIRS=\
    qtconcurrentmap \
    qtconcurrentmedian \
    qtconcurrentrun \
-   qtconcurrentthreadengine
+   qtconcurrentthreadengine \
+   qtconcurrenttask
 

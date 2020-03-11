@@ -1,0 +1,156 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qtconcurrenttask.html
+    \title Concurrent Task
+    \ingroup thread
+
+    QtConcurrent::task provides an alternative interface for running a
+    task in a separate thread. The return value of the function is made
+    available through the QFuture API.
+
+    If you want to just run a function in a separate thread without adjusting
+    any parameters, use QtConcurrent::run as that lets you write less code.
+    The QtConcurrent::task is designed for cases where you need to perform
+    extra configurations steps.
+
+    This function is a part of the \l {Qt Concurrent} framework.
+
+    \section1 Fluent interface
+
+    The QtConcurrent::task returns an instance of an auxiliary class called
+    QtConcurrent::QTaskBuilder. Normally, you don't need to create an instance
+    of this class manually. The QtConcurrent::QTaskBuilder provides an interface
+    to adjust different task parameters in a chain-like manner. This approach
+    is known as a
+    \l {https://en.wikipedia.org/wiki/Fluent_interface}{fluent interface}.
+
+    You can just set the parameters you need and then kick a task off.
+    In order to finalize the configuration of a task you must invoke
+    QtConcurrent::QTaskBuilder::spawn. This function is non-blocking (i.e.
+    returns a future object immediately), but it's not guaranteed that the
+    task starts immediately. You can use the QFuture and QFutureWatcher classes
+    to monitor the status of the task.
+
+    See more examples and explanations below.
+
+    \section1 Running a task in a separate thread
+
+    To run a function in another thread, use QtConcurrent::QTaskBuilder::spawn:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 0
+
+    This will run a lambda function in a separate thread obtained from
+    the default QThreadPool.
+
+    \section1 Passing arguments to the task
+
+    Invoking a function with arguments is done by passing them to
+    QtConcurrent::QTaskBuilder::withArguments:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 1
+
+    A copy of each argument is made at the point where
+    QtConcurrent::QTaskBuilder::withArguments is called, and these values
+    are passed to the thread when it begins executing the task. Changes made
+    to the arguments after calling QtConcurrent::QTaskBuilder::withArguments
+    are not visible to the thread.
+
+    If you want to run a function that accepts arguments by reference, you
+    should use \l {https://en.cppreference.com/w/cpp/utility/functional/ref}
+    {std::ref/cref} auxiliary functions. These functions create thin wrappers
+    around passed arguments:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 2
+
+    Make sure that all wrapped objects live long enough. It is possible to
+    get undefined behavior if a task outlives the object wrapped by
+    std::ref/cref.
+
+    \section1 Returning values from the task
+
+    You can obtain the result of a task with the QFuture API:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 3
+
+    Note that QFuture::result() is a blocking call, it waits for the
+    result to become available. Use QFutureWatcher to get a notification
+    when the task has finished execution and the result is available.
+
+    In case you want to pass a result to another asynchronous task, you can
+    use QFuture::then() to create a chain of dependent tasks. See the QFuture
+    documentation for more details.
+
+    \section1 Additional API features
+
+    \section2 Using different types of callable objects
+
+    Strictly speaking, you can use any type of tasks and arguments that
+    satisfy the following condition:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 4
+
+    You can use a free function:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 5
+
+    You can use a member function:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 6
+
+    You can use a callable object with an operator():
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 7
+
+    If you want to use an existing callable object, you need to either
+    copy/move it to QtConcurrent::task or wrap it with std::ref/cref:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 8
+
+    \section2 Using custom thread pool
+
+    You can specify a custom thread pool:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 9
+
+    \section2 Setting priority for a task
+
+    You can set the priority for a task:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 10
+*/
+
+/*!
+    \fn template <typename Task> [[nodiscard]] QTaskBuilder<Task> QtConcurrent::task(Task &&task);
+    \since 6.0
+
+    Creates an instance of QtConcurrent::QTaskBuilder. This object can be used
+    to adjust some parameters and run \a task in a separate thread.
+
+    \sa {Concurrent Task}, QtConcurrent::QTaskBuilder
+*/

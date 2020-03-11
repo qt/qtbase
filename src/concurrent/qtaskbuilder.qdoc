@@ -1,0 +1,82 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \class QtConcurrent::QTaskBuilder
+    \inmodule QtConcurrent
+    \brief The QTaskBuilder class is used for adjusting task parameters.
+    \since 6.0
+
+    \ingroup thread
+
+    It's not possible to create an object of this class manually. See
+    \l {Concurrent Task} for more details and usage examples.
+*/
+
+/*!
+    \fn template <class Task, class ...Args> [[nodiscard]] QFuture<InvokeResultType> QtConcurrent::QTaskBuilder<Task, Args...>::spawn()
+
+    Runs the task in a separate thread and returns a future object immediately.
+    This is a non-blocking call. The task might not start immediately.
+*/
+
+/*!
+    \fn template <class Task, class ...Args> template <class ...ExtraArgs> [[nodiscard]] QTaskBuilder<Task, ExtraArgs...> QtConcurrent::QTaskBuilder<Task, Args...>::withArguments(ExtraArgs &&...args)
+
+    Sets the arguments \a args the task will be invoked with. The code is ill-formed
+    (causes compilation errors) if:
+    \list
+        \li This function is invoked more than once.
+        \li The arguments count is zero.
+    \endlist
+*/
+
+/*!
+    \fn template <class Task, class ...Args> [[nodiscard]] QTaskBuilder<Task, Args...> &QtConcurrent::QTaskBuilder<Task, Args...>::onThreadPool(QThreadPool &newThreadPool)
+
+    Sets the thread pool \a newThreadPool that the task will be invoked on.
+*/
+
+/*!
+    \fn template <class Task, class ...Args> [[nodiscard]] QTaskBuilder<Task, Args...> &QtConcurrent::QTaskBuilder<Task, Args...>::withPriority(int newPriority)
+
+    Sets the priority \a newPriority that the task will be invoked with.
+*/
+
+/*!
+    \typedef InvokeResultType
+    \relates QtConcurrent::QTaskBuilder
+
+    The simplified definition of this type looks like this:
+    \code
+    template <class Task, class ...Args>
+    using InvokeResultType = std::invoke_result_t<std::decay_t<Task>, std::decay_t<Args>...>;
+    \endcode
+
+    The real implementation also contains a compile-time check for
+    whether the task can be invoked with the specified arguments or not.
+*/

@@ -69,24 +69,33 @@ struct SelectSpecialization<void>
     struct Type { typedef Void type; };
 };
 
+struct TaskStartParameters
+{
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    int priority = 0;
+};
+
 template <typename T>
 class RunFunctionTaskBase : public QFutureInterface<T> , public QRunnable
 {
 public:
     QFuture<T> start()
     {
-        return start(QThreadPool::globalInstance());
+        return start(TaskStartParameters());
     }
 
-    QFuture<T> start(QThreadPool *pool)
+    QFuture<T> start(const TaskStartParameters &parameters)
     {
-        this->setThreadPool(pool);
+        this->setThreadPool(parameters.threadPool);
         this->setRunnable(this);
         this->reportStarted();
         QFuture<T> theFuture = this->future();
-        pool->start(this, /*m_priority*/ 0);
+        parameters.threadPool->start(this, parameters.priority);
         return theFuture;
     }
+
+    // For backward compatibility
+    QFuture<T> start(QThreadPool *pool) { return start({pool, 0});  }
 
     void run() override {}
     virtual void runFunctor() = 0;
