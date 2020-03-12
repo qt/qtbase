@@ -66,7 +66,8 @@ public:
         OpenGLNoProfile,
         OpenGLCoreProfile,
         OpenGLCompatibilityProfile,
-        OpenGLES
+        OpenGLES,
+        VulkanFlavoredGLSL
     };
 
     enum ShaderType : int {
