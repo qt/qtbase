@@ -115,7 +115,7 @@ Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline size_t qHash(long key, size_t seed
 { return QHashPrivate::hash(size_t(key), seed); }
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline size_t qHash(quint64 key, size_t seed = 0) noexcept
 {
-    if (sizeof(quint64) > sizeof(size_t))
+    if constexpr (sizeof(quint64) > sizeof(size_t))
         key ^= (key >> 32);
     return QHashPrivate::hash(size_t(key), seed);
 }
