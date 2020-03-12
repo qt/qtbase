@@ -55,6 +55,15 @@ QT_BEGIN_NAMESPACE
 #  define Q_NETWORK_EXPORT
 #endif
 
+// ### Qt6: Remove
+// We work around an issue in ICC where it errors out during compilation of Qt by not marking it
+// deprecated if ICC is used
+#ifdef Q_CC_INTEL
+#define QT_DEPRECATED_BEARER_MANAGEMENT
+#else
+#define QT_DEPRECATED_BEARER_MANAGEMENT QT_DEPRECATED_VERSION_5_15
+#endif
+
 QT_END_NAMESPACE
 
 #endif

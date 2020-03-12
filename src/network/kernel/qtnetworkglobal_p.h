@@ -55,4 +55,10 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtNetwork/private/qtnetwork-config_p.h>
 
+// ### Qt6: Remove
+#ifdef QT_DEPRECATED_BEARER_MANAGEMENT
+#undef QT_DEPRECATED_BEARER_MANAGEMENT
+#endif
+#define QT_DEPRECATED_BEARER_MANAGEMENT
+
 #endif // QTNETWORKGLOBAL_P_H
