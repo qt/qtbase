@@ -661,7 +661,6 @@ QT_VERSION = ${PROJECT_VERSION}
 QT_MAJOR_VERSION = ${PROJECT_VERSION_MAJOR}
 QT_MINOR_VERSION = ${PROJECT_VERSION_MINOR}
 QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
-CONFIG -= link_prl # we do not create prl files right now
 CONFIG += ${config_entries}
 "
     )
@@ -1558,6 +1557,89 @@ function(qt_handle_multi_config_output_dirs target)
     qt_clone_property_for_configs(${target} ARCHIVE_OUTPUT_DIRECTORY "${possible_configs}")
 endfunction()
 
+# Add a finalizer function for the current CMake list file.
+#
+# You may add up to nine arguments that are passed to the finalizer.
+# A finalizer that is registered with qt_add_list_file_finalizer(foo bar baz)
+# will be called with nine arguments: foo(bar baz IGNORE IGNORE IGNORE...),
+# because CMake's handling of empty list elements is a cruel joke.
+#
+# For CMake < 3.18 the function qt_watch_current_list_dir must know about the finalizer.
+function(qt_add_list_file_finalizer func)
+    set_property(GLOBAL APPEND
+        PROPERTY QT_LIST_FILE_FINALIZER_FILES "${CMAKE_CURRENT_LIST_FILE}")
+    set_property(GLOBAL APPEND
+        PROPERTY QT_LIST_FILE_FINALIZER_FUNCS ${func})
+    foreach(i RANGE 1 9)
+        set(arg "${ARGV${i}}")
+        if(i GREATER_EQUAL ARGC)
+            set(arg "IGNORE")
+        endif()
+        set_property(GLOBAL APPEND
+            PROPERTY QT_LIST_FILE_FINALIZER_ARGV${i} "${arg}")
+    endforeach()
+endfunction()
+
+# Watcher function for the variable CMAKE_CURRENT_LIST_DIR.
+# This is the driver of the finalizer facility.
+function(qt_watch_current_list_dir variable access value current_list_file stack)
+    if(NOT access STREQUAL "MODIFIED_ACCESS")
+        # We are only interested in modifications of CMAKE_CURRENT_LIST_DIR.
+        return()
+    endif()
+    list(GET stack -1 stack_top)
+    if(stack_top STREQUAL current_list_file)
+        # If the top of the stack equals the current list file then
+        # we're entering a file. We're not interested in this case.
+        return()
+    endif()
+    get_property(files GLOBAL PROPERTY QT_LIST_FILE_FINALIZER_FILES)
+    if(NOT files)
+        return()
+    endif()
+    get_property(funcs GLOBAL PROPERTY QT_LIST_FILE_FINALIZER_FUNCS)
+    foreach(i RANGE 1 9)
+        get_property(args${i} GLOBAL PROPERTY QT_LIST_FILE_FINALIZER_ARGV${i})
+    endforeach()
+    list(LENGTH files n)
+    set(i 0)
+    while(i LESS n)
+        list(GET files ${i} file)
+        if(file STREQUAL stack_top)
+            list(GET funcs ${i} func)
+            foreach(k RANGE 1 9)
+                list(GET args${k} ${i} a${k})
+            endforeach()
+            # We've found a file we're looking for. Call the finalizer.
+            if(${CMAKE_VERSION} VERSION_LESS "3.18.0")
+                # Make finalizer known functions here:
+                if(func STREQUAL "qt_generate_prl_file")
+                    qt_generate_prl_file(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
+                else()
+                    message(FATAL_ERROR "qt_watch_current_list_dir doesn't know about ${func}. Consider adding it.")
+                endif()
+            else()
+                cmake_command(INVOKE ${func} ${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
+            endif()
+            list(REMOVE_AT files ${i})
+            list(REMOVE_AT funcs ${i})
+            foreach(k RANGE 1 9)
+                list(REMOVE_AT args${k} ${i})
+            endforeach()
+            math(EXPR n "${n} - 1")
+        else()
+            math(EXPR i "${i} + 1")
+        endif()
+    endwhile()
+    set_property(GLOBAL PROPERTY QT_LIST_FILE_FINALIZER_FILES ${files})
+    set_property(GLOBAL PROPERTY QT_LIST_FILE_FINALIZER_FUNCS ${funcs})
+    foreach(i RANGE 1 9)
+        set_property(GLOBAL PROPERTY QT_LIST_FILE_FINALIZER_ARGV${i} "${args${i}}")
+    endforeach()
+endfunction()
+
+variable_watch(CMAKE_CURRENT_LIST_DIR qt_watch_current_list_dir)
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -2059,7 +2141,159 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
 
     qt_describe_module(${target})
+    qt_add_list_file_finalizer(qt_generate_prl_file ${target})
+endfunction()
 
+# Add libraries to variable ${out_libs_var} in a way that duplicates
+# are added at the end. This ensures the library order needed for the
+# linker.
+function(qt_merge_libs out_libs_var)
+    foreach(dep ${ARGN})
+        list(REMOVE_ITEM ${out_libs_var} ${dep})
+        list(APPEND ${out_libs_var} ${dep})
+    endforeach()
+    set(${out_libs_var} ${${out_libs_var}} PARENT_SCOPE)
+endfunction()
+
+# Collects the library dependencies of a target.
+# This takes into account transitive usage requirements.
+function(qt_collect_libs target out_var)
+    set(collected ${ARGN})
+    if(target IN_LIST collected)
+        return()
+    endif()
+    list(APPEND collected ${target})
+    if(NOT TARGET qt_collect_libs_dict)
+        add_library(qt_collect_libs_dict INTERFACE IMPORTED GLOBAL)
+    endif()
+    get_target_property(libs qt_collect_libs_dict INTERFACE_${target})
+    if(NOT libs)
+        unset(libs)
+        get_target_property(target_libs ${target} INTERFACE_LINK_LIBRARIES)
+        if(NOT target_libs)
+            unset(target_libs)
+        endif()
+        get_target_property(target_type ${target} TYPE)
+        if(target_type STREQUAL "STATIC_LIBRARY")
+            get_target_property(link_libs ${target} LINK_LIBRARIES)
+            if(link_libs)
+                list(APPEND target_libs ${link_libs})
+            endif()
+        endif()
+        foreach(lib ${target_libs})
+            # Cannot use $<TARGET_POLICY:...> in add_custom_command.
+            # Check the policy now, and replace the generator expression with the value.
+            while(lib MATCHES "\\$<TARGET_POLICY:([^>]+)>")
+                cmake_policy(GET ${CMAKE_MATCH_1} value)
+                if(value STREQUAL "NEW")
+                    set(value "TRUE")
+                else()
+                    set(value "FALSE")
+                endif()
+                string(REPLACE "${CMAKE_MATCH_0}" "${value}" lib "${lib}")
+            endwhile()
+
+            # Fix up $<TARGET_PROPERTY:FOO> expressions that refer to the "current" target.
+            # Those cannot be used with add_custom_command.
+            while(lib MATCHES "\\$<TARGET_PROPERTY:([^,>]+)>")
+                string(REPLACE "${CMAKE_MATCH_0}" "$<TARGET_PROPERTY:${target},${CMAKE_MATCH_1}>"
+                    lib "${lib}")
+            endwhile()
+
+            if(lib MATCHES "^\\$<TARGET_OBJECTS:")
+                # Skip object files.
+                continue()
+            elseif(lib MATCHES "^\\$<LINK_ONLY:(.*)>$")
+                set(lib_target ${CMAKE_MATCH_1})
+            else()
+                set(lib_target ${lib})
+            endif()
+
+            if(TARGET ${lib_target})
+                if ("${lib_target}" MATCHES "^Qt::(.*)")
+                    # If both, Qt::Foo and Foo targets exist, prefer the target name without
+                    # namespace. Which one is preferred doesn't really matter. This code exists to
+                    # avoid ending up with both, Qt::Foo and Foo in our dependencies.
+                    set(namespaceless_lib_target "${CMAKE_MATCH_1}")
+                    if(TARGET namespaceless_lib_target)
+                        set(lib_target ${namespaceless_lib_target})
+                    endif()
+                endif()
+                get_target_property(lib_target_type ${lib_target} TYPE)
+                if(lib_target_type STREQUAL "INTERFACE_LIBRARY")
+                    qt_collect_libs(${lib_target} lib_libs ${collected})
+                    if(lib_libs)
+                        qt_merge_libs(libs ${lib_libs})
+                        set(is_module 0)
+                    endif()
+                else()
+                    qt_merge_libs(libs "$<TARGET_FILE:${lib_target}>")
+                    qt_collect_libs(${lib_target} lib_libs ${collected})
+                    if(lib_libs)
+                        qt_merge_libs(libs ${lib_libs})
+                    endif()
+                endif()
+            else()
+                qt_merge_libs(libs "${lib_target}")
+            endif()
+        endforeach()
+        set_target_properties(qt_collect_libs_dict PROPERTIES INTERFACE_${target} "${libs}")
+    endif()
+    set(${out_var} ${libs} PARENT_SCOPE)
+endfunction()
+
+# Generate a qmake .prl file for the given target
+function(qt_generate_prl_file target)
+    get_target_property(target_type ${target} TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
+    unset(prl_libs)
+    qt_collect_libs(${target} prl_libs)
+
+    unset(prl_config)
+    if(target_type STREQUAL "STATIC_LIBRARY")
+        list(APPEND prl_config static)
+    elseif(target_type STREQUAL "SHARED_LIBRARY")
+        list(APPEND prl_config shared)
+    endif()
+    if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
+        get_target_property(is_fw ${target} FRAMEWORK)
+        if(is_fw)
+            list(APPEND prl_config lib_bundle)
+        endif()
+    endif()
+    list(JOIN prl_config " " prl_config)
+
+    # Generate a preliminary .prl file that contains absolute paths to all libraries
+    set(prl_file_name "$<TARGET_FILE_PREFIX:${target}>$<TARGET_FILE_BASE_NAME:${target}>.prl")
+    file(GENERATE
+        OUTPUT "${prl_file_name}"
+        CONTENT
+        "QMAKE_PRL_BUILD_DIR = ${CMAKE_CURRENT_BINARY_DIR}
+QMAKE_PRL_TARGET = $<TARGET_FILE_NAME:${target}>
+QMAKE_PRL_CONFIG = ${prl_config}
+QMAKE_PRL_VERSION = ${PROJECT_VERSION}
+QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
+"
+    )
+
+    # Add a custom command that prepares the .prl file for installation
+    qt_path_join(qt_build_libdir ${QT_BUILD_DIR} ${INSTALL_LIBDIR})
+    qt_path_join(prl_file_path "${qt_build_libdir}" "${prl_file_name}")
+    set(library_suffixes ${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_STATIC_LIBRARY_SUFFIX})
+    add_custom_command(
+        TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -DIN_FILE=${prl_file_name} -DOUT_FILE=${prl_file_path}
+                "-DLIBRARY_SUFFIXES=${library_suffixes}"
+                -DQT_BUILD_LIBDIR=${qt_build_libdir}
+                -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
+        VERBATIM
+        )
+
+    # Installation of the .prl file happens globally elsewhere,
+    # because we have no clue here what the actual file name is.
 endfunction()
 
 function(qt_export_tools module_name)

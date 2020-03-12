@@ -470,3 +470,9 @@ qt_create_tools_config_files()
 if (ANDROID)
     qt_modules_process_android_dependencies()
 endif()
+
+# Install prl files
+qt_install(DIRECTORY "${PROJECT_BINARY_DIR}/${INSTALL_LIBDIR}/"
+    DESTINATION ${INSTALL_LIBDIR}
+    FILES_MATCHING PATTERN "*.prl"
+)

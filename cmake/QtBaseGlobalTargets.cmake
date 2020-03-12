@@ -287,6 +287,7 @@ qt_copy_or_install(FILES
                    cmake/QtCompilerFlags.cmake
                    cmake/QtCompilerOptimization.cmake
                    cmake/QtFeature.cmake
+                   cmake/QtFinishPrlFile.cmake
                    cmake/QtFindWrapHelper.cmake
                    cmake/QtFindWrapConfigExtra.cmake.in
                    cmake/QtFileConfigure.txt.in
