@@ -3407,33 +3407,15 @@ function(qt_add_simd_part target)
         endif()
         string(TOUPPER "QT_CFLAGS_${arg_SIMD}" simd_flags)
 
-        if (NOT TARGET "${name}")
-            add_library("${name}" OBJECT)
-        endif()
-        target_sources("${name}" PRIVATE ${arg_SOURCES})
-        target_include_directories("${name}" PRIVATE
-            ${arg_INCLUDE_DIRECTORIES}
-            $<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>)
-        target_compile_options("${name}" PRIVATE
-            ${${simd_flags}}
-            ${arg_COMPILE_FLAGS}
-            $<TARGET_PROPERTY:${target},COMPILE_OPTIONS>)
-            target_compile_definitions("${name}" PRIVATE
-            $<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>)
-
-        target_link_libraries("${target}" PRIVATE "${name}")
-
-        # Add a link-only dependency on the parent library, to force copying of framework headers
-        # before trying to compile a source file.
-        target_link_libraries("${name}" PRIVATE
-              $<FILTER:$<TARGET_PROPERTY:${target},LINK_LIBRARIES>,EXCLUDE,^${target}_simd_>)
-
-        if(NOT BUILD_SHARED_LIBS)
-            qt_install(
-              TARGETS ${name}
-              EXPORT "${INSTALL_CMAKE_NAMESPACE}Targets"
+        foreach(source IN LISTS arg_SOURCES)
+            set_property(SOURCE "${source}" APPEND
+                PROPERTY COMPILE_OPTIONS
+                ${${simd_flags}}
+                ${arg_COMPILE_FLAGS}
             )
-        endif()
+        endforeach()
+        set_source_files_properties(${arg_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
+        target_sources(${target} PRIVATE ${arg_SOURCES})
     else()
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
             message("qt_add_simd_part(${target} SIMD ${arg_SIMD} ...): Skipped")
