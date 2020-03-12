@@ -134,6 +134,7 @@ QT_BEGIN_NAMESPACE
         return __VA_ARGS__; \
     }
 
+Q_CORE_EXPORT void qt_call_post_routines();
 Q_GUI_EXPORT bool qt_is_gui_used = true;
 
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
@@ -677,6 +678,8 @@ QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
 QGuiApplication::~QGuiApplication()
 {
     Q_D(QGuiApplication);
+
+    qt_call_post_routines();
 
     d->eventDispatcher->closingDown();
     d->eventDispatcher = nullptr;
