@@ -1014,6 +1014,24 @@ struct ContainerCapabilitiesImpl<Container, decltype(std::declval<Container>().p
     { static_cast<Container *>(const_cast<void *>(container))->push_back(*static_cast<const typename Container::value_type *>(value)); }
 };
 
+namespace QtPrivate {
+namespace ContainerCapabilitiesMetaProgrammingHelper {
+    template<typename... Ts>
+    using void_t = void;
+}
+}
+
+template<typename Container>
+struct ContainerCapabilitiesImpl<Container, QtPrivate::ContainerCapabilitiesMetaProgrammingHelper::void_t<decltype(std::declval<Container>().insert(std::declval<typename Container::value_type>())), decltype(std::declval<typename Container::value_type>() == std::declval<typename Container::value_type>())>>
+{
+    enum {ContainerCapabilities = ContainerIsAppendable};
+
+    // The code below invokes undefined behavior if and only if the pointer passed into QSequentialIterableImpl
+    // pointed to a const object to begin with
+    static void appendImpl(const void *container, const void *value)
+    { static_cast<Container *>(const_cast<void *>(container))->insert(*static_cast<const typename Container::value_type *>(value)); }
+};
+
 template<typename T, typename Category = typename std::iterator_traits<typename T::const_iterator>::iterator_category>
 struct CapabilitiesImpl;
 
