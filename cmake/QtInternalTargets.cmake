@@ -99,6 +99,12 @@ endif()
 
 target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
+if(APPLE_OSX)
+    target_compile_definitions(PlatformCommonInternal INTERFACE GL_SILENCE_DEPRECATION)
+elseif(APPLE_UIKIT)
+    target_compile_definitions(PlatformCommonInternal INTERFACE GLES_SILENCE_DEPRECATION)
+endif()
+
 if(APPLE_UIKIT)
     # Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for
     # simulator_and_device_builds.
