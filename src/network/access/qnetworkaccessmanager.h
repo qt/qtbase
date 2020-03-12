@@ -92,7 +92,7 @@ public:
     };
 
 #ifndef QT_NO_BEARERMANAGEMENT // ### Qt6: Remove section
-    enum QT_DEPRECATED_VERSION_5_15 NetworkAccessibility {
+    enum QT_DEPRECATED_NETWORK_API_5_15 NetworkAccessibility {
         UnknownAccessibility = -1,
         NotAccessible = 0,
         Accessible = 1
