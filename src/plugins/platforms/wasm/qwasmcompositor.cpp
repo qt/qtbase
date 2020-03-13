@@ -328,11 +328,12 @@ QRect QWasmCompositor::titlebarRect(QWasmTitleBarOptions tb, QWasmCompositor::Su
         }
         break;
     case SC_TitleBarNormalButton:
-        if (isMinimized && (tb.flags & Qt::WindowMinimizeButtonHint))
+        if (isMinimized && (tb.flags & Qt::WindowMinimizeButtonHint)) {
             offset += delta;
-        else if (isMaximized && (tb.flags & Qt::WindowMaximizeButtonHint))
+        } else if (isMaximized && (tb.flags & Qt::WindowMaximizeButtonHint)) {
             ret.adjust(0, 0, -delta*2, 0);
             offset += (delta +delta);
+        }
         break;
     case SC_TitleBarSysMenu:
         if (tb.flags & Qt::WindowSystemMenuHint) {
