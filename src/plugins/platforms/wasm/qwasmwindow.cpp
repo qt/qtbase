@@ -265,6 +265,8 @@ bool QWasmWindow::isPointOnTitle(QPoint point) const
 
 bool QWasmWindow::isPointOnResizeRegion(QPoint point) const
 {
+    if (window()->flags().testFlag(Qt::Popup))
+        return false;
     return resizeRegion().contains(point);
 }
 
@@ -402,7 +404,8 @@ void QWasmWindow::requestUpdate()
 
 bool QWasmWindow::hasTitleBar() const
 {
-    return !(m_windowState & Qt::WindowFullScreen) && (window()->flags().testFlag(Qt::WindowTitleHint) && m_needsCompositor);
+    return !(m_windowState & Qt::WindowFullScreen) && (window()->flags().testFlag(Qt::WindowTitleHint) && m_needsCompositor)
+            && !window()->flags().testFlag(Qt::Popup);
 }
 
 QT_END_NAMESPACE
