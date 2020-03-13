@@ -6490,6 +6490,9 @@ void tst_QNetworkReply::sslSessionSharing()
     QNetworkRequest warmupRequest(urlString);
     QFETCH(bool, sessionSharingEnabled);
     warmupRequest.setAttribute(QNetworkRequest::User, sessionSharingEnabled); // so we can read it from the slot
+    // Make sure the socket is closed when the request is finished to guarantee that
+    // the _socket_ is not reused, but rather the ssl session
+    warmupRequest.setRawHeader("Connection", "close");
     if (! sessionSharingEnabled) {
         QSslConfiguration configuration(QSslConfiguration::defaultConfiguration());
         configuration.setSslOption(QSsl::SslOptionDisableSessionSharing, true);
