@@ -121,8 +121,9 @@ void QNetworkAccessCache::clear()
     NodeHash::Iterator it = hashCopy.begin();
     NodeHash::Iterator end = hashCopy.end();
     for ( ; it != end; ++it) {
-        it->object->key.clear();
-        it->object->dispose();
+        (*it)->object->key.clear();
+        (*it)->object->dispose();
+        delete (*it);
     }
 
     // now delete:
@@ -139,11 +140,10 @@ void QNetworkAccessCache::clear()
  */
 void QNetworkAccessCache::linkEntry(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
-    if (it == hash.end())
+    Node * const node = hash.value(key);
+    if (!node)
         return;
 
-    Node *const node = &it.value();
     Q_ASSERT(node != oldest && node != newest);
     Q_ASSERT(node->older == nullptr && node->newer == nullptr);
     Q_ASSERT(node->useCount == 0);
@@ -168,11 +168,9 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
  */
 bool QNetworkAccessCache::unlinkEntry(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
-    if (it == hash.end())
+    Node * const node = hash.value(key);
+    if (!node)
         return false;
-
-    Node *const node = &it.value();
 
     bool wasOldest = false;
     if (node == oldest) {
@@ -230,6 +228,7 @@ void QNetworkAccessCache::timerEvent(QTimerEvent *)
         oldest->object->dispose();
 
         hash.remove(oldest->key); // oldest gets deleted
+        delete oldest;
         oldest = next;
     }
 
@@ -249,16 +248,20 @@ void QNetworkAccessCache::addEntry(const QByteArray &key, CacheableObject *entry
     if (unlinkEntry(key))
         updateTimer();
 
-    Node &node = hash[key];     // create the entry in the hash if it didn't exist
-    if (node.useCount)
-        qWarning("QNetworkAccessCache::addEntry: overriding active cache entry '%s'",
-                 key.constData());
-    if (node.object)
-        node.object->dispose();
-    node.object = entry;
-    node.object->key = key;
-    node.key = key;
-    node.useCount = 1;
+    Node *node = hash.value(key);
+    if (!node) {
+        node = new Node;
+        hash.insert(key, node);
+    }
+
+    if (node->useCount)
+        qWarning("QNetworkAccessCache::addEntry: overriding active cache entry '%s'", key.constData());
+    if (node->object)
+        node->object->dispose();
+    node->object = entry;
+    node->object->key = key;
+    node->key = key;
+    node->useCount = 1;
 }
 
 bool QNetworkAccessCache::hasEntry(const QByteArray &key) const
@@ -268,11 +271,9 @@ bool QNetworkAccessCache::hasEntry(const QByteArray &key) const
 
 bool QNetworkAccessCache::requestEntry(const QByteArray &key, QObject *target, const char *member)
 {
-    NodeHash::Iterator it = hash.find(key);
-    if (it == hash.end())
-        return false;           // no such entry
-
-    Node *node = &it.value();
+    Node *node = hash.value(key);
+    if (!node)
+        return false;
 
     if (node->useCount > 0 && !node->object->shareable) {
         // object is not shareable and is in use
@@ -294,13 +295,14 @@ bool QNetworkAccessCache::requestEntry(const QByteArray &key, QObject *target, c
 
 QNetworkAccessCache::CacheableObject *QNetworkAccessCache::requestEntryNow(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
-    if (it == hash.end())
+    Node *node = hash.value(key);
+    if (!node)
         return nullptr;
-    if (it->useCount > 0) {
-        if (it->object->shareable) {
-            ++it->useCount;
-            return it->object;
+
+    if (node->useCount > 0) {
+        if (node->object->shareable) {
+            ++node->useCount;
+            return node->object;
         }
 
         // object in use and not shareable
@@ -309,23 +311,21 @@ QNetworkAccessCache::CacheableObject *QNetworkAccessCache::requestEntryNow(const
 
     // entry not in use, let the caller have it
     bool wasOldest = unlinkEntry(key);
-    ++it->useCount;
+    ++node->useCount;
 
     if (wasOldest)
         updateTimer();
-    return it->object;
+    return node->object;
 }
 
 void QNetworkAccessCache::releaseEntry(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
-    if (it == hash.end()) {
-        qWarning("QNetworkAccessCache::releaseEntry: trying to release key '%s' that is not in cache",
-                 key.constData());
+    Node *node = hash.value(key);
+    if (!node) {
+        qWarning("QNetworkAccessCache::releaseEntry: trying to release key '%s' that is not in cache", key.constData());
         return;
     }
 
-    Node *node = &it.value();
     Q_ASSERT(node->useCount > 0);
 
     // are there other objects waiting?
@@ -356,14 +356,12 @@ void QNetworkAccessCache::releaseEntry(const QByteArray &key)
 
 void QNetworkAccessCache::removeEntry(const QByteArray &key)
 {
-    NodeHash::Iterator it = hash.find(key);
-    if (it == hash.end()) {
-        qWarning("QNetworkAccessCache::removeEntry: trying to remove key '%s' that is not in cache",
-                 key.constData());
+    Node *node = hash.value(key);
+    if (!node) {
+        qWarning("QNetworkAccessCache::removeEntry: trying to remove key '%s' that is not in cache", key.constData());
         return;
     }
 
-    Node *node = &it.value();
     if (unlinkEntry(key))
         updateTimer();
     if (node->useCount > 1)
@@ -372,6 +370,7 @@ void QNetworkAccessCache::removeEntry(const QByteArray &key)
 
     node->object->key.clear();
     hash.remove(node->key);
+    delete node;
 }
 
 QT_END_NAMESPACE

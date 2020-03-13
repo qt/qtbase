@@ -71,7 +71,7 @@ class QNetworkAccessCache: public QObject
     Q_OBJECT
 public:
     struct Node;
-    typedef QHash<QByteArray, Node> NodeHash;
+    typedef QHash<QByteArray, Node *> NodeHash;
 
     class CacheableObject
     {
