@@ -167,12 +167,14 @@ void tst_rcc::rcc_data()
     QTest::addColumn<QString>("expected");
 
     const QString imagesPath = m_dataPath + QLatin1String("/images");
-    QTest::newRow("images") << imagesPath << "images.qrc" << "images.expected";
+    QTest::newRow("images") << imagesPath << "images.qrc" <<
+                               (sizeof(size_t) == 8 ? "images.expected" : "images.expected32");
 
     const QString sizesPath = m_dataPath + QLatin1String("/sizes");
     QTest::newRow("size-0") << sizesPath << "size-0.qrc" << "size-0.expected";
     QTest::newRow("size-1") << sizesPath << "size-1.qrc" << "size-1.expected";
-    QTest::newRow("size-2-0-35-1") << sizesPath << "size-2-0-35-1.qrc" << "size-2-0-35-1.expected";
+    QTest::newRow("size-2-0-35-1") << sizesPath << "size-2-0-35-1.qrc" <<
+                                      (sizeof(size_t) == 8 ? "size-2-0-35-1.expected" : "size-2-0-35-1.expected32");
 }
 
 static QStringList readLinesFromFile(const QString &fileName,
@@ -425,7 +427,8 @@ void tst_rcc::depFileGeneration_data()
     QTest::addColumn<QString>("depfile");
     QTest::addColumn<QString>("expected");
 
-    QTest::newRow("simple") << "simple.qrc" << "simple.d" << "simple.d.expected";
+    QTest::newRow("simple") << "simple.qrc" << "simple.d"
+                            << (sizeof(size_t) == 8 ? "simple.d.expected" : "simple.d.expected32");
     QTest::newRow("specialchar") << "specialchar.qrc" << "specialchar.d" << "specialchar.d.expected";
 }
 
@@ -467,7 +470,9 @@ void tst_rcc::python()
     const QString path = m_dataPath + QLatin1String("/sizes");
     const QString testFileRoot = path + QLatin1String("/size-2-0-35-1");
     const QString qrcFile = testFileRoot + QLatin1String(".qrc");
-    const QString expectedFile = testFileRoot + QLatin1String("_python.expected");
+    QString expectedFile = testFileRoot + QLatin1String("_python.expected");
+    if (sizeof(size_t) == 4)
+        expectedFile += QLatin1String("32");
     const QString actualFile = testFileRoot + QLatin1String(".rcc");
 
     QProcess process;

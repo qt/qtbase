@@ -486,19 +486,19 @@ void tst_QDBusXmlParser::properties_data()
     prop.type = "s";
     prop.access = QDBusIntrospection::Property::Read;
     map << prop;
-    QTest::newRow("one-readable") << "<property name=\"foo\" type=\"s\" access=\"read\"/>" << map;
+    QTest::newRow("one-readable") << "<property access=\"read\" type=\"s\" name=\"foo\" />" << map;
 
     // one writable signal
     prop.access = QDBusIntrospection::Property::Write;
     map.clear();
     map << prop;
-    QTest::newRow("one-writable") << "<property name=\"foo\" type=\"s\" access=\"write\"/>" << map;
+    QTest::newRow("one-writable") << "<property access=\"write\" type=\"s\" name=\"foo\"/>" << map;
 
     // one read- & writable signal
     prop.access = QDBusIntrospection::Property::ReadWrite;
     map.clear();
     map << prop;
-    QTest::newRow("one-read-writable") << "<property name=\"foo\" type=\"s\" access=\"readwrite\"/>"
+    QTest::newRow("one-read-writable") << "<property access=\"readwrite\" type=\"s\" name=\"foo\"/>"
                                        << map;
 
     // two, mixed properties
@@ -507,13 +507,13 @@ void tst_QDBusXmlParser::properties_data()
     prop.access = QDBusIntrospection::Property::Read;
     map << prop;
     QTest::newRow("two-1") <<
-        "<property name=\"foo\" type=\"s\" access=\"readwrite\"/>"
-        "<property name=\"bar\" type=\"i\" access=\"read\"/>" << map;
+        "<property access=\"readwrite\" type=\"s\" name=\"foo\"/>"
+        "<property access=\"read\" type=\"i\" name=\"bar\"/>" << map;
 
     // invert the order of the declaration
     QTest::newRow("two-2") <<
-        "<property name=\"bar\" type=\"i\" access=\"read\"/>"
-        "<property name=\"foo\" type=\"s\" access=\"readwrite\"/>" << map;
+        "<property access=\"read\" type=\"i\" name=\"bar\"/>"
+        "<property access=\"readwrite\" type=\"s\" name=\"foo\"/>" << map;
 
     // add a third with annotations
     prop.name = "baz";
@@ -523,21 +523,21 @@ void tst_QDBusXmlParser::properties_data()
     prop.annotations.insert("foo.annotation2", "Goodbye, World");
     map << prop;
     QTest::newRow("complex") <<
-        "<property name=\"bar\" type=\"i\" access=\"read\"/>"
-        "<property name=\"baz\" type=\"as\" access=\"write\">"
+        "<property access=\"read\" type=\"i\" name=\"bar\"/>"
+        "<property access=\"write\" type=\"as\" name=\"baz\">"
         "<annotation name=\"foo.annotation\" value=\"Hello, World\" />"
         "<annotation name=\"foo.annotation2\" value=\"Goodbye, World\" />"
         "</property>"
-        "<property name=\"foo\" type=\"s\" access=\"readwrite\"/>" << map;
+        "<property access=\"readwrite\" type=\"s\" name=\"foo\"/>" << map;
 
     // and now change the order
     QTest::newRow("complex2") <<
-        "<property name=\"baz\" type=\"as\" access=\"write\">"
+        "<property access=\"write\" type=\"as\" name=\"baz\">"
         "<annotation name=\"foo.annotation2\" value=\"Goodbye, World\" />"
         "<annotation name=\"foo.annotation\" value=\"Hello, World\" />"
         "</property>"
-        "<property name=\"bar\" type=\"i\" access=\"read\"/>"
-        "<property name=\"foo\" type=\"s\" access=\"readwrite\"/>" << map;
+        "<property access=\"read\" type=\"i\" name=\"bar\"/>"
+        "<property access=\"readwrite\" type=\"s\" name=\"foo\"/>" << map;
 }
 
 void tst_QDBusXmlParser::properties()
