@@ -341,6 +341,12 @@ public:
         Script_NyiakengPuachueHmong,
         Script_Wancho,
 
+        // Unicode 13.0 additions
+        Script_Chorasmian,
+        Script_DivesAkuru,
+        Script_KhitanSmallScript,
+        Script_Yezidi,
+
         ScriptCount
     };
 
@@ -437,7 +443,8 @@ public:
         Unicode_10_0,
         Unicode_11_0,
         Unicode_12_0,
-        Unicode_12_1
+        Unicode_12_1,
+        Unicode_13_0
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 
