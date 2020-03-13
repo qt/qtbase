@@ -19,7 +19,7 @@ instructions:
     variableValue: "-DBUILD_TESTING=OFF {{.SourceDir}}"
   - !include "{{qt/qtbase}}/call_host_cmake.yaml"
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel"
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
@@ -51,7 +51,7 @@ instructions:
     variableValue: "-DBUILD_TESTING=OFF {{.SourceDir}}"
   - !include "{{qt/qtbase}}/call_target_cmake.yaml"
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel"
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >

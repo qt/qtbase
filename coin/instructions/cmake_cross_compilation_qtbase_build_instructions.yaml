@@ -22,7 +22,7 @@ instructions:
     userMessageOnFailure: >
       Failed to call cmake.
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel"
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
@@ -57,7 +57,7 @@ instructions:
     userMessageOnFailure: >
       Failed to call cmake.
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel"
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
