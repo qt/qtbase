@@ -1219,7 +1219,7 @@ function(qt_extend_target target)
         set(target_private "${target}Private")
         if(TARGET "${target_private}")
           target_link_libraries("${target_private}"
-                                INTERFACE "${target}" ${arg_PRIVATE_MODULE_INTERFACE})
+                                INTERFACE ${arg_PRIVATE_MODULE_INTERFACE})
         endif()
         qt_register_target_dependencies("${target}"
                                         "${arg_PUBLIC_LIBRARIES}"
@@ -2054,6 +2054,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 
     if(NOT ${arg_NO_PRIVATE_MODULE})
         target_include_directories("${target_private}" INTERFACE ${interface_includes})
+        target_link_libraries("${target_private}" INTERFACE "${target}")
     endif()
 
     if(is_framework AND NOT is_interface_lib)
