@@ -57,7 +57,6 @@
 #  include "qharfbuzzng_p.h"
 #  include <harfbuzz/hb-ot.h>
 #endif
-#include <private/qharfbuzz_p.h>
 
 #include <algorithm>
 #include <limits.h>
@@ -102,75 +101,6 @@ bool qt_useHarfbuzzNG()
 }
 #endif
 
-Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
-Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
-
-static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint32 length, HB_Glyph *glyphs, hb_uint32 *numGlyphs, HB_Bool rightToLeft)
-{
-    QFontEngine *fe = (QFontEngine *)font->userData;
-
-    const QChar *str = reinterpret_cast<const QChar *>(string);
-
-    QGlyphLayout qglyphs;
-    qglyphs.numGlyphs = *numGlyphs;
-    qglyphs.glyphs = glyphs;
-    int nGlyphs = *numGlyphs;
-    bool result = fe->stringToCMap(str, length, &qglyphs, &nGlyphs, QFontEngine::GlyphIndicesOnly);
-    *numGlyphs = nGlyphs;
-
-    if (rightToLeft && result && !fe->symbol) {
-        QStringIterator it(str, str + length);
-        while (it.hasNext()) {
-            const uint ucs4 = it.next();
-            const uint mirrored = QChar::mirroredChar(ucs4);
-            if (Q_UNLIKELY(mirrored != ucs4))
-                *glyphs = fe->glyphIndex(mirrored);
-            ++glyphs;
-        }
-    }
-
-    return result;
-}
-
-static void hb_getAdvances(HB_Font font, const HB_Glyph *glyphs, hb_uint32 numGlyphs, HB_Fixed *advances, int flags)
-{
-    QFontEngine *fe = (QFontEngine *)font->userData;
-
-    QGlyphLayout qglyphs;
-    qglyphs.numGlyphs = numGlyphs;
-    qglyphs.glyphs = const_cast<glyph_t *>(glyphs);
-    qglyphs.advances = reinterpret_cast<QFixed *>(advances);
-
-    fe->recalcAdvances(&qglyphs, (flags & HB_ShaperFlag_UseDesignMetrics) ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags{});
-}
-
-static HB_Bool hb_canRender(HB_Font font, const HB_UChar16 *string, hb_uint32 length)
-{
-    QFontEngine *fe = (QFontEngine *)font->userData;
-    return fe->canRender(reinterpret_cast<const QChar *>(string), length);
-}
-
-static void hb_getGlyphMetrics(HB_Font font, HB_Glyph glyph, HB_GlyphMetrics *metrics)
-{
-    QFontEngine *fe = (QFontEngine *)font->userData;
-    glyph_metrics_t m = fe->boundingBox(glyph);
-    metrics->x = m.x.value();
-    metrics->y = m.y.value();
-    metrics->width = m.width.value();
-    metrics->height = m.height.value();
-    metrics->xOffset = m.xoff.value();
-    metrics->yOffset = m.yoff.value();
-}
-
-static HB_Fixed hb_getFontMetric(HB_Font font, HB_FontMetric metric)
-{
-    if (metric == HB_FontAscent) {
-        QFontEngine *fe = (QFontEngine *)font->userData;
-        return fe->ascent().value();
-    }
-    return 0;
-}
-
 int QFontEngine::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints)
 {
     Q_UNUSED(glyph)
@@ -181,36 +111,6 @@ int QFontEngine::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFix
     Q_UNUSED(nPoints)
     return Err_Not_Covered;
 }
-
-static HB_Error hb_getPointInOutline(HB_Font font, HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
-{
-    QFontEngine *fe = (QFontEngine *)font->userData;
-    return (HB_Error)fe->getPointInOutline(glyph, flags, point, (QFixed *)xpos, (QFixed *)ypos, (quint32 *)nPoints);
-}
-
-static const HB_FontClass hb_fontClass = {
-    hb_stringToGlyphs, hb_getAdvances, hb_canRender, hb_getPointInOutline,
-    hb_getGlyphMetrics, hb_getFontMetric
-};
-
-static HB_Error hb_getSFntTable(void *font, HB_Tag tableTag, HB_Byte *buffer, HB_UInt *length)
-{
-    QFontEngine::FaceData *data = (QFontEngine::FaceData *)font;
-    Q_ASSERT(data);
-
-    qt_get_font_table_func_t get_font_table = data->get_font_table;
-    Q_ASSERT(get_font_table);
-
-    if (!get_font_table(data->user_data, tableTag, buffer, length))
-        return HB_Err_Invalid_Argument;
-    return HB_Err_Ok;
-}
-
-static void hb_freeFace(void *face)
-{
-    qHBFreeFace((HB_Face)face);
-}
-
 
 static bool qt_get_font_table_default(void *user_data, uint tag, uchar *buffer, uint *length)
 {
@@ -301,32 +201,7 @@ void *QFontEngine::harfbuzzFont() const
     if (qt_useHarfbuzzNG())
         return hb_qt_font_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
-    if (!font_) {
-        HB_Face hbFace = (HB_Face)harfbuzzFace();
-        if (hbFace->font_for_init) {
-            void *data = hbFace->font_for_init;
-            q_check_ptr(qHBLoadFace(hbFace));
-            free(data);
-        }
-
-        HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
-        Q_CHECK_PTR(hbFont);
-        hbFont->klass = &hb_fontClass;
-        hbFont->userData = const_cast<QFontEngine *>(this);
-
-        qint64 emSquare = emSquareSize().truncate();
-        Q_ASSERT(emSquare == emSquareSize().toInt()); // ensure no truncation
-        if (emSquare == 0)
-            emSquare = 1000; // a fallback value suitable for Type1 fonts
-        hbFont->y_ppem = fontDef.pixelSize;
-        hbFont->x_ppem = fontDef.pixelSize * fontDef.stretch / 100;
-        // same as QFixed(x)/QFixed(emSquare) but without int32 overflow for x
-        hbFont->x_scale = (((qint64)hbFont->x_ppem << 6) * 0x10000L + (emSquare >> 1)) / emSquare;
-        hbFont->y_scale = (((qint64)hbFont->y_ppem << 6) * 0x10000L + (emSquare >> 1)) / emSquare;
-
-        font_ = Holder(hbFont, free);
-    }
-    return font_.get();
+    return nullptr;
 }
 
 void *QFontEngine::harfbuzzFace() const
@@ -336,19 +211,7 @@ void *QFontEngine::harfbuzzFace() const
     if (qt_useHarfbuzzNG())
         return hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
-    if (!face_) {
-        QFontEngine::FaceData *data = (QFontEngine::FaceData *)malloc(sizeof(QFontEngine::FaceData));
-        Q_CHECK_PTR(data);
-        data->user_data = faceData.user_data;
-        data->get_font_table = faceData.get_font_table;
-
-        HB_Face hbFace = qHBNewFace(data, hb_getSFntTable);
-        Q_CHECK_PTR(hbFace);
-        hbFace->isSymbolFont = symbol;
-
-        face_ = Holder(hbFace, hb_freeFace);
-    }
-    return face_.get();
+    return nullptr;
 }
 
 bool QFontEngine::supportsScript(QChar::Script script) const
@@ -387,13 +250,7 @@ bool QFontEngine::supportsScript(QChar::Script script) const
         return ret;
     }
 #endif
-    HB_Face hbFace = (HB_Face)harfbuzzFace();
-    if (hbFace->font_for_init) {
-        void *data = hbFace->font_for_init;
-        q_check_ptr(qHBLoadFace(hbFace));
-        free(data);
-    }
-    return hbFace->supported_scripts[script_to_hbscript(script)];
+    return false;
 }
 
 bool QFontEngine::canRender(const QChar *str, int len) const
