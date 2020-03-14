@@ -792,7 +792,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 //
 // ----------------------------------------------------------------------------
 
-Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
+Q_CORE_EXPORT void initScripts(const ushort *string, int length, ScriptItemArray *scripts)
 {
     int sor = 0;
     int eor = 0;
@@ -832,7 +832,7 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
 
         Q_ASSERT(script > QChar::Script_Common);
         Q_ASSERT(sor < eor);
-        ::memset(scripts + sor, script, (eor - sor) * sizeof(uchar));
+        scripts->append(ScriptItem{sor, script});
         sor = eor;
 
         script = nscript;
@@ -840,7 +840,7 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
 
     Q_ASSERT(script >= QChar::Script_Common);
     Q_ASSERT(eor == length);
-    ::memset(scripts + sor, script, (eor - sor) * sizeof(uchar));
+    scripts->append(ScriptItem{sor, script});
 }
 
 } // namespace QUnicodeTools

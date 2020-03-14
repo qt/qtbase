@@ -53,6 +53,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qchar.h>
+#include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,12 +72,13 @@ Q_DECLARE_TYPEINFO(QCharAttributes, Q_PRIMITIVE_TYPE);
 
 namespace QUnicodeTools {
 
-// ### temporary
 struct ScriptItem
 {
     int position;
     int script;
 };
+
+using ScriptItemArray = QVarLengthArray<ScriptItem, 64>;
 
 } // namespace QUnicodeTools
 Q_DECLARE_TYPEINFO(QUnicodeTools::ScriptItem, Q_PRIMITIVE_TYPE);
@@ -101,7 +103,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
                                       QCharAttributes *attributes, CharAttributeOptions options = DefaultOptionsCompat);
 
 
-Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts);
+Q_CORE_EXPORT void initScripts(const ushort *string, int length, ScriptItemArray *scripts);
 
 } // namespace QUnicodeTools
 

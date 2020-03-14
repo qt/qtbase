@@ -53,23 +53,8 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
 {
     const ushort *string = reinterpret_cast<const ushort *>(chars);
 
-    QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems;
-    {
-        QVarLengthArray<uchar> scripts(length);
-
-        QUnicodeTools::initScripts(string, length, scripts.data());
-
-        int start = 0;
-        for (int i = start + 1; i <= length; ++i) {
-            if (i == length || scripts[i] != scripts[start]) {
-                QUnicodeTools::ScriptItem item;
-                item.position = start;
-                item.script = scripts[start];
-                scriptItems.append(item);
-                start = i;
-            }
-        }
-    }
+    QUnicodeTools::ScriptItemArray scriptItems;
+    QUnicodeTools::initScripts(string, length, &scriptItems);
 
     QUnicodeTools::CharAttributeOptions options;
     switch (type) {

@@ -2098,10 +2098,14 @@ void QTextEngine::itemize() const
     layoutData->hasBidi = bidi.process();
 
     {
-        QVarLengthArray<uchar> scripts(length);
-        QUnicodeTools::initScripts(string, length, scripts.data());
-        for (int i = 0; i < length; ++i)
-            analysis[i].script = scripts.at(i);
+        QUnicodeTools::ScriptItemArray scriptItems;
+        QUnicodeTools::initScripts(string, length, &scriptItems);
+        for (int i = 0; i < scriptItems.length(); ++i) {
+            const auto &item = scriptItems.at(i);
+            int end = i < scriptItems.length() - 1 ? scriptItems.at(i + 1).position : length;
+            for (int j = item.position; j < end; ++j)
+                analysis[j].script = item.script;
+        }
     }
 
     const ushort *uc = string;
