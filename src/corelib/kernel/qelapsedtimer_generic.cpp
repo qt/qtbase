@@ -81,7 +81,8 @@ void QElapsedTimer::start() noexcept
 }
 
 /*!
-    Restarts the timer and returns the time elapsed since the previous start.
+    Restarts the timer and returns the number of milliseconds elapsed since
+    the previous start.
     This function is equivalent to obtaining the elapsed time with elapsed()
     and then starting the timer again with start(), but it does so in one
     single operation, avoiding the need to obtain the clock value twice.
