@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -75,7 +75,7 @@ namespace QUnicodeTools {
 struct ScriptItem
 {
     int position;
-    int script;
+    QChar::Script script;
 };
 
 using ScriptItemArray = QVarLengthArray<ScriptItem, 64>;

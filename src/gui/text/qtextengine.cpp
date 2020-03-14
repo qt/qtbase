@@ -1985,7 +1985,7 @@ const QCharAttributes *QTextEngine::attributes() const
     for (int i = 0; i < layoutData->items.size(); ++i) {
         const QScriptItem &si = layoutData->items.at(i);
         scriptItems[i].position = si.position;
-        scriptItems[i].script = si.analysis.script;
+        scriptItems[i].script = QChar::Script(si.analysis.script);
     }
 
     QUnicodeTools::initCharAttributes(reinterpret_cast<const ushort *>(layoutData->string.constData()),
