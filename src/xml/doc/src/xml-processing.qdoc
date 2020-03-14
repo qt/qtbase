@@ -72,7 +72,6 @@
     \title An Introduction to Namespaces
     \target namespaces
 
-    \contentspage XML Processing
     \nextpage XML Streaming
 
     Parts of the Qt XML module documentation assume that you are familiar
@@ -211,7 +210,6 @@
     \title XML Streaming
 
     \previouspage An Introduction to Namespaces
-    \contentspage XML Processing
     \nextpage The SAX Interface
 
     Since version 4.3, Qt provides two new classes for reading and
@@ -290,7 +288,6 @@
     \title The SAX interface
 
     \previouspage XML Streaming
-    \contentspage XML Processing
     \nextpage Working with the DOM Tree
 
     SAX is an event-based standard interface for XML parsers.
@@ -520,7 +517,6 @@
     \target dom
 
     \previouspage The SAX Interface
-    \contentspage XML Processing
 
     DOM Level 2 is a W3C Recommendation for XML interfaces that maps the
     constituents of an XML document to a tree structure. The specification

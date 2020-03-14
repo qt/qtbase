@@ -79,7 +79,6 @@
     \page qdbusdeclaringslots.html
     \title Declaring Slots in D-Bus Adaptors
 
-    \contentspage Using Qt D-Bus Adaptors
     \nextpage Declaring Signals in D-Bus Adaptors
 
     Slots in D-Bus adaptors are declared just like normal, public slots, but their
@@ -211,7 +210,6 @@
     \title Declaring Signals in D-Bus Adaptors
 
     \previouspage Declaring Slots in D-Bus Adaptors
-    \contentspage Using Qt D-Bus Adaptors
     \nextpage The Qt D-Bus Type System
 
     Any signal in a class derived from QDBusAbstractAdaptor will be automatically
@@ -240,7 +238,6 @@
     \title The Qt D-Bus Type System
 
     \previouspage Declaring Signals in D-Bus Adaptors
-    \contentspage Using Qt D-Bus Adaptors
 
     D-Bus has an extensible type system based on a few primitives and
     composition of the primitives in arrays and structures. Qt D-Bus

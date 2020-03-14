@@ -39,7 +39,6 @@
     \brief An overview over dialog windows.
 
     \previouspage Application Main Window
-    \contentspage Application Windows and Dialogs
     \nextpage Desktop Integration
 
     Dialogs can be \e{modal}, in which case the user is required to provide

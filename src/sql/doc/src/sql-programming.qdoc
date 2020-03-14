@@ -105,7 +105,6 @@
     \page sql-connecting.html
     \title Connecting to Databases
 
-    \contentspage SQL Programming
     \previouspage SQL Programming
     \nextpage Executing SQL Statements
 
@@ -175,7 +174,6 @@
     \title Executing SQL Statements
 
     \previouspage Connecting to Databases
-    \contentspage SQL Programming
     \nextpage Using the SQL Model Classes
 
 
@@ -325,7 +323,6 @@
     \title Using the SQL Model Classes
 
     \previouspage Executing SQL Statements
-    \contentspage SQL Programming
     \nextpage Presenting Data in a Table View
 
     In addition to QSqlQuery, Qt offers three higher-level classes
@@ -471,7 +468,6 @@
     \title Presenting Data in a Table View
 
     \previouspage Using the SQL Model Classes
-    \contentspage SQL Programming
     \nextpage Creating Data-Aware Forms
 
     The QSqlQueryModel, QSqlTableModel, and QSqlRelationalTableModel
@@ -575,7 +571,6 @@
     \title Creating Data-Aware Forms
 
     \previouspage Presenting Data in a Table View
-    \contentspage SQL Programming
 
     Using the SQL models described above, the contents of a database can
     be presented to other model/view components. For some applications,

@@ -35,7 +35,6 @@
     \ingroup qt-gui-concepts
 
     \previouspage {Styles and Style Aware Widgets}{Styles}
-    \contentspage Widgets and Layouts
     \nextpage The Style Sheet Syntax
 
     \keyword style sheet
@@ -139,7 +138,6 @@
 
 /*!
     \page stylesheet-syntax.html
-    \contentspage {Qt Style Sheets}{Contents}
     \previouspage Qt Style Sheets
     \nextpage Qt Designer Integration
     \title The Style Sheet Syntax
@@ -562,7 +560,6 @@
 
 /*!
     \page stylesheet-designer.html
-    \contentspage {Qt Style Sheets}{Contents}
     \previouspage The Style Sheet Syntax
     \nextpage Customizing Qt Widgets Using Style Sheets
     \title Qt Designer Integration
@@ -588,7 +585,6 @@
 
 /*!
     \page stylesheet-customizing.html
-    \contentspage {Qt Style Sheets}{Contents}
     \previouspage Qt Designer Integration
     \nextpage Qt Style Sheets Reference
     \title Customizing Qt Widgets Using Style Sheets
@@ -692,7 +688,6 @@
 
 /*!
     \page stylesheet-reference.html
-    \contentspage {Qt Style Sheets}{Contents}
     \previouspage Customizing Qt Widgets Using Style Sheets
     \nextpage Qt Style Sheets Examples
     \title Qt Style Sheets Reference
@@ -3506,7 +3501,6 @@
 
 /*!
     \page stylesheet-examples.html
-    \contentspage {Qt Style Sheets}{Contents}
     \previouspage Qt Style Sheets Reference
     \title Qt Style Sheets Examples
 
