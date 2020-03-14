@@ -1510,7 +1510,12 @@ void QTextEngine::shapeText(int item) const
         itemBoundaries.append(0);
     }
 
-    if (Q_UNLIKELY(!shapingEnabled)) {
+#if QT_CONFIG(harfbuzz)
+    if (Q_LIKELY(shapingEnabled && qt_useHarfbuzzNG())) {
+        si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled, letterSpacing != 0);
+    } else
+#endif
+    {
         ushort *log_clusters = logClusters(&si);
 
         int glyph_pos = 0;
@@ -1540,12 +1545,6 @@ void QTextEngine::shapeText(int item) const
         }
 
         si.num_glyphs = glyph_pos;
-#if QT_CONFIG(harfbuzz)
-    } else if (Q_LIKELY(qt_useHarfbuzzNG())) {
-        si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled, letterSpacing != 0);
-#endif
-    } else {
-        si.num_glyphs = shapeTextWithHarfbuzz(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled);
     }
     if (Q_UNLIKELY(si.num_glyphs == 0)) {
         Q_UNREACHABLE(); // ### report shaping errors somehow
@@ -1800,138 +1799,6 @@ QT_WARNING_POP
 
 #endif // harfbuzz
 
-
-QT_BEGIN_INCLUDE_NAMESPACE
-
-#include <private/qharfbuzz_p.h>
-
-QT_END_INCLUDE_NAMESPACE
-
-Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
-Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
-Q_STATIC_ASSERT(sizeof(HB_FixedPoint) == sizeof(QFixedPoint));
-
-static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLayout &source, int num)
-{
-    if (num > 0 && destination.glyphs != source.glyphs)
-        memmove(destination.glyphs, source.glyphs, num * sizeof(glyph_t));
-}
-
-int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *string, int itemLength, QFontEngine *fontEngine, const QVector<uint> &itemBoundaries, bool kerningEnabled) const
-{
-    HB_ShaperItem entire_shaper_item;
-    memset(&entire_shaper_item, 0, sizeof(entire_shaper_item));
-    entire_shaper_item.string = reinterpret_cast<const HB_UChar16 *>(string);
-    entire_shaper_item.stringLength = itemLength;
-    entire_shaper_item.item.script = script_to_hbscript(si.analysis.script);
-    entire_shaper_item.item.pos = 0;
-    entire_shaper_item.item.length = itemLength;
-    entire_shaper_item.item.bidiLevel = si.analysis.bidiLevel;
-
-    entire_shaper_item.shaperFlags = 0;
-    if (!kerningEnabled)
-        entire_shaper_item.shaperFlags |= HB_ShaperFlag_NoKerning;
-    if (option.useDesignMetrics())
-        entire_shaper_item.shaperFlags |= HB_ShaperFlag_UseDesignMetrics;
-
-    // ensure we are not asserting in HB_HeuristicSetGlyphAttributes()
-    entire_shaper_item.num_glyphs = 0;
-    for (int i = 0; i < itemLength; ++i, ++entire_shaper_item.num_glyphs) {
-        if (QChar::isHighSurrogate(string[i]) && i + 1 < itemLength && QChar::isLowSurrogate(string[i + 1]))
-            ++i;
-    }
-
-
-    int remaining_glyphs = entire_shaper_item.num_glyphs;
-    int glyph_pos = 0;
-    // for each item shape using harfbuzz and store the results in our layoutData's glyphs array.
-    for (int k = 0; k < itemBoundaries.size(); k += 3) {
-        HB_ShaperItem shaper_item = entire_shaper_item;
-        shaper_item.item.pos = itemBoundaries[k];
-        if (k + 4 < itemBoundaries.size()) {
-            shaper_item.item.length = itemBoundaries[k + 3] - shaper_item.item.pos;
-            shaper_item.num_glyphs = itemBoundaries[k + 4] - itemBoundaries[k + 1];
-        } else { // last combo in the list, avoid out of bounds access.
-            shaper_item.item.length -= shaper_item.item.pos - entire_shaper_item.item.pos;
-            shaper_item.num_glyphs -= itemBoundaries[k + 1];
-        }
-        shaper_item.initialGlyphCount = shaper_item.num_glyphs;
-        if (shaper_item.num_glyphs < shaper_item.item.length)
-            shaper_item.num_glyphs = shaper_item.item.length;
-
-        uint engineIdx = itemBoundaries[k + 2];
-        QFontEngine *actualFontEngine = fontEngine;
-        if (fontEngine->type() == QFontEngine::Multi) {
-            actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
-
-            if ((si.analysis.bidiLevel % 2) == 0)
-                shaper_item.glyphIndicesPresent = true;
-        }
-
-        shaper_item.font = (HB_Font)actualFontEngine->harfbuzzFont();
-        shaper_item.face = (HB_Face)actualFontEngine->harfbuzzFace();
-
-        remaining_glyphs -= shaper_item.initialGlyphCount;
-
-        QVarLengthArray<HB_GlyphAttributes, 128> hbGlyphAttributes;
-        do {
-            if (!ensureSpace(glyph_pos + shaper_item.num_glyphs + remaining_glyphs))
-                return 0;
-            if (hbGlyphAttributes.size() < int(shaper_item.num_glyphs)) {
-                hbGlyphAttributes.resize(shaper_item.num_glyphs);
-                memset(hbGlyphAttributes.data(), 0, hbGlyphAttributes.size() * sizeof(HB_GlyphAttributes));
-            }
-
-            const QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos);
-            if (fontEngine->type() == QFontEngine::Multi && shaper_item.num_glyphs > shaper_item.item.length)
-                moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
-
-            shaper_item.glyphs = reinterpret_cast<HB_Glyph *>(g.glyphs);
-            shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances);
-            shaper_item.offsets = reinterpret_cast<HB_FixedPoint *>(g.offsets);
-            shaper_item.attributes = hbGlyphAttributes.data();
-
-            if (engineIdx != 0 && shaper_item.glyphIndicesPresent) {
-                for (quint32 i = 0; i < shaper_item.initialGlyphCount; ++i)
-                    shaper_item.glyphs[i] &= 0x00ffffff;
-            }
-
-            shaper_item.log_clusters = logClusters(&si) + shaper_item.item.pos - entire_shaper_item.item.pos;
-        } while (!qShapeItem(&shaper_item)); // this does the actual shaping via harfbuzz.
-
-        QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos, shaper_item.num_glyphs);
-        if (fontEngine->type() == QFontEngine::Multi)
-            moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
-
-        for (quint32 i = 0; i < shaper_item.num_glyphs; ++i) {
-            HB_GlyphAttributes hbAttrs = hbGlyphAttributes.at(i);
-            QGlyphAttributes &attrs = g.attributes[i];
-            attrs.clusterStart = hbAttrs.clusterStart;
-            attrs.dontPrint = hbAttrs.dontPrint;
-            attrs.justification = hbAttrs.justification;
-        }
-
-        for (quint32 i = 0; i < shaper_item.item.length; ++i) {
-            // Workaround wrong log_clusters for surrogates (i.e. QTBUG-39875)
-            if (shaper_item.log_clusters[i] >= shaper_item.num_glyphs)
-                shaper_item.log_clusters[i] = shaper_item.num_glyphs - 1;
-            shaper_item.log_clusters[i] += glyph_pos;
-        }
-
-        if (kerningEnabled && !shaper_item.kerning_applied)
-            actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags{});
-
-        if (engineIdx != 0) {
-            for (quint32 i = 0; i < shaper_item.num_glyphs; ++i)
-                g.glyphs[i] |= (engineIdx << 24);
-        }
-
-        glyph_pos += shaper_item.num_glyphs;
-    }
-
-    return glyph_pos;
-}
-
 void QTextEngine::init(QTextEngine *e)
 {
     e->ignoreBidi = false;
@@ -2141,22 +2008,12 @@ void QTextEngine::itemize() const
             analysis->flags = QScriptAnalysis::None;
             break;
         }
-#if !QT_CONFIG(harfbuzz)
-        analysis->script = hbscript_to_script(script_to_hbscript(analysis->script));
-#endif
         ++uc;
         ++analysis;
     }
     if (option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
         (analysis-1)->flags = QScriptAnalysis::LineOrParagraphSeparator; // to exclude it from width
     }
-#if QT_CONFIG(harfbuzz)
-    analysis = scriptAnalysis.data();
-    if (!qt_useHarfbuzzNG()) {
-        for (int i = 0; i < length; ++i)
-            analysis[i].script = hbscript_to_script(script_to_hbscript(analysis[i].script));
-    }
-#endif
 
     Itemizer itemizer(layoutData->string, scriptAnalysis.data(), layoutData->items);
 

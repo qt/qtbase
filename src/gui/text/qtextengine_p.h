@@ -662,7 +662,6 @@ private:
                                 bool kerningEnabled,
                                 bool hasLetterSpacing) const;
 #endif
-    int shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *string, int itemLength, QFontEngine *fontEngine, const QVector<uint> &itemBoundaries, bool kerningEnabled) const;
 
     int endOfLine(int lineNum);
     int beginningOfLine(int lineNum);
