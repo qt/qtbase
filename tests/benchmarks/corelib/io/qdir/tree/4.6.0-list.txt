@@ -8150,8 +8150,6 @@
  qdatetime_p.h
  qeasingcurve.cpp
  qeasingcurve.h
- qharfbuzz.cpp
- qharfbuzz_p.h
  qhash.cpp
  qhash.h
  qiterator.h
