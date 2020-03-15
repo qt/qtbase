@@ -54,7 +54,6 @@
 #include "qpainter.h"
 #include "qpainterpath.h"
 #include "qpixmap.h"
-#include "qregexp.h"
 #include "qregion.h"
 #include "qdebug.h"
 #include <QtCore/private/qlocking_p.h>
