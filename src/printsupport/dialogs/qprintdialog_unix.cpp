@@ -67,6 +67,10 @@
 
 #include <QtWidgets/qdialogbuttonbox.h>
 
+#if QT_CONFIG(regularexpression)
+#include <qregularexpression.h>
+#endif
+
 #if QT_CONFIG(completer)
 #include <private/qcompleter_p.h>
 #endif
@@ -1434,10 +1438,13 @@ QUnixPrintWidget::QUnixPrintWidget(QPrinter *printer, QWidget *parent)
             if (printer->docName().isEmpty()) {
                 cur += QStringLiteral("print.pdf");
             } else {
-                const QRegExp re(QStringLiteral("(.*)\\.\\S+"));
-                if (re.exactMatch(printer->docName()))
-                    cur += re.cap(1);
+#if QT_CONFIG(regularexpression)
+                const QRegularExpression re(QStringLiteral("(.*)\\.\\S+"));
+                auto match = re.match(printer->docName());
+                if (match.hasMatch())
+                    cur += match.captured(1);
                 else
+#endif
                     cur += printer->docName();
                 cur += QStringLiteral(".pdf");
             }
