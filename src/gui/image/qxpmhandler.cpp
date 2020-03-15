@@ -45,7 +45,6 @@
 #include <qbytearraymatcher.h>
 #include <qimage.h>
 #include <qmap.h>
-#include <qregexp.h>
 #include <qtextstream.h>
 #include <qvariant.h>
 
@@ -766,17 +765,26 @@ static QString fbname(const QString &fileName) // get file basename (sort of)
 {
     QString s = fileName;
     if (!s.isEmpty()) {
-        int i;
-        if ((i = s.lastIndexOf(QLatin1Char('/'))) >= 0)
-            s = s.mid(i);
-        if ((i = s.lastIndexOf(QLatin1Char('\\'))) >= 0)
-            s = s.mid(i);
-        QRegExp r(QLatin1String("[a-zA-Z][a-zA-Z0-9_]*"));
-        int p = r.indexIn(s);
-        if (p == -1)
+        int i = qMax(s.lastIndexOf(QLatin1Char('/')), s.lastIndexOf(QLatin1Char('\\')));
+        if (i < 0)
+            i = 0;
+        auto isAsciiLetterOrNumber = [](QChar ch) -> bool {
+            return (ch.unicode() >= '0' && ch.unicode() <= '9') ||
+                    (ch.unicode() >= 'A' && ch.unicode() <= 'Z') ||
+                    (ch.unicode() >= 'a' && ch.unicode() <= 'z') ||
+                    ch.unicode() == '_';
+        };
+        int start = -1;
+        for (; i < s.length(); ++i) {
+            if (isAsciiLetterOrNumber(s.at(i))) {
+                start = i;
+            } else if (start > 0)
+                break;
+        }
+        if (start < 0)
             s.clear();
         else
-            s = s.mid(p, r.matchedLength());
+            s = s.mid(start, i - start);
     }
     if (s.isEmpty())
         s = QString::fromLatin1("dummy");
