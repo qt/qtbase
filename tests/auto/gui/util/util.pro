@@ -3,7 +3,6 @@ SUBDIRS= \
     qdesktopservices \
     qdoublevalidator \
     qintvalidator \
-    qregexpvalidator \
     qregularexpressionvalidator \
     qshadergenerator \
     qshadergraph \

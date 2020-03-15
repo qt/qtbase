@@ -3,7 +3,6 @@
 add_subdirectory(qdesktopservices)
 add_subdirectory(qdoublevalidator)
 add_subdirectory(qintvalidator)
-add_subdirectory(qregexpvalidator)
 add_subdirectory(qregularexpressionvalidator)
 add_subdirectory(qshadergenerator)
 add_subdirectory(qshadergraph)

@@ -44,7 +44,6 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qregexp.h>
 #if QT_CONFIG(regularexpression)
 #  include <QtCore/qregularexpression.h>
 #endif
@@ -120,8 +119,6 @@ private:
     int t;
 };
 
-#ifndef QT_NO_REGEXP
-
 class QDoubleValidatorPrivate;
 
 class Q_GUI_EXPORT QDoubleValidator : public QValidator
@@ -169,33 +166,6 @@ private:
     double t;
     int dec;
 };
-
-
-class Q_GUI_EXPORT QRegExpValidator : public QValidator
-{
-    Q_OBJECT
-    Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp NOTIFY regExpChanged)
-
-public:
-    explicit QRegExpValidator(QObject *parent = nullptr);
-    explicit QRegExpValidator(const QRegExp& rx, QObject *parent = nullptr);
-    ~QRegExpValidator();
-
-    virtual QValidator::State validate(QString& input, int& pos) const override;
-
-    void setRegExp(const QRegExp& rx);
-    const QRegExp& regExp() const { return r; }
-
-Q_SIGNALS:
-    void regExpChanged(const QRegExp& regExp);
-
-private:
-    Q_DISABLE_COPY(QRegExpValidator)
-
-    QRegExp r;
-};
-
-#endif // QT_NO_REGEXP
 
 #if QT_CONFIG(regularexpression)
 

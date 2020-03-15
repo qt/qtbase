@@ -686,7 +686,7 @@ QT_BEGIN_NAMESPACE
     the position in the string where the match was made (or -1 if
     there was no match).
 
-    \sa QString, QStringList, QRegExpValidator, QSortFilterProxyModel,
+    \sa QString, QStringList, QSortFilterProxyModel,
         {tools/regexp}{Regular Expression Example}
 */
 
