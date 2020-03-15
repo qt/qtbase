@@ -43,7 +43,9 @@
 #include <qvariant.h>
 #include <qdatetime.h>
 #include <qmetatype.h>
-#include <qregexp.h>
+#if QT_CONFIG(regularexpression)
+#include <qregularexpression.h>
+#endif
 #include <qshareddata.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
@@ -2335,9 +2337,11 @@ bool QOCIDriver::open(const QString & db,
     } else {
         QString versionStr;
         versionStr = QString(reinterpret_cast<const QChar *>(vertxt));
-        QRegExp vers(QLatin1String("([0-9]+)\\.[0-9\\.]+[0-9]"));
-        if (vers.indexIn(versionStr) >= 0)
-            d->serverVersion = vers.cap(1).toInt();
+#if QT_CONFIG(regularexpression)
+        auto match = QRegularExpression(QLatin1String("([0-9]+)\\.[0-9\\.]+[0-9]")).match(versionStr);
+        if (match.hasMatch())
+            d->serverVersion = vers.captured(1).toInt();
+#endif
         if (d->serverVersion == 0)
             d->serverVersion = -1;
     }
