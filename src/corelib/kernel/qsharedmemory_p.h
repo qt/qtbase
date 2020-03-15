@@ -123,7 +123,7 @@ public:
     QSharedMemoryPrivate();
 
     void *memory;
-    int size;
+    qsizetype size;
     QString key;
     QString nativeKey;
     QSharedMemory::SharedMemoryError error;
@@ -145,7 +145,7 @@ public:
 #endif
     bool initKey();
     bool cleanHandle();
-    bool create(int size);
+    bool create(qsizetype size);
     bool attach(QSharedMemory::AccessMode mode);
     bool detach();
 

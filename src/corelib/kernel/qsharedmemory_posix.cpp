@@ -82,7 +82,7 @@ bool QSharedMemoryPrivate::cleanHandle()
     return true;
 }
 
-bool QSharedMemoryPrivate::create(int size)
+bool QSharedMemoryPrivate::create(qsizetype size)
 {
     if (!handle())
         return false;
@@ -165,11 +165,11 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
         cleanHandle();
         return false;
     }
-    size = st.st_size;
+    size = qsizetype(st.st_size);
 
     // grab the memory
     const int mprot = (mode == QSharedMemory::ReadOnly ? PROT_READ : PROT_READ | PROT_WRITE);
-    memory = QT_MMAP(0, size, mprot, MAP_SHARED, hand, 0);
+    memory = QT_MMAP(0, size_t(size), mprot, MAP_SHARED, hand, 0);
     if (memory == MAP_FAILED || !memory) {
         setErrorString(QLatin1String("QSharedMemory::attach (mmap)"));
         cleanHandle();
@@ -191,7 +191,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 bool QSharedMemoryPrivate::detach()
 {
     // detach from the memory segment
-    if (::munmap(memory, size) == -1) {
+    if (::munmap(memory, size_t(size)) == -1) {
         setErrorString(QLatin1String("QSharedMemory::detach (munmap)"));
         return false;
     }

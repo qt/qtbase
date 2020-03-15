@@ -84,7 +84,7 @@ bool QSharedMemoryPrivate::cleanHandle()
     return true;
 }
 
-bool QSharedMemoryPrivate::create(int size)
+bool QSharedMemoryPrivate::create(qsizetype size)
 {
     Q_UNUSED(size);
     Q_UNIMPLEMENTED();

@@ -103,8 +103,8 @@ public:
     void setNativeKey(const QString &key);
     QString nativeKey() const;
 
-    bool create(int size, AccessMode mode = ReadWrite);
-    int size() const;
+    bool create(qsizetype size, AccessMode mode = ReadWrite);
+    qsizetype size() const;
 
     bool attach(AccessMode mode = ReadWrite);
     bool isAttached() const;

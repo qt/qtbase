@@ -122,7 +122,7 @@ bool QSharedMemoryPrivate::cleanHandle()
     return true;
 }
 
-bool QSharedMemoryPrivate::create(int size)
+bool QSharedMemoryPrivate::create(qsizetype size)
 {
     const QLatin1String function("QSharedMemory::create");
     if (nativeKey.isEmpty()) {
@@ -132,8 +132,14 @@ bool QSharedMemoryPrivate::create(int size)
     }
 
     // Create the file mapping.
-    hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size,
-                             reinterpret_cast<const wchar_t*>(nativeKey.utf16()));
+    DWORD high, low;
+    if constexpr (sizeof(qsizetype) == 8)
+        high = DWORD(quint64(size) >> 32);
+    else
+        high = 0;
+    low = DWORD(size_t(size) & 0xffffffff);
+    hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, high, low,
+                             reinterpret_cast<const wchar_t *>(nativeKey.utf16()));
     setErrorString(function);
 
     // hand is valid when it already exists unlike unix so explicitly check
@@ -160,7 +166,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
         errorString = QSharedMemory::tr("%1: size query failed").arg(QLatin1String("QSharedMemory::attach: "));
         return false;
     }
-    size = info.RegionSize;
+    size = qsizetype(info.RegionSize);
 
     return true;
 }
