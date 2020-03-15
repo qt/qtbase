@@ -50,8 +50,6 @@
 #include <QtCore/QSettings>
 #if QT_CONFIG(regularexpression)
 #include <QtCore/QRegularExpression>
-#else
-#include <QtCore/QRegExp>
 #endif
 #include <QtGui/QGuiApplication>
 #include <QtGui/QFontDatabase>
@@ -127,10 +125,8 @@ static FontKeys &fontKeys()
             const QString trueType = QStringLiteral("(TrueType)");
 #if QT_CONFIG(regularexpression)
             const QRegularExpression sizeListMatch(QStringLiteral("\\s(\\d+,)+\\d+"));
-#else
-            const QRegExp sizeListMatch(QLatin1String("\\s(\\d+,)+\\d+"));
-#endif
             Q_ASSERT(sizeListMatch.isValid());
+#endif
             const int size = allKeys.size();
             result.reserve(result.size() + size);
             for (int i = 0; i < size; ++i) {
@@ -139,7 +135,9 @@ static FontKeys &fontKeys()
                 fontKey.fileName = fontRegistry.value(registryFontKey).toString();
                 QString realKey = registryFontKey;
                 realKey.remove(trueType);
+#if QT_CONFIG(regularexpression)
                 realKey.remove(sizeListMatch);
+#endif
                 const auto fontNames = QStringRef(&realKey).trimmed().split(QLatin1Char('&'));
                 fontKey.fontNames.reserve(fontNames.size());
                 for (const QStringRef &fontName : fontNames)
