@@ -227,12 +227,10 @@ bool QFontEngine::supportsScript(QChar::Script script) const
 
 #if QT_CONFIG(harfbuzz)
     if (qt_useHarfbuzzNG()) {
-#if defined(Q_OS_DARWIN)
         // in AAT fonts, 'gsub' table is effectively replaced by 'mort'/'morx' table
         uint len;
         if (getSfntTableData(MAKE_TAG('m','o','r','t'), 0, &len) || getSfntTableData(MAKE_TAG('m','o','r','x'), 0, &len))
             return true;
-#endif
 
         bool ret = false;
         if (hb_face_t *face = hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this))) {
