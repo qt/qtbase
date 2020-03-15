@@ -135,11 +135,6 @@ private slots:
     void insertAndScrollToBottom();
     void inputMethodQueryImHints_data();
     void inputMethodQueryImHints();
-#ifndef QT_NO_REGEXP
-    void findWithRegExp();
-    void findBackwardWithRegExp();
-    void findWithRegExpReturnsFalseIfNoMoreResults();
-#endif
 #if QT_CONFIG(regularexpression)
     void findWithRegularExpression();
     void findBackwardWithRegularExpression();
@@ -1561,45 +1556,6 @@ void tst_QPlainTextEdit::inputMethodQueryImHints()
     QVariant value = ed->inputMethodQuery(Qt::ImHints);
     QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
 }
-
-#ifndef QT_NO_REGEXP
-void tst_QPlainTextEdit::findWithRegExp()
-{
-    ed->setPlainText(QStringLiteral("arbitrary text"));
-    QRegExp rx("\\w{2}xt");
-
-    bool found = ed->find(rx);
-
-    QVERIFY(found);
-    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
-}
-
-void tst_QPlainTextEdit::findBackwardWithRegExp()
-{
-    ed->setPlainText(QStringLiteral("arbitrary text"));
-    QTextCursor cursor = ed->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    ed->setTextCursor(cursor);
-    QRegExp rx("a\\w*t");
-
-    bool found = ed->find(rx, QTextDocument::FindBackward);
-
-    QVERIFY(found);
-    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("arbit"));
-}
-
-void tst_QPlainTextEdit::findWithRegExpReturnsFalseIfNoMoreResults()
-{
-    ed->setPlainText(QStringLiteral("arbitrary text"));
-    QRegExp rx("t.xt");
-    ed->find(rx);
-
-    bool found = ed->find(rx);
-
-    QVERIFY(!found);
-    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
-}
-#endif
 
 #if QT_CONFIG(regularexpression)
 void tst_QPlainTextEdit::findWithRegularExpression()

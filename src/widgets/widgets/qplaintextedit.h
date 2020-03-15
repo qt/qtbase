@@ -147,9 +147,6 @@ public:
     bool centerOnScroll() const;
 
     bool find(const QString &exp, QTextDocument::FindFlags options = QTextDocument::FindFlags());
-#ifndef QT_NO_REGEXP
-    bool find(const QRegExp &exp, QTextDocument::FindFlags options = QTextDocument::FindFlags());
-#endif
 #if QT_CONFIG(regularexpression)
     bool find(const QRegularExpression &exp, QTextDocument::FindFlags options = QTextDocument::FindFlags());
 #endif

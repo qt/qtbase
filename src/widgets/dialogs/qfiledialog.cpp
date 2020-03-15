@@ -4352,7 +4352,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
         return QStringList(completionPrefix());
 
     QString pathCopy = QDir::toNativeSeparators(path);
-    QString sep = QDir::separator();
+    QChar sep = QDir::separator();
 #if defined(Q_OS_WIN)
     if (pathCopy == QLatin1String("\\") || pathCopy == QLatin1String("\\\\"))
         return QStringList(pathCopy);
@@ -4384,14 +4384,14 @@ QStringList QFSCompleter::splitPath(const QString &path) const
         parts.append(QString());
 #else
     QStringList parts = pathCopy.split(sep);
-    if (pathCopy[0] == sep[0]) // read the "/" at the beginning as the split removed it
-        parts[0] = sep[0];
+    if (pathCopy[0] == sep) // read the "/" at the beginning as the split removed it
+        parts[0] = sep;
 #endif
 
 #if defined(Q_OS_WIN)
     bool startsFromRoot = !parts.isEmpty() && parts[0].endsWith(QLatin1Char(':'));
 #else
-    bool startsFromRoot = pathCopy[0] == sep[0];
+    bool startsFromRoot = pathCopy[0] == sep;
 #endif
     if (parts.count() == 1 || (parts.count() > 1 && !startsFromRoot)) {
         const QFileSystemModel *dirModel;

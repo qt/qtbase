@@ -3145,19 +3145,6 @@ bool QWidgetTextControl::find(const QString &exp, QTextDocument::FindFlags optio
     return true;
 }
 
-#ifndef QT_NO_REGEXP
-bool QWidgetTextControl::find(const QRegExp &exp, QTextDocument::FindFlags options)
-{
-    Q_D(QWidgetTextControl);
-    QTextCursor search = d->doc->find(exp, d->cursor, options);
-    if (search.isNull())
-        return false;
-
-    setTextCursor(search);
-    return true;
-}
-#endif
-
 #if QT_CONFIG(regularexpression)
 bool QWidgetTextControl::find(const QRegularExpression &exp, QTextDocument::FindFlags options)
 {
