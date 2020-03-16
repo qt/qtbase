@@ -3654,6 +3654,11 @@ def write_qml_plugin_epilogue(
                 if qmldir_file_info.internal:
                     cm_fh.write(f"{indent_1}QT_QML_INTERNAL_TYPE TRUE\n")
                 cm_fh.write(f"{indent_0})\n")
+            else:
+                cm_fh.write(
+                    f"{indent_0}set_source_files_properties({qml_file} PROPERTIES\n"
+                    f"{indent_1}QT_QML_SKIP_QMLDIR_ENTRY TRUE\n"
+                    f"{indent_0})\n")
 
         cm_fh.write(
             f"\n{indent_0}qt6_target_qml_files({target}\n{indent_1}FILES\n"
