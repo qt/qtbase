@@ -3606,7 +3606,9 @@ bool QVariant::canConvert(int targetTypeId) const
         case QMetaType::QByteArray:
         case QMetaType::QDateTime:
         case QMetaType::QUrl:
+#if QT_CONFIG(regularexpression)
         case QMetaType::QRegularExpression:
+#endif
         case QMetaType::QUuid:
         case QMetaType::QVariantList:
         case QMetaType::QVariantMap:

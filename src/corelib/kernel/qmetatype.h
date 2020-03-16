@@ -111,6 +111,13 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
 #define QT_FOR_EACH_STATIC_ITEMMODEL_CLASS(F)
 #endif
 
+#if QT_CONFIG(regularexpression)
+#  define QT_FOR_EACH_STATIC_REGULAR_EXPRESSION(F) \
+    F(QRegularExpression, 44, QRegularExpression)
+#else
+#  define QT_FOR_EACH_STATIC_REGULAR_EXPRESSION(F)
+#endif
+
 #define QT_FOR_EACH_STATIC_CORE_CLASS(F)\
     F(QChar, 7, QChar) \
     F(QString, 10, QString) \
@@ -134,7 +141,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     QT_FOR_EACH_STATIC_EASINGCURVE(F) \
     F(QUuid, 30, QUuid) \
     F(QVariant, 41, QVariant) \
-    F(QRegularExpression, 44, QRegularExpression) \
+    QT_FOR_EACH_STATIC_REGULAR_EXPRESSION(F) \
     F(QJsonValue, 45, QJsonValue) \
     F(QJsonObject, 46, QJsonObject) \
     F(QJsonArray, 47, QJsonArray) \

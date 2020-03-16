@@ -55,7 +55,9 @@
 #include <QtGui/qcolor.h>
 
 #include <QtCore/qdebug.h>
-#include <QtCore/qregularexpression.h>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/qregularexpression.h>
+#endif
 #include <QtCore/qtimer.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qscopedpointer.h>
@@ -1034,9 +1036,12 @@ static QList<FilterSpec> filterSpecs(const QStringList &filters,
     result.reserve(filters.size());
     *totalStringLength = 0;
 
+#if QT_CONFIG(regularexpression)
     const QRegularExpression filterSeparatorRE(QStringLiteral("[;\\s]+"));
     const QString separator = QStringLiteral(";");
     Q_ASSERT(filterSeparatorRE.isValid());
+#endif
+
     // Split filter specification as 'Texts (*.txt[;] *.doc)', '*.txt[;] *.doc'
     // into description and filters specification as '*.txt;*.doc'
     for (const QString &filterString : filters) {
@@ -1049,7 +1054,11 @@ static QList<FilterSpec> filterSpecs(const QStringList &filters,
             filterString.mid(openingParenPos + 1, closingParenPos - openingParenPos - 1).trimmed();
         if (filterSpec.filter.isEmpty())
             filterSpec.filter += u'*';
+#if QT_CONFIG(regularexpression)
         filterSpec.filter.replace(filterSeparatorRE, separator);
+#else
+        filterSpec.filter.replace(QLatin1Char(' '), QLatin1Char(';'));
+#endif
         filterSpec.description = filterString;
         if (hideFilterDetails && openingParenPos != -1) { // Do not show pattern in description
             filterSpec.description.truncate(openingParenPos);

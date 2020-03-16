@@ -161,7 +161,9 @@ class Q_CORE_EXPORT QVariant
         Point = QMetaType::QPoint,
         PointF = QMetaType::QPointF,
         RegExp = QMetaType::QRegExp,
+#if QT_CONFIG(regularexpression)
         RegularExpression = QMetaType::QRegularExpression,
+#endif
         Hash = QMetaType::QVariantHash,
 #if QT_CONFIG(easingcurve)
         EasingCurve = QMetaType::QEasingCurve,

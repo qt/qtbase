@@ -1709,6 +1709,8 @@ void QFileSystemModel::setNameFilters(const QStringList &filters)
     d->nameFilters = filters;
     d->forceSort = true;
     d->delayedSort();
+#else
+    Q_UNUSED(filters)
 #endif
 }
 
@@ -2158,6 +2160,8 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
         }
         return false;
     }
+#else
+    Q_UNUSED(node)
 #endif
     return true;
 }

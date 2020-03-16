@@ -790,6 +790,7 @@ QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
         f = match.captured(2);
     return f.split(QLatin1Char(' '), Qt::SkipEmptyParts);
 #else
+    Q_UNUSED(filter)
     return QStringList();
 #endif
 }
