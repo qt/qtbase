@@ -323,7 +323,12 @@ class LocaleScanner (object):
         yield 'minus', minus
 
         # Currency formatting (currencyFormat may have a type field):
-        money = self.find('numbers/currencyFormats/currencyFormatLength/currencyFormat/pattern')
+        xpath = 'numbers/currencyFormats/currencyFormatLength/currencyFormat/pattern'
+        try:
+            money = self.find(xpath.replace('Formats/',
+                                            'Formats[numberSystem={}]/'.format(system)))
+        except Error:
+            money = self.find(xpath)
         money = self.__currencyFormats(money, plus, minus)
         yield 'currencyFormat', money.next()
         neg = ''
