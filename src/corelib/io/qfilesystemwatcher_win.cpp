@@ -697,21 +697,20 @@ void QWindowsFileSystemWatcherEngineThread::run()
 
                         qErrnoWarning(error, "%ls", qUtf16Printable(msgFindNextFailed(h)));
                     }
-                    for (auto it = h.begin(), end = h.end(); it != end; /*erasing*/ ) {
-                        auto x = it++;
-                        QString absolutePath = x.value().absolutePath;
-                        QFileInfo fileInfo(x.value().path);
-                        DEBUG() << "checking" << x.key();
+                    for (auto it = h.begin(); it != h.end(); /*erasing*/ ) {
+                        QString absolutePath = it.value().absolutePath;
+                        QFileInfo fileInfo(it.value().path);
+                        DEBUG() << "checking" << it.key();
 
                         // i'm not completely sure the fileInfo.exist() check will ever work... see QTBUG-2331
                         // ..however, I'm not completely sure enough to remove it.
                         if (fakeRemove || !fileInfo.exists()) {
-                            DEBUG() << x.key() << "removed!";
-                            if (x.value().isDir)
-                                emit directoryChanged(x.value().path, true);
+                            DEBUG() << it.key() << "removed!";
+                            if (it.value().isDir)
+                                emit directoryChanged(it.value().path, true);
                             else
-                                emit fileChanged(x.value().path, true);
-                            h.erase(x);
+                                emit fileChanged(it.value().path, true);
+                            it = h.erase(it);
 
                             // close the notification handle if the directory has been removed
                             if (h.isEmpty()) {
@@ -726,15 +725,17 @@ void QWindowsFileSystemWatcherEngineThread::run()
                                 // h is now invalid
                                 break;
                             }
-                        } else if (x.value().isDir) {
-                            DEBUG() << x.key() << "directory changed!";
-                            emit directoryChanged(x.value().path, false);
-                            x.value() = fileInfo;
-                        } else if (x.value() != fileInfo) {
-                            DEBUG() << x.key() << "file changed!";
-                            emit fileChanged(x.value().path, false);
-                            x.value() = fileInfo;
+                            continue;
+                        } else if (it.value().isDir) {
+                            DEBUG() << it.key() << "directory changed!";
+                            emit directoryChanged(it.value().path, false);
+                            it.value() = fileInfo;
+                        } else if (it.value() != fileInfo) {
+                            DEBUG() << it.key() << "file changed!";
+                            emit fileChanged(it.value().path, false);
+                            it.value() = fileInfo;
                         }
+                        ++it;
                     }
                 }
             } else {

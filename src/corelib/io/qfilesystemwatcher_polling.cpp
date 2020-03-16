@@ -111,37 +111,40 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
 void QPollingFileSystemWatcherEngine::timeout()
 {
     for (auto it = files.begin(), end = files.end(); it != end; /*erasing*/) {
-        auto x = it++;
-        QString path = x.key();
+        QString path = it.key();
         QFileInfo fi(path);
         if (!fi.exists()) {
-            files.erase(x);
+            it = files.erase(it);
             emit fileChanged(path, true);
-        } else if (x.value() != fi) {
-            x.value() = fi;
+            continue;
+        } else if (it.value() != fi) {
+            it.value() = fi;
             emit fileChanged(path, false);
         }
+        ++it;
     }
 
     for (auto it = directories.begin(), end = directories.end(); it != end; /*erasing*/) {
-        auto x = it++;
-        QString path = x.key();
+        QString path = it.key();
         QFileInfo fi(path);
         if (!path.endsWith(QLatin1Char('/')))
             fi = QFileInfo(path + QLatin1Char('/'));
         if (!fi.exists()) {
-            directories.erase(x);
+            it = directories.erase(it);
             emit directoryChanged(path, true);
-        } else if (x.value() != fi) {
+            continue;
+        } else if (it.value() != fi) {
             fi.refresh();
             if (!fi.exists()) {
-                directories.erase(x);
+                it = directories.erase(it);
                 emit directoryChanged(path, true);
+                continue;
             } else {
-                x.value() = fi;
+                it.value() = fi;
                 emit directoryChanged(path, false);
             }
         }
+        ++it;
     }
 }
 

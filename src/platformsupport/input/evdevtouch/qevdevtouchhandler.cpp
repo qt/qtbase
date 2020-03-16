@@ -580,9 +580,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         Qt::TouchPointStates combinedStates;
         bool hasPressure = false;
 
-        for (auto i = m_contacts.begin(), end = m_contacts.end(); i != end; /*erasing*/) {
-            auto it = i++;
-
+        for (auto it = m_contacts.begin(), end = m_contacts.end(); it != end; /*erasing*/) {
             Contact &contact(it.value());
 
             if (!contact.state)
@@ -605,7 +603,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             // Avoid reporting a contact in released state more than once.
             if (!m_typeB && contact.state == Qt::TouchPointReleased
                     && !m_lastContacts.contains(key)) {
-                m_contacts.erase(it);
+                it = m_contacts.erase(it);
                 continue;
             }
 
@@ -613,6 +611,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 hasPressure = true;
 
             addTouchPoint(contact, &combinedStates);
+            ++it;
         }
 
         // Now look for contacts that have disappeared since the last sync.
@@ -633,22 +632,23 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         }
 
         // Remove contacts that have just been reported as released.
-        for (auto i = m_contacts.begin(), end = m_contacts.end(); i != end; /*erasing*/) {
-            auto it = i++;
-
+        for (auto it = m_contacts.begin(), end = m_contacts.end(); it != end; /*erasing*/) {
             Contact &contact(it.value());
 
             if (!contact.state)
                 continue;
 
             if (contact.state == Qt::TouchPointReleased) {
-                if (m_typeB)
+                if (m_typeB) {
                     contact.state = static_cast<Qt::TouchPointState>(0);
-                else
-                    m_contacts.erase(it);
+                } else {
+                    it = m_contacts.erase(it);
+                    continue;
+                }
             } else {
                 contact.state = Qt::TouchPointStationary;
             }
+            ++it;
         }
 
         m_lastContacts = m_contacts;
