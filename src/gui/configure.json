@@ -302,7 +302,7 @@
             "label": "HarfBuzz",
             "test": {
                 "tail": [
-                    "#if !HB_VERSION_ATLEAST(1, 6, 0)",
+                    "#if !HB_VERSION_ATLEAST(2, 6, 0)",
                     "#  error This version of harfbuzz is too old.",
                     "#endif"
                 ],
