@@ -101,7 +101,7 @@ qt_extend_target(Test CONDITION APPLE
         ${FWSecurity}
 )
 
-qt_extend_target(Test CONDITION APPLE_MACOS
+qt_extend_target(Test CONDITION MACOS
     SOURCES
         qtestutil_macos.mm qtestutil_macos_p.h
     PUBLIC_LIBRARIES

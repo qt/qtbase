@@ -722,7 +722,7 @@ function(qt_get_platform_try_compile_vars out_var)
     endforeach()
 
     # Pass darwin specific options.
-    if(APPLE_UIKIT)
+    if(UIKIT)
         if(CMAKE_OSX_ARCHITECTURES)
             list(GET CMAKE_OSX_ARCHITECTURES 0 osx_first_arch)
 

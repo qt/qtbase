@@ -318,7 +318,7 @@ qt_feature("android-style-assets" PRIVATE
 )
 qt_feature("shared" PUBLIC
     LABEL "Building shared libraries"
-    AUTODETECT NOT APPLE_UIKIT
+    AUTODETECT NOT UIKIT
     CONDITION BUILD_SHARED_LIBS
 )
 qt_feature_config("shared" QMAKE_PUBLIC_QT_CONFIG)
@@ -380,11 +380,11 @@ qt_feature_config("separate_debug_info" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("appstore-compliant" PUBLIC
     LABEL "App store compliance"
     PURPOSE "Disables code that is not allowed in platform app stores"
-    AUTODETECT APPLE_UIKIT OR ANDROID OR WINRT
+    AUTODETECT UIKIT OR ANDROID OR WINRT
 )
 qt_feature("simulator_and_device" PUBLIC
     LABEL "Build for both simulator and device"
-    CONDITION APPLE_UIKIT AND NOT QT_UIKIT_SDK
+    CONDITION UIKIT AND NOT QT_UIKIT_SDK
 )
 qt_feature_config("simulator_and_device" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("force_asserts" PUBLIC
@@ -685,7 +685,7 @@ qt_feature("concurrent" PUBLIC
 qt_feature_definition("concurrent" "QT_NO_CONCURRENT" NEGATE VALUE "1")
 qt_feature("dbus" PUBLIC PRIVATE
     LABEL "Qt D-Bus"
-    AUTODETECT NOT APPLE_UIKIT AND NOT ANDROID AND NOT WINRT
+    AUTODETECT NOT UIKIT AND NOT ANDROID AND NOT WINRT
     CONDITION QT_FEATURE_thread
 )
 qt_feature_definition("dbus" "QT_NO_DBUS" NEGATE VALUE "1")
@@ -712,7 +712,7 @@ qt_feature("testlib" PRIVATE
 )
 qt_feature("widgets" PRIVATE
     LABEL "Qt Widgets"
-    AUTODETECT NOT APPLE_TVOS AND NOT APPLE_WATCHOS
+    AUTODETECT NOT TVOS AND NOT WATCHOS
     CONDITION QT_FEATURE_gui
 )
 qt_feature_definition("widgets" "QT_NO_WIDGETS" NEGATE)
@@ -868,7 +868,7 @@ qt_configure_add_report_entry(
 qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Debug build wihtout Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
-    CONDITION APPLE_IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
+    CONDITION IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
 )
 qt_configure_add_report_entry(
     TYPE WARNING

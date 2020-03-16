@@ -23,7 +23,7 @@ qt_add_module(ClipboardSupport
 ## Scopes:
 #####################################################################
 
-qt_extend_target(ClipboardSupport CONDITION APPLE_MACOS
+qt_extend_target(ClipboardSupport CONDITION MACOS
     LIBRARIES
         ${FWAppKit}
 )

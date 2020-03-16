@@ -106,7 +106,7 @@ def _recursive_simplify(expr):
 
     # Simplify even further, based on domain knowledge:
     # windowses = ('WIN32', 'WINRT')
-    apples = ("APPLE_MACOS", "APPLE_UIKIT", "APPLE_IOS", "APPLE_TVOS", "APPLE_WATCHOS")
+    apples = ("MACOS", "UIKIT", "IOS", "TVOS", "WATCHOS")
     bsds = ("FREEBSD", "OPENBSD", "NETBSD")
     androids = ("ANDROID", "ANDROID_EMBEDDED")
     unixes = (

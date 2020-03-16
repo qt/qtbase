@@ -2,7 +2,7 @@
 
 # special case begn
 # Don't build manual tests when targeting iOS.
-if(APPLE_UIKIT)
+if(UIKIT)
     return()
 endif()
 # special case end

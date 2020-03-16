@@ -31,7 +31,7 @@ endif()
 # special case begin
 # Build only corelib and gui tests when targeting uikit (iOS),
 # because the script can't handle the SUBDIRS assignment well.
-if (APPLE_UIKIT)
+if (UIKIT)
     return()
 endif()
 # special case end

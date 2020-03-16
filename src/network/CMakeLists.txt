@@ -231,25 +231,25 @@ qt_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WINRT
         kernel/qdnslookup_winrt.cpp
 )
 
-qt_extend_target(Network CONDITION APPLE AND NOT APPLE_UIKIT
+qt_extend_target(Network CONDITION APPLE AND NOT UIKIT
     LIBRARIES
         ${FWCoreServices}
         ${FWSystemConfiguration}
 )
 
-qt_extend_target(Network CONDITION APPLE_IOS OR APPLE_MACOS
+qt_extend_target(Network CONDITION IOS OR MACOS
     SOURCES
         kernel/qnetconmonitor_darwin.mm
     LIBRARIES
         ${FWSystemConfiguration}
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_netlistmgr AND NOT APPLE_IOS AND NOT APPLE_MACOS
+qt_extend_target(Network CONDITION QT_FEATURE_netlistmgr AND NOT IOS AND NOT MACOS
     SOURCES
         kernel/qnetconmonitor_win.cpp
 )
 
-qt_extend_target(Network CONDITION NOT APPLE_IOS AND NOT APPLE_MACOS AND NOT QT_FEATURE_netlistmgr
+qt_extend_target(Network CONDITION NOT IOS AND NOT MACOS AND NOT QT_FEATURE_netlistmgr
     SOURCES
         kernel/qnetconmonitor_stub.cpp
 )
@@ -259,17 +259,17 @@ qt_extend_target(Network CONDITION QT_FEATURE_gssapi
         GSSAPI::GSSAPI
 )
 
-qt_extend_target(Network CONDITION APPLE_UIKIT
+qt_extend_target(Network CONDITION UIKIT
     SOURCES
         kernel/qnetworkinterface_uikit_p.h
 )
 
-qt_extend_target(Network CONDITION APPLE_MACOS
+qt_extend_target(Network CONDITION MACOS
     SOURCES
         kernel/qnetworkproxy_mac.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT APPLE_MACOS AND (UNIX OR WINRT)
+qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT MACOS AND (UNIX OR WINRT)
     SOURCES
         kernel/qnetworkproxy_libproxy.cpp
     LIBRARIES
@@ -277,7 +277,7 @@ qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT APPLE_MACOS AND (
         PkgConfig::Libproxy
 )
 
-qt_extend_target(Network CONDITION NOT APPLE_MACOS AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
+qt_extend_target(Network CONDITION NOT MACOS AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )

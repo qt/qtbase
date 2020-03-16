@@ -99,7 +99,7 @@ qt_extend_target(Test CONDITION APPLE
         ${FWSecurity}
 )
 
-qt_extend_target(Test CONDITION APPLE_MACOS
+qt_extend_target(Test CONDITION MACOS
     SOURCES
         qtestutil_macos.mm qtestutil_macos_p.h
     PUBLIC_LIBRARIES
@@ -111,8 +111,8 @@ qt_extend_target(Test CONDITION APPLE_MACOS
 
 # special case begin
 # Do not bother with disabled stuff:
-# extend_target(Test CONDITION (APPLE_MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0")) ...
-# extend_target(Test CONDITION ((APPLE_MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))) AND (NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY) ...
+# extend_target(Test CONDITION (MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0")) ...
+# extend_target(Test CONDITION ((MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))) AND (NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY) ...
 # special case end
 
 #### Keys ignored in scope 9:.:.:testlib.pro:NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY:

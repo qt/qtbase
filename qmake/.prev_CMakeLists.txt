@@ -162,7 +162,7 @@ qt_extend_target(qmake CONDITION UNIX
         qlocale_unix.cpp-NOTFOUND
 )
 
-qt_extend_target(qmake CONDITION APPLE_MACOS
+qt_extend_target(qmake CONDITION MACOS
     SOURCES
         qcore_foundation.mm
         qcore_mac.cpp

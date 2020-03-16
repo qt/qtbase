@@ -22,7 +22,7 @@ add_qt_test(tst_qtextedit
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qtextedit CONDITION APPLE_MACOS
+extend_target(tst_qtextedit CONDITION MACOS
     PUBLIC_LIBRARIES
         ${FWAppKit}
 )

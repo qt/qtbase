@@ -16,7 +16,7 @@ add_qt_test(tst_qmenubar
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmenubar CONDITION APPLE_MACOS
+extend_target(tst_qmenubar CONDITION MACOS
     SOURCES
         tst_qmenubar_mac.mm
     PUBLIC_LIBRARIES

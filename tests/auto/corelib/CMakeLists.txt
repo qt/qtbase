@@ -1,7 +1,7 @@
 # Generated from corelib.pro.
 
 add_subdirectory(kernel)
-if(NOT APPLE_UIKIT)
+if(NOT UIKIT)
     add_subdirectory(animation)
     add_subdirectory(codecs)
     add_subdirectory(global)

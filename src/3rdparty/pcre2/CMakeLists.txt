@@ -56,7 +56,7 @@ qt_extend_target(BundledPcre2 CONDITION WIN32
         PCRE2_STATIC
 )
 
-qt_extend_target(BundledPcre2 CONDITION APPLE_UIKIT OR QNX OR WINRT
+qt_extend_target(BundledPcre2 CONDITION UIKIT OR QNX OR WINRT
     DEFINES
         PCRE2_DISABLE_JIT
 )

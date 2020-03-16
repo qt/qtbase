@@ -305,7 +305,7 @@ def test_qstandardpaths_scopes():
     scope6 = _new_scope(parent_scope=scope5, condition='UNIX')
     #     mac {
     #         OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
-    scope7 = _new_scope(parent_scope=scope6, condition='APPLE_MACOS', SOURCES='qsp_mac.mm')
+    scope7 = _new_scope(parent_scope=scope6, condition='MACOS', SOURCES='qsp_mac.mm')
     #     } else:android:!android-embedded {
     #         SOURCES += io/qstandardpaths_android.cpp
     scope8 = _new_scope(parent_scope=scope6, condition='else')
@@ -330,12 +330,12 @@ def test_qstandardpaths_scopes():
     assert scope4.total_condition == 'WINRT'
     assert scope5.total_condition == 'UNIX'
     assert scope6.total_condition == 'UNIX'
-    assert scope7.total_condition == 'APPLE_MACOS'
-    assert scope8.total_condition == 'UNIX AND NOT APPLE_MACOS'
+    assert scope7.total_condition == 'MACOS'
+    assert scope8.total_condition == 'UNIX AND NOT MACOS'
     assert scope9.total_condition == 'ANDROID AND NOT ANDROID_EMBEDDED'
-    assert scope10.total_condition == 'UNIX AND NOT APPLE_MACOS AND (ANDROID_EMBEDDED OR NOT ANDROID)'
+    assert scope10.total_condition == 'UNIX AND NOT MACOS AND (ANDROID_EMBEDDED OR NOT ANDROID)'
     assert scope11.total_condition == 'HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)'
-    assert scope12.total_condition == 'UNIX AND NOT APPLE_MACOS AND NOT HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)'
+    assert scope12.total_condition == 'UNIX AND NOT MACOS AND NOT HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)'
 
 def test_recursive_expansion():
     scope = _new_scope(A='Foo',B='$$A/Bar')

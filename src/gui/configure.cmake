@@ -706,7 +706,7 @@ qt_feature("mtdev" PRIVATE
 )
 qt_feature("opengles2" PUBLIC
     LABEL "OpenGL ES 2.0"
-    CONDITION NOT WIN32 AND ( NOT APPLE_WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )
+    CONDITION NOT WIN32 AND ( NOT WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )
     ENABLE INPUT_opengl STREQUAL 'es2' OR INPUT_angle STREQUAL 'yes'
     DISABLE INPUT_opengl STREQUAL 'desktop' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
@@ -730,7 +730,7 @@ qt_feature("opengles32" PUBLIC
 qt_feature_definition("opengles32" "QT_OPENGL_ES_3_2")
 qt_feature("opengl-desktop"
     LABEL "Desktop OpenGL"
-    CONDITION ( WIN32 AND NOT WINRT AND NOT QT_FEATURE_opengles2 AND ( MSVC OR OpenGL_OpenGL_FOUND ) ) OR ( NOT APPLE_WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_OpenGL_FOUND )
+    CONDITION ( WIN32 AND NOT WINRT AND NOT QT_FEATURE_opengles2 AND ( MSVC OR OpenGL_OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_OpenGL_FOUND )
     ENABLE INPUT_opengl STREQUAL 'desktop'
     DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
@@ -1279,7 +1279,7 @@ qt_configure_add_report_entry(
 qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "The OpenGL functionality tests failed!  You might need to modify the include and library search paths by editing QMAKE_INCDIR_OPENGL[_ES2], QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your platform."
-    CONDITION QT_FEATURE_gui AND NOT APPLE_WATCHOS AND ( NOT INPUT_opengl STREQUAL 'no' ) AND NOT QT_FEATURE_opengl_desktop AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_opengl_dynamic
+    CONDITION QT_FEATURE_gui AND NOT WATCHOS AND ( NOT INPUT_opengl STREQUAL 'no' ) AND NOT QT_FEATURE_opengl_desktop AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_opengl_dynamic
 )
 qt_configure_add_report_entry(
     TYPE WARNING

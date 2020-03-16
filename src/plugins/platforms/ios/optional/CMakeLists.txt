@@ -1,5 +1,5 @@
 # Generated from optional.pro.
 
-if(APPLE_IOS)
+if(IOS)
     add_subdirectory(nsphotolibrarysupport)
 endif()

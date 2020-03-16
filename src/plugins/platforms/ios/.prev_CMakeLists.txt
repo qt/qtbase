@@ -49,7 +49,7 @@ extend_target(QIOSIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSuppo
         Qt::PlatformCompositorSupportPrivate
 )
 
-extend_target(QIOSIntegrationPlugin CONDITION NOT APPLE_TVOS
+extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
     SOURCES
         qiosclipboard.h qiosclipboard.mm
         qiosfiledialog.h qiosfiledialog.mm

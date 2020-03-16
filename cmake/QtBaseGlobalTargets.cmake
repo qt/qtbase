@@ -95,7 +95,7 @@ list(APPEND init_platform "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE ST
 if(APPLE)
     # For simulator_and_device build, we should not explicitly set the sysroot.
     list(LENGTH CMAKE_OSX_ARCHITECTURES _qt_osx_architectures_count)
-    if(CMAKE_OSX_SYSROOT AND NOT _qt_osx_architectures_count GREATER 1 AND APPLE_UIKIT)
+    if(CMAKE_OSX_SYSROOT AND NOT _qt_osx_architectures_count GREATER 1 AND UIKIT)
         list(APPEND init_platform "set(CMAKE_OSX_SYSROOT \"${CMAKE_OSX_SYSROOT}\" CACHE PATH \"\")")
     endif()
     unset(_qt_osx_architectures_count)
@@ -105,7 +105,7 @@ if(APPLE)
             "set(CMAKE_OSX_DEPLOYMENT_TARGET \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" CACHE STRING \"\")")
     endif()
 
-    if(APPLE_UIKIT)
+    if(UIKIT)
         list(APPEND init_platform
             "set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\" CACHE STRING \"\")")
         set(_qt_osx_architectures_escaped "${CMAKE_OSX_ARCHITECTURES}")
@@ -177,7 +177,7 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
 
 # Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for
 # simulator_and_device_builds.
-if(APPLE_UIKIT AND NOT QT_UIKIT_SDK)
+if(UIKIT AND NOT QT_UIKIT_SDK)
     set(__QtFeature_custom_enabled_cache_variables
         TEST_subarch_sse2
         FEATURE_sse2
@@ -267,7 +267,7 @@ qt_copy_or_install(DIRECTORY cmake/
     PATTERN "3rdparty" EXCLUDE
 )
 
-if(APPLE_MACOS)
+if(MACOS)
     qt_copy_or_install(FILES
         cmake/macos/MacOSXBundleInfo.plist.in
         DESTINATION "${__GlobalConfig_install_dir}/macos"

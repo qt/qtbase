@@ -37,7 +37,7 @@ add_qt_resource(tst_qdir "qdir"
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 2:.:.:qdir.pro:APPLE_IOS:
+#### Keys ignored in scope 2:.:.:qdir.pro:IOS:
 # QMAKE_INFO_PLIST = "Info.plist"
 
 extend_target(tst_qdir CONDITION CONFIG___contains___builtin_testdata

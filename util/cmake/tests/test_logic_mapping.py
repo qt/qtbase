@@ -116,42 +116,42 @@ def test_simplify_unix_and_win32_or_foobar_or_barfoo():
 
 
 def test_simplify_watchos_and_win32():
-    validate_simplify('APPLE_WATCHOS AND WIN32', 'OFF')
+    validate_simplify('WATCHOS AND WIN32', 'OFF')
 
 
 def test_simplify_win32_and_watchos():
-    validate_simplify('WIN32 AND APPLE_WATCHOS', 'OFF')
+    validate_simplify('WIN32 AND WATCHOS', 'OFF')
 
 
 def test_simplify_apple_and_appleosx():
-    validate_simplify('APPLE AND APPLE_MACOS', 'APPLE_MACOS')
+    validate_simplify('APPLE AND MACOS', 'MACOS')
 
 
 def test_simplify_apple_or_appleosx():
-    validate_simplify('APPLE OR APPLE_MACOS', 'APPLE')
+    validate_simplify('APPLE OR MACOS', 'APPLE')
 
 
 def test_simplify_apple_or_appleosx_level1():
-    validate_simplify('foobar AND (APPLE OR APPLE_MACOS )', 'APPLE AND foobar')
+    validate_simplify('foobar AND (APPLE OR MACOS )', 'APPLE AND foobar')
 
 
 def test_simplify_apple_or_appleosx_level1_double():
-    validate_simplify('foobar AND (APPLE OR APPLE_MACOS )', 'APPLE AND foobar')
+    validate_simplify('foobar AND (APPLE OR MACOS )', 'APPLE AND foobar')
 
 
 def test_simplify_apple_or_appleosx_level1_double_with_extra_spaces():
-    validate_simplify('foobar AND (APPLE OR APPLE_MACOS ) '
-                      'AND ( APPLE_MACOS    OR APPLE    )', 'APPLE AND foobar')
+    validate_simplify('foobar AND (APPLE OR MACOS ) '
+                      'AND ( MACOS    OR APPLE    )', 'APPLE AND foobar')
 
 
 def test_simplify_apple_or_appleosx_level2():
-    validate_simplify('foobar AND ( ( APPLE OR APPLE_WATCHOS ) '
-                      'OR APPLE_MACOS ) AND ( APPLE_MACOS    OR APPLE    ) '
+    validate_simplify('foobar AND ( ( APPLE OR WATCHOS ) '
+                      'OR MACOS ) AND ( MACOS    OR APPLE    ) '
                       'AND ( (WIN32 OR WINRT) OR UNIX) ', 'APPLE AND foobar')
 
 
 def test_simplify_not_apple_and_appleosx():
-    validate_simplify('NOT APPLE AND APPLE_MACOS', 'OFF')
+    validate_simplify('NOT APPLE AND MACOS', 'OFF')
 
 
 def test_simplify_unix_and_bar_or_win32():
@@ -182,5 +182,5 @@ def test_simplify_complex_false():
 
 
 def test_simplify_android_not_apple():
-    validate_simplify('ANDROID AND NOT ANDROID_EMBEDDED AND NOT APPLE_MACOS',
+    validate_simplify('ANDROID AND NOT ANDROID_EMBEDDED AND NOT MACOS',
                       'ANDROID AND NOT ANDROID_EMBEDDED')

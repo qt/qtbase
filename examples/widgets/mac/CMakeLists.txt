@@ -1,7 +1,7 @@
 # Generated from mac.pro.
 
 
-if(APPLE_MACOS)
+if(MACOS)
     add_subdirectory(qmaccocoaviewcontainer)
     add_subdirectory(qmacnativewidget)
 endif()

@@ -159,13 +159,13 @@ qt_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         HAVE_OT
 )
 
-qt_extend_target(BundledHarfbuzz CONDITION APPLE_UIKIT
+qt_extend_target(BundledHarfbuzz CONDITION UIKIT
     LIBRARIES
         ${FWCoreGraphics}
         ${FWCoreText}
 )
 
-qt_extend_target(BundledHarfbuzz CONDITION APPLE AND NOT APPLE_UIKIT
+qt_extend_target(BundledHarfbuzz CONDITION APPLE AND NOT UIKIT
     LIBRARIES
         ${FWApplicationServices}
 )

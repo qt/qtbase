@@ -23,5 +23,5 @@ add_qt_test(tst_qfilesystemmodel
 #### Keys ignored in scope 2:.:.:qfilesystemmodel.pro:WIN32:
 # testcase.timeout = "900"
 
-#### Keys ignored in scope 3:.:.:qfilesystemmodel.pro:APPLE_MACOS:
+#### Keys ignored in scope 3:.:.:qfilesystemmodel.pro:MACOS:
 # testcase.timeout = "900"

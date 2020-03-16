@@ -18,11 +18,11 @@ if (QT_FEATURE_gui)
         set(_default_platform "windows")
     elseif(ANDROID)
         set(_default_platform "android")
-    elseif(APPLE_MACOS)
+    elseif(MACOS)
         set(_default_platform "cocoa")
-    elseif(APPLE_TVOS OR APPLE_IOS)
+    elseif(TVOS OR IOS)
         set(_default_platform "ios")
-    elseif(APPLE_WATCHOS)
+    elseif(WATCHOS)
         set(_default_platform "minimal")
     elseif(QNX)
         set(_default_platform "qnx")
@@ -359,7 +359,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
 #### Keys ignored in scope 3:.:.:gui.pro:QT_FEATURE_angle:
 # MODULE_AUX_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/QtANGLE"
 
-qt_extend_target(Gui CONDITION APPLE_MACOS
+qt_extend_target(Gui CONDITION MACOS
     LIBRARIES
         ${FWAppKit}
     PUBLIC_LIBRARIES
@@ -578,7 +578,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_harfbuzz
 # Replicate what src/3rdparty/harfbuzz-ng/harfbuzz-ng.pro does, which is link CoreText
 # when targeting uikit.
 
-qt_extend_target(Gui CONDITION QT_FEATURE_harfbuzz AND APPLE_UIKIT
+qt_extend_target(Gui CONDITION QT_FEATURE_harfbuzz AND UIKIT
     LIBRARIES
         ${FWCoreText}
 )
@@ -622,12 +622,12 @@ qt_extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-qt_extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
+qt_extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
 )
 
-if(UNIX AND NOT ANDROID AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64"))
+if(UNIX AND NOT ANDROID AND NOT UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64"))
     qt_add_simd_part(Gui SIMD neon
         SOURCES
             ../3rdparty/pixman/pixman-arm-neon-asm.S
@@ -778,7 +778,7 @@ qt_extend_target(Gui CONDITION WASM
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
-qt_extend_target(Gui CONDITION APPLE_IOS OR APPLE_MACOS
+qt_extend_target(Gui CONDITION IOS OR MACOS
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h
         rhi/qrhimetal_p_p.h

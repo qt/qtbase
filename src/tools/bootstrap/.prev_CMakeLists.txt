@@ -174,19 +174,19 @@ qt_extend_target(Bootstrap CONDITION APPLE
         ${FWFoundation}
 )
 
-qt_extend_target(Bootstrap CONDITION APPLE_MACOS
+qt_extend_target(Bootstrap CONDITION MACOS
     SOURCES
         ../../corelib/io/qstandardpaths_mac.mm
     LIBRARIES
         ${FWCoreServices}
 )
 
-qt_extend_target(Bootstrap CONDITION APPLE_UIKIT
+qt_extend_target(Bootstrap CONDITION UIKIT
     LIBRARIES
         ${FWUIKit}
 )
 
-qt_extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_MACOS
+qt_extend_target(Bootstrap CONDITION UNIX AND NOT MACOS
     SOURCES
         ../../corelib/io/qstandardpaths_unix.cpp
 )

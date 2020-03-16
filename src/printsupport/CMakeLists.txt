@@ -143,7 +143,7 @@ if(QT_FEATURE_printdialog)
     )
 endif()
 
-qt_extend_target(PrintSupport CONDITION APPLE_MACOS AND QT_FEATURE_printdialog
+qt_extend_target(PrintSupport CONDITION MACOS AND QT_FEATURE_printdialog
     SOURCES
         dialogs/qpagesetupdialog_mac.mm
         dialogs/qprintdialog_mac.mm

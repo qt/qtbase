@@ -298,7 +298,7 @@ qt_extend_target(Widgets CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i3
         "/BASE:0x65000000"
 )
 
-qt_extend_target(Widgets CONDITION APPLE_MACOS
+qt_extend_target(Widgets CONDITION MACOS
     SOURCES
         kernel/qmacgesturerecognizer.cpp kernel/qmacgesturerecognizer_p.h
         widgets/qmaccocoaviewcontainer_mac.h widgets/qmaccocoaviewcontainer_mac.mm
@@ -596,7 +596,7 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_widgettextcontrol
         widgets/qwidgettextcontrol_p_p.h
 )
 
-qt_extend_target(Widgets CONDITION APPLE_MACOS AND (QT_FEATURE_menu OR QT_FEATURE_menubar)
+qt_extend_target(Widgets CONDITION MACOS AND (QT_FEATURE_menu OR QT_FEATURE_menubar)
     SOURCES
         widgets/qmenu_mac.mm
 )

@@ -13,7 +13,7 @@ endif()
 if(QT_FEATURE_private_tests)
     add_subdirectory(qauthenticator)
 
-    if(NOT APPLE_MACOS)
+    if(NOT MACOS)
         add_subdirectory(qhostinfo)
     endif()
 endif()
