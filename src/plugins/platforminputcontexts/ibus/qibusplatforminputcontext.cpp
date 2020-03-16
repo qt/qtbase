@@ -710,21 +710,24 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
     busConnected = true;
 }
 
-QString QIBusPlatformInputContextPrivate::getSocketPath()
+static QString getSocketPathForDisplay(QByteArray display, bool trimScreen)
 {
-    QByteArray display(qgetenv("DISPLAY"));
     QByteArray host = "unix";
     QByteArray displayNumber = "0";
 
-    int pos = display.indexOf(':');
-    if (pos > 0)
-        host = display.left(pos);
-    ++pos;
-    int pos2 = display.indexOf('.', pos);
-    if (pos2 > 0)
-        displayNumber = display.mid(pos, pos2 - pos);
-    else
-        displayNumber = display.mid(pos);
+    if (trimScreen) {
+        int pos = display.indexOf(':');
+	if (pos > 0)
+            host = display.left(pos);
+        ++pos;
+        int pos2 = display.indexOf('.', pos);
+        if (pos2 > 0)
+            displayNumber = display.mid(pos, pos2 - pos);
+        else
+            displayNumber = display.mid(pos);
+    } else {
+        displayNumber = display;
+    }
     if (debug)
         qDebug() << "host=" << host << "displayNumber" << displayNumber;
 
@@ -732,6 +735,14 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
                QLatin1String("/ibus/bus/") +
                QLatin1String(QDBusConnection::localMachineId()) +
                QLatin1Char('-') + QString::fromLocal8Bit(host) + QLatin1Char('-') + QString::fromLocal8Bit(displayNumber);
+}
+
+QString QIBusPlatformInputContextPrivate::getSocketPath()
+{
+	QString socketPath = getSocketPathForDisplay(qgetenv("WAYLAND_DISPLAY"), false);
+	if (QFile::exists(socketPath))
+		return socketPath;
+	return getSocketPathForDisplay(qgetenv("DISPLAY"), true);
 }
 
 QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
