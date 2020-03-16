@@ -3150,7 +3150,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
             for (int i = 0; i < childList.count(); ++i) {
                 QStandardItem *chi = childList.at(i);
                 if (chi) {
-                    itemsSet.erase(itemsSet.constFind(chi));
+                    itemsSet.remove(chi);
                     stack.push(chi);
                 }
             }

@@ -951,7 +951,9 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     for (QVector<QPersistentModelIndexData *>::const_iterator it = persistent_invalidated.constBegin();
          it != persistent_invalidated.constEnd(); ++it) {
         QPersistentModelIndexData *data = *it;
-        persistent.indexes.erase(persistent.indexes.constFind(data->index));
+        auto index = persistent.indexes.constFind(data->index);
+        if (index != persistent.indexes.constEnd())
+            persistent.indexes.erase(index);
         data->index = QModelIndex();
     }
 }
