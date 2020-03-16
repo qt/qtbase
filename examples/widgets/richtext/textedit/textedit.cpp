@@ -197,7 +197,7 @@ void TextEdit::setupFileActions()
     a->setPriority(QAction::LowPriority);
     menu->addSeparator();
 
-#ifndef QT_NO_PRINTER
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
     const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
     a = menu->addAction(printIcon, tr("&Print..."), this, &TextEdit::filePrint);
     a->setPriority(QAction::LowPriority);
@@ -559,7 +559,7 @@ void TextEdit::filePrint()
 
 void TextEdit::filePrintPreview()
 {
-#if QT_CONFIG(printpreviewdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printpreviewdialog)
     QPrinter printer(QPrinter::HighResolution);
     QPrintPreviewDialog preview(&printer, this);
     connect(&preview, &QPrintPreviewDialog::paintRequested, this, &TextEdit::printPreview);
@@ -569,17 +569,17 @@ void TextEdit::filePrintPreview()
 
 void TextEdit::printPreview(QPrinter *printer)
 {
-#ifdef QT_NO_PRINTER
-    Q_UNUSED(printer);
-#else
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
     textEdit->print(printer);
+#else
+    Q_UNUSED(printer)
 #endif
 }
 
 
 void TextEdit::filePrintPdf()
 {
-#ifndef QT_NO_PRINTER
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printer)
 //! [0]
     QFileDialog fileDialog(this, tr("Export PDF"));
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);

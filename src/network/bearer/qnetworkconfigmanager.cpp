@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #include "qnetworkconfigmanager.h"
 
 #include "qnetworkconfigmanager_p.h"

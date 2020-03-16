@@ -93,7 +93,6 @@
     \page paintsystem-devices.html
     \title Paint Devices and Backends
 
-    \contentspage The Paint System
     \nextpage Drawing and Filling
 
     \section1 Creating a Paint Device
@@ -185,7 +184,6 @@
     \title Drawing and Filling
 
     \previouspage Paint Devices and Backends
-    \contentspage The Paint System
     \nextpage Coordinate System
 
     \section1 Drawing
@@ -303,7 +301,6 @@
     \title Reading and Writing Image Files
 
     \previouspage Coordinate System
-    \contentspage The Paint System
 
     The most common way to read images is through QImage and QPixmap's
     constructors, or by calling the QImage::load() and QPixmap::load()

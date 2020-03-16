@@ -38,8 +38,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "12.1"
-#define DATA_VERSION_STR "QChar::Unicode_12_1"
+#define DATA_VERSION_S "13.0"
+#define DATA_VERSION_STR "QChar::Unicode_13_0"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -72,6 +72,7 @@ static void initAgeMap()
         { QChar::Unicode_11_0,   "11.0" },
         { QChar::Unicode_12_0,   "12.0" },
         { QChar::Unicode_12_1,   "12.1" }, // UCD Revision 24
+        { QChar::Unicode_13_0,   "13.0" }, // UCD Revision 26
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -798,6 +799,11 @@ static void initScriptMap()
         { QChar::Script_Nandinagari,            "Nandinagari" },
         { QChar::Script_NyiakengPuachueHmong,   "NyiakengPuachueHmong" },
         { QChar::Script_Wancho,                 "Wancho" },
+        // 13.0
+        { QChar::Script_Chorasmian,             "Chorasmian" },
+        { QChar::Script_DivesAkuru,             "DivesAkuru" },
+        { QChar::Script_KhitanSmallScript,      "KhitanSmallScript" },
+        { QChar::Script_Yezidi,                 "Yezidi" },
 
         // unhandled
         { QChar::Script_Unknown,                0 }
@@ -3045,7 +3051,7 @@ int main(int, char **)
     QByteArray header =
         "/****************************************************************************\n"
         "**\n"
-        "** Copyright (C) 2016 The Qt Company Ltd.\n"
+        "** Copyright (C) 2020 The Qt Company Ltd.\n"
         "** Contact: https://www.qt.io/licensing/\n"
         "**\n"
         "** This file is part of the QtCore module of the Qt Toolkit.\n"

@@ -1667,7 +1667,8 @@ namespace {
         QFontEngine *previousGlyphFontEngine;
 
         QFixed minw;
-        QFixed softHyphenWidth;
+        QFixed currentSoftHyphenWidth;
+        QFixed commitedSoftHyphenWidth;
         QFixed rightBearing;
         QFixed minimumRightBearing;
 
@@ -1681,7 +1682,7 @@ namespace {
 
         QFixed calculateNewWidth(const QScriptLine &line) const {
             return line.textWidth + tmpData.textWidth + spaceData.textWidth
-                    + softHyphenWidth + negativeRightBearing();
+                    + (line.textWidth > 0 ? currentSoftHyphenWidth : QFixed()) + negativeRightBearing();
         }
 
         inline glyph_t currentGlyph() const
@@ -1755,6 +1756,7 @@ inline bool LineBreakHelper::checkFullOtherwiseExtend(QScriptLine &line)
     if (line.length && !manualWrap && (newWidth > line.width || glyphCount > maxGlyphs))
         return true;
 
+    const QFixed oldTextWidth = line.textWidth;
     minw = qMax(minw, tmpData.textWidth);
     line += tmpData;
     line.textWidth += spaceData.textWidth;
@@ -1764,6 +1766,11 @@ inline bool LineBreakHelper::checkFullOtherwiseExtend(QScriptLine &line)
     tmpData.length = 0;
     spaceData.textWidth = 0;
     spaceData.length = 0;
+
+    if (oldTextWidth != line.textWidth || currentSoftHyphenWidth > 0) {
+        commitedSoftHyphenWidth = currentSoftHyphenWidth;
+        currentSoftHyphenWidth = 0;
+    }
 
     return false;
 }
@@ -1837,7 +1844,6 @@ void QTextLine::layout_helper(int maxGlyphs)
 
     while (newItem < eng->layoutData->items.size()) {
         lbh.resetRightBearing();
-        lbh.softHyphenWidth = 0;
         if (newItem != item) {
             item = newItem;
             const QScriptItem &current = eng->layoutData->items.at(item);
@@ -1975,9 +1981,9 @@ void QTextLine::layout_helper(int maxGlyphs)
             } while (lbh.currentPosition < end);
             lbh.minw = qMax(lbh.tmpData.textWidth, lbh.minw);
 
-            if (lbh.currentPosition > 0 && lbh.currentPosition < end
-                && attributes[lbh.currentPosition].lineBreak
-                && eng->layoutData->string.at(lbh.currentPosition - 1).unicode() == QChar::SoftHyphen) {
+            if (lbh.currentPosition > 0 && lbh.currentPosition <= end
+                && (lbh.currentPosition == end || attributes[lbh.currentPosition].lineBreak)
+                && eng->layoutData->string.at(lbh.currentPosition - 1) == QChar::SoftHyphen) {
                 // if we are splitting up a word because of
                 // a soft hyphen then we ...
                 //
@@ -1994,10 +2000,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                 //     want the soft-hyphen to slip into the next line
                 //     and thus become invisible again.
                 //
-                if (line.length)
-                    lbh.softHyphenWidth = lbh.glyphs.advances[lbh.logClusters[lbh.currentPosition - 1]];
-                else if (breakany)
-                    lbh.tmpData.textWidth += lbh.glyphs.advances[lbh.logClusters[lbh.currentPosition - 1]];
+                lbh.currentSoftHyphenWidth = lbh.glyphs.advances[lbh.logClusters[lbh.currentPosition - 1]];
             }
 
             if (sb_or_ws|breakany) {
@@ -2023,6 +2026,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                     lbh.calculateRightBearing();
 
                 if (lbh.checkFullOtherwiseExtend(line)) {
+
                     // We are too wide to accept the next glyph with its bearing, so we restore the
                     // right bearing to that of the previous glyph (the one that was already accepted),
                     // so that the bearing can be be applied to the final width of the text below.
@@ -2031,9 +2035,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                     else
                         lbh.calculateRightBearingForPreviousGlyph();
 
-                    if (!breakany) {
-                        line.textWidth += lbh.softHyphenWidth;
-                    }
+                    line.textWidth += lbh.commitedSoftHyphenWidth;
 
                     goto found;
                 }
@@ -2045,6 +2047,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     }
     LB_DEBUG("reached end of line");
     lbh.checkFullOtherwiseExtend(line);
+    line.textWidth += lbh.commitedSoftHyphenWidth;
 found:
     line.textAdvance = line.textWidth;
 

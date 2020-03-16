@@ -273,7 +273,11 @@ static const char specialLanguages[][6] = {
     "", // Elymaic
     "", // Nandinagari
     "", // NyiakengPuachueHmong
-    "" // Wancho
+    "", // Wancho
+    "", // Chorasmian
+    "", // DivesAkuru
+    "", // KhitanSmallScript
+    "" // Yezidi
 };
 Q_STATIC_ASSERT(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
 

@@ -48,6 +48,7 @@
 #include "qiosfiledialog.h"
 #include "qiosintegration.h"
 #include "qiosoptionalplugininterface.h"
+#include "qiosdocumentpickercontroller.h"
 
 QIOSFileDialog::QIOSFileDialog()
     : m_viewController(nullptr)
@@ -72,8 +73,12 @@ bool QIOSFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality window
     bool acceptOpen = options()->acceptMode() == QFileDialogOptions::AcceptOpen;
     QString directory = options()->initialDirectory().toLocalFile();
 
-    if (acceptOpen && directory.startsWith(QLatin1String("assets-library:")))
-        return showImagePickerDialog(parent);
+    if (acceptOpen) {
+        if (directory.startsWith(QLatin1String("assets-library:")))
+            return showImagePickerDialog(parent);
+        else
+            return showNativeDocumentPickerDialog(parent);
+    }
 
     return false;
 }
@@ -102,6 +107,25 @@ bool QIOSFileDialog::showImagePickerDialog(QWindow *parent)
     return true;
 }
 
+bool QIOSFileDialog::showNativeDocumentPickerDialog(QWindow *parent)
+{
+#ifndef Q_OS_TVOS
+    if (options()->fileMode() == QFileDialogOptions::Directory ||
+        options()->fileMode() == QFileDialogOptions::DirectoryOnly)
+        return false;
+
+    m_viewController = [[QIOSDocumentPickerController alloc] initWithQIOSFileDialog:this];
+
+    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
+        : qt_apple_sharedApplication().keyWindow;
+    [window.rootViewController presentViewController:m_viewController animated:YES completion:nil];
+
+    return true;
+#else
+    return false;
+#endif
+}
+
 void QIOSFileDialog::hide()
 {
     // QFileDialog will remember the last directory set, and open subsequent dialogs in the same
@@ -123,7 +147,7 @@ QList<QUrl> QIOSFileDialog::selectedFiles() const
     return m_selection;
 }
 
-void QIOSFileDialog::selectedFilesChanged(QList<QUrl> selection)
+void QIOSFileDialog::selectedFilesChanged(const QList<QUrl> &selection)
 {
     m_selection = selection;
     emit filesSelected(m_selection);

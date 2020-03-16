@@ -481,7 +481,6 @@
 /*!
     \page qtest-tutorial.html
     \brief A short introduction to testing with Qt Test.
-    \contentspage Qt Test Overview
     \nextpage {Chapter 1: Writing a Unit Test}{Chapter 1}
     \ingroup best-practices
 
@@ -506,7 +505,6 @@
 /*!
     \example tutorial1
 
-    \contentspage {Qt Test Tutorial}{Contents}
     \nextpage {Chapter 2: Data Driven Testing}{Chapter 2}
 
     \title Chapter 1: Writing a Unit Test
@@ -582,7 +580,6 @@
     \example tutorial2
 
     \previouspage {Chapter 1: Writing a Unit Test}{Chapter 1}
-    \contentspage {Qt Test Tutorial}{Contents}
     \nextpage {Chapter 3: Simulating Gui Events}{Chapter 3}
 
     \title Chapter 2: Data Driven Testing
@@ -691,7 +688,6 @@
     \example tutorial3
 
     \previouspage {Chapter 2: Data Driven Testing}{Chapter 2}
-    \contentspage {Qt Test Tutorial}{Contents}
     \nextpage {Chapter 4: Replaying GUI Events}{Chapter 4}
 
     \title Chapter 3: Simulating GUI Events
@@ -752,7 +748,6 @@
     \example tutorial4
 
     \previouspage {Chapter 3: Simulating GUI Events}{Chapter 3}
-    \contentspage {Qt Test Tutorial}{Contents}
     \nextpage {Chapter 5: Writing a Benchmark}{Chapter 5}
 
     \title Chapter 4: Replaying GUI Events
@@ -833,7 +828,6 @@
     \example tutorial5
 
     \previouspage {Chapter 4: Replaying GUI Events}{Chapter 4}
-    \contentspage {Qt Test Tutorial}{Contents}
     \nextpage {Chapter 6: Skipping Tests with QSKIP}{Chapter 6}
 
     \title Chapter 5: Writing a Benchmark
@@ -889,7 +883,6 @@
     \page qttestlib-tutorial6.html
 
     \previouspage {Chapter 5: Writing a Benchmark}{Chapter 5}
-    \contentspage {Qt Test Tutorial}{Contents}
 
     \title Chapter 6: Skipping Tests with QSKIP
     \brief How to skip tests in certain cases.

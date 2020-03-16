@@ -7,7 +7,7 @@
     "Description": "D-Bus is a message bus system, a simple way for applications to talk to one another.",
     "Homepage": "https://www.freedesktop.org/wiki/Software/dbus/",
     "Version": "Minimal supported is 1.2, compatible up to ...",
-    "Version": "dbus-1.12.12",
+    "Version": "dbus-1.13.12",
     "LicenseId": "AFL-2.1 OR GPL-2.0-or-later",
     "License": "Academic Free License v2.1, or GNU General Public License v2.0 or later",
     "LicenseFile": "LIBDBUS-1-LICENSE.txt",

@@ -891,14 +891,10 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
 
     QMacAutoReleasePool pool;
 
-    if (icon.isNull()) {
-        NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-        [iconButton setImage:[workspace iconForFile:m_view.window.representedFilename]];
-    } else {
-        QPixmap pixmap = icon.pixmap(QSize(22, 22));
-        NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(pixmap));
-        [iconButton setImage:[image autorelease]];
-    }
+    if (icon.isNull())
+        iconButton.image = [NSWorkspace.sharedWorkspace iconForFile:m_view.window.representedFilename];
+    else
+        iconButton.image = [NSImage imageFromQIcon:icon];
 }
 
 void QCocoaWindow::setAlertState(bool enabled)
@@ -1237,7 +1233,9 @@ void QCocoaWindow::windowDidOrderOffScreen()
 
 void QCocoaWindow::windowDidChangeOcclusionState()
 {
-    if (m_view.window.occlusionState & NSWindowOcclusionStateVisible)
+    bool visible = m_view.window.occlusionState & NSWindowOcclusionStateVisible;
+    qCDebug(lcQpaWindow) << "QCocoaWindow::windowDidChangeOcclusionState" << window() << "is now" << (visible ? "visible" : "occluded");
+    if (visible)
         [m_view setNeedsDisplay:YES];
     else
         handleExposeEvent(QRegion());

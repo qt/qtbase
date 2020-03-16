@@ -76,13 +76,14 @@ RenderThread::~RenderThread()
 
 //! [2]
 void RenderThread::render(double centerX, double centerY, double scaleFactor,
-                          QSize resultSize)
+                          QSize resultSize, double devicePixelRatio)
 {
     QMutexLocker locker(&mutex);
 
     this->centerX = centerX;
     this->centerY = centerY;
     this->scaleFactor = scaleFactor;
+    this->devicePixelRatio = devicePixelRatio;
     this->resultSize = resultSize;
 
     if (!isRunning()) {
@@ -99,8 +100,10 @@ void RenderThread::run()
 {
     forever {
         mutex.lock();
-        const QSize resultSize = this->resultSize;
-        const double scaleFactor = this->scaleFactor;
+        const double devicePixelRatio = this->devicePixelRatio;
+        const QSize resultSize = this->resultSize * devicePixelRatio;
+        const double requestedScaleFactor = this->scaleFactor;
+        const double scaleFactor = requestedScaleFactor / devicePixelRatio;
         const double centerX = this->centerX;
         const double centerY = this->centerY;
         mutex.unlock();
@@ -111,6 +114,7 @@ void RenderThread::run()
 //! [4] //! [5]
         int halfHeight = resultSize.height() / 2;
         QImage image(resultSize, QImage::Format_RGB32);
+        image.setDevicePixelRatio(devicePixelRatio);
 
         const int NumPasses = 8;
         int pass = 0;
@@ -162,7 +166,7 @@ void RenderThread::run()
                 pass = 4;
             } else {
                 if (!restart)
-                    emit renderedImage(image, scaleFactor);
+                    emit renderedImage(image, requestedScaleFactor);
 //! [5] //! [6]
                 ++pass;
             }

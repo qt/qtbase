@@ -32,11 +32,13 @@ To update:
   cases QChar may need additions to some of its enums.
 * Build with the modified code, fix any compilation issues, make check
   in suitable directories, including tst_QTextBoundaryFinder.
-* That may have updated qtbase/src/corelib/text/qunicodetables.cpp;
-  if so the update matters; be sure to commit the changes to data/ at
-  the same time and update text/qt_attribution.json to match; use the
-  UCD Revision number, rather than the Unicode standard number, as the
-  Version, for all that qunicodetables.cpp uses the latter.
+* That may have updated qtbase/src/corelib/text/qunicodetables.cpp; if
+  so the update matters; be sure to commit the changes to data/ at the
+  same time and update text/qt_attribution.json to match; use the UCD
+  Revision number, rather than the Unicode standard number, as the
+  Version, for all that qunicodetables.cpp uses the latter (see the
+  'UAX #44, UCD' page linked from https://www.unicode.org/ucd/ for the
+  table with this).
 * If there are enum additions in qchar.h (public API), be sure to also
   update the documentation in qchar.cpp for each affected enum,
   respecting the existing ordering.

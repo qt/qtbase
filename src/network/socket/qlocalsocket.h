@@ -118,7 +118,7 @@ Q_SIGNALS:
     void connected();
     void disconnected();
 #if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_X("Use QLocalSocket::errorOccurred(QLocalSocket::LocalSocketError) instead")
+    QT_DEPRECATED_NETWORK_API_5_15_X("Use QLocalSocket::errorOccurred(QLocalSocket::LocalSocketError) instead")
     void error(QLocalSocket::LocalSocketError socketError);
 #endif
     void errorOccurred(QLocalSocket::LocalSocketError socketError);

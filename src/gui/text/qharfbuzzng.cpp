@@ -230,6 +230,12 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     hb_script_t(HB_TAG('N', 'a', 'n', 'd')), // Script_Nandinagari
     hb_script_t(HB_TAG('H', 'm', 'n', 'p')), // Script_NyiakengPuachueHmong
     hb_script_t(HB_TAG('W', 'c', 'h', 'o')), // Script_Wancho
+
+    // Unicode 13.0 additions (as above)
+    hb_script_t(HB_TAG('C', 'h', 'o', 'r')), // Script_Chorasmian
+    hb_script_t(HB_TAG('D', 'i', 'v', 'e')), // Script_DivesAkuru
+    hb_script_t(HB_TAG('K', 'h', 'i', 't')), // Script_KhitanSmallScript
+    hb_script_t(HB_TAG('Y', 'e', 'z', 'i')), // Script_Yezidi
 };
 Q_STATIC_ASSERT(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));
 

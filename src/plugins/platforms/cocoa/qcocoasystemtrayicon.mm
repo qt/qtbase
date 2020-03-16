@@ -92,67 +92,46 @@
 
 #import <AppKit/AppKit.h>
 
-QT_USE_NAMESPACE
-
-@interface QT_MANGLE_NAMESPACE(QNSStatusItem) : NSObject <NSUserNotificationCenterDelegate>
-@property (nonatomic, assign) QCocoaMenu *menu;
-@property (nonatomic, assign) QIcon icon;
-@property (nonatomic, readonly) NSStatusItem *item;
-@property (nonatomic, readonly) QRectF geometry;
-- (instancetype)initWithSysTray:(QCocoaSystemTrayIcon *)systray;
-- (void)triggerSelector:(id)sender button:(Qt::MouseButton)mouseButton;
-- (void)doubleClickSelector:(id)sender;
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSStatusItem);
-
-@interface QT_MANGLE_NAMESPACE(QNSImageView) : NSImageView
-@property (nonatomic, assign) BOOL down;
-@property (nonatomic, assign) QNSStatusItem *parent;
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSImageView);
-
 QT_BEGIN_NAMESPACE
-class QSystemTrayIconSys
-{
-public:
-    QSystemTrayIconSys(QCocoaSystemTrayIcon *sys) {
-        item = [[QNSStatusItem alloc] initWithSysTray:sys];
-        NSUserNotificationCenter.defaultUserNotificationCenter.delegate = item;
-    }
-    ~QSystemTrayIconSys() {
-        [[[item item] view] setHidden: YES];
-        NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
-        if (center.delegate == item)
-            center.delegate = nil;
-        [item release];
-    }
-    QNSStatusItem *item;
-};
 
 void QCocoaSystemTrayIcon::init()
 {
-    if (!m_sys)
-        m_sys = new QSystemTrayIconSys(this);
-}
+    m_statusItem = [[NSStatusBar.systemStatusBar statusItemWithLength:NSSquareStatusItemLength] retain];
 
-QRect QCocoaSystemTrayIcon::geometry() const
-{
-    if (!m_sys)
-        return QRect();
+    m_delegate = [[QStatusItemDelegate alloc] initWithSysTray:this];
 
-    const QRectF geom = [m_sys->item geometry];
-    if (!geom.isNull())
-        return geom.toRect();
-    else
-        return QRect();
+    m_statusItem.button.target = m_delegate;
+    m_statusItem.button.action = @selector(statusItemClicked);
+    [m_statusItem.button sendActionOn:NSEventMaskLeftMouseUp | NSEventMaskRightMouseUp | NSEventMaskOtherMouseUp];
 }
 
 void QCocoaSystemTrayIcon::cleanup()
 {
-    delete m_sys;
-    m_sys = nullptr;
+    NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
+    if (center.delegate == m_delegate)
+        center.delegate = nil;
+
+    [NSStatusBar.systemStatusBar removeStatusItem:m_statusItem];
+    [m_statusItem release];
+    m_statusItem = nil;
+
+    [m_delegate release];
+    m_delegate = nil;
+
+    m_menu = nullptr;
+}
+
+QRect QCocoaSystemTrayIcon::geometry() const
+{
+    if (!m_statusItem)
+        return QRect();
+
+    if (NSWindow *window = m_statusItem.button.window) {
+        if (QCocoaScreen *screen = QCocoaScreen::get(window.screen))
+            return screen->mapFromNative(window.frame).toRect();
+    }
+
+    return QRect();
 }
 
 static bool heightCompareFunction (QSize a, QSize b) { return (a.height() < b.height()); }
@@ -165,17 +144,15 @@ static QList<QSize> sortByHeight(const QList<QSize> &sizes)
 
 void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
 {
-    if (!m_sys)
+    if (!m_statusItem)
         return;
 
-    m_sys->item.icon = icon;
-
-    // The reccomended maximum title bar icon height is 18 points
+    // The recommended maximum title bar icon height is 18 points
     // (device independent pixels). The menu height on past and
     // current OS X versions is 22 points. Provide some future-proofing
     // by deriving the icon height from the menu height.
     const int padding = 4;
-    const int menuHeight = [[NSStatusBar systemStatusBar] thickness];
+    const int menuHeight = NSStatusBar.systemStatusBar.thickness;
     const int maxImageHeight = menuHeight - padding;
 
     // Select pixmap based on the device pixel height. Ideally we would use
@@ -228,30 +205,28 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
         p.drawPixmap(r, pixmap);
     }
 
-    NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(fullHeightPixmap));
+    auto *nsimage = [NSImage imageFromQImage:fullHeightPixmap.toImage()];
     [nsimage setTemplate:icon.isMask()];
-    [(NSImageView*)[[m_sys->item item] view] setImage: nsimage];
-    [nsimage release];
+    m_statusItem.button.image = nsimage;
+    m_statusItem.button.imageScaling = NSImageScaleProportionallyDown;
 }
 
 void QCocoaSystemTrayIcon::updateMenu(QPlatformMenu *menu)
 {
-    if (!m_sys)
-        return;
-
-    m_sys->item.menu = static_cast<QCocoaMenu *>(menu);
-    if (menu && [m_sys->item.menu->nsMenu() numberOfItems] > 0) {
-        [[m_sys->item item] setHighlightMode:YES];
-    } else {
-        [[m_sys->item item] setHighlightMode:NO];
-    }
+    // We don't set the menu property of the NSStatusItem here,
+    // as that would prevent us from receiving the action for the
+    // click, and we wouldn't be able to emit the activated signal.
+    // Instead we show the menu manually when the status item is
+    // clicked.
+    m_menu = static_cast<QCocoaMenu *>(menu);
 }
 
 void QCocoaSystemTrayIcon::updateToolTip(const QString &toolTip)
 {
-    if (!m_sys)
+    if (!m_statusItem)
         return;
-    [[[m_sys->item item] view] setToolTip:toolTip.toNSString()];
+
+    m_statusItem.button.toolTip = toolTip.toNSString();
 }
 
 bool QCocoaSystemTrayIcon::isSystemTrayAvailable() const
@@ -267,180 +242,83 @@ bool QCocoaSystemTrayIcon::supportsMessages() const
 void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &message,
                                        const QIcon& icon, MessageIcon, int msecs)
 {
-    if (!m_sys)
+    if (!m_statusItem)
         return;
 
-    NSUserNotification *notification = [[NSUserNotification alloc] init];
-    notification.title = [NSString stringWithUTF8String:title.toUtf8().data()];
-    notification.informativeText = [NSString stringWithUTF8String:message.toUtf8().data()];
-
-    if (!icon.isNull()) {
-        auto *nsimage = qt_mac_create_nsimage(icon);
-        [nsimage setTemplate:icon.isMask()];
-        notification.contentImage = [nsimage autorelease];
-    }
+    auto *notification = [[NSUserNotification alloc] init];
+    notification.title = title.toNSString();
+    notification.informativeText = message.toNSString();
+    notification.contentImage = [NSImage imageFromQIcon:icon];
 
     NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
-    center.delegate = m_sys->item;
-    [center deliverNotification:notification];
+    center.delegate = m_delegate;
+
+    [center deliverNotification:[notification autorelease]];
+
     if (msecs) {
         NSTimeInterval timeout = msecs / 1000.0;
         [center performSelector:@selector(removeDeliveredNotification:) withObject:notification afterDelay:timeout];
     }
-    [notification release];
 }
+
+void QCocoaSystemTrayIcon::statusItemClicked()
+{
+    auto *mouseEvent = NSApp.currentEvent;
+
+    auto activationReason = QPlatformSystemTrayIcon::Unknown;
+
+    if (mouseEvent.clickCount == 2) {
+        activationReason = QPlatformSystemTrayIcon::DoubleClick;
+    } else {
+        auto mouseButton = cocoaButton2QtButton(mouseEvent);
+        if (mouseButton == Qt::MidButton)
+            activationReason = QPlatformSystemTrayIcon::MiddleClick;
+        else if (mouseButton == Qt::RightButton)
+            activationReason = QPlatformSystemTrayIcon::Context;
+        else
+            activationReason = QPlatformSystemTrayIcon::Trigger;
+    }
+
+    emit activated(activationReason);
+
+    if (NSMenu *menu = m_menu ? m_menu->nsMenu() : nil)
+        [m_statusItem popUpStatusItemMenu:menu];
+}
+
 QT_END_NAMESPACE
 
-@implementation NSStatusItem (Qt)
-@end
+@implementation QStatusItemDelegate
 
-@implementation QNSImageView
-- (instancetype)initWithParent:(QNSStatusItem *)myParent {
-    self = [super init];
-    self.parent = myParent;
-    self.down = NO;
+- (instancetype)initWithSysTray:(QCocoaSystemTrayIcon *)platformSystemTray
+{
+    if ((self = [super init]))
+        self.platformSystemTray = platformSystemTray;
+
     return self;
 }
 
-- (void)menuTrackingDone:(NSNotification *)__unused notification
+- (void)dealloc
 {
-    self.down = NO;
-
-    [self setNeedsDisplay:YES];
-}
-
-- (void)mousePressed:(NSEvent *)mouseEvent
-{
-    self.down = YES;
-    int clickCount = [mouseEvent clickCount];
-    [self setNeedsDisplay:YES];
-
-    if (clickCount == 2) {
-        [self menuTrackingDone:nil];
-        [self.parent doubleClickSelector:self];
-    } else {
-        [self.parent triggerSelector:self button:cocoaButton2QtButton(mouseEvent)];
-    }
-}
-
-- (void)mouseDown:(NSEvent *)mouseEvent
-{
-    [self mousePressed:mouseEvent];
-}
-
-- (void)mouseUp:(NSEvent *)mouseEvent
-{
-    Q_UNUSED(mouseEvent);
-    [self menuTrackingDone:nil];
-}
-
-- (void)rightMouseDown:(NSEvent *)mouseEvent
-{
-    [self mousePressed:mouseEvent];
-}
-
-- (void)rightMouseUp:(NSEvent *)mouseEvent
-{
-    Q_UNUSED(mouseEvent);
-    [self menuTrackingDone:nil];
-}
-
-- (void)otherMouseDown:(NSEvent *)mouseEvent
-{
-    [self mousePressed:mouseEvent];
-}
-
-- (void)otherMouseUp:(NSEvent *)mouseEvent
-{
-    Q_UNUSED(mouseEvent);
-    [self menuTrackingDone:nil];
-}
-
-- (void)drawRect:(NSRect)rect {
-    [[self.parent item] drawStatusBarBackgroundInRect:rect withHighlight:self.down];
-    [super drawRect:rect];
-}
-@end
-
-@implementation QNSStatusItem {
-    QCocoaSystemTrayIcon *systray;
-    NSStatusItem *item;
-    QNSImageView *imageCell;
-}
-
-@synthesize menu = menu;
-@synthesize icon = icon;
-
-- (instancetype)initWithSysTray:(QCocoaSystemTrayIcon *)sys
-{
-    self = [super init];
-    if (self) {
-        item = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength] retain];
-        menu = nullptr;
-        systray = sys;
-        imageCell = [[QNSImageView alloc] initWithParent:self];
-        [item setView: imageCell];
-    }
-    return self;
-}
-
-- (void)dealloc {
-    [[NSStatusBar systemStatusBar] removeStatusItem:item];
-    [[NSNotificationCenter defaultCenter] removeObserver:imageCell];
-    imageCell.parent = nil;
-    [imageCell release];
-    [item release];
+    self.platformSystemTray = nullptr;
     [super dealloc];
 }
 
-- (NSStatusItem *)item {
-    return item;
+- (void)statusItemClicked
+{
+    self.platformSystemTray->statusItemClicked();
 }
 
-- (QRectF)geometry {
-    if (NSWindow *window = item.view.window) {
-        if (QCocoaScreen *screen = QCocoaScreen::get(window.screen))
-            return screen->mapFromNative(window.frame);
-    }
-    return QRectF();
-}
-
-- (void)triggerSelector:(id)sender button:(Qt::MouseButton)mouseButton {
-    Q_UNUSED(sender);
-    if (!systray)
-        return;
-
-    if (mouseButton == Qt::MidButton)
-        emit systray->activated(QPlatformSystemTrayIcon::MiddleClick);
-    else
-        emit systray->activated(QPlatformSystemTrayIcon::Trigger);
-
-    if (menu) {
-        NSMenu *m = menu->nsMenu();
-        [[NSNotificationCenter defaultCenter] addObserver:imageCell
-         selector:@selector(menuTrackingDone:)
-             name:NSMenuDidEndTrackingNotification
-                 object:m];
-        [item popUpStatusItemMenu: m];
-    }
-}
-
-- (void)doubleClickSelector:(id)sender {
-    Q_UNUSED(sender);
-    if (!systray)
-        return;
-    emit systray->activated(QPlatformSystemTrayIcon::DoubleClick);
-}
-
-- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification {
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification
+{
     Q_UNUSED(center);
     Q_UNUSED(notification);
     return YES;
 }
 
-- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification {
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
+{
     [center removeDeliveredNotification:notification];
-    emit systray->messageClicked();
+    emit self.platformSystemTray->messageClicked();
 }
 
 @end

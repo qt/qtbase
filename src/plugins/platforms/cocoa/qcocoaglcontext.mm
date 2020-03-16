@@ -554,7 +554,7 @@ NSOpenGLContext *QCocoaGLContext::nativeContext() const
 
 QFunctionPointer QCocoaGLContext::getProcAddress(const char *procName)
 {
-    return (QFunctionPointer)dlsym(RTLD_DEFAULT, procName);
+    return (QFunctionPointer)dlsym(RTLD_NEXT, procName);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

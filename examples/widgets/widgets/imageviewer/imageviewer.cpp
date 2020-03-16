@@ -69,10 +69,11 @@
 #include <QStatusBar>
 
 #if defined(QT_PRINTSUPPORT_LIB)
-#include <QtPrintSupport/qtprintsupportglobal.h>
-#if QT_CONFIG(printdialog)
-#include <QPrintDialog>
-#endif
+#  include <QtPrintSupport/qtprintsupportglobal.h>
+
+#  if QT_CONFIG(printdialog)
+#    include <QPrintDialog>
+#  endif
 #endif
 
 //! [0]

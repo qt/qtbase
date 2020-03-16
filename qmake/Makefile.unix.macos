@@ -12,6 +12,6 @@ QTOBJS2 = \
     qcore_foundation.o
 QTSRCS2 = \
     $(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp \
-    $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp \
+    $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.mm \
     $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_darwin.mm \
     $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm

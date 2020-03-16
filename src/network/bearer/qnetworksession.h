@@ -64,15 +64,7 @@ QT_WARNING_DISABLE_DEPRECATED
 QT_BEGIN_NAMESPACE
 
 class QNetworkSessionPrivate;
-// We work around an issue in ICC where it errors out during compilation of Qt by not marking it
-// deprecated if ICC is used
-#ifdef Q_CC_INTEL
-#define QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC
-#else
-#define QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC QT_DEPRECATED_VERSION_5_15
-#endif
-class QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC Q_NETWORK_EXPORT QNetworkSession : public QObject
-#undef QT_DEPRECATED_VERSION_5_15_BUT_NOT_FOR_ICC
+class QT_DEPRECATED_BEARER_MANAGEMENT Q_NETWORK_EXPORT QNetworkSession : public QObject
 {
     Q_OBJECT
 
