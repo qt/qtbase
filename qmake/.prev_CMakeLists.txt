@@ -165,7 +165,7 @@ qt_extend_target(qmake CONDITION UNIX
 qt_extend_target(qmake CONDITION MACOS
     SOURCES
         qcore_foundation.mm
-        qcore_mac.cpp
+        qcore_mac.mm
         qoperatingsystemversion_darwin.mm
         qsettings_mac.cpp
     PUBLIC_LIBRARIES

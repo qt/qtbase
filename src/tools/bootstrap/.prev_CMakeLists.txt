@@ -167,8 +167,7 @@ qt_extend_target(Bootstrap CONDITION APPLE
     SOURCES
         ../../corelib/global/qoperatingsystemversion_darwin.mm
         ../../corelib/kernel/qcore_foundation.mm
-        ../../corelib/kernel/qcore_mac.cpp
-        ../../corelib/kernel/qcore_mac_objc.mm
+        ../../corelib/kernel/qcore_mac.mm
         ../../corelib/kernel/qcoreapplication_mac.cpp
     PUBLIC_LIBRARIES
         ${FWFoundation}

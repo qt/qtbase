@@ -698,7 +698,7 @@ qt_feature("vsp2" PRIVATE
 qt_feature("vnc" PRIVATE
     SECTION "Platform plugins"
     LABEL "VNC"
-    CONDITION ( UNIX AND NOT ANDROID AND NOT APPLE ) AND ( QT_FEATURE_regularexpression AND QT_FEATURE_network )
+    CONDITION ( UNIX AND NOT ANDROID AND NOT APPLE AND NOT WASM ) AND ( QT_FEATURE_regularexpression AND QT_FEATURE_network )
 )
 qt_feature("mtdev" PRIVATE
     LABEL "mtdev"

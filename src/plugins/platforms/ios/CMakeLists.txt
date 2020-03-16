@@ -1,4 +1,4 @@
-# Generated from ios.pro.
+# Generated from kernel.pro.
 
 #####################################################################
 ## QIOSIntegrationPlugin Plugin:
@@ -32,13 +32,15 @@ add_qt_plugin(QIOSIntegrationPlugin
         ${FWQuartzCore}
         ${FWUIKit}
         Qt::ClipboardSupportPrivate
+        Qt::Core
         Qt::CorePrivate
         Qt::FontDatabaseSupportPrivate
         Qt::GraphicsSupportPrivate
+        Qt::Gui
         Qt::GuiPrivate
 )
 
-#### Keys ignored in scope 2:.:.:kernel.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:kernel.pro:<TRUE>:
 # OTHER_FILES = "quiview_textinput.mm" "quiview_accessibility.mm"
 
 ## Scopes:
@@ -52,6 +54,7 @@ extend_target(QIOSIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSuppo
 extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
     SOURCES
         qiosclipboard.h qiosclipboard.mm
+        qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm
         qiosfiledialog.h qiosfiledialog.mm
         qiosmenu.h qiosmenu.mm
         qiosmessagedialog.h qiosmessagedialog.mm
@@ -60,6 +63,5 @@ extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
         ${FWAssetsLibrary}
 )
 
-#### Keys ignored in scope 6:.:.:kernel.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 5:.:.:kernel.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
-add_subdirectory(optional)

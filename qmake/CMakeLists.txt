@@ -168,7 +168,7 @@ qt_extend_target(qmake CONDITION UNIX
 qt_extend_target(qmake CONDITION MACOS
     SOURCES
         ../src/corelib/kernel/qcore_foundation.mm # special case
-        ../src/corelib/kernel/qcore_mac.cpp # special case
+        ../src/corelib/kernel/qcore_mac.mm # special case
         ../src/corelib/global/qoperatingsystemversion_darwin.mm # special case
         ../src/corelib/io/qsettings_mac.cpp # special case
     PUBLIC_LIBRARIES
