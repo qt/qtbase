@@ -204,66 +204,25 @@ class LocaleScanner (object):
     def __init__(self, name, nodes, root):
         self.name, self.nodes, self.base = name, nodes, root
 
-    def find(self, xpath, draft = None):
-        tags = xpath.split('/')
-        while True:
-            replace = None
-            for elt in self.nodes:
-                for selector in tags:
-                    tag, attrs = _parseXPath(selector)
-                    for elt in elt.findAllChildren(tag, attrs):
-                        if draft is None or elt.draft <= draft:
-                            break # and process the next selector
-                    else:
-                        break # no child, try next elt in self.nodes
-                else:
-                    # processed all selectors
-                    try:
-                        return elt.dom.firstChild.nodeValue
-                    except (AttributeError, KeyError):
-                        pass # move on to next elt in self.nodes
+    def find(self, xpath, default = None, draft = None):
+        """XPath search for the content of an element.
 
-            # No match in self.nodes; check root
-            elt = self.base.root
-            for i, selector in enumerate(tags):
-                tag, attrs = _parseXPath(selector)
-                for alias in elt.findAllChildren('alias', allDull = True):
-                    if alias.dom.attributes['source'].nodeValue == 'locale':
-                        replace = alias.dom.attributes['path'].nodeValue.split('/')
-                        tags = self.__xpathJoin(tags[:i], replace, tags[i:])
-                        break
-                else:
-                    for elt in elt.findAllChildren(tag, attrs):
-                        if draft is None or elt.draft <= draft:
-                            break # and process the next selector
-                    else:
-                        break
-                if replace:
-                    break
-            else:
-                # processed all selectors
-                try:
-                    return elt.dom.firstChild.nodeValue
-                except (AttributeError, KeyError):
-                    # No match
-                    pass
-            if not replace:
-                break
-
-        sought = '/'.join(tags)
-        if sought != xpath:
-            sought += ' (for {})'.format(xpath)
-        raise Error('No {} in {}'.format(sought, self.name))
-
-    def findOr(self, xpath, fallback = ''):
-        """Use a fall-back value if we don't find data.
-
-        Like find, but takes a fall-back value to return instead of
-        raising Error on failure."""
+        Required argument, xpath, is the XPath to search for. Optional
+        second argument is a default value to use, if no such node is
+        found.  Optional third argument is a draft score (see
+        Node.draftScore() for details); if given, leaf elements with
+        higher draft scores are ignored."""
         try:
-            return self.find(xpath)
-        except Error:
-            return fallback
+            for elt in self.__find(xpath):
+                try:
+                    if draft is None or elt.draft <= draft:
+                        return elt.dom.firstChild.nodeValue
+                except (AttributeError, KeyError):
+                    pass
+        except Error as e:
+            if default is None:
+                raise
+            return default
 
     def tagCodes(self):
         """Yields four tag codes
@@ -305,9 +264,9 @@ class LocaleScanner (object):
         """
         if isoCode:
             stem = 'numbers/currencies/currency[{}]/'.format(isoCode)
-            symbol = self.findOr(stem + 'symbol')
+            symbol = self.find(stem + 'symbol', '')
             name = ';'.join(
-                self.findOr(stem + 'displayName' + tail)
+                self.find(stem + 'displayName' + tail, '')
                 for tail in ('',) + tuple(
                     '[count={}]'.format(x) for x in ('zero', 'one', 'two', 'few', 'many', 'other')
                 )) + ';'
@@ -409,13 +368,13 @@ class LocaleScanner (object):
             yield 'languageEndonym', ''
 
         yield ('countryEndonym',
-               self.findOr('localeDisplayNames/territories/territory[{}]'
-                           .format(country)))
+               self.find('localeDisplayNames/territories/territory[{}]'
+                         .format(country), ''))
 
     def unitData(self):
         yield ('byte_unit',
-               self.findOr('units/unitLength[long]/unit[digital-byte]/displayName',
-                           'bytes'))
+               self.find('units/unitLength[long]/unit[digital-byte]/displayName',
+                         'bytes'))
 
         unit = self.__findUnit('', 'B')
         cache = [] # Populated by the SI call, to give hints to the IEC call
@@ -454,6 +413,51 @@ class LocaleScanner (object):
         ('short', 'format', 'abbreviated'),
         ('narrow', 'format', 'narrow'),
         ) # Used for month and day names
+
+    def __find(self, xpath):
+        retries = [ xpath.split('/') ]
+        while retries:
+            tags, elts, roots = retries.pop(), self.nodes, (self.base.root,)
+            for selector in tags:
+                tag, attrs = _parseXPath(selector)
+                elts = tuple(_iterateEach(e.findAllChildren(tag, attrs) for e in elts))
+                if not elts:
+                    break
+
+            else: # Found matching elements
+                # Possibly filter elts to prefer the least drafty ?
+                for elt in elts:
+                    yield elt
+
+            # Process roots separately: otherwise the alias-processing
+            # is excessive.
+            for i, selector in enumerate(tags):
+                tag, attrs = _parseXPath(selector)
+
+                for alias in tuple(_iterateEach(r.findAllChildren('alias', allDull=True)
+                                                for r in roots)):
+                    if alias.dom.attributes['source'].nodeValue == 'locale':
+                        replace = alias.dom.attributes['path'].nodeValue.split('/')
+                        retries.append(self.__xpathJoin(tags[:i], replace, tags[i:]))
+
+                roots = tuple(_iterateEach(r.findAllChildren(tag, attrs) for r in roots))
+                if not roots:
+                    if retries: # Let outer loop fall back on an alias path:
+                        break
+                    sought = '/'.join(tags)
+                    if sought != xpath:
+                        sought += ' (for {})'.format(xpath)
+                    raise Error('All lack child {} for {} in {}'.format(
+                            selector, sought, self.name))
+
+            else: # Found matching elements
+                for elt in roots:
+                    yield elt
+
+        sought = '/'.join(tags)
+        if sought != xpath:
+            sought += ' (for {})'.format(xpath)
+        raise Error('No {} in {}'.format(sought, self.name))
 
     def __findUnit(self, keySuffix, quantify, fallback=''):
         # The displayName for a quantified unit in en.xml is kByte
