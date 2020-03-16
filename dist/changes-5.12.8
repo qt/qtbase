@@ -1,0 +1,70 @@
+Qt 5.12.8 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0 through 5.12.7.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QLockFile:
+   * Suppressed the warning on QNX that said 'setNativeLocks failed:
+     "Function not implemented"'. There is no difference in behavior: Qt
+     will continue not to be able to apply an OS- level file lock, which
+     means the lock could be accidentally stolen by buggy software. Correct
+     software using QLockFile should not be affected.
+
+ - QXmlStream:
+   * QTBUG-47417: QXmlStreamReader does now limit the expansion of
+     entities to 4096 characters. Documents where a single entity
+     expands to more characters than the limit are not considered well
+     formed. The limit is there to avoid DoS attacks through
+     recursively expanding entities when loading untrusted content. Qt
+     5.15 will add methods that allow changing that limit.
+
+****************************************************************************
+*                                  QtSQL                                   *
+****************************************************************************
+
+ - sqlite:
+   * Updated to v3.31.1
+   * [QTBUG-82533] Fixed CVE-2020-9327
+
+****************************************************************************
+*                                  QtNetwork                               *
+****************************************************************************
+
+ - QSslCertificate:
+    * Fix a potential heap buffer overflow when parsing certificates
+ - QTBUG-81762: Fix SSL symbol resolving for OPENSSL_NO_NEXPROTONEG
+
+****************************************************************************
+*                                  Platform specific changes               *
+****************************************************************************
+
+ - macOS:
+   * QTBUG-82986: Improve performance when flushing sublayers
+   * QTBUG-79139: Avoid repainting OpenGL layers when resizing the window
+
+ - xcb/X11:
+   * QTBUG-76147, QTBUG-76354, QTBUG-68864: Fix handling of minimized state
+
+ - QNX:
+   * QTBUG-81701: QLockFile: Disable flock() on QNX
+
+
+
