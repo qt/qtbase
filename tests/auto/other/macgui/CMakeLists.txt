@@ -26,7 +26,7 @@ add_qt_test(tst_macgui
 ## Scopes:
 #####################################################################
 
-extend_target(tst_macgui CONDITION APPLE_OSX
+extend_target(tst_macgui CONDITION APPLE_MACOS
     PUBLIC_LIBRARIES
         ${FWApplicationServices}
 )

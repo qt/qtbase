@@ -28,6 +28,6 @@ if(QT_FEATURE_cursor) # special case
     add_subdirectory(mainwindows)
 endif()
 
-if(APPLE_OSX)
+if(APPLE_MACOS)
     add_subdirectory(mac)
 endif()

@@ -25,7 +25,7 @@ qt_feature("style-fusion" PRIVATE
 )
 qt_feature("style-mac" PRIVATE
     LABEL "macOS"
-    CONDITION APPLE_OSX AND QT_FEATURE_animation
+    CONDITION APPLE_MACOS AND QT_FEATURE_animation
 )
 qt_feature("style-windows" PRIVATE
     LABEL "Windows"

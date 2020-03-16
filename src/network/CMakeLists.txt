@@ -237,19 +237,19 @@ qt_extend_target(Network CONDITION APPLE AND NOT APPLE_UIKIT
         ${FWSystemConfiguration}
 )
 
-qt_extend_target(Network CONDITION APPLE_IOS OR APPLE_OSX
+qt_extend_target(Network CONDITION APPLE_IOS OR APPLE_MACOS
     SOURCES
         kernel/qnetconmonitor_darwin.mm
     LIBRARIES
         ${FWSystemConfiguration}
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_netlistmgr AND NOT APPLE_IOS AND NOT APPLE_OSX
+qt_extend_target(Network CONDITION QT_FEATURE_netlistmgr AND NOT APPLE_IOS AND NOT APPLE_MACOS
     SOURCES
         kernel/qnetconmonitor_win.cpp
 )
 
-qt_extend_target(Network CONDITION NOT APPLE_IOS AND NOT APPLE_OSX AND NOT QT_FEATURE_netlistmgr
+qt_extend_target(Network CONDITION NOT APPLE_IOS AND NOT APPLE_MACOS AND NOT QT_FEATURE_netlistmgr
     SOURCES
         kernel/qnetconmonitor_stub.cpp
 )
@@ -264,12 +264,12 @@ qt_extend_target(Network CONDITION APPLE_UIKIT
         kernel/qnetworkinterface_uikit_p.h
 )
 
-qt_extend_target(Network CONDITION APPLE_OSX
+qt_extend_target(Network CONDITION APPLE_MACOS
     SOURCES
         kernel/qnetworkproxy_mac.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT APPLE_OSX AND (UNIX OR WINRT)
+qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT APPLE_MACOS AND (UNIX OR WINRT)
     SOURCES
         kernel/qnetworkproxy_libproxy.cpp
     LIBRARIES
@@ -277,7 +277,7 @@ qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT APPLE_OSX AND (UN
         PkgConfig::Libproxy
 )
 
-qt_extend_target(Network CONDITION NOT APPLE_OSX AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
+qt_extend_target(Network CONDITION NOT APPLE_MACOS AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )

@@ -1,6 +1,6 @@
 # Generated from styles.pro.
 
-if (APPLE_OSX)
+if (APPLE_MACOS)
     add_subdirectory(qmacstyle)
 endif()
 add_subdirectory(qstyle)

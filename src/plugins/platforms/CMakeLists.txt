@@ -15,7 +15,7 @@ endif()
 if(APPLE_UIKIT AND NOT APPLE_WATCHOS)
     add_subdirectory(ios)
 endif()
-if(APPLE_OSX)
+if(APPLE_MACOS)
     add_subdirectory(cocoa)
 endif()
 if(WIN32 AND NOT WINRT) # special case TODO fix direct3d9 test

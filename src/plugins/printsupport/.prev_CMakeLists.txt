@@ -1,6 +1,6 @@
 # Generated from printsupport.pro.
 
-if(APPLE_OSX)
+if(APPLE_MACOS)
     add_subdirectory(cocoa)
 endif()
 if(WIN32)

@@ -267,7 +267,7 @@ qt_copy_or_install(DIRECTORY cmake/
     PATTERN "3rdparty" EXCLUDE
 )
 
-if(APPLE_OSX)
+if(APPLE_MACOS)
     qt_copy_or_install(FILES
         cmake/macos/MacOSXBundleInfo.plist.in
         DESTINATION "${__GlobalConfig_install_dir}/macos"

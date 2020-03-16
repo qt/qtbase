@@ -18,7 +18,7 @@ if (QT_FEATURE_gui)
         set(_default_platform "windows")
     elseif(ANDROID)
         set(_default_platform "android")
-    elseif(APPLE_OSX)
+    elseif(APPLE_MACOS)
         set(_default_platform "cocoa")
     elseif(APPLE_TVOS OR APPLE_IOS)
         set(_default_platform "ios")
@@ -359,7 +359,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
 #### Keys ignored in scope 3:.:.:gui.pro:QT_FEATURE_angle:
 # MODULE_AUX_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/QtANGLE"
 
-qt_extend_target(Gui CONDITION APPLE_OSX
+qt_extend_target(Gui CONDITION APPLE_MACOS
     LIBRARIES
         ${FWAppKit}
     PUBLIC_LIBRARIES
@@ -778,7 +778,7 @@ qt_extend_target(Gui CONDITION WASM
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
-qt_extend_target(Gui CONDITION APPLE_IOS OR APPLE_OSX
+qt_extend_target(Gui CONDITION APPLE_IOS OR APPLE_MACOS
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h
         rhi/qrhimetal_p_p.h

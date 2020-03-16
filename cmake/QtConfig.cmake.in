@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}")
 list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/3rdparty/extra-cmake-modules/find-modules")
 list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/3rdparty/kwin")
 
-if(APPLE_OSX)
+if(APPLE_MACOS)
     # Add module directory to pick up custom Info.plist template
     list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/macos")
 endif()

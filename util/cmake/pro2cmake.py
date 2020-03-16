@@ -1444,7 +1444,7 @@ def map_condition(condition: str) -> str:
     condition = re.sub(r"^no-png$", r"NOT QT_FEATURE_png", condition)
     condition = re.sub(r"contains\(CONFIG, static\)", r"NOT QT_BUILD_SHARED_LIBS", condition)
     condition = re.sub(r"contains\(QT_CONFIG,\w*shared\)", r"QT_BUILD_SHARED_LIBS", condition)
-    condition = re.sub(r"CONFIG\(osx\)", r"APPLE_OSX", condition)
+    condition = re.sub(r"CONFIG\(osx\)", r"APPLE_MACOS", condition)
 
     def gcc_version_handler(match_obj: Match):
         operator = match_obj.group(1)

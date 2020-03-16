@@ -36,12 +36,12 @@ qt_extend_target(FontDatabaseSupport CONDITION APPLE
         ${FWFoundation}
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION APPLE_OSX
+qt_extend_target(FontDatabaseSupport CONDITION APPLE_MACOS
     LIBRARIES
         ${FWAppKit}
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION APPLE AND NOT APPLE_OSX
+qt_extend_target(FontDatabaseSupport CONDITION APPLE AND NOT APPLE_MACOS
     LIBRARIES
         ${FWUIKit}
 )

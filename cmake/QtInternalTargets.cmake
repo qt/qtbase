@@ -99,7 +99,7 @@ endif()
 
 target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
-if(APPLE_OSX)
+if(APPLE_MACOS)
     target_compile_definitions(PlatformCommonInternal INTERFACE GL_SILENCE_DEPRECATION)
 elseif(APPLE_UIKIT)
     target_compile_definitions(PlatformCommonInternal INTERFACE GLES_SILENCE_DEPRECATION)

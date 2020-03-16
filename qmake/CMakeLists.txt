@@ -165,7 +165,7 @@ qt_extend_target(qmake CONDITION UNIX
         ../src/corelib/text/qlocale_unix.cpp
 )
 
-qt_extend_target(qmake CONDITION APPLE_OSX
+qt_extend_target(qmake CONDITION APPLE_MACOS
     SOURCES
         ../src/corelib/kernel/qcore_foundation.mm # special case
         ../src/corelib/kernel/qcore_mac.cpp # special case

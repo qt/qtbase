@@ -19,7 +19,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdparty/kwin"
     )
 
-    if(APPLE_OSX)
+    if(APPLE_MACOS)
         # Add module directory to pick up custom Info.plist template
         list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos")
     endif()

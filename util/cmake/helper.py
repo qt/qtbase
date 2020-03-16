@@ -668,7 +668,7 @@ platform_mapping = {
     "gcc": "GCC",
     "icc": "ICC",
     "intel_icc": "ICC",
-    "osx": "APPLE_OSX",
+    "osx": "APPLE_MACOS",
     "ios": "APPLE_IOS",
     "freebsd": "FREEBSD",
     "openbsd": "OPENBSD",
@@ -676,9 +676,9 @@ platform_mapping = {
     "haiku": "HAIKU",
     "netbsd": "NETBSD",
     "mac": "APPLE",
-    "macx": "APPLE_OSX",
-    "macos": "APPLE_OSX",
-    "macx-icc": "(APPLE_OSX AND ICC)",
+    "macx": "APPLE_MACOS",
+    "macos": "APPLE_MACOS",
+    "macx-icc": "(APPLE_MACOS AND ICC)",
 }
 
 

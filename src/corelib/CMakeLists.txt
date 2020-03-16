@@ -508,7 +508,7 @@ qt_extend_target(Core CONDITION APPLE
         ${FWFoundation}
 )
 
-qt_extend_target(Core CONDITION APPLE_OSX
+qt_extend_target(Core CONDITION APPLE_MACOS
     LIBRARIES
         ${FWAppKit}
         ${FWApplicationServices}
@@ -761,7 +761,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_easingcurve
         tools/qtimeline.cpp tools/qtimeline.h
 )
 
-qt_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT APPLE_OSX OR NOT ICC)
+qt_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT APPLE_MACOS OR NOT ICC)
     LIBRARIES
         m
 )
@@ -795,12 +795,12 @@ qt_extend_target(Core CONDITION WIN32 AND NOT QT_FEATURE_icu
         text/qcollator_win.cpp
 )
 
-qt_extend_target(Core CONDITION APPLE_OSX AND NOT QT_FEATURE_icu
+qt_extend_target(Core CONDITION APPLE_MACOS AND NOT QT_FEATURE_icu
     SOURCES
         text/qcollator_macx.cpp
 )
 
-qt_extend_target(Core CONDITION UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_icu
+qt_extend_target(Core CONDITION UNIX AND NOT APPLE_MACOS AND NOT QT_FEATURE_icu
     SOURCES
         text/qcollator_posix.cpp
 )
@@ -887,17 +887,17 @@ qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND WIN32
         io/qfilesystemwatcher_win.cpp io/qfilesystemwatcher_win_p.h
 )
 
-qt_extend_target(Core CONDITION APPLE_OSX AND QT_FEATURE_filesystemwatcher
+qt_extend_target(Core CONDITION APPLE_MACOS AND QT_FEATURE_filesystemwatcher
     SOURCES
         io/qfilesystemwatcher_fsevents.mm io/qfilesystemwatcher_fsevents_p.h
 )
 
-qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND QT_FEATURE_inotify AND UNIX AND NOT APPLE_OSX
+qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND QT_FEATURE_inotify AND UNIX AND NOT APPLE_MACOS
     SOURCES
         io/qfilesystemwatcher_inotify.cpp io/qfilesystemwatcher_inotify_p.h
 )
 
-qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_inotify AND (APPLE OR FREEBSD OR NETBSD OR OPENBSD)
+qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND UNIX AND NOT APPLE_MACOS AND NOT QT_FEATURE_inotify AND (APPLE OR FREEBSD OR NETBSD OR OPENBSD)
     SOURCES
         io/qfilesystemwatcher_kqueue.cpp io/qfilesystemwatcher_kqueue_p.h
 )
@@ -969,7 +969,7 @@ qt_extend_target(Core CONDITION APPLE AND QT_FEATURE_processenvironment
         io/qprocess_darwin.mm
 )
 
-qt_extend_target(Core CONDITION APPLE AND NOT APPLE_OSX
+qt_extend_target(Core CONDITION APPLE AND NOT APPLE_MACOS
     PUBLIC_LIBRARIES
         ${FWMobileCoreServices}
 )

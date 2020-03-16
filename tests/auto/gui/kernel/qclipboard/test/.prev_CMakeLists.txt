@@ -15,7 +15,7 @@ add_qt_test(tst_qclipboard
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qclipboard CONDITION APPLE_OSX
+extend_target(tst_qclipboard CONDITION APPLE_MACOS
     PUBLIC_LIBRARIES
         ${FWAppKit}
 )
