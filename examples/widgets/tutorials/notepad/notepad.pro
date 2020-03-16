@@ -1,6 +1,8 @@
 TEMPLATE = app
 TARGET = notepad
 
+QT += widgets
+
 qtHaveModule(printsupport): QT += printsupport
 requires(qtConfig(fontdialog))
 

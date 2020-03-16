@@ -207,7 +207,7 @@ Q_SIGNALS:
     void disconnected();
     void stateChanged(QAbstractSocket::SocketState);
 #if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_X("Use QAbstractSocket::errorOccurred(QAbstractSocket::SocketError) instead")
+    QT_DEPRECATED_NETWORK_API_5_15_X("Use QAbstractSocket::errorOccurred(QAbstractSocket::SocketError) instead")
     void error(QAbstractSocket::SocketError);
 #endif
     void errorOccurred(QAbstractSocket::SocketError);

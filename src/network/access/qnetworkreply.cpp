@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
 #include <QtNetwork/qsslconfiguration.h>

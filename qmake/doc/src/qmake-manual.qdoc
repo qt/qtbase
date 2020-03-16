@@ -84,7 +84,6 @@
 /*!
     \page qmake-overview.html
     \title Overview
-    \contentspage {qmake Manual}{Contents}
     \previouspage qmake Manual
     \nextpage Getting Started
 
@@ -158,7 +157,6 @@
 /*!
     \page qmake-project-files.html
     \title Creating Project Files
-    \contentspage {qmake Manual}{Contents}
     \previouspage Getting Started
     \nextpage Building Common Project Types
 
@@ -477,7 +475,6 @@
 /*!
     \page qmake-running.html
     \title Running qmake
-    \contentspage {qmake Manual}{Contents}
     \previouspage Building Common Project Types
     \nextpage Platform Notes
 
@@ -647,7 +644,6 @@
 /*!
     \page qmake-platform-notes.html
     \title Platform Notes
-    \contentspage {qmake Manual}{Contents}
     \previouspage Running qmake
     \nextpage qmake Language
 
@@ -863,7 +859,6 @@
 /*!
     \page qmake-reference.html
     \title Reference
-    \contentspage {qmake Manual}{Contents}
     \previouspage Configuring qmake
     \nextpage Variables
 
@@ -894,7 +889,6 @@
 /*!
     \page qmake-variable-reference.html
     \title Variables
-    \contentspage {qmake Manual}{Contents}
     \previouspage Reference
     \nextpage Replace Functions
     \keyword qmake Variable Reference
@@ -3189,7 +3183,6 @@
 /*!
     \page qmake-function-reference.html
     \title Replace Functions
-    \contentspage {qmake Manual}{Contents}
     \previouspage Variables
     \nextpage Test Functions
     \keyword qmake Function Reference - Replace Functions
@@ -3723,7 +3716,6 @@
 /*!
     \page qmake-test-function-reference.html
     \title Test Functions
-    \contentspage {qmake Manual}{Contents}
     \previouspage Replace Functions
     \keyword qmake Function Reference - Test Functions
 
@@ -4145,7 +4137,6 @@
 
 /*!
     \page qmake-environment-reference.html
-    \contentspage {qmake Manual}{Contents}
     \previouspage Using Precompiled Headers
     \nextpage Reference
 
@@ -4297,7 +4288,6 @@
 /*!
     \page qmake-language.html
     \title qmake Language
-    \contentspage {qmake Manual}{Contents}
     \previouspage Platform Notes
     \nextpage Advanced Usage
 
@@ -4624,7 +4614,6 @@
 /*!
     \page qmake-advanced-usage.html
     \title Advanced Usage
-    \contentspage {qmake Manual}{Contents}
     \previouspage qmake Language
     \nextpage Using Precompiled Headers
 
@@ -4973,7 +4962,6 @@
 /*!
     \page qmake-precompiledheaders.html
     \title Using Precompiled Headers
-    \contentspage {qmake Manual}{Contents}
     \previouspage Advanced Usage
     \nextpage Configuring qmake
 
@@ -5191,7 +5179,6 @@
     \keyword qmake-getting-started
     \page qmake-tutorial.html
     \title Getting Started
-    \contentspage {qmake Manual}{Contents}
     \previouspage Overview
     \nextpage Creating Project Files
 
@@ -5360,7 +5347,6 @@
 /*!
     \page qmake-common-projects.html
     \title Building Common Project Types
-    \contentspage {qmake Manual}{Contents}
     \previouspage Creating Project Files
     \nextpage Running qmake
 

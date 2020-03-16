@@ -1302,7 +1302,7 @@
             "label": "VNC",
             "section": "Platform plugins",
             "condition": [
-                "config.unix && !config.android && !config.darwin",
+                "config.unix && !config.android && !config.darwin && !config.wasm",
                 "features.regularexpression && features.network"
             ],
             "output": [ "privateFeature" ]

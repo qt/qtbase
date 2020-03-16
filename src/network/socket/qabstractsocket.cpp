@@ -469,6 +469,8 @@
     SSL error notification. I.E. QSslSocket::sslErrors().
 */
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #include "qabstractsocket.h"
 #include "qabstractsocket_p.h"
 

@@ -192,6 +192,7 @@ QT_BEGIN_NAMESPACE
     \value Unicode_11_0 Version 11.0 Since Qt 5.15
     \value Unicode_12_0 Version 12.0 Since Qt 5.15
     \value Unicode_12_1 Version 12.1 Since Qt 5.15
+    \value Unicode_13_0 Version 13.0 Since Qt 5.15
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 8.0 of Unicode.
 
@@ -314,12 +315,14 @@ QT_BEGIN_NAMESPACE
     \value Script_Chakma
     \value Script_Cham
     \value Script_Cherokee
+    \value Script_Chorasmian Since Qt 5.15
     \value Script_Coptic
     \value Script_Cuneiform
     \value Script_Cypriot
     \value Script_Cyrillic
     \value Script_Deseret
     \value Script_Devanagari
+    \value Script_DivesAkuru Since Qt 5.15
     \value Script_Dogra Since Qt 5.15
     \value Script_Duployan Since Qt 5.5
     \value Script_EgyptianHieroglyphs
@@ -350,6 +353,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Katakana
     \value Script_KayahLi
     \value Script_Kharoshthi
+    \value Script_KhitanSmallScript Since Qt 5.15
     \value Script_Khmer
     \value Script_Khojki Since Qt 5.5
     \value Script_Khudawadi Since Qt 5.5
@@ -439,6 +443,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Vai
     \value Script_Wancho Since Qt 5.15
     \value Script_WarangCiti Since Qt 5.5
+    \value Script_Yezidi Since Qt 5.15
     \value Script_Yi
     \value Script_ZanabazarSquare Since Qt 5.11
 

@@ -10,8 +10,9 @@
     "Description": "The Unicode Character Database (UCD) is a set of files that
  define the Unicode character properties and internal mappings.",
     "Homepage": "https://www.unicode.org/ucd/",
-    "Version": "Don't use the Unicode standard version; UCD has its own 'Revision' numbers",
-    "Version": "24",
+    "Version": "Don't use the Unicode standard version;
+ UCD has its own 'Revision' numbers, see the 'UAX #44, UCD' page",
+    "Version": "26",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
     "LicenseId": "Unicode-DFS-2016",
     "LicenseFile": "UNICODE_LICENSE.txt",

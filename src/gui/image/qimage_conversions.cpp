@@ -365,7 +365,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         uint buf[BufferSize];
         uint *buffer = buf;
         uchar *srcData = data->data + data->bytes_per_line * yStart;
-        uchar *destData = srcData;
+        uchar *destData = srcData; // This can be temporarily wrong if we doing a shrinking conversion
         QDitherInfo dither;
         QDitherInfo *ditherPtr = nullptr;
         if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
@@ -403,6 +403,18 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             y += yn;
         }
         semaphore.acquire(segments);
+        if (data->bytes_per_line != params.bytesPerLine) {
+            // Compress segments to a continuous block
+            y = 0;
+            for (int i = 0; i < segments; ++i) {
+                int yn = (data->height - y) / (segments - i);
+                uchar *srcData = data->data + data->bytes_per_line * y;
+                uchar *destData = data->data + params.bytesPerLine * y;
+                if (srcData != destData)
+                    memmove(destData, srcData, params.bytesPerLine * yn);
+                y += yn;
+            }
+        }
     } else
 #endif
         convertSegment(0, data->height);
@@ -2128,1115 +2140,240 @@ static bool convert_Grayscale8_to_Indexed8_inplace(QImageData *data, Qt::ImageCo
 
 
 // first index source, second dest
-Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormats] =
-{
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    },
-    {
-        0,
-        0,
-        swap_bit_order,
-        convert_Mono_to_Indexed8,
-        convert_Mono_to_X32,
-        convert_Mono_to_X32,
-        convert_Mono_to_X32,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_Mono
-
-    {
-        0,
-        swap_bit_order,
-        0,
-        convert_Mono_to_Indexed8,
-        convert_Mono_to_X32,
-        convert_Mono_to_X32,
-        convert_Mono_to_X32,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_MonoLSB
-
-    {
-        0,
-        convert_X_to_Mono,
-        convert_X_to_Mono,
-        0,
-        convert_Indexed8_to_X32,
-        convert_Indexed8_to_X32,
-        convert_Indexed8_to_X32,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0,
-        convert_Indexed8_to_Alpha8,
-        convert_Indexed8_to_Grayscale8,
-        0, 0, 0, 0, 0
-    }, // Format_Indexed8
-
-    {
-        0,
-        convert_X_to_Mono,
-        convert_X_to_Mono,
-        convert_RGB_to_Indexed8,
-        0,
-        mask_alpha_converter,
-        mask_alpha_converter,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_RGB32
-
-    {
-        0,
-        convert_X_to_Mono,
-        convert_X_to_Mono,
-        convert_ARGB_to_Indexed8,
-        mask_alpha_converter,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_ARGB_to_RGBx,
-        convert_ARGB_to_RGBA,
-        0,
-        0,
-        convert_ARGB_to_A2RGB30<PixelOrderBGR, false>,
-        0,
-        convert_ARGB_to_A2RGB30<PixelOrderRGB, false>,
-        0, 0,
-        0,
-        convert_ARGB32_to_RGBA64<false>,
-        0, 0, 0
-    }, // Format_ARGB32
-
-    {
-        0,
-        convert_ARGB_PM_to_Mono,
-        convert_ARGB_PM_to_Mono,
-        convert_ARGB_PM_to_Indexed8,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_ARGB_to_RGBA,
-        0, 0, 0, 0,
-        0, 0,
-        0, 0, 0, 0, 0
-    },  // Format_ARGB32_Premultiplied
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB16
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_ARGB8565_Premultiplied
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB666
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_ARGB6666_Premultiplied
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB555
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_ARGB8555_Premultiplied
-
-    {
-        0,
-        0,
-        0,
-        0,
-        convert_RGB888_to_RGB<false>,
-        convert_RGB888_to_RGB<false>,
-        convert_RGB888_to_RGB<false>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, // self
-        0,
-        0,
-        convert_RGB888_to_RGB<true>,
-        convert_RGB888_to_RGB<true>,
-        convert_RGB888_to_RGB<true>,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        convert_rgbswap_generic,
-    }, // Format_RGB888
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB444
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_ARGB4444_Premultiplied
-    {
-        0,
-        0,
-        0,
-        0,
-        convert_RGBA_to_RGB,
-        convert_RGBA_to_ARGB,
-        convert_RGBA_to_ARGB,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_passthrough,
-        convert_passthrough,
-        0,
-        0,
-        0,
-        0,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_RGBX8888
-    {
-        0,
-        0,
-        0,
-        0,
-        convert_RGBA_to_RGB,
-        convert_RGBA_to_ARGB,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        mask_alpha_converter_RGBx,
-        0,
-        0,
-        0,
-        convert_ARGB_to_A2RGB30<PixelOrderBGR, true>,
-        0,
-        convert_ARGB_to_A2RGB30<PixelOrderRGB, true>,
-        0, 0,
-        0,
-        convert_ARGB32_to_RGBA64<true>,
-        0, 0, 0
-    }, // Format_RGBA8888
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_RGBA_to_ARGB,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGBA8888_Premultiplied
-
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_passthrough,
-        convert_rgbswap_generic,
-        convert_rgbswap_generic,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_BGR30
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_A2RGB30_PM_to_ARGB<PixelOrderBGR, false>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_A2RGB30_PM_to_ARGB<PixelOrderBGR, true>,
-        0,
-        convert_A2RGB30_PM_to_RGB30<false>,
-        0,
-        convert_A2RGB30_PM_to_RGB30<true>,
-        convert_rgbswap_generic,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_A2BGR30_Premultiplied
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_rgbswap_generic,
-        convert_rgbswap_generic,
-        0,
-        convert_passthrough,
-        0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB30
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_A2RGB30_PM_to_ARGB<PixelOrderRGB, false>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_A2RGB30_PM_to_ARGB<PixelOrderRGB, true>,
-        0,
-        convert_A2RGB30_PM_to_RGB30<true>,
-        convert_rgbswap_generic,
-        convert_A2RGB30_PM_to_RGB30<false>,
-        0,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_A2RGB30_Premultiplied
-    {
-        0,
-        0,
-        0,
-        convert_Alpha8_to_Indexed8,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_Alpha8
-    {
-        0,
-        0,
-        0,
-        convert_Grayscale8_to_Indexed8,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_Grayscale8
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, // self
-        convert_passthrough,
-        convert_passthrough,
-        convert_RGBA64_to_gray16,
-        0
-    }, // Format_RGBX64
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_RGBA64_to_ARGB32<false>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_RGBA64_to_ARGB32<true>,
-        0,
-        0, 0, 0, 0,
-        0, 0,
-        convert_RGBA64_to_RGBx64,
-        0, // self
-        convert_RGBA64_to_RGBA64PM,
-        0,
-        0
-    }, // Format_RGBA64
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0,
-        0, 0,
-        convert_RGBA64PM_to_RGBA64<true>,
-        convert_RGBA64PM_to_RGBA64<false>,
-        0, // self
-        convert_RGBA64_to_gray16,
-        0
-    }, // Format_RGBA64_Premultiplied
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0,
-        convert_gray16_to_RGBA64,
-        convert_gray16_to_RGBA64,
-        convert_gray16_to_RGBA64,
-        0,  // self
-        0
-    }, // Format_Grayscale16
-    {
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_rgbswap_generic,
-        0,
-        0,
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        convert_RGB888_to_RGB<false>,
-        convert_RGB888_to_RGB<false>,
-        convert_RGB888_to_RGB<false>,
-#else
-        0, 0, 0,
-#endif
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, // self
-    }, // Format_BGR888
-};
-
-InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats] =
-{
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    },
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_Mono
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_MonoLSB
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0,
-        convert_Indexed8_to_Alpha8_inplace,
-        convert_Indexed8_to_Grayscale8_inplace,
-        0, 0, 0, 0, 0
-    }, // Format_Indexed8
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        mask_alpha_converter_inplace<QImage::Format_ARGB32>,
-        mask_alpha_converter_inplace<QImage::Format_ARGB32_Premultiplied>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_RGB32
-    {
-        0,
-        0,
-        0,
-        0,
-        mask_alpha_converter_inplace<QImage::Format_RGB32>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_ARGB_to_RGBA_inplace<QImage::Format_RGBX8888>,
-        convert_ARGB_to_RGBA_inplace<QImage::Format_RGBA8888>,
-        0,
-        0,
-        convert_ARGB_to_A2RGB30_inplace<PixelOrderBGR, false>,
-        0,
-        convert_ARGB_to_A2RGB30_inplace<PixelOrderRGB, false>,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_ARGB32
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_ARGB_to_RGBA_inplace<QImage::Format_RGBA8888_Premultiplied>,
-        0, 0, 0, 0,
-        0, 0,
-        0, 0, 0, 0, 0
-    },  // Format_ARGB32_Premultiplied
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB16
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_ARGB8565_Premultiplied
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB666
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_ARGB6666_Premultiplied
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB555
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_ARGB8555_Premultiplied
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        convert_rgbswap_generic_inplace
-    }, // Format_RGB888
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB444
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_ARGB4444_Premultiplied
-    {
-        0,
-        0,
-        0,
-        0,
-        convert_RGBA_to_ARGB_inplace<QImage::Format_RGB32>,
-        convert_RGBA_to_ARGB_inplace<QImage::Format_ARGB32>,
-        convert_RGBA_to_ARGB_inplace<QImage::Format_ARGB32_Premultiplied>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_passthrough_inplace<QImage::Format_RGBA8888>,
-        convert_passthrough_inplace<QImage::Format_RGBA8888_Premultiplied>,
-        0,
-        0,
-        0,
-        0,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_RGBX8888
-    {
-        0,
-        0,
-        0,
-        0,
-        convert_RGBA_to_ARGB_inplace<QImage::Format_RGB32>,
-        convert_RGBA_to_ARGB_inplace<QImage::Format_ARGB32>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        mask_alpha_converter_rgbx_inplace,
-        0,
-        0,
-        0,
-        convert_ARGB_to_A2RGB30_inplace<PixelOrderBGR, true>,
-        0,
-        convert_ARGB_to_A2RGB30_inplace<PixelOrderRGB, true>,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_RGBA8888
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_RGBA_to_ARGB_inplace<QImage::Format_ARGB32_Premultiplied>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGBA8888_Premultiplied
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, // self
-        convert_passthrough_inplace<QImage::Format_A2BGR30_Premultiplied>,
-        convert_rgbswap_generic_inplace,
-        convert_BGR30_to_A2RGB30_inplace,
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_BGR30
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_A2RGB30_PM_to_ARGB_inplace<PixelOrderBGR, false>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_A2RGB30_PM_to_ARGB_inplace<PixelOrderBGR, true>,
-        0,
-        convert_A2RGB30_PM_to_RGB30_inplace<false>,
-        0, // self
-        convert_A2RGB30_PM_to_RGB30_inplace<true>,
-        convert_rgbswap_generic_inplace,
-        0, 0, 0, 0, 0, 0, 0
-    }, // Format_A2BGR30_Premultiplied
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_rgbswap_generic_inplace,
-        convert_BGR30_to_A2RGB30_inplace,
-        0, // self
-        convert_passthrough_inplace<QImage::Format_A2RGB30_Premultiplied>,
-        0, 0, 0, 0, 0, 0, 0
-    }, // Format_RGB30
-    {
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_A2RGB30_PM_to_ARGB_inplace<PixelOrderRGB, false>,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        convert_A2RGB30_PM_to_ARGB_inplace<PixelOrderRGB, true>,
-        0,
-        convert_A2RGB30_PM_to_RGB30_inplace<true>,
-        convert_rgbswap_generic_inplace,
-        convert_A2RGB30_PM_to_RGB30_inplace<false>,
-        0, // self
-        0, 0,
-        0, 0, 0, 0, 0
-    }, // Format_A2RGB30_Premultiplied
-    {
-        0,
-        0,
-        0,
-        convert_Alpha8_to_Indexed8_inplace,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0,
-        0, // self
-        0,
-        0, 0, 0, 0, 0
-    }, // Format_Alpha8
-    {
-        0,
-        0,
-        0,
-        convert_Grayscale8_to_Indexed8_inplace,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0,
-        0,
-        0, // self
-        0, 0, 0, 0, 0
-    }, // Format_Grayscale8
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, // self
-        convert_passthrough_inplace<QImage::Format_RGBA64>,
-        convert_passthrough_inplace<QImage::Format_RGBA64_Premultiplied>,
-        0, 0
-    }, // Format_RGBX64
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        convert_RGBA64_to_RGBx64_inplace,
-        0, // self
-        convert_RGBA64_to_RGBA64PM_inplace,
-        0, 0
-    }, // Format_RGBA64
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        convert_RGBA64PM_to_RGBA64_inplace<true>,
-        convert_RGBA64PM_to_RGBA64_inplace<false>,
-        0, // self
-        0, 0
-    }, // Format_RGBA64_Premultiplied
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_Grayscale16
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        convert_rgbswap_generic_inplace,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    }, // Format_BGR888
-};
+Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormats] = {};
+InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats] = {};
 
 static void qInitImageConversions()
 {
+    // Some conversions can not be generic, other are just hard to make as fast in the generic converter.
+
+    // All conversions to and from indexed formats can not be generic and needs to go over RGB32 or ARGB32
+    qimage_converter_map[QImage::Format_Mono][QImage::Format_MonoLSB] = swap_bit_order;
+    qimage_converter_map[QImage::Format_Mono][QImage::Format_Indexed8] = convert_Mono_to_Indexed8;
+    qimage_converter_map[QImage::Format_Mono][QImage::Format_RGB32] = convert_Mono_to_X32;
+    qimage_converter_map[QImage::Format_Mono][QImage::Format_ARGB32] = convert_Mono_to_X32;
+    qimage_converter_map[QImage::Format_Mono][QImage::Format_ARGB32_Premultiplied] = convert_Mono_to_X32;
+
+    qimage_converter_map[QImage::Format_MonoLSB][QImage::Format_Mono] = swap_bit_order;
+    qimage_converter_map[QImage::Format_MonoLSB][QImage::Format_Indexed8] = convert_Mono_to_Indexed8;
+    qimage_converter_map[QImage::Format_MonoLSB][QImage::Format_RGB32] = convert_Mono_to_X32;
+    qimage_converter_map[QImage::Format_MonoLSB][QImage::Format_ARGB32] = convert_Mono_to_X32;
+    qimage_converter_map[QImage::Format_MonoLSB][QImage::Format_ARGB32_Premultiplied] = convert_Mono_to_X32;
+
+    qimage_converter_map[QImage::Format_Indexed8][QImage::Format_Mono] = convert_X_to_Mono;
+    qimage_converter_map[QImage::Format_Indexed8][QImage::Format_MonoLSB] = convert_X_to_Mono;
+    qimage_converter_map[QImage::Format_Indexed8][QImage::Format_RGB32] = convert_Indexed8_to_X32;
+    qimage_converter_map[QImage::Format_Indexed8][QImage::Format_ARGB32] = convert_Indexed8_to_X32;
+    qimage_converter_map[QImage::Format_Indexed8][QImage::Format_ARGB32_Premultiplied] = convert_Indexed8_to_X32;
+    // Indexed8, Alpha8 and Grayscale8 have a special relationship that can be short-cut.
+    qimage_converter_map[QImage::Format_Indexed8][QImage::Format_Grayscale8] = convert_Indexed8_to_Grayscale8;
+    qimage_converter_map[QImage::Format_Indexed8][QImage::Format_Alpha8] = convert_Indexed8_to_Alpha8;
+
+    qimage_converter_map[QImage::Format_RGB32][QImage::Format_Mono] = convert_X_to_Mono;
+    qimage_converter_map[QImage::Format_RGB32][QImage::Format_MonoLSB] = convert_X_to_Mono;
+    qimage_converter_map[QImage::Format_RGB32][QImage::Format_Indexed8] = convert_RGB_to_Indexed8;
+    qimage_converter_map[QImage::Format_RGB32][QImage::Format_ARGB32] = mask_alpha_converter;
+    qimage_converter_map[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = mask_alpha_converter;
+
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_Mono] = convert_X_to_Mono;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_MonoLSB] = convert_X_to_Mono;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_Indexed8] = convert_ARGB_to_Indexed8;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_RGB32] = mask_alpha_converter;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_RGBX8888] = convert_ARGB_to_RGBx;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_RGBA8888] = convert_ARGB_to_RGBA;
+    // ARGB32 has higher precision than ARGB32PM and needs explicit conversions to other higher color-precision formats with alpha
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_A2BGR30_Premultiplied] = convert_ARGB_to_A2RGB30<PixelOrderBGR, false>;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_A2RGB30_Premultiplied] = convert_ARGB_to_A2RGB30<PixelOrderRGB, false>;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_RGBA64] = convert_ARGB32_to_RGBA64<false>;
+
+    qimage_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_Mono] = convert_ARGB_PM_to_Mono;
+    qimage_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_MonoLSB] = convert_ARGB_PM_to_Mono;
+    qimage_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_Indexed8] = convert_ARGB_PM_to_Indexed8;
+    qimage_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = convert_ARGB_to_RGBA;
+
+    qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB<false>;
+    qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB<false>;
+    qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB<false>;
+    qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGBX8888] = convert_RGB888_to_RGB<true>;
+    qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGBA8888] = convert_RGB888_to_RGB<true>;
+    qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGBA8888_Premultiplied] = convert_RGB888_to_RGB<true>;
+    qimage_converter_map[QImage::Format_RGB888][QImage::Format_BGR888] = convert_rgbswap_generic;
+
+    qimage_converter_map[QImage::Format_RGBX8888][QImage::Format_RGB32] = convert_RGBA_to_RGB;
+    qimage_converter_map[QImage::Format_RGBX8888][QImage::Format_ARGB32] = convert_RGBA_to_ARGB;
+    qimage_converter_map[QImage::Format_RGBX8888][QImage::Format_ARGB32_Premultiplied] = convert_RGBA_to_ARGB;
+    qimage_converter_map[QImage::Format_RGBX8888][QImage::Format_RGBA8888] = convert_passthrough;
+    qimage_converter_map[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = convert_passthrough;
+
+    qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_RGB32] = convert_RGBA_to_RGB;
+    qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_ARGB32] = convert_RGBA_to_ARGB;
+    qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_RGBX8888] = mask_alpha_converter_RGBx;
+    qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_A2BGR30_Premultiplied] = convert_ARGB_to_A2RGB30<PixelOrderBGR, true>;
+    qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_A2RGB30_Premultiplied] = convert_ARGB_to_A2RGB30<PixelOrderRGB, true>;
+    qimage_converter_map[QImage::Format_RGBA8888][QImage::Format_RGBA64] = convert_ARGB32_to_RGBA64<true>;
+
+    qimage_converter_map[QImage::Format_RGBA8888_Premultiplied][QImage::Format_ARGB32_Premultiplied] = convert_RGBA_to_ARGB;
+
+    qimage_converter_map[QImage::Format_BGR30][QImage::Format_A2BGR30_Premultiplied] = convert_passthrough;
+    qimage_converter_map[QImage::Format_BGR30][QImage::Format_RGB30] = convert_rgbswap_generic;
+    qimage_converter_map[QImage::Format_BGR30][QImage::Format_A2RGB30_Premultiplied] = convert_rgbswap_generic;
+
+    qimage_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_ARGB32] = convert_A2RGB30_PM_to_ARGB<PixelOrderBGR, false>;
+    qimage_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_RGBA8888] = convert_A2RGB30_PM_to_ARGB<PixelOrderBGR, true>;
+    qimage_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_BGR30] = convert_A2RGB30_PM_to_RGB30<false>;
+    qimage_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_RGB30] = convert_A2RGB30_PM_to_RGB30<true>;
+    qimage_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_A2RGB30_Premultiplied] = convert_rgbswap_generic;
+
+    qimage_converter_map[QImage::Format_RGB30][QImage::Format_BGR30] = convert_rgbswap_generic;
+    qimage_converter_map[QImage::Format_RGB30][QImage::Format_A2BGR30_Premultiplied] = convert_rgbswap_generic;
+    qimage_converter_map[QImage::Format_RGB30][QImage::Format_A2RGB30_Premultiplied] = convert_passthrough;
+
+    qimage_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_ARGB32] = convert_A2RGB30_PM_to_ARGB<PixelOrderRGB, false>;
+    qimage_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_RGBA8888] = convert_A2RGB30_PM_to_ARGB<PixelOrderRGB, true>;
+    qimage_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_BGR30] = convert_A2RGB30_PM_to_RGB30<true>;
+    qimage_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_A2BGR30_Premultiplied] = convert_rgbswap_generic;
+    qimage_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_RGB30] = convert_A2RGB30_PM_to_RGB30<false>;
+
+    qimage_converter_map[QImage::Format_Grayscale8][QImage::Format_Indexed8] = convert_Grayscale8_to_Indexed8;
+    qimage_converter_map[QImage::Format_Alpha8][QImage::Format_Indexed8] = convert_Alpha8_to_Indexed8;
+
+    qimage_converter_map[QImage::Format_RGBX64][QImage::Format_RGBA64] = convert_passthrough;
+    qimage_converter_map[QImage::Format_RGBX64][QImage::Format_RGBA64_Premultiplied] = convert_passthrough;
+    qimage_converter_map[QImage::Format_RGBX64][QImage::Format_Grayscale16] = convert_RGBA64_to_gray16;
+
+    qimage_converter_map[QImage::Format_RGBA64][QImage::Format_ARGB32] = convert_RGBA64_to_ARGB32<false>;
+    qimage_converter_map[QImage::Format_RGBA64][QImage::Format_RGBA8888] = convert_RGBA64_to_ARGB32<true>;
+    qimage_converter_map[QImage::Format_RGBA64][QImage::Format_RGBX64] = convert_RGBA64_to_RGBx64;
+    qimage_converter_map[QImage::Format_RGBA64][QImage::Format_RGBA64_Premultiplied] =  convert_RGBA64_to_RGBA64PM;
+
+    qimage_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_RGBX64] = convert_RGBA64PM_to_RGBA64<true>;
+    qimage_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_RGBA64] = convert_RGBA64PM_to_RGBA64<false>;
+    qimage_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_Grayscale16] = convert_RGBA64_to_gray16;
+
+    qimage_converter_map[QImage::Format_Grayscale16][QImage::Format_RGBX64] = convert_gray16_to_RGBA64;
+    qimage_converter_map[QImage::Format_Grayscale16][QImage::Format_RGBA64] = convert_gray16_to_RGBA64;
+    qimage_converter_map[QImage::Format_Grayscale16][QImage::Format_RGBA64_Premultiplied] = convert_gray16_to_RGBA64;
+
+    qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGB888] = convert_rgbswap_generic;
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBX8888] = convert_RGB888_to_RGB<false>;
+    qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888] = convert_RGB888_to_RGB<false>;
+    qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888_Premultiplied] = convert_RGB888_to_RGB<false>;
+#endif
+
+    // Inline converters:
+    qimage_inplace_converter_map[QImage::Format_Indexed8][QImage::Format_Grayscale8] =
+            convert_Indexed8_to_Grayscale8_inplace;
+    qimage_inplace_converter_map[QImage::Format_Indexed8][QImage::Format_Alpha8] =
+            convert_Indexed8_to_Alpha8_inplace;
+
+    qimage_inplace_converter_map[QImage::Format_RGB32][QImage::Format_ARGB32] =
+            mask_alpha_converter_inplace<QImage::Format_ARGB32>;
+    qimage_inplace_converter_map[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] =
+            mask_alpha_converter_inplace<QImage::Format_ARGB32_Premultiplied>;
+
+    qimage_inplace_converter_map[QImage::Format_ARGB32][QImage::Format_RGB32] =
+            mask_alpha_converter_inplace<QImage::Format_RGB32>;
+    qimage_inplace_converter_map[QImage::Format_ARGB32][QImage::Format_RGBX8888] =
+            convert_ARGB_to_RGBA_inplace<QImage::Format_RGBX8888>;
+    qimage_inplace_converter_map[QImage::Format_ARGB32][QImage::Format_RGBA8888] =
+            convert_ARGB_to_RGBA_inplace<QImage::Format_RGBA8888>;
+    qimage_inplace_converter_map[QImage::Format_ARGB32][QImage::Format_A2BGR30_Premultiplied] =
+            convert_ARGB_to_A2RGB30_inplace<PixelOrderBGR, false>;
+    qimage_inplace_converter_map[QImage::Format_ARGB32][QImage::Format_A2RGB30_Premultiplied] =
+            convert_ARGB_to_A2RGB30_inplace<PixelOrderRGB, false>;
+
+    qimage_inplace_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGBA8888_Premultiplied] =
+            convert_ARGB_to_RGBA_inplace<QImage::Format_RGBA8888_Premultiplied>;
+
+    qimage_inplace_converter_map[QImage::Format_RGB888][QImage::Format_BGR888] =
+            convert_rgbswap_generic_inplace;
+
+    qimage_inplace_converter_map[QImage::Format_RGBX8888][QImage::Format_RGB32] =
+            convert_RGBA_to_ARGB_inplace<QImage::Format_RGB32>;
+    qimage_inplace_converter_map[QImage::Format_RGBX8888][QImage::Format_ARGB32] =
+            convert_RGBA_to_ARGB_inplace<QImage::Format_ARGB32>;
+    qimage_inplace_converter_map[QImage::Format_RGBX8888][QImage::Format_ARGB32_Premultiplied] =
+            convert_RGBA_to_ARGB_inplace<QImage::Format_ARGB32_Premultiplied>;
+    qimage_inplace_converter_map[QImage::Format_RGBX8888][QImage::Format_RGBA8888] =
+            convert_passthrough_inplace<QImage::Format_RGBA8888>;
+    qimage_inplace_converter_map[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] =
+            convert_passthrough_inplace<QImage::Format_RGBA8888_Premultiplied>;
+
+    qimage_inplace_converter_map[QImage::Format_RGBA8888][QImage::Format_RGB32] =
+            convert_RGBA_to_ARGB_inplace<QImage::Format_RGB32>;
+    qimage_inplace_converter_map[QImage::Format_RGBA8888][QImage::Format_ARGB32] =
+            convert_RGBA_to_ARGB_inplace<QImage::Format_ARGB32>;
+    qimage_inplace_converter_map[QImage::Format_RGBA8888][QImage::Format_RGBX8888] =
+            mask_alpha_converter_rgbx_inplace;
+    qimage_inplace_converter_map[QImage::Format_RGBA8888][QImage::Format_A2BGR30_Premultiplied] =
+            convert_ARGB_to_A2RGB30_inplace<PixelOrderBGR, true>;
+    qimage_inplace_converter_map[QImage::Format_RGBA8888][QImage::Format_A2RGB30_Premultiplied] =
+            convert_ARGB_to_A2RGB30_inplace<PixelOrderRGB, true>;
+
+    qimage_inplace_converter_map[QImage::Format_RGBA8888_Premultiplied][QImage::Format_ARGB32_Premultiplied] =
+            convert_RGBA_to_ARGB_inplace<QImage::Format_ARGB32_Premultiplied>;
+
+    qimage_inplace_converter_map[QImage::Format_BGR30][QImage::Format_A2BGR30_Premultiplied] =
+            convert_passthrough_inplace<QImage::Format_A2BGR30_Premultiplied>;
+    qimage_inplace_converter_map[QImage::Format_BGR30][QImage::Format_RGB30] =
+            convert_rgbswap_generic_inplace;
+    qimage_inplace_converter_map[QImage::Format_BGR30][QImage::Format_A2RGB30_Premultiplied] =
+            convert_BGR30_to_A2RGB30_inplace;
+
+    qimage_inplace_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_ARGB32] =
+            convert_A2RGB30_PM_to_ARGB_inplace<PixelOrderBGR, false>;
+    qimage_inplace_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_RGBA8888] =
+            convert_A2RGB30_PM_to_ARGB_inplace<PixelOrderBGR, true>;
+    qimage_inplace_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_BGR30] =
+            convert_A2RGB30_PM_to_RGB30_inplace<false>;
+    qimage_inplace_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_RGB30] =
+            convert_A2RGB30_PM_to_RGB30_inplace<true>;
+    qimage_inplace_converter_map[QImage::Format_A2BGR30_Premultiplied][QImage::Format_A2RGB30_Premultiplied] =
+            convert_rgbswap_generic_inplace;
+
+    qimage_inplace_converter_map[QImage::Format_RGB30][QImage::Format_BGR30] =
+            convert_rgbswap_generic_inplace;
+    qimage_inplace_converter_map[QImage::Format_RGB30][QImage::Format_A2BGR30_Premultiplied] =
+            convert_BGR30_to_A2RGB30_inplace;
+    qimage_inplace_converter_map[QImage::Format_RGB30][QImage::Format_A2RGB30_Premultiplied] =
+            convert_passthrough_inplace<QImage::Format_A2RGB30_Premultiplied>;
+
+    qimage_inplace_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_ARGB32] =
+            convert_A2RGB30_PM_to_ARGB_inplace<PixelOrderRGB, false>;
+    qimage_inplace_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_RGBA8888] =
+            convert_A2RGB30_PM_to_ARGB_inplace<PixelOrderRGB, true>;
+    qimage_inplace_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_BGR30] =
+            convert_A2RGB30_PM_to_RGB30_inplace<true>;
+    qimage_inplace_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_A2BGR30_Premultiplied] =
+            convert_rgbswap_generic_inplace;
+    qimage_inplace_converter_map[QImage::Format_A2RGB30_Premultiplied][QImage::Format_RGB30] =
+            convert_A2RGB30_PM_to_RGB30_inplace<false>;
+
+    qimage_inplace_converter_map[QImage::Format_Grayscale8][QImage::Format_Indexed8] =
+            convert_Grayscale8_to_Indexed8_inplace;
+    qimage_inplace_converter_map[QImage::Format_Alpha8][QImage::Format_Indexed8] =
+            convert_Alpha8_to_Indexed8_inplace;
+
+    qimage_inplace_converter_map[QImage::Format_RGBX64][QImage::Format_RGBA64] =
+            convert_passthrough_inplace<QImage::Format_RGBA64>;
+    qimage_inplace_converter_map[QImage::Format_RGBX64][QImage::Format_RGBA64_Premultiplied] =
+            convert_passthrough_inplace<QImage::Format_RGBA64_Premultiplied>;
+
+    qimage_inplace_converter_map[QImage::Format_RGBA64][QImage::Format_RGBX64] =
+            convert_RGBA64_to_RGBx64_inplace;
+    qimage_inplace_converter_map[QImage::Format_RGBA64][QImage::Format_RGBA64_Premultiplied] =
+            convert_RGBA64_to_RGBA64PM_inplace;
+
+    qimage_inplace_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_RGBX64] =
+            convert_RGBA64PM_to_RGBA64_inplace<true>;
+    qimage_inplace_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_RGBA64] =
+            convert_RGBA64PM_to_RGBA64_inplace<false>;
+
+    qimage_inplace_converter_map[QImage::Format_BGR888][QImage::Format_RGB888] =
+            convert_rgbswap_generic_inplace;
+
+    // Now architecture specific conversions:
 #if defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSSE3)
     if (qCpuHasFeature(SSSE3)) {
         extern void convert_RGB888_to_RGB32_ssse3(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);

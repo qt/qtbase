@@ -65,7 +65,7 @@ public:
     void selectNameFilter(const QString &) override {}
     QString selectedNameFilter() const override { return QString(); }
 
-    void selectedFilesChanged(QList<QUrl> selection);
+    void selectedFilesChanged(const QList<QUrl> &selection);
 
 private:
     QUrl m_directory;
@@ -74,6 +74,7 @@ private:
     UIViewController *m_viewController;
 
     bool showImagePickerDialog(QWindow *parent);
+    bool showNativeDocumentPickerDialog(QWindow *parent);
 };
 
 QT_END_NAMESPACE

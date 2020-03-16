@@ -238,6 +238,9 @@ private slots:
     void QTBUG_53969_data() { generic_data("QMYSQL"); }
     void QTBUG_53969();
 
+    void gisPointDatatype_data() { generic_data("QMYSQL"); }
+    void gisPointDatatype();
+
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
 
@@ -4078,6 +4081,25 @@ void tst_QSqlQuery::QTBUG_53969()
         }
         QCOMPARE(values, tableValues);
     }
+}
+
+void tst_QSqlQuery::gisPointDatatype()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery sqlQuery(db);
+    const auto tableName = qTableName("qtbug72140", __FILE__, db);
+    tst_Databases::safeDropTable(db, tableName);
+    QString sqlCommand = QStringLiteral("CREATE TABLE %1 (`lonlat_point` POINT NULL) ENGINE = InnoDB;").arg(tableName);
+    QVERIFY(sqlQuery.exec(sqlCommand));
+    sqlCommand = QStringLiteral("INSERT INTO %1(lonlat_point) VALUES(ST_GeomFromText('POINT(1 1)'));").arg(tableName);
+    QVERIFY(sqlQuery.exec(sqlCommand));
+    sqlCommand = QStringLiteral("SELECT * FROM %1;").arg(tableName);
+    QVERIFY(sqlQuery.exec(sqlCommand));
+    QCOMPARE(sqlQuery.record().field(0).type(), QVariant::Type::ByteArray);
+    QVERIFY(sqlQuery.next());
 }
 
 void tst_QSqlQuery::oraOCINumber()

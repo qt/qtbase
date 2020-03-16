@@ -65,6 +65,7 @@
 
 
 #include <stdio.h>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -4364,7 +4365,7 @@ void QDomElement::setAttribute(const QString& name, float value)
     if (!impl)
         return;
     QString x;
-    x.setNum(value);
+    x.setNum(value, 'g', 8);
     IMPL->setAttribute(name, x);
 }
 
@@ -4378,7 +4379,7 @@ void QDomElement::setAttribute(const QString& name, double value)
     if (!impl)
         return;
     QString x;
-    x.setNum(value);
+    x.setNum(value, 'g', 17);
     IMPL->setAttribute(name, x);
 }
 
@@ -4547,7 +4548,7 @@ void QDomElement::setAttributeNS(const QString& nsURI, const QString& qName, dou
     if (!impl)
         return;
     QString x;
-    x.setNum(value);
+    x.setNum(value, 'g', 17);
     IMPL->setAttributeNS(nsURI, qName, x);
 }
 

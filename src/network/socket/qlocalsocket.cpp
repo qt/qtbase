@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
 

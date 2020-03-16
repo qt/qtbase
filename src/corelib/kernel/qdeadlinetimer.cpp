@@ -438,8 +438,8 @@ inline bool TimeReference::toNanoseconds(qint64 *result) const
     For such objects, remainingTime() will return -1, deadline() will return the
     maximum value, and isForever() will return true.
 
-    The timer type \a timerType may be ignored, since the timer is already
-    expired.
+    The timer type \a timerType may be ignored, since the timer will never
+    expire.
 
     \sa ForeverConstant, hasExpired(), isForever(), remainingTime(), timerType()
 */
@@ -449,9 +449,9 @@ inline bool TimeReference::toNanoseconds(qint64 *result) const
     from the moment of the creation of this object, if msecs is positive. If \a
     msecs is zero, this QDeadlineTimer will be marked as expired, causing
     remainingTime() to return zero and deadline() to return an indeterminate
-    time point in the past. If \a msecs is -1, the timer will be set it to
-    never expire, causing remainingTime() to return -1 and deadline() to return
-    the maximum value.
+    time point in the past. If \a msecs is -1, the timer will be set to never
+    expire, causing remainingTime() to return -1 and deadline() to return the
+    maximum value.
 
     The QDeadlineTimer object will be constructed with the specified timer \a type.
 

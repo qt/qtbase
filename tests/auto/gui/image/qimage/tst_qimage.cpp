@@ -177,6 +177,12 @@ private slots:
     void inplaceRgbConversion_data();
     void inplaceRgbConversion();
 
+    void largeGenericRgbConversion_data();
+    void largeGenericRgbConversion();
+
+    void largeInplaceRgbConversion_data();
+    void largeInplaceRgbConversion();
+
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
 
@@ -2896,16 +2902,15 @@ void tst_QImage::inplaceRgbConversion_data()
             }
             if (i == j)
                 continue;
-            QTest::addRow("%s -> %s", formatToString(QImage::Format(i)).data(), formatToString(QImage::Format(j)).data())
-                    << QImage::Format(i) << QImage::Format(j);
+            if (qt_depthForFormat(QImage::Format(i)) >= qt_depthForFormat(QImage::Format(j)))
+                QTest::addRow("%s -> %s", formatToString(QImage::Format(i)).data(), formatToString(QImage::Format(j)).data())
+                        << QImage::Format(i) << QImage::Format(j);
         }
     }
 }
 
 void tst_QImage::inplaceRgbConversion()
 {
-    // Test that conversions between RGB formats of the same bitwidth can be done inplace.
-#if defined(Q_COMPILER_REF_QUALIFIERS)
     QFETCH(QImage::Format, format);
     QFETCH(QImage::Format, dest_format);
 
@@ -2954,7 +2959,123 @@ void tst_QImage::inplaceRgbConversion()
         QVERIFY(rwInplaceConverted.constBits() != (const uchar *)readWriteData);
         QCOMPARE(normalConverted, rwInplaceConverted);
     }
-#endif
+}
+
+void tst_QImage::largeGenericRgbConversion_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<QImage::Format>("dest_format");
+
+    QImage::Format formats[] = {
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGB16,
+        QImage::Format_RGB888,
+        QImage::Format_RGBA8888,
+        QImage::Format_BGR30,
+        QImage::Format_A2RGB30_Premultiplied,
+        QImage::Format_RGBA64_Premultiplied,
+    };
+
+    for (QImage::Format src_format : formats) {
+        for (QImage::Format dst_format : formats) {
+            if (src_format == dst_format)
+                continue;
+
+            QTest::addRow("%s -> %s", formatToString(src_format).data(), formatToString(dst_format).data())
+                    << src_format << dst_format;
+        }
+    }
+}
+
+void tst_QImage::largeGenericRgbConversion()
+{
+    // Also test a larger conversion for a few formats (here the tested precision is also higher)
+    QFETCH(QImage::Format, format);
+    QFETCH(QImage::Format, dest_format);
+
+    // Must have more than 64k pixels to trigger threaded codepath:
+    QImage image(512, 216, format);
+
+    for (int i = 0; i < image.height(); ++i)
+        for (int j = 0; j < image.width(); ++j)
+            image.setPixel(j, i, qRgb(j % 256, i, 0));
+
+    const bool precision_8bit = (format != QImage::Format_RGB16) && (dest_format != QImage::Format_RGB16);
+
+    QImage imageConverted = image.convertToFormat(dest_format);
+    QCOMPARE(imageConverted.format(), dest_format);
+    for (int i = 0; i < imageConverted.height(); ++i) {
+        for (int j = 0; j < imageConverted.width(); ++j) {
+            if (precision_8bit) {
+                QCOMPARE(imageConverted.pixel(j, i), image.pixel(j, i));
+            } else {
+                QRgb convertedColor = imageConverted.pixel(j,i);
+                QCOMPARE(qRed(convertedColor) & 0xF8, (j % 256) & 0xF8);
+                QCOMPARE(qGreen(convertedColor) & 0xFC, i & 0xFC);
+            }
+        }
+    }
+}
+
+void tst_QImage::largeInplaceRgbConversion_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<QImage::Format>("dest_format");
+
+    QImage::Format formats[] = {
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGB16,
+        QImage::Format_RGB888,
+        QImage::Format_RGBA8888,
+        QImage::Format_BGR30,
+        QImage::Format_A2RGB30_Premultiplied,
+        QImage::Format_RGBA64_Premultiplied,
+    };
+
+    for (QImage::Format src_format : formats) {
+        for (QImage::Format dst_format : formats) {
+            if (src_format == dst_format)
+                continue;
+            if (qt_depthForFormat(src_format) < qt_depthForFormat(dst_format))
+                continue;
+            QTest::addRow("%s -> %s", formatToString(src_format).data(), formatToString(dst_format).data())
+                    << src_format << dst_format;
+        }
+    }
+}
+
+void tst_QImage::largeInplaceRgbConversion()
+{
+    // Also test a larger conversion for a few formats
+    QFETCH(QImage::Format, format);
+    QFETCH(QImage::Format, dest_format);
+
+    // Must have more than 64k pixels to trigger threaded codepath:
+    QImage image(512, 216, format);
+
+    for (int i = 0; i < image.height(); ++i)
+        for (int j = 0; j < image.width(); ++j)
+            image.setPixel(j, i, qRgb(j % 256, i, 0));
+
+    const bool precision_8bit = (format != QImage::Format_RGB16) && (dest_format != QImage::Format_RGB16);
+
+    image.convertTo(dest_format);
+    QCOMPARE(image.format(), dest_format);
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            if (precision_8bit) {
+                QCOMPARE(image.pixel(j,i), qRgb(j % 256, i, 0));
+            } else {
+                QRgb convertedColor = image.pixel(j,i);
+                QCOMPARE(qRed(convertedColor) & 0xF8, (j % 256) & 0xF8);
+                QCOMPARE(qGreen(convertedColor) & 0xFC, i & 0xFC);
+            }
+        }
+    }
 }
 
 void tst_QImage::deepCopyWhenPaintingActive()

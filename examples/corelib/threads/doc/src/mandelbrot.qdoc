@@ -187,6 +187,10 @@
     generate more and more precise (and computationally expensive)
     approximations of the fractal.
 
+    We create a high resolution pixmap by applying the device
+    pixel ratio to the target size (see
+    \l{Drawing High Resolution Versions of Pixmaps and Images}).
+
     If we discover inside the loop that \c restart has been set to \c
     true (by \c render()), we break out of the loop immediately, so
     that the control quickly returns to the very top of the outer
@@ -273,12 +277,21 @@
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 8
 
     If the pixmap has the right scale factor, we draw the pixmap directly onto
-    the widget. Otherwise, we scale and translate the \l{Coordinate
-    System}{coordinate system} before we draw the pixmap. By reverse mapping
-    the widget's rectangle using the scaled painter matrix, we also make sure
-    that only the exposed areas of the pixmap are drawn. The calls to
-    QPainter::save() and QPainter::restore() make sure that any painting
-    performed afterwards uses the standard coordinate system.
+    the widget.
+
+    Otherwise, we create a preview pixmap to be shown until the calculation
+    finishes and translate the \l{Coordinate System}{coordinate system}
+    accordingly.
+
+    Since we are going to use transformations on the painter
+    and use an overload of QPainter::drawPixmap() that does not support
+    high resolution pixmaps in that case, we create a pixmap with device pixel
+    ratio 1.
+
+    By reverse mapping the widget's rectangle using the scaled painter matrix,
+    we also make sure that only the exposed areas of the pixmap are drawn.
+    The calls to QPainter::save() and QPainter::restore() make sure that any
+    painting performed afterwards uses the standard coordinate system.
 
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 9
 

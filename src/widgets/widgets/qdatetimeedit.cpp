@@ -697,8 +697,6 @@ QDateTimeEdit::Sections QDateTimeEdit::displayedSections() const
   \property QDateTimeEdit::currentSection
 
   \brief The current section of the spinbox.
-
-  \sa setCurrentSection()
 */
 
 QDateTimeEdit::Section QDateTimeEdit::currentSection() const

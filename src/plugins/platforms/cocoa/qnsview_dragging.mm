@@ -150,10 +150,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
             break;
         }
     } else {
-        NSImage *nsimage = qt_mac_create_nsimage(pixmapCursor);
-        nsimage.size = NSSizeFromCGSize((pixmapCursor.size() / pixmapCursor.devicePixelRatioF()).toCGSize());
+        auto *nsimage = [NSImage imageFromQImage:pixmapCursor.toImage()];
         nativeCursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSZeroPoint];
-        [nsimage release];
     }
 
     // Change the cursor

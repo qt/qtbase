@@ -185,7 +185,9 @@ void QEglFSDeviceIntegration::platformDestroy()
 
 EGLNativeDisplayType QEglFSDeviceIntegration::platformDisplay() const
 {
-    return EGL_DEFAULT_DISPLAY;
+    bool displayOk;
+    const int defaultDisplay = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEFAULT_DISPLAY", &displayOk);
+    return displayOk ? EGLNativeDisplayType(quintptr(defaultDisplay)) : EGL_DEFAULT_DISPLAY;
 }
 
 EGLDisplay QEglFSDeviceIntegration::createDisplay(EGLNativeDisplayType nativeDisplay)

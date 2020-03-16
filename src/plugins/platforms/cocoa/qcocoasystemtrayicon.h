@@ -49,14 +49,23 @@
 #include "QtCore/qstring.h"
 #include "QtGui/qpa/qplatformsystemtrayicon.h"
 
-QT_BEGIN_NAMESPACE
+#include "qcocoamenu.h"
 
-class QSystemTrayIconSys;
+QT_FORWARD_DECLARE_CLASS(QCocoaSystemTrayIcon);
+
+@interface QT_MANGLE_NAMESPACE(QStatusItemDelegate) : NSObject <NSUserNotificationCenterDelegate>
+- (instancetype)initWithSysTray:(QCocoaSystemTrayIcon *)platformSystemTray;
+@property (nonatomic, assign) QCocoaSystemTrayIcon *platformSystemTray;
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QStatusItemDelegate);
+
+QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QCocoaSystemTrayIcon : public QPlatformSystemTrayIcon
 {
 public:
-    QCocoaSystemTrayIcon() : m_sys(nullptr) {}
+    QCocoaSystemTrayIcon() {}
 
     void init() override;
     void cleanup() override;
@@ -70,8 +79,12 @@ public:
     bool isSystemTrayAvailable() const override;
     bool supportsMessages() const override;
 
+    void statusItemClicked();
+
 private:
-    QSystemTrayIconSys *m_sys;
+    NSStatusItem *m_statusItem = nullptr;
+    QStatusItemDelegate *m_delegate = nullptr;
+    QCocoaMenu *m_menu = nullptr;
 };
 
 QT_END_NAMESPACE

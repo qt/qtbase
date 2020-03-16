@@ -2445,14 +2445,15 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
     (*openFileImpl)();
 #else
     QFileDialog *dialog = new QFileDialog();
+    dialog->setFileMode(QFileDialog::ExistingFile);
     dialog->selectNameFilter(nameFilter);
 
     auto fileSelected = [=](const QString &fileName) {
         QByteArray fileContent;
         if (!fileName.isNull()) {
             QFile selectedFile(fileName);
-            selectedFile.open(QIODevice::ReadOnly);
-            fileContent = selectedFile.readAll();
+            if (selectedFile.open(QIODevice::ReadOnly))
+                fileContent = selectedFile.readAll();
         }
         fileOpenCompleted(fileName, fileContent);
     };

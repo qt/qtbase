@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #include "qnetworksession.h"
 #include "qnetworksession_p.h"
 #include "qbearerengine_p.h"

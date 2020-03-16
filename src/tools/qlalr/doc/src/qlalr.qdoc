@@ -53,7 +53,6 @@
     \page qlalr-files.html
     \title qlalr - Writing Grammars
 
-    \contentspage qlalr
     \previouspage qlalr
     \nextpage qlalr - Generating Code from Grammar Specifications
 
@@ -63,7 +62,6 @@
     \page qlalr-generating.html
     \title qlalr - Generating Code from Grammar Specifications
 
-    \contentspage qlalr
     \previouspage qlalr - Writing Grammars
     \nextpage qlalr - qlalr Grammar Specification
 */
@@ -72,7 +70,6 @@
     \page qlalr-grammar-specification.html
     \title qlalr - qlalr Grammar Specification
 
-    \contentspage qlalr
     \previouspage qlalr - Generating Code from Grammar Specifications
     \nextpage qlalr - Handling Conflicts
 
@@ -82,7 +79,6 @@
     \page qlalr-handling-conflicts.html
     \title qlalr - Handling Conflicts
 
-    \contentspage qlalr
     \previouspage qlalr - qlalr Grammar Specification
     \nextpage qlalr - Error Handling and Recovery
 */
@@ -91,7 +87,6 @@
     \page qlalr-handling-errors.html
     \title qlalr - Error Handling and Recovery
 
-    \contentspage qlalr
     \previouspage qlalr - Handling Conflicts
     \nextpage qlalr - References to External Information
 */
@@ -100,7 +95,6 @@
     \page qlalr-external-references.html
     \title qlalr - References to External Information
 
-    \contentspage qlalr
     \previouspage qlalr - Error Handling and Recovery
 */
 

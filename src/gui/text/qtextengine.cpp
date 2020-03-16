@@ -1358,6 +1358,37 @@ void QTextEngine::shapeLine(const QScriptLine &line)
 extern bool qt_useHarfbuzzNG(); // defined in qfontengine.cpp
 #endif
 
+static void applyVisibilityRules(ushort ucs, QGlyphLayout *glyphs, uint glyphPosition, QFontEngine *fontEngine)
+{
+    // hide characters that should normally be invisible
+    switch (ucs) {
+    case QChar::LineFeed:
+    case 0x000c: // FormFeed
+    case QChar::CarriageReturn:
+    case QChar::LineSeparator:
+    case QChar::ParagraphSeparator:
+        glyphs->attributes[glyphPosition].dontPrint = true;
+        break;
+    case QChar::SoftHyphen:
+        if (!fontEngine->symbol) {
+            // U+00AD [SOFT HYPHEN] is a default ignorable codepoint,
+            // so we replace its glyph and metrics with ones for
+            // U+002D [HYPHEN-MINUS] and make it visible if it appears at line-break
+            const uint engineIndex = glyphs->glyphs[glyphPosition] & 0xff000000;
+            glyphs->glyphs[glyphPosition] = fontEngine->glyphIndex('-');
+            if (Q_LIKELY(glyphs->glyphs[glyphPosition] != 0)) {
+                glyphs->glyphs[glyphPosition] |= engineIndex;
+                QGlyphLayout tmp = glyphs->mid(glyphPosition, 1);
+                fontEngine->recalcAdvances(&tmp, { });
+            }
+            glyphs->attributes[glyphPosition].dontPrint = true;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 void QTextEngine::shapeText(int item) const
 {
     Q_ASSERT(item < layoutData->items.size());
@@ -1491,6 +1522,20 @@ void QTextEngine::shapeText(int item) const
                     && QChar::isLowSurrogate(string[i + 1])) {
                 ++i;
                 log_clusters[i] = glyph_pos;
+
+                initialGlyphs.attributes[glyph_pos].dontPrint = !QChar::isPrint(QChar::surrogateToUcs4(string[i], string[i + 1]));
+            } else {
+                initialGlyphs.attributes[glyph_pos].dontPrint = !QChar::isPrint(string[i]);
+            }
+
+            if (Q_UNLIKELY(!initialGlyphs.attributes[glyph_pos].dontPrint)) {
+                QFontEngine *actualFontEngine = fontEngine;
+                if (actualFontEngine->type() == QFontEngine::Multi) {
+                    const uint engineIdx = initialGlyphs.glyphs[glyph_pos] >> 24;
+                    actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
+                }
+
+                applyVisibilityRules(string[i], &initialGlyphs, glyph_pos, actualFontEngine);
             }
         }
 
@@ -1702,31 +1747,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                 last_glyph_pos = i + glyphs_shaped;
                 last_cluster = cluster;
 
-                // hide characters that should normally be invisible
-                switch (string[item_pos + str_pos]) {
-                case QChar::LineFeed:
-                case 0x000c: // FormFeed
-                case QChar::CarriageReturn:
-                case QChar::LineSeparator:
-                case QChar::ParagraphSeparator:
-                    g.attributes[i].dontPrint = true;
-                    break;
-                case QChar::SoftHyphen:
-                    if (!actualFontEngine->symbol) {
-                        // U+00AD [SOFT HYPHEN] is a default ignorable codepoint,
-                        // so we replace its glyph and metrics with ones for
-                        // U+002D [HYPHEN-MINUS] and make it visible if it appears at line-break
-                        g.glyphs[i] = actualFontEngine->glyphIndex('-');
-                        if (Q_LIKELY(g.glyphs[i] != 0)) {
-                            QGlyphLayout tmp = g.mid(i, 1);
-                            actualFontEngine->recalcAdvances(&tmp, { });
-                        }
-                        g.attributes[i].dontPrint = true;
-                    }
-                    break;
-                default:
-                    break;
-                }
+                applyVisibilityRules(string[item_pos + str_pos], &g, i, actualFontEngine);
             }
         }
         while (str_pos < item_length)
