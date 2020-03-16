@@ -761,7 +761,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_easingcurve
         tools/qtimeline.cpp tools/qtimeline.h
 )
 
-qt_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT MACOS OR NOT ICC)
+qt_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT ICC OR NOT MACOS)
     LIBRARIES
         m
 )
@@ -1205,20 +1205,23 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
 # mimedb.output = "$$outpath/qmimeprovider_database.cpp"
 # mimedb.variable_out = "INCLUDED_SOURCES"
 
-#### Keys ignored in scope 200:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
-# outpath = ".rcc/debug"
+#### Keys ignored in scope 199:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
+# outpath = "$$outpath/$${QT_ARCH}"
 
-#### Keys ignored in scope 201:.:mimetypes:mimetypes/mimetypes.pri:else:
-# outpath = ".rcc/release"
+#### Keys ignored in scope 201:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
+# outpath = "$$outpath/debug"
 
-#### Keys ignored in scope 202:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
+#### Keys ignored in scope 202:.:mimetypes:mimetypes/mimetypes.pri:else:
+# outpath = "$$outpath/release"
+
+#### Keys ignored in scope 203:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
 # mimedb.commands = "cmd" "/c" "$$shell_path($$PWD/mime/generate.bat)"
 # mimedb.depends = "$$PWD/mime/generate.bat" "$$PWD/mime/hexdump.ps1"
 
-#### Keys ignored in scope 203:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 204:.:mimetypes:mimetypes/mimetypes.pri:else:
 # mimedb.commands = "perl" "$${mimedb.depends}"
 
-#### Keys ignored in scope 204:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
+#### Keys ignored in scope 205:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
 # mimedb.commands = "--zstd"
 # Resources:
 # special case begin

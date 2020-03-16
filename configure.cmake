@@ -129,8 +129,8 @@ int main(int argc, char **argv)
 
 
 qt_config_compile_test("separate_debug_info"
-                       LABEL "separate debug information support"
-                       PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/separate_debug_info")
+                   LABEL "separate debug information support"
+                   PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/separate_debug_info")
 # signaling_nan
 qt_config_compile_test(signaling_nan
     LABEL "Signaling NaN for doubles"

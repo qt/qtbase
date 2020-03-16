@@ -444,7 +444,7 @@ qt_configure_end_summary_section() # end of "Qt Network" section
 qt_configure_add_report_entry(
     TYPE NOTE
     MESSAGE "When linking against OpenSSL, you can override the default library names through OPENSSL_LIBS. For example: OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
-    CONDITION NOT ANDROID AND QT_FEATURE_openssl_linked AND OpenSSL_FOUND.source NOT = 0 AND INPUT_openssl.prefix STREQUAL '' AND INPUT_openssl.libs STREQUAL '' AND INPUT_openssl.libs.debug STREQUAL '' OR FIXME
+    CONDITION NOT ANDROID AND QT_FEATURE_openssl_linked AND TEST_openssl.source NOT = 0 AND INPUT_openssl.prefix STREQUAL '' AND INPUT_openssl.libs STREQUAL '' AND INPUT_openssl.libs.debug STREQUAL '' OR FIXME
 )
 qt_configure_add_report_entry(
     TYPE WARNING

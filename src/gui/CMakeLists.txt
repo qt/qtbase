@@ -622,12 +622,12 @@ qt_extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-qt_extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
+qt_extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64") AND NOT UIKIT
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
 )
 
-if(UNIX AND NOT ANDROID AND NOT UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64"))
+if(UNIX AND NOT ANDROID AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64") AND NOT UIKIT)
     qt_add_simd_part(Gui SIMD neon
         SOURCES
             ../3rdparty/pixman/pixman-arm-neon-asm.S
