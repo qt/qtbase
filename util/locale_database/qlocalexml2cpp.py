@@ -78,11 +78,11 @@ def compareLocaleKeys(key1, key2):
 class StringDataToken:
     def __init__(self, index, length):
         if index > 0xFFFF or length > 0xFFFF:
-            raise Error("Position exceeds ushort range: %d,%d " % (index, length))
+            raise Error("Position exceeds ushort range: {},{}".format(index, length))
         self.index = index
         self.length = length
     def __str__(self):
-        return " %d,%d " % (self.index, self.length)
+        return " {},{} ".format(self.index, self.length)
 
 class StringData:
     def __init__(self, name):
@@ -112,7 +112,7 @@ class StringData:
         return token
 
     def write(self, fd):
-        fd.write("\nstatic const ushort %s[] = {\n" % self.name)
+        fd.write("\nstatic const ushort {}[] = {{\n".format(self.name))
         fd.write(wrap_list(self.data))
         fd.write("\n};\n")
 
