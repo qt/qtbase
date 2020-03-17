@@ -15,3 +15,7 @@ add_qt_executable(maxwarnings
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(maxwarnings)
+# special case end

@@ -1,14 +1,14 @@
-# Generated from printdatatags.pro.
+# Generated from pass.pro.
 
 #####################################################################
-## printdatatags Binary:
+## pass Binary:
 #####################################################################
 
-add_qt_executable(printdatatags
+qt_add_executable(pass
     NO_INSTALL # special case
-    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" # special case
     SOURCES
-        tst_printdatatags.cpp
+        tst_pass.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
@@ -17,5 +17,5 @@ add_qt_executable(printdatatags
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(printdatatags)
+qt_apply_testlib_coverage_options(pass)
 # special case end

@@ -28,3 +28,7 @@ add_qt_resource(findtestdata "findtestdata"
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(findtestdata)
+# special case end

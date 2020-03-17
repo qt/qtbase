@@ -15,3 +15,7 @@ add_qt_executable(globaldata
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(globaldata)
+# special case end

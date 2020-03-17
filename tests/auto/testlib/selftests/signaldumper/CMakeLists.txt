@@ -16,3 +16,7 @@ add_qt_executable(signaldumper
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(signaldumper)
+# special case end

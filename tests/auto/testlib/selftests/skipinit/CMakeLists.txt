@@ -15,3 +15,7 @@ add_qt_executable(skipinit
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(skipinit)
+# special case end

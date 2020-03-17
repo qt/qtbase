@@ -16,3 +16,7 @@ add_qt_executable(exceptionthrow
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(exceptionthrow)
+# special case end

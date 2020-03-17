@@ -16,3 +16,7 @@ add_qt_executable(badxml
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(badxml)
+# special case end

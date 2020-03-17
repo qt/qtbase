@@ -15,3 +15,7 @@ add_qt_executable(singleskip
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(singleskip)
+# special case end

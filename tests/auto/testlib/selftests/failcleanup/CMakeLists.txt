@@ -15,3 +15,7 @@ add_qt_executable(failcleanup
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(failcleanup)
+# special case end

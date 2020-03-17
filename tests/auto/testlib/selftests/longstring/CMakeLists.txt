@@ -15,3 +15,7 @@ add_qt_executable(longstring
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(longstring)
+# special case end

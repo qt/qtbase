@@ -18,3 +18,7 @@ add_qt_executable(mouse
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(mouse)
+# special case end

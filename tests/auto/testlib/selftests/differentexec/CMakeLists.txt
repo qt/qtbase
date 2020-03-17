@@ -15,3 +15,7 @@ add_qt_executable(differentexec
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(differentexec)
+# special case end

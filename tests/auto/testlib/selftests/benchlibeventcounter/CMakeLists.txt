@@ -15,3 +15,7 @@ add_qt_executable(benchlibeventcounter
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(benchlibeventcounter)
+# special case end

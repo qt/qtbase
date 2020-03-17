@@ -1,6 +1,18 @@
 # Generated from selftests.pro.
 
 # special case begin
+include(../../../../src/testlib/selfcover.cmake)
+# special case end
+
+add_subdirectory(test)
+
+if(NOT WINRT)
+
+    if(TARGET Qt::Gui)
+    endif()
+endif()
+# special case begin
+
 # The whole file is written manually.
 
 if(NOT WINRT)
@@ -36,6 +48,7 @@ if(NOT WINRT)
     add_subdirectory(longstring)
     add_subdirectory(maxwarnings)
     add_subdirectory(multiexec)
+    add_subdirectory(pass)
     add_subdirectory(pairdiagnostics)
     add_subdirectory(printdatatags)
     add_subdirectory(printdatatagswithglobaltags)
@@ -65,338 +78,6 @@ if(NOT WINRT)
     endif()
 endif()
 
-#####################################################################
-## tst_selftests Test:
-#####################################################################
-
-add_qt_test(tst_selftests
-    SOURCES
-        ../../../shared/emulationdetector.h
-        tst_selftests.cpp
-    INCLUDE_DIRECTORIES
-        ../../../shared
-    LIBRARIES
-        Qt::TestPrivate
-)
-
-add_qt_resource(tst_selftests "expected_files" PREFIX "/" FILES
-    expected_assert.lightxml
-    expected_assert.tap
-    expected_assert.teamcity
-    expected_assert.txt
-    expected_assert.xml
-    expected_assert.xunitxml
-    expected_badxml.lightxml
-    expected_badxml.tap
-    expected_badxml.teamcity
-    expected_badxml.txt
-    expected_badxml.xml
-    expected_badxml.xunitxml
-    expected_benchlibcallgrind_0.txt
-    expected_benchlibcallgrind_1.txt
-    expected_benchlibcallgrind.csv
-    expected_benchlibcallgrind.lightxml
-    expected_benchlibcallgrind.tap
-    expected_benchlibcallgrind.teamcity
-    expected_benchlibcallgrind.xml
-    expected_benchlibcallgrind.xunitxml
-    expected_benchlibcounting.csv
-    expected_benchlibcounting.lightxml
-    expected_benchlibcounting.tap
-    expected_benchlibcounting.teamcity
-    expected_benchlibcounting.txt
-    expected_benchlibcounting.xml
-    expected_benchlibcounting.xunitxml
-    expected_benchlibeventcounter.csv
-    expected_benchlibeventcounter.lightxml
-    expected_benchlibeventcounter.tap
-    expected_benchlibeventcounter.teamcity
-    expected_benchlibeventcounter.txt
-    expected_benchlibeventcounter.xml
-    expected_benchlibeventcounter.xunitxml
-    expected_benchliboptions.csv
-    expected_benchliboptions.lightxml
-    expected_benchliboptions.tap
-    expected_benchliboptions.teamcity
-    expected_benchliboptions.txt
-    expected_benchliboptions.xml
-    expected_benchliboptions.xunitxml
-    expected_benchlibtickcounter.csv
-    expected_benchlibtickcounter.lightxml
-    expected_benchlibtickcounter.tap
-    expected_benchlibtickcounter.teamcity
-    expected_benchlibtickcounter.txt
-    expected_benchlibtickcounter.xml
-    expected_benchlibtickcounter.xunitxml
-    expected_benchlibwalltime.csv
-    expected_benchlibwalltime.lightxml
-    expected_benchlibwalltime.tap
-    expected_benchlibwalltime.teamcity
-    expected_benchlibwalltime.txt
-    expected_benchlibwalltime.xml
-    expected_benchlibwalltime.xunitxml
-    expected_blacklisted.lightxml
-    expected_blacklisted.tap
-    expected_blacklisted.teamcity
-    expected_blacklisted.txt
-    expected_blacklisted.xml
-    expected_blacklisted.xunitxml
-    expected_cmptest.lightxml
-    expected_cmptest.tap
-    expected_cmptest.teamcity
-    expected_cmptest.txt
-    expected_cmptest.xml
-    expected_cmptest.xunitxml
-    expected_commandlinedata.lightxml
-    expected_commandlinedata.tap
-    expected_commandlinedata.teamcity
-    expected_commandlinedata.txt
-    expected_commandlinedata.xml
-    expected_commandlinedata.xunitxml
-    expected_counting.lightxml
-    expected_counting.tap
-    expected_counting.teamcity
-    expected_counting.txt
-    expected_counting.xml
-    expected_counting.xunitxml
-    expected_crashes_1.txt
-    expected_crashes_2.txt
-    expected_crashes_3.txt
-    expected_crashes_4.txt
-    expected_crashes_5.txt
-    expected_datatable.lightxml
-    expected_datatable.tap
-    expected_datatable.teamcity
-    expected_datatable.txt
-    expected_datatable.xml
-    expected_datatable.xunitxml
-    expected_datetime.lightxml
-    expected_datetime.tap
-    expected_datetime.teamcity
-    expected_datetime.txt
-    expected_datetime.xml
-    expected_datetime.xunitxml
-    expected_differentexec.lightxml
-    expected_differentexec.tap
-    expected_differentexec.teamcity
-    expected_differentexec.txt
-    expected_differentexec.xml
-    expected_differentexec.xunitxml
-    expected_exceptionthrow.lightxml
-    expected_exceptionthrow.tap
-    expected_exceptionthrow.teamcity
-    expected_exceptionthrow.txt
-    expected_exceptionthrow.xml
-    expected_exceptionthrow.xunitxml
-    expected_expectfail.lightxml
-    expected_expectfail.tap
-    expected_expectfail.teamcity
-    expected_expectfail.txt
-    expected_expectfail.xml
-    expected_expectfail.xunitxml
-    expected_failcleanup.lightxml
-    expected_failcleanup.tap
-    expected_failcleanup.teamcity
-    expected_failcleanup.txt
-    expected_failcleanup.xml
-    expected_failcleanup.xunitxml
-    expected_faildatatype.lightxml
-    expected_faildatatype.tap
-    expected_faildatatype.teamcity
-    expected_faildatatype.txt
-    expected_faildatatype.xml
-    expected_faildatatype.xunitxml
-    expected_failfetchtype.lightxml
-    expected_failfetchtype.tap
-    expected_failfetchtype.teamcity
-    expected_failfetchtype.txt
-    expected_failfetchtype.xml
-    expected_failfetchtype.xunitxml
-    expected_failinitdata.lightxml
-    expected_failinitdata.tap
-    expected_failinitdata.teamcity
-    expected_failinitdata.txt
-    expected_failinitdata.xml
-    expected_failinitdata.xunitxml
-    expected_failinit.lightxml
-    expected_failinit.tap
-    expected_failinit.teamcity
-    expected_failinit.txt
-    expected_failinit.xml
-    expected_failinit.xunitxml
-    expected_fetchbogus.lightxml
-    expected_fetchbogus.tap
-    expected_fetchbogus.teamcity
-    expected_fetchbogus.txt
-    expected_fetchbogus.xml
-    expected_fetchbogus.xunitxml
-    expected_findtestdata.lightxml
-    expected_findtestdata.tap
-    expected_findtestdata.teamcity
-    expected_findtestdata.txt
-    expected_findtestdata.xml
-    expected_findtestdata.xunitxml
-    expected_float.lightxml
-    expected_float.tap
-    expected_float.teamcity
-    expected_float.txt
-    expected_float.xml
-    expected_float.xunitxml
-    expected_globaldata.lightxml
-    expected_globaldata.tap
-    expected_globaldata.teamcity
-    expected_globaldata.txt
-    expected_globaldata.xml
-    expected_globaldata.xunitxml
-    expected_keyboard.lightxml
-    expected_keyboard.tap
-    expected_keyboard.teamcity
-    expected_keyboard.txt
-    expected_keyboard.xml
-    expected_keyboard.xunitxml
-    expected_longstring.lightxml
-    expected_longstring.tap
-    expected_longstring.teamcity
-    expected_longstring.txt
-    expected_longstring.xml
-    expected_longstring.xunitxml
-    expected_maxwarnings.lightxml
-    expected_maxwarnings.tap
-    expected_maxwarnings.teamcity
-    expected_maxwarnings.txt
-    expected_maxwarnings.xml
-    expected_maxwarnings.xunitxml
-    expected_multiexec.lightxml
-    expected_multiexec.tap
-    expected_multiexec.teamcity
-    expected_multiexec.txt
-    expected_multiexec.xml
-    expected_multiexec.xunitxml
-    expected_pairdiagnostics.lightxml
-    expected_pairdiagnostics.tap
-    expected_pairdiagnostics.teamcity
-    expected_pairdiagnostics.txt
-    expected_pairdiagnostics.xml
-    expected_pairdiagnostics.xunitxml
-    expected_printdatatags.txt
-    expected_printdatatagswithglobaltags.txt
-    expected_qexecstringlist.lightxml
-    expected_qexecstringlist.tap
-    expected_qexecstringlist.teamcity
-    expected_qexecstringlist.txt
-    expected_qexecstringlist.xml
-    expected_qexecstringlist.xunitxml
-    expected_signaldumper.lightxml
-    expected_signaldumper.tap
-    expected_signaldumper.teamcity
-    expected_signaldumper.txt
-    expected_signaldumper.xml
-    expected_signaldumper.xunitxml
-    expected_silent.lightxml
-    expected_silent.tap
-    expected_silent.teamcity
-    expected_silent.txt
-    expected_silent.xml
-    expected_silent.xunitxml
-    expected_singleskip.lightxml
-    expected_singleskip.tap
-    expected_singleskip.teamcity
-    expected_singleskip.txt
-    expected_singleskip.xml
-    expected_singleskip.xunitxml
-    expected_skipcleanup.lightxml
-    expected_skipcleanup.tap
-    expected_skipcleanup.teamcity
-    expected_skipcleanup.txt
-    expected_skipcleanup.xml
-    expected_skipcleanup.xunitxml
-    expected_skipinitdata.lightxml
-    expected_skipinitdata.tap
-    expected_skipinitdata.teamcity
-    expected_skipinitdata.txt
-    expected_skipinitdata.xml
-    expected_skipinitdata.xunitxml
-    expected_skipinit.lightxml
-    expected_skipinit.tap
-    expected_skipinit.teamcity
-    expected_skipinit.txt
-    expected_skipinit.xml
-    expected_skipinit.xunitxml
-    expected_skip.lightxml
-    expected_skip.tap
-    expected_skip.teamcity
-    expected_skip.txt
-    expected_skip.xml
-    expected_skip.xunitxml
-    expected_sleep.lightxml
-    expected_sleep.tap
-    expected_sleep.teamcity
-    expected_sleep.txt
-    expected_sleep.xml
-    expected_sleep.xunitxml
-    expected_strcmp.lightxml
-    expected_strcmp.tap
-    expected_strcmp.teamcity
-    expected_strcmp.txt
-    expected_strcmp.xml
-    expected_strcmp.xunitxml
-    expected_subtest.lightxml
-    expected_subtest.tap
-    expected_subtest.teamcity
-    expected_subtest.txt
-    expected_subtest.xml
-    expected_subtest.xunitxml
-    expected_testlib.lightxml
-    expected_testlib.tap
-    expected_testlib.teamcity
-    expected_testlib.txt
-    expected_testlib.xml
-    expected_testlib.xunitxml
-    expected_tuplediagnostics.lightxml
-    expected_tuplediagnostics.tap
-    expected_tuplediagnostics.teamcity
-    expected_tuplediagnostics.txt
-    expected_tuplediagnostics.xml
-    expected_tuplediagnostics.xunitxml
-    expected_verbose1.lightxml
-    expected_verbose1.tap
-    expected_verbose1.teamcity
-    expected_verbose1.txt
-    expected_verbose1.xml
-    expected_verbose1.xunitxml
-    expected_verbose2.lightxml
-    expected_verbose2.tap
-    expected_verbose2.teamcity
-    expected_verbose2.txt
-    expected_verbose2.xml
-    expected_verbose2.xunitxml
-    expected_verifyexceptionthrown.lightxml
-    expected_verifyexceptionthrown.tap
-    expected_verifyexceptionthrown.teamcity
-    expected_verifyexceptionthrown.txt
-    expected_verifyexceptionthrown.xml
-    expected_verifyexceptionthrown.xunitxml
-    expected_warnings.lightxml
-    expected_warnings.tap
-    expected_warnings.teamcity
-    expected_warnings.txt
-    expected_warnings.xml
-    expected_warnings.xunitxml
-    expected_watchdog.lightxml
-    expected_watchdog.tap
-    expected_watchdog.teamcity
-    expected_watchdog.txt
-    expected_watchdog.xml
-    expected_watchdog.xunitxml
-    expected_xunit.lightxml
-    expected_xunit.tap
-    expected_xunit.teamcity
-    expected_xunit.txt
-    expected_xunit.xml
-    expected_xunit.xunitxml
-)
-
-
 #### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
 # CONFIG = "testcase"
 # expected_files.base = "$$PWD/.."
@@ -407,5 +88,4 @@ add_qt_resource(tst_selftests "expected_files" PREFIX "/" FILES
 
 #### Keys ignored in scope 5:.:.:test.pro:NOT ANDROID AND NOT WINRT AND for(file,SUBPROGRAMS):
 # TEST_HELPER_INSTALLS = "../$${file}/$${file}"
-
 # special case end

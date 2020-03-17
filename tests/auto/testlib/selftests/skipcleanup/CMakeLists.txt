@@ -15,3 +15,7 @@ add_qt_executable(skipcleanup
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(skipcleanup)
+# special case end

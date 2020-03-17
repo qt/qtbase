@@ -15,3 +15,7 @@ add_qt_executable(warnings
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(warnings)
+# special case end

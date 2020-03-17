@@ -12,3 +12,7 @@ add_qt_executable(tuplediagnostics
     PUBLIC_LIBRARIES
         Qt::Test
 )
+
+# special case begin
+qt_apply_testlib_coverage_options(tuplediagnostics)
+# special case end

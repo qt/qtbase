@@ -15,3 +15,7 @@ add_qt_executable(sleep
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(sleep)
+# special case end

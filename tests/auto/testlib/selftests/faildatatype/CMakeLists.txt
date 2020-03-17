@@ -15,3 +15,7 @@ add_qt_executable(faildatatype
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(faildatatype)
+# special case end

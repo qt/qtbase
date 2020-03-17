@@ -1,9 +1,3 @@
 # Generated from selftests.pro.
 
 add_subdirectory(test)
-
-if(NOT WINRT)
-
-    if(TARGET Qt::Gui)
-    endif()
-endif()

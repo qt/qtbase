@@ -15,3 +15,7 @@ add_qt_executable(subtest
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(subtest)
+# special case end

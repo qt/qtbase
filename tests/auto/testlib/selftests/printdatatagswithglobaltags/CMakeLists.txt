@@ -15,3 +15,7 @@ add_qt_executable(printdatatagswithglobaltags
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(printdatatagswithglobaltags)
+# special case end

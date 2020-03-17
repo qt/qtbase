@@ -16,3 +16,7 @@ add_qt_executable(silent
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(silent)
+# special case end

@@ -20,3 +20,7 @@ add_qt_executable(watchdog
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(watchdog)
+# special case end

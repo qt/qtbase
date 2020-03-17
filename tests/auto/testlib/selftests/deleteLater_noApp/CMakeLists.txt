@@ -12,3 +12,7 @@ add_qt_executable(deleteLater_noApp
     PUBLIC_LIBRARIES
         Qt::Test
 )
+
+# special case begin
+qt_apply_testlib_coverage_options(deleteLater_noApp)
+# special case end

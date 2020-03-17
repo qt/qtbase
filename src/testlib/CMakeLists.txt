@@ -1,5 +1,9 @@
 # Generated from testlib.pro.
 
+# special case begin
+include(selfcover.cmake)
+# special case end
+
 #####################################################################
 ## Test Module:
 #####################################################################
@@ -130,3 +134,6 @@ qt_add_docs(Test
     doc/qttestlib.qdocconf
 )
 
+# special case begin
+qt_apply_testlib_coverage_options(Test)
+# special case end

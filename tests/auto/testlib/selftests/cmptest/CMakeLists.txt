@@ -20,3 +20,7 @@ extend_target(cmptest CONDITION TARGET Qt::Gui
     PUBLIC_LIBRARIES
         Qt::Gui
 )
+
+# special case begin
+qt_apply_testlib_coverage_options(cmptest)
+# special case end

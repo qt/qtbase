@@ -10,10 +10,14 @@ add_qt_executable(verbose2
     SOURCES
         ../counting/tst_counting.cpp
     DEFINES
-        TESTLIB_VERBOSITY_ARG="-v2"
+        TESTLIB_VERBOSITY_ARG=-v2 # special case remove quotes
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(verbose2)
+# special case end

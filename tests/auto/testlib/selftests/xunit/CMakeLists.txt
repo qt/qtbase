@@ -15,3 +15,7 @@ add_qt_executable(xunit
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(xunit)
+# special case end

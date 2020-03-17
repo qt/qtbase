@@ -12,3 +12,7 @@ add_qt_executable(pairdiagnostics
     PUBLIC_LIBRARIES
         Qt::Test
 )
+
+# special case begin
+qt_apply_testlib_coverage_options(pairdiagnostics)
+# special case end

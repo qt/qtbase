@@ -15,3 +15,7 @@ add_qt_executable(datetime
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(datetime)
+# special case end

@@ -16,3 +16,7 @@ add_qt_executable(blacklisted
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(blacklisted)
+# special case end

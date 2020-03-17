@@ -15,3 +15,7 @@ add_qt_executable(fetchbogus
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(fetchbogus)
+# special case end

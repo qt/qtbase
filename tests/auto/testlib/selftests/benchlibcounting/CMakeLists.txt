@@ -15,3 +15,7 @@ add_qt_executable(benchlibcounting
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(tst_selftests)
+# special case end

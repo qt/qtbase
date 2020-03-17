@@ -15,3 +15,7 @@ add_qt_executable(failfetchtype
 
 ## Scopes:
 #####################################################################
+
+# special case begin
+qt_apply_testlib_coverage_options(failfetchtype)
+# special case end
