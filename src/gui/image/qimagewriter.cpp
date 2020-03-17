@@ -47,19 +47,18 @@
     \ingroup painting
     \ingroup io
 
-    QImageWriter supports setting format specific options, such as the
-    gamma level, compression level and quality, prior to storing the
+    QImageWriter supports setting format specific options, such as
+    compression level and quality, prior to storing the
     image. If you do not need such options, you can use QImage::save()
     or QPixmap::save() instead.
 
     To store an image, you start by constructing a QImageWriter
     object.  Pass either a file name or a device pointer, and the
     image format to QImageWriter's constructor. You can then set
-    several options, such as the gamma level (by calling setGamma())
-    and quality (by calling setQuality()). canWrite() returns \c true if
-    QImageWriter can write the image (i.e., the image format is
-    supported and the device is open for writing). Call write() to
-    write the image to the device.
+    several options, such as quality (by calling setQuality()).
+    canWrite() returns \c true if QImageWriter can write the image
+    (i.e., the image format is supported and the device is open for
+    writing). Call write() to write the image to the device.
 
     If any error occurs when writing the image, write() will return
     false. You can then call error() to find the type of error that
@@ -81,7 +80,7 @@
 
     \snippet qimagewriter/main.cpp 0
 
-    \sa QImageReader, QImageIOHandler, QImageIOPlugin
+    \sa QImageReader, QImageIOHandler, QImageIOPlugin, QColorSpace
 */
 
 /*!
@@ -500,6 +499,8 @@ int QImageWriter::compression() const
 
 #if QT_DEPRECATED_SINCE(5, 15)
 /*!
+    \obsolete Use QColorSpace conversion on the QImage instead.
+
     This is an image format specific function that sets the gamma
     level of the image to \a gamma. For image formats that do not
     support setting the gamma level, this value is ignored.
@@ -515,6 +516,8 @@ void QImageWriter::setGamma(float gamma)
 }
 
 /*!
+    \obsolete Use QImage::colorSpace() and QColorSpace::gamma() instead.
+
     Returns the gamma level of the image.
 
     \sa setGamma()

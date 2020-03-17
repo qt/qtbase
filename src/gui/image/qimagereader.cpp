@@ -101,7 +101,7 @@
     This can be disabled by setting the environment variable
     \c QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING.
 
-    \sa QImageWriter, QImageIOHandler, QImageIOPlugin, QMimeDatabase
+    \sa QImageWriter, QImageIOHandler, QImageIOPlugin, QMimeDatabase, QColorSpace
     \sa QImage::devicePixelRatio(), QPixmap::devicePixelRatio(), QIcon, QPainter::drawPixmap(), QPainter::drawImage(), Qt::AA_UseHighDpiPixmaps
 */
 
@@ -1152,6 +1152,7 @@ bool QImageReader::autoTransform() const
 #if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \since 5.6
+    \obsolete Use QColorSpace conversion on the QImage instead.
 
     This is an image format specific function that forces images with
     gamma information to be gamma corrected to \a gamma. For image formats
@@ -1169,6 +1170,7 @@ void QImageReader::setGamma(float gamma)
 
 /*!
     \since 5.6
+    \obsolete Use QImage::colorSpace() and QColorSpace::gamma() instead.
 
     Returns the gamma level of the decoded image. If setGamma() has been
     called and gamma correction is supported it will return the gamma set.
