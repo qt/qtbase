@@ -2663,12 +2663,19 @@ void QSortFilterProxyModel::setFilterKeyColumn(int column)
     \property QSortFilterProxyModel::filterCaseSensitivity
 
     \brief the case sensitivity of the QRegExp pattern used to filter the
-    contents of the source model
+    contents of the source model.
 
     By default, the filter is case sensitive.
 
     \sa filterRegExp, sortCaseSensitivity
 */
+
+/*!
+    \since 5.15
+    \fn void QSortFilterProxyModel::filterCaseSensitivityChanged(Qt::CaseSensitivity filterCaseSensitivity)
+    \brief This signal is emitted when the case sensitivity of the filter
+           changes to \a filterCaseSensitivity.
+ */
 Qt::CaseSensitivity QSortFilterProxyModel::filterCaseSensitivity() const
 {
     Q_D(const QSortFilterProxyModel);
@@ -2695,6 +2702,13 @@ void QSortFilterProxyModel::setFilterCaseSensitivity(Qt::CaseSensitivity cs)
 
     \sa filterCaseSensitivity, lessThan()
 */
+
+/*!
+    \since 5.15
+    \fn void QSortFilterProxyModel::sortCaseSensitivityChanged(Qt::CaseSensitivity sortCaseSensitivity)
+    \brief This signal is emitted when the case sensitivity for sorting
+           changes to \a sortCaseSensitivity.
+*/
 Qt::CaseSensitivity QSortFilterProxyModel::sortCaseSensitivity() const
 {
     Q_D(const QSortFilterProxyModel);
@@ -2720,6 +2734,13 @@ void QSortFilterProxyModel::setSortCaseSensitivity(Qt::CaseSensitivity cs)
     By default, sorting is not local aware.
 
     \sa sortCaseSensitivity, lessThan()
+*/
+
+/*!
+    \since 5.15
+    \fn void QSortFilterProxyModel::sortLocaleAwareChanged(bool sortLocaleAware)
+    \brief This signal is emitted when the locale aware setting
+           changes to \a sortLocaleAware.
 */
 bool QSortFilterProxyModel::isSortLocaleAware() const
 {
@@ -2841,11 +2862,18 @@ void QSortFilterProxyModel::setDynamicSortFilter(bool enable)
 /*!
     \since 4.2
     \property QSortFilterProxyModel::sortRole
-    \brief the item role that is used to query the source model's data when sorting items
+    \brief the item role that is used to query the source model's data when
+           sorting items.
 
     The default value is Qt::DisplayRole.
 
     \sa lessThan()
+*/
+
+/*!
+    \since 5.15
+    \fn void QSortFilterProxyModel::sortRoleChanged(int sortRole)
+    \brief This signal is emitted when the sort role changes to \a sortRole.
 */
 int QSortFilterProxyModel::sortRole() const
 {
@@ -2866,11 +2894,18 @@ void QSortFilterProxyModel::setSortRole(int role)
 /*!
     \since 4.2
     \property QSortFilterProxyModel::filterRole
-    \brief the item role that is used to query the source model's data when filtering items
+    \brief the item role that is used to query the source model's data when
+           filtering items.
 
     The default value is Qt::DisplayRole.
 
     \sa filterAcceptsRow()
+*/
+
+/*!
+    \since 5.15
+    \fn void QSortFilterProxyModel::filterRoleChanged(int filterRole)
+    \brief This signal is emitted when the filter role changes to \a filterRole.
 */
 int QSortFilterProxyModel::filterRole() const
 {
@@ -2898,6 +2933,13 @@ void QSortFilterProxyModel::setFilterRole(int role)
     The default value is false.
 
     \sa filterAcceptsRow()
+*/
+
+/*!
+    \since 5.15
+    \fn void QSortFilterProxyModel::recursiveFilteringEnabledChanged(int recursiveFilteringEnabled)
+    \brief This signal is emitted when the recursive filter setting is changed
+           to \a recursiveFilteringEnabled.
 */
 bool QSortFilterProxyModel::isRecursiveFilteringEnabled() const
 {
