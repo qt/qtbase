@@ -28,6 +28,12 @@ to avoid conflict with other packages that are already installed: `pip install v
   (on Windows: `source env\Scripts\activate.bat`)
 * Install the requirements: `pip install -r requirements.txt`
 
+If the `pip install` command above doesn't work, try:
+
+```
+python3.7 -m pip install -r requirements.txt
+```
+
 # Contributing to the scripts
 
 You can verify if the styling of a script complaint with PEP8, with a couple of exceptions:
