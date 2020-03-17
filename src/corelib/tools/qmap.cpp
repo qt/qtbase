@@ -740,7 +740,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn template <class Key, class T> QList<Key> QMap<Key, T>::uniqueKeys() const
     \since 4.2
-    \obsolete
+    \obsolete Use QMultiMap for storing multiple values with the same key.
 
     Returns a list containing all the keys in the map in ascending
     order. Keys that occur multiple times in the map (because items
@@ -802,9 +802,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn template <class Key, class T> QList<T> QMap<Key, T>::values(const Key &key) const
-    \obsolete
-
     \overload
+    \obsolete Use QMultiMap for maps storing multiple values with the same key.
 
     Returns a list containing all the values associated with key
     \a key, from the most recently inserted to the least recently
@@ -1162,7 +1161,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const Key &key, const T &value)
-    \obsolete
+    \obsolete Use QMultiMap for storing multiple values with the same key.
 
     Inserts a new item with the key \a key and a value of \a value.
 
@@ -1177,7 +1176,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const_iterator pos, const Key &key, const T &value)
     \overload
     \since 5.1
-    \obsolete
+    \obsolete Use QMultiMap for storing multiple values with the same key.
     Inserts a new item with the key \a key and value \a value and with hint \a pos
     suggesting where to do the insert.
 
@@ -1196,7 +1195,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 
 /*! \fn template <class Key, class T> QMap<Key, T> &QMap<Key, T>::unite(const QMap<Key, T> &other)
-    \obsolete
+    \obsolete Use QMultiMap for storing multiple values with the same key.
 
     Inserts all the items in the \a other map into this map. If a
     key is common to both maps, the resulting map will contain the
