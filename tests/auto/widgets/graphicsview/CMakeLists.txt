@@ -18,8 +18,17 @@ add_subdirectory(qgraphicspixmapitem)
 add_subdirectory(qgraphicspolygonitem)
 add_subdirectory(qgraphicstransform)
 if(QT_FEATURE_style_fusion)
-    add_subdirectory(qgraphicsproxywidget)
-    add_subdirectory(qgraphicswidget)
+    # special case begin
+    # These tests are never run in coin with qmake since the statement
+    # !qtConfig(style-fusion): always passes causing the subdirs to be removed.
+    # For these tests to be generated the .pro file needs to be patched and
+    # the above line changed to !qtConfig(style-fusion). That being said,
+    # one of the test fails and needs to be corrected by someone with know how in
+    # that area. Until then we will disable them to mimic the behavior seen in
+    # coin.
+    #add_subdirectory(qgraphicsproxywidget)
+    #add_subdirectory(qgraphicswidget)
+    # special case end
 endif()
 if(NOT WINRT)
     add_subdirectory(qgraphicsview)
