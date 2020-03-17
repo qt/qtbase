@@ -810,11 +810,10 @@ void QWidgetRepaintManager::paintAndFlush()
     bool repaintAllWidgets = false;
 
     const QRect tlwRect = tlw->data->crect;
-    const QRect surfaceGeometry(tlwRect.topLeft(), store->size());
-    if ((surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
+    if (!updatesDisabled && store->size() != tlwRect.size()) {
         if (hasStaticContents() && !store->size().isEmpty() ) {
             // Repaint existing dirty area and newly visible area.
-            const QRect clipRect(0, 0, surfaceGeometry.width(), surfaceGeometry.height());
+            const QRect clipRect(QPoint(0, 0), store->size());
             const QRegion staticRegion(staticContents(nullptr, clipRect));
             QRegion newVisible(0, 0, tlwRect.width(), tlwRect.height());
             newVisible -= staticRegion;
@@ -830,7 +829,7 @@ void QWidgetRepaintManager::paintAndFlush()
         }
     }
 
-    if (surfaceGeometry.size() != tlwRect.size())
+    if (store->size() != tlwRect.size())
         store->resize(tlwRect.size());
 
     if (updatesDisabled)
@@ -1241,11 +1240,10 @@ bool QWidgetRepaintManager::hasStaticContents() const
 QRegion QWidgetRepaintManager::staticContents(QWidget *parent, const QRect &withinClipRect) const
 {
     if (!parent && tlw->testAttribute(Qt::WA_StaticContents)) {
-        const QSize surfaceGeometry(store->size());
-        QRect surfaceRect(0, 0, surfaceGeometry.width(), surfaceGeometry.height());
+        QRect backingstoreRect(QPoint(0, 0), store->size());
         if (!withinClipRect.isEmpty())
-            surfaceRect &= withinClipRect;
-        return QRegion(surfaceRect);
+            backingstoreRect &= withinClipRect;
+        return QRegion(backingstoreRect);
     }
 
     QRegion region;
