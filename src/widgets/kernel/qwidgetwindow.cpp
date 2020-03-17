@@ -764,7 +764,7 @@ void QWidgetWindow::repaintWindow()
         return;
 
     QTLWExtra *tlwExtra = m_widget->window()->d_func()->maybeTopData();
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
+    if (tlwExtra && tlwExtra->backingStore)
         tlwExtra->repaintManager->markDirty(m_widget->rect(), m_widget,
                                                  QWidgetRepaintManager::UpdateNow, QWidgetRepaintManager::BufferInvalid);
 }
