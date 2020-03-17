@@ -403,7 +403,7 @@ class CalendarDataWriter (LocaleSourceEditor):
                     months_data.append(locale.shortMonths[calendar]),
                     months_data.append(locale.longMonths[calendar]),
                     months_data.append(locale.narrowMonths[calendar]))
-                + '// {}/{}/{}\n '.format(locale.language, locale.script, locale.country))
+                + '// {}/{}/{}\n'.format(locale.language, locale.script, locale.country))
         self.writer.write(self.formatCalendar(*( (0,) * 3 + ('0,0',) * 6 ))
                           + '// trailing zeros\n')
         self.writer.write('};\n')
