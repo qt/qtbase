@@ -96,6 +96,7 @@ private:
 template <typename F> QScopeGuard(F(&)()) -> QScopeGuard<F(*)()>;
 #endif
 
+//! [qScopeGuard]
 template <typename F>
 #if __has_cpp_attribute(nodiscard)
 Q_REQUIRED_RESULT
