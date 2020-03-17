@@ -94,8 +94,18 @@ public:
 
     // Override QDateTimeParser:
     QString displayText() const override { return edit->text(); }
-    QDateTime getMinimum() const override { return minimum.toDateTime(); }
-    QDateTime getMaximum() const override { return maximum.toDateTime(); }
+    QDateTime getMinimum() const override
+    {
+        if (keyboardTracking)
+            return minimum.toDateTime();
+        return QDateTimeParser::getMinimum();
+    }
+    QDateTime getMaximum() const override
+    {
+        if (keyboardTracking)
+            return maximum.toDateTime();
+        return QDateTimeParser::getMaximum();
+    }
     QLocale locale() const override { return q_func()->locale(); }
     QString getAmPmText(AmPm ap, Case cs) const override;
     int cursorPosition() const override { return edit ? edit->cursorPosition() : -1; }
