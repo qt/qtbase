@@ -1395,6 +1395,7 @@ void tst_QLocale::fpExceptions()
     // check that double-to-string conversion doesn't throw floating point exceptions when they are
     // enabled
 #ifdef Q_OS_WIN
+    _clear87();
     unsigned int oldbits = _control87(0, 0);
     _control87( 0 | _EM_INEXACT, _MCW_EM );
 #endif
