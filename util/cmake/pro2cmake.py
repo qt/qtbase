@@ -1568,6 +1568,7 @@ def map_condition(condition: str) -> str:
                     and is_known_3rd_party_library(feature_name[7:])
                     and not feature_name.startswith("system_jpeg")
                     and not feature_name.startswith("system_zlib")
+                    and not feature_name.startswith("system_tiff")
                     and not feature_name.startswith("system_doubleconversion")
                 ):
                     part = "ON"
