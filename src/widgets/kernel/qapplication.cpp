@@ -2695,8 +2695,6 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
     QDesktopWidget has various functions for obtaining useful geometries upon
     the desktop, such as QDesktopWidget::screenGeometry() and
     QDesktopWidget::availableGeometry().
-
-    On X11, it is also possible to draw on the desktop.
 */
 QDesktopWidget *QApplication::desktop()
 {
