@@ -1012,7 +1012,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SE_PushButtonFocusRect  Area for the focus rect (usually
         larger than the contents rect).
     \value SE_PushButtonLayoutItem  Area that counts for the parent layout.
-    \value SE_PushButtonBevel  Area used for the bevel of the button.
+    \value SE_PushButtonBevel [since 5.15] Area used for the bevel of the button.
 
     \value SE_CheckBoxIndicator  Area for the state indicator (e.g., check mark).
     \value SE_CheckBoxContents  Area for the label (text or pixmap).
