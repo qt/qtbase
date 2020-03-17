@@ -75,6 +75,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn template<typename T> QDBusReply<T>::QDBusReply(const QDBusReply &other)
+    \since 5.15
+
+    Constructs a copy of \a other.
+*/
+
+/*!
     \fn template<typename T> QDBusReply<T>::QDBusReply(const QDBusMessage &reply)
     Automatically construct a QDBusReply object from the reply message \a reply, extracting the
     first return value from it if it is a success reply.
