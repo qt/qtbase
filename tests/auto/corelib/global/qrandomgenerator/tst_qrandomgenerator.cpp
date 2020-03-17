@@ -671,7 +671,7 @@ void tst_QRandomGenerator::qualityReal()
     RandomGenerator rng(control);
 
     enum {
-        SampleSize = 160,
+        SampleSize = 16000,
 
         // Expected value: sample size times proportion of the range:
         PerfectOctile = SampleSize / 8,
@@ -679,8 +679,8 @@ void tst_QRandomGenerator::qualityReal()
 
         // Variance is (1 - proportion of range) * expected; sqrt() for standard deviations.
         // Should usually be within twice that and almost never outside four times:
-        RangeHalf = 25,         // floor(4 * sqrt((1 - 0.5) * PerfectHalf))
-        RangeOctile = 16        // floor(4 * sqrt((1 - 0.125) * PerfectOctile))
+        RangeHalf = 252,         // floor(4 * sqrt((1 - 0.5) * PerfectHalf))
+        RangeOctile = 167        // floor(4 * sqrt((1 - 0.125) * PerfectOctile))
     };
 
     double data[SampleSize];
