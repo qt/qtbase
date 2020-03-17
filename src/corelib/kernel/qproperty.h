@@ -122,7 +122,7 @@ public:
     // already has.
     using BindingEvaluationFunction = std::function<BindingEvaluationResult(int version, void *propertyStoragePtr)>;
 
-    QUntypedPropertyBinding() = default;
+    QUntypedPropertyBinding();
     QUntypedPropertyBinding(BindingEvaluationFunction function, const QPropertyBindingSourceLocation &location);
     QUntypedPropertyBinding(QUntypedPropertyBinding &&other);
     QUntypedPropertyBinding(const QUntypedPropertyBinding &other);
@@ -337,7 +337,7 @@ private:
     Q_DISABLE_COPY(QProperty)
 
     friend struct QPropertyBasePointer;
-    friend struct QPropertyBinding<T>;
+    friend class QPropertyBinding<T>;
     friend struct QPropertyObserver;
     // Mutable because querying for the value may require evalating the binding expression, calling
     // non-const functions on QPropertyBase.

@@ -89,6 +89,8 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
     return changed;
 }
 
+QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
+
 QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding::BindingEvaluationFunction function,
                                                  const QPropertyBindingSourceLocation &location)
 {
