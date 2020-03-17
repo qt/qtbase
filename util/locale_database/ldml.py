@@ -348,7 +348,7 @@ class LocaleScanner (object):
         yield 'minus', minus
 
         # Currency formatting:
-        xpath = 'numbers/currencyFormats/currencyFormatLength/currencyFormat[standard]/pattern'
+        xpath = 'numbers/currencyFormats/currencyFormatLength/currencyFormat[accounting]/pattern'
         try:
             money = self.find(xpath.replace('Formats/',
                                             'Formats[numberSystem={}]/'.format(system)))
