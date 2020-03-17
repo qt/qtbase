@@ -298,8 +298,8 @@ public:
     { return fromCbor(QByteArray(reinterpret_cast<const char *>(data), int(len)), error); }
 #endif // QT_CONFIG(cborstreamreader)
 #if QT_CONFIG(cborstreamwriter)
-    QByteArray toCbor(EncodingOptions opt = NoTransformation);
-    void toCbor(QCborStreamWriter &writer, EncodingOptions opt = NoTransformation);
+    QByteArray toCbor(EncodingOptions opt = NoTransformation) const;
+    void toCbor(QCborStreamWriter &writer, EncodingOptions opt = NoTransformation) const;
 #endif
 
     QString toDiagnosticNotation(DiagnosticNotationOptions opts = Compact) const;

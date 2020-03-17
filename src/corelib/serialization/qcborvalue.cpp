@@ -2506,7 +2506,7 @@ QCborValue QCborValue::fromCbor(const QByteArray &ba, QCborParserError *error)
 
     \sa fromCbor(), fromVariant(), fromJsonValue()
  */
-QByteArray QCborValue::toCbor(EncodingOptions opt)
+QByteArray QCborValue::toCbor(EncodingOptions opt) const
 {
     QByteArray result;
     QCborStreamWriter writer(&result);
@@ -2543,7 +2543,7 @@ QByteArray QCborValue::toCbor(EncodingOptions opt)
 
     \sa fromCbor(), fromVariant(), fromJsonValue()
  */
-Q_NEVER_INLINE void QCborValue::toCbor(QCborStreamWriter &writer, EncodingOptions opt)
+Q_NEVER_INLINE void QCborValue::toCbor(QCborStreamWriter &writer, EncodingOptions opt) const
 {
     if (isContainer() || isTag())
         return encodeToCbor(writer, container, -type(), opt);
