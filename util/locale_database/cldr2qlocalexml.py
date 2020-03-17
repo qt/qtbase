@@ -55,6 +55,7 @@ time zone names; see cldr2qtimezone.py for details.
 """
 
 import os
+import sys
 
 from localetools import Error
 from cldr import CldrReader
@@ -101,6 +102,10 @@ def main(args, out, err):
         usage(name, err, 'Too many arguments - excess: ' + ' '.join(args))
         return 1
 
+    if emit.encoding != 'UTF-8' or (emit.encoding is None and sys.getdefaultencoding() != 'UTF-8'):
+        reload(sys) # Weirdly, this gets a richer sys module than the plain import got us !
+        sys.setdefaultencoding('UTF-8')
+
     # TODO - command line options to tune choice of grumble and whitter:
     reader = CldrReader(root, err.write, err.write)
     writer = QLocaleXmlWriter(emit.write)
@@ -114,5 +119,4 @@ def main(args, out, err):
     return 0
 
 if __name__ == '__main__':
-    import sys
     sys.exit(main(sys.argv, sys.stdout, sys.stderr))
