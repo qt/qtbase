@@ -243,14 +243,8 @@ Q_DECL_CONSTEXPR inline double qRadiansToDegrees(double radians)
     return radians * (180 / M_PI);
 }
 
-
-Q_DECL_RELAXED_CONSTEXPR inline quint32 qNextPowerOfTwo(quint32 v)
-{
-#if defined(QT_HAS_BUILTIN_CLZ)
-    if (v == 0)
-        return 1;
-    return 2U << (31 ^ QAlgorithmsPrivate::qt_builtin_clz(v));
-#else
+namespace QtPrivate {
+constexpr inline quint32 qConstexprNextPowerOfTwo(quint32 v) {
     v |= v >> 1;
     v |= v >> 2;
     v |= v >> 4;
@@ -258,16 +252,9 @@ Q_DECL_RELAXED_CONSTEXPR inline quint32 qNextPowerOfTwo(quint32 v)
     v |= v >> 16;
     ++v;
     return v;
-#endif
 }
 
-Q_DECL_RELAXED_CONSTEXPR inline quint64 qNextPowerOfTwo(quint64 v)
-{
-#if defined(QT_HAS_BUILTIN_CLZLL)
-    if (v == 0)
-        return 1;
-    return Q_UINT64_C(2) << (63 ^ QAlgorithmsPrivate::qt_builtin_clzll(v));
-#else
+constexpr inline quint64 qConstexprNextPowerOfTwo(quint64 v) {
     v |= v >> 1;
     v |= v >> 2;
     v |= v >> 4;
@@ -276,15 +263,45 @@ Q_DECL_RELAXED_CONSTEXPR inline quint64 qNextPowerOfTwo(quint64 v)
     v |= v >> 32;
     ++v;
     return v;
+}
+
+constexpr inline quint32 qConstexprNextPowerOfTwo(qint32 v) {
+    return qConstexprNextPowerOfTwo(quint32(v));
+}
+
+constexpr inline quint32 qConstexprNextPowerOfTwo(qint64 v) {
+    return qConstexprNextPowerOfTwo(quint64(v));
+}
+}
+
+constexpr inline quint32 qNextPowerOfTwo(quint32 v)
+{
+#if defined(QT_HAS_BUILTIN_CLZ)
+    if (v == 0)
+        return 1;
+    return 2U << (31 ^ QAlgorithmsPrivate::qt_builtin_clz(v));
+#else
+    return QtPrivate::qConstexprNextPowerOfTwo(v);
 #endif
 }
 
-Q_DECL_RELAXED_CONSTEXPR inline quint32 qNextPowerOfTwo(qint32 v)
+constexpr inline quint64 qNextPowerOfTwo(quint64 v)
+{
+#if defined(QT_HAS_BUILTIN_CLZLL)
+    if (v == 0)
+        return 1;
+    return Q_UINT64_C(2) << (63 ^ QAlgorithmsPrivate::qt_builtin_clzll(v));
+#else
+    return QtPrivate::qConstexprNextPowerOfTwo(v);
+#endif
+}
+
+constexpr inline quint32 qNextPowerOfTwo(qint32 v)
 {
     return qNextPowerOfTwo(quint32(v));
 }
 
-Q_DECL_RELAXED_CONSTEXPR inline quint64 qNextPowerOfTwo(qint64 v)
+constexpr inline quint64 qNextPowerOfTwo(qint64 v)
 {
     return qNextPowerOfTwo(quint64(v));
 }
