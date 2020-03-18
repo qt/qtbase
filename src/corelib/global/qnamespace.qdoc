@@ -2875,8 +2875,7 @@
     \value MatchStartsWith         The search term matches the start of the item.
     \value MatchEndsWith           The search term matches the end of the item.
     \value MatchCaseSensitive      The search is case sensitive.
-    \value MatchRegExp             Performs string-based matching using a regular
-           expression as the search term. Uses the deprecated QRegExp class.
+    \value MatchRegExp             Same as MatchRegularExpression
            \e{This enum value is deprecated since Qt 5.15.}
     \value MatchRegularExpression  Performs string-based matching using a regular
            expression as the search term. Uses QRegularExpression.

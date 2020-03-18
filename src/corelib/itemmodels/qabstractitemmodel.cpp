@@ -2408,13 +2408,6 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
 
                 QString t = v.toString();
                 switch (matchType) {
-#if QT_DEPRECATED_SINCE(5, 15)
-                case Qt::MatchRegExp:
-                    if (QRegExp(text, cs).exactMatch(t))
-                        result.append(idx);
-                    break;
-#endif
-
 #if QT_CONFIG(regularexpression)
                 case Qt::MatchRegularExpression:
                     Q_FALLTHROUGH();

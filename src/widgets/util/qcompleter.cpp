@@ -757,7 +757,7 @@ int QUnsortedModelEngine::buildIndices(const QString& str, const QModelIndex& pa
         case Qt::MatchExactly:
         case Qt::MatchFixedString:
         case Qt::MatchCaseSensitive:
-        case Qt::MatchRegExp:
+        case Qt::MatchRegularExpression:
         case Qt::MatchWildcard:
         case Qt::MatchWrap:
         case Qt::MatchRecursive:
