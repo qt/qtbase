@@ -619,11 +619,6 @@ struct _hb_qt_font_funcs_t {
 
 Q_GLOBAL_STATIC(_hb_qt_font_funcs_t, qt_ffuncs)
 
-hb_font_funcs_t *hb_qt_get_font_funcs()
-{
-    return qt_ffuncs()->funcs;
-}
-
 
 static hb_blob_t *
 _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
@@ -704,7 +699,7 @@ _hb_qt_font_create(QFontEngine *fe)
     const qreal y_ppem = fe->fontDef.pixelSize;
     const qreal x_ppem = (fe->fontDef.pixelSize * fe->fontDef.stretch) / 100.0;
 
-    hb_font_set_funcs(font, hb_qt_get_font_funcs(), (void *)fe, NULL);
+    hb_font_set_funcs(font, qt_ffuncs()->funcs, fe, nullptr);
     hb_font_set_scale(font, QFixed::fromReal(x_ppem).value(), -QFixed::fromReal(y_ppem).value());
     hb_font_set_ppem(font, int(x_ppem), int(y_ppem));
 
