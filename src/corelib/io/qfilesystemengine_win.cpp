@@ -53,6 +53,9 @@
 #include "qdatetime.h"
 #include "qt_windows.h"
 #include "qvector.h"
+#if QT_CONFIG(regularexpression)
+#include "qregularexpression.h"
+#endif
 
 #include <sys/types.h>
 #include <direct.h>
@@ -329,15 +332,17 @@ static QString readSymLink(const QFileSystemEntry &link)
         free(rdb);
         CloseHandle(handle);
 
-#if QT_CONFIG(fslibs)
+#if QT_CONFIG(fslibs) && QT_CONFIG(regularexpression)
         initGlobalSid();
-        QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
-        if (matchVolName.indexIn(result) == 0) {
+        QRegularExpression matchVolumeRe(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), QRegularExpression::CaseInsensitiveOption);
+        auto matchVolume = matchVolumeRe.match(result);
+        if (matchVolume.hasMatch()) {
+            Q_ASSERT(matchVolume.capturedStart() == 0);
             DWORD len;
             wchar_t buffer[MAX_PATH];
-            const QString volumeName = QLatin1String("\\\\?\\") + result.leftRef(matchVolName.matchedLength());
+            const QString volumeName = QLatin1String("\\\\?\\") + matchVolume.captured();
             if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()), buffer, MAX_PATH, &len) != 0)
-                result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
+                result.replace(0, matchVolume.capturedLength(), QString::fromWCharArray(buffer));
         }
 #endif // QT_CONFIG(fslibs)
     }
