@@ -49,7 +49,7 @@ endif()
 # build.
 include(QtPlatformSupport)
 
-macro(qt_build_repo_begin)
+macro(qt_build_internals_set_up_private_api)
     # Qt specific setup common for all modules:
     include(QtSetup)
     include(FeatureSummary)
@@ -63,6 +63,10 @@ macro(qt_build_repo_begin)
 
     # Decide whether tools will be built.
     qt_check_if_tools_will_be_built()
+endmacro()
+
+macro(qt_build_repo_begin)
+    qt_build_internals_set_up_private_api()
 
     # Add global docs targets that will work both for per-repo builds, and super builds.
     if(NOT TARGET docs)
@@ -184,12 +188,16 @@ macro(qt_set_up_standalone_tests_build)
     # Standalone tests are not handled via the main repo project and qt_build_tests.
 endmacro()
 
+function(qt_get_standalone_tests_confg_files_path out_var)
+    set(path "${QT_CONFIG_INSTALL_DIR}/${INSTALL_CMAKE_NAMESPACE}BuildInternals/StandaloneTests")
+    set("${out_var}" "${path}" PARENT_SCOPE)
+endfunction()
+
 macro(qt_build_tests)
     if(QT_BUILD_STANDALONE_TESTS)
         # Find location of TestsConfig.cmake. These contain the modules that need to be
         # find_package'd when testing.
-        set(_qt_build_tests_install_prefix
-            "${QT_CONFIG_INSTALL_DIR}/${INSTALL_CMAKE_NAMESPACE}BuildInternals/StandaloneTests")
+        qt_get_standalone_tests_confg_files_path(_qt_build_tests_install_prefix)
         if(QT_WILL_INSTALL)
             qt_path_join(_qt_build_tests_install_prefix
                          ${CMAKE_INSTALL_PREFIX} ${_qt_build_tests_install_prefix})

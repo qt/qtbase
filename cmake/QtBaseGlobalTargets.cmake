@@ -69,6 +69,37 @@ qt_install(FILES
     COMPONENT Devel
 )
 
+# Configure and install the QtBuildInternals package.
+set(__build_internals_path_suffix "${INSTALL_CMAKE_NAMESPACE}BuildInternals")
+qt_path_join(__build_internals_build_dir ${QT_CONFIG_BUILD_DIR} ${__build_internals_path_suffix})
+qt_path_join(__build_internals_install_dir ${QT_CONFIG_INSTALL_DIR}
+                                           ${__build_internals_path_suffix})
+set(__build_internals_standalone_test_template_dir "QtStandaloneTestTemplateProject")
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsConfig.cmake"
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
+    @ONLY
+    )
+
+qt_install(FILES
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
+    "${__build_internals_build_dir}/QtBuildInternalsExtra.cmake"
+    DESTINATION "${__build_internals_install_dir}"
+    COMPONENT Devel
+)
+qt_copy_or_install(
+    FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsAndroid.cmake"
+    DESTINATION "${__build_internals_install_dir}")
+qt_copy_or_install(
+    DIRECTORY
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}"
+    DESTINATION "${__build_internals_install_dir}")
+
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}/CMakeLists.txt")
+
 # Generate toolchain file for convenience
 if(QT_HOST_PATH)
     get_filename_component(init_qt_host_path "${QT_HOST_PATH}" ABSOLUTE)
@@ -158,6 +189,28 @@ else()
 qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private.bat" DESTINATION "${INSTALL_BINDIR}")
 endif()
 unset(__qt_cmake_extra)
+
+# Provide a private convenience wrapper to configure and build one or more standalone tests.
+# Calling CMake directly on a Qt test project won't work because the project does not call
+# find_package(Qt...) to get all dependencies like examples do.
+# Instead a template CMakeLists.txt project is used which sets up all the necessary private bits
+# and then calls add_subdirectory on the provided project path.
+set(__qt_cmake_standalone_test_bin_name "qt-cmake-standalone-test")
+set(__qt_cmake_private_path "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
+set(__qt_cmake_standalone_test_path
+    "${__build_internals_install_dir}/${__build_internals_standalone_test_template_dir}")
+if(UNIX)
+    string(PREPEND __qt_cmake_private_path "exec ")
+    set(__qt_cmake_standalone_passed_args "\"$@\" -DPWD=\"$PWD\"")
+else()
+    string(APPEND __qt_cmake_standalone_test_bin_name ".bat")
+    string(APPEND __qt_cmake_private_path ".bat")
+    set(__qt_cmake_standalone_passed_args "%* -DPWD=\"%CD%\"")
+endif()
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-standalone-test.in"
+               "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_standalone_test_bin_name}")
+qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_standalone_test_bin_name}"
+           DESTINATION "${INSTALL_BINDIR}")
 
 ## Library to hold global features:
 ## These features are stored and accessed via Qt::GlobalConfig, but the
@@ -273,29 +326,6 @@ if(MACOS)
         DESTINATION "${__GlobalConfig_install_dir}/macos"
     )
 endif()
-
-# Configure and install the QtBuildInternals package.
-set(__build_internals_path_suffix "${INSTALL_CMAKE_NAMESPACE}BuildInternals")
-qt_path_join(__build_internals_build_dir ${QT_CONFIG_BUILD_DIR} ${__build_internals_path_suffix})
-qt_path_join(__build_internals_install_dir ${QT_CONFIG_INSTALL_DIR}
-                                           ${__build_internals_path_suffix})
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsConfig.cmake"
-    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
-    @ONLY
-    )
-
-qt_install(FILES
-    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
-    "${__build_internals_build_dir}/QtBuildInternalsExtra.cmake"
-    DESTINATION "${__build_internals_install_dir}"
-    COMPONENT Devel
-)
-qt_copy_or_install(
-    FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsAndroid.cmake"
-    DESTINATION "${__build_internals_install_dir}")
-
 
 # Generate the new resource API
 set(QT_CORE_RESOURCE_GENERATED_FILE_NAME "${INSTALL_CMAKE_NAMESPACE}CoreResource.cmake" CACHE INTERNAL "")
