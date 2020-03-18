@@ -64,6 +64,17 @@ macro(qt_build_repo_begin)
     # Decide whether tools will be built.
     qt_check_if_tools_will_be_built()
 
+    # Add global docs targets that will work both for per-repo builds, and super builds.
+    if(NOT TARGET docs)
+        add_custom_target(docs)
+        add_custom_target(prepare_docs)
+        add_custom_target(generate_docs)
+        add_custom_target(html_docs)
+        add_custom_target(qch_docs)
+        add_custom_target(install_html_docs_docs)
+        add_custom_target(install_qch_docs_docs)
+        add_custom_target(install_docs_docs)
+    endif()
 
     string(TOLOWER ${PROJECT_NAME} project_name_lower)
 
@@ -87,10 +98,19 @@ macro(qt_build_repo_begin)
 
     add_dependencies(${qt_docs_generate_target_name} ${qt_docs_prepare_target_name})
     add_dependencies(${qt_docs_html_target_name} ${qt_docs_generate_target_name})
-    add_dependencies(${qt_docs_target_name} ${qt_docs_html_target_name} ${qt_docs_qch_target_name})
     add_dependencies(${qt_docs_install_html_target_name} ${qt_docs_html_target_name})
     add_dependencies(${qt_docs_install_qch_target_name} ${qt_docs_qch_target_name})
     add_dependencies(${qt_docs_install_target_name} ${qt_docs_install_html_target_name} ${qt_docs_install_qch_target_name})
+
+    # Make global doc targets depend on the module ones.
+    add_dependencies(docs ${qt_docs_target_name})
+    add_dependencies(prepare_docs ${qt_docs_prepare_target_name})
+    add_dependencies(generate_docs ${qt_docs_generate_target_name})
+    add_dependencies(html_docs ${qt_docs_qch_target_name})
+    add_dependencies(qch_docs ${qt_docs_html_target_name})
+    add_dependencies(install_html_docs_docs ${qt_docs_install_html_target_name})
+    add_dependencies(install_qch_docs_docs ${qt_docs_install_qch_target_name})
+    add_dependencies(install_docs_docs ${qt_docs_install_target_name})
 endmacro()
 
 macro(qt_build_repo_end)
