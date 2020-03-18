@@ -102,7 +102,7 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
     for (int style = 1; m_id.isEmpty() && style-- > 0;) {
         for (int dst = 1; m_id.isEmpty() && dst-- > 0;) {
             m_id = match(androidTimeZone.callObjectMethod(
-                             "getDisplayName", "(ZI;)Ljava/lang/String;", bool(dst), style));
+                             "getDisplayName", "(ZI)Ljava/lang/String;", bool(dst), style));
         }
     }
 }

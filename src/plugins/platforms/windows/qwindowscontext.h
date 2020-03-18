@@ -249,6 +249,8 @@ public:
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 
+    static void forceNcCalcSize(HWND hwnd);
+
     static bool systemParametersInfo(unsigned action, unsigned param, void *out, unsigned dpi = 0);
     static bool systemParametersInfoForScreen(unsigned action, unsigned param, void *out,
                                               const QPlatformScreen *screen = nullptr);

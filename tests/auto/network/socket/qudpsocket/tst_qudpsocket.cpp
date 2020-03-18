@@ -1090,12 +1090,21 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
     QProcess serverProcess;
     serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
                         QIODevice::ReadWrite | QIODevice::Text);
-    QVERIFY2(serverProcess.waitForStarted(3000),
-             qPrintable("Failed to start subprocess: " + serverProcess.errorString()));
+
+    const auto serverProcessCleaner = qScopeGuard([&serverProcess] {
+        serverProcess.kill();
+        serverProcess.waitForFinished();
+    });
+
+    if (!serverProcess.waitForStarted(3000))
+        QSKIP("Failed to start server as a subprocess");
 
     // Wait until the server has started and reports success.
-    while (!serverProcess.canReadLine())
-        QVERIFY(serverProcess.waitForReadyRead(3000));
+    while (!serverProcess.canReadLine()) {
+       if (!serverProcess.waitForReadyRead(3000))
+           QSKIP("No output from the server process, bailing out");
+    }
+
     QByteArray serverGreeting = serverProcess.readLine();
     QVERIFY(serverGreeting != QByteArray("XXX\n"));
     int serverPort = serverGreeting.trimmed().toInt();
@@ -1105,12 +1114,21 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
     clientProcess.start(QString::fromLatin1("clientserver/clientserver connectedclient %1 %2")
                         .arg(QLatin1String("127.0.0.1")).arg(serverPort),
                         QIODevice::ReadWrite | QIODevice::Text);
-    QVERIFY2(clientProcess.waitForStarted(3000),
-             qPrintable("Failed to start subprocess: " + clientProcess.errorString()));
 
-    // Wait until the server has started and reports success.
-    while (!clientProcess.canReadLine())
-        QVERIFY(clientProcess.waitForReadyRead(3000));
+    const auto clientProcessCleaner = qScopeGuard([&clientProcess] {
+        clientProcess.kill();
+        clientProcess.waitForFinished();
+    });
+
+    if (!clientProcess.waitForStarted(3000))
+        QSKIP("Client process did not start");
+
+    // Wait until the client has started and reports success.
+    while (!clientProcess.canReadLine()) {
+        if (!clientProcess.waitForReadyRead(3000))
+            QSKIP("No output from the client process, bailing out");
+    }
+
     QByteArray clientGreeting = clientProcess.readLine();
     QCOMPARE(clientGreeting, QByteArray("ok\n"));
 
@@ -1135,11 +1153,6 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
         QCOMPARE(serverData.at(i * 3 + 2).trimmed().mid(8).toInt(),
                  sdata.mid(4).trimmed().toInt() * 2);
     }
-
-    clientProcess.kill();
-    QVERIFY(clientProcess.waitForFinished());
-    serverProcess.kill();
-    QVERIFY(serverProcess.waitForFinished());
 #endif
 }
 
@@ -1151,12 +1164,21 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
     QProcess serverProcess;
     serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
                         QIODevice::ReadWrite | QIODevice::Text);
-    QVERIFY2(serverProcess.waitForStarted(3000),
-             qPrintable("Failed to start subprocess: " + serverProcess.errorString()));
+
+    const auto serverProcessCleaner = qScopeGuard([&serverProcess] {
+        serverProcess.kill();
+        serverProcess.waitForFinished();
+    });
+
+    if (!serverProcess.waitForStarted(3000))
+        QSKIP("Failed to start the server subprocess");
 
     // Wait until the server has started and reports success.
-    while (!serverProcess.canReadLine())
-        QVERIFY(serverProcess.waitForReadyRead(3000));
+    while (!serverProcess.canReadLine()) {
+        if (!serverProcess.waitForReadyRead(3000))
+            QSKIP("No output from the server, probably, it is not running");
+    }
+
     QByteArray serverGreeting = serverProcess.readLine();
     QVERIFY(serverGreeting != QByteArray("XXX\n"));
     int serverPort = serverGreeting.trimmed().toInt();
@@ -1166,12 +1188,21 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
     clientProcess.start(QString::fromLatin1("clientserver/clientserver unconnectedclient %1 %2")
                         .arg(QLatin1String("127.0.0.1")).arg(serverPort),
                         QIODevice::ReadWrite | QIODevice::Text);
-    QVERIFY2(clientProcess.waitForStarted(3000),
-             qPrintable("Failed to start subprocess: " + clientProcess.errorString()));
 
-    // Wait until the server has started and reports success.
-    while (!clientProcess.canReadLine())
-        QVERIFY(clientProcess.waitForReadyRead(3000));
+    const auto clientProcessCleaner = qScopeGuard([&clientProcess] {
+        clientProcess.kill();
+        clientProcess.waitForFinished();
+    });
+
+    if (!clientProcess.waitForStarted(3000))
+        QSKIP("Failed to start the client's subprocess");
+
+    // Wait until the client has started and reports success.
+    while (!clientProcess.canReadLine()) {
+        if (!clientProcess.waitForReadyRead(3000))
+            QSKIP("The client subprocess produced not output, exiting.");
+    }
+
     QByteArray clientGreeting = clientProcess.readLine();
     QCOMPARE(clientGreeting, QByteArray("ok\n"));
 
@@ -1197,11 +1228,6 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
         QCOMPARE(serverData.at(i * 3 + 2).trimmed().mid(8).toInt(),
                  sdata.mid(4).trimmed().toInt() * 2);
     }
-
-    clientProcess.kill();
-    QVERIFY(clientProcess.waitForFinished());
-    serverProcess.kill();
-    QVERIFY(serverProcess.waitForFinished());
 #endif
 }
 

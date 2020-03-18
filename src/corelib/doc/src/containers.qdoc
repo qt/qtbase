@@ -123,6 +123,10 @@
     a vector can be quite slow, because it can lead to large numbers
     of items having to be moved by one position in memory.
 
+    \row \li \l{QVarLengthArray}<T, Prealloc>
+    \li This provides a low-level variable-length array. It can be used
+    instead of QVector in places where speed is particularly important.
+
     \row \li \l{QStack}<T>
     \li This is a convenience subclass of QVector that provides
     "last in, first out" (LIFO) semantics. It adds the following
@@ -622,15 +626,11 @@
 
     \section1 Other Container-Like Classes
 
-    Qt includes three template classes that resemble containers in
+    Qt includes other template classes that resemble containers in
     some respects. These classes don't provide iterators and cannot
     be used with the \c foreach keyword.
 
     \list
-    \li QVarLengthArray<T, Prealloc> provides a low-level
-       variable-length array. It can be used instead of QVector in
-       places where speed is particularly important.
-
     \li QCache<Key, T> provides a cache to store objects of a certain
        type T associated with keys of type Key.
 

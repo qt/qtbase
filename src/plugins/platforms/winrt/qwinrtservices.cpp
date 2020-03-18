@@ -43,6 +43,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QCoreApplication>
 #include <QtCore/qfunctions_winrt.h>
+#include <private/qeventdispatcher_winrt_p.h>
 
 #include <wrl.h>
 #include <windows.foundation.h>
@@ -94,13 +95,17 @@ bool QWinRTServices::openUrl(const QUrl &url)
     HRESULT hr = d->uriFactory->CreateUri(uriString.Get(), &uri);
     RETURN_FALSE_IF_FAILED("Failed to create URI from QUrl.");
 
-    ComPtr<IAsyncOperation<bool>> op;
-    hr = d->launcher->LaunchUriAsync(uri.Get(), &op);
-    RETURN_FALSE_IF_FAILED("Failed to start URI launch.");
-
     boolean result;
-    hr = QWinRTFunctions::await(op, &result);
-    RETURN_FALSE_IF_FAILED("Failed to launch URI.");
+    hr = QEventDispatcherWinRT::runOnXamlThread([this, d, uri, &result]() {
+        ComPtr<IAsyncOperation<bool>> op;
+        HRESULT hr = d->launcher->LaunchUriAsync(uri.Get(), &op);
+        RETURN_HR_IF_FAILED("Failed to start URI launch.");
+
+        hr = QWinRTFunctions::await(op, &result);
+        RETURN_HR_IF_FAILED("Failed to launch URI.");
+        return hr;
+    });
+    RETURN_FALSE_IF_FAILED("Failed to launch URI from Xaml thread.");
 
     return result;
 }
@@ -131,12 +136,16 @@ bool QWinRTServices::openDocument(const QUrl &url)
 
     boolean result;
     {
-        ComPtr<IAsyncOperation<bool>> op;
-        hr = d->launcher->LaunchFileAsync(file.Get(), &op);
-        RETURN_FALSE_IF_FAILED("Failed to start file launch.");
+        hr = QEventDispatcherWinRT::runOnXamlThread([this, d, file, &result]() {
+            ComPtr<IAsyncOperation<bool>> op;
+            HRESULT hr = d->launcher->LaunchFileAsync(file.Get(), &op);
+            RETURN_HR_IF_FAILED("Failed to start file launch.");
 
-        hr = QWinRTFunctions::await(op, &result);
-        RETURN_FALSE_IF_FAILED("Failed to launch file.");
+            hr = QWinRTFunctions::await(op, &result);
+            RETURN_HR_IF_FAILED("Failed to launch file.");
+            return hr;
+        });
+        RETURN_FALSE_IF_FAILED("Failed to launch file from Xaml thread.");
     }
 
     return result;
