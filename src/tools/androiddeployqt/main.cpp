@@ -40,7 +40,7 @@
 #include <QStandardPaths>
 #include <QUuid>
 #include <QDirIterator>
-#include <QRegExp>
+#include <QRegularExpression>
 
 #include <algorithm>
 
@@ -239,7 +239,7 @@ struct Options
     QString qmlImportScannerBinaryPath;
 };
 
-static const QHash<QByteArray, QByteArray> elfArchitecures = {
+static const QHash<QByteArray, QByteArray> elfArchitectures = {
     {"aarch64", "arm64-v8a"},
     {"arm", "armeabi-v7a"},
     {"i386", "x86"},
@@ -296,7 +296,7 @@ static QString shellQuoteWin(const QString &arg)
         // Quotes are escaped and their preceding backslashes are doubled.
         // It's impossible to escape anything inside a quoted string on cmd
         // level, so the outer quoting must be "suspended".
-        ret.replace(QRegExp(QLatin1String("(\\\\*)\"")), QLatin1String("\"\\1\\1\\^\"\""));
+        ret.replace(QRegularExpression(QLatin1String("(\\\\*)\"")), QLatin1String("\"\\1\\1\\^\"\""));
         // The argument must not end with a \ since this would be interpreted
         // as escaping the quote -- rather put the \ behind the quote: e.g.
         // rather use "foo"\ than "foo\"
@@ -317,17 +317,18 @@ static QString shellQuote(const QString &arg)
         return shellQuoteUnix(arg);
 }
 
-QString architecureFromName(const QString &name)
+QString architectureFromName(const QString &name)
 {
-    QRegExp architecture(QStringLiteral(".*_(armeabi-v7a|arm64-v8a|x86|x86_64).so"));
-    if (!architecture.exactMatch(name))
+    QRegularExpression architecture(QStringLiteral("_(armeabi-v7a|arm64-v8a|x86|x86_64).so$"));
+    auto match = architecture.match(name);
+    if (!match.hasMatch())
         return {};
-    return architecture.capturedTexts().last();
+    return match.captured(1);
 }
 
 QString fileArchitecture(const Options &options, const QString &path)
 {
-    auto arch = architecureFromName(path);
+    auto arch = architectureFromName(path);
     if (!arch.isEmpty())
         return arch;
 
@@ -357,9 +358,9 @@ QString fileArchitecture(const Options &options, const QString &path)
         QString library;
         line = line.trimmed();
         if (line.startsWith("Arch: ")) {
-            auto it = elfArchitecures.find(line.mid(6));
+            auto it = elfArchitectures.find(line.mid(6));
             pclose(readElfCommand);
-            return it != elfArchitecures.constEnd() ? QString::fromLatin1(it.value()) : QString{};
+            return it != elfArchitectures.constEnd() ? QString::fromLatin1(it.value()) : QString{};
         }
     }
     pclose(readElfCommand);
@@ -688,11 +689,16 @@ bool copyFileIfNewer(const QString &sourceFileName,
 
 QString cleanPackageName(QString packageName)
 {
-    QRegExp legalChars(QLatin1String("[a-zA-Z0-9_\\.]"));
-
-    for (int i = 0; i < packageName.length(); ++i) {
-        if (!legalChars.exactMatch(packageName.mid(i, 1)))
-            packageName[i] = QLatin1Char('_');
+    auto isLegalChar = [] (QChar c) -> bool {
+        ushort ch = c.unicode();
+        return (ch >= '0' && ch <= '9') ||
+                (ch >= 'A' && ch <= 'Z') ||
+                (ch >= 'a' && ch <= 'z') ||
+                ch == '.';
+    };
+    for (QChar &c : packageName) {
+        if (!isLegalChar(c))
+            c = QLatin1Char('_');
     }
 
     static QStringList keywords;
@@ -881,7 +887,7 @@ bool readInputFile(Options *options)
         }
         for (auto it = targetArchitectures.constBegin(); it != targetArchitectures.constEnd(); ++it) {
             if (it.value().isUndefined()) {
-                fprintf(stderr, "Invalid architecure.\n");
+                fprintf(stderr, "Invalid architecture.\n");
                 return false;
             }
             if (it.value().isNull())
@@ -1658,8 +1664,8 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
         line = line.trimmed();
         if (!readLibs) {
             if (line.startsWith("Arch: ")) {
-                auto it = elfArchitecures.find(line.mid(6));
-                if (it == elfArchitecures.constEnd() || *it != options.currentArchitecture.toLatin1()) {
+                auto it = elfArchitectures.find(line.mid(6));
+                if (it == elfArchitectures.constEnd() || *it != options.currentArchitecture.toLatin1()) {
                     if (options.verbose)
                         fprintf(stdout, "Skipping \"%s\", architecture mismatch\n", qPrintable(fileName));
                     return {};
