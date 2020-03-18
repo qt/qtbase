@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2013 Konstantin Ritt
 ** Contact: https://www.qt.io/licensing/
 **
@@ -82,7 +82,7 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_HANGUL,
     HB_SCRIPT_ETHIOPIC,
     HB_SCRIPT_CHEROKEE,
-    HB_SCRIPT_CANADIAN_ABORIGINAL,
+    HB_SCRIPT_CANADIAN_SYLLABICS,
     HB_SCRIPT_OGHAM,
     HB_SCRIPT_RUNIC,
     HB_SCRIPT_KHMER,
@@ -218,20 +218,22 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_SOYOMBO,
     HB_SCRIPT_ZANABAZAR_SQUARE,
 
-    // Unicode 12.1 additions (not present in harfbuzz-ng 1.7.4)
-    hb_script_t(HB_TAG('D', 'o', 'g', 'r')), // Script_Dogra
-    hb_script_t(HB_TAG('G', 'o', 'n', 'g')), // Script_GunjalaGondi
-    hb_script_t(HB_TAG('R', 'o', 'h', 'g')), // Script_HanifiRohingya
-    hb_script_t(HB_TAG('M', 'a', 'k', 'a')), // Script_Makasar
-    hb_script_t(HB_TAG('M', 'e', 'd', 'f')), // Script_Medefaidrin
-    hb_script_t(HB_TAG('S', 'o', 'g', 'o')), // Script_OldSogdian
-    hb_script_t(HB_TAG('S', 'o', 'g', 'd')), // Script_Sogdian
-    hb_script_t(HB_TAG('E', 'l', 'y', 'm')), // Script_Elymaic
-    hb_script_t(HB_TAG('N', 'a', 'n', 'd')), // Script_Nandinagari
-    hb_script_t(HB_TAG('H', 'm', 'n', 'p')), // Script_NyiakengPuachueHmong
-    hb_script_t(HB_TAG('W', 'c', 'h', 'o')), // Script_Wancho
+    // Unicode 11.0 additions
+    HB_SCRIPT_DOGRA,
+    HB_SCRIPT_GUNJALA_GONDI,
+    HB_SCRIPT_HANIFI_ROHINGYA,
+    HB_SCRIPT_MAKASAR,
+    HB_SCRIPT_MEDEFAIDRIN,
+    HB_SCRIPT_OLD_SOGDIAN,
+    HB_SCRIPT_SOGDIAN,
 
-    // Unicode 13.0 additions (as above)
+    // Unicode 12.0 additions
+    HB_SCRIPT_ELYMAIC,
+    HB_SCRIPT_NANDINAGARI,
+    HB_SCRIPT_NYIAKENG_PUACHUE_HMONG,
+    HB_SCRIPT_WANCHO,
+
+    // Unicode 13.0 additions (not present in harfbuzz-ng 2.6.4)
     hb_script_t(HB_TAG('C', 'h', 'o', 'r')), // Script_Chorasmian
     hb_script_t(HB_TAG('D', 'i', 'v', 'e')), // Script_DivesAkuru
     hb_script_t(HB_TAG('K', 'h', 'i', 't')), // Script_KhitanSmallScript
@@ -259,15 +261,6 @@ _hb_qt_unicode_combining_class(hb_unicode_funcs_t * /*ufuncs*/,
                                void * /*user_data*/)
 {
     return hb_unicode_combining_class_t(QChar::combiningClass(unicode));
-}
-
-static unsigned int
-_hb_qt_unicode_eastasian_width(hb_unicode_funcs_t * /*ufuncs*/,
-                               hb_codepoint_t /*unicode*/,
-                               void * /*user_data*/)
-{
-    qCritical("hb_qt_unicode_eastasian_width: not implemented!");
-    return 1;
 }
 
 static const hb_unicode_general_category_t _qtcategory_to_hbcategory[] = {
@@ -405,37 +398,17 @@ _hb_qt_unicode_decompose(hb_unicode_funcs_t * /*ufuncs*/,
     return true;
 }
 
-static unsigned int
-_hb_qt_unicode_decompose_compatibility(hb_unicode_funcs_t * /*ufuncs*/,
-                                       hb_codepoint_t u,
-                                       hb_codepoint_t *decomposed,
-                                       void * /*user_data*/)
-{
-    const QString normalized = QChar::decomposition(u);
-
-    uint outlen = 0;
-    QStringIterator it(normalized);
-    while (it.hasNext()) {
-        Q_ASSERT(outlen < HB_UNICODE_MAX_DECOMPOSITION_LEN);
-        decomposed[outlen++] = it.next();
-    }
-
-    return outlen;
-}
-
 
 struct _hb_unicode_funcs_t {
     _hb_unicode_funcs_t()
     {
         funcs = hb_unicode_funcs_create(NULL);
         hb_unicode_funcs_set_combining_class_func(funcs, _hb_qt_unicode_combining_class, NULL, NULL);
-        hb_unicode_funcs_set_eastasian_width_func(funcs, _hb_qt_unicode_eastasian_width, NULL, NULL);
         hb_unicode_funcs_set_general_category_func(funcs, _hb_qt_unicode_general_category, NULL, NULL);
         hb_unicode_funcs_set_mirroring_func(funcs, _hb_qt_unicode_mirroring, NULL, NULL);
         hb_unicode_funcs_set_script_func(funcs, _hb_qt_unicode_script, NULL, NULL);
         hb_unicode_funcs_set_compose_func(funcs, _hb_qt_unicode_compose, NULL, NULL);
         hb_unicode_funcs_set_decompose_func(funcs, _hb_qt_unicode_decompose, NULL, NULL);
-        hb_unicode_funcs_set_decompose_compatibility_func(funcs, _hb_qt_unicode_decompose_compatibility, NULL, NULL);
     }
     ~_hb_unicode_funcs_t()
     {

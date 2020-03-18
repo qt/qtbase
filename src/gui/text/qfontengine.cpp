@@ -232,20 +232,17 @@ bool QFontEngine::supportsScript(QChar::Script script) const
         if (getSfntTableData(MAKE_TAG('m','o','r','t'), 0, &len) || getSfntTableData(MAKE_TAG('m','o','r','x'), 0, &len))
             return true;
 
-        bool ret = false;
         if (hb_face_t *face = hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this))) {
-            hb_tag_t script_tag_1, script_tag_2;
-            hb_ot_tags_from_script(hb_qt_script_to_script(script), &script_tag_1, &script_tag_2);
+            unsigned int script_count = HB_OT_MAX_TAGS_PER_SCRIPT;
+            hb_tag_t script_tags[HB_OT_MAX_TAGS_PER_SCRIPT];
 
-            unsigned int script_index;
-            ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, script_tag_1, &script_index);
-            if (!ret) {
-                ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, script_tag_2, &script_index);
-                if (!ret && script_tag_2 != HB_OT_TAG_DEFAULT_SCRIPT)
-                    ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, HB_OT_TAG_DEFAULT_SCRIPT, &script_index);
-            }
+            hb_ot_tags_from_script_and_language(hb_qt_script_to_script(script), HB_LANGUAGE_INVALID,
+                                                &script_count, script_tags,
+                                                nullptr, nullptr);
+
+            if (hb_ot_layout_table_select_script(face, HB_OT_TAG_GSUB, script_count, script_tags, nullptr, nullptr))
+                return true;
         }
-        return ret;
     }
 #endif
     return false;

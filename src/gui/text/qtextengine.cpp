@@ -1665,11 +1665,12 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
 
             bool dontLigate = hasLetterSpacing && !scriptRequiresOpenType;
             const hb_feature_t features[5] = {
-                { HB_TAG('k','e','r','n'), !!kerningEnabled, 0, uint(-1) },
-                { HB_TAG('l','i','g','a'), !dontLigate, 0, uint(-1) },
-                { HB_TAG('c','l','i','g'), !dontLigate, 0, uint(-1) },
-                { HB_TAG('d','l','i','g'), !dontLigate, 0, uint(-1) },
-                { HB_TAG('h','l','i','g'), !dontLigate, 0, uint(-1) } };
+                { HB_TAG('k','e','r','n'), !!kerningEnabled, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END },
+                { HB_TAG('l','i','g','a'), false, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END },
+                { HB_TAG('c','l','i','g'), false, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END },
+                { HB_TAG('d','l','i','g'), false, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END },
+                { HB_TAG('h','l','i','g'), false, HB_FEATURE_GLOBAL_START, HB_FEATURE_GLOBAL_END }
+            };
             const int num_features = dontLigate ? 5 : 1;
 
             // whitelist cross-platforms shapers only
