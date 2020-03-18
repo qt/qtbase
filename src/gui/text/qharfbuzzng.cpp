@@ -634,13 +634,14 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
         return hb_blob_get_empty();
 
     char *buffer = static_cast<char *>(malloc(length));
-    Q_CHECK_PTR(buffer);
+    if (q_check_ptr(buffer) == nullptr)
+        return nullptr;
 
     if (Q_UNLIKELY(!get_font_table(data->user_data, tag, reinterpret_cast<uchar *>(buffer), &length)))
-        length = 0;
+        return nullptr;
 
     return hb_blob_create(const_cast<const char *>(buffer), length,
-                          HB_MEMORY_MODE_READONLY,
+                          HB_MEMORY_MODE_WRITABLE,
                           buffer, free);
 }
 
@@ -653,10 +654,6 @@ _hb_qt_face_create(QFontEngine *fe)
     data->get_font_table = fe->faceData.get_font_table;
 
     hb_face_t *face = hb_face_create_for_tables(_hb_qt_reference_table, (void *)data, free);
-    if (Q_UNLIKELY(hb_face_is_immutable(face))) {
-        hb_face_destroy(face);
-        return NULL;
-    }
 
     hb_face_set_index(face, fe->faceId().index);
     hb_face_set_upem(face, fe->emSquareSize().truncate());
@@ -667,8 +664,7 @@ _hb_qt_face_create(QFontEngine *fe)
 static void
 _hb_qt_face_release(void *user_data)
 {
-    if (Q_LIKELY(user_data))
-        hb_face_destroy(static_cast<hb_face_t *>(user_data));
+    hb_face_destroy(static_cast<hb_face_t *>(user_data));
 }
 
 hb_face_t *hb_qt_face_get_for_engine(QFontEngine *fe)
@@ -686,15 +682,8 @@ static inline hb_font_t *
 _hb_qt_font_create(QFontEngine *fe)
 {
     hb_face_t *face = hb_qt_face_get_for_engine(fe);
-    if (Q_UNLIKELY(!face))
-        return NULL;
 
     hb_font_t *font = hb_font_create(face);
-
-    if (Q_UNLIKELY(hb_font_is_immutable(font))) {
-        hb_font_destroy(font);
-        return NULL;
-    }
 
     const qreal y_ppem = fe->fontDef.pixelSize;
     const qreal x_ppem = (fe->fontDef.pixelSize * fe->fontDef.stretch) / 100.0;
@@ -711,8 +700,7 @@ _hb_qt_font_create(QFontEngine *fe)
 static void
 _hb_qt_font_release(void *user_data)
 {
-    if (Q_LIKELY(user_data))
-        hb_font_destroy(static_cast<hb_font_t *>(user_data));
+    hb_font_destroy(static_cast<hb_font_t *>(user_data));
 }
 
 hb_font_t *hb_qt_font_get_for_engine(QFontEngine *fe)
