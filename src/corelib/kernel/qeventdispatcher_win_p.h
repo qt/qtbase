@@ -170,6 +170,7 @@ public:
     HHOOK getMessageHook;
 
     // for controlling when to send posted events
+    UINT_PTR sendPostedEventsTimerId;
     QAtomicInt wakeUps;
 
     // timers
