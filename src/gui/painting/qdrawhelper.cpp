@@ -4482,9 +4482,8 @@ static void blend_color_generic(int count, const QSpan *spans, void *userData)
     uint buffer[BufferSize];
     Operator op = getOperator(data, nullptr, 0);
     const uint color = data->solidColor.toArgb32();
-    bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
-                  || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && qAlpha(color) == 255);
-    QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
+    const bool solidFill = op.mode == QPainter::CompositionMode_Source;
+    const QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
     while (count--) {
         int x = spans->x;
@@ -4552,9 +4551,8 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
 
     alignas(8) QRgba64 buffer[BufferSize];
     const QRgba64 color = data->solidColor;
-    bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
-                  || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && color.isOpaque());
-    QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
+    const bool solidFill = op.mode == QPainter::CompositionMode_Source;
+    const QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
     while (count--) {
         int x = spans->x;
