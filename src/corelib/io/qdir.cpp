@@ -2150,7 +2150,6 @@ bool QDir::match(const QStringList &filters, const QString &fileName)
 {
     for (QStringList::ConstIterator sit = filters.constBegin(); sit != filters.constEnd(); ++sit) {
         // Insensitive exact match
-        // (see Notes for QRegExp Users in QRegularExpression's documentation)
         QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(*sit),
                               QRegularExpression::CaseInsensitiveOption);
         if (rx.match(fileName).hasMatch())

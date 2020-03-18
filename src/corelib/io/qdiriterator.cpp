@@ -93,7 +93,9 @@
 #include "qdir_p.h"
 #include "qabstractfileengine_p.h"
 
+#ifdef QT_BOOTSTRAPPED
 #include <QtCore/qregexp.h>
+#endif
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qvariant.h>
