@@ -30,8 +30,8 @@
     \title 2D Painting Example
     \ingroup examples-widgets-opengl
 
-    \brief The 2D Painting example shows how QPainter and QGLWidget can be used
-    together to display accelerated 2D graphics on supported hardware.
+    \brief The 2D Painting example shows how QPainter and QOpenGLWidget can be
+    used together to display accelerated 2D graphics on supported hardware.
 
     \image 2dpainting-example.png
 
@@ -39,23 +39,23 @@
     paint devices provided by QPaintDevice subclasses, such as QWidget
     and QImage.
 
-    Since QGLWidget is a subclass of QWidget, it is possible
+    Since QOpenGLWidget is a subclass of QWidget, it is possible
     to reimplement its \l{QWidget::paintEvent()}{paintEvent()} and use
     QPainter to draw on the device, just as you would with a QWidget.
     The only difference is that the painting operations will be accelerated
     in hardware if it is supported by your system's OpenGL drivers.
 
     In this example, we perform the same painting operations on a
-    QWidget and a QGLWidget. The QWidget is shown with anti-aliasing
-    enabled, and the QGLWidget will also use anti-aliasing if the
+    QWidget and a QOpenGLWidget. The QWidget is shown with anti-aliasing
+    enabled, and the QOpenGLWidget will also use anti-aliasing if the
     required extensions are supported by your system's OpenGL driver.
 
     \section1 Overview
 
-    To be able to compare the results of painting onto a QGLWidget subclass
+    To be able to compare the results of painting onto a QOpenGLWidget subclass
     with native drawing in a QWidget subclass, we want to show both kinds
     of widget side by side. To do this, we derive subclasses of QWidget and
-    QGLWidget, using a separate \c Helper class to perform the same painting
+    QOpenGLWidget, using a separate \c Helper class to perform the same painting
     operations for each, and lay them out in a top-level widget, itself
     provided a the \c Window class.
 
@@ -63,7 +63,7 @@
 
     In this example, the painting operations are performed by a helper class.
     We do this because we want the same painting operations to be performed
-    for both our QWidget subclass and the QGLWidget subclass.
+    for both our QWidget subclass and the QOpenGLWidget subclass.
 
     The \c Helper class is minimal:
 
@@ -81,7 +81,7 @@
 
     The actual painting is performed in the \c paint() function. This takes
     a QPainter that has already been set up to paint onto a paint device
-    (either a QWidget or a QGLWidget), a QPaintEvent that provides information
+    (either a QWidget or a QOpenGLWidget), a QPaintEvent that provides information
     about the region to be painted, and a measure of the elapsed time (in
     milliseconds) since the paint device was last updated.
 
@@ -148,7 +148,7 @@
     \section1 GLWidget Class Definition
 
     The \c GLWidget class definition is basically the same as the \c Widget
-    class except that it is derived from QGLWidget.
+    class except that it is derived from QOpenGLWidget.
 
     \snippet 2dpainting/glwidget.h 0
 

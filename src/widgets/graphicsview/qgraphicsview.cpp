@@ -89,8 +89,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     By default, QGraphicsView provides a regular QWidget for the viewport
     widget. You can access this widget by calling viewport(), or you can
     replace it by calling setViewport(). To render using OpenGL, simply call
-    setViewport(new QGLWidget). QGraphicsView takes ownership of the viewport
-    widget.
+    setViewport(new QOpenGLWidget). QGraphicsView takes ownership of the
+    viewport widget.
 
     QGraphicsView supports affine transformations, using QTransform. You can
     either pass a matrix to setTransform(), or you can call one of the
@@ -159,8 +159,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     fastest when QGraphicsView spends more time figuring out what to draw than
     it would spend drawing (e.g., when very many small items are repeatedly
     updated). This is the preferred update mode for viewports that do not
-    support partial updates, such as QGLWidget, and for viewports that need to
-    disable scroll optimization.
+    support partial updates, such as QOpenGLWidget, and for viewports that
+    need to disable scroll optimization.
 
     \value MinimalViewportUpdate QGraphicsView will determine the minimal
     viewport region that requires a redraw, minimizing the time spent drawing

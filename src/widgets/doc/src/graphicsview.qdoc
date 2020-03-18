@@ -117,7 +117,7 @@
         of a scene. You can attach several views to the same scene, to provide
         several viewports into the same data set. The view widget is a scroll
         area, and provides scroll bars for navigating through large scenes. To
-        enable OpenGL support, you can set a QGLWidget as the viewport by
+        enable OpenGL support, you can set a QOpenGLWidget as the viewport by
         calling QGraphicsView::setViewport().
 
         \snippet graphicsview.cpp 1
@@ -436,10 +436,10 @@
 
       \section2 OpenGL Rendering
 
-        To enable OpenGL rendering, you simply set a new QGLWidget as the
+        To enable OpenGL rendering, you simply set a new QOpenGLWidget as the
         viewport of QGraphicsView by calling QGraphicsView::setViewport(). If
-        you want OpenGL with antialiasing, you need OpenGL sample buffer
-        support (see QGLFormat::sampleBuffers()).
+        you want OpenGL with antialiasing, you need to set a QSurfaceFormat
+        with the needed sample count (see QSurfaceFormat::setSamples()).
 
         Example:
 

@@ -47,7 +47,7 @@
     The example consist of two classes:
 
     \list
-    \li \c MainWidget extends QGLWidget and contains OpenGL ES 2.0
+    \li \c MainWidget extends QOpenGLWidget and contains OpenGL ES 2.0
         initialization and drawing and mouse and timer event handling
     \li \c GeometryEngine handles polygon geometries. Transfers polygon geometry
         to vertex buffer objects and draws geometries from vertex buffer objects.
@@ -92,7 +92,7 @@
 
     \section1 Loading Textures from Qt Resource Files
 
-    \c QGLWidget interface implements methods for loading textures from QImage to GL
+    \c QOpenGLWidget interface implements methods for loading textures from QImage to GL
     texture memory. We still need to use OpenGL provided functions for specifying
     the GL texture unit and configuring texture filtering options.
 
