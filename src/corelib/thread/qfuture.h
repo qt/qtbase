@@ -53,8 +53,6 @@ QT_BEGIN_NAMESPACE
 
 template <typename T>
 class QFutureWatcher;
-template <>
-class QFutureWatcher<void>;
 
 template <typename T>
 class QFuture
@@ -63,13 +61,39 @@ public:
     QFuture()
         : d(QFutureInterface<T>::canceledResult())
     { }
+
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     explicit QFuture(QFutureInterface<T> *p) // internal
         : d(*p)
     { }
+
+    template<typename U = T, typename = QtPrivate::EnableForVoid<U>>
+    explicit QFuture(QFutureInterfaceBase *p) // internal
+        : d(*p)
+    {
+    }
+
+#if !defined(Q_CC_XLC)
+    template<typename U, typename V = T, typename = QtPrivate::EnableForVoid<V>>
+    QFuture(const QFuture<U> &other) : d(other.d)
+    {
+    }
+
+    template<typename U, typename V = T, typename = QtPrivate::EnableForVoid<V>>
+    QFuture<void> &operator=(const QFuture<U> &other)
+    {
+        d = other.d;
+        return *this;
+    }
+#endif
+
 #if defined(Q_CLANG_QDOC)
     ~QFuture() { }
     QFuture(const QFuture<T> &) { }
     QFuture<T> & operator=(const QFuture<T> &) { }
+
+    // This is required to allow QDoc to find the declaration of operator T().
+    operator T() const;
 #endif
 
     bool operator==(const QFuture &other) const { return (d == other.d); }
@@ -95,11 +119,20 @@ public:
     QString progressText() const { return d.progressText(); }
     void waitForFinished() { d.waitForFinished(); }
 
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     inline T result() const;
+
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     inline T resultAt(int index) const;
+
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     bool isResultReadyAt(int resultIndex) const { return d.isResultReadyAt(resultIndex); }
 
-    operator T() const { return result(); }
+    // operator T()
+    template<typename U = T>
+    operator typename std::enable_if_t<!std::is_same_v<U, void>, U>() const { return result(); }
+
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     QList<T> results() const { return d.results(); }
 
     template<class Function>
@@ -117,6 +150,9 @@ public:
     class const_iterator
     {
     public:
+        static_assert(!std::is_same_v<T, void>,
+                      "It isn't possible to define QFuture<void>::const_iterator");
+
         typedef std::bidirectional_iterator_tag iterator_category;
         typedef qptrdiff difference_type;
         typedef T value_type;
@@ -203,9 +239,16 @@ public:
     friend class const_iterator;
     typedef const_iterator ConstIterator;
 
+    template<class U = T, typename = QtPrivate::EnableForNonVoid<U>>
     const_iterator begin() const { return  const_iterator(this, 0); }
+
+    template<class U = T, typename = QtPrivate::EnableForNonVoid<U>>
     const_iterator constBegin() const { return  const_iterator(this, 0); }
+
+    template<class U = T, typename = QtPrivate::EnableForNonVoid<U>>
     const_iterator end() const { return const_iterator(this, -1); }
+
+    template<class U = T, typename = QtPrivate::EnableForNonVoid<U>>
     const_iterator constEnd() const { return const_iterator(this, -1); }
 
 private:
@@ -213,17 +256,21 @@ private:
 
 public: // Warning: the d pointer is not documented and is considered private.
     // TODO: make this private
-    mutable QFutureInterface<T> d;
+    using QFuturePrivate =
+            std::conditional_t<std::is_same_v<T, void>, QFutureInterfaceBase, QFutureInterface<T>>;
+    mutable QFuturePrivate d;
 };
 
-template <typename T>
+template<typename T>
+template<typename U, typename>
 inline T QFuture<T>::result() const
 {
     d.waitForResult(0);
     return d.resultReference(0);
 }
 
-template <typename T>
+template<typename T>
+template<typename U, typename>
 inline T QFuture<T>::resultAt(int index) const
 {
     d.waitForResult(index);
@@ -265,80 +312,6 @@ QFuture<typename QFuture<T>::template ResultType<Function>> QFuture<T>::then(QTh
     return promise.future();
 }
 
-Q_DECLARE_SEQUENTIAL_ITERATOR(Future)
-
-template <>
-class QFuture<void>
-{
-public:
-    QFuture()
-        : d(QFutureInterface<void>::canceledResult())
-    { }
-    explicit QFuture(QFutureInterfaceBase *p) // internal
-        : d(*p)
-    { }
-
-    bool operator==(const QFuture &other) const { return (d == other.d); }
-    bool operator!=(const QFuture &other) const { return (d != other.d); }
-
-#if !defined(Q_CC_XLC)
-    template <typename T>
-    QFuture(const QFuture<T> &other)
-        : d(other.d)
-    { }
-
-    template <typename T>
-    QFuture<void> &operator=(const QFuture<T> &other)
-    {
-        d = other.d;
-        return *this;
-    }
-#endif
-
-    void cancel() { d.cancel(); }
-    bool isCanceled() const { return d.isCanceled(); }
-
-    void setPaused(bool paused) { d.setPaused(paused); }
-    bool isPaused() const { return d.isPaused(); }
-    void pause() { setPaused(true); }
-    void resume() { setPaused(false); }
-    void togglePaused() { d.togglePaused(); }
-
-    bool isStarted() const { return d.isStarted(); }
-    bool isFinished() const { return d.isFinished(); }
-    bool isRunning() const { return d.isRunning(); }
-
-    int resultCount() const { return d.resultCount(); }
-    int progressValue() const { return d.progressValue(); }
-    int progressMinimum() const { return d.progressMinimum(); }
-    int progressMaximum() const { return d.progressMaximum(); }
-    QString progressText() const { return d.progressText(); }
-    void waitForFinished() { d.waitForFinished(); }
-
-    template<class Function>
-    using ResultType = typename QtPrivate::ResultTypeHelper<Function, void>::ResultType;
-
-    template<class Function>
-    QFuture<ResultType<Function>> then(Function &&function);
-
-    template<class Function>
-    QFuture<ResultType<Function>> then(QtFuture::Launch policy, Function &&function);
-
-    template<class Function>
-    QFuture<ResultType<Function>> then(QThreadPool *pool, Function &&function);
-
-private:
-    friend class QFutureWatcher<void>;
-
-#ifdef QFUTURE_TEST
-public:
-#endif
-    mutable QFutureInterfaceBase d;
-
-    template<typename Function, typename ResultType, typename ParentResultType>
-    friend class QtPrivate::Continuation;
-};
-
 inline QFuture<void> QFutureInterface<void>::future()
 {
     return QFuture<void>(this);
@@ -350,31 +323,7 @@ QFuture<void> qToVoidFuture(const QFuture<T> &future)
     return QFuture<void>(future.d);
 }
 
-template<class Function>
-QFuture<QFuture<void>::ResultType<Function>> QFuture<void>::then(Function &&function)
-{
-    return then(QtFuture::Launch::Sync, std::forward<Function>(function));
-}
-
-template<class Function>
-QFuture<QFuture<void>::ResultType<Function>> QFuture<void>::then(QtFuture::Launch policy,
-                                                                 Function &&function)
-{
-    QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::Continuation<Function, ResultType<Function>, void>::create(
-            std::forward<Function>(function), this, promise, policy);
-    return promise.future();
-}
-
-template<class Function>
-QFuture<QFuture<void>::ResultType<Function>> QFuture<void>::then(QThreadPool *pool,
-                                                                 Function &&function)
-{
-    QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::Continuation<Function, ResultType<Function>, void>::create(
-            std::forward<Function>(function), this, promise, pool);
-    return promise.future();
-}
+Q_DECLARE_SEQUENTIAL_ITERATOR(Future)
 
 QT_END_NAMESPACE
 

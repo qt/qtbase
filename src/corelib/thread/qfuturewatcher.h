@@ -110,6 +110,12 @@ private:
     virtual QFutureInterfaceBase &futureInterface() = 0;
 };
 
+namespace QtPrivate {
+
+template<class T>
+using EnableForNonVoid = std::enable_if_t<!std::is_same_v<T, void>>;
+}
+
 template <typename T>
 class QFutureWatcher : public QFutureWatcherBase
 {
@@ -124,7 +130,10 @@ public:
     QFuture<T> future() const
     { return m_future; }
 
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     T result() const { return m_future.result(); }
+
+    template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     T resultAt(int index) const { return m_future.resultAt(index); }
 
 #ifdef Q_QDOC
@@ -171,36 +180,6 @@ private:
 
 template <typename T>
 Q_INLINE_TEMPLATE void QFutureWatcher<T>::setFuture(const QFuture<T> &_future)
-{
-    if (_future == m_future)
-        return;
-
-    disconnectOutputInterface(true);
-    m_future = _future;
-    connectOutputInterface();
-}
-
-template <>
-class QFutureWatcher<void> : public QFutureWatcherBase
-{
-public:
-    explicit QFutureWatcher(QObject *_parent = nullptr)
-        : QFutureWatcherBase(_parent)
-    { }
-    ~QFutureWatcher()
-    { disconnectOutputInterface(); }
-
-    void setFuture(const QFuture<void> &future);
-    QFuture<void> future() const
-    { return m_future; }
-
-private:
-    QFuture<void> m_future;
-    const QFutureInterfaceBase &futureInterface() const override { return m_future.d; }
-    QFutureInterfaceBase &futureInterface() override { return m_future.d; }
-};
-
-Q_INLINE_TEMPLATE void QFutureWatcher<void>::setFuture(const QFuture<void> &_future)
 {
     if (_future == m_future)
         return;

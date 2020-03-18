@@ -66,6 +66,12 @@ enum class Launch { Sync, Async, Inherit };
 
 namespace QtPrivate {
 
+template<class T>
+using EnableForVoid = std::enable_if_t<std::is_same_v<T, void>>;
+
+template<class T>
+using EnableForNonVoid = std::enable_if_t<!std::is_same_v<T, void>>;
+
 template<typename F, typename Arg, typename Enable = void>
 struct ResultTypeHelper
 {
