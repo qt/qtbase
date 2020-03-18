@@ -33,6 +33,7 @@
 #include <qapplication.h>
 #include <qevent.h>
 #include <qaction.h>
+#include <qactiongroup.h>
 #include <qmenu.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformintegration.h>
@@ -68,7 +69,7 @@ private slots:
 private:
     QEvent::Type m_lastEventType;
     const int m_keyboardScheme;
-    QGuiAction *m_lastAction;
+    QAction *m_lastAction;
 };
 
 tst_QAction::tst_QAction()

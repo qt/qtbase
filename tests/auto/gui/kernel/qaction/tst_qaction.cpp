@@ -30,18 +30,18 @@
 
 #include <qguiapplication.h>
 #include <qevent.h>
-#include <qguiaction.h>
-#include <qguiactiongroup.h>
+#include <qaction.h>
+#include <qactiongroup.h>
 #include <qpa/qplatformtheme.h>
 
 #include <private/qguiapplication_p.h>
 
-class tst_QGuiAction : public QObject
+class tst_QAction : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QGuiAction();
+    tst_QAction();
 
 private slots:
     void cleanup();
@@ -63,35 +63,33 @@ private:
     const int m_keyboardScheme;
 };
 
-tst_QGuiAction::tst_QGuiAction()
+tst_QAction::tst_QAction()
     : m_keyboardScheme(QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::KeyboardScheme).toInt())
 {
 }
 
-void tst_QGuiAction::cleanup()
+void tst_QAction::cleanup()
 {
     QVERIFY(QGuiApplication::topLevelWindows().isEmpty());
 }
 
 // Testing get/set functions
-void tst_QGuiAction::getSetCheck()
+void tst_QAction::getSetCheck()
 {
-    QGuiAction obj1(nullptr);
-    // QActionGroup * QAction::actionGroup()
-    // void QAction::setActionGroup(QActionGroup *)
-    auto var1 = new QGuiActionGroup(nullptr);
+    QAction obj1(nullptr);
+    auto var1 = new QActionGroup(nullptr);
     obj1.setActionGroup(var1);
-    QCOMPARE(var1, obj1.guiActionGroup());
+    QCOMPARE(var1, obj1.actionGroup());
     obj1.setActionGroup(nullptr);
-    QCOMPARE(obj1.guiActionGroup(), nullptr);
+    QCOMPARE(obj1.actionGroup(), nullptr);
     delete var1;
 
-    QCOMPARE(obj1.priority(), QGuiAction::NormalPriority);
-    obj1.setPriority(QGuiAction::LowPriority);
-    QCOMPARE(obj1.priority(), QGuiAction::LowPriority);
+    QCOMPARE(obj1.priority(), QAction::NormalPriority);
+    obj1.setPriority(QAction::LowPriority);
+    QCOMPARE(obj1.priority(), QAction::LowPriority);
 }
 
-void tst_QGuiAction::setText_data()
+void tst_QAction::setText_data()
 {
     QTest::addColumn<QString>("text");
     QTest::addColumn<QString>("iconText");
@@ -103,11 +101,11 @@ void tst_QGuiAction::setText_data()
     QTest::newRow("Mnemonic and ellipsis") << "O&pen File ..." << "Open File" << "Open File";
 }
 
-void tst_QGuiAction::setText()
+void tst_QAction::setText()
 {
     QFETCH(QString, text);
 
-    QGuiAction action(nullptr);
+    QAction action(nullptr);
     action.setText(text);
 
     QCOMPARE(action.text(), text);
@@ -116,11 +114,11 @@ void tst_QGuiAction::setText()
     QCOMPARE(action.iconText(), iconText);
 }
 
-void tst_QGuiAction::setIconText()
+void tst_QAction::setIconText()
 {
     QFETCH(QString, iconText);
 
-    QGuiAction action(nullptr);
+    QAction action(nullptr);
     action.setIconText(iconText);
     QCOMPARE(action.iconText(), iconText);
 
@@ -131,9 +129,9 @@ void tst_QGuiAction::setIconText()
 #if QT_CONFIG(shortcut)
 
 //basic testing of standard keys
-void tst_QGuiAction::setStandardKeys()
+void tst_QAction::setStandardKeys()
 {
-    QGuiAction act(nullptr);
+    QAction act(nullptr);
     act.setShortcut(QKeySequence("CTRL+L"));
     QList<QKeySequence> list;
     act.setShortcuts(list);
@@ -158,9 +156,9 @@ void tst_QGuiAction::setStandardKeys()
     QCOMPARE(act.shortcuts(), expected);
 }
 
-void tst_QGuiAction::task200823_tooltip()
+void tst_QAction::task200823_tooltip()
 {
-    const QScopedPointer<QGuiAction> action(new QGuiAction("foo", nullptr));
+    const QScopedPointer<QAction> action(new QAction("foo", nullptr));
     QString shortcut("ctrl+o");
     action->setShortcut(shortcut);
 
@@ -173,11 +171,11 @@ void tst_QGuiAction::task200823_tooltip()
 
 #endif // QT_CONFIG(shortcut)
 
-void tst_QGuiAction::task229128TriggeredSignalWithoutActiongroup()
+void tst_QAction::task229128TriggeredSignalWithoutActiongroup()
 {
     // test without a group
-    const QScopedPointer<QGuiAction> actionWithoutGroup(new QGuiAction("Test", nullptr));
-    QSignalSpy spyWithoutGroup(actionWithoutGroup.data(), QOverload<bool>::of(&QGuiAction::triggered));
+    const QScopedPointer<QAction> actionWithoutGroup(new QAction("Test", nullptr));
+    QSignalSpy spyWithoutGroup(actionWithoutGroup.data(), QOverload<bool>::of(&QAction::triggered));
     QCOMPARE(spyWithoutGroup.count(), 0);
     actionWithoutGroup->trigger();
     // signal should be emitted
@@ -193,10 +191,10 @@ void tst_QGuiAction::task229128TriggeredSignalWithoutActiongroup()
     QCOMPARE(spyWithoutGroup.count(), 1);
 }
 
-void tst_QGuiAction::setData() // QTBUG-62006
+void tst_QAction::setData() // QTBUG-62006
 {
-    QGuiAction act(nullptr);
-    QSignalSpy spy(&act, &QGuiAction::changed);
+    QAction act(nullptr);
+    QSignalSpy spy(&act, &QAction::changed);
     QCOMPARE(act.data(), QVariant());
     QCOMPARE(spy.count(), 0);
     act.setData(QVariant());
@@ -208,10 +206,10 @@ void tst_QGuiAction::setData() // QTBUG-62006
     QCOMPARE(spy.count(), 1);
 }
 
-void tst_QGuiAction::setEnabledSetVisible()
+void tst_QAction::setEnabledSetVisible()
 {
-    QGuiAction action(nullptr);
-    QSignalSpy spy(&action, &QGuiAction::enabledChanged);
+    QAction action(nullptr);
+    QSignalSpy spy(&action, &QAction::enabledChanged);
     QVERIFY(action.isEnabled());
     QVERIFY(action.isVisible());
     QCOMPARE(spy.count(), 0);
@@ -232,12 +230,12 @@ void tst_QGuiAction::setEnabledSetVisible()
     QCOMPARE(spy.count(), 2);
 }
 
-void tst_QGuiAction::setCheckabledSetChecked()
+void tst_QAction::setCheckabledSetChecked()
 {
-    QGuiAction action(nullptr);
-    QSignalSpy changedSpy(&action, &QGuiAction::changed);
-    QSignalSpy checkedSpy(&action, &QGuiAction::toggled);
-    QSignalSpy checkableSpy(&action, &QGuiAction::checkableChanged);
+    QAction action(nullptr);
+    QSignalSpy changedSpy(&action, &QAction::changed);
+    QSignalSpy checkedSpy(&action, &QAction::toggled);
+    QSignalSpy checkableSpy(&action, &QAction::checkableChanged);
     QVERIFY(!action.isCheckable());
     QVERIFY(!action.isChecked());
     QCOMPARE(changedSpy.count(), 0);
@@ -273,5 +271,5 @@ void tst_QGuiAction::setCheckabledSetChecked()
     QCOMPARE(checkableSpy.count(), 3);
 }
 
-QTEST_MAIN(tst_QGuiAction)
-#include "tst_qguiaction.moc"
+QTEST_MAIN(tst_QAction)
+#include "tst_qaction.moc"

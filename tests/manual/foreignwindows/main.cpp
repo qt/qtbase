@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDesktopWidget>
 #include <QtWidgets/QMainWindow>

@@ -52,6 +52,7 @@
 
 #include <QRandomGenerator>
 
+#include <QActionGroup>
 #include <QMainWindow>
 #include <QMenu>
 #include <QPainter>

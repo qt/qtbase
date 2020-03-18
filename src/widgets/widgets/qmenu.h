@@ -44,7 +44,7 @@
 #include <QtWidgets/qwidget.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qicon.h>
-#include <QtWidgets/qaction.h>
+#include <QtGui/qaction.h>
 
 #if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
@@ -282,7 +282,7 @@ private:
     friend class QMenuBarPrivate;
     friend class QTornOffMenu;
     friend class QComboBox;
-    friend class QAction;
+    friend class QtWidgetsActionPrivate;
     friend class QToolButtonPrivate;
     friend void qt_mac_emit_menuSignals(QMenu *menu, bool show);
     friend void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action);

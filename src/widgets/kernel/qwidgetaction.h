@@ -41,7 +41,7 @@
 #define QWIDGETACTION_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-#include <QtWidgets/qaction.h>
+#include <QtGui/qaction.h>
 
 QT_REQUIRE_CONFIG(action);
 

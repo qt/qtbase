@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QAction>
+#include <QActionGroup>
 #include <QApplication>
 #include <QClipboard>
 #include <QColorDialog>

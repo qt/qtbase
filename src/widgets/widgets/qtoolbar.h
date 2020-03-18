@@ -41,7 +41,7 @@
 #define QDYNAMICTOOLBAR_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-#include <QtWidgets/qaction.h>
+#include <QtGui/qaction.h>
 #include <QtWidgets/qwidget.h>
 
 QT_REQUIRE_CONFIG(toolbar);

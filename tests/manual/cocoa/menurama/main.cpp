@@ -29,7 +29,7 @@
 #include "mainwindow.h"
 #include "menuramaapplication.h"
 
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <QtWidgets/QMenu>
 
 int main(int argc, char *argv[])

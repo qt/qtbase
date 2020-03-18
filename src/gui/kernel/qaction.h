@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGUIACTION_H
-#define QGUIACTION_H
+#ifndef QACTION_H
+#define QACTION_H
 
 #include <QtGui/qtguiglobal.h>
 #if QT_CONFIG(shortcut)
@@ -53,13 +53,18 @@ QT_REQUIRE_CONFIG(action);
 QT_BEGIN_NAMESPACE
 
 class QActionEvent;
-class QGuiActionGroup;
-class QGuiActionPrivate;
+class QActionGroup;
+class QActionPrivate;
+#if QT_DEPRECATED_SINCE(6,0)
+class QWidget;
+class QGraphicsWidget;
+class QMenu;
+#endif
 
-class Q_GUI_EXPORT QGuiAction : public QObject
+class Q_GUI_EXPORT QAction : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QGuiAction)
+    Q_DECLARE_PRIVATE(QAction)
 
     Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable NOTIFY checkableChanged FINAL)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked NOTIFY toggled)
@@ -91,14 +96,56 @@ public:
                     NormalPriority = 128,
                     HighPriority = 256};
     Q_ENUM(Priority)
-    explicit QGuiAction(QObject *parent = nullptr);
-    explicit QGuiAction(const QString &text, QObject *parent = nullptr);
-    explicit QGuiAction(const QIcon &icon, const QString &text, QObject *parent = nullptr);
+    explicit QAction(QObject *parent = nullptr);
+    explicit QAction(const QString &text, QObject *parent = nullptr);
+    explicit QAction(const QIcon &icon, const QString &text, QObject *parent = nullptr);
 
-    ~QGuiAction();
+    ~QAction();
 
-    void setActionGroup(QGuiActionGroup *group);
-    QGuiActionGroup *guiActionGroup() const;
+    QVector<QObject *> associatedObjects() const;
+
+#if QT_DEPRECATED_SINCE(6,0)
+#ifdef Q_CLANG_QDOC
+    QWidget *parentWidget() const;
+    QList<QWidget*> associatedWidgets() const;
+    QList<QGraphicsWidget*> associatedGraphicsWidgets() const;
+#else
+    /*
+        These are templates so that instantiation happens only in calling code, when
+        QWidget, QMenu, and QGraphicsWidget can be expected to be fully defined.
+    */
+    template<typename T = QWidget*>
+    T parentWidget() const
+    {
+        auto result = parent();
+        while (result && !qobject_cast<T>(result))
+            result = result->parent();
+        return static_cast<T>(result);
+    }
+
+    template<typename T = QWidget*>
+    QList<T> associatedWidgets() const
+    {
+        QList<T> result;
+        for (auto object : associatedObjects())
+            if (auto widget = qobject_cast<T>(object))
+                result.append(widget);
+        return result;
+    }
+    template<typename T = QGraphicsWidget*>
+    QList<T> associatedGraphicsWidgets() const
+    {
+        QList<T> result;
+        for (auto object : associatedObjects())
+            if (auto graphicsWidget = qobject_cast<T>(object))
+                result.append(graphicsWidget);
+        return result;
+    }
+#endif
+#endif
+
+    void setActionGroup(QActionGroup *group);
+    QActionGroup *actionGroup() const;
     void setIcon(const QIcon &icon);
     QIcon icon() const;
 
@@ -159,15 +206,35 @@ public:
     void setMenuRole(MenuRole menuRole);
     MenuRole menuRole() const;
 
+#if QT_DEPRECATED_SINCE(6,0)
+#ifdef Q_CLANG_QDOC
+    QMenu *menu() const;
+    void setMenu(QMenu *menu);
+#else
+    template<typename T = QMenu*>
+    T menu() const
+    {
+        return qobject_cast<T>(menuObject());
+    }
+    template<typename T = QMenu*>
+    void setMenu(T m)
+    {
+        setMenuObject(m);
+    }
+#endif
+#endif
+
     void setIconVisibleInMenu(bool visible);
     bool isIconVisibleInMenu() const;
 
     void setShortcutVisibleInContextMenu(bool show);
     bool isShortcutVisibleInContextMenu() const;
 
+    bool showStatusText(QObject *object = nullptr);
+
 protected:
     bool event(QEvent *) override;
-    QGuiAction(QGuiActionPrivate &dd, QObject *parent);
+    QAction(QActionPrivate &dd, QObject *parent);
 
 public Q_SLOTS:
     void trigger() { activate(Trigger); }
@@ -188,14 +255,22 @@ Q_SIGNALS:
     void toggled(bool);
 
 private:
-    Q_DISABLE_COPY(QGuiAction)
-    friend class QGuiActionGroup;
+    Q_DISABLE_COPY(QAction)
+    friend class QActionGroup;
+    friend class QWidget;
+    friend class QMenu;
+    friend class QMenuPrivate;
+    friend class QToolButton;
+    friend class QGraphicsWidget;
+
+    QObject *menuObject() const;
+    void setMenuObject(QObject *object);
 };
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QGuiAction *);
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QAction *);
 #endif
 
 QT_END_NAMESPACE
 
-#endif // QGUIACTION_H
+#endif // QACTION_H

@@ -52,13 +52,13 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include "private/qaction_p.h"
+#include "private/qaction_widgets_p.h"
 
 QT_REQUIRE_CONFIG(action);
 
 QT_BEGIN_NAMESPACE
 
-class QWidgetActionPrivate : public QActionPrivate
+class QWidgetActionPrivate : public QtWidgetsActionPrivate
 {
     Q_DECLARE_PUBLIC(QWidgetAction)
 public:

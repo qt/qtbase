@@ -1,4 +1,4 @@
 CONFIG += testcase
-TARGET = tst_qguiaction
+TARGET = tst_qaction
 QT += gui-private core-private testlib
-SOURCES += tst_qguiaction.cpp
+SOURCES += tst_qaction.cpp

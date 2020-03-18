@@ -53,6 +53,7 @@
 #include "iconsizespinbox.h"
 #include "imagedelegate.h"
 
+#include <QActionGroup>
 #include <QApplication>
 #include <QButtonGroup>
 #include <QCheckBox>

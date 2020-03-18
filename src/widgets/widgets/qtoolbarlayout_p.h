@@ -96,7 +96,7 @@ public:
     QSize sizeHint() const override;
 
     void insertAction(int index, QAction *action);
-    int indexOf(const QGuiAction *action) const;
+    int indexOf(const QAction *action) const;
     using QLayout::indexOf; // bring back the hidden members
 
     bool layoutActions(const QSize &size);

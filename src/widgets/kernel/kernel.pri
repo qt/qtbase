@@ -58,13 +58,10 @@ macx: {
 }
 
 qtConfig(action) {
-    HEADERS += kernel/qaction.h \
-               kernel/qaction_p.h \
-               kernel/qactiongroup.h \
+    HEADERS += kernel/qaction_widgets_p.h \
                kernel/qwidgetaction.h \
                kernel/qwidgetaction_p.h
-    SOURCES += kernel/qaction.cpp \
-               kernel/qactiongroup.cpp \
+    SOURCES += kernel/qaction_widgets.cpp \
                kernel/qwidgetaction.cpp
 }
 

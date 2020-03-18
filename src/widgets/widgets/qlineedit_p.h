@@ -240,7 +240,7 @@ public:
 
 #if QT_CONFIG(action)
     QWidget *addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition, int flags = 0);
-    void removeAction(QGuiAction *action);
+    void removeAction(QAction *action);
 #endif
     SideWidgetParameters sideWidgetParameters() const;
     QIcon clearButtonIcon() const;
@@ -264,7 +264,7 @@ private:
     friend class QTypeInfo<SideWidgetLocation>;
 
 #if QT_CONFIG(action)
-    SideWidgetLocation findSideWidget(const QGuiAction *a) const;
+    SideWidgetLocation findSideWidget(const QAction *a) const;
 #endif
 
     SideWidgetEntryList leadingSideWidgets;

@@ -50,7 +50,7 @@
 
 #include "colorswatch.h"
 
-#include <QAction>
+#include <QActionGroup>
 #include <QtEvents>
 #include <QFrame>
 #include <QMainWindow>

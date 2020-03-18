@@ -52,7 +52,7 @@
 #include "colorswatch.h"
 #include "toolbar.h"
 
-#include <QAction>
+#include <QActionGroup>
 #include <QLayout>
 #include <QMenu>
 #include <QMenuBar>

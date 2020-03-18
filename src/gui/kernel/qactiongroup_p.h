@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,44 +37,55 @@
 **
 ****************************************************************************/
 
-#ifndef QACTIONGROUP_H
-#define QACTIONGROUP_H
+#ifndef QGUIACTIONGROUP_P_H
+#define QGUIACTIONGROUP_P_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
-#include <QtGui/qguiactiongroup.h>
-#include <QtWidgets/qaction.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists for the convenience
+// of other Qt classes. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtGui/private/qtguiglobal_p.h>
+#include <QtGui/qactiongroup.h>
+#include <QtGui/qfont.h>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/private/qshortcutmap_p.h>
+#endif
+#include "private/qobject_p.h"
 
 QT_REQUIRE_CONFIG(action);
 
 QT_BEGIN_NAMESPACE
 
-class QActionGroupPrivate;
-
-class Q_WIDGETS_EXPORT QActionGroup : public QGuiActionGroup
+class Q_GUI_EXPORT QActionGroupPrivate : public QObjectPrivate
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QActionGroup)
-
+    Q_DECLARE_PUBLIC(QActionGroup)
 public:
-    explicit QActionGroup(QObject* parent);
-    ~QActionGroup();
+    enum Signal { Triggered, Hovered };
 
-    QAction *checkedAction() const;
+    QActionGroupPrivate();
+    ~QActionGroupPrivate();
 
-    QAction *addAction(QAction *a);
-    QAction *addAction(const QString &text);
-    QAction *addAction(const QIcon &icon, const QString &text);
+    virtual void emitSignal(Signal, QAction *) {}
 
-    QList<QAction*> actions() const;
-
-Q_SIGNALS:
-    void triggered(QAction *);
-    void hovered(QAction *);
+    QList<QAction *> actions;
+    QPointer<QAction> current;
+    uint enabled : 1;
+    uint visible : 1;
+    QActionGroup::ExclusionPolicy exclusionPolicy = QActionGroup::ExclusionPolicy::Exclusive;
 
 private:
-    Q_DISABLE_COPY(QActionGroup)
+    void _q_actionTriggered();  //private slot
+    void _q_actionChanged();    //private slot
+    void _q_actionHovered();    //private slot
 };
 
 QT_END_NAMESPACE
 
-#endif // QACTIONGROUP_H
+#endif // QACTIONGROUP_P_H

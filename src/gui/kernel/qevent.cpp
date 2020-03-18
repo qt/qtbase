@@ -3278,7 +3278,7 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
 /*!
     \class QActionEvent
     \brief The QActionEvent class provides an event that is generated
-    when a QGuiAction is added, removed, or changed.
+    when a QAction is added, removed, or changed.
 
     \ingroup events
     \inmodule QtGui
@@ -3289,7 +3289,7 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
     QWidget::actionEvent() to create \l{QToolButton}s for the
     actions.
 
-    \sa QGuiAction, QWidget::addAction(), QWidget::removeAction(), QWidget::actions()
+    \sa QAction, QWidget::addAction(), QWidget::removeAction(), QWidget::actions()
 */
 
 /*!
@@ -3300,7 +3300,7 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
     type is ActionAdded, the action is to be inserted before the
     action \a before. If \a before is \nullptr, the action is appended.
 */
-QActionEvent::QActionEvent(int type, QGuiAction *action, QGuiAction *before)
+QActionEvent::QActionEvent(int type, QAction *action, QAction *before)
     : QEvent(static_cast<QEvent::Type>(type)), act(action), bef(before)
 {}
 

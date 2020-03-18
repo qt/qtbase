@@ -30,7 +30,7 @@
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QLayout>
 #include <QtWidgets/QDialog>
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <qdialogbuttonbox.h>
 #include <limits.h>
 

@@ -37,29 +37,29 @@
 **
 ****************************************************************************/
 
-#include "qguiactiongroup.h"
+#include "qactiongroup.h"
 
-#include "qguiaction.h"
-#include "qguiaction_p.h"
-#include "qguiactiongroup_p.h"
+#include "qaction.h"
+#include "qaction_p.h"
+#include "qactiongroup_p.h"
 #include "qevent.h"
 #include "qlist.h"
 
 QT_BEGIN_NAMESPACE
 
-QGuiActionGroupPrivate::QGuiActionGroupPrivate() :
+QActionGroupPrivate::QActionGroupPrivate() :
     enabled(1), visible(1)
 {
 }
 
-QGuiActionGroupPrivate::~QGuiActionGroupPrivate() = default;
+QActionGroupPrivate::~QActionGroupPrivate() = default;
 
-void QGuiActionGroup::_q_actionChanged()
+void QActionGroup::_q_actionChanged()
 {
-    Q_D(QGuiActionGroup);
-    auto action = qobject_cast<QGuiAction*>(sender());
-    Q_ASSERT_X(action != nullptr, "QGuiActionGroup::_q_actionChanged", "internal error");
-    if (d->exclusionPolicy != QGuiActionGroup::ExclusionPolicy::None) {
+    Q_D(QActionGroup);
+    auto action = qobject_cast<QAction*>(sender());
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionChanged", "internal error");
+    if (d->exclusionPolicy != QActionGroup::ExclusionPolicy::None) {
         if (action->isChecked()) {
             if (action != d->current) {
                 if (!d->current.isNull())
@@ -72,44 +72,42 @@ void QGuiActionGroup::_q_actionChanged()
     }
 }
 
-void QGuiActionGroup::_q_actionTriggered()
+void QActionGroup::_q_actionTriggered()
 {
-    Q_D(QGuiActionGroup);
-    auto action = qobject_cast<QGuiAction*>(sender());
-    Q_ASSERT_X(action != nullptr, "QGuiActionGroup::_q_actionTriggered", "internal error");
-    d->emitSignal(QGuiActionGroupPrivate::Triggered, action);
+    auto action = qobject_cast<QAction*>(sender());
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionTriggered", "internal error");
+    emit triggered(action);
 }
 
-void QGuiActionGroup::_q_actionHovered()
+void QActionGroup::_q_actionHovered()
 {
-    Q_D(QGuiActionGroup);
-    auto action = qobject_cast<QGuiAction*>(sender());
-    Q_ASSERT_X(action != nullptr, "QGuiActionGroup::_q_actionHovered", "internal error");
-    d->emitSignal(QGuiActionGroupPrivate::Hovered, action);
+    auto action = qobject_cast<QAction*>(sender());
+    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionHovered", "internal error");
+    emit hovered(action);
 }
 
 /*!
-    \class QGuiActionGroup
-    \brief The QGuiActionGroup class groups actions together.
+    \class QActionGroup
+    \brief The QActionGroup class groups actions together.
     \since 6.0
 
     \inmodule QtGui
 
-    QGuiActionGroup is a base class for classes grouping
-    classes inhheriting QGuiAction objects together.
+    QActionGroup is a base class for classes grouping
+    classes inhheriting QAction objects together.
 
-    In some situations it is useful to group QGuiAction objects together.
+    In some situations it is useful to group QAction objects together.
     For example, if you have a \uicontrol{Left Align} action, a \uicontrol{Right
     Align} action, a \uicontrol{Justify} action, and a \uicontrol{Center} action,
     only one of these actions should be active at any one time. One
     simple way of achieving this is to group the actions together in
-    an action group, inheriting QGuiActionGroup.
+    an action group, inheriting QActionGroup.
 
-    \sa QGuiAction
+    \sa QAction
 */
 
 /*!
-    \enum QGuiActionGroup::ExclusionPolicy
+    \enum QActionGroup::ExclusionPolicy
 
     This enum specifies the different policies that can be used to
     control how the group performs exclusive checking on checkable actions.
@@ -134,14 +132,14 @@ void QGuiActionGroup::_q_actionHovered()
     The action group is exclusive by default. Call setExclusive(false)
     to make the action group non-exclusive. To make the group exclusive
     but allow unchecking the active action call instead
-    setExclusionPolicy(QGuiActionGroup::ExclusionPolicy::ExclusiveOptional)
+    setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional)
 */
-QGuiActionGroup::QGuiActionGroup(QObject* parent) :
-    QGuiActionGroup(*new QGuiActionGroupPrivate, parent)
+QActionGroup::QActionGroup(QObject* parent) :
+    QActionGroup(*new QActionGroupPrivate, parent)
 {
 }
 
-QGuiActionGroup::QGuiActionGroup(QGuiActionGroupPrivate &dd, QObject *parent) :
+QActionGroup::QActionGroup(QActionGroupPrivate &dd, QObject *parent) :
     QObject(dd, parent)
 {
 }
@@ -149,26 +147,26 @@ QGuiActionGroup::QGuiActionGroup(QGuiActionGroupPrivate &dd, QObject *parent) :
 /*!
     Destroys the action group.
 */
-QGuiActionGroup::~QGuiActionGroup() = default;
+QActionGroup::~QActionGroup() = default;
 
 /*!
-    \fn QGuiAction *QGuiActionGroup::addAction(QGuiAction *action)
+    \fn QAction *QActionGroup::addAction(QAction *action)
 
     Adds the \a action to this group, and returns it.
 
     Normally an action is added to a group by creating it with the
     group as its parent, so this function is not usually used.
 
-    \sa QGuiAction::setActionGroup()
+    \sa QAction::setActionGroup()
 */
-QGuiAction *QGuiActionGroup::addAction(QGuiAction* a)
+QAction *QActionGroup::addAction(QAction* a)
 {
-    Q_D(QGuiActionGroup);
+    Q_D(QActionGroup);
     if (!d->actions.contains(a)) {
         d->actions.append(a);
-        QObject::connect(a, &QGuiAction::triggered, this, &QGuiActionGroup::_q_actionTriggered);
-        QObject::connect(a, &QGuiAction::changed, this, &QGuiActionGroup::_q_actionChanged);
-        QObject::connect(a, &QGuiAction::hovered, this, &QGuiActionGroup::_q_actionHovered);
+        QObject::connect(a, &QAction::triggered, this, &QActionGroup::_q_actionTriggered);
+        QObject::connect(a, &QAction::changed, this, &QActionGroup::_q_actionChanged);
+        QObject::connect(a, &QAction::hovered, this, &QActionGroup::_q_actionHovered);
     }
     a->d_func()->setEnabled(d->enabled, true);
     if (!a->d_func()->forceInvisible) {
@@ -177,7 +175,7 @@ QGuiAction *QGuiActionGroup::addAction(QGuiAction* a)
     }
     if (a->isChecked())
         d->current = a;
-    QGuiActionGroup *oldGroup = a->d_func()->group;
+    QActionGroup *oldGroup = a->d_func()->group;
     if (oldGroup != this) {
         if (oldGroup)
             oldGroup->removeAction(a);
@@ -188,20 +186,48 @@ QGuiAction *QGuiActionGroup::addAction(QGuiAction* a)
 }
 
 /*!
+    Creates and returns an action with \a text.  The newly created
+    action is a child of this action group.
+
+    Normally an action is added to a group by creating it with the
+    group as parent, so this function is not usually used.
+
+    \sa QAction::setActionGroup()
+*/
+QAction *QActionGroup::addAction(const QString &text)
+{
+    return new QAction(text, this);
+}
+
+/*!
+    Creates and returns an action with \a text and an \a icon. The
+    newly created action is a child of this action group.
+
+    Normally an action is added to a group by creating it with the
+    group as its parent, so this function is not usually used.
+
+    \sa QAction::setActionGroup()
+*/
+QAction *QActionGroup::addAction(const QIcon &icon, const QString &text)
+{
+    return new QAction(icon, text, this);
+}
+
+/*!
   Removes the \a action from this group. The action will have no
   parent as a result.
 
-  \sa QGuiAction::setActionGroup()
+  \sa QAction::setActionGroup()
 */
-void QGuiActionGroup::removeAction(QGuiAction *action)
+void QActionGroup::removeAction(QAction *action)
 {
-    Q_D(QGuiActionGroup);
+    Q_D(QActionGroup);
     if (d->actions.removeAll(action)) {
         if (action == d->current)
             d->current = nullptr;
-        QObject::disconnect(action, &QGuiAction::triggered, this, &QGuiActionGroup::_q_actionTriggered);
-        QObject::disconnect(action, &QGuiAction::changed, this, &QGuiActionGroup::_q_actionChanged);
-        QObject::disconnect(action, &QGuiAction::hovered, this, &QGuiActionGroup::_q_actionHovered);
+        QObject::disconnect(action, &QAction::triggered, this, &QActionGroup::_q_actionTriggered);
+        QObject::disconnect(action, &QAction::changed, this, &QActionGroup::_q_actionChanged);
+        QObject::disconnect(action, &QAction::hovered, this, &QActionGroup::_q_actionHovered);
         action->d_func()->group = nullptr;
     }
 }
@@ -209,9 +235,9 @@ void QGuiActionGroup::removeAction(QGuiAction *action)
 /*!
     Returns the list of this groups's actions. This may be empty.
 */
-QList<QGuiAction*> QGuiActionGroup::guiActions() const
+QList<QAction*> QActionGroup::actions() const
 {
-    Q_D(const QGuiActionGroup);
+    Q_D(const QActionGroup);
     return d->actions;
 }
 
@@ -222,12 +248,12 @@ QList<QGuiAction*> QGuiActionGroup::guiActions() const
     setExclusionPolicy(ExclusionPolicy::Exclusive) when \a b is true,
     else setExclusionPolicy(QActionGroup::ExclusionPolicy::None).
 
-    \sa QGuiActionGroup::exclusionPolicy
+    \sa QActionGroup::exclusionPolicy
 */
-void QGuiActionGroup::setExclusive(bool b)
+void QActionGroup::setExclusive(bool b)
 {
-    setExclusionPolicy(b ? QGuiActionGroup::ExclusionPolicy::Exclusive
-                         : QGuiActionGroup::ExclusionPolicy::None);
+    setExclusionPolicy(b ? QActionGroup::ExclusionPolicy::Exclusive
+                         : QActionGroup::ExclusionPolicy::None);
 }
 
 /*!
@@ -237,13 +263,13 @@ void QGuiActionGroup::setExclusive(bool b)
     or ExclusionOptional.
 
 */
-bool QGuiActionGroup::isExclusive() const
+bool QActionGroup::isExclusive() const
 {
-    return exclusionPolicy() != QGuiActionGroup::ExclusionPolicy::None;
+    return exclusionPolicy() != QActionGroup::ExclusionPolicy::None;
 }
 
 /*!
-    \property QGuiActionGroup::exclusionPolicy
+    \property QActionGroup::exclusionPolicy
     \brief This property holds the group exclusive checking policy
 
     If exclusionPolicy is set to Exclusive, only one checkable
@@ -254,22 +280,22 @@ bool QGuiActionGroup::isExclusive() const
     action in the group can be unchecked leaving the group with no actions
     checked.
 
-    \sa QGuiAction::checkable
+    \sa QAction::checkable
 */
-void QGuiActionGroup::setExclusionPolicy(QGuiActionGroup::ExclusionPolicy policy)
+void QActionGroup::setExclusionPolicy(QActionGroup::ExclusionPolicy policy)
 {
-    Q_D(QGuiActionGroup);
+    Q_D(QActionGroup);
     d->exclusionPolicy = policy;
 }
 
-QGuiActionGroup::ExclusionPolicy QGuiActionGroup::exclusionPolicy() const
+QActionGroup::ExclusionPolicy QActionGroup::exclusionPolicy() const
 {
-    Q_D(const QGuiActionGroup);
+    Q_D(const QActionGroup);
     return d->exclusionPolicy;
 }
 
 /*!
-    \fn void QGuiActionGroup::setDisabled(bool b)
+    \fn void QActionGroup::setDisabled(bool b)
 
     This is a convenience function for the \l enabled property, that
     is useful for signals--slots connections. If \a b is true the
@@ -277,26 +303,26 @@ QGuiActionGroup::ExclusionPolicy QGuiActionGroup::exclusionPolicy() const
 */
 
 /*!
-    \property QGuiActionGroup::enabled
+    \property QActionGroup::enabled
     \brief whether the action group is enabled
 
     Each action in the group will be enabled or disabled unless it
     has been explicitly disabled.
 
-    \sa QGuiAction::setEnabled()
+    \sa QAction::setEnabled()
 */
-void QGuiActionGroup::setEnabled(bool b)
+void QActionGroup::setEnabled(bool b)
 {
-    Q_D(QGuiActionGroup);
+    Q_D(QActionGroup);
     d->enabled = b;
     for (auto action : qAsConst(d->actions)) {
         action->d_func()->setEnabled(b, true);
     }
 }
 
-bool QGuiActionGroup::isEnabled() const
+bool QActionGroup::isEnabled() const
 {
-    Q_D(const QGuiActionGroup);
+    Q_D(const QActionGroup);
     return d->enabled;
 }
 
@@ -304,24 +330,24 @@ bool QGuiActionGroup::isEnabled() const
   Returns the currently checked action in the group, or \nullptr if
   none are checked.
 */
-QGuiAction *QGuiActionGroup::checkedGuiAction() const
+QAction *QActionGroup::checkedAction() const
 {
-    Q_D(const QGuiActionGroup);
+    Q_D(const QActionGroup);
     return d->current.data();
 }
 
 /*!
-    \property QGuiActionGroup::visible
+    \property QActionGroup::visible
     \brief whether the action group is visible
 
     Each action in the action group will match the visible state of
     this group unless it has been explicitly hidden.
 
-    \sa QGuiAction::setEnabled()
+    \sa QAction::setEnabled()
 */
-void QGuiActionGroup::setVisible(bool b)
+void QActionGroup::setVisible(bool b)
 {
-    Q_D(QGuiActionGroup);
+    Q_D(QActionGroup);
     d->visible = b;
     for (auto action : qAsConst(d->actions)) {
         if (!action->d_func()->forceInvisible) {
@@ -331,9 +357,9 @@ void QGuiActionGroup::setVisible(bool b)
     }
 }
 
-bool QGuiActionGroup::isVisible() const
+bool QActionGroup::isVisible() const
 {
-    Q_D(const QGuiActionGroup);
+    Q_D(const QActionGroup);
     return d->visible;
 }
 

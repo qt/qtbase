@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,76 +37,74 @@
 **
 ****************************************************************************/
 
-#ifndef QACTION_H
-#define QACTION_H
+#ifndef QGUIACTIONGROUP_H
+#define QGUIACTIONGROUP_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
-#include <QtGui/qguiaction.h>
-#include <QtCore/qstring.h>
-#include <QtWidgets/qwidget.h>
-#include <QtCore/qvariant.h>
+#include <QtGui/qtguiglobal.h>
+#include <QtGui/qaction.h>
 
 QT_REQUIRE_CONFIG(action);
 
 QT_BEGIN_NAMESPACE
 
-class QMenu;
-class QActionGroup;
-class QActionPrivate;
-class QGraphicsWidget;
+class QActionGroupPrivate;
 
-class Q_WIDGETS_EXPORT QAction : public QGuiAction
+class Q_GUI_EXPORT QActionGroup : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QAction)
+    Q_DECLARE_PRIVATE(QActionGroup)
+
+    Q_PROPERTY(QActionGroup::ExclusionPolicy exclusionPolicy READ exclusionPolicy WRITE setExclusionPolicy)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
+    Q_PROPERTY(bool visible READ isVisible WRITE setVisible)
+
 public:
-    QAction(QObject* parent = nullptr);
-    QAction(const QString &text, QObject* parent = nullptr);
-    QAction(const QIcon &icon, const QString &text, QObject* parent);
-    ~QAction();
+    enum class ExclusionPolicy {
+        None,
+        Exclusive,
+        ExclusiveOptional
+    };
+    Q_ENUM(ExclusionPolicy)
 
-    QActionGroup *actionGroup() const;
+    explicit QActionGroup(QObject *parent);
+    ~QActionGroup();
 
-#if QT_CONFIG(menu)
-    QMenu *menu() const;
-    void setMenu(QMenu *menu);
-#endif
+    QAction *addAction(QAction *a);
+    QAction *addAction(const QString &text);
+    QAction *addAction(const QIcon &icon, const QString &text);
+    void removeAction(QAction *a);
+    QList<QAction*> actions() const;
+    QAction *checkedAction() const;
 
-    bool showStatusText(QWidget *widget = nullptr);
+    bool isExclusive() const;
+    bool isEnabled() const;
+    bool isVisible() const;
+    ExclusionPolicy exclusionPolicy() const;
 
-    QWidget *parentWidget() const;
 
-    QList<QWidget *> associatedWidgets() const;
-#if QT_CONFIG(graphicsview)
-    QList<QGraphicsWidget *> associatedGraphicsWidgets() const; // ### suboptimal
-#endif
+public Q_SLOTS:
+    void setEnabled(bool);
+    inline void setDisabled(bool b) { setEnabled(!b); }
+    void setVisible(bool);
+    void setExclusive(bool);
+    void setExclusionPolicy(ExclusionPolicy policy);
+
+Q_SIGNALS:
+    void triggered(QAction *);
+    void hovered(QAction *);
+
+private Q_SLOTS:
+    void _q_actionTriggered();
+    void _q_actionHovered();
+    void _q_actionChanged();
 
 protected:
-    QAction(QActionPrivate &dd, QObject *parent);
-    bool event(QEvent *) override;
+     QActionGroup(QActionGroupPrivate &dd, QObject *parent);
 
 private:
-    Q_DISABLE_COPY(QAction)
-
-    friend class QGraphicsWidget;
-    friend class QWidget;
-    friend class QMenu;
-    friend class QMenuPrivate;
-    friend class QMenuBar;
-    friend class QToolButton;
-#ifdef Q_OS_MAC
-    friend void qt_mac_clear_status_text(QAction *action);
-#endif
+    Q_DISABLE_COPY(QActionGroup)
 };
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_WIDGETS_EXPORT QDebug operator<<(QDebug, const QAction *);
-#endif
-
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtWidgets/qactiongroup.h>
-QT_END_INCLUDE_NAMESPACE
 
 QT_END_NAMESPACE
 
-#endif // QACTION_H
+#endif // QGUIACTIONGROUP_H

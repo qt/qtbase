@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGUIACTION_P_H
-#define QGUIACTION_P_H
+#ifndef QACTION_WIDGETS_P_H
+#define QACTION_WIDGETS_P_H
 
 //
 //  W A R N I N G
@@ -51,13 +51,8 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include <QtGui/qguiaction.h>
-#include <QtGui/qfont.h>
-#if QT_CONFIG(shortcut)
-#  include <QtGui/private/qshortcutmap_p.h>
-#endif
-#include "private/qobject_p.h"
+#include <QtGui/private/qaction_p.h>
+#include <QtWidgets/qmenu.h>
 
 QT_REQUIRE_CONFIG(action);
 
@@ -65,65 +60,25 @@ QT_BEGIN_NAMESPACE
 
 class QShortcutMap;
 
-class Q_GUI_EXPORT QGuiActionPrivate : public QObjectPrivate
+class Q_WIDGETS_EXPORT QtWidgetsActionPrivate : public QActionPrivate
 {
-    Q_DECLARE_PUBLIC(QGuiAction)
+    Q_DECLARE_PUBLIC(QAction)
 public:
-    QGuiActionPrivate();
-    ~QGuiActionPrivate();
+    QtWidgetsActionPrivate() = default;
+    ~QtWidgetsActionPrivate();
+
+    void destroy() override;
 
 #if QT_CONFIG(shortcut)
-    virtual QShortcutMap::ContextMatcher contextMatcher() const;
+    QShortcutMap::ContextMatcher contextMatcher() const override;
 #endif
 
-    static QGuiActionPrivate *get(QGuiAction *q)
-    {
-        return q->d_func();
-    }
+    QPointer<QMenu> m_menu;
 
-    bool setEnabled(bool enable, bool byGroup);
-
-    QPointer<QGuiActionGroup> group;
-    QString text;
-    QString iconText;
-    QIcon icon;
-    QString tooltip;
-    QString statustip;
-    QString whatsthis;
-#if QT_CONFIG(shortcut)
-    QKeySequence shortcut;
-    QList<QKeySequence> alternateShortcuts;
-#endif
-    QVariant userData;
-#if QT_CONFIG(shortcut)
-    int shortcutId = 0;
-    QVector<int> alternateShortcutIds;
-    Qt::ShortcutContext shortcutContext = Qt::WindowShortcut;
-    uint autorepeat : 1;
-#endif
-    QFont font;
-    uint enabled : 1, explicitEnabled : 1, explicitEnabledValue : 1;
-    uint visible : 1, forceInvisible : 1;
-    uint checkable : 1;
-    uint checked : 1;
-    uint separator : 1;
-    uint fontSet : 1;
-
-    int iconVisibleInMenu : 2;  // Only has values -1, 0, and 1
-    int shortcutVisibleInContextMenu : 2; // Only has values -1, 0, and 1
-
-    QGuiAction::MenuRole menuRole = QGuiAction::TextHeuristicRole;
-    QGuiAction::Priority priority = QGuiAction::NormalPriority;
-
-#if QT_CONFIG(shortcut)
-    void redoGrab(QShortcutMap &map);
-    void redoGrabAlternate(QShortcutMap &map);
-    void setShortcutEnabled(bool enable, QShortcutMap &map);
-#endif // QT_NO_SHORTCUT
-
-    void sendDataChanged();
+    QObject *menu() const override;
+    void setMenu(QObject *menu) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QACTION_P_H
+#endif // QACTION_WIDGETS_P_H

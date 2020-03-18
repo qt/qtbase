@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qwidgetaction.h"
+#include "qwidget.h"
 #include "qdebug.h"
 
 #include "qwidgetaction_p.h"

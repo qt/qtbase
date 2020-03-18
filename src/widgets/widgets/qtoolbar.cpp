@@ -1073,11 +1073,12 @@ static bool waitForPopup(QToolBar *tb, QWidget *popup)
     if (menu == nullptr)
         return false;
 
-    QAction *action = menu->menuAction();
-    QList<QWidget*> widgets = action->associatedWidgets();
-    for (int i = 0; i < widgets.count(); ++i) {
-        if (waitForPopup(tb, widgets.at(i)))
-            return true;
+    const QAction *action = menu->menuAction();
+    for (auto object : action->associatedObjects()) {
+        if (QWidget *widget = qobject_cast<QWidget*>(object)) {
+            if (waitForPopup(tb, widget))
+                return true;
+        }
     }
 
     return false;

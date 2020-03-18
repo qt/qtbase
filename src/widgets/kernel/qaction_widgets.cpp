@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -37,64 +37,67 @@
 **
 ****************************************************************************/
 
-#ifndef QACTION_P_H
-#define QACTION_P_H
+#include "qaction.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <QtGui/private/qguiaction_p.h>
-#include "QtWidgets/qaction.h"
+#include <private/qapplication_p.h>
+#include "qaction_widgets_p.h"
 #if QT_CONFIG(menu)
-#include "QtWidgets/qmenu.h"
+#include <private/qmenu_p.h>
 #endif
 #if QT_CONFIG(graphicsview)
-#include "private/qgraphicswidget_p.h"
+#include "qgraphicswidget.h"
 #endif
-#include "private/qobject_p.h"
+
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACTION
-
-
-class QShortcutMap;
-
-class Q_WIDGETS_EXPORT QActionPrivate : public QGuiActionPrivate
+QActionPrivate *QApplicationPrivate::createActionPrivate() const
 {
-    Q_DECLARE_PUBLIC(QAction)
-public:
-    QActionPrivate() = default;
+    return new QtWidgetsActionPrivate;
+}
 
-#if QT_CONFIG(shortcut)
-    QShortcutMap::ContextMatcher contextMatcher() const override;
-#endif
+QtWidgetsActionPrivate::~QtWidgetsActionPrivate() = default;
 
-    static QActionPrivate *get(QAction *q)
-    {
-        return q->d_func();
-    }
-
-    bool showStatusText(QWidget *w, const QString &str);
-
-    QPointer<QMenu> menu;
-    QWidgetList widgets;
+// we can't do this in the destructor, as it would only be called by ~QObject
+void QtWidgetsActionPrivate::destroy()
+{
+    Q_Q(QAction);
+    const auto objects = associatedObjects;
+    for (int i = objects.size()-1; i >= 0; --i) {
+        QObject *object = objects.at(i);
+        if (QWidget *widget = qobject_cast<QWidget*>(object))
+            widget->removeAction(q);
 #if QT_CONFIG(graphicsview)
-    QList<QGraphicsWidget *> graphicsWidgets;
+        else if (QGraphicsWidget *graphicsWidget = qobject_cast<QGraphicsWidget*>(object))
+            graphicsWidget->removeAction(q);
 #endif
-};
+    }
+}
 
-#endif // QT_NO_ACTION
+QShortcutMap::ContextMatcher QtWidgetsActionPrivate::contextMatcher() const
+{
+    return qWidgetShortcutContextMatcher;
+}
+
+#if QT_CONFIG(menu)
+QObject *QtWidgetsActionPrivate::menu() const
+{
+    return m_menu;
+}
+
+void QtWidgetsActionPrivate::setMenu(QObject *menu)
+{
+    Q_Q(QAction);
+    QMenu *theMenu = qobject_cast<QMenu*>(menu);
+    Q_ASSERT_X(!menu || theMenu, "QAction::setMenu",
+               "QAction::setMenu expects a QMenu* in widget applications");
+    if (m_menu)
+        m_menu->d_func()->setOverrideMenuAction(nullptr); //we reset the default action of any previous menu
+    m_menu = theMenu;
+    if (m_menu)
+        m_menu->d_func()->setOverrideMenuAction(q);
+    sendDataChanged();
+}
+#endif // QT_CONFIG(menu)
 
 QT_END_NAMESPACE
-
-#endif // QACTION_P_H

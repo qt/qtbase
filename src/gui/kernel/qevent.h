@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 class QFile;
-class QGuiAction;
+class QAction;
 class QScreen;
 class QTouchDevice;
 #if QT_CONFIG(gestures)
@@ -728,13 +728,13 @@ private:
 #if QT_CONFIG(action)
 class Q_GUI_EXPORT QActionEvent : public QEvent
 {
-    QGuiAction *act, *bef;
+    QAction *act, *bef;
 public:
-    QActionEvent(int type, QGuiAction *action, QGuiAction *before = nullptr);
+    QActionEvent(int type, QAction *action, QAction *before = nullptr);
     ~QActionEvent();
 
-    inline QGuiAction *action() const { return act; }
-    inline QGuiAction *before() const { return bef; }
+    inline QAction *action() const { return act; }
+    inline QAction *before() const { return bef; }
 };
 #endif // QT_CONFIG(action)
 

@@ -28,10 +28,10 @@
 
 #include <QtTest/QtTest>
 
-#include <qguiaction.h>
-#include <qguiactiongroup.h>
+#include <qaction.h>
+#include <qactiongroup.h>
 
-class tst_QGuiActionGroup : public QObject
+class tst_QActionGroup : public QObject
 {
     Q_OBJECT
 
@@ -45,13 +45,13 @@ private slots:
     void unCheckCurrentAction();
 };
 
-void tst_QGuiActionGroup::enabledPropagation()
+void tst_QActionGroup::enabledPropagation()
 {
-    QGuiActionGroup testActionGroup(nullptr);
+    QActionGroup testActionGroup(nullptr);
 
-    auto childAction = new QGuiAction( &testActionGroup );
-    auto anotherChildAction = new QGuiAction( &testActionGroup );
-    auto freeAction = new QGuiAction(nullptr);
+    auto childAction = new QAction( &testActionGroup );
+    auto anotherChildAction = new QAction( &testActionGroup );
+    auto freeAction = new QAction(nullptr);
 
     QVERIFY( testActionGroup.isEnabled() );
     QVERIFY( childAction->isEnabled() );
@@ -72,7 +72,7 @@ void tst_QGuiActionGroup::enabledPropagation()
     QVERIFY( !anotherChildAction->isEnabled() );
 
     testActionGroup.setEnabled( false );
-    auto lastChildAction = new QGuiAction(&testActionGroup);
+    auto lastChildAction = new QAction(&testActionGroup);
 
     QVERIFY(!lastChildAction->isEnabled());
     testActionGroup.setEnabled( true );
@@ -84,13 +84,13 @@ void tst_QGuiActionGroup::enabledPropagation()
     delete freeAction;
 }
 
-void tst_QGuiActionGroup::visiblePropagation()
+void tst_QActionGroup::visiblePropagation()
 {
-    QGuiActionGroup testActionGroup(nullptr);
+    QActionGroup testActionGroup(nullptr);
 
-    auto childAction = new QGuiAction( &testActionGroup );
-    auto anotherChildAction = new QGuiAction( &testActionGroup );
-    auto freeAction = new QGuiAction(nullptr);
+    auto childAction = new QAction( &testActionGroup );
+    auto anotherChildAction = new QAction( &testActionGroup );
+    auto freeAction = new QAction(nullptr);
 
     QVERIFY( testActionGroup.isVisible() );
     QVERIFY( childAction->isVisible() );
@@ -109,7 +109,7 @@ void tst_QGuiActionGroup::visiblePropagation()
     QVERIFY( !anotherChildAction->isVisible() );
 
     testActionGroup.setVisible( false );
-    auto lastChildAction = new QGuiAction(&testActionGroup);
+    auto lastChildAction = new QAction(&testActionGroup);
 
     QVERIFY(!lastChildAction->isVisible());
     testActionGroup.setVisible( true );
@@ -121,17 +121,17 @@ void tst_QGuiActionGroup::visiblePropagation()
     delete freeAction;
 }
 
-void tst_QGuiActionGroup::exclusive()
+void tst_QActionGroup::exclusive()
 {
-    QGuiActionGroup group(nullptr);
+    QActionGroup group(nullptr);
     group.setExclusive(false);
     QVERIFY( !group.isExclusive() );
 
-    auto actOne = new QGuiAction(&group);
+    auto actOne = new QAction(&group);
     actOne->setCheckable( true );
-    auto actTwo = new QGuiAction(&group);
+    auto actTwo = new QAction(&group);
     actTwo->setCheckable( true );
-    auto actThree = new QGuiAction(&group);
+    auto actThree = new QAction(&group);
     actThree->setCheckable( true );
 
     group.setExclusive( true );
@@ -150,17 +150,17 @@ void tst_QGuiActionGroup::exclusive()
     QVERIFY( !actThree->isChecked() );
 }
 
-void tst_QGuiActionGroup::exclusiveOptional()
+void tst_QActionGroup::exclusiveOptional()
 {
-    QGuiActionGroup group(0);
+    QActionGroup group(0);
     group.setExclusive(true);
     QVERIFY( group.isExclusive() );
 
-    auto actOne = new QGuiAction(&group);
+    auto actOne = new QAction(&group);
     actOne->setCheckable( true );
-    auto actTwo = new QGuiAction(&group);
+    auto actTwo = new QAction(&group);
     actTwo->setCheckable( true );
-    auto actThree = new QGuiAction(&group);
+    auto actThree = new QAction(&group);
     actThree->setCheckable( true );
 
     QVERIFY( !actOne->isChecked() );
@@ -177,7 +177,7 @@ void tst_QGuiActionGroup::exclusiveOptional()
     QVERIFY( !actTwo->isChecked() );
     QVERIFY( !actThree->isChecked() );
 
-    group.setExclusionPolicy(QGuiActionGroup::ExclusionPolicy::ExclusiveOptional);
+    group.setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
     QVERIFY( group.isExclusive() );
 
     actOne->trigger();
@@ -196,25 +196,25 @@ void tst_QGuiActionGroup::exclusiveOptional()
     QVERIFY( !actThree->isChecked() );
 }
 
-void tst_QGuiActionGroup::testActionInTwoQActionGroup()
+void tst_QActionGroup::testActionInTwoQActionGroup()
 {
-    QGuiAction action1("Action 1", this);
+    QAction action1("Action 1", this);
 
-    QGuiActionGroup group1(this);
-    QGuiActionGroup group2(this);
+    QActionGroup group1(this);
+    QActionGroup group2(this);
 
     group1.addAction(&action1);
     group2.addAction(&action1);
 
-    QCOMPARE(action1.guiActionGroup(), &group2);
-    QCOMPARE(group2.guiActions().constFirst(), &action1);
-    QCOMPARE(group1.guiActions().isEmpty(), true);
+    QCOMPARE(action1.actionGroup(), &group2);
+    QCOMPARE(group2.actions().constFirst(), &action1);
+    QCOMPARE(group1.actions().isEmpty(), true);
 }
 
-void tst_QGuiActionGroup::unCheckCurrentAction()
+void tst_QActionGroup::unCheckCurrentAction()
 {
-    QGuiActionGroup group(nullptr);
-    QGuiAction action1(&group) ,action2(&group);
+    QActionGroup group(nullptr);
+    QAction action1(&group) ,action2(&group);
     action1.setCheckable(true);
     action2.setCheckable(true);
     QVERIFY(!action1.isChecked());
@@ -222,14 +222,14 @@ void tst_QGuiActionGroup::unCheckCurrentAction()
     action1.setChecked(true);
     QVERIFY(action1.isChecked());
     QVERIFY(!action2.isChecked());
-    auto current = group.checkedGuiAction();
+    auto current = group.checkedAction();
     QCOMPARE(current, &action1);
     current->setChecked(false);
     QVERIFY(!action1.isChecked());
     QVERIFY(!action2.isChecked());
-    QVERIFY(!group.checkedGuiAction());
+    QVERIFY(!group.checkedAction());
 }
 
 
-QTEST_MAIN(tst_QGuiActionGroup)
-#include "tst_qguiactiongroup.moc"
+QTEST_MAIN(tst_QActionGroup)
+#include "tst_qactiongroup.moc"

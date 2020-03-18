@@ -47,7 +47,7 @@
 #include <private/qguiapplication_p.h>
 #include <QtGui/qpa/qplatformdialoghelper.h>
 #include <QtGui/qpa/qplatformtheme.h>
-#include <QtWidgets/qaction.h>
+#include <QtGui/qaction.h>
 
 #include "qdialogbuttonbox.h"
 

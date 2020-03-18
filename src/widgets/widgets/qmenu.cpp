@@ -41,6 +41,7 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
+#include "qactiongroup.h"
 #include "qdebug.h"
 #include "qstyle.h"
 #include "qevent.h"
@@ -198,7 +199,8 @@ void QMenuPrivate::init()
 #endif
     q->setAttribute(Qt::WA_X11NetWmWindowTypePopupMenu);
     defaultMenuAction = menuAction = new QAction(q);
-    menuAction->d_func()->menu = q;
+    menuAction->setMenu(q); // this calls setOverrideMenuAction
+    setOverrideMenuAction(nullptr);
     QObject::connect(menuAction, &QAction::changed, [this] {
         if (!tornPopup.isNull())
             tornPopup->updateWindowTitle();
@@ -2244,7 +2246,7 @@ void QMenu::clear()
 
     for(int i = 0; i < acts.size(); i++) {
         removeAction(acts[i]);
-        if (acts[i]->parent() == this && acts[i]->d_func()->widgets.isEmpty())
+        if (acts[i]->parent() == this && acts[i]->d_func()->associatedObjects.isEmpty())
             delete acts[i];
     }
 }

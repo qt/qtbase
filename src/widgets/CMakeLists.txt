@@ -323,8 +323,7 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_graphicseffect
 
 qt_extend_target(Widgets CONDITION QT_FEATURE_action
     SOURCES
-        kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
-        kernel/qactiongroup.cpp kernel/qactiongroup.h
+        kernel/qaction_widgets.cpp kernel/qaction_widgets_p.h
         kernel/qwidgetaction.cpp kernel/qwidgetaction.h kernel/qwidgetaction_p.h
 )
 

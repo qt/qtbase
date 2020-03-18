@@ -1776,7 +1776,7 @@ QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
     \value Exclusive The item is an exclusive check item (like a radio button).
     \value NonExclusive The item is a non-exclusive check item (like a check box).
 
-    \sa checkType, QGuiAction::checkable, QGuiAction::checked, QGuiActionGroup::exclusionPolicy
+    \sa checkType, QAction::checkable, QAction::checked, QActionGroup::exclusionPolicy
 */
 
 /*!

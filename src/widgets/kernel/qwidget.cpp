@@ -89,7 +89,7 @@
 #include "qwidget_p.h"
 #include <QtGui/private/qwindow_p.h>
 #if QT_CONFIG(action)
-#  include "qaction_p.h"
+#  include "QtGui/private/qaction_p.h"
 #endif
 #include "qlayout_p.h"
 #if QT_CONFIG(graphicsview)
@@ -1429,9 +1429,9 @@ QWidget::~QWidget()
 
 #ifndef QT_NO_ACTION
     // remove all actions from this widget
-    for (int i = 0; i < d->actions.size(); ++i) {
-        QActionPrivate *apriv = d->actions.at(i)->d_func();
-        apriv->widgets.removeAll(this);
+    for (auto action : qAsConst(d->actions)) {
+        QActionPrivate *apriv = action->d_func();
+        apriv->associatedObjects.removeAll(this);
     }
     d->actions.clear();
 #endif
@@ -3133,7 +3133,7 @@ void QWidget::insertAction(QAction *before, QAction *action)
     d->actions.insert(pos, action);
 
     QActionPrivate *apriv = action->d_func();
-    apriv->widgets.append(this);
+    apriv->associatedObjects.append(this);
 
     QActionEvent e(QEvent::ActionAdded, action, before);
     QCoreApplication::sendEvent(this, &e);
@@ -3170,7 +3170,7 @@ void QWidget::removeAction(QAction *action)
     Q_D(QWidget);
 
     QActionPrivate *apriv = action->d_func();
-    apriv->widgets.removeAll(this);
+    apriv->associatedObjects.removeAll(this);
 
     if (d->actions.removeAll(action)) {
         QActionEvent e(QEvent::ActionRemoved, action);

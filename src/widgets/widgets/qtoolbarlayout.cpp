@@ -207,7 +207,7 @@ void QToolBarLayout::insertAction(int index, QAction *action)
     }
 }
 
-int QToolBarLayout::indexOf(const QGuiAction *action) const
+int QToolBarLayout::indexOf(const QAction *action) const
 {
     for (int i = 0; i < items.count(); ++i) {
         if (items.at(i)->action == action)

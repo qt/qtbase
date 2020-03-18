@@ -232,9 +232,9 @@ QGraphicsWidget::~QGraphicsWidget()
     Q_D(QGraphicsWidget);
 #ifndef QT_NO_ACTION
     // Remove all actions from this widget
-    for (int i = 0; i < d->actions.size(); ++i) {
-        QActionPrivate *apriv = d->actions.at(i)->d_func();
-        apriv->graphicsWidgets.removeAll(this);
+    for (auto action : qAsConst(d->actions)) {
+        QActionPrivate *apriv = action->d_func();
+        apriv->associatedObjects.removeAll(this);
     }
     d->actions.clear();
 #endif
@@ -2049,7 +2049,7 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
 
     if (index == -1) {
         QActionPrivate *apriv = action->d_func();
-        apriv->graphicsWidgets.append(this);
+        apriv->associatedObjects.append(this);
     }
 
     QActionEvent e(QEvent::ActionAdded, action, before);
@@ -2092,7 +2092,7 @@ void QGraphicsWidget::removeAction(QAction *action)
     Q_D(QGraphicsWidget);
 
     QActionPrivate *apriv = action->d_func();
-    apriv->graphicsWidgets.removeAll(this);
+    apriv->associatedObjects.removeAll(this);
 
     if (d->actions.removeAll(action)) {
         QActionEvent e(QEvent::ActionRemoved, action);

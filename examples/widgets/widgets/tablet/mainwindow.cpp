@@ -51,6 +51,7 @@
 #include "mainwindow.h"
 #include "tabletcanvas.h"
 
+#include <QActionGroup>
 #include <QApplication>
 #include <QColorDialog>
 #include <QDir>

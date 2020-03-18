@@ -282,14 +282,14 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
 #if QT_CONFIG(action)
 static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidget *active_window)
 {
-    const QWidgetList &widgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->widgets;
+    const QObjectList associatedObjects = a->associatedObjects();
 #if defined(DEBUG_QSHORTCUTMAP)
-    if (widgets.isEmpty())
+    if (associatedObjects.isEmpty())
         qDebug() << a << "not connected to any widgets; won't trigger";
 #endif
-    for (auto w : widgets) {
+    for (auto object : associatedObjects) {
 #if QT_CONFIG(menu)
-        if (auto menu = qobject_cast<QMenu *>(w)) {
+        if (auto menu = qobject_cast<QMenu *>(object)) {
 #ifdef Q_OS_DARWIN
             // On Mac, menu item shortcuts are processed before reaching any window.
             // That means that if a menu action shortcut has not been already processed
@@ -310,21 +310,18 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
                 return true;
         } else
 #endif
-            if (correctWidgetContext(context, w, active_window))
+        if (auto widget = qobject_cast<QWidget*>(object)) {
+            if (correctWidgetContext(context, widget, active_window))
                 return true;
+        }
+#if QT_CONFIG(graphicsview)
+        else if (auto graphicsWidget = qobject_cast<QGraphicsWidget*>(object)) {
+            if (correctGraphicsWidgetContext(context, graphicsWidget, active_window))
+                return true;
+        }
+#endif
     }
 
-#if QT_CONFIG(graphicsview)
-    const auto &graphicsWidgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->graphicsWidgets;
-#if defined(DEBUG_QSHORTCUTMAP)
-    if (graphicsWidgets.isEmpty())
-        qDebug() << a << "not connected to any widgets; won't trigger";
-#endif
-    for (auto graphicsWidget : graphicsWidgets) {
-        if (correctGraphicsWidgetContext(context, graphicsWidget, active_window))
-            return true;
-    }
-#endif
     return false;
 }
 #endif // QT_CONFIG(action)

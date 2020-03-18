@@ -117,6 +117,10 @@ public:
 
     void notifyWindowIconChanged() override;
 
+#ifndef QT_NO_ACTION
+    QActionPrivate *createActionPrivate() const override;
+#endif
+
     //modality
     bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const override;
     static bool isBlockedByModal(QWidget *widget);

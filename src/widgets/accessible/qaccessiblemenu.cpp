@@ -45,7 +45,7 @@
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>
 #endif
-#include <QtWidgets/QAction>
+#include <QtGui/QAction>
 #include <qstyle.h>
 #include <private/qwidget_p.h>
 
@@ -118,16 +118,19 @@ QAccessibleInterface *QAccessibleMenu::child(int index) const
 QAccessibleInterface *QAccessibleMenu::parent() const
 {
     if (QAction *menuAction = menu()->menuAction()) {
-        const QList<QWidget*> parentCandidates =
-                QList<QWidget*>() << menu()->parentWidget() << menuAction->associatedWidgets();
-        for (QWidget *w : parentCandidates) {
-            if (qobject_cast<QMenu*>(w)
+        QVector<QObject*> parentCandidates;
+        const QVector<QObject*> associatedObjects = menuAction->associatedObjects();
+        parentCandidates.reserve(associatedObjects.size() + 1);
+        parentCandidates << menu()->parentWidget() << associatedObjects;
+        for (QObject *object : qAsConst(parentCandidates)) {
+            if (qobject_cast<QMenu*>(object)
 #if QT_CONFIG(menubar)
-                || qobject_cast<QMenuBar*>(w)
+                || qobject_cast<QMenuBar*>(object)
 #endif
                 ) {
-                if (w->actions().indexOf(menuAction) != -1)
-                    return getOrCreateMenu(w, menuAction);
+                QWidget *widget = static_cast<QWidget*>(object);
+                if (widget->actions().indexOf(menuAction) != -1)
+                    return getOrCreateMenu(widget, menuAction);
             }
         }
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,10 +37,10 @@
 **
 ****************************************************************************/
 
-#include "qguiaction.h"
-#include "qguiactiongroup.h"
+#include "qaction.h"
+#include "qactiongroup.h"
 
-#include "qguiaction_p.h"
+#include "qaction_p.h"
 #include "qguiapplication.h"
 #include "qevent.h"
 #include "qlist.h"
@@ -53,7 +53,7 @@
 
 #define QAPP_CHECK(functionName) \
     if (Q_UNLIKELY(!QCoreApplication::instance())) { \
-        qWarning("QGuiAction: Initialize Q(Gui)Application before calling '" functionName "'."); \
+        qWarning("QAction: Initialize Q(Gui)Application before calling '" functionName "'."); \
         return; \
     }
 
@@ -72,7 +72,12 @@ static QString qt_strippedText(QString s)
     return s.trimmed();
 }
 
-QGuiActionPrivate::QGuiActionPrivate() :
+QActionPrivate *QGuiApplicationPrivate::createActionPrivate() const
+{
+    return new QActionPrivate;
+}
+
+QActionPrivate::QActionPrivate() :
 #if QT_CONFIG(shortcut)
     autorepeat(1),
 #endif
@@ -85,17 +90,21 @@ QGuiActionPrivate::QGuiActionPrivate() :
 #if QT_CONFIG(shortcut)
 static bool dummy(QObject *, Qt::ShortcutContext) { return false; } // only for GUI testing.
 
-QShortcutMap::ContextMatcher QGuiActionPrivate::contextMatcher() const
+QShortcutMap::ContextMatcher QActionPrivate::contextMatcher() const
 {
     return dummy;
-}
+};
 #endif // QT_CONFIG(shortcut)
 
-QGuiActionPrivate::~QGuiActionPrivate() = default;
+QActionPrivate::~QActionPrivate() = default;
 
-void QGuiActionPrivate::sendDataChanged()
+void QActionPrivate::destroy()
 {
-    Q_Q(QGuiAction);
+}
+
+void QActionPrivate::sendDataChanged()
+{
+    Q_Q(QAction);
     QActionEvent e(QEvent::ActionChanged, q);
     QCoreApplication::sendEvent(q, &e);
 
@@ -103,9 +112,9 @@ void QGuiActionPrivate::sendDataChanged()
 }
 
 #if QT_CONFIG(shortcut)
-void QGuiActionPrivate::redoGrab(QShortcutMap &map)
+void QActionPrivate::redoGrab(QShortcutMap &map)
 {
-    Q_Q(QGuiAction);
+    Q_Q(QAction);
     if (shortcutId)
         map.removeShortcut(shortcutId, q);
     if (shortcut.isEmpty())
@@ -117,9 +126,9 @@ void QGuiActionPrivate::redoGrab(QShortcutMap &map)
         map.setShortcutAutoRepeat(false, shortcutId, q);
 }
 
-void QGuiActionPrivate::redoGrabAlternate(QShortcutMap &map)
+void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
 {
-    Q_Q(QGuiAction);
+    Q_Q(QAction);
     for(int i = 0; i < alternateShortcutIds.count(); ++i) {
         if (const int id = alternateShortcutIds.at(i))
             map.removeShortcut(id, q);
@@ -148,9 +157,9 @@ void QGuiActionPrivate::redoGrabAlternate(QShortcutMap &map)
     }
 }
 
-void QGuiActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
+void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 {
-    Q_Q(QGuiAction);
+    Q_Q(QAction);
     if (shortcutId)
         map.setShortcutEnabled(enable, shortcutId, q);
     for(int i = 0; i < alternateShortcutIds.count(); ++i) {
@@ -160,11 +169,29 @@ void QGuiActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 }
 #endif // QT_NO_SHORTCUT
 
+bool QActionPrivate::showStatusText(QObject *object, const QString &str)
+{
+    if (QObject *receiver = object ? object : parent) {
+        QStatusTipEvent tip(str);
+        QCoreApplication::sendEvent(receiver, &tip);
+        return true;
+    }
+    return false;
+}
+
+void QActionPrivate::setMenu(QObject *)
+{
+}
+
+QObject *QActionPrivate::menu() const
+{
+    return nullptr;
+}
 
 /*!
-    \class QGuiAction
-    \brief QGuiAction is the base class for actions, an abstract user interface
-    action that can be inserted into widgets.
+    \class QAction
+    \brief The QAction class provides an abstraction for user commands
+    that can be added to different user interface components.
     \since 6.0
 
     \inmodule QtGui
@@ -180,12 +207,7 @@ void QGuiActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     if the user presses a Bold toolbar button, the Bold menu item
     will automatically be checked.
 
-    Actions can be created as independent objects, but they may
-    also be created during the construction of menus; the QMenu class
-    contains convenience functions for creating actions suitable for
-    use as menu items.
-
-    A QGuiAction may contain an icon, menu text, a shortcut, status text,
+    A QAction may contain an icon, menu text, a shortcut, status text,
     "What's This?" text, and a tooltip. Most of these can be set in
     the constructor. They can also be set independently with
     setIcon(), setText(), setIconText(), setShortcut(),
@@ -196,23 +218,42 @@ void QGuiActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     they are used in. In most cases actions will be children of
     the application's main window.
 
+    \section1 QAction in widget applications
+
+    Once a QAction has been created, it should be added to the relevant
+    menu and toolbar, then connected to the slot which will perform
+    the action. For example:
+
+    \snippet mainwindows/application/mainwindow.cpp 19
+
+    Actions are added to widgets using QWidget::addAction() or
+    QGraphicsWidget::addAction(). Note that an action must be added to a
+    widget before it can be used. This is also true when the shortcut should
+    be global (i.e., Qt::ApplicationShortcut as Qt::ShortcutContext).
+
+    Actions can be created as independent objects. But they may
+    also be created during the construction of menus. The QMenu class
+    contains convenience functions for creating actions suitable for
+    use as menu items.
+
+
     \sa QMenu, QToolBar, {Application Example}
 */
 
 /*!
-    \fn void QGuiAction::trigger()
+    \fn void QAction::trigger()
 
     This is a convenience slot that calls activate(Trigger).
 */
 
 /*!
-    \fn void QGuiAction::hover()
+    \fn void QAction::hover()
 
     This is a convenience slot that calls activate(Hover).
 */
 
 /*!
-    \enum QGuiAction::MenuRole
+    \enum QAction::MenuRole
 
     This enum describes how an action should be moved into the application menu on \macos.
 
@@ -239,8 +280,8 @@ void QGuiActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 
     \note The \a parent argument is optional since Qt 5.7.
 */
-QGuiAction::QGuiAction(QObject *parent)
-    : QGuiAction(*new QGuiActionPrivate, parent)
+QAction::QAction(QObject *parent)
+    : QAction(*QGuiApplicationPrivate::instance()->createActionPrivate(), parent)
 {
 }
 
@@ -257,10 +298,10 @@ QGuiAction::QGuiAction(QObject *parent)
     setToolTip().
 
 */
-QGuiAction::QGuiAction(const QString &text, QObject *parent)
-    : QGuiAction(parent)
+QAction::QAction(const QString &text, QObject *parent)
+    : QAction(parent)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     d->text = text;
 }
 
@@ -276,38 +317,38 @@ QGuiAction::QGuiAction(const QString &text, QObject *parent)
     tooltips unless you specify a different text using
     setToolTip().
 */
-QGuiAction::QGuiAction(const QIcon &icon, const QString &text, QObject *parent)
-    : QGuiAction(text, parent)
+QAction::QAction(const QIcon &icon, const QString &text, QObject *parent)
+    : QAction(text, parent)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     d->icon = icon;
 }
 
 /*!
     \internal
 */
-QGuiAction::QGuiAction(QGuiActionPrivate &dd, QObject *parent)
+QAction::QAction(QActionPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
-    Q_D(QGuiAction);
-    d->group = qobject_cast<QGuiActionGroup *>(parent);
+    Q_D(QAction);
+    d->group = qobject_cast<QActionGroup *>(parent);
     if (d->group)
         d->group->addAction(this);
 }
 
 #if QT_CONFIG(shortcut)
 /*!
-    \property QGuiAction::shortcut
+    \property QAction::shortcut
     \brief the action's primary shortcut key
 
     Valid keycodes for this property can be found in \l Qt::Key and
     \l Qt::Modifier. There is no default shortcut key.
 */
-void QGuiAction::setShortcut(const QKeySequence &shortcut)
+void QAction::setShortcut(const QKeySequence &shortcut)
 {
     QAPP_CHECK("setShortcut");
 
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->shortcut == shortcut)
         return;
 
@@ -322,9 +363,9 @@ void QGuiAction::setShortcut(const QKeySequence &shortcut)
 
     \sa shortcut
 */
-void QGuiAction::setShortcuts(const QList<QKeySequence> &shortcuts)
+void QAction::setShortcuts(const QList<QKeySequence> &shortcuts)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
 
     QList <QKeySequence> listCopy = shortcuts;
 
@@ -352,7 +393,7 @@ void QGuiAction::setShortcuts(const QList<QKeySequence> &shortcuts)
 
     \sa QKeySequence::keyBindings()
 */
-void QGuiAction::setShortcuts(QKeySequence::StandardKey key)
+void QAction::setShortcuts(QKeySequence::StandardKey key)
 {
     QList <QKeySequence> list = QKeySequence::keyBindings(key);
     setShortcuts(list);
@@ -363,9 +404,9 @@ void QGuiAction::setShortcuts(QKeySequence::StandardKey key)
 
     \sa setShortcuts()
 */
-QKeySequence QGuiAction::shortcut() const
+QKeySequence QAction::shortcut() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->shortcut;
 }
 
@@ -375,9 +416,9 @@ QKeySequence QGuiAction::shortcut() const
 
     \sa setShortcuts()
 */
-QList<QKeySequence> QGuiAction::shortcuts() const
+QList<QKeySequence> QAction::shortcuts() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     QList <QKeySequence> shortcuts;
     if (!d->shortcut.isEmpty())
         shortcuts << d->shortcut;
@@ -387,15 +428,15 @@ QList<QKeySequence> QGuiAction::shortcuts() const
 }
 
 /*!
-    \property QGuiAction::shortcutContext
+    \property QAction::shortcutContext
     \brief the context for the action's shortcut
 
     Valid values for this property can be found in \l Qt::ShortcutContext.
     The default value is Qt::WindowShortcut.
 */
-void QGuiAction::setShortcutContext(Qt::ShortcutContext context)
+void QAction::setShortcutContext(Qt::ShortcutContext context)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->shortcutContext == context)
         return;
     QAPP_CHECK("setShortcutContext");
@@ -405,14 +446,14 @@ void QGuiAction::setShortcutContext(Qt::ShortcutContext context)
     d->sendDataChanged();
 }
 
-Qt::ShortcutContext QGuiAction::shortcutContext() const
+Qt::ShortcutContext QAction::shortcutContext() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->shortcutContext;
 }
 
 /*!
-    \property QGuiAction::autoRepeat
+    \property QAction::autoRepeat
     \brief whether the action can auto repeat
 
     If true, the action will auto repeat when the keyboard shortcut
@@ -420,9 +461,9 @@ Qt::ShortcutContext QGuiAction::shortcutContext() const
     enabled on the system.
     The default value is true.
 */
-void QGuiAction::setAutoRepeat(bool on)
+void QAction::setAutoRepeat(bool on)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->autorepeat == on)
         return;
     QAPP_CHECK("setAutoRepeat");
@@ -432,28 +473,28 @@ void QGuiAction::setAutoRepeat(bool on)
     d->sendDataChanged();
 }
 
-bool QGuiAction::autoRepeat() const
+bool QAction::autoRepeat() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->autorepeat;
 }
 #endif // QT_CONFIG(shortcut)
 
 /*!
-    \property QGuiAction::font
+    \property QAction::font
     \brief the action's font
 
     The font property is used to render the text set on the
-    QGuiAction. The font will can be considered a hint as it will not be
+    QAction. The font can be considered a hint as it will not be
     consulted in all cases based upon application and style.
 
     By default, this property contains the application's default font.
 
     \sa setText()
 */
-void QGuiAction::setFont(const QFont &font)
+void QAction::setFont(const QFont &font)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->font == font)
         return;
 
@@ -462,9 +503,9 @@ void QGuiAction::setFont(const QFont &font)
     d->sendDataChanged();
 }
 
-QFont QGuiAction::font() const
+QFont QAction::font() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->font;
 }
 
@@ -472,9 +513,12 @@ QFont QGuiAction::font() const
 /*!
     Destroys the object and frees allocated resources.
 */
-QGuiAction::~QGuiAction()
+QAction::~QAction()
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
+
+    d->destroy();
+
     if (d->group)
         d->group->removeAction(this);
 #if QT_CONFIG(shortcut)
@@ -492,11 +536,11 @@ QGuiAction::~QGuiAction()
 
   Actions within the group will be mutually exclusive.
 
-  \sa QGuiActionGroup, guiActionGroup()
+  \sa QActionGroup, actionGroup()
 */
-void QGuiAction::setActionGroup(QGuiActionGroup *group)
+void QAction::setActionGroup(QActionGroup *group)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if(group == d->group)
         return;
 
@@ -512,17 +556,53 @@ void QGuiAction::setActionGroup(QGuiActionGroup *group)
   Returns the action group for this action. If no action group manages
   this action, then \nullptr will be returned.
 
-  \sa QGuiActionGroup, setActionGroup()
+  \sa QActionGroup, setActionGroup()
 */
-QGuiActionGroup *QGuiAction::guiActionGroup() const
+QActionGroup *QAction::actionGroup() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->group;
 }
 
+/*!
+  \since 6.0
+  Returns a list of objects this action has been added to.
+
+  \sa QWidget::addAction(), QGraphicsWidget::addAction()
+*/
+QVector<QObject*> QAction::associatedObjects() const
+{
+    Q_D(const QAction);
+    return d->associatedObjects;
+}
 
 /*!
-    \property QGuiAction::icon
+    \fn QWidget *QAction::parentWidget() const
+    \obsolete Use parent() with qobject_cast() instead.
+
+    Returns the parent widget.
+*/
+
+/*!
+    \fn QList<QWidget*> QAction::associatedWidgets() const
+    \obsolete Use associatedObjects() with qobject_cast() instead.
+
+    Returns a list of widgets this action has been added to.
+
+    \sa QWidget::addAction(), associatedObjects(), associatedGraphicsWidgets()
+*/
+
+/*!
+    \fn QList<QWidget*> QAction::associatedGraphicsWidgets() const
+    \obsolete Use associatedObjects() with qobject_cast() instead.
+
+    Returns a list of graphics widgets this action has been added to.
+
+    \sa QGraphicsWidget::addAction(), associatedObjects(), associatedWidgets()
+*/
+
+/*!
+    \property QAction::icon
     \brief the action's icon
 
     In toolbars, the icon is used as the tool button icon; in menus,
@@ -532,16 +612,16 @@ QGuiActionGroup *QGuiAction::guiActionGroup() const
     If a null icon (QIcon::isNull()) is passed into this function,
     the icon of the action is cleared.
 */
-void QGuiAction::setIcon(const QIcon &icon)
+void QAction::setIcon(const QIcon &icon)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     d->icon = icon;
     d->sendDataChanged();
 }
 
-QIcon QGuiAction::icon() const
+QIcon QAction::icon() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->icon;
 }
 
@@ -554,9 +634,9 @@ QIcon QGuiAction::icon() const
 
   \sa isSeparator()
 */
-void QGuiAction::setSeparator(bool b)
+void QAction::setSeparator(bool b)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->separator == b)
         return;
 
@@ -570,14 +650,14 @@ void QGuiAction::setSeparator(bool b)
 
   \sa setSeparator()
 */
-bool QGuiAction::isSeparator() const
+bool QAction::isSeparator() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->separator;
 }
 
 /*!
-    \property QGuiAction::text
+    \property QAction::text
     \brief the action's descriptive text
 
     If the action is added to a menu, the menu option will consist of
@@ -588,9 +668,9 @@ bool QGuiAction::isSeparator() const
 
     \sa iconText
 */
-void QGuiAction::setText(const QString &text)
+void QAction::setText(const QString &text)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->text == text)
         return;
 
@@ -598,9 +678,9 @@ void QGuiAction::setText(const QString &text)
     d->sendDataChanged();
 }
 
-QString QGuiAction::text() const
+QString QAction::text() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     QString s = d->text;
     if(s.isEmpty()) {
         s = d->iconText;
@@ -610,7 +690,7 @@ QString QGuiAction::text() const
 }
 
 /*!
-    \property QGuiAction::iconText
+    \property QAction::iconText
     \brief the action's descriptive icon text
 
     If QToolBar::toolButtonStyle is set to a value that permits text to
@@ -628,9 +708,9 @@ QString QGuiAction::text() const
 
     \sa setToolTip(), setStatusTip()
 */
-void QGuiAction::setIconText(const QString &text)
+void QAction::setIconText(const QString &text)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->iconText == text)
         return;
 
@@ -638,16 +718,16 @@ void QGuiAction::setIconText(const QString &text)
     d->sendDataChanged();
 }
 
-QString QGuiAction::iconText() const
+QString QAction::iconText() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     if (d->iconText.isEmpty())
         return qt_strippedText(d->text);
     return d->iconText;
 }
 
 /*!
-    \property QGuiAction::toolTip
+    \property QAction::toolTip
     \brief the action's tooltip
 
     This text is used for the tooltip. If no tooltip is specified,
@@ -657,9 +737,9 @@ QString QGuiAction::iconText() const
 
     \sa setStatusTip(), setShortcut()
 */
-void QGuiAction::setToolTip(const QString &tooltip)
+void QAction::setToolTip(const QString &tooltip)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->tooltip == tooltip)
         return;
 
@@ -667,9 +747,9 @@ void QGuiAction::setToolTip(const QString &tooltip)
     d->sendDataChanged();
 }
 
-QString QGuiAction::toolTip() const
+QString QAction::toolTip() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     if (d->tooltip.isEmpty()) {
         if (!d->text.isEmpty())
             return qt_strippedText(d->text);
@@ -679,7 +759,7 @@ QString QGuiAction::toolTip() const
 }
 
 /*!
-    \property QGuiAction::statusTip
+    \property QAction::statusTip
     \brief the action's status tip
 
     The status tip is displayed on all status bars provided by the
@@ -689,9 +769,9 @@ QString QGuiAction::toolTip() const
 
     \sa setToolTip(), showStatusText()
 */
-void QGuiAction::setStatusTip(const QString &statustip)
+void QAction::setStatusTip(const QString &statustip)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->statustip == statustip)
         return;
 
@@ -699,14 +779,28 @@ void QGuiAction::setStatusTip(const QString &statustip)
     d->sendDataChanged();
 }
 
-QString QGuiAction::statusTip() const
+QString QAction::statusTip() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->statustip;
 }
 
 /*!
-    \property QGuiAction::whatsThis
+  Updates the relevant status bar for the UI represented by \a object by sending a
+  QStatusTipEvent. Returns \c true if an event was sent, otherwise returns \c false.
+
+  If a null widget is specified, the event is sent to the action's parent.
+
+  \sa statusTip
+*/
+bool QAction::showStatusText(QObject *object)
+{
+    Q_D(QAction);
+    return d->showStatusText(object, statusTip());
+}
+
+/*!
+    \property QAction::whatsThis
     \brief the action's "What's This?" help text
 
     The "What's This?" text is used to provide a brief description of
@@ -715,9 +809,9 @@ QString QGuiAction::statusTip() const
 
     \sa QWhatsThis
 */
-void QGuiAction::setWhatsThis(const QString &whatsthis)
+void QAction::setWhatsThis(const QString &whatsthis)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->whatsthis == whatsthis)
         return;
 
@@ -725,14 +819,14 @@ void QGuiAction::setWhatsThis(const QString &whatsthis)
     d->sendDataChanged();
 }
 
-QString QGuiAction::whatsThis() const
+QString QAction::whatsThis() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->whatsthis;
 }
 
 /*!
-    \enum QGuiAction::Priority
+    \enum QAction::Priority
 
     This enum defines priorities for actions in user interface.
 
@@ -749,7 +843,7 @@ QString QGuiAction::whatsThis() const
 
 
 /*!
-    \property QGuiAction::priority
+    \property QAction::priority
 
     \brief the actions's priority in the user interface.
 
@@ -760,9 +854,9 @@ QString QGuiAction::whatsThis() const
     mode set, then actions with LowPriority will not show the text
     labels.
 */
-void QGuiAction::setPriority(Priority priority)
+void QAction::setPriority(Priority priority)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->priority == priority)
         return;
 
@@ -770,14 +864,14 @@ void QGuiAction::setPriority(Priority priority)
     d->sendDataChanged();
 }
 
-QGuiAction::Priority QGuiAction::priority() const
+QAction::Priority QAction::priority() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->priority;
 }
 
 /*!
-    \property QGuiAction::checkable
+    \property QAction::checkable
     \brief whether the action is a checkable action
 
     A checkable action is one which has an on/off state. For example,
@@ -790,19 +884,19 @@ QGuiAction::Priority QGuiAction::priority() const
     on the state of others. For example, "Left Align", "Center" and
     "Right Align" toggle actions are mutually exclusive. To achieve
     exclusive toggling, add the relevant toggle actions to a
-    QGuiActionGroup with the QGuiActionGroup::exclusive property set to
+    QActionGroup with the QActionGroup::exclusive property set to
     true.
 
     \sa setChecked()
 */
-void QGuiAction::setCheckable(bool b)
+void QAction::setCheckable(bool b)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->checkable == b)
         return;
 
     d->checkable = b;
-    QPointer<QGuiAction> guard(this);
+    QPointer<QAction> guard(this);
     d->sendDataChanged();
     if (guard)
         emit checkableChanged(b);
@@ -810,59 +904,59 @@ void QGuiAction::setCheckable(bool b)
         emit toggled(b);
 }
 
-bool QGuiAction::isCheckable() const
+bool QAction::isCheckable() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->checkable;
 }
 
 /*!
-    \fn void QGuiAction::toggle()
+    \fn void QAction::toggle()
 
     This is a convenience function for the \l checked property.
     Connect to it to change the checked state to its opposite state.
 */
-void QGuiAction::toggle()
+void QAction::toggle()
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     setChecked(!d->checked);
 }
 
 /*!
-    \property QGuiAction::checked
+    \property QAction::checked
     \brief whether the action is checked.
 
     Only checkable actions can be checked.  By default, this is false
     (the action is unchecked).
 
     \note The notifier signal for this property is toggled(). As toggling
-    a QGuiAction changes its state, it will also emit a changed() signal.
+    a QAction changes its state, it will also emit a changed() signal.
 
     \sa checkable, toggled()
 */
-void QGuiAction::setChecked(bool b)
+void QAction::setChecked(bool b)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->checked == b)
         return;
 
     d->checked = b;
     if (!d->checkable)
         return;
-    QPointer<QGuiAction> guard(this);
+    QPointer<QAction> guard(this);
     d->sendDataChanged();
     if (guard)
         emit toggled(b);
 }
 
-bool QGuiAction::isChecked() const
+bool QAction::isChecked() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->checked && d->checkable;
 }
 
 /*!
-    \fn void QGuiAction::setDisabled(bool b)
+    \fn void QAction::setDisabled(bool b)
 
     This is a convenience function for the \l enabled property, that
     is useful for signals--slots connections. If \a b is true the
@@ -870,7 +964,7 @@ bool QGuiAction::isChecked() const
 */
 
 /*!
-    \property QGuiAction::enabled
+    \property QAction::enabled
     \brief whether the action is enabled
 
     Disabled actions cannot be chosen by the user. They do not
@@ -879,7 +973,7 @@ bool QGuiAction::isChecked() const
     be displayed using only shades of gray.
 
     \uicontrol{What's This?} help on disabled actions is still available, provided
-    that the QGuiAction::whatsThis property is set.
+    that the QAction::whatsThis property is set.
 
     An action will be disabled when all widgets to which it is added
     (with QWidget::addAction()) are disabled or not visible. When an
@@ -890,9 +984,9 @@ bool QGuiAction::isChecked() const
 
     \sa text
 */
-void QGuiAction::setEnabled(bool b)
+void QAction::setEnabled(bool b)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->explicitEnabledValue == b && d->explicitEnabled)
         return;
     d->explicitEnabledValue = b;
@@ -901,9 +995,9 @@ void QGuiAction::setEnabled(bool b)
     d->setEnabled(b, false);
 }
 
-bool QGuiActionPrivate::setEnabled(bool b, bool byGroup)
+bool QActionPrivate::setEnabled(bool b, bool byGroup)
 {
-    Q_Q(QGuiAction);
+    Q_Q(QAction);
     if (b && !visible)
         b = false;
     if (b && !byGroup && (group && !group->isEnabled()))
@@ -925,23 +1019,23 @@ bool QGuiActionPrivate::setEnabled(bool b, bool byGroup)
     return true;
 }
 
-void QGuiAction::resetEnabled()
+void QAction::resetEnabled()
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (!d->explicitEnabled)
         return;
     d->explicitEnabled = false;
     d->setEnabled(true, false);
 }
 
-bool QGuiAction::isEnabled() const
+bool QAction::isEnabled() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->enabled;
 }
 
 /*!
-    \property QGuiAction::visible
+    \property QAction::visible
     \brief whether the action can be seen (e.g. in menus and toolbars)
 
     If \e visible is true the action can be seen (e.g. in menus and
@@ -953,9 +1047,9 @@ bool QGuiAction::isEnabled() const
 
     By default, this property is \c true (actions are visible).
 */
-void QGuiAction::setVisible(bool b)
+void QAction::setVisible(bool b)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (b == d->visible && b != d->forceInvisible)
         return;
     QAPP_CHECK("setVisible");
@@ -969,25 +1063,31 @@ void QGuiAction::setVisible(bool b)
 }
 
 
-bool QGuiAction::isVisible() const
+bool QAction::isVisible() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->visible;
 }
 
 /*!
   \reimp
 */
-bool QGuiAction::event(QEvent *e)
+bool QAction::event(QEvent *e)
 {
+    Q_D(QAction);
+    if (e->type() == QEvent::ActionChanged) {
+        for (auto object : qAsConst(d->associatedObjects))
+            QCoreApplication::sendEvent(object, e);
+    }
+
 #if QT_CONFIG(shortcut)
     if (e->type() == QEvent::Shortcut) {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         Q_ASSERT_X(se->key() == d_func()->shortcut || d_func()->alternateShortcuts.contains(se->key()),
-                   "QGuiAction::event",
+                   "QAction::event",
                    "Received shortcut event from incorrect shortcut");
         if (se->isAmbiguous())
-            qWarning("QGuiAction::event: Ambiguous shortcut overload: %s", se->key().toString(QKeySequence::NativeText).toLatin1().constData());
+            qWarning("QAction::event: Ambiguous shortcut overload: %s", se->key().toString(QKeySequence::NativeText).toLatin1().constData());
         else
             activate(Trigger);
         return true;
@@ -997,13 +1097,13 @@ bool QGuiAction::event(QEvent *e)
 }
 
 /*!
-  Returns the user data as set in QGuiAction::setData.
+  Returns the user data as set in QAction::setData.
 
   \sa setData()
 */
-QVariant QGuiAction::data() const
+QVariant QAction::data() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->userData;
 }
 
@@ -1012,9 +1112,9 @@ QVariant QGuiAction::data() const
 
   \sa data()
 */
-void QGuiAction::setData(const QVariant &data)
+void QAction::setData(const QVariant &data)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->userData == data)
         return;
     d->userData = data;
@@ -1024,19 +1124,19 @@ void QGuiAction::setData(const QVariant &data)
 /*!
   Sends the relevant signals for ActionEvent \a event.
 
-  Action based widgets use this API to cause the QGuiAction
+  Action-based widgets use this API to cause the QAction
   to emit signals as well as emitting their own.
 */
-void QGuiAction::activate(ActionEvent event)
+void QAction::activate(ActionEvent event)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if(event == Trigger) {
         QPointer<QObject> guard = this;
         if(d->checkable) {
             // the checked action of an exclusive group may not be unchecked
             if (d->checked && (d->group
-                               && d->group->exclusionPolicy() == QGuiActionGroup::ExclusionPolicy::Exclusive
-                               && d->group->checkedGuiAction() == this)) {
+                               && d->group->exclusionPolicy() == QActionGroup::ExclusionPolicy::Exclusive
+                               && d->group->checkedAction() == this)) {
                 if (!guard.isNull())
                     emit triggered(true);
                 return;
@@ -1051,7 +1151,7 @@ void QGuiAction::activate(ActionEvent event)
 }
 
 /*!
-    \fn void QGuiAction::triggered(bool checked)
+    \fn void QAction::triggered(bool checked)
 
     This signal is emitted when an action is activated by the user;
     for example, when the user clicks a menu option, toolbar button,
@@ -1066,12 +1166,12 @@ void QGuiAction::activate(ActionEvent event)
 */
 
 /*!
-    \fn void QGuiAction::toggled(bool checked)
+    \fn void QAction::toggled(bool checked)
 
     This signal is emitted whenever a checkable action changes its
     isChecked() status. This can be the result of a user interaction,
     or because setChecked() was called. As setChecked() changes the
-    QGuiAction, it emits changed() in addition to toggled().
+    QAction, it emits changed() in addition to toggled().
 
     \a checked is true if the action is checked, or false if the
     action is unchecked.
@@ -1080,7 +1180,7 @@ void QGuiAction::activate(ActionEvent event)
 */
 
 /*!
-    \fn void QGuiAction::hovered()
+    \fn void QAction::hovered()
 
     This signal is emitted when an action is highlighted by the user;
     for example, when the user pauses with the cursor over a menu option,
@@ -1090,7 +1190,7 @@ void QGuiAction::activate(ActionEvent event)
 */
 
 /*!
-    \fn void QGuiAction::changed()
+    \fn void QAction::changed()
 
     This signal is emitted when an action has changed. If you
     are only interested in actions in a given widget, you can
@@ -1101,17 +1201,17 @@ void QGuiAction::activate(ActionEvent event)
 */
 
 /*!
-    \enum QGuiAction::ActionEvent
+    \enum QAction::ActionEvent
 
-    This enum type is used when calling QGuiAction::activate()
+    This enum type is used when calling QAction::activate()
 
-    \value Trigger this will cause the QGuiAction::triggered() signal to be emitted.
+    \value Trigger this will cause the QAction::triggered() signal to be emitted.
 
-    \value Hover this will cause the QGuiAction::hovered() signal to be emitted.
+    \value Hover this will cause the QAction::hovered() signal to be emitted.
 */
 
 /*!
-    \property QGuiAction::menuRole
+    \property QAction::menuRole
     \brief the action's menu role
 
     This indicates what role the action serves in the application menu on
@@ -1122,9 +1222,9 @@ void QGuiAction::activate(ActionEvent event)
     bar in \macos (usually just before the first application window is
     shown).
 */
-void QGuiAction::setMenuRole(MenuRole menuRole)
+void QAction::setMenuRole(MenuRole menuRole)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->menuRole == menuRole)
         return;
 
@@ -1132,14 +1232,43 @@ void QGuiAction::setMenuRole(MenuRole menuRole)
     d->sendDataChanged();
 }
 
-QGuiAction::MenuRole QGuiAction::menuRole() const
+QAction::MenuRole QAction::menuRole() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     return d->menuRole;
 }
 
 /*!
-    \property QGuiAction::iconVisibleInMenu
+    \fn QMenu *QAction::menu() const
+    \obsolete
+
+    Returns the menu contained by this action.
+
+    In widget applications, actions that contain menus can be used to create menu
+    items with submenus, or inserted into toolbars to create buttons with popup menus.
+
+    \sa QMenu::addAction()
+*/
+QObject* QAction::menuObject() const
+{
+    Q_D(const QAction);
+    return d->menu();
+}
+
+/*!
+    \fn void QAction::setMenu(QMenu *menu)
+    \obsolete
+
+    Sets the menu contained by this action to the specified \a menu.
+*/
+void QAction::setMenuObject(QObject *object)
+{
+    Q_D(QAction);
+    d->setMenu(object);
+}
+
+/*!
+    \property QAction::iconVisibleInMenu
     \brief Whether or not an action should show an icon in a menu
 
     In some applications, it may make sense to have actions with icons in the
@@ -1155,9 +1284,9 @@ QGuiAction::MenuRole QGuiAction::menuRole() const
 
     \sa icon, QCoreApplication::setAttribute()
 */
-void QGuiAction::setIconVisibleInMenu(bool visible)
+void QAction::setIconVisibleInMenu(bool visible)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->iconVisibleInMenu == -1 || visible != bool(d->iconVisibleInMenu)) {
         int oldValue = d->iconVisibleInMenu;
         d->iconVisibleInMenu = visible;
@@ -1169,9 +1298,9 @@ void QGuiAction::setIconVisibleInMenu(bool visible)
     }
 }
 
-bool QGuiAction::isIconVisibleInMenu() const
+bool QAction::isIconVisibleInMenu() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     if (d->iconVisibleInMenu == -1) {
         return !QCoreApplication::testAttribute(Qt::AA_DontShowIconsInMenus);
     }
@@ -1179,7 +1308,7 @@ bool QGuiAction::isIconVisibleInMenu() const
 }
 
 /*!
-    \property QGuiAction::shortcutVisibleInContextMenu
+    \property QAction::shortcutVisibleInContextMenu
     \brief Whether or not an action should show a shortcut in a context menu
 
     In some applications, it may make sense to have actions with shortcuts in
@@ -1192,9 +1321,9 @@ bool QGuiAction::isIconVisibleInMenu() const
 
     \sa shortcut, QCoreApplication::setAttribute()
 */
-void QGuiAction::setShortcutVisibleInContextMenu(bool visible)
+void QAction::setShortcutVisibleInContextMenu(bool visible)
 {
-    Q_D(QGuiAction);
+    Q_D(QAction);
     if (d->shortcutVisibleInContextMenu == -1 || visible != bool(d->shortcutVisibleInContextMenu)) {
         int oldValue = d->shortcutVisibleInContextMenu;
         d->shortcutVisibleInContextMenu = visible;
@@ -1206,9 +1335,9 @@ void QGuiAction::setShortcutVisibleInContextMenu(bool visible)
     }
 }
 
-bool QGuiAction::isShortcutVisibleInContextMenu() const
+bool QAction::isShortcutVisibleInContextMenu() const
 {
-    Q_D(const QGuiAction);
+    Q_D(const QAction);
     if (d->shortcutVisibleInContextMenu == -1) {
         return !QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus)
             && QGuiApplication::styleHints()->showShortcutsInContextMenus();
@@ -1217,11 +1346,11 @@ bool QGuiAction::isShortcutVisibleInContextMenu() const
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug d, const QGuiAction *action)
+Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAction *action)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "QGuiAction(" << static_cast<const void *>(action);
+    d << "QAction(" << static_cast<const void *>(action);
     if (action) {
         d << " text=" << action->text();
         if (!action->toolTip().isEmpty())
@@ -1246,4 +1375,4 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QGuiAction *action)
 
 QT_END_NAMESPACE
 
-#include "moc_qguiaction.cpp"
+#include "moc_qaction.cpp"

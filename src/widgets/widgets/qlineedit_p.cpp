@@ -548,7 +548,7 @@ void QLineEditPrivate::positionSideWidgets()
 }
 
 #if QT_CONFIG(action)
-QLineEditPrivate::SideWidgetLocation QLineEditPrivate::findSideWidget(const QGuiAction *a) const
+QLineEditPrivate::SideWidgetLocation QLineEditPrivate::findSideWidget(const QAction *a) const
 {
     int i = 0;
     for (const auto &e : leadingSideWidgets) {
@@ -635,7 +635,7 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     return w;
 }
 
-void QLineEditPrivate::removeAction(QGuiAction *action)
+void QLineEditPrivate::removeAction(QAction *action)
 {
     Q_Q(QLineEdit);
     const auto location = findSideWidget(action);

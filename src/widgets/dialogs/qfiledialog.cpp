@@ -48,6 +48,7 @@
 #include <private/qguiapplication_p.h>
 #include <qfontmetrics.h>
 #include <qaction.h>
+#include <qactiongroup.h>
 #include <qheaderview.h>
 #if QT_CONFIG(shortcut)
 #  include <qshortcut.h>

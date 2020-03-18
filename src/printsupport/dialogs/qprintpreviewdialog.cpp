@@ -42,7 +42,8 @@
 #include <private/qprinter_p.h>
 #include "qprintdialog.h"
 
-#include <QtWidgets/qaction.h>
+#include <QtGui/qaction.h>
+#include <QtGui/qactiongroup.h>
 #include <QtWidgets/qboxlayout.h>
 #include <QtWidgets/qcombobox.h>
 #include <QtWidgets/qlineedit.h>

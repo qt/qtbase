@@ -1,11 +1,11 @@
 TEMPLATE=subdirs
 SUBDIRS=\
+   qaction \
+   qactiongroup \
    qbackingstore \
    qclipboard \
    qcursor \
    qdrag \
-   qguiaction \
-   qguiactiongroup \
    qevent \
    qfileopenevent \
    qguieventdispatcher \
@@ -46,8 +46,8 @@ win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
    qguieventloop
 
 !qtConfig(action): SUBDIRS -= \
-   qguiaction \
-   qguiactiongroup
+   qaction \
+   qactiongroup
 
 !qtConfig(highdpiscaling): SUBDIRS -= qhighdpiscaling
 

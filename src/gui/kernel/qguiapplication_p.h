@@ -78,6 +78,9 @@ class QPlatformDragQtResponse;
 class QDrag;
 #endif // QT_CONFIG(draganddrop)
 class QInputDeviceManager;
+#ifndef QT_NO_ACTION
+class QActionPrivate;
+#endif
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
@@ -325,6 +328,10 @@ public:
     static void setApplicationState(Qt::ApplicationState state, bool forcePropagate = false);
 
     static void resetCachedDevicePixelRatio();
+
+#ifndef QT_NO_ACTION
+    virtual QActionPrivate *createActionPrivate() const;
+#endif
 
 protected:
     virtual void notifyThemeChanged();

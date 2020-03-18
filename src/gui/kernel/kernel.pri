@@ -128,14 +128,14 @@ SOURCES += \
 
 qtConfig(action) {
     HEADERS += \
-        kernel/qguiaction.h \
-        kernel/qguiaction_p.h \
-        kernel/qguiactiongroup.h \
-        kernel/qguiactiongroup_p.h
+        kernel/qaction.h \
+        kernel/qaction_p.h \
+        kernel/qactiongroup.h \
+        kernel/qactiongroup_p.h
 
     SOURCES += \
-        kernel/qguiactiongroup.cpp \
-        kernel/qguiaction.cpp
+        kernel/qactiongroup.cpp \
+        kernel/qaction.cpp
 }
 
 qtConfig(draganddrop) {

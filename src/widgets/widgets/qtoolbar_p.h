@@ -53,7 +53,7 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qtoolbar.h"
-#include "QtWidgets/qaction.h"
+#include "QtGui/qaction.h"
 #include "private/qwidget_p.h"
 #include <QtCore/qbasictimer.h>
 

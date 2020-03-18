@@ -45,7 +45,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
 #if QT_CONFIG(action)
-#  include <QtWidgets/qaction.h>
+#  include <QtGui/qaction.h>
 #endif
 
 #include "qundostack.h"

@@ -450,8 +450,8 @@ qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
 
 qt_extend_target(Gui CONDITION QT_FEATURE_action
     SOURCES
-        kernel/qguiaction.cpp kernel/qguiaction.h kernel/qguiaction_p.h
-        kernel/qguiactiongroup.cpp kernel/qguiactiongroup.h kernel/qguiactiongroup_p.h
+        kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
+        kernel/qactiongroup.cpp kernel/qactiongroup.h kernel/qactiongroup_p.h
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop

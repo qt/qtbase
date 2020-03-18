@@ -31,6 +31,7 @@
 #include <qmainwindow.h>
 #include <qmenu.h>
 #include <qaction.h>
+#include <qactiongroup.h>
 
 class tst_QActionGroup : public QObject
 {
