@@ -282,11 +282,6 @@ void QCoreTextFontEngine::init()
 
     cache_cost = (CTFontGetAscent(ctfont) + CTFontGetDescent(ctfont)) * avgCharWidth.toInt() * 2000;
 
-    // HACK hb_coretext requires both CTFont and CGFont but user_data is only void*
-    Q_ASSERT((void *)(&ctfont + 1) == (void *)&cgFont);
-    faceData.user_data = &ctfont;
-    faceData.get_font_table = ct_getSfntTable;
-
     kerningPairsLoaded = false;
 }
 
