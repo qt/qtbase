@@ -534,7 +534,7 @@ void QThreadPool::start(std::function<void()> functionToRun, int priority)
     does nothing and returns \c false.  Otherwise, \a runnable is run immediately
     using one available thread and this function returns \c true.
 
-    Note that the thread pool takes ownership of the \a runnable if
+    Note that on success the thread pool takes ownership of the \a runnable if
     \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns \c true,
     and the \a runnable will be deleted automatically by the thread
     pool after the \l{QRunnable::run()}{runnable->run()} returns. If
@@ -549,12 +549,7 @@ bool QThreadPool::tryStart(QRunnable *runnable)
         return false;
 
     Q_D(QThreadPool);
-
     QMutexLocker locker(&d->mutex);
-
-    if (d->allThreads.isEmpty() == false && d->activeThreadCount() >= d->maxThreadCount)
-        return false;
-
     return d->tryStart(runnable);
 }
 
@@ -571,7 +566,17 @@ bool QThreadPool::tryStart(std::function<void()> functionToRun)
 {
     if (!functionToRun)
         return false;
-    return tryStart(QRunnable::create(std::move(functionToRun)));
+
+    Q_D(QThreadPool);
+    QMutexLocker locker(&d->mutex);
+    if (!d->allThreads.isEmpty() && d->activeThreadCount() >= d->maxThreadCount)
+        return false;
+
+    QRunnable *runnable = QRunnable::create(std::move(functionToRun));
+    if (d->tryStart(runnable))
+        return true;
+    delete runnable;
+    return false;
 }
 
 /*! \property QThreadPool::expiryTimeout

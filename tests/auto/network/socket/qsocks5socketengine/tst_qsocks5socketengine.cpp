@@ -309,7 +309,7 @@ void tst_QSocks5SocketEngine::simpleConnectToIMAP()
     QCOMPARE(socketDevice.peerAddress(), QtNetworkSettings::imapServerIp());
 
     // Wait for the greeting
-    QVERIFY(socketDevice.waitForRead());
+    QVERIFY2(socketDevice.waitForRead(), qPrintable("Socket error:" + socketDevice.errorString()));
 
     // Read the greeting
     qint64 available = socketDevice.bytesAvailable();
