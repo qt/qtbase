@@ -37,7 +37,6 @@
 #include <qfile.h>
 #include <qiodevice.h>
 #include <qlocale.h>
-#include <qregexp.h>
 #include <qstack.h>
 #include <qxmlstream.h>
 
@@ -1362,7 +1361,17 @@ bool RCCResourceLibrary::writeInitializer()
         QString initNameStr = m_initName;
         if (!initNameStr.isEmpty()) {
             initNameStr.prepend(QLatin1Char('_'));
-            initNameStr.replace(QRegExp(QLatin1String("[^a-zA-Z0-9_]")), QLatin1String("_"));
+            auto isAsciiLetterOrNumber = [] (QChar c) -> bool {
+                ushort ch = c.unicode();
+                return (ch >= '0' && ch <= '9') ||
+                        (ch >= 'A' && ch <= 'Z') ||
+                        (ch >= 'a' && ch <= 'z') ||
+                        ch == '_';
+            };
+            for (QChar &c : initNameStr) {
+                if (!isAsciiLetterOrNumber(c))
+                    c = QLatin1Char('_');
+            }
         }
         QByteArray initName = initNameStr.toLatin1();
 
