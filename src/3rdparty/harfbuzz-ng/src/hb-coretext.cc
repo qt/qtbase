@@ -36,18 +36,6 @@
 #include "hb-aat-layout.hh"
 #include <math.h>
 
-typedef bool (*qt_get_font_table_func_t) (void *user_data, unsigned int tag, unsigned char *buffer, unsigned int *length);
-
-struct FontEngineFaceData {
-  void *user_data;
-  qt_get_font_table_func_t get_font_table;
-};
-
-struct CoreTextFontEngineData {
-  CTFontRef ctFont;
-  CGFontRef cgFont;
-};
-
 
 /**
  * SECTION:hb-coretext
@@ -119,7 +107,6 @@ get_last_resort_font_desc ()
   return font_desc;
 }
 
-#if 0
 static void
 release_data (void *info, const void *data, size_t size)
 {
@@ -128,7 +115,6 @@ release_data (void *info, const void *data, size_t size)
 
   hb_blob_destroy ((hb_blob_t *) info);
 }
-#endif
 
 static CGFontRef
 create_cg_font (hb_face_t *face)
@@ -140,7 +126,6 @@ create_cg_font (hb_face_t *face)
   }
   else
   {
-#if 0
     hb_blob_t *blob = hb_face_reference_blob (face);
     unsigned int blob_length;
     const char *blob_data = hb_blob_get_data (blob, &blob_length);
@@ -155,11 +140,6 @@ create_cg_font (hb_face_t *face)
 	DEBUG_MSG (CORETEXT, face, "Face CGFontCreateWithDataProvider() failed");
       CGDataProviderRelease (provider);
     }
-#else
-    FontEngineFaceData *fontEngineFaceData = (FontEngineFaceData *) face->user_data;
-    CoreTextFontEngineData *coreTextFontEngineData = (CoreTextFontEngineData *) fontEngineFaceData->user_data;
-    cg_font = CGFontRetain (coreTextFontEngineData->cgFont);
-#endif
   }
   return cg_font;
 }
