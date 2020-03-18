@@ -71,13 +71,6 @@ qt_set_symbol_visibility_hidden(BundledHarfbuzz)
 ## Scopes:
 #####################################################################
 
-qt_extend_target(BundledHarfbuzz CONDITION APPLE
-    SOURCES
-        src/hb-coretext.cc src/hb-coretext.h
-    DEFINES
-        HAVE_CORETEXT
-)
-
 #### Keys ignored in scope 2:.:.:harfbuzz-ng.pro:APPLE:
 # SHAPERS = "coretext"
 
@@ -157,17 +150,6 @@ qt_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-var-mvar-table.hh
     DEFINES
         HAVE_OT
-)
-
-qt_extend_target(BundledHarfbuzz CONDITION UIKIT
-    LIBRARIES
-        ${FWCoreGraphics}
-        ${FWCoreText}
-)
-
-qt_extend_target(BundledHarfbuzz CONDITION APPLE AND NOT UIKIT
-    LIBRARIES
-        ${FWApplicationServices}
 )
 
 qt_extend_target(BundledHarfbuzz CONDITION SHAPERS_ISEMPTY OR SHAPERS___contains___fallback
