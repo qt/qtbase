@@ -986,7 +986,7 @@ public:
     // uint _iteratorCapabilities:4;
     // uint _revision:3;
     // uint _containerCapabilities:4;
-    // uint _unused:21;*/
+    // uint _unused:21;
     typedef int(*sizeFunc)(const void *p);
     typedef const void * (*atFunc)(const void *p, int);
     typedef void (*moveIteratorFunc)(const void *p, void **);
