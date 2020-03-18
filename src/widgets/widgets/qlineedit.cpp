@@ -609,7 +609,7 @@ const QValidator * QLineEdit::validator() const
     The initial setting is to have no input validator (i.e. any input
     is accepted up to maxLength()).
 
-    \sa validator(), hasAcceptableInput(), QIntValidator, QDoubleValidator, QRegExpValidator
+    \sa validator(), hasAcceptableInput(), QIntValidator, QDoubleValidator, QRegularExpressionValidator
 */
 
 void QLineEdit::setValidator(const QValidator *v)

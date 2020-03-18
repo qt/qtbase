@@ -1314,10 +1314,6 @@ QColorShower::QColorShower(QColorDialog *parent)
     QRegularExpression regExp(QStringLiteral("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})"));
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(regExp, this);
     htEd->setValidator(validator);
-#elif !defined(QT_NO_REGEXP)
-    QRegExp regExp(QStringLiteral("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})"));
-    QRegExpValidator *validator = new QRegExpValidator(regExp, this);
-    htEd->setValidator(validator);
 #else
     htEd->setReadOnly(true);
 #endif
