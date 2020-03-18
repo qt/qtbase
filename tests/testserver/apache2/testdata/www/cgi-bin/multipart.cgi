@@ -11,7 +11,7 @@ print "content type: $contentType\n";
 
 if ($contentType =~ /^multipart\/form-data/) {
     foreach my $key ($q->param) {
-        foreach my $value ($q->param($key)) {
+        foreach my $value (scalar $q->param($key)) {
             if ($key =~ /text/) {
                 $retValue = $value;
             } else {
