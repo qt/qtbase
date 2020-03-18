@@ -30,7 +30,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QHash>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QSystemSemaphore>
 #include <QXmlStreamReader>
 
@@ -177,7 +177,7 @@ static QString shellQuoteWin(const QString &arg)
         // Quotes are escaped and their preceding backslashes are doubled.
         // It's impossible to escape anything inside a quoted string on cmd
         // level, so the outer quoting must be "suspended".
-        ret.replace(QRegExp(QStringLiteral("(\\\\*)\"")), QStringLiteral("\"\\1\\1\\^\"\""));
+        ret.replace(QRegularExpression(QStringLiteral("(\\\\*)\"")), QStringLiteral("\"\\1\\1\\^\"\""));
         // The argument must not end with a \ since this would be interpreted
         // as escaping the quote -- rather put the \ behind the quote: e.g.
         // rather use "foo"\ than "foo\"
@@ -334,8 +334,8 @@ static void setOutputFile(QString file, QString format)
 
 static bool parseTestArgs()
 {
-    QRegExp newLoggingFormat{QStringLiteral("(.*),(txt|csv|xunitxml|xml|lightxml|teamcity|tap)")};
-    QRegExp oldFormats{QStringLiteral("-(txt|csv|xunitxml|xml|lightxml|teamcity|tap)")};
+    QRegularExpression oldFormats{QStringLiteral("^-(txt|csv|xunitxml|xml|lightxml|teamcity|tap)$")};
+    QRegularExpression newLoggingFormat{QStringLiteral("^(.*),(txt|csv|xunitxml|xml|lightxml|teamcity|tap)$")};
 
     QString file;
     QString logType;
@@ -347,16 +347,20 @@ static bool parseTestArgs()
                 return false; // missing file argument
 
             const auto &filePath = g_options.testArgsList[++i];
-            if (!newLoggingFormat.exactMatch(filePath)) {
+            const auto match = newLoggingFormat.match(filePath);
+            if (!match.hasMatch()) {
                 file = filePath;
             } else {
-                const auto capturedTexts = newLoggingFormat.capturedTexts();
+                const auto capturedTexts = match.capturedTexts();
                 setOutputFile(capturedTexts.at(1), capturedTexts.at(2));
             }
-        } else if (oldFormats.exactMatch(arg)) {
-            logType = oldFormats.capturedTexts().at(1);
         } else {
-            unhandledArgs += QStringLiteral(" %1").arg(arg);
+            auto match = oldFormats.match(arg);
+            if (match.hasMatch()) {
+                logType = match.capturedTexts().at(1);
+            } else {
+                unhandledArgs += QStringLiteral(" %1").arg(arg);
+            }
         }
     }
     if (g_options.outFiles.isEmpty() || !file.isEmpty() || !logType.isEmpty())
