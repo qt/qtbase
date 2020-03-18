@@ -147,18 +147,13 @@ public:
     QString toText() const;
 
 #if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_X("Use the overload not using QRegExp") static QList<QSslCertificate> fromPath(
-        const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
-        QRegExp::PatternSyntax syntax = QRegExp::FixedString);
-
-    static QList<QSslCertificate> fromPath(
-        const QString &path, QSsl::EncodingFormat format,
-        PatternSyntax syntax);
-#else
-    static QList<QSslCertificate> fromPath(
-        const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
-        PatternSyntax syntax = FixedString);
+    QT_DEPRECATED_X("Use the overload not using QRegExp")
+    static QList<QSslCertificate> fromPath(const QString &path, QSsl::EncodingFormat format,
+                                           QRegExp::PatternSyntax syntax);
 #endif
+    static QList<QSslCertificate> fromPath(const QString &path,
+                                           QSsl::EncodingFormat format = QSsl::Pem,
+                                           PatternSyntax syntax = PatternSyntax::FixedString);
 
     static QList<QSslCertificate> fromDevice(
         QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
