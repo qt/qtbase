@@ -1626,7 +1626,8 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
     props.direction = si.analysis.bidiLevel % 2 ? HB_DIRECTION_RTL : HB_DIRECTION_LTR;
     QChar::Script script = QChar::Script(si.analysis.script);
     props.script = hb_qt_script_to_script(script);
-    // ### props.language = hb_language_get_default_for_script(props.script);
+    // ### TODO get_default_for_script?
+    props.language = hb_language_get_default(); // use default language from locale
 
     for (int k = 0; k < itemBoundaries.size(); k += 3) {
         const uint item_pos = itemBoundaries[k];
@@ -1656,7 +1657,6 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
 #endif
 
         hb_buffer_set_segment_properties(buffer, &props);
-        hb_buffer_guess_segment_properties(buffer);
 
         uint buffer_flags = HB_BUFFER_FLAG_DEFAULT;
         // Symbol encoding used to encode various crap in the 32..255 character code range,
