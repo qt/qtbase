@@ -368,6 +368,7 @@ long q_ASN1_INTEGER_get(ASN1_INTEGER *a);
 int q_ASN1_INTEGER_cmp(const ASN1_INTEGER *x, const ASN1_INTEGER *y);
 int q_ASN1_STRING_length(ASN1_STRING *a);
 int q_ASN1_STRING_to_UTF8(unsigned char **a, ASN1_STRING *b);
+int q_ASN1_TIME_to_tm(const ASN1_TIME *s, struct tm *tm);
 long q_BIO_ctrl(BIO *a, int b, long c, void *d);
 Q_AUTOTEST_EXPORT int q_BIO_free(BIO *a);
 BIO *q_BIO_new_mem_buf(void *a, int b);

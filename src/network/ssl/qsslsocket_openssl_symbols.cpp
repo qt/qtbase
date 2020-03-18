@@ -247,6 +247,7 @@ DEFINEFUNC(long, ASN1_INTEGER_get, ASN1_INTEGER *a, a, return 0, return)
 DEFINEFUNC2(int, ASN1_INTEGER_cmp, const ASN1_INTEGER *a, a, const ASN1_INTEGER *b, b, return 1, return)
 DEFINEFUNC(int, ASN1_STRING_length, ASN1_STRING *a, a, return 0, return)
 DEFINEFUNC2(int, ASN1_STRING_to_UTF8, unsigned char **a, a, ASN1_STRING *b, b, return 0, return)
+DEFINEFUNC2(int, ASN1_TIME_to_tm, const ASN1_TIME *s, s, struct tm *tm, tm, return 0, return)
 DEFINEFUNC4(long, BIO_ctrl, BIO *a, a, int b, b, long c, c, void *d, d, return -1, return)
 DEFINEFUNC(int, BIO_free, BIO *a, a, return 0, return)
 DEFINEFUNC2(BIO *, BIO_new_mem_buf, void *a, a, int b, b, return nullptr, return)
@@ -952,6 +953,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(ASN1_INTEGER_cmp)
     RESOLVEFUNC(ASN1_STRING_length)
     RESOLVEFUNC(ASN1_STRING_to_UTF8)
+    RESOLVEFUNC(ASN1_TIME_to_tm)
     RESOLVEFUNC(BIO_ctrl)
     RESOLVEFUNC(BIO_free)
     RESOLVEFUNC(BIO_new)
@@ -1208,117 +1210,18 @@ bool q_resolveOpenSslSymbols()
 }
 #endif // !defined QT_LINKED_OPENSSL
 
-//==============================================================================
-// contributed by Jay Case of Sarvega, Inc.; http://sarvega.com/
-// Based on X509_cmp_time() for intitial buffer hacking.
-//==============================================================================
 QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
 {
-    size_t lTimeLength = aTime->length;
-    char *pString = (char *) aTime->data;
-    auto isValidPointer = [pString, lTimeLength](const char *const probe){
-        return size_t(probe - pString) < lTimeLength;
-    };
+    QDateTime result;
+    tm lTime;
 
-    if (aTime->type == V_ASN1_UTCTIME) {
-
-        char lBuffer[24];
-        char *pBuffer = lBuffer;
-
-        if ((lTimeLength < 11) || (lTimeLength > 17))
-            return QDateTime();
-
-        memcpy(pBuffer, pString, 10);
-        pBuffer += 10;
-        pString += 10;
-
-        if ((*pString == 'Z') || (*pString == '-') || (*pString == '+')) {
-            *pBuffer++ = '0';
-            *pBuffer++ = '0';
-        } else {
-            *pBuffer++ = *pString++;
-            if (!isValidPointer(pString)) // Nah.
-                return {};
-            *pBuffer++ = *pString++;
-            if (!isValidPointer(pString)) // Nah.
-                return {};
-            // Skip any fractional seconds...
-            if (*pString == '.') {
-                pString++;
-                if (!isValidPointer(pString)) // Oh no, cannot dereference (see below).
-                    return {};
-                while ((*pString >= '0') && (*pString <= '9')) {
-                    pString++;
-                    if (!isValidPointer(pString)) // No and no.
-                        return {};
-                }
-            }
-        }
-
-        *pBuffer++ = 'Z';
-        *pBuffer++ = '\0';
-
-        time_t lSecondsFromUCT;
-        if (*pString == 'Z') {
-            lSecondsFromUCT = 0;
-        } else {
-            if ((*pString != '+') && (*pString != '-'))
-                return QDateTime();
-
-            if (!isValidPointer(pString + 4)) {
-                // What kind of input parameters we were provided with? To hell with them!
-                return {};
-            }
-            lSecondsFromUCT = ((pString[1] - '0') * 10 + (pString[2] - '0')) * 60;
-            lSecondsFromUCT += (pString[3] - '0') * 10 + (pString[4] - '0');
-            lSecondsFromUCT *= 60;
-            if (*pString == '-')
-                lSecondsFromUCT = -lSecondsFromUCT;
-        }
-
-        tm lTime;
-        lTime.tm_sec = ((lBuffer[10] - '0') * 10) + (lBuffer[11] - '0');
-        lTime.tm_min = ((lBuffer[8] - '0') * 10) + (lBuffer[9] - '0');
-        lTime.tm_hour = ((lBuffer[6] - '0') * 10) + (lBuffer[7] - '0');
-        lTime.tm_mday = ((lBuffer[4] - '0') * 10) + (lBuffer[5] - '0');
-        lTime.tm_mon = (((lBuffer[2] - '0') * 10) + (lBuffer[3] - '0')) - 1;
-        lTime.tm_year = ((lBuffer[0] - '0') * 10) + (lBuffer[1] - '0');
-        if (lTime.tm_year < 50)
-            lTime.tm_year += 100; // RFC 2459
-
+    if (q_ASN1_TIME_to_tm(aTime, &lTime)) {
         QDate resDate(lTime.tm_year + 1900, lTime.tm_mon + 1, lTime.tm_mday);
         QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
-
-        QDateTime result(resDate, resTime, Qt::UTC);
-        result = result.addSecs(lSecondsFromUCT);
-        return result;
-
-    } else if (aTime->type == V_ASN1_GENERALIZEDTIME) {
-
-        if (lTimeLength < 15)
-            return QDateTime(); // hopefully never triggered
-
-        // generalized time is always YYYYMMDDHHMMSSZ (RFC 2459, section 4.1.2.5.2)
-        tm lTime;
-        lTime.tm_sec = ((pString[12] - '0') * 10) + (pString[13] - '0');
-        lTime.tm_min = ((pString[10] - '0') * 10) + (pString[11] - '0');
-        lTime.tm_hour = ((pString[8] - '0') * 10) + (pString[9] - '0');
-        lTime.tm_mday = ((pString[6] - '0') * 10) + (pString[7] - '0');
-        lTime.tm_mon = (((pString[4] - '0') * 10) + (pString[5] - '0'));
-        lTime.tm_year = ((pString[0] - '0') * 1000) + ((pString[1] - '0') * 100) +
-                        ((pString[2] - '0') * 10) + (pString[3] - '0');
-
-        QDate resDate(lTime.tm_year, lTime.tm_mon, lTime.tm_mday);
-        QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
-
-        QDateTime result(resDate, resTime, Qt::UTC);
-        return result;
-
-    } else {
-        qCWarning(lcSsl, "unsupported date format detected");
-        return QDateTime();
+        result = QDateTime(resDate, resTime, Qt::UTC);
     }
 
+    return result;
 }
 
 QT_END_NAMESPACE
