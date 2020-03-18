@@ -5139,7 +5139,8 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
         yoff += image_height;
 
     bool isBpp32 = qPixelLayouts[data->rasterBuffer->format].bpp == QPixelLayout::BPP32;
-    if (op.destFetch64 == destFetch64Undefined && image_width <= BufferSize && isBpp32) {
+    bool isBpp64 = qPixelLayouts[data->rasterBuffer->format].bpp == QPixelLayout::BPP64;
+    if (op.destFetch64 == destFetch64Undefined && image_width <= BufferSize && (isBpp32 || isBpp64)) {
         // If destination isn't blended into the result, we can do the tiling directly on destination pixels.
         while (count--) {
             int x = spans->x;
@@ -5173,9 +5174,14 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
                 if (sx >= image_width)
                     sx = 0;
             }
-            uint *dest = (uint*)data->rasterBuffer->scanLine(y) + x - image_width;
-            for (int i = image_width; i < length; ++i) {
-                dest[i] = dest[i - image_width];
+            if (isBpp32) {
+                uint *dest = reinterpret_cast<uint *>(data->rasterBuffer->scanLine(y)) + x - image_width;
+                for (int i = image_width; i < length; ++i)
+                    dest[i] = dest[i - image_width];
+            } else {
+                quint64 *dest = reinterpret_cast<quint64 *>(data->rasterBuffer->scanLine(y)) + x - image_width;
+                for (int i = image_width; i < length; ++i)
+                    dest[i] = dest[i - image_width];
             }
             ++spans;
         }
