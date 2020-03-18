@@ -2442,7 +2442,17 @@ void QWindowsWindow::setFullFrameMargins(const QMargins &newMargins)
 
 void QWindowsWindow::updateFullFrameMargins()
 {
-    // Normally obtained from WM_NCCALCSIZE
+    // QTBUG-82580: If a native menu is present, force a WM_NCCALCSIZE.
+    if (GetMenu(m_data.hwnd))
+        QWindowsContext::forceNcCalcSize(m_data.hwnd);
+    else
+        calculateFullFrameMargins();
+}
+
+void QWindowsWindow::calculateFullFrameMargins()
+{
+    // Normally obtained from WM_NCCALCSIZE. This calculation only works
+    // when no native menu is present.
     const auto systemMargins = testFlag(DisableNonClientScaling)
         ? QWindowsGeometryHint::frameOnPrimaryScreen(m_data.hwnd)
         : frameMargins_sys();

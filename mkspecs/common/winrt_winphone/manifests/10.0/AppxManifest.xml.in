@@ -6,7 +6,8 @@
   xmlns:uap=\"http://schemas.microsoft.com/appx/manifest/uap/windows10\"
   xmlns:uap3=\"http://schemas.microsoft.com/appx/manifest/uap/windows10/3\"
   xmlns:mobile=\"http://schemas.microsoft.com/appx/manifest/mobile/windows10\"
-  IgnorableNamespaces=\"uap uap3 mp mobile\">
+  xmlns:iot=\"http://schemas.microsoft.com/appx/manifest/iot/windows10\"
+  IgnorableNamespaces=\"uap uap3 mp mobile iot\">
 
   <Identity
     Name=\"$${WINRT_MANIFEST.identity}\"

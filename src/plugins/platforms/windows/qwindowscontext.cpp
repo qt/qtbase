@@ -1006,6 +1006,13 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
     return result;
 }
 
+void QWindowsContext::forceNcCalcSize(HWND hwnd)
+{
+    // Force WM_NCCALCSIZE to adjust margin
+    SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
+                 SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+}
+
 bool QWindowsContext::systemParametersInfo(unsigned action, unsigned param, void *out,
                                            unsigned dpi)
 {
