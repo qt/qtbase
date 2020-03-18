@@ -2287,8 +2287,8 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
 bool buildAndroidProject(const Options &options)
 {
     GradleProperties localProperties;
-    localProperties["sdk.dir"] = options.sdkPath.toUtf8();
-    localProperties["ndk.dir"] = options.ndkPath.toUtf8();
+    localProperties["sdk.dir"] = QDir::fromNativeSeparators(options.sdkPath).toUtf8();
+    localProperties["ndk.dir"] = QDir::fromNativeSeparators(options.ndkPath).toUtf8();
 
     if (!mergeGradleProperties(options.outputDirectory + QLatin1String("local.properties"), localProperties))
         return false;
