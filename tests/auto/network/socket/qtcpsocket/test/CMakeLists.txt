@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qtcpsocket
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../tst_qtcpsocket.cpp
     PUBLIC_LIBRARIES
