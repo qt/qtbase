@@ -1428,6 +1428,9 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
 {
     size_t lTimeLength = aTime->length;
     char *pString = (char *) aTime->data;
+    auto isValidPointer = [pString, lTimeLength](const char *const probe){
+        return size_t(probe - pString) < lTimeLength;
+    };
 
     if (aTime->type == V_ASN1_UTCTIME) {
 
@@ -1446,12 +1449,21 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
             *pBuffer++ = '0';
         } else {
             *pBuffer++ = *pString++;
+            if (!isValidPointer(pString)) // Nah.
+                return {};
             *pBuffer++ = *pString++;
+            if (!isValidPointer(pString)) // Nah.
+                return {};
             // Skip any fractional seconds...
             if (*pString == '.') {
                 pString++;
-                while ((*pString >= '0') && (*pString <= '9'))
+                if (!isValidPointer(pString)) // Oh no, cannot dereference (see below).
+                    return {};
+                while ((*pString >= '0') && (*pString <= '9')) {
                     pString++;
+                    if (!isValidPointer(pString)) // No and no.
+                        return {};
+                }
             }
         }
 
@@ -1465,6 +1477,10 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
             if ((*pString != '+') && (*pString != '-'))
                 return QDateTime();
 
+            if (!isValidPointer(pString + 4)) {
+                // What kind of input parameters we were provided with? To hell with them!
+                return {};
+            }
             lSecondsFromUCT = ((pString[1] - '0') * 10 + (pString[2] - '0')) * 60;
             lSecondsFromUCT += (pString[3] - '0') * 10 + (pString[4] - '0');
             lSecondsFromUCT *= 60;
