@@ -3678,9 +3678,9 @@ def handle_app_or_lib(
     is_plugin = "plugin" in config
     is_qt_plugin = any("qt_plugin" == s for s in scope.get("_LOADED")) or is_qml_plugin
     target = ""
-    gui = all(
-        val not in config for val in ["console", "cmdline", "-app_bundle"]
-    ) and "testlib" not in scope.expand("QT")
+    gui = all(val not in config for val in ["console", "cmdline", "-app_bundle"]) and all(
+        val not in scope.expand("QT") for val in ["testlib", "testlib-private"]
+    )
 
     if is_jar:
         write_jar(cm_fh, scope, indent=indent)
