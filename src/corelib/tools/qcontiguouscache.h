@@ -137,8 +137,9 @@ public:
     void removeLast();
     T takeLast();
 
+    // Use extra parentheses around max to avoid expanding it if it is a macro.
     inline bool areIndexesValid() const
-    { return d->offset >= 0 && d->offset < std::numeric_limits<qsizetype>::max() - d->count && (d->offset % d->alloc) == d->start; }
+    { return d->offset >= 0 && d->offset < (std::numeric_limits<qsizetype>::max)() - d->count && (d->offset % d->alloc) == d->start; }
 
     inline void normalizeIndexes() { d->offset = d->start; }
 

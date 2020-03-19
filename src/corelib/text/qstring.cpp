@@ -10203,11 +10203,11 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
     } else {
         if (!str.isNull() || out.version() < 3) {
             if ((out.byteOrder() == QDataStream::BigEndian) == (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
-                out.writeBytes(reinterpret_cast<const char *>(str.unicode()), sizeof(QChar) * str.length());
+                out.writeBytes(reinterpret_cast<const char *>(str.unicode()), uint(sizeof(QChar) * str.length()));
             } else {
                 QVarLengthArray<ushort> buffer(str.length());
                 qbswap<sizeof(ushort)>(str.constData(), str.length(), buffer.data());
-                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), sizeof(ushort) * buffer.size());
+                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), uint(sizeof(ushort) * buffer.size()));
             }
         } else {
             // write null marker
