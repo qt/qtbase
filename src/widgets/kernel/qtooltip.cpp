@@ -402,10 +402,10 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
 #endif //QT_NO_STYLE_STYLESHEET
 
     QPoint p = pos;
-    int screenNumber = getTipScreen(pos, w);
-    QScreen *screen = QGuiApplication::screens().at(screenNumber);
-    if (screen) {
-        const QPlatformScreen *platformScreen = screen->handle();
+    const QScreen *screen = QGuiApplication::screens().value(getTipScreen(pos, w),
+                                                             QGuiApplication::primaryScreen());
+    // a QScreen's handle *should* never be null, so this is a bit paranoid
+    if (const QPlatformScreen *platformScreen = screen ? screen->handle() : nullptr) {
         const QSize cursorSize = QHighDpi::fromNativePixels(platformScreen->cursor()->size(),
                                                             platformScreen);
         QPoint offset(2, cursorSize.height());
