@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_executable(benchlibtickcounter
-    GUI
     SOURCES
         tst_benchlibtickcounter.cpp
     PUBLIC_LIBRARIES

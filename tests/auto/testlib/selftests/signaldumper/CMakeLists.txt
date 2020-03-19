@@ -7,7 +7,6 @@
 add_qt_executable(signaldumper
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
-    GUI
     SOURCES
         tst_signaldumper.cpp
     PUBLIC_LIBRARIES

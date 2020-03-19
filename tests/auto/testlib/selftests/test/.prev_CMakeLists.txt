@@ -13,17 +13,6 @@ qt_add_test(tst_selftests
         ../../../../shared
     PUBLIC_LIBRARIES
         Qt::TestPrivate
-    # special case begin
-    # These lines need to be commented out as they need to be enabled
-    # COMPILE_OPTIONS
-    #   conditionally
-    #   --cs-exclude-file-abs-wildcard=${QT_SOURCE_TREE}/*
-    #   --cs-include-file-abs-wildcard=*/src/testlib/*
-    #   --cs-mcc
-    #   --cs-mcdc
-    # LINK_OPTIONS
-    #   "$$COVERAGE_OPTIONS"
-    # special case end
 )
 
 file(GLOB resource_glob_0 RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "../expected_*")
@@ -40,7 +29,7 @@ qt_add_resource(tst_selftests "qmake_expected_files"
     PREFIX
         "/"
     BASE
-        "${CMAKE_CURRENT_SOURCE_DIR}" # special case
+        "$$PWD/.."
     FILES
         ${qmake_expected_files_resource_files}
 )
@@ -54,8 +43,3 @@ qt_add_resource(tst_selftests "qmake_expected_files"
 
 #### Keys ignored in scope 7:.:..:../selftests.pri:TARGET Qt::Gui:
 # SUBPROGRAMS = "keyboard" "mouse"
-
-# special case begin
-qt_apply_testlib_coverage_options(tst_selftests)
-# special case end
-

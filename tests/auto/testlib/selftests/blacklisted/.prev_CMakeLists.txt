@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_executable(blacklisted
-    GUI
     SOURCES
         tst_blacklisted.cpp
     PUBLIC_LIBRARIES

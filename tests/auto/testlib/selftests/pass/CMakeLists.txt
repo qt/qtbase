@@ -19,3 +19,4 @@ qt_add_executable(pass
 # special case begin
 qt_apply_testlib_coverage_options(pass)
 # special case end
+

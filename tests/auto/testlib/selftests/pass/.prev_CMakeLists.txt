@@ -1,14 +1,14 @@
-# Generated from silent.pro.
+# Generated from pass.pro.
 
 #####################################################################
-## silent Binary:
+## pass Binary:
 #####################################################################
 
-add_qt_executable(silent
+qt_add_executable(pass
     SOURCES
-        tst_silent.cpp
+        tst_pass.cpp
     PUBLIC_LIBRARIES
-        Qt::TestPrivate
+        Qt::Test
 )
 
 ## Scopes:

@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_executable(signaldumper
-    GUI
     SOURCES
         tst_signaldumper.cpp
     PUBLIC_LIBRARIES
