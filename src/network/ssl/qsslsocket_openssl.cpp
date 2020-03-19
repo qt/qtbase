@@ -1942,6 +1942,12 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
         // Initialize OpenSSL.
         if (q_OPENSSL_init_ssl(0, nullptr) != 1)
             return false;
+
+        if (q_OpenSSL_version_num() < 0x10101000L) {
+            qCWarning(lcSsl, "QSslSocket: OpenSSL >= 1.1.1 is required; %s was found instead", q_OpenSSL_version(OPENSSL_VERSION));
+            return false;
+        }
+
         q_SSL_load_error_strings();
         q_OpenSSL_add_all_algorithms();
 
