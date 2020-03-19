@@ -2701,7 +2701,7 @@ QMetaTypeInterface QMetaTypeForType<T>::metaType = {
         }
     }),
     /*.copyCtr=*/ QT_METATYPE_CONSTEXPRLAMDA( -> QMetaTypeInterface::CopyCtrFn {
-        if (std::is_copy_constructible_v<T>) {
+        if constexpr (std::is_copy_constructible_v<T>) {
             return [](const QMetaTypeInterface *, void *addr, const void *other) {
                 new (addr) T(*reinterpret_cast<const T *>(other));
             };
