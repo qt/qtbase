@@ -1532,17 +1532,15 @@ void QNetworkAccessManagerPrivate::_q_replySslErrors(const QList<QSslError> &err
 #endif
 }
 
+#ifndef QT_NO_SSL
 void QNetworkAccessManagerPrivate::_q_replyPreSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator)
 {
-#ifndef QT_NO_SSL
     Q_Q(QNetworkAccessManager);
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
     emit q->preSharedKeyAuthenticationRequired(reply, authenticator);
-#else
-    Q_UNUSED(authenticator);
-#endif
 }
+#endif
 
 QNetworkReply *QNetworkAccessManagerPrivate::postProcess(QNetworkReply *reply)
 {

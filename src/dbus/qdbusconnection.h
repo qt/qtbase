@@ -77,6 +77,8 @@ class QDBusConnectionPrivate;
 class Q_DBUS_EXPORT QDBusConnection
 {
     Q_GADGET
+    Q_MOC_INCLUDE(<QtDBus/qdbuspendingcall.h>)
+
 public:
     enum BusType { SessionBus, SystemBus, ActivationBus };
     Q_ENUM(BusType)

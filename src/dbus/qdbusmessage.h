@@ -139,6 +139,8 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusMessage)
 
+#else
+class Q_DBUS_EXPORT QDBusMessage {}; // dummy class for moc
 #endif // QT_NO_DBUS
 #endif
 

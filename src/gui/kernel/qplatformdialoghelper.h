@@ -58,6 +58,8 @@
 #include <QtCore/QDir>
 #include <QtCore/QUrl>
 #include <QtGui/QRgb>
+Q_MOC_INCLUDE(<QFont>)
+Q_MOC_INCLUDE(<QColor>)
 
 QT_BEGIN_NAMESPACE
 

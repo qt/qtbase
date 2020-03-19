@@ -5278,6 +5278,8 @@ void tst_QObject::connectForwardDeclare()
     QVERIFY(connect(&ob, &ForwardDeclareArguments::mySignal, &ob, &ForwardDeclareArguments::mySlot, Qt::QueuedConnection));
 }
 
+class ForwardDeclared {}; // complete definition for moc
+
 class NoDefaultConstructor
 {
     Q_GADGET

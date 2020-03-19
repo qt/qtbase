@@ -66,6 +66,7 @@ class QBackingStore;
 class Q_GUI_EXPORT QPlatformNativeInterface : public QObject
 {
     Q_OBJECT
+    Q_MOC_INCLUDE(<qpa/qplatformwindow.h>)
 public:
     virtual void *nativeResourceForIntegration(const QByteArray &resource);
     virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);

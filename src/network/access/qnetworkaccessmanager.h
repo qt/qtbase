@@ -49,6 +49,7 @@
 #include <QtNetwork/QSslConfiguration>
 #include <QtNetwork/QSslPreSharedKeyAuthenticator>
 #endif
+Q_MOC_INCLUDE(<QtNetwork/QSslError>)
 
 QT_BEGIN_NAMESPACE
 
@@ -178,7 +179,9 @@ private:
 #endif
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
+#ifndef QT_NO_SSL
     Q_PRIVATE_SLOT(d_func(), void _q_replyPreSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*))
+#endif
     Q_PRIVATE_SLOT(d_func(), void _q_onlineStateChanged(bool))
 };
 

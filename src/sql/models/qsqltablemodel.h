@@ -58,6 +58,7 @@ class Q_SQL_EXPORT QSqlTableModel: public QSqlQueryModel
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QSqlTableModel)
+    Q_MOC_INCLUDE(<QtSql/qsqlrecord.h>)
 
 public:
     enum EditStrategy {OnFieldChange, OnRowChange, OnManualSubmit};

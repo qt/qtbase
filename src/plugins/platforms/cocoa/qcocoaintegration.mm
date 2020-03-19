@@ -524,6 +524,6 @@ void QCocoaIntegration::focusWindowChanged(QWindow *focusWindow)
     setApplicationIcon(focusWindow->icon());
 }
 
-#include "moc_qcocoaintegration.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qcocoaintegration.cpp"

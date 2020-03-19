@@ -100,6 +100,26 @@ private:
     QString senderName; // internal; will probably change
 };
 
+// TODO: move into own header and use Q_MOC_INCLUDE
+struct QDBusConnectionManager::ConnectionRequestData
+{
+    enum RequestType {
+        ConnectToStandardBus,
+        ConnectToBusByAddress,
+        ConnectToPeerByAddress
+    } type;
+
+    union {
+        QDBusConnection::BusType busType;
+        const QString *busAddress;
+    };
+    const QString *name;
+
+    QDBusConnectionPrivate *result;
+
+    bool suspendedDelivery;
+};
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS

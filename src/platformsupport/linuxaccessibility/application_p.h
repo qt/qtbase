@@ -56,6 +56,7 @@
 #include <QtCore/QQueue>
 #include <QtDBus/QDBusConnection>
 #include <QtGui/QAccessibleInterface>
+Q_MOC_INCLUDE(<QtDBus/QDBusMessage>)
 
 QT_REQUIRE_CONFIG(accessibility);
 

@@ -30,6 +30,7 @@
 #define FORWARD_DECLARED_PARAM_H
 #include <qobject.h>
 #include <qmetatype.h>
+Q_MOC_INCLUDE("forwarddeclaredparam.h")
 
 // test support for const refs to forward-declared structs in parameters
 

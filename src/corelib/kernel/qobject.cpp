@@ -2562,7 +2562,7 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
 
     Q_ASSERT_X(signal.mobj->cast(this) && signal.methodType() == QMetaMethod::Signal,
                "QObject::isSignalConnected" , "the parameter must be a signal member of the object");
-    uint signalIndex = (signal.handle - QMetaObjectPrivate::get(signal.mobj)->methodData)/5;
+    uint signalIndex = (signal.handle - QMetaObjectPrivate::get(signal.mobj)->methodData)/QMetaObjectPrivate::IntsPerMethod;
 
     if (signal.mobj->d.data[signal.handle + 4] & MethodCloned)
         signalIndex = QMetaObjectPrivate::originalClone(signal.mobj, signalIndex);
@@ -2610,7 +2610,7 @@ void QMetaObjectPrivate::memberIndexes(const QObject *obj,
         m = m->d.superdata;
     if (!m)
         return;
-    *signalIndex = *methodIndex = (member.handle - get(member.mobj)->methodData)/5;
+    *signalIndex = *methodIndex = (member.handle - get(member.mobj)->methodData)/QMetaObjectPrivate::IntsPerMethod;
 
     int signalOffset;
     int methodOffset;

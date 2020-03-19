@@ -39,7 +39,7 @@ class Generator
     ClassDef *cdef;
     QVector<uint> meta_data;
 public:
-    Generator(ClassDef *classDef, const QVector<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile = nullptr);
+    Generator(ClassDef *classDef, const QVector<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile = nullptr, bool requireCompleteTypes = false);
     void generateCode();
 private:
     bool registerableMetaType(const QByteArray &propertyType);
@@ -47,7 +47,7 @@ private:
     void generateClassInfos();
     void registerFunctionStrings(const QVector<FunctionDef> &list);
     void registerByteArrayVector(const QVector<QByteArray> &list);
-    void generateFunctions(const QVector<FunctionDef> &list, const char *functype, int type, int &paramsIndex);
+    void generateFunctions(const QVector<FunctionDef> &list, const char *functype, int type, int &paramsIndex, int &initialMetatypeOffset);
     void generateFunctionRevisions(const QVector<FunctionDef> &list, const char *functype);
     void generateFunctionParameters(const QVector<FunctionDef> &list, const char *functype);
     void generateTypeInfo(const QByteArray &typeName, bool allowEmptyName = false);
@@ -70,6 +70,7 @@ private:
     QVector<QByteArray> metaTypes;
     QHash<QByteArray, QByteArray> knownQObjectClasses;
     QHash<QByteArray, QByteArray> knownGadgets;
+    bool requireCompleteTypes;
 };
 
 QT_END_NAMESPACE

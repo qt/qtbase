@@ -56,6 +56,7 @@
 #include <QtDBus/QDBusVariant>
 
 #include <QtGui/qtgui-config.h>
+Q_MOC_INCLUDE(<QtDBus/QDBusError>)
 
 QT_BEGIN_NAMESPACE
 

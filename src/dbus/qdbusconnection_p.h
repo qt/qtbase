@@ -70,6 +70,7 @@
 
 #include <qdbusmessage.h>
 #include <qdbusservicewatcher.h>    // for the WatchMode enum
+Q_MOC_INCLUDE(<QtDBus/private/qdbuspendingcall_p.h>)
 
 #ifndef QT_NO_DBUS
 

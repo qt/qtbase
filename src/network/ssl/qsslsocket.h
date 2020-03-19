@@ -109,6 +109,7 @@ class QSslSocketPrivate;
 class Q_NETWORK_EXPORT QSslSocket : public QTcpSocket
 {
     Q_OBJECT
+    Q_MOC_INCLUDE(<QtNetwork/qsslpresharedkeyauthenticator.h>)
 public:
     enum SslMode {
         UnencryptedMode,

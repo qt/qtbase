@@ -80,9 +80,9 @@ QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
     return nullptr;
  }
 
-Generator::Generator(ClassDef *classDef, const QVector<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile)
+Generator::Generator(ClassDef *classDef, const QVector<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile, bool requireCompleteTypes)
     : out(outfile), cdef(classDef), metaTypes(metaTypes), knownQObjectClasses(knownQObjectClasses)
-    , knownGadgets(knownGadgets)
+    , knownGadgets(knownGadgets), requireCompleteTypes(requireCompleteTypes)
 {
     if (cdef->superclassList.size())
         purestSuperClass = cdef->superclassList.constFirst().first;
@@ -350,7 +350,7 @@ void Generator::generateCode()
 
     int methodCount = cdef->signalList.count() + cdef->slotList.count() + cdef->methodList.count();
     fprintf(out, "    %4d, %4d, // methods\n", methodCount, methodCount ? index : 0);
-    index += methodCount * 5;
+    index += methodCount * QMetaObjectPrivate::IntsPerMethod;
     if (cdef->revisionedMethods)
         index += methodCount;
     int paramsIndex = index;
@@ -391,20 +391,22 @@ void Generator::generateCode()
 //
     generateClassInfos();
 
+    int initialMetaTypeOffset = cdef->propertyList.count();
+
 //
 // Build signals array first, otherwise the signal indices would be wrong
 //
-    generateFunctions(cdef->signalList, "signal", MethodSignal, paramsIndex);
+    generateFunctions(cdef->signalList, "signal", MethodSignal, paramsIndex, initialMetaTypeOffset);
 
 //
 // Build slots array
 //
-    generateFunctions(cdef->slotList, "slot", MethodSlot, paramsIndex);
+    generateFunctions(cdef->slotList, "slot", MethodSlot, paramsIndex, initialMetaTypeOffset);
 
 //
 // Build method array
 //
-    generateFunctions(cdef->methodList, "method", MethodMethod, paramsIndex);
+    generateFunctions(cdef->methodList, "method", MethodMethod, paramsIndex, initialMetaTypeOffset);
 
 //
 // Build method version arrays
@@ -438,7 +440,7 @@ void Generator::generateCode()
 // Build constructors array
 //
     if (isConstructible)
-        generateFunctions(cdef->constructorList, "constructor", MethodConstructor, paramsIndex);
+        generateFunctions(cdef->constructorList, "constructor", MethodConstructor, paramsIndex, initialMetaTypeOffset);
 
 //
 // Terminate data array
@@ -553,14 +555,48 @@ void Generator::generateCode()
     else
         fprintf(out, "    qt_meta_extradata_%s,\n", qualifiedClassNameIdentifier.constData());
 
-    if (cdef->propertyList.isEmpty()) {
+    bool constructorListContainsArgument = false;
+    for (int i = 0; i< cdef->constructorList.count(); ++i) {
+        const FunctionDef& fdef = cdef->constructorList.at(i);
+        if (fdef.arguments.count()) {
+            constructorListContainsArgument = true;
+            break;
+        }
+    }
+    if (cdef->propertyList.isEmpty() && cdef->signalList.isEmpty() && cdef->slotList.isEmpty() && cdef->methodList.isEmpty() && !constructorListContainsArgument) {
         fprintf(out, "    nullptr,\n");
     } else {
-        fprintf(out, "qt_metaTypeArray<\n");
+        bool needsComma = false;
+        if (!requireCompleteTypes) {
+            fprintf(out, "qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t\n", qualifiedClassNameIdentifier.constData());
+            needsComma = true;
+        } else {
+            fprintf(out, "qt_metaTypeArray<\n");
+        }
         for (int i = 0; i < cdef->propertyList.count(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
-            fprintf(out, "%s%s", i == 0 ? "" : ", ", p.type.data());
+            fprintf(out, "%s%s", needsComma ? ", " : "", p.type.data());
+            needsComma = true;
         }
+        for (const QVector<FunctionDef> &methodContainer: {cdef->signalList, cdef->slotList, cdef->methodList} ) {
+            for (int i = 0; i< methodContainer.count(); ++i) {
+                const FunctionDef& fdef = methodContainer.at(i);
+                fprintf(out, "%s%s", needsComma ? ", " : "", fdef.type.name.data());
+                needsComma = true;
+                for (const auto &argument: fdef.arguments) {
+                    fprintf(out, ", %s", argument.type.name.data());
+                }
+            }
+            fprintf(out, "\n");
+        }
+        for (int i = 0; i< cdef->constructorList.count(); ++i) {
+            const FunctionDef& fdef = cdef->constructorList.at(i);
+            for (const auto &argument: fdef.arguments) {
+                fprintf(out, "%s%s", needsComma ? ", " : "", argument.type.name.data());
+                needsComma = true;
+            }
+        }
+        fprintf(out, "\n");
         fprintf(out, ">,\n");
     }
 
@@ -571,6 +607,7 @@ void Generator::generateCode()
 
     fprintf(out, "\nconst QMetaObject *%s::metaObject() const\n{\n    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;\n}\n",
             cdef->qualified.constData());
+
 
 //
 // Generate smart cast function
@@ -688,11 +725,11 @@ void Generator::registerByteArrayVector(const QVector<QByteArray> &list)
         strreg(ba);
 }
 
-void Generator::generateFunctions(const QVector<FunctionDef>& list, const char *functype, int type, int &paramsIndex)
+void Generator::generateFunctions(const QVector<FunctionDef>& list, const char *functype, int type, int &paramsIndex, int &initialMetatypeOffset)
 {
     if (list.isEmpty())
         return;
-    fprintf(out, "\n // %ss: name, argc, parameters, tag, flags\n", functype);
+    fprintf(out, "\n // %ss: name, argc, parameters, tag, flags, initial metatype offsets\n", functype);
 
     for (int i = 0; i < list.count(); ++i) {
         const FunctionDef &f = list.at(i);
@@ -727,10 +764,12 @@ void Generator::generateFunctions(const QVector<FunctionDef>& list, const char *
         }
 
         int argc = f.arguments.count();
-        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x /* %s */,\n",
-            stridx(f.name), argc, paramsIndex, stridx(f.tag), flags, comment.constData());
+        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x, %4d /* %s */,\n",
+            stridx(f.name), argc, paramsIndex, stridx(f.tag), flags, initialMetatypeOffset, comment.constData());
 
         paramsIndex += 1 + argc * 2;
+        // constructors don't have a return type
+        initialMetatypeOffset += (f.isConstructor ? 0 : 1) + argc;
     }
 }
 

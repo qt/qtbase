@@ -75,6 +75,11 @@ struct z_stream_s;
 #include <private/qringbuffer_p.h>
 #include <private/qbytedata_p.h>
 
+#ifndef QT_NO_NETWORKPROXY
+Q_MOC_INCLUDE(<QtNetwork/QNetworkProxy>)
+#endif
+Q_MOC_INCLUDE(<QtNetwork/QAuthenticator>)
+
 QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE

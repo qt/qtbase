@@ -367,6 +367,10 @@ int runMoc(int argc, char **argv)
     depFileRuleNameOption.setValueName(QStringLiteral("rule name"));
     parser.addOption(depFileRuleNameOption);
 
+    QCommandLineOption requireCompleTypesOption(QStringLiteral("require-complete-types"));
+    requireCompleTypesOption.setDescription(QStringLiteral("Require complete types for better performance"));
+    parser.addOption(requireCompleTypesOption);
+
     parser.addPositionalArgument(QStringLiteral("[header-file]"),
             QStringLiteral("Header file to read from, otherwise stdin."));
     parser.addPositionalArgument(QStringLiteral("[@option-file]"),
@@ -398,6 +402,8 @@ int runMoc(int argc, char **argv)
         moc.noInclude = true;
         autoInclude = false;
     }
+    if (parser.isSet(requireCompleTypesOption))
+        moc.requireCompleteTypes = true;
     if (!ignoreConflictingOptions) {
         if (parser.isSet(forceIncludeOption)) {
             moc.noInclude = false;

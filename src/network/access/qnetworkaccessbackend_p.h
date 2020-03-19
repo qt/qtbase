@@ -54,10 +54,11 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qnetworkreplyimpl_p.h"
 #include "QtCore/qobject.h"
+Q_MOC_INCLUDE(<QAuthenticator>)
+Q_MOC_INCLUDE(<QtNetwork/QSslError>)
 
 QT_BEGIN_NAMESPACE
 
-class QAuthenticator;
 class QNetworkProxy;
 class QNetworkProxyQuery;
 class QNetworkRequest;

@@ -131,7 +131,8 @@ class QDebug;
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslError &error);
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslError::SslError &error);
 #endif
-
+#else
+class Q_NETWORK_EXPORT QSslError {}; // dummy class so that moc has a complete type
 #endif // QT_NO_SSL
 
 QT_END_NAMESPACE

@@ -44,6 +44,9 @@
 
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qpixmap.h>
+Q_MOC_INCLUDE(<QWindow>)
+Q_MOC_INCLUDE(<qpa/qplatformprintersupport.h>)
+Q_MOC_INCLUDE(<QPrintEngine>)
 
 QT_BEGIN_NAMESPACE
 

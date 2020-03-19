@@ -45,6 +45,7 @@
 
 #include <xkbcommon/xkbcommon-compose.h>
 
+Q_DECLARE_OPAQUE_POINTER(xkb_context *)
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcXkbCompose)

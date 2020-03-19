@@ -57,8 +57,10 @@ public:
     QByteArray name() const;
     const char *typeName() const;
     int returnType() const;
+    QMetaType returnMetaType() const;
     int parameterCount() const;
     int parameterType(int index) const;
+    QMetaType parameterMetaType(int index) const;
     void getParameterTypes(int *types) const;
     QList<QByteArray> parameterTypes() const;
     QList<QByteArray> parameterNames() const;

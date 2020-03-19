@@ -76,25 +76,6 @@ static void preventDllUnload();
 
 Q_GLOBAL_STATIC(QDBusConnectionManager, _q_manager)
 
-struct QDBusConnectionManager::ConnectionRequestData
-{
-    enum RequestType {
-        ConnectToStandardBus,
-        ConnectToBusByAddress,
-        ConnectToPeerByAddress
-    } type;
-
-    union {
-        QDBusConnection::BusType busType;
-        const QString *busAddress;
-    };
-    const QString *name;
-
-    QDBusConnectionPrivate *result;
-
-    bool suspendedDelivery;
-};
-
 QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::BusType type)
 {
     Q_STATIC_ASSERT(int(QDBusConnection::SessionBus) + int(QDBusConnection::SystemBus) == 1);

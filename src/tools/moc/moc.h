@@ -224,13 +224,14 @@ class Moc : public Parser
 {
 public:
     Moc()
-        : noInclude(false), mustIncludeQPluginH(false)
+        : noInclude(false), mustIncludeQPluginH(false), requireCompleteTypes(false)
         {}
 
     QByteArray filename;
 
     bool noInclude;
     bool mustIncludeQPluginH;
+    bool requireCompleteTypes;
     QByteArray includePath;
     QVector<QByteArray> includeFiles;
     QVector<ClassDef> classList;

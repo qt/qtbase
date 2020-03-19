@@ -30,6 +30,7 @@
 #define PARSE_DEFINES_H
 
 #include <qobject.h>
+Q_MOC_INCLUDE(<QMap>)
 
 // this is intentionally ugly to test moc's preprocessing capabilities
 #define PD_NAMESPACE PD

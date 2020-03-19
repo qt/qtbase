@@ -416,7 +416,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
             - methods.count(); // ditto
 
     QDBusMetaObjectPrivate *header = reinterpret_cast<QDBusMetaObjectPrivate *>(idata.data());
-    Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 8, "QtDBus meta-object generator should generate the same version as moc");
+    Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 9, "QtDBus meta-object generator should generate the same version as moc");
     header->revision = QMetaObjectPrivate::OutputRevision;
     header->className = 0;
     header->classInfoCount = 0;
@@ -424,7 +424,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     header->methodCount = signals_.count() + methods.count();
     header->methodData = idata.size();
     header->propertyCount = properties.count();
-    header->propertyData = header->methodData + header->methodCount * 5 + methodParametersDataSize;
+    header->propertyData = header->methodData + header->methodCount * QMetaObjectPrivate::IntsPerMethod + methodParametersDataSize;
     header->enumeratorCount = 0;
     header->enumeratorData = 0;
     header->constructorCount = 0;
@@ -436,7 +436,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     header->methodDBusData = header->propertyDBusData + header->propertyCount * intsPerProperty;
 
     int data_size = idata.size() +
-                    (header->methodCount * (5+intsPerMethod)) + methodParametersDataSize +
+                    (header->methodCount * (QMetaObjectPrivate::IntsPerMethod+intsPerMethod)) + methodParametersDataSize +
                     (header->propertyCount * (3+intsPerProperty));
     for (const Method &mm : qAsConst(signals_))
         data_size += 2 + mm.inputTypes.count() + mm.outputTypes.count();
@@ -447,12 +447,23 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     QMetaStringTable strings(className.toLatin1());
 
     int offset = header->methodData;
-    int parametersOffset = offset + header->methodCount * 5;
+    int parametersOffset = offset + header->methodCount * QMetaObjectPrivate::IntsPerMethod;
     int signatureOffset = header->methodDBusData;
     int typeidOffset = header->methodDBusData + header->methodCount * intsPerMethod;
     idata[typeidOffset++] = 0;                           // eod
 
+    int totalMetaTypeCount = properties.count();
+    for (const auto& methodContainer: {signals_, methods}) {
+        for (const auto& method: methodContainer) {
+            int argc = method.inputTypes.size() + qMax(qsizetype(0), method.outputTypes.size() - 1);
+            totalMetaTypeCount += argc + 1;
+        }
+    }
+    QMetaType *metaTypes = new QMetaType[totalMetaTypeCount];
+    int propertyId = 0;
+
     // add each method:
+    int currentMethodMetaTypeOffset = properties.count();
     for (int x = 0; x < 2; ++x) {
         // Signals must be added before other methods, to match moc.
         QMap<QByteArray, Method> &map = (x == 0) ? signals_ : methods;
@@ -467,6 +478,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
             idata[offset++] = parametersOffset;
             idata[offset++] = strings.enter(mm.tag);
             idata[offset++] = mm.flags;
+            idata[offset++] = currentMethodMetaTypeOffset;
 
             // Parameter types
             for (int i = -1; i < argc; ++i) {
@@ -496,6 +508,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
                     typeInfo = IsUnresolvedType | strings.enter(typeName);
                 else
                     typeInfo = type;
+                metaTypes[currentMethodMetaTypeOffset++] = QMetaType (type);
                 idata[parametersOffset++] = typeInfo;
             }
             // Parameter names
@@ -514,15 +527,12 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
         }
     }
 
-    Q_ASSERT(offset == header->methodData + header->methodCount * 5);
+    Q_ASSERT(offset == header->methodData + header->methodCount * QMetaObjectPrivate::IntsPerMethod);
     Q_ASSERT(parametersOffset == header->propertyData);
     Q_ASSERT(signatureOffset == header->methodDBusData + header->methodCount * intsPerMethod);
     Q_ASSERT(typeidOffset == idata.size());
     offset += methodParametersDataSize;
     Q_ASSERT(offset == header->propertyData);
-
-    QMetaType *metaTypes = new QMetaType[properties.count()];
-    int propertyId = 0;
 
     // add each property
     signatureOffset = header->propertyDBusData;

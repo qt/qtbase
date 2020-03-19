@@ -57,6 +57,7 @@ class QRect;
 class Q_GUI_EXPORT QPlatformSystemTrayIcon : public QObject
 {
     Q_OBJECT
+    Q_MOC_INCLUDE(<qpa/qplatformscreen.h>)
 public:
     enum ActivationReason {
         Unknown,

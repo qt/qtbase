@@ -2796,6 +2796,35 @@ constexpr QMetaTypeInterface *qMetaTypeInterfaceForType()
     }
 }
 
+namespace detail {
+
+template <typename T, typename ODR_VIOLATION_PREVENTER>
+struct is_complete_helper {
+    template <typename U>
+    static auto check(U*)  -> std::integral_constant<bool, sizeof(U) != 0>;
+    static auto check(...) -> std::false_type;
+    using type = decltype(check(static_cast<T*>(nullptr)));
+};
+
+}
+
+template <typename T, typename ODR_VIOLATION_PREVENTER>
+struct is_complete : detail::is_complete_helper<T, ODR_VIOLATION_PREVENTER>::type {};
+
+template<typename Unique, typename T>
+constexpr QMetaTypeInterface *qTryMetaTypeInterfaceForType()
+{
+    using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
+    using Tz = std::remove_pointer_t<Ty>;
+    if constexpr (!is_complete<Tz, Unique>::value) {
+        return nullptr;
+    } else if constexpr (std::is_same_v<Ty, void>) {
+        return nullptr;
+    } else {
+        return &QMetaTypeForType<Ty>::metaType;
+    }
+}
+
 } // namespace QtPrivate
 
 template<typename T>
@@ -2807,6 +2836,11 @@ QMetaType QMetaType::fromType()
 template<typename... T>
 QtPrivate::QMetaTypeInterface *const qt_metaTypeArray[] = {
     QtPrivate::qMetaTypeInterfaceForType<T>()...
+};
+
+template<typename Unique,typename... T>
+QtPrivate::QMetaTypeInterface *const qt_incomplete_metaTypeArray[] = {
+    QtPrivate::qTryMetaTypeInterfaceForType<Unique, T>()...
 };
 
 QT_END_NAMESPACE

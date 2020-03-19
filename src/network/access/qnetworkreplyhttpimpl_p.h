@@ -71,6 +71,8 @@
 #include <QtNetwork/QSslConfiguration>
 #endif
 
+Q_MOC_INCLUDE(<QtNetwork/QAuthenticator>)
+
 QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE

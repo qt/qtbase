@@ -59,6 +59,7 @@ class QTuioToken;
 class QTuioHandler : public QObject
 {
     Q_OBJECT
+    Q_MOC_INCLUDE("qoscmessage_p.h")
 
 public:
     explicit QTuioHandler(const QString &specification);

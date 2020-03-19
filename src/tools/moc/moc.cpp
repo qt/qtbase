@@ -1125,7 +1125,7 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
 
     fputs("", out);
     for (i = 0; i < classList.size(); ++i) {
-        Generator generator(&classList[i], metaTypes, knownQObjectClasses, knownGadgets, out);
+        Generator generator(&classList[i], metaTypes, knownQObjectClasses, knownGadgets, out, requireCompleteTypes);
         generator.generateCode();
     }
     fputs("", out);

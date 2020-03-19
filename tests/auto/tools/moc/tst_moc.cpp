@@ -1773,14 +1773,20 @@ public slots:
         QString const returnConstString2( QString const s) { return s; }
 };
 
+
+struct science_constant {};
+struct science_const {};
+struct constconst {};
+struct const_ {};
+
 class QTBUG9354_constInName: public QObject
 { Q_OBJECT
 public slots:
-    void slotChooseScientificConst0(struct science_constant const &) {};
-    void foo(struct science_const const &) {};
-    void foo(struct constconst const &) {};
-    void foo(struct constconst *) {};
-    void foo(struct const_ *) {};
+    void slotChooseScientificConst0(science_constant const &) {};
+    void foo(science_const const &) {};
+    void foo(constconst const &) {};
+    void foo(constconst *) {};
+    void foo(const_ *) {};
 };
 
 

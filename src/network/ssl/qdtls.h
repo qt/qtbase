@@ -48,6 +48,8 @@
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qobject.h>
 
+Q_MOC_INCLUDE(<QtNetwork/QSslPreSharedKeyAuthenticator>)
+
 #ifndef Q_CLANG_QDOC
 QT_REQUIRE_CONFIG(dtls);
 #endif

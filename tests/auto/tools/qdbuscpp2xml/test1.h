@@ -30,14 +30,15 @@
 #define QDBUSCPP2XML_TEST1_H
 
 #include <QObject>
-
-class QDBusObjectPath;
-class QDBusUnixFileDescriptor;
-class QDBusSignature;
+#include <QtDBus/QDBusSignature>
+#include <QtDBus/QDBusObjectPath>
+#include <QtDBus/QDBusUnixFileDescriptor>
 
 class Test1 : public QObject
 {
     Q_OBJECT
+    Q_MOC_INCLUDE(<QtDBus/qdbusextratypes.h>)
+    Q_MOC_INCLUDE(<QtDBus/qdbusunixfiledescriptor.h>)
     Q_CLASSINFO("D-Bus Interface", "org.qtProject.qdbuscpp2xmlTests.Test1")
     Q_PROPERTY(int numProperty1 READ numProperty1 CONSTANT)
     Q_PROPERTY(int numProperty2 READ numProperty2 WRITE setNumProperty2)

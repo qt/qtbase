@@ -1216,7 +1216,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             - int(d->methods.size())       // return "parameters" don't have names
             - int(d->constructors.size()); // "this" parameters don't have names
     if (buf) {
-        Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 8, "QMetaObjectBuilder should generate the same version as moc");
+        Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 9, "QMetaObjectBuilder should generate the same version as moc");
         pmeta->revision = QMetaObjectPrivate::OutputRevision;
         pmeta->flags = d->flags;
         pmeta->className = 0;   // Class name is always the first string.
@@ -1228,7 +1228,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
         pmeta->methodCount = int(d->methods.size());
         pmeta->methodData = dataIndex;
-        dataIndex += 5 * int(d->methods.size());
+        dataIndex += QMetaObjectPrivate::IntsPerMethod * int(d->methods.size());
         if (hasRevisionedMethods)
             dataIndex += int(d->methods.size());
         paramsIndex = dataIndex;
@@ -1248,10 +1248,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
         pmeta->constructorCount = int(d->constructors.size());
         pmeta->constructorData = dataIndex;
-        dataIndex += 5 * int(d->constructors.size());
+        dataIndex += QMetaObjectPrivate::IntsPerMethod * int(d->constructors.size());
     } else {
         dataIndex += 2 * int(d->classInfoNames.size());
-        dataIndex += 5 * int(d->methods.size());
+        dataIndex += QMetaObjectPrivate::IntsPerMethod * int(d->methods.size());
         if (hasRevisionedMethods)
             dataIndex += int(d->methods.size());
         paramsIndex = dataIndex;
@@ -1262,7 +1262,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         if (hasRevisionedProperties)
             dataIndex += int(d->properties.size());
         dataIndex += 5 * int(d->enumerators.size());
-        dataIndex += 5 * int(d->constructors.size());
+        dataIndex += QMetaObjectPrivate::IntsPerMethod * int(d->constructors.size());
     }
 
     // Allocate space for the enumerator key names and values.
@@ -1307,6 +1307,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Output the methods in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->methodData);
+    int parameterMetaTypesIndex = d->properties.size();
     for (const auto &method : d->methods) {
         int name = strings.enter(method.name());
         int argc = method.parameterCount();
@@ -1318,11 +1319,13 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             data[dataIndex + 2] = paramsIndex;
             data[dataIndex + 3] = tag;
             data[dataIndex + 4] = attrs;
+            data[dataIndex + 5] = parameterMetaTypesIndex;
             if (method.methodType() == QMetaMethod::Signal)
                 pmeta->signalCount++;
         }
-        dataIndex += 5;
+        dataIndex += QMetaObjectPrivate::IntsPerMethod;
         paramsIndex += 1 + argc * 2;
+        parameterMetaTypesIndex += 1 + argc;
     }
     if (hasRevisionedMethods) {
         for (const auto &method : d->methods) {
@@ -1333,7 +1336,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     // Output the method parameters in the class.
-    Q_ASSERT(!buf || dataIndex == pmeta->methodData + int(d->methods.size()) * 5
+    Q_ASSERT(!buf || dataIndex == pmeta->methodData + int(d->methods.size()) * QMetaObjectPrivate::IntsPerMethod
              + (hasRevisionedMethods ? int(d->methods.size()) : 0));
     for (int x = 0; x < 2; ++x) {
         const std::vector<QMetaMethodBuilderPrivate> &methods = (x == 0) ? d->methods : d->constructors;
@@ -1446,9 +1449,11 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             data[dataIndex + 2] = paramsIndex;
             data[dataIndex + 3] = tag;
             data[dataIndex + 4] = attrs;
+            data[dataIndex + 5] = parameterMetaTypesIndex;
         }
-        dataIndex += 5;
+        dataIndex += QMetaObjectPrivate::IntsPerMethod;
         paramsIndex += 1 + argc * 2;
+        parameterMetaTypesIndex += argc;
     }
 
     size += strings.blobSize();
@@ -1474,7 +1479,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         size += sizeof(SuperData) * (d->relatedMetaObjects.size() + 1);
     }
 
-    if (d->properties.size() > 0) {
+    if (d->properties.size() > 0 || d->methods.size() > 0 || d->constructors.size() > 0) {
         ALIGN(size, QtPrivate::QMetaTypeInterface *);
         auto types = reinterpret_cast<QtPrivate::QMetaTypeInterface **>(buf + size);
         if (buf) {
@@ -1484,8 +1489,26 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                 *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                 types++;
             }
+            for (const auto &method: d->methods) {
+                QMetaType mt(QMetaType::type(method.returnType));
+                *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+                types++;
+                for (const auto &parameterType: method.parameterTypes()) {
+                    QMetaType mt(QMetaType::type(parameterType));
+                    *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+                    types++;
+                }
+            }
+            for (const auto &constructor: d->constructors) {
+                for (const auto &parameterType: constructor.parameterTypes()) {
+                    QMetaType mt(QMetaType::type(parameterType));
+                    *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+                    types++;
+                }
+            }
         }
-        size += static_cast<int>(sizeof(QMetaType) * d->properties.size());
+        // parameterMetaTypesIndex is equal to the total number of metatypes
+        size += static_cast<int>(sizeof(QMetaType) * parameterMetaTypesIndex);
     }
 
     // Align the final size and return it.

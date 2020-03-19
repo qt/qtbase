@@ -43,6 +43,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/QObject>
 #include <QtGui/qsurface.h>
+Q_MOC_INCLUDE(<QScreen>)
 
 QT_BEGIN_NAMESPACE
 

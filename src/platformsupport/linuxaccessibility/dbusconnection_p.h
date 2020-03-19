@@ -55,6 +55,7 @@
 #include <QtCore/QString>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusVariant>
+Q_MOC_INCLUDE(<QtDBus/QDBusError>)
 
 QT_BEGIN_NAMESPACE
 

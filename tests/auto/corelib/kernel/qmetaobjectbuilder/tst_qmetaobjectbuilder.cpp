@@ -1391,7 +1391,7 @@ private:
 };
 
 QMetaObject TestObject::staticMetaObject = {
-    { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}
 };
 
 TestObject::TestObject(QObject *parent)

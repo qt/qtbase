@@ -83,6 +83,7 @@ public:
 class Q_AUTOTEST_EXPORT QAbstractSocketEngine : public QObject
 {
     Q_OBJECT
+    Q_MOC_INCLUDE(<QtNetwork/qauthenticator.h>)
 public:
 
     static QAbstractSocketEngine *createSocketEngine(QAbstractSocket::SocketType socketType, const QNetworkProxy &, QObject *parent);
