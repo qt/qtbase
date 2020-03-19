@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGUISHORTCUT_P_H
-#define QGUISHORTCUT_P_H
+#ifndef QSHORTCUT_P_H
+#define QSHORTCUT_P_H
 
 //
 //  W A R N I N G
@@ -52,7 +52,7 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include "qguishortcut.h"
+#include "qshortcut.h"
 #include <QtGui/qkeysequence.h>
 
 #include <QtCore/qstring.h>
@@ -70,16 +70,17 @@ class QShortcutMap;
     \internal
     Private data accessed through d-pointer.
 */
-class Q_GUI_EXPORT QGuiShortcutPrivate : public QObjectPrivate
+class Q_GUI_EXPORT QShortcutPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QGuiShortcut)
+    Q_DECLARE_PUBLIC(QShortcut)
 public:
-    QGuiShortcutPrivate() = default;
+    QShortcutPrivate() = default;
 
     virtual QShortcutMap::ContextMatcher contextMatcher() const;
     virtual bool handleWhatsThis() { return false; }
 
     QKeySequence sc_sequence;
+    QString sc_whatsthis;
     Qt::ShortcutContext sc_context = Qt::WindowShortcut;
     bool sc_enabled = true;
     bool sc_autorepeat = true;
@@ -89,4 +90,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QGUISHORTCUT_P_H
+#endif // QSHORTCUT_P_H

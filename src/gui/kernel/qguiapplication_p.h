@@ -81,6 +81,9 @@ class QInputDeviceManager;
 #ifndef QT_NO_ACTION
 class QActionPrivate;
 #endif
+#if QT_CONFIG(shortcut)
+class QShortcutPrivate;
+#endif
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
@@ -331,6 +334,9 @@ public:
 
 #ifndef QT_NO_ACTION
     virtual QActionPrivate *createActionPrivate() const;
+#endif
+#ifndef QT_NO_SHORTCUT
+    virtual QShortcutPrivate *createShortcutPrivate() const;
 #endif
 
 protected:

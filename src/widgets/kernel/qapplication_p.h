@@ -120,6 +120,9 @@ public:
 #ifndef QT_NO_ACTION
     QActionPrivate *createActionPrivate() const override;
 #endif
+#ifndef QT_NO_SHORTCUT
+    QShortcutPrivate *createShortcutPrivate() const override;
+#endif
 
     //modality
     bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const override;

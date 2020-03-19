@@ -71,8 +71,7 @@ qtConfig(formlayout) {
 }
 
 qtConfig(shortcut) {
-    HEADERS += kernel/qshortcut.h
-    SOURCES += kernel/qshortcut.cpp
+    SOURCES += kernel/qshortcut_widgets.cpp
 }
 
 qtConfig(tooltip) {

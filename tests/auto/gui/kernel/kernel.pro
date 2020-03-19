@@ -11,7 +11,6 @@ SUBDIRS=\
    qguieventdispatcher \
    qguieventloop \
    qguimetatype \
-   qguishortcut \
    qguitimer \
    qguivariant \
    qhighdpiscaling \
@@ -22,6 +21,7 @@ SUBDIRS=\
    qmouseevent_modal \
    qpalette \
    qscreen \
+   qshortcut \
    qsurfaceformat \
    qtouchevent \
    qwindow \
@@ -34,7 +34,7 @@ win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
 
 !qtConfig(shortcut): SUBDIRS -= \
    qkeysequence \
-   qguishortcut \
+   qshortcut \
    qguimetatype \
    qguivariant
 

@@ -334,7 +334,7 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_formlayout
 
 qt_extend_target(Widgets CONDITION QT_FEATURE_shortcut
     SOURCES
-        kernel/qshortcut.cpp kernel/qshortcut.h
+        kernel/qshortcut_widgets.cpp
 )
 
 qt_extend_target(Widgets CONDITION QT_FEATURE_tooltip

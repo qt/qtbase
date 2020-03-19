@@ -465,7 +465,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
 
 qt_extend_target(Gui CONDITION QT_FEATURE_shortcut
     SOURCES
-        kernel/qguishortcut.cpp kernel/qguishortcut.h kernel/qguishortcut_p.h
+        kernel/qshortcut.cpp kernel/qshortcut.h kernel/qshortcut_p.h
         kernel/qkeysequence.cpp kernel/qkeysequence.h kernel/qkeysequence_p.h
         kernel/qshortcutmap.cpp kernel/qshortcutmap_p.h
 )

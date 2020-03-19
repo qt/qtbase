@@ -28,13 +28,13 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/qguiapplication.h>
-#include <QtGui/qguishortcut.h>
+#include <QtGui/qshortcut.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qrasterwindow.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 
-class tst_QGuiShortcut : public QObject
+class tst_QShortcut : public QObject
 {
     Q_OBJECT
 public:
@@ -66,17 +66,17 @@ static void sendKey(QWindow *target, Qt::Key k, char c, Qt::KeyboardModifiers mo
     QTest::sendKeyEvent(QTest::Release, target, k, c, modifiers);
 }
 
-void tst_QGuiShortcut::trigger()
+void tst_QShortcut::trigger()
 {
     ColoredWindow w(Qt::yellow);
     w.setTitle(QTest::currentTestFunction());
     w.resize(QGuiApplication::primaryScreen()->size() / 4);
-    new QGuiShortcut(Qt::CTRL + Qt::Key_Q, &w, SLOT(close()));
+    new QShortcut(Qt::CTRL + Qt::Key_Q, &w, SLOT(close()));
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     sendKey(&w, Qt::Key_Q, 'q', Qt::ControlModifier);
     QTRY_VERIFY(!w.isVisible());
 }
 
-QTEST_MAIN(tst_QGuiShortcut)
-#include "tst_qguishortcut.moc"
+QTEST_MAIN(tst_QShortcut)
+#include "tst_qshortcut.moc"

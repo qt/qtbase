@@ -38,6 +38,8 @@
 ****************************************************************************/
 
 #include "qshortcut.h"
+#include "private/qshortcut_p.h"
+
 #include "private/qwidget_p.h"
 
 #include <qevent.h>
@@ -52,7 +54,6 @@
 #endif
 #include <qapplication.h>
 #include <private/qapplication_p.h>
-#include "private/qguishortcut_p.h"
 #include <private/qshortcutmap_p.h>
 #if QT_CONFIG(action)
 #  include <private/qaction_p.h>
@@ -326,223 +327,32 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
 }
 #endif // QT_CONFIG(action)
 
-
-/*!
-    \class QShortcut
-    \brief The QShortcut class is used to create keyboard shortcuts.
-
-    \ingroup events
-    \inmodule QtWidgets
-
-    The QShortcut class provides a way of connecting keyboard
-    shortcuts to Qt's \l{signals and slots} mechanism, so that
-    objects can be informed when a shortcut is executed. The shortcut
-    can be set up to contain all the key presses necessary to
-    describe a keyboard shortcut, including the states of modifier
-    keys such as \uicontrol Shift, \uicontrol Ctrl, and \uicontrol Alt.
-
-    \target mnemonic
-
-    On certain widgets, using '&' in front of a character will
-    automatically create a mnemonic (a shortcut) for that character,
-    e.g. "E&xit" will create the shortcut \uicontrol Alt+X (use '&&' to
-    display an actual ampersand). The widget might consume and perform
-    an action on a given shortcut. On X11 the ampersand will not be
-    shown and the character will be underlined. On Windows, shortcuts
-    are normally not displayed until the user presses the \uicontrol Alt
-    key, but this is a setting the user can change. On Mac, shortcuts
-    are disabled by default. Call \l qt_set_sequence_auto_mnemonic() to
-    enable them. However, because mnemonic shortcuts do not fit in
-    with Aqua's guidelines, Qt will not show the shortcut character
-    underlined.
-
-    For applications that use menus, it may be more convenient to
-    use the convenience functions provided in the QMenu class to
-    assign keyboard shortcuts to menu items as they are created.
-    Alternatively, shortcuts may be associated with other types of
-    actions in the QAction class.
-
-    The simplest way to create a shortcut for a particular widget is
-    to construct the shortcut with a key sequence. For example:
-
-    \snippet code/src_gui_kernel_qshortcut.cpp 0
-
-    When the user types the \l{QKeySequence}{key sequence}
-    for a given shortcut, the shortcut's activated() signal is
-    emitted. (In the case of ambiguity, the activatedAmbiguously()
-    signal is emitted.) A shortcut is "listened for" by Qt's event
-    loop when the shortcut's parent widget is receiving events.
-
-    A shortcut's key sequence can be set with setKey() and retrieved
-    with key(). A shortcut can be enabled or disabled with
-    setEnabled(), and can have "What's This?" help text set with
-    setWhatsThis().
-
-    \sa QShortcutEvent, QKeySequence, QAction
-*/
-
-/*!
-    \fn QWidget *QShortcut::parentWidget() const
-
-    Returns the shortcut's parent widget.
-*/
-
-/*
-    \internal
-    Private data accessed through d-pointer.
-*/
-class QShortcutPrivate : public QGuiShortcutPrivate
+class QtWidgetsShortcutPrivate : public QShortcutPrivate
 {
     Q_DECLARE_PUBLIC(QShortcut)
 public:
-    QShortcutPrivate() = default;
+    QtWidgetsShortcutPrivate() = default;
 
     QShortcutMap::ContextMatcher contextMatcher() const override
     { return qWidgetShortcutContextMatcher; }
 
     bool handleWhatsThis() override;
-
-    QString sc_whatsthis;
 };
 
-bool QShortcutPrivate::handleWhatsThis()
+bool QtWidgetsShortcutPrivate::handleWhatsThis()
 {
 #if QT_CONFIG(whatsthis)
-    const bool result = QWhatsThis::inWhatsThisMode();
-    if (result)
+    if (QWhatsThis::inWhatsThisMode()) {
         QWhatsThis::showText(QCursor::pos(), sc_whatsthis);
-    return result;
-#else
-    return false;
+        return true;
+    }
 #endif
+    return false;
 }
 
-/*!
-    Constructs a QShortcut object for the \a parent widget. Since no
-    shortcut key sequence is specified, the shortcut will not emit any
-    signals.
-
-    \sa setKey()
-*/
-QShortcut::QShortcut(QWidget *parent)
-    : QGuiShortcut(*new QShortcutPrivate, parent)
+QShortcutPrivate *QApplicationPrivate::createShortcutPrivate() const
 {
+    return new QtWidgetsShortcutPrivate;
 }
-
-/*!
-    Constructs a QShortcut object for the \a parent widget. The shortcut
-    operates on its parent, listening for \l{QShortcutEvent}s that
-    match the \a key sequence. Depending on the ambiguity of the
-    event, the shortcut will call the \a member function, or the \a
-    ambiguousMember function, if the key press was in the shortcut's
-    \a shortcutContext.
-*/
-QShortcut::QShortcut(const QKeySequence &key, QWidget *parent,
-                     const char *member, const char *ambiguousMember,
-                     Qt::ShortcutContext shortcutContext)
-    : QGuiShortcut(*new QShortcutPrivate, key, parent, member, ambiguousMember, shortcutContext)
-{
-}
-
-/*!
-    \fn template<typename Functor>
-        QShortcut(const QKeySequence &key, QWidget *parent,
-                  Functor functor,
-                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
-    \since 5.15
-    \overload
-
-    This is a QShortcut convenience constructor which connects the shortcut's
-    \l{QShortcut::activated()}{activated()} signal to the \a functor.
-*/
-/*!
-    \fn template<typename Functor>
-        QShortcut(const QKeySequence &key, QWidget *parent,
-                  const QObject *context, Functor functor,
-                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
-    \since 5.15
-    \overload
-
-    This is a QShortcut convenience constructor which connects the shortcut's
-    \l{QShortcut::activated()}{activated()} signal to the \a functor.
-
-    The \a functor can be a pointer to a member function of the \a context object.
-
-    If the \a context object is destroyed, the \a functor will not be called.
-*/
-/*!
-    \fn template<typename Functor, typename FunctorAmbiguous>
-        QShortcut(const QKeySequence &key, QWidget *parent,
-                  const QObject *context1, Functor functor,
-                  FunctorAmbiguous functorAmbiguous,
-                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
-    \since 5.15
-    \overload
-
-    This is a QShortcut convenience constructor which connects the shortcut's
-    \l{QShortcut::activated()}{activated()} signal to the \a functor and
-    \l{QShortcut::activatedAmbiguously()}{activatedAmbiguously()}
-    signal to the \a FunctorAmbiguous.
-
-    The \a functor and \a FunctorAmbiguous can be a pointer to a member
-    function of the \a context object.
-
-    If the \a context object is destroyed, the \a functor and
-    \a FunctorAmbiguous will not be called.
-*/
-/*!
-    \fn template<typename Functor, typename FunctorAmbiguous>
-        QShortcut(const QKeySequence &key, QWidget *parent,
-                  const QObject *context1, Functor functor,
-                  const QObject *context2, FunctorAmbiguous functorAmbiguous,
-                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
-    \since 5.15
-    \overload
-
-    This is a QShortcut convenience constructor which connects the shortcut's
-    \l{QShortcut::activated()}{activated()} signal to the \a functor and
-    \l{QShortcut::activatedAmbiguously()}{activatedAmbiguously()}
-    signal to the \a FunctorAmbiguous.
-
-    The \a functor can be a pointer to a member function of the
-    \a context1 object.
-    The \a FunctorAmbiguous can be a pointer to a member function of the
-    \a context2 object.
-
-    If the \a context1 object is destroyed, the \a functor will not be called.
-    If the \a context2 object is destroyed, the \a FunctorAmbiguous
-    will not be called.
-*/
-
-/*!
-    \property QShortcut::whatsThis
-    \brief the shortcut's "What's This?" help text
-
-    The text will be shown when the application is in "What's
-    This?" mode and the user types the shortcut key() sequence.
-
-    To set "What's This?" help on a menu item (with or without a
-    shortcut key), set the help on the item's action.
-
-    By default, this property contains an empty string.
-
-    \sa QWhatsThis::inWhatsThisMode(), QAction::setWhatsThis()
-*/
-void QShortcut::setWhatsThis(const QString &text)
-{
-    Q_D(QShortcut);
-    d->sc_whatsthis = text;
-}
-
-QString QShortcut::whatsThis() const
-{
-    Q_D(const QShortcut);
-    return d->sc_whatsthis;
-}
-
-/*!
-    Destroys the shortcut.
-*/
-QShortcut::~QShortcut() = default;
 
 QT_END_NAMESPACE
