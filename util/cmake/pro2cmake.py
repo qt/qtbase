@@ -3987,6 +3987,10 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
     for include_index, include_file in enumerate(scope.get_files("_INCLUDED", is_include=True)):
         if not include_file:
             continue
+        # Ignore selfcover.pri as this generates too many incompatible flags
+        # need to be removed with special cases
+        if include_file.endswith("selfcover.pri"):
+            continue
         if include_file.startswith("${QT_SOURCE_TREE}"):
             root_source_dir = get_top_level_repo_project_path(scope.file_absolute_path)
             include_file = include_file.replace("${QT_SOURCE_TREE}", root_source_dir)
