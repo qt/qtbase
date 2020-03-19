@@ -94,6 +94,22 @@ private:
     {
         return !(m1 == m2);
     }
+
+    template <std::size_t I,
+              typename M,
+              std::enable_if_t<(I < 4), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<M>, QMargins>, bool> = true>
+    friend constexpr decltype(auto) get(M &&m) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<M>(m).m_left);
+        else if constexpr (I == 1)
+            return (std::forward<M>(m).m_top);
+        else if constexpr (I == 2)
+            return (std::forward<M>(m).m_right);
+        else if constexpr (I == 3)
+            return (std::forward<M>(m).m_bottom);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QMargins, Q_MOVABLE_TYPE);
@@ -327,6 +343,22 @@ private:
     {
         return !(lhs == rhs);
     }
+
+    template <std::size_t I,
+              typename M,
+              std::enable_if_t<(I < 4), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<M>, QMarginsF>, bool> = true>
+    friend constexpr decltype(auto) get(M &&m) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<M>(m).m_left);
+        else if constexpr (I == 1)
+            return (std::forward<M>(m).m_top);
+        else if constexpr (I == 2)
+            return (std::forward<M>(m).m_right);
+        else if constexpr (I == 3)
+            return (std::forward<M>(m).m_bottom);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QMarginsF, Q_MOVABLE_TYPE);
@@ -493,5 +525,33 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QMarginsF &);
 #endif
 
 QT_END_NAMESPACE
+
+/*****************************************************************************
+  QMargins/QMarginsF tuple protocol
+ *****************************************************************************/
+
+namespace std {
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QMargins)> : public integral_constant<size_t, 4> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QMargins)> { public: using type = int; };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QMargins)> { public: using type = int; };
+    template <>
+    class tuple_element<2, QT_PREPEND_NAMESPACE(QMargins)> { public: using type = int; };
+    template <>
+    class tuple_element<3, QT_PREPEND_NAMESPACE(QMargins)> { public: using type = int; };
+
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QMarginsF)> : public integral_constant<size_t, 4> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QMarginsF)> { public: using type = QT_PREPEND_NAMESPACE(qreal); };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QMarginsF)> { public: using type = QT_PREPEND_NAMESPACE(qreal); };
+    template <>
+    class tuple_element<2, QT_PREPEND_NAMESPACE(QMarginsF)> { public: using type = QT_PREPEND_NAMESPACE(qreal); };
+    template <>
+    class tuple_element<3, QT_PREPEND_NAMESPACE(QMarginsF)> { public: using type = QT_PREPEND_NAMESPACE(qreal); };
+}
 
 #endif // QMARGINS_H

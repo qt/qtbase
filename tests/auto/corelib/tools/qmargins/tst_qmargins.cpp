@@ -52,6 +52,8 @@ private slots:
 #ifndef QT_NO_DEBUG_STREAM
     void debugStreamCheckF();
 #endif
+
+    void structuredBinding();
 };
 
 // Testing get/set functions
@@ -282,6 +284,60 @@ void tst_QMargins::debugStreamCheckF()
     QCOMPARE(result, expected);
 }
 #endif
+
+void tst_QMargins::structuredBinding()
+{
+    {
+        QMargins m(1, 2, 3, 4);
+        auto [left, top, right, bottom] = m;
+        QCOMPARE(left, 1);
+        QCOMPARE(top, 2);
+        QCOMPARE(right, 3);
+        QCOMPARE(bottom, 4);
+    }
+    {
+        QMargins m(1, 2, 3, 4);
+        auto &[left, top, right, bottom] = m;
+        QCOMPARE(left, 1);
+        QCOMPARE(top, 2);
+        QCOMPARE(right, 3);
+        QCOMPARE(bottom, 4);
+
+        left = 10;
+        top = 20;
+        right = 30;
+        bottom = 40;
+        QCOMPARE(m.left(), 10);
+        QCOMPARE(m.top(), 20);
+        QCOMPARE(m.right(), 30);
+        QCOMPARE(m.bottom(), 40);
+    }
+    {
+        QMarginsF m(1.0, 2.0, 3.0, 4.0);
+        auto [left, top, right, bottom] = m;
+        QCOMPARE(left, 1.0);
+        QCOMPARE(top, 2.0);
+        QCOMPARE(right, 3.0);
+        QCOMPARE(bottom, 4.0);
+    }
+    {
+        QMarginsF m(1.0, 2.0, 3.0, 4.0);
+        auto &[left, top, right, bottom] = m;
+        QCOMPARE(left, 1.0);
+        QCOMPARE(top, 2.0);
+        QCOMPARE(right, 3.0);
+        QCOMPARE(bottom, 4.0);
+
+        left = 10.0;
+        top = 20.0;
+        right = 30.0;
+        bottom = 40.0;
+        QCOMPARE(m.left(), 10.0);
+        QCOMPARE(m.top(), 20.0);
+        QCOMPARE(m.right(), 30.0);
+        QCOMPARE(m.bottom(), 40.0);
+    }
+}
 
 QTEST_APPLESS_MAIN(tst_QMargins)
 #include "tst_qmargins.moc"
