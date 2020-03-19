@@ -56,19 +56,16 @@ public:
 
     void setMapping(QObject *sender, int id);
     void setMapping(QObject *sender, const QString &text);
-    void setMapping(QObject *sender, QWidget *widget);
     void setMapping(QObject *sender, QObject *object);
     void removeMappings(QObject *sender);
 
     QObject *mapping(int id) const;
     QObject *mapping(const QString &text) const;
-    QObject *mapping(QWidget *widget) const;
     QObject *mapping(QObject *object) const;
 
 Q_SIGNALS:
     void mappedInt(int);
     void mappedString(const QString &);
-    void mappedWidget(QWidget *);
     void mappedObject(QObject *);
 
 public Q_SLOTS:

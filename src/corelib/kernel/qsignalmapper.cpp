@@ -68,13 +68,11 @@ public:
     {
         emitMappedValue(sender, &QSignalMapper::mappedInt, intHash);
         emitMappedValue(sender, &QSignalMapper::mappedString, stringHash);
-        emitMappedValue(sender, &QSignalMapper::mappedWidget, widgetHash);
         emitMappedValue(sender, &QSignalMapper::mappedObject, objectHash);
     }
 
     QHash<QObject *, int> intHash;
     QHash<QObject *, QString> stringHash;
-    QHash<QObject *, QWidget*> widgetHash;
     QHash<QObject *, QObject*> objectHash;
 };
 
@@ -95,8 +93,8 @@ public:
     The class supports the mapping of particular strings, integers,
     objects and widgets with particular objects using setMapping().
     The objects' signals can then be connected to the map() slot which
-    will emit a signal (it could be mappedInt(), mappedString(),
-    mappedWidget() and mappedObject()) with a value associated with
+    will emit a signal (it could be mappedInt(), mappedString()
+    and mappedObject()) with a value associated with
     the original signalling object. Mappings can be removed later using
     removeMappings().
 
@@ -184,19 +182,6 @@ void QSignalMapper::setMapping(QObject *sender, const QString &text)
 
 /*!
     Adds a mapping so that when map() is signalled from the \a sender,
-    the signal mappedWidget(\a widget ) is emitted.
-
-    There may be at most one widget for each sender.
-*/
-void QSignalMapper::setMapping(QObject *sender, QWidget *widget)
-{
-    Q_D(QSignalMapper);
-    d->widgetHash.insert(sender, widget);
-    connect(sender, SIGNAL(destroyed()), this, SLOT(_q_senderDestroyed()));
-}
-
-/*!
-    Adds a mapping so that when map() is signalled from the \a sender,
     the signal mappedObject(\a object ) is emitted.
 
     There may be at most one object for each sender.
@@ -231,17 +216,6 @@ QObject *QSignalMapper::mapping(const QString &id) const
 /*!
     \overload mapping()
 
-    Returns the sender QObject that is associated with the \a widget.
-*/
-QObject *QSignalMapper::mapping(QWidget *widget) const
-{
-    Q_D(const QSignalMapper);
-    return d->widgetHash.key(widget);
-}
-
-/*!
-    \overload mapping()
-
     Returns the sender QObject that is associated with the \a object.
 */
 QObject *QSignalMapper::mapping(QObject *object) const
@@ -264,7 +238,6 @@ void QSignalMapper::removeMappings(QObject *sender)
 
     d->intHash.remove(sender);
     d->stringHash.remove(sender);
-    d->widgetHash.remove(sender);
     d->objectHash.remove(sender);
 }
 
@@ -299,17 +272,6 @@ void QSignalMapper::map(QObject *sender)
     This signal is emitted when map() is signalled from an object that
     has a string mapping set. The object's mapped string is passed in
     \a text.
-
-    \sa setMapping()
-*/
-
-/*!
-    \fn void QSignalMapper::mappedWidget(QWidget *widget)
-    \since 5.15
-
-    This signal is emitted when map() is signalled from an object that
-    has a widget mapping set. The object's mapped widget is passed in
-    \a widget.
 
     \sa setMapping()
 */
