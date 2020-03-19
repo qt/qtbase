@@ -59,4 +59,8 @@ android {
     aaptOptions {
         noCompress 'rcc'
     }
+
+    defaultConfig {
+        resConfigs "en"
+    }
 }
