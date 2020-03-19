@@ -115,6 +115,18 @@ private:
     friend class QTransform;
     int xp;
     int yp;
+
+    template <std::size_t I,
+              typename P,
+              std::enable_if_t<(I < 2), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<P>, QPoint>, bool> = true>
+    friend constexpr decltype(auto) get(P &&p) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<P>(p).xp);
+        else if constexpr (I == 1)
+            return (std::forward<P>(p).yp);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QPoint, Q_MOVABLE_TYPE);
@@ -297,6 +309,18 @@ private:
 
     qreal xp;
     qreal yp;
+
+    template <std::size_t I,
+              typename P,
+              std::enable_if_t<(I < 2), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<P>, QPointF>, bool> = true>
+    friend constexpr decltype(auto) get(P &&p) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<P>(p).xp);
+        else if constexpr (I == 1)
+            return (std::forward<P>(p).yp);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QPointF, Q_MOVABLE_TYPE);
@@ -397,5 +421,25 @@ Q_CORE_EXPORT QDebug operator<<(QDebug d, const QPointF &p);
 #endif
 
 QT_END_NAMESPACE
+
+/*****************************************************************************
+  QPoint/QPointF tuple protocol
+ *****************************************************************************/
+
+namespace std {
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QPoint)> : public integral_constant<size_t, 2> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QPoint)> { public: using type = int; };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QPoint)> { public: using type = int; };
+
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QPointF)> : public integral_constant<size_t, 2> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QPointF)> { public: using type = QT_PREPEND_NAMESPACE(qreal); };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QPointF)> { public: using type = QT_PREPEND_NAMESPACE(qreal); };
+}
 
 #endif // QPOINT_H
