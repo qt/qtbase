@@ -38,6 +38,8 @@
 #include <qmovie.h>
 #include <qpicture.h>
 #include <qmessagebox.h>
+#include <qfontmetrics.h>
+#include <qmath.h>
 #include <private/qlabel_p.h>
 
 class Widget : public QWidget
@@ -373,8 +375,16 @@ void tst_QLabel::sizeHint()
     l1.setAlignment(Qt::AlignVCenter);
     l1.setTextInteractionFlags(Qt::TextSelectableByMouse);   // will now use qtextcontrol
     int h1 = l1.sizeHint().height();
-    QCOMPARE(h1, h);
 
+    QFontMetricsF fontMetrics(QApplication::font());
+    qreal leading = fontMetrics.leading();
+    qreal ascent = fontMetrics.ascent();
+    qreal descent = fontMetrics.descent();
+
+    bool leadingOverflow = qCeil(ascent + descent) < qCeil(ascent + descent + leading);
+    if (leadingOverflow)
+        QEXPECT_FAIL("", "See QTBUG-82954", Continue);
+    QCOMPARE(h1, h);
 }
 
 void tst_QLabel::task226479_movieResize()
