@@ -93,13 +93,13 @@ public:
 
     Type &operator*() const noexcept
     {
-        Q_ASSERT(pointer());
-        return *pointer();
+        Q_ASSERT(data());
+        return *data();
     }
 
     Type *operator->() const noexcept
     {
-        return pointer();
+        return data();
     }
 
     explicit operator bool() const noexcept
@@ -137,14 +137,14 @@ public:
         return TagType(typename QtPrivate::TagInfo<T>::TagType(d & tagMask()));
     }
 
-    T* pointer() const noexcept
+    T* data() const noexcept
     {
         return reinterpret_cast<T*>(d & pointerMask());
     }
 
     bool isNull() const noexcept
     {
-        return !pointer();
+        return !data();
     }
 
     void swap(QTaggedPointer<T, Tag> &other) noexcept
@@ -154,12 +154,12 @@ public:
 
     friend inline bool operator==(const QTaggedPointer<T, Tag> &lhs, const QTaggedPointer<T, Tag> &rhs) noexcept
     {
-        return lhs.pointer() == rhs.pointer();
+        return lhs.data() == rhs.data();
     }
 
     friend inline bool operator!=(const QTaggedPointer<T, Tag> &lhs, const QTaggedPointer<T, Tag> &rhs) noexcept
     {
-        return lhs.pointer() != rhs.pointer();
+        return lhs.data() != rhs.data();
     }
 
     friend inline bool operator==(const QTaggedPointer<T, Tag> &lhs, std::nullptr_t) noexcept
@@ -184,7 +184,7 @@ public:
 
     friend inline bool operator!(const QTaggedPointer<T, Tag> &ptr) noexcept
     {
-        return !ptr.pointer();
+        return !ptr.data();
     }
 
 protected:

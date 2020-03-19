@@ -299,7 +299,7 @@ void QPropertyObserverPointer::unlink()
     if (ptr->next)
         ptr->next->prev = ptr->prev;
     if (ptr->prev)
-        ptr->prev.setPointer(ptr->next.pointer());
+        ptr->prev.setPointer(ptr->next.data());
     ptr->next = nullptr;
     ptr->prev.clear();
 }
@@ -323,7 +323,7 @@ void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding
 
     auto observer = const_cast<QPropertyObserver*>(ptr);
     while (observer) {
-        auto * const next = observer->next.pointer();
+        auto * const next = observer->next.data();
         if (observer->next.tag() == QPropertyObserver::ObserverNotifiesChangeHandler) {
             if (!knownIfPropertyChanged && triggeringBinding) {
                 knownIfPropertyChanged = true;

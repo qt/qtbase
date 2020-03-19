@@ -50,24 +50,24 @@ void tst_QTaggedPointer::construction()
 {
     {
         QTaggedPointer<int> p;
-        QCOMPARE(p.pointer(), nullptr);
+        QCOMPARE(p.data(), nullptr);
         QVERIFY(!p.tag());
     }
     {
         QTaggedPointer<int> p(nullptr, 0x1);
-        QCOMPARE(p.pointer(), nullptr);
+        QCOMPARE(p.data(), nullptr);
         QCOMPARE(p.tag(), quintptr(0x1));
     }
     {
         QScopedPointer<int> rawPointer(new int(5));
         QTaggedPointer<int> p(rawPointer.data());
-        QCOMPARE(p.pointer(), rawPointer.data());
+        QCOMPARE(p.data(), rawPointer.data());
         QVERIFY(!p.tag());
     }
     {
         QScopedPointer<int> rawPointer(new int(5));
         QTaggedPointer<int> p(rawPointer.data(), 0x1);
-        QCOMPARE(p.pointer(), rawPointer.data());
+        QCOMPARE(p.data(), rawPointer.data());
         QCOMPARE(p.tag(), quintptr(0x1));
     }
 }
@@ -328,7 +328,7 @@ void tst_QTaggedPointer::tag()
 {
     QScopedPointer<int> rawPointer(new int(3));
     QTaggedPointer<int> p(rawPointer.data());
-    QCOMPARE(*p.pointer(), 3);
+    QCOMPARE(*p.data(), 3);
     QVERIFY(!p.tag());
 
     p.setTag(0x1);
@@ -356,11 +356,11 @@ void tst_QTaggedPointer::objectMember()
     f.p = QTaggedPointer<int>(rawPointer.data(), 0x1);
 
     Foo f2(f);
-    QCOMPARE(f2.p.pointer(), f.p.pointer());
+    QCOMPARE(f2.p.data(), f.p.data());
     QCOMPARE(f2.p.tag(), f.p.tag());
 
     Foo f3 = f;
-    QCOMPARE(f3.p.pointer(), f.p.pointer());
+    QCOMPARE(f3.p.data(), f.p.data());
     QCOMPARE(f3.p.tag(), f.p.tag());
 }
 
@@ -411,7 +411,7 @@ struct LinkedListItem
 
     ~LinkedListItem()
     {
-        delete next.pointer();
+        delete next.data();
     }
 };
 

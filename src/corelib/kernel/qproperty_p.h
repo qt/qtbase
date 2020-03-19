@@ -94,7 +94,7 @@ struct QPropertyObserverPointer
 
     explicit operator bool() const { return ptr != nullptr; }
 
-    QPropertyObserverPointer nextObserver() const { return {ptr->next.pointer()}; }
+    QPropertyObserverPointer nextObserver() const { return {ptr->next.data()}; }
 };
 
 class QPropertyBindingErrorPrivate : public QSharedData
