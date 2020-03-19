@@ -3256,11 +3256,12 @@ void QRhiGles2::gatherUniforms(GLuint program,
     QByteArray prefix = ub.structName.toUtf8() + '.';
     for (const QShaderDescription::BlockVariable &blockMember : ub.members) {
         if (blockMember.type == QShaderDescription::Struct) {
-            prefix += blockMember.name.toUtf8();
+            QByteArray structPrefix = prefix + blockMember.name.toUtf8();
+
             const int baseOffset = blockMember.offset;
             if (blockMember.arrayDims.isEmpty()) {
                 for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
-                    registerUniformIfActive(structMember, prefix, ub.binding, baseOffset, program, dst);
+                    registerUniformIfActive(structMember, structPrefix, ub.binding, baseOffset, program, dst);
             } else {
                 if (blockMember.arrayDims.count() > 1) {
                     qWarning("Array of struct '%s' has more than one dimension. Only the first dimension is used.",
@@ -3270,7 +3271,7 @@ void QRhiGles2::gatherUniforms(GLuint program,
                 const int elemSize = blockMember.size / dim;
                 int elemOffset = baseOffset;
                 for (int di = 0; di < dim; ++di) {
-                    const QByteArray arrayPrefix = prefix + '[' + QByteArray::number(di) + ']' + '.';
+                    const QByteArray arrayPrefix = structPrefix + '[' + QByteArray::number(di) + ']' + '.';
                     for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
                         registerUniformIfActive(structMember, arrayPrefix, ub.binding, elemOffset, program, dst);
                     elemOffset += elemSize;
