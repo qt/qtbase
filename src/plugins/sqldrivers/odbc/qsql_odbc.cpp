@@ -1586,7 +1586,7 @@ bool QODBCResult::exec()
 
                     if (bindValueType(i) & QSql::Out) {
                         const QVarLengthArray<SQLTCHAR> a(toSQLTCHAR(str));
-                        ba = QByteArray((const char *)a.constData(), a.size() * sizeof(SQLTCHAR));
+                        ba = QByteArray((const char *)a.constData(), int(a.size() * sizeof(SQLTCHAR)));
                         r = SQLBindParameter(d->hStmt,
                                             i + 1,
                                             qParamType[bindValueType(i) & QSql::InOut],
