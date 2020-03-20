@@ -813,16 +813,16 @@ void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 
 void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 {
-    QSize oldSize = m_widget->data->crect.size();
+    auto oldRect = m_widget->rect();
 
     if (updateSize()) {
         QGuiApplication::forwardEvent(m_widget, event);
 
         if (m_widget->d_func()->shouldPaintOnScreen()) {
-            QRegion updateRegion(geometry());
+            QRegion dirtyRegion = m_widget->rect();
             if (m_widget->testAttribute(Qt::WA_StaticContents))
-                updateRegion -= QRect(0, 0, oldSize.width(), oldSize.height());
-            m_widget->d_func()->syncBackingStore(updateRegion);
+                dirtyRegion -= oldRect;
+            m_widget->d_func()->syncBackingStore(dirtyRegion);
         } else {
             m_widget->d_func()->syncBackingStore();
         }
