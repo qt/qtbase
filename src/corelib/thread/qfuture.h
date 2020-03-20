@@ -254,10 +254,18 @@ public:
 private:
     friend class QFutureWatcher<T>;
 
-public: // Warning: the d pointer is not documented and is considered private.
-    // TODO: make this private
+    template<class U>
+    friend class QFuture;
+
+    template<class Function, class ResultType, class ParentResultType>
+    friend class QtPrivate::Continuation;
+
     using QFuturePrivate =
             std::conditional_t<std::is_same_v<T, void>, QFutureInterfaceBase, QFutureInterface<T>>;
+
+#ifdef QFUTURE_TEST
+public:
+#endif
     mutable QFuturePrivate d;
 };
 
