@@ -1569,6 +1569,7 @@ def map_condition(condition: str) -> str:
                     and not feature_name.startswith("system_jpeg")
                     and not feature_name.startswith("system_zlib")
                     and not feature_name.startswith("system_tiff")
+                    and not feature_name.startswith("system_assimp")
                     and not feature_name.startswith("system_doubleconversion")
                 ):
                     part = "ON"
