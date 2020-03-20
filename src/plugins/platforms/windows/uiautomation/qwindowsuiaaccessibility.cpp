@@ -105,6 +105,7 @@ static QString alertSound(const QObject *object)
         case Critical:
             return QStringLiteral("SystemHand");
         }
+        return QString();
     }
     return QStringLiteral("SystemAsterisk");
 }
