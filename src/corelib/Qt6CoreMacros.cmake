@@ -768,6 +768,13 @@ function(qt6_generate_meta_types_json_file target)
         file(MAKE_DIRECTORY "${target_binary_dir}/meta_types")
         file(TOUCH ${metatypes_file})
     endif()
+
+    # Need to make the path absolute during a Qt non-prefix build, otherwise files are written
+    # to the source dir because the paths are relative to the source dir when using file(TOUCH).
+    if(arg_COPY_OVER_INSTALL AND NOT IS_ABSOLUTE "${arg_INSTALL_DIR}/${metatypes_file_name}")
+        set(arg_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${arg_INSTALL_DIR}")
+    endif()
+
     if (arg_COPY_OVER_INSTALL AND NOT EXISTS ${arg_INSTALL_DIR}/${metatypes_file_name})
         file(MAKE_DIRECTORY "${arg_INSTALL_DIR}")
         file(TOUCH "${arg_INSTALL_DIR}/${metatypes_file_name}")
