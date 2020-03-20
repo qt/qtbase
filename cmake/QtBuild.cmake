@@ -1318,7 +1318,8 @@ function(qt_install_injections target build_dir install_dir)
                            "${lower_case_forwarding_header_path}"
                            "${current_repo_build_dir}/${file}")
         set(main_contents "#include \"${relpath}\"")
-        file(GENERATE OUTPUT "${lower_case_forwarding_header_path}/${original_file_name}"
+
+        qt_configure_file(OUTPUT "${lower_case_forwarding_header_path}/${original_file_name}"
              CONTENT "${main_contents}")
 
         if(is_framework)
@@ -1348,7 +1349,7 @@ function(qt_install_injections target build_dir install_dir)
             endif()
 
             # Generate upper case forwarding header like QVulkanFunctions or QtConfig.
-            file(GENERATE OUTPUT "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}"
+            qt_configure_file(OUTPUT "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}"
                  CONTENT "#include \"${destinationname}\"\n")
 
             if(is_framework)
