@@ -4537,6 +4537,9 @@ void tst_QSqlQuery::QTBUG_57138()
 
 void tst_QSqlQuery::dateTime_data()
 {
+    if (dbs.dbNames.isEmpty())
+        QSKIP( "No database drivers are available in this Qt configuration");
+
     QTest::addColumn<QString>("dbName");
     QTest::addColumn<QString>("tableName");
     QTest::addColumn<QString>("createTableString");
