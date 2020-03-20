@@ -1369,9 +1369,35 @@ static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &
         return nullptr;
     }
 
-    auto d = new QCborContainerPrivate;
-    d->ref.store(1);
-    d->decodeContainerFromCbor(reader, remainingRecursionDepth - 1);
+    QCborContainerPrivate *d = nullptr;
+    int mapShift = reader.isMap() ? 1 : 0;
+    if (reader.isLengthKnown()) {
+        quint64 len = reader.length();
+
+        // Clamp allocation to 1M elements (avoids crashing due to corrupt
+        // stream or loss of precision when converting from quint64 to
+        // QVector::size_type).
+        len = qMin(len, quint64(1024 * 1024 - 1));
+        if (len) {
+            d = new QCborContainerPrivate;
+            d->ref.store(1);
+            d->elements.reserve(qsizetype(len) << mapShift);
+        }
+    } else {
+        d = new QCborContainerPrivate;
+        d->ref.store(1);
+    }
+
+    reader.enterContainer();
+    if (reader.lastError() != QCborError::NoError)
+        return d;
+
+    while (reader.hasNext() && reader.lastError() == QCborError::NoError)
+        d->decodeValueFromCbor(reader, remainingRecursionDepth - 1);
+
+    if (reader.lastError() == QCborError::NoError)
+        reader.leaveContainer();
+
     return d;
 }
 
@@ -1626,30 +1652,6 @@ void QCborContainerPrivate::decodeValueFromCbor(QCborStreamReader &reader, int r
     case QCborStreamReader::Invalid:
         return;                 // probably a decode error
     }
-}
-
-void QCborContainerPrivate::decodeContainerFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
-{
-    int mapShift = reader.isMap() ? 1 : 0;
-    if (reader.isLengthKnown()) {
-        quint64 len = reader.length();
-
-        // Clamp allocation to 1M elements (avoids crashing due to corrupt
-        // stream or loss of precision when converting from quint64 to
-        // QVector::size_type).
-        len = qMin(len, quint64(1024 * 1024 - 1));
-        elements.reserve(qsizetype(len) << mapShift);
-    }
-
-    reader.enterContainer();
-    if (reader.lastError() != QCborError::NoError)
-        return;
-
-    while (reader.hasNext() && reader.lastError() == QCborError::NoError)
-        decodeValueFromCbor(reader, remainingRecursionDepth);
-
-    if (reader.lastError() == QCborError::NoError)
-        reader.leaveContainer();
 }
 
 /*!
