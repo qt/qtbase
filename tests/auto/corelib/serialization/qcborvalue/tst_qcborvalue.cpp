@@ -1709,13 +1709,21 @@ void tst_QCborValue::validation_data()
     // They are meant to ensure we don't pre-allocate a lot of memory
     // unnecessarily and possibly crash the application. The actual number of
     // elements in the stream is only 2, so we should get an unexpected EOF
-    // error. QCborValue internally uses 16 bytes per element, so we get to
-    // 2 GB at 2^27 elements.
-    QTest::addRow("very-large-array-no-overflow") << raw("\x9a\x07\xff\xff\xff" "\0\0") << 0 << CborErrorUnexpectedEOF;
-    QTest::addRow("very-large-array-overflow1") << raw("\x9a\x40\0\0\0" "\0\0") << 0 << CborErrorUnexpectedEOF;
+    // error. QCborValue internally uses 16 bytes per element, so we get to 2
+    // GB at 2^27 elements (32-bit) or, theoretically, 2^63 bytes at 2^59
+    // elements (64-bit).
+    if (sizeof(QVector<int>::size_type) == sizeof(int)) {
+        // 32-bit sizes (Qt 5 and 32-bit platforms)
+        QTest::addRow("very-large-array-no-overflow") << raw("\x9a\x07\xff\xff\xff" "\0\0") << 0 << CborErrorUnexpectedEOF;
+        QTest::addRow("very-large-array-overflow1") << raw("\x9a\x40\0\0\0" "\0\0") << 0 << CborErrorUnexpectedEOF;
 
-    // this makes sure we don't accidentally clip to 32-bit: sending 2^32+2 elements
-    QTest::addRow("very-large-array-overflow2") << raw("\x9b\0\0\0\1""\0\0\0\2" "\0\0") << 0 << CborErrorDataTooLarge;
+        // this makes sure we don't accidentally clip to 32-bit: sending 2^32+2 elements
+        QTest::addRow("very-large-array-overflow2") << raw("\x9b\0\0\0\1""\0\0\0\2" "\0\0") << 0 << CborErrorDataTooLarge;
+    } else {
+        // 64-bit Qt 6
+        QTest::addRow("very-large-array-no-overflow") << raw("\x9b\x07\xff\xff\xff" "\xff\xff\xff\xff" "\0\0");
+        QTest::addRow("very-large-array-overflow") << raw("\x9b\x40\0\0\0" "\0\0\0\0" "\0\0");
+    }
 }
 
 void tst_QCborValue::validation()
