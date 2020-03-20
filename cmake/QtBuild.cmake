@@ -3960,6 +3960,41 @@ function(qt_process_qlalr consuming_target input_file_list flags)
     endforeach()
 endfunction()
 
+
+# qt_configure_file(OUTPUT output-file <INPUT input-file | CONTENT content>)
+# input-file is relative to ${CMAKE_CURRENT_SOURCE_DIR}
+# output-file is relative to ${CMAKE_CURRENT_BINARY_DIR}
+#
+# This function is similar to file(GENERATE OUTPUT) except it writes the content
+# to the file at configure time, rather than at generate time. Once CMake 3.18 is released, it can use file(CONFIGURE) in its implmenetation. Until then, it
+# uses configure_file() with a generic input file as source, when used with the CONTENT signature.
+function(qt_configure_file)
+    qt_parse_all_arguments(arg "qt_configure_file" "" "OUTPUT;INPUT;CONTENT" "" ${ARGN})
+
+    if(NOT arg_OUTPUT)
+        message(FATAL_ERROR "No output file provided to qt_configure_file.")
+    endif()
+
+    if(arg_CONTENT)
+        set(template_name "QtFileConfigure.txt.in")
+        # When building qtbase, use the source template file.
+        # Otherwise use the installed file.
+        # This should work for non-prefix and superbuilds as well.
+        if(QtBase_SOURCE_DIR)
+            set(input_file "${QtBase_SOURCE_DIR}/cmake/${template_name}")
+        else()
+            set(input_file "${Qt6_DIR}/${template_name}")
+        endif()
+        set(__qt_file_configure_content "${arg_CONTENT}")
+    elseif(arg_INPUT)
+        set(input_file "${arg_INPUT}")
+    else()
+        message(FATAL_ERROR "No input value provided to qt_configure_file.")
+    endif()
+
+    configure_file("${input_file}" "${arg_OUTPUT}" @ONLY)
+endfunction()
+
 macro(qt_add_string_to_qconfig_cpp str)
     string(LENGTH "${str}" length)
     string(APPEND QT_CONFIG_STRS "    \"${str}\\0\"\n")
