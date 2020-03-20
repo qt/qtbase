@@ -553,6 +553,7 @@ void QColorSpace::setTransferFunction(QColorSpace::TransferFunction transferFunc
         return;
     if (!d_ptr) {
         d_ptr = new QColorSpacePrivate(Primaries::Custom, transferFunction, gamma);
+        d_ptr->ref.ref();
         return;
     }
     if (d_ptr->transferFunction == transferFunction && d_ptr->gamma == gamma)
@@ -593,6 +594,7 @@ void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
         return;
     if (!d_ptr) {
         d_ptr = new QColorSpacePrivate(primariesId, TransferFunction::Custom, 0.0f);
+        d_ptr->ref.ref();
         return;
     }
     if (d_ptr->primaries == primariesId)
@@ -618,6 +620,7 @@ void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoin
         return;
     if (!d_ptr) {
         d_ptr = new QColorSpacePrivate(primaries, TransferFunction::Custom, 0.0f);
+        d_ptr->ref.ref();
         return;
     }
     QColorMatrix toXyz = primaries.toXyzMatrix();
