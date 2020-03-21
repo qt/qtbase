@@ -325,7 +325,7 @@ Q_OUTOFLINE_TEMPLATE void qDeleteAll(ForwardIterator begin, ForwardIterator end)
 template <typename Container>
 inline void qDeleteAll(const Container &c)
 {
-    qDeleteAll(c.begin(), c.end());
+    qDeleteAll(c.cbegin(), c.cend());
 }
 
 /*
