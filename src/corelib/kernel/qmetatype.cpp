@@ -669,13 +669,6 @@ void QtMetaTypePrivate::derefAndDestroy(QtPrivate::QMetaTypeInterface *d_ptr)
     }
 }
 
-Q_CORE_EXPORT void QtMetaTypePrivate::unsafeUnregister(QtPrivate::QMetaTypeInterface *d_ptr)
-{
-    if (auto reg = customTypeRegistry())
-        reg->unregisterDynamicType(d_ptr->typeId.loadRelaxed());
-    d_ptr->typeId = 0;
-}
-
 /*!
     \fn QMetaType::~QMetaType()
 
@@ -1775,12 +1768,6 @@ QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(QT_METATYPE_DECLARE_TEMPLATE_ITER)
 QT_FOR_EACH_STATIC_CORE_CLASS(QT_METATYPE_DECLARE_TEMPLATE_ITER)
 QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_DECLARE_TEMPLATE_ITER)
 QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_DECLARE_TEMPLATE_ITER)
-
-Q_CORE_EXPORT QMetaTypeInterface *QMetaTypeInterface::get(const QMetaType &metatype)
-{
-    return metatype.d_ptr;
-}
-
 #undef QT_METATYPE_DECLARE_TEMPLATE_ITER
 #endif
 }

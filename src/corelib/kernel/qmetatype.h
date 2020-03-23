@@ -700,7 +700,6 @@ public:
     static void unregisterConverterFunction(int from, int to);
 private:
     friend class QVariant;
-    friend class QtPrivate::QMetaTypeInterface;
     QtPrivate::QMetaTypeInterface *d_ptr = nullptr;
 };
 
@@ -2285,8 +2284,6 @@ public:
 
     using LegacyRegisterOp = void (*)();
     LegacyRegisterOp legacyRegisterOp;
-
-    Q_CORE_EXPORT static QMetaTypeInterface *get(const QMetaType &metatype);
 };
 
 struct QTypeNormalizer

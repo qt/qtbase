@@ -218,7 +218,6 @@ static QtPrivate::QMetaTypeInterface *getInterfaceFromType()
         return true;
 
 void derefAndDestroy(QtPrivate::QMetaTypeInterface *d_ptr);
-Q_CORE_EXPORT void unsafeUnregister(QtPrivate::QMetaTypeInterface *d_ptr);
 
 } //namespace QtMetaTypePrivate
 
