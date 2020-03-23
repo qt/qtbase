@@ -226,7 +226,7 @@ void SslClient::setupSecureSocket()
             this, &SslClient::socketStateChanged);
     connect(socket, &QSslSocket::encrypted,
             this, &SslClient::socketEncrypted);
-    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QSslSocket::error),
+    connect(socket, &QSslSocket::errorOccurred,
             this, &SslClient::socketError);
     connect(socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),
             this, &SslClient::sslErrors);
