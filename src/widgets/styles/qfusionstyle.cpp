@@ -479,7 +479,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     {
         QPixmap pixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_groupbox.png"));
         int topMargin = 0;
-        auto control = dynamic_cast<const QGroupBox *>(widget);
+        auto control = qobject_cast<const QGroupBox *>(widget);
         if (control && !control->isCheckable() && control->title().isEmpty()) {
             // Shrinking the topMargin if Not checkable AND title is empty
             topMargin = groupBoxTopMargin;
