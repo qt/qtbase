@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qrandom.h>
+
 #include "qxcbconnection.h"
 #include "qcolormap_x11_p.h"
 #include "qxcbnativepainting.h"
@@ -279,7 +281,7 @@ Picture QXcbX11Data::getSolidFill(int screen, const QColor &c)
             return X11->solid_fills[i].picture;
     }
     // none found, replace one
-    int i = qrand() % 16;
+    int i = QRandomGenerator::global()->generate() % 16;
 
     if (X11->solid_fills[i].screen != screen && X11->solid_fills[i].picture) {
         XRenderFreePicture (X11->display, X11->solid_fills[i].picture);
