@@ -53,8 +53,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qvarlengtharray.h>
-#include <memory>
+#include <QtCore/qscopedpointer.h>
 #include <vector>
 #include <functional>
 
@@ -62,12 +61,16 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QPropertyBindingPrivate : public QSharedData
+class Q_CORE_EXPORT QPropertyBindingPrivate : public QSharedData
 {
+private:
+    friend struct QPropertyBasePointer;
+
     QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction;
 
     QPropertyObserverPointer firstObserver;
-    QVarLengthArray<QPropertyObserver, 4> dependencyObservers;
+    std::array<QPropertyObserver, 4> inlineDependencyObservers;
+    QScopedPointer<std::vector<QPropertyObserver>> heapObservers;
 
     void *propertyDataPtr = nullptr;
 
@@ -79,6 +82,10 @@ struct QPropertyBindingPrivate : public QSharedData
     bool dirty = false;
     bool updating = false;
 
+public:
+    // public because the auto-tests access it, too.
+    size_t dependencyObserverCount = 0;
+
     QPropertyBindingPrivate(const QMetaType &metaType, QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
                             const QPropertyBindingSourceLocation &location)
         : evaluationFunction(std::move(evaluationFunction))
@@ -86,6 +93,37 @@ struct QPropertyBindingPrivate : public QSharedData
         , metaType(metaType)
     {}
     virtual ~QPropertyBindingPrivate();
+
+    void setDirty(bool d) { dirty = d; }
+    void setProperty(void *propertyPtr) { propertyDataPtr = propertyPtr; }
+    void prependObserver(QPropertyObserverPointer observer) {
+        observer.ptr->prev = const_cast<QPropertyObserver **>(&firstObserver.ptr);
+        firstObserver = observer;
+    }
+
+    void clearDependencyObservers() {
+        for (size_t i = 0; i < inlineDependencyObservers.size(); ++i) {
+            QPropertyObserver empty;
+            qSwap(inlineDependencyObservers[i], empty);
+        }
+        if (heapObservers)
+            heapObservers->clear();
+        dependencyObserverCount = 0;
+    }
+    QPropertyObserverPointer allocateDependencyObserver() {
+        if (dependencyObserverCount < inlineDependencyObservers.size()) {
+            ++dependencyObserverCount;
+            return {&inlineDependencyObservers[dependencyObserverCount - 1]};
+        }
+        ++dependencyObserverCount;
+        if (!heapObservers)
+            heapObservers.reset(new std::vector<QPropertyObserver>());
+        return {&heapObservers->emplace_back()};
+    }
+
+    QPropertyBindingSourceLocation sourceLocation() const { return location; }
+    QPropertyBindingError bindingError() const { return error; }
+    QMetaType valueMetaType() const { return metaType; }
 
     void unlinkAndDeref();
 

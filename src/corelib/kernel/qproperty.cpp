@@ -53,7 +53,7 @@ QPropertyBase::QPropertyBase(QPropertyBase &&other, void *propertyDataPtr)
     QPropertyBasePointer d{this};
     d.setFirstObserver(nullptr);
     if (auto binding = d.bindingPtr())
-        binding->propertyDataPtr = propertyDataPtr;
+        binding->setProperty(propertyDataPtr);
 }
 
 void QPropertyBase::moveAssign(QPropertyBase &&other, void *propertyDataPtr)
@@ -73,7 +73,7 @@ void QPropertyBase::moveAssign(QPropertyBase &&other, void *propertyDataPtr)
     std::swap(d_ptr, other.d_ptr);
 
     if (auto binding = d.bindingPtr())
-        binding->propertyDataPtr = propertyDataPtr;
+        binding->setProperty(propertyDataPtr);
 
     d.setFirstObserver(observer.ptr);
 
@@ -111,10 +111,10 @@ QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding 
         newBinding.data()->ref.ref();
         d_ptr = (d_ptr & FlagMask) | reinterpret_cast<quintptr>(newBinding.data());
         d_ptr |= BindingBit;
-        newBinding->dirty = true;
-        newBinding->propertyDataPtr = propertyDataPtr;
+        newBinding->setDirty(true);
+        newBinding->setProperty(propertyDataPtr);
         if (observer)
-            observer.prependToBinding(newBinding.data());
+            newBinding->prependObserver(observer);
     } else {
         d_ptr &= ~BindingBit;
     }
@@ -175,11 +175,10 @@ static thread_local BindingEvaluationState *currentBindingEvaluationState = null
 
 BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding)
     : binding(binding)
-    , dependencyObservers(&binding->dependencyObservers)
 {
     previousState = currentBindingEvaluationState;
     currentBindingEvaluationState = this;
-    dependencyObservers->clear();
+    binding->clearDependencyObservers();
 }
 
 BindingEvaluationState::~BindingEvaluationState()
@@ -222,8 +221,7 @@ void QPropertyBase::registerWithCurrentlyEvaluatingBinding() const
 
     QPropertyBasePointer d{this};
 
-    currentState->dependencyObservers->append(QPropertyObserver());
-    QPropertyObserverPointer dependencyObserver{&(*currentState->dependencyObservers)[currentState->dependencyObservers->size() - 1]};
+    QPropertyObserverPointer dependencyObserver = currentState->binding->allocateDependencyObserver();
     dependencyObserver.setBindingToMarkDirty(currentState->binding);
     dependencyObserver.observeProperty(d);
 }
@@ -262,6 +260,8 @@ QPropertyObserver::~QPropertyObserver()
     QPropertyObserverPointer d{this};
     d.unlink();
 }
+
+QPropertyObserver::QPropertyObserver() = default;
 
 QPropertyObserver::QPropertyObserver(QPropertyObserver &&other)
 {
@@ -349,12 +349,6 @@ void QPropertyObserverPointer::observeProperty(QPropertyBasePointer property)
 {
     unlink();
     property.addObserver(ptr);
-}
-
-void QPropertyObserverPointer::prependToBinding(QPropertyBindingPrivate *binding)
-{
-    ptr->prev = const_cast<QPropertyObserver **>(&binding->firstObserver.ptr);
-    binding->firstObserver = *this;
 }
 
 QPropertyBindingError::QPropertyBindingError(Type type)

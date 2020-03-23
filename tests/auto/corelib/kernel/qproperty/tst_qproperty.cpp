@@ -220,13 +220,11 @@ void tst_QProperty::avoidDependencyAllocationAfterFirstEval()
     QCOMPARE(propWithBinding.value(), int(11));
 
     QVERIFY(QPropertyBasePointer::get(propWithBinding).bindingPtr());
-    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObservers.size(), 2);
-    QVERIFY(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObservers.capacity() >= 2);
+    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2);
 
     firstDependency = 100;
     QCOMPARE(propWithBinding.value(), int(110));
-    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObservers.size(), 2);
-    QVERIFY(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObservers.capacity() >= 2);
+    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2);
 }
 
 void tst_QProperty::propertyArrays()
@@ -493,7 +491,7 @@ void tst_QProperty::bindingSourceLocation()
 #if defined(QT_PROPERTY_COLLECT_BINDING_LOCATION)
     auto bindingLine = std::experimental::source_location::current().line() + 1;
     auto binding = Qt::makePropertyBinding([]() { return 42; });
-    QCOMPARE(QPropertyBindingPrivate::get(binding)->location.line, bindingLine);
+    QCOMPARE(QPropertyBindingPrivate::get(binding)->sourceLocation().line, bindingLine);
 #else
     QSKIP("Skipping this in the light of missing binding source location support");
 #endif

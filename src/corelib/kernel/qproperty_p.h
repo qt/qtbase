@@ -90,7 +90,6 @@ struct QPropertyObserverPointer
 
     void notify(QPropertyBindingPrivate *triggeringBinding);
     void observeProperty(QPropertyBasePointer property);
-    void prependToBinding(QPropertyBindingPrivate *binding);
 
     explicit operator bool() const { return ptr != nullptr; }
 
@@ -110,7 +109,6 @@ struct BindingEvaluationState
     BindingEvaluationState(QPropertyBindingPrivate *binding);
     ~BindingEvaluationState();
     QPropertyBindingPrivate *binding;
-    QVarLengthArray<QPropertyObserver, 4> *dependencyObservers = nullptr;
     BindingEvaluationState *previousState = nullptr;
 };
 

@@ -152,21 +152,14 @@ QPropertyBindingError QUntypedPropertyBinding::error() const
 {
     if (!d)
         return QPropertyBindingError();
-    return d->error;
+    return d->bindingError();
 }
 
 QMetaType QUntypedPropertyBinding::valueMetaType() const
 {
     if (!d)
         return QMetaType();
-    return d->metaType;
-}
-
-void QUntypedPropertyBinding::setDirty(bool dirty)
-{
-    if (!d)
-        return;
-    d->dirty = dirty;
+    return d->valueMetaType();
 }
 
 QT_END_NAMESPACE

@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QUntypedPropertyBinding;
-struct QPropertyBindingPrivate;
+class QPropertyBindingPrivate;
 using QPropertyBindingPrivatePtr = QExplicitlySharedDataPointer<QPropertyBindingPrivate>;
 struct QPropertyBasePointer;
 

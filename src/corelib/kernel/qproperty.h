@@ -137,12 +137,10 @@ public:
 
     QMetaType valueMetaType() const;
 
-    void setDirty(bool dirty = true);
-
-private:
     explicit QUntypedPropertyBinding(const QPropertyBindingPrivatePtr &priv);
+private:
     friend class QtPrivate::QPropertyBase;
-    friend struct QPropertyBindingPrivate;
+    friend class QPropertyBindingPrivate;
     template <typename> friend class QPropertyBinding;
     QPropertyBindingPrivatePtr d;
 };
@@ -357,7 +355,7 @@ private:
 
     friend struct QPropertyBasePointer;
     friend class QPropertyBinding<T>;
-    friend struct QPropertyObserver;
+    friend class QPropertyObserver;
     // Mutable because querying for the value may require evalating the binding expression, calling
     // non-const functions on QPropertyBase.
     mutable QtPrivate::QPropertyValueStorage<T> d;
@@ -385,8 +383,9 @@ namespace Qt {
 struct QPropertyObserverPrivate;
 struct QPropertyObserverPointer;
 
-struct Q_CORE_EXPORT QPropertyObserver
+class Q_CORE_EXPORT QPropertyObserver
 {
+public:
     // Internal
     enum ObserverTag {
         ObserverNotifiesBinding = 0x0,
@@ -394,7 +393,7 @@ struct Q_CORE_EXPORT QPropertyObserver
     };
     Q_DECLARE_FLAGS(ObserverTags, ObserverTag)
 
-    QPropertyObserver() = default;
+    QPropertyObserver();
     QPropertyObserver(QPropertyObserver &&other);
     QPropertyObserver &operator=(QPropertyObserver &&other);
     ~QPropertyObserver();
@@ -424,6 +423,7 @@ private:
 
     friend struct QPropertyObserverPointer;
     friend struct QPropertyBasePointer;
+    friend class QPropertyBindingPrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPropertyObserver::ObserverTags)
