@@ -240,18 +240,33 @@ QColor qt_mac_toQColor(CGColorRef color)
 QColor qt_mac_toQColor(const NSColor *color)
 {
     QColor qtColor;
-    NSString *colorSpace = [color colorSpaceName];
-    if (colorSpace == NSDeviceCMYKColorSpace) {
-        CGFloat cyan, magenta, yellow, black, alpha;
-        [color getCyan:&cyan magenta:&magenta yellow:&yellow black:&black alpha:&alpha];
-        qtColor.setCmykF(cyan, magenta, yellow, black, alpha);
-    } else {
-        NSColor *tmpColor;
-        tmpColor = [color colorUsingColorSpaceName:NSDeviceRGBColorSpace];
-        CGFloat red, green, blue, alpha;
+    switch (color.type) {
+    case NSColorTypeComponentBased: {
+        const NSColorSpace *colorSpace = [color colorSpace];
+        if (colorSpace == NSColorSpace.genericRGBColorSpace
+            && color.numberOfComponents == 4) { // rbga
+            CGFloat components[4];
+            [color getComponents:components];
+            qtColor.setRgbF(components[0], components[1], components[2], components[3]);
+            break;
+        } else if (colorSpace == NSColorSpace.genericCMYKColorSpace
+                   && color.numberOfComponents == 5) { // cmyk + alpha
+            CGFloat components[5];
+            [color getComponents:components];
+            qtColor.setCmykF(components[0], components[1], components[2], components[3], components[4]);
+            break;
+        }
+    }
+        Q_FALLTHROUGH();
+    default: {
+        const NSColor *tmpColor = [color colorUsingColorSpace:NSColorSpace.genericRGBColorSpace];
+        CGFloat red = 0, green = 0, blue = 0, alpha = 0;
         [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
         qtColor.setRgbF(red, green, blue, alpha);
+        break;
     }
+    }
+
     return qtColor;
 }
 #endif
@@ -277,9 +292,9 @@ static bool qt_mac_isSystemColorOrInstance(const NSColor *color, NSString *color
     // We specifically do not want isKindOfClass: here
     if ([color.className isEqualToString:className]) // NSPatternColorSpace
         return true;
-    if ([color.catalogNameComponent isEqualToString:@"System"] &&
-        [color.colorNameComponent isEqualToString:colorNameComponent] &&
-        [color.colorSpaceName isEqualToString:NSNamedColorSpace])
+    if (color.type == NSColorTypeCatalog &&
+        [color.catalogNameComponent isEqualToString:@"System"] &&
+        [color.colorNameComponent isEqualToString:colorNameComponent])
         return true;
     return false;
 }
@@ -335,8 +350,8 @@ QBrush qt_mac_toQBrush(const NSColor *color, QPalette::ColorGroup colorGroup)
         return qtBrush;
     }
 
-    if (NSColor *patternColor = [color colorUsingColorSpaceName:NSPatternColorSpace]) {
-        NSImage *patternImage = patternColor.patternImage;
+    if (color.type == NSColorTypePattern) {
+        NSImage *patternImage = color.patternImage;
         const QSizeF sz(patternImage.size.width, patternImage.size.height);
         // FIXME: QBrush is not resolution independent (QTBUG-49774)
         qtBrush.setTexture(qt_mac_toQPixmap(patternImage, sz));

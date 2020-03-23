@@ -44,6 +44,7 @@
 #include "qcocoacolordialoghelper.h"
 #include "qcocoahelpers.h"
 #include "qcocoaeventdispatcher.h"
+#include "private/qcoregraphics_p.h"
 
 #import <AppKit/AppKit.h>
 
@@ -181,33 +182,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 - (void)updateQtColor
 {
     NSColor *color = [mColorPanel color];
-    NSString *colorSpaceName = [color colorSpaceName];
-    if (colorSpaceName == NSDeviceCMYKColorSpace) {
-        CGFloat cyan = 0, magenta = 0, yellow = 0, black = 0, alpha = 0;
-        [color getCyan:&cyan magenta:&magenta yellow:&yellow black:&black alpha:&alpha];
-        mQtColor.setCmykF(cyan, magenta, yellow, black, alpha);
-    } else if (colorSpaceName == NSCalibratedRGBColorSpace || colorSpaceName == NSDeviceRGBColorSpace)  {
-        CGFloat red = 0, green = 0, blue = 0, alpha = 0;
-        [color getRed:&red green:&green blue:&blue alpha:&alpha];
-        mQtColor.setRgbF(red, green, blue, alpha);
-    } else if (colorSpaceName == NSNamedColorSpace) {
-        NSColor *tmpColor = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
-        CGFloat red = 0, green = 0, blue = 0, alpha = 0;
-        [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
-        mQtColor.setRgbF(red, green, blue, alpha);
-    } else {
-        NSColorSpace *colorSpace = [color colorSpace];
-        if ([colorSpace colorSpaceModel] == NSCMYKColorSpaceModel && [color numberOfComponents] == 5){
-            CGFloat components[5];
-            [color getComponents:components];
-            mQtColor.setCmykF(components[0], components[1], components[2], components[3], components[4]);
-        } else {
-            NSColor *tmpColor = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
-            CGFloat red = 0, green = 0, blue = 0, alpha = 0;
-            [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
-            mQtColor.setRgbF(red, green, blue, alpha);
-        }
-    }
+    mQtColor = qt_mac_toQColor(color);
     if (mHelper)
         emit mHelper->currentColorChanged(mQtColor);
 }
