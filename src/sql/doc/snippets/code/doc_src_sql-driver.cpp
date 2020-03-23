@@ -60,8 +60,8 @@ void testProc()
 QSqlQuery q;
 q.exec("call qtestproc (@outval1, @outval2)");
 q.exec("select @outval1, @outval2");
-q.next();
-qDebug() << q.value(0) << q.value(1); // outputs "42" and "43"
+if (q.next())
+    qDebug() << q.value(0) << q.value(1); // outputs "42" and "43"
 //! [2]
 }
 
@@ -87,7 +87,8 @@ db.setDatabaseName("C:\\test.gdb");
 //! [25]
 // connect to database using the Latin-1 character set
 db.setConnectOptions("ISC_DPB_LC_CTYPE=Latin1");
-db.open();
+if (db.open())
+    qDebug("The database connection is open.");
 //! [25]
 }
 
@@ -96,8 +97,8 @@ void exProc()
 //! [26]
 QSqlQuery q;
 q.exec("execute procedure my_procedure");
-q.next();
-qDebug() << q.value(0); // outputs the first RETURN/OUT value
+if (q.next())
+    qDebug() << q.value(0); // outputs the first RETURN/OUT value
 //! [26]
 
 qDebug( \

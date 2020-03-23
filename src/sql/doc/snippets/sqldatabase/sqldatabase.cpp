@@ -207,7 +207,7 @@ void QSqlQuery_snippets()
     QMap<QString, QVariant> sqlIterator(query.boundValues());
     for (auto i = sqlIterator.begin(); i != sqlIterator.end(); ++i) {
         cout << i.key().toUtf8().data() << ": "
-             << i.value().toString().toUtf8().data() << Qt::endl;
+             << i.value().toString().toUtf8().data() << "\n";
     }
 //! [14]
     }
@@ -217,7 +217,7 @@ void QSqlQuery_snippets()
 //! [15]
     QList<QVariant> list = query.boundValues().values();
     for (int i = 0; i < list.size(); ++i)
-        cout << i << ": " << list.at(i).toString().toUtf8().data() << Qt::endl;
+        cout << i << ": " << list.at(i).toString().toUtf8().data() << "\n";
 //! [15]
     }
 }
@@ -274,6 +274,7 @@ void QSqlTableModel_snippets()
     model.select();
     int salary = model.record(4).value("salary").toInt();
 //! [25]
+    Q_UNUSED(salary);
     }
 }
 
@@ -514,7 +515,7 @@ public:
               const QString & /* password */, const QString & /* host */,
               int /* port */, const QString & /* options */) override
         { return false; }
-    void close() {}
+    void close() override {}
     QSqlResult *createResult() const override { return new XyzResult(this); }
 };
 //! [48]
