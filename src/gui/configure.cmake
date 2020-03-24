@@ -829,7 +829,7 @@ qt_feature("ico" PUBLIC PRIVATE
 qt_feature_definition("ico" "QT_NO_ICO" NEGATE VALUE "1")
 qt_feature("jpeg" PRIVATE
     LABEL "JPEG"
-    CONDITION QT_FEATURE_imageformatplugin AND JPEG_FOUND
+    CONDITION QT_FEATURE_imageformatplugin
     DISABLE INPUT_libjpeg STREQUAL 'no'
 )
 qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE)

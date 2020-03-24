@@ -794,7 +794,6 @@ def get_feature_mapping():
             "condition": "NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND ( TEST_posix_iconv OR TEST_sun_iconv )"
         },
         "incredibuild_xge": None,
-        "jpeg": {"condition": "QT_FEATURE_imageformatplugin AND JPEG_FOUND"},
         "ltcg": None,
         "msvc_mp": None,
         "optimize_debug": None,
