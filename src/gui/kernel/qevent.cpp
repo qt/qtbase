@@ -2225,14 +2225,14 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
     (pressing the stylus tip against the tablet surface is equivalent to a left
     mouse button). But tablet events also pass through some extra information
     that the tablet device driver provides; for example, you might want to do
-    subpixel rendering with higher resolution coordinates (\l hiResGlobalX()
-    and \l hiResGlobalY()), adjust color brightness based on the \l pressure()
-    of the tool against the tablet surface, use different brushes depending on
-    the type of tool in use (\l device()), modulate the brush shape in some way
-    according to the X-axis and Y-axis tilt of the tool with respect to the
-    tablet surface (\l xTilt() and \l yTilt()), and use a virtual eraser
-    instead of a brush if the user switches to the other end of a double-ended
-    stylus (\l pointerType()).
+    subpixel rendering with higher resolution coordinates (\l globalPosF()),
+    adjust color brightness based on the \l pressure() of the tool against the
+    tablet surface, use different brushes depending on the type of tool in use
+    (\l deviceType()), modulate the brush shape in some way according to the
+    X-axis and Y-axis tilt of the tool with respect to the tablet surface
+    (\l xTilt() and \l yTilt()), and use a virtual eraser instead of a brush if
+    the user switches to the other end of a double-ended stylus
+    (\l pointerType()).
 
     Every event contains an accept flag that indicates whether the receiver
     wants the event. You should call QTabletEvent::accept() if you handle the
