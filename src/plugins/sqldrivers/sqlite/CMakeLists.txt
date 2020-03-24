@@ -13,8 +13,6 @@ qt_add_plugin(QSQLiteDriverPlugin
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    LIBRARIES # special case
-        SQLite::SQLite3 # special case
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
@@ -28,7 +26,78 @@ qt_add_plugin(QSQLiteDriverPlugin
 ## Scopes:
 #####################################################################
 
+qt_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_system_sqlite
+    PUBLIC_LIBRARIES
+        SQLite::SQLite3
+)
+
 # special case begin
-# Remove non-system-sqlite code
-# qt_extend_target(qsqlite CONDITION QT_FEATURE_system_sqlite
+if (NOT QT_FEATURE_system_sqlite)
+    qt_find_package(Threads REQUIRED PROVIDED_TARGETS Threads::Threads)
+    # On newer compilers compiling sqlite.c produces warnings
+    qt_disable_warnings(QSQLiteDriverPlugin)
+endif()
 # special case end
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_system_sqlite
+    SOURCES
+        ../../../3rdparty/sqlite/sqlite3.c
+    DEFINES
+        SQLITE_ENABLE_COLUMN_METADATA
+        SQLITE_ENABLE_FTS3
+        SQLITE_ENABLE_FTS3_PARENTHESIS
+        SQLITE_ENABLE_FTS5
+        SQLITE_ENABLE_JSON1
+        SQLITE_ENABLE_RTREE
+        SQLITE_OMIT_COMPLETE
+    INCLUDE_DIRECTORIES
+        ../../../3rdparty/sqlite
+    PUBLIC_LIBRARIES # special case
+        Threads::Threads # special case
+)
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION CMAKE_BUILD_TYPE STREQUAL Release AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        NDEBUG
+)
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_largefile AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        SQLITE_DISABLE_LFS
+)
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_posix_fallocate AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        HAVE_POSIX_FALLOCATE=1
+)
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION WINRT AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        SQLITE_OS_WINRT
+)
+
+#### Keys ignored in scope 8:.:../../../3rdparty:../../../3rdparty/sqlite.pri:WINRT:
+# QMAKE_CFLAGS = "-Gy"
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION QNX AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        _QNX_SOURCE
+)
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION UNIX AND NOT QT_FEATURE_system_sqlite AND NOT WINRT AND NOT winphone
+    DEFINES
+        HAVE_USLEEP=1
+)
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
+    PUBLIC_LIBRARIES
+        ${CMAKE_DL_LIBS}
+)
+
+qt_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        SQLITE_OMIT_LOAD_EXTENSION
+)
+
+#### Keys ignored in scope 13:.:../../../3rdparty:../../../3rdparty/sqlite.pri:INTEGRITY:
+# QMAKE_CFLAGS = "-include" "qplatformdefs.h"

@@ -651,6 +651,10 @@ qt_feature("neon"
 )
 qt_feature_definition("neon" "QT_COMPILER_SUPPORTS_NEON" VALUE "1")
 qt_feature_config("neon" QMAKE_PRIVATE_CONFIG)
+qt_feature("posix_fallocate" PRIVATE
+    LABEL "POSIX fallocate()"
+    CONDITION TEST_posix_fallocate
+)
 qt_feature("alloca_h" PRIVATE
     LABEL "alloca.h"
     CONDITION TEST_alloca_h
@@ -769,6 +773,11 @@ qt_configure_add_summary_entry(
     CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
 )
 qt_configure_add_summary_entry(ARGS "shared")
+qt_configure_add_summary_entry(
+    TYPE "firstAvailableFeature"
+    ARGS "c11 c99 c89"
+    MESSAGE "Using C standard"
+)
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
     ARGS "c++2a c++17 c++14 c++11"

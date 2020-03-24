@@ -2,6 +2,10 @@
 
 #### Inputs
 
+# input sqlite
+set(INPUT_sqlite "undefined" CACHE STRING "")
+set_property(CACHE INPUT_sqlite PROPERTY STRINGS undefined qt system)
+
 
 
 #### Libraries
@@ -46,7 +50,12 @@ qt_feature("sql-psql" PRIVATE
 )
 qt_feature("sql-sqlite" PRIVATE
     LABEL "SQLite"
-    CONDITION QT_FEATURE_datestring AND SQLite3_FOUND
+    CONDITION QT_FEATURE_datestring
+)
+qt_feature("system-sqlite" PRIVATE
+    LABEL "  Using system provided SQLite"
+    AUTODETECT OFF
+    CONDITION QT_FEATURE_sql_sqlite AND SQLite3_FOUND
 )
 qt_configure_add_summary_section(NAME "Qt Sql Drivers")
 qt_configure_add_summary_entry(ARGS "sql-db2")

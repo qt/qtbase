@@ -28,7 +28,7 @@ qt_add_plugin(QSQLiteDriverPlugin
 
 qt_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_system_sqlite
     PUBLIC_LIBRARIES
-        sqlite
+        SQLite::SQLite3
 )
 
 qt_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_system_sqlite
@@ -51,7 +51,7 @@ qt_extend_target(QSQLiteDriverPlugin CONDITION CMAKE_BUILD_TYPE STREQUAL Release
         NDEBUG
 )
 
-qt_extend_target(QSQLiteDriverPlugin CONDITION NOT CONFIG___contains___largefile AND NOT QT_FEATURE_system_sqlite
+qt_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_largefile AND NOT QT_FEATURE_system_sqlite
     DEFINES
         SQLITE_DISABLE_LFS
 )

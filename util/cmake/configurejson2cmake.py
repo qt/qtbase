@@ -472,7 +472,6 @@ def parseInput(ctx, sinput, data, cm_fh):
         "pps",
         "slog2",
         "syslog",
-        "sqlite",
     }
 
     if sinput in skip_inputs:
@@ -807,7 +806,6 @@ def get_feature_mapping():
         },
         "simulator_and_device": {"condition": "UIKIT AND NOT QT_UIKIT_SDK"},
         "pkg-config": None,
-        "posix_fallocate": None,  # Only needed for sqlite, which we do not want to build
         "posix-libiconv": {
             "condition": "NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND TEST_iconv_needlib",
             "enable": "TEST_posix_iconv AND TEST_iconv_needlib",
@@ -828,7 +826,7 @@ def get_feature_mapping():
         "sanitize_undefined": None,
         "shared": {"condition": "BUILD_SHARED_LIBS"},
         "silent": None,
-        "sql-sqlite": {"condition": "QT_FEATURE_datestring AND SQLite3_FOUND"},
+        "sql-sqlite": {"condition": "QT_FEATURE_datestring"},
         "static": None,
         "static_runtime": None,
         "stl": None,  # Do we really need to test for this in 2018?!
@@ -838,7 +836,6 @@ def get_feature_mapping():
             "enable": "TEST_sun_iconv",
             "disable": "NOT TEST_sun_iconv",
         },
-        "system-sqlite": None,
         "system-xcb": None,
         "tiff": {"condition": "QT_FEATURE_imageformatplugin AND TIFF_FOUND"},
         "use_gold_linker": None,

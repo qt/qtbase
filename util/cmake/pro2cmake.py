@@ -1550,6 +1550,7 @@ def map_condition(condition: str) -> str:
         r"DEFINES___contains___QT_NO_TRANSLATION", r"(NOT QT_FEATURE_translation)", condition
     )
     condition = re.sub(r"styles___contains___fusion", r"QT_FEATURE_style_fusion", condition)
+    condition = re.sub(r"CONFIG___contains___largefile", r"QT_FEATURE_largefile", condition)
 
     condition = condition.replace("cross_compile", "CMAKE_CROSSCOMPILING")
 
@@ -1571,6 +1572,7 @@ def map_condition(condition: str) -> str:
                     and not feature_name.startswith("system_tiff")
                     and not feature_name.startswith("system_assimp")
                     and not feature_name.startswith("system_doubleconversion")
+                    and not feature_name.startswith("system_sqlite")
                 ):
                     part = "ON"
                 elif feature == "dlopen":

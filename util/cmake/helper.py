@@ -472,6 +472,7 @@ _library_map = [
     LibraryMapping("speechd", "SpeechDispatcher", "SpeechDispatcher::SpeechDispatcher"),
     LibraryMapping("sqlite2", None, None),  # No more sqlite2 support in Qt6!
     LibraryMapping("sqlite3", "SQLite3", "SQLite::SQLite3"),
+    LibraryMapping("sqlite", "SQLite3", "SQLite::SQLite3"),
     LibraryMapping("sun_iconv", None, None),
     LibraryMapping("tslib", "Tslib", "PkgConfig::Tslib"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),
