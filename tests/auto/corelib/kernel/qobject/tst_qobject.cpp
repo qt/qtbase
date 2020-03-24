@@ -6967,14 +6967,13 @@ void tst_QObject::mutableFunctor()
 
 void tst_QObject::checkArgumentsForNarrowing()
 {
-    enum UnscopedEnum {};
-    enum SignedUnscopedEnum { SignedUnscopedEnumV1 = -1, SignedUnscopedEnumV2 = 1 };
+    enum UnscopedEnum { UnscopedEnumV1 = INT_MAX, UnscopedEnumV2 };
+    enum SignedUnscopedEnum { SignedUnscopedEnumV1 = INT_MIN, SignedUnscopedEnumV2 = INT_MAX };
 
-    // a constexpr would suffice, but MSVC2013 RTM doesn't support them...
-#define IS_UNSCOPED_ENUM_SIGNED (std::is_signed<typename std::underlying_type<UnscopedEnum>::type>::value)
+    static constexpr bool IsUnscopedEnumSigned = std::is_signed_v<std::underlying_type_t<UnscopedEnum>>;
 
-#define NARROWS_IF(x, y, test) Q_STATIC_ASSERT((QtPrivate::AreArgumentsNarrowedBase<x, y>::value) == (test))
-#define FITS_IF(x, y, test)    Q_STATIC_ASSERT((QtPrivate::AreArgumentsNarrowedBase<x, y>::value) != (test))
+#define NARROWS_IF(x, y, test) Q_STATIC_ASSERT((QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<x, y>::value) != (test))
+#define FITS_IF(x, y, test)    Q_STATIC_ASSERT((QtPrivate::AreArgumentsConvertibleWithoutNarrowingBase<x, y>::value) == (test))
 #define NARROWS(x, y)          NARROWS_IF(x, y, true)
 #define FITS(x, y)             FITS_IF(x, y, true)
 
@@ -6982,9 +6981,14 @@ void tst_QObject::checkArgumentsForNarrowing()
     Q_STATIC_ASSERT(sizeof(SignedUnscopedEnum) <= sizeof(int));
 
     // floating point to integral
+
+    // GCC < 9 does not consider floating point to bool to be narrowing,
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65043
+#if !defined(Q_CC_GNU) || Q_CC_GNU >= 900
     NARROWS(float, bool);
     NARROWS(double, bool);
     NARROWS(long double, bool);
+#endif
 
     NARROWS(float, char);
     NARROWS(double, char);
@@ -7008,12 +7012,19 @@ void tst_QObject::checkArgumentsForNarrowing()
 
 
     // floating point to a smaller floating point
-    NARROWS_IF(double, float, (sizeof(double) > sizeof(float)));
-    NARROWS_IF(long double, float, (sizeof(long double) > sizeof(float)));
+    NARROWS(double, float);
+    NARROWS(long double, float);
     FITS(float, double);
     FITS(float, long double);
 
-    NARROWS_IF(long double, double, (sizeof(long double) > sizeof(double)));
+    // GCC thinks this is narrowing only on architectures where
+    // sizeof(long double) > sizeof(double)
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=92856
+#if defined(Q_CC_GNU)
+    NARROWS_IF(long double, double, sizeof(long double) > sizeof(double));
+#else
+    NARROWS(long double, double);
+#endif
     FITS(double, long double);
 
 
@@ -7202,21 +7213,21 @@ void tst_QObject::checkArgumentsForNarrowing()
     FITS(UnscopedEnum, UnscopedEnum);
     FITS(SignedUnscopedEnum, SignedUnscopedEnum);
 
-    NARROWS_IF(UnscopedEnum, char, ((sizeof(UnscopedEnum) > sizeof(char)) || (sizeof(UnscopedEnum) == sizeof(char) && IS_UNSCOPED_ENUM_SIGNED == std::is_signed<char>::value)));
-    NARROWS_IF(UnscopedEnum, signed char, ((sizeof(UnscopedEnum) > sizeof(char)) || (sizeof(UnscopedEnum) == sizeof(char) && !IS_UNSCOPED_ENUM_SIGNED)));
-    NARROWS_IF(UnscopedEnum, unsigned char, ((sizeof(UnscopedEnum) > sizeof(char)) || IS_UNSCOPED_ENUM_SIGNED));
+    NARROWS_IF(UnscopedEnum, char, ((sizeof(UnscopedEnum) > sizeof(char)) || (sizeof(UnscopedEnum) == sizeof(char) && IsUnscopedEnumSigned == std::is_signed<char>::value)));
+    NARROWS_IF(UnscopedEnum, signed char, ((sizeof(UnscopedEnum) > sizeof(char)) || (sizeof(UnscopedEnum) == sizeof(char) && !IsUnscopedEnumSigned)));
+    NARROWS_IF(UnscopedEnum, unsigned char, ((sizeof(UnscopedEnum) > sizeof(char)) || IsUnscopedEnumSigned));
 
-    NARROWS_IF(UnscopedEnum, short, ((sizeof(UnscopedEnum) > sizeof(short)) || (sizeof(UnscopedEnum) == sizeof(short) && !IS_UNSCOPED_ENUM_SIGNED)));
-    NARROWS_IF(UnscopedEnum, unsigned short, ((sizeof(UnscopedEnum) > sizeof(short)) || IS_UNSCOPED_ENUM_SIGNED));
+    NARROWS_IF(UnscopedEnum, short, ((sizeof(UnscopedEnum) > sizeof(short)) || (sizeof(UnscopedEnum) == sizeof(short) && !IsUnscopedEnumSigned)));
+    NARROWS_IF(UnscopedEnum, unsigned short, ((sizeof(UnscopedEnum) > sizeof(short)) || IsUnscopedEnumSigned));
 
-    NARROWS_IF(UnscopedEnum, int, (sizeof(UnscopedEnum) == sizeof(int) && !IS_UNSCOPED_ENUM_SIGNED));
-    NARROWS_IF(UnscopedEnum, unsigned int, IS_UNSCOPED_ENUM_SIGNED);
+    NARROWS_IF(UnscopedEnum, int, sizeof(UnscopedEnum) > sizeof(int) || (sizeof(UnscopedEnum) == sizeof(int) && !IsUnscopedEnumSigned));
+    NARROWS_IF(UnscopedEnum, unsigned int, IsUnscopedEnumSigned);
 
-    NARROWS_IF(UnscopedEnum, long, (sizeof(UnscopedEnum) == sizeof(long) && !IS_UNSCOPED_ENUM_SIGNED));
-    NARROWS_IF(UnscopedEnum, unsigned long, IS_UNSCOPED_ENUM_SIGNED);
+    NARROWS_IF(UnscopedEnum, long, sizeof(UnscopedEnum) > sizeof(long) || (sizeof(UnscopedEnum) == sizeof(long) && !IsUnscopedEnumSigned));
+    NARROWS_IF(UnscopedEnum, unsigned long, IsUnscopedEnumSigned);
 
-    NARROWS_IF(UnscopedEnum, long long, (sizeof(UnscopedEnum) == sizeof(long long) && !IS_UNSCOPED_ENUM_SIGNED));
-    NARROWS_IF(UnscopedEnum, unsigned long long, IS_UNSCOPED_ENUM_SIGNED);
+    NARROWS_IF(UnscopedEnum, long long, sizeof(UnscopedEnum) > sizeof(long long) || (sizeof(UnscopedEnum) == sizeof(long long) && !IsUnscopedEnumSigned));
+    NARROWS_IF(UnscopedEnum, unsigned long long, IsUnscopedEnumSigned);
 
     Q_STATIC_ASSERT(std::is_signed<typename std::underlying_type<SignedUnscopedEnum>::type>::value);
 
@@ -7226,203 +7237,58 @@ void tst_QObject::checkArgumentsForNarrowing()
     FITS(SignedUnscopedEnum, long);
     FITS(SignedUnscopedEnum, long long);
 
-
-    enum class ScopedEnumBackedBySChar : signed char { A };
-    enum class ScopedEnumBackedByUChar : unsigned char { A };
-    enum class ScopedEnumBackedByShort : short { A };
-    enum class ScopedEnumBackedByUShort : unsigned short { A };
-    enum class ScopedEnumBackedByInt : int { A };
-    enum class ScopedEnumBackedByUInt : unsigned int { A };
-    enum class ScopedEnumBackedByLong : long { A };
-    enum class ScopedEnumBackedByULong : unsigned long { A };
-    enum class ScopedEnumBackedByLongLong : long long { A };
-    enum class ScopedEnumBackedByULongLong : unsigned long long { A };
-
-    FITS(ScopedEnumBackedBySChar, ScopedEnumBackedBySChar);
-    FITS(ScopedEnumBackedByUChar, ScopedEnumBackedByUChar);
-    FITS(ScopedEnumBackedByShort, ScopedEnumBackedByShort);
-    FITS(ScopedEnumBackedByUShort, ScopedEnumBackedByUShort);
-    FITS(ScopedEnumBackedByInt, ScopedEnumBackedByInt);
-    FITS(ScopedEnumBackedByUInt, ScopedEnumBackedByUInt);
-    FITS(ScopedEnumBackedByLong, ScopedEnumBackedByLong);
-    FITS(ScopedEnumBackedByULong, ScopedEnumBackedByULong);
-    FITS(ScopedEnumBackedByLongLong, ScopedEnumBackedByLongLong);
-    FITS(ScopedEnumBackedByULongLong, ScopedEnumBackedByULongLong);
-
-    FITS(ScopedEnumBackedBySChar, signed char);
-    FITS(ScopedEnumBackedByUChar, unsigned char);
-    FITS(ScopedEnumBackedByShort, short);
-    FITS(ScopedEnumBackedByUShort, unsigned short);
-    FITS(ScopedEnumBackedByInt, int);
-    FITS(ScopedEnumBackedByUInt, unsigned int);
-    FITS(ScopedEnumBackedByLong, long);
-    FITS(ScopedEnumBackedByULong, unsigned long);
-    FITS(ScopedEnumBackedByLongLong, long long);
-    FITS(ScopedEnumBackedByULongLong, unsigned long long);
-
-    FITS(ScopedEnumBackedBySChar, signed char);
-    FITS(ScopedEnumBackedBySChar, short);
-    FITS(ScopedEnumBackedBySChar, int);
-    FITS(ScopedEnumBackedBySChar, long);
-    FITS(ScopedEnumBackedBySChar, long long);
-
-    FITS(ScopedEnumBackedByUChar, unsigned char);
-    FITS(ScopedEnumBackedByUChar, unsigned short);
-    FITS(ScopedEnumBackedByUChar, unsigned int);
-    FITS(ScopedEnumBackedByUChar, unsigned long);
-    FITS(ScopedEnumBackedByUChar, unsigned long long);
-
-    NARROWS_IF(ScopedEnumBackedByShort, char, (sizeof(short) > sizeof(char) || std::is_unsigned<char>::value));
-    NARROWS_IF(ScopedEnumBackedByUShort, char, (sizeof(short) > sizeof(char) || std::is_signed<char>::value));
-    NARROWS_IF(ScopedEnumBackedByInt, char, (sizeof(int) > sizeof(char) || std::is_unsigned<char>::value));
-    NARROWS_IF(ScopedEnumBackedByUInt, char, (sizeof(int) > sizeof(char) || std::is_signed<char>::value));
-    NARROWS_IF(ScopedEnumBackedByLong, char, (sizeof(long) > sizeof(char) || std::is_unsigned<char>::value));
-    NARROWS_IF(ScopedEnumBackedByULong, char, (sizeof(long) > sizeof(char) || std::is_signed<char>::value));
-    NARROWS_IF(ScopedEnumBackedByLongLong, char, (sizeof(long long) > sizeof(char) || std::is_unsigned<char>::value));
-    NARROWS_IF(ScopedEnumBackedByULongLong, char, (sizeof(long long) > sizeof(char) || std::is_signed<char>::value));
-
-    NARROWS_IF(ScopedEnumBackedByShort, signed char, (sizeof(short) > sizeof(char)));
-    NARROWS(ScopedEnumBackedByUShort, signed char);
-    NARROWS_IF(ScopedEnumBackedByInt, signed char, (sizeof(int) > sizeof(char)));
-    NARROWS(ScopedEnumBackedByUInt, signed char);
-    NARROWS_IF(ScopedEnumBackedByLong, signed char, (sizeof(long) > sizeof(char)));
-    NARROWS(ScopedEnumBackedByULong, signed char);
-    NARROWS_IF(ScopedEnumBackedByLongLong, signed char, (sizeof(long long) > sizeof(char)));
-    NARROWS(ScopedEnumBackedByULongLong, signed char);
-
-    NARROWS(ScopedEnumBackedByShort, unsigned char);
-    NARROWS_IF(ScopedEnumBackedByUShort, unsigned char, (sizeof(short) > sizeof(char)));
-    NARROWS(ScopedEnumBackedByInt, unsigned char);
-    NARROWS_IF(ScopedEnumBackedByUInt, unsigned char, (sizeof(int) > sizeof(char)));
-    NARROWS(ScopedEnumBackedByLong, unsigned char);
-    NARROWS_IF(ScopedEnumBackedByULong, unsigned char, (sizeof(long) > sizeof(char)));
-    NARROWS(ScopedEnumBackedByLongLong, unsigned char);
-    NARROWS_IF(ScopedEnumBackedByULongLong, unsigned char, (sizeof(long long) > sizeof(char)));
-
-    NARROWS_IF(ScopedEnumBackedByInt, short, (sizeof(int) > sizeof(short)));
-    NARROWS(ScopedEnumBackedByUInt, short);
-    NARROWS_IF(ScopedEnumBackedByLong, short, (sizeof(long) > sizeof(short)));
-    NARROWS(ScopedEnumBackedByULong, short);
-    NARROWS_IF(ScopedEnumBackedByLongLong, short, (sizeof(long long) > sizeof(short)));
-    NARROWS(ScopedEnumBackedByULongLong, short);
-
-    NARROWS(ScopedEnumBackedByInt, unsigned short);
-    NARROWS_IF(ScopedEnumBackedByUInt, unsigned short, (sizeof(int) > sizeof(short)));
-    NARROWS(ScopedEnumBackedByLong, unsigned short);
-    NARROWS_IF(ScopedEnumBackedByULong, unsigned short, (sizeof(long) > sizeof(short)));
-    NARROWS(ScopedEnumBackedByLongLong, unsigned short);
-    NARROWS_IF(ScopedEnumBackedByULongLong, unsigned short, (sizeof(long long) > sizeof(short)));
-
-    NARROWS_IF(ScopedEnumBackedByLong, int, (sizeof(long) > sizeof(int)));
-    NARROWS(ScopedEnumBackedByULong, int);
-    NARROWS_IF(ScopedEnumBackedByLongLong, int, (sizeof(long long) > sizeof(int)));
-    NARROWS(ScopedEnumBackedByULongLong, int);
-
-    NARROWS(ScopedEnumBackedByLong, unsigned int);
-    NARROWS_IF(ScopedEnumBackedByULong, unsigned int, (sizeof(long) > sizeof(int)));
-    NARROWS(ScopedEnumBackedByLongLong, unsigned int);
-    NARROWS_IF(ScopedEnumBackedByULongLong, unsigned int, (sizeof(long long) > sizeof(int)));
-
-    NARROWS_IF(ScopedEnumBackedByLongLong, long, (sizeof(long long) > sizeof(long)));
-    NARROWS(ScopedEnumBackedByULongLong, long);
-
-    NARROWS(ScopedEnumBackedByLongLong, unsigned long);
-    NARROWS_IF(ScopedEnumBackedByULongLong, unsigned long, (sizeof(long long) > sizeof(long)));
-
-    // different signedness of the underlying type
-    NARROWS(SignedUnscopedEnum, unsigned char);
-    NARROWS(SignedUnscopedEnum, unsigned short);
-    NARROWS(SignedUnscopedEnum, unsigned int);
-    NARROWS(SignedUnscopedEnum, unsigned long);
-    NARROWS(SignedUnscopedEnum, unsigned long long);
-
-    NARROWS(ScopedEnumBackedBySChar, unsigned char);
-    NARROWS(ScopedEnumBackedBySChar, unsigned short);
-    NARROWS(ScopedEnumBackedBySChar, unsigned int);
-    NARROWS(ScopedEnumBackedBySChar, unsigned long);
-    NARROWS(ScopedEnumBackedBySChar, unsigned long long);
-
-    NARROWS(ScopedEnumBackedByShort, unsigned char);
-    NARROWS(ScopedEnumBackedByShort, unsigned short);
-    NARROWS(ScopedEnumBackedByShort, unsigned int);
-    NARROWS(ScopedEnumBackedByShort, unsigned long);
-    NARROWS(ScopedEnumBackedByShort, unsigned long long);
-
-    NARROWS(ScopedEnumBackedByInt, unsigned char);
-    NARROWS(ScopedEnumBackedByInt, unsigned short);
-    NARROWS(ScopedEnumBackedByInt, unsigned int);
-    NARROWS(ScopedEnumBackedByInt, unsigned long);
-    NARROWS(ScopedEnumBackedByInt, unsigned long long);
-
-    NARROWS(ScopedEnumBackedByLong, unsigned char);
-    NARROWS(ScopedEnumBackedByLong, unsigned short);
-    NARROWS(ScopedEnumBackedByLong, unsigned int);
-    NARROWS(ScopedEnumBackedByLong, unsigned long);
-    NARROWS(ScopedEnumBackedByLong, unsigned long long);
-
-    NARROWS(ScopedEnumBackedByLongLong, unsigned char);
-    NARROWS(ScopedEnumBackedByLongLong, unsigned short);
-    NARROWS(ScopedEnumBackedByLongLong, unsigned int);
-    NARROWS(ScopedEnumBackedByLongLong, unsigned long);
-    NARROWS(ScopedEnumBackedByLongLong, unsigned long long);
-
-    NARROWS(ScopedEnumBackedByUChar, signed char);
-    FITS_IF(ScopedEnumBackedByUChar, short, (sizeof(char) < sizeof(short)));
-    FITS_IF(ScopedEnumBackedByUChar, int, (sizeof(char) < sizeof(int)));
-    FITS_IF(ScopedEnumBackedByUChar, long, (sizeof(char) < sizeof(long)));
-    FITS_IF(ScopedEnumBackedByUChar, long long, (sizeof(char) < sizeof(long long)));
-
-    NARROWS(ScopedEnumBackedByUShort, signed char);
-    NARROWS(ScopedEnumBackedByUShort, short);
-    FITS_IF(ScopedEnumBackedByUShort, int, (sizeof(short) < sizeof(int)));
-    FITS_IF(ScopedEnumBackedByUShort, long, (sizeof(short) < sizeof(long)));
-    FITS_IF(ScopedEnumBackedByUShort, long long, (sizeof(short) < sizeof(long long)));
-
-    NARROWS(ScopedEnumBackedByUInt, signed char);
-    NARROWS(ScopedEnumBackedByUInt, short);
-    NARROWS(ScopedEnumBackedByUInt, int);
-    FITS_IF(ScopedEnumBackedByUInt, long, (sizeof(ScopedEnumBackedByUInt) < sizeof(long)));
-    FITS(ScopedEnumBackedByUInt, long long);
-
-    NARROWS(ScopedEnumBackedByULong, signed char);
-    NARROWS(ScopedEnumBackedByULong, short);
-    NARROWS(ScopedEnumBackedByULong, int);
-    NARROWS(ScopedEnumBackedByULong, long);
-    FITS_IF(ScopedEnumBackedByULong, long long, (sizeof(ScopedEnumBackedByULong) < sizeof(long long)));
-
-    NARROWS(ScopedEnumBackedByULongLong, signed char);
-    NARROWS(ScopedEnumBackedByULongLong, short);
-    NARROWS(ScopedEnumBackedByULongLong, int);
-    NARROWS(ScopedEnumBackedByULongLong, long);
-    NARROWS(ScopedEnumBackedByULongLong, long long);
-
     // other types which should be always unaffected
     FITS(void *, void *);
 
     FITS(QString, QString);
-    FITS(QString &, QString &);
-    FITS(const QString &, const QString &);
-
     FITS(QObject, QObject);
     FITS(QObject *, QObject *);
     FITS(const QObject *, const QObject *);
 
     FITS(std::nullptr_t, std::nullptr_t);
 
-    FITS(QString, QObject);
-    FITS(QString, QVariant);
-    FITS(QString, void *);
-    FITS(QString, long long);
-    FITS(bool, const QObject *&);
-    FITS(int (*)(bool), void (QObject::*)());
+    // classes with conversion operators undergoing implicit conversions
+    struct ConvertingToDouble {
+        /* implicit */ operator double() const { return 42.0; }
+    };
 
+    NARROWS(ConvertingToDouble, char);
+    NARROWS(ConvertingToDouble, short);
+    NARROWS(ConvertingToDouble, int);
+    NARROWS(ConvertingToDouble, long);
+    NARROWS(ConvertingToDouble, long long);
+    NARROWS(ConvertingToDouble, float);
+    FITS(ConvertingToDouble, double);
+    FITS(ConvertingToDouble, long double);
+
+
+    // no compiler still implements this properly.
+#if 0
+    struct ConstructibleFromInt {
+        /* implicit */ ConstructibleFromInt(int) {}
+    };
+
+    FITS(char, ConstructibleFromInt);
+    FITS(short, ConstructibleFromInt);
+    FITS(int, ConstructibleFromInt);
+    NARROWS(unsigned int, ConstructibleFromInt);
+    NARROWS_IF(long, ConstructibleFromInt, sizeof(long) > sizeof(int));
+    NARROWS_IF(long long, ConstructibleFromInt, sizeof(long long) > sizeof(int));
+    NARROWS(float, ConstructibleFromInt);
+    NARROWS(double, ConstructibleFromInt);
+#endif
+
+    // forward declared classes must work
+    class ForwardDeclared;
+    FITS(ForwardDeclared, ForwardDeclared);
+
+#if 0 // waiting for official compiler releases that implement P1957...
     {
         // wg21.link/P1957
         NARROWS(char*, bool);
         NARROWS(void (QObject::*)(), bool);
     }
-
-#undef IS_UNSCOPED_ENUM_SIGNED
+#endif
 
 #undef NARROWS_IF
 #undef FITS_IF
