@@ -113,11 +113,6 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
         refreshRate = 60.0;
 
     updatePrimaryOrientation();
-
-    filteredOrientation = orientation;
-    if (filteredOrientation == Qt::PrimaryOrientation)
-        filteredOrientation = primaryOrientation;
-
     updateHighDpi();
 }
 
@@ -511,57 +506,24 @@ QRect QScreen::availableVirtualGeometry() const
 }
 
 /*!
-    Sets the orientations that the application is interested in receiving
-    updates for in conjunction with this screen.
-
-    For example, to receive orientation() updates and thus have
-    orientationChanged() signals being emitted for LandscapeOrientation and
-    InvertedLandscapeOrientation, call setOrientationUpdateMask() with
-    \a{mask} set to Qt::LandscapeOrientation | Qt::InvertedLandscapeOrientation.
-
-    The default, 0, means no orientationChanged() signals are fired.
-*/
-void QScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
-{
-    Q_D(QScreen);
-    d->orientationUpdateMask = mask;
-    d->platformScreen->setOrientationUpdateMask(mask);
-    QGuiApplicationPrivate::updateFilteredScreenOrientation(this);
-}
-
-/*!
-    Returns the currently set orientation update mask.
-
-    \sa setOrientationUpdateMask()
-*/
-Qt::ScreenOrientations QScreen::orientationUpdateMask() const
-{
-    Q_D(const QScreen);
-    return d->orientationUpdateMask;
-}
-
-/*!
     \property QScreen::orientation
     \brief the screen orientation
 
-    The screen orientation represents the physical orientation
-    of the display. For example, the screen orientation of a mobile device
-    will change based on how it is being held. A change to the orientation
-    might or might not trigger a change to the primary orientation of the screen.
+    The \c orientation property tells the orientation of the screen from the
+    window system perspective.
 
-    Changes to this property will be filtered by orientationUpdateMask(),
-    so in order to receive orientation updates the application must first
-    call setOrientationUpdateMask() with a mask of the orientations it wants
-    to receive.
+    Most mobile devices and tablet computers contain accelerometer sensors.
+    The Qt Sensors module provides the ability to read this sensor directly.
+    However, the windowing system may rotate the entire screen automatically
+    based on how it is being held; in that case, this \c orientation property
+    will change.
 
-    Qt::PrimaryOrientation is never returned.
-
-    \sa primaryOrientation()
+    \sa primaryOrientation(), QWindow::contentOrientation(), QOrientationSensor
 */
 Qt::ScreenOrientation QScreen::orientation() const
 {
     Q_D(const QScreen);
-    return d->filteredOrientation;
+    return d->orientation;
 }
 
 /*!

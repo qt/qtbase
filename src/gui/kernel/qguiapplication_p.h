@@ -153,7 +153,6 @@ public:
     static void processApplicationTermination(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
     static void updateFilteredScreenOrientation(QScreen *screen);
-    static void reportScreenOrientationChange(QScreen *screen);
     static void processScreenOrientationChange(QWindowSystemInterfacePrivate::ScreenOrientationEvent *e);
     static void processScreenGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);
     static void processScreenLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e);

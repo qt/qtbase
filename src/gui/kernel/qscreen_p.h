@@ -77,9 +77,7 @@ public:
 
     QPlatformScreen *platformScreen = nullptr;
 
-    Qt::ScreenOrientations orientationUpdateMask;
     Qt::ScreenOrientation orientation = Qt::PrimaryOrientation;
-    Qt::ScreenOrientation filteredOrientation = Qt::PrimaryOrientation;
     Qt::ScreenOrientation primaryOrientation = Qt::LandscapeOrientation;
     QRect geometry;
     QRect availableGeometry;

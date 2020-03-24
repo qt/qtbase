@@ -125,7 +125,6 @@ public:
 
     virtual Qt::ScreenOrientation nativeOrientation() const;
     virtual Qt::ScreenOrientation orientation() const;
-    virtual void setOrientationUpdateMask(Qt::ScreenOrientations mask);
 
     virtual QWindow *topLevelAt(const QPoint &point) const;
     QWindowList windows() const;

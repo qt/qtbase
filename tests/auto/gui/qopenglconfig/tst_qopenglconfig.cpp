@@ -148,8 +148,7 @@ static void dumpConfiguration(QTextStream &str)
             << "\n  DevicePixelRatio: " << screen->devicePixelRatio()
             << " Primary orientation: " << screen->primaryOrientation()
             << "\n  Orientation: " << screen->orientation()
-            << " Native orientation: " << screen->nativeOrientation()
-            << " OrientationUpdateMask: " << screen->orientationUpdateMask() << '\n';
+            << " Native orientation: " << screen->nativeOrientation() << '\n';
     }
 
     // On Windows, this will provide addition GPU info similar to the output of dxdiag.

@@ -225,8 +225,7 @@ void ScreenWatcherMainWindow::startMouseMonitor()
 
 void screenAdded(QScreen* screen)
 {
-    screen->setOrientationUpdateMask((Qt::ScreenOrientations)0x0F);
-    qDebug("\nscreenAdded %s siblings %d first %s", qPrintable(screen->name()), screen->virtualSiblings().count(),
+    qDebug("\nscreenAdded %s siblings %d fast %s", qPrintable(screen->name()), screen->virtualSiblings().count(),
         (screen->virtualSiblings().isEmpty() ? "none" : qPrintable(screen->virtualSiblings().first()->name())));
     ScreenWatcherMainWindow *w = new ScreenWatcherMainWindow(screen);
 

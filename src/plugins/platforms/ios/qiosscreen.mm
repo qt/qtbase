@@ -300,6 +300,8 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
         }
     }
 
+    m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
+
     updateProperties();
 
     m_displayLink = [m_uiScreen displayLinkWithBlock:^(CADisplayLink *) { deliverUpdateRequests(); }];
@@ -518,17 +520,6 @@ Qt::ScreenOrientation QIOSScreen::orientation() const
 
     return toQtScreenOrientation(deviceOrientation);
 #endif
-}
-
-void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
-{
-    if (m_orientationListener && mask == Qt::PrimaryOrientation) {
-        [m_orientationListener release];
-        m_orientationListener = 0;
-    } else if (!m_orientationListener) {
-        m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
-        updateProperties();
-    }
 }
 
 QPixmap QIOSScreen::grabWindow(WId window, int x, int y, int width, int height) const

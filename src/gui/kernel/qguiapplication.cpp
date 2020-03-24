@@ -3073,25 +3073,6 @@ void QGuiApplicationPrivate::processScreenOrientationChange(QWindowSystemInterfa
     QScreen *s = e->screen.data();
     s->d_func()->orientation = e->orientation;
 
-    updateFilteredScreenOrientation(s);
-}
-
-void QGuiApplicationPrivate::updateFilteredScreenOrientation(QScreen *s)
-{
-    Qt::ScreenOrientation o = s->d_func()->orientation;
-    if (o == Qt::PrimaryOrientation)
-        o = s->primaryOrientation();
-    o = Qt::ScreenOrientation(o & s->orientationUpdateMask());
-    if (o == Qt::PrimaryOrientation)
-        return;
-    if (o == s->d_func()->filteredOrientation)
-        return;
-    s->d_func()->filteredOrientation = o;
-    reportScreenOrientationChange(s);
-}
-
-void QGuiApplicationPrivate::reportScreenOrientationChange(QScreen *s)
-{
     emit s->orientationChanged(s->orientation());
 
     QScreenOrientationChangeEvent event(s, s->orientation());
@@ -3126,9 +3107,6 @@ void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfaceP
 
         if (s->primaryOrientation() != primaryOrientation)
             emit s->primaryOrientationChanged(s->primaryOrientation());
-
-        if (s->d_func()->orientation == Qt::PrimaryOrientation)
-            updateFilteredScreenOrientation(s);
     }
 
     s->d_func()->emitGeometryChangeSignals(geometryChanged, availableGeometryChanged);

@@ -982,8 +982,6 @@ public:
     TestPlugin()
     {
         QScreen* screen = QGuiApplication::primaryScreen();
-        // Make sure the orientation we want to send doesn't get filtered out.
-        screen->setOrientationUpdateMask(screen->orientationUpdateMask() | testOrientationToSend);
         QWindowSystemInterface::handleScreenOrientationChange(screen, testOrientationToSend);
     }
 };
