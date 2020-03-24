@@ -48,6 +48,7 @@ private slots:
     void fromSignal();
 
     void gadget();
+    void revision();
 
     void returnMetaType();
     void parameterMetaType();
@@ -781,10 +782,20 @@ class MyTestClass : public QObject
 public:
     MyTestClass() {};
 public Q_SLOTS:
-    MyGadget doStuff(int, float, MyGadget) {return {};}
+    Q_REVISION(42) MyGadget doStuff(int, float, MyGadget) {return {};}
 Q_SIGNALS:
     QObject *mySignal();
 };
+
+void tst_QMetaMethod::revision()
+{
+    auto mo = MyTestClass::staticMetaObject;
+    const auto normalized = QMetaObject::normalizedSignature("doStuff(int, float, MyGadget)");
+    const int idx = mo.indexOfSlot(normalized);
+    QMetaMethod mm = mo.method(idx);
+    QVERIFY(mm.isValid());
+    QCOMPARE(QTypeRevision::fromEncodedVersion(mm.revision()), QTypeRevision::fromMinorVersion(42));
+}
 
 void tst_QMetaMethod::returnMetaType()
 {
