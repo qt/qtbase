@@ -512,9 +512,7 @@ void tst_Http2::goaway()
         request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
         replies[i] = manager->get(request);
         QCOMPARE(replies[i]->error(), QNetworkReply::NoError);
-        void (QNetworkReply::*errorSignal)(QNetworkReply::NetworkError) =
-            &QNetworkReply::errorOccurred;
-        connect(replies[i], errorSignal, this, &tst_Http2::replyFinishedWithError);
+        connect(replies[i], &QNetworkReply::errorOccurred, this, &tst_Http2::replyFinishedWithError);
         // Since we're using self-signed certificates, ignore SSL errors:
         replies[i]->ignoreSslErrors();
     }

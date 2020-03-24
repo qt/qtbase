@@ -2552,8 +2552,7 @@ void tst_QSslSocket::closeWhileEmittingSocketError()
     clientSocket.setSslConfiguration(clientConfig);
 
     QSignalSpy socketErrorSpy(&clientSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)));
-    void (QSslSocket::*errorSignal)(QAbstractSocket::SocketError) = &QSslSocket::errorOccurred;
-    connect(&clientSocket, errorSignal, &handshake, &BrokenPskHandshake::socketError);
+    connect(&clientSocket, &QSslSocket::errorOccurred, &handshake, &BrokenPskHandshake::socketError);
 
     clientSocket.connectToHostEncrypted(QStringLiteral("127.0.0.1"), handshake.serverPort());
     // Make sure we have some data buffered so that close will try to flush:

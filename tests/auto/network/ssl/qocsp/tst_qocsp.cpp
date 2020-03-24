@@ -410,7 +410,6 @@ private:
 
     static QString certDirPath;
 
-    void (QSslSocket::*socketErrorSignal)(QAbstractSocket::SocketError) = &QAbstractSocket::errorOccurred;
     void (QSslSocket::*tlsErrorsSignal)(const QList<QSslError> &) = &QSslSocket::sslErrors;
     void (QTestEventLoop::*exitLoopSlot)() = &QTestEventLoop::exitLoop;
 
@@ -764,7 +763,7 @@ void tst_QOcsp::setupOcspClient(QSslSocket &clientSocket, const CertificateChain
     clientSocket.setSslConfiguration(clientConfig);
     clientSocket.setPeerVerifyName(name);
 
-    connect(&clientSocket, socketErrorSignal, &loop, exitLoopSlot);
+    connect(&clientSocket, &QAbstractSocket::errorOccurred, &loop, exitLoopSlot);
     connect(&clientSocket, tlsErrorsSignal, &loop, exitLoopSlot);
     connect(&clientSocket, &QSslSocket::encrypted, &loop, exitLoopSlot);
 }
