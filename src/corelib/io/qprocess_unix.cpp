@@ -251,7 +251,7 @@ bool QProcessPrivate::openChannel(Channel &channel)
                 channel.notifier = new QSocketNotifier(channel.pipe[1],
                                                        QSocketNotifier::Write, q);
                 channel.notifier->setEnabled(false);
-                QObject::connect(channel.notifier, SIGNAL(activated(int)),
+                QObject::connect(channel.notifier, SIGNAL(activated(QSocketDescriptor)),
                                  q, SLOT(_q_canWrite()));
             } else {
                 channel.notifier = new QSocketNotifier(channel.pipe[0],
@@ -261,7 +261,7 @@ bool QProcessPrivate::openChannel(Channel &channel)
                     receiver = SLOT(_q_canReadStandardOutput());
                 else
                     receiver = SLOT(_q_canReadStandardError());
-                QObject::connect(channel.notifier, SIGNAL(activated(int)),
+                QObject::connect(channel.notifier, SIGNAL(activated(QSocketDescriptor)),
                                  q, receiver);
             }
         }
@@ -380,7 +380,7 @@ void QProcessPrivate::startProcess()
     if (threadData.loadRelaxed()->hasEventDispatcher()) {
         startupSocketNotifier = new QSocketNotifier(childStartedPipe[0],
                                                     QSocketNotifier::Read, q);
-        QObject::connect(startupSocketNotifier, SIGNAL(activated(int)),
+        QObject::connect(startupSocketNotifier, SIGNAL(activated(QSocketDescriptor)),
                          q, SLOT(_q_startupNotification()));
     }
 
@@ -531,7 +531,7 @@ void QProcessPrivate::startProcess()
 
     if (threadData.loadRelaxed()->eventDispatcher.loadAcquire()) {
         deathNotifier = new QSocketNotifier(forkfd, QSocketNotifier::Read, q);
-        QObject::connect(deathNotifier, SIGNAL(activated(int)),
+        QObject::connect(deathNotifier, SIGNAL(activated(QSocketDescriptor)),
                          q, SLOT(_q_processDied()));
     }
 }

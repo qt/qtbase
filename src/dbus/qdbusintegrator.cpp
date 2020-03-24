@@ -1205,7 +1205,7 @@ void QDBusConnectionPrivate::doDispatch()
     }
 }
 
-void QDBusConnectionPrivate::socketRead(int fd)
+void QDBusConnectionPrivate::socketRead(qintptr fd)
 {
     WatcherHash::ConstIterator it = watchers.constFind(fd);
     while (it != watchers.constEnd() && it.key() == fd) {
@@ -1219,7 +1219,7 @@ void QDBusConnectionPrivate::socketRead(int fd)
     doDispatch();
 }
 
-void QDBusConnectionPrivate::socketWrite(int fd)
+void QDBusConnectionPrivate::socketWrite(qintptr fd)
 {
     WatcherHash::ConstIterator it = watchers.constFind(fd);
     while (it != watchers.constEnd() && it.key() == fd) {

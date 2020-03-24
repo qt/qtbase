@@ -130,7 +130,7 @@ protected:
     bool rollbackTransaction() override;
 
 private Q_SLOTS:
-    void _q_handleNotification(int);
+    void _q_handleNotification();
 };
 
 QT_END_NAMESPACE

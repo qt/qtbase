@@ -96,7 +96,7 @@ void QQnxButtonEventNotifier::start()
     }
 
     m_readNotifier = new QSocketNotifier(m_fd, QSocketNotifier::Read);
-    QObject::connect(m_readNotifier, SIGNAL(activated(int)), this, SLOT(updateButtonStates()));
+    QObject::connect(m_readNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(updateButtonStates()));
 
     qButtonDebug("successfully connected to Navigator. fd = %d", m_fd);
 }

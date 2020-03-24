@@ -92,7 +92,7 @@ QDeviceDiscoveryUDev::QDeviceDiscoveryUDev(QDeviceTypes types, struct udev *udev
     m_udevMonitorFileDescriptor = udev_monitor_get_fd(m_udevMonitor);
 
     m_udevSocketNotifier = new QSocketNotifier(m_udevMonitorFileDescriptor, QSocketNotifier::Read, this);
-    connect(m_udevSocketNotifier, SIGNAL(activated(int)), this, SLOT(handleUDevNotification()));
+    connect(m_udevSocketNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(handleUDevNotification()));
 }
 
 QDeviceDiscoveryUDev::~QDeviceDiscoveryUDev()

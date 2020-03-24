@@ -279,7 +279,7 @@ void QPSQLDriverPrivate::checkPendingNotifications() const
     Q_Q(const QPSQLDriver);
     if (seid.size() && !pendingNotifyCheck) {
         pendingNotifyCheck = true;
-        QMetaObject::invokeMethod(const_cast<QPSQLDriver*>(q), "_q_handleNotification", Qt::QueuedConnection, Q_ARG(int,0));
+        QMetaObject::invokeMethod(const_cast<QPSQLDriver*>(q), "_q_handleNotification", Qt::QueuedConnection);
     }
 }
 
@@ -1246,7 +1246,7 @@ void QPSQLDriver::close()
 
         d->seid.clear();
         if (d->sn) {
-            disconnect(d->sn, SIGNAL(activated(int)), this, SLOT(_q_handleNotification(int)));
+            disconnect(d->sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_handleNotification()));
             delete d->sn;
             d->sn = nullptr;
         }
@@ -1603,7 +1603,7 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
 
         if (!d->sn) {
             d->sn = new QSocketNotifier(socket, QSocketNotifier::Read);
-            connect(d->sn, SIGNAL(activated(int)), this, SLOT(_q_handleNotification(int)));
+            connect(d->sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_handleNotification()));
         }
     } else {
         qWarning("QPSQLDriver::subscribeToNotificationImplementation: PQsocket didn't return a valid socket to listen on");
@@ -1639,7 +1639,7 @@ bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
     d->seid.removeAll(name);
 
     if (d->seid.isEmpty()) {
-        disconnect(d->sn, SIGNAL(activated(int)), this, SLOT(_q_handleNotification(int)));
+        disconnect(d->sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_handleNotification()));
         delete d->sn;
         d->sn = nullptr;
     }
@@ -1653,7 +1653,7 @@ QStringList QPSQLDriver::subscribedToNotifications() const
     return d->seid;
 }
 
-void QPSQLDriver::_q_handleNotification(int)
+void QPSQLDriver::_q_handleNotification()
 {
     Q_D(QPSQLDriver);
     d->pendingNotifyCheck = false;
