@@ -47,7 +47,6 @@ find_package(Qt5Core REQUIRED)
 
 include("${_Qt5CTestMacros}")
 
-expect_pass(test_use_modules_function)
 expect_pass(test_umbrella_config)
 expect_pass(test_wrap_cpp_and_resources)
 if (NOT NO_WIDGETS)
