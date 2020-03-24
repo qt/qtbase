@@ -21,7 +21,10 @@ function(qt_configure_process_path name default docstring)
         # If relative path given, it's relative to the install prefix (rather than the binary dir,
         # which is what qmake does for some reason).
         # In both cases, store the value as a relative path.
-        if(rel_path MATCHES "^\.\./")
+        if("${rel_path}" STREQUAL "")
+            # file(RELATIVE_PATH) returns an empty string if the given absolute paths are equal
+            set(rel_path ".")
+        elseif(rel_path MATCHES "^\.\./")
             message(FATAL_ERROR
                 "Path component '${name}' is outside computed install prefix: ${rel_path} ")
         endif()
