@@ -1191,16 +1191,16 @@
             \li none | dotted | dashed | dot-dash | dot-dot-dash | solid | double | groove | ridge | inset | outset
             \li Border style for text tables and table cells.
     \row    \li \c border-top-style
-            \li <color>
+            \li <border-style>
             \li Top border style for table cells.
     \row    \li \c border-bottom-style
-            \li <color>
+            \li <border-style>
             \li Bottom border style for table cells.
     \row    \li \c border-left-style
-            \li <color>
+            \li <border-style>
             \li Left border style for table cells.
     \row    \li \c border-right-style
-            \li <color>
+            \li <border-style>
             \li Right border style for table cells.
     \row    \li \c border-width
             \li <width>px
