@@ -46,9 +46,6 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     ## Should this Qt be built with Werror?
     option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
 
-    ## Should Qt be built using PCH?
-    option(BUILD_WITH_PCH "Build Qt using precompiled headers?" ON)
-
     ## QtBase specific configure tests:
     include(QtBaseConfigureTests)
 

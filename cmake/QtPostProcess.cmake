@@ -361,6 +361,10 @@ function(qt_generate_build_internals_extra_cmake_code)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(CMAKE_DEFAULT_BUILD_TYPE \"${CMAKE_DEFAULT_BUILD_TYPE}\" CACHE STRING \"\")\n")
         endif()
+        if(DEFINED BUILD_WITH_PCH)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(BUILD_WITH_PCH \"${BUILD_WITH_PCH}\" CACHE STRING \"\")\n")
+        endif()
 
         qt_generate_install_prefixes(install_prefix_content)
 

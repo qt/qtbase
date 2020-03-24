@@ -202,8 +202,25 @@ function(qt_auto_detect_darwin)
     endif()
 endfunction()
 
+function(qt_auto_detect_pch)
+    set(default_value "ON")
+
+    if(CMAKE_OSX_ARCHITECTURES)
+        list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
+        # CMake doesn't currently support PCH when multiple architecture are set. This is the
+        # case for simulator_and_device builds.
+        if(arch_count GREATER 1)
+            set(default_value "OFF")
+            message(WARNING "PCH support disabled due to usage of multiple architectures.")
+        endif()
+    endif()
+
+    option(BUILD_WITH_PCH "Build Qt using precompiled headers?" "${default_value}")
+endfunction()
+
 qt_auto_detect_cmake_config()
 qt_auto_detect_darwin()
 qt_auto_detect_ios()
 qt_auto_detect_android()
 qt_auto_detect_vpckg()
+qt_auto_detect_pch()
