@@ -46,7 +46,6 @@
 #include <QDebug>
 
 #include <limits>
-#include <locale>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,27 +83,6 @@ static OidNameMap createOidMap()
     return oids;
 }
 Q_GLOBAL_STATIC_WITH_ARGS(OidNameMap, oidNameMap, (createOidMap()))
-
-static bool stringToNonNegativeInt(const QByteArray &asnString, int *val)
-{
-    // Helper function for toDateTime(), which handles chunking of the original
-    // string into smaller sub-components, so we expect the whole 'asnString' to
-    // be a valid non-negative number.
-    Q_ASSERT(val);
-
-    // We want the C locale, as used by QByteArray; however, no leading sign is
-    // allowed (which QByteArray would accept), so we have to check the data:
-    const std::locale localeC;
-    for (char v : asnString) {
-        if (!std::isdigit(v, localeC))
-            return false;
-    }
-
-    bool ok = false;
-    *val = asnString.toInt(&ok);
-    Q_ASSERT(ok && *val >= 0);
-    return true;
-}
 
 QAsn1Element::QAsn1Element(quint8 type, const QByteArray &value)
     : mType(type)
@@ -256,30 +234,61 @@ bool QAsn1Element::toBool(bool *ok) const
 
 QDateTime QAsn1Element::toDateTime() const
 {
-    if (mValue.endsWith('Z')) {
-        if (mType == UtcTimeType && mValue.size() == 13) {
-            int year = 0;
-            if (!stringToNonNegativeInt(mValue.mid(0, 2), &year))
-                return QDateTime();
-            // RFC 2459: YY represents a year in the range [1950, 2049]
-            return QDateTime(QDate(year < 50 ? 2000 + year : 1900 + year,
-                                   mValue.mid(2, 2).toInt(),
-                                   mValue.mid(4, 2).toInt()),
-                             QTime(mValue.mid(6, 2).toInt(),
-                                   mValue.mid(8, 2).toInt(),
-                                   mValue.mid(10, 2).toInt()),
-                             Qt::UTC);
-        } else if (mType == GeneralizedTimeType && mValue.size() == 15) {
-            return QDateTime(QDate(mValue.mid(0, 4).toInt(),
-                                   mValue.mid(4, 2).toInt(),
-                                   mValue.mid(6, 2).toInt()),
-                             QTime(mValue.mid(8, 2).toInt(),
-                                   mValue.mid(10, 2).toInt(),
-                                   mValue.mid(12, 2).toInt()),
-                             Qt::UTC);
-        }
+    QDateTime result;
+
+    if (mValue.size() != 13 && mValue.size() != 15)
+        return result;
+
+    // QDateTime::fromString is lenient and accepts +- signs in front
+    // of the year; but ASN.1 doesn't allow them.
+    const auto isAsciiDigit = [](QChar c)
+    {
+        return c >= QLatin1Char('0') && c <= QLatin1Char('9');
+    };
+
+    if (!isAsciiDigit(mValue[0]))
+        return result;
+
+    // Timezone must be present, and UTC
+    if (mValue.back() != 'Z')
+        return result;
+
+    // In addition, check that we only have digits representing the
+    // date/time. This should not really be necessary (there's no such
+    // thing as negative months/days/etc.); it's a workaround for
+    // QTBUG-84349.
+    if (!std::all_of(mValue.begin(), mValue.end() - 1, isAsciiDigit))
+        return result;
+
+    if (mType == UtcTimeType && mValue.size() == 13) {
+        result = QDateTime::fromString(QString::fromLatin1(mValue),
+                                       QStringLiteral("yyMMddHHmmsst"));
+        if (!result.isValid())
+            return result;
+
+        Q_ASSERT(result.timeSpec() == Qt::UTC);
+
+        QDate date = result.date();
+
+        // RFC 2459:
+        //   Where YY is greater than or equal to 50, the year shall be
+        //   interpreted as 19YY; and
+        //
+        //   Where YY is less than 50, the year shall be interpreted as 20YY.
+        //
+        // QDateTime interprets the 'yy' format as 19yy, so we may need to adjust
+        // the year (bring it in the [1950, 2049] range).
+        if (date.year() < 1950)
+            result.setDate(date.addYears(100));
+
+        Q_ASSERT(result.date().year() >= 1950);
+        Q_ASSERT(result.date().year() <= 2049);
+    } else if (mType == GeneralizedTimeType && mValue.size() == 15) {
+        result = QDateTime::fromString(QString::fromLatin1(mValue),
+                                       QStringLiteral("yyyyMMddHHmmsst"));
     }
-    return QDateTime();
+
+    return result;
 }
 
 QMultiMap<QByteArray, QString> QAsn1Element::toInfo() const

@@ -170,6 +170,12 @@ void tst_QAsn1Element::dateTime_data()
     QTest::newRow("GeneralizedTime - no trailing Z")
         << QByteArray::fromHex("180f323035313038323930393533343159")
         << QDateTime();
+    QTest::newRow("GeneralizedTime - invalid month (+8)")
+        << QByteArray::fromHex("180f323035312b3832393039353334315a")
+        << QDateTime();
+    QTest::newRow("GeneralizedTime - invalid date (+9)")
+        << QByteArray::fromHex("180f3230353130382b393039353334315a")
+        << QDateTime();
 }
 
 void tst_QAsn1Element::dateTime()
