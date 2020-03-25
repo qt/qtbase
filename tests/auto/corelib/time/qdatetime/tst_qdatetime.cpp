@@ -2554,6 +2554,11 @@ void tst_QDateTime::fromStringStringFormat()
 
     QDateTime dt = QDateTime::fromString(string, format);
 
+    if (expected.isValid()) {
+        QCOMPARE(dt.timeSpec(), expected.timeSpec());
+        if (expected.timeSpec() == Qt::TimeZone)
+            QCOMPARE(dt.timeZone(), expected.timeZone());
+    }
     QCOMPARE(dt, expected);
 }
 

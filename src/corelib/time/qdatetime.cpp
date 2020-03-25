@@ -5537,13 +5537,12 @@ QT_WARNING_POP
 QDateTime QDateTime::fromString(const QString &string, const QString &format, QCalendar cal)
 {
 #if QT_CONFIG(datetimeparser)
-    QTime time;
-    QDate date;
+    QDateTime datetime;
 
     QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
-    if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
-        return QDateTime(date, time);
+    if (dt.parseFormat(format) && dt.fromString(string, &datetime))
+        return datetime;
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);

@@ -1976,7 +1976,14 @@ QDateTime QDateTimeEditPrivate::validateAndInterpret(QString &input, int &positi
             return minimum.toDateTime();
         }
     }
+
     StateNode tmp = parse(input, position, value.toDateTime(), fixup);
+    // Impose this widget's spec:
+    tmp.value = tmp.value.toTimeSpec(spec);
+    // ... but that might turn a valid datetime into an invalid one:
+    if (!tmp.value.isValid() && tmp.state == Acceptable)
+        tmp.state = Intermediate;
+
     input = tmp.input;
     position += tmp.padded;
     state = QValidator::State(int(tmp.state));
