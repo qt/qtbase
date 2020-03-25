@@ -525,7 +525,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                 }
                 break;
             case 't':
-                if (parserType != QMetaType::QTime) {
+                if (parserType == QMetaType::QDateTime) {
                     const SectionNode sn = { TimeZoneSection, i - add, countRepeat(newFormat, i, 4), 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
