@@ -305,11 +305,9 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         }
         break;
     case UIA_TogglePatternId:
-        // Checkbox controls.
-        if (accessible->role() == QAccessible::CheckBox
-                || (accessible->role() == QAccessible::MenuItem && accessible->state().checkable)) {
+        // Checkboxes and other checkable controls.
+        if (accessible->state().checkable)
             *pRetVal = new QWindowsUiaToggleProvider(id());
-        }
         break;
     case UIA_SelectionPatternId:
         // Lists of items.
