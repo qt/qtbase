@@ -233,13 +233,12 @@ Q_SIGNALS:
     void textActivated(const QString &);
     void highlighted(int index);
     void textHighlighted(const QString &);
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_X_5_15("Use currentIndexChanged(int, const QString &) instead")
     void currentIndexChanged(int index);
-    QT_DEPRECATED_VERSION_X_5_15("Use currentIndexChanged(int, const QString &) instead")
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15(
+            "Use currentIndexChanged(int) instead, and get the text using itemText(index)")
     void currentIndexChanged(const QString &);
 #endif
-    void currentIndexChanged(int index, const QString &text);
     void currentTextChanged(const QString &);
 #if QT_DEPRECATED_SINCE(5, 15)
     QT_DEPRECATED_VERSION_X(5, 15, "Use textActivated() instead")

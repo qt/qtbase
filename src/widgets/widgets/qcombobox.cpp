@@ -904,7 +904,8 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     This signal is sent when the user chooses an item in the combobox.
     The item's \a index is passed. Note that this signal is sent even
     when the choice is not changed. If you need to know when the
-    choice actually changes, use signal currentIndexChanged().
+    choice actually changes, use signal currentIndexChanged() or
+    currentTextChanged().
 
 */
 
@@ -914,7 +915,8 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     This signal is sent when the user chooses an item in the combobox.
     The item's \a text is passed. Note that this signal is sent even
     when the choice is not changed. If you need to know when the
-    choice actually changes, use signal currentIndexChanged().
+    choice actually changes, use signal currentIndexChanged() or
+    currentTextChanged().
 
     \obsolete Use QComboBox::textActivated() instead
 */
@@ -925,7 +927,8 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     This signal is sent when the user chooses an item in the combobox.
     The item's \a text is passed. Note that this signal is sent even
     when the choice is not changed. If you need to know when the
-    choice actually changes, use signal currentIndexChanged().
+    choice actually changes, use signal currentIndexChanged() or
+    currentTextChanged().
 */
 
 /*!
@@ -959,8 +962,6 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     changes either through user interaction or programmatically. The
     item's \a index is passed or -1 if the combobox becomes empty or the
     currentIndex was reset.
-
-    \obsolete Use currentIndexChanged(int index, const QString &text) instead
 */
 
 /*!
@@ -971,17 +972,8 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     changes either through user interaction or programmatically.  The
     item's \a text is passed.
 
-    \obsolete Use currentIndexChanged(int index, const QString &text) instead
-*/
-
-/*!
-    \fn void QComboBox::currentIndexChanged(int index, const QString &text)
-    \since 5.15
-
-    This signal is sent whenever the currentIndex in the combobox
-    changes either through user interaction or programmatically. The
-    item's \a index is passed or -1 if the combobox becomes empty or
-    the currentIndex was reset. The item's \a text is also passed.
+    \obsolete Use currentIndexChanged(int) and get the text from
+    the itemText(int) method.
 */
 
 /*!
@@ -1013,7 +1005,6 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     d->init();
 }
 
-
 /*!
     \class QComboBox
     \brief The QComboBox widget is a combined button and popup list.
@@ -1036,9 +1027,10 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     to clear the displayed string without changing the combobox's
     contents.
 
-    There are two signals emitted if the current item of a combobox
-    changes, currentIndexChanged() and activated().
-    currentIndexChanged() is always emitted regardless if the change
+    There are three signals emitted if the current item of a combobox
+    changes, currentIndexChanged(), currentTextChanged() and activated().
+    currentIndexChanged() and currentTextChanged() are always emitted
+    regardless if the change
     was done programmatically or by user interaction, while
     activated() is only emitted when the change is caused by user
     interaction. The highlighted() signal is emitted when the user
@@ -1466,14 +1458,13 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
 {
     Q_Q(QComboBox);
     const QString text = itemText(index);
-#if QT_DEPRECATED_SINCE(5, 15)
+    emit q->currentIndexChanged(index.row());
+#if QT_DEPRECATED_SINCE(5, 13)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
-    emit q->currentIndexChanged(index.row());
     emit q->currentIndexChanged(text);
     QT_WARNING_POP
 #endif
-    emit q->currentIndexChanged(index.row(), text);
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
         emit q->currentTextChanged(text);

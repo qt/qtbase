@@ -1208,7 +1208,8 @@ void tst_QComboBox::currentIndex()
         QVERIFY(testWidget->currentText().isEmpty());
 
         // spy on currentIndexChanged
-        QSignalSpy indexChangedSpy(testWidget, SIGNAL(currentIndexChanged(int, QString)));
+        QSignalSpy indexChangedInt(testWidget, SIGNAL(currentIndexChanged(int)));
+        QSignalSpy indexChangedString(testWidget, SIGNAL(currentIndexChanged(QString)));
 
         // stuff items into it
         foreach(QString text, initialItems) {
@@ -1232,12 +1233,16 @@ void tst_QComboBox::currentIndex()
         QCOMPARE(testWidget->currentText(), expectedCurrentText);
 
         // check that signal count is correct
-        QCOMPARE(indexChangedSpy.count(), expectedSignalCount);
+        QCOMPARE(indexChangedInt.count(), expectedSignalCount);
+        QCOMPARE(indexChangedString.count(), expectedSignalCount);
 
         // compare with last sent signal values
-        if (indexChangedSpy.count())
-            QCOMPARE(indexChangedSpy.at(indexChangedSpy.count() - 1).at(0).toInt(),
-                     testWidget->currentIndex());
+        if (indexChangedInt.count())
+            QCOMPARE(indexChangedInt.at(indexChangedInt.count() - 1).at(0).toInt(),
+                    testWidget->currentIndex());
+        if (indexChangedString.count())
+            QCOMPARE(indexChangedString.at(indexChangedString.count() - 1).at(0).toString(),
+                     testWidget->currentText());
 
         if (edit) {
             testWidget->setCurrentIndex(-1);
@@ -2336,8 +2341,7 @@ public:
     {
         QStringList list;
         list << "one" << "two";
-        connect(this, SIGNAL(currentIndexChanged(int, QString)),
-                this, SLOT(onCurrentIndexChanged(int)));
+        connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
         addItems(list);
     }
 public slots:
@@ -2763,7 +2767,7 @@ void tst_QComboBox::resetModel()
     };
     QComboBox cb;
     StringListModel model({"1", "2"});
-    QSignalSpy spy(&cb, QOverload<int, const QString &>::of(&QComboBox::currentIndexChanged));
+    QSignalSpy spy(&cb, QOverload<int>::of(&QComboBox::currentIndexChanged));
     QCOMPARE(spy.count(), 0);
     QCOMPARE(cb.currentIndex(), -1); //no selection
 
