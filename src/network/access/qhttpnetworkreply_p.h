@@ -262,7 +262,6 @@ public:
     bool autoDecompress;
 
     QByteDataBuffer responseData; // uncompressed body
-    QByteArray compressedData; // compressed body (temporary)
     bool requestIsPrepared;
 
     bool pipeliningUsed;

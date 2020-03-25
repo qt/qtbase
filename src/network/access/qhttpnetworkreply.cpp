@@ -990,7 +990,6 @@ bool QHttpNetworkReplyPrivate::expectContent()
 
 void QHttpNetworkReplyPrivate::eraseData()
 {
-    compressedData.clear();
     responseData.clear();
 }
 
