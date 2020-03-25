@@ -4,6 +4,16 @@ cmake_minimum_required(VERSION 3.15.0)
 # Run auto detection routines
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
 
+if (CMAKE_CROSSCOMPILING AND CMAKE_SYSROOT)
+    # When cross compiling with CMake any calls to pkg_check_modules() will
+    # search into the host system instead of the target sysroot.
+    # The current work around is based on the discussion found at
+    # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4478
+    set(ENV{PKG_CONFIG_DIR} "")
+    set(ENV{PKG_CONFIG_LIBDIR} "${CMAKE_SYSROOT}/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig")
+    set(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
+endif()
+
 project(QtBase
     VERSION 6.0.0
     DESCRIPTION "Qt Base Libraries"
