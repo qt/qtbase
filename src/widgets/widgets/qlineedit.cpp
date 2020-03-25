@@ -701,7 +701,7 @@ QSize QLineEdit::sizeHint() const
 /*!
     Returns a minimum size for the line edit.
 
-    The width returned is enough for at least one character.
+    The width returned is usually enough for at least one character.
 */
 
 QSize QLineEdit::minimumSizeHint() const
@@ -713,7 +713,7 @@ QSize QLineEdit::minimumSizeHint() const
     int h = fm.height() + qMax(2 * QLineEditPrivate::verticalMargin, fm.leading())
             + tm.top() + tm.bottom()
             + d->topmargin + d->bottommargin;
-    int w = fm.maxWidth()
+    int w = fm.maxWidth() + 2 * QLineEditPrivate::horizontalMargin
             + tm.left() + tm.right()
             + d->leftmargin + d->rightmargin;
     QStyleOptionFrame opt;
