@@ -49,23 +49,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QtConcurrent {
 
-template <typename T>
-class FunctionWrapper0
-{
-public:
-    typedef T (*FunctionPointerType)();
-    typedef T result_type;
-    inline FunctionWrapper0(FunctionPointerType _functionPointer)
-    :functionPointer(_functionPointer) { }
-
-    inline T operator()()
-    {
-        return functionPointer();
-    }
-private:
-    FunctionPointerType functionPointer;
-};
-
 template <typename T, typename U>
 class FunctionWrapper1
 {
@@ -80,23 +63,6 @@ public:
         return functionPointer(u);
     }
 
-private:
-    FunctionPointerType functionPointer;
-};
-
-template <typename T, typename U, typename V>
-class FunctionWrapper2
-{
-public:
-    typedef T (*FunctionPointerType)(U u, V v);
-    typedef T result_type;
-    inline FunctionWrapper2(FunctionPointerType _functionPointer)
-    :functionPointer(_functionPointer) { }
-
-    inline T operator()(U u, V v)
-    {
-        return functionPointer(u, v);
-    }
 private:
     FunctionPointerType functionPointer;
 };

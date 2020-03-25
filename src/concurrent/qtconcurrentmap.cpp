@@ -524,19 +524,7 @@
 */
 
 /*!
-  \class QtConcurrent::FunctionWrapper0
-  \inmodule QtConcurrent
-  \internal
-*/
-
-/*!
   \class QtConcurrent::FunctionWrapper1
-  \inmodule QtConcurrent
-  \internal
-*/
-
-/*!
-  \class QtConcurrent::FunctionWrapper2
   \inmodule QtConcurrent
   \internal
 */
