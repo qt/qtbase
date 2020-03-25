@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -107,7 +107,7 @@ QList<QDateTime> tst_QDateTime::daily(qint64 start, qint64 end)
     QList<QDateTime> list;
     list.reserve(end - start);
     for (int jd = start; jd < end; ++jd)
-        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0)));
+        list.append(QDateTime(QDate::fromJulianDay(jd).startOfDay()));
     return list;
 }
 
@@ -117,15 +117,16 @@ QList<QDateTime> tst_QDateTime::norse(qint64 start, qint64 end)
     QList<QDateTime> list;
     list.reserve(end - start);
     for (int jd = start; jd < end; ++jd)
-        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0), cet));
+        list.append(QDateTime(QDate::fromJulianDay(jd).startOfDay(cet)));
     return list;
 }
 
 void tst_QDateTime::create()
 {
+    const QTime noon = QTime::fromMSecsSinceStartOfDay(43200);
     QBENCHMARK {
         for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd) {
-            QDateTime test(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0));
+            QDateTime test(QDate::fromJulianDay(jd), noon);
             Q_UNUSED(test);
         }
     }
