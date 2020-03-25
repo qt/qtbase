@@ -68,6 +68,9 @@
 #if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
 #endif
+#if QT_CONFIG(regularexpression)
+#include <qregularexpression.h>
+#endif
 #include <qapplication.h>
 #include <qstylepainter.h>
 #include "ui_qfiledialog.h"
@@ -1413,18 +1416,22 @@ bool QFileDialog::isNameFilterDetailsVisible() const
 */
 QStringList qt_strip_filters(const QStringList &filters)
 {
+#if QT_CONFIG(regularexpression)
     QStringList strippedFilters;
-    QRegExp r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
+    QRegularExpression r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
     const int numFilters = filters.count();
     strippedFilters.reserve(numFilters);
     for (int i = 0; i < numFilters; ++i) {
         QString filterName;
-        int index = r.indexIn(filters[i]);
-        if (index >= 0)
-            filterName = r.cap(1);
+        auto match = r.match(filters[i]);
+        if (match.hasMatch())
+            filterName = match.captured(1);
         strippedFilters.append(filterName.simplified());
     }
     return strippedFilters;
+#else
+    return filters;
+#endif
 }
 
 
@@ -4369,16 +4376,14 @@ QStringList QFSCompleter::splitPath(const QString &path) const
     }
 #endif
 
-    QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
-
 #if defined(Q_OS_WIN)
-    QStringList parts = pathCopy.split(re, Qt::SkipEmptyParts);
+    QStringList parts = pathCopy.split(sep, Qt::SkipEmptyParts);
     if (!doubleSlash.isEmpty() && !parts.isEmpty())
         parts[0].prepend(doubleSlash);
     if (pathCopy.endsWith(sep))
         parts.append(QString());
 #else
-    QStringList parts = pathCopy.split(re);
+    QStringList parts = pathCopy.split(sep);
     if (pathCopy[0] == sep[0]) // read the "/" at the beginning as the split removed it
         parts[0] = sep[0];
 #endif
