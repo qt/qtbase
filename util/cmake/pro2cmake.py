@@ -323,6 +323,7 @@ def set_up_cmake_api_calls():
     api[1]["qt_add_resource"] = "add_qt_resource"
     api[1]["qt_add_qml_module"] = "add_qml_module"
     api[1]["qt_add_cmake_library"] = "add_cmake_library"
+    api[1]["qt_add_3rdparty_library"] = "qt_add_3rdparty_library"
 
     api[2]["qt_extend_target"] = "qt_extend_target"
     api[2]["qt_add_module"] = "qt_add_module"
