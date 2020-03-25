@@ -1544,15 +1544,9 @@ QTextCursor QTextDocument::find(const QRegExp &expr, const QTextCursor &cursor, 
 #endif // QT_REGEXP
 
 #if QT_CONFIG(regularexpression)
-static bool findInBlock(const QTextBlock &block, const QRegularExpression &expression, int offset,
+static bool findInBlock(const QTextBlock &block, const QRegularExpression &expr, int offset,
                         QTextDocument::FindFlags options, QTextCursor *cursor)
 {
-    QRegularExpression expr(expression);
-    if (!(options & QTextDocument::FindCaseSensitively))
-        expr.setPatternOptions(expr.patternOptions() | QRegularExpression::CaseInsensitiveOption);
-    else
-        expr.setPatternOptions(expr.patternOptions() & ~QRegularExpression::CaseInsensitiveOption);
-
     QString text = block.text();
     text.replace(QChar::Nbsp, QLatin1Char(' '));
     QRegularExpressionMatch match;
@@ -1619,16 +1613,22 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, int from, FindFl
     QTextBlock block = d->blocksFind(pos);
     int blockOffset = pos - block.position();
 
+    QRegularExpression expression(expr);
+    if (!(options & QTextDocument::FindCaseSensitively))
+        expression.setPatternOptions(expr.patternOptions() | QRegularExpression::CaseInsensitiveOption);
+    else
+        expression.setPatternOptions(expr.patternOptions() & ~QRegularExpression::CaseInsensitiveOption);
+
     if (!(options & FindBackward)) {
         while (block.isValid()) {
-            if (findInBlock(block, expr, blockOffset, options, &cursor))
+            if (findInBlock(block, expression, blockOffset, options, &cursor))
                 return cursor;
             block = block.next();
             blockOffset = 0;
         }
     } else {
         while (block.isValid()) {
-            if (findInBlock(block, expr, blockOffset, options, &cursor))
+            if (findInBlock(block, expression, blockOffset, options, &cursor))
                 return cursor;
             block = block.previous();
             blockOffset = block.length() - 1;
