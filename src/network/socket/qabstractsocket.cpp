@@ -202,13 +202,6 @@
 */
 
 /*!
-    \fn void QAbstractSocket::error(QAbstractSocket::SocketError socketError)
-    \obsolete
-
-    Use errorOccurred() instead.
-*/
-
-/*!
     \fn void QAbstractSocket::errorOccurred(QAbstractSocket::SocketError socketError)
     \since 5.15
 
@@ -1454,9 +1447,6 @@ QAbstractSocket::QAbstractSocket(SocketType socketType,
            : socketType == SctpSocket ? "Sctp" : "Unknown", &dd, parent);
 #endif
     d->socketType = socketType;
-
-    // Support the deprecated error() signal:
-    connect(this, &QAbstractSocket::errorOccurred, this, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error));
 }
 
 /*!

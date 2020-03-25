@@ -281,7 +281,7 @@ void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError er
     Q_Q(QNetworkReplyWasmImpl);
 
     q->setError(errorCode, errorString);
-    emit q->error(errorCode);
+    emit q->errorOccurred(errorCode);
 
     q->setFinished(true);
     emit q->finished();

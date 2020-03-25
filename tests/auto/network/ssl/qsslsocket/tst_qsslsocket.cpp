@@ -4450,9 +4450,6 @@ void tst_QSslSocket::oldErrorsOnSocketReuse()
 
 #if QT_CONFIG(openssl)
 
-void (QSslSocket::*const tlsErrorSignal)(const QList<QSslError> &) = &QSslSocket::sslErrors;
-void (QAbstractSocket::*const socketErrorSignal)(QAbstractSocket::SocketError) = &QAbstractSocket::error;
-
 void tst_QSslSocket::alertMissingCertificate()
 {
     // In this test we want a server to abort the connection due to the failing
@@ -4474,7 +4471,7 @@ void tst_QSslSocket::alertMissingCertificate()
     server.config.setMissingCertificateIsFatal(true);
 
     QSslSocket clientSocket;
-    connect(&clientSocket, tlsErrorSignal, [&clientSocket](const QList<QSslError> &errors){
+    connect(&clientSocket, &QSslSocket::sslErrors, [&clientSocket](const QList<QSslError> &errors){
         qDebug() << "ERR";
         clientSocket.ignoreSslErrors(errors);
     });
@@ -4497,7 +4494,7 @@ void tst_QSslSocket::alertMissingCertificate()
 
     // Presumably, RemoteHostClosedError for the client and SslHandshakeError
     // for the server:
-    connect(&clientSocket, socketErrorSignal, earlyQuitter);
+    connect(&clientSocket, &QAbstractSocket::errorOccurred, earlyQuitter);
     connect(&server, &SslServer::socketError, earlyQuitter);
 
     runner.enterLoopMSecs(1000);
@@ -4547,7 +4544,7 @@ void tst_QSslSocket::alertInvalidCertificate()
 
     // Presumably, RemoteHostClosedError for the server and SslHandshakeError
     // for the client:
-    connect(&clientSocket, socketErrorSignal, earlyQuitter);
+    connect(&clientSocket, &QAbstractSocket::errorOccurred, earlyQuitter);
     connect(&server, &SslServer::socketError, earlyQuitter);
 
     runner.enterLoopMSecs(1000);

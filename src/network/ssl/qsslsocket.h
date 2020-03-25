@@ -231,9 +231,6 @@ public:
     bool waitForBytesWritten(int msecs = 30000) override;
     bool waitForDisconnected(int msecs = 30000) override;
 
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use sslHandshakeErrors()") QList<QSslError> sslErrors() const;
-#endif // QT_DEPRECATED_SINCE(5, 15)
     QList<QSslError> sslHandshakeErrors() const;
 
     static bool supportsSsl();

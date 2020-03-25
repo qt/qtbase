@@ -1903,25 +1903,6 @@ bool QSslSocket::waitForDisconnected(int msecs)
     return retVal;
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \deprecated
-
-    Use sslHandshakeErrors() instead.
-
-    Returns a list of the last SSL errors that occurred. This is the
-    same list as QSslSocket passes via the sslErrors() signal. If the
-    connection has been encrypted with no errors, this function will
-    return an empty list.
-
-    \sa connectToHostEncrypted(), sslHandshakeErrors()
-*/
-QList<QSslError> QSslSocket::sslErrors() const
-{
-    return sslHandshakeErrors();
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
 /*!
     \since 5.15
 

@@ -330,13 +330,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QLocalSocket::error(QLocalSocket::LocalSocketError socketError)
-    \obsolete
-
-    Use errorOccurred() instead.
-*/
-
-/*!
     \fn void QLocalSocket::errorOccurred(QLocalSocket::LocalSocketError socketError)
     \since 5.15
 
@@ -372,9 +365,6 @@ QLocalSocket::QLocalSocket(QObject * parent)
 {
     Q_D(QLocalSocket);
     d->init();
-
-    // Support the deprecated error() signal:
-    connect(this, &QLocalSocket::errorOccurred, this, QOverload<QLocalSocket::LocalSocketError>::of(&QLocalSocket::error));
 }
 
 /*!

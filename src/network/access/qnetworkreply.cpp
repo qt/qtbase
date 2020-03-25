@@ -364,13 +364,6 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 */
 
 /*!
-    \fn void QNetworkReply::error(QNetworkReply::NetworkError code)
-    \obsolete
-
-    Use errorOccurred() instead.
-*/
-
-/*!
     \fn void QNetworkReply::errorOccurred(QNetworkReply::NetworkError code)
     \since 5.15
 
@@ -463,8 +456,6 @@ QNetworkReply::QNetworkReply(QObject *parent)
 QNetworkReply::QNetworkReply(QNetworkReplyPrivate &dd, QObject *parent)
     : QIODevice(dd, parent)
 {
-    // Support the deprecated error() signal:
-    connect(this, &QNetworkReply::errorOccurred, this, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error));
 }
 
 /*!
