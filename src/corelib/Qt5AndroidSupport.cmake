@@ -18,7 +18,7 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
       option(ANDROID_BUILD_ABI_${abi} "Enable the build for Android ${abi}" ${abi_initial_value})
     endif()
   endforeach()
-  option(ANDROID_MIN_SDK_VERSION "Android minimum SDK version" "21")
+  option(ANDROID_MIN_SDK_VERSION "Android minimum SDK version" "23")
   option(ANDROID_TARGET_SDK_VERSION "Android target SDK version" "28")
 
   # Make sure to delete the "android-build" directory, which contains all the
