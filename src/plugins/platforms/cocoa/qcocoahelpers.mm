@@ -514,8 +514,8 @@ QT_END_NAMESPACE
 - (NSButton *)createButtonWithTitle:(const char *)title
 {
     NSButton *button = [[NSButton alloc] initWithFrame:NSZeroRect];
-    button.buttonType = NSMomentaryLightButton;
-    button.bezelStyle = NSRoundedBezelStyle;
+    button.buttonType = NSButtonTypeMomentaryLight;
+    button.bezelStyle = NSBezelStyleRounded;
     const QString &cleanTitle = QPlatformTheme::removeMnemonics(QCoreApplication::translate("QDialogButtonBox", title));
     // FIXME: Not obvious, from Cocoa's documentation, that QString::toNSString() makes a deep copy
     button.title = (NSString *)cleanTitle.toCFString();

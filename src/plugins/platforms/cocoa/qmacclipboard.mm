@@ -594,7 +594,7 @@ QString qt_mac_get_pasteboardString(PasteboardRef paste)
         pb = [NSPasteboard generalPasteboard];
     }
     if (pb) {
-        NSString *text = [pb stringForType:NSStringPboardType];
+        NSString *text = [pb stringForType:NSPasteboardTypeString];
         if (text)
             return QString::fromNSString(text);
     }

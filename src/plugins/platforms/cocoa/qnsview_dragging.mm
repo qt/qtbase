@@ -47,15 +47,14 @@
 
     NSString * const mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
     NSMutableArray<NSString *> *supportedTypes = [NSMutableArray<NSString *> arrayWithArray:@[
-                   NSColorPboardType,
-                   NSFilenamesPboardType, NSStringPboardType,
-                   NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
-                   NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
-                   NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType,
-                   NSRTFDPboardType, NSHTMLPboardType,
-                   NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
-                   NSFilesPromisePboardType, NSInkTextPboardType,
-                   NSMultipleTextSelectionPboardType, mimeTypeGeneric]];
+                   NSPasteboardTypeColor, NSPasteboardTypeString,
+                   NSPasteboardTypeFileURL, @"com.adobe.encapsulated-postscript", NSPasteboardTypeTIFF,
+                   NSPasteboardTypeRTF, NSPasteboardTypeTabularText, NSPasteboardTypeFont,
+                   NSPasteboardTypeRuler, NSFileContentsPboardType,
+                   NSPasteboardTypeRTFD , NSPasteboardTypeHTML,
+                   NSPasteboardTypeURL, NSPasteboardTypePDF, (NSString *)kUTTypeVCard,
+                   (NSString *)kPasteboardTypeFileURLPromise, (NSString *)kUTTypeInkText,
+                   NSPasteboardTypeMultipleTextSelection, mimeTypeGeneric]];
 
     // Add custom types supported by the application
     for (const QString &customType : qt_mac_enabledDraggedTypes())

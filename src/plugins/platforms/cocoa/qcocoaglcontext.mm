@@ -145,17 +145,17 @@ void QCocoaGLContext::initialize()
     // --------------------- Set NSOpenGLContext properties ---------------------
 
     const GLint interval = m_format.swapInterval() >= 0 ? m_format.swapInterval() : 1;
-    [m_context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
+    [m_context setValues:&interval forParameter:NSOpenGLContextParameterSwapInterval];
 
     if (m_format.alphaBufferSize() > 0) {
         int zeroOpacity = 0;
-        [m_context setValues:&zeroOpacity forParameter:NSOpenGLCPSurfaceOpacity];
+        [m_context setValues:&zeroOpacity forParameter:NSOpenGLContextParameterSurfaceOpacity];
     }
 
     // OpenGL surfaces can be ordered either above(default) or below the NSWindow
     // FIXME: Promote to QSurfaceFormat option or property
     const GLint order = qt_mac_resolveOption(1, "QT_MAC_OPENGL_SURFACE_ORDER");
-    [m_context setValues:&order forParameter:NSOpenGLCPSurfaceOrder];
+    [m_context setValues:&order forParameter:NSOpenGLContextParameterSurfaceOrder];
 
     updateSurfaceFormat();
 
@@ -342,7 +342,7 @@ void QCocoaGLContext::updateSurfaceFormat()
         return value;
     };
 
-    m_format.setSwapInterval(glContextParameter(NSOpenGLCPSwapInterval));
+    m_format.setSwapInterval(glContextParameter(NSOpenGLContextParameterSwapInterval));
 
     if (oldContext)
         [oldContext makeCurrentContext];
@@ -390,7 +390,7 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
         // Clear the current drawable and reset the active window, so that GL
         // commands that don't target a specific FBO will not end up stomping
         // on the previously set drawable.
-        qCDebug(lcQpaOpenGLContext) << "Clearing current drawable" << m_context.view << "for" << m_context;
+        qCDebug(lcQpaOpenGLContext) << "Clearing current drawable" << QT_IGNORE_DEPRECATIONS(m_context.view) << "for" << m_context;
         [m_context clearDrawable];
         return true;
     }
@@ -399,7 +399,7 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     auto *cocoaWindow = static_cast<QCocoaWindow *>(surface);
     QNSView *view = qnsview_cast(cocoaWindow->view());
 
-    if (view == m_context.view)
+    if (view == QT_IGNORE_DEPRECATIONS(m_context.view))
         return true;
 
     prepareDrawable(cocoaWindow);
@@ -412,7 +412,7 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 
     auto updateCallback = [this, view]() {
         Q_ASSERT(QThread::currentThread() == qApp->thread());
-        if (m_context.view != view)
+        if (QT_IGNORE_DEPRECATIONS(m_context.view) != view)
             return;
         m_needsUpdate = true;
     };
@@ -423,7 +423,7 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
         m_updateObservers.append(QMacNotificationObserver(view, NSViewFrameDidChangeNotification, updateCallback));
         m_updateObservers.append(QMacNotificationObserver(view.window, NSWindowDidChangeScreenNotification, updateCallback));
     } else {
-        m_updateObservers.append(QMacNotificationObserver(view, NSViewGlobalFrameDidChangeNotification, updateCallback));
+        m_updateObservers.append(QMacNotificationObserver(view, QT_IGNORE_DEPRECATIONS(NSViewGlobalFrameDidChangeNotification), updateCallback));
     }
 
     m_updateObservers.append(QMacNotificationObserver([NSApplication sharedApplication],
@@ -435,14 +435,14 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     // have the same effect as an update.
 
     // Now we are ready to associate the view with the context
-    m_context.view = view;
-    if (m_context.view != view) {
+    QT_IGNORE_DEPRECATIONS(m_context.view) = view;
+    if (QT_IGNORE_DEPRECATIONS(m_context.view) != view) {
         qCInfo(lcQpaOpenGLContext) << "Failed to set" << view << "as drawable for" << m_context;
         m_updateObservers.clear();
         return false;
     }
 
-    qCInfo(lcQpaOpenGLContext) << "Set drawable for" << m_context << "to" << m_context.view;
+    qCInfo(lcQpaOpenGLContext) << "Set drawable for" << m_context << "to" << QT_IGNORE_DEPRECATIONS(m_context.view);
     return true;
 }
 
@@ -467,7 +467,7 @@ void QCocoaGLContext::prepareDrawable(QCocoaWindow *platformWindow)
         }
     }
 
-    view.wantsBestResolutionOpenGLSurface = prefersBestResolutionOpenGLSurface;
+    QT_IGNORE_DEPRECATIONS(view.wantsBestResolutionOpenGLSurface) = prefersBestResolutionOpenGLSurface;
 }
 
 // NSOpenGLContext is not re-entrant. Even when using separate contexts per thread,
@@ -483,7 +483,7 @@ void QCocoaGLContext::update()
     QMacAutoReleasePool pool;
 
     QMutexLocker locker(&s_reentrancyMutex);
-    qCInfo(lcQpaOpenGLContext) << "Updating" << m_context << "for" << m_context.view;
+    qCInfo(lcQpaOpenGLContext) << "Updating" << m_context << "for" << QT_IGNORE_DEPRECATIONS(m_context.view);
     [m_context update];
 }
 
@@ -501,7 +501,7 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
         return;
     }
 
-    if (m_context.view.layer) {
+    if (QT_IGNORE_DEPRECATIONS(m_context.view).layer) {
         // Flushing an NSOpenGLContext will hit the screen immediately, ignoring
         // any Core Animation transactions in place. This may result in major
         // visual artifacts if the flush happens out of sync with the size

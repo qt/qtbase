@@ -189,7 +189,7 @@ void QNSWindowBackingStore::flush(QWindow *window, const QRegion &region, const 
     // its parent/ancestor, and the parent/ancestor being the one locked by AppKit.
     // In this case we also need to lock and unlock focus manually.
     const bool shouldHandleViewLockManually = [NSView focusView] != view;
-    if (shouldHandleViewLockManually && ![view lockFocusIfCanDraw]) {
+    if (shouldHandleViewLockManually && !QT_IGNORE_DEPRECATIONS([view lockFocusIfCanDraw])) {
         qWarning() << "failed to lock focus of" << view;
         return;
     }
@@ -263,13 +263,12 @@ void QNSWindowBackingStore::flush(QWindow *window, const QRegion &region, const 
     // -------------------------------------------------------------------------
 
     if (shouldHandleViewLockManually)
-        [view unlockFocus];
+        QT_IGNORE_DEPRECATIONS([view unlockFocus]);
 
     if (drawingOutsideOfDisplayCycle) {
         redrawRoundedBottomCorners([view convertRect:region.boundingRect().toCGRect() toView:nil]);
-        [view.window flushWindow];
+        QT_IGNORE_DEPRECATIONS([view.window flushWindow]);
     }
-
 
     // Done flushing to NSWindow backingstore
 

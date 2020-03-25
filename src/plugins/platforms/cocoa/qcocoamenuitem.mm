@@ -342,7 +342,7 @@ NSMenuItem *QCocoaMenuItem::sync()
 
     m_native.image = [NSImage imageFromQIcon:m_icon withSize:m_iconSize];
 
-    m_native.state = m_checked ?  NSOnState : NSOffState;
+    m_native.state = m_checked ?  NSControlStateValueOn : NSControlStateValueOff;
     return m_native;
 }
 
