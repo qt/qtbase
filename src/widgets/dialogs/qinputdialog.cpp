@@ -1349,32 +1349,7 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
     \sa getText(), getDouble(), getItem(), getMultiLineText()
 */
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    Static convenience function to get a floating point number from the user.
-
-    \a title is the text which is displayed in the title bar of the dialog.
-    \a label is the text which is shown to the user (it should say what should
-    be entered).
-    \a value is the default floating point number that the line edit will be
-    set to.
-    \a min and \a max are the minimum and maximum values the user may choose.
-    \a decimals is the maximum number of decimal places the number may have.
-
-    If \a ok is nonnull, *\a ok will be set to true if the user pressed \uicontrol OK
-    and to false if the user pressed \uicontrol Cancel. The dialog's parent is
-    \a parent. The dialog will be modal and uses the widget \a flags.
-
-    This function returns the floating point number which has been entered by
-    the user.
-
-    Use this static function like this:
-
-    \snippet dialogs/standarddialogs/dialog.cpp 1
-
-    \sa getText(), getInt(), getItem(), getMultiLineText()
-*/
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_QDOC)
 double QInputDialog::getDouble(QWidget *parent, const QString &title, const QString &label,
                                double value, double min, double max, int decimals, bool *ok,
                                Qt::WindowFlags flags)
@@ -1383,7 +1358,6 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
 }
 #endif
 /*!
-    \overload
     Static convenience function to get a floating point number from the user.
 
     \a title is the text which is displayed in the title bar of the dialog.
