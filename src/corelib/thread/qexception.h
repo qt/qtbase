@@ -84,27 +84,15 @@ public:
 
 namespace QtPrivate {
 
-class Base;
-class Q_CORE_EXPORT ExceptionHolder
-{
-public:
-    ExceptionHolder(QException *exception = nullptr);
-    ExceptionHolder(const ExceptionHolder &other);
-    void operator=(const ExceptionHolder &other); // ### Qt6: copy-assign operator shouldn't return void. Remove this method and the copy-ctor, they are unneeded.
-    ~ExceptionHolder();
-    QException *exception() const;
-    QExplicitlySharedDataPointer<Base> base;
-};
-
 class Q_CORE_EXPORT ExceptionStore
 {
 public:
     void setException(const QException &e);
+    void setException(std::exception_ptr e);
     bool hasException() const;
-    ExceptionHolder exception();
+    std::exception_ptr exception() const;
     void throwPossibleException();
-    bool hasThrown() const;
-    ExceptionHolder exceptionHolder;
+    std::exception_ptr exceptionHolder;
 };
 
 } // namespace QtPrivate

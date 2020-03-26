@@ -90,6 +90,7 @@ public:
     void reportCanceled();
 #ifndef QT_NO_EXCEPTIONS
     void reportException(const QException &e);
+    void reportException(std::exception_ptr e);
 #endif
     void reportResultsReady(int beginIndex, int endIndex);
 

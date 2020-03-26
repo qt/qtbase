@@ -158,64 +158,37 @@ QUnhandledException *QUnhandledException::clone() const
 
 namespace QtPrivate {
 
-class Base : public QSharedData
-{
-public:
-    Base(QException *exception)
-    : exception(exception), hasThrown(false) { }
-    ~Base() { delete exception; }
-
-    QException *exception;
-    bool hasThrown;
-};
-
-ExceptionHolder::ExceptionHolder(QException *exception)
-: base(exception ? new Base(exception) : nullptr) {}
-
-ExceptionHolder::ExceptionHolder(const ExceptionHolder &other)
-: base(other.base)
-{}
-
-void ExceptionHolder::operator=(const ExceptionHolder &other)
-{
-    base = other.base;
-}
-
-ExceptionHolder::~ExceptionHolder()
-{}
-
-QException *ExceptionHolder::exception() const
-{
-    if (!base)
-        return nullptr;
-    return base->exception;
-}
-
 void ExceptionStore::setException(const QException &e)
 {
-    if (hasException() == false)
-        exceptionHolder = ExceptionHolder(e.clone());
+    Q_ASSERT(!hasException());
+    try {
+        e.raise();
+    } catch (...) {
+        exceptionHolder = std::current_exception();
+    }
+}
+
+void ExceptionStore::setException(std::exception_ptr e)
+{
+    Q_ASSERT(!hasException());
+    exceptionHolder = e;
 }
 
 bool ExceptionStore::hasException() const
 {
-    return (exceptionHolder.exception() != nullptr);
+    return !!exceptionHolder;
 }
 
-ExceptionHolder ExceptionStore::exception()
+std::exception_ptr ExceptionStore::exception() const
 {
     return exceptionHolder;
 }
 
 void ExceptionStore::throwPossibleException()
 {
-    if (hasException() ) {
-        exceptionHolder.base->hasThrown = true;
-        exceptionHolder.exception()->raise();
-    }
+    if (hasException())
+        std::rethrow_exception(exceptionHolder);
 }
-
-bool ExceptionStore::hasThrown() const { return exceptionHolder.base->hasThrown; }
 
 } // namespace QtPrivate
 

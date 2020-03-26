@@ -283,6 +283,15 @@ void QFutureInterfaceBase::reportCanceled()
 #ifndef QT_NO_EXCEPTIONS
 void QFutureInterfaceBase::reportException(const QException &exception)
 {
+    try {
+        exception.raise();
+    } catch (...) {
+        reportException(std::current_exception());
+    }
+}
+
+void QFutureInterfaceBase::reportException(std::exception_ptr exception)
+{
     QMutexLocker locker(&d->m_mutex);
     if (d->state.loadRelaxed() & (Canceled|Finished))
         return;

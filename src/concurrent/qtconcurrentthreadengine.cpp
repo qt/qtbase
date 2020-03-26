@@ -324,7 +324,7 @@ void ThreadEngineBase::handleException(const QException &exception)
 {
     if (futureInterface)
         futureInterface->reportException(exception);
-    else
+    else if (!exceptionStore.hasException())
         exceptionStore.setException(exception);
 }
 #endif

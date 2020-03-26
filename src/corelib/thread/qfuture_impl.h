@@ -226,10 +226,8 @@ void Continuation<Function, ResultType, ParentResultType>::runFunction()
             }
         }
 #ifndef QT_NO_EXCEPTIONS
-    } catch (QException &e) {
-        promise.reportException(e);
     } catch (...) {
-        promise.reportException(QUnhandledException());
+        promise.reportException(std::current_exception());
     }
 #endif
     promise.reportFinished();
@@ -249,8 +247,7 @@ bool Continuation<Function, ResultType, ParentResultType>::execute()
             // interrupt the continuation chain, so don't report anything yet.
             if constexpr (!std::is_invocable_v<std::decay_t<Function>, QFuture<ParentResultType>>) {
                 promise.reportStarted();
-                const QException *e = parentFuture.d.exceptionStore().exception().exception();
-                promise.reportException(*e);
+                promise.reportException(parentFuture.d.exceptionStore().exception());
                 promise.reportFinished();
                 return false;
             }

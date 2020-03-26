@@ -1418,6 +1418,23 @@ QFuture<void> createDerivedExceptionFuture()
     return f;
 }
 
+struct TestException
+{
+};
+
+QFuture<int> createCustomExceptionFuture()
+{
+    QFutureInterface<int> i;
+    i.reportStarted();
+    QFuture<int> f = i.future();
+    int r = 0;
+    i.reportResult(r);
+    auto exception = std::make_exception_ptr(TestException());
+    i.reportException(exception);
+    i.reportFinished();
+    return f;
+}
+
 void tst_QFuture::exceptions()
 {
     // test throwing from waitForFinished
@@ -1498,6 +1515,18 @@ void tst_QFuture::exceptions()
         try {
             createDerivedExceptionFuture().waitForFinished();
         } catch (DerivedException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
+
+    // Custom exceptions
+    {
+        QFuture<int> f = createCustomExceptionFuture();
+        bool caught = false;
+        try {
+            f.result();
+        } catch (const TestException &) {
             caught = true;
         }
         QVERIFY(caught);
@@ -2040,46 +2069,87 @@ void tst_QFuture::thenOnExceptionFuture()
     }
 }
 
+template<class Exception, bool hasTestMsg = false>
+QFuture<void> createExceptionContinuation(QtFuture::Launch policy = QtFuture::Launch::Sync)
+{
+    QFutureInterface<void> promise;
+
+    auto then = promise.future().then(policy, [] {
+        if constexpr (hasTestMsg)
+            throw Exception("TEST");
+        else
+            throw Exception();
+    });
+
+    promise.reportStarted();
+    promise.reportFinished();
+
+    return then;
+}
+
 void tst_QFuture::thenThrows()
 {
-    // Continuation throws an exception
+    // Continuation throws a QException
     {
-        QFutureInterface<void> promise;
-
-        QFuture<void> then = promise.future().then([]() { throw QException(); });
-
-        promise.reportStarted();
-        promise.reportFinished();
+        auto future = createExceptionContinuation<QException>();
 
         bool caught = false;
         try {
-            then.waitForFinished();
-        } catch (QException &) {
+            future.waitForFinished();
+        } catch (const QException &) {
             caught = true;
         }
+        QVERIFY(caught);
+    }
+
+    // Continuation throws an exception derived from QException
+    {
+        auto future = createExceptionContinuation<DerivedException>();
+
+        bool caught = false;
+        try {
+            future.waitForFinished();
+        } catch (const QException &) {
+            caught = true;
+        } catch (const std::exception &) {
+            QFAIL("The exception should be caught by the above catch block.");
+        }
+
+        QVERIFY(caught);
+    }
+
+    // Continuation throws std::exception
+    {
+        auto future = createExceptionContinuation<std::runtime_error, true>();
+
+        bool caught = false;
+        try {
+            future.waitForFinished();
+        } catch (const QException &) {
+            QFAIL("The exception should be caught by the below catch block.");
+        } catch (const std::exception &e) {
+            QCOMPARE(e.what(), "TEST");
+            caught = true;
+        }
+
         QVERIFY(caught);
     }
 
     // Same with QtFuture::Launch::Async
     {
-        QFutureInterface<void> promise;
-
-        QFuture<void> then =
-                promise.future().then(QtFuture::Launch::Async, []() { throw QException(); });
-
-        promise.reportStarted();
-        promise.reportFinished();
+        auto future = createExceptionContinuation<QException>(QtFuture::Launch::Async);
 
         bool caught = false;
         try {
-            then.waitForFinished();
-        } catch (QException &) {
+            future.waitForFinished();
+        } catch (const QException &) {
             caught = true;
         }
         QVERIFY(caught);
     }
 }
-#endif
+
+#endif // QT_NO_EXCEPTIONS
 
 void tst_QFuture::testSingleResult(const UniquePtr &p)
 {
