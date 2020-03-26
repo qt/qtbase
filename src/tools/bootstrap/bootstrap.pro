@@ -90,7 +90,6 @@ SOURCES += \
            ../../corelib/text/qbytearraymatcher.cpp \
            ../../corelib/text/qlocale.cpp \
            ../../corelib/text/qlocale_tools.cpp \
-           ../../corelib/text/qregexp.cpp \
            ../../corelib/text/qregularexpression.cpp \
            ../../corelib/text/qstring.cpp \
            ../../corelib/text/qstringbuilder.cpp \

@@ -41,6 +41,7 @@
 #include <qdebug.h>
 #include <qbuffer.h>
 #include <qdatetime.h>
+#include <qregexp.h>
 
 #if defined(Q_OS_UNIX)
 #include <unistd.h>

@@ -66,6 +66,10 @@
 #define QT_NO_USING_NAMESPACE
 #define QT_NO_DEPRECATED
 
+#ifndef QT_BUILD_QMAKE
+#define QT_NO_REGEXP
+#endif
+
 // Keep feature-test macros in alphabetic order by feature name:
 #define QT_FEATURE_alloca 1
 #define QT_FEATURE_alloca_h -1
