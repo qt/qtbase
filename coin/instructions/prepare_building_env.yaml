@@ -91,21 +91,21 @@ instructions:
         enable_if:
           condition: property
           property: target.os
-          in_values: ["WINRT", "WINPHONE", "WINCE"]
+          in_values: ["WinRT", "WinPhone", "WinCE"]
       - type: EnvironmentVariable
         variableName: WINDOWS_SDK_VERSION
         variableValue: "10.0.14393.0"
         enable_if:
           condition: property
           property: target.os
-          equals_value: WINRT
+          equals_value: "WinRT"
       - type: EnvironmentVariable
         variableName: WINDOWS_SDK_VERSION
         variableValue: ""
         disable_if:
           condition: property
           property: host.os
-          equals_value: WINRT  # TODO set windows sdk version for desktop windows as well
+          equals_value: "WinRT" # TODO set windows sdk version for desktop windows as well
 
 
   # MSVC is installed in somehow arbitrary places. To reduce amount of combinations we need to make a variable.
