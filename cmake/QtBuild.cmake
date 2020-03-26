@@ -4124,6 +4124,29 @@ function(qt_enable_msvc_cplusplus_define target visibility)
     endif()
 endfunction()
 
+# Equivalent of qmake's qtNomakeTools(directory1 directory2).
+# If QT_NO_MAKE_TOOLS is true, then the given directories will be excluded from the
+# default 'all' target.
+function(qt_exclude_tool_directories_from_default_target)
+    if(QT_NO_MAKE_TOOLS)
+        set(absolute_path_directories "")
+        foreach(directory ${ARGV})
+            list(APPEND absolute_path_directories "${CMAKE_CURRENT_SOURCE_DIR}/${directory}")
+        endforeach()
+
+        # Properties can only be set on processed directories (some might not be processed due to
+        # disabled features). So we need to exclude only processed directories.
+        get_directory_property(subdirectories SUBDIRECTORIES)
+
+        # Poor man's set intersection.
+        foreach(directory ${absolute_path_directories})
+            if(directory IN_LIST subdirectories)
+                set_property(DIRECTORY "${directory}" PROPERTY EXCLUDE_FROM_ALL TRUE)
+            endif()
+        endforeach()
+    endif()
+endfunction()
+
 # Compatibility macros that should be removed once all their usages are removed.
 function(extend_target)
     qt_extend_target(${ARGV})

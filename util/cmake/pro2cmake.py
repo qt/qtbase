@@ -1064,6 +1064,13 @@ class Scope(object):
             if project_required_condition:
                 scope._append_operation("_REQUIREMENTS", AddOperation(project_required_condition))
 
+            qt_no_make_tools = statement.get("qt_no_make_tools_arguments")
+            if qt_no_make_tools:
+                qt_no_make_tools = qt_no_make_tools.strip("()").strip()
+                qt_no_make_tools = qt_no_make_tools.split()
+                for entry in qt_no_make_tools:
+                    scope._append_operation("_QT_NO_MAKE_TOOLS", AddOperation(entry))
+
         scope.settle_condition()
 
         if scope.scope_debug:
@@ -1782,6 +1789,16 @@ def handle_subdir(
         scope, cm_fh, indent=indent, current_conditions=current_conditions, is_example=is_example
     )
     group_and_print_sub_dirs(scope, indent=indent)
+
+    qt_no_make_tools = scope.get("_QT_NO_MAKE_TOOLS")
+    if qt_no_make_tools:
+        ind = spaces(indent + 1)
+        directories_string = ""
+        for directory in qt_no_make_tools:
+            directories_string += f"{ind}{directory}\n"
+        cm_fh.write(
+            f"\nqt_exclude_tool_directories_from_default_target(\n{directories_string})\n\n"
+        )
 
 
 def sort_sources(sources: List[str]) -> List[str]:

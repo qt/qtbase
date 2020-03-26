@@ -243,6 +243,14 @@ class QmakeParser:
             "Requires", pp.Keyword("requires") + RequiresCondition("project_required_condition")
         )
 
+        FunctionArgumentsAsString = add_element(
+            "FunctionArgumentsAsString", pp.originalTextFor(pp.nestedExpr())
+        )
+        QtNoMakeTools = add_element(
+            "QtNoMakeTools",
+            pp.Keyword("qtNomakeTools") + FunctionArgumentsAsString("qt_no_make_tools_arguments"),
+        )
+
         # ignore the whole thing...
         DefineTestDefinition = add_element(
             "DefineTestDefinition",
@@ -281,6 +289,7 @@ class QmakeParser:
                 | Include
                 | Option
                 | Requires
+                | QtNoMakeTools
                 | ForLoop
                 | ForLoopSingleLine
                 | DefineTestDefinition
