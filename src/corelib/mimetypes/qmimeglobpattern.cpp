@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     Handles glob weights, and preferring longer matches over shorter matches.
 */
 
-void QMimeGlobMatchResult::addMatch(const QString &mimeType, int weight, const QString &pattern)
+void QMimeGlobMatchResult::addMatch(const QString &mimeType, int weight, const QString &pattern, int knownSuffixLength)
 {
     if (m_allMatchingMimeTypes.contains(mimeType))
         return;
@@ -84,8 +84,7 @@ void QMimeGlobMatchResult::addMatch(const QString &mimeType, int weight, const Q
     if (!m_matchingMimeTypes.contains(mimeType)) {
         m_matchingMimeTypes.append(mimeType);
         m_allMatchingMimeTypes.append(mimeType);
-        if (pattern.startsWith(QLatin1String("*.")))
-            m_foundSuffix = pattern.mid(2);
+        m_knownSuffixLength = knownSuffixLength;
     }
 }
 
@@ -152,6 +151,18 @@ bool QMimeGlobPattern::matchFileName(const QString &inputFilename) const
 #endif
 }
 
+static bool isSimplePattern(const QString &pattern)
+{
+   // starts with "*.", has no other '*'
+   return pattern.lastIndexOf(QLatin1Char('*')) == 0
+      && pattern.length() > 1
+      && pattern.at(1) == QLatin1Char('.') // (other dots are OK, like *.tar.bz2)
+      // and contains no other special character
+      && !pattern.contains(QLatin1Char('?'))
+      && !pattern.contains(QLatin1Char('['))
+      ;
+}
+
 static bool isFastPattern(const QString &pattern)
 {
    // starts with "*.", has no other '*' and no other '.'
@@ -205,8 +216,11 @@ void QMimeGlobPatternList::match(QMimeGlobMatchResult &result,
     const QMimeGlobPatternList::const_iterator endIt = this->constEnd();
     for (; it != endIt; ++it) {
         const QMimeGlobPattern &glob = *it;
-        if (glob.matchFileName(fileName))
-            result.addMatch(glob.mimeType(), glob.weight(), glob.pattern());
+        if (glob.matchFileName(fileName)) {
+            const QString pattern = glob.pattern();
+            const int suffixLen = isSimplePattern(pattern) ? pattern.length() - 2 : 0;
+            result.addMatch(glob.mimeType(), glob.weight(), pattern, suffixLen);
+        }
     }
 }
 
@@ -226,7 +240,7 @@ void QMimeAllGlobPatterns::matchingGlobs(const QString &fileName, QMimeGlobMatch
         const QStringList matchingMimeTypes = m_fastPatterns.value(simpleExtension);
         const QString simplePattern = QLatin1String("*.") + simpleExtension;
         for (const QString &mime : matchingMimeTypes)
-            result.addMatch(mime, 50, simplePattern);
+            result.addMatch(mime, 50, simplePattern, simpleExtension.size());
         // Can't return yet; *.tar.bz2 has to win over *.bz2, so we need the low-weight mimetypes anyway,
         // at least those with weight 50.
     }

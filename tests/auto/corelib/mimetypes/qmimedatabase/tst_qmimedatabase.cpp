@@ -667,6 +667,9 @@ void tst_QMimeDatabase::knownSuffix()
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.bz2")), QString::fromLatin1("bz2"));
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.bar.bz2")), QString::fromLatin1("bz2"));
     QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.tar.bz2")), QString::fromLatin1("tar.bz2"));
+    QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.TAR")), QString::fromLatin1("TAR")); // preserve case
+    QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.flatpakrepo")), QString::fromLatin1("flatpakrepo"));
+    QCOMPARE(db.suffixForFileName(QString::fromLatin1("foo.anim2")), QString()); // the glob is anim[0-9], no way to extract the extension without expensive regexp capturing
 }
 
 void tst_QMimeDatabase::symlinkToFifo() // QTBUG-48529
@@ -784,6 +787,9 @@ void tst_QMimeDatabase::findByFileName()
     // Test QFileInfo overload
     const QMimeType mimeForFileInfo = database.mimeTypeForFile(QFileInfo(filePath), QMimeDatabase::MatchExtension);
     QCOMPARE(mimeForFileInfo.name(), resultMimeTypeName);
+
+    const QString suffix = database.suffixForFileName(filePath);
+    QVERIFY2(filePath.endsWith(suffix), qPrintable(filePath + " does not end with " + suffix));
 }
 
 void tst_QMimeDatabase::findByData_data()
