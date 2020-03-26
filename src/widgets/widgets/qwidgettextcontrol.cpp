@@ -2236,6 +2236,7 @@ void QWidgetTextControlPrivate::focusEvent(QFocusEvent *e)
 #endif
     } else {
         setCursorVisible(false);
+        cursorOn = false;
 
         if (cursorIsFocusIndicator
             && e->reason() != Qt::ActiveWindowFocusReason
