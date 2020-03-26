@@ -1152,6 +1152,9 @@ def processSummaryHelper(ctx, entries, cm_fh):
         elif "type" in entry and entry["type"] == "buildMode":
             message = entry["message"]
             cm_fh.write(f"qt_configure_add_summary_build_mode({message})\n")
+        elif "type" in entry and entry["type"] == "buildParts":
+            message = entry["message"]
+            cm_fh.write(f'qt_configure_add_summary_build_parts("{message}")\n')
         elif "section" in entry:
             section = entry["section"]
             cm_fh.write(f'qt_configure_add_summary_section(NAME "{section}")\n')

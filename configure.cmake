@@ -860,6 +860,7 @@ qt_configure_add_summary_entry(
     MESSAGE "Code Coverage Instrumentation"
     CONDITION QT_FEATURE_coverage
 )
+qt_configure_add_summary_build_parts("Build parts")
 qt_configure_add_summary_entry(
     ARGS "appstore-compliant"
     CONDITION APPLE OR ANDROID OR WINRT OR WIN32

@@ -106,6 +106,8 @@ function(qt_configure_eval_commands)
             qt_configure_process_add_summary_build_type_and_config(${command_args})
         elseif(command_name STREQUAL ADD_BUILD_MODE)
             qt_configure_process_add_summary_build_mode(${command_args})
+        elseif(command_name STREQUAL ADD_BUILD_PARTS)
+            qt_configure_process_add_summary_build_parts(${command_args})
         endif()
 
         math(EXPR command_index "${command_index}+1")
@@ -282,6 +284,29 @@ function(qt_configure_process_add_summary_build_mode label)
         endif()
     endif()
 
+    qt_configure_add_report_padded("${label}" "${message}")
+endfunction()
+
+function(qt_configure_add_summary_build_parts)
+    qt_configure_record_command(ADD_BUILD_PARTS ${ARGV})
+endfunction()
+
+function(qt_configure_process_add_summary_build_parts label)
+    set(parts "libs")
+
+    if(BUILD_EXAMPLES AND NOT QT_NO_MAKE_EXAMPLES)
+        list(APPEND parts "examples")
+    endif()
+
+    if(BUILD_TESTING AND NOT QT_NO_MAKE_TESTS)
+        list(APPEND parts "tests")
+    endif()
+
+    if(NOT CMAKE_CROSSCOMPILING)
+        list(APPEND parts "tools")
+    endif()
+
+    string(REPLACE ";" " " message "${parts}")
     qt_configure_add_report_padded("${label}" "${message}")
 endfunction()
 
