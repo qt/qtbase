@@ -243,7 +243,7 @@ NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
     switch (cursor->shape()) {
     case Qt::BitmapCursor: {
         if (cursor->pixmap().isNull())
-            return createCursorFromBitmap(cursor->bitmap(), cursor->mask(), hotspot);
+            return createCursorFromBitmap(cursor->bitmap(Qt::ReturnByValue), cursor->mask(Qt::ReturnByValue), hotspot);
         else
             return createCursorFromPixmap(cursor->pixmap(), hotspot);
         break; }
@@ -301,17 +301,17 @@ NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
     if (cursorData) {
         QBitmap bitmap(QBitmap::fromData(QSize(16, 16), cursorData, QImage::Format_Mono));
         QBitmap mask(QBitmap::fromData(QSize(16, 16), cursorMaskData, QImage::Format_Mono));
-        return (createCursorFromBitmap(&bitmap, &mask, hotspot));
+        return (createCursorFromBitmap(bitmap, mask, hotspot));
     }
 
     return nil; // should not happen, all cases covered above
 }
 
-NSCursor *QCocoaCursor::createCursorFromBitmap(const QBitmap *bitmap, const QBitmap *mask, const QPoint hotspot)
+NSCursor *QCocoaCursor::createCursorFromBitmap(const QBitmap &bitmap, const QBitmap &mask, const QPoint hotspot)
 {
-    QImage finalCursor(bitmap->size(), QImage::Format_ARGB32);
-    QImage bmi = bitmap->toImage().convertToFormat(QImage::Format_RGB32);
-    QImage bmmi = mask->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage finalCursor(bitmap.size(), QImage::Format_ARGB32);
+    QImage bmi = bitmap.toImage().convertToFormat(QImage::Format_RGB32);
+    QImage bmmi = mask.toImage().convertToFormat(QImage::Format_RGB32);
     for (int row = 0; row < finalCursor.height(); ++row) {
         QRgb *bmData = reinterpret_cast<QRgb *>(bmi.scanLine(row));
         QRgb *bmmData = reinterpret_cast<QRgb *>(bmmi.scanLine(row));
@@ -332,7 +332,7 @@ NSCursor *QCocoaCursor::createCursorFromBitmap(const QBitmap *bitmap, const QBit
     return createCursorFromPixmap(QPixmap::fromImage(finalCursor), hotspot);
 }
 
-NSCursor *QCocoaCursor::createCursorFromPixmap(const QPixmap pixmap, const QPoint hotspot)
+NSCursor *QCocoaCursor::createCursorFromPixmap(const QPixmap &pixmap, const QPoint hotspot)
 {
     NSPoint hotSpot = NSMakePoint(hotspot.x(), hotspot.y());
     auto *image = [NSImage imageFromQImage:pixmap.toImage()];

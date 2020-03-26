@@ -63,8 +63,8 @@ private:
     QHash<Qt::CursorShape, NSCursor *> m_cursors;
     NSCursor *convertCursor(QCursor *cursor);
     NSCursor *createCursorData(QCursor * cursor);
-    NSCursor *createCursorFromBitmap(const QBitmap *bitmap, const QBitmap *mask, const QPoint hotspot = QPoint());
-    NSCursor *createCursorFromPixmap(const QPixmap pixmap, const QPoint hotspot = QPoint());
+    NSCursor *createCursorFromBitmap(const QBitmap &bitmap, const QBitmap &mask, const QPoint hotspot = QPoint());
+    NSCursor *createCursorFromPixmap(const QPixmap &pixmap, const QPoint hotspot = QPoint());
 };
 
 QT_END_NAMESPACE
