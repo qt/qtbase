@@ -124,7 +124,7 @@ class ReduceKernel
                       const IntermediateResults<T> &result)
     {
         for (int i = 0; i < result.vector.size(); ++i) {
-            reduce(r, result.vector.at(i));
+            std::invoke(reduce, r, result.vector.at(i));
         }
     }
 

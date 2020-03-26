@@ -104,7 +104,6 @@ public:
     int member0() { return 10; }
     int member1(int in) { return in; }
 
-    typedef int result_type;
     int operator()() { return 10; }
     int operator()(int in) { return in; }
 };
@@ -115,7 +114,6 @@ public:
     int member0() const { return 10; }
     int member1(int in) const { return in; }
 
-    typedef int result_type;
     int operator()() const { return 10; }
     int operator()(int in) const { return in; }
 };
@@ -126,7 +124,6 @@ public:
     int member0() noexcept { return 10; }
     int member1(int in) noexcept { return in; }
 
-    typedef int result_type;
     int operator()() noexcept { return 10; }
     int operator()(int in) noexcept { return in; }
 };
@@ -137,7 +134,6 @@ public:
     int member0() const noexcept { return 10; }
     int member1(int in) const noexcept { return in; }
 
-    typedef int result_type;
     int operator()() const noexcept { return 10; }
     int operator()(int in) const noexcept { return in; }
 };
@@ -320,7 +316,6 @@ void tst_QtConcurrentRun::returnValue()
 struct TestClass
 {
     void foo() { }
-    typedef void result_type;
     void operator()() { }
     void operator()(int) { }
     void fooInt(int){ };
@@ -329,7 +324,6 @@ struct TestClass
 struct TestConstClass
 {
     void foo() const { }
-    typedef void result_type;
     void operator()() const { }
     void operator()(int) const { }
     void fooInt(int) const { };

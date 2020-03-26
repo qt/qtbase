@@ -46,6 +46,7 @@
 
 #include <QtConcurrent/qtconcurrentiteratekernel.h>
 #include <QtConcurrent/qtconcurrentreducekernel.h>
+#include <QtConcurrent/qtconcurrentfunctionwrappers.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +66,7 @@ public:
 
     bool runIteration(Iterator it, int, void *) override
     {
-        map(*it);
+        std::invoke(map, *it);
         return false;
     }
 
@@ -88,13 +89,15 @@ template <typename ReducedResultType,
           typename ReduceFunctor,
           typename Reducer = ReduceKernel<ReduceFunctor,
                                           ReducedResultType,
-                                          typename MapFunctor::result_type> >
+                                          QtPrivate::MapResultType<Iterator, MapFunctor>>>
 class MappedReducedKernel : public IterateKernel<Iterator, ReducedResultType>
 {
     ReducedResultType reducedResult;
     MapFunctor map;
     ReduceFunctor reduce;
     Reducer reducer;
+    using IntermediateResultsType = QtPrivate::MapResultType<Iterator, MapFunctor>;
+
 public:
     typedef ReducedResultType ReturnType;
     MappedReducedKernel(Iterator begin, Iterator end, MapFunctor _map, ReduceFunctor _reduce, ReduceOptions reduceOptions)
@@ -113,18 +116,18 @@ public:
 
     bool runIteration(Iterator it, int index, ReducedResultType *) override
     {
-        IntermediateResults<typename MapFunctor::result_type> results;
+        IntermediateResults<IntermediateResultsType> results;
         results.begin = index;
         results.end = index + 1;
 
-        results.vector.append(map(*it));
+        results.vector.append(std::invoke(map, *it));
         reducer.runReduce(reduce, reducedResult, results);
         return false;
     }
 
     bool runIterations(Iterator sequenceBeginIterator, int beginIndex, int endIndex, ReducedResultType *) override
     {
-        IntermediateResults<typename MapFunctor::result_type> results;
+        IntermediateResults<IntermediateResultsType> results;
         results.begin = beginIndex;
         results.end = endIndex;
         results.vector.reserve(endIndex - beginIndex);
@@ -132,7 +135,7 @@ public:
         Iterator it = sequenceBeginIterator;
         std::advance(it, beginIndex);
         for (int i = beginIndex; i < endIndex; ++i) {
-            results.vector.append(map(*(it)));
+            results.vector.append(std::invoke(map, *it));
             std::advance(it, 1);
         }
 
@@ -163,20 +166,18 @@ public:
 };
 
 template <typename Iterator, typename MapFunctor>
-class MappedEachKernel : public IterateKernel<Iterator, typename MapFunctor::result_type>
+class MappedEachKernel : public IterateKernel<Iterator, QtPrivate::MapResultType<Iterator, MapFunctor>>
 {
     MapFunctor map;
-    typedef typename MapFunctor::result_type T;
-public:
-    typedef T ReturnType;
-    typedef T ResultType;
+    using T = QtPrivate::MapResultType<Iterator, MapFunctor>;
 
+public:
     MappedEachKernel(Iterator begin, Iterator end, MapFunctor _map)
         : IterateKernel<Iterator, T>(begin, end), map(_map) { }
 
     bool runIteration(Iterator it, int,  T *result) override
     {
-        *result = map(*it);
+        *result = std::invoke(map, *it);
         return true;
     }
 

@@ -78,7 +78,7 @@ class FilterKernel : public IterateKernel<typename Sequence::const_iterator, voi
 {
     typedef ReduceKernel<ReduceFunctor, Sequence, typename Sequence::value_type> Reducer;
     typedef IterateKernel<typename Sequence::const_iterator, void> IterateKernelType;
-    typedef typename ReduceFunctor::result_type T;
+    typedef void T;
 
     Sequence reducedResult;
     Sequence &sequence;
@@ -101,11 +101,11 @@ public:
         results.begin = index;
         results.end = index + 1;
 
-            if (keep(*it))
-                results.vector.append(*it);
+        if (std::invoke(keep, *it))
+            results.vector.append(*it);
 
-            reducer.runReduce(reduce, reducedResult, results);
-            return false;
+        reducer.runReduce(reduce, reducedResult, results);
+        return false;
     }
 
     bool runIterations(typename Sequence::const_iterator sequenceBeginIterator, int begin, int end, T *) override
@@ -119,7 +119,7 @@ public:
         typename Sequence::const_iterator it = sequenceBeginIterator;
         std::advance(it, begin);
         for (int i = begin; i < end; ++i) {
-            if (keep(*it))
+            if (std::invoke(keep, *it))
                 results.vector.append(*it);
             std::advance(it, 1);
         }
@@ -189,7 +189,7 @@ public:
         results.begin = index;
         results.end = index + 1;
 
-        if (keep(*it))
+        if (std::invoke(keep, *it))
             results.vector.append(*it);
 
         reducer.runReduce(reduce, reducedResult, results);
@@ -206,7 +206,7 @@ public:
         Iterator it = sequenceBeginIterator;
         std::advance(it, begin);
         for (int i = begin; i < end; ++i) {
-            if (keep(*it))
+            if (std::invoke(keep, *it))
                 results.vector.append(*it);
             std::advance(it, 1);
         }
@@ -264,7 +264,7 @@ public:
 
     bool runIteration(Iterator it, int index, T *) override
     {
-        if (keep(*it))
+        if (std::invoke(keep, *it))
             this->reportResult(&(*it), index);
         else
             this->reportResult(nullptr, index);
@@ -282,7 +282,7 @@ public:
         Iterator it = sequenceBeginIterator;
         std::advance(it, begin);
         for (int i = begin; i < end; ++i) {
-            if (keep(*it))
+            if (std::invoke(keep, *it))
                 results.vector.append(*it);
             std::advance(it, 1);
         }

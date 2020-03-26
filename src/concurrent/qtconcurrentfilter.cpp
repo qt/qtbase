@@ -144,8 +144,7 @@
     QtConcurrent::filter(), QtConcurrent::filtered(), and
     QtConcurrent::filteredReduced() accept function objects
     for the filter function. These function objects can be used to
-    add state to a function call. The result_type typedef must define the
-    result type of the function call operator:
+    add state to a function call:
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 13
 
@@ -154,6 +153,26 @@
     when the type of the reduction result is explicitly specified:
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 14
+
+    \section2 Using Lambda Expressions
+
+    QtConcurrent::filter(), QtConcurrent::filtered(), and
+    QtConcurrent::filteredReduced() accept lambda expressions for the filter and
+    reduce function:
+
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 15
+
+    When using QtConcurrent::filteredReduced() or
+    QtConcurrent::blockingFilteredReduced(), you can mix the use of normal
+    functions, member functions and lambda expressions freely.
+
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 16
+
+    For the reduce function, lambda expressions are not directly supported.
+    Lambda expressions can, however, be used when the type of the reduction
+    result is explicitly specified:
+
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 17
 
     \section2 Wrapping Functions that Take Multiple Arguments
 

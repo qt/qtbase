@@ -130,7 +130,8 @@ QFuture<void> squeezedStrings = QtConcurrent::map(strings, &QString::squeeze);
 
 // Swap the rgb values of all pixels on a list of images.
 QList<QImage> images = ...;
-QFuture<QImage> bgrImages = QtConcurrent::mapped(images, &QImage::rgbSwapped);
+QFuture<QImage> bgrImages = QtConcurrent::mapped(images,
+    static_cast<QImage (QImage::*)() const &>(&QImage::rgbSwapped));
 
 // Create a set of the lengths of all strings in a list.
 QStringList strings = ...;
@@ -197,3 +198,37 @@ struct Scaled
 QList<QImage> images = ...;
 QFuture<QImage> thumbnails = QtConcurrent::mapped(images, Scaled(100));
 //! [14]
+
+//! [15]
+QVector<int> vector { 1, 2, 3, 4 };
+QtConcurrent::blockingMap(vector, [](int &x) { x *= 2; });
+
+int size = 100;
+QVector<QImage> images = ...;
+
+QVector<QImage> thumbnails = QtConcurrent::mapped(images,
+        [&size](const QImage &image) {
+            return image.scaled(size, size);
+        }
+    ).results();
+//! [15]
+
+//! [16]
+QVector<QImage> collage = QtConcurrent::mappedReduced(images,
+        [&size](const QImage &image) {
+            return image.scaled(size, size);
+        },
+        addToCollage
+   ).results();
+//! [16]
+
+//! [17]
+QVector<QImage> collage = QtConcurrent::mappedReduced<QImage>(images,
+        [&size](const QImage &image) {
+            return image.scaled(size, size);
+        },
+        [](QImage &result, const QImage &value) {
+            // do some transformation
+        }
+   ).results();
+//! [17]

@@ -38,12 +38,16 @@ class tst_QtConcurrentFilter : public QObject
 
 private slots:
     void filter();
+    void filterLambda();
     void filtered();
+    void filteredLambda();
     void filteredReduced();
+    void filteredReduceLambda();
     void resultAt();
     void incrementalResults();
     void noDetach();
     void stlContainers();
+    void stlContainersLambda();
     void filteredReduceInitialValue();
 };
 
@@ -114,6 +118,22 @@ void tst_QtConcurrentFilter::filter()
         QList<Number> list;
         list << 1 << 2 << 3 << 4;
         QtConcurrent::blockingFilter(list, &Number::isEven);
+        QCOMPARE(list, QList<Number>() << 2 << 4);
+    }
+}
+
+void tst_QtConcurrentFilter::filterLambda()
+{
+    {
+        QList<Number> list;
+        list << 1 << 2 << 3 << 4;
+        QtConcurrent::filter(list, [](const Number &number) { return number.isEven(); }).waitForFinished();
+        QCOMPARE(list, QList<Number>() << 2 << 4);
+    }
+    {
+        QList<Number> list;
+        list << 1 << 2 << 3 << 4;
+        QtConcurrent::blockingFilter(list, [](const Number &number) { return number.isEven(); });
         QCOMPARE(list, QList<Number>() << 2 << 4);
     }
 }
@@ -289,6 +309,64 @@ void tst_QtConcurrentFilter::filtered()
                                                            integers.constEnd(),
                                                            &Number::isEven);
         QCOMPARE(list2, QList<Number>() << 2 << 4);
+    }
+}
+
+void tst_QtConcurrentFilter::filteredLambda()
+{
+    QList<int> list;
+    list << 1 << 2 << 3 << 4;
+
+    {
+        QFuture<int> f = QtConcurrent::filtered(list,
+            [](int x) {
+                return (x & 1) == 0;
+            }
+        );
+        QList<int> list2 = f.results();
+        QCOMPARE(list2, QList<int>() << 2 << 4);
+    }
+    {
+        QFuture<int> f = QtConcurrent::filtered(list.begin(), list.end(),
+            [](const int &x) {
+                return (x & 1) == 0;
+            }
+        );
+        QList<int> list2 = f.results();
+        QCOMPARE(list2, QList<int>() << 2 << 4);
+    }
+    {
+        QFuture<int> f = QtConcurrent::filtered(list.constBegin(), list.constEnd(),
+            [](const int &x) {
+                return (x & 1) == 0;
+            }
+        );
+        QList<int> list2 = f.results();
+        QCOMPARE(list2, QList<int>() << 2 << 4);
+    }
+    {
+        QList<int> list2 = QtConcurrent::blockingFiltered(list,
+            [](const int &x) {
+                return (x & 1) == 0;
+            }
+        );
+        QCOMPARE(list2, QList<int>() << 2 << 4);
+    }
+    {
+        QList<int> list2 = QtConcurrent::blockingFiltered<QList<int> >(list.begin(), list.end(),
+            [](const int &x) {
+                return (x & 1) == 0;
+            }
+        );
+        QCOMPARE(list2, QList<int>() << 2 << 4);
+    }
+    {
+        QList<int> list2 = QtConcurrent::blockingFiltered<QList<int> >(list.constBegin(), list.constEnd(),
+            [](const int &x) {
+                return (x & 1) == 0;
+            }
+        );
+        QCOMPARE(list2, QList<int>() << 2 << 4);
     }
 }
 
@@ -728,7 +806,221 @@ void tst_QtConcurrentFilter::filteredReduced()
                                                         numberSumReduce);
         QCOMPARE(sum, 6);
     }
+}
 
+void tst_QtConcurrentFilter::filteredReduceLambda()
+{
+    QList<int> list;
+    list << 1 << 2 << 3 << 4;
+    QList<Number> numberList;
+    numberList << 1 << 2 << 3 << 4;
+
+    // lambda-lambda
+    {
+        int sum = QtConcurrent::filteredReduced<int>(list,
+            [](const int &x) {
+                return (x & 1) == 0;
+            },
+            [](int &sum, int x) {
+                sum += x;
+            }
+        );
+        QCOMPARE(sum, 6);
+
+        int sum2 = QtConcurrent::blockingFilteredReduced<int>(list,
+            [](const int &x) {
+                return (x & 1) == 0;
+            },
+            [](int &sum, int x) {
+                sum += x;
+            }
+        );
+        QCOMPARE(sum2, 6);
+    }
+
+    // lambda-functor
+    {
+        int sum = QtConcurrent::filteredReduced<int>(list,
+            [](const int &x) {
+                return (x & 1) == 0;
+            },
+            IntSumReduce()
+        );
+        QCOMPARE(sum, 6);
+
+        int sum2 = QtConcurrent::blockingFilteredReduced<int>(list,
+            [](const int &x) {
+                return (x & 1) == 0;
+            },
+            IntSumReduce()
+        );
+        QCOMPARE(sum2, 6);
+    }
+
+    // functor-lambda
+    {
+        int sum = QtConcurrent::filteredReduced<int>(list,
+            KeepEvenIntegers(),
+            [](int &sum, int x) {
+                sum += x;
+            }
+        );
+        QCOMPARE(sum, 6);
+
+        int sum2 = QtConcurrent::blockingFilteredReduced<int>(list,
+            KeepEvenIntegers(),
+            [](int &sum, int x) {
+                sum += x;
+            }
+        );
+        QCOMPARE(sum2, 6);
+    }
+
+    // lambda-function
+    {
+        int sum = QtConcurrent::filteredReduced(list,
+            [] (const int &x) {
+                return (x & 1) == 0;
+            },
+            intSumReduce
+        );
+        QCOMPARE(sum, 6);
+
+        int sum2 = QtConcurrent::filteredReduced(list.begin(), list.end(),
+            [](const int &x) {
+                return (x & 1) == 0;
+            },
+            intSumReduce
+        );
+        QCOMPARE(sum2, 6);
+
+        int sum3 = QtConcurrent::blockingFilteredReduced(list,
+            [] (const int &x) {
+                return (x & 1) == 0;
+            },
+            intSumReduce
+        );
+        QCOMPARE(sum3, 6);
+
+        int sum4 = QtConcurrent::blockingFilteredReduced(list.begin(), list.end(),
+            [] (const int &x) {
+                return (x & 1) == 0;
+            },
+            intSumReduce
+        );
+        QCOMPARE(sum4, 6);
+    }
+
+    // function-lambda
+    {
+        int sum = QtConcurrent::filteredReduced<int>(list,
+            keepEvenIntegers,
+            [](int &sum, int x) {
+                sum += x;
+            }
+        );
+        QCOMPARE(sum, 6);
+
+        int sum2 = QtConcurrent::filteredReduced<int>(list.begin(), list.end(),
+            keepEvenIntegers,
+            [](int &sum, int x) {
+                sum += x;
+            }
+        );
+        QCOMPARE(sum2, 6);
+
+        int sum3 = QtConcurrent::blockingFilteredReduced<int>(list,
+            keepEvenIntegers,
+            [](int &sum, int x) {
+                sum += x;
+            }
+        );
+        QCOMPARE(sum3, 6);
+
+        int sum4 = QtConcurrent::blockingFilteredReduced<int>(list.begin(), list.end(),
+            keepEvenIntegers,
+            [](int &sum, int x) {
+                sum += x;
+            }
+        );
+        QCOMPARE(sum4, 6);
+    }
+
+    // lambda-member
+    {
+        auto push_back = static_cast<void (QVector<int>::*)(const int &)>(&QVector<int>::push_back);
+
+        QList<int> list2 = QtConcurrent::filteredReduced(list,
+            [] (const int &x) {
+                return (x & 1) == 0;
+            },
+            push_back,
+            QtConcurrent::OrderedReduce
+        );
+        QCOMPARE(list2, QList<int>() << 2 << 4);
+
+        QList<int> list3 = QtConcurrent::filteredReduced(list.begin(), list.end(),
+            [] (const int &x) {
+                return (x & 1) == 0;
+            },
+            push_back,
+            QtConcurrent::OrderedReduce
+        );
+        QCOMPARE(list3, QList<int>() << 2 << 4);
+
+        QList<int> list4 = QtConcurrent::blockingFilteredReduced(list,
+            [] (const int &x) {
+                return (x & 1) == 0;
+            },
+            push_back,
+            QtConcurrent::OrderedReduce
+        );
+        QCOMPARE(list4, QList<int>() << 2 << 4);
+
+        QList<int> list5 = QtConcurrent::blockingFilteredReduced(list.begin(), list.end(),
+            [] (const int &x) {
+                return (x & 1) == 0;
+            },
+            push_back,
+            QtConcurrent::OrderedReduce
+        );
+        QCOMPARE(list5, QList<int>() << 2 << 4);
+    }
+
+    // member-lambda
+    {
+        int sum = QtConcurrent::filteredReduced<int>(numberList,
+            &Number::isEven,
+            [](int &sum, const Number &x) {
+                sum += x.toInt();
+            }
+        );
+        QCOMPARE(sum, 6);
+
+        int sum2 = QtConcurrent::filteredReduced<int>(numberList.begin(), numberList.end(),
+            &Number::isEven,
+            [](int &sum, const Number &x) {
+                sum += x.toInt();
+            }
+        );
+        QCOMPARE(sum2, 6);
+
+        int sum3 = QtConcurrent::blockingFilteredReduced<int>(numberList,
+            &Number::isEven,
+            [](int &sum, const Number &x) {
+                sum += x.toInt();
+            }
+        );
+        QCOMPARE(sum3, 6);
+
+        int sum4 = QtConcurrent::blockingFilteredReduced<int>(numberList.begin(), numberList.end(),
+            &Number::isEven,
+            [](int &sum, const Number &x) {
+                sum += x.toInt();
+            }
+        );
+        QCOMPARE(sum4, 6);
+    }
 }
 
 bool filterfn(int i)
@@ -855,6 +1147,57 @@ void tst_QtConcurrentFilter::stlContainers()
     QtConcurrent::blockingFilter(list, waitFilterfn);
     QCOMPARE(list2.size(), (std::list<int>::size_type)(1));
     QCOMPARE(*list2.begin(), 1);
+}
+
+void tst_QtConcurrentFilter::stlContainersLambda()
+{
+    std::vector<int> vector;
+    vector.push_back(1);
+    vector.push_back(2);
+
+    std::vector<int> vector2 = QtConcurrent::blockingFiltered(vector,
+        [](const int &i) {
+            return waitFilterfn(i);
+        }
+    );
+    QCOMPARE(vector2.size(), (std::vector<int>::size_type)(1));
+    QCOMPARE(vector2[0], 1);
+
+    std::list<int> list;
+    list.push_back(1);
+    list.push_back(2);
+
+    std::list<int> list2 = QtConcurrent::blockingFiltered(list,
+        [](const int &i) {
+            return waitFilterfn(i);
+        }
+    );
+    QCOMPARE(list2.size(), (std::list<int>::size_type)(1));
+    QCOMPARE(*list2.begin(), 1);
+
+    QtConcurrent::filtered(list,
+        [](const int &i) {
+            return waitFilterfn(i);
+        }
+    ).waitForFinished();
+    QtConcurrent::filtered(vector,
+        [](const int &i) {
+            return waitFilterfn(i);
+        }
+    ).waitForFinished();
+    QtConcurrent::filtered(vector.begin(), vector.end(),
+        [](const int &i) {
+            return waitFilterfn(i);
+        }
+    ).waitForFinished();
+
+    QtConcurrent::blockingFilter(list,
+        [](const int &i) {
+            return waitFilterfn(i);
+        }
+    );
+    QCOMPARE(list.size(), (std::list<int>::size_type)(1));
+    QCOMPARE(*list.begin(), 1);
 }
 
 void tst_QtConcurrentFilter::filteredReduceInitialValue()

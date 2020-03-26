@@ -43,148 +43,16 @@
 #include <QtConcurrent/qtconcurrentcompilertest.h>
 #include <QtCore/QStringList>
 
+#include <tuple>
+
 #if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 QT_BEGIN_NAMESPACE
 
-namespace QtConcurrent {
-
-template <typename T, typename U>
-class FunctionWrapper1
-{
-public:
-    typedef T (*FunctionPointerType)(U u);
-    typedef T result_type;
-    inline FunctionWrapper1(FunctionPointerType _functionPointer)
-    :functionPointer(_functionPointer) { }
-
-    inline T operator()(U u)
-    {
-        return functionPointer(u);
-    }
-
-private:
-    FunctionPointerType functionPointer;
-};
-
-template <typename T, typename C>
-class MemberFunctionWrapper
-{
-public:
-    typedef T (C::*FunctionPointerType)();
-    typedef T result_type;
-    inline MemberFunctionWrapper(FunctionPointerType _functionPointer)
-    :functionPointer(_functionPointer) { }
-
-    inline T operator()(C &c)
-    {
-        return (c.*functionPointer)();
-    }
-private:
-    FunctionPointerType functionPointer;
-};
-
-template <typename T, typename C, typename U>
-class MemberFunctionWrapper1
-{
-public:
-    typedef T (C::*FunctionPointerType)(U);
-    typedef T result_type;
-
-    inline MemberFunctionWrapper1(FunctionPointerType _functionPointer)
-        : functionPointer(_functionPointer)
-    { }
-
-    inline T operator()(C &c, U u)
-    {
-        return (c.*functionPointer)(u);
-    }
-
-private:
-    FunctionPointerType functionPointer;
-};
-
-template <typename T, typename C>
-class ConstMemberFunctionWrapper
-{
-public:
-    typedef T (C::*FunctionPointerType)() const;
-    typedef T result_type;
-    inline ConstMemberFunctionWrapper(FunctionPointerType _functionPointer)
-    :functionPointer(_functionPointer) { }
-
-    inline T operator()(const C &c) const
-    {
-        return (c.*functionPointer)();
-    }
-private:
-    FunctionPointerType functionPointer;
-};
-
-} // namespace QtConcurrent.
-
 namespace QtPrivate {
-
-template <typename T>
-const T& createFunctionWrapper(const T& t)
-{
-    return t;
-}
-
-template <typename T, typename U>
-QtConcurrent::FunctionWrapper1<T, U> createFunctionWrapper(T (*func)(U))
-{
-    return QtConcurrent::FunctionWrapper1<T, U>(func);
-}
-
-template <typename T, typename C>
-QtConcurrent::MemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)())
-{
-    return QtConcurrent::MemberFunctionWrapper<T, C>(func);
-}
-
-template <typename T, typename C, typename U>
-QtConcurrent::MemberFunctionWrapper1<T, C, U> createFunctionWrapper(T (C::*func)(U))
-{
-    return QtConcurrent::MemberFunctionWrapper1<T, C, U>(func);
-}
-
-template <typename T, typename C>
-QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)() const)
-{
-    return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
-}
-
-#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
-template <typename T, typename U>
-QtConcurrent::FunctionWrapper1<T, U> createFunctionWrapper(T (*func)(U) noexcept)
-{
-    return QtConcurrent::FunctionWrapper1<T, U>(func);
-}
-
-template <typename T, typename C>
-QtConcurrent::MemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)() noexcept)
-{
-    return QtConcurrent::MemberFunctionWrapper<T, C>(func);
-}
-
-template <typename T, typename C, typename U>
-QtConcurrent::MemberFunctionWrapper1<T, C, U> createFunctionWrapper(T (C::*func)(U) noexcept)
-{
-    return QtConcurrent::MemberFunctionWrapper1<T, C, U>(func);
-}
-
-template <typename T, typename C>
-QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)() const noexcept)
-{
-    return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
-}
-#endif
 
 struct PushBackWrapper
 {
-    typedef void result_type;
-
     template <class C, class U>
     inline void operator()(C &c, const U &u) const
     {
@@ -198,10 +66,41 @@ struct PushBackWrapper
     }
 };
 
-template <typename Functor, bool foo = HasResultType<Functor>::Value>
-struct LazyResultType { typedef typename Functor::result_type Type; };
-template <typename Functor>
-struct LazyResultType<Functor, false> { typedef void Type; };
+// -- MapResultType
+
+template <class T, class Enable = void>
+struct Argument
+{
+    using Type = void;
+};
+
+template <class Sequence>
+struct Argument<Sequence, typename std::enable_if<IsIterableValue<Sequence>>::type>
+{
+    using Type = std::decay_t<decltype(*std::begin(std::declval<Sequence>()))>;
+};
+
+template <class Iterator>
+struct Argument<Iterator, typename std::enable_if<IsDereferenceableValue<Iterator>>::type>
+{
+    using Type = std::decay_t<decltype(*std::declval<Iterator>())>;
+};
+
+template <class T>
+using ArgumentType = typename Argument<T>::Type;
+
+template <class T, class MapFunctor>
+struct MapResult
+{
+    static_assert(std::is_invocable_v<std::decay_t<MapFunctor>, ArgumentType<T>>,
+                  "It's not possible to invoke the function with passed argument.");
+    using Type = std::invoke_result_t<std::decay_t<MapFunctor>, ArgumentType<T>>;
+};
+
+template <class T, class MapFunctor>
+using MapResultType = typename MapResult<T, MapFunctor>::Type;
+
+// -- ReduceResultType
 
 template <class T>
 struct ReduceResultType;
@@ -218,6 +117,18 @@ struct ReduceResultType<T(C::*)(U)>
     typedef C ResultType;
 };
 
+template <class U, class V>
+struct ReduceResultType<std::function<void(U&, V)>>
+{
+    typedef U ResultType;
+};
+
+template <typename R, typename ...A>
+struct ReduceResultType<R(*)(A...)>
+{
+    using ResultType = typename std::tuple_element<0, std::tuple<A...>>::type;
+};
+
 #if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
 template <class U, class V>
 struct ReduceResultType<void(*)(U&,V) noexcept>
@@ -232,107 +143,26 @@ struct ReduceResultType<T(C::*)(U) noexcept>
 };
 #endif
 
+// -- MapSequenceResultType
+
 template <class InputSequence, class MapFunctor>
-struct MapResultType
-{
-    typedef typename LazyResultType<MapFunctor>::Type ResultType;
-};
+struct MapSequenceResultType;
 
-template <class U, class V>
-struct MapResultType<void, U (*)(V)>
+template <class MapFunctor>
+struct MapSequenceResultType<QStringList, MapFunctor>
 {
-    typedef U ResultType;
+    typedef QList<QtPrivate::MapResultType<QStringList, MapFunctor>> ResultType;
 };
-
-template <class T, class C>
-struct MapResultType<void, T(C::*)() const>
-{
-    typedef T ResultType;
-};
-
-#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
-template <class U, class V>
-struct MapResultType<void, U (*)(V) noexcept>
-{
-    typedef U ResultType;
-};
-
-template <class T, class C>
-struct MapResultType<void, T(C::*)() const noexcept>
-{
-    typedef T ResultType;
-};
-#endif
 
 #ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 
 template <template <typename> class InputSequence, typename MapFunctor, typename T>
-struct MapResultType<InputSequence<T>, MapFunctor>
+struct MapSequenceResultType<InputSequence<T>, MapFunctor>
 {
-    typedef InputSequence<typename LazyResultType<MapFunctor>::Type> ResultType;
+    typedef InputSequence<QtPrivate::MapResultType<InputSequence<T>, MapFunctor>> ResultType;
 };
-
-template <template <typename> class InputSequence, class T, class U, class V>
-struct MapResultType<InputSequence<T>, U (*)(V)>
-{
-    typedef InputSequence<U> ResultType;
-};
-
-template <template <typename> class InputSequence, class T, class U, class C>
-struct MapResultType<InputSequence<T>, U(C::*)() const>
-{
-    typedef InputSequence<U> ResultType;
-};
-
-#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
-
-template <template <typename> class InputSequence, class T, class U, class V>
-struct MapResultType<InputSequence<T>, U (*)(V) noexcept>
-{
-    typedef InputSequence<U> ResultType;
-};
-
-template <template <typename> class InputSequence, class T, class U, class C>
-struct MapResultType<InputSequence<T>, U(C::*)() const noexcept>
-{
-    typedef InputSequence<U> ResultType;
-};
-#endif
 
 #endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
-
-template <class MapFunctor>
-struct MapResultType<QStringList, MapFunctor>
-{
-    typedef QList<typename LazyResultType<MapFunctor>::Type> ResultType;
-};
-
-template <class U, class V>
-struct MapResultType<QStringList, U (*)(V)>
-{
-    typedef QList<U> ResultType;
-};
-
-template <class U, class C>
-struct MapResultType<QStringList, U(C::*)() const>
-{
-    typedef QList<U> ResultType;
-};
-
-#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
-
-template <class U, class V>
-struct MapResultType<QStringList, U (*)(V) noexcept>
-{
-    typedef QList<U> ResultType;
-};
-
-template <class U, class C>
-struct MapResultType<QStringList, U(C::*)() const noexcept>
-{
-    typedef QList<U> ResultType;
-};
-#endif
 
 } // namespace QtPrivate.
 

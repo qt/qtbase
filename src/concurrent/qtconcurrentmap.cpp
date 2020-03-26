@@ -270,8 +270,7 @@
     QtConcurrent::map(), QtConcurrent::mapped(), and
     QtConcurrent::mappedReduced() accept function objects
     for the map function. These function objects can be used to
-    add state to a function call. The result_type typedef must define the
-    result type of the function call operator:
+    add state to a function call:
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 14
 
@@ -280,6 +279,26 @@
     when the type of the reduction result is explicitly specified:
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 11
+
+    \section2 Using Lambda Expressions
+
+    QtConcurrent::map(), QtConcurrent::mapped(), and
+    QtConcurrent::mappedReduced() accept lambda expressions for the map and
+    reduce function:
+
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 15
+
+    When using QtConcurrent::mappedReduced() or
+    QtConcurrent::blockingMappedReduced(), you can mix the use of normal
+    functions, member functions and lambda expressions freely.
+
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 16
+
+    For the reduce function, lambda expressions are not directly supported.
+    Lambda expressions can, however, be used when the type of the reduction
+    result is explicitly specified:
+
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 17
 
     \section2 Wrapping Functions that Take Multiple Arguments
 
@@ -321,7 +340,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename MapFunctor> QFuture<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType> QtConcurrent::mapped(const Sequence &sequence, MapFunctor function)
+    \fn template <typename Sequence, typename MapFunctor> QFuture<QtPrivate::MapResultType<Sequence, MapFunctor>> QtConcurrent::mapped(const Sequence &sequence, MapFunctor function)
 
     Calls \a function once for each item in \a sequence and returns a future
     with each mapped item as a result. You can use QFuture::const_iterator or
@@ -331,7 +350,7 @@
 */
 
 /*!
-    \fn template <typename Iterator, typename MapFunctor> QFuture<typename QtPrivate::MapResultType<void, MapFunctor>::ResultType> QtConcurrent::mapped(Iterator begin, Iterator end, MapFunctor function)
+    \fn template <typename Iterator, typename MapFunctor> QFuture<QtPrivate::MapResultType<Iterator, MapFunctor>> QtConcurrent::mapped(Iterator begin, Iterator end, MapFunctor function)
 
     Calls \a function once for each item from \a begin to \a end and returns a
     future with each mapped item as a result. You can use
@@ -521,28 +540,4 @@
   sequence being processed.
 
   \sa blockingMappedReduced(), {Concurrent Map and Map-Reduce}
-*/
-
-/*!
-  \class QtConcurrent::FunctionWrapper1
-  \inmodule QtConcurrent
-  \internal
-*/
-
-/*!
-  \class QtConcurrent::MemberFunctionWrapper
-  \inmodule QtConcurrent
-  \internal
-*/
-
-/*!
-  \class QtConcurrent::MemberFunctionWrapper1
-  \inmodule QtConcurrent
-  \internal
-*/
-
-/*!
-  \class QtConcurrent::ConstMemberFunctionWrapper
-  \inmodule QtConcurrent
-  \internal
 */

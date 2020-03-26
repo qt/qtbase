@@ -158,8 +158,6 @@ struct StartsWith
     StartsWith(const QString &string)
     : m_string(string) { }
 
-    typedef bool result_type;
-
     bool operator()(const QString &testString)
     {
         return testString.startsWith(m_string);
@@ -183,3 +181,57 @@ QFuture<QString> fooString =
                                          StartsWith(QLatin1String("Foo")),
                                          StringTransform());
 //! [14]
+
+//! [15]
+// keep only even integers
+QVector<int> vector { 1, 2, 3, 4 };
+QtConcurrent::blockingFilter(vector, [](int n) { return (n & 1) == 0; });
+
+// retrieve only even integers
+QVector<int> vector2 { 1, 2, 3, 4 };
+QFuture<int> future = QtConcurrent::filtered(vector2, [](int x) {
+    return (x & 1) == 0;
+});
+QVector<int> results = future.results();
+
+// add up all even integers
+QVector<int> vector3 { 1, 2, 3, 4 };
+int sum = QtConcurrent::filteredReduced<int>(vector3,
+    [](int x) {
+        return (x & 1) == 0;
+    },
+    [](int &sum, int x) {
+        sum += x;
+    }
+);
+//! [15]
+
+//! [16]
+void intSumReduce(int &sum, int x)
+{
+    sum += x;
+}
+
+QVector<int> vector { 1, 2, 3, 4 };
+int sum = QtConcurrent::filteredReduced(vector,
+    [] (int x) {
+        return (x & 1) == 0;
+    },
+    intSumReduce
+);
+//! [16]
+
+//! [17]
+bool keepEvenIntegers(int x)
+{
+    return (x & 1) == 0;
+}
+
+QVector<int> vector { 1, 2, 3, 4 };
+int sum = QtConcurrent::filteredReduced<int>(vector,
+    keepEvenIntegers,
+    [](int &sum, int x) {
+        sum += x;
+    }
+);
+//! [17]
