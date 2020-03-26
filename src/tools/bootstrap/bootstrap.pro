@@ -14,6 +14,9 @@ MODULE_DEFINES = \
         QT_NO_CAST_TO_ASCII
 MODULE_CONFIG = gc_binaries
 
+DEFINES += PCRE2_DISABLE_JIT
+include(../../3rdparty/pcre2/pcre2.pri)
+
 DEFINES += \
     $$MODULE_DEFINES \
     QT_NO_FOREACH \
@@ -21,7 +24,8 @@ DEFINES += \
 
 INCLUDEPATH += \
     $$PWD/.. \
-    $$PWD/../../3rdparty/tinycbor/src
+    $$PWD/../../3rdparty/tinycbor/src \
+    $$PWD/../../3rdparty/pcre2/src
 
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
@@ -87,6 +91,7 @@ SOURCES += \
            ../../corelib/text/qlocale.cpp \
            ../../corelib/text/qlocale_tools.cpp \
            ../../corelib/text/qregexp.cpp \
+           ../../corelib/text/qregularexpression.cpp \
            ../../corelib/text/qstring.cpp \
            ../../corelib/text/qstringbuilder.cpp \
            ../../corelib/text/qstring_compat.cpp \

@@ -101,6 +101,11 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#if QT_CONFIG(slog2)
+extern char *__progname;
+#endif
+
+#ifndef QT_BOOTSTRAPPED
 #if QT_CONFIG(regularexpression)
 #  ifdef __UCLIBC__
 #    if __UCLIBC_HAS_BACKTRACE__
@@ -111,11 +116,6 @@
 #  endif
 #endif
 
-#if QT_CONFIG(slog2)
-extern char *__progname;
-#endif
-
-#ifndef QT_BOOTSTRAPPED
 #if defined(Q_OS_LINUX) && (defined(__GLIBC__) || __has_include(<sys/syscall.h>))
 #  include <sys/syscall.h>
 

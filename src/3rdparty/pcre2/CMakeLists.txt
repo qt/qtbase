@@ -51,11 +51,6 @@ qt_set_symbol_visibility_hidden(BundledPcre2)
 ## Scopes:
 #####################################################################
 
-qt_extend_target(BundledPcre2 CONDITION WIN32
-    PUBLIC_DEFINES
-        PCRE2_STATIC
-)
-
 qt_extend_target(BundledPcre2 CONDITION QNX OR UIKIT OR WINRT
     DEFINES
         PCRE2_DISABLE_JIT
@@ -69,4 +64,9 @@ qt_extend_target(BundledPcre2 CONDITION (TEST_architecture_arch STREQUAL "arm") 
 qt_extend_target(BundledPcre2 CONDITION (TEST_architecture_arch STREQUAL "arm64") AND WIN32
     DEFINES
         PCRE2_DISABLE_JIT
+)
+
+qt_extend_target(BundledPcre2 CONDITION WIN32
+    PUBLIC_DEFINES
+        PCRE2_STATIC
 )

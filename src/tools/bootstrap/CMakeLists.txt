@@ -11,6 +11,37 @@ add_library(Bootstrap STATIC)
 # special case end
 qt_extend_target(Bootstrap
     SOURCES
+        ../../3rdparty/pcre2/src/config.h
+        ../../3rdparty/pcre2/src/pcre2.h
+        ../../3rdparty/pcre2/src/pcre2_auto_possess.c
+        ../../3rdparty/pcre2/src/pcre2_chartables.c
+        ../../3rdparty/pcre2/src/pcre2_compile.c
+        ../../3rdparty/pcre2/src/pcre2_config.c
+        ../../3rdparty/pcre2/src/pcre2_context.c
+        ../../3rdparty/pcre2/src/pcre2_dfa_match.c
+        ../../3rdparty/pcre2/src/pcre2_error.c
+        ../../3rdparty/pcre2/src/pcre2_extuni.c
+        ../../3rdparty/pcre2/src/pcre2_find_bracket.c
+        ../../3rdparty/pcre2/src/pcre2_internal.h
+        ../../3rdparty/pcre2/src/pcre2_intmodedep.h
+        ../../3rdparty/pcre2/src/pcre2_jit_compile.c
+        ../../3rdparty/pcre2/src/pcre2_maketables.c
+        ../../3rdparty/pcre2/src/pcre2_match.c
+        ../../3rdparty/pcre2/src/pcre2_match_data.c
+        ../../3rdparty/pcre2/src/pcre2_newline.c
+        ../../3rdparty/pcre2/src/pcre2_ord2utf.c
+        ../../3rdparty/pcre2/src/pcre2_pattern_info.c
+        ../../3rdparty/pcre2/src/pcre2_script_run.c
+        ../../3rdparty/pcre2/src/pcre2_serialize.c
+        ../../3rdparty/pcre2/src/pcre2_string_utils.c
+        ../../3rdparty/pcre2/src/pcre2_study.c
+        ../../3rdparty/pcre2/src/pcre2_substitute.c
+        ../../3rdparty/pcre2/src/pcre2_substring.c
+        ../../3rdparty/pcre2/src/pcre2_tables.c
+        ../../3rdparty/pcre2/src/pcre2_ucd.c
+        ../../3rdparty/pcre2/src/pcre2_ucp.h
+        ../../3rdparty/pcre2/src/pcre2_valid_utf.c
+        ../../3rdparty/pcre2/src/pcre2_xclass.c
         ../../corelib/codecs/qlatincodec.cpp
         ../../corelib/codecs/qtextcodec.cpp
         ../../corelib/codecs/qutfcodec.cpp
@@ -74,6 +105,7 @@ qt_extend_target(Bootstrap
         ../../corelib/text/qlocale.cpp
         ../../corelib/text/qlocale_tools.cpp
         ../../corelib/text/qregexp.cpp
+        ../../corelib/text/qregularexpression.cpp
         ../../corelib/text/qstring.cpp
         ../../corelib/text/qstring_compat.cpp
         ../../corelib/text/qstringbuilder.cpp
@@ -99,6 +131,10 @@ qt_extend_target(Bootstrap
         ../../corelib/tools/qversionnumber.cpp
         ../../xml/dom/qdom.cpp
         ../../xml/sax/qxml.cpp
+    DEFINES
+        HAVE_CONFIG_H
+        PCRE2_CODE_UNIT_WIDTH=16
+        PCRE2_DISABLE_JIT
     PUBLIC_DEFINES # special case
         QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
         QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
@@ -113,6 +149,7 @@ qt_extend_target(Bootstrap
         ..
         ../../3rdparty/tinycbor/src
     PUBLIC_INCLUDE_DIRECTORIES  # special case
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/pcre2/src>
         $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES> # special case
         $<TARGET_PROPERTY:Xml,INCLUDE_DIRECTORIES> # special case
     PUBLIC_LIBRARIES  # special case
@@ -155,6 +192,8 @@ qt_extend_target(Bootstrap CONDITION WIN32
         ../../corelib/kernel/qsystemsemaphore_win.cpp
         ../../corelib/kernel/qwinregistry.cpp
         ../../corelib/plugin/qsystemlibrary.cpp
+    PUBLIC_DEFINES
+        PCRE2_STATIC
     PUBLIC_LIBRARIES
         advapi32
         netapi32
