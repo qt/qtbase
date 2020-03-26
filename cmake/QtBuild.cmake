@@ -3579,6 +3579,12 @@ function(qt_add_docs)
     set(target ${ARGV0})
     set(doc_project ${ARGV1})
 
+    # If a target is not built (which can happen for tools when crosscompiling, we shouldn't try
+    # to generate docs.
+    if(NOT TARGET "${target}")
+        return()
+    endif()
+
     if (NOT QT_SUPERBUILD OR QT_WILL_INSTALL)
         set(qdoc_bin "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qdoc")
         set(qtattributionsscanner_bin "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qtattributionsscanner")
