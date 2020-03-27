@@ -226,11 +226,11 @@ void QPropertyBase::registerWithCurrentlyEvaluatingBinding() const
     dependencyObserver.observeProperty(d);
 }
 
-void QPropertyBase::notifyObservers()
+void QPropertyBase::notifyObservers(void *propertyDataPtr)
 {
     QPropertyBasePointer d{this};
     if (QPropertyObserverPointer observer = d.firstObserver())
-        observer.notify(d.bindingPtr());
+        observer.notify(d.bindingPtr(), propertyDataPtr);
 }
 
 int QPropertyBasePointer::observerCount() const
@@ -241,7 +241,7 @@ int QPropertyBasePointer::observerCount() const
     return count;
 }
 
-QPropertyObserver::QPropertyObserver(void (*callback)(QPropertyObserver*))
+QPropertyObserver::QPropertyObserver(void (*callback)(QPropertyObserver *, void *))
 {
     QPropertyObserverPointer d{this};
     d.setChangeHandler(callback);
@@ -304,7 +304,7 @@ void QPropertyObserverPointer::unlink()
     ptr->prev.clear();
 }
 
-void QPropertyObserverPointer::setChangeHandler(void (*changeHandler)(QPropertyObserver *))
+void QPropertyObserverPointer::setChangeHandler(void (*changeHandler)(QPropertyObserver *, void *))
 {
     ptr->changeHandler = changeHandler;
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesChangeHandler);
@@ -316,7 +316,7 @@ void QPropertyObserverPointer::setBindingToMarkDirty(QPropertyBindingPrivate *bi
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesBinding);
 }
 
-void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding)
+void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, void *propertyDataPtr)
 {
     bool knownIfPropertyChanged = false;
     bool propertyChanged =true;
@@ -334,7 +334,7 @@ void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding
                 return;
 
             if (auto handlerToCall = std::exchange(observer->changeHandler, nullptr)) {
-                handlerToCall(observer);
+                handlerToCall(observer, propertyDataPtr);
                 observer->changeHandler = handlerToCall;
             }
         } else {

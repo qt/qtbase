@@ -89,7 +89,7 @@ public:
     void removeBinding();
 
     void registerWithCurrentlyEvaluatingBinding() const;
-    void notifyObservers();
+    void notifyObservers(void *propertyDataPtr);
 
     void setExtraBit(bool b)
     {

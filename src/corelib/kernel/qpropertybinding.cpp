@@ -63,7 +63,7 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
 {
     dirty = true;
     if (firstObserver)
-        firstObserver.notify(this);
+        firstObserver.notify(this, propertyDataPtr);
 }
 
 bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()

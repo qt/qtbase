@@ -348,7 +348,7 @@ public:
 private:
     void notify()
     {
-        d.priv.notifyObservers();
+        d.priv.notifyObservers(&d);
     }
 
     Q_DISABLE_COPY(QProperty)
@@ -403,7 +403,7 @@ public:
     { setSource(property.d.priv); }
 
 protected:
-    QPropertyObserver(void (*callback)(QPropertyObserver*));
+    QPropertyObserver(void (*callback)(QPropertyObserver*, void *));
 
 private:
     void setSource(QtPrivate::QPropertyBase &property);
@@ -415,7 +415,7 @@ private:
 
     union {
         QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
-        void (*changeHandler)(QPropertyObserver*);
+        void (*changeHandler)(QPropertyObserver*, void *);
     };
 
     QPropertyObserver(const QPropertyObserver &) = delete;
@@ -434,7 +434,7 @@ class QPropertyChangeHandler : public QPropertyObserver
     Functor m_handler;
 public:
     QPropertyChangeHandler(Functor handler)
-        : QPropertyObserver([](QPropertyObserver *self) {
+        : QPropertyObserver([](QPropertyObserver *self, void *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
               This->m_handler();
           })
@@ -444,7 +444,7 @@ public:
 
     template <typename PropertyType>
     QPropertyChangeHandler(const QProperty<PropertyType> &property, Functor handler)
-        : QPropertyObserver([](QPropertyObserver *self) {
+        : QPropertyObserver([](QPropertyObserver *self, void *) {
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
               This->m_handler();
           })
@@ -474,6 +474,29 @@ QPropertyChangeHandler<Functor> QProperty<T>::subscribe(Functor f)
     f();
     return onValueChanged(f);
 }
+
+template <auto propertyMember, auto callbackMember>
+struct QPropertyMemberChangeHandler;
+
+template<typename Class, typename PropertyType, PropertyType Class::* PropertyMember, void(Class::*Callback)()>
+struct QPropertyMemberChangeHandler<PropertyMember, Callback> : public QPropertyObserver
+{
+    QPropertyMemberChangeHandler(Class *obj)
+        : QPropertyObserver(notify)
+    {
+        setSource(obj->*PropertyMember);
+    }
+
+    static void notify(QPropertyObserver *, void *propertyDataPtr)
+    {
+        // memberOffset is the offset of the QProperty<> member within the class. We get the absolute address
+        // of that member and subtracting the relative offset gives us the address of the class instance.
+        const size_t memberOffset = reinterpret_cast<size_t>(&(static_cast<Class *>(nullptr)->*PropertyMember));
+        Class *obj = reinterpret_cast<Class *>(reinterpret_cast<char *>(propertyDataPtr) - memberOffset);
+        (obj->*Callback)();
+    }
+};
+
 
 QT_END_NAMESPACE
 
