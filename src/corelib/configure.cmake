@@ -165,7 +165,9 @@ int main(int argc, char **argv)
 {
     (void)argc; (void)argv;
     /* BEGIN TEST: */
-std::filesystem::path p(\"./file\");
+std::filesystem::copy(
+    std::filesystem::path("./file"),
+    std::filesystem::path("./other"));
     /* END TEST: */
     return 0;
 }

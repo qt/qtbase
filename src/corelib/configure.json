@@ -371,7 +371,11 @@
             "type": "compile",
             "test": {
                 "include": "filesystem",
-                "main": "std::filesystem::path p(\"./file\");",
+                "main": [
+                    "std::filesystem::copy(",
+                    "    std::filesystem::path(\"./file\"),",
+                    "    std::filesystem::path(\"./other\"));"
+                ],
                 "qmake": "CONFIG += c++17"
             }
         },
