@@ -47,7 +47,7 @@
 #include "qtcpsocket.h"
 #include "qurlinfo_p.h"
 #include "qstringlist.h"
-#include "qregexp.h"
+#include "qregularexpression.h"
 #include "qtimer.h"
 #include "qfileinfo.h"
 #include "qtcpserver.h"
@@ -621,18 +621,20 @@ bool QFtpDTP::parseDir(const QByteArray &buffer, const QString &userName, QUrlIn
     QString bufferStr = QString::fromUtf8(buffer).trimmed();
 
     // Unix style FTP servers
-    QRegExp unixPattern(QLatin1String("^([\\-dl])([a-zA-Z\\-]{9,9})\\s+\\d+\\s+(\\S*)\\s+"
-                                      "(\\S*)\\s+(\\d+)\\s+(\\S+\\s+\\S+\\s+\\S+)\\s+(\\S.*)"));
-    if (unixPattern.indexIn(bufferStr) == 0) {
-        _q_parseUnixDir(unixPattern.capturedTexts(), userName, info);
+    QRegularExpression unixPattern(QLatin1String("^([\\-dl])([a-zA-Z\\-]{9,9})\\s+\\d+\\s+(\\S*)\\s+"
+                                                 "(\\S*)\\s+(\\d+)\\s+(\\S+\\s+\\S+\\s+\\S+)\\s+(\\S.*)"));
+    auto unixPatternMatch = unixPattern.match(bufferStr);
+    if (unixPatternMatch.hasMatch()) {
+        _q_parseUnixDir(unixPatternMatch.capturedTexts(), userName, info);
         return true;
     }
 
     // DOS style FTP servers
-    QRegExp dosPattern(QLatin1String("^(\\d\\d-\\d\\d-\\d\\d\\ \\ \\d\\d:\\d\\d[AP]M)\\s+"
-                                     "(<DIR>|\\d+)\\s+(\\S.*)$"));
-    if (dosPattern.indexIn(bufferStr) == 0) {
-        _q_parseDosDir(dosPattern.capturedTexts(), userName, info);
+    QRegularExpression dosPattern(QLatin1String("^(\\d\\d-\\d\\d-\\d\\d\\ \\ \\d\\d:\\d\\d[AP]M)\\s+"
+                                                "(<DIR>|\\d+)\\s+(\\S.*)$"));
+    auto dosPatternMatch = dosPattern.match(bufferStr);
+    if (dosPatternMatch.hasMatch()) {
+        _q_parseDosDir(dosPatternMatch.capturedTexts(), userName, info);
         return true;
     }
 
@@ -1064,14 +1066,15 @@ bool QFtpPI::processReply()
         // both examples where the parenthesis are used, and where
         // they are missing. We need to scan for the address and host
         // info.
-        QRegExp addrPortPattern(QLatin1String("(\\d+),(\\d+),(\\d+),(\\d+),(\\d+),(\\d+)"));
-        if (addrPortPattern.indexIn(replyText) == -1) {
+        QRegularExpression addrPortPattern(QLatin1String("(\\d+),(\\d+),(\\d+),(\\d+),(\\d+),(\\d+)"));
+        auto addrPortMatch = addrPortPattern.match(replyText);
+        if (!addrPortMatch.hasMatch()) {
 #if defined(QFTPPI_DEBUG)
             qDebug("QFtp: bad 227 response -- address and port information missing");
 #endif
             // this error should be reported
         } else {
-            const QStringList lst = addrPortPattern.capturedTexts();
+            const QStringList lst = addrPortMatch.capturedTexts();
             QString host = lst[1] + QLatin1Char('.') + lst[2] + QLatin1Char('.') + lst[3] + QLatin1Char('.') + lst[4];
             quint16 port = (lst[5].toUInt() << 8) + lst[6].toUInt();
             waitForDtpToConnect = true;

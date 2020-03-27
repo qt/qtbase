@@ -344,7 +344,7 @@
             "purpose": "Provides support for the File Transfer Protocol in QNetworkAccessManager.",
             "section": "Networking",
             "autoDetect": false,
-            "condition": "features.textdate",
+            "condition": "features.textdate && features.regularexpression",
             "output": [ "publicFeature", "feature" ]
         },
         "http": {
