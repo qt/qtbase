@@ -599,9 +599,17 @@ const QValidator * QLineEdit::validator() const
 }
 
 /*!
-    Sets this line edit to only accept input that the validator, \a v,
-    will accept. This allows you to place any arbitrary constraints on
-    the text which may be entered.
+    Sets the validator for values of line edit to \a v.
+
+    The line edit's returnPressed() and editingFinished() signals will only
+    be emitted if \a v validates the line edit's content as \l{QValidator::}{Acceptable}.
+    The user may change the content to any \l{QValidator::}{Intermediate}
+    value during editing, but will be prevented from editing the text to a
+    value that \a v validates as \l{QValidator::}{Invalid}.
+
+    This allows you to constrain the text that shall finally be entered when editing is
+    done, while leaving users with enough freedom to edit the text from one valid state
+    to another.
 
     If \a v == 0, setValidator() removes the current input validator.
     The initial setting is to have no input validator (i.e. any input
@@ -1439,7 +1447,7 @@ void QLineEdit::copy() const
     Inserts the clipboard's text at the cursor position, deleting any
     selected text, providing the line edit is not \l{QLineEdit::readOnly}{read-only}.
 
-    If the end result would not be acceptable to the current
+    If the end result would be invalid to the current
     \l{setValidator()}{validator}, nothing happens.
 
     \sa copy(), cut()
