@@ -271,8 +271,7 @@ class Q_GUI_EXPORT QTabletEvent : public QInputEvent
 {
     Q_GADGET
 public:
-    enum TabletDevice { NoDevice, Puck, Stylus, Airbrush, FourDMouse,
-                        XFreeEraser /*internal*/, RotationStylus };
+    enum TabletDevice { NoDevice, Puck, Stylus, Airbrush, FourDMouse, RotationStylus };
     Q_ENUM(TabletDevice)
     enum PointerType { UnknownPointer, Pen, Cursor, Eraser };
     Q_ENUM(PointerType)

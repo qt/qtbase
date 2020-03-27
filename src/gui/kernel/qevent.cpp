@@ -2291,7 +2291,6 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
     \value FourDMouse A 4D Mouse.
     \value RotationStylus A special stylus that also knows about rotation
            (a 6D stylus). \since 4.1
-    \omitvalue XFreeEraser
 */
 
 /*!
