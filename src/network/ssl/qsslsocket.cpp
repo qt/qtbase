@@ -1527,40 +1527,6 @@ QList<QSslCipher> QSslSocket::supportedCiphers()
 /*!
   \deprecated
 
-  Use QSslConfiguration::addCaCertificates() instead.
-
-  Searches all files in the \a path for certificates encoded in the
-  specified \a format and adds them to this socket's CA certificate
-  database. \a path must be a file or a pattern matching one or more
-  files, as specified by \a syntax. Returns \c true if one or more
-  certificates are added to the socket's CA certificate database;
-  otherwise returns \c false.
-
-  The CA certificate database is used by the socket during the
-  handshake phase to validate the peer's certificate.
-
-  For more precise control, use addCaCertificate().
-
-  \sa addCaCertificate(), QSslCertificate::fromPath()
-*/
-bool QSslSocket::addCaCertificates(const QString &path, QSsl::EncodingFormat format,
-                                   QRegExp::PatternSyntax syntax)
-{
-    Q_D(QSslSocket);
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
-QT_WARNING_POP
-    if (certs.isEmpty())
-        return false;
-
-    d->configuration.caCertificates += certs;
-    return true;
-}
-
-/*!
-  \deprecated
-
   Use QSslConfiguration::addCaCertificate() instead.
 
   Adds the \a certificate to this socket's CA certificate database.
@@ -1643,29 +1609,6 @@ QList<QSslCertificate> QSslSocket::caCertificates() const
     return d->configuration.caCertificates;
 }
 #endif  // #if QT_DEPRECATED_SINCE(5, 5)
-
-/*!
-    \deprecated
-
-    Use QSslConfiguration::addCaCertificates() on the default QSslConfiguration instead.
-
-    Searches all files in the \a path for certificates with the
-    specified \a encoding and adds them to the default CA certificate
-    database. \a path can be an explicit file, or it can contain
-    wildcards in the format specified by \a syntax. Returns \c true if
-    any CA certificates are added to the default database.
-
-    Each SSL socket's CA certificate database is initialized to the
-    default CA certificate database.
-
-    \sa QSslConfiguration::caCertificates(), QSslConfiguration::addCaCertificates(),
-        QSslConfiguration::addCaCertificate()
-*/
-bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat encoding,
-                                          QRegExp::PatternSyntax syntax)
-{
-    return QSslSocketPrivate::addDefaultCaCertificates(path, encoding, syntax);
-}
 
 /*!
     \deprecated
@@ -2513,28 +2456,6 @@ void QSslSocketPrivate::setDefaultCaCertificates(const QList<QSslCertificate> &c
     // when the certificates are set explicitly, we do not want to
     // load the system certificates on demand
     s_loadRootCertsOnDemand = false;
-}
-
-/*!
-    \internal
-*/
-bool QSslSocketPrivate::addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat format,
-                                                 QRegExp::PatternSyntax syntax)
-{
-    QSslSocketPrivate::ensureInitialized();
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
-QT_WARNING_POP
-    if (certs.isEmpty())
-        return false;
-
-    QMutexLocker locker(&globalData()->mutex);
-    globalData()->config.detach();
-    globalData()->config->caCertificates += certs;
-    globalData()->dtlsConfig.detach();
-    globalData()->dtlsConfig->caCertificates += certs;
-    return true;
 }
 
 /*!

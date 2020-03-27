@@ -50,7 +50,6 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qdatetime.h>
-#include <QtCore/qregexp.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qmap.h>
 #include <QtNetwork/qssl.h>
@@ -142,19 +141,9 @@ public:
     QByteArray toDer() const;
     QString toText() const;
 
-#if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_X("Use the overload not using QRegExp") static QList<QSslCertificate> fromPath(
-        const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
-        QRegExp::PatternSyntax syntax = QRegExp::FixedString);
-
-    static QList<QSslCertificate> fromPath(
-        const QString &path, QSsl::EncodingFormat format,
-        PatternSyntax syntax);
-#else
     static QList<QSslCertificate> fromPath(
         const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
-        PatternSyntax syntax = FixedString);
-#endif
+        PatternSyntax syntax = PatternSyntax::FixedString);
 
     static QList<QSslCertificate> fromDevice(
         QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);

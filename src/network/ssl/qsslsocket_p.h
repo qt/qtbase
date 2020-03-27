@@ -140,8 +140,6 @@ public:
     static QList<QSslCertificate> defaultCaCertificates();
     static QList<QSslCertificate> systemCaCertificates();
     static void setDefaultCaCertificates(const QList<QSslCertificate> &certs);
-    static bool addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat format,
-                                         QRegExp::PatternSyntax syntax);
     static void addDefaultCaCertificate(const QSslCertificate &cert);
     static void addDefaultCaCertificates(const QList<QSslCertificate> &certs);
     Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QSslCertificate &cert,

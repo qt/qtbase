@@ -43,7 +43,6 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qregexp.h>
 #include <QtCore/qvector.h>
 #ifndef QT_NO_SSL
 #   include <QtNetwork/qtcpsocket.h>
@@ -208,8 +207,6 @@ public:
 
     // CA settings.
 #if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use QSslConfiguration::addCaCertificates()") bool addCaCertificates(const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
-                           QRegExp::PatternSyntax syntax = QRegExp::FixedString);
     QT_DEPRECATED_X("Use QSslConfiguration::addCaCertificate()") void addCaCertificate(const QSslCertificate &certificate);
     QT_DEPRECATED_X("Use QSslConfiguration::addCaCertificates()") void addCaCertificates(const QList<QSslCertificate> &certificates);
 #endif // QT_DEPRECATED_SINCE(5, 15)
@@ -218,8 +215,6 @@ public:
     QT_DEPRECATED_X("Use QSslConfiguration::caCertificates()") QList<QSslCertificate> caCertificates() const;
 #endif // QT_DEPRECATED_SINCE(5, 5)
 #if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED static bool addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
-                                         QRegExp::PatternSyntax syntax = QRegExp::FixedString);
     QT_DEPRECATED static void addDefaultCaCertificate(const QSslCertificate &certificate);
     QT_DEPRECATED static void addDefaultCaCertificates(const QList<QSslCertificate> &certificates);
 #endif // QT_DEPRECATED_SINCE(5, 15)
