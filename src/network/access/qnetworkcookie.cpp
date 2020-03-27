@@ -46,7 +46,7 @@
 #include "QtCore/qdebug.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qlocale.h"
-#include <QtCore/qregexp.h>
+#include <QtCore/qregularexpression.h>
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qurl.h"
@@ -593,7 +593,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
     int zoneOffset = -1;
 
     // hour:minute:second.ms pm
-    QRegExp timeRx(QLatin1String("(\\d{1,2}):(\\d{1,2})(:(\\d{1,2})|)(\\.(\\d{1,3})|)((\\s{0,}(am|pm))|)"));
+    QRegularExpression timeRx(QLatin1String("(\\d{1,2}):(\\d{1,2})(:(\\d{1,2})|)(\\.(\\d{1,3})|)((\\s{0,}(am|pm))|)"));
 
     int at = 0;
     while (at < dateString.length()) {
@@ -673,21 +673,23 @@ static QDateTime parseDateString(const QByteArray &dateString)
             && (dateString[at + 2] == ':' || dateString[at + 1] == ':')) {
             // While the date can be found all over the string the format
             // for the time is set and a nice regexp can be used.
-            int pos = timeRx.indexIn(QLatin1String(dateString), at);
+            QRegularExpressionMatch match;
+            int pos = QString::fromLatin1(dateString).indexOf(timeRx, at, &match);
             if (pos != -1) {
-                QStringList list = timeRx.capturedTexts();
-                int h = atoi(list.at(1).toLatin1().constData());
-                int m = atoi(list.at(2).toLatin1().constData());
-                int s = atoi(list.at(4).toLatin1().constData());
-                int ms = atoi(list.at(6).toLatin1().constData());
-                if (h < 12 && !list.at(9).isEmpty())
-                    if (list.at(9) == QLatin1String("pm"))
+                QStringList list = match.capturedTexts();
+                int h = match.captured(1).toInt();
+                int m = match.captured(2).toInt();
+                int s = match.captured(4).toInt();
+                int ms = match.captured(6).toInt();
+                QString ampm = match.captured(9);
+                if (h < 12 && !ampm.isEmpty())
+                    if (ampm == QLatin1String("pm"))
                         h += 12;
                 time = QTime(h, m, s, ms);
 #ifdef PARSEDATESTRINGDEBUG
                 qDebug() << "Time:" << list << timeRx.matchedLength();
 #endif
-                at += timeRx.matchedLength();
+                at += match.capturedLength();
                 continue;
             }
         }
