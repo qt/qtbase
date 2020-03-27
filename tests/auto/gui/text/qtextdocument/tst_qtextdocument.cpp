@@ -70,8 +70,6 @@ private slots:
     void find_data();
     void find();
     void find2();
-    void findWithRegExp_data();
-    void findWithRegExp();
     void findWithRegularExpression_data();
     void findWithRegularExpression();
     void findMultiple();
@@ -380,39 +378,8 @@ void tst_QTextDocument::find()
     }
 
     //search using a regular expression
-    QRegExp expr(needle);
-    expr.setPatternSyntax(QRegExp::FixedString);
+    QRegularExpression expr(QRegularExpression::escape(needle));
     QTextDocument::FindFlags flg(flags);
-    expr.setCaseSensitivity((flg & QTextDocument::FindCaseSensitively) ? Qt::CaseSensitive : Qt::CaseInsensitive);
-    cursor = doc->find(expr, from, flg);
-
-    if (anchor != -1) {
-        QCOMPARE(cursor.anchor(), anchor);
-        QCOMPARE(cursor.position(), position);
-    } else {
-        QVERIFY(cursor.isNull());
-    }
-}
-
-void tst_QTextDocument::findWithRegExp_data()
-{
-    buildRegExpData();
-}
-
-void tst_QTextDocument::findWithRegExp()
-{
-    QFETCH(QString, haystack);
-    QFETCH(QString, needle);
-    QFETCH(int, flags);
-    QFETCH(int, from);
-    QFETCH(int, anchor);
-    QFETCH(int, position);
-
-    cursor.insertText(haystack);
-    //search using a regular expression
-    QRegExp expr(needle);
-    QTextDocument::FindFlags flg(flags);
-    expr.setCaseSensitivity((flg & QTextDocument::FindCaseSensitively) ? Qt::CaseSensitive : Qt::CaseInsensitive);
     cursor = doc->find(expr, from, flg);
 
     if (anchor != -1) {
@@ -480,26 +447,6 @@ void tst_QTextDocument::findMultiple()
     QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
     cursor = doc->find("bar", cursor, QTextDocument::FindBackward);
     QCOMPARE(cursor.selectionStart(), text.indexOf("bar"));
-    QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
-
-
-    QRegExp expr("bar");
-    expr.setPatternSyntax(QRegExp::FixedString);
-
-    cursor.movePosition(QTextCursor::End);
-    cursor = doc->find(expr, cursor, QTextDocument::FindBackward);
-    QCOMPARE(cursor.selectionStart(), text.lastIndexOf("bar"));
-    QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
-    cursor = doc->find(expr, cursor, QTextDocument::FindBackward);
-    QCOMPARE(cursor.selectionStart(), text.indexOf("bar"));
-    QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
-
-    cursor.movePosition(QTextCursor::Start);
-    cursor = doc->find(expr, cursor);
-    QCOMPARE(cursor.selectionStart(), text.indexOf("bar"));
-    QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
-    cursor = doc->find(expr, cursor);
-    QCOMPARE(cursor.selectionStart(), text.lastIndexOf("bar"));
     QCOMPARE(cursor.selectionEnd(), cursor.selectionStart() + 3);
 
     QRegularExpression regularExpression("bar");
@@ -1863,7 +1810,7 @@ void tst_QTextDocument::setFragmentMarkersInHtmlExport()
         QTextDocumentFragment fragment(cursor);
 
         QString expected = htmlHead;
-        expected.replace(QRegExp("<body.*>"), QString("<body>"));
+        expected.replace(QRegularExpression("<body.*>"), QString("<body>"));
         expected += QString("<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><!--StartFragment-->Test<span style=\" color:#00ff00;\">Blah</span><!--EndFragment--></p>") + htmlTail;
         QCOMPARE(fragment.toHtml(), expected);
     }
@@ -1883,7 +1830,7 @@ void tst_QTextDocument::setFragmentMarkersInHtmlExport()
         QTextDocumentFragment fragment(cursor);
 
         QString expected = htmlHead;
-        expected.replace(QRegExp("<body.*>"), QString("<body>"));
+        expected.replace(QRegularExpression("<body.*>"), QString("<body>"));
         expected += QString("<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><!--StartFragment-->Test<!--EndFragment--></p>") + htmlTail;
         QCOMPARE(fragment.toHtml(), expected);
     }
@@ -2024,8 +1971,9 @@ void tst_QTextDocument::capitalizationHtmlInExport()
 {
     doc->setPlainText("Test");
 
-    QRegExp re(".*span style=\"(.*)\">Test.*");
-    QVERIFY(re.exactMatch(doc->toHtml()) == false); // no span
+    QRegularExpression re(".*span style=\"(.*)\">Test.*");
+    QCOMPARE(re.captureCount(), 1);
+    QVERIFY(!re.match(doc->toHtml()).hasMatch()); // no span
 
     QTextCursor cursor(doc);
     cursor.setPosition(4, QTextCursor::KeepAnchor);
@@ -2034,23 +1982,23 @@ void tst_QTextDocument::capitalizationHtmlInExport()
     cursor.mergeCharFormat(cf);
 
     const QString smallcaps = doc->toHtml();
-    QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.captureCount(), 1);
-    QCOMPARE(re.cap(1).trimmed(), QString("font-variant:small-caps;"));
+    auto match = re.match(doc->toHtml());
+    QVERIFY(match.hasMatch());
+    QCOMPARE(match.captured(1).trimmed(), QString("font-variant:small-caps;"));
 
     cf.setFontCapitalization(QFont::AllUppercase);
     cursor.mergeCharFormat(cf);
     const QString uppercase = doc->toHtml();
-    QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.captureCount(), 1);
-    QCOMPARE(re.cap(1).trimmed(), QString("text-transform:uppercase;"));
+    match = re.match(doc->toHtml());
+    QVERIFY(match.hasMatch());
+    QCOMPARE(match.captured(1).trimmed(), QString("text-transform:uppercase;"));
 
     cf.setFontCapitalization(QFont::AllLowercase);
     cursor.mergeCharFormat(cf);
     const QString lowercase = doc->toHtml();
-    QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.captureCount(), 1);
-    QCOMPARE(re.cap(1).trimmed(), QString("text-transform:lowercase;"));
+    match = re.match(doc->toHtml());
+    QVERIFY(match.hasMatch());
+    QCOMPARE(match.captured(1).trimmed(), QString("text-transform:lowercase;"));
 
     doc->setHtml(smallcaps);
     cursor.setPosition(1);
@@ -2065,8 +2013,9 @@ void tst_QTextDocument::wordspacingHtmlExport()
 {
     doc->setPlainText("Test");
 
-    QRegExp re(".*span style=\"(.*)\">Test.*");
-    QVERIFY(re.exactMatch(doc->toHtml()) == false); // no span
+    QRegularExpression re(".*span style=\"(.*)\">Test.*");
+    QCOMPARE(re.captureCount(), 1);
+    QVERIFY(!re.match(doc->toHtml()).hasMatch()); // no span
 
     QTextCursor cursor(doc);
     cursor.setPosition(4, QTextCursor::KeepAnchor);
@@ -2074,16 +2023,16 @@ void tst_QTextDocument::wordspacingHtmlExport()
     cf.setFontWordSpacing(4);
     cursor.mergeCharFormat(cf);
 
-    QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.captureCount(), 1);
-    QCOMPARE(re.cap(1).trimmed(), QString("word-spacing:4px;"));
+    auto match = re.match(doc->toHtml());
+    QVERIFY(match.hasMatch());
+    QCOMPARE(match.captured(1).trimmed(), QString("word-spacing:4px;"));
 
     cf.setFontWordSpacing(-8.5);
     cursor.mergeCharFormat(cf);
 
-    QVERIFY(re.exactMatch(doc->toHtml()));
-    QCOMPARE(re.captureCount(), 1);
-    QCOMPARE(re.cap(1).trimmed(), QString("word-spacing:-8.5px;"));
+    match = re.match(doc->toHtml());
+    QVERIFY(match.hasMatch());
+    QCOMPARE(match.captured(1).trimmed(), QString("word-spacing:-8.5px;"));
 }
 
 class CursorPosSignalSpy : public QObject

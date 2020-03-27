@@ -186,11 +186,6 @@ public:
     QTextCursor find(const QString &subString, int from = 0, FindFlags options = FindFlags()) const;
     QTextCursor find(const QString &subString, const QTextCursor &cursor, FindFlags options = FindFlags()) const;
 
-#ifndef QT_NO_REGEXP
-    QTextCursor find(const QRegExp &expr, int from = 0, FindFlags options = FindFlags()) const;
-    QTextCursor find(const QRegExp &expr, const QTextCursor &cursor, FindFlags options = FindFlags()) const;
-#endif
-
 #if QT_CONFIG(regularexpression)
     QTextCursor find(const QRegularExpression &expr, int from = 0, FindFlags options = FindFlags()) const;
     QTextCursor find(const QRegularExpression &expr, const QTextCursor &cursor, FindFlags options = FindFlags()) const;
