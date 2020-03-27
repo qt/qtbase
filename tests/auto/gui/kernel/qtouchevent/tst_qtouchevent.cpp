@@ -35,13 +35,17 @@
 #include <QtTest>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
+#include <private/qevent_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qpointingdevice_p.h>
+
+Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
 class tst_QTouchEventWidget : public QWidget
 {
 public:
-    QList<QTouchEvent::TouchPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
+    QList<QEventPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
+    QList<QPointF> lastNormalizedPositions;
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
     bool deleteInTouchBegin, deleteInTouchUpdate, deleteInTouchEnd;
@@ -65,41 +69,58 @@ public:
 
     bool event(QEvent *event) override
     {
+        lastNormalizedPositions.clear();
         switch (event->type()) {
-        case QEvent::TouchBegin:
+        case QEvent::TouchBegin: {
+            qCDebug(lcTests) << objectName() << event;
             if (seenTouchBegin) qWarning("TouchBegin: already seen a TouchBegin");
             if (seenTouchUpdate) qWarning("TouchBegin: TouchUpdate cannot happen before TouchBegin");
             if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
-            touchBeginPoints = static_cast<QTouchEvent *>(event)->touchPoints();
-            timestamp = static_cast<QTouchEvent *>(event)->timestamp();
-            deviceFromEvent = static_cast<QTouchEvent *>(event)->pointingDevice();
+            auto touchEvent = static_cast<QTouchEvent *>(event);
+            touchBeginPoints = touchEvent->touchPoints();
+            Q_ASSERT(touchBeginPoints.first().event() == event);
+            for (const QEventPoint &pt : touchEvent->touchPoints())
+                lastNormalizedPositions << pt.normalizedPos();
+            timestamp = touchEvent->timestamp();
+            deviceFromEvent = touchEvent->pointingDevice();
             event->setAccepted(acceptTouchBegin);
             if (deleteInTouchBegin)
                 delete this;
             break;
-        case QEvent::TouchUpdate:
+        }
+        case QEvent::TouchUpdate: {
+            qCDebug(lcTests) << objectName() << event;
             if (!seenTouchBegin) qWarning("TouchUpdate: have not seen TouchBegin");
             if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
-            touchUpdatePoints = static_cast<QTouchEvent *>(event)->touchPoints();
-            timestamp = static_cast<QTouchEvent *>(event)->timestamp();
-            deviceFromEvent = static_cast<QTouchEvent *>(event)->pointingDevice();
+            auto touchEvent = static_cast<QTouchEvent *>(event);
+            touchUpdatePoints = touchEvent->touchPoints();
+            for (const QEventPoint &pt : touchEvent->touchPoints())
+                lastNormalizedPositions << pt.normalizedPos();
+            timestamp = touchEvent->timestamp();
+            deviceFromEvent = touchEvent->pointingDevice();
             event->setAccepted(acceptTouchUpdate);
             if (deleteInTouchUpdate)
                 delete this;
             break;
-        case QEvent::TouchEnd:
+        }
+        case QEvent::TouchEnd: {
+            qCDebug(lcTests) << objectName() << event;
             if (!seenTouchBegin) qWarning("TouchEnd: have not seen TouchBegin");
             if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
-            touchEndPoints = static_cast<QTouchEvent *>(event)->touchPoints();
-            timestamp = static_cast<QTouchEvent *>(event)->timestamp();
-            deviceFromEvent = static_cast<QTouchEvent *>(event)->pointingDevice();
+            auto touchEvent = static_cast<QTouchEvent *>(event);
+            touchEndPoints = touchEvent->touchPoints();
+            for (const QEventPoint &pt : touchEvent->touchPoints())
+                lastNormalizedPositions << pt.normalizedPos();
+            timestamp = touchEvent->timestamp();
+            deviceFromEvent = touchEvent->pointingDevice();
             event->setAccepted(acceptTouchEnd);
             if (deleteInTouchEnd)
                 delete this;
             break;
+        }
         default:
             return QWidget::event(event);
         }
@@ -110,7 +131,7 @@ public:
 class tst_QTouchEventGraphicsItem : public QGraphicsItem
 {
 public:
-    QList<QTouchEvent::TouchPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
+    QList<QEventPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
     int touchBeginCounter, touchUpdateCounter, touchEndCounter;
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
@@ -223,6 +244,7 @@ tst_QTouchEvent::tst_QTouchEvent()
   , secondaryTouchScreenDevice(QTest::createTouchDevice())
   , touchPadDevice(QTest::createTouchDevice(QInputDevice::DeviceType::TouchPad))
 {
+    QInputDevicePrivate::get(touchPadDevice)->setAvailableVirtualGeometry(QRect(50, 50, 500, 500));
 }
 
 void tst_QTouchEvent::cleanup()
@@ -277,12 +299,11 @@ void tst_QTouchEvent::touchDisabledByDefault()
         QVERIFY(!widget.testAttribute(Qt::WA_AcceptTouchEvents));
 
         // events should not be accepted since they are not enabled
-        QList<QTouchEvent::TouchPoint> touchPoints;
-        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QList<QEventPoint> touchPoints;
+        touchPoints.append(QEventPoint(0));
         QTouchEvent touchEvent(QEvent::TouchBegin,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointPressed,
                                touchPoints);
         QVERIFY(!QApplication::sendEvent(&widget, &touchEvent));
         QVERIFY(!touchEvent.isAccepted());
@@ -302,15 +323,15 @@ void tst_QTouchEvent::touchDisabledByDefault()
         QVERIFY(!item.acceptTouchEvents());
 
         // compose an event to the scene that is over the item
-        QTouchEvent::TouchPoint touchPoint(0);
-        touchPoint.setState(Qt::TouchPointPressed);
-        touchPoint.setPos(view.mapFromScene(item.mapToScene(item.boundingRect().center())));
-        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.position().toPoint()));
-        touchPoint.setScenePos(view.mapToScene(touchPoint.position().toPoint()));
+        QMutableEventPoint touchPoint(0);
+        touchPoint.setState(QEventPoint::State::Pressed);
+        touchPoint.setPosition(view.mapFromScene(item.mapToScene(item.boundingRect().center())));
+        touchPoint.setGlobalPosition(view.mapToGlobal(touchPoint.position().toPoint()));
+        touchPoint.setScenePosition(view.mapToScene(touchPoint.position().toPoint()));
+
         QTouchEvent touchEvent(QEvent::TouchBegin,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointPressed,
                                (QList<QTouchEvent::TouchPoint>() << touchPoint));
         QVERIFY(!QApplication::sendEvent(view.viewport(), &touchEvent));
         QVERIFY(!touchEvent.isAccepted());
@@ -328,12 +349,11 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
 
         // QWidget handles touch event by converting them into a mouse event, so the event is both
         // accepted and handled (res == true)
-        QList<QTouchEvent::TouchPoint> touchPoints;
-        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QList<QEventPoint> touchPoints;
+        touchPoints.append(QEventPoint(0));
         QTouchEvent touchEvent(QEvent::TouchBegin,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointPressed,
                                touchPoints);
         QVERIFY(QApplication::sendEvent(&widget, &touchEvent));
         QVERIFY(!touchEvent.isAccepted()); // Qt 5.X ignores touch events.
@@ -361,16 +381,15 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
         QVERIFY(view.viewport()->testAttribute(Qt::WA_AcceptTouchEvents));
 
         // compose an event to the scene that is over the item
-        QTouchEvent::TouchPoint touchPoint(0);
-        touchPoint.setState(Qt::TouchPointPressed);
-        touchPoint.setPos(view.mapFromScene(item.mapToScene(item.boundingRect().center())));
-        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.position().toPoint()));
-        touchPoint.setScenePos(view.mapToScene(touchPoint.position().toPoint()));
+        QPointF pos = view.mapFromScene(item.mapToScene(item.boundingRect().center()));
+        QMutableEventPoint touchPoint(0, QEventPoint::State::Pressed,
+                                      view.mapToScene(pos.toPoint()),
+                                      view.mapToGlobal(pos.toPoint()));
+        touchPoint.setPosition(pos);
         QTouchEvent touchEvent(QEvent::TouchBegin,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointPressed,
-                               (QList<QTouchEvent::TouchPoint>() << touchPoint));
+                               (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchEvent));
         QVERIFY(touchEvent.isAccepted());
         QVERIFY(item.seenTouchBegin);
@@ -391,12 +410,11 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
         grandchild.setAttribute(Qt::WA_AcceptTouchEvents);
         grandchild.acceptTouchBegin = false;
 
-        QList<QTouchEvent::TouchPoint> touchPoints;
-        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QList<QEventPoint> touchPoints;
+        touchPoints.append(QEventPoint(0));
         QTouchEvent touchEvent(QEvent::TouchBegin,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointPressed,
                                touchPoints);
         QVERIFY(QApplication::sendEvent(&grandchild, &touchEvent));
         QVERIFY(touchEvent.isAccepted());
@@ -438,16 +456,14 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
         grandchild.acceptTouchBegin = false;
 
         // compose an event to the scene that is over the grandchild
-        QTouchEvent::TouchPoint touchPoint(0);
-        touchPoint.setState(Qt::TouchPointPressed);
-        touchPoint.setPos(view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center())));
-        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.position().toPoint()));
-        touchPoint.setScenePos(view.mapToScene(touchPoint.position().toPoint()));
+        QPointF pos = view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center()));
+        QEventPoint touchPoint(0, QEventPoint::State::Pressed,
+                               view.mapToScene(pos.toPoint()),
+                               view.mapToGlobal(pos.toPoint()));
         QTouchEvent touchEvent(QEvent::TouchBegin,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointPressed,
-                               (QList<QTouchEvent::TouchPoint>() << touchPoint));
+                               (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchEvent));
         QVERIFY(touchEvent.isAccepted());
         QVERIFY(grandchild.seenTouchBegin);
@@ -473,16 +489,15 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
         child.setAcceptTouchEvents(true);
 
         // compose an event to the scene that is over the grandchild
-        QTouchEvent::TouchPoint touchPoint(0);
-        touchPoint.setState(Qt::TouchPointPressed);
-        touchPoint.setPos(view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center())));
-        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.position().toPoint()));
-        touchPoint.setScenePos(view.mapToScene(touchPoint.position().toPoint()));
+        QPointF pos = view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center()));
+        QMutableEventPoint touchPoint(0, QEventPoint::State::Pressed,
+                                      view.mapToScene(pos.toPoint()),
+                                      view.mapToGlobal(pos.toPoint()));
+        touchPoint.setPosition(pos);
         QTouchEvent touchEvent(QEvent::TouchBegin,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointPressed,
-                               (QList<QTouchEvent::TouchPoint>() << touchPoint));
+                               (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchEvent));
         QVERIFY(touchEvent.isAccepted());
         QVERIFY(!grandchild.seenTouchBegin);
@@ -503,12 +518,11 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         child.acceptTouchUpdate = false;
         child.acceptTouchEnd = false;
 
-        QList<QTouchEvent::TouchPoint> touchPoints;
-        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QList<QEventPoint> touchPoints;
+        touchPoints.append(QEventPoint(0));
         QTouchEvent touchBeginEvent(QEvent::TouchBegin,
                                     touchScreenDevice,
                                     Qt::NoModifier,
-                                    Qt::TouchPointPressed,
                                     touchPoints);
         QVERIFY(QApplication::sendEvent(&child, &touchBeginEvent));
         QVERIFY(touchBeginEvent.isAccepted());
@@ -519,7 +533,6 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
                                      touchScreenDevice,
                                      Qt::NoModifier,
-                                     Qt::TouchPointMoved,
                                      touchPoints);
         QVERIFY(QApplication::sendEvent(&child, &touchUpdateEvent));
         QVERIFY(!touchUpdateEvent.isAccepted());
@@ -530,7 +543,6 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         QTouchEvent touchEndEvent(QEvent::TouchEnd,
                                   touchScreenDevice,
                                   Qt::NoModifier,
-                                  Qt::TouchPointReleased,
                                   touchPoints);
         QVERIFY(QApplication::sendEvent(&child, &touchEndEvent));
         QVERIFY(!touchEndEvent.isAccepted());
@@ -556,28 +568,29 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         child.acceptTouchEnd = false;
 
         // compose an event to the scene that is over the child
-        QTouchEvent::TouchPoint touchPoint(0);
-        touchPoint.setState(Qt::TouchPointPressed);
-        touchPoint.setPos(view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center())));
-        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.position().toPoint()));
-        touchPoint.setScenePos(view.mapToScene(touchPoint.position().toPoint()));
+        QPointF pos = view.mapFromScene(grandchild.mapToScene(grandchild.boundingRect().center()));
+        QMutableEventPoint touchPoint(0, QEventPoint::State::Pressed,
+                                      view.mapToScene(pos.toPoint()),
+                                      view.mapToGlobal(pos.toPoint()));
+        touchPoint.setPosition(pos);
         QTouchEvent touchBeginEvent(QEvent::TouchBegin,
                                     touchScreenDevice,
                                     Qt::NoModifier,
-                                    Qt::TouchPointPressed,
-                                    (QList<QTouchEvent::TouchPoint>() << touchPoint));
+                                    (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchBeginEvent));
         QVERIFY(touchBeginEvent.isAccepted());
         QVERIFY(child.seenTouchBegin);
         QVERIFY(!root.seenTouchBegin);
 
         // send the touch update to the child, but ignore it, it doesn't propagate
-        touchPoint.setState(Qt::TouchPointMoved);
+        touchPoint = QMutableEventPoint(0, QEventPoint::State::Updated,
+                                        view.mapToScene(pos.toPoint()),
+                                        view.mapToGlobal(pos.toPoint()));
+        touchPoint.setPosition(pos);
         QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
                                      touchScreenDevice,
                                      Qt::NoModifier,
-                                     Qt::TouchPointMoved,
-                                     (QList<QTouchEvent::TouchPoint>() << touchPoint));
+                                     (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchUpdateEvent));
         // the scene accepts the event, since it found an item to send the event to
         QVERIFY(!touchUpdateEvent.isAccepted());
@@ -585,12 +598,14 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         QVERIFY(!root.seenTouchUpdate);
 
         // send the touch end, same thing should happen as with touch update
-        touchPoint.setState(Qt::TouchPointReleased);
+        touchPoint = QMutableEventPoint(0, QEventPoint::State::Released,
+                                        view.mapToScene(pos.toPoint()),
+                                        view.mapToGlobal(pos.toPoint()));
+        touchPoint.setPosition(pos);
         QTouchEvent touchEndEvent(QEvent::TouchEnd,
                                   touchScreenDevice,
                                   Qt::NoModifier,
-                                  Qt::TouchPointReleased,
-                                  (QList<QTouchEvent::TouchPoint>() << touchPoint));
+                                  (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchEndEvent));
         // the scene accepts the event, since it found an item to send the event to
         QVERIFY(!touchEndEvent.isAccepted());
@@ -613,25 +628,16 @@ void tst_QTouchEvent::basicRawEventTranslation()
     touchWidget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
-    QPointF pos = touchWidget.rect().center();
-    QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
-    QPointF delta(10, 10);
-    QRectF screenGeometry = touchWidget.screen()->geometry();
-
-    QTouchEvent::TouchPoint rawTouchPoint;
-    rawTouchPoint.setId(0);
+    const QPointF pos = touchWidget.rect().center();
+    const QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
+    const QPointF delta(10, 10);
 
     // this should be translated to a TouchBegin
-    rawTouchPoint.setState(Qt::TouchPointPressed);
-    rawTouchPoint.setScreenPos(screenPos);
-    rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.position(), screenGeometry));
-    QList<QPointF> rawPosList;
-    rawPosList << QPointF(12, 34) << QPointF(56, 78);
-    rawTouchPoint.setRawScreenPositions(rawPosList);
+    QEventPoint rawTouchPoint(0, QEventPoint::State::Pressed, QPointF(), screenPos);
     const ulong timestamp = 1234;
     QWindow *window = touchWidget.windowHandle();
     QList<QWindowSystemInterface::TouchPoint> nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() << rawTouchPoint, window);
     QWindowSystemInterface::handleTouchEvent(window, timestamp, touchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
@@ -639,57 +645,47 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QVERIFY(!touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchBeginPoints.count(), 1);
     QCOMPARE(touchWidget.timestamp, timestamp);
-    QTouchEvent::TouchPoint touchBeginPoint = touchWidget.touchBeginPoints.first();
+    QEventPoint touchBeginPoint = touchWidget.touchBeginPoints.first();
     QCOMPARE(touchBeginPoint.id(), 0);
     QCOMPARE(touchBeginPoint.state(), rawTouchPoint.state());
     QCOMPARE(touchBeginPoint.position(), pos);
     QCOMPARE(touchBeginPoint.pressPosition(), pos);
-    QCOMPARE(touchBeginPoint.lastPos(), pos);
+    QCOMPARE(touchBeginPoint.lastPosition(), pos);
     QCOMPARE(touchBeginPoint.scenePosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchBeginPoint.scenePressPosition(), rawTouchPoint.globalPosition());
-    QCOMPARE(touchBeginPoint.lastScenePos(), rawTouchPoint.globalPosition());
+    QCOMPARE(touchBeginPoint.sceneLastPosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchBeginPoint.globalPosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchBeginPoint.globalPressPosition(), rawTouchPoint.globalPosition());
-    QCOMPARE(touchBeginPoint.lastScreenPos(), rawTouchPoint.globalPosition());
-    QCOMPARE(touchBeginPoint.normalizedPos(), rawTouchPoint.normalizedPos());
-    QCOMPARE(touchBeginPoint.startNormalizedPos(), touchBeginPoint.normalizedPos());
-    QCOMPARE(touchBeginPoint.lastNormalizedPos(), touchBeginPoint.normalizedPos());
+    QCOMPARE(touchBeginPoint.globalLastPosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchBeginPoint.position(), pos);
     QCOMPARE(touchBeginPoint.globalPosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchBeginPoint.scenePosition(), touchBeginPoint.scenePosition());
     QCOMPARE(touchBeginPoint.ellipseDiameters(), QSizeF(0, 0));
     QCOMPARE(touchBeginPoint.pressure(), qreal(1.));
     QCOMPARE(touchBeginPoint.velocity(), QVector2D());
-    if (!QHighDpiScaling::isActive())
-        QCOMPARE(touchBeginPoint.rawScreenPositions(), rawPosList);
 
     // moving the point should translate to TouchUpdate
-    rawTouchPoint.setState(Qt::TouchPointMoved);
-    rawTouchPoint.setScreenPos(screenPos + delta);
-    rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.position(), screenGeometry));
+    rawTouchPoint = QEventPoint(0, QEventPoint::State::Updated, QPointF(), screenPos + delta);
     nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() << rawTouchPoint, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchUpdatePoints.count(), 1);
-    QTouchEvent::TouchPoint touchUpdatePoint = touchWidget.touchUpdatePoints.first();
+    QEventPoint touchUpdatePoint = touchWidget.touchUpdatePoints.first();
     QCOMPARE(touchUpdatePoint.id(), 0);
     QCOMPARE(touchUpdatePoint.state(), rawTouchPoint.state());
     QCOMPARE(touchUpdatePoint.position(), pos + delta);
     QCOMPARE(touchUpdatePoint.pressPosition(), pos);
-    QCOMPARE(touchUpdatePoint.lastPos(), pos);
+    QCOMPARE(touchUpdatePoint.lastPosition(), pos);
     QCOMPARE(touchUpdatePoint.scenePosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchUpdatePoint.scenePressPosition(), screenPos);
-    QCOMPARE(touchUpdatePoint.lastScenePos(), screenPos);
+    QCOMPARE(touchUpdatePoint.sceneLastPosition(), screenPos);
     QCOMPARE(touchUpdatePoint.globalPosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchUpdatePoint.globalPressPosition(), screenPos);
-    QCOMPARE(touchUpdatePoint.lastScreenPos(), screenPos);
-    QCOMPARE(touchUpdatePoint.normalizedPos(), rawTouchPoint.normalizedPos());
-    QCOMPARE(touchUpdatePoint.startNormalizedPos(), touchBeginPoint.normalizedPos());
-    QCOMPARE(touchUpdatePoint.lastNormalizedPos(), touchBeginPoint.normalizedPos());
+    QCOMPARE(touchUpdatePoint.globalLastPosition(), screenPos);
     QCOMPARE(touchUpdatePoint.position(), pos + delta);
     QCOMPARE(touchUpdatePoint.globalPosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchUpdatePoint.scenePosition(), touchUpdatePoint.scenePosition());
@@ -697,32 +693,27 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchUpdatePoint.pressure(), qreal(1.));
 
     // releasing the point translates to TouchEnd
-    rawTouchPoint.setState(Qt::TouchPointReleased);
-    rawTouchPoint.setScreenPos(screenPos + delta + delta);
-    rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.position(), screenGeometry));
+    rawTouchPoint = QEventPoint(0, QEventPoint::State::Released, QPointF(), screenPos + delta + delta);
     nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() << rawTouchPoint, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchEndPoints.count(), 1);
-    QTouchEvent::TouchPoint touchEndPoint = touchWidget.touchEndPoints.first();
+    QEventPoint touchEndPoint = touchWidget.touchEndPoints.first();
     QCOMPARE(touchEndPoint.id(), 0);
     QCOMPARE(touchEndPoint.state(), rawTouchPoint.state());
     QCOMPARE(touchEndPoint.position(), pos + delta + delta);
     QCOMPARE(touchEndPoint.pressPosition(), pos);
-    QCOMPARE(touchEndPoint.lastPos(), pos + delta);
+    QCOMPARE(touchEndPoint.lastPosition(), pos + delta);
     QCOMPARE(touchEndPoint.scenePosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchEndPoint.scenePressPosition(), screenPos);
-    QCOMPARE(touchEndPoint.lastScenePos(), screenPos + delta);
+    QCOMPARE(touchEndPoint.sceneLastPosition(), screenPos + delta);
     QCOMPARE(touchEndPoint.globalPosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchEndPoint.globalPressPosition(), screenPos);
-    QCOMPARE(touchEndPoint.lastScreenPos(), screenPos + delta);
-    QCOMPARE(touchEndPoint.normalizedPos(), rawTouchPoint.normalizedPos());
-    QCOMPARE(touchEndPoint.startNormalizedPos(), touchBeginPoint.normalizedPos());
-    QCOMPARE(touchEndPoint.lastNormalizedPos(), touchUpdatePoint.normalizedPos());
+    QCOMPARE(touchEndPoint.globalLastPosition(), screenPos + delta);
     QCOMPARE(touchEndPoint.position(), pos + delta + delta);
     QCOMPARE(touchEndPoint.globalPosition(), rawTouchPoint.globalPosition());
     QCOMPARE(touchEndPoint.scenePosition(), touchEndPoint.scenePosition());
@@ -754,19 +745,11 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     QPointF leftScreenPos = leftWidget.mapToGlobal(leftPos.toPoint());
     QPointF rightScreenPos = rightWidget.mapToGlobal(rightPos.toPoint());
     QPointF centerScreenPos = touchWidget.mapToGlobal(centerPos.toPoint());
-    QRectF screenGeometry = touchWidget.screen()->geometry();
-
-    QList<QTouchEvent::TouchPoint> rawTouchPoints;
-    rawTouchPoints.append(QTouchEvent::TouchPoint(0));
-    rawTouchPoints.append(QTouchEvent::TouchPoint(1));
 
     // generate TouchBegins on both leftWidget and rightWidget
-    rawTouchPoints[0].setState(Qt::TouchPointPressed);
-    rawTouchPoints[0].setScreenPos(leftScreenPos);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
-    rawTouchPoints[1].setState(Qt::TouchPointPressed);
-    rawTouchPoints[1].setScreenPos(rightScreenPos);
-    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].position(), screenGeometry));
+    auto rawTouchPoints = QList<QEventPoint>()
+        << QEventPoint(0, QEventPoint::State::Pressed, QPointF(), leftScreenPos)
+        << QEventPoint(1, QEventPoint::State::Pressed, QPointF(), rightScreenPos);
     QWindow *window = touchWidget.windowHandle();
     QList<QWindowSystemInterface::TouchPoint> nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
@@ -786,42 +769,36 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     const int touchPointId0 = 0;
     const int touchPointId1 = touchPointId0 + 1;
     {
-        QTouchEvent::TouchPoint leftTouchPoint = leftWidget.touchBeginPoints.first();
+        QEventPoint leftTouchPoint = leftWidget.touchBeginPoints.first();
         QCOMPARE(leftTouchPoint.id(), touchPointId0);
         QCOMPARE(leftTouchPoint.state(), rawTouchPoints[0].state());
         QCOMPARE(leftTouchPoint.position(), leftPos);
         QCOMPARE(leftTouchPoint.pressPosition(), leftPos);
-        QCOMPARE(leftTouchPoint.lastPos(), leftPos);
+        QCOMPARE(leftTouchPoint.lastPosition(), leftPos);
         QCOMPARE(leftTouchPoint.scenePosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.scenePressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScenePos(), leftScreenPos);
+        QCOMPARE(leftTouchPoint.sceneLastPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.globalPressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScreenPos(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.normalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.startNormalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.lastNormalizedPos(), rawTouchPoints[0].normalizedPos());
+        QCOMPARE(leftTouchPoint.globalLastPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.position(), leftPos);
         QCOMPARE(leftTouchPoint.scenePosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.ellipseDiameters(), QSizeF(0, 0));
         QCOMPARE(leftTouchPoint.pressure(), qreal(1.));
 
-        QTouchEvent::TouchPoint rightTouchPoint = rightWidget.touchBeginPoints.first();
+        QEventPoint rightTouchPoint = rightWidget.touchBeginPoints.first();
         QCOMPARE(rightTouchPoint.id(), touchPointId1);
         QCOMPARE(rightTouchPoint.state(), rawTouchPoints[1].state());
         QCOMPARE(rightTouchPoint.position(), rightPos);
         QCOMPARE(rightTouchPoint.pressPosition(), rightPos);
-        QCOMPARE(rightTouchPoint.lastPos(), rightPos);
+        QCOMPARE(rightTouchPoint.lastPosition(), rightPos);
         QCOMPARE(rightTouchPoint.scenePosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.scenePressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScenePos(), rightScreenPos);
+        QCOMPARE(rightTouchPoint.sceneLastPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.globalPressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScreenPos(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.normalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.startNormalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.lastNormalizedPos(), rawTouchPoints[1].normalizedPos());
+        QCOMPARE(rightTouchPoint.globalLastPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.position(), rightPos);
         QCOMPARE(rightTouchPoint.scenePosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), rightScreenPos);
@@ -829,13 +806,9 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
         QCOMPARE(rightTouchPoint.pressure(), qreal(1.));
     }
 
-    // generate TouchUpdates on both leftWidget and rightWidget
-    rawTouchPoints[0].setState(Qt::TouchPointMoved);
-    rawTouchPoints[0].setScreenPos(centerScreenPos);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
-    rawTouchPoints[1].setState(Qt::TouchPointMoved);
-    rawTouchPoints[1].setScreenPos(centerScreenPos);
-    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].position(), screenGeometry));
+    rawTouchPoints.clear();
+    rawTouchPoints << QEventPoint(0, QEventPoint::State::Updated, QPointF(), centerScreenPos)
+                   << QEventPoint(1, QEventPoint::State::Updated, QPointF(), centerScreenPos);
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchScreenDevice, nativeTouchPoints);
@@ -852,42 +825,36 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     QCOMPARE(leftWidget.touchUpdatePoints.count(), 1);
     QCOMPARE(rightWidget.touchUpdatePoints.count(), 1);
     {
-        QTouchEvent::TouchPoint leftTouchPoint = leftWidget.touchUpdatePoints.first();
+        QEventPoint leftTouchPoint = leftWidget.touchUpdatePoints.first();
         QCOMPARE(leftTouchPoint.id(), touchPointId0);
         QCOMPARE(leftTouchPoint.state(), rawTouchPoints[0].state());
         QCOMPARE(leftTouchPoint.position(), QPointF(leftWidget.mapFromParent(centerPos.toPoint())));
         QCOMPARE(leftTouchPoint.pressPosition(), leftPos);
-        QCOMPARE(leftTouchPoint.lastPos(), leftPos);
+        QCOMPARE(leftTouchPoint.lastPosition(), leftPos);
         QCOMPARE(leftTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.scenePressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScenePos(), leftScreenPos);
+        QCOMPARE(leftTouchPoint.sceneLastPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.globalPressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScreenPos(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.normalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.startNormalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.lastNormalizedPos(), rawTouchPoints[0].normalizedPos());
+        QCOMPARE(leftTouchPoint.globalLastPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.position(), leftWidget.mapFromParent(centerPos.toPoint()));
         QCOMPARE(leftTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.ellipseDiameters(), QSizeF(0, 0));
         QCOMPARE(leftTouchPoint.pressure(), qreal(1.));
 
-        QTouchEvent::TouchPoint rightTouchPoint = rightWidget.touchUpdatePoints.first();
+        QEventPoint rightTouchPoint = rightWidget.touchUpdatePoints.first();
         QCOMPARE(rightTouchPoint.id(), touchPointId1);
         QCOMPARE(rightTouchPoint.state(), rawTouchPoints[1].state());
         QCOMPARE(rightTouchPoint.position(), QPointF(rightWidget.mapFromParent(centerPos.toPoint())));
         QCOMPARE(rightTouchPoint.pressPosition(), rightPos);
-        QCOMPARE(rightTouchPoint.lastPos(), rightPos);
+        QCOMPARE(rightTouchPoint.lastPosition(), rightPos);
         QCOMPARE(rightTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.scenePressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScenePos(), rightScreenPos);
+        QCOMPARE(rightTouchPoint.sceneLastPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.globalPressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScreenPos(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.normalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.startNormalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.lastNormalizedPos(), rawTouchPoints[1].normalizedPos());
+        QCOMPARE(rightTouchPoint.globalLastPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.position(), rightWidget.mapFromParent(centerPos.toPoint()));
         QCOMPARE(rightTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), centerScreenPos);
@@ -896,12 +863,9 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     }
 
     // generate TouchEnds on both leftWidget and rightWidget
-    rawTouchPoints[0].setState(Qt::TouchPointReleased);
-    rawTouchPoints[0].setScreenPos(centerScreenPos);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
-    rawTouchPoints[1].setState(Qt::TouchPointReleased);
-    rawTouchPoints[1].setScreenPos(centerScreenPos);
-    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].position(), screenGeometry));
+    rawTouchPoints.clear();
+    rawTouchPoints << QEventPoint(0, QEventPoint::State::Released, QPointF(), centerScreenPos)
+                   << QEventPoint(1, QEventPoint::State::Released, QPointF(), centerScreenPos);
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchScreenDevice, nativeTouchPoints);
@@ -918,42 +882,36 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     QCOMPARE(leftWidget.touchEndPoints.count(), 1);
     QCOMPARE(rightWidget.touchEndPoints.count(), 1);
     {
-        QTouchEvent::TouchPoint leftTouchPoint = leftWidget.touchEndPoints.first();
+        QEventPoint leftTouchPoint = leftWidget.touchEndPoints.first();
         QCOMPARE(leftTouchPoint.id(), touchPointId0);
         QCOMPARE(leftTouchPoint.state(), rawTouchPoints[0].state());
         QCOMPARE(leftTouchPoint.position(), QPointF(leftWidget.mapFromParent(centerPos.toPoint())));
         QCOMPARE(leftTouchPoint.pressPosition(), leftPos);
-        QCOMPARE(leftTouchPoint.lastPos(), leftTouchPoint.position());
+        QCOMPARE(leftTouchPoint.lastPosition(), leftTouchPoint.position());
         QCOMPARE(leftTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.scenePressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScenePos(), leftTouchPoint.scenePosition());
+        QCOMPARE(leftTouchPoint.sceneLastPosition(), leftTouchPoint.scenePosition());
         QCOMPARE(leftTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.globalPressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScreenPos(), leftTouchPoint.globalPosition());
-        QCOMPARE(leftTouchPoint.normalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.startNormalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.lastNormalizedPos(), rawTouchPoints[0].normalizedPos());
+        QCOMPARE(leftTouchPoint.globalLastPosition(), leftTouchPoint.globalPosition());
         QCOMPARE(leftTouchPoint.position(), leftWidget.mapFromParent(centerPos.toPoint()));
         QCOMPARE(leftTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.ellipseDiameters(), QSizeF(0, 0));
         QCOMPARE(leftTouchPoint.pressure(), qreal(0.));
 
-        QTouchEvent::TouchPoint rightTouchPoint = rightWidget.touchEndPoints.first();
+        QEventPoint rightTouchPoint = rightWidget.touchEndPoints.first();
         QCOMPARE(rightTouchPoint.id(), touchPointId1);
         QCOMPARE(rightTouchPoint.state(), rawTouchPoints[1].state());
         QCOMPARE(rightTouchPoint.position(), QPointF(rightWidget.mapFromParent(centerPos.toPoint())));
         QCOMPARE(rightTouchPoint.pressPosition(), rightPos);
-        QCOMPARE(rightTouchPoint.lastPos(), rightTouchPoint.position());
+        QCOMPARE(rightTouchPoint.lastPosition(), rightTouchPoint.position());
         QCOMPARE(rightTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.scenePressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScenePos(), rightTouchPoint.scenePosition());
+        QCOMPARE(rightTouchPoint.sceneLastPosition(), rightTouchPoint.scenePosition());
         QCOMPARE(rightTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.globalPressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScreenPos(), rightTouchPoint.globalPosition());
-        QCOMPARE(rightTouchPoint.normalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.startNormalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.lastNormalizedPos(), rawTouchPoints[1].normalizedPos());
+        QCOMPARE(rightTouchPoint.globalLastPosition(), rightTouchPoint.globalPosition());
         QCOMPARE(rightTouchPoint.position(), rightWidget.mapFromParent(centerPos.toPoint()));
         QCOMPARE(rightTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), centerScreenPos);
@@ -975,21 +933,12 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
     QPointF pos = touchWidget.rect().center();
     QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
     QPointF delta(10, 10);
-    QRectF screenGeometry = touchWidget.screen()->geometry();
-
-    QList<QTouchEvent::TouchPoint> rawTouchPoints(3);
-    rawTouchPoints[0].setId(1);
-    rawTouchPoints[1].setId(10);
-    rawTouchPoints[2].setId(11);
+    ulong timestamp = 1234;
 
     // this should be translated to a TouchBegin
-    rawTouchPoints[0].setState(Qt::TouchPointPressed);
-    rawTouchPoints[0].setScreenPos(screenPos);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
-    rawTouchPoints[0].setRawScreenPositions({{12, 34}, {56, 78}});
-    ulong timestamp = 1234;
     QList<QWindowSystemInterface::TouchPoint> nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoints[0], window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() <<
+            QMutableEventPoint(1234, 1, QEventPoint::State::Pressed, screenPos, screenPos, screenPos), window);
     QWindowSystemInterface::handleTouchEvent(window, timestamp, touchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
@@ -997,19 +946,16 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
     QVERIFY(!touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchBeginPoints.count(), 1);
     QCOMPARE(touchWidget.timestamp, timestamp);
-    QTouchEvent::TouchPoint touchBeginPoint = touchWidget.touchBeginPoints.first();
+    QEventPoint touchBeginPoint = touchWidget.touchBeginPoints.first();
     QCOMPARE(touchBeginPoint.id(), 1);
-    QCOMPARE(touchBeginPoint.state(), rawTouchPoints[0].state());
+    QCOMPARE(touchBeginPoint.state(), QEventPoint::State::Pressed);
     QCOMPARE(touchBeginPoint.position(), pos);
 
     // press a point on secondaryTouchScreenDevice
     touchWidget.seenTouchBegin = false;
-    rawTouchPoints[1].setState(Qt::TouchPointPressed);
-    rawTouchPoints[1].setScreenPos(screenPos);
-    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].position(), screenGeometry));
-    rawTouchPoints[1].setRawScreenPositions({{90, 100}, {110, 120}});
     nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoints[1], window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() <<
+            QMutableEventPoint(1234, 10, QEventPoint::State::Pressed, screenPos, screenPos, screenPos), window);
     QWindowSystemInterface::handleTouchEvent(window, ++timestamp, secondaryTouchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -1017,17 +963,14 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
     QCOMPARE(touchWidget.timestamp, timestamp);
     touchBeginPoint = touchWidget.touchBeginPoints[0];
     QCOMPARE(touchBeginPoint.id(), 10);
-    QCOMPARE(touchBeginPoint.state(), rawTouchPoints[1].state());
+    QCOMPARE(touchBeginPoint.state(), QEventPoint::State::Pressed);
     QCOMPARE(touchBeginPoint.position(), pos);
 
     // press another point on secondaryTouchScreenDevice
     touchWidget.seenTouchBegin = false;
-    rawTouchPoints[2].setState(Qt::TouchPointPressed);
-    rawTouchPoints[2].setScreenPos(screenPos);
-    rawTouchPoints[2].setNormalizedPos(normalized(rawTouchPoints[2].position(), screenGeometry));
-    rawTouchPoints[2].setRawScreenPositions({{130, 140}, {150, 160}});
     nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoints[2], window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() <<
+            QMutableEventPoint(1234, 11, QEventPoint::State::Pressed, screenPos, screenPos, screenPos), window);
     QWindowSystemInterface::handleTouchEvent(window, ++timestamp, secondaryTouchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -1035,41 +978,37 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
     QCOMPARE(touchWidget.timestamp, timestamp);
     touchBeginPoint = touchWidget.touchBeginPoints[0];
     QCOMPARE(touchBeginPoint.id(), 11);
-    QCOMPARE(touchBeginPoint.state(), rawTouchPoints[2].state());
+    QCOMPARE(touchBeginPoint.state(), QEventPoint::State::Pressed);
     QCOMPARE(touchBeginPoint.position(), pos);
 
     // moving the first point should translate to TouchUpdate
-    rawTouchPoints[0].setState(Qt::TouchPointMoved);
-    rawTouchPoints[0].setScreenPos(screenPos + delta);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
     nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoints[0], window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() <<
+            QMutableEventPoint(1234, 1, QEventPoint::State::Updated, screenPos + delta, screenPos + delta, screenPos + delta), window);
     QWindowSystemInterface::handleTouchEvent(window, ++timestamp, touchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchUpdatePoints.count(), 1);
-    QTouchEvent::TouchPoint touchUpdatePoint = touchWidget.touchUpdatePoints.first();
+    QEventPoint touchUpdatePoint = touchWidget.touchUpdatePoints.first();
     QCOMPARE(touchUpdatePoint.id(), 1);
-    QCOMPARE(touchUpdatePoint.state(), rawTouchPoints[0].state());
+    QCOMPARE(touchUpdatePoint.state(), QEventPoint::State::Updated);
     QCOMPARE(touchUpdatePoint.position(), pos + delta);
 
     // releasing the first point translates to TouchEnd
-    rawTouchPoints[0].setState(Qt::TouchPointReleased);
-    rawTouchPoints[0].setScreenPos(screenPos + delta + delta);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
     nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoints[0], window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() <<
+            QMutableEventPoint(1234, 1, QEventPoint::State::Released, screenPos + delta + delta, screenPos + delta + delta, screenPos + delta + delta), window);
     QWindowSystemInterface::handleTouchEvent(window, ++timestamp, touchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchEndPoints.count(), 1);
-    QTouchEvent::TouchPoint touchEndPoint = touchWidget.touchEndPoints.first();
+    QEventPoint touchEndPoint = touchWidget.touchEndPoints.first();
     QCOMPARE(touchEndPoint.id(), 1);
-    QCOMPARE(touchEndPoint.state(), rawTouchPoints[0].state());
+    QCOMPARE(touchEndPoint.state(), QEventPoint::State::Released);
     QCOMPARE(touchEndPoint.position(), pos + delta + delta);
 
     // Widgets don't normally handle this case: if a TouchEnd was seen before, then
@@ -1082,10 +1021,10 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
     // Releasing one point on the secondary touchscreen does not yet generate TouchEnd.
     touchWidget.seenTouchEnd = false;
     touchWidget.touchEndPoints.clear();
-    rawTouchPoints[1].setState(Qt::TouchPointReleased);
-    rawTouchPoints[2].setState(Qt::TouchPointStationary);
     nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoints[1] << rawTouchPoints[2], window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() <<
+            QMutableEventPoint(1234, 10, QEventPoint::State::Released, screenPos, screenPos, screenPos) <<
+            QMutableEventPoint(1234, 11, QEventPoint::State::Stationary, screenPos, screenPos, screenPos), window);
     QWindowSystemInterface::handleTouchEvent(window, ++timestamp, secondaryTouchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
@@ -1097,9 +1036,10 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
 
     // releasing the last point on the secondary touchscreen translates to TouchEnd
     touchWidget.seenTouchEnd = false;
-    rawTouchPoints[2].setState(Qt::TouchPointReleased);
     nativeTouchPoints =
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QTouchEvent::TouchPoint>() << rawTouchPoints[2], window);
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(QList<QEventPoint>() <<
+            QMutableEventPoint(1234, 11, QEventPoint::State::Released, screenPos + delta + delta,
+                               screenPos + delta + delta, screenPos + delta + delta), window);
     QWindowSystemInterface::handleTouchEvent(window, ++timestamp, secondaryTouchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
@@ -1108,22 +1048,25 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
     QCOMPARE(touchWidget.touchEndPoints.count(), 1);
     touchEndPoint = touchWidget.touchEndPoints.first();
     QCOMPARE(touchEndPoint.id(), 11);
-    QCOMPARE(touchEndPoint.state(), rawTouchPoints[2].state());
+    QCOMPARE(touchEndPoint.state(), QEventPoint::State::Released);
 }
 
 void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
 {
     tst_QTouchEventWidget touchWidget;
+    touchWidget.setObjectName("touchWidget");
     touchWidget.setWindowTitle(QTest::currentTestFunction());
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
     touchWidget.setGeometry(100, 100, 400, 300);
 
     tst_QTouchEventWidget leftWidget(&touchWidget);
+    leftWidget.setObjectName("leftWidget");
     leftWidget.setAttribute(Qt::WA_AcceptTouchEvents);
     leftWidget.setGeometry(0, 100, 100, 100);
     leftWidget.acceptTouchBegin =true;
 
     tst_QTouchEventWidget rightWidget(&touchWidget);
+    rightWidget.setObjectName("rightWidget");
     rightWidget.setAttribute(Qt::WA_AcceptTouchEvents);
     rightWidget.setGeometry(300, 100, 100, 100);
 
@@ -1136,19 +1079,20 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     QPointF leftScreenPos = leftWidget.mapToGlobal(leftPos.toPoint());
     QPointF rightScreenPos = rightWidget.mapToGlobal(rightPos.toPoint());
     QPointF centerScreenPos = touchWidget.mapToGlobal(centerPos.toPoint());
-    QRectF screenGeometry = touchWidget.screen()->geometry();
 
-    QList<QTouchEvent::TouchPoint> rawTouchPoints;
-    rawTouchPoints.append(QTouchEvent::TouchPoint(0));
-    rawTouchPoints.append(QTouchEvent::TouchPoint(1));
+    QList<QMutableEventPoint> rawTouchPoints;
+    rawTouchPoints.append(QMutableEventPoint(0));
+    rawTouchPoints.append(QMutableEventPoint(1));
 
     // generate TouchBegin on leftWidget only
-    rawTouchPoints[0].setState(Qt::TouchPointPressed);
-    rawTouchPoints[0].setScreenPos(leftScreenPos);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
-    rawTouchPoints[1].setState(Qt::TouchPointPressed);
-    rawTouchPoints[1].setScreenPos(rightScreenPos);
-    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].position(), screenGeometry));
+    {
+        QMutableEventPoint &tp0 = QMutableEventPoint::from(rawTouchPoints[0]);
+        tp0.setState(QEventPoint::State::Pressed);
+        tp0.setGlobalPosition(leftScreenPos);
+        QMutableEventPoint & tp1 = QMutableEventPoint::from(rawTouchPoints[1]);
+        tp1.setState(QEventPoint::State::Pressed);
+        tp1.setGlobalPosition(rightScreenPos);
+    }
     QWindow *window = touchWidget.windowHandle();
     QList<QWindowSystemInterface::TouchPoint> nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
@@ -1157,8 +1101,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     QVERIFY(!touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
-    QEXPECT_FAIL("", "QTBUG-46266, fails in Qt 5", Abort);
-    QVERIFY(!leftWidget.seenTouchBegin);
+    QVERIFY(leftWidget.seenTouchBegin);
     QVERIFY(!leftWidget.seenTouchUpdate);
     QVERIFY(!leftWidget.seenTouchEnd);
     QVERIFY(!rightWidget.seenTouchBegin);
@@ -1167,43 +1110,41 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     QCOMPARE(leftWidget.touchBeginPoints.count(), 2);
     QCOMPARE(rightWidget.touchBeginPoints.count(), 0);
     {
-        QTouchEvent::TouchPoint leftTouchPoint = leftWidget.touchBeginPoints.at(0);
+        QEventPoint leftTouchPoint = leftWidget.touchBeginPoints.at(0);
+        qCDebug(lcTests) << "lastNormalizedPositions after press" << leftWidget.lastNormalizedPositions;
+        qCDebug(lcTests) << "leftTouchPoint" << leftTouchPoint;
         QCOMPARE(leftTouchPoint.id(), rawTouchPoints[0].id());
         QCOMPARE(leftTouchPoint.state(), rawTouchPoints[0].state());
         QCOMPARE(leftTouchPoint.position(), leftPos);
         QCOMPARE(leftTouchPoint.pressPosition(), leftPos);
-        QCOMPARE(leftTouchPoint.lastPos(), leftPos);
+        QCOMPARE(leftTouchPoint.lastPosition(), leftPos);
         QCOMPARE(leftTouchPoint.scenePosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.scenePressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScenePos(), leftScreenPos);
+        QCOMPARE(leftTouchPoint.sceneLastPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.globalPressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScreenPos(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.normalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.startNormalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.lastNormalizedPos(), rawTouchPoints[0].normalizedPos());
+        QCOMPARE(leftTouchPoint.globalLastPosition(), leftScreenPos);
+        QVERIFY(qAbs(leftWidget.lastNormalizedPositions.at(0).x() - 0.2) < 0.05); // 0.198, might depend on window frame size
         QCOMPARE(leftTouchPoint.position(), leftPos);
         QCOMPARE(leftTouchPoint.scenePosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.ellipseDiameters(), QSizeF(0, 0));
         QCOMPARE(leftTouchPoint.pressure(), qreal(1.));
 
-        QTouchEvent::TouchPoint rightTouchPoint = leftWidget.touchBeginPoints.at(1);
+        QEventPoint rightTouchPoint = leftWidget.touchBeginPoints.at(1);
+        qCDebug(lcTests) << "rightTouchPoint" << rightTouchPoint;
         QCOMPARE(rightTouchPoint.id(), rawTouchPoints[1].id());
         QCOMPARE(rightTouchPoint.state(), rawTouchPoints[1].state());
         QCOMPARE(rightTouchPoint.position(), QPointF(leftWidget.mapFromGlobal(rightScreenPos.toPoint())));
         QCOMPARE(rightTouchPoint.pressPosition(), QPointF(leftWidget.mapFromGlobal(rightScreenPos.toPoint())));
-        QCOMPARE(rightTouchPoint.lastPos(), QPointF(leftWidget.mapFromGlobal(rightScreenPos.toPoint())));
+        QCOMPARE(rightTouchPoint.lastPosition(), QPointF(leftWidget.mapFromGlobal(rightScreenPos.toPoint())));
         QCOMPARE(rightTouchPoint.scenePosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.scenePressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScenePos(), rightScreenPos);
+        QCOMPARE(rightTouchPoint.sceneLastPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.globalPressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScreenPos(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.normalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.startNormalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.lastNormalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.position(), rightWidget.mapFromParent(rightScreenPos.toPoint()));
+        QCOMPARE(rightTouchPoint.globalLastPosition(), rightScreenPos);
+        QVERIFY(qAbs(leftWidget.lastNormalizedPositions.at(1).x() - 0.8) < 0.05); // 0.798, might depend on window frame size
         QCOMPARE(rightTouchPoint.scenePosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.ellipseDiameters(), QSizeF(0, 0));
@@ -1211,12 +1152,10 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     }
 
     // generate TouchUpdate on leftWidget
-    rawTouchPoints[0].setState(Qt::TouchPointMoved);
-    rawTouchPoints[0].setScreenPos(centerScreenPos);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
-    rawTouchPoints[1].setState(Qt::TouchPointMoved);
-    rawTouchPoints[1].setScreenPos(centerScreenPos);
-    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].position(), screenGeometry));
+    rawTouchPoints[0].setState(QEventPoint::State::Updated);
+    rawTouchPoints[0].setGlobalPosition(centerScreenPos);
+    rawTouchPoints[1].setState(QEventPoint::State::Updated);
+    rawTouchPoints[1].setGlobalPosition(centerScreenPos);
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchPadDevice, nativeTouchPoints);
@@ -1233,56 +1172,52 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     QCOMPARE(leftWidget.touchUpdatePoints.count(), 2);
     QCOMPARE(rightWidget.touchUpdatePoints.count(), 0);
     {
-        QTouchEvent::TouchPoint leftTouchPoint = leftWidget.touchUpdatePoints.at(0);
+        QEventPoint leftTouchPoint = leftWidget.touchUpdatePoints.at(0);
+        qCDebug(lcTests) << "lastNormalizedPositions after update" << leftWidget.lastNormalizedPositions;
+        qCDebug(lcTests) << "leftTouchPoint" << leftTouchPoint;
         QCOMPARE(leftTouchPoint.id(), rawTouchPoints[0].id());
         QCOMPARE(leftTouchPoint.state(), rawTouchPoints[0].state());
         QCOMPARE(leftTouchPoint.position(), QPointF(leftWidget.mapFromParent(centerPos.toPoint())));
         QCOMPARE(leftTouchPoint.pressPosition(), leftPos);
-        QCOMPARE(leftTouchPoint.lastPos(), leftPos);
+        QCOMPARE(leftTouchPoint.lastPosition(), leftPos);
         QCOMPARE(leftTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.scenePressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScenePos(), leftScreenPos);
+        QCOMPARE(leftTouchPoint.sceneLastPosition(), leftScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.globalPressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScreenPos(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.normalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.startNormalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.lastNormalizedPos(), rawTouchPoints[0].normalizedPos());
+        QCOMPARE(leftTouchPoint.globalLastPosition(), leftScreenPos);
+        QVERIFY(qAbs(leftWidget.lastNormalizedPositions.at(0).x() - 0.5) < 0.05); // 0.498, might depend on window frame size
         QCOMPARE(leftTouchPoint.position(), leftWidget.mapFromParent(centerPos.toPoint()));
         QCOMPARE(leftTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.ellipseDiameters(), QSizeF(0, 0));
-        QCOMPARE(leftTouchPoint.pressure(), qreal(1.));
+        QCOMPARE(leftTouchPoint.pressure(), 1);
 
-        QTouchEvent::TouchPoint rightTouchPoint = leftWidget.touchUpdatePoints.at(1);
+        QEventPoint rightTouchPoint = leftWidget.touchUpdatePoints.at(1);
+        qCDebug(lcTests) << "rightTouchPoint" << rightTouchPoint;
         QCOMPARE(rightTouchPoint.id(), rawTouchPoints[1].id());
         QCOMPARE(rightTouchPoint.state(), rawTouchPoints[1].state());
         QCOMPARE(rightTouchPoint.position(), QPointF(leftWidget.mapFromParent(centerPos.toPoint())));
         QCOMPARE(rightTouchPoint.pressPosition(), QPointF(leftWidget.mapFromGlobal(rightScreenPos.toPoint())));
-        QCOMPARE(rightTouchPoint.lastPos(), QPointF(leftWidget.mapFromGlobal(rightScreenPos.toPoint())));
+        QCOMPARE(rightTouchPoint.lastPosition(), QPointF(leftWidget.mapFromGlobal(rightScreenPos.toPoint())));
         QCOMPARE(rightTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.scenePressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScenePos(), rightScreenPos);
+        QCOMPARE(rightTouchPoint.sceneLastPosition(), rightScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.globalPressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScreenPos(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.normalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.startNormalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.lastNormalizedPos(), rawTouchPoints[1].normalizedPos());
+        QCOMPARE(rightTouchPoint.globalLastPosition(), rightScreenPos);
+        QVERIFY(qAbs(leftWidget.lastNormalizedPositions.at(1).x() - 0.5) < 0.05); // 0.498, might depend on window frame size
         QCOMPARE(rightTouchPoint.position(), leftWidget.mapFromParent(centerPos.toPoint()));
         QCOMPARE(rightTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.ellipseDiameters(), QSizeF(0, 0));
-        QCOMPARE(rightTouchPoint.pressure(), qreal(1.));
+        QCOMPARE(rightTouchPoint.pressure(), 1);
     }
 
     // generate TouchEnd on leftWidget
-    rawTouchPoints[0].setState(Qt::TouchPointReleased);
-    rawTouchPoints[0].setScreenPos(centerScreenPos);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
-    rawTouchPoints[1].setState(Qt::TouchPointReleased);
-    rawTouchPoints[1].setScreenPos(centerScreenPos);
-    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].position(), screenGeometry));
+    // both touchpoints are still at centerScreenPos
+    rawTouchPoints[0].setState(QEventPoint::State::Released);
+    rawTouchPoints[1].setState(QEventPoint::State::Released);
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchPadDevice, nativeTouchPoints);
@@ -1299,47 +1234,46 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     QCOMPARE(leftWidget.touchEndPoints.count(), 2);
     QCOMPARE(rightWidget.touchEndPoints.count(), 0);
     {
-        QTouchEvent::TouchPoint leftTouchPoint = leftWidget.touchEndPoints.at(0);
+        QEventPoint leftTouchPoint = leftWidget.touchEndPoints.at(0);
+        qCDebug(lcTests) << "lastNormalizedPositions after release" << leftWidget.lastNormalizedPositions;
+        qCDebug(lcTests) << "leftTouchPoint" << leftTouchPoint;
         QCOMPARE(leftTouchPoint.id(), rawTouchPoints[0].id());
         QCOMPARE(leftTouchPoint.state(), rawTouchPoints[0].state());
         QCOMPARE(leftTouchPoint.position(), QPointF(leftWidget.mapFromParent(centerPos.toPoint())));
         QCOMPARE(leftTouchPoint.pressPosition(), leftPos);
-        QCOMPARE(leftTouchPoint.lastPos(), leftTouchPoint.position());
+        QCOMPARE(leftTouchPoint.lastPosition(), leftTouchPoint.position());
         QCOMPARE(leftTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.scenePressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScenePos(), leftTouchPoint.scenePosition());
+        QCOMPARE(leftTouchPoint.sceneLastPosition(), leftTouchPoint.scenePosition());
         QCOMPARE(leftTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.globalPressPosition(), leftScreenPos);
-        QCOMPARE(leftTouchPoint.lastScreenPos(), leftTouchPoint.globalPosition());
-        QCOMPARE(leftTouchPoint.normalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.startNormalizedPos(), rawTouchPoints[0].normalizedPos());
-        QCOMPARE(leftTouchPoint.lastNormalizedPos(), rawTouchPoints[0].normalizedPos());
+        QCOMPARE(leftTouchPoint.globalLastPosition(), leftTouchPoint.globalPosition());
+        QVERIFY(qAbs(leftWidget.lastNormalizedPositions.at(0).x() - 0.5) < 0.05); // 0.498, might depend on window frame size
         QCOMPARE(leftTouchPoint.position(), leftWidget.mapFromParent(centerPos.toPoint()));
         QCOMPARE(leftTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(leftTouchPoint.ellipseDiameters(), QSizeF(0, 0));
-        QCOMPARE(leftTouchPoint.pressure(), qreal(0.));
+        QCOMPARE(leftTouchPoint.pressure(), 0);
 
-        QTouchEvent::TouchPoint rightTouchPoint = leftWidget.touchEndPoints.at(1);
+        QEventPoint rightTouchPoint = leftWidget.touchEndPoints.at(1);
+        qCDebug(lcTests) << "rightTouchPoint" << rightTouchPoint;
         QCOMPARE(rightTouchPoint.id(), rawTouchPoints[1].id());
         QCOMPARE(rightTouchPoint.state(), rawTouchPoints[1].state());
         QCOMPARE(rightTouchPoint.position(), QPointF(leftWidget.mapFromParent(centerPos.toPoint())));
         QCOMPARE(rightTouchPoint.pressPosition(), QPointF(leftWidget.mapFromGlobal(rightScreenPos.toPoint())));
-        QCOMPARE(rightTouchPoint.lastPos(), rightTouchPoint.position());
+        QCOMPARE(rightTouchPoint.lastPosition(), rightTouchPoint.position());
         QCOMPARE(rightTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.scenePressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScenePos(), rightTouchPoint.scenePosition());
+        QCOMPARE(rightTouchPoint.sceneLastPosition(), rightTouchPoint.scenePosition());
         QCOMPARE(rightTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.globalPressPosition(), rightScreenPos);
-        QCOMPARE(rightTouchPoint.lastScreenPos(), rightTouchPoint.globalPosition());
-        QCOMPARE(rightTouchPoint.normalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.startNormalizedPos(), rawTouchPoints[1].normalizedPos());
-        QCOMPARE(rightTouchPoint.lastNormalizedPos(), rawTouchPoints[1].normalizedPos());
+        QCOMPARE(rightTouchPoint.globalLastPosition(), rightTouchPoint.globalPosition());
+        QVERIFY(qAbs(leftWidget.lastNormalizedPositions.at(1).x() - 0.5) < 0.05); // 0.498, might depend on window frame size
         QCOMPARE(rightTouchPoint.position(), leftWidget.mapFromParent(centerPos.toPoint()));
         QCOMPARE(rightTouchPoint.scenePosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.globalPosition(), centerScreenPos);
         QCOMPARE(rightTouchPoint.ellipseDiameters(), QSizeF(0, 0));
-        QCOMPARE(rightTouchPoint.pressure(), qreal(0.));
+        QCOMPARE(rightTouchPoint.pressure(), 0);
     }
 }
 
@@ -1359,25 +1293,17 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
         screenPos << touchWidget.mapToGlobal(pos[i].toPoint());
     }
     QPointF delta(10, 10);
-    QRectF screenGeometry = touchWidget.screen()->geometry();
-
-    QList<QPointF> rawPosList;
-    rawPosList << QPointF(12, 34) << QPointF(56, 78);
-
-    QList<QTouchEvent::TouchPoint> rawTouchPoints;
+    QList<QMutableEventPoint> rawTouchPoints;
 
     // Press both points, this should be translated to a TouchBegin
     for (int i = 0; i < 2; ++i) {
-        QTouchEvent::TouchPoint rawTouchPoint;
-        rawTouchPoint.setId(i);
-        rawTouchPoint.setState(Qt::TouchPointPressed);
-        rawTouchPoint.setScreenPos(screenPos[i]);
-        rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.position(), screenGeometry));
-        rawTouchPoint.setRawScreenPositions(rawPosList);
+        QMutableEventPoint rawTouchPoint(i);
+        rawTouchPoint.setState(QEventPoint::State::Pressed);
+        rawTouchPoint.setGlobalPosition(screenPos[i]);
         rawTouchPoints << rawTouchPoint;
     }
-    QTouchEvent::TouchPoint &p0 = rawTouchPoints[0];
-    QTouchEvent::TouchPoint &p1 = rawTouchPoints[1];
+    QMutableEventPoint &p0 = rawTouchPoints[0];
+    QMutableEventPoint &p1 = rawTouchPoints[1];
 
     const ulong timestamp = 1234;
     QWindow *window = touchWidget.windowHandle();
@@ -1391,17 +1317,16 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
     QCOMPARE(touchWidget.touchBeginPoints.count(), 2);
 
     for (int i = 0; i < touchWidget.touchBeginPoints.count(); ++i) {
-        QTouchEvent::TouchPoint touchBeginPoint = touchWidget.touchBeginPoints.at(i);
+        QEventPoint touchBeginPoint = touchWidget.touchBeginPoints.at(i);
         QCOMPARE(touchBeginPoint.id(), i);
         QCOMPARE(touchBeginPoint.state(), rawTouchPoints[i].state());
     }
 
     // moving the point should translate to TouchUpdate
     for (int i = 0; i < rawTouchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint &p = rawTouchPoints[i];
-        p.setState(Qt::TouchPointMoved);
-        p.setScreenPos(p.globalPosition() + delta);
-        p.setNormalizedPos(normalized(p.position(), screenGeometry));
+        auto &p = rawTouchPoints[i];
+        p.setState(QEventPoint::State::Updated);
+        p.setGlobalPosition(p.globalPosition() + delta);
     }
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
@@ -1415,8 +1340,8 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
     QCOMPARE(touchWidget.touchUpdatePoints.at(1).id(), 1);
 
     // release last point
-    p0.setState(Qt::TouchPointStationary);
-    p1.setState(Qt::TouchPointReleased);
+    p0.setState(QEventPoint::State::Stationary);
+    p1.setState(QEventPoint::State::Released);
 
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
@@ -1424,13 +1349,13 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
     QCoreApplication::processEvents();
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
-    QVERIFY(!touchWidget.seenTouchEnd);
+    QCOMPARE(touchWidget.seenTouchEnd, false);
     QCOMPARE(touchWidget.touchUpdatePoints.count(), 2);
     QCOMPARE(touchWidget.touchUpdatePoints[0].id(), 0);
     QCOMPARE(touchWidget.touchUpdatePoints[1].id(), 1);
 
     // Press last point again, id should increase
-    p1.setState(Qt::TouchPointPressed);
+    p1.setState(QEventPoint::State::Pressed);
     p1.setId(42);   // new id
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
@@ -1444,8 +1369,8 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
     QCOMPARE(touchWidget.touchUpdatePoints[1].id(), 42);
 
     // release everything
-    p0.setState(Qt::TouchPointReleased);
-    p1.setState(Qt::TouchPointReleased);
+    p0.setState(QEventPoint::State::Released);
+    p1.setState(QEventPoint::State::Released);
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchScreenDevice, nativeTouchPoints);
@@ -1473,22 +1398,19 @@ void tst_QTouchEvent::deleteInEventHandler()
         child2->deleteInTouchUpdate = true;
         child3->deleteInTouchEnd = true;
 
-        QList<QTouchEvent::TouchPoint> touchPoints;
-        touchPoints.append(QTouchEvent::TouchPoint(0));
+        QList<QEventPoint> touchPoints;
+        touchPoints.append(QEventPoint(0));
         QTouchEvent touchBeginEvent(QEvent::TouchBegin,
                                     touchScreenDevice,
                                     Qt::NoModifier,
-                                    Qt::TouchPointPressed,
                                     touchPoints);
         QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointStationary,
                                touchPoints);
         QTouchEvent touchEndEvent(QEvent::TouchEnd,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointReleased,
                                touchPoints);
         touchBeginEvent.ignore();
         QVERIFY(QApplication::sendEvent(child1, &touchBeginEvent));
@@ -1541,30 +1463,25 @@ void tst_QTouchEvent::deleteInEventHandler()
         view.resize(200, 200);
         view.fitInView(scene.sceneRect());
 
-        QTouchEvent::TouchPoint touchPoint(0);
-        touchPoint.setState(Qt::TouchPointPressed);
-        touchPoint.setPos(view.mapFromScene(child1->mapToScene(child1->boundingRect().center())));
-        touchPoint.setScreenPos(view.mapToGlobal(touchPoint.position().toPoint()));
-        touchPoint.setScenePos(view.mapToScene(touchPoint.position().toPoint()));
-        QList<QTouchEvent::TouchPoint> touchPoints;
-        touchPoints.append(touchPoint);
+        QMutableEventPoint touchPoint(0);
+        touchPoint.setState(QEventPoint::State::Pressed);
+        touchPoint.setPosition(view.mapFromScene(child1->mapToScene(child1->boundingRect().center())));
+        touchPoint.setGlobalPosition(view.mapToGlobal(touchPoint.position().toPoint()));
+        touchPoint.setScenePosition(view.mapToScene(touchPoint.position().toPoint()));
         QTouchEvent touchBeginEvent(QEvent::TouchBegin,
                                     touchScreenDevice,
                                     Qt::NoModifier,
-                                    Qt::TouchPointPressed,
-                                    touchPoints);
-        touchPoints[0].setState(Qt::TouchPointMoved);
+                                    {touchPoint});
+        touchPoint.setState(QEventPoint::State::Updated);
         QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointMoved,
-                               touchPoints);
-        touchPoints[0].setState(Qt::TouchPointReleased);
+                                {touchPoint});
+        touchPoint.setState(QEventPoint::State::Released);
         QTouchEvent touchEndEvent(QEvent::TouchEnd,
                                touchScreenDevice,
                                Qt::NoModifier,
-                               Qt::TouchPointReleased,
-                               touchPoints);
+                               {touchPoint});
 
         child1->weakpointer = &child1;
         touchBeginEvent.ignore();
@@ -1638,21 +1555,17 @@ void tst_QTouchEvent::deleteInRawEventTranslation()
     QPointF leftScreenPos = leftWidget->mapToGlobal(leftPos.toPoint());
     QPointF centerScreenPos = centerWidget->mapToGlobal(centerPos.toPoint());
     QPointF rightScreenPos = rightWidget->mapToGlobal(rightPos.toPoint());
-    QRectF screenGeometry = touchWidget.screen()->geometry();
 
-    QList<QTouchEvent::TouchPoint> rawTouchPoints;
-    rawTouchPoints.append(QTouchEvent::TouchPoint(0));
-    rawTouchPoints.append(QTouchEvent::TouchPoint(1));
-    rawTouchPoints.append(QTouchEvent::TouchPoint(2));
-    rawTouchPoints[0].setState(Qt::TouchPointPressed);
-    rawTouchPoints[0].setScreenPos(leftScreenPos);
-    rawTouchPoints[0].setNormalizedPos(normalized(rawTouchPoints[0].position(), screenGeometry));
-    rawTouchPoints[1].setState(Qt::TouchPointPressed);
-    rawTouchPoints[1].setScreenPos(centerScreenPos);
-    rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].position(), screenGeometry));
-    rawTouchPoints[2].setState(Qt::TouchPointPressed);
-    rawTouchPoints[2].setScreenPos(rightScreenPos);
-    rawTouchPoints[2].setNormalizedPos(normalized(rawTouchPoints[2].position(), screenGeometry));
+    QList<QMutableEventPoint> rawTouchPoints;
+    rawTouchPoints.append(QMutableEventPoint(0));
+    rawTouchPoints.append(QMutableEventPoint(1));
+    rawTouchPoints.append(QMutableEventPoint(2));
+    rawTouchPoints[0].setState(QEventPoint::State::Pressed);
+    rawTouchPoints[0].setGlobalPosition(leftScreenPos);
+    rawTouchPoints[1].setState(QEventPoint::State::Pressed);
+    rawTouchPoints[1].setGlobalPosition(centerScreenPos);
+    rawTouchPoints[2].setState(QEventPoint::State::Pressed);
+    rawTouchPoints[2].setGlobalPosition(rightScreenPos);
 
     // generate begin events on all widgets, the left widget should die
     QWindow *window = touchWidget.windowHandle();
@@ -1665,18 +1578,18 @@ void tst_QTouchEvent::deleteInRawEventTranslation()
     QVERIFY(!rightWidget.isNull());
 
     // generate update events on all widget, the center widget should die
-    rawTouchPoints[0].setState(Qt::TouchPointMoved);
-    rawTouchPoints[1].setState(Qt::TouchPointMoved);
-    rawTouchPoints[2].setState(Qt::TouchPointMoved);
+    rawTouchPoints[0].setState(QEventPoint::State::Updated);
+    rawTouchPoints[1].setState(QEventPoint::State::Updated);
+    rawTouchPoints[2].setState(QEventPoint::State::Updated);
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchScreenDevice, nativeTouchPoints);
     QCoreApplication::processEvents();
 
     // generate end events on all widget, the right widget should die
-    rawTouchPoints[0].setState(Qt::TouchPointReleased);
-    rawTouchPoints[1].setState(Qt::TouchPointReleased);
-    rawTouchPoints[2].setState(Qt::TouchPointReleased);
+    rawTouchPoints[0].setState(QEventPoint::State::Released);
+    rawTouchPoints[1].setState(QEventPoint::State::Released);
+    rawTouchPoints[2].setState(QEventPoint::State::Released);
     nativeTouchPoints =
         QWindowSystemInterfacePrivate::toNativeTouchPoints(rawTouchPoints, window);
     QWindowSystemInterface::handleTouchEvent(window, 0, touchScreenDevice, nativeTouchPoints);
@@ -1773,7 +1686,7 @@ class WindowTouchEventFilter : public QObject
 public:
     bool eventFilter(QObject *obj, QEvent *event) override;
     struct TouchInfo {
-        QList<QTouchEvent::TouchPoint> points;
+        QList<QEventPoint> points;
         QEvent::Type lastSeenType;
     };
     QMap<const QPointingDevice *, TouchInfo> d;
@@ -1813,7 +1726,7 @@ void tst_QTouchEvent::testQGuiAppDelivery()
 
     QWindowSystemInterface::TouchPoint tp;
     tp.id = 0;
-    tp.state = Qt::TouchPointPressed;
+    tp.state = QEventPoint::State::Pressed;
     tp.area = QRectF(120, 120, 20, 20);
     points.append(tp);
 
@@ -1830,7 +1743,7 @@ void tst_QTouchEvent::testQGuiAppDelivery()
     QCOMPARE(filter.d.value(touchScreenDevice).points.count(), 1);
     QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchBegin);
 
-    points[0].state = Qt::TouchPointMoved;
+    points[0].state = QEventPoint::State::Updated;
     QWindowSystemInterface::handleTouchEvent(&w, touchScreenDevice, points); // TouchUpdate
     QCoreApplication::processEvents();
     QCOMPARE(filter.d.count(), 1);
@@ -1838,7 +1751,7 @@ void tst_QTouchEvent::testQGuiAppDelivery()
     QCOMPARE(filter.d.value(touchScreenDevice).points.count(), 2);
     QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchUpdate);
 
-    points[0].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&w, touchScreenDevice, points); // TouchEnd
     QCoreApplication::processEvents();
     QCOMPARE(filter.d.count(), 1);
@@ -1865,7 +1778,7 @@ void tst_QTouchEvent::testMultiDevice()
     // Even though there is a point with id 0 for both devices, they should be delivered cleanly, independently.
     QWindowSystemInterface::TouchPoint tp;
     tp.id = 0;
-    tp.state = Qt::TouchPointPressed;
+    tp.state = QEventPoint::State::Pressed;
     const QPoint screenOrigin = w.screen()->geometry().topLeft();
     const QRectF area0(120, 120, 20, 20);
     tp.area = QHighDpi::toNative(area0, QHighDpiScaling::factor(&w), screenOrigin);

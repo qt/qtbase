@@ -91,6 +91,7 @@
 #include <qthread.h>
 #include <private/qthread_p.h>
 
+#include <QtGui/private/qevent_p.h>
 #include <private/qfont_p.h>
 #if QT_CONFIG(action)
 #include <private/qaction_p.h>
@@ -99,7 +100,6 @@
 #include <stdlib.h>
 
 #include "qapplication_p.h"
-#include "private/qevent_p.h"
 #include "qwidget_p.h"
 
 #include "qgesture.h"
@@ -2946,7 +2946,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                                mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source());
                 me.spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
-                QGuiApplicationPrivate::setMouseEventFlags(&me, mouse->flags());
+                QMutableSinglePointEvent::from(me).setDoubleClick(QMutableSinglePointEvent::from(mouse)->isDoubleClick());
                 // throw away any mouse-tracking-only mouse events
                 if (!w->hasMouseTracking()
                     && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {
@@ -3067,7 +3067,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
 
             QWheelEvent we(relpos, wheel->globalPosition(), wheel->pixelDelta(), wheel->angleDelta(), wheel->buttons(),
-                            wheel->modifiers(), phase, wheel->inverted(), wheel->source());
+                            wheel->modifiers(), phase, wheel->inverted(), wheel->source(), wheel->pointingDevice());
 
             we.setTimestamp(wheel->timestamp());
             bool eventAccepted;
@@ -3080,7 +3080,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
                     break;
 
-                we.p += w->pos();
+                QMutableSinglePointEvent::from(we).mutablePoint().setPosition(we.position() + w->pos());
                 w = w->parentWidget();
             } while (w);
             wheel->setAccepted(eventAccepted);
@@ -3250,7 +3250,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     // Note: TouchUpdate and TouchEnd events are never propagated
     {
         QWidget *widget = static_cast<QWidget *>(receiver);
-        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(e);
+        QMutableTouchEvent *touchEvent = QMutableTouchEvent::from(static_cast<QTouchEvent *>(e));
         bool eventAccepted = touchEvent->isAccepted();
         bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
 
@@ -3293,12 +3293,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint offset = widget->pos();
             widget = widget->parentWidget();
             touchEvent->setTarget(widget);
-            for (int i = 0; i < touchEvent->_touchPoints.size(); ++i) {
-                QTouchEvent::TouchPoint &pt = touchEvent->_touchPoints[i];
-                pt.d->pos = pt.position() + offset;
-                pt.d->startPos = pt.pressPosition() + offset;
-                pt.d->lastPos = pt.lastPos() + offset;
-            }
+            for (QEventPoint &pt : touchEvent->touchPoints())
+                QMutableEventPoint::from(pt).setPosition(pt.position() + offset);
         }
 
 #ifndef QT_NO_GESTURES
@@ -3944,18 +3940,15 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
 bool QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent)
 {
     bool containsPress = false;
-    for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
-        QTouchEvent::TouchPoint &touchPoint = touchEvent->_touchPoints[i];
 
+    for (QEventPoint &pt : QMutableTouchEvent::from(touchEvent)->touchPoints()) {
         // preserve the sub-pixel resolution
-        const QPointF screenPos = touchPoint.globalPosition();
+        const QPointF screenPos = pt.globalPosition();
         const QPointF delta = screenPos - screenPos.toPoint();
 
-        touchPoint.d->pos = widget->mapFromGlobal(screenPos.toPoint()) + delta;
-        touchPoint.d->startPos = widget->mapFromGlobal(touchPoint.globalPressPosition().toPoint()) + delta;
-        touchPoint.d->lastPos = widget->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
+        QMutableEventPoint::from(pt).setPosition(widget->mapFromGlobal(screenPos.toPoint()) + delta);
 
-        if (touchPoint.state() == Qt::TouchPointPressed)
+        if (pt.state() == QEventPoint::State::Pressed)
             containsPress = true;
     }
     return containsPress;
@@ -3979,7 +3972,7 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 {
 }
 
-QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice *device, const QTouchEvent::TouchPoint &touchPoint)
+QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice *device, const QEventPoint &touchPoint)
 {
     const QPointF screenPos = touchPoint.globalPosition();
     int closestTouchPointId = -1;
@@ -3989,7 +3982,7 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice 
             ite = activeTouchPoints.constEnd();
     while (it != ite) {
         if (it.key().device == device && it.key().touchPointId != touchPoint.id()) {
-            const QTouchEvent::TouchPoint &touchPoint = it->touchPoint;
+            const QEventPoint &touchPoint = it->touchPoint;
             qreal dx = screenPos.x() - touchPoint.globalPosition().x();
             qreal dy = screenPos.y() - touchPoint.globalPosition().y();
             qreal distance = dx * dx + dy * dy;
@@ -4010,7 +4003,7 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
         return;
 
     for (int i = 0, tc = touchEvent->touchPoints().count(); i < tc; ++i) {
-        const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
+        const QEventPoint &touchPoint = touchEvent->touchPoints().at(i);
         activeTouchPoints[QGuiApplicationPrivate::ActiveTouchPointsKey(
                     touchEvent->pointingDevice(), touchPoint.id())].target = widget;
     }
@@ -4018,30 +4011,31 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
 
 bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  const QPointingDevice *device,
-                                                 const QList<QTouchEvent::TouchPoint> &touchPoints,
+                                                 const QList<QEventPoint> &touchPoints,
                                                  ulong timestamp)
 {
     QApplicationPrivate *d = self;
-    typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
+    // TODO get rid of this QPair
+    typedef QPair<QEventPoint::State, QList<QEventPoint> > StatesAndTouchPoints;
     QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
 
     for (int i = 0; i < touchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint touchPoint = touchPoints.at(i);
-        // explicitly detach from the original touch point that we got, so even
-        // if the touchpoint structs are reused, we will make a copy that we'll
-        // deliver to the user (which might want to store the struct for later use).
-        touchPoint.d = touchPoint.d->detach();
+        QEventPoint touchPoint = touchPoints.at(i);
 
         // update state
         QPointer<QObject> target;
         ActiveTouchPointsKey touchInfoKey(device, touchPoint.id());
         ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
-        if (touchPoint.state() == Qt::TouchPointPressed) {
-            if (device->type() == QInputDevice::DeviceType::TouchPad) {
+        if (touchPoint.state() == QEventPoint::State::Pressed) {
+            if (device->type() == QInputDevice::DeviceType::TouchPad && !d->activeTouchPoints.isEmpty()) {
                 // on touch-pads, send all touch points to the same widget
-                target = d->activeTouchPoints.isEmpty()
-                        ? QPointer<QObject>()
-                        : d->activeTouchPoints.constBegin().value().target;
+                // pick the first non-null target if possible
+                for (const auto &a : d->activeTouchPoints.values()) {
+                    if (a.target) {
+                        target = a.target;
+                        break;
+                    }
+                }
             }
 
             if (!target) {
@@ -4084,7 +4078,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 #endif
 
         StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[targetWidget];
-        maskAndPoints.first |= touchPoint.state();
+        maskAndPoints.first = QEventPoint::State(maskAndPoints.first | touchPoint.state());
         maskAndPoints.second.append(touchPoint);
     }
 
@@ -4101,13 +4095,13 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
         QEvent::Type eventType;
         switch (it.value().first) {
-        case Qt::TouchPointPressed:
+        case QEventPoint::State::Pressed:
             eventType = QEvent::TouchBegin;
             break;
-        case Qt::TouchPointReleased:
+        case QEventPoint::State::Released:
             eventType = QEvent::TouchEnd;
             break;
-        case Qt::TouchPointStationary:
+        case QEventPoint::State::Stationary:
             // don't send the event if nothing changed
             continue;
         default:
@@ -4115,14 +4109,10 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             break;
         }
 
-        QTouchEvent touchEvent(eventType,
-                               device,
-                               QGuiApplication::keyboardModifiers(),
-                               it.value().first,
-                               it.value().second);
+        QMutableTouchEvent touchEvent(eventType, device, QGuiApplication::keyboardModifiers(),
+                                      it.value().second);
         bool containsPress = updateTouchPointsForWidget(widget, &touchEvent);
         touchEvent.setTimestamp(timestamp);
-        touchEvent.setWindow(window->windowHandle());
         touchEvent.setTarget(widget);
 
         if (containsPress)
@@ -4160,7 +4150,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
 void QApplicationPrivate::translateTouchCancel(const QPointingDevice *device, ulong timestamp)
 {
-    QTouchEvent touchEvent(QEvent::TouchCancel, device, QGuiApplication::keyboardModifiers());
+    QMutableTouchEvent touchEvent(QEvent::TouchCancel, device, QGuiApplication::keyboardModifiers());
     touchEvent.setTimestamp(timestamp);
     QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
             = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
@@ -4174,7 +4164,6 @@ void QApplicationPrivate::translateTouchCancel(const QPointingDevice *device, ul
     for (QSet<QWidget *>::const_iterator widIt = widgetsNeedingCancel.constBegin(),
          widItEnd = widgetsNeedingCancel.constEnd(); widIt != widItEnd; ++widIt) {
         QWidget *widget = *widIt;
-        touchEvent.setWindow(widget->windowHandle());
         touchEvent.setTarget(widget);
         QApplication::sendSpontaneousEvent(widget, &touchEvent);
     }

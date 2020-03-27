@@ -2159,8 +2159,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     if (mouseMove) {
         QGuiApplicationPrivate::lastCursorPosition = globalPoint;
-        const auto doubleClickDistance = e->source == Qt::MouseEventNotSynthesized ?
-                    mouseDoubleClickDistance : touchDoubleTapDistance;
+        const auto doubleClickDistance = (e->device && e->device->type() == QInputDevice::DeviceType::Mouse ?
+                    mouseDoubleClickDistance : touchDoubleTapDistance);
         if (qAbs(globalPoint.x() - mousePressX) > doubleClickDistance ||
             qAbs(globalPoint.y() - mousePressY) > doubleClickDistance)
             mousePressButton = Qt::NoButton;
@@ -2199,6 +2199,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (!window)
         return;
 
+    const QPointingDevice *device = static_cast<const QPointingDevice *>(e->device);
 #ifndef QT_NO_CURSOR
     if (!e->synthetic()) {
         if (const QScreen *screen = window->screen())
@@ -2206,14 +2207,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
                 const QPointF nativeLocalPoint = QHighDpi::toNativePixels(localPoint, screen);
                 const QPointF nativeGlobalPoint = QHighDpi::toNativePixels(globalPoint, screen);
                 QMouseEvent ev(type, nativeLocalPoint, nativeLocalPoint, nativeGlobalPoint,
-                                          button, e->buttons, e->modifiers, e->source);
+                               button, e->buttons, e->modifiers, e->source, device);
                 ev.setTimestamp(e->timestamp);
                 cursor->pointerEvent(ev);
             }
     }
 #endif
 
-    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source);
+    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source, device);
     ev.setTimestamp(e->timestamp);
 
     if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
@@ -2223,7 +2224,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     if (doubleClick && (ev.type() == QEvent::MouseButtonPress)) {
         // QtBUG-25831, used to suppress delivery in qwidgetwindow.cpp
-        setMouseEventFlags(&ev, ev.flags() | Qt::MouseEventCreatedDoubleClick);
+        QMutableSinglePointEvent::from(ev).setDoubleClick();
     }
 
     QGuiApplication::sendSpontaneousEvent(window, &ev);
@@ -2244,11 +2245,11 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         // avoid strange touch event sequences when several
         // buttons are pressed
         if (type == QEvent::MouseButtonPress && button == Qt::LeftButton) {
-            point.state = Qt::TouchPointPressed;
+            point.state = QEventPoint::State::Pressed;
         } else if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
-            point.state = Qt::TouchPointReleased;
+            point.state = QEventPoint::State::Released;
         } else if (type == QEvent::MouseMove && (e->buttons & Qt::LeftButton)) {
-            point.state = Qt::TouchPointMoved;
+            point.state = QEventPoint::State::Updated;
         } else {
             return;
         }
@@ -2256,7 +2257,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         points << point;
 
         QEvent::Type type;
-        QList<QTouchEvent::TouchPoint> touchPoints =
+        const QList<QEventPoint> &touchPoints =
                 QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
 
         QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
@@ -2268,7 +2269,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         if (!e->window.isNull() || e->nullWindow()) { // QTBUG-36364, check if window closed in response to press
             const QEvent::Type doubleClickType = e->nonClientArea ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
             QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
-                                      button, e->buttons, e->modifiers, e->source);
+                                      button, e->buttons, e->modifiers, e->source, device);
             dblClickEvent.setTimestamp(e->timestamp);
             QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
         }
@@ -2301,10 +2302,11 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
         return;
     }
 
-     QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta,
-                    mouse_buttons, e->modifiers, e->phase, e->inverted, e->source);
-     ev.setTimestamp(e->timestamp);
-     QGuiApplication::sendSpontaneousEvent(window, &ev);
+    const QPointingDevice *device = static_cast<const QPointingDevice *>(e->device);
+    QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta,
+                   mouse_buttons, e->modifiers, e->phase, e->inverted, e->source, device);
+    ev.setTimestamp(e->timestamp);
+    QGuiApplication::sendSpontaneousEvent(window, &ev);
 #else
      Q_UNUSED(e);
 #endif // QT_CONFIG(wheelevent)
@@ -2673,7 +2675,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
             }
         }();
         QWindowSystemInterfacePrivate::MouseEvent mouseEvent(window, e->timestamp, e->local,
-            e->global, e->buttons, e->modifiers, button, mouseType, Qt::MouseEventSynthesizedByQt);
+            e->global, e->buttons, e->modifiers, button, mouseType, Qt::MouseEventNotSynthesized, false, device);
         mouseEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
         processMouseEvent(&mouseEvent);
     }
@@ -2716,7 +2718,8 @@ void QGuiApplicationPrivate::processGestureEvent(QWindowSystemInterfacePrivate::
     if (e->window.isNull())
         return;
 
-    QNativeGestureEvent ev(e->type, e->device, e->pos, e->pos, e->globalPos, e->realValue, e->sequenceId, e->intValue);
+    const QPointingDevice *device = static_cast<const QPointingDevice *>(e->device);
+    QNativeGestureEvent ev(e->type, device, e->pos, e->pos, e->globalPos, e->realValue, e->sequenceId, e->intValue);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(e->window, &ev);
 }
@@ -2765,11 +2768,12 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 {
     QGuiApplicationPrivate *d = self;
     modifier_buttons = e->modifiers;
+    const QPointingDevice *device = static_cast<const QPointingDevice *>(e->device);
 
     if (e->touchType == QEvent::TouchCancel) {
         // The touch sequence has been canceled (e.g. by the compositor).
         // Send the TouchCancel to all windows with active touches and clean up.
-        QTouchEvent touchEvent(QEvent::TouchCancel, static_cast<const QPointingDevice *>(e->device), e->modifiers);
+        QTouchEvent touchEvent(QEvent::TouchCancel, device, e->modifiers);
         touchEvent.setTimestamp(e->timestamp);
         QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
                 = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
@@ -2782,7 +2786,6 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
         for (QSet<QWindow *>::const_iterator winIt = windowsNeedingCancel.constBegin(),
             winItEnd = windowsNeedingCancel.constEnd(); winIt != winItEnd; ++winIt) {
-            touchEvent.setWindow(*winIt);
             QGuiApplication::sendSpontaneousEvent(*winIt, &touchEvent);
         }
         if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic()) {
@@ -2798,7 +2801,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                e->modifiers,
                                                                Qt::LeftButton,
                                                                QEvent::MouseButtonRelease,
-                                                               Qt::MouseEventSynthesizedByQt);
+                                                               Qt::MouseEventNotSynthesized,
+                                                               false,
+                                                               device);
                 fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                 processMouseEvent(&fake);
             }
@@ -2816,25 +2821,22 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     self->lastTouchType = e->touchType;
 
     QWindow *window = e->window.data();
-    typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
+    // TODO get rid of this QPair; we don't need to accumulate combined states here anymore
+    typedef QPair<QEventPoint::States, QList<QEventPoint> > StatesAndTouchPoints;
     QHash<QWindow *, StatesAndTouchPoints> windowsNeedingEvents;
     bool stationaryTouchPointChangedProperty = false;
 
     for (int i = 0; i < e->points.count(); ++i) {
-        QTouchEvent::TouchPoint touchPoint = e->points.at(i);
-        // explicitly detach from the original touch point that we got, so even
-        // if the touchpoint structs are reused, we will make a copy that we'll
-        // deliver to the user (which might want to store the struct for later use).
-        touchPoint.d = touchPoint.d->detach();
+        QMutableEventPoint touchPoint = QMutableEventPoint::from(e->points[i]);
 
         // update state
         QPointer<QWindow> w;
-        QTouchEvent::TouchPoint previousTouchPoint;
-        ActiveTouchPointsKey touchInfoKey(static_cast<const QPointingDevice *>(e->device), touchPoint.id());
+        QEventPoint previousTouchPoint;
+        ActiveTouchPointsKey touchInfoKey(device, touchPoint.id());
         ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
         switch (touchPoint.state()) {
-        case Qt::TouchPointPressed:
-            if (e->device->type() == QInputDevice::DeviceType::TouchPad) {
+        case QEventPoint::State::Pressed:
+            if (e->device && e->device->type() == QInputDevice::DeviceType::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
                 w = d->activeTouchPoints.isEmpty()
                     ? QPointer<QWindow>()
@@ -2851,30 +2853,23 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             }
 
             touchInfo.window = w;
-            touchPoint.d->startScreenPos = touchPoint.globalPosition();
-            touchPoint.d->lastScreenPos = touchPoint.globalPosition();
-            touchPoint.d->startNormalizedPos = touchPoint.normalizedPos();
-            touchPoint.d->lastNormalizedPos = touchPoint.normalizedPos();
-            if (touchPoint.pressure() < qreal(0.))
-                touchPoint.d->pressure = qreal(1.);
+            touchPoint.setGlobalPressPosition(touchPoint.globalPosition());
+            touchPoint.setGlobalLastPosition(touchPoint.globalPosition());
+            if (touchPoint.pressure() < 0)
+                touchPoint.setPressure(1);
 
             touchInfo.touchPoint = touchPoint;
             break;
 
-        case Qt::TouchPointReleased:
+        case QEventPoint::State::Released:
             w = touchInfo.window;
             if (!w)
                 continue;
 
             previousTouchPoint = touchInfo.touchPoint;
-            touchPoint.d->startScreenPos = previousTouchPoint.globalPressPosition();
-            touchPoint.d->lastScreenPos = previousTouchPoint.globalPosition();
-            touchPoint.d->startPos = previousTouchPoint.pressPosition();
-            touchPoint.d->lastPos = previousTouchPoint.position();
-            touchPoint.d->startNormalizedPos = previousTouchPoint.startNormalizedPos();
-            touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
-            if (touchPoint.pressure() < qreal(0.))
-                touchPoint.d->pressure = qreal(0.);
+            touchPoint.setGlobalPressPosition(previousTouchPoint.globalPressPosition());
+            touchPoint.setGlobalLastPosition(previousTouchPoint.globalPosition());
+            touchPoint.setPressure(0);
 
             break;
 
@@ -2884,26 +2879,22 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 continue;
 
             previousTouchPoint = touchInfo.touchPoint;
-            touchPoint.d->startScreenPos = previousTouchPoint.globalPressPosition();
-            touchPoint.d->lastScreenPos = previousTouchPoint.globalPosition();
-            touchPoint.d->startPos = previousTouchPoint.pressPosition();
-            touchPoint.d->lastPos = previousTouchPoint.position();
-            touchPoint.d->startNormalizedPos = previousTouchPoint.startNormalizedPos();
-            touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
-            if (touchPoint.pressure() < qreal(0.))
-                touchPoint.d->pressure = qreal(1.);
+            touchPoint.setGlobalPressPosition(previousTouchPoint.globalPressPosition());
+            touchPoint.setGlobalLastPosition(previousTouchPoint.globalPosition());
+            if (touchPoint.pressure() < 0)
+                touchPoint.setPressure(1);
 
             // Stationary points might not be delivered down to the receiving item
             // and get their position transformed, keep the old values instead.
-            if (touchPoint.state() == Qt::TouchPointStationary) {
+            if (touchPoint.state() == QEventPoint::State::Stationary) {
                 if (touchInfo.touchPoint.velocity() != touchPoint.velocity()) {
                     touchInfo.touchPoint.setVelocity(touchPoint.velocity());
-                    touchPoint.d->stationaryWithModifiedProperty = true;
+                    touchPoint.setStationaryWithModifiedProperty();
                     stationaryTouchPointChangedProperty = true;
                 }
                 if (!qFuzzyCompare(touchInfo.touchPoint.pressure(), touchPoint.pressure())) {
                     touchInfo.touchPoint.setPressure(touchPoint.pressure());
-                    touchPoint.d->stationaryWithModifiedProperty = true;
+                    touchPoint.setStationaryWithModifiedProperty();
                     stationaryTouchPointChangedProperty = true;
                 }
             } else {
@@ -2914,13 +2905,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
         Q_ASSERT(w.data() != nullptr);
 
-        // make the *scene* functions return the same as the *screen* functions
-        // Note: touchPoint is a reference to the one from activeTouchPoints,
-        // so we can modify it as long as we're careful NOT to call setters and
-        // otherwise NOT to cause the d-pointer to be detached.
-        touchPoint.d->scenePos = touchPoint.globalPosition();
-        touchPoint.d->startScenePos = touchPoint.globalPressPosition();
-        touchPoint.d->lastScenePos = touchPoint.lastScreenPos();
+        // make the *scene* position the same as the *global* position
+        // Note: touchPoint is a reference to the one from activeTouchPoints, so we can modify it.
+        touchPoint.setScenePosition(touchPoint.globalPosition());
 
         StatesAndTouchPoints &maskAndPoints = windowsNeedingEvents[w.data()];
         maskAndPoints.first |= touchPoint.state();
@@ -2937,13 +2924,13 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
         QEvent::Type eventType;
         switch (it.value().first) {
-        case Qt::TouchPointPressed:
+        case QEventPoint::State::Pressed:
             eventType = QEvent::TouchBegin;
             break;
-        case Qt::TouchPointReleased:
+        case QEventPoint::State::Released:
             eventType = QEvent::TouchEnd;
             break;
-        case Qt::TouchPointStationary:
+        case QEventPoint::State::Stationary:
             // don't send the event if nothing changed
             if (!stationaryTouchPointChangedProperty)
                 continue;
@@ -2961,39 +2948,26 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 // but don't leave dangling state: e.g.
                 // QQuickWindowPrivate::itemForTouchPointId needs to be cleared.
                 QTouchEvent touchEvent(QEvent::TouchCancel,
-                                       static_cast<const QPointingDevice *>(e->device),
+                                       device,
                                        e->modifiers);
                 touchEvent.setTimestamp(e->timestamp);
-                touchEvent.setWindow(w);
                 QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
             }
             continue;
         }
 
-        QTouchEvent touchEvent(eventType,
-                               static_cast<const QPointingDevice *>(e->device),
-                               e->modifiers,
-                               it.value().first,    // state flags
-                               it.value().second);  // list of touchpoints
+        const auto &touchpoints = it.value().second;
+        QMutableTouchEvent touchEvent(eventType, device, e->modifiers, touchpoints);
         touchEvent.setTimestamp(e->timestamp);
-        touchEvent.setWindow(w);
 
-        const int pointCount = touchEvent.touchPoints().count();
-        for (int i = 0; i < pointCount; ++i) {
-            QTouchEvent::TouchPoint &touchPoint = touchEvent._touchPoints[i];
+        for (QEventPoint &pt : touchEvent.touchPoints()) {
+            auto &touchPoint = QMutableEventPoint::from(pt);
 
             // preserve the sub-pixel resolution
             const QPointF screenPos = touchPoint.globalPosition();
             const QPointF delta = screenPos - screenPos.toPoint();
 
-            touchPoint.d->pos = w->mapFromGlobal(screenPos.toPoint()) + delta;
-            if (touchPoint.state() == Qt::TouchPointPressed) {
-                // touchPoint is actually a reference to one that is stored in activeTouchPoints,
-                // and we are now going to store the startPos and lastPos there, for the benefit
-                // of future moves and releases.  It's important that the d-pointer is NOT detached.
-                touchPoint.d->startPos = w->mapFromGlobal(touchPoint.globalPressPosition().toPoint()) + delta;
-                touchPoint.d->lastPos = w->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
-            }
+            touchPoint.setPosition(w->mapFromGlobal(screenPos.toPoint()) + delta);
         }
 
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
@@ -3004,9 +2978,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 if (eventType == QEvent::TouchEnd)
                     self->synthesizedMousePoints.clear();
 
-                const QList<QTouchEvent::TouchPoint> &touchPoints = touchEvent.touchPoints();
                 if (eventType == QEvent::TouchBegin)
-                    m_fakeMouseSourcePointId = touchPoints.first().id();
+                    m_fakeMouseSourcePointId = touchEvent.point(0).id();
 
                 const QEvent::Type mouseType = [&]() {
                     switch (eventType) {
@@ -3020,8 +2993,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 Qt::MouseButton button = mouseType == QEvent::MouseMove ? Qt::NoButton : Qt::LeftButton;
                 Qt::MouseButtons buttons = mouseType == QEvent::MouseButtonRelease ? Qt::NoButton : Qt::LeftButton;
 
-                for (int i = 0; i < touchPoints.count(); ++i) {
-                    const QTouchEvent::TouchPoint &touchPoint = touchPoints.at(i);
+                const auto &points = touchEvent.touchPoints();
+                for (const QEventPoint &touchPoint : points) {
                     if (touchPoint.id() == m_fakeMouseSourcePointId) {
                         if (eventType != QEvent::TouchEnd)
                             self->synthesizedMousePoints.insert(w, SynthesizedMouseData(
@@ -3035,7 +3008,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                        e->modifiers,
                                                                        button,
                                                                        mouseType,
-                                                                       Qt::MouseEventSynthesizedByQt);
+                                                                       Qt::MouseEventSynthesizedByQt,
+                                                                       false,
+                                                                       device);
                         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                         processMouseEvent(&fake);
                         break;
@@ -3049,10 +3024,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     // delivered. When the receiver is a widget, QApplication will access
     // activeTouchPoints during delivery and therefore nothing can be removed
     // before sending the event.
-    for (int i = 0; i < e->points.count(); ++i) {
-        QTouchEvent::TouchPoint touchPoint = e->points.at(i);
-        if (touchPoint.state() == Qt::TouchPointReleased)
-            d->activeTouchPoints.remove(ActiveTouchPointsKey(static_cast<const QPointingDevice *>(e->device), touchPoint.id()));
+    for (const QEventPoint &touchPoint : e->points) {
+        if (touchPoint.state() == QEventPoint::State::Released)
+            d->activeTouchPoints.remove(ActiveTouchPointsKey(device, touchPoint.id()));
     }
 }
 
@@ -4246,53 +4220,6 @@ enum MouseMasks {
     MouseFlagsCapsMask = 0xFF0000,
     MouseFlagsShift = 16
 };
-
-int QGuiApplicationPrivate::mouseEventCaps(QMouseEvent *event)
-{
-    return event->caps & MouseCapsMask;
-}
-
-QVector2D QGuiApplicationPrivate::mouseEventVelocity(QMouseEvent *event)
-{
-    return event->velocity;
-}
-
-void QGuiApplicationPrivate::setMouseEventCapsAndVelocity(QMouseEvent *event, int caps, const QVector2D &velocity)
-{
-    Q_ASSERT(caps <= MouseCapsMask);
-    event->caps &= ~MouseCapsMask;
-    event->caps |= caps & MouseCapsMask;
-    event->velocity = velocity;
-}
-
-Qt::MouseEventSource QGuiApplicationPrivate::mouseEventSource(const QMouseEvent *event)
-{
-    return Qt::MouseEventSource((event->caps & MouseSourceMaskDst) >> MouseSourceShift);
-}
-
-void QGuiApplicationPrivate::setMouseEventSource(QMouseEvent *event, Qt::MouseEventSource source)
-{
-    // Mouse event synthesization status is encoded in the caps field because
-    // QPointingDevice::Capability uses only 6 bits from it.
-    int value = source;
-    Q_ASSERT(value <= MouseSourceMaskSrc);
-    event->caps &= ~MouseSourceMaskDst;
-    event->caps |= (value & MouseSourceMaskSrc) << MouseSourceShift;
-}
-
-Qt::MouseEventFlags QGuiApplicationPrivate::mouseEventFlags(const QMouseEvent *event)
-{
-    return Qt::MouseEventFlags((event->caps & MouseFlagsCapsMask) >> MouseFlagsShift);
-}
-
-void QGuiApplicationPrivate::setMouseEventFlags(QMouseEvent *event, Qt::MouseEventFlags flags)
-{
-    // use the 0x00FF0000 byte from caps (containing up to 7 mouse event flags)
-    unsigned int value = flags;
-    Q_ASSERT(value <= Qt::MouseEventFlagMask);
-    event->caps &= ~MouseFlagsCapsMask;
-    event->caps |= (value & Qt::MouseEventFlagMask) << MouseFlagsShift;
-}
 
 QInputDeviceManager *QGuiApplicationPrivate::inputDeviceManager()
 {

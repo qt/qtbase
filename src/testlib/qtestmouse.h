@@ -211,20 +211,20 @@ namespace QTest
 
         stateKey &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
 
-        QMouseEvent me(QEvent::User, QPoint(), Qt::LeftButton, button, stateKey);
+        QMouseEvent me(QEvent::User, QPointF(), Qt::LeftButton, QTestPrivate::qtestMouseButtons, stateKey, QPointingDevice::primaryPointingDevice());
         switch (action)
         {
             case MousePress:
-                me = QMouseEvent(QEvent::MouseButtonPress, pos, widget->mapToGlobal(pos), button, button, stateKey);
+                me = QMouseEvent(QEvent::MouseButtonPress, pos, widget->mapToGlobal(pos), button, button, stateKey, QPointingDevice::primaryPointingDevice());
                 me.setTimestamp(++lastMouseTimestamp);
                 break;
             case MouseRelease:
-                me = QMouseEvent(QEvent::MouseButtonRelease, pos, widget->mapToGlobal(pos), button, Qt::MouseButton(), stateKey);
+                me = QMouseEvent(QEvent::MouseButtonRelease, pos, widget->mapToGlobal(pos), button, Qt::MouseButton(), stateKey, QPointingDevice::primaryPointingDevice());
                 me.setTimestamp(++lastMouseTimestamp);
                 lastMouseTimestamp += mouseDoubleClickInterval; // avoid double clicks being generated
                 break;
             case MouseDClick:
-                me = QMouseEvent(QEvent::MouseButtonDblClick, pos, widget->mapToGlobal(pos), button, button, stateKey);
+                me = QMouseEvent(QEvent::MouseButtonDblClick, pos, widget->mapToGlobal(pos), button, button, stateKey, QPointingDevice::primaryPointingDevice());
                 me.setTimestamp(++lastMouseTimestamp);
                 break;
             case MouseMove:

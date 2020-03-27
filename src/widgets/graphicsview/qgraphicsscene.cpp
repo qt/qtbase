@@ -243,6 +243,7 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/qinputmethod.h>
 #include <private/qapplication_p.h>
+#include <private/qevent_p.h>
 #include <private/qobject_p.h>
 #if QT_CONFIG(graphicseffect)
 #include <private/qgraphicseffect_p.h>
@@ -5828,18 +5829,15 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
     const QTransform mapFromScene =
         item->d_ptr->genericMapFromSceneTransform(static_cast<const QWidget *>(touchEvent->target()));
 
-    for (auto &touchPoint : touchEvent->_touchPoints) {
-        touchPoint.setPos(mapFromScene.map(touchPoint.scenePosition()));
-        touchPoint.setStartPos(mapFromScene.map(touchPoint.scenePressPosition()));
-        touchPoint.setLastPos(mapFromScene.map(touchPoint.lastScenePos()));
-    }
+    for (QEventPoint &pt : QMutableTouchEvent::from(touchEvent)->touchPoints())
+        QMutableEventPoint::from(pt).setPosition(mapFromScene.map(pt.scenePosition()));
 }
 
 int QGraphicsScenePrivate::findClosestTouchPointId(const QPointF &scenePos)
 {
     int closestTouchPointId = -1;
     qreal closestDistance = qreal(0.);
-    for (const QTouchEvent::TouchPoint &touchPoint : qAsConst(sceneCurrentTouchPoints)) {
+    for (const QEventPoint &touchPoint : qAsConst(sceneCurrentTouchPoints)) {
         qreal distance = QLineF(scenePos, touchPoint.scenePosition()).length();
         if (closestTouchPointId == -1|| distance < closestDistance) {
             closestTouchPointId = touchPoint.id();
@@ -5851,14 +5849,14 @@ int QGraphicsScenePrivate::findClosestTouchPointId(const QPointF &scenePos)
 
 void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
 {
-    typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
+    typedef QPair<QEventPoint::States, QList<QEventPoint> > StatesAndTouchPoints;
     QHash<QGraphicsItem *, StatesAndTouchPoints> itemsNeedingEvents;
 
     const auto touchPoints = sceneTouchEvent->touchPoints();
     for (const auto &touchPoint : touchPoints) {
         // update state
         QGraphicsItem *item = nullptr;
-        if (touchPoint.state() == Qt::TouchPointPressed) {
+        if (touchPoint.state() == QEventPoint::State::Pressed) {
             if (sceneTouchEvent->pointingDevice()->type() == QInputDevice::DeviceType::TouchPad) {
                 // on touch-pad devices, send all touch points to the same item
                 item = itemForTouchPointId.isEmpty()
@@ -5886,7 +5884,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
 
             itemForTouchPointId.insert(touchPoint.id(), item);
             sceneCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
-        } else if (touchPoint.state() == Qt::TouchPointReleased) {
+        } else if (touchPoint.state() == QEventPoint::State::Released) {
             item = itemForTouchPointId.take(touchPoint.id());
             if (!item)
                 continue;
@@ -5901,7 +5899,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
         }
 
         StatesAndTouchPoints &statesAndTouchPoints = itemsNeedingEvents[item];
-        statesAndTouchPoints.first |= touchPoint.state();
+        statesAndTouchPoints.first = QEventPoint::States(statesAndTouchPoints.first | touchPoint.state());
         statesAndTouchPoints.second.append(touchPoint);
     }
 
@@ -5921,15 +5919,15 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
         // determine event type from the state mask
         QEvent::Type eventType;
         switch (it.value().first) {
-        case Qt::TouchPointPressed:
+        case QEventPoint::State::Pressed:
             // all touch points have pressed state
             eventType = QEvent::TouchBegin;
             break;
-        case Qt::TouchPointReleased:
+        case QEventPoint::State::Released:
             // all touch points have released state
             eventType = QEvent::TouchEnd;
             break;
-        case Qt::TouchPointStationary:
+        case QEventPoint::State::Stationary:
             // don't send the event if nothing changed
             continue;
         default:
@@ -5938,9 +5936,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             break;
         }
 
-        QTouchEvent touchEvent(eventType, sceneTouchEvent->pointingDevice(), sceneTouchEvent->modifiers(), it.value().first, it.value().second);
-        // TODO more constructor args and fewer setters?
-        touchEvent.setWindow(sceneTouchEvent->window());
+        QMutableTouchEvent touchEvent(eventType, sceneTouchEvent->pointingDevice(), sceneTouchEvent->modifiers(), it.value().second);
         touchEvent.setTarget(sceneTouchEvent->target());
         touchEvent.setModifiers(sceneTouchEvent->modifiers());
         touchEvent.setTimestamp(sceneTouchEvent->timestamp());
@@ -5981,7 +5977,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
 
     if (focusOnTouch) {
         if (cachedItemsUnderMouse.isEmpty() || cachedItemsUnderMouse.constFirst() != origin) {
-            const QTouchEvent::TouchPoint &firstTouchPoint = touchEvent->touchPoints().first();
+            const QEventPoint &firstTouchPoint = touchEvent->touchPoints().first();
             cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.globalPosition().toPoint(),
                                                     firstTouchPoint.scenePosition(),
                                                     static_cast<QWidget *>(touchEvent->target()));

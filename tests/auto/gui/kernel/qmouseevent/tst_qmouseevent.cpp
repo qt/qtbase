@@ -120,12 +120,6 @@ void tst_QMouseEvent::mouseEventBasic()
     QCOMPARE(me.position(), local);
     QCOMPARE(me.scenePosition(), scene);
     QCOMPARE(me.globalPosition(), screen);
-
-    QPointF changedLocal(33, 66);
-    me.setLocalPos(changedLocal);
-    QCOMPARE(me.position(), changedLocal);
-    QCOMPARE(me.scenePosition(), scene);
-    QCOMPARE(me.globalPosition(), screen);
 }
 
 void tst_QMouseEvent::checkMousePressEvent_data()

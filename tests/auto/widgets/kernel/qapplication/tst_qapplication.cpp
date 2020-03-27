@@ -57,6 +57,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
+#include <private/qevent_p.h>
 #include <private/qhighdpiscaling_p.h>
 
 #include <algorithm>
@@ -1900,15 +1901,6 @@ void tst_QApplication::touchEventPropagation()
     int argc = 1;
     QApplication app(argc, &argv0);
 
-    QList<QTouchEvent::TouchPoint> pressedTouchPoints;
-    QTouchEvent::TouchPoint press(0);
-    press.setState(Qt::TouchPointPressed);
-    pressedTouchPoints << press;
-
-    QList<QTouchEvent::TouchPoint> releasedTouchPoints;
-    QTouchEvent::TouchPoint release(0);
-    release.setState(Qt::TouchPointReleased);
-    releasedTouchPoints << release;
 
     QPointingDevice *device = QTest::createTouchDevice();
 
@@ -1927,8 +1919,10 @@ void tst_QApplication::touchEventPropagation()
         // we must ensure there is a screen position in the TouchPoint that maps to a local 0, 0.
         const QPoint deviceGlobalPos =
             QHighDpi::toNativePixels(window.mapToGlobal(QPoint(0, 0)), window.windowHandle()->screen());
-        pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
-        releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
+        auto pressedTouchPoints = QList<QEventPoint>() <<
+            QEventPoint(0, QEventPoint::State::Pressed, QPointF(), deviceGlobalPos);
+        auto releasedTouchPoints = QList<QEventPoint>() <<
+            QEventPoint(0, QEventPoint::State::Released, QPointF(), deviceGlobalPos);
 
         QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
@@ -1985,8 +1979,10 @@ void tst_QApplication::touchEventPropagation()
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         const QPoint deviceGlobalPos =
             QHighDpi::toNativePixels(window.mapToGlobal(QPoint(50, 150)), window.windowHandle()->screen());
-        pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
-        releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
+        auto pressedTouchPoints = QList<QEventPoint>() <<
+            QEventPoint(0, QEventPoint::State::Pressed, QPointF(), deviceGlobalPos);
+        auto releasedTouchPoints = QList<QEventPoint>() <<
+            QEventPoint(0, QEventPoint::State::Released, QPointF(), deviceGlobalPos);
 
         QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,

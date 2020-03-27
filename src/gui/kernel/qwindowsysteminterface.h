@@ -156,7 +156,7 @@ public:
                                  bool inverted = false);
 
     struct TouchPoint {
-        TouchPoint() : id(0), uniqueId(-1), pressure(0), rotation(0), state(Qt::TouchPointStationary) { }
+        TouchPoint() : id(0), uniqueId(-1), pressure(0), rotation(0), state(QEventPoint::State::Stationary) { }
         int id;                 // for application use
         qint64 uniqueId;        // for TUIO: object/token ID; otherwise empty
                                 // TODO for TUIO 2.0: add registerPointerUniqueID(QPointingDeviceUniqueId)
@@ -166,9 +166,8 @@ public:
         qreal pressure;         // 0 to 1
         qreal rotation;         // rotation applied to the elliptical contact patch
                                 // 0 means pointing straight up; 0 if unknown (like QTabletEvent::rotation)
-        Qt::TouchPointState state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
+        QEventPoint::State state; // Pressed|Updated|Stationary|Released
         QVector2D velocity;     // in screen coordinate system, pixels / seconds
-        QTouchEvent::TouchPoint::InfoFlags flags;
         QList<QPointF> rawPositions; // in screen coordinates
     };
 

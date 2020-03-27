@@ -79,7 +79,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
         In this type of device, the touch surface and display are integrated.
         This means the surface and display typically have the same size, such
         that there is a direct relationship between the touch points' physical
-        positions and the coordinate reported by QTouchEvent::TouchPoint. As a
+        positions and the coordinate reported by QEventPoint. As a
         result, Qt allows the user to interact directly with multiple QWidgets,
         QGraphicsItems, or Qt Quick Items at the same time.
 
@@ -158,12 +158,6 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
     \value Velocity
         Indicates that velocity information is available, meaning that
         QPointerEvent::EventPoint::velocity() returns a valid vector.
-
-    \value RawPositions
-        Indicates that the list returned by
-        QPointerEvent::EventPoint::rawScreenPositions() may contain one or more
-        positions for each touch point. This is relevant when the touch input
-        gets filtered or corrected on the driver level.
 
     \value NormalizedPosition
         Indicates that the normalized position is available, meaning that

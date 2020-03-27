@@ -310,21 +310,12 @@ inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for sing
 
 void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent)
 {
-    QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
-    for (int i = 0; i < touchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
-        const QSizeF ellipseDiameters = touchPoint.ellipseDiameters();
+    for (QEventPoint &pt : QMutableTouchEvent::from(touchEvent)->touchPoints()) {
         // the scene will set the item local pos, startPos, lastPos, and rect before delivering to
         // an item, but for now those functions are returning the view's local coordinates
-        touchPoint.setScenePos(d->mapToScene(touchPoint.position()));
-        touchPoint.setStartScenePos(d->mapToScene(touchPoint.pressPosition()));
-        touchPoint.setLastScenePos(d->mapToScene(touchPoint.lastPos()));
-        touchPoint.setEllipseDiameters(ellipseDiameters);
-
+        QMutableEventPoint::from(pt).setScenePosition(d->mapToScene(pt.position()));
         // screenPos, startScreenPos, and lastScreenPos are already set
     }
-
-    touchEvent->setTouchPoints(touchPoints);
 }
 
 /*!
@@ -2929,7 +2920,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         if (d->scene && d->sceneInteractionAllowed) {
             // Convert and deliver the touch event to the scene.
             QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
-            touchEvent->setTarget(viewport());
+            QMutableTouchEvent::from(touchEvent)->setTarget(viewport());
             QGraphicsViewPrivate::translateTouchEvent(d, touchEvent);
             QCoreApplication::sendEvent(d->scene, touchEvent);
         } else {

@@ -738,22 +738,22 @@ int QWasmEventTranslator::handleTouch(int eventType, const EmscriptenTouchEvent 
         case EMSCRIPTEN_EVENT_TOUCHSTART:
             if (tp != pressedTouchIds.constEnd()) {
                 touchPoint.state = (stationaryTouchPoint
-                                    ? Qt::TouchPointStationary
-                                    : Qt::TouchPointMoved);
+                                    ? QEventPoint::State::Stationary
+                                    : QEventPoint::State::Updated);
             } else {
-                touchPoint.state = Qt::TouchPointPressed;
+                touchPoint.state = QEventPoint::State::Pressed;
             }
             pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
 
             break;
         case EMSCRIPTEN_EVENT_TOUCHEND:
-            touchPoint.state = Qt::TouchPointReleased;
+            touchPoint.state = QEventPoint::State::Released;
             pressedTouchIds.remove(touchPoint.id);
             break;
         case EMSCRIPTEN_EVENT_TOUCHMOVE:
             touchPoint.state = (stationaryTouchPoint
-                                ? Qt::TouchPointStationary
-                                : Qt::TouchPointMoved);
+                                ? QEventPoint::State::Stationary
+                                : QEventPoint::State::Updated);
 
             pressedTouchIds.insert(touchPoint.id, touchPoint.normalPosition);
             break;

@@ -247,13 +247,13 @@ public:
     void initializeMultitouch_sys();
     void cleanupMultitouch();
     void cleanupMultitouch_sys();
-    QWidget *findClosestTouchPointTarget(const QPointingDevice *device, const QTouchEvent::TouchPoint &touchPoint);
-    void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
+    QWidget *findClosestTouchPointTarget(const QPointingDevice *device, const QEventPoint &touchPoint);
+    void appendTouchPoint(const QEventPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     void activateImplicitTouchGrab(QWidget *widget, QTouchEvent *touchBeginEvent);
     static bool translateRawTouchEvent(QWidget *widget,
                                        const QPointingDevice *device,
-                                       const QList<QTouchEvent::TouchPoint> &touchPoints,
+                                       const QList<QEventPoint> &touchPoints,
                                        ulong timestamp);
     static void translateTouchCancel(const QPointingDevice *device, ulong timestamp);
 

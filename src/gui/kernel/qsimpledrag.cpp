@@ -184,7 +184,7 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
             QMouseEvent *newRelease = new QMouseEvent(release->type(),
                 releaseWindowPos, releaseWindowPos, release->globalPosition(),
                 release->button(), release->buttons(),
-                release->modifiers(), release->source());
+                release->modifiers(), release->source(), release->pointingDevice());
             QCoreApplication::postEvent(o, newRelease);
             return true; // defer mouse release events until drag event loop has returned
         }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -563,8 +563,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 }
             }
 #endif
-            if ((event->type() != QEvent::MouseButtonPress)
-                    || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
+            if ((event->type() != QEvent::MouseButtonPress) || !(QMutableSinglePointEvent::from(event)->isDoubleClick())) {
                 // if the widget that was pressed is gone, then deliver move events without buttons
                 const auto buttons = event->type() == QEvent::MouseMove && qt_popup_down_closed
                                    ? Qt::NoButton : event->buttons();
@@ -666,8 +665,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (!receiver)
         return;
 
-    if ((event->type() != QEvent::MouseButtonPress)
-        || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
+    if ((event->type() != QEvent::MouseButtonPress) || !QMutableSinglePointEvent::from(event)->isDoubleClick()) {
 
         // The preceding statement excludes MouseButtonPress events which caused
         // creation of a MouseButtonDblClick event. QTBUG-25831
@@ -866,7 +864,8 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     QPoint mapped = widget->mapFrom(rootWidget, pos);
 
     QWheelEvent translated(QPointF(mapped), event->globalPosition(), event->pixelDelta(), event->angleDelta(),
-                           event->buttons(), event->modifiers(), event->phase(), event->inverted(), event->source());
+                           event->buttons(), event->modifiers(), event->phase(), event->inverted(),
+                           event->source(), event->pointingDevice());
     translated.setTimestamp(event->timestamp());
     QGuiApplication::forwardEvent(widget, &translated, event);
 }

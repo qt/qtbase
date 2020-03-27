@@ -66,7 +66,7 @@ public:
         , m_angle(0)
         , m_angularVelocity(0)
         , m_angularAcceleration(0)
-        , m_state(Qt::TouchPointPressed)
+        , m_state(QEventPoint::State::Pressed)
     {
     }
 
@@ -77,9 +77,9 @@ public:
 
     void setX(float x)
     {
-        if (state() == Qt::TouchPointStationary &&
+        if (state() == QEventPoint::State::Stationary &&
             !qFuzzyCompare(m_x + 2.0, x + 2.0)) { // +2 because 1 is a valid value, and qFuzzyCompare can't cope with 0.0
-            setState(Qt::TouchPointMoved);
+            setState(QEventPoint::State::Updated);
         }
         m_x = x;
     }
@@ -87,9 +87,9 @@ public:
 
     void setY(float y)
     {
-        if (state() == Qt::TouchPointStationary &&
+        if (state() == QEventPoint::State::Stationary &&
             !qFuzzyCompare(m_y + 2.0, y + 2.0)) { // +2 because 1 is a valid value, and qFuzzyCompare can't cope with 0.0
-            setState(Qt::TouchPointMoved);
+            setState(QEventPoint::State::Updated);
         }
         m_y = y;
     }
@@ -109,9 +109,9 @@ public:
     {
         if (angle > M_PI)
             angle = angle - M_PI * 2.0; // zero is pointing upwards, and is the default; but we want to have negative angles when rotating left
-        if (state() == Qt::TouchPointStationary &&
+        if (state() == QEventPoint::State::Stationary &&
             !qFuzzyCompare(m_angle + 2.0, angle + 2.0)) { // +2 because 1 is a valid value, and qFuzzyCompare can't cope with 0.0
-            setState(Qt::TouchPointMoved);
+            setState(QEventPoint::State::Updated);
         }
         m_angle = angle;
     }
@@ -122,8 +122,8 @@ public:
     float angularAcceleration() const { return m_angularAcceleration; }
     void setAngularAcceleration(float angularAcceleration) { m_angularAcceleration = angularAcceleration; }
 
-    void setState(const Qt::TouchPointState &state) { m_state = state; }
-    Qt::TouchPointState state() const { return m_state; }
+    void setState(const QEventPoint::State &state) { m_state = state; }
+    QEventPoint::State state() const { return m_state; }
 
 private:
     int m_id;       // sessionID, temporary object ID
@@ -136,7 +136,7 @@ private:
     float m_angle;
     float m_angularVelocity;
     float m_angularAcceleration;
-    Qt::TouchPointState m_state;
+    QEventPoint::State m_state;
 };
 Q_DECLARE_TYPEINFO(QTuioToken, Q_MOVABLE_TYPE); // Q_PRIMITIVE_TYPE: not possible: m_id, m_classId == -1
 

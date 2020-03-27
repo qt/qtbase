@@ -47,54 +47,112 @@
 
 QT_BEGIN_NAMESPACE
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+// Private subclasses to allow accessing and modifying protected variables.
+// These should NOT hold any extra state.
 
-class QTouchEventTouchPointPrivate
+class QMutableEventPoint : public QEventPoint
 {
 public:
-    inline QTouchEventTouchPointPrivate(int id)
-        : ref(1),
-          id(id),
-          state(Qt::TouchPointReleased),
-          pressure(-1),
-          rotation(0),
-          ellipseDiameters(0, 0),
-          stationaryWithModifiedProperty(false)
-    { }
+    QMutableEventPoint(int pointId = -1, State state = QEventPoint::State::Stationary,
+                       const QPointF &scenePosition = QPointF(), const QPointF &globalPosition = QPointF()) :
+        QEventPoint(pointId, state, scenePosition, globalPosition) {}
 
-    inline QTouchEventTouchPointPrivate *detach()
+    QMutableEventPoint(ulong timestamp, int pointId, State state,
+                       const QPointF &position, const QPointF &scenePosition, const QPointF &globalPosition) :
+        QEventPoint(pointId, state, scenePosition, globalPosition)
     {
-        QTouchEventTouchPointPrivate *d = new QTouchEventTouchPointPrivate(*this);
-        d->ref.storeRelaxed(1);
-        if (!this->ref.deref())
-            delete this;
-        return d;
+        m_timestamp = timestamp;
+        m_pos = position;
     }
 
-    QAtomicInt ref;
-    int id;
-    QPointingDeviceUniqueId uniqueId;
-    Qt::TouchPointStates state;
-    QPointF pos, scenePos, screenPos, normalizedPos,
-            startPos, startScenePos, startScreenPos, startNormalizedPos,
-            lastPos, lastScenePos, lastScreenPos, lastNormalizedPos;
-    qreal pressure;
-    qreal rotation;
-    QSizeF ellipseDiameters;
-    QVector2D velocity;
-    QTouchEvent::TouchPoint::InfoFlags flags;
-    bool stationaryWithModifiedProperty : 1;
-    QList<QPointF> rawScreenPositions;
+    static QMutableEventPoint *from(QEventPoint *me) { return static_cast<QMutableEventPoint *>(me); }
+
+    static QMutableEventPoint &from(QEventPoint &me) { return static_cast<QMutableEventPoint &>(me); }
+
+    bool stationaryWithModifiedProperty() const { return m_stationaryWithModifiedProperty; }
+
+    void setId(int pointId) { m_pointId = pointId; }
+
+    void setParent(const QPointerEvent *p) { m_parent = p; }
+
+    void setTimestamp(const ulong t) { m_timestamp = t; }
+
+    void setState(QEventPoint::State state) { m_state = state; }
+
+    void setUniqueId(const QPointingDeviceUniqueId &uid) { m_uniqueId = uid; }
+
+    void setPosition(const QPointF &pos) { m_pos = pos; }
+
+    void setScenePosition(const QPointF &pos) { m_scenePos = pos; }
+
+    void setGlobalPosition(const QPointF &pos) { m_globalPos = pos; }
+
+#if QT_DEPRECATED_SINCE(6, 0)
+    // temporary replacements for QTouchEvent::TouchPoint setters, mainly to make porting easier
+    QT_DEPRECATED_VERSION_X_6_0("Use setPosition()")
+    void setPos(const QPointF &pos) { m_pos = pos; }
+    QT_DEPRECATED_VERSION_X_6_0("Use setScenePosition()")
+    void setScenePos(const QPointF &pos) { m_scenePos = pos; }
+    QT_DEPRECATED_VERSION_X_6_0("Use setGlobalPosition()")
+    void setScreenPos(const QPointF &pos) { m_globalPos = pos; }
+#endif
+
+    void setGlobalPressPosition(const QPointF &pos) { m_globalPressPos = pos; }
+
+    void setGlobalGrabPosition(const QPointF &pos) { m_globalGrabPos = pos; }
+
+    void setGlobalLastPosition(const QPointF &pos) { m_globalLastPos = pos; }
+
+    void setEllipseDiameters(const QSizeF &d) { m_ellipseDiameters = d; }
+
+    void setPressure(qreal v) { m_pressure = v; }
+
+    void setRotation(qreal v) { m_rotation = v; }
+
+    void setVelocity(const QVector2D &v) { m_velocity = v; }
+
+    void setStationaryWithModifiedProperty(bool s = true) { m_stationaryWithModifiedProperty = s; }
 };
+
+static_assert(sizeof(QMutableEventPoint) == sizeof(QEventPoint));
+
+class QMutableTouchEvent : public QTouchEvent
+{
+public:
+    QMutableTouchEvent(QEvent::Type eventType,
+                       const QPointingDevice *device = nullptr,
+                       Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                       const QList<QEventPoint> &touchPoints = QList<QEventPoint>()) :
+        QTouchEvent(eventType, device, modifiers, touchPoints) { }
+
+    static QMutableTouchEvent *from(QTouchEvent *e) { return static_cast<QMutableTouchEvent *>(e); }
+
+    static QMutableTouchEvent &from(QTouchEvent &e) { return static_cast<QMutableTouchEvent &>(e); }
+
+    void setTarget(QObject *target) { m_target = target; }
+
+    QList<QEventPoint> &touchPoints() { return m_touchPoints; }
+};
+
+static_assert(sizeof(QMutableTouchEvent) == sizeof(QTouchEvent));
+
+class QMutableSinglePointEvent : public QSinglePointEvent
+{
+public:
+    static QMutableSinglePointEvent *from(QSinglePointEvent *e) { return static_cast<QMutableSinglePointEvent *>(e); }
+
+    static QMutableSinglePointEvent &from(QSinglePointEvent &e) { return static_cast<QMutableSinglePointEvent &>(e); }
+
+    QMutableEventPoint &mutablePoint() { return QMutableEventPoint::from(m_point); }
+
+    void setSource(Qt::MouseEventSource s) { m_source = s; }
+
+    bool isDoubleClick() { return m_doubleClick; }
+
+    void setDoubleClick(bool d = true) { m_doubleClick = d; }
+};
+
+static_assert(sizeof(QMutableSinglePointEvent) == sizeof(QSinglePointEvent));
 
 QT_END_NAMESPACE
 

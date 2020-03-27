@@ -623,36 +623,29 @@ void QWindowSystemInterface::registerInputDevice(const QInputDevice *device)
     QInputDevicePrivate::registerDevice(device);
 }
 
-QList<QTouchEvent::TouchPoint>
+QList<QEventPoint>
     QWindowSystemInterfacePrivate::fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,
                                                          const QWindow *window, QEvent::Type *type)
 {
-    QList<QTouchEvent::TouchPoint> touchPoints;
-    Qt::TouchPointStates states;
-    QTouchEvent::TouchPoint p;
+    QList<QEventPoint> touchPoints;
+    QEventPoint::States states;
 
     touchPoints.reserve(points.count());
     QList<QWindowSystemInterface::TouchPoint>::const_iterator point = points.constBegin();
     QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
-        p.setId(point->id);
+        QPointF globalPos = QHighDpi::fromNativePixels(point->area.center(), window);
+        QMutableEventPoint p(point->id, point->state, globalPos, globalPos);
+        states |= point->state;
         if (point->uniqueId >= 0)
-            p.setUniqueId(point->uniqueId);
+            p.setUniqueId(QPointingDeviceUniqueId::fromNumericId(point->uniqueId));
         p.setPressure(point->pressure);
         p.setRotation(point->rotation);
-        states |= point->state;
-        p.setState(point->state);
-
-        p.setScreenPos(QHighDpi::fromNativePixels(point->area.center(), window));
         p.setEllipseDiameters(QHighDpi::fromNativePixels(point->area.size(), window));
+        p.setVelocity(QHighDpi::fromNativePixels(point->velocity, window));
 
         // The local pos is not set: it will be calculated
         // when the event gets processed by QGuiApplication.
-
-        p.setNormalizedPos(QHighDpi::fromNativePixels(point->normalPosition, window));
-        p.setVelocity(QHighDpi::fromNativePixels(point->velocity, window));
-        p.setFlags(point->flags);
-        p.setRawScreenPositions(QHighDpi::fromNativePixels(point->rawPositions, window));
 
         touchPoints.append(p);
         ++point;
@@ -661,37 +654,28 @@ QList<QTouchEvent::TouchPoint>
     // Determine the event type based on the combined point states.
     if (type) {
         *type = QEvent::TouchUpdate;
-        if (states == Qt::TouchPointPressed)
+        if (states == QEventPoint::State::Pressed)
             *type = QEvent::TouchBegin;
-        else if (states == Qt::TouchPointReleased)
+        else if (states == QEventPoint::State::Released)
             *type = QEvent::TouchEnd;
     }
 
     return touchPoints;
 }
 
-QList<QWindowSystemInterface::TouchPoint>
-    QWindowSystemInterfacePrivate::toNativeTouchPoints(const QList<QTouchEvent::TouchPoint>& pointList,
-                                                       const QWindow *window)
+QWindowSystemInterface::TouchPoint
+QWindowSystemInterfacePrivate::toNativeTouchPoint(const QEventPoint &pt, const QWindow *window)
 {
-    QList<QWindowSystemInterface::TouchPoint> newList;
-    newList.reserve(pointList.size());
-    for (const QTouchEvent::TouchPoint &pt : pointList) {
-        QWindowSystemInterface::TouchPoint p;
-        p.id = pt.id();
-        p.flags = pt.flags();
-        p.normalPosition = QHighDpi::toNativeLocalPosition(pt.normalizedPos(), window);
-        QRectF area(QPointF(), pt.ellipseDiameters());
-        area.moveCenter(pt.globalPosition());
-        // TODO store ellipseDiameters in QWindowSystemInterface::TouchPoint or just use QTouchEvent::TouchPoint
-        p.area = QHighDpi::toNativePixels(area, window);
-        p.pressure = pt.pressure();
-        p.state = pt.state();
-        p.velocity = QHighDpi::toNativePixels(pt.velocity(), window);
-        p.rawPositions = QHighDpi::toNativePixels(pt.rawScreenPositions(), window);
-        newList.append(p);
-    }
-    return newList;
+    QWindowSystemInterface::TouchPoint p;
+    p.id = pt.id();
+    QRectF area(QPointF(), pt.ellipseDiameters());
+    area.moveCenter(pt.globalPosition());
+    // TODO store ellipseDiameters in QWindowSystemInterface::TouchPoint or just use QEventPoint
+    p.area = QHighDpi::toNativePixels(area, window);
+    p.pressure = pt.pressure();
+    p.state = pt.state();
+    p.velocity = QHighDpi::toNativePixels(pt.velocity(), window);
+    return p;
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchEvent, QWindow *window, const QPointingDevice *device,
@@ -711,7 +695,7 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchEvent, QWindow *window, ulong times
         return false;
 
     QEvent::Type type;
-    QList<QTouchEvent::TouchPoint> touchPoints =
+    QList<QEventPoint> touchPoints =
             QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(window, timestamp, type, device, touchPoints, mods);
@@ -730,7 +714,7 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleTouchCancelEvent, QWindow *window, ulong
 {
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(window, timestamp, QEvent::TouchCancel, device,
-                                                         QList<QTouchEvent::TouchPoint>(), mods);
+                                                         QList<QEventPoint>(), mods);
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
@@ -1248,7 +1232,7 @@ namespace QTest
 }
 
 Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *window, const QPointingDevice *device,
-                                const QList<QTouchEvent::TouchPoint> &points,
+                                const QList<QEventPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
     QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(window, device,

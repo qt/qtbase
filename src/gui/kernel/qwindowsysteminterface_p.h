@@ -50,6 +50,7 @@
 // We mean it.
 //
 
+#include <QtGui/private/qevent_p.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qwindowsysteminterface.h"
 
@@ -234,14 +235,20 @@ public:
         const QInputDevice *device;
     };
 
-    class MouseEvent : public InputEvent {
+    class PointerEvent : public InputEvent {
+    public:
+        PointerEvent(QWindow * w, ulong time, EventType t, Qt::KeyboardModifiers mods, const QPointingDevice *device)
+            : InputEvent(w, time, t, mods, device) {}
+    };
+
+    class MouseEvent : public PointerEvent {
     public:
         MouseEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global,
                    Qt::MouseButtons state, Qt::KeyboardModifiers mods,
                    Qt::MouseButton b, QEvent::Type type,
                    Qt::MouseEventSource src = Qt::MouseEventNotSynthesized, bool frame = false,
                    const QPointingDevice *device = QPointingDevice::primaryPointingDevice())
-            : InputEvent(w, time, Mouse, mods, device), localPos(local), globalPos(global),
+            : PointerEvent(w, time, Mouse, mods, device), localPos(local), globalPos(global),
               buttons(state), source(src), nonClientArea(frame), button(b), buttonType(type) { }
 
         // ### In Qt6 this method can be removed as there won't be need for compatibility code path
@@ -260,12 +267,12 @@ public:
         QEvent::Type buttonType;
     };
 
-    class WheelEvent : public InputEvent {
+    class WheelEvent : public PointerEvent {
     public:
         WheelEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global, QPoint pixelD, QPoint angleD, int qt4D, Qt::Orientation qt4O,
                    Qt::KeyboardModifiers mods, Qt::ScrollPhase phase = Qt::NoScrollPhase, Qt::MouseEventSource src = Qt::MouseEventNotSynthesized,
                    bool inverted = false, const QPointingDevice *device = QPointingDevice::primaryPointingDevice())
-            : InputEvent(w, time, Wheel, mods, device), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
+            : PointerEvent(w, time, Wheel, mods, device), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
               qt4Orientation(qt4O), localPos(local), globalPos(global), phase(phase), source(src), inverted(inverted) { }
         QPoint pixelDelta;
         QPoint angleDelta;
@@ -291,6 +298,7 @@ public:
             : InputEvent(w, time, Key, mods, device), key(k), unicode(text), repeat(autorep),
              repeatCount(count), keyType(t),
              nativeScanCode(nativeSC), nativeVirtualKey(nativeVK), nativeModifiers(nativeMods) { }
+        const QInputDevice *source;
         int key;
         QString unicode;
         bool repeat;
@@ -301,13 +309,12 @@ public:
         quint32 nativeModifiers;
     };
 
-    class TouchEvent : public InputEvent {
+    class TouchEvent : public PointerEvent {
     public:
         TouchEvent(QWindow *w, ulong time, QEvent::Type t, const QPointingDevice *device,
-                   const QList<QTouchEvent::TouchPoint> &p, Qt::KeyboardModifiers mods)
-            : InputEvent(w, time, Touch, mods, device), points(p), touchType(t) {
-        }
-        QList<QTouchEvent::TouchPoint> points;
+                   const QList<QEventPoint> &p, Qt::KeyboardModifiers mods)
+            : PointerEvent(w, time, Touch, mods, device), points(p), touchType(t) { }
+        QList<QEventPoint> points;
         QEvent::Type touchType;
     };
 
@@ -371,8 +378,9 @@ public:
         QUrl url;
     };
 
-    class Q_GUI_EXPORT TabletEvent : public InputEvent {
+    class Q_GUI_EXPORT TabletEvent : public PointerEvent {
     public:
+        // TODO take QPointingDevice* instead of types and IDs
         static void handleTabletEvent(QWindow *w, const QPointF &local, const QPointF &global,
                                       int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                       qreal tangentialPressure, qreal rotation, int z, qint64 uid,
@@ -382,7 +390,7 @@ public:
         TabletEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global,
                     const QPointingDevice *device, Qt::MouseButtons b, qreal pressure, int xTilt, int yTilt, qreal tpressure,
                     qreal rotation, int z, Qt::KeyboardModifiers mods)
-            : InputEvent(w, time, Tablet, mods, device),
+            : PointerEvent(w, time, Tablet, mods, device),
               buttons(b), local(local), global(global),
               pressure(pressure), xTilt(xTilt), yTilt(yTilt), tangentialPressure(tpressure),
               rotation(rotation), z(z) { }
@@ -398,16 +406,18 @@ public:
         static bool platformSynthesizesMouse;
     };
 
-    class TabletEnterProximityEvent : public InputEvent {
+    class TabletEnterProximityEvent : public PointerEvent {
     public:
+        // TODO store more info: position and whatever else we can get on most platforms
         TabletEnterProximityEvent(ulong time, const QPointingDevice *device)
-            : InputEvent(nullptr, time, TabletEnterProximity, Qt::NoModifier, device) { }
+            : PointerEvent(nullptr, time, TabletEnterProximity, Qt::NoModifier, device) { }
     };
 
-    class TabletLeaveProximityEvent : public InputEvent {
+    class TabletLeaveProximityEvent : public PointerEvent {
     public:
+        // TODO store more info: position and whatever else we can get on most platforms
         TabletLeaveProximityEvent(ulong time, const QPointingDevice *device)
-            : InputEvent(nullptr, time, TabletLeaveProximity, Qt::NoModifier, device) { }
+            : PointerEvent(nullptr, time, TabletLeaveProximity, Qt::NoModifier, device) { }
     };
 
     class PlatformPanelEvent : public WindowSystemEvent {
@@ -433,11 +443,11 @@ public:
 #endif
 
 #ifndef QT_NO_GESTURES
-    class GestureEvent : public InputEvent {
+    class GestureEvent : public PointerEvent {
     public:
         GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, const QPointingDevice *dev, QPointF pos, QPointF globalPos)
-            : InputEvent(window, time, Gesture, Qt::NoModifier, dev), type(type), pos(pos), globalPos(globalPos),
-              realValue(0), sequenceId(0), intValue(0), device(dev) { }
+            : PointerEvent(window, time, Gesture, Qt::NoModifier, dev), type(type), pos(pos), globalPos(globalPos),
+              realValue(0), sequenceId(0), intValue(0) { }
         Qt::NativeGestureType type;
         QPointF pos;
         QPointF globalPos;
@@ -446,7 +456,6 @@ public:
         // Windows
         ulong sequenceId;
         quint64 intValue;
-        const QPointingDevice *device;
     };
 #endif
 
@@ -526,12 +535,22 @@ public:
     static QMutex flushEventMutex;
     static QAtomicInt eventAccepted;
 
-    static QList<QTouchEvent::TouchPoint>
+    static QList<QEventPoint>
         fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,
                               const QWindow *window, QEvent::Type *type = nullptr);
+    template<class EventPointList>
     static QList<QWindowSystemInterface::TouchPoint>
-        toNativeTouchPoints(const QList<QTouchEvent::TouchPoint>& pointList,
-                            const QWindow *window);
+        toNativeTouchPoints(const EventPointList &pointList, const QWindow *window)
+    {
+        QList<QWindowSystemInterface::TouchPoint> newList;
+        newList.reserve(pointList.size());
+        for (const auto &point : pointList) {
+            newList.append(toNativeTouchPoint(point, window));
+        }
+        return newList;
+    }
+    static QWindowSystemInterface::TouchPoint
+        toNativeTouchPoint(const QEventPoint &point, const QWindow *window);
 
     static void installWindowSystemEventHandler(QWindowSystemEventHandler *handler);
     static void removeWindowSystemEventhandler(QWindowSystemEventHandler *handler);

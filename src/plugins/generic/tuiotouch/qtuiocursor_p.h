@@ -55,7 +55,7 @@ public:
         , m_vx(0)
         , m_vy(0)
         , m_acceleration(0)
-        , m_state(Qt::TouchPointPressed)
+        , m_state(QEventPoint::State::Pressed)
     {
     }
 
@@ -63,9 +63,9 @@ public:
 
     void setX(float x)
     {
-        if (state() == Qt::TouchPointStationary &&
+        if (state() == QEventPoint::State::Stationary &&
             !qFuzzyCompare(m_x + 2.0, x + 2.0)) { // +2 because 1 is a valid value, and qFuzzyCompare can't cope with 0.0
-            setState(Qt::TouchPointMoved);
+            setState(QEventPoint::State::Updated);
         }
         m_x = x;
     }
@@ -73,9 +73,9 @@ public:
 
     void setY(float y)
     {
-        if (state() == Qt::TouchPointStationary &&
+        if (state() == QEventPoint::State::Stationary &&
             !qFuzzyCompare(m_y + 2.0, y + 2.0)) { // +2 because 1 is a valid value, and qFuzzyCompare can't cope with 0.0
-            setState(Qt::TouchPointMoved);
+            setState(QEventPoint::State::Updated);
         }
         m_y = y;
     }
@@ -90,8 +90,8 @@ public:
     void setAcceleration(float acceleration) { m_acceleration = acceleration; }
     float acceleration() const { return m_acceleration; }
 
-    void setState(const Qt::TouchPointState &state) { m_state = state; }
-    Qt::TouchPointState state() const { return m_state; }
+    void setState(const QEventPoint::State &state) { m_state = state; }
+    QEventPoint::State state() const { return m_state; }
 
 private:
     int m_id;
@@ -100,7 +100,7 @@ private:
     float m_vx;
     float m_vy;
     float m_acceleration;
-    Qt::TouchPointState m_state;
+    QEventPoint::State m_state;
 };
 Q_DECLARE_TYPEINFO(QTuioCursor, Q_MOVABLE_TYPE); // Q_PRIMITIVE_TYPE: not possible, m_state is = 1, not 0.
 

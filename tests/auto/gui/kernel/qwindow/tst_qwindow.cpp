@@ -960,15 +960,15 @@ public:
         QList<QTouchEvent::TouchPoint> points = event->touchPoints();
         for (int i = 0; i < points.count(); ++i) {
             switch (points.at(i).state()) {
-            case Qt::TouchPointPressed:
+            case QEventPoint::State::Pressed:
                 ++touchPressedCount;
                 if (spinLoopWhenPressed)
                     QCoreApplication::processEvents();
                 break;
-            case Qt::TouchPointReleased:
+            case QEventPoint::State::Released:
                 ++touchReleasedCount;
                 break;
-            case Qt::TouchPointMoved:
+            case QEventPoint::State::Updated:
                 ++touchMovedCount;
                 break;
             default:
@@ -1055,15 +1055,15 @@ void tst_QWindow::testInputEvents()
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1, tp2;
     tp1.id = 1;
-    tp1.state = Qt::TouchPointPressed;
+    tp1.state = QEventPoint::State::Pressed;
     tp1.area = QRect(10, 10, 4, 4);
     tp2.id = 2;
-    tp2.state = Qt::TouchPointPressed;
+    tp2.state = QEventPoint::State::Pressed;
     tp2.area = QRect(20, 20, 4, 4);
     points << tp1 << tp2;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    points[0].state = Qt::TouchPointReleased;
-    points[1].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
+    points[1].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchPressedCount, 2);
@@ -1102,24 +1102,24 @@ void tst_QWindow::touchToMouseTranslation()
     const QRectF pressArea(101, 102, 4, 4);
     const QRectF moveArea(105, 108, 4, 4);
     tp1.id = 1;
-    tp1.state = Qt::TouchPointPressed;
+    tp1.state = QEventPoint::State::Pressed;
     tp1.area = QHighDpi::toNativePixels(pressArea, &window);
     tp2.id = 2;
-    tp2.state = Qt::TouchPointPressed;
+    tp2.state = QEventPoint::State::Pressed;
     points << tp1 << tp2;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     // Now an update but with changed list order. The mouse event should still
     // be generated from the point with id 1.
     tp1.id = 2;
-    tp1.state = Qt::TouchPointStationary;
+    tp1.state = QEventPoint::State::Stationary;
     tp2.id = 1;
-    tp2.state = Qt::TouchPointMoved;
+    tp2.state = QEventPoint::State::Updated;
     tp2.area = QHighDpi::toNativePixels(moveArea, &window);
     points.clear();
     points << tp1 << tp2;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    points[0].state = Qt::TouchPointReleased;
-    points[1].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
+    points[1].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
 
@@ -1133,11 +1133,11 @@ void tst_QWindow::touchToMouseTranslation()
 
     window.ignoreTouch = false;
 
-    points[0].state = Qt::TouchPointPressed;
-    points[1].state = Qt::TouchPointPressed;
+    points[0].state = QEventPoint::State::Pressed;
+    points[1].state = QEventPoint::State::Pressed;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    points[0].state = Qt::TouchPointReleased;
-    points[1].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
+    points[1].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
 
@@ -1148,11 +1148,11 @@ void tst_QWindow::touchToMouseTranslation()
     QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, false);
 
     window.ignoreTouch = true;
-    points[0].state = Qt::TouchPointPressed;
-    points[1].state = Qt::TouchPointPressed;
+    points[0].state = QEventPoint::State::Pressed;
+    points[1].state = QEventPoint::State::Pressed;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    points[0].state = Qt::TouchPointReleased;
-    points[1].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
+    points[1].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
 
@@ -1270,7 +1270,7 @@ void tst_QWindow::touchCancel()
     tp1.id = 1;
 
     // Start a touch.
-    tp1.state = Qt::TouchPointPressed;
+    tp1.state = QEventPoint::State::Pressed;
     tp1.area = QRect(10, 10, 4, 4);
     points << tp1;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
@@ -1285,7 +1285,7 @@ void tst_QWindow::touchCancel()
 
     // Send a move -> will not be delivered due to the cancellation.
     QTRY_COMPARE(window.touchMovedCount, 0);
-    points[0].state = Qt::TouchPointMoved;
+    points[0].state = QEventPoint::State::Updated;
     tp1.area.adjust(2, 2, 2, 2);
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
@@ -1293,25 +1293,25 @@ void tst_QWindow::touchCancel()
 
     // Likewise. The only allowed transition is TouchCancel -> TouchBegin.
     QTRY_COMPARE(window.touchReleasedCount, 0);
-    points[0].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchReleasedCount, 0);
 
     // Start a new sequence -> from this point on everything should go through normally.
-    points[0].state = Qt::TouchPointPressed;
+    points[0].state = QEventPoint::State::Pressed;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchEventType, QEvent::TouchBegin);
     QTRY_COMPARE(window.touchPressedCount, 2);
 
-    points[0].state = Qt::TouchPointMoved;
+    points[0].state = QEventPoint::State::Updated;
     tp1.area.adjust(2, 2, 2, 2);
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchMovedCount, 1);
 
-    points[0].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchReleasedCount, 1);
@@ -1330,7 +1330,7 @@ void tst_QWindow::touchCancelWithTouchToMouse()
     QWindowSystemInterface::TouchPoint tp1;
     tp1.id = 1;
 
-    tp1.state = Qt::TouchPointPressed;
+    tp1.state = QEventPoint::State::Pressed;
     const QRect area(100, 100, 4, 4);
     tp1.area = QHighDpi::toNativePixels(area, &window);
     points << tp1;
@@ -1379,7 +1379,7 @@ void tst_QWindow::touchInterruptedByPopup()
     tp1.id = 1;
 
     // Start a touch.
-    tp1.state = Qt::TouchPointPressed;
+    tp1.state = QEventPoint::State::Pressed;
     tp1.area = QRect(10, 10, 4, 4);
     points << tp1;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
@@ -1399,7 +1399,7 @@ void tst_QWindow::touchInterruptedByPopup()
     // Send a move -> will not be delivered to the original window
     // (TODO verify where it is forwarded, after we've defined that)
     QTRY_COMPARE(window.touchMovedCount, 0);
-    points[0].state = Qt::TouchPointMoved;
+    points[0].state = QEventPoint::State::Updated;
     tp1.area.adjust(2, 2, 2, 2);
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
@@ -1407,7 +1407,7 @@ void tst_QWindow::touchInterruptedByPopup()
 
     // Send a touch end -> will not be delivered to the original window
     QTRY_COMPARE(window.touchReleasedCount, 0);
-    points[0].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchReleasedCount, 0);
@@ -1676,14 +1676,14 @@ void tst_QWindow::inputReentrancy()
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1;
     tp1.id = 1;
-    tp1.state = Qt::TouchPointPressed;
+    tp1.state = QEventPoint::State::Pressed;
     tp1.area = QRectF(10, 10, 4, 4);
     points << tp1;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    points[0].state = Qt::TouchPointMoved;
+    points[0].state = QEventPoint::State::Updated;
     points[0].area = QRectF(20, 20, 8, 8);
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    points[0].state = Qt::TouchPointReleased;
+    points[0].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QCOMPARE(window.touchPressedCount, 1);

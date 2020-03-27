@@ -160,7 +160,7 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
         m_touchPoints[i].pressure = 1.0;
 
         // nothing touching
-        m_touchPoints[i].state = Qt::TouchPointReleased;
+        m_touchPoints[i].state = QEventPoint::State::Released;
     }
 }
 
@@ -544,15 +544,15 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
             QEvent::Type type = QEvent::None;
             switch (qnxType) {
             case SCREEN_EVENT_MTOUCH_TOUCH:
-                m_touchPoints[touchId].state = Qt::TouchPointPressed;
+                m_touchPoints[touchId].state = QEventPoint::State::Pressed;
                 type = QEvent::TouchBegin;
                 break;
             case SCREEN_EVENT_MTOUCH_MOVE:
-                m_touchPoints[touchId].state = Qt::TouchPointMoved;
+                m_touchPoints[touchId].state = QEventPoint::State::Updated;
                 type = QEvent::TouchUpdate;
                 break;
             case SCREEN_EVENT_MTOUCH_RELEASE:
-                m_touchPoints[touchId].state = Qt::TouchPointReleased;
+                m_touchPoints[touchId].state = QEventPoint::State::Released;
                 type = QEvent::TouchEnd;
                 break;
             }
@@ -563,9 +563,9 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
                 if (i == touchId) {
                     // current touch point is always active
                     pointList.append(m_touchPoints[i]);
-                } else if (m_touchPoints[i].state != Qt::TouchPointReleased) {
+                } else if (m_touchPoints[i].state != QEventPoint::State::Released) {
                     // finger is down but did not move
-                    m_touchPoints[i].state = Qt::TouchPointStationary;
+                    m_touchPoints[i].state = QEventPoint::State::Stationary;
                     pointList.append(m_touchPoints[i]);
                 }
             }

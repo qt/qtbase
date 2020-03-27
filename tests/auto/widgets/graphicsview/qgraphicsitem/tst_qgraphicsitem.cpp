@@ -33,6 +33,7 @@
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicsview_p.h>
 #include <private/qgraphicsscene_p.h>
+#include <private/qinputdevice_p.h>
 #include <QRandomGenerator>
 #include <QStyleOptionGraphicsItem>
 #include <QAbstractTextDocumentLayout>
@@ -490,7 +491,7 @@ private slots:
 
 private:
     GraphicsItems paintedItems;
-    QPointingDevice *m_touchDevice = nullptr;
+    QPointingDevice *m_touchDevice = QTest::createTouchDevice();
 };
 
 void tst_QGraphicsItem::initMain()
@@ -10980,7 +10981,7 @@ void tst_QGraphicsItem::focusHandling()
 class TouchEventTestee : public QGraphicsRectItem
 {
 public:
-    using TouchPoints = QList<QTouchEvent::TouchPoint>;
+    using TouchPoints = QList<QEventPoint>;
 
     TouchEventTestee(const QSizeF &size = QSizeF(100, 100)) :
         QGraphicsRectItem(QRectF(QPointF(), size))
@@ -11019,25 +11020,21 @@ private:
     TouchPoints m_touchUpdatePoints;
 };
 
-static QList<QTouchEvent::TouchPoint>
+static QList<QEventPoint>
     createTouchPoints(const QGraphicsView &view,
                       const QPointF &scenePos,
                       const QSizeF &ellipseDiameters,
-                      Qt::TouchPointState state = Qt::TouchPointPressed)
+                      QEventPoint::State state = QEventPoint::State::Pressed)
 {
-    QTouchEvent::TouchPoint tp(0);
-    tp.setState(state);
-    tp.setScenePos(scenePos);
-    tp.setStartScenePos(scenePos);
-    tp.setLastScenePos(scenePos);
     const QPointF screenPos = view.viewport()->mapToGlobal(view.mapFromScene(scenePos));
-    tp.setScreenPos(screenPos);
-    tp.setStartScreenPos(screenPos);
-    tp.setLastScreenPos(screenPos);
+    QMutableEventPoint tp(0, state, scenePos, screenPos);
+    tp.setState(state);
+    tp.setScenePosition(scenePos);
+    tp.setGlobalPosition(screenPos);
+    tp.setGlobalPressPosition(screenPos);
+    tp.setGlobalLastPosition(screenPos);
     tp.setEllipseDiameters(ellipseDiameters);
-    const QSizeF screenSize = view.screen()->geometry().size();
-    tp.setNormalizedPos(QPointF(screenPos.x() / screenSize.width(), screenPos.y() / screenSize.height()));
-    return QList<QTouchEvent::TouchPoint>() << tp;
+    return QList<QEventPoint>() << tp;
 }
 
 static bool comparePointF(const QPointF &p1, const QPointF &p2)
@@ -11104,15 +11101,14 @@ void tst_QGraphicsItem::touchEventPropagation()
     view.setSceneRect(touchEventReceiver->boundingRect());
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QInputDevicePrivate::get(m_touchDevice)->setAvailableVirtualGeometry(view.screen()->geometry());
 
     QCOMPARE(touchEventReceiver->touchBeginEventCount(), 0);
 
     const QPointF scenePos = view.sceneRect().center();
     sendMousePress(&scene, scenePos);
-    if (m_touchDevice == nullptr)
-        m_touchDevice = QTest::createTouchDevice();
-    QTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice, Qt::NoModifier, Qt::TouchPointPressed,
-                           createTouchPoints(view, scenePos, QSizeF(10, 10)));
+    QMutableTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice, Qt::NoModifier,
+                                  createTouchPoints(view, scenePos, QSizeF(10, 10)));
     touchBegin.setTarget(view.viewport());
 
     qApp->sendEvent(&scene, &touchBegin);
@@ -11165,39 +11161,36 @@ void tst_QGraphicsItem::touchEventTransformation()
     view.setTransform(viewTransform);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QInputDevicePrivate::get(m_touchDevice)->setAvailableVirtualGeometry(view.screen()->geometry());
 
     QCOMPARE(touchEventReceiver->touchBeginEventCount(), 0);
 
-    if (m_touchDevice == nullptr)
-        m_touchDevice = QTest::createTouchDevice();
-    QTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice, Qt::NoModifier, Qt::TouchPointPressed,
-                           createTouchPoints(view, touchScenePos, ellipseDiameters));
+    QMutableTouchEvent touchBegin(QEvent::TouchBegin, m_touchDevice, Qt::NoModifier,
+                                  createTouchPoints(view, touchScenePos, ellipseDiameters));
     touchBegin.setTarget(view.viewport());
-
     QCoreApplication::sendEvent(&scene, &touchBegin);
     QCOMPARE(touchEventReceiver->touchBeginEventCount(), 1);
 
-    const QTouchEvent::TouchPoint touchBeginPoint = touchEventReceiver->touchBeginPoints().constFirst();
+    const QEventPoint touchBeginPoint = touchEventReceiver->touchBeginPoints().constFirst();
 
-    COMPARE_POINTF(touchBeginPoint.scenePos(), touchScenePos);
-    COMPARE_POINTF(touchBeginPoint.startScenePos(), touchScenePos);
-    COMPARE_POINTF(touchBeginPoint.lastScenePos(), touchScenePos);
-    COMPARE_POINTF(touchBeginPoint.pos(), expectedItemPos);
+    COMPARE_POINTF(touchBeginPoint.scenePosition(), touchScenePos);
+    COMPARE_POINTF(touchBeginPoint.scenePressPosition(), touchScenePos);
+    COMPARE_POINTF(touchBeginPoint.sceneLastPosition(), touchScenePos);
+    COMPARE_POINTF(touchBeginPoint.position(), expectedItemPos);
     COMPARE_SIZEF(touchBeginPoint.ellipseDiameters(), ellipseDiameters); // Must remain untransformed
 
-    QTouchEvent touchUpdate(QEvent::TouchUpdate, m_touchDevice, Qt::NoModifier, Qt::TouchPointMoved,
-                           createTouchPoints(view, touchScenePos, ellipseDiameters,  Qt::TouchPointMoved));
+    QMutableTouchEvent touchUpdate(QEvent::TouchUpdate, m_touchDevice, Qt::NoModifier,
+                                   createTouchPoints(view, touchScenePos, ellipseDiameters, QEventPoint::State::Updated));
     touchUpdate.setTarget(view.viewport());
 
     QCoreApplication::sendEvent(&scene, &touchUpdate);
     QCOMPARE(touchEventReceiver->touchUpdateEventCount(), 1);
 
-    const QTouchEvent::TouchPoint touchUpdatePoint = touchEventReceiver->touchUpdatePoints().constFirst();
+    const QEventPoint touchUpdatePoint = touchEventReceiver->touchUpdatePoints().constFirst();
 
-    COMPARE_POINTF(touchUpdatePoint.scenePos(), touchScenePos);
-    COMPARE_POINTF(touchBeginPoint.startScenePos(), touchScenePos);
-    COMPARE_POINTF(touchUpdatePoint.lastScenePos(), touchScenePos);
-    COMPARE_POINTF(touchUpdatePoint.pos(), expectedItemPos);
+    COMPARE_POINTF(touchUpdatePoint.scenePosition(), touchScenePos);
+    COMPARE_POINTF(touchBeginPoint.scenePressPosition(), touchScenePos);
+    COMPARE_POINTF(touchUpdatePoint.position(), expectedItemPos);
     COMPARE_SIZEF(touchUpdatePoint.ellipseDiameters(), ellipseDiameters); // Must remain untransformed
 
 }

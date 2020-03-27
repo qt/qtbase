@@ -126,8 +126,7 @@ public:
         int y = 0;
         int maj = -1;
         int pressure = 0;
-        Qt::TouchPointState state = Qt::TouchPointPressed;
-        QTouchEvent::TouchPoint::InfoFlags flags;
+        QEventPoint::State state = QEventPoint::State::Pressed;
     };
     QHash<int, Contact> m_contacts; // The key is a tracking id for type A, slot number for type B.
     QHash<int, Contact> m_lastContacts;
@@ -138,7 +137,7 @@ public:
     double m_lastTimeStamp;
 
     int findClosestContact(const QHash<int, Contact> &contacts, int x, int y, int *dist);
-    void addTouchPoint(const Contact &contact, Qt::TouchPointStates *combinedStates);
+    void addTouchPoint(const Contact &contact, QEventPoint::States *combinedStates);
     void reportPoints();
     void loadMultiScreenMappings();
 
@@ -474,11 +473,10 @@ void QEvdevTouchScreenHandler::unregisterPointingDevice()
     m_device = nullptr;
 }
 
-void QEvdevTouchScreenData::addTouchPoint(const Contact &contact, Qt::TouchPointStates *combinedStates)
+void QEvdevTouchScreenData::addTouchPoint(const Contact &contact, QEventPoint::States *combinedStates)
 {
     QWindowSystemInterface::TouchPoint tp;
     tp.id = contact.trackingId;
-    tp.flags = contact.flags;
     tp.state = contact.state;
     *combinedStates |= tp.state;
 
@@ -509,8 +507,8 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_contacts[m_currentSlot].x = m_currentData.x;
             if (m_typeB) {
                 m_contacts[m_currentSlot].x = m_currentData.x;
-                if (m_contacts[m_currentSlot].state == Qt::TouchPointStationary)
-                    m_contacts[m_currentSlot].state = Qt::TouchPointMoved;
+                if (m_contacts[m_currentSlot].state == QEventPoint::State::Stationary)
+                    m_contacts[m_currentSlot].state = QEventPoint::State::Updated;
             }
         } else if (data->code == ABS_MT_POSITION_Y || (m_singleTouch && data->code == ABS_Y)) {
             m_currentData.y = qBound(hw_range_y_min, data->value, hw_range_y_max);
@@ -518,23 +516,23 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_contacts[m_currentSlot].y = m_currentData.y;
             if (m_typeB) {
                 m_contacts[m_currentSlot].y = m_currentData.y;
-                if (m_contacts[m_currentSlot].state == Qt::TouchPointStationary)
-                    m_contacts[m_currentSlot].state = Qt::TouchPointMoved;
+                if (m_contacts[m_currentSlot].state == QEventPoint::State::Stationary)
+                    m_contacts[m_currentSlot].state = QEventPoint::State::Updated;
             }
         } else if (data->code == ABS_MT_TRACKING_ID) {
             m_currentData.trackingId = data->value;
             if (m_typeB) {
                 if (m_currentData.trackingId == -1) {
-                    m_contacts[m_currentSlot].state = Qt::TouchPointReleased;
+                    m_contacts[m_currentSlot].state = QEventPoint::State::Released;
                 } else {
-                    m_contacts[m_currentSlot].state = Qt::TouchPointPressed;
+                    m_contacts[m_currentSlot].state = QEventPoint::State::Pressed;
                     m_contacts[m_currentSlot].trackingId = m_currentData.trackingId;
                 }
             }
         } else if (data->code == ABS_MT_TOUCH_MAJOR) {
             m_currentData.maj = data->value;
             if (data->value == 0)
-                m_currentData.state = Qt::TouchPointReleased;
+                m_currentData.state = QEventPoint::State::Released;
             if (m_typeB)
                 m_contacts[m_currentSlot].maj = m_currentData.maj;
         } else if (data->code == ABS_PRESSURE || data->code == ABS_MT_PRESSURE) {
@@ -550,7 +548,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
     } else if (data->type == EV_KEY && !m_typeB) {
         if (data->code == BTN_TOUCH && data->value == 0)
-            m_contacts[m_currentSlot].state = Qt::TouchPointReleased;
+            m_contacts[m_currentSlot].state = QEventPoint::State::Released;
     } else if (data->type == EV_SYN && data->code == SYN_MT_REPORT && m_lastEventType != EV_SYN) {
 
         // If there is no tracking id, one will be generated later.
@@ -578,7 +576,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
         m_lastTouchPoints = m_touchPoints;
         m_touchPoints.clear();
-        Qt::TouchPointStates combinedStates;
+        QEventPoint::States combinedStates;
         bool hasPressure = false;
 
         for (auto it = m_contacts.begin(), end = m_contacts.end(); it != end; /*erasing*/) {
@@ -590,19 +588,19 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             int key = m_typeB ? it.key() : contact.trackingId;
             if (!m_typeB && m_lastContacts.contains(key)) {
                 const Contact &prev(m_lastContacts.value(key));
-                if (contact.state == Qt::TouchPointReleased) {
+                if (contact.state == QEventPoint::State::Released) {
                     // Copy over the previous values for released points, just in case.
                     contact.x = prev.x;
                     contact.y = prev.y;
                     contact.maj = prev.maj;
                 } else {
                     contact.state = (prev.x == contact.x && prev.y == contact.y)
-                            ? Qt::TouchPointStationary : Qt::TouchPointMoved;
+                            ? QEventPoint::State::Stationary : QEventPoint::State::Updated;
                 }
             }
 
             // Avoid reporting a contact in released state more than once.
-            if (!m_typeB && contact.state == Qt::TouchPointReleased
+            if (!m_typeB && contact.state == QEventPoint::State::Released
                     && !m_lastContacts.contains(key)) {
                 it = m_contacts.erase(it);
                 continue;
@@ -621,12 +619,12 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             int key = m_typeB ? it.key() : contact.trackingId;
             if (m_typeB) {
                 if (contact.trackingId != m_contacts[key].trackingId && contact.state) {
-                    contact.state = Qt::TouchPointReleased;
+                    contact.state = QEventPoint::State::Released;
                     addTouchPoint(contact, &combinedStates);
                 }
             } else {
                 if (!m_contacts.contains(key)) {
-                    contact.state = Qt::TouchPointReleased;
+                    contact.state = QEventPoint::State::Released;
                     addTouchPoint(contact, &combinedStates);
                 }
             }
@@ -639,15 +637,15 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             if (!contact.state)
                 continue;
 
-            if (contact.state == Qt::TouchPointReleased) {
+            if (contact.state == QEventPoint::State::Released) {
                 if (m_typeB) {
-                    contact.state = static_cast<Qt::TouchPointState>(0);
+                    contact.state = QEventPoint::State::Stationary;
                 } else {
                     it = m_contacts.erase(it);
                     continue;
                 }
             } else {
-                contact.state = Qt::TouchPointStationary;
+                contact.state = QEventPoint::State::Stationary;
             }
             ++it;
         }
@@ -657,7 +655,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             m_contacts.clear();
 
 
-        if (!m_touchPoints.isEmpty() && (hasPressure || combinedStates != Qt::TouchPointStationary))
+        if (!m_touchPoints.isEmpty() && (hasPressure || combinedStates != QEventPoint::State::Stationary))
             reportPoints();
     }
 
@@ -780,7 +778,7 @@ void QEvdevTouchScreenData::reportPoints()
 
         // Calculate normalized pressure.
         if (!hw_pressure_min && !hw_pressure_max)
-            tp.pressure = tp.state == Qt::TouchPointReleased ? 0 : 1;
+            tp.pressure = tp.state == QEventPoint::State::Released ? 0 : 1;
         else
             tp.pressure = (tp.pressure - hw_pressure_min) / qreal(hw_pressure_max - hw_pressure_min);
 
@@ -927,8 +925,8 @@ void QEvdevTouchScreenHandlerThread::filterAndSendTouchPoints()
             f.y.initialize(pos.y(), velocity.y());
             // Make sure the first instance of a touch point we send has the
             // 'pressed' state.
-            if (tp.state != Qt::TouchPointPressed)
-                tp.state = Qt::TouchPointPressed;
+            if (tp.state != QEventPoint::State::Pressed)
+                tp.state = QEventPoint::State::Pressed;
         }
 
         tp.velocity = QVector2D(f.x.velocity() * winRect.width(), f.y.velocity() * winRect.height());
@@ -950,14 +948,14 @@ void QEvdevTouchScreenHandlerThread::filterAndSendTouchPoints()
         f.touchPoint = tp;
 
         // Don't store the point for future reference if it is a release.
-        if (tp.state != Qt::TouchPointReleased)
+        if (tp.state != QEventPoint::State::Released)
             filteredPoints[tp.id] = f;
     }
 
     for (QHash<int, FilteredTouchPoint>::const_iterator it = m_filteredPoints.constBegin(), end = m_filteredPoints.constEnd(); it != end; ++it) {
         const FilteredTouchPoint &f = it.value();
         QWindowSystemInterface::TouchPoint tp = f.touchPoint;
-        tp.state = Qt::TouchPointReleased;
+        tp.state = QEventPoint::State::Released;
         tp.velocity = QVector2D();
         points.append(tp);
     }

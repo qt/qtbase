@@ -88,7 +88,7 @@ class QCocoaTouch
 
         void updateTouchData(NSTouch *nstouch, NSTouchPhase phase);
         static QCocoaTouch *findQCocoaTouch(NSTouch *nstouch);
-        static Qt::TouchPointState toTouchPointState(NSTouchPhase nsState);
+        static QEventPoint::State toTouchPointState(NSTouchPhase nsState);
 };
 
 QT_END_NAMESPACE

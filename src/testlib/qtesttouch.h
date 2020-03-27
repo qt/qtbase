@@ -61,7 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, const QPointingDevice *device,
-                                const QList<QTouchEvent::TouchPoint> &points,
+                                const QList<QEventPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier);
 
 
@@ -81,52 +81,52 @@ namespace QTest
         }
         QTouchEventSequence& press(int touchId, const QPoint &pt, QWindow *window = nullptr)
         {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(window, pt));
-            p.setState(Qt::TouchPointPressed);
+            QEventPoint &p = point(touchId);
+            p.m_globalPos = mapToScreen(window, pt);
+            p.m_state = QEventPoint::State::Pressed;
             return *this;
         }
         QTouchEventSequence& move(int touchId, const QPoint &pt, QWindow *window = nullptr)
         {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(window, pt));
-            p.setState(Qt::TouchPointMoved);
+            QEventPoint &p = point(touchId);
+            p.m_globalPos = mapToScreen(window, pt);
+            p.m_state = QEventPoint::State::Updated;
             return *this;
         }
         QTouchEventSequence& release(int touchId, const QPoint &pt, QWindow *window = nullptr)
         {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(window, pt));
-            p.setState(Qt::TouchPointReleased);
+            QEventPoint &p = point(touchId);
+            p.m_globalPos = mapToScreen(window, pt);
+            p.m_state = QEventPoint::State::Released;
             return *this;
         }
         QTouchEventSequence& stationary(int touchId)
         {
-            QTouchEvent::TouchPoint &p = pointOrPreviousPoint(touchId);
-            p.setState(Qt::TouchPointStationary);
+            QEventPoint &p = pointOrPreviousPoint(touchId);
+            p.m_state = QEventPoint::State::Stationary;
             return *this;
         }
 
 #ifdef QT_WIDGETS_LIB
         QTouchEventSequence& press(int touchId, const QPoint &pt, QWidget *widget = nullptr)
         {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(widget, pt));
-            p.setState(Qt::TouchPointPressed);
+            QEventPoint &p = point(touchId);
+            p.m_globalPos = mapToScreen(widget, pt);
+            p.m_state = QEventPoint::State::Pressed;
             return *this;
         }
         QTouchEventSequence& move(int touchId, const QPoint &pt, QWidget *widget = nullptr)
         {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(widget, pt));
-            p.setState(Qt::TouchPointMoved);
+            QEventPoint &p = point(touchId);
+            p.m_globalPos = mapToScreen(widget, pt);
+            p.m_state = QEventPoint::State::Updated;
             return *this;
         }
         QTouchEventSequence& release(int touchId, const QPoint &pt, QWidget *widget = nullptr)
         {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(widget, pt));
-            p.setState(Qt::TouchPointReleased);
+            QEventPoint &p = point(touchId);
+            p.m_globalPos = mapToScreen(widget, pt);
+            p.m_state = QEventPoint::State::Released;
             return *this;
         }
 #endif
@@ -168,24 +168,6 @@ private:
         {
         }
 
-        QTouchEvent::TouchPoint &point(int touchId)
-        {
-            if (!points.contains(touchId))
-                points[touchId] = QTouchEvent::TouchPoint(touchId);
-            return points[touchId];
-        }
-
-        QTouchEvent::TouchPoint &pointOrPreviousPoint(int touchId)
-        {
-            if (!points.contains(touchId)) {
-                if (previousPoints.contains(touchId))
-                    points[touchId] = previousPoints.value(touchId);
-                else
-                    points[touchId] = QTouchEvent::TouchPoint(touchId);
-            }
-            return points[touchId];
-        }
-
 #ifdef QT_WIDGETS_LIB
         QPoint mapToScreen(QWidget *widget, const QPoint &pt)
         {
@@ -201,8 +183,8 @@ private:
             return targetWindow ? targetWindow->mapToGlobal(pt) : pt;
         }
 
-        QMap<int, QTouchEvent::TouchPoint> previousPoints;
-        QMap<int, QTouchEvent::TouchPoint> points;
+        QMap<int, QEventPoint> previousPoints;
+        QMap<int, QEventPoint> points;
 #ifdef QT_WIDGETS_LIB
         QWidget *targetWidget;
 #endif
@@ -213,6 +195,29 @@ private:
         friend QTouchEventSequence touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit);
 #endif
         friend QTouchEventSequence touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit);
+
+    protected:
+        // These don't make sense for public testing API,
+        // because we are getting rid of most public setters in QEventPoint.
+        // Each of these constructs a QEventPoint with null parent; in normal usage,
+        // the QTouchEvent constructor will set the points' parents to itself, later on.
+        QEventPoint &point(int touchId)
+        {
+            if (!points.contains(touchId))
+                points[touchId] = QEventPoint(touchId);
+            return points[touchId];
+        }
+
+        QEventPoint &pointOrPreviousPoint(int touchId)
+        {
+            if (!points.contains(touchId)) {
+                if (previousPoints.contains(touchId))
+                    points[touchId] = previousPoints.value(touchId);
+                else
+                    points[touchId] = QEventPoint(touchId);
+            }
+            return points[touchId];
+        }
     };
 
 #if defined(QT_WIDGETS_LIB) || defined(Q_CLANG_QDOC)

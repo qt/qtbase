@@ -601,7 +601,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
 
     QTouchPointList touchPoints;
     touchPoints.reserve(winTouchPointCount);
-    Qt::TouchPointStates allStates;
+    QEventPoint::States allStates;
 
     GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(msg.lParam),
                       UINT(msg.wParam), winTouchInputs.data(), sizeof(TOUCHINPUT));
@@ -628,15 +628,15 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         touchPoint.normalPosition = normalPosition;
 
         if (winTouchInput.dwFlags & TOUCHEVENTF_DOWN) {
-            touchPoint.state = Qt::TouchPointPressed;
+            touchPoint.state = QEventPoint::State::Pressed;
             m_lastTouchPositions.insert(id, touchPoint.normalPosition);
         } else if (winTouchInput.dwFlags & TOUCHEVENTF_UP) {
-            touchPoint.state = Qt::TouchPointReleased;
+            touchPoint.state = QEventPoint::State::Released;
             m_lastTouchPositions.remove(id);
         } else {
             touchPoint.state = (stationaryTouchPoint
-                     ? Qt::TouchPointStationary
-                     : Qt::TouchPointMoved);
+                     ? QEventPoint::State::Stationary
+                     : QEventPoint::State::Updated);
             m_lastTouchPositions.insert(id, touchPoint.normalPosition);
         }
 
@@ -648,7 +648,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(msg.lParam));
 
     // all touch points released, forget the ids we've seen, they may not be reused
-    if (allStates == Qt::TouchPointReleased)
+    if (allStates == QEventPoint::State::Released)
         m_touchInputIDToTouchPointID.clear();
 
     QWindowSystemInterface::handleTouchEvent(window,

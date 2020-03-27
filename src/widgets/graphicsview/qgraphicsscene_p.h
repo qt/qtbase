@@ -309,7 +309,7 @@ public:
 
     QStyleOptionGraphicsItem styleOptionTmp;
 
-    QMap<int, QTouchEvent::TouchPoint> sceneCurrentTouchPoints;
+    QMap<int, QEventPoint> sceneCurrentTouchPoints;
     QMap<int, QGraphicsItem *> itemForTouchPointId;
     static void updateTouchPointsForItem(QGraphicsItem *item, QTouchEvent *touchEvent);
     int findClosestTouchPointId(const QPointF &scenePos);

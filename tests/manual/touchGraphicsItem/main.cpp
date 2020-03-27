@@ -68,7 +68,7 @@ protected:
             case QEvent::TouchEnd:
             {
                 QTouchEvent *te = static_cast<QTouchEvent *>(e);
-                for (const QTouchEvent::TouchPoint &tp : te->touchPoints()) {
+                for (const QEventPoint &tp : te->touchPoints()) {
                     QGraphicsEllipseItem *diameterItem = nullptr;
                     QSizeF ellipse = tp.ellipseDiameters();
                     if (ellipse.isNull()) {
@@ -121,8 +121,6 @@ int main(int argc, char **argv)
             str << " Pressure";
         if (capabilities & QPointingDevice::Velocity)
             str << " Velocity";
-        if (capabilities & QPointingDevice::RawPositions)
-            str << " RawPositions";
         if (capabilities & QPointingDevice::Capability::NormalizedPosition)
             str << " NormalizedPosition";
         if (capabilities & QInputDevice::DeviceType::MouseEmulation)

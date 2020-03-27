@@ -491,7 +491,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
                 << " message=" << Qt::hex << msg.message
                 << " count=" << Qt::dec << count;
 
-    Qt::TouchPointStates allStates;
+    QEventPoint::States allStates;
 
     for (quint32 i = 0; i < count; ++i) {
         if (QWindowsContext::verbose > 1)
@@ -526,13 +526,13 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         touchPoint.normalPosition = normalPosition;
 
         if (touchInfo[i].pointerInfo.pointerFlags & POINTER_FLAG_DOWN) {
-            touchPoint.state = Qt::TouchPointPressed;
+            touchPoint.state = QEventPoint::State::Pressed;
             m_lastTouchPositions.insert(touchPoint.id, touchPoint.normalPosition);
         } else if (touchInfo[i].pointerInfo.pointerFlags & POINTER_FLAG_UP) {
-            touchPoint.state = Qt::TouchPointReleased;
+            touchPoint.state = QEventPoint::State::Released;
             m_lastTouchPositions.remove(touchPoint.id);
         } else {
-            touchPoint.state = stationaryTouchPoint ? Qt::TouchPointStationary : Qt::TouchPointMoved;
+            touchPoint.state = stationaryTouchPoint ? QEventPoint::State::Stationary : QEventPoint::State::Updated;
             m_lastTouchPositions.insert(touchPoint.id, touchPoint.normalPosition);
         }
         allStates |= touchPoint.state;
@@ -544,7 +544,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     }
 
     // all touch points released, forget the ids we've seen.
-    if (allStates == Qt::TouchPointReleased)
+    if (allStates == QEventPoint::State::Released)
         m_touchInputIDToTouchPointID.clear();
 
     QWindowSystemInterface::handleTouchEvent(window, m_touchDevice, touchPoints,

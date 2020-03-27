@@ -71,7 +71,7 @@ QGesture *QPanGestureRecognizer::create(QObject *target)
     return new QPanGesture;
 }
 
-static QPointF panOffset(const QList<QTouchEvent::TouchPoint> &touchPoints, int maxCount)
+static QPointF panOffset(const QList<QEventPoint> &touchPoints, int maxCount)
 {
     QPointF result;
     const int count = qMin(touchPoints.size(), maxCount);
@@ -92,7 +92,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
     case QEvent::TouchBegin: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         result = QGestureRecognizer::MayBeGesture;
-        QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+        QEventPoint p = ev->touchPoints().at(0);
         d->lastOffset = d->offset = QPointF();
         d->pointCount = m_pointCount;
         break;
@@ -185,8 +185,8 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         d->changeFlags = { };
         if (ev->touchPoints().size() == 2) {
-            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
-            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+            QEventPoint p1 = ev->touchPoints().at(0);
+            QEventPoint p2 = ev->touchPoints().at(1);
 
             d->hotSpot = p1.globalPosition();
             d->isHotSpotSet = true;
@@ -209,7 +209,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             } else {
                 d->lastScaleFactor = d->scaleFactor;
                 QLineF line(p1.globalPosition(), p2.globalPosition());
-                QLineF lastLine(p1.lastScreenPos(),  p2.lastScreenPos());
+                QLineF lastLine(p1.globalLastPosition(),  p2.globalLastPosition());
                 qreal newScaleFactor = line.length() / lastLine.length();
                 if (newScaleFactor > kSingleStepScaleMax || newScaleFactor < kSingleStepScaleMin)
                     return QGestureRecognizer::Ignore;
@@ -315,9 +315,9 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
             result = QGestureRecognizer::CancelGesture;
         else if (ev->touchPoints().size() == 3) {
             d->state = QSwipeGesturePrivate::ThreePointsReached;
-            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
-            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
-            QTouchEvent::TouchPoint p3 = ev->touchPoints().at(2);
+            QEventPoint p1 = ev->touchPoints().at(0);
+            QEventPoint p2 = ev->touchPoints().at(1);
+            QEventPoint p3 = ev->touchPoints().at(2);
 
             if (d->lastPositions[0].isNull()) {
                 d->lastPositions[0] = p1.globalPressPosition().toPoint();
@@ -381,7 +381,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
                 result = QGestureRecognizer::Ignore;
                 break;
             case QSwipeGesturePrivate::ThreePointsReached:
-                result = (ev->touchPointStates() & Qt::TouchPointPressed)
+                result = (ev->touchPointStates() & QEventPoint::State::Pressed)
                     ? QGestureRecognizer::CancelGesture : QGestureRecognizer::Ignore;
                 break;
             }
@@ -447,7 +447,7 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd: {
         if (q->state() != Qt::NoGesture && ev->touchPoints().size() == 1) {
-            QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+            QEventPoint p = ev->touchPoints().at(0);
             QPoint delta = p.position().toPoint() - p.pressPosition().toPoint();
             enum { TapRadius = 40 };
             if (delta.manhattanLength() <= TapRadius) {
@@ -551,7 +551,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     case QEvent::TouchUpdate: {
         const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         if (d->timerId && ev->touchPoints().size() == 1) {
-            QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+            QEventPoint p = ev->touchPoints().at(0);
             QPoint delta = p.position().toPoint() - p.pressPosition().toPoint();
             if (delta.manhattanLength() <= TapRadius)
                 return QGestureRecognizer::MayBeGesture;

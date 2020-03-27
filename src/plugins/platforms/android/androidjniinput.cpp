@@ -228,19 +228,19 @@ namespace QtAndroidInput
     static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint id, jint action, jboolean /*primary*/, jint x, jint y,
         jfloat major, jfloat minor, jfloat rotation, jfloat pressure)
     {
-        Qt::TouchPointState state = Qt::TouchPointStationary;
+        QEventPoint::State state = QEventPoint::State::Stationary;
         switch (action) {
         case 0:
-            state = Qt::TouchPointPressed;
+            state = QEventPoint::State::Pressed;
             break;
         case 1:
-            state = Qt::TouchPointMoved;
+            state = QEventPoint::State::Updated;
             break;
         case 2:
-            state = Qt::TouchPointStationary;
+            state = QEventPoint::State::Stationary;
             break;
         case 3:
-            state = Qt::TouchPointReleased;
+            state = QEventPoint::State::Released;
             break;
         }
 
@@ -258,7 +258,7 @@ namespace QtAndroidInput
                                  double(major * 2));
         m_touchPoints.push_back(touchPoint);
 
-        if (state == Qt::TouchPointPressed) {
+        if (state == QEventPoint::State::Pressed) {
             QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
             if (inputContext && qGuiApp)
                 QMetaObject::invokeMethod(inputContext, "touchDown", Q_ARG(int, x), Q_ARG(int, y));

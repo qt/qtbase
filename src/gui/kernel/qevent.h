@@ -46,6 +46,7 @@
 #include <QtCore/qiodevice.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
@@ -64,6 +65,7 @@ class QFile;
 class QAction;
 class QInputDevice;
 class QPointingDevice;
+class QPointerEvent;
 class QScreen;
 #if QT_CONFIG(gestures)
 class QGesture;
@@ -80,15 +82,130 @@ public:
     inline void setModifiers(Qt::KeyboardModifiers amodifiers) { modState = amodifiers; }
     inline ulong timestamp() const { return ts; }
     inline void setTimestamp(ulong atimestamp) { ts = atimestamp; }
+
 protected:
     const QInputDevice *m_dev = nullptr;
-    Qt::KeyboardModifiers modState;
+    Qt::KeyboardModifiers modState = Qt::NoModifier;
     ulong ts;
+    qint64 m_extra = 0; // reserved, unused for now
 };
+
+namespace QTest {
+    class QTouchEventSequence; // just for the friend declaration below
+}
+
+class Q_GUI_EXPORT QEventPoint
+{
+    Q_GADGET
+public:
+    enum State : quint8 {
+        Unknown     = Qt::TouchPointUnknownState,
+        Stationary  = Qt::TouchPointStationary,
+        Pressed     = Qt::TouchPointPressed,
+        Updated     = Qt::TouchPointMoved,
+        Released    = Qt::TouchPointReleased
+    };
+    Q_DECLARE_FLAGS(States, State)
+    Q_FLAG(States)
+
+    QEventPoint(int id = -1, const QPointerEvent *parent = nullptr);
+    QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition);
+
+    const QPointerEvent *event() const { return m_parent; }
+    QPointF position() const { return m_pos; }
+    QPointF pressPosition() const { return m_globalPressPos - m_globalPos + m_pos; }
+    QPointF grabPosition() const { return m_globalGrabPos - m_globalPos + m_pos; }
+    QPointF lastPosition() const { return m_globalLastPos - m_globalPos + m_pos; }
+    QPointF scenePosition() const { return m_scenePos; }
+    QPointF scenePressPosition() const { return m_globalPressPos - m_globalPos + m_scenePos; }
+    QPointF sceneGrabPosition() const { return m_globalGrabPos - m_globalPos + m_scenePos; }
+    QPointF sceneLastPosition() const { return m_globalLastPos - m_globalPos + m_scenePos; }
+    QPointF globalPosition() const { return m_globalPos; }
+    QPointF globalPressPosition() const { return m_globalPressPos; }
+    QPointF globalGrabPosition() const { return m_globalGrabPos; }
+    QPointF globalLastPosition() const { return m_globalLastPos; }
+
+#if QT_DEPRECATED_SINCE(6, 0)
+    // QEventPoint replaces QTouchEvent::TouchPoint, so we need all its old accessors, for now
+    QT_DEPRECATED_VERSION_X_6_0("Use position()")
+    QPointF pos() const { return position(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use pressPosition()")
+    QPointF startPos() const { return pressPosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use scenePosition()")
+    QPointF scenePos() const { return scenePosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use scenePressPosition()")
+    QPointF startScenePos() const { return scenePressPosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    QPointF screenPos() const { return globalPosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPressPosition()")
+    QPointF startScreenPos() const { return globalPressPosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPressPosition()")
+    QPointF startNormalizedPos() const;
+    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
+    QPointF normalizedPos() const;
+    QT_DEPRECATED_VERSION_X_6_0("Use lastPosition()")
+    QPointF lastPos() const { return lastPosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use sceneLastPosition()")
+    QPointF lastScenePos() const { return sceneLastPosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalLastPosition()")
+    QPointF lastScreenPos() const { return globalLastPosition(); }
+    QT_DEPRECATED_VERSION_X_6_0("Use globalLastPosition()")
+    QPointF lastNormalizedPos() const;
+#endif // QT_DEPRECATED_SINCE(6, 0)
+    QVector2D velocity() const { return m_velocity; }
+    State state() const { return m_state; }
+    int id() const { return m_pointId; }
+    QPointingDeviceUniqueId uniqueId() const { return m_uniqueId; }
+    qreal timeHeld() const { return (m_timestamp - m_pressTimestamp) / qreal(1000); }
+    qreal pressure() const { return m_pressure; }
+    qreal rotation() const { return m_rotation; }
+    QSizeF ellipseDiameters() const { return m_ellipseDiameters; }
+
+    bool isAccepted() const { return m_accept; }
+    void setAccepted(bool accepted = true);
+    QObject *exclusiveGrabber() const { return m_exclusiveGrabber.data(); }
+    void setExclusiveGrabber(QObject *exclusiveGrabber);
+    void cancelExclusiveGrab();
+    void cancelPassiveGrab(QObject *grabber);
+    bool removePassiveGrabber(QObject *grabber);
+    void cancelAllGrabs(QObject *grabber);
+    const QList<QPointer <QObject>> &passiveGrabbers() const { return m_passiveGrabbers; }
+    void setPassiveGrabbers(const QList<QPointer <QObject>> &grabbers);
+    void clearPassiveGrabbers();
+
+protected:
+    const QPointerEvent *m_parent = nullptr;
+    QPointF m_pos, m_scenePos, m_globalPos,
+            m_globalPressPos, m_globalGrabPos, m_globalLastPos;
+    qreal m_pressure = 1;
+    qreal m_rotation = 0;
+    QSizeF m_ellipseDiameters = QSizeF(0, 0);
+    QVector2D m_velocity;
+    QPointer<QObject> m_exclusiveGrabber;
+    QList<QPointer <QObject> > m_passiveGrabbers;
+    ulong m_timestamp = 0;
+    ulong m_pressTimestamp = 0;
+    QPointingDeviceUniqueId m_uniqueId;
+    int m_pointId = -1;
+    State m_state : 8;
+    quint32 m_accept : 1;
+    quint32 m_stationaryWithModifiedProperty : 1;
+    quint32 m_reserved : 22;
+
+    friend class QTest::QTouchEventSequence;
+};
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QEventPoint &);
+#endif
 
 class Q_GUI_EXPORT QPointerEvent : public QInputEvent
 {
 public:
+    virtual ~QPointerEvent();
+    virtual int pointCount() const = 0;
+    virtual const QEventPoint &point(int i) const = 0;
+
     explicit QPointerEvent(Type type, const QPointingDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     const QPointingDevice *pointingDevice() const;
     QPointingDevice::PointerType pointerType() const {
@@ -96,10 +213,38 @@ public:
     }
 };
 
-class Q_GUI_EXPORT QEnterEvent : public QEvent
+class Q_GUI_EXPORT QSinglePointEvent : public QPointerEvent
 {
 public:
-    QEnterEvent(const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos);
+    QSinglePointEvent();
+    QSinglePointEvent(Type type, const QPointingDevice *dev, const QPointF &localPos,
+                      const QPointF &scenePos, const QPointF &globalPos,
+                      Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons buttons = Qt::NoButton,
+                      Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    int pointCount() const override { return 1; }
+    const QEventPoint &point(int i) const override { Q_ASSERT(i == 0); return m_point; }
+
+    inline Qt::MouseButton button() const { return m_button; }
+    inline Qt::MouseButtons buttons() const { return m_mouseState; }
+
+    inline QPointF position() const { return m_point.position(); }
+    inline QPointF scenePosition() const { return m_point.scenePosition(); }
+    inline QPointF globalPosition() const { return m_point.globalPosition(); }
+
+protected:
+    QEventPoint m_point;
+    Qt::MouseButton m_button = Qt::NoButton;
+    Qt::MouseButtons m_mouseState = Qt::NoButton;
+    quint32 m_source : 8; // actually Qt::MouseEventSource
+    quint32 m_doubleClick : 1;
+    quint32 m_reserved : 7; // subclasses dovetail their flags, so we don't reserve all 32 bits here
+};
+
+class Q_GUI_EXPORT QEnterEvent : public QSinglePointEvent
+{
+public:
+    QEnterEvent(const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
+                const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
     ~QEnterEvent();
 
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -124,29 +269,26 @@ public:
     QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
     QPointF screenPos() const { return globalPosition(); }
 #endif // QT_DEPRECATED_SINCE(6, 0)
-
-    QPointF position() const { return l; }
-    QPointF scenePosition() const { return s; }
-    QPointF globalPosition() const { return g; }
-
-protected:
-    QPointF l, s, g;
 };
 
-class Q_GUI_EXPORT QMouseEvent : public QPointerEvent
+class Q_GUI_EXPORT QMouseEvent : public QSinglePointEvent
 {
 public:
     QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
-                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
+                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
+                const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
     QMouseEvent(Type type, const QPointF &localPos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
-                Qt::KeyboardModifiers modifiers);
+                Qt::KeyboardModifiers modifiers,
+                const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
     QMouseEvent(Type type, const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
-                Qt::KeyboardModifiers modifiers);
+                Qt::KeyboardModifiers modifiers,
+                const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
     QMouseEvent(Type type, const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
-                Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
+                Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source,
+                const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
     ~QMouseEvent();
 
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
@@ -171,34 +313,18 @@ public:
     QPointF windowPos() const { return scenePosition(); }
     QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
     QPointF screenPos() const { return globalPosition(); }
-#endif // QT_DEPRECATED_SINCE(6, 0)
-
-    QPointF position() const { return l; }
-    QPointF scenePosition() const { return w; }
-    QPointF globalPosition() const { return g; }
-
-    inline Qt::MouseButton button() const { return b; }
-    inline Qt::MouseButtons buttons() const { return mouseState; }
-
-    inline void setLocalPos(const QPointF &localPosition) { l = localPosition; }
-
     Qt::MouseEventSource source() const;
+    QT_DEPRECATED_VERSION_X_6_0("Internal, don't use")
     Qt::MouseEventFlags flags() const;
-
-protected:
-    QPointF l, w, g;
-    Qt::MouseButton b;
-    Qt::MouseButtons mouseState;
-    int caps;
-    QVector2D velocity;
-
-    friend class QGuiApplicationPrivate;
+#endif // QT_DEPRECATED_SINCE(6, 0)
 };
 
-class Q_GUI_EXPORT QHoverEvent : public QInputEvent
+class Q_GUI_EXPORT QHoverEvent : public QSinglePointEvent
 {
 public:
-    QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos,
+                Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
     ~QHoverEvent();
 
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -215,63 +341,51 @@ public:
     inline QPoint oldPos() const { return op.toPoint(); }
     inline QPointF oldPosF() const { return op; }
 
-    QPointF position() const { return p; }
-
 protected:
-    QPointF p, op;
+    quint32 mReserved : 16;
+    QPointF op; // TODO remove?
 };
 
 #if QT_CONFIG(wheelevent)
-class Q_GUI_EXPORT QWheelEvent : public QPointerEvent
+class Q_GUI_EXPORT QWheelEvent : public QSinglePointEvent
 {
 public:
     enum { DefaultDeltasPerStep = 120 };
 
-    QWheelEvent(QPointF pos, QPointF globalPos, QPoint pixelDelta, QPoint angleDelta,
+    QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pixelDelta, QPoint angleDelta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
-                bool inverted, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+                bool inverted, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized,
+                const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
     ~QWheelEvent();
 
+    inline QPoint pixelDelta() const { return m_pixelDelta; }
+    inline QPoint angleDelta() const { return m_angleDelta; }
 
-    inline QPoint pixelDelta() const { return pixelD; }
-    inline QPoint angleDelta() const { return angleD; }
+    inline Qt::ScrollPhase phase() const { return Qt::ScrollPhase(m_phase); }
+    inline bool inverted() const { return m_invertedScrolling; }
 
-    inline QPointF position() const { return p; }
-    inline QPointF globalPosition() const { return g; }
-
-    inline Qt::MouseButtons buttons() const { return mouseState; }
-
-    inline Qt::ScrollPhase phase() const { return Qt::ScrollPhase(ph); }
-    inline bool inverted() const { return invertedScrolling; }
-
-    Qt::MouseEventSource source() const { return Qt::MouseEventSource(src); }
+    Qt::MouseEventSource source() const { return Qt::MouseEventSource(m_source); }
 
 protected:
-    QPointF p;
-    QPointF g;
-    QPoint pixelD;
-    QPoint angleD;
-    Qt::MouseButtons mouseState;
-    uint src: 2;
-    uint ph : 3;
-    bool invertedScrolling : 1;
-    int reserved : 26;
-
-    friend class QApplication;
+    quint32 m_phase : 3;
+    quint32 m_invertedScrolling : 1;
+    quint32 m_reserved : 12;
+    QPoint m_pixelDelta;
+    QPoint m_angleDelta;
 };
 #endif
 
 #if QT_CONFIG(tabletevent)
-class Q_GUI_EXPORT QTabletEvent : public QPointerEvent
+class Q_GUI_EXPORT QTabletEvent : public QSinglePointEvent
 {
-    Q_GADGET
 public:
     QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
                  int deviceType, int pointerType, qreal pressure, int xTilt, int yTilt,
                  qreal tangentialPressure, qreal rotation, int z,
                  Qt::KeyboardModifiers keyState, qint64 uniqueID,
                  Qt::MouseButton button, Qt::MouseButtons buttons);
-    QTabletEvent(Type t, const QPointingDevice *dev, const QPointF &pos, const QPointF &globalPos,
+    QTabletEvent(Type t, const QPointingDevice *device,
+                 const QPointF &pos, const QPointF &globalPos,
                  qreal pressure, int xTilt, int yTilt,
                  qreal tangentialPressure, qreal rotation, int z,
                  Qt::KeyboardModifiers keyState,
@@ -300,37 +414,31 @@ public:
     inline qreal hiResGlobalX() const { return globalPosition().x(); }
     QT_DEPRECATED_VERSION_X_6_0("use globalPosition().y()")
     inline qreal hiResGlobalY() const { return globalPosition().y(); }
-#endif
-    inline QPointF position() const { return mPos; }
-    inline QPointF globalPosition() const { return mGPos; }
+    QT_DEPRECATED_VERSION_X_6_0("use pointingDevice().uniqueId()")
     inline qint64 uniqueId() const { return pointingDevice() ? pointingDevice()->uniqueId().numericId() : -1; }
-    inline qreal pressure() const { return mPress; }
+#endif
+    inline qreal pressure() const { return point(0).pressure(); }
+    inline qreal rotation() const { return point(0).rotation(); }
     inline int z() const { return mZ; }
     inline qreal tangentialPressure() const { return mTangential; }
-    inline qreal rotation() const { return mRot; }
     inline int xTilt() const { return mXT; }
     inline int yTilt() const { return mYT; }
-    inline Qt::MouseButton button() const { return mButton; }
-    inline Qt::MouseButtons buttons() const { return mButtons; }
 
 protected:
-    QPointF mPos, mGPos;
+    quint32 mReserved : 16;
     int mXT, mYT, mZ;
-    qreal mPress, mTangential, mRot;
-    // TODO refactor to parent class along with QMouseEvent's button storage
-    Qt::MouseButton mButton;
-    Qt::MouseButtons mButtons;
+    qreal mTangential;
 };
 #endif // QT_CONFIG(tabletevent)
 
 #if QT_CONFIG(gestures)
-class Q_GUI_EXPORT QNativeGestureEvent : public QPointerEvent
+class Q_GUI_EXPORT QNativeGestureEvent : public QSinglePointEvent
 {
 public:
     QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
                         const QPointF &globalPos, qreal value, ulong sequenceId, quint64 intArgument);
     ~QNativeGestureEvent();
-    Qt::NativeGestureType gestureType() const { return mGestureType; }
+    Qt::NativeGestureType gestureType() const { return Qt::NativeGestureType(mGestureType); }
     qreal value() const { return mRealValue; }
 
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -348,15 +456,9 @@ public:
     QPointF screenPos() const { return globalPosition(); }
 #endif
 
-    QPointF position() const { return mLocalPos; }
-    QPointF scenePosition() const { return mScenePos; }
-    QPointF globalPosition() const { return mGlobalPos; }
-
 protected:
-    Qt::NativeGestureType mGestureType;
-    QPointF mLocalPos;
-    QPointF mScenePos;
-    QPointF mGlobalPos;
+    quint32 mGestureType : 4;
+    quint32 mReserved : 12;
     qreal mRealValue;
     ulong mSequenceId;
     quint64 mIntValue;
@@ -370,7 +472,8 @@ public:
               bool autorep = false, ushort count = 1);
     QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
               quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-              const QString &text = QString(), bool autorep = false, ushort count = 1);
+              const QString &text = QString(), bool autorep = false, ushort count = 1,
+              const QInputDevice *device = QInputDevice::primaryKeyboard());
     ~QKeyEvent();
 
     int key() const { return k; }
@@ -829,156 +932,34 @@ class QTouchEventTouchPointPrivate;
 class Q_GUI_EXPORT QTouchEvent : public QPointerEvent
 {
 public:
-    class Q_GUI_EXPORT TouchPoint
-    {
-    public:
-        enum InfoFlag {
-            Pen  = 0x0001,
-            Token = 0x0002
-        };
-#ifndef Q_MOC_RUN
-        // otherwise moc gives
-        // Error: Meta object features not supported for nested classes
-        Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
-#endif
-
-        explicit TouchPoint(int id = -1);
-        TouchPoint(const TouchPoint &other);
-        TouchPoint(TouchPoint &&other) noexcept
-            : d(nullptr)
-        { qSwap(d, other.d); }
-        TouchPoint &operator=(TouchPoint &&other) noexcept
-        { qSwap(d, other.d); return *this; }
-        ~TouchPoint();
-
-        TouchPoint &operator=(const TouchPoint &other)
-        { if ( d != other.d ) { TouchPoint copy(other); swap(copy); } return *this; }
-
-        void swap(TouchPoint &other) noexcept
-        { qSwap(d, other.d); }
-
-        int id() const;
-        QPointingDeviceUniqueId uniqueId() const;
-
-        Qt::TouchPointState state() const;
-
-#if QT_DEPRECATED_SINCE(6, 0)
-        QT_DEPRECATED_VERSION_X_6_0("Use position()")
-        QPointF pos() const { return position(); }
-        QT_DEPRECATED_VERSION_X_6_0("Use pressPosition()")
-        QPointF startPos() const { return pressPosition(); }
-
-        QT_DEPRECATED_VERSION_X_6_0("Use scenePosition()")
-        QPointF scenePos() const { return scenePosition(); }
-        QT_DEPRECATED_VERSION_X_6_0("Use scenePressPosition()")
-        QPointF startScenePos() const { return scenePressPosition(); }
-
-        QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
-        QPointF screenPos() const { return globalPosition(); }
-        QT_DEPRECATED_VERSION_X_6_0("Use globalPressPosition()")
-        QPointF startScreenPos() const { return globalPressPosition(); }
-#endif // QT_DEPRECATED_SINCE(6, 0)
-
-        // TODO deprecate these after finding good replacements (use QPointingDevice::globalArea?)
-        QPointF normalizedPos() const;
-        QPointF startNormalizedPos() const;
-
-        // TODO deprecate these after finding good replacements (store longer history perhaps?)
-        QPointF lastPos() const;
-        QPointF lastScenePos() const;
-        QPointF lastScreenPos() const;
-        QPointF lastNormalizedPos() const;
-
-        QPointF position() const;
-        QPointF pressPosition() const;
-        QPointF scenePosition() const;
-        QPointF scenePressPosition() const;
-        QPointF globalPosition() const;
-        QPointF globalPressPosition() const;
-
-        qreal pressure() const;
-        qreal rotation() const;
-        QSizeF ellipseDiameters() const;
-
-        QVector2D velocity() const;
-        InfoFlags flags() const;
-        QList<QPointF> rawScreenPositions() const;
-
-        // internal
-        // ### Qt 6: move private, rename appropriately, only friends can call them
-#if QT_DEPRECATED_SINCE(6, 0)
-        void setId(int id);
-        void setUniqueId(qint64 uid);
-        void setState(Qt::TouchPointStates state);
-        void setPos(const QPointF &pos);
-        void setScenePos(const QPointF &scenePos);
-        void setScreenPos(const QPointF &screenPos);
-        void setNormalizedPos(const QPointF &normalizedPos);
-        void setStartPos(const QPointF &startPos);
-        void setStartScenePos(const QPointF &startScenePos);
-        void setStartScreenPos(const QPointF &startScreenPos);
-        void setStartNormalizedPos(const QPointF &startNormalizedPos);
-        void setLastPos(const QPointF &lastPos);
-        void setLastScenePos(const QPointF &lastScenePos);
-        void setLastScreenPos(const QPointF &lastScreenPos);
-        void setLastNormalizedPos(const QPointF &lastNormalizedPos);
-        void setPressure(qreal pressure);
-        void setRotation(qreal angle);
-        void setEllipseDiameters(const QSizeF &dia);
-        void setVelocity(const QVector2D &v);
-        void setFlags(InfoFlags flags);
-        void setRawScreenPositions(const QList<QPointF> &positions);
-#endif // QT_DEPRECATED_SINCE(6, 0)
-
-    private:
-        QTouchEventTouchPointPrivate *d;
-        friend class QGuiApplication;
-        friend class QGuiApplicationPrivate;
-        friend class QApplication;
-        friend class QApplicationPrivate;
-        friend class QQuickPointerTouchEvent;
-        friend class QQuickMultiPointTouchArea;
-    };
+    using TouchPoint = QEventPoint; // source compat
 
     explicit QTouchEvent(QEvent::Type eventType,
-                         const QPointingDevice *source = nullptr,
+                         const QPointingDevice *device = nullptr,
                          Qt::KeyboardModifiers modifiers = Qt::NoModifier,
-                         Qt::TouchPointStates touchPointStates = Qt::TouchPointStates(),
-                         const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
+                         const QList<QEventPoint> &touchPoints = {});
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use another constructor")
+    explicit QTouchEvent(QEvent::Type eventType,
+                         const QPointingDevice *device,
+                         Qt::KeyboardModifiers modifiers,
+                         QEventPoint::States touchPointStates,
+                         const QList<QEventPoint> &touchPoints = {});
+#endif
     ~QTouchEvent();
 
-    inline QWindow *window() const { return _window; }
-    inline QObject *target() const { return _target; }
-    inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
-    inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
+    int pointCount() const override { return m_touchPoints.count(); }
+    const QEventPoint &point(int i) const override { return m_touchPoints.at(i); }
 
-    // ### Qt 6: move private, rename appropriately, only friends can call them; or just let friends modify variables directly
-#if QT_DEPRECATED_SINCE(6, 0)
-    inline void setWindow(QWindow *awindow) { _window = awindow; }
-    inline void setTarget(QObject *atarget) { _target = atarget; }
-    inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
-#endif // QT_DEPRECATED_SINCE(6, 0)
+    inline QObject *target() const { return m_target; }
+    inline QEventPoint::States touchPointStates() const { return m_touchPointStates; }
+    const QList<QEventPoint> &touchPoints() const { return m_touchPoints; }
 
 protected:
-    QWindow *_window;
-    QObject *_target;
-    Qt::TouchPointStates _touchPointStates;
-    QList<QTouchEvent::TouchPoint> _touchPoints;
-
-    friend class QGuiApplication;
-    friend class QGuiApplicationPrivate;
-    friend class QApplication;
-    friend class QApplicationPrivate;
-#ifndef QT_NO_GRAPHICSVIEW
-    friend class QGraphicsScenePrivate; // direct access to _touchPoints
-#endif
+    QObject *m_target = nullptr;
+    QEventPoint::States m_touchPointStates = QEventPoint::State::Unknown;
+    QList<QEventPoint> m_touchPoints;
 };
-Q_DECLARE_TYPEINFO(QTouchEvent::TouchPoint, Q_MOVABLE_TYPE);
-Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchEvent::TouchPoint::InfoFlags)
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QTouchEvent::TouchPoint &);
-#endif
 
 class Q_GUI_EXPORT QScrollPrepareEvent : public QEvent
 {

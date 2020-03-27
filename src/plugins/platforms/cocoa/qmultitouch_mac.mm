@@ -112,22 +112,22 @@ QCocoaTouch *QCocoaTouch::findQCocoaTouch(NSTouch *nstouch)
     return nullptr;
 }
 
-Qt::TouchPointState QCocoaTouch::toTouchPointState(NSTouchPhase nsState)
+QEventPoint::State QCocoaTouch::toTouchPointState(NSTouchPhase nsState)
 {
-    Qt::TouchPointState qtState = Qt::TouchPointReleased;
+    QEventPoint::State qtState = QEventPoint::State::Released;
     switch (nsState) {
         case NSTouchPhaseBegan:
-            qtState = Qt::TouchPointPressed;
+            qtState = QEventPoint::State::Pressed;
             break;
         case NSTouchPhaseMoved:
-            qtState = Qt::TouchPointMoved;
+            qtState = QEventPoint::State::Updated;
             break;
         case NSTouchPhaseStationary:
-            qtState = Qt::TouchPointStationary;
+            qtState = QEventPoint::State::Stationary;
             break;
         case NSTouchPhaseEnded:
         case NSTouchPhaseCancelled:
-            qtState = Qt::TouchPointReleased;
+            qtState = QEventPoint::State::Released;
             break;
         default:
             break;
@@ -191,7 +191,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
         const auto currentTouchesSnapshot = _currentTouches;
         for (QCocoaTouch *qcocoaTouch : currentTouchesSnapshot) {
             if (!_updateInternalStateOnly) {
-                qcocoaTouch->_touchPoint.state = Qt::TouchPointReleased;
+                qcocoaTouch->_touchPoint.state = QEventPoint::State::Released;
                 touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
             }
             delete qcocoaTouch;
@@ -207,7 +207,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
 
     if (_updateInternalStateOnly && !wasUpdateInternalStateOnly && !_currentTouches.isEmpty()) {
         QCocoaTouch *qcocoaTouch = _currentTouches.cbegin().value();
-        qcocoaTouch->_touchPoint.state = Qt::TouchPointReleased;
+        qcocoaTouch->_touchPoint.state = QEventPoint::State::Released;
         touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
         // Since this last touch also will end up being the first
         // touch (if the user adds a second finger without lifting

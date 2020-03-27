@@ -1618,6 +1618,7 @@ namespace Qt {
     };
 
     enum TouchPointState {
+        TouchPointUnknownState = 0x00,
         TouchPointPressed    = 0x01,
         TouchPointMoved      = 0x02,
         TouchPointStationary = 0x04,
@@ -1707,6 +1708,7 @@ namespace Qt {
     };
 
     enum MouseEventFlag {
+        NoMouseEventFlag = 0x00,
         MouseEventCreatedDoubleClick = 0x01,
         MouseEventFlagMask = 0xFF
     };

@@ -4840,15 +4840,12 @@ void tst_QGraphicsScene::focusOnTouch()
 
     scene.setFocusOnTouch(false);
 
-    QPointingDevice device;
-    device.setType(QInputDevice::DeviceType::TouchPad);
-    QList<QTouchEvent::TouchPoint> touchPoints;
-    QTouchEvent::TouchPoint point;
-    point.setScenePos(QPointF(10, 10));
-    point.setState(Qt::TouchPointPressed);
-    touchPoints.append(point);
-    QTouchEvent event(QEvent::TouchBegin, &device, Qt::NoModifier, Qt::TouchPointStates(),
-                      touchPoints);
+    QPointingDevice device("fake touchpad", 4321, QInputDevice::DeviceType::TouchPad,
+                           QPointingDevice::PointerType::Finger, QInputDevice::Capability::Position, 1, 3);
+
+    auto touchPoints = QList<QEventPoint>() <<
+        QEventPoint(0, QEventPoint::State::Pressed, {10, 10}, {});
+    QTouchEvent event(QEvent::TouchBegin, &device, Qt::NoModifier, touchPoints);
 
     QApplication::sendEvent(&scene, &event);
 

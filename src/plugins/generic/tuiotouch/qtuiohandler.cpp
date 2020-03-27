@@ -260,12 +260,12 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
         if (!oldActiveCursors.contains(cursorId)) {
             // newly active
             QTuioCursor cursor(cursorId);
-            cursor.setState(Qt::TouchPointPressed);
+            cursor.setState(QEventPoint::State::Pressed);
             newActiveCursors.insert(cursorId, cursor);
         } else {
             // we already know about it, remove it so it isn't marked as released
             QTuioCursor cursor = oldActiveCursors.value(cursorId);
-            cursor.setState(Qt::TouchPointStationary); // position change in SET will update if needed
+            cursor.setState(QEventPoint::State::Stationary); // position change in SET will update if needed
             newActiveCursors.insert(cursorId, cursor);
             oldActiveCursors.remove(cursorId);
         }
@@ -378,7 +378,7 @@ void QTuioHandler::process2DCurFseq(const QOscMessage &message)
 
     for (const QTuioCursor &tc : qAsConst(m_deadCursors)) {
         QWindowSystemInterface::TouchPoint tp = cursorToTouchPoint(tc, win);
-        tp.state = Qt::TouchPointReleased;
+        tp.state = QEventPoint::State::Released;
         tpl.append(tp);
     }
     QWindowSystemInterface::handleTouchEvent(win, m_device, tpl);
@@ -425,12 +425,12 @@ void QTuioHandler::process2DObjAlive(const QOscMessage &message)
         if (!oldActiveTokens.contains(sessionId)) {
             // newly active
             QTuioToken token(sessionId);
-            token.setState(Qt::TouchPointPressed);
+            token.setState(QEventPoint::State::Pressed);
             newActiveTokens.insert(sessionId, token);
         } else {
             // we already know about it, remove it so it isn't marked as released
             QTuioToken token = oldActiveTokens.value(sessionId);
-            token.setState(Qt::TouchPointStationary); // position change in SET will update if needed
+            token.setState(QEventPoint::State::Stationary); // position change in SET will update if needed
             newActiveTokens.insert(sessionId, token);
             oldActiveTokens.remove(sessionId);
         }
@@ -511,7 +511,6 @@ QWindowSystemInterface::TouchPoint QTuioHandler::tokenToTouchPoint(const QTuioTo
     QWindowSystemInterface::TouchPoint tp;
     tp.id = tc.id();
     tp.uniqueId = tc.classId(); // TODO TUIO 2.0: populate a QVariant, and register the mapping from int to arbitrary UID data
-    tp.flags = QTouchEvent::TouchPoint::Token;
     tp.pressure = 1.0f;
 
     tp.normalPosition = QPointF(tc.x(), tc.y());
@@ -552,7 +551,7 @@ void QTuioHandler::process2DObjFseq(const QOscMessage &message)
 
     for (const QTuioToken & t : qAsConst(m_deadTokens)) {
         QWindowSystemInterface::TouchPoint tp = tokenToTouchPoint(t, win);
-        tp.state = Qt::TouchPointReleased;
+        tp.state = QEventPoint::State::Released;
         tp.velocity = QVector2D();
         tpl.append(tp);
     }
