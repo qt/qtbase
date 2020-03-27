@@ -1266,16 +1266,6 @@ void Moc::createPropertyDef(PropertyDef &propDef)
     next();
     propDef.name = lexem();
 
-    // Could be Q_PROPERTY(type field) and later QProperty<int> field; -- to be resolved later.
-    if (lookup() == RPAREN) {
-        propDef.isQProperty = true;
-        propDef.designable = propDef.scriptable = propDef.stored = "true";
-        propDef.user = "false";
-        propDef.read = propDef.name + ".value";
-        propDef.write = propDef.name + ".setValue";
-        return;
-    }
-
     while (test(IDENTIFIER)) {
         const QByteArray l = lexem();
         if (l[0] == 'C' && l == "CONSTANT") {
@@ -1806,31 +1796,32 @@ void Moc::checkProperties(ClassDef *cdef)
     QSet<QByteArray> definedProperties;
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         PropertyDef &p = cdef->propertyList[i];
-        if (p.read.isEmpty() && p.member.isEmpty())
-            continue;
         if (definedProperties.contains(p.name)) {
             QByteArray msg = "The property '" + p.name + "' is defined multiple times in class " + cdef->classname + ".";
             warning(msg.constData());
         }
         definedProperties.insert(p.name);
 
-        const auto skipProperty = [&](const QByteArray &msg) {
-            const int rewind = index;
-            if (p.location >= 0)
-                index = p.location;
-            warning(msg.constData());
-            index = rewind;
-            cdef->propertyList.removeAt(i);
-            --i;
-        };
-
-        if (p.isQProperty) {
+        if (p.read.isEmpty() && p.member.isEmpty()) {
             if (!cdef->qPropertyMembers.contains(p.name)) {
+                const int rewind = index;
+                if (p.location >= 0)
+                    index = p.location;
                 QByteArray msg = "Property declaration " + p.name + " has neither an associated QProperty<> member"
-                    ", nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.";
-                skipProperty(msg);
-                break;
+                                 ", nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.";
+                warning(msg.constData());
+                index = rewind;
+                if (p.write.isEmpty()) {
+                    cdef->propertyList.removeAt(i);
+                    --i;
+                }
+                continue;
             }
+            p.read = p.name + ".value";
+            p.write = p.name + ".setValue";
+            p.isQProperty = true;
+            p.designable = p.scriptable = p.stored = "true";
+            p.user = "false";
         }
 
         for (int j = 0; j < cdef->publicList.count(); ++j) {

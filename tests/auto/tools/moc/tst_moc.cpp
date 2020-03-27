@@ -4106,12 +4106,15 @@ void tst_Moc::requiredProperties()
 class ClassWithQPropertyMembers : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int publicProperty)
+    Q_PROPERTY(int publicProperty NOTIFY publicPropertyChanged)
     Q_PROPERTY(int privateExposedProperty)
 public:
 
     QProperty<int> publicProperty;
     QProperty<int> notExposed;
+
+signals:
+    void publicPropertyChanged();
 
 protected:
     QProperty<int> protectedProperty;
@@ -4119,6 +4122,7 @@ protected:
 private:
     QProperty<int> privateProperty;
     QProperty<int> privateExposedProperty;
+    QPropertyMemberChangeHandler<&ClassWithQPropertyMembers::publicProperty, &ClassWithQPropertyMembers::publicPropertyChanged> connector{this};
 };
 
 void tst_Moc::qpropertyMembers()
@@ -4139,12 +4143,15 @@ void tst_Moc::qpropertyMembers()
     prop.write(&instance, 42);
     QCOMPARE(instance.publicProperty.value(), 42);
 
+    QSignalSpy publicPropertySpy(&instance, SIGNAL(publicPropertyChanged()));
+
     instance.publicProperty.setValue(100);
     QCOMPARE(prop.read(&instance).toInt(), 100);
+    QCOMPARE(publicPropertySpy.count(), 1);
 
     QCOMPARE(prop.metaType(), QMetaType(QMetaType::Int));
 
-    QVERIFY(!prop.notifySignal().isValid());
+    QVERIFY(prop.notifySignal().isValid());
 }
 
 
@@ -4195,7 +4202,6 @@ void tst_Moc::setQPRopertyBinding()
         void *argv[] = { &binding };
         instance.qt_metacall(QMetaObject::SetQPropertyBinding, prop.propertyIndex(), argv);
     }
-    QVERIFY(!bindingCalled); // not yet!
 
     QCOMPARE(instance.publicProperty.value(), 42);
     QVERIFY(bindingCalled); // but now it should've been called :)
