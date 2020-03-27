@@ -1713,8 +1713,11 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
                                             width / line.length(),
                                             s->lastPen.capStyle() == Qt::SquareCap);
             } else {
-                d->rasterizeLine_dashed(line, width,
-                                        &dashIndex, &dashOffset, &inDash);
+                // LinesHint means each line is distinct, so restart dashing
+                int dIndex = dashIndex;
+                qreal dOffset = dashOffset;
+                bool inD = inDash;
+                d->rasterizeLine_dashed(line, width, &dIndex, &dOffset, &inD);
             }
         }
     }
