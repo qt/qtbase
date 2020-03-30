@@ -126,24 +126,25 @@ void tst_QSslCertificate::initTestCase()
 
     QDir dir(testDataDir + "certificates");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
-    QRegExp rxCert(QLatin1String("^.+\\.(pem|der)$"));
-    QRegExp rxSan(QLatin1String("^(.+\\.(?:pem|der))\\.san$"));
-    QRegExp rxPubKey(QLatin1String("^(.+\\.(?:pem|der))\\.pubkey$"));
-    QRegExp rxDigest(QLatin1String("^(.+\\.(?:pem|der))\\.digest-(md5|sha1)$"));
+    QRegularExpression rxCert(QLatin1String("^.+\\.(pem|der)$"));
+    QRegularExpression rxSan(QLatin1String("^(.+\\.(?:pem|der))\\.san$"));
+    QRegularExpression rxPubKey(QLatin1String("^(.+\\.(?:pem|der))\\.pubkey$"));
+    QRegularExpression rxDigest(QLatin1String("^(.+\\.(?:pem|der))\\.digest-(md5|sha1)$"));
+    QRegularExpressionMatch match;
     foreach (QFileInfo fileInfo, fileInfoList) {
-        if (rxCert.indexIn(fileInfo.fileName()) >= 0)
+        if ((match = rxCert.match(fileInfo.fileName())).hasMatch())
             certInfoList <<
                 CertInfo(fileInfo,
-                         rxCert.cap(1) == QLatin1String("pem") ? QSsl::Pem : QSsl::Der);
-        if (rxSan.indexIn(fileInfo.fileName()) >= 0)
-            subjAltNameMap.insert(rxSan.cap(1), fileInfo.absoluteFilePath());
-        if (rxPubKey.indexIn(fileInfo.fileName()) >= 0)
-            pubkeyMap.insert(rxPubKey.cap(1), fileInfo.absoluteFilePath());
-        if (rxDigest.indexIn(fileInfo.fileName()) >= 0) {
-            if (rxDigest.cap(2) == QLatin1String("md5"))
-                md5Map.insert(rxDigest.cap(1), fileInfo.absoluteFilePath());
+                         match.captured(1) == QLatin1String("pem") ? QSsl::Pem : QSsl::Der);
+        if ((match = rxSan.match(fileInfo.fileName())).hasMatch())
+            subjAltNameMap.insert(match.captured(1), fileInfo.absoluteFilePath());
+        if ((match = rxPubKey.match(fileInfo.fileName())).hasMatch())
+            pubkeyMap.insert(match.captured(1), fileInfo.absoluteFilePath());
+        if ((match = rxDigest.match(fileInfo.fileName())).hasMatch()) {
+            if (match.captured(2) == QLatin1String("md5"))
+                md5Map.insert(match.captured(1), fileInfo.absoluteFilePath());
             else
-                sha1Map.insert(rxDigest.cap(1), fileInfo.absoluteFilePath());
+                sha1Map.insert(match.captured(1), fileInfo.absoluteFilePath());
         }
     }
 }
@@ -338,11 +339,12 @@ void tst_QSslCertificate::digest_data()
 static QByteArray convertDigest(const QByteArray &input)
 {
     QByteArray result;
-    QRegExp rx(QLatin1String("(?:=|:)([0-9A-Fa-f]{2})"));
+    QRegularExpression rx(QLatin1String("(?:=|:)([0-9A-Fa-f]{2})"));
+    QRegularExpressionMatch match;
     int pos = 0;
-    while ((pos = rx.indexIn(input, pos)) != -1) {
-        result.append(rx.cap(1).toLatin1());
-        pos += rx.matchedLength();
+    while ((match = rx.match(input, pos)).hasMatch()) {
+        result.append(match.captured(1).toLatin1());
+        pos = match.capturedEnd();
     }
     return QByteArray::fromHex(result);
 }
@@ -418,16 +420,17 @@ void tst_QSslCertificate::subjectAlternativeNames()
     }
 
     // verify that each entry in fileContents is present in subjAltNames
-    QRegExp rx(QLatin1String("(email|DNS):([^,\\r\\n]+)"));
-    for (int pos = 0; (pos = rx.indexIn(fileContents, pos)) != -1; pos += rx.matchedLength()) {
+    QRegularExpression rx(QLatin1String("(email|DNS):([^,\\r\\n]+)"));
+    QRegularExpressionMatch match;
+    for (int pos = 0; (match = rx.match(fileContents, pos)).hasMatch(); pos = match.capturedEnd()) {
         QSsl::AlternativeNameEntryType key;
-        if (rx.cap(1) == QLatin1String("email"))
+        if (match.captured(1) == QLatin1String("email"))
             key = QSsl::EmailEntry;
-        else if (rx.cap(1) == QLatin1String("DNS"))
+        else if (match.captured(1) == QLatin1String("DNS"))
             key = QSsl::DnsEntry;
         else
             QFAIL("unsupported alternative name type");
-        QVERIFY(altSubjectNames.contains(key, rx.cap(2)));
+        QVERIFY(altSubjectNames.contains(key, match.captured(2)));
     }
 }
 
