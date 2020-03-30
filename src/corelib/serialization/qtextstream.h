@@ -268,7 +268,7 @@ Q_CORE_EXPORT QTextStream &ws(QTextStream &s);
 
 } // namespace Qt
 
-#if QT_DEPRECATED_SINCE(5, 15) && !defined(Q_QDOC)
+#if QT_DEPRECATED_SINCE(5, 15)
 // This namespace only exists for 'using namespace' declarations.
 namespace QTextStreamFunctions {
 Q_CORE_EXPORT QT_DEPRECATED_X("Use Qt::bin") QTextStream &bin(QTextStream &s);
@@ -303,7 +303,7 @@ QT_WARNING_DISABLE_CLANG("-Wheader-hygiene")
 // conflicting definitions compiler errors.
 using namespace QTextStreamFunctions;
 QT_WARNING_POP
-#endif // QT_DEPRECATED_SINCE(5, 15) && !defined(Q_QDOC)
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 inline QTextStreamManipulator qSetFieldWidth(int width)
 {
