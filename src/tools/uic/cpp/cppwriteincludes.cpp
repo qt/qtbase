@@ -255,7 +255,7 @@ void WriteIncludes::acceptCustomWidget(DomCustomWidget *node)
 
 void WriteIncludes::acceptActionGroup(DomActionGroup *node)
 {
-    add(QLatin1String("QAction"));
+    add(QLatin1String("QActionGroup"));
     TreeWalker::acceptActionGroup(node);
 }
 
