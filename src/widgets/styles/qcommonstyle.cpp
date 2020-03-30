@@ -4498,6 +4498,21 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
     return ret;
 }
 
+static inline int defaultLayoutTopMargin(const QStyleOption *opt)
+{
+    return int(QStyleHelper::dpiScaled(11, opt));
+}
+
+static inline int defaultLayoutChildMargin(const QStyleOption *opt)
+{
+    return int(QStyleHelper::dpiScaled(9, opt));
+}
+
+static inline int defaultLayoutSpacing(const QStyleOption *opt)
+{
+    return int(QStyleHelper::dpiScaled(6, opt));
+}
+
 /*! \reimp */
 int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const
 {
@@ -4776,28 +4791,44 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_LayoutBottomMargin:
         {
             bool isWindow = false;
-            if (opt) {
-                isWindow = (opt->state & State_Window);
-            } else if (widget) {
+            if (opt)
+                isWindow = opt->state.testFlag(State_Window);
+            else if (widget)
                 isWindow = widget->isWindow();
-            }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            ret = isWindow ? defaultLayoutTopMargin(opt) : defaultLayoutChildMargin(opt);
+#else
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
             ret = proxy()->pixelMetric(isWindow ? PM_DefaultTopLevelMargin : PM_DefaultChildMargin, opt);
+QT_WARNING_POP
+#endif
         }
         break;
     case PM_LayoutHorizontalSpacing:
     case PM_LayoutVerticalSpacing:
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        ret = defaultLayoutTopMargin(opt);
+#else
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         ret = proxy()->pixelMetric(PM_DefaultLayoutSpacing, opt);
+QT_WARNING_POP
+#endif
         break;
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case PM_DefaultTopLevelMargin:
-        ret = int(QStyleHelper::dpiScaled(11, opt));
+        ret = defaultLayoutTopMargin(opt);
         break;
     case PM_DefaultChildMargin:
-        ret = int(QStyleHelper::dpiScaled(9, opt));
+        ret = defaultLayoutChildMargin(opt);
         break;
     case PM_DefaultLayoutSpacing:
-        ret = int(QStyleHelper::dpiScaled(6, opt));
+        ret = defaultLayoutSpacing(opt);
         break;
+QT_WARNING_POP
 
     case PM_ToolBarIconSize:
         ret = 0;
