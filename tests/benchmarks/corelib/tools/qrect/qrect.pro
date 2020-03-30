@@ -1,7 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_qrect
-
 QT = core testlib
-CONFIG += release
+CONFIG += benchmark
 
+TARGET = tst_bench_qrect
 SOURCES += main.cpp

@@ -1,5 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_qmutex
+CONFIG += benchmark
 QT = core testlib
-SOURCES += tst_qmutex.cpp
 
+TARGET = tst_bench_qmutex
+SOURCES += tst_qmutex.cpp

@@ -1,5 +1,6 @@
-TARGET = tst_bench_vector
+CONFIG += benchmark
 QT = core testlib core-private
+
 INCLUDEPATH += .
-SOURCES += main.cpp outofline.cpp 
-CONFIG += release
+TARGET = tst_bench_vector
+SOURCES += main.cpp outofline.cpp
