@@ -48,6 +48,11 @@
 #if QT_CONFIG(thread)
 #include <qsemaphore.h>
 #include <qthreadpool.h>
+#ifdef Q_OS_WASM
+// WebAssembly has threads; however we can't block the main thread.
+#else
+#define QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -227,7 +232,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
         }
     };
 
-#if QT_CONFIG(thread)
+#ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
     int segments = src->nbytes / (1<<16);
     segments = std::min(segments, src->height);
 
@@ -281,7 +286,7 @@ void convert_generic_to_rgb64(QImageData *dest, const QImageData *src, Qt::Image
             destData += dest->bytes_per_line;
         }
     };
-#if QT_CONFIG(thread)
+#ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
     int segments = src->nbytes / (1<<16);
     segments = std::min(segments, src->height);
 
@@ -388,7 +393,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             destData += params.bytesPerLine;
         }
     };
-#if QT_CONFIG(thread)
+#ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
     int segments = data->nbytes / (1<<16);
     segments = std::min(segments, data->height);
     if (segments > 1) {
