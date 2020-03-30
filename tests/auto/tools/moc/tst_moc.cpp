@@ -33,6 +33,7 @@
 #include <qmetaobject.h>
 #include <qjsondocument.h>
 #include <qversionnumber.h>
+#include <qregularexpression.h>
 
 #include "using-namespaces.h"
 #include "assign-namespace.h"
@@ -2254,8 +2255,7 @@ void tst_Moc::warnings()
 
 #ifdef Q_CC_MSVC
     // for some reasons, moc compiled with MSVC uses a different output format
-    QRegExp lineNumberRe(":(-?\\d+):");
-    lineNumberRe.setMinimal(true);
+    QRegularExpression lineNumberRe(":(-?\\d+):", QRegularExpression::InvertedGreedinessOption);
     expectedStdErr.replace(lineNumberRe, "(\\1):");
 #endif
 
