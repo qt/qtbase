@@ -426,8 +426,8 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             data->nbytes = params.totalSize;
         }
         data->bytes_per_line = params.bytesPerLine;
-        data->depth = destDepth;
     }
+    data->depth = destDepth;
     data->format = dst_format;
     return true;
 }
