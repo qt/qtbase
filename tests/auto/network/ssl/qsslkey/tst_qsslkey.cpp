@@ -112,17 +112,18 @@ void tst_QSslKey::initTestCase()
 
     QDir dir(testDataDir + "keys");
     const QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
-    QRegExp rx(QLatin1String("^(rsa|dsa|dh|ec)-(pub|pri)-(\\d+)-?[\\w-]*\\.(pem|der)$"));
+    QRegularExpression rx(QLatin1String("^(rsa|dsa|dh|ec)-(pub|pri)-(\\d+)-?[\\w-]*\\.(pem|der)$"));
     for (const QFileInfo &fileInfo : fileInfoList) {
-        if (rx.indexIn(fileInfo.fileName()) >= 0) {
+        auto match = rx.match(fileInfo.fileName());
+        if (match.hasMatch()) {
             keyInfoList << KeyInfo(
                 fileInfo,
-                rx.cap(1) == QLatin1String("rsa") ? QSsl::Rsa :
-                rx.cap(1) == QLatin1String("dsa") ? QSsl::Dsa :
-                rx.cap(1) == QLatin1String("dh") ? QSsl::Dh : QSsl::Ec,
-                rx.cap(2) == QLatin1String("pub") ? QSsl::PublicKey : QSsl::PrivateKey,
-                rx.cap(3).toInt(),
-                rx.cap(4) == QLatin1String("pem") ? QSsl::Pem : QSsl::Der);
+                match.captured(1) == QLatin1String("rsa") ? QSsl::Rsa :
+                match.captured(1) == QLatin1String("dsa") ? QSsl::Dsa :
+                match.captured(1) == QLatin1String("dh") ? QSsl::Dh : QSsl::Ec,
+                match.captured(2) == QLatin1String("pub") ? QSsl::PublicKey : QSsl::PrivateKey,
+                match.captured(3).toInt(),
+                match.captured(4) == QLatin1String("pem") ? QSsl::Pem : QSsl::Der);
         }
     }
 }
