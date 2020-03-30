@@ -6,7 +6,6 @@ SUBDIRS       = \
                 echoplugin \
                 i18n \
                 plugandpaint \
-                regexp \
                 regularexpression \
                 settingseditor \
                 styleplugin \
