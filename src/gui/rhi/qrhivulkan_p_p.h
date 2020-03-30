@@ -587,7 +587,7 @@ struct QVkSwapChain : public QRhiSwapChain
 
     bool ensureSurface();
 
-    static const quint32 MAX_BUFFER_COUNT = 3;
+    static const quint32 EXPECTED_MAX_BUFFER_COUNT = 4;
 
     QWindow *window = nullptr;
     QSize pixelSize;
@@ -617,7 +617,8 @@ struct QVkSwapChain : public QRhiSwapChain
             ScImageUseTransferSource
         };
         LastUse lastUse = ScImageUseNone;
-    } imageRes[MAX_BUFFER_COUNT];
+    };
+    QVarLengthArray<ImageResources, EXPECTED_MAX_BUFFER_COUNT> imageRes;
 
     struct FrameResources {
         VkFence imageFence = VK_NULL_HANDLE;

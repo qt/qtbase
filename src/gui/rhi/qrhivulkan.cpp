@@ -1296,16 +1296,11 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
     VkSurfaceCapabilitiesKHR surfaceCaps;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDev, swapChainD->surface, &surfaceCaps);
     quint32 reqBufferCount;
-    if (swapChainD->m_flags.testFlag(QRhiSwapChain::MinimalBufferCount)) {
+    if (swapChainD->m_flags.testFlag(QRhiSwapChain::MinimalBufferCount) || surfaceCaps.maxImageCount == 0) {
         reqBufferCount = qMax<quint32>(2, surfaceCaps.minImageCount);
     } else {
-        const quint32 maxBuffers = QVkSwapChain::MAX_BUFFER_COUNT;
-        if (surfaceCaps.maxImageCount)
-            reqBufferCount = qMax(qMin(surfaceCaps.maxImageCount, maxBuffers), surfaceCaps.minImageCount);
-        else
-            reqBufferCount = qMax<quint32>(2, surfaceCaps.minImageCount);
+        reqBufferCount = qMax(qMin<quint32>(surfaceCaps.maxImageCount, 3), surfaceCaps.minImageCount);
     }
-
     VkSurfaceTransformFlagBitsKHR preTransform =
         (surfaceCaps.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
         ? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
@@ -1389,23 +1384,19 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         return false;
     }
 
-    if (actualSwapChainBufferCount > QVkSwapChain::MAX_BUFFER_COUNT) {
-        qWarning("Too many swapchain buffers (%u)", actualSwapChainBufferCount);
-        return false;
-    }
     if (actualSwapChainBufferCount != reqBufferCount)
         qCDebug(QRHI_LOG_INFO, "Actual swapchain buffer count is %u", actualSwapChainBufferCount);
     swapChainD->bufferCount = int(actualSwapChainBufferCount);
 
-    VkImage swapChainImages[QVkSwapChain::MAX_BUFFER_COUNT];
-    err = vkGetSwapchainImagesKHR(dev, swapChainD->sc, &actualSwapChainBufferCount, swapChainImages);
+    QVarLengthArray<VkImage, QVkSwapChain::EXPECTED_MAX_BUFFER_COUNT> swapChainImages(actualSwapChainBufferCount);
+    err = vkGetSwapchainImagesKHR(dev, swapChainD->sc, &actualSwapChainBufferCount, swapChainImages.data());
     if (err != VK_SUCCESS) {
         qWarning("Failed to get swapchain images: %d", err);
         return false;
     }
 
-    VkImage msaaImages[QVkSwapChain::MAX_BUFFER_COUNT];
-    VkImageView msaaViews[QVkSwapChain::MAX_BUFFER_COUNT];
+    QVarLengthArray<VkImage, QVkSwapChain::EXPECTED_MAX_BUFFER_COUNT> msaaImages(swapChainD->bufferCount);
+    QVarLengthArray<VkImageView, QVkSwapChain::EXPECTED_MAX_BUFFER_COUNT> msaaViews(swapChainD->bufferCount);
     if (swapChainD->samples > VK_SAMPLE_COUNT_1_BIT) {
         if (!createTransientImage(swapChainD->colorFormat,
                                   swapChainD->pixelSize,
@@ -1413,8 +1404,8 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
                                   VK_IMAGE_ASPECT_COLOR_BIT,
                                   swapChainD->samples,
                                   &swapChainD->msaaImageMem,
-                                  msaaImages,
-                                  msaaViews,
+                                  msaaImages.data(),
+                                  msaaViews.data(),
                                   swapChainD->bufferCount))
         {
             qWarning("Failed to create transient image for MSAA color buffer");
@@ -1427,6 +1418,7 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+    swapChainD->imageRes.resize(swapChainD->bufferCount);
     for (int i = 0; i < swapChainD->bufferCount; ++i) {
         QVkSwapChain::ImageResources &image(swapChainD->imageRes[i]);
         image.image = swapChainImages[i];
