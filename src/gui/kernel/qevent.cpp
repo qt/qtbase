@@ -4653,19 +4653,12 @@ QPointF QTouchEvent::TouchPoint::lastNormalizedPos() const
     return d->lastNormalizedPos;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
-    Returns the rect for this touch point, relative to the widget
-    or QGraphicsItem that received the event. The rect is centered
-    around the point returned by pos().
-
-    \note This function returns an empty rect if the device does not report touch point sizes.
-
-    \obsolete This function is deprecated in 5.9 because it returns the outer bounds
+    \deprecated This function is deprecated since 5.9 because it returns the outer bounds
     of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
     modeled as an ellipse at position pos() with ellipseDiameters()
     which are independent of rotation().
-
-    \sa scenePos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::rect() const
 {
@@ -4675,16 +4668,10 @@ QRectF QTouchEvent::TouchPoint::rect() const
 }
 
 /*!
-    Returns the rect for this touch point in scene coordinates.
-
-    \note This function returns an empty rect if the device does not report touch point sizes.
-
-    \obsolete This function is deprecated in 5.9 because it returns the outer bounds
+    \deprecated This function is deprecated since 5.9 because it returns the outer bounds
     of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
     modeled as an ellipse at position scenePos() with ellipseDiameters()
     which are independent of rotation().
-
-    \sa scenePos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::sceneRect() const
 {
@@ -4694,16 +4681,10 @@ QRectF QTouchEvent::TouchPoint::sceneRect() const
 }
 
 /*!
-    Returns the rect for this touch point in screen coordinates.
-
-    \note This function returns an empty rect if the device does not report touch point sizes.
-
-    \obsolete This function is deprecated because it returns the outer bounds of the
+    \deprecated This function is deprecated since 5.9 because it returns the outer bounds of the
     touchpoint regardless of rotation, whereas a touchpoint is more correctly
     modeled as an ellipse at position screenPos() with ellipseDiameters()
     which are independent of rotation().
-
-    \sa screenPos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::screenRect() const
 {
@@ -4711,6 +4692,7 @@ QRectF QTouchEvent::TouchPoint::screenRect() const
     ret.moveCenter(d->screenPos);
     return ret;
 }
+#endif
 
 /*!
     Returns the pressure of this touch point. The return value is in
@@ -4909,6 +4891,7 @@ void QTouchEvent::TouchPoint::setLastNormalizedPos(const QPointF &lastNormalized
     d->lastNormalizedPos = lastNormalizedPos;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 // ### remove the following 3 setRect functions and their usages soon
 /*! \internal
     \obsolete
@@ -4942,6 +4925,7 @@ void QTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
     d->screenPos = screenRect.center();
     d->ellipseDiameters = screenRect.size();
 }
+#endif
 
 /*! \internal */
 void QTouchEvent::TouchPoint::setPressure(qreal pressure)
