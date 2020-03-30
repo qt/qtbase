@@ -539,7 +539,7 @@ function(qt_is_imported_target target out_var)
 endfunction()
 
 # Generates module .pri files for consumption by qmake
-function(qt_generate_module_pri_file target target_path pri_files_var)
+function(qt_generate_module_pri_file target target_path config_module_name pri_files_var)
     set(flags INTERNAL_MODULE HEADER_MODULE)
     set(options)
     set(multiopts QMAKE_MODULE_CONFIG)
@@ -572,53 +572,53 @@ function(qt_generate_module_pri_file target target_path pri_files_var)
 
     if(arg_QMAKE_MODULE_CONFIG)
         string(REPLACE ";" " " module_config "${arg_QMAKE_MODULE_CONFIG}")
-        set(module_config "\nQT.${module_lower}.CONFIG = ${module_config}")
+        set(module_config "\nQT.${module_config_name}.CONFIG = ${module_config}")
     else()
         set(module_config "")
     endif()
 
     if (NOT ${arg_INTERNAL_MODULE})
-        qt_path_join(pri_file_name "${target_path}" "qt_lib_${module_lower}.pri")
+        qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
         list(APPEND pri_files "${pri_file_name}")
 
         file(GENERATE
             OUTPUT "${pri_file_name}"
             CONTENT
-        "QT.${module_lower}.VERSION = ${PROJECT_VERSION}
-QT.${module_lower}.name = ${module}
-QT.${module_lower}.module = ${module_versioned}
-QT.${module_lower}.libs = $$QT_MODULE_LIB_BASE
-QT.${module_lower}.includes = $$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}
-QT.${module_lower}.frameworks =
-QT.${module_lower}.bins = $$QT_MODULE_BIN_BASE
-QT.${module_lower}.depends =
-QT.${module_lower}.uses =
-QT.${module_lower}.module_config = v2
-QT.${module_lower}.DEFINES = QT_${module_define}_LIB
-QT.${module_lower}.enabled_features = ${enabled_features}
-QT.${module_lower}.disabled_features = ${disabled_features}${module_config}
-QT_MODULES += ${module_lower}
+        "QT.${config_module_name}.VERSION = ${PROJECT_VERSION}
+QT.${config_module_name}.name = ${module}
+QT.${config_module_name}.module = ${module_versioned}
+QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
+QT.${config_module_name}.includes = $$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}
+QT.${config_module_name}.frameworks =
+QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE
+QT.${config_module_name}.depends =
+QT.${config_module_name}.uses =
+QT.${config_module_name}.module_config = v2
+QT.${config_module_name}.DEFINES = QT_${module_define}_LIB
+QT.${config_module_name}.enabled_features = ${enabled_features}
+QT.${config_module_name}.disabled_features = ${disabled_features}${module_config}
+QT_MODULES += ${config_module_name}
 "
         )
     endif()
 
-    qt_path_join(private_pri_file "${target_path}" "qt_lib_${module_lower}_private.pri")
+    qt_path_join(private_pri_file "${target_path}" "qt_lib_${config_module_name}_private.pri")
     list(APPEND pri_files "${private_pri_file}")
 
     file(GENERATE
         OUTPUT "${private_pri_file}"
         CONTENT
-        "QT.${module_lower}_private.VERSION = ${PROJECT_VERSION}
-QT.${module_lower}_private.name = ${module}
-QT.${module_lower}_private.module =
-QT.${module_lower}_private.libs = $$QT_MODULE_LIB_BASE
-QT.${module_lower}_private.includes = $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}
-QT.${module_lower}_private.frameworks =
-QT.${module_lower}_private.depends = ${module_lower}
-QT.${module_lower}_private.uses =
-QT.${module_lower}_private.module_config = v2
-QT.${module_lower}_private.enabled_features = ${enabled_private_features}
-QT.${module_lower}_private.disabled_features = ${disabled_private_features}
+        "QT.${config_module_name}_private.VERSION = ${PROJECT_VERSION}
+QT.${config_module_name}_private.name = ${module}
+QT.${config_module_name}_private.module =
+QT.${config_module_name}_private.libs = $$QT_MODULE_LIB_BASE
+QT.${config_module_name}_private.includes = $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}
+QT.${config_module_name}_private.frameworks =
+QT.${config_module_name}_private.depends = ${config_module_name}
+QT.${config_module_name}_private.uses =
+QT.${config_module_name}_private.module_config = v2
+QT.${config_module_name}_private.enabled_features = ${enabled_private_features}
+QT.${config_module_name}_private.disabled_features = ${disabled_private_features}
 "
     )
 
@@ -2010,7 +2010,8 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
 
     qt_path_join(pri_target_path ${PROJECT_BINARY_DIR} ${INSTALL_MKSPECSDIR}/modules)
-    qt_generate_module_pri_file("${target}" "${pri_target_path}" module_pri_files
+    qt_generate_module_pri_file("${target}" "${pri_target_path}" ${arg_CONFIG_MODULE_NAME}
+        module_pri_files
         ${arg_INTERNAL_MODULE}
         ${header_module}
         QMAKE_MODULE_CONFIG
