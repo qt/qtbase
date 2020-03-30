@@ -161,6 +161,15 @@ $i"
                 CMAKE_CMDLINE="$CMAKE_CMDLINE
 -DFEATURE_${VAR}=OFF"
                 ;;
+            --sanitize=*)
+                VAR=`echo $i | sed 's,^--sanitize=\(.*\),\1,'`
+                CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DECM_ENABLE_SANITIZERS=${VAR}"
+                ;;
+            --ccache)
+                CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DQT_USE_CCACHE=ON"
+                ;;
             --)
                 PASSTHRU=yes
                 ;;
