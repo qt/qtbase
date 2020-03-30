@@ -1818,7 +1818,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, int element, quint6
 
     cacheIt = cache.constFind(state & stateMask);
     if (cacheIt != cache.constEnd()) {
-        const QRenderRule &newRule = cacheIt.value();
+        QRenderRule newRule = cacheIt.value();
         cache[state] = newRule;
         return newRule;
     }
