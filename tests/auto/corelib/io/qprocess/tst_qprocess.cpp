@@ -36,7 +36,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QThread>
 #include <QtCore/QTemporaryDir>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QDebug>
 #include <QtCore/QMetaType>
 #include <QtNetwork/QHostInfo>
@@ -1759,9 +1759,9 @@ void tst_QProcess::setEnvironment()
         QStringList environment = QProcess::systemEnvironment();
         if (value.isNull()) {
             int pos;
-            QRegExp rx(name + "=.*");
+            QRegularExpression rx(name + "=.*");
 #ifdef Q_OS_WIN
-            rx.setCaseSensitivity(Qt::CaseInsensitive);
+            rx.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 #endif
             while ((pos = environment.indexOf(rx)) != -1)
                 environment.removeAt(pos);
@@ -1884,7 +1884,7 @@ void tst_QProcess::systemEnvironment()
     QVERIFY(!QProcessEnvironment::systemEnvironment().isEmpty());
 
     QVERIFY(QProcessEnvironment::systemEnvironment().contains("PATH"));
-    QVERIFY(!QProcess::systemEnvironment().filter(QRegExp("^PATH=", Qt::CaseInsensitive)).isEmpty());
+    QVERIFY(!QProcess::systemEnvironment().filter(QRegularExpression("^PATH=", QRegularExpression::CaseInsensitiveOption)).isEmpty());
 }
 
 void tst_QProcess::spaceInName()
@@ -2453,7 +2453,7 @@ void tst_QProcess::finishProcessBeforeReadingDone()
     QVERIFY(process.waitForStarted());
     loop.exec();
     QStringList lines = QString::fromLocal8Bit(process.readAllStandardOutput()).split(
-            QRegExp(QStringLiteral("[\r\n]")), Qt::SkipEmptyParts);
+            QRegularExpression(QStringLiteral("[\r\n]")), Qt::SkipEmptyParts);
     QVERIFY(!lines.isEmpty());
     QCOMPARE(lines.last(), QStringLiteral("10239 -this is a number"));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
@@ -2651,7 +2651,7 @@ void tst_QProcess::finishProcessBeforeReadingDone_deprecated()
     QVERIFY(process.waitForStarted());
     loop.exec();
     QStringList lines = QString::fromLocal8Bit(process.readAllStandardOutput()).split(
-            QRegExp(QStringLiteral("[\r\n]")), Qt::SkipEmptyParts);
+            QRegularExpression(QStringLiteral("[\r\n]")), Qt::SkipEmptyParts);
     QVERIFY(!lines.isEmpty());
     QCOMPARE(lines.last(), QStringLiteral("10239 -this is a number"));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
