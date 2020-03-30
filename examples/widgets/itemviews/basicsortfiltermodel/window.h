@@ -74,7 +74,7 @@ public:
     void setSourceModel(QAbstractItemModel *model);
 
 private slots:
-    void filterRegExpChanged();
+    void filterRegularExpressionChanged();
     void filterColumnChanged();
     void sortChanged();
 
@@ -91,6 +91,12 @@ private:
     QLabel *filterSyntaxLabel;
     QLabel *filterColumnLabel;
     QLineEdit *filterPatternLineEdit;
+    enum Syntax {
+        RegularExpression,
+        Wildcard,
+        FixedString
+    };
+
     QComboBox *filterSyntaxComboBox;
     QComboBox *filterColumnComboBox;
 };

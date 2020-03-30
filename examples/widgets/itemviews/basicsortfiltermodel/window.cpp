@@ -74,9 +74,9 @@ Window::Window()
     filterPatternLabel->setBuddy(filterPatternLineEdit);
 
     filterSyntaxComboBox = new QComboBox;
-    filterSyntaxComboBox->addItem(tr("Regular expression"), QRegExp::RegExp);
-    filterSyntaxComboBox->addItem(tr("Wildcard"), QRegExp::Wildcard);
-    filterSyntaxComboBox->addItem(tr("Fixed string"), QRegExp::FixedString);
+    filterSyntaxComboBox->addItem(tr("Regular expression"), RegularExpression);
+    filterSyntaxComboBox->addItem(tr("Wildcard"), Wildcard);
+    filterSyntaxComboBox->addItem(tr("Fixed string"), FixedString);
     filterSyntaxLabel = new QLabel(tr("Filter &syntax:"));
     filterSyntaxLabel->setBuddy(filterSyntaxComboBox);
 
@@ -88,13 +88,13 @@ Window::Window()
     filterColumnLabel->setBuddy(filterColumnComboBox);
 
     connect(filterPatternLineEdit, &QLineEdit::textChanged,
-            this, &Window::filterRegExpChanged);
+            this, &Window::filterRegularExpressionChanged);
     connect(filterSyntaxComboBox, &QComboBox::currentIndexChanged,
-            this, &Window::filterRegExpChanged);
+            this, &Window::filterRegularExpressionChanged);
     connect(filterColumnComboBox, &QComboBox::currentIndexChanged,
             this, &Window::filterColumnChanged);
     connect(filterCaseSensitivityCheckBox, &QAbstractButton::toggled,
-            this, &Window::filterRegExpChanged);
+            this, &Window::filterRegularExpressionChanged);
     connect(sortCaseSensitivityCheckBox, &QAbstractButton::toggled,
             this, &Window::sortChanged);
 
@@ -141,17 +141,26 @@ void Window::setSourceModel(QAbstractItemModel *model)
     sourceView->setModel(model);
 }
 
-void Window::filterRegExpChanged()
+void Window::filterRegularExpressionChanged()
 {
-    QRegExp::PatternSyntax syntax =
-            QRegExp::PatternSyntax(filterSyntaxComboBox->itemData(
-                    filterSyntaxComboBox->currentIndex()).toInt());
-    Qt::CaseSensitivity caseSensitivity =
-            filterCaseSensitivityCheckBox->isChecked() ? Qt::CaseSensitive
-                                                       : Qt::CaseInsensitive;
+    Syntax s = Syntax(filterSyntaxComboBox->itemData(filterSyntaxComboBox->currentIndex()).toInt());
+    QString pattern = filterPatternLineEdit->text();
+    switch (s) {
+    case Wildcard:
+        pattern = QRegularExpression::wildcardToRegularExpression(pattern);
+        break;
+    case FixedString:
+        pattern = QRegularExpression::escape(pattern);
+        break;
+    default:
+        break;
+    }
 
-    QRegExp regExp(filterPatternLineEdit->text(), caseSensitivity, syntax);
-    proxyModel->setFilterRegExp(regExp);
+    QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
+    if (!filterCaseSensitivityCheckBox->isChecked())
+        options |= QRegularExpression::CaseInsensitiveOption;
+    QRegularExpression regularExpression(pattern, options);
+    proxyModel->setFilterRegularExpression(regularExpression);
 }
 
 void Window::filterColumnChanged()
