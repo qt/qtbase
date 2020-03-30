@@ -109,6 +109,64 @@ struct ResultTypeHelper<
     using ResultType = std::invoke_result_t<std::decay_t<F>>;
 };
 
+// Helpers to resolve argument types of callables.
+template<typename...>
+struct ArgsType;
+
+template<typename Arg, typename... Args>
+struct ArgsType<Arg, Args...>
+{
+    using First = Arg;
+    static const bool HasExtraArgs = (sizeof...(Args) > 0);
+};
+
+template<>
+struct ArgsType<>
+{
+    using First = void;
+    static const bool HasExtraArgs = false;
+};
+
+template<typename F>
+struct ArgResolver : ArgResolver<decltype(&std::decay_t<F>::operator())>
+{
+};
+
+template<typename R, typename... Args>
+struct ArgResolver<R(Args...)> : public ArgsType<Args...>
+{
+};
+
+template<typename R, typename... Args>
+struct ArgResolver<R (*)(Args...)> : public ArgsType<Args...>
+{
+};
+
+template<typename R, typename... Args>
+struct ArgResolver<R (&)(Args...)> : public ArgsType<Args...>
+{
+};
+
+template<typename Class, typename R, typename... Args>
+struct ArgResolver<R (Class::*)(Args...)> : public ArgsType<Args...>
+{
+};
+
+template<typename Class, typename R, typename... Args>
+struct ArgResolver<R (Class::*)(Args...) noexcept> : public ArgsType<Args...>
+{
+};
+
+template<typename Class, typename R, typename... Args>
+struct ArgResolver<R (Class::*)(Args...) const> : public ArgsType<Args...>
+{
+};
+
+template<typename Class, typename R, typename... Args>
+struct ArgResolver<R (Class::*)(Args...) const noexcept> : public ArgsType<Args...>
+{
+};
+
 template<typename Function, typename ResultType, typename ParentResultType>
 class Continuation
 {
@@ -185,6 +243,37 @@ private:
 private:
     QThreadPool *threadPool;
 };
+
+#ifndef QT_NO_EXCEPTIONS
+
+template<class Function, class ResultType>
+class FailureHandler
+{
+public:
+    static void create(Function &&function, QFuture<ResultType> *future,
+                       const QFutureInterface<ResultType> &promise);
+
+    FailureHandler(Function &&func, const QFuture<ResultType> &f,
+                   const QFutureInterface<ResultType> &p)
+        : promise(p), parentFuture(f), handler(std::forward<Function>(func))
+    {
+    }
+
+public:
+    void run();
+
+private:
+    template<class ArgType>
+    void handleException();
+    void handleAllExceptions();
+
+private:
+    QFutureInterface<ResultType> promise;
+    const QFuture<ResultType> parentFuture;
+    Function handler;
+};
+
+#endif
 
 template<typename Function, typename ResultType, typename ParentResultType>
 void Continuation<Function, ResultType, ParentResultType>::runFunction()
@@ -297,7 +386,7 @@ void Continuation<Function, ResultType, ParentResultType>::create(Function &&fun
 
     p.setLaunchAsync(launchAsync);
 
-    auto continuation = [continuationJob, policy, launchAsync]() mutable {
+    auto continuation = [continuationJob, launchAsync]() mutable {
         bool isLaunched = continuationJob->execute();
         // If continuation is successfully launched, AsyncContinuation will be deleted
         // by the QThreadPool which has started it. Synchronous continuation will be
@@ -336,6 +425,90 @@ void Continuation<Function, ResultType, ParentResultType>::create(Function &&fun
 
     f->d.setContinuation(continuation);
 }
+
+#ifndef QT_NO_EXCEPTIONS
+
+template<class Function, class ResultType>
+void FailureHandler<Function, ResultType>::create(Function &&function, QFuture<ResultType> *future,
+                                                  const QFutureInterface<ResultType> &promise)
+{
+    Q_ASSERT(future);
+
+    FailureHandler<Function, ResultType> *failureHandler = new FailureHandler<Function, ResultType>(
+            std::forward<Function>(function), *future, promise);
+
+    auto failureContinuation = [failureHandler]() mutable {
+        failureHandler->run();
+        delete failureHandler;
+    };
+
+    future->d.setContinuation(std::move(failureContinuation));
+}
+
+template<class Function, class ResultType>
+void FailureHandler<Function, ResultType>::run()
+{
+    Q_ASSERT(parentFuture.isFinished());
+
+    promise.reportStarted();
+
+    if (parentFuture.d.exceptionStore().hasException()) {
+        using ArgType = typename QtPrivate::ArgResolver<Function>::First;
+        if constexpr (std::is_void_v<ArgType>) {
+            handleAllExceptions();
+        } else {
+            handleException<ArgType>();
+        }
+    } else {
+        if constexpr (!std::is_void_v<ResultType>)
+            promise.reportResult(parentFuture.result());
+    }
+    promise.reportFinished();
+}
+
+template<class Function, class ResultType>
+template<class ArgType>
+void FailureHandler<Function, ResultType>::handleException()
+{
+    try {
+        parentFuture.d.exceptionStore().throwPossibleException();
+    } catch (const ArgType &e) {
+        try {
+            // Handle exceptions matching with the handler's argument type
+            if constexpr (std::is_void_v<ResultType>) {
+                handler(e);
+            } else {
+                promise.reportResult(handler(e));
+            }
+        } catch (...) {
+            promise.reportException(std::current_exception());
+        }
+    } catch (...) {
+        // Exception doesn't match with handler's argument type, propagate
+        // the exception to be handled later.
+        promise.reportException(std::current_exception());
+    }
+}
+
+template<class Function, class ResultType>
+void FailureHandler<Function, ResultType>::handleAllExceptions()
+{
+    try {
+        parentFuture.d.exceptionStore().throwPossibleException();
+    } catch (...) {
+        try {
+            if constexpr (std::is_void_v<ResultType>) {
+                handler();
+            } else {
+                promise.reportResult(handler());
+            }
+        } catch (...) {
+            promise.reportException(std::current_exception());
+        }
+    }
+}
+
+#endif // QT_NO_EXCEPTIONS
 
 } // namespace QtPrivate
 

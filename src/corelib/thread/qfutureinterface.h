@@ -63,6 +63,11 @@ class QFutureWatcherBasePrivate;
 namespace QtPrivate {
 template<typename Function, typename ResultType, typename ParentResultType>
 class Continuation;
+
+#ifndef QT_NO_EXCEPTIONS
+template<class Function, class ResultType>
+class FailureHandler;
+#endif
 }
 
 class Q_CORE_EXPORT QFutureInterfaceBase
@@ -157,6 +162,11 @@ private:
 
     template<typename Function, typename ResultType, typename ParentResultType>
     friend class QtPrivate::Continuation;
+
+#ifndef QT_NO_EXCEPTIONS
+    template<class Function, class ResultType>
+    friend class QtPrivate::FailureHandler;
+#endif
 
 protected:
     void setContinuation(std::function<void()> func);

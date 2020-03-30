@@ -846,6 +846,8 @@
 
     \note If the parent future gets canceled, its continuations will
     also be canceled.
+
+    \sa onFailed()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(QtFuture::Launch policy, Function &&function)
@@ -877,6 +879,8 @@
     future.then(QtFuture::Launch::Async, [](int res){ ... })
           .then(QtFuture::Launch::Inherit, [](int res2){ ... });
     \endcode
+
+    \sa onFailed()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(QThreadPool *pool, Function &&function)
@@ -888,4 +892,83 @@
     computations if desired. When the asynchronous computation represented by this
     future finishes, \a function will be invoked in a separate thread taken from the
     QThreadPool \a pool.
+
+    \sa onFailed()
+*/
+
+/*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onFailed(Function &&handler)
+
+    \since 6.0
+
+    Attaches a failure handler to this future, to handle any exceptions that may
+    have been generated. Returns a QFuture of the parent type. The handler will
+    be invoked only in case of an exception, in the same thread as the parent
+    future has been running. \a handler is a callable which takes either no argument
+    or one argument, to filter by specific error types similar to
+    \l {https://en.cppreference.com/w/cpp/language/try_catch} {catch} statement.
+
+    For example:
+
+    \code
+    QFuture<int> future = ...;
+    auto resultFuture = future.then([](int res) {
+        ...
+        throw Error();
+        ...
+    }).onFailed([](const Error &e) {
+        // Handle exceptions of type Error
+        ...
+        return -1;
+    }).onFailed([] {
+        // Handle all other types of errors
+        ...
+        return -1;
+    });
+
+    auto result = resultFuture.result(); // result is -1
+
+    \endcode
+
+    If there are multiple handlers attached, the first handler that matches with the
+    thrown exception type will be invoked. For example:
+
+    \code
+    QFuture<int> future = ...;
+    future.then([](int res) {
+        ...
+        throw std::runtime_error("message");
+        ...
+    }).onFailed([](const std::exception &e) {
+        // This handler will be invoked
+    }).onFailed([](const std::runtime_error &e) {
+        // This handler won't be invoked, because of the handler above.
+    });
+    \endcode
+
+    If none of the handlers matches with the thrown exception type, the exception
+    will be propagated to the resulted future:
+
+    \code
+    QFuture<int> future = ...;
+    auto resultFuture = future.then([](int res) {
+        ...
+        throw Error("message");
+        ...
+    }).onFailed([](const std::exception &e) {
+        // Won't be invoked
+    }).onFailed([](const QException &e) {
+        // Won't be invoked
+    });
+
+    try {
+        auto result = resultFuture.result();
+    } catch(...) {
+        // Handle the exception
+    }
+    \endcode
+
+    \note You can always attach a handler taking no argument, to handle all exception
+    types and avoid writing the try-catch block.
+
+    \sa then()
 */

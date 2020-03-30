@@ -162,6 +162,12 @@ public:
     template<class Function>
     QFuture<ResultType<Function>> then(QThreadPool *pool, Function &&function);
 
+#ifndef QT_NO_EXCEPTIONS
+    template<class Function,
+             typename = std::enable_if_t<!QtPrivate::ArgResolver<Function>::HasExtraArgs>>
+    QFuture<T> onFailed(Function &&handler);
+#endif
+
     class const_iterator
     {
     public:
@@ -275,6 +281,11 @@ private:
     template<class Function, class ResultType, class ParentResultType>
     friend class QtPrivate::Continuation;
 
+#ifndef QT_NO_EXCEPTIONS
+    template<class Function, class ResultType>
+    friend class QtPrivate::FailureHandler;
+#endif
+
     using QFuturePrivate =
             std::conditional_t<std::is_same_v<T, void>, QFutureInterfaceBase, QFutureInterface<T>>;
 
@@ -334,6 +345,19 @@ QFuture<typename QFuture<T>::template ResultType<Function>> QFuture<T>::then(QTh
             std::forward<Function>(function), this, promise, pool);
     return promise.future();
 }
+
+#ifndef QT_NO_EXCEPTIONS
+
+template<class T>
+template<class Function, typename>
+QFuture<T> QFuture<T>::onFailed(Function &&handler)
+{
+    QFutureInterface<T> promise(QFutureInterfaceBase::State::Pending);
+    QtPrivate::FailureHandler<Function, T>::create(std::forward<Function>(handler), this, promise);
+    return promise.future();
+}
+
+#endif
 
 inline QFuture<void> QFutureInterface<void>::future()
 {

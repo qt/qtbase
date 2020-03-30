@@ -104,6 +104,8 @@ private slots:
 #ifndef QT_NO_EXCEPTIONS
     void thenOnExceptionFuture();
     void thenThrows();
+    void onFailed();
+    void onFailedTestCallables();
 #endif
     void takeResults();
     void takeResult();
@@ -2147,6 +2149,337 @@ void tst_QFuture::thenThrows()
         }
         QVERIFY(caught);
     }
+}
+
+void tst_QFuture::onFailed()
+{
+    // Ready exception void future
+    {
+        int checkpoint = 0;
+        auto future = createExceptionFuture().then([&] { checkpoint = 1; }).onFailed([&] {
+            checkpoint = 2;
+        });
+
+        try {
+            future.waitForFinished();
+        } catch (...) {
+            checkpoint = 3;
+        }
+        QCOMPARE(checkpoint, 2);
+    }
+
+    // std::exception handler
+    {
+        QFutureInterface<int> promise;
+
+        int checkpoint = 0;
+        auto then = promise.future()
+                            .then([&](int res) {
+                                throw std::exception();
+                                return res;
+                            })
+                            .then([&](int res) { return res + 1; })
+                            .onFailed([&](const QException &) {
+                                checkpoint = 1;
+                                return -1;
+                            })
+                            .onFailed([&](const std::exception &) {
+                                checkpoint = 2;
+                                return -1;
+                            })
+                            .onFailed([&] {
+                                checkpoint = 3;
+                                return -1;
+                            });
+
+        promise.reportStarted();
+        promise.reportResult(1);
+        promise.reportFinished();
+
+        int res = 0;
+        try {
+            res = then.result();
+        } catch (...) {
+            checkpoint = 4;
+        }
+        QCOMPARE(checkpoint, 2);
+        QCOMPARE(res, -1);
+    }
+
+    // then() throws an exception derived from QException
+    {
+        QFutureInterface<int> promise;
+
+        int checkpoint = 0;
+        auto then = promise.future()
+                            .then([&](int res) {
+                                throw DerivedException();
+                                return res;
+                            })
+                            .then([&](int res) { return res + 1; })
+                            .onFailed([&](const QException &) {
+                                checkpoint = 1;
+                                return -1;
+                            })
+                            .onFailed([&](const std::exception &) {
+                                checkpoint = 2;
+                                return -1;
+                            })
+                            .onFailed([&] {
+                                checkpoint = 3;
+                                return -1;
+                            });
+
+        promise.reportStarted();
+        promise.reportResult(1);
+        promise.reportFinished();
+
+        int res = 0;
+        try {
+            res = then.result();
+        } catch (...) {
+            checkpoint = 4;
+        }
+        QCOMPARE(checkpoint, 1);
+        QCOMPARE(res, -1);
+    }
+
+    // then() throws a custom exception
+    {
+        QFutureInterface<int> promise;
+
+        int checkpoint = 0;
+        auto then = promise.future()
+                            .then([&](int res) {
+                                throw TestException();
+                                return res;
+                            })
+                            .then([&](int res) { return res + 1; })
+                            .onFailed([&](const QException &) {
+                                checkpoint = 1;
+                                return -1;
+                            })
+                            .onFailed([&](const std::exception &) {
+                                checkpoint = 2;
+                                return -1;
+                            })
+                            .onFailed([&] {
+                                checkpoint = 3;
+                                return -1;
+                            });
+
+        promise.reportStarted();
+        promise.reportResult(1);
+        promise.reportFinished();
+
+        int res = 0;
+        try {
+            res = then.result();
+        } catch (...) {
+            checkpoint = 4;
+        }
+        QCOMPARE(checkpoint, 3);
+        QCOMPARE(res, -1);
+    }
+
+    // Custom exception handler
+    {
+        struct TestException
+        {
+        };
+
+        QFutureInterface<int> promise;
+
+        int checkpoint = 0;
+        auto then = promise.future()
+                            .then([&](int res) {
+                                throw TestException();
+                                return res;
+                            })
+                            .then([&](int res) { return res + 1; })
+                            .onFailed([&](const QException &) {
+                                checkpoint = 1;
+                                return -1;
+                            })
+                            .onFailed([&](const TestException &) {
+                                checkpoint = 2;
+                                return -1;
+                            })
+                            .onFailed([&] {
+                                checkpoint = 3;
+                                return -1;
+                            });
+
+        promise.reportStarted();
+        promise.reportResult(1);
+        promise.reportFinished();
+
+        int res = 0;
+        try {
+            res = then.result();
+        } catch (...) {
+            checkpoint = 4;
+        }
+        QCOMPARE(checkpoint, 2);
+        QCOMPARE(res, -1);
+    }
+
+    // Handle all exceptions
+    {
+        QFutureInterface<int> promise;
+
+        int checkpoint = 0;
+        auto then = promise.future()
+                            .then([&](int res) {
+                                throw QException();
+                                return res;
+                            })
+                            .then([&](int res) { return res + 1; })
+                            .onFailed([&] {
+                                checkpoint = 1;
+                                return -1;
+                            })
+                            .onFailed([&](const QException &) {
+                                checkpoint = 2;
+                                return -1;
+                            });
+
+        promise.reportStarted();
+        promise.reportResult(1);
+        promise.reportFinished();
+
+        int res = 0;
+        try {
+            res = then.result();
+        } catch (...) {
+            checkpoint = 3;
+        }
+        QCOMPARE(checkpoint, 1);
+        QCOMPARE(res, -1);
+    }
+
+    // Handler throws exception
+    {
+        QFutureInterface<int> promise;
+
+        int checkpoint = 0;
+        auto then = promise.future()
+                            .then([&](int res) {
+                                throw QException();
+                                return res;
+                            })
+                            .then([&](int res) { return res + 1; })
+                            .onFailed([&](const QException &) {
+                                checkpoint = 1;
+                                throw QException();
+                                return -1;
+                            })
+                            .onFailed([&] {
+                                checkpoint = 2;
+                                return -1;
+                            });
+
+        promise.reportStarted();
+        promise.reportResult(1);
+        promise.reportFinished();
+
+        int res = 0;
+        try {
+            res = then.result();
+        } catch (...) {
+            checkpoint = 3;
+        }
+        QCOMPARE(checkpoint, 2);
+        QCOMPARE(res, -1);
+    }
+
+    // No handler for exception
+    {
+        QFutureInterface<int> promise;
+
+        int checkpoint = 0;
+        auto then = promise.future()
+                            .then([&](int res) {
+                                throw QException();
+                                return res;
+                            })
+                            .then([&](int res) { return res + 1; })
+                            .onFailed([&](const std::exception &) {
+                                checkpoint = 1;
+                                throw std::exception();
+                                return -1;
+                            })
+                            .onFailed([&](QException &) {
+                                checkpoint = 2;
+                                return -1;
+                            });
+
+        promise.reportStarted();
+        promise.reportResult(1);
+        promise.reportFinished();
+
+        int res = 0;
+        try {
+            res = then.result();
+        } catch (...) {
+            checkpoint = 3;
+        }
+        QCOMPARE(checkpoint, 3);
+        QCOMPARE(res, 0);
+    }
+}
+
+template<class Callable>
+bool runForCallable(Callable &&handler)
+{
+    QFuture<int> future = createExceptionResultFuture()
+                                  .then([&](int) { return 1; })
+                                  .onFailed(std::forward<Callable>(handler));
+
+    int res = 0;
+    try {
+        res = future.result();
+    } catch (...) {
+        return false;
+    }
+    return res == -1;
+}
+
+int foo()
+{
+    return -1;
+}
+
+void tst_QFuture::onFailedTestCallables()
+{
+    QVERIFY(runForCallable([&] { return -1; }));
+    QVERIFY(runForCallable(foo));
+    QVERIFY(runForCallable(&foo));
+
+    std::function<int()> func = foo;
+    QVERIFY(runForCallable(func));
+
+    struct Functor1
+    {
+        int operator()() { return -1; }
+        static int foo() { return -1; }
+    };
+    QVERIFY(runForCallable(Functor1()));
+    QVERIFY(runForCallable(Functor1::foo));
+
+    struct Functor2
+    {
+        int operator()() const { return -1; }
+        static int foo() { return -1; }
+    };
+    QVERIFY(runForCallable(Functor2()));
+
+    struct Functor3
+    {
+        int operator()() const noexcept { return -1; }
+        static int foo() { return -1; }
+    };
+    QVERIFY(runForCallable(Functor3()));
 }
 
 #endif // QT_NO_EXCEPTIONS
