@@ -12,7 +12,7 @@ add_subdirectory(qmetaobject)
 add_subdirectory(qmetaobjectbuilder)
 add_subdirectory(qmetamethod)
 add_subdirectory(qmetaproperty)
-# add_subdirectory(qmetatype) # special case
+add_subdirectory(qmetatype)
 add_subdirectory(qmetaenum)
 if(TARGET Qt::Gui)
     add_subdirectory(qmimedata)
