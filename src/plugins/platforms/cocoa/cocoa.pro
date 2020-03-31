@@ -97,7 +97,7 @@ DEFINES += QT_NO_FOREACH
 QT += \
     core-private gui-private \
     theme_support-private \
-    fontdatabase_support-private graphics_support-private
+    fontdatabase_support-private
 
 qtConfig(vulkan): QT += vulkan_support-private
 

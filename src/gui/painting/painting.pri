@@ -118,8 +118,12 @@ RESOURCES += \
         painting/qpdf.qrc \
 
 darwin {
-    HEADERS += painting/qcoregraphics_p.h
-    SOURCES += painting/qcoregraphics.mm
+    HEADERS += \
+        painting/qcoregraphics_p.h \
+        painting/qrasterbackingstore_p.h
+    SOURCES += \
+        painting/qcoregraphics.mm \
+        painting/qrasterbackingstore.cpp
 }
 
 qtConfig(cssparser) {

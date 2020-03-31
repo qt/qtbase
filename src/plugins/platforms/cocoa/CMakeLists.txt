@@ -59,7 +59,6 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         Qt::Core
         Qt::CorePrivate
         Qt::FontDatabaseSupportPrivate
-        Qt::GraphicsSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
         Qt::ThemeSupportPrivate

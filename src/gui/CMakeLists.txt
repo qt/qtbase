@@ -379,6 +379,11 @@ qt_extend_target(Gui CONDITION APPLE
         ${FWCoreGraphics}
 )
 
+qt_extend_target(Gui CONDITION APPLE
+    SOURCES
+        painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_animation
     SOURCES
         animation/qguivariantanimation.cpp

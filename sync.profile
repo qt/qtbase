@@ -22,7 +22,6 @@
     "QtPlatformCompositorSupport" => "$basedir/src/platformsupport/platformcompositor",
     "QtServiceSupport" => "$basedir/src/platformsupport/services",
     "QtThemeSupport" => "$basedir/src/platformsupport/themes",
-    "QtGraphicsSupport" => "$basedir/src/platformsupport/graphics",
     "QtEglSupport" => "$basedir/src/platformsupport/eglconvenience",
     "QtFbSupport" => "$basedir/src/platformsupport/fbconvenience",
     "QtGlxSupport" => "$basedir/src/platformsupport/glxconvenience",

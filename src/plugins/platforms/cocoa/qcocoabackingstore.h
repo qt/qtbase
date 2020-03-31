@@ -40,7 +40,7 @@
 #ifndef QBACKINGSTORE_COCOA_H
 #define QBACKINGSTORE_COCOA_H
 
-#include <QtGraphicsSupport/private/qrasterbackingstore_p.h>
+#include <QtGui/private/qrasterbackingstore_p.h>
 
 #include <private/qcore_mac_p.h>
 

@@ -34,7 +34,6 @@ add_qt_plugin(QIOSIntegrationPlugin
         Qt::Core
         Qt::CorePrivate
         Qt::FontDatabaseSupportPrivate
-        Qt::GraphicsSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
 )

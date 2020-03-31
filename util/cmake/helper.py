@@ -171,9 +171,6 @@ _qt_library_map = [
     ),  # manually added special case
     LibraryMapping("glx_support", "Qt6", "Qt::GlxSupport", extra=["COMPONENTS", "GlxSupport"]),
     LibraryMapping(
-        "graphics_support", "Qt6", "Qt::GraphicsSupport", extra=["COMPONENTS", "GraphicsSupport"]
-    ),
-    LibraryMapping(
         "gsttools", "Qt6", "Qt::MultimediaGstTools", extra=["COMPONENTS", "MultimediaGstTools"]
     ),
     LibraryMapping("gui", "Qt6", "Qt::Gui", extra=["COMPONENTS", "Gui"]),

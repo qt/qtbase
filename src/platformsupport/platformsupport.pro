@@ -37,11 +37,6 @@ qtConfig(accessibility) {
     win32:!winrt: SUBDIRS += windowsuiautomation
 }
 
-darwin {
-    SUBDIRS += \
-        graphics
-}
-
 qtConfig(vulkan): \
     SUBDIRS += vkconvenience
 

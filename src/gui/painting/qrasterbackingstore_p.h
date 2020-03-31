@@ -56,7 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QRasterBackingStore : public QPlatformBackingStore
+class Q_GUI_EXPORT QRasterBackingStore : public QPlatformBackingStore
 {
 public:
     QRasterBackingStore(QWindow *window);
