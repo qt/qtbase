@@ -41,13 +41,10 @@
 #define QCOCOAFILEDIALOGHELPER_H
 
 #include <QObject>
-#include <QtWidgets/qtwidgetsglobal.h>
 #include <qpa/qplatformdialoghelper.h>
 #include <QtCore/private/qcore_mac_p.h>
 
 #import <AppKit/NSSavePanel.h>
-
-QT_REQUIRE_CONFIG(filedialog);
 
 @interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) : NSObject<NSOpenSavePanelDelegate>
 @end

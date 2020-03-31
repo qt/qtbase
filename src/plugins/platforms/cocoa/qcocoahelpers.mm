@@ -49,10 +49,6 @@
 #include <private/qwindow_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
 
-#ifndef QT_NO_WIDGETS
-#include <QtWidgets/QWidget>
-#endif
-
 #include <algorithm>
 
 #include <mach-o/dyld.h>

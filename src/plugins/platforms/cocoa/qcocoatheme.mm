@@ -63,18 +63,9 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
 
-#ifdef QT_WIDGETS_LIB
-#include <QtWidgets/qtwidgetsglobal.h>
-#if QT_CONFIG(colordialog)
 #include "qcocoacolordialoghelper.h"
-#endif
-#if QT_CONFIG(filedialog)
 #include "qcocoafiledialoghelper.h"
-#endif
-#if QT_CONFIG(fontdialog)
 #include "qcocoafontdialoghelper.h"
-#endif
-#endif
 
 #include <CoreServices/CoreServices.h>
 
@@ -329,32 +320,22 @@ bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
 {
     if (dialogType == QPlatformTheme::FileDialog)
         return true;
-#if defined(QT_WIDGETS_LIB) && QT_CONFIG(colordialog)
     if (dialogType == QPlatformTheme::ColorDialog)
         return true;
-#endif
-#if defined(QT_WIDGETS_LIB) && QT_CONFIG(fontdialog)
     if (dialogType == QPlatformTheme::FontDialog)
         return true;
-#endif
     return false;
 }
 
 QPlatformDialogHelper *QCocoaTheme::createPlatformDialogHelper(DialogType dialogType) const
 {
     switch (dialogType) {
-#if defined(QT_WIDGETS_LIB) && QT_CONFIG(filedialog)
     case QPlatformTheme::FileDialog:
         return new QCocoaFileDialogHelper();
-#endif
-#if defined(QT_WIDGETS_LIB) && QT_CONFIG(colordialog)
     case QPlatformTheme::ColorDialog:
         return new QCocoaColorDialogHelper();
-#endif
-#if defined(QT_WIDGETS_LIB) && QT_CONFIG(fontdialog)
     case QPlatformTheme::FontDialog:
         return new QCocoaFontDialogHelper();
-#endif
     default:
         return nullptr;
     }

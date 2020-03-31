@@ -40,12 +40,8 @@
 #ifndef QCOCOACOLORDIALOGHELPER_H
 #define QCOCOACOLORDIALOGHELPER_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
-
 #include <QObject>
 #include <qpa/qplatformdialoghelper.h>
-
-QT_REQUIRE_CONFIG(colordialog);
 
 QT_BEGIN_NAMESPACE
 

@@ -41,10 +41,7 @@
 #define QCOCOAFONTDIALOGHELPER_H
 
 #include <QObject>
-#include <QtWidgets/qtwidgetsglobal.h>
 #include <qpa/qplatformdialoghelper.h>
-
-QT_REQUIRE_CONFIG(fontdialog);
 
 QT_BEGIN_NAMESPACE
 

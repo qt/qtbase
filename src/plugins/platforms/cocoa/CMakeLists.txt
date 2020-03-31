@@ -43,6 +43,9 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         qnsview.h qnsview.mm
         qnswindow.h qnswindow.mm
         qnswindowdelegate.h qnswindowdelegate.mm
+        qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
+        qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
+        qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
     DEFINES
         QT_NO_FOREACH
     PUBLIC_LIBRARIES
@@ -110,21 +113,5 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
 
 #### Keys ignored in scope 7:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
-
-qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets
-    SOURCES
-        qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
-)
-
-qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_filedialog AND TARGET Qt::Widgets
-    SOURCES
-        qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
-)
-
-qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_fontdialog AND TARGET Qt::Widgets
-    SOURCES
-        qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
-)
-
 #### Keys ignored in scope 12:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"

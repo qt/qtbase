@@ -68,13 +68,6 @@
 
 #include <QtGui/private/qfontengine_coretext_p.h>
 
-#ifdef QT_WIDGETS_LIB
-#include <QtWidgets/qtwidgetsglobal.h>
-#if QT_CONFIG(filedialog)
-#include "qcocoafiledialoghelper.h"
-#endif
-#endif
-
 #include <IOKit/graphics/IOGraphicsLib.h>
 
 static void initResources()
