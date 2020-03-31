@@ -1229,6 +1229,11 @@ void DeleteLaterWidget::runTest()
 
     QCoreApplication::processEvents();
 
+    // At this point, the event queue is empty. As we want a deferred
+    // deletion to occur before the timer event, we should provoke the
+    // event dispatcher for the next spin.
+    QCoreApplication::eventDispatcher()->interrupt();
+
     QVERIFY(!stillAlive); // verify at the end to make test terminate
 }
 
@@ -1258,8 +1263,10 @@ void tst_QApplication::testDeleteLater()
     QObject *stillAlive = wgt->findChild<QObject*>("deleteLater");
     QVERIFY(stillAlive);
 
+    wgt->show();
     QCoreApplication::exec();
 
+    QVERIFY(wgt->isHidden());
     delete wgt;
 
 }
