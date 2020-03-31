@@ -827,7 +827,20 @@ def get_feature_mapping():
         "sanitizer": None,
         "sanitize_thread": None,
         "sanitize_undefined": None,
-        "shared": {"condition": "BUILD_SHARED_LIBS"},
+        "shared": {
+            "condition": "BUILD_SHARED_LIBS",
+            "output": [
+                "publicFeature",
+                "publicQtConfig",
+                "publicConfig",
+                {
+                    "type": "define",
+                    "name": "QT_STATIC",
+                    "prerequisite": "!defined(QT_SHARED) && !defined(QT_STATIC)",
+                    "negative": True
+                }
+            ]
+        },
         "silent": None,
         "sql-sqlite": {"condition": "QT_FEATURE_datestring"},
         "static": None,
@@ -1050,6 +1063,8 @@ def parseFeature(ctx, feature, data, cm_fh):
             cm_fh.write(" NEGATE")
         if outputArgs.get("value") is not None:
             cm_fh.write(f' VALUE "{outputArgs.get("value")}"')
+        if outputArgs.get("prerequisite") is not None:
+            cm_fh.write(f' PREREQUISITE "{outputArgs.get("prerequisite")}"')
         cm_fh.write(")\n")
 
     # Write qt_feature_config() calls

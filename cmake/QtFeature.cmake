@@ -343,7 +343,7 @@ endfunction()
 
 function(qt_feature_definition feature name)
     qt_feature_normalize_name("${feature}" feature)
-    qt_parse_all_arguments(arg "qt_feature_definition" "NEGATE" "VALUE" "" ${ARGN})
+    qt_parse_all_arguments(arg "qt_feature_definition" "NEGATE" "VALUE;PREREQUISITE" "" ${ARGN})
 
     # Store all the define related info in a unique variable key.
     set(key_name "_QT_FEATURE_DEFINE_DEFINITION_${feature}_${name}")
@@ -363,7 +363,7 @@ function(qt_evaluate_feature_definition key)
 
     cmake_parse_arguments(arg
         "NEGATE;"
-        "FEATURE;NAME;VALUE;" "" ${${key}})
+        "FEATURE;NAME;VALUE;PREREQUISITE" "" ${${key}})
 
     set(expected ON)
     if (arg_NEGATE)
@@ -373,10 +373,18 @@ function(qt_evaluate_feature_definition key)
     set(msg "")
 
     if(QT_FEATURE_${arg_FEATURE} STREQUAL expected)
+        set(indent "")
+        if(arg_PREREQUISITE)
+            string(APPEND msg "#if ${arg_PREREQUISITE}\n")
+            set(indent "  ")
+        endif()
         if (arg_VALUE)
-            string(APPEND msg "#define ${arg_NAME} ${arg_VALUE}\n")
+            string(APPEND msg "${indent}#define ${arg_NAME} ${arg_VALUE}\n")
         else()
-            string(APPEND msg "#define ${arg_NAME}\n")
+            string(APPEND msg "${indent}#define ${arg_NAME}\n")
+        endif()
+        if(arg_PREREQUISITE)
+            string(APPEND msg "#endif\n")
         endif()
 
         string(APPEND __QtFeature_public_extra "${msg}")

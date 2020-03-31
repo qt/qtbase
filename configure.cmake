@@ -321,6 +321,7 @@ qt_feature("shared" PUBLIC
     AUTODETECT NOT UIKIT
     CONDITION BUILD_SHARED_LIBS
 )
+qt_feature_definition("shared" "QT_STATIC" NEGATE PREREQUISITE "!defined(QT_SHARED) && !defined(QT_STATIC)")
 qt_feature_config("shared" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature_config("shared" QMAKE_PUBLIC_CONFIG)
 qt_feature("use_bfd_linker"
