@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtOpenGL/qtopenglglobal.h>
+
 #include <QtCore/QTimer>
 #include <QtOpenGL/QOpenGLTextureBlitter>
 #include <QtGui/QMatrix4x4>
@@ -72,7 +74,7 @@ public:
     virtual void endCompositing() { }
 };
 
-class QOpenGLCompositor : public QObject
+class Q_OPENGL_EXPORT QOpenGLCompositor : public QObject
 {
     Q_OBJECT
 

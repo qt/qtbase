@@ -37,7 +37,8 @@ HEADERS += \
     qopenglversionprofile.h \
     qopenglvertexarrayobject.h \
     qopenglwindow.h \
-    qtopenglglobal.h
+    qtopenglglobal.h \
+    qplatformbackingstoreopenglsupport.h
 
 SOURCES += \
     qopengl2pexvertexarray.cpp \
@@ -61,7 +62,8 @@ SOURCES += \
     qopenglversionprofile.cpp \
     qopenglvertexarrayobject.cpp \
     qopenglwindow.cpp \
-    qopengldebug.cpp
+    qopengldebug.cpp \
+    qplatformbackingstoreopenglsupport.cpp
 
 !qtConfig(opengles2) {
     HEADERS += \
@@ -137,6 +139,16 @@ qtConfig(vulkan) {
 
     # Applications must inherit the Vulkan header include path.
     QMAKE_USE += vulkan/nolink
+}
+
+qtConfig(egl) {
+    SOURCES += \
+        qopenglcompositorbackingstore.cpp \
+        qopenglcompositor.cpp
+
+    HEADERS += \
+        qopenglcompositorbackingstore_p.h \
+        qopenglcompositor_p.h
 }
 
 load(qt_module)

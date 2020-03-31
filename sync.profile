@@ -18,7 +18,6 @@
     "QtFontDatabaseSupport" => "$basedir/src/platformsupport/fontdatabases",
     "QtInputSupport" => "$basedir/src/platformsupport/input",
     "QtXkbCommonSupport" => "$basedir/src/platformsupport/input/xkbcommon",
-    "QtPlatformCompositorSupport" => "$basedir/src/platformsupport/platformcompositor",
     "QtServiceSupport" => "$basedir/src/platformsupport/services",
     "QtThemeSupport" => "$basedir/src/platformsupport/themes",
     "QtEglSupport" => "$basedir/src/platformsupport/eglconvenience",

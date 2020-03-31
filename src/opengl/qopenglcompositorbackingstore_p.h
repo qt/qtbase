@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtOpenGL/qtopenglglobal.h>
+
 #include <qpa/qplatformbackingstore.h>
 #include <QImage>
 #include <QRegion>
@@ -60,7 +62,7 @@ QT_BEGIN_NAMESPACE
 class QOpenGLContext;
 class QPlatformTextureList;
 
-class QOpenGLCompositorBackingStore : public QPlatformBackingStore
+class Q_OPENGL_EXPORT QOpenGLCompositorBackingStore : public QPlatformBackingStore
 {
 public:
     QOpenGLCompositorBackingStore(QWindow *window);

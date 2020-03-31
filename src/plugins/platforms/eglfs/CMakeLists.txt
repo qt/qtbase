@@ -44,9 +44,9 @@ qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
         Qt::InputSupportPrivate
 )
 
-qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
+        Qt::OpenGLPrivate
 )
 
 qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_vulkan

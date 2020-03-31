@@ -240,18 +240,6 @@ _qt_library_map = [
         "particles", "Qt6", "Qt::QuickParticles", extra=["COMPONENTS", "QuickParticles"]
     ),
     LibraryMapping(
-        "platformcompositor",
-        "Qt6",
-        "Qt::PlatformCompositorSupport",
-        extra=["COMPONENTS", "PlatformCompositorSupport"],
-    ),
-    LibraryMapping(
-        "platformcompositor_support",
-        "Qt6",
-        "Qt::PlatformCompositorSupport",
-        extra=["COMPONENTS", "PlatformCompositorSupport"],
-    ),
-    LibraryMapping(
         "plugin-interfaces",
         "Qt6",
         "Qt::AppManPluginInterfaces",

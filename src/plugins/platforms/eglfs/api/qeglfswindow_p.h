@@ -57,7 +57,7 @@
 
 #include <qpa/qplatformwindow.h>
 #ifndef QT_NO_OPENGL
-# include <QtPlatformCompositorSupport/private/qopenglcompositor_p.h>
+# include <QtOpenGL/private/qopenglcompositor_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE

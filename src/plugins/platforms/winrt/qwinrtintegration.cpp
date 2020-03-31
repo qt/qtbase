@@ -54,7 +54,7 @@
 #  include "uiautomation/qwinrtuiaaccessibility.h"
 #endif
 #if QT_CONFIG(opengl)
-#include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
 #endif
 
 #include <QtGui/QOffscreenSurface>

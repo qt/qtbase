@@ -45,7 +45,7 @@
 #ifndef QT_NO_OPENGL
 # include <QtGui/private/qopenglcontext_p.h>
 # include <QtGui/QOpenGLContext>
-# include <QtPlatformCompositorSupport/private/qopenglcompositorbackingstore_p.h>
+# include <QtOpenGL/private/qopenglcompositorbackingstore_p.h>
 #endif
 #include <QtEglSupport/private/qeglconvenience_p.h>
 

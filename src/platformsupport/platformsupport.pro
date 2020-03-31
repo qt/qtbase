@@ -19,8 +19,6 @@ qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid)|qtConf
 if(unix:!uikit)|qtConfig(xcb): \
     SUBDIRS += services
 
-qtConfig(opengl): \
-    SUBDIRS += platformcompositor
 qtConfig(egl): \
     SUBDIRS += eglconvenience
 qtConfig(xlib):qtConfig(opengl):!qtConfig(opengles2): \

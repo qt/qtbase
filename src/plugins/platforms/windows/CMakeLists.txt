@@ -86,9 +86,9 @@ qt_add_resource(QWindowsIntegrationPlugin "openglblacklists"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QWindowsIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
+        Qt::OpenGLPrivate
 )
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility

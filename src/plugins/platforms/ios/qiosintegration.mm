@@ -67,7 +67,7 @@
 #import <AudioToolbox/AudioServices.h>
 
 #if QT_CONFIG(opengl)
-#include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
 #endif
 
 #include <QtDebug>

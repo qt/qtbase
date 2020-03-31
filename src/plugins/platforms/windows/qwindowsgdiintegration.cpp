@@ -46,7 +46,7 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 
 #if QT_CONFIG(opengl)
-#include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
 #endif
 
 QT_BEGIN_NAMESPACE

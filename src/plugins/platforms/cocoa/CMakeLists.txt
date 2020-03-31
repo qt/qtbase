@@ -111,9 +111,9 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
         qcocoasessionmanager.cpp qcocoasessionmanager.h
 )
 
-qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
+        Qt::OpenGLPrivate
 )
 
 qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::Widgets

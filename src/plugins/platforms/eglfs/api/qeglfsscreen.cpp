@@ -43,7 +43,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformcursor.h>
 #ifndef QT_NO_OPENGL
-# include <QtPlatformCompositorSupport/private/qopenglcompositor_p.h>
+# include <QtOpenGL/private/qopenglcompositor_p.h>
 #endif
 
 #include "qeglfsscreen_p.h"

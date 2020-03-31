@@ -6,7 +6,7 @@ QT += \
     core-private gui-private \
     fontdatabase_support-private egl_support-private
 
-qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
+qtConfig(opengl): QT += opengl-private
 
 DEFINES *= QT_NO_CAST_FROM_ASCII __WRL_NO_DEFAULT_LIB__
 

@@ -47,9 +47,9 @@ qt_disable_apple_app_extension_api_only(QIOSIntegrationPlugin)
 ## Scopes:
 #####################################################################
 
-extend_target(QIOSIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
+        Qt::OpenGLPrivate
 )
 
 extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS

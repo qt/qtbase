@@ -98,7 +98,7 @@ QT += \
     core-private gui-private \
     theme_support-private
 
-qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
+qtConfig(opengl): QT += opengl-private
 
 CONFIG += no_app_extension_api_only
 

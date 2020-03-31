@@ -41,7 +41,7 @@
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
 # include "qwasmbackingstore.h"
-# include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+# include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
 #endif
 #include "qwasmfontdatabase.h"
 #if defined(Q_OS_UNIX)

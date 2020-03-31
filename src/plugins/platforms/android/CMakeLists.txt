@@ -76,9 +76,9 @@ qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
         qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h
 )
 
-qt_extend_target(QAndroidIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
+        Qt::OpenGLPrivate
 )
 
 qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_assets

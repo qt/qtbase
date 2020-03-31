@@ -51,7 +51,7 @@
 
 #ifndef QT_NO_OPENGL
 
-#include <QtGui/qtguiglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 #include <qpa/qplatformbackingstore.h>
 
 #include <QtGui/QOpenGLContext>
@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 class QOpenGLTextureBlitter;
 class QOpenGLBackingStore;
 
-class QPlatformBackingStoreOpenGLSupport : public QPlatformBackingStoreOpenGLSupportBase
+class Q_OPENGL_EXPORT QPlatformBackingStoreOpenGLSupport : public QPlatformBackingStoreOpenGLSupportBase
 {
 public:
     explicit QPlatformBackingStoreOpenGLSupport(QPlatformBackingStore *backingStore) : backingStore(backingStore) {}

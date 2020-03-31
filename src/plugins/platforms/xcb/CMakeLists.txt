@@ -71,9 +71,9 @@ qt_disable_apple_app_extension_api_only(XcbQpa)
 ## Scopes:
 #####################################################################
 
-qt_extend_target(XcbQpa CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
-        Qt::PlatformCompositorSupportPrivate
+        Qt::OpenGLPrivate
 )
 
 qt_extend_target(XcbQpa CONDITION TARGET Qt::LinuxAccessibilitySupportPrivate

@@ -4,7 +4,7 @@ QT += \
     core-private gui-private \
     eventdispatcher_support-private fontdatabase_support-private egl_support-private
 
-qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
+qtConfig(opengl): QT += opengl-private
 
 # Avoid X11 header collision, use generic EGL native types
 DEFINES += QT_EGL_NO_X11
