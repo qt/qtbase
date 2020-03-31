@@ -45,7 +45,7 @@
 #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #if defined(Q_OS_MAC)
 #include <qpa/qplatformfontdatabase.h>
-#include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
+#include <QtGui/private/qcoretextfontdatabase_p.h>
 #else
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #endif

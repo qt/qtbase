@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
 
-class QCoreTextFontEngine : public QFontEngine
+class Q_GUI_EXPORT QCoreTextFontEngine : public QFontEngine
 {
     Q_GADGET
 
@@ -152,7 +152,7 @@ protected:
     mutable bool kerningPairsLoaded;
 };
 
-CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
+CGAffineTransform Q_GUI_EXPORT qt_transform_from_fontdef(const QFontDef &fontDef);
 
 QT_END_NAMESPACE
 

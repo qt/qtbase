@@ -65,7 +65,7 @@ Q_DECLARE_METATYPE(QCFType<CFURLRef>);
 
 QT_BEGIN_NAMESPACE
 
-class QCoreTextFontDatabase : public QPlatformFontDatabase
+class Q_GUI_EXPORT QCoreTextFontDatabase : public QPlatformFontDatabase
 {
 public:
     QCoreTextFontDatabase();
@@ -104,7 +104,7 @@ private:
 // to generate code for each override in QCoreTextFontDatabase for each T.
 
 template <class T>
-class QCoreTextFontDatabaseEngineFactory : public QCoreTextFontDatabase
+class Q_GUI_EXPORT QCoreTextFontDatabaseEngineFactory : public QCoreTextFontDatabase
 {
 public:
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;

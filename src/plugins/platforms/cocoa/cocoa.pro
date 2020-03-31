@@ -96,8 +96,7 @@ DEFINES += QT_NO_FOREACH
 
 QT += \
     core-private gui-private \
-    theme_support-private \
-    fontdatabase_support-private
+    theme_support-private
 
 qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
 

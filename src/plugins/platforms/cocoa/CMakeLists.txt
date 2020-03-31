@@ -58,7 +58,6 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         Cups::Cups
         Qt::Core
         Qt::CorePrivate
-        Qt::FontDatabaseSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
         Qt::ThemeSupportPrivate

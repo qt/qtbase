@@ -7,10 +7,6 @@ CONFIG += static internal_module
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../../corelib/global/qt_pch.h
 
-darwin {
-    include($$PWD/mac/coretext.pri)
-}
-
 unix {
     include($$PWD/genericunix/genericunix.pri)
 }

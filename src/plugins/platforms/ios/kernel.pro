@@ -6,8 +6,7 @@ TARGET = qios
 qtConfig(shared): CONFIG += static
 
 QT += \
-    core-private gui-private \
-    fontdatabase_support-private
+    core-private gui-private
 
 qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
 

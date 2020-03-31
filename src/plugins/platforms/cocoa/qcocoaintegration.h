@@ -57,7 +57,7 @@
 
 #include <QtCore/QScopedPointer>
 #include <qpa/qplatformintegration.h>
-#include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
+#include <QtGui/private/qcoretextfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 

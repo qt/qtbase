@@ -8,7 +8,7 @@ SUBDIRS = \
     fbconvenience \
     themes
 
-qtConfig(freetype)|darwin|win32: \
+if(qtConfig(freetype):!darwin)|win32: \
     SUBDIRS += fontdatabases
 
 qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid)|qtConfig(xkbcommon) {

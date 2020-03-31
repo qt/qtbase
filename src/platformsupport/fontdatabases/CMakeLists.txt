@@ -25,27 +25,6 @@ qt_add_module(FontDatabaseSupport
 ## Scopes:
 #####################################################################
 
-qt_extend_target(FontDatabaseSupport CONDITION APPLE
-    SOURCES
-        mac/qcoretextfontdatabase.mm mac/qcoretextfontdatabase_p.h
-        mac/qfontengine_coretext.mm mac/qfontengine_coretext_p.h
-    LIBRARIES
-        ${FWCoreFoundation}
-        ${FWCoreGraphics}
-        ${FWCoreText}
-        ${FWFoundation}
-)
-
-qt_extend_target(FontDatabaseSupport CONDITION MACOS
-    LIBRARIES
-        ${FWAppKit}
-)
-
-qt_extend_target(FontDatabaseSupport CONDITION APPLE AND NOT MACOS
-    LIBRARIES
-        ${FWUIKit}
-)
-
 qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
     LIBRARIES
         WrapFreetype::WrapFreetype

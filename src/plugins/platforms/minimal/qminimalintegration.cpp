@@ -54,7 +54,7 @@
 #    include <QtFontDatabaseSupport/private/qwindowsfontdatabase_ft_p.h>
 #  endif
 #elif defined(Q_OS_DARWIN)
-#  include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
+#  include <QtGui/private/qcoretextfontdatabase_p.h>
 #endif
 
 #if QT_CONFIG(fontconfig)

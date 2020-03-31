@@ -507,6 +507,27 @@ qt_extend_target(Gui CONDITION QT_FEATURE_freetype
         WrapFreetype::WrapFreetype
 )
 
+qt_extend_target(Gui CONDITION APPLE
+    SOURCES
+        text/coretext/qcoretextfontdatabase.mm text/coretext/qcoretextfontdatabase_p.h
+        text/coretext/qfontengine_coretext.mm text/coretext/qfontengine_coretext_p.h
+    LIBRARIES
+        ${FWCoreFoundation}
+        ${FWCoreGraphics}
+        ${FWCoreText}
+        ${FWFoundation}
+)
+
+qt_extend_target(Gui CONDITION MACOS
+    LIBRARIES
+        ${FWAppKit}
+)
+
+qt_extend_target(Gui CONDITION UIKIT
+    LIBRARIES
+        ${FWUIKit}
+)
+
 #### Keys ignored in scope 39:.:image:image/image.pri:WIN32 AND mingw:
 # GCC_VERSION = "$${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.$${QMAKE_GCC_PATCH_VERSION}"
 

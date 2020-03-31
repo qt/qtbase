@@ -33,7 +33,6 @@ add_qt_plugin(QIOSIntegrationPlugin
         ${FWUIKit}
         Qt::Core
         Qt::CorePrivate
-        Qt::FontDatabaseSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
 )

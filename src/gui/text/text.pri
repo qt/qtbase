@@ -127,3 +127,7 @@ qtConfig(cssparser) {
 qtConfig(freetype) {
     include($$PWD/freetype/freetype.pri)
 }
+
+darwin {
+    include($$PWD/coretext/coretext.pri)
+}

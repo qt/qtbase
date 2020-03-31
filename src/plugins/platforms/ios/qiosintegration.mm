@@ -59,7 +59,7 @@
 #include <qoffscreensurface.h>
 #include <qpa/qplatformoffscreensurface.h>
 
-#include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
+#include <QtGui/private/qcoretextfontdatabase_p.h>
 #include <QtGui/private/qmacmime_p.h>
 #include <QDir>
 #include <QOperatingSystemVersion>

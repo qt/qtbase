@@ -132,7 +132,7 @@ void QCoreTextFontDatabase::populateFontDatabase()
 
     qCDebug(lcQpaFonts) << "Resolving theme fonts took" << elapsed.restart() << "ms";
 
-    Q_FOREACH (CTFontDescriptorRef fontDesc, m_systemFontDescriptors)
+    for (CTFontDescriptorRef fontDesc : m_systemFontDescriptors)
         populateFromDescriptor(fontDesc);
 
     qCDebug(lcQpaFonts) << "Populating system descriptors took" << elapsed.restart() << "ms";
