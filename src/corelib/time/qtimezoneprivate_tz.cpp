@@ -1123,15 +1123,15 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
 {
     // Check TZ env var first, if not populated try find it
     QByteArray ianaId = qgetenv("TZ");
-    if (!ianaId.isEmpty() && ianaId.at(0) == ':')
-        ianaId = ianaId.mid(1);
 
     // The TZ value can be ":/etc/localtime" which libc considers
     // to be a "default timezone", in which case it will be read
     // by one of the blocks below, so unset it here so it is not
     // considered as a valid/found ianaId
-    if (ianaId == "/etc/localtime")
+    if (ianaId == ":/etc/localtime")
         ianaId.clear();
+    else if (ianaId.startsWith(':'))
+        ianaId = ianaId.mid(1);
 
     // On most distros /etc/localtime is a symlink to a real file so extract name from the path
     if (ianaId.isEmpty()) {
@@ -1150,15 +1150,12 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
         }
     }
 
-    // On Debian Etch up to Jessie, /etc/localtime is a regular file while the actual name is in /etc/timezone
+    // On Debian Etch up to Jessie, /etc/localtime is a copy of the relevant
+    // zoneinfo file, whose name is recorded in /etc/timezone:
     if (ianaId.isEmpty()) {
         QFile tzif(QStringLiteral("/etc/timezone"));
-        if (tzif.open(QIODevice::ReadOnly)) {
-            // TODO QTextStream inefficient, replace later
-            QTextStream ts(&tzif);
-            if (!ts.atEnd())
-                ianaId = ts.readLine().toUtf8();
-        }
+        if (tzif.open(QIODevice::ReadOnly))
+            ianaId = tzif.readAll().trimmed();
     }
 
     // On some Red Hat distros /etc/localtime is real file with name held in /etc/sysconfig/clock
@@ -1166,16 +1163,12 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
     if (ianaId.isEmpty()) {
         QFile tzif(QStringLiteral("/etc/sysconfig/clock"));
         if (tzif.open(QIODevice::ReadOnly)) {
-            // TODO QTextStream inefficient, replace later
-            QTextStream ts(&tzif);
-            QString line;
-            while (ianaId.isEmpty() && !ts.atEnd() && ts.status() == QTextStream::Ok) {
-                line = ts.readLine();
-                if (line.startsWith(QLatin1String("ZONE="))) {
-                    ianaId = line.midRef(6, line.size() - 7).toUtf8();
-                } else if (line.startsWith(QLatin1String("TIMEZONE="))) {
-                    ianaId = line.midRef(10, line.size() - 11).toUtf8();
-                }
+            while (ianaId.isEmpty() && !tzif.atEnd()) {
+                const QByteArray line(tzif.readLine().trimmed());
+                if (line.startsWith("ZONE="))
+                    ianaId = line.mid(6, line.length() - 7);
+                else if (line.startsWith("TIMEZONE="))
+                    ianaId = line.mid(10, line.length() - 11);
             }
         }
     }
