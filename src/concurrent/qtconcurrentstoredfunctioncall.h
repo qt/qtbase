@@ -80,20 +80,13 @@ struct StoredFunctionCall : public RunFunctionTask<InvokeResultType<Function, Ar
 
     void runFunctor() override
     {
-        using Indexes =
-            std::make_index_sequence<
-                std::tuple_size<DecayedTuple<Function, Args...>>::value>;
+        constexpr auto invoke = &std::invoke<std::decay_t<Function>,
+                                             std::decay_t<Args>...>;
 
-        invoke(Indexes());
-    }
-
-    template <std::size_t... I>
-    void invoke(std::index_sequence<I...>)
-    {
         if constexpr (std::is_void_v<InvokeResultType<Function, Args...>>)
-            std::invoke(std::get<I>(std::move(data))...);
+            std::apply(invoke, std::move(data));
         else
-            this->result = std::invoke(std::get<I>(std::move(data))...);
+            this->result = std::apply(invoke, std::move(data));
     }
 
     DecayedTuple<Function, Args...> data;
