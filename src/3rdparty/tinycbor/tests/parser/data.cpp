@@ -338,7 +338,7 @@ void addValidationColumns()
     QTest::addColumn<CborError>("expectedError");
 }
 
-void addValidationData()
+void addValidationData(size_t minInvalid = ~size_t(0))
 {
     // illegal numbers are future extension points
     QTest::newRow("illegal-number-in-unsigned-1") << raw("\x81\x1c") << 0 << CborErrorIllegalNumber;
@@ -488,26 +488,35 @@ void addValidationData()
     QTest::newRow("map-break-after-value-tag2") << raw("\x81\xbf\0\xd8\x20\xff") << 0 << CborErrorUnexpectedBreak;
 
     // check for pointer additions wrapping over the limit of the address space
-    CborError tooLargeOn32bit = (sizeof(void *) == 4) ? CborErrorDataTooLarge : CborErrorUnexpectedEOF;
+    auto wraparoundError = [minInvalid](uint64_t encodedSize) {
+        if (encodedSize > minInvalid)
+            return CborErrorDataTooLarge;
+        return CborErrorUnexpectedEOF;
+    };
+    constexpr uint64_t FourGB = UINT32_MAX + UINT64_C(1);
     // on 32-bit systems, this is a -1
-    QTest::newRow("bytearray-wraparound1") << raw("\x81\x5a\xff\xff\xff\xff") << 0 << CborErrorUnexpectedEOF;
-    QTest::newRow("string-wraparound1") << raw("\x81\x7a\xff\xff\xff\xff") << 0 << CborErrorUnexpectedEOF;
+    QTest::newRow("bytearray-wraparound1") << raw("\x81\x5a\xff\xff\xff\xff") << 0 << wraparoundError(UINT32_MAX);
+    QTest::newRow("string-wraparound1") << raw("\x81\x7a\xff\xff\xff\xff") << 0 << wraparoundError(UINT32_MAX);
     // on 32-bit systems, a 4GB addition could be dropped
-    QTest::newRow("bytearray-wraparound2") << raw("\x81\x5b\0\0\0\1\0\0\0\0") << 0 << tooLargeOn32bit;
-    QTest::newRow("string-wraparound2") << raw("\x81\x7b\0\0\0\1\0\0\0\0") << 0 << tooLargeOn32bit;
+    QTest::newRow("bytearray-wraparound2") << raw("\x81\x5b\0\0\0\1\0\0\0\0") << 0 << wraparoundError(FourGB);
+    QTest::newRow("string-wraparound2") << raw("\x81\x7b\0\0\0\1\0\0\0\0") << 0 << wraparoundError(FourGB);
     // on 64-bit systems, this could be a -1
-    QTest::newRow("bytearray-wraparound3") << raw("\x81\x5b\xff\xff\xff\xff\xff\xff\xff\xff") << 0 << tooLargeOn32bit;
-    QTest::newRow("string-wraparound3") << raw("\x81\x7b\xff\xff\xff\xff\xff\xff\xff\xff") << 0 << tooLargeOn32bit;
+    QTest::newRow("bytearray-wraparound3") << raw("\x81\x5b\xff\xff\xff\xff\xff\xff\xff\xff") << 0
+                                           << wraparoundError(UINT64_MAX);
+    QTest::newRow("string-wraparound3") << raw("\x81\x7b\xff\xff\xff\xff\xff\xff\xff\xff") << 0
+                                        << wraparoundError(UINT64_MAX);
 
     // ditto on chunks
-    QTest::newRow("bytearray-chunk-wraparound1") << raw("\x81\x5f\x5a\xff\xff\xff\xff") << 0 << CborErrorUnexpectedEOF;
-    QTest::newRow("string-chunk-wraparound1") << raw("\x81\x7f\x7a\xff\xff\xff\xff") << 0 << CborErrorUnexpectedEOF;
+    QTest::newRow("bytearray-chunk-wraparound1") << raw("\x81\x5f\x5a\xff\xff\xff\xff") << 0 << wraparoundError(UINT32_MAX);
+    QTest::newRow("string-chunk-wraparound1") << raw("\x81\x7f\x7a\xff\xff\xff\xff") << 0 << wraparoundError(UINT32_MAX);
     // on 32-bit systems, a 4GB addition could be dropped
-    QTest::newRow("bytearray-chunk-wraparound2") << raw("\x81\x5f\x5b\0\0\0\1\0\0\0\0") << 0 << tooLargeOn32bit;
-    QTest::newRow("string-chunk-wraparound2") << raw("\x81\x7f\x7b\0\0\0\1\0\0\0\0") << 0 << tooLargeOn32bit;
+    QTest::newRow("bytearray-chunk-wraparound2") << raw("\x81\x5f\x5b\0\0\0\1\0\0\0\0") << 0 << wraparoundError(FourGB);
+    QTest::newRow("string-chunk-wraparound2") << raw("\x81\x7f\x7b\0\0\0\1\0\0\0\0") << 0 << wraparoundError(FourGB);
     // on 64-bit systems, this could be a -1
-    QTest::newRow("bytearray-chunk-wraparound3") << raw("\x81\x5f\x5b\xff\xff\xff\xff\xff\xff\xff\xff") << 0 << tooLargeOn32bit;
-    QTest::newRow("string-chunk-wraparound3") << raw("\x81\x7f\x7b\xff\xff\xff\xff\xff\xff\xff\xff") << 0 << tooLargeOn32bit;
+    QTest::newRow("bytearray-chunk-wraparound3") << raw("\x81\x5f\x5b\xff\xff\xff\xff\xff\xff\xff\xff") << 0
+                                                 << wraparoundError(UINT64_MAX);
+    QTest::newRow("string-chunk-wraparound3") << raw("\x81\x7f\x7b\xff\xff\xff\xff\xff\xff\xff\xff") << 0
+                                              << wraparoundError(UINT64_MAX);
 
     QTest::newRow("eof-after-array") << raw("\x81") << 0 << CborErrorUnexpectedEOF;
     QTest::newRow("eof-after-array2") << raw("\x81\x78\x20") << 0 << CborErrorUnexpectedEOF;

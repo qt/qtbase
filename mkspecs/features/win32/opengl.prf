@@ -3,8 +3,9 @@ QT_FOR_CONFIG += gui
 defineTest(prependOpenGlLib) {
     path = $$QT.core.libs/$$QMAKE_PREFIX_STATICLIB$$1
     ext = .$$QMAKE_EXTENSION_STATICLIB
+    !mingw|qtConfig(debug_and_release): debug_suffix = "d"
     QMAKE_LIBS_OPENGL_ES2 = $${path}$${ext} $$QMAKE_LIBS_OPENGL_ES2
-    QMAKE_LIBS_OPENGL_ES2_DEBUG = $${path}d$${ext} $$QMAKE_LIBS_OPENGL_ES2_DEBUG
+    QMAKE_LIBS_OPENGL_ES2_DEBUG = $${path}$${debug_suffix}$${ext} $$QMAKE_LIBS_OPENGL_ES2_DEBUG
     export(QMAKE_LIBS_OPENGL_ES2)
     export(QMAKE_LIBS_OPENGL_ES2_DEBUG)
 }

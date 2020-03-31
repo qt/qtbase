@@ -288,6 +288,12 @@ QAbstractItemModelTester::FailureReportingMode QAbstractItemModelTester::failure
     return d->failureReportingMode;
 }
 
+bool QAbstractItemModelTester::verify(bool statement, const char *statementStr, const char *description, const char *file, int line)
+{
+    Q_D(QAbstractItemModelTester);
+    return d->verify(statement, statementStr, description, file, line);
+}
+
 QAbstractItemModelTesterPrivate::QAbstractItemModelTesterPrivate(QAbstractItemModel *model, QAbstractItemModelTester::FailureReportingMode failureReportingMode)
     : model(model),
       failureReportingMode(failureReportingMode),
