@@ -192,9 +192,7 @@ template<> struct TypeDefinition<QIcon> { static const bool IsAvailable = false;
 template<typename T>
 static QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterface) *getInterfaceFromType()
 {
-    if constexpr (std::is_same_v<T, void>) {
-        return nullptr;
-    } else if constexpr (QtMetaTypePrivate::TypeDefinition<T>::IsAvailable) {
+    if constexpr (QtMetaTypePrivate::TypeDefinition<T>::IsAvailable) {
         return &QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeForType)<T>::metaType;
     }
     return nullptr;

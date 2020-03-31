@@ -127,6 +127,7 @@ private slots:
     void operatorEq_data();
     void operatorEq();
     void typesWithInaccessibleDTors();
+    void voidIsNotUnknown();
 };
 
 struct BaseGenericType
@@ -1339,7 +1340,7 @@ void tst_QMetaType::isRegistered_data()
     QTest::addColumn<bool>("registered");
 
     // predefined/custom types
-    QTest::newRow("QMetaType::Void") << int(QMetaType::Void) << false;
+    QTest::newRow("QMetaType::Void") << int(QMetaType::Void) << true;
     QTest::newRow("QMetaType::Int") << int(QMetaType::Int) << true;
 
     int dummyTypeId = qRegisterMetaType<IsRegisteredDummyType>("IsRegisteredDummyType");
@@ -2548,7 +2549,7 @@ void tst_QMetaType::operatorEq_data()
     QTest::newRow("String") << QMetaType(QMetaType::QString)
                             << QMetaType::fromType<const QString &>() << true;
     QTest::newRow("void1") << QMetaType(QMetaType::UnknownType) << QMetaType::fromType<void>()
-                           << true;
+                           << false;
     QTest::newRow("void2") << QMetaType::fromType<const void>() << QMetaType::fromType<void>()
                            << true;
     QTest::newRow("vec1") << QMetaType::fromType<QVector<const int *>>()
@@ -2588,6 +2589,14 @@ void tst_QMetaType::typesWithInaccessibleDTors()
     // should compile
     Q_UNUSED(QMetaType::fromType<WithPrivateDTor>());
     Q_UNUSED(QMetaType::fromType<WithDeletedDtor>());
+}
+
+void tst_QMetaType::voidIsNotUnknown()
+{
+    QMetaType voidType = QMetaType::fromType<void>();
+    QMetaType voidType2 = QMetaType(QMetaType::Void);
+    QCOMPARE(voidType, voidType2);
+    QVERIFY(voidType != QMetaType(QMetaType::UnknownType));
 }
 
 // Compile-time test, it should be possible to register function pointer types

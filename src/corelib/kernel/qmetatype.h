@@ -2758,7 +2758,6 @@ QMetaTypeInterface QMetaTypeForType<T>::metaType = {
         }
     })
 };
-#undef QT_METATYPE_CONSTEXPRLAMDA
 
 template<typename T>
 constexpr const decltype(typenameHelper<T>()) QMetaTypeForType<T>::name = typenameHelper<T>();
@@ -2766,7 +2765,28 @@ constexpr const decltype(typenameHelper<T>()) QMetaTypeForType<T>::name = typena
 template<>
 class QMetaTypeForType<void>
 {
+    static const decltype(typenameHelper<void>()) name;
+
+public:
+    static inline QMetaTypeInterface metaType =
+    {
+        /*.revision=*/ 0,
+        /*.size=*/ 0,
+        /*.alignment=*/ 0,
+        /*.flags=*/ 0,
+        /*.metaObject=*/ nullptr,
+        /*.name=*/ "void",
+        /*.typeId=*/ BuiltinMetaType<void>::value,
+        /*.ref=*/ Q_REFCOUNT_INITIALIZE_STATIC,
+        /*.deleteSelf=*/ nullptr,
+        /*.defaultCtr=*/ nullptr,
+        /*.copyCtr=*/ nullptr,
+        /*.moveCtr=*/ nullptr,
+        /*.dtor=*/ nullptr,
+        /*.legacyRegisterOp=*/ nullptr
+    };
 };
+#undef QT_METATYPE_CONSTEXPRLAMDA
 
 #ifndef QT_BOOTSTRAPPED
 #define QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER(TypeName, Id, Name)                               \
@@ -2789,11 +2809,7 @@ template<typename T>
 constexpr QMetaTypeInterface *qMetaTypeInterfaceForType()
 {
     using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
-    if constexpr (std::is_same_v<Ty, void>) {
-        return nullptr;
-    } else {
-        return &QMetaTypeForType<Ty>::metaType;
-    }
+    return &QMetaTypeForType<Ty>::metaType;
 }
 
 namespace detail {
@@ -2817,8 +2833,6 @@ constexpr QMetaTypeInterface *qTryMetaTypeInterfaceForType()
     using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
     using Tz = std::remove_pointer_t<Ty>;
     if constexpr (!is_complete<Tz, Unique>::value) {
-        return nullptr;
-    } else if constexpr (std::is_same_v<Ty, void>) {
         return nullptr;
     } else {
         return &QMetaTypeForType<Ty>::metaType;
