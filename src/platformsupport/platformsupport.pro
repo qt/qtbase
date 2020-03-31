@@ -39,7 +39,6 @@ qtConfig(accessibility) {
 
 darwin {
     SUBDIRS += \
-        clipboard \
         graphics
 }
 

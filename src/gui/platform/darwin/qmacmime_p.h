@@ -51,14 +51,15 @@
 // We mean it.
 //
 
-#include <QtCore>
+
+#include <QtGui/private/qtguiglobal_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
 QT_BEGIN_NAMESPACE
 
 // Duplicate of QMacPasteboardMime in QtMacExtras. Keep in sync!
-class QMacInternalPasteboardMime {
+class Q_GUI_EXPORT QMacInternalPasteboardMime {
     char type;
 public:
     enum QMacPasteboardMimeType { MIME_DND=0x01,
@@ -87,10 +88,10 @@ public:
     virtual int count(QMimeData *mimeData);
 };
 
-void qt_mac_addToGlobalMimeList(QMacInternalPasteboardMime *macMime);
-void qt_mac_removeFromGlobalMimeList(QMacInternalPasteboardMime *macMime);
-void qt_mac_registerDraggedTypes(const QStringList &types);
-const QStringList& qt_mac_enabledDraggedTypes();
+Q_GUI_EXPORT void qt_mac_addToGlobalMimeList(QMacInternalPasteboardMime *macMime);
+Q_GUI_EXPORT void qt_mac_removeFromGlobalMimeList(QMacInternalPasteboardMime *macMime);
+Q_GUI_EXPORT void qt_mac_registerDraggedTypes(const QStringList &types);
+Q_GUI_EXPORT const QStringList& qt_mac_enabledDraggedTypes();
 
 QT_END_NAMESPACE
 

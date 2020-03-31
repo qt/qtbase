@@ -7,7 +7,7 @@ qtConfig(shared): CONFIG += static
 
 QT += \
     core-private gui-private \
-    clipboard_support-private fontdatabase_support-private graphics_support-private
+    fontdatabase_support-private graphics_support-private
 
 qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
 

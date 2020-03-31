@@ -31,7 +31,6 @@ add_qt_plugin(QIOSIntegrationPlugin
         ${FWFoundation}
         ${FWQuartzCore}
         ${FWUIKit}
-        Qt::ClipboardSupportPrivate
         Qt::Core
         Qt::CorePrivate
         Qt::FontDatabaseSupportPrivate

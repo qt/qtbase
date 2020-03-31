@@ -762,6 +762,14 @@ qt_extend_target(Gui CONDITION WASM
 
 qt_extend_target(Gui CONDITION IOS OR MACOS
     SOURCES
+        platform/darwin/qmacmime.mm
+        platform/darwin/qmacmime_p.h
+    PUBLIC_LIBRARIES
+        ${FWImageIO}
+)
+
+qt_extend_target(Gui CONDITION IOS OR MACOS
+    SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h
         rhi/qrhimetal_p_p.h
     PUBLIC_LIBRARIES

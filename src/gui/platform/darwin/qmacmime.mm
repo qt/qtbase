@@ -40,7 +40,10 @@
 #include <ImageIO/ImageIO.h>
 
 #include <QtCore/qsystemdetection.h>
+#include <QtCore/qurl.h>
 #include <QtGui/qimage.h>
+#include <QtCore/qmimedata.h>
+#include <QtCore/qstringconverter.h>
 
 #if defined(Q_OS_MACOS)
 #import <AppKit/AppKit.h>

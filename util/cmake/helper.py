@@ -96,9 +96,6 @@ _qt_library_map = [
     LibraryMapping("bootstrap", "Qt6", "Qt::Bootstrap", extra=["COMPONENTS", "Bootstrap"]),
     # bootstrap-dbus: Not needed in Qt6!
     LibraryMapping("client", "Qt6", "Qt::WaylandClient", extra=["COMPONENTS", "WaylandClient"]),
-    LibraryMapping(
-        "clipboard_support", "Qt6", "Qt::ClipboardSupport", extra=["COMPONENTS", "ClipboardSupport"]
-    ),
     LibraryMapping("coap", "Qt6", "Qt::Coap", extra=["COMPONENTS", "Coap"]),
     LibraryMapping("common-lib", "Qt6", "Qt::AppManCommon", extra=["COMPONENTS", "AppManCommon"]),
     LibraryMapping(

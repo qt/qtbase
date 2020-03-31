@@ -56,7 +56,6 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         ${FWMetal}
         ${FWQuartzCore}
         Cups::Cups
-        Qt::ClipboardSupportPrivate
         Qt::Core
         Qt::CorePrivate
         Qt::FontDatabaseSupportPrivate
