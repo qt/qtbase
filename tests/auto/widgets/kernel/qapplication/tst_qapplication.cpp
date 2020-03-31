@@ -1366,10 +1366,11 @@ void tst_QApplication::testDeleteLaterProcessEvents2()
     // If you call deleteLater() on an object when there is no parent
     // event loop, and then enter an event loop, the object will get
     // deleted.
+    QEventLoop loop;
     object = new QObject;
+    connect(object, &QObject::destroyed, &loop, &QEventLoop::quit);
     p = object;
     object->deleteLater();
-    QEventLoop loop;
     QTimer::singleShot(1000, &loop, &QEventLoop::quit);
     loop.exec();
     QVERIFY(!p);
