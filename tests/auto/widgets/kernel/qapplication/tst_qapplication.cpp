@@ -93,7 +93,11 @@ private slots:
     void quitOnLastWindowClosed();
     void closeAllWindows();
     void testDeleteLater();
-    void testDeleteLaterProcessEvents();
+    void testDeleteLaterProcessEvents1();
+    void testDeleteLaterProcessEvents2();
+    void testDeleteLaterProcessEvents3();
+    void testDeleteLaterProcessEvents4();
+    void testDeleteLaterProcessEvents5();
 
 #if QT_CONFIG(library)
     void libraryPaths();
@@ -1333,10 +1337,8 @@ public slots:
     }
 };
 
-void tst_QApplication::testDeleteLaterProcessEvents()
+void tst_QApplication::testDeleteLaterProcessEvents1()
 {
-    int argc = 0;
-
     // Calling processEvents() with no event dispatcher does nothing.
     QObject *object = new QObject;
     QPointer<QObject> p(object);
@@ -1344,75 +1346,84 @@ void tst_QApplication::testDeleteLaterProcessEvents()
     QApplication::processEvents();
     QVERIFY(p);
     delete object;
+}
 
-    {
-        QApplication app(argc, nullptr);
-        // If you call processEvents() with an event dispatcher present, but
-        // outside any event loops, deferred deletes are not processed unless
-        // sendPostedEvents(0, DeferredDelete) is called.
-        object = new QObject;
-        p = object;
-        object->deleteLater();
-        QCoreApplication::processEvents();
-        QVERIFY(p);
-        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
-        QVERIFY(!p);
+void tst_QApplication::testDeleteLaterProcessEvents2()
+{
+    int argc = 0;
+    QApplication app(argc, nullptr);
+    // If you call processEvents() with an event dispatcher present, but
+    // outside any event loops, deferred deletes are not processed unless
+    // sendPostedEvents(0, DeferredDelete) is called.
+    auto object = new QObject;
+    QPointer<QObject> p(object);
+    object->deleteLater();
+    QCoreApplication::processEvents();
+    QVERIFY(p);
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    QVERIFY(!p);
 
-        // If you call deleteLater() on an object when there is no parent
-        // event loop, and then enter an event loop, the object will get
-        // deleted.
-        object = new QObject;
-        p = object;
-        object->deleteLater();
-        QEventLoop loop;
-        QTimer::singleShot(1000, &loop, &QEventLoop::quit);
-        loop.exec();
-        QVERIFY(!p);
-    }
-    {
-        // When an object is in an event loop, then calls deleteLater() and enters
-        // an event loop recursively, it should not die until the parent event
-        // loop continues.
-        QApplication app(argc, nullptr);
-        QEventLoop loop;
-        EventLoopNester *nester = new EventLoopNester;
-        p = nester;
-        QTimer::singleShot(3000, &loop, &QEventLoop::quit);
-        QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndEnterLoop);
+    // If you call deleteLater() on an object when there is no parent
+    // event loop, and then enter an event loop, the object will get
+    // deleted.
+    object = new QObject;
+    p = object;
+    object->deleteLater();
+    QEventLoop loop;
+    QTimer::singleShot(1000, &loop, &QEventLoop::quit);
+    loop.exec();
+    QVERIFY(!p);
+}
 
-        loop.exec();
-        QVERIFY(!p);
-    }
+void tst_QApplication::testDeleteLaterProcessEvents3()
+{
+    int argc = 0;
+    // When an object is in an event loop, then calls deleteLater() and enters
+    // an event loop recursively, it should not die until the parent event
+    // loop continues.
+    QApplication app(argc, nullptr);
+    QEventLoop loop;
+    EventLoopNester *nester = new EventLoopNester;
+    QPointer<QObject> p(nester);
+    QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+    QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndEnterLoop);
 
-    {
-        // When the event loop that calls deleteLater() is exited
-        // immediately, the object should die when returning to the
-        // parent event loop
-        QApplication app(argc, nullptr);
-        QEventLoop loop;
-        EventLoopNester *nester = new EventLoopNester;
-        p = nester;
-        QTimer::singleShot(3000, &loop, &QEventLoop::quit);
-        QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndExitLoop);
+    loop.exec();
+    QVERIFY(!p);
+}
 
-        loop.exec();
-        QVERIFY(!p);
-    }
+void tst_QApplication::testDeleteLaterProcessEvents4()
+{
+    int argc = 0;
+    // When the event loop that calls deleteLater() is exited
+    // immediately, the object should die when returning to the
+    // parent event loop
+    QApplication app(argc, nullptr);
+    QEventLoop loop;
+    EventLoopNester *nester = new EventLoopNester;
+    QPointer<QObject> p(nester);
+    QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+    QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndExitLoop);
 
-    {
-        // when the event loop that calls deleteLater() also calls
-        // processEvents() immediately afterwards, the object should
-        // not die until the parent loop continues
-        QApplication app(argc, nullptr);
-        QEventLoop loop;
-        EventLoopNester *nester = new EventLoopNester();
-        p = nester;
-        QTimer::singleShot(3000, &loop, &QEventLoop::quit);
-        QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndProcessEvents);
+    loop.exec();
+    QVERIFY(!p);
+}
 
-        loop.exec();
-        QVERIFY(!p);
-    }
+void tst_QApplication::testDeleteLaterProcessEvents5()
+{
+    // when the event loop that calls deleteLater() also calls
+    // processEvents() immediately afterwards, the object should
+    // not die until the parent loop continues
+    int argc = 0;
+    QApplication app(argc, nullptr);
+    QEventLoop loop;
+    EventLoopNester *nester = new EventLoopNester();
+    QPointer<QObject> p(nester);
+    QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+    QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndProcessEvents);
+
+    loop.exec();
+    QVERIFY(!p);
 }
 
 /*
