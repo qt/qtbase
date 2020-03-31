@@ -8,7 +8,6 @@ QT += \
 qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
 
 qtConfig(accessibility): QT += accessibility_support-private
-qtConfig(vulkan): QT += vulkan_support-private
 
 qtConfig(directwrite3): DEFINES *= QT_USE_DIRECTWRITE2 QT_USE_DIRECTWRITE3
 

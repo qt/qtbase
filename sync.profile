@@ -27,7 +27,6 @@
     "QtGlxSupport" => "$basedir/src/platformsupport/glxconvenience",
     "QtKmsSupport" => "$basedir/src/platformsupport/kmsconvenience",
     "QtEdidSupport" => "$basedir/src/platformsupport/edid",
-    "QtVulkanSupport" => "$basedir/src/platformsupport/vkconvenience",
     "QtLinuxOfonoSupport" => "$basedir/src/platformsupport/linuxofono",
     "QtPlatformHeaders" => "$basedir/src/platformheaders",
     "QtANGLE/KHR" => "!$basedir/src/3rdparty/angle/include/KHR",

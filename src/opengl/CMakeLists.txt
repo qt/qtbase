@@ -84,6 +84,14 @@ qt_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2
         qopenglqueryhelper_p.h
         qopengltimerquery.cpp qopengltimerquery.h
 )
+
+qt_extend_target(OpenGL CONDITION QT_FEATURE_vulkan
+    SOURCES
+        qvkconvenience.cpp qvkconvenience_p.h
+    PUBLIC_LIBRARIES
+        Vulkan::Vulkan_nolink
+)
+
 qt_add_docs(OpenGL
     doc/qtopengl.qdocconf
 )

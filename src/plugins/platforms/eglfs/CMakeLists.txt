@@ -53,8 +53,6 @@ qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_vulkan
     SOURCES
         api/vulkan/qeglfsvulkaninstance.cpp api/vulkan/qeglfsvulkaninstance_p.h
         api/vulkan/qeglfsvulkanwindow.cpp api/vulkan/qeglfsvulkanwindow_p.h
-    PUBLIC_LIBRARIES
-        Qt::VulkanSupportPrivate
 )
 
 # special case:

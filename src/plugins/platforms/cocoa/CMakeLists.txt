@@ -93,8 +93,6 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_opengl
 qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qcocoavulkaninstance.h qcocoavulkaninstance.mm
-    PUBLIC_LIBRARIES
-        Qt::VulkanSupportPrivate
 )
 
 qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_accessibility

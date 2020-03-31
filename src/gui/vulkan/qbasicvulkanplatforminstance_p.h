@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtGui/qtguiglobal.h>
+
 #include <QtCore/QLibrary>
 #include <qpa/qplatformvulkaninstance.h>
 
@@ -58,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QLibrary;
 
-class QBasicPlatformVulkanInstance : public QPlatformVulkanInstance
+class Q_GUI_EXPORT QBasicPlatformVulkanInstance : public QPlatformVulkanInstance
 {
 public:
     QBasicPlatformVulkanInstance();

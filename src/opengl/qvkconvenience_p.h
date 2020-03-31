@@ -51,12 +51,12 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 #include <qvulkaninstance.h>
 
 QT_BEGIN_NAMESPACE
 
-class QVkConvenience
+class Q_OPENGL_EXPORT QVkConvenience
 {
 public:
 #if QT_CONFIG(opengl)

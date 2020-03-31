@@ -52,7 +52,7 @@
 //
 
 #include "qeglfsglobal_p.h"
-#include <QtVulkanSupport/private/qbasicvulkanplatforminstance_p.h>
+#include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 
 QT_BEGIN_NAMESPACE
 

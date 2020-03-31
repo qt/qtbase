@@ -37,9 +37,6 @@ qtConfig(accessibility) {
     win32:!winrt: SUBDIRS += windowsuiautomation
 }
 
-qtConfig(vulkan): \
-    SUBDIRS += vkconvenience
-
 !android:linux*:qtHaveModule(dbus) \
     SUBDIRS += linuxofono
 

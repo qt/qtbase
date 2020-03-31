@@ -120,8 +120,6 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qwindowsvulkaninstance.cpp qwindowsvulkaninstance.h
-    PUBLIC_LIBRARIES
-        Qt::VulkanSupportPrivate
 )
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_directwrite3

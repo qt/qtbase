@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QVulkanWindowPrivate : public QWindowPrivate
+class Q_GUI_EXPORT QVulkanWindowPrivate : public QWindowPrivate
 {
     Q_DECLARE_PUBLIC(QVulkanWindow)
 

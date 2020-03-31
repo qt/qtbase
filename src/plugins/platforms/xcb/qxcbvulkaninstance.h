@@ -46,7 +46,7 @@
 
 #define VK_USE_PLATFORM_XCB_KHR
 
-#include <QtVulkanSupport/private/qbasicvulkanplatforminstance_p.h>
+#include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 #include <QLibrary>
 
 QT_BEGIN_NAMESPACE

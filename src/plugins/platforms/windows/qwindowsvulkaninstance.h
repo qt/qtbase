@@ -46,7 +46,7 @@
 
 #define VK_USE_PLATFORM_WIN32_KHR
 
-#include <QtVulkanSupport/private/qbasicvulkanplatforminstance_p.h>
+#include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 #include <QtCore/qlibrary.h>
 
 QT_BEGIN_NAMESPACE

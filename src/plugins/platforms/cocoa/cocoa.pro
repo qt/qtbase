@@ -99,8 +99,6 @@ QT += \
     theme_support-private \
     fontdatabase_support-private
 
-qtConfig(vulkan): QT += vulkan_support-private
-
 qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
 
 CONFIG += no_app_extension_api_only

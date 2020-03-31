@@ -330,9 +330,6 @@ _qt_library_map = [
         "virtualkeyboard", "Qt6", "Qt::VirtualKeyboard", extra=["COMPONENTS", "VirtualKeyboard"]
     ),
     LibraryMapping(
-        "vulkan_support", "Qt6", "Qt::VulkanSupport", extra=["COMPONENTS", "VulkanSupport"]
-    ),
-    LibraryMapping(
         "waylandclient", "Qt6", "Qt::WaylandClient", extra=["COMPONENTS", "WaylandClient"]
     ),
     LibraryMapping(

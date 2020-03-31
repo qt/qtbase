@@ -40,7 +40,7 @@
 #ifndef QANDROIDPLATFORMVULKANINSTANCE_H
 #define QANDROIDPLATFORMVULKANINSTANCE_H
 
-#include <QtVulkanSupport/private/qbasicvulkanplatforminstance_p.h>
+#include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 #include <QLibrary>
 
 QT_BEGIN_NAMESPACE

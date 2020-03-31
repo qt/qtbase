@@ -74,8 +74,6 @@ qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qandroidplatformvulkaninstance.cpp qandroidplatformvulkaninstance.h
         qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h
-    PUBLIC_LIBRARIES
-        Qt::VulkanSupportPrivate
 )
 
 qt_extend_target(QAndroidIntegrationPlugin CONDITION TARGET Qt::PlatformCompositorSupportPrivate

@@ -47,7 +47,7 @@
 #include <MoltenVK/mvk_vulkan.h>
 
 #include <QtCore/QHash>
-#include <QtVulkanSupport/private/qbasicvulkanplatforminstance_p.h>
+#include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 
 #include <AppKit/AppKit.h>
 

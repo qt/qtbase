@@ -81,8 +81,6 @@ qt_extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
     SOURCES
         qxcbvulkaninstance.cpp qxcbvulkaninstance.h
         qxcbvulkanwindow.cpp qxcbvulkanwindow.h
-    PUBLIC_LIBRARIES
-        Qt::VulkanSupportPrivate
 )
 
 qt_extend_target(XcbQpa CONDITION QT_FEATURE_glib

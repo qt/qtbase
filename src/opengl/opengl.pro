@@ -129,4 +129,14 @@ qtConfig(opengles2) {
     SOURCES += qopenglfunctions_es2.cpp
 }
 
+qtConfig(vulkan) {
+    CONFIG += generated_privates
+
+    HEADERS += qvkconvenience_p.h
+    SOURCES += qvkconvenience.cpp
+
+    # Applications must inherit the Vulkan header include path.
+    QMAKE_USE += vulkan/nolink
+}
+
 load(qt_module)

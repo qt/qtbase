@@ -695,6 +695,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         vulkan/qvulkanfunctions.cpp
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
+        vulkan/qbasicvulkanplatforminstance.cpp vulkan/qbasicvulkanplatforminstance_p.h
     PUBLIC_LIBRARIES
         Vulkan::Vulkan_nolink
 )
