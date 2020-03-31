@@ -639,7 +639,7 @@ QTzTimeZonePrivate::QTzTimeZonePrivate()
 // Create a named time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
 {
-    init(ianaId);
+    init(ianaId.isEmpty() ? systemTimeZoneId() : ianaId);
 }
 
 QTzTimeZonePrivate::~QTzTimeZonePrivate()
@@ -852,13 +852,16 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::fetchEntry(const QByteArray &ianaId)
 
 void QTzTimeZonePrivate::init(const QByteArray &ianaId)
 {
+    // System ID defaults to UTC, so is never empty; and our callers default to
+    // the system ID if what they're given is empty.
+    Q_ASSERT(!ianaId.isEmpty());
     static QTzTimeZoneCache tzCache;
     const auto &entry = tzCache.fetchEntry(ianaId);
     if (entry.m_tranTimes.isEmpty() && entry.m_posixRule.isEmpty())
         return; // Invalid after all !
 
     cached_data = std::move(entry);
-    m_id = ianaId.isEmpty() ? systemTimeZoneId() : ianaId;
+    m_id = ianaId;
 }
 
 QLocale::Country QTzTimeZonePrivate::country() const
