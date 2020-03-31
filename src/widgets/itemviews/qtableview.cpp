@@ -674,7 +674,7 @@ QRect QTableViewPrivate::intersectedRect(const QRect rect, const QModelIndex &to
     Q_Q(const QTableView);
 
     using minMaxPair = std::pair<int, int>;
-    const auto calcMinMax = [q, rect](QHeaderView *hdr, int startIdx, int endIdx, minMaxPair bounds) -> minMaxPair
+    const auto calcMinMax = [q](QHeaderView *hdr, int startIdx, int endIdx, minMaxPair bounds) -> minMaxPair
     {
         minMaxPair ret(std::numeric_limits<int>::max(), std::numeric_limits<int>::min());
         if (hdr->sectionsMoved()) {
