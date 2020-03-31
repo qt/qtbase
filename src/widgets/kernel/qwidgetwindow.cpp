@@ -505,7 +505,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::ContextMenuOnMouseRelease).toBool() ?
         QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
     if (QApplicationPrivate::inPopupMode()) {
-        QWidget *activePopupWidget = QApplication::activePopupWidget();
+        QPointer<QWidget> activePopupWidget = QApplication::activePopupWidget();
         QPoint mapped = event->pos();
         if (activePopupWidget != m_widget)
             mapped = activePopupWidget->mapFromGlobal(event->globalPos());
@@ -565,9 +565,11 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 #endif
             if ((event->type() != QEvent::MouseButtonPress)
                     || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
-
+                // if the widget that was pressed is gone, then deliver move events without buttons
+                const auto buttons = event->type() == QEvent::MouseMove && qt_button_down == nullptr
+                                   ? Qt::NoButton : event->buttons();
                 QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(),
-                              event->button(), event->buttons(), event->modifiers(), event->source());
+                              event->button(), buttons, event->modifiers(), event->source());
                 e.setTimestamp(event->timestamp());
                 QApplicationPrivate::sendMouseEvent(receiver, &e, receiver, receiver->window(), &qt_button_down, qt_last_mouse_receiver);
                 qt_last_mouse_receiver = receiver;
