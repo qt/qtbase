@@ -43,6 +43,7 @@ private Q_SLOTS:
     void useCustomThreadPool();
     void setPriority();
     void adjustAllSettings();
+    void ignoreFutureResult();
 };
 
 using namespace QtConcurrent;
@@ -154,6 +155,20 @@ void tst_QtConcurrentTask::adjustAllSettings()
         .waitForFinished();
 
     QCOMPARE(result, QVector<int>({1, 2, 3}));
+}
+void tst_QtConcurrentTask::ignoreFutureResult()
+{
+    QThreadPool pool;
+
+    std::atomic_int value = 0;
+    for (std::size_t i = 0; i < 10; ++i)
+        task([&value]{ ++value; })
+            .onThreadPool(pool)
+            .spawn(FutureResult::Ignore);
+
+    pool.waitForDone();
+
+    QCOMPARE(value, 10);
 }
 
 QTEST_MAIN(tst_QtConcurrentTask)

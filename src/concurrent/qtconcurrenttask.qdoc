@@ -143,6 +143,11 @@
     You can set the priority for a task:
 
     \snippet code/src_concurrent_qtconcurrenttask.cpp 10
+
+    If you don't need a future object, you can call
+    QtConcurrent::QTaskBuilder::spawn(QtConcurrent::FutureResult::Ignore):
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 11
 */
 
 /*!

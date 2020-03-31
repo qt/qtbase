@@ -45,6 +45,13 @@
 */
 
 /*!
+    \fn template <class Task, class ...Args> void QtConcurrent::QTaskBuilder<Task, Args...>::spawn(QtConcurrent::FutureResult)
+
+    Runs the task in a separate thread. This is a non-blocking call.
+    The task might not start immediately.
+*/
+
+/*!
     \fn template <class Task, class ...Args> template <class ...ExtraArgs> [[nodiscard]] QTaskBuilder<Task, ExtraArgs...> QtConcurrent::QTaskBuilder<Task, Args...>::withArguments(ExtraArgs &&...args)
 
     Sets the arguments \a args the task will be invoked with. The code is ill-formed
@@ -79,4 +86,16 @@
 
     The real implementation also contains a compile-time check for
     whether the task can be invoked with the specified arguments or not.
+*/
+
+/*!
+    \enum QtConcurrent::FutureResult
+
+    This enum type is used to invoke a special overload of
+    QtConcurrent::QTaskBuilder::spawn(QtConcurrent::FutureResult)
+    that doesn't return a future object.
+
+    \value Ignore
+           An auxiliary tag which introduced to improve code
+           readability.
 */

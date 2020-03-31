@@ -125,3 +125,7 @@ QtConcurrent::task([]{ return 42; }).onThreadPool(pool).spawn();
 //! [10]
 QtConcurrent::task([]{ return 42; }).withPriority(10).spawn();
 //! [10]
+
+//! [11]
+QtConcurrent::task([]{ qDebug("Hello, world!"); }).spawn(FutureResult::Ignore);
+//! [11]

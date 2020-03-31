@@ -52,6 +52,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtConcurrent {
 
+enum class FutureResult { Ignore };
+
 using InvokeResultType = int;
 
 template <class Task, class ...Args>
@@ -60,6 +62,8 @@ class QTaskBuilder
 public:
     [[nodiscard]]
     QFuture<InvokeResultType> spawn();
+
+    void spawn(FutureResult);
 
     template <class ...ExtraArgs>
     [[nodiscard]]
@@ -78,6 +82,8 @@ public:
 
 namespace QtConcurrent {
 
+enum class FutureResult { Ignore };
+
 template <class Task, class ...Args>
 class QTaskBuilder
 {
@@ -87,6 +93,12 @@ public:
     {
         return (new StoredFunctionCall<Task, Args...>(std::move(taskWithArgs)))
                    ->start(startParameters);
+    }
+
+    void spawn(FutureResult)
+    {
+        (new StoredFunctionCall<Task, Args...>(std::move(taskWithArgs)))
+            ->start(startParameters);
     }
 
     template <class ...ExtraArgs>
