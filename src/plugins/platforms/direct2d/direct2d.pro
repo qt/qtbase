@@ -5,8 +5,6 @@ QT += \
     eventdispatcher_support-private \
     fontdatabase_support-private theme_support-private
 
-qtConfig(accessibility): QT += accessibility_support-private
-
 LIBS += -ldwmapi -lversion -ld3d11 -ldxgi -ldxguid
 QMAKE_USE_PRIVATE += gdi32 dwrite_1 d2d1_1
 

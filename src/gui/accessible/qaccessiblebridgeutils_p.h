@@ -61,8 +61,8 @@ QT_REQUIRE_CONFIG(accessibility);
 QT_BEGIN_NAMESPACE
 
 namespace QAccessibleBridgeUtils {
-    QStringList effectiveActionNames(QAccessibleInterface *iface);
-    bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionName);
+    Q_GUI_EXPORT QStringList effectiveActionNames(QAccessibleInterface *iface);
+    Q_GUI_EXPORT bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionName);
 }
 
 QT_END_NAMESPACE

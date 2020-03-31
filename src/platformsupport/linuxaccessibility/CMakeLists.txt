@@ -31,7 +31,6 @@ qt_add_module(LinuxAccessibilitySupport
         QT_NO_CAST_FROM_ASCII
     PUBLIC_LIBRARIES
         PkgConfig::ATSPI2_nolink
-        Qt::AccessibilitySupportPrivate
         Qt::CorePrivate
         Qt::DBus
         Qt::GuiPrivate

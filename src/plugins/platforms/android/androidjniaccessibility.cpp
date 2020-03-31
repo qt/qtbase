@@ -41,7 +41,7 @@
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
 #include "qpa/qplatformaccessibility.h"
-#include <QtAccessibilitySupport/private/qaccessiblebridgeutils_p.h>
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include "qguiapplication.h"
 #include "qwindow.h"
 #include "qrect.h"

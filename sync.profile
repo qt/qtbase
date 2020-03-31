@@ -11,7 +11,6 @@
     "QtTest" => "$basedir/src/testlib",
     "QtDBus" => "$basedir/src/dbus",
     "QtConcurrent" => "$basedir/src/concurrent",
-    "QtAccessibilitySupport" => "$basedir/src/platformsupport/accessibility",
     "QtLinuxAccessibilitySupport" => "$basedir/src/platformsupport/linuxaccessibility",
     "QtDeviceDiscoverySupport" => "$basedir/src/platformsupport/devicediscovery",
     "QtEventDispatcherSupport" => "$basedir/src/platformsupport/eventdispatchers",

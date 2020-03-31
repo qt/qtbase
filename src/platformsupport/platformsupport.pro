@@ -27,10 +27,8 @@ qtConfig(kms): \
     SUBDIRS += kmsconvenience
 
 qtConfig(accessibility) {
-    SUBDIRS += accessibility
     qtConfig(accessibility-atspi-bridge) {
         SUBDIRS += linuxaccessibility
-        linuxaccessibility.depends += accessibility
     }
 }
 

@@ -77,12 +77,6 @@ class LibraryMapping:
 _qt_library_map = [
     # Qt:
     LibraryMapping(
-        "accessibility_support",
-        "Qt6",
-        "Qt::AccessibilitySupport",
-        extra=["COMPONENTS", "AccessibilitySupport"],
-    ),
-    LibraryMapping(
         "androidextras", "Qt6", "Qt::AndroidExtras", extra=["COMPONENTS", "AndroidExtras"]
     ),
     LibraryMapping("animation", "Qt6", "Qt::3DAnimation", extra=["COMPONENTS", "3DAnimation"]),

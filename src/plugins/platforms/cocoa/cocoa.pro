@@ -76,7 +76,6 @@ qtConfig(vulkan) {
 }
 
 qtConfig(accessibility) {
-    QT += accessibility_support-private
     SOURCES += qcocoaaccessibilityelement.mm \
         qcocoaaccessibility.mm
     HEADERS += qcocoaaccessibilityelement.h \

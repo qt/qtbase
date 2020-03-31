@@ -104,8 +104,6 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
         qcocoaaccessibility.h qcocoaaccessibility.mm
         qcocoaaccessibilityelement.h qcocoaaccessibilityelement.mm
-    PUBLIC_LIBRARIES
-        Qt::AccessibilitySupportPrivate
 )
 
 qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager

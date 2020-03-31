@@ -44,7 +44,6 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${QT_SOURCE_TREE}/src/3rdparty/android
     PUBLIC_LIBRARIES
-        Qt::AccessibilitySupportPrivate
         Qt::Core
         Qt::CorePrivate
         Qt::EglSupportPrivate

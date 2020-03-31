@@ -115,8 +115,6 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
         uiautomation/qwindowsuiautils.cpp uiautomation/qwindowsuiautils.h
         uiautomation/qwindowsuiavalueprovider.cpp uiautomation/qwindowsuiavalueprovider.h
         uiautomation/qwindowsuiawindowprovider.cpp uiautomation/qwindowsuiawindowprovider.h
-    PUBLIC_LIBRARIES
-        Qt::AccessibilitySupportPrivate
 )
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_directwrite3

@@ -1,7 +1,7 @@
 TARGET = QtLinuxAccessibilitySupport
 MODULE = linuxaccessibility_support
 
-QT = core-private dbus gui-private accessibility_support-private
+QT = core-private dbus gui-private
 CONFIG += static internal_module
 
 DEFINES += QT_NO_CAST_FROM_ASCII
