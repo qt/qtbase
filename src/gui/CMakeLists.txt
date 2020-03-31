@@ -65,6 +65,7 @@ qt_add_module(Gui
         image/qicon.cpp image/qicon.h image/qicon_p.h
         image/qiconengine.cpp image/qiconengine.h
         image/qiconengineplugin.cpp image/qiconengineplugin.h
+        image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qiconloader.cpp image/qiconloader_p.h
         image/qimage.cpp image/qimage.h image/qimage_p.h
         image/qimage_conversions.cpp

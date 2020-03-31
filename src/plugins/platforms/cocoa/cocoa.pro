@@ -93,9 +93,7 @@ LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework I
 
 DEFINES += QT_NO_FOREACH
 
-QT += \
-    core-private gui-private \
-    theme_support-private
+QT += core-private gui-private
 
 CONFIG += no_app_extension_api_only
 

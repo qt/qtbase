@@ -60,7 +60,6 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
 )
 
 # special case begin

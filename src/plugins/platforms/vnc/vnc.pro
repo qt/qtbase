@@ -2,7 +2,7 @@ TARGET = qvnc
 
 QT += \
     core-private network gui-private \
-    service_support-private theme_support-private fb_support-private \
+    service_support-private fb_support-private \
     eventdispatcher_support-private fontdatabase_support-private
 
 qtHaveModule(input_support-private): \

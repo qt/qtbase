@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractFileIconEngine : public QPixmapIconEngine
+class Q_GUI_EXPORT QAbstractFileIconEngine : public QPixmapIconEngine
 {
 public:
     explicit QAbstractFileIconEngine(const QFileInfo &info, QPlatformTheme::IconOptions opts)

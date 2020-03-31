@@ -58,7 +58,7 @@
 #include <QtGui/qtextformat.h>
 #include <QtGui/private/qcoretextfontdatabase_p.h>
 #include <QtGui/private/qfontengine_coretext_p.h>
-#include <QtThemeSupport/private/qabstractfileiconengine_p.h>
+#include <QtGui/private/qabstractfileiconengine_p.h>
 #include <qpa/qplatformdialoghelper.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>

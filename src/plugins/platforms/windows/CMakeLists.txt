@@ -55,7 +55,6 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         Qt::FontDatabaseSupportPrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::ThemeSupportPrivate
         dwmapi
         imm32
         oleaut32

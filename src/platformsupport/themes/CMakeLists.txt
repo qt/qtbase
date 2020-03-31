@@ -7,8 +7,6 @@
 qt_add_module(ThemeSupport
     STATIC
     INTERNAL_MODULE
-    SOURCES
-        qabstractfileiconengine.cpp qabstractfileiconengine_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
     PUBLIC_LIBRARIES

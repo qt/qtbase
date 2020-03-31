@@ -5,8 +5,10 @@ SUBDIRS = \
     edid \
     eventdispatchers \
     devicediscovery \
-    fbconvenience \
-    themes
+    fbconvenience
+
+if(unix:!uikit:!macos)|qtConfig(xcb): \
+    SUBDIRS += themes
 
 if(qtConfig(freetype):!darwin)|win32: \
     SUBDIRS += fontdatabases

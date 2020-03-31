@@ -9,10 +9,4 @@ DEFINES += QT_NO_CAST_FROM_ASCII
 if(unix:!uikit)|qtConfig(xcb): \
     include($$PWD/genericunix/genericunix.pri)
 
-HEADERS += \
-    qabstractfileiconengine_p.h
-
-SOURCES += \
-    qabstractfileiconengine.cpp
-
 load(qt_module)
