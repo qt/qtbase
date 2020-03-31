@@ -138,15 +138,21 @@ public:
 
     void optimize() const;
 
+    enum WildcardConversionOption {
+        DefaultWildcardConversion = 0x0,
+        UnanchoredWildcardConversion = 0x1
+    };
+    Q_DECLARE_FLAGS(WildcardConversionOptions, WildcardConversionOption)
+
 #if QT_STRINGVIEW_LEVEL < 2
     static QString escape(const QString &str)
     {
         return escape(qToStringViewIgnoringNull(str));
     }
 
-    static QString wildcardToRegularExpression(const QString &str)
+    static QString wildcardToRegularExpression(const QString &str, WildcardConversionOptions options = DefaultWildcardConversion)
     {
-        return wildcardToRegularExpression(qToStringViewIgnoringNull(str));
+        return wildcardToRegularExpression(qToStringViewIgnoringNull(str), options);
     }
 
     static inline QString anchoredPattern(const QString &expression)
@@ -156,7 +162,7 @@ public:
 #endif
 
     static QString escape(QStringView str);
-    static QString wildcardToRegularExpression(QStringView str);
+    static QString wildcardToRegularExpression(QStringView str, WildcardConversionOptions options = DefaultWildcardConversion);
     static QString anchoredPattern(QStringView expression);
 
     bool operator==(const QRegularExpression &re) const;

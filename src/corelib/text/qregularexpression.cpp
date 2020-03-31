@@ -1901,10 +1901,25 @@ QString QRegularExpression::escape(QStringView str)
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 5.12
-    \fn QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
+    \fn QString QRegularExpression::wildcardToRegularExpression(const QString &pattern, WildcardConversionType type)
     \overload
 */
 #endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \since 6.0
+    \enum QRegularExpression::WildcardConversionOption
+
+    The WildcardConversionOption enum defines modifiers to the way a wildcard glob
+    pattern gets converted to a regular expression pattern.
+
+    \value DefaultWildcardConversion
+        No conversion options are set.
+
+    \value UnanchoredWildcardConversion
+        The conversion will not anchor the pattern. This allows for partial string matches of
+        wildcard expressions.
+*/
 
 /*!
     \since 5.15
@@ -1916,9 +1931,10 @@ QString QRegularExpression::escape(QStringView str)
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 31
 
-    The returned regular expression is already fully anchored. In other
+    By default, the returned regular expression is fully anchored. In other
     words, there is no need of calling anchoredPattern() again on the
-    result.
+    result. To get an a regular expression that is not anchored, pass
+    UnanchoredWildcardConversion as the conversion \a option.
 
     \warning Unlike QRegExp, this implementation follows closely the definition
     of wildcard for glob patterns:
@@ -1956,7 +1972,7 @@ QString QRegularExpression::escape(QStringView str)
 
     \sa escape()
 */
-QString QRegularExpression::wildcardToRegularExpression(QStringView pattern)
+QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, WildcardConversionOptions options)
 {
     const int wclen = pattern.length();
     QString rx;
@@ -2031,7 +2047,10 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern)
         }
     }
 
-    return anchoredPattern(rx);
+    if (!(options & UnanchoredWildcardConversion))
+        rx = anchoredPattern(rx);
+
+    return rx;
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
