@@ -65,25 +65,26 @@ public:
     };
 
     inline explicit QTransform(Qt::Initialization) {}
-    QTransform();
+    inline QTransform()
+        : m_matrix{ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} }
+        , m_type(TxNone)
+        , m_dirty(TxNone) {}
     QTransform(qreal h11, qreal h12, qreal h13,
                qreal h21, qreal h22, qreal h23,
-               qreal h31, qreal h32, qreal h33 = 1.0);
+               qreal h31, qreal h32, qreal h33)
+        : m_matrix{ {h11, h12, h13}, {h21, h22, h23}, {h31, h32, h33} }
+        , m_type(TxNone)
+        , m_dirty(TxProject) {}
     QTransform(qreal h11, qreal h12, qreal h21,
-               qreal h22, qreal dx, qreal dy);
+               qreal h22, qreal dx, qreal dy)
+        : m_matrix{ {h11, h12, 0}, {h21, h22, 0}, {dx, dy, 1} }
+        , m_type(TxNone)
+        , m_dirty(TxShear) {}
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // ### Qt 6: remove; the compiler-generated ones are fine!
-    QTransform &operator=(QTransform &&other) noexcept // = default
-    { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QTransform)); return *this; }
-    QTransform &operator=(const QTransform &) noexcept; // = default
-    QTransform(QTransform &&other) noexcept // = default
-        : affine(Qt::Uninitialized)
-    { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QTransform)); }
-    QTransform(const QTransform &other) noexcept // = default
-        : affine(Qt::Uninitialized)
-    { memcpy(static_cast<void *>(this), static_cast<const void *>(&other), sizeof(QTransform)); }
-#endif
+    QTransform &operator=(QTransform &&other) noexcept = default;
+    QTransform &operator=(const QTransform &) noexcept = default;
+    QTransform(QTransform &&other) noexcept = default;
+    QTransform(const QTransform &other) noexcept = default;
 
     bool isAffine() const;
     bool isIdentity() const;
@@ -95,10 +96,6 @@ public:
     TransformationType type() const;
 
     inline qreal determinant() const;
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use determinant() instead")
-    qreal det() const;
-#endif
 
     qreal m11() const;
     qreal m12() const;
@@ -174,35 +171,11 @@ public:
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const Affine &m);
 
 private:
-    inline QTransform(qreal h11, qreal h12, qreal h13,
-                      qreal h21, qreal h22, qreal h23,
-                      qreal h31, qreal h32, qreal h33, bool)
-        : m_matrix{ {h11, h12, h13}, {h21, h22, h23}, {h31, h32, h33} }
-        , m_type(TxNone)
-        , m_dirty(TxProject)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        , d(nullptr)
-#endif
-    {
-    }
-    inline QTransform(bool)
-        : m_matrix{ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} }
-        , m_type(TxNone)
-        , m_dirty(TxNone)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        , d(nullptr)
-#endif
-    {
-    }
     inline TransformationType inline_type() const;
     qreal m_matrix[3][3];
 
     mutable uint m_type : 5;
     mutable uint m_dirty : 5;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    class Private;
-    Private *d;
-#endif
 };
 Q_DECLARE_TYPEINFO(QTransform, Q_MOVABLE_TYPE);
 
@@ -250,12 +223,6 @@ inline qreal QTransform::determinant() const
            m_matrix[1][0] * (m_matrix[2][2] * m_matrix[0][1] - m_matrix[2][1] * m_matrix[0][2]) +
            m_matrix[2][0] * (m_matrix[1][2] * m_matrix[0][1] - m_matrix[1][1] * m_matrix[0][2]);
 }
-#if QT_DEPRECATED_SINCE(5, 13)
-inline qreal QTransform::det() const
-{
-    return determinant();
-}
-#endif
 inline qreal QTransform::m11() const
 {
     return m_matrix[0][0];

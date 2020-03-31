@@ -244,6 +244,8 @@ static void nanWarning(const char *func)
 */
 
 /*!
+    \fn QTransform::QTransform()
+
     Constructs an identity matrix.
 
     All elements are set to zero except \c m11 and \c m22 (specifying
@@ -251,15 +253,6 @@ static void nanWarning(const char *func)
 
     \sa reset()
 */
-QTransform::QTransform()
-    : m_matrix{ {1, 0, 0}, {0, 1, 0}, {0, 0, 1} }
-    , m_type(TxNone)
-    , m_dirty(TxNone)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    , d(nullptr)
-#endif
-{
-}
 
 /*!
     \fn QTransform::QTransform(qreal m11, qreal m12, qreal m13, qreal m21, qreal m22, qreal m23, qreal m31, qreal m32, qreal m33)
@@ -269,17 +262,6 @@ QTransform::QTransform()
 
     \sa setMatrix()
 */
-QTransform::QTransform(qreal h11, qreal h12, qreal h13,
-                       qreal h21, qreal h22, qreal h23,
-                       qreal h31, qreal h32, qreal h33)
-    : m_matrix{ {h11, h12, h13}, {h21, h22, h23}, {h31, h32, h33} }
-    , m_type(TxNone)
-    , m_dirty(TxProject)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    , d(nullptr)
-#endif
-{
-}
 
 /*!
     \fn QTransform::QTransform(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qreal dy)
@@ -288,16 +270,6 @@ QTransform::QTransform(qreal h11, qreal h12, qreal h13,
 
     \sa setMatrix()
 */
-QTransform::QTransform(qreal h11, qreal h12, qreal h21,
-                       qreal h22, qreal dx, qreal dy)
-    : m_matrix{ {h11, h12, 0}, {h21, h22, 0}, {dx, dy, 1} }
-    , m_type(TxNone)
-    , m_dirty(TxShear)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    , d(nullptr)
-#endif
-{
-}
 
 /*!
     Returns the adjoint of this matrix.
@@ -319,7 +291,7 @@ QTransform QTransform::adjoint() const
 
     return QTransform(h11, h12, h13,
                       h21, h22, h23,
-                      h31, h32, h33, true);
+                      h31, h32, h33);
 }
 
 /*!
@@ -329,7 +301,7 @@ QTransform QTransform::transposed() const
 {
     QTransform t(m_matrix[0][0], m_matrix[1][0], m_matrix[2][0],
                  m_matrix[0][1], m_matrix[1][1], m_matrix[2][1],
-                 m_matrix[0][2], m_matrix[1][2], m_matrix[2][2], true);
+                 m_matrix[0][2], m_matrix[1][2], m_matrix[2][2]);
     return t;
 }
 
@@ -345,7 +317,7 @@ QTransform QTransform::transposed() const
 */
 QTransform QTransform::inverted(bool *invertible) const
 {
-    QTransform invert(true);
+    QTransform invert;
     bool inv = true;
 
     switch(inline_type()) {
@@ -449,7 +421,7 @@ QTransform QTransform::fromTranslate(qreal dx, qreal dy)
         return QTransform();
 }
 #endif
-    QTransform transform(1, 0, 0, 0, 1, 0, dx, dy, 1, true);
+    QTransform transform(1, 0, 0, 0, 1, 0, dx, dy, 1);
     if (dx == 0 && dy == 0)
         transform.m_type = TxNone;
     else
@@ -515,7 +487,7 @@ QTransform QTransform::fromScale(qreal sx, qreal sy)
         return QTransform();
 }
 #endif
-    QTransform transform(sx, 0, 0, 0, sy, 0, 0, 0, 1, true);
+    QTransform transform(sx, 0, 0, 0, sy, 0, 0, 0, 1);
     if (sx == 1. && sy == 1.)
         transform.m_type = TxNone;
     else
@@ -911,7 +883,7 @@ QTransform QTransform::operator*(const QTransform &m) const
     if (thisType == TxNone)
         return m;
 
-    QTransform t(true);
+    QTransform t;
     TransformationType type = qMax(thisType, otherType);
     switch(type) {
     case TxNone:
@@ -1009,27 +981,11 @@ QTransform QTransform::operator*(const QTransform &m) const
     element of this matrix.
 */
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
+    \fn QTransform &QTransform::operator=(const QTransform &matrix) noexcept
+
     Assigns the given \a matrix's values to this matrix.
 */
-QTransform & QTransform::operator=(const QTransform &matrix) noexcept
-{
-    m_matrix[0][0] = matrix.m_matrix[0][0];
-    m_matrix[0][1] = matrix.m_matrix[0][1];
-    m_matrix[1][0] = matrix.m_matrix[1][0];
-    m_matrix[1][1] = matrix.m_matrix[1][1];
-    m_matrix[2][0] = matrix.m_matrix[2][0];
-    m_matrix[2][1] = matrix.m_matrix[2][1];
-    m_matrix[0][2] = matrix.m_matrix[0][2];
-    m_matrix[1][2] = matrix.m_matrix[1][2];
-    m_matrix[2][2] = matrix.m_matrix[2][2];
-    m_type = matrix.m_type;
-    m_dirty = matrix.m_dirty;
-
-    return *this;
-}
-#endif
 
 /*!
     Resets the matrix to an identity matrix, i.e. all elements are set
@@ -1041,10 +997,7 @@ QTransform & QTransform::operator=(const QTransform &matrix) noexcept
 */
 void QTransform::reset()
 {
-    m_matrix[0][0] = m_matrix[1][1] = m_matrix[2][2] = 1.0;
-    m_matrix[0][1] = m_matrix[0][2] = m_matrix[1][0] = m_matrix[1][2] = m_matrix[2][0] = m_matrix[2][1] = 0;
-    m_type = TxNone;
-    m_dirty = TxNone;
+    *this = QTransform();
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -2139,15 +2092,6 @@ QTransform::operator QVariant() const
 
     \sa inverted()
 */
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn qreal QTransform::det() const
-    \obsolete
-
-    Returns the matrix's determinant. Use determinant() instead.
-*/
-#endif
 
 /*!
     \fn qreal QTransform::m11() const
