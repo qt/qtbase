@@ -210,3 +210,30 @@
     \sa QWidget::showMaximized(), QWidget::saveGeometry(), QWidget::restoreGeometry()
     \since 5.9
 */
+
+/*!
+    \typedef QWindowsWindowFunctions::SetWinTabEnabled
+    \since 6.0
+
+    This is the typedef for the function returned by QGuiApplication::platformFunction
+    when passed setWinTabEnabledIdentifier().
+*/
+
+/*!
+    \fn QByteArray QWindowsWindowFunctions::setWinTabEnabledIdentifier()
+    \since 6.0
+
+    This function returns the bytearray that can be used to query
+    QGuiApplication::platformFunction to retrieve the SetWinTabEnabled function.
+*/
+
+/*!
+    \fn bool QWindowsWindowFunctions::setWinTabEnabled(bool enabled)
+    \since 6.0
+
+    This is a convenience function that can be used directly instead of resolving
+    the function pointer.
+
+    \a enabled determines whether the WinTab API will be used for tablet input instead
+    of the native API. Returns true if the operation was successful.
+*/

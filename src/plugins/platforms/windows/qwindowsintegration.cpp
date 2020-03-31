@@ -140,6 +140,7 @@ struct QWindowsIntegrationPrivate
     ~QWindowsIntegrationPrivate();
 
     unsigned m_options = 0;
+    int m_tabletAbsoluteRange = -1;
     QWindowsContext m_context;
     QPlatformFontDatabase *m_fontDatabase = nullptr;
 #if QT_CONFIG(clipboard)
@@ -239,19 +240,18 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     initOpenGlBlacklistResources();
 
     static bool dpiAwarenessSet = false;
-    int tabletAbsoluteRange = -1;
     // Default to per-monitor awareness to avoid being scaled when monitors with different DPI
     // are connected to Windows 8.1
     QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorDpiAware;
-    m_options = parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness);
+    m_options = parseOptions(paramList, &m_tabletAbsoluteRange, &dpiAwareness);
     QWindowsFontDatabase::setFontOptions(m_options);
 
     if (m_context.initPointer(m_options)) {
         QCoreApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
     } else {
         m_context.initTablet(m_options);
-        if (tabletAbsoluteRange >= 0)
-            m_context.setTabletAbsoluteRange(tabletAbsoluteRange);
+        if (m_tabletAbsoluteRange >= 0)
+            m_context.setTabletAbsoluteRange(m_tabletAbsoluteRange);
     }
 
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
@@ -640,6 +640,28 @@ QPlatformServices *QWindowsIntegration::services() const
 void QWindowsIntegration::beep() const
 {
     MessageBeep(MB_OK);  // For QApplication
+}
+
+bool QWindowsIntegration::setWinTabEnabled(bool enabled)
+{
+    bool ret = false;
+    if (QWindowsIntegration *p = QWindowsIntegration::instance()) {
+        if (enabled) {
+            if (p->d->m_context.tabletSupport()) {
+                ret = true;
+            } else {
+                ret = p->d->m_context.initTablet(p->d->m_options);
+                if (ret && p->d->m_tabletAbsoluteRange >= 0)
+                    p->d->m_context.setTabletAbsoluteRange(p->d->m_tabletAbsoluteRange);
+            }
+        } else {
+            if (p->d->m_context.tabletSupport())
+                ret = p->d->m_context.disposeTablet();
+            else
+                ret = true;
+        }
+    }
+    return ret;
 }
 
 #if QT_CONFIG(vulkan)

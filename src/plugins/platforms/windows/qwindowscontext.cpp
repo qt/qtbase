@@ -380,6 +380,16 @@ bool QWindowsContext::initTablet(unsigned integrationOptions)
 #endif
 }
 
+bool QWindowsContext::disposeTablet()
+{
+#if QT_CONFIG(tabletevent)
+    d->m_tabletSupport.reset();
+    return true;
+#else
+    return false;
+#endif
+}
+
 bool QWindowsContext::initPointer(unsigned integrationOptions)
 {
     if (integrationOptions & QWindowsIntegration::DontUseWMPointer)

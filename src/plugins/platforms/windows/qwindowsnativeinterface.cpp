@@ -300,6 +300,8 @@ QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &fun
         return QFunctionPointer(QWindowsNativeInterface::setWindowActivationBehavior);
     if (function == QWindowsWindowFunctions::isTabletModeIdentifier())
         return QFunctionPointer(QWindowsNativeInterface::isTabletMode);
+    if (function == QWindowsWindowFunctions::setWinTabEnabledIdentifier())
+        return QFunctionPointer(QWindowsIntegration::setWinTabEnabled);
     return nullptr;
 }
 

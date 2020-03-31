@@ -108,6 +108,14 @@ public:
         IsTabletModeType func = reinterpret_cast<IsTabletModeType>(QGuiApplication::platformFunction(isTabletModeIdentifier()));
         return func && func();
     }
+
+    typedef bool (*SetWinTabEnabled)(bool enabled);
+    static const QByteArray setWinTabEnabledIdentifier() { return QByteArrayLiteral("WindowsSetWinTabEnabled"); }
+    static bool setWinTabEnabled(bool enabled)
+    {
+        SetWinTabEnabled func = reinterpret_cast<SetWinTabEnabled>(QGuiApplication::platformFunction(setWinTabEnabledIdentifier()));
+        return func && func(enabled);
+    }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsWindowFunctions::TouchWindowTouchTypes)

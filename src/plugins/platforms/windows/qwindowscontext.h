@@ -175,6 +175,7 @@ public:
     bool initTouch(unsigned integrationOptions); // For calls from QWindowsIntegration::QWindowsIntegration() only.
     bool initTablet(unsigned integrationOptions);
     bool initPointer(unsigned integrationOptions);
+    bool disposeTablet();
 
     bool initPowerNotificationHandler();
 

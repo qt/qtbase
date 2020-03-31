@@ -111,6 +111,8 @@ public:
 
     static QWindowsIntegration *instance() { return m_instance; }
 
+    static bool setWinTabEnabled(bool enabled);
+
     unsigned options() const;
 
     void beep() const override;
