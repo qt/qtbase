@@ -867,29 +867,45 @@ QString QDir::relativeFilePath(const QString &fileName) const
 #endif
 
     QString result;
-    QVector<QStringRef> dirElts = dir.splitRef(QLatin1Char('/'), Qt::SkipEmptyParts);
-    QVector<QStringRef> fileElts = file.splitRef(QLatin1Char('/'), Qt::SkipEmptyParts);
+    const auto dirElts = dir.tokenize(QLatin1Char('/'), Qt::SkipEmptyParts);
+    const auto fileElts = file.tokenize(QLatin1Char('/'), Qt::SkipEmptyParts);
 
-    int i = 0;
-    while (i < dirElts.size() && i < fileElts.size() &&
+
+    const auto dend = dirElts.end();
+    const auto fend = fileElts.end();
+    auto dit = dirElts.begin();
+    auto fit = fileElts.begin();
+
+    const auto eq = [](QStringView lhs, QStringView rhs) {
+        return
 #if defined(Q_OS_WIN)
-           dirElts.at(i).compare(fileElts.at(i), Qt::CaseInsensitive) == 0)
+           lhs.compare(rhs, Qt::CaseInsensitive) == 0;
 #else
-           dirElts.at(i) == fileElts.at(i))
+           lhs == rhs;
 #endif
-        ++i;
+    };
 
-    for (int j = 0; j < dirElts.size() - i; ++j)
+    // std::ranges::mismatch
+    while (dit != dend && fit != fend && eq(*dit, *fit)) {
+        ++dit;
+        ++fit;
+    }
+
+    while (dit != dend) {
         result += QLatin1String("../");
+        ++dit;
+    }
 
-    for (int j = i; j < fileElts.size(); ++j) {
-        result += fileElts.at(j);
-        if (j < fileElts.size() - 1)
+    if (fit != fend) {
+        while (fit != fend) {
+            result += *fit++;
             result += QLatin1Char('/');
+        }
+        result.chop(1);
     }
 
     if (result.isEmpty())
-        return QLatin1String(".");
+        result = QLatin1String(".");
     return result;
 }
 
