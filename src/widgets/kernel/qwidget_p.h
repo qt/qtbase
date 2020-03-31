@@ -270,6 +270,7 @@ public:
         TopLevel
     };
     QWindow *windowHandle(WindowHandleMode mode = WindowHandleMode::Direct) const;
+    QWindow *_q_closestWindowHandle() const; // Private slot in QWidget
 
     QScreen *associatedScreen() const;
 

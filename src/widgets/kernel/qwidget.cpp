@@ -1112,6 +1112,17 @@ QWindow *QWidgetPrivate::windowHandle(WindowHandleMode mode) const
     return nullptr;
 }
 
+/*!
+    \internal
+
+    Used by clients outside of widgets to get a handle to the
+    closest QWindow without having to link to widgets.
+*/
+QWindow *QWidgetPrivate::_q_closestWindowHandle() const
+{
+    return windowHandle(QWidgetPrivate::WindowHandleMode::Closest);
+}
+
 QScreen *QWidgetPrivate::associatedScreen() const
 {
     if (auto window = windowHandle(WindowHandleMode::Closest))
