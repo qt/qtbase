@@ -13,3 +13,7 @@ else: \
     LIBS_PRIVATE += -framework UIKit
 
 CONFIG += watchos_coretext
+
+qtConfig(freetype) {
+    QMAKE_USE_PRIVATE += freetype
+}

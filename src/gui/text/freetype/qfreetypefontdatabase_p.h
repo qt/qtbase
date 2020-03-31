@@ -63,7 +63,7 @@ struct FontFile
     int indexValue;
 };
 
-class QFreeTypeFontDatabase : public QPlatformFontDatabase
+class Q_GUI_EXPORT QFreeTypeFontDatabase : public QPlatformFontDatabase
 {
 public:
     void populateFontDatabase() override;

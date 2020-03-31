@@ -207,7 +207,7 @@ qtConfig(gui) {
     }
     qtConfig(freetype):!qtConfig(system-freetype) {
         SUBDIRS += src_3rdparty_freetype
-        src_platformsupport.depends += src_3rdparty_freetype
+        src_gui.depends += src_3rdparty_freetype
     }
     qtConfig(vkgen) {
         SUBDIRS += src_tools_qvkgen

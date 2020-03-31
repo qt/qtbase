@@ -74,7 +74,7 @@ class QFontconfigDatabase;
  * This class represents one font file on disk (like Arial.ttf) and is shared between all the font engines
  * that show this font file (at different pixel sizes).
  */
-class QFreetypeFace
+class Q_GUI_EXPORT QFreetypeFace
 {
 public:
     void computeSize(const QFontDef &fontDef, int *xsize, int *ysize, bool *outline_drawing, QFixed *scalableBitmapScaleFactor);
@@ -128,7 +128,7 @@ private:
     QFontEngine::Holder hbFace;
 };
 
-class QFontEngineFT : public QFontEngine
+class Q_GUI_EXPORT QFontEngineFT : public QFontEngine
 {
 public:
     struct GlyphInfo {
@@ -353,7 +353,7 @@ inline QFontEngineFT::Glyph *QFontEngineFT::QGlyphSet::getGlyph(glyph_t index, Q
     return glyph_data.value(GlyphAndSubPixelPosition(index, subPixelPosition));
 }
 
-extern FT_Library qt_getFreetype();
+Q_GUI_EXPORT FT_Library qt_getFreetype();
 
 QT_END_NAMESPACE
 

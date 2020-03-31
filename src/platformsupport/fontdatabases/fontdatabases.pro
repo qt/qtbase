@@ -11,10 +11,6 @@ darwin {
     include($$PWD/mac/coretext.pri)
 }
 
-qtConfig(freetype) {
-    include($$PWD/freetype/freetype.pri)
-}
-
 unix {
     include($$PWD/genericunix/genericunix.pri)
 }

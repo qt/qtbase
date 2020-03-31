@@ -15,6 +15,7 @@ HEADERS += \
 qtConfig(freetype) {
     SOURCES += $$PWD/qwindowsfontdatabase_ft.cpp
     HEADERS += $$PWD/qwindowsfontdatabase_ft_p.h
+    QMAKE_USE_PRIVATE += freetype
 }
 
 qtConfig(directwrite):qtConfig(direct2d) {

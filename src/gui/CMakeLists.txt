@@ -10,6 +10,7 @@ set(OpenGL_GL_PREFERENCE GLVND) # special case:
 qt_find_package(X11_XCB)
 qt_find_package(WrapHarfbuzz PROVIDED_TARGETS WrapHarfbuzz::WrapHarfbuzz)
 qt_find_package(WrapPNG PROVIDED_TARGETS WrapPNG::WrapPNG)
+qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
 
 if (QT_FEATURE_gui)
     if (WINRT)
@@ -496,6 +497,14 @@ qt_extend_target(Gui CONDITION QT_FEATURE_png
         image/qpnghandler.cpp image/qpnghandler_p.h
     LIBRARIES
         WrapPNG::WrapPNG
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_freetype
+    SOURCES
+        text/freetype/qfontengine_ft.cpp text/freetype/qfontengine_ft_p.h
+        text/freetype/qfreetypefontdatabase.cpp text/freetype/qfreetypefontdatabase_p.h
+    LIBRARIES
+        WrapFreetype::WrapFreetype
 )
 
 #### Keys ignored in scope 39:.:image:image/image.pri:WIN32 AND mingw:

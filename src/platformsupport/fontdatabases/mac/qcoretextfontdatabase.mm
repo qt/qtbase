@@ -57,7 +57,7 @@
 #endif
 #include <QtCore/QtEndian>
 #ifndef QT_NO_FREETYPE
-#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
+#include <QtGui/private/qfontengine_ft_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE

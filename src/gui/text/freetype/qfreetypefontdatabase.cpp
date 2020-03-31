@@ -48,7 +48,7 @@
 #include <QtCore/QtEndian>
 
 #undef QT_NO_FREETYPE
-#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
+#include "qfontengine_ft_p.h"
 
 #include <ft2build.h>
 #include FT_TRUETYPE_TABLES_H

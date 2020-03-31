@@ -47,9 +47,6 @@ qt_extend_target(FontDatabaseSupport CONDITION APPLE AND NOT MACOS
 )
 
 qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
-    SOURCES
-        freetype/qfontengine_ft.cpp freetype/qfontengine_ft_p.h
-        freetype/qfreetypefontdatabase.cpp freetype/qfreetypefontdatabase_p.h
     LIBRARIES
         WrapFreetype::WrapFreetype
 )

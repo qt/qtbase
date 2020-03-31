@@ -39,7 +39,7 @@
 
 #include "qwinrtfontdatabase_p.h"
 
-#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
+#include <QtGui/private/qfontengine_ft_p.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFile>

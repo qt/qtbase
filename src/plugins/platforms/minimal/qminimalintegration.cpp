@@ -45,7 +45,7 @@
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
+#include <QtGui/private/qfreetypefontdatabase_p.h>
 #if defined(Q_OS_WINRT)
 #  include <QtFontDatabaseSupport/private/qwinrtfontdatabase_p.h>
 #elif defined(Q_OS_WIN)
@@ -63,7 +63,7 @@
 #endif
 
 #if QT_CONFIG(freetype)
-#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
+#include <QtGui/private/qfontengine_ft_p.h>
 #endif
 
 #if !defined(Q_OS_WIN)

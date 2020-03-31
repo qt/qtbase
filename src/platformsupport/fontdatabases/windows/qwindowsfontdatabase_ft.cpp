@@ -40,7 +40,7 @@
 #include "qwindowsfontdatabase_ft_p.h"
 #include "qwindowsfontdatabase_p.h"
 
-#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
+#include <QtGui/private/qfontengine_ft_p.h>
 
 #include <ft2build.h>
 #include FT_TRUETYPE_TABLES_H

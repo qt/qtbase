@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
+#include <QtGui/private/qfreetypefontdatabase_p.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/qt_windows.h>
 

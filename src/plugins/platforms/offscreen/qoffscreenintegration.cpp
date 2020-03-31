@@ -50,7 +50,7 @@
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #endif
 #elif defined(Q_OS_WIN)
-#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
+#include <QtGui/private/qfreetypefontdatabase_p.h>
 #ifndef Q_OS_WINRT
 #include <QtCore/private/qeventdispatcher_win_p.h>
 #else
