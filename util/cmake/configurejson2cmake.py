@@ -817,8 +817,11 @@ def get_feature_mapping():
         "qpa_default_platform": None,  # Not a bool!
         "release": None,
         "release_tools": None,
-        "rpath_dir": None,  # rpath related
-        "rpath": None,
+        "rpath_dir": None,  # merely used to fill the qmake variable EXTRA_RPATHS
+        "rpath": {
+            "autoDetect": "1",
+            "condition": "BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID AND NOT APPLE"
+        },
         "sanitize_address": None,  # sanitizer
         "sanitize_memory": None,
         "sanitizer": None,

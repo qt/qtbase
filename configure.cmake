@@ -387,6 +387,12 @@ qt_feature("simulator_and_device" PUBLIC
     CONDITION UIKIT AND NOT QT_UIKIT_SDK
 )
 qt_feature_config("simulator_and_device" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("rpath" PUBLIC
+    LABEL "Build with RPATH"
+    AUTODETECT 1
+    CONDITION BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID AND NOT APPLE
+)
+qt_feature_config("rpath" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("force_asserts" PUBLIC
     LABEL "Force assertions"
     AUTODETECT OFF
