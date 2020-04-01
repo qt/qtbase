@@ -527,7 +527,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
 
 #if QT_CONFIG(regularexpression)
     if (syntax == PatternSyntax::Wildcard)
-        sourcePath = QRegularExpression::wildcardToRegularExpression(sourcePath);
+        sourcePath = QRegularExpression::wildcardToRegularExpression(sourcePath, QRegularExpression::UnanchoredWildcardConversion);
 
     QRegularExpression pattern(QRegularExpression::anchoredPattern(sourcePath));
 #endif
