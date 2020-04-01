@@ -1134,6 +1134,17 @@ qt_feature("multiprocess" PRIVATE
     PURPOSE "Provides support for detecting the desktop environment, launching external processes and opening URLs."
     CONDITION NOT INTEGRITY AND NOT rtems
 )
+qt_feature("whatsthis" PUBLIC
+    SECTION "Widget Support"
+    LABEL "QWhatsThis"
+    PURPOSE "Supports displaying \"What's this\" help."
+)
+qt_feature_definition("whatsthis" "QT_NO_WHATSTHIS" NEGATE VALUE "1")
+qt_feature("raster-64bit" PRIVATE
+    SECTION "Painting"
+    LABEL "QPainter - 64 bit raster"
+    PURPOSE "Internal painting support for 64 bit (16 bpc) rasterization."
+)
 qt_feature("undocommand" PUBLIC
     SECTION "Utilities"
     LABEL "QUndoCommand"
@@ -1154,17 +1165,6 @@ qt_feature("undogroup" PUBLIC
     CONDITION QT_FEATURE_undostack
 )
 qt_feature_definition("undogroup" "QT_NO_UNDOGROUP" NEGATE VALUE "1")
-qt_feature("whatsthis" PUBLIC
-    SECTION "Widget Support"
-    LABEL "QWhatsThis"
-    PURPOSE "Supports displaying \"What's this\" help."
-)
-qt_feature_definition("whatsthis" "QT_NO_WHATSTHIS" NEGATE VALUE "1")
-qt_feature("raster-64bit" PRIVATE
-    SECTION "Painting"
-    LABEL "QPainter - 64 bit raster"
-    PURPOSE "Internal painting support for 64 bit (16 bpc) rasterization."
-)
 qt_configure_add_summary_section(NAME "Qt Gui")
 qt_configure_add_summary_entry(ARGS "accessibility")
 qt_configure_add_summary_entry(ARGS "freetype")
