@@ -2280,7 +2280,7 @@ function(qt_add_plugin target)
         "${ARGN}"
     )
 
-    qt_get_sanitized_plugin_type("${arg_TYPE}" arg_TYPE)
+    qt_get_sanitized_plugin_type("${arg_TYPE}" plugin_type_escaped)
 
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
     set(install_directory_default "${INSTALL_PLUGINSDIR}/${arg_TYPE}")
@@ -2296,7 +2296,7 @@ function(qt_add_plugin target)
     # Derive the class name from the target name if it's not explicitly specified.
     # Don't set it for qml plugins though.
     set(plugin_class_name "")
-    if (NOT arg_CLASS_NAME AND NOT "${arg_TYPE}" STREQUAL "qml_plugin")
+    if (NOT arg_CLASS_NAME AND NOT "${plugin_type_escaped}" STREQUAL "qml_plugin")
         set(plugin_class_name "${target}")
     endif()
 
@@ -2366,8 +2366,8 @@ function(qt_add_plugin target)
     endif()
 
     # Save the Qt module in the plug-in's properties
-    if(NOT arg_TYPE STREQUAL "qml_plugin")
-        qt_get_module_for_plugin("${target}" "${arg_TYPE}")
+    if(NOT plugin_type_escaped STREQUAL "qml_plugin")
+        qt_get_module_for_plugin("${target}" "${plugin_type_escaped}")
         get_target_property(qt_module "${target}" QT_MODULE)
     endif()
 
@@ -2490,7 +2490,7 @@ function(qt_add_plugin target)
     endif()
 
     # Store the plug-in type in the target property
-    set_property(TARGET "${target}" PROPERTY QT_PLUGIN_TYPE "${arg_TYPE}")
+    set_property(TARGET "${target}" PROPERTY QT_PLUGIN_TYPE "${plugin_type_escaped}")
 
     if (NOT arg_ALLOW_UNDEFINED_SYMBOLS)
         ### fixme: cmake is missing a built-in variable for this. We want to apply it only to
