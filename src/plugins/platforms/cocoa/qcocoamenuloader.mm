@@ -39,7 +39,6 @@
 
 #include "qcocoamenuloader.h"
 
-#include "messages.h"
 #include "qcocoahelpers.h"
 #include "qcocoansmenu.h"
 #include "qcocoamenubar.h"

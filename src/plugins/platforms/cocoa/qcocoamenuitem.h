@@ -53,6 +53,18 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 
 QT_BEGIN_NAMESPACE
 
+enum {
+    AboutAppMenuItem = 0,
+    PreferencesAppMenuItem,
+    ServicesAppMenuItem,
+    HideAppMenuItem,
+    HideOthersAppMenuItem,
+    ShowAllAppMenuItem,
+    QuitAppMenuItem
+};
+
+QString qt_mac_applicationmenu_string(int type);
+
 class QCocoaMenu;
 
 class QCocoaMenuObject

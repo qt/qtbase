@@ -31,8 +31,7 @@ SOURCES += main.mm \
     qcocoaintrospection.mm \
     qcocoakeymapper.mm \
     qcocoamimetypes.mm \
-    qiosurfacegraphicsbuffer.mm \
-    messages.cpp
+    qiosurfacegraphicsbuffer.mm
 
 HEADERS += qcocoaintegration.h \
     qcocoascreen.h \
@@ -63,7 +62,6 @@ HEADERS += qcocoaintegration.h \
     qcocoasystemtrayicon.h \
     qcocoaintrospection.h \
     qcocoakeymapper.h \
-    messages.h \
     qiosurfacegraphicsbuffer.h \
     qcocoamimetypes.h
 
