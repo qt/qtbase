@@ -632,17 +632,6 @@ function(qt_generate_global_config_pri_file)
     get_target_property(enabled_features GlobalConfig INTERFACE_QT_ENABLED_PUBLIC_FEATURES)
     get_target_property(disabled_features GlobalConfig INTERFACE_QT_DISABLED_PUBLIC_FEATURES)
 
-    # configure2cmake skips the "static" feature, so emulate it here for qmake support:
-    if(QT_BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
-        list(APPEND enabled_features shared)
-        list(APPEND disabled_features static)
-        set(qt_build_config_type "shared")
-    else()
-        list(APPEND enabled_features static)
-        list(APPEND disabled_features shared)
-        set(qt_build_config_type "static")
-    endif()
-
     string (REPLACE ";" " " enabled_features "${enabled_features}")
     string (REPLACE ";" " " disabled_features "${disabled_features}")
 
