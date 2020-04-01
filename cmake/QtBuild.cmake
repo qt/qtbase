@@ -3104,6 +3104,7 @@ function(qt_add_3rdparty_library target)
             VERSION ${PROJECT_VERSION}
             SOVERSION ${PROJECT_VERSION_MAJOR}
             QT_MODULE_IS_3RDPARTY_LIBRARY TRUE
+            QT_MODULE_SKIP_DEPENDS_INCLUDE TRUE
         )
         qt_handle_multi_config_output_dirs("${target}")
 
