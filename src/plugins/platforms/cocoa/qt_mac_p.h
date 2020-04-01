@@ -60,15 +60,14 @@
 
 #include <CoreServices/CoreServices.h>
 
-#include "QtCore/qglobal.h"
-#include "QtCore/qvariant.h"
-#include "QtCore/qmimedata.h"
-#include "QtCore/qpointer.h"
-#include "QtCore/qloggingcategory.h"
-#include "private/qcore_mac_p.h"
+#include <QtCore/qglobal.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/qmimedata.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/private/qcore_mac_p.h>
 
-
-#include "QtGui/qpainter.h"
+#include <QtGui/qpainter.h>
 
 QT_BEGIN_NAMESPACE
 class QWidget;
