@@ -643,13 +643,6 @@ function(qt_generate_global_config_pri_file)
         set(qt_build_config_type "static")
     endif()
 
-    # configure2cmake skips the "rpath" feature, so emulate it here for qmake support:
-    if(CMAKE_SKIP_RPATH)
-        list(APPEND disabled_features rpath)
-    elseif(LINUX OR APPLE)
-        list(APPEND enabled_features rpath)
-    endif()
-
     string (REPLACE ";" " " enabled_features "${enabled_features}")
     string (REPLACE ";" " " disabled_features "${disabled_features}")
 
