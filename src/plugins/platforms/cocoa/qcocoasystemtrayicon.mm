@@ -162,7 +162,7 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
     qreal devicePixelRatio = qApp->devicePixelRatio();
     const int maxPixmapHeight = maxImageHeight * devicePixelRatio;
     QSize selectedSize;
-    Q_FOREACH (const QSize& size, sortByHeight(icon.availableSizes())) {
+    for (const QSize& size : sortByHeight(icon.availableSizes())) {
         // Select a pixmap based on the height. We want the largest pixmap
         // with a height smaller or equal to maxPixmapHeight. The pixmap
         // may rectangular; assume it has a reasonable size. If there is

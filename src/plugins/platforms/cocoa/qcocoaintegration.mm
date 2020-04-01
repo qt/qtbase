@@ -116,7 +116,7 @@ class QFontEngineFT;
 static QCocoaIntegration::Options parseOptions(const QStringList &paramList)
 {
     QCocoaIntegration::Options options;
-    foreach (const QString &param, paramList) {
+    for (const QString &param : paramList) {
 #ifndef QT_NO_FREETYPE
         if (param == QLatin1String("fontengine=freetype"))
             options |= QCocoaIntegration::UseFreeTypeFontEngine;

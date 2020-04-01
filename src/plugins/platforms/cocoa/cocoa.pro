@@ -92,6 +92,8 @@ RESOURCES += qcocoaresources.qrc
 
 LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework CoreVideo -framework Metal -framework IOSurface -lcups
 
+DEFINES += QT_NO_FOREACH
+
 QT += \
     core-private gui-private \
     clipboard_support-private theme_support-private \

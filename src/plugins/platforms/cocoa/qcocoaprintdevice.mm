@@ -117,7 +117,7 @@ QCocoaPrintDevice::~QCocoaPrintDevice()
 {
     if (m_ppd)
         ppdClose(m_ppd);
-    foreach (PMPaper paper, m_macPapers)
+    for (PMPaper paper : m_macPapers)
         PMRelease(paper);
     // Releasing the session appears to also release the printer
     if (m_session)
@@ -171,7 +171,7 @@ QPageSize QCocoaPrintDevice::createPageSize(const PMPaper &paper) const
 void QCocoaPrintDevice::loadPageSizes() const
 {
     m_pageSizes.clear();
-    foreach (PMPaper paper, m_macPapers)
+    for (PMPaper paper : m_macPapers)
         PMRelease(paper);
     m_macPapers.clear();
     m_printableMargins.clear();

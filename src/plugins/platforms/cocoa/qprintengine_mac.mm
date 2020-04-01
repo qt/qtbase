@@ -485,7 +485,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         int bestResolution = 0;
         int dpi = value.toInt();
         int bestDistance = INT_MAX;
-        foreach (int resolution, d->m_printDevice->supportedResolutions()) {
+        for (int resolution : d->m_printDevice->supportedResolutions()) {
             if (dpi == resolution) {
                 bestResolution = resolution;
                 break;
@@ -758,7 +758,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     }
     case PPK_SupportedResolutions: {
         QList<QVariant> list;
-        foreach (int resolution, d->m_printDevice->supportedResolutions())
+        for (int resolution : d->m_printDevice->supportedResolutions())
             list << resolution;
         ret = list;
         break;

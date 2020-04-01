@@ -547,7 +547,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         return nsActions;
 
     const QStringList &supportedActionNames = QAccessibleBridgeUtils::effectiveActionNames(iface);
-    foreach (const QString &qtAction, supportedActionNames) {
+    for (const QString &qtAction : supportedActionNames) {
         NSString *nsAction = QCocoaAccessible::getTranslatedAction(qtAction);
         if (nsAction)
             [nsActions addObject : nsAction];

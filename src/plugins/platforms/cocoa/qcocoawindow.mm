@@ -1833,7 +1833,7 @@ qreal QCocoaWindow::devicePixelRatio() const
 QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)
 {
     QWindow *targetWindow = window();
-    foreach (QObject *child, targetWindow->children())
+    for (QObject *child : targetWindow->children())
         if (QWindow *childWindow = qobject_cast<QWindow *>(child))
             if (QPlatformWindow *handle = childWindow->handle())
                 if (handle->isExposed() && childWindow->geometry().contains(windowPoint))
