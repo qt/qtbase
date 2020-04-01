@@ -48,7 +48,6 @@
 
 #include <qguiapplication.h>
 #include <private/qguiapplication_p.h>
-#include "qt_mac_p.h"
 #include "qcocoahelpers.h"
 #include "qcocoaeventdispatcher.h"
 #include <qbuffer.h>

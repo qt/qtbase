@@ -46,7 +46,6 @@
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 #include "qcocoahelpers.h"
-#include "qt_mac_p.h"
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoamenuloader.h"
 #include <QtGui/private/qcoregraphics_p.h>

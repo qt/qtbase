@@ -3,7 +3,7 @@
     "Name": "Cocoa Platform Plugin",
     "QDocModule": "qtgui",
     "QtUsage": "Code used in the Qt Platform Abstraction (QPA) for macOS.",
-    "Files": "qcocoaapplication.h qcocoaapplication.mm qcocoaapplicationdelegate.h qcocoaapplicationdelegate.mm qcocoaeventdispatcher.h qcocoaeventdispatcher.mm qcocoaintrospection.h qcocoaintrospection.mm qcocoasystemtrayicon.mm qmacdefines_mac.h",
+    "Files": "qcocoaapplication.h qcocoaapplication.mm qcocoaapplicationdelegate.h qcocoaapplicationdelegate.mm qcocoaeventdispatcher.h qcocoaeventdispatcher.mm qcocoaintrospection.h qcocoaintrospection.mm qcocoasystemtrayicon.mm",
 
     "Description": "Allows Qt to integrate into Apple's Cocoa API.",
     "LicenseId": "BSD-3-Clause",

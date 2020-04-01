@@ -57,9 +57,9 @@
 #include <QtGui/private/qfont_p.h>
 #include <QtCore/qhash.h>
 
-#include "qt_mac_p.h"
-
 typedef struct CGColorSpace *CGColorSpaceRef;
+typedef struct CGContext *CGContextRef;
+
 QT_BEGIN_NAMESPACE
 
 class QCoreGraphicsPaintEnginePrivate;

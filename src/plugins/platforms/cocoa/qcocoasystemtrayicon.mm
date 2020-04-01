@@ -84,7 +84,6 @@
 
 #include "qcocoamenu.h"
 
-#include "qt_mac_p.h"
 #include "qcocoahelpers.h"
 #include "qcocoaintegration.h"
 #include "qcocoascreen.h"

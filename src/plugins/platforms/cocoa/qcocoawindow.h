@@ -51,7 +51,6 @@
 #endif
 #include "qnsview.h"
 #include "qnswindow.h"
-#include "qt_mac_p.h"
 
 #if QT_CONFIG(vulkan)
 #include <MoltenVK/mvk_vulkan.h>

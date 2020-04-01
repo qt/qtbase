@@ -37,6 +37,9 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+#include <ApplicationServices/ApplicationServices.h>
+
 #include "qprintengine_mac_p.h"
 #include "qcocoaprintersupport.h"
 #include <quuid.h>
@@ -44,6 +47,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 
+#include <QtCore/private/qcore_mac_p.h>
 
 #ifndef QT_NO_PRINTER
 

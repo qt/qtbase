@@ -37,12 +37,16 @@
 **
 ****************************************************************************/
 
+#include <ApplicationServices/ApplicationServices.h>
+
 #include "qcocoaprintdevice.h"
 
 #if QT_CONFIG(mimetype)
 #include <QtCore/qmimedatabase.h>
 #endif
 #include <qdebug.h>
+
+#include <QtCore/private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 

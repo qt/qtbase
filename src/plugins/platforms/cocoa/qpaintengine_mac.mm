@@ -37,6 +37,9 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+#include <CoreGraphics/CoreGraphics.h>
+
 #include "qpaintengine_mac_p.h"
 #if defined(QT_PRINTSUPPORT_LIB)
 #include "qprintengine_mac_p.h"

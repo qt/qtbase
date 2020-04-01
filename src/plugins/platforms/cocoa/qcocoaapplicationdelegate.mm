@@ -87,7 +87,6 @@
 #include <qurl.h>
 #include <qdebug.h>
 #include <qguiapplication.h>
-#include "qt_mac_p.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <qwindowdefs.h>
 
