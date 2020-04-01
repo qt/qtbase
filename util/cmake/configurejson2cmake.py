@@ -897,7 +897,6 @@ def get_feature_mapping():
         },
         "silent": None,
         "sql-sqlite": {"condition": "QT_FEATURE_datestring"},
-        "static": None,
         "static_runtime": None,
         "stl": None,  # Do we really need to test for this in 2018?!
         "strip": None,

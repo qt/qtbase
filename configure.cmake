@@ -325,6 +325,11 @@ qt_feature("shared" PUBLIC
 qt_feature_definition("shared" "QT_STATIC" NEGATE PREREQUISITE "!defined(QT_SHARED) && !defined(QT_STATIC)")
 qt_feature_config("shared" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature_config("shared" QMAKE_PUBLIC_CONFIG)
+qt_feature("static" PUBLIC
+    CONDITION NOT QT_FEATURE_shared
+)
+qt_feature_config("static" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature_config("static" QMAKE_PUBLIC_CONFIG)
 qt_feature("use_bfd_linker"
     LABEL "bfd"
     AUTODETECT false
