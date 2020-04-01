@@ -3,6 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Copyright (C) 2019 Mail.ru Group.
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -195,6 +196,12 @@ public:
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
 
     Q_REQUIRED_RESULT QLatin1String trimmed() const noexcept { return QtPrivate::trimmed(*this); }
+
+    template <typename Needle, typename...Flags>
+    Q_REQUIRED_RESULT inline constexpr auto tokenize(Needle &&needle, Flags...flags) const
+        noexcept(noexcept(qTokenize(std::declval<const QLatin1String &>(), std::forward<Needle>(needle), flags...)))
+            -> decltype(qTokenize(*this, std::forward<Needle>(needle), flags...))
+    { return qTokenize(*this, std::forward<Needle>(needle), flags...); }
 
     inline bool operator==(const QString &s) const noexcept;
     inline bool operator!=(const QString &s) const noexcept;
@@ -633,6 +640,24 @@ public:
     QVector<QStringRef> splitRef(const QRegularExpression &sep,
                                  Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
 #endif
+
+    template <typename Needle, typename...Flags>
+    Q_REQUIRED_RESULT inline auto tokenize(Needle &&needle, Flags...flags) const &
+        noexcept(noexcept(qTokenize(std::declval<const QString &>(), std::forward<Needle>(needle), flags...)))
+            -> decltype(qTokenize(*this, std::forward<Needle>(needle), flags...))
+    { return qTokenize(qToStringViewIgnoringNull(*this), std::forward<Needle>(needle), flags...); }
+
+    template <typename Needle, typename...Flags>
+    Q_REQUIRED_RESULT inline auto tokenize(Needle &&needle, Flags...flags) const &&
+        noexcept(noexcept(qTokenize(std::declval<const QString>(), std::forward<Needle>(needle), flags...)))
+            -> decltype(qTokenize(std::move(*this), std::forward<Needle>(needle), flags...))
+    { return qTokenize(std::move(*this), std::forward<Needle>(needle), flags...); }
+
+    template <typename Needle, typename...Flags>
+    Q_REQUIRED_RESULT inline auto tokenize(Needle &&needle, Flags...flags) &&
+        noexcept(noexcept(qTokenize(std::declval<QString>(), std::forward<Needle>(needle), flags...)))
+            -> decltype(qTokenize(std::move(*this), std::forward<Needle>(needle), flags...))
+    { return qTokenize(std::move(*this), std::forward<Needle>(needle), flags...); }
 
 
     enum NormalizationForm {

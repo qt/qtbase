@@ -1429,6 +1429,14 @@ void tst_QStringApiSymmetry::tok_data(bool rhsHasVariableLength)
     split_data(rhsHasVariableLength);
 }
 
+template <typename T> struct has_tokenize_method : std::false_type {};
+template <> struct has_tokenize_method<QString> : std::true_type {};
+template <> struct has_tokenize_method<QStringView> : std::true_type {};
+template <> struct has_tokenize_method<QLatin1String> : std::true_type {};
+
+template <typename T>
+constexpr inline bool has_tokenize_method_v = has_tokenize_method<std::decay_t<T>>::value;
+
 template <typename Haystack, typename Needle>
 void tst_QStringApiSymmetry::tok_impl() const
 {
@@ -1475,6 +1483,21 @@ void tst_QStringApiSymmetry::tok_impl() const
         QCOMPARE(toQStringList(tok), resultCS);
     }
 #endif // __cpp_deduction_guides
+
+    if constexpr (has_tokenize_method_v<Haystack>) {
+        QCOMPARE(toQStringList(haystack.tokenize(needle)), resultCS);
+        QCOMPARE(toQStringList(haystack.tokenize(needle, Qt::KeepEmptyParts, Qt::CaseSensitive)), resultCS);
+        QCOMPARE(toQStringList(haystack.tokenize(needle, Qt::CaseInsensitive, Qt::KeepEmptyParts)), resultCIS);
+        QCOMPARE(toQStringList(haystack.tokenize(needle, Qt::SkipEmptyParts, Qt::CaseSensitive)), skippedResultCS);
+        QCOMPARE(toQStringList(haystack.tokenize(needle, Qt::CaseInsensitive, Qt::SkipEmptyParts)), skippedResultCIS);
+
+        {
+            const auto tok = deepCopied(haystack).tokenize(deepCopied(needle));
+            // here, the temporaries returned from deepCopied() have already been destroyed,
+            // yet `tok` should have kept a copy alive as needed:
+            QCOMPARE(toQStringList(tok), resultCS);
+        }
+    }
 }
 
 void tst_QStringApiSymmetry::mid_data()

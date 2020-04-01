@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QStringView>
+#include <QStringTokenizer>
 #include <QString>
 #include <QChar>
 #include <QStringRef>
@@ -39,6 +40,8 @@
 #include <string_view>
 #include <array>
 #include <vector>
+#include <algorithm>
+#include <memory>
 
 // for negative testing (can't convert from)
 #include <deque>
@@ -263,6 +266,9 @@ private Q_SLOTS:
     void comparison();
 
     void overloadResolution();
+
+    void tokenize_data() const;
+    void tokenize() const;
 
 private:
     template <typename String>
@@ -500,6 +506,165 @@ void tst_QStringView::fromQStringRef() const
     QVERIFY(!QStringView(empty).isNull());
 
     conversion_tests(QString("Hello World!").midRef(6));
+}
+
+void tst_QStringView::tokenize_data() const
+{
+    // copied from tst_QString
+    QTest::addColumn<QString>("str");
+    QTest::addColumn<QString>("sep");
+    QTest::addColumn<QStringList>("result");
+
+    QTest::newRow("1") << "a,b,c" << "," << (QStringList() << "a" << "b" << "c");
+    QTest::newRow("2") << QString("-rw-r--r--  1 0  0  519240 Jul  9  2002 bigfile")
+                       << " "
+                       << (QStringList() << "-rw-r--r--" << "" << "1" << "0" << "" << "0" << ""
+                                         << "519240" << "Jul" << "" << "9" << "" << "2002"
+                                         << "bigfile");
+    QTest::newRow("one-empty") << "" << " " << (QStringList() << "");
+    QTest::newRow("two-empty") << " " << " " << (QStringList() << "" << "");
+    QTest::newRow("three-empty") << "  " << " " << (QStringList() << "" << "" << "");
+
+    QTest::newRow("all-empty") << "" << "" << (QStringList() << "" << "");
+    QTest::newRow("sep-empty") << "abc" << "" << (QStringList() << "" << "a" << "b" << "c" << "");
+}
+
+void tst_QStringView::tokenize() const
+{
+    QFETCH(const QString, str);
+    QFETCH(const QString, sep);
+    QFETCH(const QStringList, result);
+
+    // lvalue QString
+#ifdef __cpp_deduction_guides
+    {
+        auto rit = result.cbegin();
+        for (auto sv : QStringTokenizer{str, sep})
+            QCOMPARE(sv, *rit++);
+    }
+#endif
+    {
+        auto rit = result.cbegin();
+        for (auto sv : QStringView{str}.tokenize(sep))
+            QCOMPARE(sv, *rit++);
+    }
+
+    // rvalue QString
+#ifdef __cpp_deduction_guides
+    {
+        auto rit = result.cbegin();
+        for (auto sv : QStringTokenizer{str, QString{sep}})
+            QCOMPARE(sv, *rit++);
+    }
+#endif
+    {
+        auto rit = result.cbegin();
+        for (auto sv : QStringView{str}.tokenize(QString{sep}))
+            QCOMPARE(sv, *rit++);
+    }
+
+    // (rvalue) QStringRef
+#ifdef __cpp_deduction_guides
+    {
+        auto rit = result.cbegin();
+        for (auto sv : QStringTokenizer{str, sep.midRef(0)})
+            QCOMPARE(sv, *rit++);
+    }
+#endif
+    {
+        auto rit = result.cbegin();
+        for (auto sv : QStringView{str}.tokenize(sep.midRef(0)))
+            QCOMPARE(sv, *rit++);
+    }
+
+    // (rvalue) QChar
+#ifdef __cpp_deduction_guides
+    if (sep.size() == 1) {
+        auto rit = result.cbegin();
+        for (auto sv : QStringTokenizer{str, sep.front()})
+            QCOMPARE(sv, *rit++);
+    }
+#endif
+    if (sep.size() == 1) {
+        auto rit = result.cbegin();
+        for (auto sv : QStringView{str}.tokenize(sep.front()))
+            QCOMPARE(sv, *rit++);
+    }
+
+    // (rvalue) char16_t
+#ifdef __cpp_deduction_guides
+    if (sep.size() == 1) {
+        auto rit = result.cbegin();
+        for (auto sv : QStringTokenizer{str, *qToStringViewIgnoringNull(sep).utf16()})
+            QCOMPARE(sv, *rit++);
+    }
+#endif
+    if (sep.size() == 1) {
+        auto rit = result.cbegin();
+        for (auto sv : QStringView{str}.tokenize(*qToStringViewIgnoringNull(sep).utf16()))
+            QCOMPARE(sv, *rit++);
+    }
+
+    // char16_t literal
+    const auto make_literal = [](const QString &sep) {
+        auto literal = std::make_unique<char16_t[]>(sep.size() + 1);
+        const auto to_char16_t = [](QChar c) { return char16_t{c.unicode()}; };
+        std::transform(sep.cbegin(), sep.cend(), literal.get(), to_char16_t);
+        return literal;
+    };
+    const std::unique_ptr<const char16_t[]> literal = make_literal(sep);
+#ifdef __cpp_deduction_guides
+    {
+        auto rit = result.cbegin();
+        for (auto sv : QStringTokenizer{str, literal.get()})
+            QCOMPARE(sv, *rit++);
+    }
+#endif
+    {
+        auto rit = result.cbegin();
+        for (auto sv : QStringView{str}.tokenize(literal.get()))
+            QCOMPARE(sv, *rit++);
+    }
+
+#ifdef __cpp_deduction_guides
+#ifdef __cpp_lib_ranges
+    // lvalue QString
+    {
+        QStringList actual;
+        const QStringTokenizer tok{str, sep};
+        std::ranges::transform(tok, std::back_inserter(actual),
+                               [](auto sv) { return sv.toString(); });
+        QCOMPARE(result, actual);
+    }
+
+    // rvalue QString
+    {
+        QStringList actual;
+        const QStringTokenizer tok{str, QString{sep}};
+        std::ranges::transform(tok, std::back_inserter(actual),
+                               [](auto sv) { return sv.toString(); });
+        QCOMPARE(result, actual);
+    }
+
+    // (rvalue) QStringRef
+    {
+        QStringList actual;
+        const QStringTokenizer tok{str, sep.midRef(0)};
+        std::ranges::transform(tok, std::back_inserter(actual),
+                               [](auto sv) { return sv.toString(); });
+        QCOMPARE(result, actual);
+    }
+
+    // (rvalue) QChar
+    if (sep.size() == 1) {
+        QStringList actual;
+        const QStringTokenizer tok{str, sep.front()};
+        std::ranges::transform(tok, std::back_inserter(actual),
+                               [](auto sv) { return sv.toString(); });
+        QCOMPARE(result, actual);
+    }
+#endif // __cpp_lib_ranges
+#endif // __cpp_deduction_guides
 }
 
 template <typename Char>

@@ -1172,4 +1172,46 @@ QT_BEGIN_NAMESPACE
     \since 6.0
 */
 
+
+/*!
+    \fn QStringView::tokenize(Needle &&sep, Flags...flags) const
+    \fn QLatin1String::tokenize(Needle &&sep, Flags...flags) const
+    \fn QString::tokenize(Needle &&sep, Flags...flags) const &
+    \fn QString::tokenize(Needle &&sep, Flags...flags) const &&
+    \fn QString::tokenize(Needle &&sep, Flags...flags) &&
+
+    Splits the string into substring views wherever \a sep occurs, and
+    returns a lazy sequence of those strings.
+
+    Equivalent to
+
+    \code
+    return QStringTokenizer{std::forward<Needle>(sep), flags...};
+    \endcode
+
+    except it works without C++17 Class Template Argument Deduction (CTAD)
+    enabled in the compiler.
+
+    See QStringTokenizer for how \a sep and \a flags interact to form
+    the result.
+
+    \note While this function returns QStringTokenizer, you should never,
+    ever, name its template arguments explicitly. If you can use C++17 Class
+    Template Argument Deduction (CTAD), you may write
+    \code
+    QStringTokenizer result = sv.tokenize(sep);
+    \endcode
+    (without template arguments). If you can't use C++17 CTAD, you must store
+    the return value only in \c{auto} variables:
+    \code
+    auto result = sv.tokenize(sep);
+    \endcode
+    This is because the template arguments of QStringTokenizer have a very
+    subtle dependency on the specific tokenize() overload from which they are
+    returned, and they don't usually correspond to the type used for the separator.
+
+    \since 6.0
+    \sa QStringTokenizer, qTokenize()
+*/
+
 QT_END_NAMESPACE

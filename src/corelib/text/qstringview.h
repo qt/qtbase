@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Copyright (C) 2019 Mail.ru Group.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -274,6 +274,12 @@ public:
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
 
     Q_REQUIRED_RESULT QStringView trimmed() const noexcept { return QtPrivate::trimmed(*this); }
+
+    template <typename Needle, typename...Flags>
+    Q_REQUIRED_RESULT constexpr inline auto tokenize(Needle &&needle, Flags...flags) const
+        noexcept(noexcept(qTokenize(std::declval<const QStringView&>(), std::forward<Needle>(needle), flags...)))
+            -> decltype(qTokenize(*this, std::forward<Needle>(needle), flags...))
+    { return qTokenize(*this, std::forward<Needle>(needle), flags...); }
 
     Q_REQUIRED_RESULT int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::compareStrings(*this, other, cs); }
