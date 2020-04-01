@@ -21,7 +21,7 @@
             }
         ],
         "inputFile": "backslash-newlines.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -38,7 +38,7 @@
             }
         ],
         "inputFile": "c-comments.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -69,7 +69,7 @@
             }
         ],
         "inputFile": "cstyle-enums.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -235,7 +235,7 @@
             }
         ],
         "inputFile": "cxx11-enums.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -538,7 +538,7 @@
             }
         ],
         "inputFile": "cxx11-explicit-override-control.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -643,7 +643,7 @@
             }
         ],
         "inputFile": "cxx11-final-classes.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -679,7 +679,7 @@
             }
         ],
         "inputFile": "cxx17-namespaces.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -708,7 +708,7 @@
             }
         ],
         "inputFile": "dir-in-include-path.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -725,7 +725,7 @@
             }
         ],
         "inputFile": "enum_with_include.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -756,7 +756,7 @@
             }
         ],
         "inputFile": "escapes-in-string-literals.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -957,7 +957,7 @@
             }
         ],
         "inputFile": "forward-declared-param.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -986,7 +986,7 @@
             }
         ],
         "inputFile": "function-with-attributes.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1018,7 +1018,7 @@
             }
         ],
         "inputFile": "gadgetwithnoenums.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1051,7 +1051,7 @@
             }
         ],
         "inputFile": "grand-parent-gadget-class.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1117,7 +1117,7 @@
             }
         ],
         "inputFile": "moc_include.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1180,7 +1180,7 @@
             }
         ],
         "inputFile": "namespace.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1266,7 +1266,7 @@
             }
         ],
         "inputFile": "namespaced-flags.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1297,7 +1297,7 @@
             }
         ],
         "inputFile": "no-keywords.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1314,7 +1314,7 @@
             }
         ],
         "inputFile": "non-gadget-parent-class.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1373,7 +1373,7 @@
             }
         ],
         "inputFile": "oldstyle-casts.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1573,7 +1573,7 @@
             }
         ],
         "inputFile": "parse-defines.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1590,7 +1590,7 @@
             }
         ],
         "inputFile": "plugin_metadata.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
          "classes": [
@@ -1607,7 +1607,7 @@
             }
         ],
         "inputFile": "pointery_to_incomplete.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1676,7 +1676,7 @@
             }
         ],
         "inputFile": "pure-virtual-signals.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1723,7 +1723,7 @@
             }
         ],
         "inputFile": "qinvokable.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1754,7 +1754,7 @@
             }
         ],
         "inputFile": "qprivateslots.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1775,7 +1775,7 @@
             }
         ],
         "inputFile": "qtbug-35657-gadget.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1807,7 +1807,7 @@
             }
         ],
         "inputFile": "related-metaobjects-in-gadget.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -1860,7 +1860,7 @@
             }
         ],
         "inputFile": "related-metaobjects-in-namespaces.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2300,7 +2300,7 @@
             }
         ],
         "inputFile": "related-metaobjects-name-conflict.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2327,7 +2327,7 @@
             }
         ],
         "inputFile": "single-quote-digit-separator-n3781.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2408,7 +2408,7 @@
             }
         ],
         "inputFile": "single_function_keyword.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2474,7 +2474,7 @@
             }
         ],
         "inputFile": "slots-with-void-template.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2491,7 +2491,7 @@
             }
         ],
         "inputFile": "task192552.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2519,7 +2519,7 @@
             }
         ],
         "inputFile": "task234909.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2669,7 +2669,7 @@
             }
         ],
         "inputFile": "task240368.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2686,7 +2686,7 @@
             }
         ],
         "inputFile": "task87883.h",
-        "outputRevision": 67
+        "outputRevision": 68
     },
     {
         "classes": [
@@ -2759,6 +2759,6 @@
             }
         ],
         "inputFile": "trigraphs.h",
-        "outputRevision": 67
+        "outputRevision": 68
     }
 ]

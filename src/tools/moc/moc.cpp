@@ -1415,10 +1415,6 @@ void Moc::parseProperty(ClassDef *def)
     createPropertyDef(propDef);
     next(RPAREN);
 
-    if(!propDef.notify.isEmpty())
-        def->notifyableProperties++;
-    if (propDef.revision > 0)
-        ++def->revisionedProperties;
     def->propertyList += propDef;
 }
 
@@ -1512,11 +1508,6 @@ void Moc::parsePrivateProperty(ClassDef *def)
 
     createPropertyDef(propDef);
 
-    if(!propDef.notify.isEmpty())
-        def->notifyableProperties++;
-    if (propDef.revision > 0)
-        ++def->revisionedProperties;
-
     def->propertyList += propDef;
 }
 
@@ -1549,9 +1540,6 @@ void Moc::parsePrivateQProperty(ClassDef *def)
         parsePropertyAttributes(propDef);
 
     next(RPAREN);
-
-    if (!propDef.notify.isEmpty())
-        def->notifyableProperties++;
 
     def->propertyList += propDef;
 }

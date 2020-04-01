@@ -72,7 +72,6 @@ enum PropertyFlags  {
     Resettable = 0x00000004,
     EnumOrFlag = 0x00000008,
     StdCppSet = 0x00000100,
-//     Override = 0x00000200,
     Constant = 0x00000400,
     Final = 0x00000800,
     Designable = 0x00001000,
@@ -80,8 +79,6 @@ enum PropertyFlags  {
     Stored = 0x00010000,
     Editable = 0x00040000,
     User = 0x00100000,
-    Notify = 0x00400000,
-    Revisioned = 0x00800000,
     Required = 0x01000000,
     IsQProperty = 0x02000000
 };
@@ -176,6 +173,7 @@ struct QMetaObjectPrivate
     enum { OutputRevision = 9 }; // Used by moc, qmetaobjectbuilder and qdbus
     enum { IntsPerMethod = QMetaMethod::Data::Size};
     enum { IntsPerEnum = QMetaEnum::Data::Size };
+    enum { IntsPerProperty = QMetaProperty::Data::Size };
 
     int revision;
     int className;

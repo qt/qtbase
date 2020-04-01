@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef Q_MOC_OUTPUT_REVISION
-#define Q_MOC_OUTPUT_REVISION 67
+#define Q_MOC_OUTPUT_REVISION 68
 #endif
 
 // The following macros can be defined by tools that understand Qt

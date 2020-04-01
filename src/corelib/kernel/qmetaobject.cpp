@@ -978,8 +978,9 @@ int QMetaObject::indexOfEnumerator(const char *name) const
     const QMetaObject *m = this;
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
-        for (int i = d->enumeratorCount - 1; i >= 0; --i) {
-            const char *prop = rawStringData(m, m->d.data[d->enumeratorData + QMetaObjectPrivate::IntsPerEnum * i]);
+        for (int i = 0; i < d->enumeratorCount; ++i) {
+            const QMetaEnum e(m, i);
+            const char *prop = rawStringData(m, e.data.name());
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->enumeratorOffset();
                 return i;
@@ -991,8 +992,9 @@ int QMetaObject::indexOfEnumerator(const char *name) const
     m = this;
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
-        for (int i = d->enumeratorCount - 1; i >= 0; --i) {
-            const char *prop = rawStringData(m, m->d.data[d->enumeratorData + QMetaObjectPrivate::IntsPerEnum  * i + 1]);
+        for (int i = 0; i < d->enumeratorCount; ++i) {
+            const QMetaEnum e(m, i);
+            const char *prop = rawStringData(m, e.data.alias());
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->enumeratorOffset();
                 return i;
@@ -1014,8 +1016,9 @@ int QMetaObject::indexOfProperty(const char *name) const
     const QMetaObject *m = this;
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
-        for (int i = d->propertyCount-1; i >= 0; --i) {
-            const char *prop = rawStringData(m, m->d.data[d->propertyData + 3*i]);
+        for (int i = 0; i < d->propertyCount; ++i) {
+            const QMetaProperty p(m, i);
+            const char *prop = rawStringData(m, p.data.name());
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->propertyOffset();
                 return i;
@@ -1024,7 +1027,6 @@ int QMetaObject::indexOfProperty(const char *name) const
         m = m->d.superdata;
     }
 
-    Q_ASSERT(priv(this->d.data)->revision >= 3);
     if (priv(this->d.data)->flags & DynamicMetaObject) {
         QAbstractDynamicMetaObject *me =
             const_cast<QAbstractDynamicMetaObject *>(static_cast<const QAbstractDynamicMetaObject *>(this));
@@ -1118,47 +1120,9 @@ QMetaProperty QMetaObject::property(int index) const
     if (i < 0 && d.superdata)
         return d.superdata->property(index);
 
-    QMetaProperty result;
-    if (i >= 0 && i < priv(d.data)->propertyCount) {
-        int handle = priv(d.data)->propertyData + 3*i;
-        int flags = d.data[handle + 2];
-        result.mobj = this;
-        result.handle = handle;
-        result.idx = i;
-
-        if (flags & EnumOrFlag) {
-            const char *type = rawTypeNameFromTypeInfo(this, d.data[handle + 1]);
-            result.menum = enumerator(indexOfEnumerator(type));
-            if (!result.menum.isValid()) {
-                const char *enum_name = type;
-                const char *scope_name = objectClassName(this);
-                char *scope_buffer = nullptr;
-
-                const char *colon = strrchr(enum_name, ':');
-                // ':' will always appear in pairs
-                Q_ASSERT(colon <= enum_name || *(colon-1) == ':');
-                if (colon > enum_name) {
-                    int len = colon-enum_name-1;
-                    scope_buffer = (char *)malloc(len+1);
-                    memcpy(scope_buffer, enum_name, len);
-                    scope_buffer[len] = '\0';
-                    scope_name = scope_buffer;
-                    enum_name = colon+1;
-                }
-
-                const QMetaObject *scope = nullptr;
-                if (qstrcmp(scope_name, "Qt") == 0)
-                    scope = &Qt::staticMetaObject;
-                else
-                    scope = QMetaObject_findMetaObject(this, scope_name);
-                if (scope)
-                    result.menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
-                if (scope_buffer)
-                    free(scope_buffer);
-            }
-        }
-    }
-    return result;
+    if (i >= 0 && i < priv(d.data)->propertyCount)
+        return QMetaProperty(this, i);
+    return QMetaProperty();
 }
 
 /*!
@@ -2921,13 +2885,9 @@ QMetaEnum::QMetaEnum(const QMetaObject *mobj, int index)
 */
 
 /*!
+    \fn QMetaProperty::QMetaProperty()
     \internal
 */
-QMetaProperty::QMetaProperty()
-    : mobj(nullptr), handle(0), idx(0)
-{
-}
-
 
 /*!
     Returns this property's name.
@@ -2938,8 +2898,7 @@ const char *QMetaProperty::name() const
 {
     if (!mobj)
         return nullptr;
-    int handle = priv(mobj->d.data)->propertyData + 3*idx;
-    return rawStringData(mobj, mobj->d.data[handle]);
+    return rawStringData(mobj, data.name());
 }
 
 /*!
@@ -2951,8 +2910,7 @@ const char *QMetaProperty::typeName() const
 {
     if (!mobj)
         return nullptr;
-    int handle = priv(mobj->d.data)->propertyData + 3*idx;
-    return rawTypeNameFromTypeInfo(mobj, mobj->d.data[handle + 1]);
+    return rawTypeNameFromTypeInfo(mobj, data.type());
 }
 
 /*!
@@ -3049,9 +3007,7 @@ bool QMetaProperty::isEnumType() const
 {
     if (!mobj)
         return false;
-    int handle = priv(mobj->d.data)->propertyData + 3*idx;
-    int flags = mobj->d.data[handle + 2];
-    return (flags & EnumOrFlag) && menum.name();
+    return (data.flags() & EnumOrFlag) && menum.name();
 }
 
 /*!
@@ -3067,9 +3023,7 @@ bool QMetaProperty::hasStdCppSet() const
 {
     if (!mobj)
         return false;
-    int handle = priv(mobj->d.data)->propertyData + 3*idx;
-    int flags = mobj->d.data[handle + 2];
-    return (flags & StdCppSet);
+    return (data.flags() & StdCppSet);
 }
 
 /*!
@@ -3084,6 +3038,46 @@ int QMetaProperty::registerPropertyType() const
     void *argv[] = { &registerResult };
     mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, idx, argv);
     return registerResult == -1 ? QMetaType::UnknownType : registerResult;
+}
+
+QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
+    : mobj(mobj),
+      data({ mobj->d.data + priv(mobj->d.data)->propertyData + index * Data::Size }),
+      idx(index)
+{
+    Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->propertyCount);
+
+    if (data.flags() & EnumOrFlag) {
+        const char *type = rawTypeNameFromTypeInfo(mobj, data.type());
+        menum = mobj->enumerator(mobj->indexOfEnumerator(type));
+        if (!menum.isValid()) {
+            const char *enum_name = type;
+            const char *scope_name = objectClassName(mobj);
+            char *scope_buffer = nullptr;
+
+            const char *colon = strrchr(enum_name, ':');
+            // ':' will always appear in pairs
+            Q_ASSERT(colon <= enum_name || *(colon-1) == ':');
+            if (colon > enum_name) {
+                int len = colon-enum_name-1;
+                scope_buffer = (char *)malloc(len+1);
+                memcpy(scope_buffer, enum_name, len);
+                scope_buffer[len] = '\0';
+                scope_name = scope_buffer;
+                enum_name = colon+1;
+            }
+
+            const QMetaObject *scope = nullptr;
+            if (qstrcmp(scope_name, "Qt") == 0)
+                scope = &Qt::staticMetaObject;
+            else
+                scope = QMetaObject_findMetaObject(mobj, scope_name);
+            if (scope)
+                menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
+            if (scope_buffer)
+                free(scope_buffer);
+        }
+    }
 }
 
 /*!
@@ -3269,8 +3263,7 @@ bool QMetaProperty::isResettable() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    return flags & Resettable;
+    return data.flags() & Resettable;
 }
 
 /*!
@@ -3282,8 +3275,7 @@ bool QMetaProperty::isReadable() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    return flags & Readable;
+    return data.flags() & Readable;
 }
 
 /*!
@@ -3296,8 +3288,7 @@ bool QMetaProperty::hasNotifySignal() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    return flags & Notify;
+    return data.notifyIndex() != uint(-1);
 }
 
 /*!
@@ -3327,27 +3318,23 @@ QMetaMethod QMetaProperty::notifySignal() const
  */
 int QMetaProperty::notifySignalIndex() const
 {
-    if (hasNotifySignal()) {
-        int offset = priv(mobj->d.data)->propertyData +
-                     priv(mobj->d.data)->propertyCount * 3 + idx;
-        int methodIndex = mobj->d.data[offset];
-        if (methodIndex & IsUnresolvedSignal) {
-            methodIndex &= ~IsUnresolvedSignal;
-            const QByteArray signalName = stringData(mobj, methodIndex);
-            const QMetaObject *m = mobj;
-            const int idx = indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
-            if (idx >= 0) {
-                return idx + m->methodOffset();
-            } else {
-                qWarning("QMetaProperty::notifySignal: cannot find the NOTIFY signal %s in class %s for property '%s'",
-                         signalName.constData(), objectClassName(mobj), name());
-                return -1;
-            }
-        }
-        return methodIndex + mobj->methodOffset();
-    } else {
+    if (!mobj || data.notifyIndex() == std::numeric_limits<uint>::max())
         return -1;
+    uint methodIndex = data.notifyIndex();
+    if (methodIndex & IsUnresolvedSignal) {
+        methodIndex &= ~IsUnresolvedSignal;
+        const QByteArray signalName = stringData(mobj, methodIndex);
+        const QMetaObject *m = mobj;
+        const int idx = indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
+        if (idx >= 0) {
+            return idx + m->methodOffset();
+        } else {
+            qWarning("QMetaProperty::notifySignal: cannot find the NOTIFY signal %s in class %s for property '%s'",
+                     signalName.constData(), objectClassName(mobj), name());
+            return -1;
+        }
     }
+    return methodIndex + mobj->methodOffset();
 }
 
 // This method has been around for a while, but the documentation was marked \internal until 5.1
@@ -3361,23 +3348,7 @@ int QMetaProperty::revision() const
 {
     if (!mobj)
         return 0;
-    int flags = mobj->d.data[handle + 2];
-    if (flags & Revisioned) {
-        int offset = priv(mobj->d.data)->propertyData +
-                     priv(mobj->d.data)->propertyCount * 3 + idx;
-        // Revision data is placed after NOTIFY data, if present.
-        // Iterate through properties to discover whether we have NOTIFY signals.
-        for (int i = 0; i < priv(mobj->d.data)->propertyCount; ++i) {
-            int handle = priv(mobj->d.data)->propertyData + 3*i;
-            if (mobj->d.data[handle + 2] & Notify) {
-                offset += priv(mobj->d.data)->propertyCount;
-                break;
-            }
-        }
-        return mobj->d.data[offset];
-    } else {
-        return 0;
-    }
+    return data.revision();
 }
 
 /*!
@@ -3390,8 +3361,7 @@ bool QMetaProperty::isWritable() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    return flags & Writable;
+    return data.flags() & Writable;
 }
 
 
@@ -3409,11 +3379,7 @@ bool QMetaProperty::isDesignable() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    bool b = flags & Designable;
-    return b;
-
-
+    return data.flags() & Designable;
 }
 
 /*!
@@ -3430,9 +3396,7 @@ bool QMetaProperty::isScriptable() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    bool b = flags & Scriptable;
-    return b;
+    return data.flags() & Scriptable;
 }
 
 /*!
@@ -3449,9 +3413,7 @@ bool QMetaProperty::isStored() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    bool b = flags & Stored;
-    return b;
+    return data.flags() & Stored;
 }
 
 /*!
@@ -3471,9 +3433,7 @@ bool QMetaProperty::isUser() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    bool b = flags & User;
-    return b;
+    return data.flags() & User;
 }
 
 /*!
@@ -3487,8 +3447,7 @@ bool QMetaProperty::isConstant() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    return flags & Constant;
+    return data.flags() & Constant;
 }
 
 /*!
@@ -3502,8 +3461,7 @@ bool QMetaProperty::isFinal() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    return flags & Final;
+    return data.flags() & Final;
 }
 
 /*!
@@ -3517,8 +3475,7 @@ bool QMetaProperty::isRequired() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    return flags & Required;
+    return data.flags() & Required;
 }
 
 /*!
@@ -3532,8 +3489,7 @@ bool QMetaProperty::isQProperty() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    return flags & IsQProperty;
+    return data.flags() & IsQProperty;
 }
 
 /*!
@@ -3553,9 +3509,7 @@ bool QMetaProperty::isEditable() const
 {
     if (!mobj)
         return false;
-    int flags = mobj->d.data[handle + 2];
-    bool b = flags & Editable;
-    return b;
+    return data.flags() & Editable;
 }
 #endif
 

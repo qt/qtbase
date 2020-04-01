@@ -156,13 +156,10 @@ public:
              int _revision = 0)
         : name(_name),
           type(QMetaObject::normalizedType(_type.constData())),
-          flags(Readable | Writable | Scriptable), notifySignal(-1),
+          flags(Readable | Writable | Scriptable), notifySignal(notifierIdx),
           revision(_revision)
     {
-        if (notifierIdx >= 0) {
-            flags |= Notify;
-            notifySignal = notifierIdx;
-        }
+
     }
 
     QByteArray name;
@@ -213,7 +210,6 @@ public:
         staticMetacallFunction = nullptr;
     }
 
-    bool hasRevisionedProperties() const;
     bool hasRevisionedMethods() const;
 
     QByteArray className;
@@ -228,15 +224,6 @@ public:
     QList<const QMetaObject *> relatedMetaObjects;
     int flags;
 };
-
-bool QMetaObjectBuilderPrivate::hasRevisionedProperties() const
-{
-    for (const auto &property : properties) {
-        if (property.revision)
-            return true;
-    }
-    return false;
-}
 
 bool QMetaObjectBuilderPrivate::hasRevisionedMethods() const
 {
@@ -605,7 +592,6 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
         if (index == -1)
             index = addMethod(method).index();
         d->properties[property._index].notifySignal = index;
-        d->properties[property._index].setFlag(Notify, true);
     }
     return property;
 }
@@ -879,7 +865,6 @@ void QMetaObjectBuilder::removeMethod(int index)
             // Adjust the indices of property notify signal references.
             if (property.notifySignal == index) {
                 property.notifySignal = -1;
-                property.setFlag(Notify, false);
             } else if (property.notifySignal > index)
                 property.notifySignal--;
         }
@@ -1180,8 +1165,6 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     int enumIndex;
     int index;
     bool hasRevisionedMethods = d->hasRevisionedMethods();
-    bool hasRevisionedProperties = d->hasRevisionedProperties();
-    bool hasNotifySignals = false;
 
     if (relocatable &&
         (d->relatedMetaObjects.size() > 0 || d->staticMetacallFunction))
@@ -1204,12 +1187,6 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         = reinterpret_cast<QMetaObjectPrivate *>(buf + size);
     int pmetaSize = size;
     dataIndex = MetaObjectPrivateFieldCount;
-    for (const auto &property : d->properties) {
-        if (property.notifySignal != -1) {
-            hasNotifySignals = true;
-            break;
-        }
-    }
     int methodParametersDataSize =
             ((aggregateParameterCount(d->methods)
              + aggregateParameterCount(d->constructors)) * 2) // types and parameter names
@@ -1236,11 +1213,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
         pmeta->propertyCount = int(d->properties.size());
         pmeta->propertyData = dataIndex;
-        dataIndex += 3 * int(d->properties.size());
-        if (hasNotifySignals)
-            dataIndex += int(d->properties.size());
-        if (hasRevisionedProperties)
-            dataIndex += int(d->properties.size());
+        dataIndex += QMetaObjectPrivate::IntsPerProperty * int(d->properties.size());
 
         pmeta->enumeratorCount = int(d->enumerators.size());
         pmeta->enumeratorData = dataIndex;
@@ -1256,11 +1229,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             dataIndex += int(d->methods.size());
         paramsIndex = dataIndex;
         dataIndex += methodParametersDataSize;
-        dataIndex += 3 * int(d->properties.size());
-        if (hasNotifySignals)
-            dataIndex += int(d->properties.size());
-        if (hasRevisionedProperties)
-            dataIndex += int(d->properties.size());
+        dataIndex += QMetaObjectPrivate::IntsPerProperty * int(d->properties.size());
         dataIndex += QMetaObjectPrivate::IntsPerEnum * int(d->enumerators.size());
         dataIndex += QMetaObjectPrivate::IntsPerMethod * int(d->constructors.size());
     }
@@ -1387,26 +1356,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             data[dataIndex]     = name;
             data[dataIndex + 1] = typeInfo;
             data[dataIndex + 2] = flags;
+            data[dataIndex + 3] = prop.notifySignal;
+            data[dataIndex + 4] = prop.revision;
         }
-        dataIndex += 3;
-    }
-    if (hasNotifySignals) {
-        for (const auto &prop : d->properties) {
-            if (buf) {
-                if (prop.notifySignal != -1)
-                    data[dataIndex] = prop.notifySignal;
-                else
-                    data[dataIndex] = 0;
-            }
-            ++dataIndex;
-        }
-    }
-    if (hasRevisionedProperties) {
-        for (const auto &prop : d->properties) {
-            if (buf)
-                data[dataIndex] = prop.revision;
-            ++dataIndex;
-        }
+        dataIndex += QMetaObjectPrivate::IntsPerProperty;
     }
 
     // Output the enumerators in the class.
@@ -1675,8 +1628,7 @@ void QMetaObjectBuilder::serialize(QDataStream& stream) const
         stream << property.type;
         stream << property.flags;
         stream << property.notifySignal;
-        if (property.revision)
-            stream << property.revision;
+        stream << property.revision;
     }
 
     // Write the enumerators.
@@ -1838,8 +1790,7 @@ void QMetaObjectBuilder::deserialize
             stream.setStatus(QDataStream::ReadCorruptData);
             return;
         }
-        if (property.flags & Revisioned)
-            stream >> property.revision;
+        stream >> property.revision;
     }
 
     // Read the enumerators.
@@ -2202,7 +2153,7 @@ bool QMetaPropertyBuilder::hasNotifySignal() const
 {
     QMetaPropertyBuilderPrivate *d = d_func();
     if (d)
-        return d->flag(Notify);
+        return d->notifySignal != -1;
     else
         return false;
 }
@@ -2232,10 +2183,8 @@ void QMetaPropertyBuilder::setNotifySignal(const QMetaMethodBuilder& value)
     if (d) {
         if (value._mobj) {
             d->notifySignal = value._index;
-            d->setFlag(Notify, true);
         } else {
             d->notifySignal = -1;
-            d->setFlag(Notify, false);
         }
     }
 }
@@ -2248,10 +2197,8 @@ void QMetaPropertyBuilder::setNotifySignal(const QMetaMethodBuilder& value)
 void QMetaPropertyBuilder::removeNotifySignal()
 {
     QMetaPropertyBuilderPrivate *d = d_func();
-    if (d) {
+    if (d)
         d->notifySignal = -1;
-        d->setFlag(Notify, false);
-    }
 }
 
 /*!
@@ -2604,10 +2551,8 @@ int QMetaPropertyBuilder::revision() const
 void QMetaPropertyBuilder::setRevision(int revision)
 {
     QMetaPropertyBuilderPrivate *d = d_func();
-    if (d) {
+    if (d)
         d->revision = revision;
-        d->setFlag(Revisioned, revision != 0);
-    }
 }
 
 

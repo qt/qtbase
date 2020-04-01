@@ -276,7 +276,7 @@ Q_DECLARE_TYPEINFO(QMetaEnum, Q_MOVABLE_TYPE);
 class Q_CORE_EXPORT QMetaProperty
 {
 public:
-    QMetaProperty();
+    constexpr QMetaProperty() : mobj(nullptr), data({ nullptr }), idx(-1) {}
 
     const char *name() const;
     const char *typeName() const;
@@ -326,8 +326,22 @@ public:
 private:
     int registerPropertyType() const;
 
+    struct Data {
+        enum { Size = 5 };
+
+        uint name() const { return d[0]; }
+        uint type() const { return d[1]; }
+        uint flags() const { return d[2]; }
+        uint notifyIndex() const { return d[3]; }
+        uint revision() const { return d[4]; }
+
+        const uint *d;
+    };
+
+    QMetaProperty(const QMetaObject *mobj, int index);
+
     const QMetaObject *mobj;
-    uint handle;
+    Data data;
     int idx;
     QMetaEnum menum;
     friend struct QMetaObject;

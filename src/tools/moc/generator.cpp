@@ -363,11 +363,7 @@ void Generator::generateCode()
             - cdef->constructorList.count(); // "this" parameters don't have names
 
     fprintf(out, "    %4d, %4d, // properties\n", cdef->propertyList.count(), cdef->propertyList.count() ? index : 0);
-    index += cdef->propertyList.count() * 3;
-    if(cdef->notifyableProperties)
-        index += cdef->propertyList.count();
-    if (cdef->revisionedProperties)
-        index += cdef->propertyList.count();
+    index += cdef->propertyList.count() * QMetaObjectPrivate::IntsPerProperty;
     fprintf(out, "    %4d, %4d, // enums/sets\n", cdef->enumList.count(), cdef->enumList.count() ? index : 0);
 
     int enumsIndex = index;
@@ -888,12 +884,6 @@ void Generator::generateProperties()
         if (p.user != "false")
             flags |= User;
 
-        if (p.notifyId != -1)
-            flags |= Notify;
-
-        if (p.revision > 0)
-            flags |= Revisioned;
-
         if (p.constant)
             flags |= Constant;
         if (p.final)
@@ -906,32 +896,13 @@ void Generator::generateProperties()
 
         fprintf(out, "    %4d, ", stridx(p.name));
         generateTypeInfo(p.type);
-        fprintf(out, ", 0x%.8x,\n", flags);
-    }
-
-    if(cdef->notifyableProperties) {
-        fprintf(out, "\n // properties: notify_signal_id\n");
-        for (int i = 0; i < cdef->propertyList.count(); ++i) {
-            const PropertyDef &p = cdef->propertyList.at(i);
-            if (p.notifyId == -1) {
-                fprintf(out, "    %4d,\n",
-                        0);
-            } else if (p.notifyId > -1) {
-                fprintf(out, "    %4d,\n",
-                        p.notifyId);
-            } else {
-                const int indexInStrings = strings.indexOf(p.notify);
-                fprintf(out, "    %4d,\n",
-                        indexInStrings | IsUnresolvedSignal);
-            }
+        int notifyId = p.notifyId;
+        if (p.notifyId < -1) {
+            // signal is in parent class
+            const int indexInStrings = strings.indexOf(p.notify);
+            notifyId = indexInStrings | IsUnresolvedSignal;
         }
-    }
-    if (cdef->revisionedProperties) {
-        fprintf(out, "\n // properties: revision\n");
-        for (int i = 0; i < cdef->propertyList.count(); ++i) {
-            const PropertyDef &p = cdef->propertyList.at(i);
-            fprintf(out, "    %4d,\n", p.revision);
-        }
+        fprintf(out, ", 0x%.8x, uint(%d), %d,\n", flags, notifyId, p.revision);
     }
 }
 

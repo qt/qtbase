@@ -432,12 +432,12 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     header->flags = RequiresVariantMetaObject;
     header->signalCount = signals_.count();
     // These are specific to QDBusMetaObject:
-    header->propertyDBusData = header->propertyData + header->propertyCount * 3;
+    header->propertyDBusData = header->propertyData + header->propertyCount * QMetaObjectPrivate::IntsPerProperty;
     header->methodDBusData = header->propertyDBusData + header->propertyCount * intsPerProperty;
 
     int data_size = idata.size() +
                     (header->methodCount * (QMetaObjectPrivate::IntsPerMethod+intsPerMethod)) + methodParametersDataSize +
-                    (header->propertyCount * (3+intsPerProperty));
+                    (header->propertyCount * (QMetaObjectPrivate::IntsPerProperty+intsPerProperty));
     for (const Method &mm : qAsConst(signals_))
         data_size += 2 + mm.inputTypes.count() + mm.outputTypes.count();
     for (const Method &mm : qAsConst(methods))
@@ -545,6 +545,8 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
         Q_ASSERT(mp.type != QMetaType::UnknownType);
         idata[offset++] = mp.type;
         idata[offset++] = mp.flags;
+        idata[offset++] = -1; // notify index
+        idata[offset++] = 0; // revision
 
         idata[signatureOffset++] = strings.enter(mp.signature);
         idata[signatureOffset++] = mp.type;

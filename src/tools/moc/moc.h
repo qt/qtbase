@@ -201,9 +201,7 @@ struct ClassDef : BaseDef {
     QVector<PropertyDef> propertyList;
     QVector<PrivateQPropertyDef> privateQProperties;
     QSet<QByteArray> qPropertyMembers;
-    int notifyableProperties = 0;
     int revisionedMethods = 0;
-    int revisionedProperties = 0;
 
     bool hasQObject = false;
     bool hasQGadget = false;
