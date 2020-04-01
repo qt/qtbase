@@ -190,16 +190,13 @@ void QPlatformTextureList::clear()
     Flushes the given \a region from the specified \a window onto the
     screen, and composes it with the specified \a textures.
 
-    If OpenGLSupport has been enabled using \c setOpenGLSupport,
-    the default implementation retrieves the contents using toTexture()
+    The default implementation retrieves the contents using toTexture()
     and composes using OpenGL. May be reimplemented in subclasses if there
     is a more efficient native way to do it.
 
     \note \a region is relative to the window which may not be top-level in case
     \a window corresponds to a native child widget. \a offset is the position of
     the native child relative to the top-level window.
-
-    \sa setOpenGLSupport()
  */
 
 void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region,
@@ -238,8 +235,7 @@ QImage QPlatformBackingStore::toImage() const
   The ownership of the texture is not transferred. The caller must not store
   the return value between calls, but instead call this function before each use.
 
-  If OpenGLSupport has been enabled using \c setOpenGLSupport,
-  the default implementation returns a cached texture if \a dirtyRegion is empty and
+  The default implementation returns a cached texture if \a dirtyRegion is empty and
   \a textureSize matches the backingstore size, otherwise it retrieves the content using
   toImage() and performs a texture upload. This works only if the value of \a textureSize
   is preserved between the calls to this function.
@@ -255,8 +251,6 @@ QImage QPlatformBackingStore::toImage() const
   flags will be set to include \c TextureFlip.
 
   \note \a dirtyRegion is relative to the backingstore so no adjustment is needed.
-
-  \sa setOpenGLSupport()
  */
 GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const
 {
@@ -281,6 +275,12 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
 QPlatformBackingStore::QPlatformBackingStore(QWindow *window)
     : d_ptr(new QPlatformBackingStorePrivate(window))
 {
+#ifndef QT_NO_OPENGL
+    if (auto createOpenGLSupport = QPlatformBackingStoreOpenGLSupportBase::factoryFunction()) {
+        d_ptr->openGLSupport = createOpenGLSupport();
+        d_ptr->openGLSupport->backingStore = this;
+    }
+#endif
 }
 
 /*!
@@ -318,15 +318,27 @@ QBackingStore *QPlatformBackingStore::backingStore() const
 }
 
 #ifndef QT_NO_OPENGL
+
+using FactoryFunction = QPlatformBackingStoreOpenGLSupportBase::FactoryFunction;
+
 /*!
-    Injects an OpenGL implementation helper. Platform integrations need to
-    call this if they intend to use the default OpenGL implementations of
-    composeAndFlush or toTexture.
+    Registers a factory function for OpenGL implementation helper.
+
+    The QtOpenGL library automatically registers a default function,
+    unless already set by the platform plugin in other ways.
 */
-void QPlatformBackingStore::setOpenGLSupport(QPlatformBackingStoreOpenGLSupportBase *openGLSupport)
+void QPlatformBackingStoreOpenGLSupportBase::setFactoryFunction(FactoryFunction function)
 {
-    d_ptr->openGLSupport = openGLSupport;
+    s_factoryFunction = function;
 }
+
+FactoryFunction QPlatformBackingStoreOpenGLSupportBase::factoryFunction()
+{
+    return s_factoryFunction;
+}
+
+FactoryFunction QPlatformBackingStoreOpenGLSupportBase::s_factoryFunction = nullptr;
+
 #endif // QT_NO_OPENGL
 
 /*!

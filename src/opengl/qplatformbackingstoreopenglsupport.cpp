@@ -450,6 +450,18 @@ GLuint QPlatformBackingStoreOpenGLSupport::toTexture(const QRegion &dirtyRegion,
     return textureId;
 }
 
+static QPlatformBackingStoreOpenGLSupportBase *createOpenGLSupport()
+{
+    return new QPlatformBackingStoreOpenGLSupport;
+}
+
+static void setDefaultOpenGLSupportFactoryFunction()
+{
+    if (!QPlatformBackingStoreOpenGLSupportBase::factoryFunction())
+        QPlatformBackingStoreOpenGLSupportBase::setFactoryFunction(createOpenGLSupport);
+}
+Q_CONSTRUCTOR_FUNCTION(setDefaultOpenGLSupportFactoryFunction);
+
 #endif // QT_NO_OPENGL
 
 QT_END_NAMESPACE

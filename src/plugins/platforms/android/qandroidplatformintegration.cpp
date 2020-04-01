@@ -289,11 +289,7 @@ QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(Q
     if (!QtAndroid::activity())
         return nullptr;
 
-    auto *backingStore = new QAndroidPlatformBackingStore(window);
-#if QT_CONFIG(opengl)
-    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
-#endif // QT_CONFIG(opengl)
-    return backingStore;
+    return new QAndroidPlatformBackingStore(window);
 }
 
 QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const

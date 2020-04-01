@@ -98,8 +98,6 @@ QT += \
     core-private gui-private \
     theme_support-private
 
-qtConfig(opengl): QT += opengl-private
-
 CONFIG += no_app_extension_api_only
 
 qtHaveModule(widgets) {

@@ -191,11 +191,7 @@ QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 // Used when the QWindow's surface type is set by the client to QSurface::RasterSurface
 QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    auto *backingStore = new QIOSBackingStore(window);
-#if QT_CONFIG(opengl)
-    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
-#endif
-    return backingStore;
+    return new QIOSBackingStore(window);
 }
 
 // Used when the QWindow's surface type is set by the client to QSurface::OpenGLSurface

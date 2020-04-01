@@ -64,14 +64,12 @@ class QOpenGLBackingStore;
 class Q_OPENGL_EXPORT QPlatformBackingStoreOpenGLSupport : public QPlatformBackingStoreOpenGLSupportBase
 {
 public:
-    explicit QPlatformBackingStoreOpenGLSupport(QPlatformBackingStore *backingStore) : backingStore(backingStore) {}
     ~QPlatformBackingStoreOpenGLSupport() override;
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                          QPlatformTextureList *textures, bool translucentBackground) override;
     GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, QPlatformBackingStore::TextureFlags *flags) const override;
 
 private:
-    QPlatformBackingStore *backingStore = nullptr;
     QScopedPointer<QOpenGLContext> context;
     mutable GLuint textureId = 0;
     mutable QSize textureSize;

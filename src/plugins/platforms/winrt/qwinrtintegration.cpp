@@ -208,11 +208,7 @@ QPlatformWindow *QWinRTIntegration::createPlatformWindow(QWindow *window) const
 
 QPlatformBackingStore *QWinRTIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    auto *backingStore = new QWinRTBackingStore(window);
-#if QT_CONFIG(opengl)
-    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
-#endif
-    return backingStore;
+    return new QWinRTBackingStore(window);
 }
 
 QPlatformOpenGLContext *QWinRTIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const

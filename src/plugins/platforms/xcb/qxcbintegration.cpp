@@ -304,9 +304,6 @@ QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *wind
         backingStore = new QXcbBackingStore(window);
     }
     Q_ASSERT(backingStore);
-#ifndef QT_NO_OPENGL
-    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
-#endif
     return backingStore;
 }
 

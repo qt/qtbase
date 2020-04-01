@@ -68,10 +68,6 @@
 
 #include <QtGui/private/qfontengine_coretext_p.h>
 
-#if QT_CONFIG(opengl)
-#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
-#endif
-
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qtwidgetsglobal.h>
 #if QT_CONFIG(filedialog)
@@ -333,9 +329,6 @@ QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *wi
     else
         backingStore = new QNSWindowBackingStore(window);
 
-#if QT_CONFIG(opengl)
-    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
-#endif
     return backingStore;
 }
 

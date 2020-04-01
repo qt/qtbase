@@ -181,7 +181,6 @@ QPlatformBackingStore *QWasmIntegration::createPlatformBackingStore(QWindow *win
 #ifndef QT_NO_OPENGL
     QWasmCompositor *compositor = QWasmScreen::get(window->screen())->compositor();
     QWasmBackingStore *backingStore = new QWasmBackingStore(compositor, window);
-    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
     m_backingStores.insert(window, backingStore);
     return backingStore;
 #else
