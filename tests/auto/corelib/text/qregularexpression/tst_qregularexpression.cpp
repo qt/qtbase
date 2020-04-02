@@ -805,7 +805,7 @@ void tst_QRegularExpression::normalMatch_data()
     QTest::newRow("anchoredmatch01") << QRegularExpression("\\d+")
                                      << "abc123def"
                                      << 0
-                                     << QRegularExpression::MatchOptions(QRegularExpression::AnchoredMatchOption)
+                                     << QRegularExpression::MatchOptions(QRegularExpression::AnchorAtOffsetMatchOption)
                                      << m;
 
     // ***
@@ -1212,7 +1212,7 @@ void tst_QRegularExpression::globalMatch_data()
                                    << "ACA""GTG""CGA""AAA""AAA""AAG""GAA""AAG""AAA""AAA"
                                    << 0
                                    << QRegularExpression::NormalMatch
-                                   << QRegularExpression::MatchOptions(QRegularExpression::AnchoredMatchOption)
+                                   << QRegularExpression::MatchOptions(QRegularExpression::AnchorAtOffsetMatchOption)
                                    << matchList;
 
     matchList.clear();

@@ -291,7 +291,7 @@ void RegularExpressionDialog::refresh()
     QRegularExpression::MatchOptions matchOptions = QRegularExpression::NoMatchOption;
 
     if (anchoredMatchOptionCheckBox->isChecked())
-        matchOptions |= QRegularExpression::AnchoredMatchOption;
+        matchOptions |= QRegularExpression::AnchorAtOffsetMatchOption;
     if (dontCheckSubjectStringMatchOptionCheckBox->isChecked())
         matchOptions |= QRegularExpression::DontCheckSubjectStringMatchOption;
 

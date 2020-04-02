@@ -553,7 +553,7 @@ QT_BEGIN_NAMESPACE
 
     \section2 Caret modes
 
-    The AnchoredMatchOption match option can be used to emulate the
+    The AnchorAtOffsetMatchOption match option can be used to emulate the
     QRegExp::CaretAtOffset behaviour. There is no equivalent for the other
     QRegExp::CaretMode modes.
 
@@ -788,9 +788,16 @@ QT_BEGIN_NAMESPACE
         No match options are set.
 
     \value AnchoredMatchOption
+        Use AnchorAtOffsetMatchOption instead.
+
+    \value AnchorAtOffsetMatchOption
         The match is constrained to start exactly at the offset passed to
         match() in order to be successful, even if the pattern string does not
         contain any metacharacter that anchors the match at that point.
+        Note that passing this option does not anchor the end of the match
+        to the end of the subject; if you want to fully anchor a regular
+        expression, use anchoredPattern().
+        This enum value has been introduced in Qt 6.0.
 
     \value DontCheckSubjectStringMatchOption
         The subject string is not checked for UTF-16 validity before
@@ -832,7 +839,7 @@ static int convertToPcreOptions(QRegularExpression::MatchOptions matchOptions)
 {
     int options = 0;
 
-    if (matchOptions & QRegularExpression::AnchoredMatchOption)
+    if (matchOptions & QRegularExpression::AnchorAtOffsetMatchOption)
         options |= PCRE2_ANCHORED;
     if (matchOptions & QRegularExpression::DontCheckSubjectStringMatchOption)
         options |= PCRE2_NO_UTF_CHECK;
