@@ -28,6 +28,8 @@ function(qt_internal_set_warnings_are_errors_flags target)
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.0.0")
             # GCC 9 introduced these but we are not clean for it.
             list(APPEND flags -Wno-error=deprecated-copy -Wno-error=redundant-move -Wno-error=init-list-lifetime)
+            # GCC 9 introduced -Wformat-overflow in -Wall, but it is buggy:
+            list(APPEND flags -Wno-error=format-overflow)
         endif()
 
         # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
