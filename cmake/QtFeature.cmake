@@ -641,12 +641,74 @@ function(qt_config_compile_test name)
     endif()
 
     cmake_parse_arguments(arg "" "LABEL;PROJECT_PATH;C_STANDARD;CXX_STANDARD"
-        "COMPILE_OPTIONS;LIBRARIES;CODE" ${ARGN})
+        "COMPILE_OPTIONS;LIBRARIES;CODE;PACKAGES" ${ARGN})
 
     if(arg_PROJECT_PATH)
         message(STATUS "Performing Test ${arg_LABEL}")
+
+        set(flags "")
+        qt_get_platform_try_compile_vars(platform_try_compile_vars)
+        list(APPEND flags ${platform_try_compile_vars})
+
+        # If the repo has its own cmake modules, include those in the module path, so that various
+        # find_package calls work.
+        if(EXISTS "${PROJECT_SOURCE_DIR}/cmake")
+            list(APPEND flags "-DCMAKE_MODULE_PATH:STRING=${PROJECT_SOURCE_DIR}/cmake")
+        endif()
+
+        # Pass which packages need to be found.
+        # Very scary / ugly escaping incoming.
+        if(arg_PACKAGES)
+            set(packages_list "")
+
+            # Parse the package names, version, etc. An example would be:
+            # PACKAGE Foo 6 REQUIRED
+            # PACKAGE Bar 2 COMPONENTS Baz
+            foreach(p ${arg_PACKAGES})
+                if(p STREQUAL PACKAGE)
+                    if(package_entry)
+                        # Use 6 backslashes + ; which will be collapsed when doing variable
+                        # expansion at multiple stages.
+                        list(JOIN package_entry "\\\\\\;" package_entry_string)
+                        list(APPEND packages_list "${package_entry_string}")
+                    endif()
+
+                    set(package_entry "")
+                else()
+                    list(APPEND package_entry "${p}")
+                endif()
+            endforeach()
+            # Parse final entry.
+            if(package_entry)
+                list(JOIN package_entry "\\\\\\;" package_entry_string)
+                list(APPEND packages_list "${package_entry_string}")
+            endif()
+
+            # Before the join, packages_list has 3 backslashes + ; for each package part
+            # (name, component) if you display them.
+            # After the join, packages_list has 2 backslashes + ; for each package part, and a
+            # '\;' to separate package entries.
+            list(JOIN packages_list "\;" packages_list)
+
+            # Finally when appending the joined string to the flags, the flags are separated by
+            # ';', the package entries by '\;', and the packages parts of an entry by '\\;'.
+            # Example:
+            # WrapFoo\\;6\\;COMPONENTS\\;bar\;WrapBaz\\;5
+            list(APPEND flags "-DQT_CONFIG_COMPILE_TEST_PACKAGES:STRING=${packages_list}")
+
+            # Inside the project, the value of QT_CONFIG_COMPILE_TEST_PACKAGES is used in a foreach
+            # loop that calls find_package() for each package entry, and thus the variable expansion
+            # ends up calling something like find_package(WrapFoo;6;COMPONENTS;bar) aka
+            # find_package(WrapFoo 6 COMPONENTS bar).
+        endif()
+
+        # Pass which libraries need to be linked against.
+        if(arg_LIBRARIES)
+            list(APPEND flags "-DQT_CONFIG_COMPILE_TEST_LIBRARIES:STRING=${arg_LIBRARIES}")
+        endif()
+
         try_compile(HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}"
-                    "${name}")
+                    "${name}" CMAKE_FLAGS ${flags})
 
         if(${HAVE_${name}})
             set(status_label "Success")
@@ -720,6 +782,10 @@ function(qt_get_platform_try_compile_vars out_var)
     if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
         list(APPEND flags "VCPKG_CHAINLOAD_TOOLCHAIN_FILE")
     endif()
+
+    # Pass language standard flags.
+    list(APPEND flags "CMAKE_C_STANDARD")
+    list(APPEND flags "CMAKE_CXX_STANDARD")
 
     # Assemble the list with regular options.
     set(flags_cmd_line "")

@@ -499,6 +499,70 @@ def parseInput(ctx, sinput, data, cm_fh):
     return
 
 
+def get_library_usage_for_compile_test(library):
+    result = {}
+    mapped_library = find_3rd_party_library_mapping(library)
+    if not mapped_library:
+        result["fixme"] = f"# FIXME: use: unmapped library: {library}\n"
+        return result
+
+    if mapped_library.test_library_overwrite:
+        target_name = mapped_library.test_library_overwrite
+    else:
+        target_name = mapped_library.targetName
+    result["target_name"] = target_name
+    result["package_name"] = mapped_library.packageName
+    result["extra"] = mapped_library.extra
+    return result
+
+
+# Handles config.test/foo/foo.pro projects.
+def write_standalone_compile_test(cm_fh, ctx, data, config_test_name, is_library_test):
+    rel_test_project_path = f"{ctx['test_dir']}/{config_test_name}"
+    if posixpath.exists(f"{ctx['project_dir']}/{rel_test_project_path}/CMakeLists.txt"):
+        label = ""
+        libraries = []
+        packages = []
+
+        if "label" in data:
+            label = data["label"]
+
+        if is_library_test and config_test_name in data["libraries"]:
+            if "label" in data["libraries"][config_test_name]:
+                label = data["libraries"][config_test_name]["label"]
+
+            # If a library entry in configure.json has a test, and
+            # the test uses a config.tests standalone project, we
+            # need to get the package and target info for the
+            # library, and pass it to the test so compiling and
+            # linking succeeds.
+            library_usage = get_library_usage_for_compile_test(config_test_name)
+            if "target_name" in library_usage:
+                libraries.append(library_usage["target_name"])
+            if "package_name" in library_usage:
+                find_package_arguments = []
+                find_package_arguments.append(library_usage["package_name"])
+                if "extra" in library_usage:
+                    find_package_arguments.extend(library_usage["extra"])
+                package_line = "PACKAGE " + " ".join(find_package_arguments)
+                packages.append(package_line)
+
+        cm_fh.write(
+            f"""
+qt_config_compile_test("{config_test_name}"
+                   LABEL "{label}"
+                   PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{rel_test_project_path}"
+"""
+        )
+        if libraries:
+            libraries_string = " ".join(libraries)
+            cm_fh.write(f"                   LIBRARIES {libraries_string}\n")
+        if packages:
+            packages_string = " ".join(packages)
+            cm_fh.write(f"                   PACKAGES {packages_string}")
+        cm_fh.write(f")\n")
+
+
 def write_compile_test(
     ctx, name, details, data, cm_fh, manual_library_list=None, is_library_test=False
 ):
@@ -514,15 +578,7 @@ def write_compile_test(
             print(f"    XXXX Failed to locate inherited library test {inherited_test_name}")
 
     if isinstance(details, str):
-        rel_test_project_path = f"{ctx['test_dir']}/{details}"
-        if posixpath.exists(f"{ctx['project_dir']}/{rel_test_project_path}/CMakeLists.txt"):
-            cm_fh.write(
-                f"""
-qt_config_compile_test("{details}"
-                   LABEL "{data['label']}"
-                   PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{rel_test_project_path}")
-"""
-            )
+        write_standalone_compile_test(cm_fh, ctx, data, details, is_library_test)
         return
 
     def resolve_head(detail):
@@ -644,14 +700,12 @@ qt_config_compile_test("{details}"
         if len(library) == 0:
             continue
 
-        mapped_library = find_3rd_party_library_mapping(library)
-        if not mapped_library:
-            qmakeFixme += f"# FIXME: use: unmapped library: {library}\n"
+        library_usage = get_library_usage_for_compile_test(library)
+        if "fixme" in library_usage:
+            qmakeFixme += library_usage["fixme"]
             continue
-        if mapped_library.test_library_overwrite:
-            library_list.append(mapped_library.test_library_overwrite)
         else:
-            library_list.append(mapped_library.targetName)
+            library_list.append(library_usage["target_name"])
 
     cm_fh.write(f"qt_config_compile_test({featureName(name)}\n")
     cm_fh.write(lineify("LABEL", data.get("label", "")))

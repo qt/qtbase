@@ -3912,7 +3912,17 @@ def handle_config_test_project(scope: Scope, cm_fh: IO[str]):
     project_name = os.path.splitext(os.path.basename(scope.file_absolute_path))[0]
     content = (
         f"cmake_minimum_required(VERSION 3.14.0)\n"
-        f"project(config_test_{project_name} LANGUAGES CXX)\n"
+        f"project(config_test_{project_name} LANGUAGES C CXX)\n"
+        """
+foreach(p ${QT_CONFIG_COMPILE_TEST_PACKAGES})
+    find_package(${p})
+endforeach()
+
+if(QT_CONFIG_COMPILE_TEST_LIBRARIES)
+    link_libraries(${QT_CONFIG_COMPILE_TEST_LIBRARIES})
+endif()
+
+"""
     )
     cm_fh.write(f"{content}\n")
 
