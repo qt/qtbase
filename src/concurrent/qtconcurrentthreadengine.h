@@ -121,6 +121,7 @@ protected:
     QThreadPool *threadPool;
     ThreadEngineBarrier barrier;
     QtPrivate::ExceptionStore exceptionStore;
+    QBasicMutex mutex;
 };
 
 

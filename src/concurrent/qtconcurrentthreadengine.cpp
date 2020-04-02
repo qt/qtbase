@@ -322,10 +322,13 @@ void ThreadEngineBase::run() // implements QRunnable.
 
 void ThreadEngineBase::handleException(const QException &exception)
 {
-    if (futureInterface)
+    if (futureInterface) {
         futureInterface->reportException(exception);
-    else if (!exceptionStore.hasException())
-        exceptionStore.setException(exception);
+    } else {
+        QMutexLocker lock(&mutex);
+        if (!exceptionStore.hasException())
+            exceptionStore.setException(exception);
+    }
 }
 #endif
 
