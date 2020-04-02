@@ -1032,8 +1032,8 @@ template <class T> inline T qgraphicsitem_cast(const QGraphicsItem *item)
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem *item);
-Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsObject *item);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, const QGraphicsItem *item);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, const QGraphicsObject *item);
 Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change);
 Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag);
 Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags);
