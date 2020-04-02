@@ -235,15 +235,15 @@ bool QLibraryPrivate::load_sys()
 
             hnd = dlopen(QFile::encodeName(attempt), dlFlags);
 #ifdef Q_OS_ANDROID
-            if (!pHnd) {
+            if (!hnd) {
                 auto attemptFromBundle = attempt;
-                pHnd = dlopen(QFile::encodeName(attemptFromBundle.replace(QLatin1Char('/'), QLatin1Char('_'))), dlFlags);
+                hnd = dlopen(QFile::encodeName(attemptFromBundle.replace(QLatin1Char('/'), QLatin1Char('_'))), dlFlags);
             }
-            if (pHnd) {
+            if (hnd) {
                 using JniOnLoadPtr = jint (*)(JavaVM *vm, void *reserved);
                 JniOnLoadPtr jniOnLoad = reinterpret_cast<JniOnLoadPtr>(dlsym(pHnd, "JNI_OnLoad"));
                 if (jniOnLoad && jniOnLoad(QtAndroidPrivate::javaVM(), nullptr) == JNI_ERR) {
-                    dlclose(pHnd);
+                    dlclose(hnd);
                     pHnd = nullptr;
                 }
             }
