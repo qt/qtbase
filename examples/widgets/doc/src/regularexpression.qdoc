@@ -40,9 +40,6 @@
     case insensitive matching, multiline matching, Unicode properties selectors
     and partial/incremental matching.
 
-    QRegularExpression is a big improvement over QRegExp in terms of features
-    and performance and should be used in all new code.
-
     \image regularexpression-example.png
 */
 

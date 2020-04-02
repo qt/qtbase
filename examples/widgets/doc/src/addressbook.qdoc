@@ -68,7 +68,7 @@
 
     QSortFilterProxyModel is the class responsible for filtering
     the contacts for each group of contacts. Each proxy model uses
-    a QRegExp to filter out contacts that do not belong in the
+    a QRegularExpression to filter out contacts that do not belong in the
     corresponding alphabetical group. The \c AddDialog class is
     used to obtain information from the user for the address book.
     This QDialog subclass is instantiated by \c NewAddressTab to
@@ -199,7 +199,7 @@
     group tabs, table views and proxy models in
     \c AddressWidget. Each proxy model in turn is set to filter
     contact names according to the relevant alphabet group using a
-    \l{Qt::CaseInsensitive}{case-insensitive} QRegExp object. The
+    case-insensitive QRegularExpression object. The
     table views are also sorted in ascending order using the
     corresponding proxy model's \l{QSortFilterProxyModel::}{sort()}
     function.
