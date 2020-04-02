@@ -72,9 +72,6 @@ class QObject;
 class QThread;
 class QWidget;
 class QAccessibleWidget;
-#ifndef QT_NO_REGEXP
-class QRegExp;
-#endif
 #if QT_CONFIG(regularexpression)
 class QRegularExpression;
 #endif
@@ -83,8 +80,6 @@ struct QDynamicMetaObjectData;
 typedef QList<QObject*> QObjectList;
 
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name,
-                                           const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
-Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re,
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
@@ -179,21 +174,6 @@ public:
                                 reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
-
-#ifndef QT_NO_REGEXP
-#if QT_DEPRECATED_SINCE(5, 13)
-    template<typename T>
-    QT_DEPRECATED_X("Use findChildren(const QRegularExpression &, ...) instead.")
-    inline QList<T> findChildren(const QRegExp &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-    {
-        typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
-        QList<T> list;
-        qt_qFindChildren_helper(this, re, ObjType::staticMetaObject,
-                                reinterpret_cast<QList<void *> *>(&list), options);
-        return list;
-    }
-#endif
-#endif
 
 #if QT_CONFIG(regularexpression)
     template<typename T>
@@ -474,14 +454,6 @@ inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QString &nam
 {
     return o->findChildren<T>(name);
 }
-
-#if !defined(QT_NO_REGEXP) || defined(Q_CLANG_QDOC)
-template<typename T>
-inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QRegExp &re)
-{
-    return o->findChildren<T>(re);
-}
-#endif
 
 #endif //QT_DEPRECATED
 

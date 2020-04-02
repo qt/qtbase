@@ -50,7 +50,6 @@
 #include "qloggingcategory.h"
 #include "qvariant.h"
 #include "qmetaobject.h"
-#include <qregexp.h>
 #if QT_CONFIG(regularexpression)
 #  include <qregularexpression.h>
 #endif
@@ -1901,20 +1900,6 @@ void QObject::killTimer(int id)
 */
 
 /*!
-    \fn template<typename T> QList<T> QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options) const
-    \overload findChildren()
-    \obsolete
-
-    Returns the children of this object that can be cast to type T
-    and that have names matching the regular expression \a regExp,
-    or an empty list if there are no such objects.
-    The search is performed recursively, unless \a options specifies the
-    option FindDirectChildrenOnly.
-
-    Use the findChildren overload taking a QRegularExpression instead.
-*/
-
-/*!
     \fn QList<T> QObject::findChildren(const QRegularExpression &re, Qt::FindChildOptions options) const
     \overload findChildren()
 
@@ -1960,21 +1945,6 @@ void QObject::killTimer(int id)
 */
 
 /*!
-    \fn template<typename T> QList<T> qFindChildren(const QObject *obj, const QRegExp &regExp)
-    \relates QObject
-    \overload qFindChildren()
-
-    This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a regExp).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QObject::findChildren()
-*/
-
-/*!
     \internal
 */
 void qt_qFindChildren_helper(const QObject *parent, const QString &name,
@@ -1994,29 +1964,6 @@ void qt_qFindChildren_helper(const QObject *parent, const QString &name,
             qt_qFindChildren_helper(obj, name, mo, list, options);
     }
 }
-
-#ifndef QT_NO_REGEXP
-/*!
-    \internal
-*/
-void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
-                             const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
-{
-    if (!parent || !list)
-        return;
-    const QObjectList &children = parent->children();
-    QRegExp reCopy = re;
-    QObject *obj;
-    for (int i = 0; i < children.size(); ++i) {
-        obj = children.at(i);
-        if (mo.cast(obj) && reCopy.indexIn(obj->objectName()) != -1)
-            list->append(obj);
-
-        if (options & Qt::FindChildrenRecursively)
-            qt_qFindChildren_helper(obj, re, mo, list, options);
-    }
-}
-#endif // QT_NO_REGEXP
 
 #if QT_CONFIG(regularexpression)
 /*!
