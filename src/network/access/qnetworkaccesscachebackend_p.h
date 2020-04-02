@@ -68,6 +68,7 @@ public:
     void open() override;
     void closeDownstreamChannel() override;
     void closeUpstreamChannel();
+    bool start() override;
 
     void upstreamReadyRead();
     void downstreamReadyWrite() override;
