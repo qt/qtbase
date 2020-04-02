@@ -1679,8 +1679,9 @@ void QTabBar::hideEvent(QHideEvent *)
 bool QTabBar::event(QEvent *event)
 {
     Q_D(QTabBar);
-    if (event->type() == QEvent::HoverMove
-        || event->type() == QEvent::HoverEnter) {
+    switch (event->type()) {
+    case QEvent::HoverMove:
+    case QEvent::HoverEnter: {
         QHoverEvent *he = static_cast<QHoverEvent *>(event);
         if (!d->hoverRect.contains(he->pos())) {
             QRect oldHoverRect = d->hoverRect;
@@ -1703,28 +1704,32 @@ bool QTabBar::event(QEvent *event)
             update(d->hoverRect);
         }
         return true;
-    } else if (event->type() == QEvent::HoverLeave) {
+    }
+    case QEvent::HoverLeave: {
         QRect oldHoverRect = d->hoverRect;
         d->hoverIndex = -1;
         d->hoverRect = QRect();
         update(oldHoverRect);
         return true;
+    }
 #ifndef QT_NO_TOOLTIP
-    } else if (event->type() == QEvent::ToolTip) {
+    case QEvent::ToolTip:
         if (const QTabBarPrivate::Tab *tab = d->at(tabAt(static_cast<QHelpEvent*>(event)->pos()))) {
             if (!tab->toolTip.isEmpty()) {
                 QToolTip::showText(static_cast<QHelpEvent*>(event)->globalPos(), tab->toolTip, this);
                 return true;
             }
         }
+        break;
 #endif // QT_NO_TOOLTIP
 #if QT_CONFIG(whatsthis)
-    } else if (event->type() == QEvent::QueryWhatsThis) {
+    case QEvent::QEvent::QueryWhatsThis: {
         const QTabBarPrivate::Tab *tab = d->at(d->indexAtPos(static_cast<QHelpEvent*>(event)->pos()));
         if (!tab || tab->whatsThis.isEmpty())
             event->ignore();
         return true;
-    } else if (event->type() == QEvent::WhatsThis) {
+    }
+    case QEvent::WhatsThis:
         if (const QTabBarPrivate::Tab *tab = d->at(d->indexAtPos(static_cast<QHelpEvent*>(event)->pos()))) {
             if (!tab->whatsThis.isEmpty()) {
                 QWhatsThis::showText(static_cast<QHelpEvent*>(event)->globalPos(),
@@ -1732,9 +1737,11 @@ bool QTabBar::event(QEvent *event)
                 return true;
             }
         }
+        break;
 #endif // QT_CONFIG(whatsthis)
 #ifndef QT_NO_SHORTCUT
-    } else if (event->type() == QEvent::Shortcut) {
+
+    case QEvent::Shortcut: {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(event);
         for (int i = 0; i < d->tabList.count(); ++i) {
             const QTabBarPrivate::Tab *tab = &d->tabList.at(i);
@@ -1743,22 +1750,19 @@ bool QTabBar::event(QEvent *event)
                 return true;
             }
         }
+    }
+        break;
 #endif
-    } else if (event->type() == QEvent::MouseButtonDblClick) { // ### fixme Qt 6: move to mouseDoubleClickEvent(), here for BC reasons.
-        const QPoint pos = static_cast<const QMouseEvent *>(event)->pos();
-        const bool isEventInCornerButtons = (!d->leftB->isHidden() && d->leftB->geometry().contains(pos))
-                                            || (!d->rightB->isHidden() && d->rightB->geometry().contains(pos));
-        if (!isEventInCornerButtons)
-            emit tabBarDoubleClicked(tabAt(pos));
-    } else if (event->type() == QEvent::Move) {
+    case QEvent::Move:
         d->updateMacBorderMetrics();
-        return QWidget::event(event);
-
+        break;
 #if QT_CONFIG(draganddrop)
-    } else if (event->type() == QEvent::DragEnter) {
+
+    case QEvent::DragEnter:
         if (d->changeCurrentOnDrag)
             event->accept();
-    } else if (event->type() == QEvent::DragMove) {
+        break;
+    case QEvent::DragMove:
         if (d->changeCurrentOnDrag) {
             const int tabIndex = tabAt(static_cast<QDragMoveEvent *>(event)->pos());
             if (isTabEnabled(tabIndex) && d->switchTabCurrentIndex != tabIndex) {
@@ -1769,11 +1773,17 @@ bool QTabBar::event(QEvent *event)
             }
             event->ignore();
         }
-    } else if (event->type() == QEvent::DragLeave || event->type() == QEvent::Drop) {
+        break;
+    case QEvent::DragLeave:
+    case QEvent::Drop:
         d->killSwitchTabTimer();
         event->ignore();
+        break;
 #endif
+    default:
+        break;
     }
+
     return QWidget::event(event);
 }
 
@@ -2303,6 +2313,20 @@ void QTabBar::mouseReleaseEvent(QMouseEvent *event)
         setCurrentIndex(i);
     if (!selectOnRelease || !d->validIndex(i) || d->currentIndex == i)
         repaint(tabRect(i));
+}
+
+/*!\reimp
+ */
+void QTabBar::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    Q_D(QTabBar);
+    const QPoint pos = event->pos();
+    const bool isEventInCornerButtons = (!d->leftB->isHidden() && d->leftB->geometry().contains(pos))
+                                        || (!d->rightB->isHidden() && d->rightB->geometry().contains(pos));
+    if (!isEventInCornerButtons)
+        emit tabBarDoubleClicked(tabAt(pos));
+
+    mousePressEvent(event);
 }
 
 /*!\reimp
