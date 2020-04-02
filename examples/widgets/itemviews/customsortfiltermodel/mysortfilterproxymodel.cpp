@@ -83,8 +83,8 @@ bool MySortFilterProxyModel::filterAcceptsRow(int sourceRow,
     QModelIndex index1 = sourceModel()->index(sourceRow, 1, sourceParent);
     QModelIndex index2 = sourceModel()->index(sourceRow, 2, sourceParent);
 
-    return (sourceModel()->data(index0).toString().contains(filterRegExp())
-            || sourceModel()->data(index1).toString().contains(filterRegExp()))
+    return (sourceModel()->data(index0).toString().contains(filterRegularExpression())
+            || sourceModel()->data(index1).toString().contains(filterRegularExpression()))
             && dateInRange(sourceModel()->data(index2).toDate());
 }
 //! [3]

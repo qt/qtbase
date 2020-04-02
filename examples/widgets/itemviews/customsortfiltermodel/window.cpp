@@ -148,10 +148,24 @@ void Window::setSourceModel(QAbstractItemModel *model)
 //! [8]
 void Window::textFilterChanged()
 {
-    QRegExp regExp(filterWidget->text(),
-                   filterWidget->caseSensitivity(),
-                   filterWidget->patternSyntax());
-    proxyModel->setFilterRegExp(regExp);
+    FilterWidget::PatternSyntax s = filterWidget->patternSyntax();
+    QString pattern = filterWidget->text();
+    switch (s) {
+    case FilterWidget::Wildcard:
+        pattern = QRegularExpression::wildcardToRegularExpression(pattern);
+        break;
+    case FilterWidget::FixedString:
+        pattern = QRegularExpression::escape(pattern);
+        break;
+    default:
+        break;
+    }
+
+    QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
+    if (filterWidget->caseSensitivity() == Qt::CaseInsensitive)
+        options |= QRegularExpression::CaseInsensitiveOption;
+    QRegularExpression regularExpression(pattern, options);
+    proxyModel->setFilterRegularExpression(regularExpression);
 }
 //! [8]
 

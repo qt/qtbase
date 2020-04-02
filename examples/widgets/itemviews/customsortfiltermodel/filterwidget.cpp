@@ -72,18 +72,18 @@ FilterWidget::FilterWidget(QWidget *parent)
 
     menu->addSeparator();
     m_patternGroup->setExclusive(true);
-    QAction *patternAction = menu->addAction("Fixed String");
-    patternAction->setData(QVariant(int(QRegExp::FixedString)));
+    QAction *patternAction = menu->addAction("Regular Expression");
     patternAction->setCheckable(true);
     patternAction->setChecked(true);
-    m_patternGroup->addAction(patternAction);
-    patternAction = menu->addAction("Regular Expression");
-    patternAction->setCheckable(true);
-    patternAction->setData(QVariant(int(QRegExp::RegExp2)));
+    patternAction->setData(QVariant(int(RegularExpression)));
     m_patternGroup->addAction(patternAction);
     patternAction = menu->addAction("Wildcard");
     patternAction->setCheckable(true);
-    patternAction->setData(QVariant(int(QRegExp::Wildcard)));
+    patternAction->setData(QVariant(int(Wildcard)));
+    m_patternGroup->addAction(patternAction);
+    patternAction = menu->addAction("Fixed String");
+    patternAction->setData(QVariant(int(FixedString)));
+    patternAction->setCheckable(true);
     m_patternGroup->addAction(patternAction);
     connect(m_patternGroup, &QActionGroup::triggered, this, &FilterWidget::filterChanged);
 
@@ -113,17 +113,17 @@ void FilterWidget::setCaseSensitivity(Qt::CaseSensitivity cs)
     m_caseSensitivityAction->setChecked(cs == Qt::CaseSensitive);
 }
 
-static inline QRegExp::PatternSyntax patternSyntaxFromAction(const QAction *a)
+static inline FilterWidget::PatternSyntax patternSyntaxFromAction(const QAction *a)
 {
-    return static_cast<QRegExp::PatternSyntax>(a->data().toInt());
+    return static_cast<FilterWidget::PatternSyntax>(a->data().toInt());
 }
 
-QRegExp::PatternSyntax FilterWidget::patternSyntax() const
+FilterWidget::PatternSyntax FilterWidget::patternSyntax() const
 {
     return patternSyntaxFromAction(m_patternGroup->checkedAction());
 }
 
-void FilterWidget::setPatternSyntax(QRegExp::PatternSyntax s)
+void FilterWidget::setPatternSyntax(PatternSyntax s)
 {
     const QList<QAction*> actions = m_patternGroup->actions();
     for (QAction *a : actions) {

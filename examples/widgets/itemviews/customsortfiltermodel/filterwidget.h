@@ -52,28 +52,32 @@
 #define FILTERWIDGET_H
 
 #include <QLineEdit>
-#include <QRegExp>
 
 QT_BEGIN_NAMESPACE
 class QAction;
 class QActionGroup;
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QRegExp::PatternSyntax)
-
 class FilterWidget : public QLineEdit
 {
     Q_OBJECT
     Q_PROPERTY(Qt::CaseSensitivity caseSensitivity READ caseSensitivity WRITE setCaseSensitivity)
-    Q_PROPERTY(QRegExp::PatternSyntax patternSyntax READ patternSyntax WRITE setPatternSyntax)
+    Q_PROPERTY(PatternSyntax patternSyntax READ patternSyntax WRITE setPatternSyntax)
 public:
     explicit FilterWidget(QWidget *parent = nullptr);
 
     Qt::CaseSensitivity caseSensitivity() const;
     void setCaseSensitivity(Qt::CaseSensitivity);
 
-    QRegExp::PatternSyntax patternSyntax() const;
-    void setPatternSyntax(QRegExp::PatternSyntax);
+    enum PatternSyntax {
+        RegularExpression,
+        Wildcard,
+        FixedString
+    };
+    Q_ENUM(PatternSyntax)
+
+    PatternSyntax patternSyntax() const;
+    void setPatternSyntax(PatternSyntax);
 
 signals:
     void filterChanged();

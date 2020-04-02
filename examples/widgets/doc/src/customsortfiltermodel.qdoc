@@ -250,15 +250,15 @@
     The \c textFilterChanged() function is called whenever the user
     changes the filter pattern or the case sensitivity.
 
-    We first retrieve the preferred syntax (the QRegExp::PatternSyntax
+    We first retrieve the preferred syntax (the FilterWidget::PatternSyntax
     enum is used to interpret the meaning of the given pattern), then
     we determine the preferred case sensitivity. Based on these
     preferences and the current filter pattern, we set the proxy
-    model's \l {QSortFilterProxyModel::}{filterRegExp} property. The
-    \l {QSortFilterProxyModel::}{filterRegExp} property holds the
+    model's \l {QSortFilterProxyModel::}{filterRegularExpression} property. The
+    \l {QSortFilterProxyModel::}{filterRegularExpression} property holds the
     regular expression used to filter the contents of the source
     model. Note that calling QSortFilterProxyModel's \l
-    {QSortFilterProxyModel::}{setFilterRegExp()} function also updates
+    {QSortFilterProxyModel::}{setFilterRegularExpression()} function also updates
     the model.
 
     \snippet itemviews/customsortfiltermodel/window.cpp 9
