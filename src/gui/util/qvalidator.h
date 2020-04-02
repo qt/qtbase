@@ -104,7 +104,7 @@ public:
 
     void setBottom(int);
     void setTop(int);
-    virtual void setRange(int bottom, int top);
+    void setRange(int bottom, int top);
 
     int bottom() const { return b; }
     int top() const { return t; }
@@ -141,7 +141,7 @@ public:
     Q_ENUM(Notation)
     QValidator::State validate(QString &, int &) const override;
 
-    virtual void setRange(double bottom, double top, int decimals = 0);
+    void setRange(double bottom, double top, int decimals = 0);
     void setBottom(double);
     void setTop(double);
     void setDecimals(int);
@@ -181,7 +181,7 @@ public:
     explicit QRegularExpressionValidator(const QRegularExpression &re, QObject *parent = nullptr);
     ~QRegularExpressionValidator();
 
-    virtual QValidator::State validate(QString &input, int &pos) const override;
+    QValidator::State validate(QString &input, int &pos) const override;
 
     QRegularExpression regularExpression() const;
 
