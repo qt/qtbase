@@ -1,9 +1,7 @@
 TEMPLATE = app
-TARGET = tst_bench_qfileinfo
-
+CONFIG += benchmark
 QT -= gui
 QT += core-private testlib
 
-CONFIG += release
-
+TARGET = tst_bench_qfileinfo
 SOURCES += main.cpp

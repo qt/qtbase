@@ -1,7 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_qringbuffer
-
+CONFIG += benchmark
 QT = core-private testlib
-CONFIG += release
 
+TARGET = tst_bench_qringbuffer
 SOURCES += main.cpp

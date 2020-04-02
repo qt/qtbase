@@ -1,6 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_containers-sequential
-
+CONFIG += benchmark
 QT = core testlib
 
+TARGET = tst_bench_containers-sequential
 SOURCES += main.cpp

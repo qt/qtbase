@@ -1,11 +1,9 @@
 TEMPLATE = app
-TARGET = tst_bench_qstringbuilder
+CONFIG += benchmark
+QT = core testlib
 
 QMAKE_CXXFLAGS += -g
 QMAKE_CFLAGS += -g
 
-QT = core testlib
-
-CONFIG += release
-
-SOURCES += main.cpp 
+TARGET = tst_bench_qstringbuilder
+SOURCES += main.cpp

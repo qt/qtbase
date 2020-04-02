@@ -1,10 +1,7 @@
 TEMPLATE = app
-TARGET = qtimer_vs_qmetaobject
-INCLUDEPATH += .
-
-CONFIG += release
-#CONFIG += debug
-
-
-SOURCES += tst_qtimer_vs_qmetaobject.cpp
+CONFIG += benchmark
 QT = core testlib
+
+INCLUDEPATH += .
+TARGET = qtimer_vs_qmetaobject
+SOURCES += tst_qtimer_vs_qmetaobject.cpp
