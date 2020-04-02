@@ -178,12 +178,6 @@ public:
     }
 
 private:
-#if QT_DEPRECATED_SINCE(5,0)
-    // signature() has been renamed to methodSignature() in Qt 5.
-    // Warning, that function returns a QByteArray; check the life time if
-    // you convert to char*.
-    char *signature(struct renamedInQt5_warning_checkTheLifeTime * = nullptr) = delete;
-#endif
     static QMetaMethod fromSignalImpl(const QMetaObject *, void **);
     static QMetaMethod fromRelativeMethodIndex(const QMetaObject *mobj, int index);
     static QMetaMethod fromRelativeConstructorIndex(const QMetaObject *mobj, int index);
@@ -201,6 +195,9 @@ private:
 
         const uint *d;
     };
+    constexpr QMetaMethod(const QMetaObject *metaObject, const Data &data_)
+        : mobj(metaObject), data(data_)
+    {}
 
     const QMetaObject *mobj;
     Data data;
@@ -276,7 +273,7 @@ Q_DECLARE_TYPEINFO(QMetaEnum, Q_MOVABLE_TYPE);
 class Q_CORE_EXPORT QMetaProperty
 {
 public:
-    constexpr QMetaProperty() : mobj(nullptr), data({ nullptr }), idx(-1) {}
+    constexpr QMetaProperty() : mobj(nullptr), data({ nullptr }) {}
 
     const char *name() const;
     const char *typeName() const;
@@ -335,6 +332,8 @@ private:
         uint notifyIndex() const { return d[3]; }
         uint revision() const { return d[4]; }
 
+        int index(const QMetaObject *mobj) const;
+
         const uint *d;
     };
 
@@ -342,7 +341,6 @@ private:
 
     const QMetaObject *mobj;
     Data data;
-    int idx;
     QMetaEnum menum;
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;

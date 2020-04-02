@@ -241,6 +241,16 @@ struct QMetaObjectPrivate
                                         const QObject *receiver, int method_index, void **slot,
                                         QBasicMutex *senderMutex, DisconnectType = DisconnectAll);
 #endif
+
+    template<int MethodType>
+    static inline int indexOfMethodRelative(const QMetaObject **baseObject,
+                                            const QByteArray &name, int argc,
+                                            const QArgumentType *types);
+
+    static bool methodMatch(const QMetaObject *m, const QMetaMethod &method,
+                            const QByteArray &name, int argc,
+                            const QArgumentType *types);
+
 };
 
 // For meta-object generators

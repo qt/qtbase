@@ -565,21 +565,21 @@ int QMetaObject::classInfoCount() const
     return n;
 }
 
-// Returns \c true if the method defined by the given meta-object&handle
+// Returns \c true if the method defined by the given meta-object&meta-method
 // matches the given name, argument count and argument types, otherwise
 // returns \c false.
-static bool methodMatch(const QMetaObject *m, int handle,
+bool QMetaObjectPrivate::methodMatch(const QMetaObject *m, const QMetaMethod &method,
                         const QByteArray &name, int argc,
                         const QArgumentType *types)
 {
-    Q_ASSERT(priv(m->d.data)->revision >= 7);
-    if (int(m->d.data[handle + 1]) != argc)
+    const QMetaMethod::Data &data = method.data;
+    if (data.argc() != uint(argc))
         return false;
 
-    if (rawStringData(m, m->d.data[handle]) != name)
+    if (stringData(m, data.name()) != name)
         return false;
 
-    int paramsIndex = m->d.data[handle + 2] + 1;
+    int paramsIndex = data.parameters() + 1;
     for (int i = 0; i < argc; ++i) {
         uint typeInfo = m->d.data[paramsIndex + i];
         if (types[i].type()) {
@@ -601,7 +601,7 @@ static bool methodMatch(const QMetaObject *m, int handle,
 * \a MethodType might be MethodSignal or MethodSlot, or \nullptr to match everything.
 */
 template<int MethodType>
-static inline int indexOfMethodRelative(const QMetaObject **baseObject,
+inline int QMetaObjectPrivate::indexOfMethodRelative(const QMetaObject **baseObject,
                                         const QByteArray &name, int argc,
                                         const QArgumentType *types)
 {
@@ -613,8 +613,8 @@ static inline int indexOfMethodRelative(const QMetaObject **baseObject,
                         ? (priv(m->d.data)->signalCount) : 0;
 
         for (; i >= end; --i) {
-            int handle = priv(m->d.data)->methodData + QMetaObjectPrivate::IntsPerMethod*i;
-            if (methodMatch(m, handle, name, argc, types)) {
+            auto data = QMetaMethod::fromRelativeMethodIndex(m, i);
+            if (methodMatch(m, data, name, argc, types)) {
                 *baseObject = m;
                 return i;
             }
@@ -657,7 +657,7 @@ int QMetaObject::indexOfMethod(const char *method) const
     Q_ASSERT(priv(m->d.data)->revision >= 7);
     QArgumentTypeArray types;
     QByteArray name = QMetaObjectPrivate::decodeMethodSignature(method, types);
-    i = indexOfMethodRelative<0>(&m, name, types.size(), types.constData());
+    i = QMetaObjectPrivate::indexOfMethodRelative<0>(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
     return i;
@@ -814,8 +814,8 @@ int QMetaObjectPrivate::indexOfConstructor(const QMetaObject *m, const QByteArra
                                            int argc, const QArgumentType *types)
 {
     for (int i = priv(m->d.data)->constructorCount-1; i >= 0; --i) {
-        int handle = priv(m->d.data)->constructorData + QMetaObjectPrivate::IntsPerMethod*i;
-        if (methodMatch(m, handle, name, argc, types))
+        const QMetaMethod method = QMetaMethod::fromRelativeConstructorIndex(m, i);
+        if (methodMatch(m, method, name, argc, types))
             return i;
     }
     return -1;
@@ -2941,7 +2941,7 @@ int QMetaProperty::userType() const
 {
     if (!mobj)
         return QMetaType::UnknownType;
-    return QMetaType(mobj->d.metaTypes[idx]).id();
+    return QMetaType(mobj->d.metaTypes[data.index(mobj)]).id();
 }
 
 /*!
@@ -2955,7 +2955,12 @@ QMetaType QMetaProperty::metaType() const
 {
     if (!mobj)
         return {};
-    return QMetaType(mobj->d.metaTypes[idx]);
+    return QMetaType(mobj->d.metaTypes[data.index(mobj)]);
+}
+
+int QMetaProperty::Data::index(const QMetaObject *mobj) const
+{
+    return (d - mobj->d.data - priv(mobj->d.data)->propertyData)/Size;
 }
 
 /*!
@@ -2967,7 +2972,7 @@ int QMetaProperty::propertyIndex() const
 {
     if (!mobj)
         return -1;
-    return idx + mobj->propertyOffset();
+    return data.index(mobj) + mobj->propertyOffset();
 }
 
 /*!
@@ -2979,7 +2984,7 @@ int QMetaProperty::relativePropertyIndex() const
 {
     if (!mobj)
         return -1;
-    return idx;
+    return data.index(mobj);
 }
 
 /*!
@@ -3036,14 +3041,13 @@ int QMetaProperty::registerPropertyType() const
 {
     int registerResult = -1;
     void *argv[] = { &registerResult };
-    mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, idx, argv);
+    mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, data.index(mobj), argv);
     return registerResult == -1 ? QMetaType::UnknownType : registerResult;
 }
 
 QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
     : mobj(mobj),
-      data({ mobj->d.data + priv(mobj->d.data)->propertyData + index * Data::Size }),
-      idx(index)
+      data({ mobj->d.data + priv(mobj->d.data)->propertyData + index * Data::Size })
 {
     Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->propertyCount);
 
@@ -3110,7 +3114,7 @@ QVariant QMetaProperty::read(const QObject *object) const
     int status = -1;
     QVariant value;
     void *argv[] = { nullptr, &value, &status };
-    QMetaType t(mobj->d.metaTypes[idx]);
+    QMetaType t(mobj->d.metaTypes[data.index(mobj)]);
     if (t == QMetaType::fromType<QVariant>()) {
         argv[0] = &value;
     } else {
@@ -3118,10 +3122,10 @@ QVariant QMetaProperty::read(const QObject *object) const
         argv[0] = value.data();
     }
     if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall) {
-        mobj->d.static_metacall(const_cast<QObject*>(object), QMetaObject::ReadProperty, idx, argv);
+        mobj->d.static_metacall(const_cast<QObject*>(object), QMetaObject::ReadProperty, data.index(mobj), argv);
     } else {
         QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::ReadProperty,
-                              idx + mobj->propertyOffset(), argv);
+                              data.index(mobj) + mobj->propertyOffset(), argv);
     }
 
     if (status != -1)
@@ -3149,7 +3153,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         return false;
 
     QVariant v = value;
-    QMetaType t(mobj->d.metaTypes[idx]);
+    QMetaType t(mobj->d.metaTypes[data.index(mobj)]);
     if (t != QMetaType::fromType<QVariant>() && t != v.metaType()) {
         if (isEnumType() && !t.metaObject() && v.userType() == QMetaType::QString) {
             // Assigning a string to a property of type Q_ENUMS (instead of Q_ENUM)
@@ -3183,9 +3187,9 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     else
         argv[0] = v.data();
     if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall)
-        mobj->d.static_metacall(object, QMetaObject::WriteProperty, idx, argv);
+        mobj->d.static_metacall(object, QMetaObject::WriteProperty, data.index(mobj), argv);
     else
-        QMetaObject::metacall(object, QMetaObject::WriteProperty, idx + mobj->propertyOffset(), argv);
+        QMetaObject::metacall(object, QMetaObject::WriteProperty, data.index(mobj) + mobj->propertyOffset(), argv);
 
     return status;
 }
@@ -3204,9 +3208,9 @@ bool QMetaProperty::reset(QObject *object) const
         return false;
     void *argv[] = { nullptr };
     if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall)
-        mobj->d.static_metacall(object, QMetaObject::ResetProperty, idx, argv);
+        mobj->d.static_metacall(object, QMetaObject::ResetProperty, data.index(mobj), argv);
     else
-        QMetaObject::metacall(object, QMetaObject::ResetProperty, idx + mobj->propertyOffset(), argv);
+        QMetaObject::metacall(object, QMetaObject::ResetProperty, data.index(mobj) + mobj->propertyOffset(), argv);
     return true;
 }
 /*!
@@ -3325,7 +3329,7 @@ int QMetaProperty::notifySignalIndex() const
         methodIndex &= ~IsUnresolvedSignal;
         const QByteArray signalName = stringData(mobj, methodIndex);
         const QMetaObject *m = mobj;
-        const int idx = indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
+        const int idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
         if (idx >= 0) {
             return idx + m->methodOffset();
         } else {
@@ -3666,11 +3670,9 @@ const char* QMetaClassInfo::value() const
 int QMetaObjectPrivate::originalClone(const QMetaObject *mobj, int local_method_index)
 {
     Q_ASSERT(local_method_index < get(mobj)->methodCount);
-    int handle = get(mobj)->methodData + QMetaObjectPrivate::IntsPerMethod * local_method_index;
-    while (mobj->d.data[handle + 4] & MethodCloned) {
+    while (QMetaMethod::fromRelativeMethodIndex(mobj, local_method_index).data.flags() & MethodCloned) {
         Q_ASSERT(local_method_index > 0);
-        handle -= QMetaObjectPrivate::IntsPerMethod;
-        local_method_index--;
+        --local_method_index;
     }
     return local_method_index;
 }
