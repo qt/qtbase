@@ -512,7 +512,7 @@ static inline bool runSysApp(const QString &binary,
     errorMessage->clear();
     QProcess process;
     process.setEnvironment(env);
-    process.start(binary);
+    process.start(binary, QStringList());
     process.closeWriteChannel();
     if (!process.waitForStarted()) {
         *errorMessage = QLatin1String("Cannot start '") + binary
