@@ -78,15 +78,7 @@ void tst_QSortFilterProxyModel::cleanupTestCase()
 
 void tst_QSortFilterProxyModel::cleanup()
 {
-    switch (m_filterType) {
-    case FilterType::RegExp:
-        m_proxy->setFilterRegExp(QRegExp());
-        break;
-    case FilterType::RegularExpression:
-        m_proxy->setFilterRegularExpression(QRegularExpression());
-        break;
-    }
-
+    m_proxy->setFilterRegularExpression(QRegularExpression());
     m_proxy->sort(-1, Qt::AscendingOrder);
     m_model->clear();
     m_model->insertColumns(0, 1);
@@ -553,7 +545,7 @@ void tst_QSortFilterProxyModel::appendRowFromCombobox()
 
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
-    proxy.setFilterRegExp(pattern);
+    proxy.setFilterRegularExpression(pattern);
 
     QComboBox comboBox;
     comboBox.setModel(&proxy);
@@ -873,29 +865,16 @@ class MyFilteredColumnProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    MyFilteredColumnProxyModel(FilterType filterType, QObject *parent = nullptr) :
-        QSortFilterProxyModel(parent),
-        m_filterType(filterType)
+    MyFilteredColumnProxyModel(QObject *parent = nullptr) :
+        QSortFilterProxyModel(parent)
     { }
 
 protected:
     bool filterAcceptsColumn(int sourceColumn, const QModelIndex &) const override
     {
         QString key = sourceModel()->headerData(sourceColumn, Qt::Horizontal).toString();
-        bool result = false;
-        switch (m_filterType) {
-        case FilterType::RegExp:
-            result = key.contains(filterRegExp());
-            break;
-        case FilterType::RegularExpression:
-            result = key.contains(filterRegularExpression());
-            break;
-        }
-        return result;
+        return key.contains(filterRegularExpression());
     }
-
-private:
-    FilterType m_filterType;
 };
 
 void tst_QSortFilterProxyModel::removeColumns_data()
@@ -1104,7 +1083,7 @@ void tst_QSortFilterProxyModel::removeColumns()
     QFETCH(QStringList, expectedSource);
 
     QStandardItemModel model;
-    MyFilteredColumnProxyModel proxy(m_filterType);
+    MyFilteredColumnProxyModel proxy;
     proxy.setSourceModel(&model);
     if (!filter.isEmpty())
         setupFilter(&proxy, filter);
@@ -1358,14 +1337,7 @@ void tst_QSortFilterProxyModel::checkHierarchy(const QStringList &l, const QAbst
 
 void tst_QSortFilterProxyModel::setupFilter(QSortFilterProxyModel *model, const QString& pattern)
 {
-    switch (m_filterType) {
-    case FilterType::RegExp:
-        model->setFilterRegExp(pattern);
-        break;
-    case FilterType::RegularExpression:
-        model->setFilterRegularExpression(pattern);
-        break;
-    }
+    model->setFilterRegularExpression(pattern);
 }
 
 class TestModel: public QAbstractTableModel
@@ -4928,7 +4900,7 @@ void tst_QSortFilterProxyModel::filterAndInsertRow()
     model.setStringList(initialModelList);
     proxyModel.setSourceModel(&model);
     proxyModel.setDynamicSortFilter(true);
-    proxyModel.setFilterRegExp(filterRegExp);
+    proxyModel.setFilterRegularExpression(filterRegExp);
 
     QVERIFY(proxyModel.insertRow(row));
     QCOMPARE(model.stringList(), expectedModelList);

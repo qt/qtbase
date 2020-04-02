@@ -142,133 +142,6 @@ private:
     int end;
 };
 
-class RegularExpressionData {
-
-private:
-    enum class ExpressionType {
-        RegExp,
-#if QT_CONFIG(regularexpression)
-        RegularExpression
-#endif
-    };
-
-public:
-    RegularExpressionData() :
-        m_type(ExpressionType::RegExp)
-    {}
-
-#if QT_CONFIG(regularexpression)
-    QRegularExpression regularExpression() const
-    {
-        if (m_type == ExpressionType::RegularExpression)
-            return  m_regularExpression;
-        return QRegularExpression();
-    }
-
-    void setRegularExpression(const QRegularExpression &rx)
-    {
-        m_type = ExpressionType::RegularExpression;
-        m_regularExpression = rx;
-        m_regExp = QRegExp();
-    }
-#endif
-
-    QRegExp regExp() const
-    {
-        if (m_type == ExpressionType::RegExp)
-            return m_regExp;
-        return QRegExp();
-    }
-
-    void setRegExp(const QRegExp &rx)
-    {
-        m_type = ExpressionType::RegExp;
-        m_regExp = rx;
-#if QT_CONFIG(regularexpression)
-        m_regularExpression = QRegularExpression();
-#endif
-
-    }
-
-    bool isEmpty() const
-    {
-        bool result = true;
-        switch (m_type) {
-        case ExpressionType::RegExp:
-            result = m_regExp.isEmpty();
-            break;
-#if QT_CONFIG(regularexpression)
-        case ExpressionType::RegularExpression:
-            result = m_regularExpression.pattern().isEmpty();
-            break;
-#endif
-        }
-        return result;
-    }
-
-    Qt::CaseSensitivity caseSensitivity() const
-    {
-        Qt::CaseSensitivity sensitivity = Qt::CaseInsensitive;
-        switch (m_type) {
-        case ExpressionType::RegExp:
-            sensitivity = m_regExp.caseSensitivity();
-            break;
-#if QT_CONFIG(regularexpression)
-        case ExpressionType::RegularExpression:
-        {
-            QRegularExpression::PatternOptions options = m_regularExpression.patternOptions();
-            if (!(options & QRegularExpression::CaseInsensitiveOption))
-                sensitivity = Qt::CaseSensitive;
-        }
-            break;
-#endif
-        }
-        return sensitivity;
-    }
-
-    void setCaseSensitivity(Qt::CaseSensitivity cs)
-    {
-        switch (m_type) {
-        case ExpressionType::RegExp:
-            m_regExp.setCaseSensitivity(cs);
-            break;
-#if QT_CONFIG(regularexpression)
-        case ExpressionType::RegularExpression:
-        {
-            QRegularExpression::PatternOptions options = m_regularExpression.patternOptions();
-            options.setFlag(QRegularExpression::CaseInsensitiveOption, cs == Qt::CaseSensitive);
-            m_regularExpression.setPatternOptions(options);
-        }
-            break;
-#endif
-        }
-    }
-
-    bool hasMatch(const QString &str) const
-    {
-        bool result = false;
-        switch (m_type) {
-        case ExpressionType::RegExp:
-            result = str.contains(m_regExp);
-            break;
-#if QT_CONFIG(regularexpression)
-        case ExpressionType::RegularExpression:
-            result = str.contains(m_regularExpression);
-            break;
-#endif
-        }
-        return result;
-    }
-
-private:
-    ExpressionType m_type;
-    QRegExp m_regExp;
-#if QT_CONFIG(regularexpression)
-    QRegularExpression m_regularExpression;
-#endif
-};
-
-
 class QSortFilterProxyModelPrivate : public QAbstractProxyModelPrivate
 {
     Q_DECLARE_PUBLIC(QSortFilterProxyModel)
@@ -300,7 +173,7 @@ public:
 
     int filter_column;
     int filter_role;
-    RegularExpressionData filter_data;
+    QRegularExpression filter_data;
     QModelIndex last_top_source;
 
     bool filter_recursive;
@@ -1271,7 +1144,7 @@ void QSortFilterProxyModelPrivate::update_persistent_indexes(
 */
 void QSortFilterProxyModelPrivate::filter_about_to_be_changed(const QModelIndex &source_parent)
 {
-  if (!filter_data.isEmpty() &&
+  if (!filter_data.pattern().isEmpty() &&
         source_index_mapping.constFind(source_parent) == source_index_mapping.constEnd())
     create_mapping(source_parent);
 }
@@ -1934,9 +1807,9 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     \section1 Filtering
 
     In addition to sorting, QSortFilterProxyModel can be used to hide items
-    that do not match a certain filter. The filter is specified using a QRegExp
+    that do not match a certain filter. The filter is specified using a QRegularExpression
     object and is applied to the filterRole() (Qt::DisplayRole by default) of
-    each item, for a given column. The QRegExp object can be used to match a
+    each item, for a given column. The QRegularExpression object can be used to match a
     regular expression, a wildcard pattern, or a fixed string. For example:
 
     \snippet qsortfilterproxymodel-details/main.cpp 5
@@ -1984,21 +1857,6 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
 
     \note Some general guidelines for subclassing models are available in the
     \l{Model Subclassing Reference}.
-
-    \note With Qt 5, regular expression support has been improved through the
-    QRegularExpression class. QSortFilterProxyModel dating back prior to that
-    class creation, it originally supported only QRegExp. Since Qt 5.12,
-    QRegularExpression APIs have been added. Therefore, QRegExp APIs should be
-    considered deprecated and the QRegularExpression version should be used in
-    place.
-
-    \warning Don't mix calls to the getters and setters of different regexp types
-    as this will lead to unexpected results. For maximum compatibility, the original
-    implementation has been kept. Therefore, if, for example, a call to
-    setFilterRegularExpression is made followed by another one to
-    setFilterFixedString, the first call will setup a QRegularExpression object
-    to use as filter while the second will setup a QRegExp in FixedString mode.
-    However, this is an implementation detail that might change in the future.
 
     \sa QAbstractProxyModel, QAbstractItemModel, {Model/View Programming},
     {Basic Sort/Filter Model Example}, {Custom Sort/Filter Model Example}, QIdentityProxyModel
@@ -2595,33 +2453,6 @@ Qt::SortOrder QSortFilterProxyModel::sortOrder() const
     return d->sort_order;
 }
 
-/*!
-    \property QSortFilterProxyModel::filterRegExp
-    \brief the QRegExp used to filter the contents of the source model
-
-    Setting this property overwrites the current
-    \l{QSortFilterProxyModel::filterCaseSensitivity}{filterCaseSensitivity}.
-    By default, the QRegExp is an empty string matching all contents.
-
-    If no QRegExp or an empty string is set, everything in the source model
-    will be accepted.
-
-    \sa filterCaseSensitivity, setFilterWildcard(), setFilterFixedString()
-*/
-QRegExp QSortFilterProxyModel::filterRegExp() const
-{
-    Q_D(const QSortFilterProxyModel);
-    return d->filter_data.regExp();
-}
-
-void QSortFilterProxyModel::setFilterRegExp(const QRegExp &regExp)
-{
-    Q_D(QSortFilterProxyModel);
-    d->filter_about_to_be_changed();
-    d->filter_data.setRegExp(regExp);
-    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
-}
-
 #if QT_CONFIG(regularexpression)
 /*!
     \since 5.12
@@ -2640,14 +2471,14 @@ void QSortFilterProxyModel::setFilterRegExp(const QRegExp &regExp)
 QRegularExpression QSortFilterProxyModel::filterRegularExpression() const
 {
     Q_D(const QSortFilterProxyModel);
-    return d->filter_data.regularExpression();
+    return d->filter_data;
 }
 
 void QSortFilterProxyModel::setFilterRegularExpression(const QRegularExpression &regularExpression)
 {
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
-    d->filter_data.setRegularExpression(regularExpression);
+    d->filter_data = regularExpression;
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 #endif
@@ -2677,12 +2508,12 @@ void QSortFilterProxyModel::setFilterKeyColumn(int column)
 /*!
     \property QSortFilterProxyModel::filterCaseSensitivity
 
-    \brief the case sensitivity of the QRegExp pattern used to filter the
+    \brief the case sensitivity of the QRegularExpression pattern used to filter the
     contents of the source model.
 
     By default, the filter is case sensitive.
 
-    \sa filterRegExp, sortCaseSensitivity
+    \sa filterRegularExpression, sortCaseSensitivity
 */
 
 /*!
@@ -2694,16 +2525,20 @@ void QSortFilterProxyModel::setFilterKeyColumn(int column)
 Qt::CaseSensitivity QSortFilterProxyModel::filterCaseSensitivity() const
 {
     Q_D(const QSortFilterProxyModel);
-    return d->filter_data.caseSensitivity();
+    return d->filter_data.patternOptions() & QRegularExpression::CaseInsensitiveOption ?
+                Qt::CaseInsensitive : Qt::CaseSensitive;
 }
 
 void QSortFilterProxyModel::setFilterCaseSensitivity(Qt::CaseSensitivity cs)
 {
     Q_D(QSortFilterProxyModel);
-    if (cs == d->filter_data.caseSensitivity())
+    QRegularExpression::PatternOptions o = QRegularExpression::NoPatternOption;
+    if (cs == Qt::CaseInsensitive)
+        o = QRegularExpression::CaseInsensitiveOption;
+    if (o == d->filter_data.patternOptions())
         return;
     d->filter_about_to_be_changed();
-    d->filter_data.setCaseSensitivity(cs);
+    d->filter_data.setPatternOptions(o);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
     emit filterCaseSensitivityChanged(cs);
 }
@@ -2774,24 +2609,6 @@ void QSortFilterProxyModel::setSortLocaleAware(bool on)
     emit sortLocaleAwareChanged(on);
 }
 
-/*!
-    \overload
-
-    Sets the regular expression used to filter the contents
-    of the source model to \a pattern.
-
-    \sa setFilterCaseSensitivity(), setFilterWildcard(), setFilterFixedString(), filterRegExp()
-*/
-void QSortFilterProxyModel::setFilterRegExp(const QString &pattern)
-{
-    Q_D(QSortFilterProxyModel);
-    d->filter_about_to_be_changed();
-    QRegExp rx(pattern);
-    rx.setCaseSensitivity(d->filter_data.caseSensitivity());
-    d->filter_data.setRegExp(rx);
-    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
-}
-
 #if QT_CONFIG(regularexpression)
 /*!
     \since 5.12
@@ -2809,7 +2626,7 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QString &pattern)
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
     QRegularExpression rx(pattern);
-    d->filter_data.setRegularExpression(rx);
+    d->filter_data.setPattern(pattern);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 #endif
@@ -2818,14 +2635,14 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QString &pattern)
     Sets the wildcard expression used to filter the contents
     of the source model to the given \a pattern.
 
-    \sa setFilterCaseSensitivity(), setFilterRegExp(), setFilterFixedString(), filterRegExp()
+    \sa setFilterCaseSensitivity(), setFilterRegularExpression(), setFilterFixedString(), filterRegularExpression()
 */
 void QSortFilterProxyModel::setFilterWildcard(const QString &pattern)
 {
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
-    QRegExp rx(pattern, d->filter_data.caseSensitivity(), QRegExp::Wildcard);
-    d->filter_data.setRegExp(rx);
+    QString p = QRegularExpression::wildcardToRegularExpression(pattern, QRegularExpression::UnanchoredWildcardConversion);
+    d->filter_data.setPattern(p);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 
@@ -2833,14 +2650,13 @@ void QSortFilterProxyModel::setFilterWildcard(const QString &pattern)
     Sets the fixed string used to filter the contents
     of the source model to the given \a pattern.
 
-    \sa setFilterCaseSensitivity(), setFilterRegExp(), setFilterWildcard(), filterRegExp()
+    \sa setFilterCaseSensitivity(), setFilterRegularExpression(), setFilterWildcard(), filterRegularExpression()
 */
 void QSortFilterProxyModel::setFilterFixedString(const QString &pattern)
 {
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
-    QRegExp rx(pattern, d->filter_data.caseSensitivity(), QRegExp::FixedString);
-    d->filter_data.setRegExp(rx);
+    d->filter_data.setPattern(QRegularExpression::escape(pattern));
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
 
@@ -3130,20 +2946,20 @@ bool QSortFilterProxyModel::lessThan(const QModelIndex &source_left, const QMode
     should be accepted or not. This can be changed by setting the
     \l{QSortFilterProxyModel::filterRole}{filterRole} property.
 
-    \sa filterAcceptsColumn(), setFilterFixedString(), setFilterRegExp(), setFilterWildcard()
+    \sa filterAcceptsColumn(), setFilterFixedString(), setFilterRegularExpression(), setFilterWildcard()
 */
 bool QSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
     Q_D(const QSortFilterProxyModel);
 
-    if (d->filter_data.isEmpty())
+    if (d->filter_data.pattern().isEmpty())
         return true;
     if (d->filter_column == -1) {
         int column_count = d->model->columnCount(source_parent);
         for (int column = 0; column < column_count; ++column) {
             QModelIndex source_index = d->model->index(source_row, column, source_parent);
             QString key = d->model->data(source_index, d->filter_role).toString();
-            if (d->filter_data.hasMatch(key))
+            if (d->filter_data.match(key).hasMatch())
                 return true;
         }
         return false;
@@ -3152,7 +2968,7 @@ bool QSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &
     if (!source_index.isValid()) // the column may not exist
         return true;
     QString key = d->model->data(source_index, d->filter_role).toString();
-    return d->filter_data.hasMatch(key);
+    return d->filter_data.match(key).hasMatch();
 }
 
 /*!
@@ -3162,7 +2978,7 @@ bool QSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &
     \note The default implementation always returns \c true. You must reimplement this
     method to get the described behavior.
 
-    \sa filterAcceptsRow(), setFilterFixedString(), setFilterRegExp(), setFilterWildcard()
+    \sa filterAcceptsRow(), setFilterFixedString(), setFilterRegularExpression(), setFilterWildcard()
 */
 bool QSortFilterProxyModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
 {

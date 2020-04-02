@@ -42,7 +42,6 @@ private slots:
 tst_QSortFilterProxyModelRegularExpression::tst_QSortFilterProxyModelRegularExpression() :
     tst_QSortFilterProxyModel()
 {
-    m_filterType = FilterType::RegularExpression;
 }
 
 void tst_QSortFilterProxyModelRegularExpression::tst_invalid()
@@ -51,8 +50,6 @@ void tst_QSortFilterProxyModelRegularExpression::tst_invalid()
     QSortFilterProxyModel model;
     model.setFilterRegularExpression(pattern);
     QCOMPARE(model.filterRegularExpression(), QRegularExpression(pattern));
-    model.setFilterRegExp(pattern);
-    QCOMPARE(model.filterRegularExpression(), QRegularExpression());
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModelRegularExpression)

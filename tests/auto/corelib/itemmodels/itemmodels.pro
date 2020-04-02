@@ -13,7 +13,6 @@ qtHaveModule(gui): SUBDIRS += \
 
 qtHaveModule(widgets) {
     SUBDIRS += \
-        qsortfilterproxymodel_regexp \
         qsortfilterproxymodel_regularexpression
 
     qtHaveModule(sql): SUBDIRS += \

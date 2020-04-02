@@ -41,7 +41,6 @@
 #define QSORTFILTERPROXYMODEL_H
 
 #include <QtCore/qabstractproxymodel.h>
-#include <QtCore/qregexp.h>
 
 #if QT_CONFIG(regularexpression)
 # include <QtCore/qregularexpression.h>
@@ -62,7 +61,6 @@ class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
     friend class QSortFilterProxyModelGreaterThan;
 
     Q_OBJECT
-    Q_PROPERTY(QRegExp filterRegExp READ filterRegExp WRITE setFilterRegExp)
 #if QT_CONFIG(regularexpression)
     Q_PROPERTY(QRegularExpression filterRegularExpression READ filterRegularExpression WRITE setFilterRegularExpression)
 #endif
@@ -86,8 +84,6 @@ public:
 
     QItemSelection mapSelectionToSource(const QItemSelection &proxySelection) const override;
     QItemSelection mapSelectionFromSource(const QItemSelection &sourceSelection) const override;
-
-    QRegExp filterRegExp() const;
 
 #if QT_CONFIG(regularexpression)
     QRegularExpression filterRegularExpression() const;
@@ -121,8 +117,6 @@ public:
     void setRecursiveFilteringEnabled(bool recursive);
 
 public Q_SLOTS:
-    void setFilterRegExp(const QString &pattern);
-    void setFilterRegExp(const QRegExp &regExp);
 #if QT_CONFIG(regularexpression)
     void setFilterRegularExpression(const QString &pattern);
     void setFilterRegularExpression(const QRegularExpression &regularExpression);
