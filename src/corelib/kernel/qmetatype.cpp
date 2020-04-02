@@ -659,7 +659,7 @@ void QMetaType::destruct(void *data) const
     }
 }
 
-void QtMetaTypePrivate::derefAndDestroy(QtPrivate::QMetaTypeInterface *d_ptr)
+void QtMetaTypePrivate::derefAndDestroy(NS(QtPrivate::QMetaTypeInterface) *d_ptr)
 {
     if (d_ptr && !d_ptr->ref.deref()) {
         if (auto reg = customTypeRegistry())
