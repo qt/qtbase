@@ -2188,14 +2188,16 @@ endfunction()
 # main_target_name = qtwaylandscanner
 # dep_package_name = WaylandScanner
 function(qt_record_extra_package_dependency main_target_name dep_package_name dep_package_version)
-    get_target_property(extra_packages "${main_target_name}" QT_EXTRA_PACKAGE_DEPENDENCIES)
-    if(NOT extra_packages)
-        set(extra_packages "")
-    endif()
+    if (TARGET "${main_target_name}")
+        get_target_property(extra_packages "${main_target_name}" QT_EXTRA_PACKAGE_DEPENDENCIES)
+        if(NOT extra_packages)
+            set(extra_packages "")
+        endif()
 
-    list(APPEND extra_packages "${dep_package_name}\;${dep_package_version}")
-    set_target_properties("${main_target_name}" PROPERTIES QT_EXTRA_PACKAGE_DEPENDENCIES
-                                                           "${extra_packages}")
+        list(APPEND extra_packages "${dep_package_name}\;${dep_package_version}")
+        set_target_properties("${main_target_name}" PROPERTIES QT_EXTRA_PACKAGE_DEPENDENCIES
+                                                               "${extra_packages}")
+    endif()
 endfunction()
 
 # This function records a dependency between ${main_target_name} and ${dep_target_name}
