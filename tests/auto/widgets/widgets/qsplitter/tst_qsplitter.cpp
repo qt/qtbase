@@ -763,7 +763,7 @@ void tst_QSplitter::replaceWidget()
     // the same size on the new widget. Because of QLabel's sizing
     // constraints (they can expand but not shrink) the easiest is
     // to set a shorter label.
-    QLabel *newWidget = new QLabel(QLatin1String("<b>NEW</b>"));
+    QLabel *newWidget = new QLabel(QLatin1String("NEW"));
 
     EventCounterSpy ef(&sp);
     ef.installEventFilter();
