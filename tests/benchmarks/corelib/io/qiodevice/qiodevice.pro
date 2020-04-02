@@ -1,8 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_qiodevice
-
+CONFIG += benchmark
 QT = core testlib
 
-CONFIG += release
-
+TARGET = tst_bench_qiodevice
 SOURCES += main.cpp

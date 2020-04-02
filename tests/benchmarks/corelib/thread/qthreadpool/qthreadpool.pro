@@ -1,5 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_qthreadpool
-
-SOURCES += tst_qthreadpool.cpp
+CONFIG += benchmark
 QT = core testlib
+
+TARGET = tst_bench_qthreadpool
+SOURCES += tst_qthreadpool.cpp

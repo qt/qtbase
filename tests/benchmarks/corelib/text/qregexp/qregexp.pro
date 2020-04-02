@@ -1,8 +1,9 @@
 TEMPLATE = app
-TARGET = tst_bench_qregexp
+CONFIG += benchmark
+CONFIG += exceptions
 QT = core testlib
-CONFIG += release exceptions
 
+TARGET = tst_bench_qregexp
 SOURCES += main.cpp
 RESOURCES += qregexp.qrc
 
@@ -17,4 +18,3 @@ qtHaveModule(script):!pcre {
         LIBS += -lboost_regex
     }
 }
-

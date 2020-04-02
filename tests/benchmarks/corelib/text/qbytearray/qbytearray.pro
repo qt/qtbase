@@ -1,7 +1,7 @@
 TEMPLATE = app
-TARGET = tst_bench_qbytearray
-
+CONFIG += benchmark
 QT = core testlib
 
-TESTDATA += main.cpp
+TARGET = tst_bench_qbytearray
 SOURCES += main.cpp
+TESTDATA += main.cpp

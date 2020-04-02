@@ -1,4 +1,5 @@
-TARGET = tst_bench_qdatetime
+CONFIG += benchmark
 QT = core testlib
 
+TARGET = tst_bench_qdatetime
 SOURCES += main.cpp
