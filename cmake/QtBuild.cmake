@@ -3096,22 +3096,20 @@ function(qt_add_3rdparty_library target)
 
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
-    if(NOT arg_HEADER_MODULE)
-        set_target_properties(${target} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
-            RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-            ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR}
-            QT_MODULE_IS_3RDPARTY_LIBRARY TRUE
-            QT_MODULE_SKIP_DEPENDS_INCLUDE TRUE
-        )
-        qt_handle_multi_config_output_dirs("${target}")
+    set_target_properties(${target} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+        RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+        ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
+        QT_MODULE_IS_3RDPARTY_LIBRARY TRUE
+        QT_MODULE_SKIP_DEPENDS_INCLUDE TRUE
+    )
+    qt_handle_multi_config_output_dirs("${target}")
 
-        set_target_properties(${target} PROPERTIES
-            OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
-        )
-    endif()
+    set_target_properties(${target} PROPERTIES
+        OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
+    )
 
     if(NOT arg_INTERFACE)
         # This property is used for super builds with static libraries. We use
