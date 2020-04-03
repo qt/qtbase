@@ -46,10 +46,9 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \group qt-lighthouse-win
-    \title Qt Lighthouse plugin for Windows
+    \title Qt platform plugin for Windows
 
-    \brief Class documentation of the  Qt Lighthouse plugin for Windows.
+    \brief Class documentation of the  Qt platform plugin for Windows.
 
     \section1 Supported Parameters
 
@@ -78,7 +77,6 @@ QT_BEGIN_NAMESPACE
     \class QWindowsIntegrationPlugin
     \brief Plugin.
     \internal
-    \ingroup qt-lighthouse-win
  */
 
 /*!
@@ -86,7 +84,6 @@ QT_BEGIN_NAMESPACE
 
     \brief Namespace for enumerations, etc.
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 /*!
@@ -97,7 +94,6 @@ QT_BEGIN_NAMESPACE
     With flags that should help to structure the code.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsIntegrationPlugin : public QPlatformIntegrationPlugin

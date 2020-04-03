@@ -65,7 +65,6 @@ QT_BEGIN_NAMESPACE
     Qt Widgets, either the containers or the items might be deleted first.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 static uint nextId = 1;

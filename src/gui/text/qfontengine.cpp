@@ -2268,7 +2268,7 @@ bool QFontEngineMulti::canRender(const QChar *string, int len) const
     return true;
 }
 
-/* Implement alphaMapForGlyph() which is called by Lighthouse/Windows code.
+/* Implement alphaMapForGlyph() which is called by QPA Windows code.
  * Ideally, that code should be fixed to correctly handle QFontEngineMulti. */
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph)

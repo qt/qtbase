@@ -60,7 +60,6 @@
 
     \sa QInternalMimeData, QWindowsMime, QWindowsMimeConverter
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 bool QWindowsInternalMimeData::hasFormat_sys(const QString &mime) const

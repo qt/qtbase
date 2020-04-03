@@ -74,8 +74,6 @@ QT_BEGIN_NAMESPACE
 
     Input method support in Cocoa uses NSTextInput protorol. Therefore
     almost all functionality is implemented in QNSView.
-
-    \ingroup qt-lighthouse-cocoa
 */
 
 

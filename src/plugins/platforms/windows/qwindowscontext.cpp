@@ -185,7 +185,6 @@ static bool enableNonClientDpiScaling(HWND hwnd)
     \sa QWindowsShell32DLL
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 void QWindowsUser32DLL::init()
@@ -251,7 +250,6 @@ QWindowsContext *QWindowsContext::m_instance = nullptr;
     Holds state information formerly stored in \c qapplication_win.cpp.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 typedef QHash<HWND, QWindowsWindow *> HandleBaseWindowHash;
@@ -1673,7 +1671,6 @@ static inline bool isTopLevel(HWND hwnd)
     There is another one for timers, sockets, etc in
     QEventDispatcherWin32.
 
-    \ingroup qt-lighthouse-win
 */
 
 extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)

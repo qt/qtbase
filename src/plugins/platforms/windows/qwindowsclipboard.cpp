@@ -71,7 +71,6 @@ QT_BEGIN_NAMESPACE
     \note The OLE-functions used in this class require OleInitialize().
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -110,7 +109,6 @@ static QDebug operator<<(QDebug d, const QMimeData *mimeData)
 
     \sa QWindowsInternalMimeDataBase, QWindowsClipboard
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 IDataObject *QWindowsClipboardRetrievalMimeData::retrieveDataObject() const

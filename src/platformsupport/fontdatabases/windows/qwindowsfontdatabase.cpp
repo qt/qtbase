@@ -587,7 +587,6 @@ namespace {
 /*!
     \struct QWindowsFontEngineData
     \brief Static constant data shared by the font engines.
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsFontEngineData::QWindowsFontEngineData()
@@ -673,10 +672,9 @@ static inline bool initDirectWrite(QWindowsFontEngineData *d)
     delayed population of the database again passing a font name
     to EnumFontFamiliesEx(), working around the fact that
     EnumFontFamiliesEx() does not list all fonts by default.
-    This should be introduced to Lighthouse as well?
+    This should be introduced to QPA as well?
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 #ifndef QT_NO_DEBUG_STREAM

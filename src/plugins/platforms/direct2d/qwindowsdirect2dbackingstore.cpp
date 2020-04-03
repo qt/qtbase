@@ -58,7 +58,6 @@ QT_BEGIN_NAMESPACE
     \class QWindowsDirect2DBackingStore
     \brief Backing store for windows.
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 static inline QWindowsDirect2DPlatformPixmap *platformPixmap(QPixmap *p)

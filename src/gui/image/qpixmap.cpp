@@ -78,7 +78,7 @@ static bool qt_pixmap_thread_test()
     if (qApp->thread() != QThread::currentThread()) {
         bool fail = false;
         if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
-            printf("Lighthouse plugin does not support threaded pixmaps!\n");
+            printf("Platform plugin does not support threaded pixmaps!\n");
             fail = true;
         }
         if (fail) {
