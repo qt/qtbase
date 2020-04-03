@@ -865,7 +865,9 @@ def get_feature_mapping():
             "enable": "TEST_posix_iconv AND TEST_iconv_needlib",
             "disable": "NOT TEST_posix_iconv OR NOT TEST_iconv_needlib",
         },
-        "precompile_header": None,
+        "precompile_header": {
+            "condition": "BUILD_WITH_PCH"
+        },
         "profile": None,
         "qmakeargs": None,
         "qpa_default_platform": None,  # Not a bool!

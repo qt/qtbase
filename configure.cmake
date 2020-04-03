@@ -130,7 +130,8 @@ int main(int argc, char **argv)
 
 qt_config_compile_test("separate_debug_info"
                    LABEL "separate debug information support"
-                   PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/separate_debug_info")
+                   PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/separate_debug_info"
+)
 # signaling_nan
 qt_config_compile_test(signaling_nan
     LABEL "Signaling NaN for doubles"
@@ -492,6 +493,11 @@ qt_feature("c11" PUBLIC
     LABEL "C11"
     CONDITION QT_FEATURE_c99 AND c_std_11 IN_LIST CMAKE_C_COMPILE_FEATURES
 )
+qt_feature("precompile_header"
+    LABEL "Using precompiled headers"
+    CONDITION BUILD_WITH_PCH
+)
+qt_feature_config("precompile_header" QMAKE_PRIVATE_CONFIG)
 qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
     CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
