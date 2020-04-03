@@ -10,6 +10,7 @@ DEFINES += \
     PROEVALUATOR_FULL \
     QT_BOOTSTRAPPED \
     QT_BUILD_QMAKE \
+    QT_USE_QSTRINGBUILDER \
     QT_NO_FOREACH \
     $$shell_quote(QT_VERSION_STR=\"$$QT_VERSION\") \
     QT_VERSION_MAJOR=$$QT_MAJOR_VERSION \
@@ -153,6 +154,7 @@ SOURCES += \
     qromancalendar.cpp \
     qsettings.cpp \
     qstring.cpp \
+    qstringbuilder.cpp \
     qstringlist.cpp \
     qsystemerror.cpp \
     qtemporaryfile.cpp \
@@ -209,6 +211,7 @@ HEADERS += \
     qregexp.h \
     qromancalendar_p.h \
     qstring.h \
+    qstringbuilder.h \
     qstringlist.h \
     qstringmatcher.h \
     qsystemerror_p.h \

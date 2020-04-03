@@ -72,6 +72,7 @@ qt_add_tool(qmake # special case
         ../src/corelib/text/qregexp.cpp ../src/corelib/text/qregexp.h
         ../src/corelib/tools/qringbuffer.cpp # special case
         ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h
+        ../src/corelib/text/qstringbuilder.cpp ../src/corelib/text/qstringbuilder.h
         ../src/corelib/text/qstringlist.cpp ../src/corelib/text/qstringlist.h
         ../src/corelib/text/qstringmatcher.h
         ../src/corelib/tools/qvector.h
@@ -110,6 +111,7 @@ qt_add_tool(qmake # special case
         PROEVALUATOR_FULL
         QT_BOOTSTRAPPED
         QT_BUILD_QMAKE
+        QT_USE_QSTRINGBUILDER
         QT_NO_FOREACH
         QT_VERSION_STR="${PROJECT_VERSION}" # special case
         QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case

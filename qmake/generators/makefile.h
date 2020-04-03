@@ -140,10 +140,16 @@ protected:
     //escape
     virtual QString escapeFilePath(const QString &path) const = 0;
     ProString escapeFilePath(const ProString &path) const;
+    template<typename A, typename B>
+    QString escapeFilePath(const QStringBuilder<A, B> &path) const
+    { return escapeFilePath(QString(path)); }
     QStringList escapeFilePaths(const QStringList &paths) const;
     ProStringList escapeFilePaths(const ProStringList &paths) const;
     virtual QString escapeDependencyPath(const QString &path) const;
     ProString escapeDependencyPath(const ProString &path) const;
+    template<typename A, typename B>
+    QString escapeDependencyPath(const QStringBuilder<A, B> &path) const
+    { return escapeDependencyPath(QString(path)); }
     QStringList escapeDependencyPaths(const QStringList &paths) const;
     ProStringList escapeDependencyPaths(const ProStringList &paths) const;
 

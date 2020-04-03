@@ -86,8 +86,8 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
 
     if (project->isActiveConfig("debug_info")) {
         if (t == "dlltarget" || project->values(ProKey(t + ".CONFIG")).indexOf("no_dll") == -1) {
-            const QFileInfo targetFileInfo = project->first("DESTDIR") + project->first("TARGET")
-                    + project->first("TARGET_EXT");
+            const QFileInfo targetFileInfo(project->first("DESTDIR") + project->first("TARGET")
+                    + project->first("TARGET_EXT"));
             const QString pdb_target = targetFileInfo.completeBaseName() + ".pdb";
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
             QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
@@ -245,8 +245,8 @@ void NmakeMakefileGenerator::init()
         project->values("PRECOMPILED_PCH_C")    = ProStringList(precompPchC);
     }
 
-    const QFileInfo targetFileInfo = project->first("DESTDIR") + project->first("TARGET")
-            + project->first("TARGET_EXT");
+    const QFileInfo targetFileInfo(project->first("DESTDIR") + project->first("TARGET")
+            + project->first("TARGET_EXT"));
     const ProString targetBase = targetFileInfo.path() + '/' + targetFileInfo.completeBaseName();
     if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("shared")) {
         project->values("QMAKE_CLEAN").append(targetBase + ".exp");

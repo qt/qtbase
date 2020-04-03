@@ -50,7 +50,7 @@ protected:
 
     bool findLibraries(bool linkPrl, bool mergeLflags) override;
     QString escapeFilePath(const QString &path) const override;
-    ProString escapeFilePath(const ProString &path) const { return MakefileGenerator::escapeFilePath(path); }
+    using MakefileGenerator::escapeFilePath;
     QStringList &findDependencies(const QString &) override;
     void init() override;
 

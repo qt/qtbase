@@ -21,6 +21,7 @@ add_qt_test(tst_qmakelib
         PROEVALUATOR_FULL
         PROEVALUATOR_SETENV
         PROPARSER_DEBUG
+        QT_USE_QSTRINGBUILDER
     INCLUDE_DIRECTORIES
         ../../../../qmake/library
 )

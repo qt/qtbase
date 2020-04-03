@@ -2273,7 +2273,7 @@ QString MakefileGenerator::fullBuildArgs()
 
     //output
     QString ofile = fileFixify(Option::output.fileName());
-    if(!ofile.isEmpty() && ofile != project->first("QMAKE_MAKEFILE"))
+    if (!ofile.isEmpty() && ofile != project->first("QMAKE_MAKEFILE").toQStringView())
         ret += " -o " + escapeFilePath(ofile);
 
     //inputs
@@ -2515,7 +2515,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         if(!abs_source_path.isEmpty() && out_directory.startsWith(abs_source_path))
             out_directory = Option::output_dir + out_directory.mid(abs_source_path.length());
 
-        QString out_directory_cdin = out_directory.isEmpty() ? "\n\t"
+        QString out_directory_cdin = out_directory.isEmpty() ? QString("\n\t")
                                                              : "\n\tcd " + escapeFilePath(out_directory) + " && ";
         QString makefilein = " -f " + escapeFilePath(subtarget->makefile);
 
@@ -2696,7 +2696,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 if(!recurse.contains(subtarget->name))
                     continue;
 
-                QString out_directory_cdin = out_directory.isEmpty() ? "\n\t"
+                QString out_directory_cdin = out_directory.isEmpty() ? QString("\n\t")
                                                                      : "\n\tcd " + escapeFilePath(out_directory) + " && ";
                 QString makefilein = " -f " + escapeFilePath(subtarget->makefile);
 

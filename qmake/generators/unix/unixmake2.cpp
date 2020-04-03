@@ -134,7 +134,7 @@ UnixMakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::
         if (!dist_directory.startsWith(Option::dir_sep))
             dist_directory.prepend(Option::dir_sep);
 
-        QString out_directory_cdin = out_directory.isEmpty() ? "\n\t"
+        QString out_directory_cdin = out_directory.isEmpty() ? QString("\n\t")
                                                              : "\n\tcd " + escapeFilePath(out_directory) + " && ";
         QString makefilein = " -e -f " + escapeFilePath(subtarget->makefile)
                 + " distdir DISTDIR=$(DISTDIR)" + escapeFilePath(dist_directory);
@@ -749,7 +749,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 (!isShallowBundle
                     ? (isFramework
                         ? ("Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") + "/Resources/")
-                        : "Contents/")
+                        : QString("Contents/"))
                     : QString())
                 + "Info.plist";
             bundledFiles << info_plist_out;

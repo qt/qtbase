@@ -644,7 +644,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 bool isObj = project->values(ProKey(*it + ".CONFIG")).indexOf("no_link") == -1;
                 if (!isObj) {
                     for (int i = 0; i < sources.size(); ++i) {
-                        if (sources.at(i).keyName() == inputs.at(input)) {
+                        if (sources.at(i).keyName() == inputs.at(input).toQStringView()) {
                             duplicate = true;
                             break;
                         }
