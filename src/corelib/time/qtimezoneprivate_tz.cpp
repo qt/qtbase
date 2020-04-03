@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Crimson AS <info@crimson.no>
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
@@ -42,18 +43,19 @@
 #include "qtimezoneprivate_p.h"
 #include "private/qlocale_tools_p.h"
 
-#include <QtCore/QFile>
-#include <QtCore/QMutex>
-#include <QtCore/QHash>
 #include <QtCore/QDataStream>
 #include <QtCore/QDateTime>
+#include <QtCore/QFile>
+#include <QtCore/QHash>
+#include <QtCore/QMutex>
 
 #include <qdebug.h>
+#include <qplatformdefs.h>
 
 #include <algorithm>
 #include <errno.h>
 #include <limits.h>
-#if !defined(Q_OS_INTEGRITY)
+#ifndef Q_OS_INTEGRITY
 #include <sys/param.h> // to use MAXSYMLINKS constant
 #endif
 #include <unistd.h>    // to use _SC_SYMLOOP_MAX constant
@@ -1100,73 +1102,6 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
     return last > tranCache().cbegin() ? dataForTzTransition(*--last) : invalidData();
 }
 
-static long getSymloopMax()
-{
-#if defined(SYMLOOP_MAX)
-    return SYMLOOP_MAX; // if defined, at runtime it can only be greater than this, so this is a safe bet
-#else
-    errno = 0;
-    long result = sysconf(_SC_SYMLOOP_MAX);
-    if (result >= 0)
-        return result;
-    // result is -1, meaning either error or no limit
-    Q_ASSERT(!errno); // ... but it can't be an error, POSIX mandates _SC_SYMLOOP_MAX
-
-    // therefore we can make up our own limit
-#  if defined(MAXSYMLINKS)
-    return MAXSYMLINKS;
-#  else
-    return 8;
-#  endif
-#endif
-}
-
-// TODO Could cache the value and monitor the required files for any changes
-QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
-{
-    // Check TZ env var first, if not populated try find it
-    QByteArray ianaId = qgetenv("TZ");
-
-    // The TZ value can be ":/etc/localtime" which libc considers
-    // to be a "default timezone", in which case it will be read
-    // by one of the blocks below, so unset it here so it is not
-    // considered as a valid/found ianaId
-    if (ianaId == ":/etc/localtime")
-        ianaId.clear();
-    else if (ianaId.startsWith(':'))
-        ianaId = ianaId.mid(1);
-
-    // On most distros /etc/localtime is a symlink to a real file so extract name from the path
-    if (ianaId.isEmpty()) {
-        const QLatin1String zoneinfo("/zoneinfo/");
-        QString path = QFile::symLinkTarget(QStringLiteral("/etc/localtime"));
-        int index = -1;
-        long iteration = getSymloopMax();
-        // Symlink may point to another symlink etc. before being under zoneinfo/
-        // We stop on the first path under /zoneinfo/, even if it is itself a
-        // symlink, like America/Montreal pointing to America/Toronto
-        while (iteration-- > 0 && !path.isEmpty() && (index = path.indexOf(zoneinfo)) < 0)
-            path = QFile::symLinkTarget(path);
-        if (index >= 0) {
-            // /etc/localtime is a symlink to the current TZ file, so extract from path
-            ianaId = path.midRef(index + zoneinfo.size()).toUtf8();
-        }
-    }
-
-    // Some systems (e.g. uClibc) have a default value for $TZ in /etc/TZ:
-    if (ianaId.isEmpty()) {
-        QFile zone(QStringLiteral("/etc/TZ"));
-        if (zone.open(QIODevice::ReadOnly))
-            ianaId = zone.readAll().trimmed();
-    }
-
-    // Give up for now and return UTC
-    if (ianaId.isEmpty())
-        ianaId = utcQByteArray();
-
-    return ianaId;
-}
-
 bool QTzTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
 {
     return tzZones->contains(ianaId);
@@ -1189,6 +1124,148 @@ QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Country coun
     }
     std::sort(result.begin(), result.end());
     return result;
+}
+
+// Getting the system zone's ID:
+
+namespace {
+class ZoneNameReader : public QObject
+{
+public:
+    QByteArray name()
+    {
+        /* Assumptions:
+           a) Systems don't change which of localtime and TZ they use without a
+              reboot.
+           b) When they change, they use atomic renames, hence a new device and
+              inode for the new file.
+           c) If we change which *name* is used for a zone, while referencing
+              the same final zoneinfo file, we don't care about the change of
+              name (e.g. if Europe/Oslo and Europe/Berlin are both symlinks to
+              the same CET file, continuing to use the old name, after
+              /etc/localtime changes which of the two it points to, is
+              harmless).
+
+           The alternative would be to use a file-system watcher, but they are a
+           scarce resource.
+         */
+        const StatIdent local = identify("/etc/localtime");
+        const StatIdent tz = identify("/etc/TZ");
+        if (!m_name.isEmpty() && m_last.isValid() && (m_last == local || m_last == tz))
+            return m_name;
+
+        m_name = etcLocalTime();
+        if (!m_name.isEmpty()) {
+            m_last = local;
+            return m_name;
+        }
+
+        m_name = etcTZ();
+        m_last = m_name.isEmpty() ? StatIdent() : tz;
+        return m_name;
+    }
+
+
+private:
+    QByteArray m_name;
+    struct StatIdent
+    {
+        static constexpr unsigned long bad = ~0ul;
+        unsigned long m_dev, m_ino;
+        StatIdent() : m_dev(bad), m_ino(bad) {}
+        StatIdent(const QT_STATBUF &data) : m_dev(data.st_dev), m_ino(data.st_ino) {}
+        bool isValid() { return m_dev != bad || m_ino != bad; }
+        bool operator==(const StatIdent &other)
+        { return other.m_dev == m_dev && other.m_ino == m_ino; }
+    };
+    StatIdent m_last;
+
+    static StatIdent identify(const char *path)
+    {
+        QT_STATBUF data;
+        return QT_STAT(path, &data) == -1 ? StatIdent() : StatIdent(data);
+    }
+
+    static QByteArray etcLocalTime()
+    {
+        // On most distros /etc/localtime is a symlink to a real file so extract
+        // name from the path
+        const QLatin1String zoneinfo("/zoneinfo/");
+        QString path = QStringLiteral("/etc/localtime");
+        long iteration = getSymloopMax();
+        // Symlink may point to another symlink etc. before being under zoneinfo/
+        // We stop on the first path under /zoneinfo/, even if it is itself a
+        // symlink, like America/Montreal pointing to America/Toronto
+        do {
+            path = QFile::symLinkTarget(path);
+            int index = path.indexOf(zoneinfo);
+            if (index >= 0) // Found zoneinfo file; extract zone name from path:
+                return path.midRef(index + zoneinfo.size()).toUtf8();
+        } while (!path.isEmpty() && --iteration > 0);
+
+        return QByteArray();
+    }
+
+    static QByteArray etcTZ()
+    {
+        // Some systems (e.g. uClibc) have a default value for $TZ in /etc/TZ:
+        const QString path = QStringLiteral("/etc/TZ");
+        QFile zone(path);
+        if (zone.open(QIODevice::ReadOnly))
+            return zone.readAll().trimmed();
+
+        return QByteArray();
+    }
+
+    // Any chain of symlinks longer than this is assumed to be a loop:
+    static long getSymloopMax()
+    {
+#ifdef SYMLOOP_MAX
+        // If defined, at runtime it can only be greater than this, so this is a safe bet:
+        return SYMLOOP_MAX;
+#else
+        errno = 0;
+        long result = sysconf(_SC_SYMLOOP_MAX);
+        if (result >= 0)
+            return result;
+        // result is -1, meaning either error or no limit
+        Q_ASSERT(!errno); // ... but it can't be an error, POSIX mandates _SC_SYMLOOP_MAX
+
+        // therefore we can make up our own limit
+#  ifdef MAXSYMLINKS
+        return MAXSYMLINKS;
+#  else
+        return 8;
+#  endif
+#endif
+    }
+};
+}
+
+QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
+{
+    // Check TZ env var first, if not populated try find it
+    QByteArray ianaId = qgetenv("TZ");
+
+    // The TZ value can be ":/etc/localtime" which libc considers
+    // to be a "default timezone", in which case it will be read
+    // by one of the blocks below, so unset it here so it is not
+    // considered as a valid/found ianaId
+    if (ianaId == ":/etc/localtime")
+        ianaId.clear();
+    else if (ianaId.startsWith(':'))
+        ianaId = ianaId.mid(1);
+
+    if (ianaId.isEmpty()) {
+        thread_local static ZoneNameReader reader;
+        ianaId = reader.name();
+    }
+
+    // Give up for now and return UTC
+    if (ianaId.isEmpty())
+        ianaId = utcQByteArray();
+
+    return ianaId;
 }
 
 QT_END_NAMESPACE
