@@ -200,7 +200,6 @@ public:
     QDockWidgetGroupLayout(QDockWidgetGroupWindow* parent) : QLayout(parent) {
         setSizeConstraint(QLayout::SetMinAndMaxSize);
         resizer = new QWidgetResizeHandler(parent);
-        resizer->setMovingEnabled(false);
     }
     ~QDockWidgetGroupLayout() {
         layoutState.deleteAllLayoutItems();
@@ -259,7 +258,7 @@ public:
         li->apply(false);
         if (savedState.rect.isValid())
             savedState.rect = li->rect;
-        resizer->setActive(QWidgetResizeHandler::Resize, !nativeWindowDeco());
+        resizer->setEnabled(!nativeWindowDeco());
     }
 
     QDockAreaLayoutInfo *dockAreaLayoutInfo() { return &layoutState; }

@@ -887,12 +887,10 @@ void QDockWidgetPrivate::endDrag(bool abort)
 void QDockWidgetPrivate::setResizerActive(bool active)
 {
     Q_Q(QDockWidget);
-    if (active && !resizer) {
+    if (active && !resizer)
         resizer = new QWidgetResizeHandler(q);
-        resizer->setMovingEnabled(false);
-    }
     if (resizer)
-        resizer->setActive(QWidgetResizeHandler::Resize, active);
+        resizer->setEnabled(active);
 }
 
 bool QDockWidgetPrivate::isAnimating() const
