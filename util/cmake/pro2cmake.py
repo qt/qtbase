@@ -40,6 +40,7 @@ import sys
 import re
 import io
 import glob
+import fnmatch
 
 from condition_simplifier import simplify_condition
 from condition_simplifier_cache import set_condition_simplified_cache_enabled
@@ -4090,6 +4091,10 @@ def should_convert_project(project_file_path: str = "", ignore_skip_marker: bool
 
     # Skip qmake testdata projects.
     if project_relative_path.startswith("tests/auto/tools/qmake/testdata"):
+        return False
+
+    # Skip doc snippets.
+    if fnmatch.fnmatch(project_relative_path, "src/*/doc/snippets/*"):
         return False
 
     # Skip certain config tests.
