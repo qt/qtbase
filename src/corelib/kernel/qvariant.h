@@ -81,9 +81,6 @@ class QSize;
 class QSizeF;
 class QRect;
 class QRectF;
-#ifndef QT_NO_REGEXP
-class QRegExp;
-#endif // QT_NO_REGEXP
 #if QT_CONFIG(regularexpression)
 class QRegularExpression;
 #endif // QT_CONFIG(regularexpression)
@@ -160,7 +157,6 @@ class Q_CORE_EXPORT QVariant
         LineF = QMetaType::QLineF,
         Point = QMetaType::QPoint,
         PointF = QMetaType::QPointF,
-        RegExp = QMetaType::QRegExp,
 #if QT_CONFIG(regularexpression)
         RegularExpression = QMetaType::QRegularExpression,
 #endif
@@ -252,9 +248,6 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QRectF &rect);
 #endif
     QVariant(const QLocale &locale);
-#ifndef QT_NO_REGEXP
-    QVariant(const QRegExp &regExp);
-#endif // QT_NO_REGEXP
 #if QT_CONFIG(regularexpression)
     QVariant(const QRegularExpression &re);
 #endif // QT_CONFIG(regularexpression)
@@ -329,9 +322,6 @@ class Q_CORE_EXPORT QVariant
     QRectF toRectF() const;
 #endif
     QLocale toLocale() const;
-#ifndef QT_NO_REGEXP
-    QRegExp toRegExp() const;
-#endif // QT_NO_REGEXP
 #if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression() const;
 #endif // QT_CONFIG(regularexpression)

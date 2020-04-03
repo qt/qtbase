@@ -137,7 +137,6 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QLineF, 24, QLineF) \
     F(QPoint, 25, QPoint) \
     F(QPointF, 26, QPointF) \
-    F(QRegExp, 27, QRegExp) \
     QT_FOR_EACH_STATIC_EASINGCURVE(F) \
     F(QUuid, 30, QUuid) \
     F(QVariant, 41, QVariant) \
@@ -474,7 +473,7 @@ public:
         QChar = 7, QString = 10, QStringList = 11, QByteArray = 12,
         QBitArray = 13, QDate = 14, QTime = 15, QDateTime = 16, QUrl = 17,
         QLocale = 18, QRect = 19, QRectF = 20, QSize = 21, QSizeF = 22,
-        QLine = 23, QLineF = 24, QPoint = 25, QPointF = 26, QRegExp = 27,
+        QLine = 23, QLineF = 24, QPoint = 25, QPointF = 26,
         QEasingCurve = 29, QUuid = 30, QVariant = 41, QModelIndex = 42,
         QPersistentModelIndex = 50, QRegularExpression = 44,
         QJsonValue = 45, QJsonObject = 46, QJsonArray = 47, QJsonDocument = 48,

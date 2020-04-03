@@ -4388,6 +4388,18 @@ bool QRegExp::exactMatch(const QString &str) const
     }
 }
 
+/*!
+   Returns the regexp as a QVariant
+*/
+QRegExp::operator QVariant() const
+{
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    QVariant v;
+    v.setValue(*this);
+    return v;
+QT_WARNING_POP
+}
+
 // ### Qt 5: make non-const
 /*!
     Attempts to find a match in \a str from position \a offset (0 by

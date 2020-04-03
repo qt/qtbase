@@ -111,9 +111,6 @@ private slots:
     void stream_QString_data();
     void stream_QString();
 
-    void stream_QRegExp_data();
-    void stream_QRegExp();
-
 #if QT_CONFIG(regularexpression)
     void stream_QRegularExpression_data();
     void stream_QRegularExpression();
@@ -232,7 +229,6 @@ private:
     void writeQRegion(QDataStream *s);
     void writeQSize(QDataStream *s);
     void writeQString(QDataStream* dev);
-    void writeQRegExp(QDataStream* dev);
 #if QT_CONFIG(regularexpression)
     void writeQRegularExpression(QDataStream *dev);
 #endif
@@ -266,7 +262,6 @@ private:
     void readQRegion(QDataStream *s);
     void readQSize(QDataStream *s);
     void readQString(QDataStream *s);
-    void readQRegExp(QDataStream *s);
 #if QT_CONFIG(regularexpression)
     void readQRegularExpression(QDataStream *s);
 #endif
@@ -515,71 +510,6 @@ void tst_QDataStream::readQString(QDataStream *s)
     QCOMPARE(S, QString("nonempty"));
     *s >> S;
     QCOMPARE(S, test);
-}
-
-// ************************************
-
-static QRegExp QRegExpData(int index)
-{
-    switch (index) {
-    case 0: return QRegExp();
-    case 1: return QRegExp("");
-    case 2: return QRegExp("A", Qt::CaseInsensitive);
-    case 3: return QRegExp("ABCDE FGHI", Qt::CaseSensitive, QRegExp::Wildcard);
-    case 4: return QRegExp("This is a long string", Qt::CaseInsensitive, QRegExp::FixedString);
-    case 5: return QRegExp("And again a string with a \nCRLF", Qt::CaseInsensitive, QRegExp::RegExp);
-    case 6:
-        {
-            QRegExp rx("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRESTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/");
-            rx.setMinimal(true);
-            return rx;
-        }
-    }
-    return QRegExp("foo");
-}
-#define MAX_QREGEXP_DATA 7
-
-void tst_QDataStream::stream_QRegExp_data()
-{
-    stream_data(MAX_QREGEXP_DATA);
-}
-
-void tst_QDataStream::stream_QRegExp()
-{
-    STREAM_IMPL(QRegExp);
-}
-
-void tst_QDataStream::writeQRegExp(QDataStream* s)
-{
-    QRegExp test(QRegExpData(dataIndex(QTest::currentDataTag())));
-    *s << test;
-    *s << QString("Her er det noe tekst");
-    *s << test;
-    *s << QString("nonempty");
-    *s << test;
-    *s << QVariant(test);
-}
-
-void tst_QDataStream::readQRegExp(QDataStream *s)
-{
-    QRegExp R;
-    QString S;
-    QVariant V;
-    QRegExp test(QRegExpData(dataIndex(QTest::currentDataTag())));
-
-    *s >> R;
-    QCOMPARE(R, test);
-    *s >> S;
-    QCOMPARE(S, QString("Her er det noe tekst"));
-    *s >> R;
-    QCOMPARE(R, test);
-    *s >> S;
-    QCOMPARE(S, QString("nonempty"));
-    *s >> R;
-    QCOMPARE(R, test);
-    *s >> V;
-    QCOMPARE(V.type(), QVariant::RegExp);
-    QCOMPARE(V.toRegExp(), test);
 }
 
 // ************************************

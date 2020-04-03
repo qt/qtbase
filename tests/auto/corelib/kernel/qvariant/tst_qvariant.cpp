@@ -171,7 +171,6 @@ private slots:
 
     void toLocale();
 
-    void toRegExp();
     void toRegularExpression();
 
     void url();
@@ -1219,14 +1218,6 @@ void tst_QVariant::toLocale()
     loc = variant.toLocale();
 }
 
-void tst_QVariant::toRegExp()
-{
-    QVariant variant;
-    QRegExp rx = variant.toRegExp();
-    variant = QRegExp("foo");
-    rx = variant.toRegExp();
-}
-
 void tst_QVariant::toRegularExpression()
 {
     QVariant variant;
@@ -1320,8 +1311,6 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow( "uint_valid" ) << QVariant( (uint)123 ) << false;
     QTest::newRow( "qchar" ) << QVariant(QChar('a')) << false;
     QTest::newRow( "qchar_null" ) << QVariant(QChar(0)) << true;
-    QTest::newRow( "regexp" ) << QVariant(QRegExp("foo", Qt::CaseInsensitive)) << false;
-    QTest::newRow( "regexp_empty" ) << QVariant(QRegExp()) << false;
     QTest::newRow( "regularexpression" ) << QVariant(QRegularExpression("abc.*def")) << false;
     QTest::newRow( "regularexpression_empty" ) << QVariant(QRegularExpression()) << false;
 
@@ -1768,7 +1757,6 @@ void tst_QVariant::typeName_data()
     QTest::newRow("38") << int(QVariant::LineF) << QByteArray("QLineF");
     QTest::newRow("39") << int(QVariant::RectF) << QByteArray("QRectF");
     QTest::newRow("40") << int(QVariant::PointF) << QByteArray("QPointF");
-    QTest::newRow("41") << int(QVariant::RegExp) << QByteArray("QRegExp");
     QTest::newRow("44") << int(QVariant::Transform) << QByteArray("QTransform");
     QTest::newRow("45") << int(QVariant::Hash) << QByteArray("QVariantHash");
     QTest::newRow("46") << int(QVariant::Matrix4x4) << QByteArray("QMatrix4x4");
@@ -3902,7 +3890,6 @@ void tst_QVariant::implicitConstruction()
     F(LineF) \
     F(Point) \
     F(PointF) \
-    F(RegExp) \
     F(EasingCurve) \
     F(Uuid) \
     F(ModelIndex) \

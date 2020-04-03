@@ -164,9 +164,6 @@ template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false
 template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
 #endif
-#ifdef QT_NO_REGEXP
-template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = false; };
-#endif
 #if !QT_CONFIG(regularexpression)
 template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
 #endif

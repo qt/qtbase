@@ -57,7 +57,6 @@
 #include "qstringlist.h"
 #include "qurl.h"
 #include "qlocale.h"
-#include "qregexp.h"
 #include "quuid.h"
 #if QT_CONFIG(itemmodel)
 #include "qabstractitemmodel.h"
@@ -1681,7 +1680,6 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     \value Quaternion  a QQuaternion
     \value Rect  a QRect
     \value RectF  a QRectF
-    \value RegExp  a QRegExp
     \value RegularExpression  a QRegularExpression
     \value Region  a QRegion
     \value Size  a QSize
@@ -2077,12 +2075,6 @@ QVariant::QVariant(const char *val)
 */
 
 /*!
-  \fn QVariant::QVariant(const QRegExp &regExp)
-
-  Constructs a new variant with the regexp value \a regExp.
-*/
-
-/*!
   \fn QVariant::QVariant(const QRegularExpression &re)
 
   \since 5.0
@@ -2216,11 +2208,6 @@ QVariant::QVariant(const QUrl &u)
 QVariant::QVariant(const QLocale &l)
     : d(Locale)
 { v_construct<QLocale>(&d, l); }
-#ifndef QT_NO_REGEXP
-QVariant::QVariant(const QRegExp &regExp)
-    : d(RegExp)
-{ v_construct<QRegExp>(&d, regExp); }
-#endif // QT_NO_REGEXP
 #if QT_CONFIG(regularexpression)
 QVariant::QVariant(const QRegularExpression &re)
     : d(RegularExpression)
@@ -2262,7 +2249,7 @@ QVariant::QVariant(const QPersistentModelIndex &modelIndex)
     Note that return values in the ranges QVariant::Char through
     QVariant::RegExp and QVariant::Font through QVariant::Transform
     correspond to the values in the ranges QMetaType::QChar through
-    QMetaType::QRegExp and QMetaType::QFont through QMetaType::QQuaternion.
+    QMetaType::QRegularExpression and QMetaType::QFont through QMetaType::QQuaternion.
 
     Pay particular attention when working with char and QChar
     variants.  Note that there is no QVariant constructor specifically
@@ -2493,7 +2480,10 @@ void QVariant::load(QDataStream &s)
     qint8 is_null = false;
     if (s.version() >= QDataStream::Qt_4_2)
         s >> is_null;
-    if (typeId == QVariant::UserType) {
+    if (typeId == 27) {
+        // used to be QRegExp in Qt 4/5
+        typeId = QMetaType::type("QRegExp");
+    } else if (typeId == QVariant::UserType) {
         QByteArray name;
         s >> name;
         typeId = QMetaType::type(name.constData());
@@ -2532,9 +2522,11 @@ void QVariant::load(QDataStream &s)
 void QVariant::save(QDataStream &s) const
 {
     quint32 typeId = d.type().id();
-    if (typeId >= QMetaType::User)
+    bool saveAsUserType = false;
+    if (typeId >= QMetaType::User) {
         typeId = QMetaType::User;
-    bool fakeUserType = false;
+        saveAsUserType = true;
+    }
     if (s.version() < QDataStream::Qt_4_0) {
         int i;
         for (i = 0; i <= MapFromThreeCount - 1; ++i) {
@@ -2550,6 +2542,7 @@ void QVariant::save(QDataStream &s) const
     } else if (s.version() < QDataStream::Qt_5_0) {
         if (typeId == QMetaType::User) {
             typeId = 127; // QVariant::UserType had this value in Qt4
+            saveAsUserType = true;
         } else if (typeId >= 128 - 97 && typeId <= LastCoreType) {
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
@@ -2566,15 +2559,22 @@ void QVariant::save(QDataStream &s) const
         } else if (typeId == QMetaType::QPolygonF || typeId == QMetaType::QUuid) {
             // These existed in Qt 4 only as a custom type
             typeId = 127;
-            fakeUserType = true;
+            saveAsUserType = true;
+        }
+    }
+    const char *typeName = nullptr;
+    if (saveAsUserType) {
+        typeName = QMetaType::typeName(d.type().id());
+        if (!strcmp(typeName, "QRegExp")) {
+            typeId = 27; // QRegExp in Qt 4/5
+            typeName = nullptr;
         }
     }
     s << typeId;
     if (s.version() >= QDataStream::Qt_4_2)
         s << qint8(d.is_null);
-    if (d.type().id() >= int(QVariant::UserType) || fakeUserType) {
+    if (typeName)
         s << QMetaType::typeName(userType());
-    }
 
     if (!isValid()) {
         if (s.version() < QDataStream::Qt_5_0)
@@ -2937,22 +2937,6 @@ QLocale QVariant::toLocale() const
 {
     return qVariantToHelper<QLocale>(d, handlerManager);
 }
-
-/*!
-    \fn QRegExp QVariant::toRegExp() const
-    \since 4.1
-
-    Returns the variant as a QRegExp if the variant has userType()
-    \l QMetaType::QRegExp; otherwise returns an empty QRegExp.
-
-    \sa canConvert(int targetTypeId), convert()
-*/
-#ifndef QT_NO_REGEXP
-QRegExp QVariant::toRegExp() const
-{
-    return qVariantToHelper<QRegExp>(d, handlerManager);
-}
-#endif
 
 #if QT_CONFIG(regularexpression)
 /*!
@@ -3356,7 +3340,7 @@ static const quint32 qCanConvertMatrix[QMetaType::LastCoreType + 1] =
 
 /*QPointF*/       1 << QMetaType::QPoint,
 
-/*QRegExp*/       0,
+/*unused, was: QRegExp*/       0,
 
 /*QHash*/         0,
 

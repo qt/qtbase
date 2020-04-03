@@ -223,16 +223,6 @@ template<> struct TestValueFactory<QMetaType::QPersistentModelIndex> {
 template<> struct TestValueFactory<QMetaType::Nullptr> {
     static std::nullptr_t *create() { return new std::nullptr_t; }
 };
-template<> struct TestValueFactory<QMetaType::QRegExp> {
-    static QRegExp *create()
-    {
-#ifndef QT_NO_REGEXP
-        return new QRegExp("A*");
-#else
-        return 0;
-#endif
-    }
-};
 template<> struct TestValueFactory<QMetaType::QRegularExpression> {
     static QRegularExpression *create()
     {

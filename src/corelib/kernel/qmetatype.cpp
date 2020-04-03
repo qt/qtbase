@@ -53,7 +53,6 @@
 #include "quuid.h"
 #include "qvariant.h"
 #include "qdatastream.h"
-#include "qregexp.h"
 #include "qmetatypeswitcher_p.h"
 
 #if QT_CONFIG(regularexpression)
@@ -352,7 +351,6 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \value QRect QRect
     \value QPoint QPoint
     \value QUrl QUrl
-    \value QRegExp QRegExp
     \value QRegularExpression QRegularExpression
     \value QDateTime QDateTime
     \value QPointF QPointF

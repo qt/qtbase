@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
@@ -83,6 +84,15 @@ private slots:
 
     void filterList();
     void replaceInList();
+
+    void datastream_data();
+    void datastream();
+
+    void datastream2();
+
+private:
+    void readQRegExp(QDataStream *s);
+    void writeQRegExp(QDataStream* dev);
 };
 
 // Testing get/set functions
@@ -1544,6 +1554,173 @@ void tst_QRegExp::replaceInList()
     list5 = QRegExp("^(.*), (.*)$").replaceIn(list5, "\\2 \\1");
     QCOMPARE( list5, list6 );
 }
+
+static QRegExp QRegExpData(int index)
+{
+    switch (index) {
+    case 0: return QRegExp();
+    case 1: return QRegExp("");
+    case 2: return QRegExp("A", Qt::CaseInsensitive);
+    case 3: return QRegExp("ABCDE FGHI", Qt::CaseSensitive, QRegExp::Wildcard);
+    case 4: return QRegExp("This is a long string", Qt::CaseInsensitive, QRegExp::FixedString);
+    case 5: return QRegExp("And again a string with a \nCRLF", Qt::CaseInsensitive, QRegExp::RegExp);
+    case 6:
+        {
+            QRegExp rx("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRESTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/");
+            rx.setMinimal(true);
+            return rx;
+        }
+    }
+    return QRegExp("foo");
+}
+#define MAX_QREGEXP_DATA 7
+
+void tst_QRegExp::datastream_data()
+{
+    QTest::addColumn<QString>("device");
+    QTest::addColumn<QString>("byteOrder");
+
+    const char * const devices[] = {
+        "file",
+        "bytearray",
+        "buffer",
+        0
+    };
+    for (int d=0; devices[d] != 0; d++) {
+        QString device = devices[d];
+        for (int b=0; b<2; b++) {
+            QString byte_order = b == 0 ? "BigEndian" : "LittleEndian";
+
+            QString tag = device + QLatin1Char('_') + byte_order;
+            for (int e = 0; e < MAX_QREGEXP_DATA; e++) {
+                QTest::newRow(qPrintable(tag + QLatin1Char('_') + QString::number(e))) << device << byte_order;
+            }
+        }
+    }
+}
+
+static int dataIndex(const QString &tag)
+{
+    int pos = tag.lastIndexOf(QLatin1Char('_'));
+    if (pos >= 0) {
+        int ret = 0;
+        QString count = tag.mid(pos + 1);
+        bool ok;
+        ret = count.toInt(&ok);
+        if (ok)
+            return ret;
+    }
+    return -1;
+}
+
+void tst_QRegExp::datastream()
+{
+    QFETCH(QString, device); \
+
+    qRegisterMetaTypeStreamOperators<QRegExp>("QRegExp");
+
+    if (device == "bytearray") { \
+        QByteArray ba; \
+        QDataStream sout(&ba, QIODevice::WriteOnly); \
+        writeQRegExp(&sout); \
+        QDataStream sin(&ba, QIODevice::ReadOnly); \
+        readQRegExp(&sin); \
+    } else if (device == "file") { \
+        QString fileName = "qdatastream.out"; \
+        QFile fOut(fileName); \
+        QVERIFY(fOut.open(QIODevice::WriteOnly)); \
+        QDataStream sout(&fOut); \
+        writeQRegExp(&sout); \
+        fOut.close(); \
+        QFile fIn(fileName); \
+        QVERIFY(fIn.open(QIODevice::ReadOnly)); \
+        QDataStream sin(&fIn); \
+        readQRegExp(&sin); \
+        fIn.close(); \
+    } else if (device == "buffer") { \
+        QByteArray ba(10000, '\0'); \
+        QBuffer bOut(&ba); \
+        bOut.open(QIODevice::WriteOnly); \
+        QDataStream sout(&bOut); \
+        writeQRegExp(&sout); \
+        bOut.close(); \
+        QBuffer bIn(&ba); \
+        bIn.open(QIODevice::ReadOnly); \
+        QDataStream sin(&bIn); \
+        readQRegExp(&sin); \
+        bIn.close(); \
+    }
+}
+
+static void saveQVariantFromDataStream(const QString &fileName, QDataStream::Version version)
+{
+
+    QFile file(fileName);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QDataStream dataFileStream(&file);
+
+    QString typeName;
+    dataFileStream >> typeName;
+    QByteArray data = file.readAll();
+    const int id = QMetaType::type(typeName.toLatin1());
+
+    QBuffer buffer;
+    buffer.open(QIODevice::ReadWrite);
+    QDataStream stream(&buffer);
+    stream.setVersion(version);
+
+    QVariant constructedVariant(static_cast<QVariant::Type>(id));
+    QCOMPARE(constructedVariant.userType(), id);
+    stream << constructedVariant;
+
+    // We are testing QVariant there is no point in testing full array.
+    QCOMPARE(buffer.data().left(5), data.left(5));
+
+    buffer.seek(0);
+    QVariant recunstructedVariant;
+    stream >> recunstructedVariant;
+    QCOMPARE(recunstructedVariant.userType(), constructedVariant.userType());
+}
+
+void tst_QRegExp::datastream2()
+{
+    saveQVariantFromDataStream(QLatin1String(":/data/qdatastream_4.9.bin"), QDataStream::Qt_4_9);
+    saveQVariantFromDataStream(QLatin1String(":/data/qdatastream_5.0.bin"), QDataStream::Qt_5_0);
+}
+
+void tst_QRegExp::writeQRegExp(QDataStream* s)
+{
+    QRegExp test(QRegExpData(dataIndex(QTest::currentDataTag())));
+    *s << test;
+    *s << QString("Her er det noe tekst");
+    *s << test;
+    *s << QString("nonempty");
+    *s << test;
+    *s << QVariant(test);
+}
+
+void tst_QRegExp::readQRegExp(QDataStream *s)
+{
+    QRegExp R;
+    QString S;
+    QVariant V;
+    QRegExp test(QRegExpData(dataIndex(QTest::currentDataTag())));
+
+    *s >> R;
+    QCOMPARE(R, test);
+    *s >> S;
+    QCOMPARE(S, QString("Her er det noe tekst"));
+    *s >> R;
+    QCOMPARE(R, test);
+    *s >> S;
+    QCOMPARE(S, QString("nonempty"));
+    *s >> R;
+    QCOMPARE(R, test);
+    *s >> V;
+    QCOMPARE(V.userType(), qMetaTypeId<QRegExp>());
+    QCOMPARE(qvariant_cast<QRegExp>(V), test);
+}
+
 
 QTEST_APPLESS_MAIN(tst_QRegExp)
 #include "tst_qregexp.moc"
