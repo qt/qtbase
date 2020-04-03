@@ -31,7 +31,7 @@
 
 #include <proitems.h>
 
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qdir.h>
 #include <stdlib.h>
 #include <time.h>
@@ -209,7 +209,7 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
     const ProStringList &incs = project->values("INCLUDEPATH");
     for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit).toQString();
-        inc.replace(QRegExp("\\\\$"), "");
+        inc.replace(QRegularExpression("\\\\$"), "");
 
         if (!isystem.isEmpty() && isSystemInclude(inc))
             t << isystem << ' ';

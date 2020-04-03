@@ -34,7 +34,7 @@
 #include <qscopedpointer.h>
 #include <qstringlist.h>
 #include <qfileinfo.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -834,12 +834,13 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         QFile manifestFile(Option::output_dir + QLatin1Char('/') + manifest);
         if (manifestFile.open(QFile::ReadOnly)) {
             const QString contents = manifestFile.readAll();
-            QRegExp regexp("[\\\\/a-zA-Z0-9_\\-\\!]*\\.(png|jpg|jpeg)");
+            QRegularExpression regexp("[\\\\/a-zA-Z0-9_\\-\\!]*\\.(png|jpg|jpeg)");
             int pos = 0;
             while (pos > -1) {
-                pos = regexp.indexIn(contents, pos);
+                QRegularExpressionMatch m;
+                pos = contents.indexOf(regexp, pos, &m);
                 if (pos >= 0) {
-                    const QString match = regexp.cap(0);
+                    const QString match = m.captured(0);
                     icons.insert(match);
                     pos += match.length();
                 }

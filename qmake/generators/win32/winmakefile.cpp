@@ -33,7 +33,7 @@
 #include <qtextstream.h>
 #include <qstring.h>
 #include <qhash.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qstringlist.h>
 #include <qdir.h>
 #include <stdlib.h>
@@ -561,7 +561,7 @@ void Win32MakefileGenerator::writeIncPart(QTextStream &t)
     const ProStringList &incs = project->values("INCLUDEPATH");
     for(int i = 0; i < incs.size(); ++i) {
         QString inc = incs.at(i).toQString();
-        inc.replace(QRegExp("\\\\$"), "");
+        inc.replace(QRegularExpression("\\\\$"), "");
         if(!inc.isEmpty())
             t << "-I" << escapeFilePath(inc) << ' ';
     }
@@ -588,7 +588,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
 
     t << "####### Output directory\n\n";
     if(!project->values("OBJECTS_DIR").isEmpty())
-        t << "OBJECTS_DIR   = " << escapeFilePath(var("OBJECTS_DIR").remove(QRegExp("\\\\$"))) << Qt::endl;
+        t << "OBJECTS_DIR   = " << escapeFilePath(var("OBJECTS_DIR").remove(QRegularExpression("\\\\$"))) << Qt::endl;
     else
         t << "OBJECTS_DIR   = . \n";
     t << Qt::endl;
@@ -860,7 +860,7 @@ QString Win32MakefileGenerator::escapeDependencyPath(const QString &path) const
 {
     QString ret = path;
     if (!ret.isEmpty()) {
-        static const QRegExp criticalChars(QStringLiteral("([\t #])"));
+        static const QRegularExpression criticalChars(QStringLiteral("([\t #])"));
         if (ret.contains(criticalChars))
             ret = "\"" + ret + "\"";
         debug_msg(2, "EscapeDependencyPath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());

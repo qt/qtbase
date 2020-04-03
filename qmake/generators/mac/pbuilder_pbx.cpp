@@ -30,7 +30,7 @@
 #include "option.h"
 #include "meta.h"
 #include <qdir.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qcryptographichash.h>
 #include <qdebug.h>
 #include <qsettings.h>
@@ -1865,11 +1865,12 @@ QString
 ProjectBuilderMakefileGenerator::fixForOutput(const QString &values)
 {
     //get the environment variables references
-    QRegExp reg_var("\\$\\((.*)\\)");
-    for(int rep = 0; (rep = reg_var.indexIn(values, rep)) != -1;) {
-        if(project->values("QMAKE_PBX_VARS").indexOf(reg_var.cap(1)) == -1)
-            project->values("QMAKE_PBX_VARS").append(reg_var.cap(1));
-        rep += reg_var.matchedLength();
+    QRegularExpression reg_var("\\$\\((.*)\\)");
+    QRegularExpressionMatch match;
+    for (int rep = 0; (match = reg_var.match(values, rep)).hasMatch();) {
+        if (project->values("QMAKE_PBX_VARS").indexOf(match.captured(1)) == -1)
+            project->values("QMAKE_PBX_VARS").append(match.captured(1));
+        rep = match.capturedEnd();
     }
 
     return values;
@@ -2019,7 +2020,7 @@ ProjectBuilderMakefileGenerator::writeSettings(const QString &var, const ProStri
     for(int i = 0; i < indent_level; ++i)
         newline += "\t";
 
-    static QRegExp allowedVariableCharacters("^[a-zA-Z0-9_]*$");
+    static QRegularExpression allowedVariableCharacters("^[a-zA-Z0-9_]*$");
     ret += var.contains(allowedVariableCharacters) ? var : quotedStringLiteral(var);
 
     ret += " = ";

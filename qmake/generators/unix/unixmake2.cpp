@@ -30,7 +30,7 @@
 #include "unixmake.h"
 #include "option.h"
 #include "meta.h"
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qbytearray.h>
 #include <qfile.h>
 #include <qdir.h>
@@ -290,7 +290,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         if (project->isActiveConfig("gcc_MD_depends")) {
             ProStringList objects = project->values("OBJECTS");
             for (ProStringList::Iterator it = objects.begin(); it != objects.end(); ++it) {
-                QString d_file = (*it).toQString().replace(QRegExp(Option::obj_ext + "$"), ".d");
+                QString d_file = (*it).toQString().replace(QRegularExpression(Option::obj_ext + "$"), ".d");
                 t << "-include " << escapeDependencyPath(d_file) << Qt::endl;
                 project->values("QMAKE_DISTCLEAN") << d_file;
             }
@@ -346,7 +346,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                         if(!d_file.isEmpty()) {
                             d_file = odir + ".deps/" + fileFixify(d_file, FileFixifyBackwards) + ".d";
                             QString d_file_d = escapeDependencyPath(d_file);
-                            QStringList deps = findDependencies((*it).toQString()).filter(QRegExp(
+                            QStringList deps = findDependencies((*it).toQString()).filter(QRegularExpression(
                                         "((^|/)" + Option::h_moc_mod + "|" + Option::cpp_moc_ext + "$)"));
                             if(!deps.isEmpty())
                                 t << d_file_d << ": " << finalizeDependencyPaths(deps).join(' ') << Qt::endl;
@@ -507,7 +507,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         if(do_incremental) {
             ProString s_ext = project->first("QMAKE_EXTENSION_SHLIB");
             QString incr_target = var("QMAKE_ORIG_TARGET").replace(
-                QRegExp("\\." + s_ext), "").replace(QRegExp("^lib"), "") + "_incremental";
+                QRegularExpression("\\." + s_ext), "").replace(QRegularExpression("^lib"), "") + "_incremental";
             if(incr_target.indexOf(Option::dir_sep) != -1)
                 incr_target = incr_target.right(incr_target.length() -
                                                 (incr_target.lastIndexOf(Option::dir_sep) + 1));
@@ -1533,8 +1533,10 @@ std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t,
         for (ProStringList::ConstIterator objit = objs.begin(); objit != objs.end(); ++objit) {
             bool increment = false;
             for (ProStringList::ConstIterator incrit = incrs.begin(); incrit != incrs.end(); ++incrit) {
-                if ((*objit).toQString().indexOf(QRegExp((*incrit).toQString(), Qt::CaseSensitive,
-                                                         QRegExp::Wildcard)) != -1) {
+                auto pattern =
+                        QRegularExpression::wildcardToRegularExpression((*incrit).toQString(),
+                                                                        QRegularExpression::UnanchoredWildcardConversion);
+                if ((*objit).toQString().contains(QRegularExpression(pattern))) {
                     increment = true;
                     incrs_out.append((*objit));
                     break;

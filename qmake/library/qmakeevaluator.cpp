@@ -41,7 +41,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qlist.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qset.h>
 #include <qstack.h>
 #include <qstring.h>
@@ -334,7 +334,7 @@ ProStringList QMakeEvaluator::split_value_list(const QStringRef &vals, int sourc
 }
 
 static void replaceInList(ProStringList *varlist,
-        const QRegExp &regexp, const QString &replace, bool global, QString &tmp)
+        const QRegularExpression &regexp, const QString &replace, bool global, QString &tmp)
 {
     for (ProStringList::Iterator varit = varlist->begin(); varit != varlist->end(); ) {
         ProStringRoUser u1(*varit, tmp);
@@ -898,9 +898,10 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProVariable(
         QString pattern = func[1].toString();
         QString replace = func[2].toString();
         if (quote)
-            pattern = QRegExp::escape(pattern);
+            pattern = QRegularExpression::escape(pattern);
 
-        QRegExp regexp(pattern, case_sense ? Qt::CaseSensitive : Qt::CaseInsensitive);
+        QRegularExpression regexp(pattern, case_sense ? QRegularExpression::NoPatternOption :
+                                                        QRegularExpression::CaseInsensitiveOption);
 
         // We could make a union of modified and unmodified values,
         // but this will break just as much as it fixes, so leave it as is.
@@ -1635,17 +1636,17 @@ bool QMakeEvaluator::isActiveConfig(const QStringRef &config, bool regex)
         return m_hostBuild;
 
     if (regex && (config.contains(QLatin1Char('*')) || config.contains(QLatin1Char('?')))) {
-        QRegExp re(config.toString(), Qt::CaseSensitive, QRegExp::Wildcard);
+        QRegularExpression re(QRegularExpression::wildcardToRegularExpression(config.toString()));
 
         // mkspecs
-        if (re.exactMatch(m_qmakespecName))
+        if (re.match(m_qmakespecName).hasMatch())
             return true;
 
         // CONFIG variable
         const auto configValues = values(statics.strCONFIG);
         for (const ProString &configValue : configValues) {
             ProStringRoUser u1(configValue, m_tmp[m_toggle ^= 1]);
-            if (re.exactMatch(u1.str()))
+            if (re.match(u1.str()).hasMatch())
                 return true;
         }
     } else {

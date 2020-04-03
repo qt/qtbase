@@ -34,7 +34,7 @@
 
 #include <qscopedpointer.h>
 #include <qfileinfo.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 
 using namespace QMakeInternal;
 
@@ -321,7 +321,7 @@ triState operator!(const triState &rhs)
 QStringList VCToolBase::fixCommandLine(const QString &input)
 {
     // The splitting regexp is a bit bizarre for backwards compat reasons (why else ...).
-    return input.split(QRegExp(QLatin1String("(\n\t|\r\\\\h|\r\n)\\s*")));
+    return input.split(QRegularExpression(QLatin1String("(\n\t|\r\\\\h|\r\n)\\s*")));
 }
 
 static QString vcCommandSeparator()

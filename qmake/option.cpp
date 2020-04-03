@@ -30,7 +30,7 @@
 #include "cachekeys.h"
 #include <ioutils.h>
 #include <qdir.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qhash.h>
 #include <qdebug.h>
 #include <qlibraryinfo.h>
@@ -519,12 +519,14 @@ Option::fixString(QString string, uchar flags)
 
     //fix the environment variables
     if(flags & Option::FixEnvVars) {
-        int rep;
-        static QRegExp reg_var("\\$\\(.*\\)");
-        reg_var.setMinimal(true);
-        while((rep = reg_var.indexIn(string)) != -1)
-            string.replace(rep, reg_var.matchedLength(),
-                           QString::fromLocal8Bit(qgetenv(string.mid(rep + 2, reg_var.matchedLength() - 3).toLatin1().constData()).constData()));
+        static QRegularExpression reg_var("\\$\\(.*\\)", QRegularExpression::InvertedGreedinessOption);
+        QRegularExpressionMatch match;
+        while ((match = reg_var.match(string)).hasMatch()) {
+            int start = match.capturedStart();
+            int len = match.capturedLength();
+            string.replace(start, len,
+                           QString::fromLocal8Bit(qgetenv(string.mid(start + 2, len - 3).toLatin1().constData()).constData()));
+        }
     }
 
     //canonicalize it (and treat as a path)

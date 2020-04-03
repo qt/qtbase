@@ -29,7 +29,7 @@
 #include "msvc_nmake.h"
 #include "option.h"
 
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <qset.h>
@@ -370,12 +370,12 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
             for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
                 t << '{' << escapeDependencyPath(sourceDir) << '}' << (*cppit)
                   << '{' << escapeDependencyPath(objDir) << '}' << Option::obj_ext << "::\n\t"
-                  << var("QMAKE_RUN_CXX_IMP_BATCH").replace(QRegExp("\\$@"), fileVar("OBJECTS_DIR"))
+                  << var("QMAKE_RUN_CXX_IMP_BATCH").replace(QRegularExpression("\\$@"), fileVar("OBJECTS_DIR"))
                   << "\n\t$<\n<<\n\n";
             for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
                 t << '{' << escapeDependencyPath(sourceDir) << '}' << (*cit)
                   << '{' << escapeDependencyPath(objDir) << '}' << Option::obj_ext << "::\n\t"
-                  << var("QMAKE_RUN_CC_IMP_BATCH").replace(QRegExp("\\$@"), fileVar("OBJECTS_DIR"))
+                  << var("QMAKE_RUN_CC_IMP_BATCH").replace(QRegularExpression("\\$@"), fileVar("OBJECTS_DIR"))
                   << "\n\t$<\n<<\n\n";
         }
     } else {
@@ -434,7 +434,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
             }
 
             const QString resourceId = (templateName == "app") ? "1" : "2";
-            const bool incrementalLinking = project->values("QMAKE_LFLAGS").toQStringList().filter(QRegExp("(/|-)INCREMENTAL:NO")).isEmpty();
+            const bool incrementalLinking = project->values("QMAKE_LFLAGS").toQStringList().filter(QRegularExpression("(/|-)INCREMENTAL:NO")).isEmpty();
             if (incrementalLinking && !linkerSupportsEmbedding) {
                 // Link a resource that contains the manifest without modifying the exe/dll after linking.
 

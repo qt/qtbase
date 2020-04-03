@@ -34,7 +34,7 @@
 #include "metamakefile.h"
 #include <qnamespace.h>
 #include <qdebug.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <stdio.h>
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 #ifdef Q_OS_WIN
 
 struct SedSubst {
-    QRegExp from;
+    QRegularExpression from;
     QString to;
 };
 Q_DECLARE_TYPEINFO(SedSubst, Q_MOVABLE_TYPE);
@@ -85,7 +85,7 @@ static int doSed(int argc, char **argv)
                     return 3;
                 }
                 QChar sep = ++j < cmd.length() ? cmd.at(j) : QChar();
-                Qt::CaseSensitivity matchcase = Qt::CaseSensitive;
+                QRegularExpression::PatternOptions matchcase = QRegularExpression::NoPatternOption;
                 bool escaped = false;
                 int phase = 1;
                 QStringList phases;
@@ -129,14 +129,14 @@ static int doSed(int argc, char **argv)
                 }
                 if (curr.contains(QLatin1Char('i'))) {
                     curr.remove(QLatin1Char('i'));
-                    matchcase = Qt::CaseInsensitive;
+                    matchcase = QRegularExpression::CaseInsensitiveOption;
                 }
                 if (curr != QLatin1String("g")) {
                     fprintf(stderr, "Error: sed s command supports only g & i options; g is required\n");
                     return 3;
                 }
                 SedSubst subst;
-                subst.from = QRegExp(phases.at(0), matchcase);
+                subst.from = QRegularExpression(phases.at(0), matchcase);
                 subst.to = phases.at(1);
                 subst.to.replace(QLatin1String("\\\\"), QLatin1String("\\")); // QString::replace(rx, sub) groks \1, but not \\.
                 substs << subst;

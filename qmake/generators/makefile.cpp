@@ -36,7 +36,7 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qtextstream.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qhash.h>
 #include <qdebug.h>
 #include <qbuffer.h>
@@ -1575,11 +1575,12 @@ MakefileGenerator::replaceExtraCompilerVariables(
 
     //do the work
     QString ret = orig_var;
-    QRegExp reg_var("\\$\\{.*\\}");
-    reg_var.setMinimal(true);
-    for(int rep = 0; (rep = reg_var.indexIn(ret, rep)) != -1; ) {
+    QRegularExpression reg_var("\\$\\{.*\\}", QRegularExpression::InvertedGreedinessOption);
+    QRegularExpressionMatch match;
+    for (int rep = 0; (match = reg_var.match(ret, rep)).hasMatch(); ) {
+        rep = match.capturedStart();
         QStringList val;
-        const ProString var(ret.mid(rep + 2, reg_var.matchedLength() - 3));
+        const ProString var(ret.mid(rep + 2, match.capturedLength() - 3));
         bool filePath = false;
         if(val.isEmpty() && var.startsWith(QLatin1String("QMAKE_VAR_"))) {
             const ProKey varname = var.mid(10).toKey();
@@ -1675,10 +1676,10 @@ MakefileGenerator::replaceExtraCompilerVariables(
             } else {
                 fullVal = val.join(' ');
             }
-            ret.replace(rep, reg_var.matchedLength(), fullVal);
-            rep += fullVal.length();
+            ret.replace(match.capturedStart(), match.capturedLength(), fullVal);
+            rep = match.capturedStart(), fullVal.length();
         } else {
-            rep += reg_var.matchedLength();
+            rep = match.capturedEnd();
         }
     }
 
@@ -2018,7 +2019,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
         const bool existingDepsOnly = config.contains("dep_existing_only");
         QStringList tmp_dep = project->values(ProKey(*it + ".depends")).toQStringList();
         if (config.indexOf("combine") != -1) {
-            if (tmp_out.contains(QRegExp("(^|[^$])\\$\\{QMAKE_(?!VAR_)"))) {
+            if (tmp_out.contains(QRegularExpression("(^|[^$])\\$\\{QMAKE_(?!VAR_)"))) {
                 warn_msg(WarnLogic, "QMAKE_EXTRA_COMPILERS(%s) with combine has variable output.",
                          (*it).toLatin1().constData());
                 continue;
@@ -2167,9 +2168,10 @@ MakefileGenerator::writeExtraVariables(QTextStream &t)
     const ProValueMap &vars = project->variables();
     const ProStringList &exports = project->values("QMAKE_EXTRA_VARIABLES");
     for (ProStringList::ConstIterator exp_it = exports.begin(); exp_it != exports.end(); ++exp_it) {
-        QRegExp rx((*exp_it).toQString(), Qt::CaseInsensitive, QRegExp::Wildcard);
+        auto pattern = QRegularExpression::wildcardToRegularExpression((*exp_it).toQString());
+        QRegularExpression rx(pattern, QRegularExpression::CaseInsensitiveOption);
         for (ProValueMap::ConstIterator it = vars.begin(); it != vars.end(); ++it) {
-            if (rx.exactMatch(it.key().toQString()))
+            if (rx.match(it.key().toQString()).hasMatch())
                 outlist << ("EXPORT_" + it.key() + " = " + it.value().join(' '));
         }
     }
@@ -2314,7 +2316,7 @@ MakefileGenerator::findSubDirsSubTargets() const
             ProString ofile = subdirs[subdir];
             QString oname = ofile.toQString();
             QString fixedSubdir = oname;
-            fixedSubdir.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
+            fixedSubdir.replace(QRegularExpression("[^a-zA-Z0-9_]"),"-");
 
             SubTarget *st = new SubTarget;
             st->name = oname;
@@ -2386,7 +2388,7 @@ MakefileGenerator::findSubDirsSubTargets() const
                         if(subdirs[subDep] == depends.at(depend)) {
                             QString subName = subdirs[subDep].toQString();
                             QString fixedSubDep = subName;
-                            fixedSubDep.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
+                            fixedSubDep.replace(QRegularExpression("[^a-zA-Z0-9_]"),"-");
                             const ProKey dtkey(fixedSubDep + ".target");
                             if (!project->isEmpty(dtkey)) {
                                 st->depends += project->first(dtkey);
@@ -2400,7 +2402,7 @@ MakefileGenerator::findSubDirsSubTargets() const
                                     if (!project->isEmpty(dskey))
                                         d = project->first(dskey).toQString();
                                 }
-                                st->depends += "sub-" + d.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
+                                st->depends += "sub-" + d.replace(QRegularExpression("[^a-zA-Z0-9_]"),"-");
                             }
                             found = true;
                             break;
@@ -2408,7 +2410,7 @@ MakefileGenerator::findSubDirsSubTargets() const
                     }
                     if(!found) {
                         QString depend_str = depends.at(depend).toQString();
-                        st->depends += depend_str.replace(QRegExp("[^a-zA-Z0-9_]"),"-");
+                        st->depends += depend_str.replace(QRegularExpression("[^a-zA-Z0-9_]"),"-");
                     }
                 }
             }
@@ -2417,7 +2419,7 @@ MakefileGenerator::findSubDirsSubTargets() const
                 st->target = project->first(tkey).toQString();
             } else {
                 st->target = "sub-" + file;
-                st->target.replace(QRegExp("[^a-zA-Z0-9_]"), "-");
+                st->target.replace(QRegularExpression("[^a-zA-Z0-9_]"), "-");
             }
         }
     }
@@ -2882,12 +2884,12 @@ MakefileGenerator::escapeDependencyPath(const QString &path) const
 #ifdef Q_OS_UNIX
         // When running on Unix, we need to escape colons (which may appear
         // anywhere in a path, and would be mis-parsed as dependency separators).
-        static const QRegExp criticalChars(QStringLiteral("([\t :#])"));
+        static const QRegularExpression criticalChars(QStringLiteral("([\t :#])"));
 #else
         // MinGW make has a hack for colons which denote drive letters, and no
         // other colons may appear in paths. And escaping colons actually breaks
         // the make from the Android SDK.
-        static const QRegExp criticalChars(QStringLiteral("([\t #])"));
+        static const QRegularExpression criticalChars(QStringLiteral("([\t #])"));
 #endif
         ret.replace(criticalChars, QStringLiteral("\\\\1"));
         ret.replace(QLatin1Char('='), QStringLiteral("$(EQ)"));
@@ -3070,8 +3072,8 @@ MakefileGenerator::findFileForDep(const QMakeLocalFileName &dep, const QMakeLoca
         const ProStringList &nodeplist = project->values("SKIP_DEPENDS");
         for (ProStringList::ConstIterator it = nodeplist.begin();
             it != nodeplist.end(); ++it) {
-            QRegExp regx((*it).toQString());
-            if(regx.indexIn(dep.local()) != -1) {
+            QRegularExpression regx((*it).toQString());
+            if (regx.match(dep.local()).hasMatch()) {
                 found = true;
                 break;
             }
