@@ -31,10 +31,17 @@ QOBJS = \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraylist.o qbytearraymatcher.o \
 	qcalendar.o qgregoriancalendar.o qromancalendar.o \
         qcryptographichash.o qdatetime.o qhash.o \
-	qlocale.o qlocale_tools.o qmap.o qregexp.o qringbuffer.o \
+        qlocale.o qlocale_tools.o qmap.o qregularexpression.o qregexp.o qringbuffer.o \
 	qstringbuilder.o qstring.o qstringlist.o qversionnumber.o \
 	qvsnprintf.o qxmlstream.o qxmlutils.o \
-	$(QTOBJS) $(QTOBJS2)
+        pcre2_auto_possess.o pcre2_chartables.o pcre2_compile.o pcre2_config.o \
+        pcre2_context.o pcre2_dfa_match.o pcre2_error.o pcre2_extuni.o \
+        pcre2_find_bracket.o pcre2_jit_compile.o pcre2_maketables.o pcre2_match.o \
+        pcre2_match_data.o pcre2_newline.o pcre2_ord2utf.o pcre2_pattern_info.o pcre2_script_run.o \
+        pcre2_serialize.o pcre2_string_utils.o pcre2_study.o pcre2_substitute.o \
+        pcre2_substring.o pcre2_tables.o pcre2_ucd.o pcre2_valid_utf.o \
+        pcre2_xclass.o \
+        $(QTOBJS) $(QTOBJS2)
 # QTOBJS and QTOBJS2 are populated by Makefile.unix.* as for QTSRC (see below).
 # Note: qlibraryinfo.o omitted deliberately - see below.
 
@@ -112,6 +119,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/text/qbytearraymatcher.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qlocale.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qlocale_tools.cpp \
+	   $(SOURCE_PATH)/src/corelib/text/qregularexpression.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qregexp.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstringbuilder.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstring.cpp \
@@ -128,6 +136,32 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qringbuffer.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_auto_possess.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_chartables.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_compile.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_config.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_context.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_dfa_match.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_error.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_extuni.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_find_bracket.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_jit_compile.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_maketables.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_match.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_match_data.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_newline.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_ord2utf.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_pattern_info.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_script_run.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_serialize.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_string_utils.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_study.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_substitute.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_substring.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_tables.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_ucd.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_valid_utf.c \
+	   $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_xclass.c \
 	   $(QTSRCS) $(QTSRCS2)
 # QTSRCS and QTSRCS2 come from Makefile.unix.* (concatenated with this
 # by configure); QTSRCS2 may include *.mm entries on macOS.
@@ -136,6 +170,7 @@ DEPEND_SRC = \
 CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -I$(QMKSRC) -I$(QMKLIBSRC) -I$(QMKGENSRC) \
 	   -I$(SOURCE_PATH)/src/3rdparty/tinycbor/src \
+	   -I$(SOURCE_PATH)/src/3rdparty/pcre2/src \
 	   -I$(QMKGENSRC)/unix -I$(QMKGENSRC)/win32 -I$(QMKGENSRC)/mac \
 	   -I$(INC_PATH) -I$(INC_PATH)/QtCore \
 	   -I$(INC_PATH)/QtCore/$(QT_VERSION) -I$(INC_PATH)/QtCore/$(QT_VERSION)/QtCore \
@@ -143,9 +178,12 @@ CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -I$(QMAKESPEC) \
 	   -DQT_VERSION_STR=\"$(QT_VERSION)\" -DQT_VERSION_MAJOR=$(QT_MAJOR_VERSION) -DQT_VERSION_MINOR=$(QT_MINOR_VERSION) -DQT_VERSION_PATCH=$(QT_PATCH_VERSION) \
 	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
-	   -DQT_NO_FOREACH -DQT_USE_QSTRINGBUILDER
+           -DQT_NO_FOREACH -DQT_USE_QSTRINGBUILDER \
+           -DPCRE2_CODE_UNIT_WIDTH=16 -DHAVE_CONFIG_H\
+            $(EXTRA_CPPFLAGS)
 
 CXXFLAGS = $(EXTRA_CXXFLAGS) $(CONFIG_CXXFLAGS) $(CPPFLAGS)
+CFLAGS = $(CPPFLAGS) $(CONFIG_CFLAGS)
 LFLAGS = $(EXTRA_LFLAGS) $(CONFIG_LFLAGS)
 
 first all: $(BUILD_PATH)/bin/qmake$(EXEEXT)
@@ -410,6 +448,9 @@ qabstractfileengine.o: $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
 qtemporaryfile.o: $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
+qregularexpression.o: $(SOURCE_PATH)/src/corelib/text/qregularexpression.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
 qregexp.o: $(SOURCE_PATH)/src/corelib/text/qregexp.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
@@ -493,5 +534,84 @@ qxmlutils.o: $(SOURCE_PATH)/src/corelib/serialization/qxmlutils.cpp
 
 qtextstream.o: $(SOURCE_PATH)/src/corelib/serialization/qtextstream.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+pcre2_auto_possess.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_auto_possess.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_chartables.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_chartables.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_compile.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_compile.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_config.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_config.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_context.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_context.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_dfa_match.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_dfa_match.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_error.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_error.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_extuni.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_extuni.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_find_bracket.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_find_bracket.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_jit_compile.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_jit_compile.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_maketables.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_maketables.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_match.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_match.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_match_data.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_match_data.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_newline.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_newline.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_ord2utf.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_ord2utf.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_pattern_info.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_pattern_info.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_script_run.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_script_run.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_serialize.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_serialize.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_string_utils.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_string_utils.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_study.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_study.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_substitute.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_substitute.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_substring.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_substring.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_tables.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_tables.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_ucd.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_ucd.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_valid_utf.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_valid_utf.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+pcre2_xclass.o: $(SOURCE_PATH)/src/3rdparty/pcre2/src/pcre2_xclass.c
+	$(CC) -c -o $@ $(CFLAGS) $<
+
 
 # DO NOT DELETE THIS LINE -- make depend depends on it

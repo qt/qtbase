@@ -353,6 +353,7 @@ macSDKify()
         ;;
     esac
 
+    hasCFlags=
     echo "$1" | while read line; do
         case "$line" in
             QMAKE_CC=*|QMAKE_CXX=*|QMAKE_FIX_RPATH=*|QMAKE_AR=*|QMAKE_RANLIB=*|QMAKE_LINK=*|QMAKE_LINK_SHLIB=*)
@@ -363,7 +364,11 @@ macSDKify()
                 val=$(echo $sdk_val $(echo $val | cut -s -d ' ' -f 2-))
                 echo "$var=$val"
             ;;
-            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*|QMAKE_LFLAGS=*)
+            QMAKE_CFLAGS=*)
+                echo "$line -isysroot $sysroot $version_min_flag"
+                hasCFlags="true";
+            ;;
+            QMAKE_CXXFLAGS=*|QMAKE_LFLAGS=*)
                 echo "$line -isysroot $sysroot $version_min_flag"
             ;;
             *)
@@ -371,6 +376,10 @@ macSDKify()
             ;;
         esac
     done
+
+    if [ -z "$hasCFlags" ]; then
+        echo "QMAKE_CFLAGS = -isysroot $sysroot $version_min_flag";
+    fi
 }
 
 # relies on $QMAKESPEC being set correctly. parses include statements in
@@ -844,6 +853,7 @@ fi
         setBootstrapVariable QMAKE_CC CC "$CC_TRANSFORM"
         setBootstrapVariable QMAKE_CXX CXX "$CC_TRANSFORM"
         setBootstrapVariable QMAKE_CXXFLAGS
+        setBootstrapVariable QMAKE_CFLAGS
         setBootstrapVariable QMAKE_CXXFLAGS_CXX1Z
         setBootstrapVariable QMAKE_CXXFLAGS_SPLIT_SECTIONS
         setBootstrapVariable QMAKE_LFLAGS
@@ -874,6 +884,7 @@ fi
         echo "QT_MINOR_VERSION = $QT_MINOR_VERSION" >> "$mkfile"
         echo "QT_PATCH_VERSION = $QT_PATCH_VERSION" >> "$mkfile"
         echo "CONFIG_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
+        echo "CONFIG_CFLAGS = \$(QMAKE_CFLAGS)" >> "$mkfile"
         echo "CONFIG_LFLAGS = $EXTRA_LFLAGS" >> "$mkfile"
         echo "RM_F = rm -f" >> "$mkfile"
         echo "RM_RF = rm -rf" >> "$mkfile"

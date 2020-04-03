@@ -32,17 +32,20 @@ CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac \
               -I$(SOURCE_PATH)/src/3rdparty/tinycbor/src \
+              -I$(SOURCE_PATH)/src/3rdparty/pcre2/src \
               -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
               -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS \
               -DQT_VERSION_STR=\"$(QT_VERSION)\" -DQT_VERSION_MAJOR=$(QT_MAJOR_VERSION) -DQT_VERSION_MINOR=$(QT_MINOR_VERSION) -DQT_VERSION_PATCH=$(QT_PATCH_VERSION) \
               -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
-              -DQT_NO_FOREACH -DQT_USE_QSTRINGBUILDER -DUNICODE -D_ENABLE_EXTENDED_ALIGNED_STORAGE
-CFLAGS   = $(CFLAGS_PCH) $(CFLAGS_BARE) $(CFLAGS)
+              -DQT_NO_FOREACH -DQT_USE_QSTRINGBUILDER -DUNICODE -D_ENABLE_EXTENDED_ALIGNED_STORAGE \
+              -DPCRE2_CODE_UNIT_WIDTH=16 -DHAVE_CONFIG_H -DPCRE2_STATIC
+
+CFLAGS   = $(CFLAGS_BARE) $(CFLAGS)
 
 CXXFLAGS_BARE = $(CFLAGS_BARE)
-CXXFLAGS = $(CFLAGS)
+CXXFLAGS = $(CFLAGS) $(CFLAGS_PCH)
 
 LFLAGS	    =
 LIBS        = ole32.lib advapi32.lib shell32.lib netapi32.lib
@@ -125,7 +128,34 @@ QTOBJS= \
 	qjsonparser.obj \
 	qjsonarray.obj \
 	qjsonobject.obj \
-	qjsonvalue.obj
+	qjsonvalue.obj \
+        qregularexpression.obj \
+	pcre2_auto_possess.obj \
+	pcre2_chartables.obj \
+	pcre2_compile.obj \
+	pcre2_config.obj \
+	pcre2_context.obj \
+	pcre2_dfa_match.obj \
+	pcre2_error.obj \
+	pcre2_extuni.obj \
+	pcre2_find_bracket.obj \
+	pcre2_jit_compile.obj \
+	pcre2_maketables.obj \
+	pcre2_match.obj \
+	pcre2_match_data.obj \
+	pcre2_newline.obj \
+	pcre2_ord2utf.obj \
+	pcre2_pattern_info.obj \
+	pcre2_script_run.obj \
+	pcre2_serialize.obj \
+	pcre2_string_utils.obj \
+	pcre2_study.obj \
+	pcre2_substitute.obj \
+	pcre2_substring.obj \
+	pcre2_tables.obj \
+	pcre2_ucd.obj \
+	pcre2_valid_utf.obj \
+	pcre2_xclass.obj \
 
 first all: $(BUILD_PATH)\bin\qmake.exe
 binary: $(BUILD_PATH)\qmake\qmake.exe
@@ -210,6 +240,9 @@ qmake_pch.obj:
 
 {$(SOURCE_PATH)\src\corelib\tools}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
+
+{$(SOURCE_PATH)\src\3rdparty\pcre2\src}.c{}.obj::
+        $(CXX) $(CFLAGS) $<
 
 # Make sure qlibraryinfo.obj isn't compiled with PCH enabled
 qlibraryinfo.obj: $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp

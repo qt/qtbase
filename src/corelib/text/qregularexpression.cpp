@@ -1535,9 +1535,17 @@ QString QRegularExpression::errorString() const
         } while (errorStringLength < 0);
         errorString.resize(errorStringLength);
 
+#ifdef QT_NO_TRANSLATION
+        return errorString;
+#else
         return QCoreApplication::translate("QRegularExpression", std::move(errorString).toLatin1().constData());
+#endif
     }
+#ifdef QT_NO_TRANSLATION
+        return QLatin1String("no error");
+#else
     return QCoreApplication::translate("QRegularExpression", "no error");
+#endif
 }
 
 /*!

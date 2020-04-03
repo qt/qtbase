@@ -25,3 +25,6 @@ else
     RM_F = del /f
     RM_RF = rmdir /s /q
 endif
+ifeq ($(CXX), g++)
+    CC = gcc
+endif

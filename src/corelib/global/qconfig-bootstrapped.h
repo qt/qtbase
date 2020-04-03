@@ -106,11 +106,7 @@
 #define QT_FEATURE_lttng -1
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1
-#ifndef QT_BUILD_QMAKE
 #define QT_FEATURE_regularexpression 1
-#else
-#define QT_FEATURE_regularexpression -1
-#endif
 #ifdef __GLIBC_PREREQ
 # define QT_FEATURE_renameat2 (__GLIBC_PREREQ(2, 28) ? 1 : -1)
 #else

@@ -103,11 +103,13 @@ INCLUDEPATH += \
 
 VPATH += \
     ../src/corelib/global \
+    ../src/corelib/text \
     ../src/corelib/tools \
     ../src/corelib/kernel \
     ../src/corelib/codecs \
     ../src/corelib/plugin \
     ../src/corelib/io \
+        ../src/corelib/time \
     ../src/corelib/serialization
 
 SOURCES += \
@@ -151,6 +153,7 @@ SOURCES += \
     qmetatype.cpp \
     qnumeric.cpp \
     qregexp.cpp \
+    qregularexpression.cpp \
     qromancalendar.cpp \
     qsettings.cpp \
     qstring.cpp \
@@ -209,6 +212,7 @@ HEADERS += \
     qmetatype.h \
     qnumeric.h \
     qregexp.h \
+    qregularexpression.h \
     qromancalendar_p.h \
     qstring.h \
     qstringbuilder.h \
@@ -223,6 +227,8 @@ HEADERS += \
     qversionnumber.h \
     qxmlstream.h \
     qxmlutils_p.h
+
+include(../src/3rdparty/pcre2/pcre2.pri)
 
 unix {
     SOURCES += \

@@ -9,6 +9,37 @@ qt_add_tool(qmake # special case
     TOOLS_TARGET Core # special case
     # GUI # special case: remove this
     SOURCES
+        ../src/3rdparty/pcre2/src/config.h
+        ../src/3rdparty/pcre2/src/pcre2.h
+        ../src/3rdparty/pcre2/src/pcre2_auto_possess.c
+        ../src/3rdparty/pcre2/src/pcre2_chartables.c
+        ../src/3rdparty/pcre2/src/pcre2_compile.c
+        ../src/3rdparty/pcre2/src/pcre2_config.c
+        ../src/3rdparty/pcre2/src/pcre2_context.c
+        ../src/3rdparty/pcre2/src/pcre2_dfa_match.c
+        ../src/3rdparty/pcre2/src/pcre2_error.c
+        ../src/3rdparty/pcre2/src/pcre2_extuni.c
+        ../src/3rdparty/pcre2/src/pcre2_find_bracket.c
+        ../src/3rdparty/pcre2/src/pcre2_internal.h
+        ../src/3rdparty/pcre2/src/pcre2_intmodedep.h
+        ../src/3rdparty/pcre2/src/pcre2_jit_compile.c
+        ../src/3rdparty/pcre2/src/pcre2_maketables.c
+        ../src/3rdparty/pcre2/src/pcre2_match.c
+        ../src/3rdparty/pcre2/src/pcre2_match_data.c
+        ../src/3rdparty/pcre2/src/pcre2_newline.c
+        ../src/3rdparty/pcre2/src/pcre2_ord2utf.c
+        ../src/3rdparty/pcre2/src/pcre2_pattern_info.c
+        ../src/3rdparty/pcre2/src/pcre2_script_run.c
+        ../src/3rdparty/pcre2/src/pcre2_serialize.c
+        ../src/3rdparty/pcre2/src/pcre2_string_utils.c
+        ../src/3rdparty/pcre2/src/pcre2_study.c
+        ../src/3rdparty/pcre2/src/pcre2_substitute.c
+        ../src/3rdparty/pcre2/src/pcre2_substring.c
+        ../src/3rdparty/pcre2/src/pcre2_tables.c
+        ../src/3rdparty/pcre2/src/pcre2_ucd.c
+        ../src/3rdparty/pcre2/src/pcre2_ucp.h
+        ../src/3rdparty/pcre2/src/pcre2_valid_utf.c
+        ../src/3rdparty/pcre2/src/pcre2_xclass.c
         ../src/corelib/codecs/qutfcodec.cpp ../src/corelib/codecs/qutfcodec_p.h
         ../src/corelib/global/qendian.cpp # special case
         ../src/corelib/global/qglobal.cpp ../src/corelib/global/qglobal.h
@@ -70,6 +101,7 @@ qt_add_tool(qmake # special case
         ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
         ../src/corelib/tools/qmap.cpp ../src/corelib/tools/qmap.h
         ../src/corelib/text/qregexp.cpp ../src/corelib/text/qregexp.h
+        ../src/corelib/text/qregularexpression.cpp ../src/corelib/text/qregularexpression.h
         ../src/corelib/tools/qringbuffer.cpp # special case
         ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h
         ../src/corelib/text/qstringbuilder.cpp ../src/corelib/text/qstringbuilder.h
@@ -117,6 +149,9 @@ qt_add_tool(qmake # special case
         QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
         QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
         QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
+        PCRE2_CODE_UNIT_WIDTH=16
+        PCRE2_DISABLE_JIT
+        HAVE_CONFIG_H
     INCLUDE_DIRECTORIES
         # . # special case remove
         generators
@@ -151,6 +186,8 @@ qt_extend_target(qmake CONDITION WIN32
         _CRT_SECURE_NO_WARNINGS
         _ENABLE_EXTENDED_ALIGNED_STORAGE
         _SCL_SECURE_NO_WARNINGS
+    PUBLIC_DEFINES
+        PCRE2_STATIC
     PUBLIC_LIBRARIES
         advapi32
         kernel32
