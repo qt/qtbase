@@ -76,6 +76,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QRegExp
     \inmodule QtCore
+    \obsolete Use QRegularExpression instead
     \reentrant
     \brief The QRegExp class provides pattern matching using regular expressions.
 
@@ -83,6 +84,10 @@ QT_BEGIN_NAMESPACE
     \ingroup shared
 
     \keyword regular expression
+
+    This class is deprecated in Qt 6. Please use QRegularExpression instead
+    for all new code. For guidelines on porting old code from QRegExp to
+    QRegularExpression, see {Porting to QRegularExpression}
 
     A regular expression, or "regexp", is a pattern for matching
     substrings in a text. This is useful in many contexts, e.g.,
@@ -688,6 +693,133 @@ QT_BEGIN_NAMESPACE
 
     \sa QString, QStringList, QSortFilterProxyModel,
         {tools/regexp}{Regular Expression Example}
+
+
+    \section1 Porting to QRegularExpression
+
+    The QRegularExpression class introduced in Qt 5 is a big improvement upon
+    QRegExp, in terms of APIs offered, supported pattern syntax and speed of
+    execution. The biggest difference is that QRegularExpression simply holds a
+    regular expression, and it's \e{not} modified when a match is requested.
+    Instead, a QRegularExpressionMatch object is returned, in order to check
+    the result of a match and extract the captured substring. The same applies
+    with global matching and QRegularExpressionMatchIterator.
+
+    Other differences are outlined below.
+
+    \section2 Different pattern syntax
+
+    Porting a regular expression from QRegExp to QRegularExpression may require
+    changes to the pattern itself.
+
+    In certain scenarios, QRegExp was too lenient and accepted patterns that
+    are simply invalid when using QRegularExpression. These are somehow easy
+    to detect, because the QRegularExpression objects built with these patterns
+    are not valid (cf. QRegularExpression::isValid()).
+
+    In other cases, a pattern ported from QRegExp to QRegularExpression may
+    silently change semantics. Therefore, it is necessary to review the
+    patterns used. The most notable cases of silent incompatibility are:
+
+    \list
+
+    \li Curly braces are needed in order to use a hexadecimal escape like
+    \c{\xHHHH} with more than 2 digits. A pattern like \c{\x2022} neeeds to
+    be ported to \c{\x{2022}}, or it will match a space (\c{0x20}) followed
+    by the string \c{"22"}. In general, it is highly recommended to always use
+    curly braces with the \c{\x} escape, no matter the amount of digits
+    specified.
+
+    \li A 0-to-n quantification like \c{{,n}} needs to be ported to \c{{0,n}} to
+    preserve semantics. Otherwise, a pattern such as \c{\d{,3}} would
+    actually match a digit followed by the exact string \c{"{,3}"}.
+
+    \li QRegExp by default does Unicode-aware matching, while
+    QRegularExpression requires a separate option; see below for more details.
+
+    \endlist
+
+    \section2 Porting from QRegExp::exactMatch()
+
+    QRegExp::exactMatch() in Qt 4 served two purposes: it exactly matched
+    a regular expression against a subject string, and it implemented partial
+    matching.
+
+    \section3 Porting from QRegExp's Exact Matching
+
+    Exact matching indicates whether the regular expression matches the entire
+    subject string. For example, the classes yield on the subject string \c{"abc123"}:
+
+    \table
+    \header \li                  \li QRegExp::exactMatch() \li QRegularExpressionMatch::hasMatch()
+    \row    \li \c{"\\d+"}       \li \b false              \li \b true
+    \row    \li \c{"[a-z]+\\d+"} \li \b true               \li \b true
+    \endtable
+
+    Exact matching is not reflected in QRegularExpression. If you want
+    to be sure that the subject string matches the regular expression
+    exactly, you can wrap the pattern using the QRegularExpression::anchoredPattern()
+    function:
+
+    \snippet code/src_corelib_tools_qregexp.cpp 21
+
+    \section3 Porting from QRegExp's Partial Matching
+
+    When using QRegExp::exactMatch(), if an exact match was not found, one
+    could still find out how much of the subject string was matched by the
+    regular expression by calling QRegExp::matchedLength(). If the returned length
+    was equal to the subject string's length, then one could conclude that a partial
+    match was found.
+
+    QRegularExpression supports partial matching explicitly by means of the
+    appropriate MatchType.
+
+    \section2 Global matching
+
+    Due to limitations of the QRegExp API it was impossible to implement global
+    matching correctly (that is, like Perl does). In particular, patterns that
+    can match 0 characters (like \c{"a*"}) are problematic.
+
+    QRegularExpression::globalMatch() implements Perl global match correctly, and
+    the returned iterator can be used to examine each result.
+
+    \section2 Unicode properties support
+
+    When using QRegExp, character classes such as \c{\w}, \c{\d}, etc. match
+    characters with the corresponding Unicode property: for instance, \c{\d}
+    matches any character with the Unicode Nd (decimal digit) property.
+
+    Those character classes only match ASCII characters by default when using
+    QRegularExpression: for instance, \c{\d} matches exactly a character in the
+    \c{0-9} ASCII range. It is possible to change this behavior by using the
+    UseUnicodePropertiesOption pattern option.
+
+    \section2 Wildcard matching
+
+    There is no direct way to do wildcard matching in QRegularExpression.
+    However, the wildcardToRegularExpression method is provided to translate
+    glob patterns into a Perl-compatible regular expression that can be used
+    for that purpose.
+
+    \section2 Other pattern syntaxes
+
+    QRegularExpression supports only Perl-compatible regular expressions.
+
+    \section2 Minimal matching
+
+    QRegExp::setMinimal() implemented minimal matching by simply reversing the
+    greediness of the quantifiers (QRegExp did not support lazy quantifiers,
+    like \c{*?}, \c{+?}, etc.). QRegularExpression instead does support greedy,
+    lazy and possessive quantifiers. The InvertedGreedinessOption
+    pattern option can be useful to emulate the effects of QRegExp::setMinimal():
+    if enabled, it inverts the greediness of quantifiers (greedy ones become
+    lazy and vice versa).
+
+    \section2 Caret modes
+
+    The AnchorAtOffsetMatchOption match option can be used to emulate the
+    QRegExp::CaretAtOffset behavior. There is no equivalent for the other
+    QRegExp::CaretMode modes.
 */
 
 #if defined(Q_OS_VXWORKS) && defined(EOS)

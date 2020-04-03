@@ -232,3 +232,12 @@ s2 = QRegExp::escape("f(x)");    // s2 == "f\\(x\\)"
 QRegExp rx("(" + QRegExp::escape(name) +
            "|" + QRegExp::escape(alias) + ")");
 //! [20]
+
+{
+//! [21]
+QString p("a .*|pattern");
+
+// re matches exactly the pattern string p
+QRegularExpression re(QRegularExpression::anchoredPattern(p));
+//! [21]
+}

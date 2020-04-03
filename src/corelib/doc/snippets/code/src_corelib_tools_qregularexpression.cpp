@@ -285,15 +285,6 @@ if (!invalidRe.isValid()) {
 }
 
 {
-//! [24]
-QString p("a .*|pattern");
-
-// re matches exactly the pattern string p
-QRegularExpression re(QRegularExpression::anchoredPattern(p));
-//! [24]
-}
-
-{
 //! [26]
 QString escaped = QRegularExpression::escape("a(x) = f(x) + g(x)");
 // escaped == "a\\(x\\)\\ \\=\\ f\\(x\\)\\ \\+\\ g\\(x\\)"
