@@ -279,6 +279,7 @@ _qt_library_map = [
         "Qt::Quick3DAssetImport",
         extra=["COMPONENTS", "Quick3DAssetImport"],
     ),
+    LibraryMapping("core5compat", "Qt6", "Qt::Core5Compat", extra=["COMPONENTS", "Core5Compat"]),
     LibraryMapping("quick3d", "Qt6", "Qt::Quick3D", extra=["COMPONENTS", "Quick3D"]),
     LibraryMapping(
         "quick3drender", "Qt6", "Qt::Quick3DRender", extra=["COMPONENTS", "Quick3DRender"]
