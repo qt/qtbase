@@ -3549,7 +3549,7 @@ void QMenu::actionEvent(QActionEvent *e)
             if (QWidget *widget = d->widgetItems.value(wa)) {
 #ifdef Q_OS_MACOS
                 QWidget *p = widget->parentWidget();
-                if (p != this && qobject_cast<QMacNativeWidget *>(p)) {
+                if (p != this && QT_IGNORE_DEPRECATIONS(qobject_cast<QMacNativeWidget *>(p))) {
                     // This widget was reparented into a native Mac view
                     // (see QMenuPrivate::moveWidgetToPlatformItem).
                     // Reset the parent and delete the native widget.

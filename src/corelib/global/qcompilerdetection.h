@@ -1306,6 +1306,14 @@
 #  define QT_WARNING_DISABLE_DEPRECATED
 #endif
 
+#ifndef QT_IGNORE_DEPRECATIONS
+#define QT_IGNORE_DEPRECATIONS(statement) \
+    QT_WARNING_PUSH \
+    QT_WARNING_DISABLE_DEPRECATED \
+    statement \
+    QT_WARNING_POP
+#endif
+
 /*
    Proper for-scoping in MIPSpro CC
 */
