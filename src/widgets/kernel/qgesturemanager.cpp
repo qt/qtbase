@@ -51,7 +51,7 @@
 #include "qgesture.h"
 #include "qevent.h"
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #include "qmacgesturerecognizer_p.h"
 #endif
 
@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcGestureManager, "qt.widgets.gestures")
 
-#if !defined(Q_OS_OSX)
+#if !defined(Q_OS_MACOS)
 static inline int panTouchPoints()
 {
     // Override by environment variable for testing.
@@ -89,7 +89,7 @@ QGestureManager::QGestureManager(QObject *parent)
 {
     qRegisterMetaType<Qt::GestureState>();
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     registerGestureRecognizer(new QMacSwipeGestureRecognizer);
     registerGestureRecognizer(new QMacPinchGestureRecognizer);
     registerGestureRecognizer(new QMacPanGestureRecognizer);

@@ -58,7 +58,7 @@
 #  include "qfilesystemwatcher_inotify_p.h"
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(QT_PLATFORM_UIKIT)
 #  include "qfilesystemwatcher_kqueue_p.h"
-#elif defined(Q_OS_OSX)
+#elif defined(Q_OS_MACOS)
 #  include "qfilesystemwatcher_fsevents_p.h"
 #endif
 
@@ -79,7 +79,7 @@ QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine(QObject 
     return QInotifyFileSystemWatcherEngine::create(parent);
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(QT_PLATFORM_UIKIT)
     return QKqueueFileSystemWatcherEngine::create(parent);
-#elif defined(Q_OS_OSX)
+#elif defined(Q_OS_MACOS)
     return QFseventsFileSystemWatcherEngine::create(parent);
 #else
     Q_UNUSED(parent);

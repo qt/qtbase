@@ -995,7 +995,7 @@ void tst_QStyleSheetStyle::focusColors()
 #ifndef QT_NO_CURSOR
 void tst_QStyleSheetStyle::hoverColors()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("This test is fragile on Mac, most likely due to QTBUG-33959.");
 #endif
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))

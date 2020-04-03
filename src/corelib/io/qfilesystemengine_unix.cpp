@@ -69,7 +69,7 @@
 # include <CoreFoundation/CFBundle.h>
 #endif
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #include <CoreServices/CoreServices.h>
 #endif
 

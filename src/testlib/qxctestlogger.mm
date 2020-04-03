@@ -189,7 +189,7 @@ private:
     // Prevent XCTestProbe from re-launching runTests on application startup
     [[NSNotificationCenter defaultCenter] removeObserver:[XCTestProbe class]
         name:[NSString stringWithFormat:@"%@DidFinishLaunchingNotification",
-                #if defined(Q_OS_OSX)
+                #if defined(Q_OS_MACOS)
                     @"NSApplication"
                 #else
                     @"UIApplication"

@@ -183,7 +183,7 @@ MainWindow::MainWindow(QWidget *parent)
     bottomBar->addWidget((uploadLimitLabel = new QLabel(tr("0 KB/s"))));
     uploadLimitLabel->setFixedSize(QSize(fm.horizontalAdvance(tr("99999 KB/s")), fm.lineSpacing()));
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
 

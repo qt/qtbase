@@ -1082,7 +1082,7 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
 void QComboBoxPrivate::init()
 {
     Q_Q(QComboBox);
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // On OS X, only line edits and list views always get tab focus. It's only
     // when we enable full keyboard access that other controls can get tab focus.
     // When it's not editable, a combobox looks like a button, and it behaves as
@@ -1239,7 +1239,7 @@ void QComboBoxPrivate::updateViewContainerPaletteAndOpacity()
 
 void QComboBoxPrivate::updateFocusPolicy()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     Q_Q(QComboBox);
 
     // See comment in QComboBoxPrivate::init()
@@ -2696,7 +2696,7 @@ bool QComboBoxPrivate::showNativePopup()
     const QRect targetRect = QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize());
     m_platformMenu->showPopup(tlw, QHighDpi::toNativePixels(targetRect, tlw), currentItem);
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // The Cocoa popup will swallow any mouse release event.
     // We need to fake one here to un-press the button.
     QMouseEvent mouseReleased(QEvent::MouseButtonRelease, q->pos(), Qt::LeftButton,

@@ -1041,7 +1041,7 @@ static inline bool isCaseSensitiveFileSystem(const QString &path)
     // Return case insensitive unconditionally, even if someone has a case sensitive
     // file system mounted, wrongly capitalized drive letters will cause mismatches.
     return false;
-#elif defined(Q_OS_OSX)
+#elif defined(Q_OS_MACOS)
     return pathconf(QFile::encodeName(path).constData(), _PC_CASE_SENSITIVE);
 #else
     return true;

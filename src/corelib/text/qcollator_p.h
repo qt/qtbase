@@ -57,7 +57,7 @@
 #include <QVector>
 #if QT_CONFIG(icu)
 #include <unicode/ucol.h>
-#elif defined(Q_OS_OSX)
+#elif defined(Q_OS_MACOS)
 #include <CoreServices/CoreServices.h>
 #elif defined(Q_OS_WIN)
 #include <qt_windows.h>
@@ -70,7 +70,7 @@ typedef UCollator *CollatorType;
 typedef QByteArray CollatorKeyType;
 const CollatorType NoCollator = nullptr;
 
-#elif defined(Q_OS_OSX)
+#elif defined(Q_OS_MACOS)
 typedef CollatorRef CollatorType;
 typedef QVector<UCCollationValue> CollatorKeyType;
 const CollatorType NoCollator = 0;

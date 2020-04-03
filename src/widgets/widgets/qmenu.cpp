@@ -48,7 +48,7 @@
 #include "qlayout.h"
 #include "qpainter.h"
 #include <qpa/qplatformtheme.h>
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #include "qmacnativewidget_mac.h"
 #endif
 #include "qapplication.h"
@@ -1491,7 +1491,7 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
 
     emit q->aboutToShow();
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     if (platformMenu) {
         const auto actions = q->actions();
         for (QAction *action : actions) {
@@ -3547,7 +3547,7 @@ void QMenu::actionEvent(QActionEvent *e)
             d->currentAction = nullptr;
         if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
             if (QWidget *widget = d->widgetItems.value(wa)) {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
                 QWidget *p = widget->parentWidget();
                 if (p != this && qobject_cast<QMacNativeWidget *>(p)) {
                     // This widget was reparented into a native Mac view

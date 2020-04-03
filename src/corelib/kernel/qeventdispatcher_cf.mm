@@ -48,7 +48,7 @@
 
 #include <limits>
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #  include <AppKit/NSApplication.h>
 #elif defined(Q_OS_WATCHOS)
 #  include <WatchKit/WatchKit.h>

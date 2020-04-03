@@ -1892,7 +1892,7 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QUrl &url,
         }
     }
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     //now we try to get the username and password from keychain
     //if not successful signal will be emitted
     QString username;

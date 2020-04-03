@@ -2101,7 +2101,7 @@ QT_WARNING_DISABLE_DEPRECATED
 QSysInfo::MacVersion QSysInfo::macVersion()
 {
     const auto version = QOperatingSystemVersion::current();
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     return QSysInfo::MacVersion(Q_MV_OSX(version.majorVersion(), version.minorVersion()));
 #elif defined(Q_OS_IOS)
     return QSysInfo::MacVersion(Q_MV_IOS(version.majorVersion(), version.minorVersion()));

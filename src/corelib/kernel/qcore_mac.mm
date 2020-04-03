@@ -458,7 +458,7 @@ QMacRootLevelAutoReleasePool::~QMacRootLevelAutoReleasePool()
 
 // -------------------------------------------------------------------------
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 
 // Use this method to keep all the information in the TextSegment. As long as it is ordered
 // we are in OK shape, and we can influence that ourselves.
@@ -598,7 +598,7 @@ Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode)
     return i->qtKey;
 }
 
-#endif // Q_OS_OSX
+#endif // Q_OS_MACOS
 
 void qt_apple_check_os_version()
 {

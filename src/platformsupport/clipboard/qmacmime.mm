@@ -42,7 +42,7 @@
 #include <QtCore/qsystemdetection.h>
 #include <QtGui/qimage.h>
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
 #import <AppKit/AppKit.h>
 #else
 #include <MobileCoreServices/MobileCoreServices.h>

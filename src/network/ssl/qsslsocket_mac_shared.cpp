@@ -57,14 +57,14 @@
 
 #include <QtCore/qdebug.h>
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #   include <Security/Security.h>
 #endif
 
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 namespace {
 
 bool hasTrustedSslServerPolicy(SecPolicyRef policy, CFDictionaryRef props) {
@@ -119,7 +119,7 @@ bool isCaCertificateTrusted(SecCertificateRef cfCert, int domain)
 }
 
 } // anon namespace
-#endif // Q_OS_OSX
+#endif // Q_OS_MACOS
 
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 {
@@ -127,7 +127,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 
     QList<QSslCertificate> systemCerts;
     // SecTrustSettingsCopyCertificates is not defined on iOS.
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // iterate through all enum members, order:
     // kSecTrustSettingsDomainUser, kSecTrustSettingsDomainAdmin, kSecTrustSettingsDomainSystem
     for (int dom = kSecTrustSettingsDomainUser; dom <= int(kSecTrustSettingsDomainSystem); dom++) {

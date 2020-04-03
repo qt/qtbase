@@ -2320,7 +2320,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     static bool menuKeyPressAccepted = false;
 #endif
 
-#if !defined(Q_OS_OSX)
+#if !defined(Q_OS_MACOS)
     // FIXME: Include OS X in this code path by passing the key event through
     // QPlatformInputContext::filterEvent().
     if (e->keyType == QEvent::KeyPress && window) {

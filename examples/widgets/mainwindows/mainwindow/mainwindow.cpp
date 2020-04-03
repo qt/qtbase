@@ -120,7 +120,7 @@ void MainWindow::actionTriggered(QAction *action)
 
 void MainWindow::setupToolBar()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
 
@@ -178,7 +178,7 @@ void MainWindow::setupMenuBar()
     for (int i = 0; i < toolBars.count(); ++i)
         toolBarMenu->addMenu(toolBars.at(i)->toolbarMenu());
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     toolBarMenu->addSeparator();
 
     action = toolBarMenu->addAction(tr("Unified"));

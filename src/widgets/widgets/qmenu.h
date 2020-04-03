@@ -270,7 +270,7 @@ private:
     friend void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action);
 };
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 // ### Qt 4 compatibility; remove in Qt 6
 inline QT_DEPRECATED void qt_mac_set_dock_menu(QMenu *menu) { menu->setAsDockMenu(); }
 #endif
