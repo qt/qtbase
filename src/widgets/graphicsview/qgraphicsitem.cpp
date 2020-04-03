@@ -1075,7 +1075,7 @@ void QGraphicsItemPrivate::setIsMemberOfGroup(bool enabled)
     Q_Q(QGraphicsItem);
     isMemberOfGroup = enabled;
     if (!qgraphicsitem_cast<QGraphicsItemGroup *>(q)) {
-        foreach (QGraphicsItem *child, children)
+        for (QGraphicsItem *child : qAsConst(children))
             child->d_func()->setIsMemberOfGroup(enabled);
     }
 }
@@ -1591,9 +1591,8 @@ QGraphicsItem::~QGraphicsItem()
     if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
         QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
         if (QGestureManager *manager = QGestureManager::instance(QGestureManager::DontForceCreation)) {
-            const auto types  = d_ptr->gestureContext.keys(); // FIXME: iterate over the map directly?
-            for (Qt::GestureType type : types)
-                manager->cleanupCachedGestures(o, type);
+            for (auto it = d_ptr->gestureContext.constBegin(); it != d_ptr->gestureContext.constEnd(); ++it)
+                manager->cleanupCachedGestures(o, it.key());
         }
     }
 #endif
@@ -2511,7 +2510,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly,
     const bool updateChildren = update && !((flags & QGraphicsItem::ItemClipsChildrenToShape
                                              || flags & QGraphicsItem::ItemContainsChildrenInShape)
                                             && !(flags & QGraphicsItem::ItemHasNoContents));
-    foreach (QGraphicsItem *child, children) {
+    for (QGraphicsItem *child : qAsConst(children)) {
         if (!newVisible || !child->d_ptr->explicitlyHidden)
             child->d_ptr->setVisibleHelper(newVisible, false, updateChildren, hiddenByPanel);
     }
@@ -2701,7 +2700,7 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
     if (update)
         q_ptr->update();
 
-    foreach (QGraphicsItem *child, children) {
+    for (QGraphicsItem *child : qAsConst(children)) {
         if (!newEnabled || !child->d_ptr->explicitlyDisabled)
             child->d_ptr->setEnabledHelper(newEnabled, /* explicitly = */ false);
     }
@@ -3981,7 +3980,7 @@ void QGraphicsItem::ensureVisible(const QRectF &rect, int xmargin, int ymargin)
             sceneRect = sceneTransform().mapRect(rect);
         else
             sceneRect = sceneBoundingRect();
-        foreach (QGraphicsView *view, d_ptr->scene->d_func()->views)
+        for (QGraphicsView *view : qAsConst(d_ptr->scene->d_func()->views))
             view->ensureVisible(sceneRect, xmargin, ymargin);
     }
 }
@@ -4765,7 +4764,7 @@ inline void QGraphicsItemPrivate::sendScenePosChange()
         if (flags & QGraphicsItem::ItemSendsScenePositionChanges)
             q->itemChange(QGraphicsItem::ItemScenePositionHasChanged, q->scenePos());
         if (scenePosDescendants) {
-            foreach (QGraphicsItem *item, scene->d_func()->scenePosItems) {
+            for (QGraphicsItem *item : qAsConst(scene->d_func()->scenePosItems)) {
                 if (q->isAncestorOf(item))
                     item->itemChange(QGraphicsItem::ItemScenePositionHasChanged, item->scenePos());
             }
@@ -7330,7 +7329,7 @@ void QGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                     // temporarily removing this item from the selection list.
                     if (d_ptr->selected) {
                         scene->d_func()->selectedItems.remove(this);
-                        foreach (QGraphicsItem *item, scene->d_func()->selectedItems) {
+                        for (QGraphicsItem *item : qAsConst(scene->d_func()->selectedItems)) {
                             if (item->isSelected()) {
                                 selectionChanged = true;
                                 break;

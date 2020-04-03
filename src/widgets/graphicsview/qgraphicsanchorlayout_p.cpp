@@ -2633,7 +2633,7 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
     top += geom.top();
     right = geom.right() - right;
 
-    foreach (QGraphicsLayoutItem *item, items) {
+    for (QGraphicsLayoutItem *item : qAsConst(items)) {
         QRectF newGeom;
         QSizeF itemPreferredSize = item->effectiveSizeHint(Qt::PreferredSize);
         if (m_floatItems[Horizontal].contains(item)) {

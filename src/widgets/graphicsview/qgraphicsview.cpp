@@ -693,7 +693,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
                                                                                   mouseEvent.widget());
     }
     // Find the topmost item under the mouse with a cursor.
-    foreach (QGraphicsItem *item, scene->d_func()->cachedItemsUnderMouse) {
+    for (QGraphicsItem *item : qAsConst(scene->d_func()->cachedItemsUnderMouse)) {
         if (item->isEnabled() && item->hasCursor()) {
             _q_setViewportCursor(item->cursor());
             return;
