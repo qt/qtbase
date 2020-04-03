@@ -465,8 +465,8 @@ qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
 
 qt_extend_target(Gui CONDITION QT_FEATURE_shortcut
     SOURCES
-        kernel/qshortcut.cpp kernel/qshortcut.h kernel/qshortcut_p.h
         kernel/qkeysequence.cpp kernel/qkeysequence.h kernel/qkeysequence_p.h
+        kernel/qshortcut.cpp kernel/qshortcut.h kernel/qshortcut_p.h
         kernel/qshortcutmap.cpp kernel/qshortcutmap_p.h
 )
 
@@ -664,6 +664,16 @@ qt_extend_target(Gui CONDITION QT_FEATURE_regularexpression
         util/qshadergenerator.cpp util/qshadergenerator_p.h
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_undocommand
+    SOURCES
+        util/qundostack.cpp util/qundostack.h util/qundostack_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_undogroup
+    SOURCES
+        util/qundogroup.cpp util/qundogroup.h
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
     SOURCES
         opengl/qopenglfunctions_1_0.cpp opengl/qopenglfunctions_1_0.h
@@ -711,7 +721,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 82:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
+#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # special case begin
 # We must always generate syncqt-injected header files,
 # because we added a custom command earlier for those for framework builds.
@@ -767,10 +777,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 83:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 85:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 86:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM

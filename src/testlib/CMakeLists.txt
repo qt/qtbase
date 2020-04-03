@@ -66,10 +66,6 @@ qt_add_module(Test
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
-    # special case begin
-    # remove COMPILE_OPTIONS, LINK_OPTIONS, COVERAGE_OPTIONS
-    # figure out how it should be handled.
-    # special case end
 )
 
 #### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:

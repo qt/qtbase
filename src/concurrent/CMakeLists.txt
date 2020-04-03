@@ -7,6 +7,7 @@
 qt_add_module(Concurrent
     EXCEPTIONS
     SOURCES
+        qtaskbuilder.h
         qtconcurrent_global.h
         qtconcurrentcompilertest.h
         qtconcurrentexception.h
@@ -21,9 +22,8 @@ qt_add_module(Concurrent
         qtconcurrentrun.cpp qtconcurrentrun.h
         qtconcurrentrunbase.h
         qtconcurrentstoredfunctioncall.h
-        qtconcurrentthreadengine.cpp qtconcurrentthreadengine.h
-        qtaskbuilder.h
         qtconcurrenttask.h
+        qtconcurrentthreadengine.cpp qtconcurrentthreadengine.h
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE

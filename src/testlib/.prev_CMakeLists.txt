@@ -61,13 +61,6 @@ qt_add_module(Test
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
-    COMPILE_OPTIONS
-        --cs-exclude-file-abs-wildcard=${QT_SOURCE_TREE}/*
-        --cs-include-file-abs-wildcard=*/src/testlib/*
-        --cs-mcc
-        --cs-mcdc
-    LINK_OPTIONS
-        "$$COVERAGE_OPTIONS"
 )
 
 #### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:

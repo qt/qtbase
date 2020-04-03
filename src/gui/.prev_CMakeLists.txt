@@ -364,8 +364,8 @@ qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
 
 qt_extend_target(Gui CONDITION QT_FEATURE_action
     SOURCES
-        kernel/qguiaction.cpp kernel/qguiaction.h kernel/qguiaction_p.h
-        kernel/qguiactiongroup.cpp kernel/qguiactiongroup.h kernel/qguiactiongroup_p.h
+        kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
+        kernel/qactiongroup.cpp kernel/qactiongroup.h kernel/qactiongroup_p.h
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
@@ -379,8 +379,8 @@ qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
 
 qt_extend_target(Gui CONDITION QT_FEATURE_shortcut
     SOURCES
-        kernel/qguishortcut.cpp kernel/qguishortcut.h kernel/qguishortcut_p.h
         kernel/qkeysequence.cpp kernel/qkeysequence.h kernel/qkeysequence_p.h
+        kernel/qshortcut.cpp kernel/qshortcut.h kernel/qshortcut_p.h
         kernel/qshortcutmap.cpp kernel/qshortcutmap_p.h
 )
 
@@ -559,6 +559,16 @@ qt_extend_target(Gui CONDITION QT_FEATURE_regularexpression
         util/qshadergenerator.cpp util/qshadergenerator_p.h
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_undocommand
+    SOURCES
+        util/qundostack.cpp util/qundostack.h util/qundostack_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_undogroup
+    SOURCES
+        util/qundogroup.cpp util/qundogroup.h
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
     SOURCES
         opengl/qopenglfunctions_1_0.cpp opengl/qopenglfunctions_1_0.h
@@ -606,7 +616,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 82:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
+#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # QMAKE_EXTRA_COMPILERS = "qvkgen_h" "qvkgen_ph" "qvkgen_pimpl"
 # QMAKE_QVKGEN_INPUT = "vulkan/vk.xml"
 # QMAKE_QVKGEN_LICENSE_HEADER = "$$QT_SOURCE_TREE/header.LGPL"
@@ -622,10 +632,10 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 83:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 85:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 86:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM
