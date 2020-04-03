@@ -69,7 +69,7 @@
 #include <qlist.h>
 #include <qvariant.h>  /* All moc genereated code has this include */
 #include <qobject.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qscopedpointer.h>
 #include <qshareddata.h>
 #include <qstring.h>

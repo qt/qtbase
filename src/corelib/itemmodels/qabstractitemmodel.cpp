@@ -45,7 +45,6 @@
 #include <qmimedata.h>
 #include <qdebug.h>
 #include <qvector.h>
-#include <qregexp.h>
 #if QT_CONFIG(regularexpression)
 #  include <qregularexpression.h>
 #endif
