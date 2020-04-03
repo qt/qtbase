@@ -184,6 +184,15 @@ def _parse_commandline():
     )
 
     parser.add_argument(
+        "-o",
+        "--output-file",
+        dest="output_file",
+        type=str,
+        help="Specify a file path where the generated content should be written to."
+             "Default is to write to CMakeLists.txt in the same directory as the .pro file.",
+    )
+
+    parser.add_argument(
         "files",
         metavar="<.pro/.pri file>",
         type=str,
@@ -4053,11 +4062,16 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
 
 
 def copy_generated_file_to_final_location(
-    scope: Scope, keep_temporary_files=False, debug: bool = False
+    scope: Scope, output_file: str, keep_temporary_files=False, debug: bool = False
 ) -> None:
     if debug:
-        print(f"Copying {scope.generated_cmake_lists_path} to {scope.original_cmake_lists_path}")
-    copyfile(scope.generated_cmake_lists_path, scope.original_cmake_lists_path)
+        print(f"Copying {scope.generated_cmake_lists_path} to {output_file}")
+
+    base_dir = os.path.dirname(output_file)
+    base_dir_abs = os.path.realpath(base_dir)
+    os.makedirs(base_dir_abs, exist_ok=True)
+
+    copyfile(scope.generated_cmake_lists_path, output_file)
     if not keep_temporary_files:
         os.remove(scope.generated_cmake_lists_path)
 
@@ -4203,10 +4217,15 @@ def main() -> None:
         generate_new_cmakelists(file_scope, is_example=args.is_example, debug=args.debug)
 
         copy_generated_file = True
+
+        output_file = file_scope.original_cmake_lists_path
+        if args.output_file:
+            output_file = args.output_file
+
         if not args.skip_special_case_preservation:
             debug_special_case = args.debug_special_case_preservation or args.debug
             handler = SpecialCaseHandler(
-                file_scope.original_cmake_lists_path,
+                output_file,
                 file_scope.generated_cmake_lists_path,
                 file_scope.basedir,
                 keep_temporary_files=args.keep_temporary_files,
@@ -4217,7 +4236,7 @@ def main() -> None:
 
         if copy_generated_file:
             copy_generated_file_to_final_location(
-                file_scope, keep_temporary_files=args.keep_temporary_files
+                file_scope, output_file, keep_temporary_files=args.keep_temporary_files
             )
         os.chdir(backup_current_dir)
 
