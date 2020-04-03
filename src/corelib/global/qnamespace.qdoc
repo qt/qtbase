@@ -280,12 +280,6 @@
            \e glProgramBinary(). In the unlikely event of this being problematic,
            set this attribute to disable all disk-based caching of shaders.
 
-    \value AA_DisableWindowContextHelpButton Disables the WindowContextHelpButtonHint
-           by default on Qt::Sheet and Qt::Dialog widgets. This hides the \gui ? button
-           on Windows, which only makes sense if you use \l QWhatsThis functionality.
-           This value was added in Qt 5.10. In Qt 6, WindowContextHelpButtonHint
-           will not be set by default.
-
     \value AA_DisableSessionManager Disables the QSessionManager.
            By default Qt will connect to a running session manager for a GUI
            application on supported platforms, use of a session manager may be

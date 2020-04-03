@@ -967,18 +967,11 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
         flags |= Qt::WindowSystemMenuHint;
         flags |= Qt::WindowTitleHint;
     }
-    if (customize)
-        ; // don't modify window flags if the user explicitly set them.
-    else if (type == Qt::Dialog || type == Qt::Sheet) {
+    if (!customize) { // don't modify window flags if the user explicitly set them.
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
-        // ### fixme: Qt 6: Never set Qt::WindowContextHelpButtonHint flag automatically
-        if (!QApplicationPrivate::testAttribute(Qt::AA_DisableWindowContextHelpButton))
-            flags |= Qt::WindowContextHelpButtonHint;
-    } else if (type == Qt::Tool)
-        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
-    else
-        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint |
-                Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint | Qt::WindowFullscreenButtonHint;
+        if (type != Qt::Dialog && type != Qt::Sheet && type != Qt::Tool)
+            flags |= Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowFullscreenButtonHint;
+    }
     if (w->testAttribute(Qt::WA_TransparentForMouseEvents))
         flags |= Qt::WindowTransparentForInput;
 }
