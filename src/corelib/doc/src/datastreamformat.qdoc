@@ -77,7 +77,6 @@
     \li QPoint
     \li QQuaternion
     \li QRect
-    \li QRegExp
     \li QRegularExpression
     \li QRegion
     \li QSize
