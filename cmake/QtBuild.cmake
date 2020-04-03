@@ -1092,7 +1092,7 @@ endfunction()
 
 function(qt_update_precompiled_header target precompiled_header)
     if (precompiled_header AND BUILD_WITH_PCH)
-        set_property(TARGET "${target}" APPEND PROPERTY "PRECOMPILE_HEADERS" "$<$<COMPILE_LANGUAGE:CXX>:${precompiled_header}>")
+        set_property(TARGET "${target}" APPEND PROPERTY "PRECOMPILE_HEADERS" "$<$<OR:$<COMPILE_LANGUAGE:CXX>,$<COMPILE_LANGUAGE:OBJCXX>>:${precompiled_header}>")
     endif()
 endfunction()
 
@@ -1113,8 +1113,11 @@ function(qt_update_ignore_pch_source target sources)
 endfunction()
 
 function(qt_ignore_pch_obj_c_sources target sources)
-    list(FILTER sources INCLUDE REGEX "\\.mm$")
-    qt_update_ignore_pch_source("${target}" "${sources}")
+    # No obj-cxx PCH support for versions lower than 3.16.
+    if(CMAKE_VERSION VERSION_LESS 3.16.0)
+        list(FILTER sources INCLUDE REGEX "\\.mm$")
+        qt_update_ignore_pch_source("${target}" "${sources}")
+    endif()
 endfunction()
 
 # This function can be used to add sources/libraries/etc. to the specified CMake target

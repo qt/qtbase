@@ -205,10 +205,10 @@ endfunction()
 function(qt_auto_detect_pch)
     set(default_value "ON")
 
-    if(CMAKE_OSX_ARCHITECTURES)
+    if(CMAKE_OSX_ARCHITECTURES AND CMAKE_VERSION VERSION_LESS 3.18.0 AND NOT QT_FORCE_PCH)
         list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
-        # CMake doesn't currently support PCH when multiple architecture are set. This is the
-        # case for simulator_and_device builds.
+        # CMake versions lower than 3.18 don't support PCH when multiple architectures are set.
+        # This is the case for simulator_and_device builds.
         if(arch_count GREATER 1)
             set(default_value "OFF")
             message(WARNING "PCH support disabled due to usage of multiple architectures.")

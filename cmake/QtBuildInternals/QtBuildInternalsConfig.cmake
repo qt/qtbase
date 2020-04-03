@@ -65,8 +65,26 @@ macro(qt_build_internals_set_up_private_api)
     qt_check_if_tools_will_be_built()
 endmacro()
 
+macro(qt_enable_cmake_languages)
+    include(CheckLanguage)
+    set(__qt_required_language_list C CXX)
+    set(__qt_optional_language_list OBJC OBJCXX)
+
+    foreach(__qt_lang ${__qt_required_language_list})
+        enable_language(${__qt_lang})
+    endforeach()
+
+    foreach(__qt_lang ${__qt_optional_language_list})
+        check_language(${__qt_lang})
+        if(CMAKE_${__qt_lang}_COMPILER)
+            enable_language(${__qt_lang})
+        endif()
+    endforeach()
+endmacro()
+
 macro(qt_build_repo_begin)
     qt_build_internals_set_up_private_api()
+    qt_enable_cmake_languages()
 
     # Add global docs targets that will work both for per-repo builds, and super builds.
     if(NOT TARGET docs)
