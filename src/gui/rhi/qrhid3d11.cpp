@@ -4161,7 +4161,7 @@ bool QD3D11SwapChain::buildOrResize()
             qWarning("Failed to create D3D11 swapchain: %s", qPrintable(comErrorMessage(hr)));
             return false;
         }
-        rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
+        rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
     } else {
         releaseBuffers();
         const UINT count = useFlipDiscard ? BUFFER_COUNT : 1;
