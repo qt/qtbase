@@ -2653,7 +2653,8 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QString &pattern)
 {
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
-    QRegularExpression rx(pattern);
+    QRegularExpression rx(pattern,
+                          d->filter_data.patternOptions() & QRegularExpression::CaseInsensitiveOption);
     d->filter_data.setPattern(pattern);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
