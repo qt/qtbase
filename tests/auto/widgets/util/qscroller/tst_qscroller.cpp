@@ -82,8 +82,8 @@ public:
 
                 currentPos = se->contentPos();
                 overshoot = se->overshootDistance();
-                if (!qFuzzyCompare( overshoot.x() + 1.0, 1.0 ) ||
-                    !qFuzzyCompare( overshoot.y() + 1.0, 1.0 ))
+                if (!qFuzzyCompare(overshoot.x() + 1.0, 1.0) ||
+                    !qFuzzyCompare(overshoot.y() + 1.0, 1.0))
                     receivedOvershoot = true;
                 return true;
             }
@@ -116,8 +116,8 @@ public:
     ~tst_QScroller() { }
 
 private:
-    void kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint touchStart, QPoint touchUpdate, QPoint touchEnd);
-    void kineticScrollNoTest( tst_QScrollerWidget *sw, QPointF from, QPoint touchStart, QPoint touchUpdate, QPoint touchEnd);
+    void kineticScroll(tst_QScrollerWidget *sw, QPointF from, QPoint touchStart, QPoint touchUpdate, QPoint touchEnd);
+    void kineticScrollNoTest(tst_QScrollerWidget *sw, QPointF from, QPoint touchStart, QPoint touchUpdate, QPoint touchEnd);
 
 private slots:
     void staticScrollers();
@@ -135,13 +135,13 @@ private:
     Generates touchBegin, touchUpdate and touchEnd events to trigger scrolling.
     Tests some in between states but does not wait until scrolling is finished.
 */
-void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint touchStart, QPoint touchUpdate, QPoint touchEnd)
+void tst_QScroller::kineticScroll(tst_QScrollerWidget *sw, QPointF from, QPoint touchStart, QPoint touchUpdate, QPoint touchEnd)
 {
     sw->scrollPosition = from;
     sw->currentPos= from;
 
     QScroller *s1 = QScroller::scroller(sw);
-    QCOMPARE( s1->state(), QScroller::Inactive );
+    QCOMPARE(s1->state(), QScroller::Inactive);
 
     QScrollerProperties sp1 = QScroller::scroller(sw)->scrollerProperties();
 
@@ -161,7 +161,7 @@ void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));
     QApplication::sendEvent(sw, &touchEvent1);
 
-    QCOMPARE( s1->state(), QScroller::Pressed );
+    QCOMPARE(s1->state(), QScroller::Pressed);
 
     // send the touch update far enough to trigger a scroll
     QTest::qWait(200); // we need to wait a little or else the speed would be infinite. now we have around 500 pixel per second.
@@ -175,13 +175,13 @@ void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));
     QApplication::sendEvent(sw, &touchEvent2);
 
-    QCOMPARE( s1->state(), QScroller::Dragging );
-    QCOMPARE( sw->receivedPrepare, true );
+    QCOMPARE(s1->state(), QScroller::Dragging);
+    QCOMPARE(sw->receivedPrepare, true);
 
 
-    QTRY_COMPARE( sw->receivedFirst, true );
-    QCOMPARE( sw->receivedScroll, true );
-    QCOMPARE( sw->receivedOvershoot, false );
+    QTRY_COMPARE(sw->receivedFirst, true);
+    QCOMPARE(sw->receivedScroll, true);
+    QCOMPARE(sw->receivedOvershoot, false);
 
     // note that the scrolling goes in a different direction than the mouse move
     QPoint calculatedPos = from.toPoint() - touchUpdate - touchStart;
@@ -204,13 +204,13 @@ void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint
     Generates touchBegin, touchUpdate and touchEnd events to trigger scrolling.
     This function does not have any in between tests, it does not expect the scroller to actually scroll.
 */
-void tst_QScroller::kineticScrollNoTest( tst_QScrollerWidget *sw, QPointF from, QPoint touchStart, QPoint touchUpdate, QPoint touchEnd)
+void tst_QScroller::kineticScrollNoTest(tst_QScrollerWidget *sw, QPointF from, QPoint touchStart, QPoint touchUpdate, QPoint touchEnd)
 {
     sw->scrollPosition = from;
     sw->currentPos = from;
 
     QScroller *s1 = QScroller::scroller(sw);
-    QCOMPARE( s1->state(), QScroller::Inactive );
+    QCOMPARE(s1->state(), QScroller::Inactive);
 
     QScrollerProperties sp1 = s1->scrollerProperties();
     int fps = 60;
@@ -348,52 +348,57 @@ void tst_QScroller::scrollerProperties()
 
 void tst_QScroller::scrollTo()
 {
-    {
-        tst_QScrollerWidget *sw = new tst_QScrollerWidget();
-        sw->scrollArea = QRectF( 0, 0, 1000, 1000 );
-        sw->scrollPosition = QPointF( 500, 500 );
+    QScopedPointer<tst_QScrollerWidget> sw(new tst_QScrollerWidget);
+    sw->show();
+    QApplication::setActiveWindow(sw.data());
+    if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
+        QSKIP("Failed to show and activate window");
 
-        QScroller *s1 = QScroller::scroller(sw);
-        QCOMPARE( s1->state(), QScroller::Inactive );
+    sw->scrollArea = QRectF(0, 0, 1000, 1000);
+    sw->scrollPosition = QPointF(500, 500);
 
-        // a normal scroll
-        s1->scrollTo(QPointF(100,100), 100);
-        QTest::qWait(200);
+    QScroller *s1 = QScroller::scroller(sw.data());
+    QCOMPARE(s1->state(), QScroller::Inactive);
 
-        QCOMPARE( sw->receivedPrepare, true );
-        QCOMPARE( sw->receivedScroll, true );
-        QCOMPARE( sw->receivedFirst, true );
-        QCOMPARE( sw->receivedLast, true );
-        QCOMPARE( sw->receivedOvershoot, false );
-        QVERIFY(qFuzzyCompare( sw->currentPos.x(), 100 ));
-        QVERIFY(qFuzzyCompare( sw->currentPos.y(), 100 ));
+    // a normal scroll
+    s1->scrollTo(QPointF(100,100), 100);
+    QTest::qWait(200);
 
-        delete sw;
-    }
+    QTRY_COMPARE(sw->receivedPrepare, true);
+    QCOMPARE(sw->receivedScroll, true);
+    QCOMPARE(sw->receivedFirst, true);
+    QCOMPARE(sw->receivedLast, true);
+    QCOMPARE(sw->receivedOvershoot, false);
+    QTRY_VERIFY(qFuzzyCompare(sw->currentPos.x(), 100));
+    QVERIFY(qFuzzyCompare(sw->currentPos.y(), 100));
 }
 
 void tst_QScroller::scroll()
 {
 #if QT_CONFIG(gestures) && QT_CONFIG(scroller)
     // -- good case. normal scroll
-    tst_QScrollerWidget *sw = new tst_QScrollerWidget();
+    QScopedPointer<tst_QScrollerWidget> sw(new tst_QScrollerWidget());
     sw->scrollArea = QRectF(0, 0, 1000, 1000);
-    QScroller::grabGesture(sw, QScroller::TouchGesture);
+    QScroller::grabGesture(sw.data(), QScroller::TouchGesture);
     sw->setGeometry(100, 100, 400, 300);
+    sw->show();
+    QApplication::setActiveWindow(sw.data());
+    if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
+        QSKIP("Failed to show and activate window");
 
-    QScroller *s1 = QScroller::scroller(sw);
-    kineticScroll(sw, QPointF(500, 500), QPoint(0, 0), QPoint(100, 100), QPoint(200, 200));
+    QScroller *s1 = QScroller::scroller(sw.data());
+    kineticScroll(sw.data(), QPointF(500, 500), QPoint(0, 0), QPoint(100, 100), QPoint(200, 200));
     // now we should be scrolling
-    QTRY_COMPARE( s1->state(), QScroller::Scrolling );
+    QTRY_COMPARE(s1->state(), QScroller::Scrolling);
 
     // wait until finished, check that no further first scroll is sent
     sw->receivedFirst = false;
     sw->receivedScroll = false;
     QTRY_VERIFY(s1->state() != QScroller::Scrolling);
 
-    QCOMPARE( sw->receivedFirst, false );
-    QCOMPARE( sw->receivedScroll, true );
-    QCOMPARE( sw->receivedLast, true );
+    QCOMPARE(sw->receivedFirst, false);
+    QCOMPARE(sw->receivedScroll, true);
+    QCOMPARE(sw->receivedLast, true);
     QVERIFY(sw->currentPos.x() < 400);
     QVERIFY(sw->currentPos.y() < 400);
 
@@ -401,26 +406,28 @@ void tst_QScroller::scroll()
 
     sw->reset();
     sw->scrollArea = QRectF(0, 0, 0, 1000);
-    kineticScrollNoTest(sw, QPointF(0, 500), QPoint(0, 0), QPoint(100, 0), QPoint(200, 0));
+    kineticScrollNoTest(sw.data(), QPointF(0, 500), QPoint(0, 0), QPoint(100, 0), QPoint(200, 0));
 
     QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     QCOMPARE(sw->currentPos.x(), 0.0);
     QCOMPARE(sw->currentPos.y(), 500.0);
-
-    delete sw;
 #endif
 }
 
 void tst_QScroller::overshoot()
 {
 #if QT_CONFIG(gestures) && QT_CONFIG(scroller)
-    tst_QScrollerWidget *sw = new tst_QScrollerWidget();
+    QScopedPointer<tst_QScrollerWidget> sw(new tst_QScrollerWidget);
     sw->scrollArea = QRectF(0, 0, 1000, 1000);
-    QScroller::grabGesture(sw, QScroller::TouchGesture);
+    QScroller::grabGesture(sw.data(), QScroller::TouchGesture);
     sw->setGeometry(100, 100, 400, 300);
+    sw->show();
+    QApplication::setActiveWindow(sw.data());
+    if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
+        QSKIP("Failed to show and activate window");
 
-    QScroller *s1 = QScroller::scroller(sw);
+    QScroller *s1 = QScroller::scroller(sw.data());
     QScrollerProperties sp1 = s1->scrollerProperties();
 
     sp1.setScrollMetric(QScrollerProperties::OvershootDragResistanceFactor, 0.5);
@@ -431,14 +438,14 @@ void tst_QScroller::overshoot()
 
     sp1.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QVariant::fromValue(QScrollerProperties::OvershootWhenScrollable));
     s1->setScrollerProperties(sp1);
-    kineticScrollNoTest(sw, QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
+    kineticScrollNoTest(sw.data(), QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
     QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     //qDebug() << "Overshoot fuzzy: "<<sw->currentPos;
-    QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
-    QVERIFY(qFuzzyCompare( sw->currentPos.y(), 500 ));
-    QCOMPARE( sw->receivedOvershoot, true );
+    QVERIFY(qFuzzyCompare(sw->currentPos.x(), 0));
+    QVERIFY(qFuzzyCompare(sw->currentPos.y(), 500));
+    QCOMPARE(sw->receivedOvershoot, true);
 
     // -- try to scroll with overshoot (when scrollable bad case)
     sw->reset();
@@ -446,14 +453,14 @@ void tst_QScroller::overshoot()
 
     sp1.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QVariant::fromValue(QScrollerProperties::OvershootWhenScrollable));
     s1->setScrollerProperties(sp1);
-    kineticScrollNoTest(sw, QPointF(0, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
+    kineticScrollNoTest(sw.data(), QPointF(0, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
     QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     //qDebug() << "Overshoot fuzzy: "<<sw->currentPos;
-    QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
-    QVERIFY(qFuzzyCompare( sw->currentPos.y(), 500 ));
-    QCOMPARE( sw->receivedOvershoot, false );
+    QVERIFY(qFuzzyCompare(sw->currentPos.x(), 0));
+    QVERIFY(qFuzzyCompare(sw->currentPos.y(), 500));
+    QCOMPARE(sw->receivedOvershoot, false);
 
     // -- try to scroll with overshoot (always on)
     sw->reset();
@@ -461,15 +468,15 @@ void tst_QScroller::overshoot()
 
     sp1.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QVariant::fromValue(QScrollerProperties::OvershootAlwaysOn));
     s1->setScrollerProperties(sp1);
-    kineticScrollNoTest(sw, QPointF(0, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
+    kineticScrollNoTest(sw.data(), QPointF(0, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
     QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
     //qDebug() << "Overshoot fuzzy: "<<sw->currentPos;
 
-    QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
-    QVERIFY(qFuzzyCompare( sw->currentPos.y(), 500 ));
-    QCOMPARE( sw->receivedOvershoot, true );
+    QVERIFY(qFuzzyCompare(sw->currentPos.x(), 0));
+    QVERIFY(qFuzzyCompare(sw->currentPos.y(), 500));
+    QCOMPARE(sw->receivedOvershoot, true);
 
     // -- try to scroll with overshoot (always off)
     sw->reset();
@@ -477,13 +484,13 @@ void tst_QScroller::overshoot()
 
     sp1.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QVariant::fromValue(QScrollerProperties::OvershootAlwaysOff));
     s1->setScrollerProperties(sp1);
-    kineticScrollNoTest(sw, QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
+    kineticScrollNoTest(sw.data(), QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
     QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
-    QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
-    QVERIFY(qFuzzyCompare( sw->currentPos.y(), 500 ));
-    QCOMPARE( sw->receivedOvershoot, false );
+    QVERIFY(qFuzzyCompare(sw->currentPos.x(), 0));
+    QVERIFY(qFuzzyCompare(sw->currentPos.y(), 500));
+    QCOMPARE(sw->receivedOvershoot, false);
 
     // -- try to scroll with overshoot (always on but max overshoot = 0)
     sp1.setScrollMetric(QScrollerProperties::OvershootDragDistanceFactor, 0.0);
@@ -493,39 +500,39 @@ void tst_QScroller::overshoot()
 
     sp1.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QVariant::fromValue(QScrollerProperties::OvershootAlwaysOn));
     s1->setScrollerProperties(sp1);
-    kineticScrollNoTest(sw, QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
+    kineticScrollNoTest(sw.data(), QPointF(500, 500), QPoint(0, 0), QPoint(400, 0), QPoint(490, 0));
 
     QTRY_COMPARE(s1->state(), QScroller::Inactive);
 
-    QVERIFY(qFuzzyCompare( sw->currentPos.x(), 0 ));
-    QVERIFY(qFuzzyCompare( sw->currentPos.y(), 500 ));
-    QCOMPARE( sw->receivedOvershoot, false );
-
-    delete sw;
+    QVERIFY(qFuzzyCompare(sw->currentPos.x(), 0));
+    QVERIFY(qFuzzyCompare(sw->currentPos.y(), 500));
+    QCOMPARE(sw->receivedOvershoot, false);
 #endif
 }
 
 void tst_QScroller::multipleWindows()
 {
 #if QT_CONFIG(gestures) && QT_CONFIG(scroller)
-    QScopedPointer<tst_QScrollerWidget> sw1(new tst_QScrollerWidget());
+    QScopedPointer<tst_QScrollerWidget> sw1(new tst_QScrollerWidget);
     sw1->scrollArea = QRectF(0, 0, 1000, 1000);
     QScroller::grabGesture(sw1.data(), QScroller::TouchGesture);
     sw1->setGeometry(100, 100, 400, 300);
+
     QScroller *s1 = QScroller::scroller(sw1.data());
     kineticScroll(sw1.data(), QPointF(500, 500), QPoint(0, 0), QPoint(100, 100), QPoint(200, 200));
     // now we should be scrolling
-    QTRY_COMPARE( s1->state(), QScroller::Scrolling );
+    QTRY_COMPARE(s1->state(), QScroller::Scrolling);
 
     // That was fun! Do it again!
     QScopedPointer<tst_QScrollerWidget> sw2(new tst_QScrollerWidget());
     sw2->scrollArea = QRectF(0, 0, 1000, 1000);
     QScroller::grabGesture(sw2.data(), QScroller::TouchGesture);
     sw2->setGeometry(100, 100, 400, 300);
+
     QScroller *s2 = QScroller::scroller(sw2.data());
     kineticScroll(sw2.data(), QPointF(500, 500), QPoint(0, 0), QPoint(100, 100), QPoint(200, 200));
     // now we should be scrolling
-    QTRY_COMPARE( s2->state(), QScroller::Scrolling );
+    QTRY_COMPARE(s2->state(), QScroller::Scrolling);
 
     // wait for both to stop
     QTRY_VERIFY(s1->state() != QScroller::Scrolling);

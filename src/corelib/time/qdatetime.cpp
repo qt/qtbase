@@ -277,10 +277,11 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     \reentrant
     \brief The QDate class provides date functions.
 
-
-    A QDate object represents a particular date. This can be expressed as a
-    calendar date, i.e. year, month, and day numbers, in the proleptic Gregorian
-    calendar.
+    A QDate object represents a particular day, regardless of calendar,
+    locale or other settings used when creating it or supplied by the system.
+    It can report the year, month and day of the month that represent the
+    day with respect to the proleptic Gregorian calendar or any calendar supplied
+    as a QCalendar object.
 
     A QDate object is typically created by giving the year, month, and day
     numbers explicitly. Note that QDate interprets year numbers less than 100 as
@@ -1578,9 +1579,8 @@ qint64 QDate::daysTo(const QDate &d) const
 /*!
     \fn bool QDate::operator==(const QDate &d) const
 
-    Returns \c true if this date is equal to \a d; otherwise returns
-    false.
-
+    Returns \c true if this date and \a d represent the same day, otherwise
+    \c false.
 */
 
 /*!
@@ -1588,6 +1588,8 @@ qint64 QDate::daysTo(const QDate &d) const
 
     Returns \c true if this date is different from \a d; otherwise
     returns \c false.
+
+    \sa operator==()
 */
 
 /*!
