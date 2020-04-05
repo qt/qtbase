@@ -2845,7 +2845,7 @@ static bool RectInRegion(QRegionPrivate *region, int rx, int ry, uint rwidth, ui
             break;
         }
     }
-    return partIn ? ((ry <= prect->bottom()) ? RectanglePart : RectangleIn) : RectangleOut;
+    return partIn;
 }
 // END OF Region.c extract
 // START OF poly.h extract

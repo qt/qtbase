@@ -92,7 +92,7 @@ void QTransposeProxyModelPrivate::onLayoutAboutToBeChanged(const QList<QPersiste
     layoutChangePersistentIndexes.clear();
     layoutChangeProxyIndexes.reserve(proxyPersistentIndexes.size());
     layoutChangePersistentIndexes.reserve(proxyPersistentIndexes.size());
-    for (const QPersistentModelIndex &proxyPersistentIndex : proxyPersistentIndexes) {
+    for (const QModelIndex &proxyPersistentIndex : proxyPersistentIndexes) {
         layoutChangeProxyIndexes << proxyPersistentIndex;
         Q_ASSERT(proxyPersistentIndex.isValid());
         const QPersistentModelIndex srcPersistentIndex = q->mapToSource(proxyPersistentIndex);

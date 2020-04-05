@@ -693,7 +693,7 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 
     if (notation == QDoubleValidator::StandardNotation) {
         double max = qMax(qAbs(q->b), qAbs(q->t));
-        if (max < LLONG_MAX) {
+        if (max < double(LLONG_MAX)) {
             qlonglong n = pow10(numDigits(qlonglong(max)));
             // In order to get the highest possible number in the intermediate
             // range we need to get 10 to the power of the number of digits

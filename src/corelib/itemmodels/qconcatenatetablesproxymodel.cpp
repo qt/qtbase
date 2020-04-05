@@ -642,7 +642,7 @@ void QConcatenateTablesProxyModelPrivate::_q_slotSourceLayoutAboutToBeChanged(co
     layoutChangePersistentIndexes.reserve(persistentIndexList.size());
     layoutChangeProxyIndexes.reserve(persistentIndexList.size());
 
-    for (const QPersistentModelIndex &proxyPersistentIndex : persistentIndexList) {
+    for (const QModelIndex &proxyPersistentIndex : persistentIndexList) {
         layoutChangeProxyIndexes.append(proxyPersistentIndex);
         Q_ASSERT(proxyPersistentIndex.isValid());
         const QPersistentModelIndex srcPersistentIndex = q->mapToSource(proxyPersistentIndex);
