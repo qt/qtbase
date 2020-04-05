@@ -4509,7 +4509,7 @@ QStringList QLocale::uiLanguages() const
         if (!res.isNull()) {
             uiLanguages = res.toStringList();
             // ... but we need to include likely-adjusted forms of each of those, too:
-            for (const auto entry : qAsConst(uiLanguages))
+            for (const auto &entry : qAsConst(uiLanguages))
                 locales.append(QLocale(entry));
         }
         if (locales.isEmpty())

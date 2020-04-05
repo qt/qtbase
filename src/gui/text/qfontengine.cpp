@@ -757,10 +757,10 @@ Q_GUI_EXPORT void qt_addBitmapToPath(qreal x0, qreal y0, const uchar *image_data
     // set up edges
     for (int y = 0; y <= h; ++y) {
         for (int x = 0; x <= w; ++x) {
-            bool topLeft = (x == 0)|(y == 0) ? false : SET(x - 1, y - 1);
-            bool topRight = (x == w)|(y == 0) ? false : SET(x, y - 1);
-            bool bottomLeft = (x == 0)|(y == h) ? false : SET(x - 1, y);
-            bool bottomRight = (x == w)|(y == h) ? false : SET(x, y);
+            bool topLeft = (x == 0 || y == 0) ? false : SET(x - 1, y - 1);
+            bool topRight = (x == w || y == 0) ? false : SET(x, y - 1);
+            bool bottomLeft = (x == 0 || y == h) ? false : SET(x - 1, y);
+            bool bottomRight = (x == w || y == h) ? false : SET(x, y);
 
             GRID(x, y) = 0;
             if ((!topRight) & bottomRight)
