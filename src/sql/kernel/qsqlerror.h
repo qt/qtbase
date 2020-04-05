@@ -57,10 +57,6 @@ public:
         TransactionError,
         UnknownError
     };
-#if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED QSqlError(const QString &driverText, const QString &databaseText,
-                            ErrorType type, int number);
-#endif
     QSqlError(const QString &driverText = QString(),
               const QString &databaseText = QString(),
               ErrorType type = NoError,
@@ -79,19 +75,9 @@ public:
     QString driverText() const;
     QString databaseText() const;
     ErrorType type() const;
-#if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED int number() const;
-#endif
     QString nativeErrorCode() const;
     QString text() const;
     bool isValid() const;
-
-#if QT_DEPRECATED_SINCE(5, 1)
-    QT_DEPRECATED void setDriverText(const QString &driverText);
-    QT_DEPRECATED void setDatabaseText(const QString &databaseText);
-    QT_DEPRECATED void setType(ErrorType type);
-    QT_DEPRECATED void setNumber(int number);
-#endif
 
 private:
     // ### Qt6: Keep the pointer and remove the rest.
