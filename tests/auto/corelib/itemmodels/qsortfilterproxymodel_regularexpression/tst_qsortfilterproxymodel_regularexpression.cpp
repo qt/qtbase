@@ -37,6 +37,7 @@ public:
     tst_QSortFilterProxyModelRegularExpression();
 private slots:
     void tst_invalid();
+    void tst_caseSensitivity();
 };
 
 tst_QSortFilterProxyModelRegularExpression::tst_QSortFilterProxyModelRegularExpression() :
@@ -53,6 +54,26 @@ void tst_QSortFilterProxyModelRegularExpression::tst_invalid()
     QCOMPARE(model.filterRegularExpression(), QRegularExpression(pattern));
     model.setFilterRegExp(pattern);
     QCOMPARE(model.filterRegularExpression(), QRegularExpression());
+}
+
+void tst_QSortFilterProxyModelRegularExpression::tst_caseSensitivity()
+{
+    const QLatin1String pattern("test");
+    QStringListModel model({ "test", "TesT" });
+    QSortFilterProxyModel proxyModel;
+    proxyModel.setSourceModel(&model);
+
+    proxyModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
+    proxyModel.setFilterRegularExpression(pattern);
+    QCOMPARE(proxyModel.filterCaseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(proxyModel.rowCount(), 2);
+
+    proxyModel.setFilterCaseSensitivity(Qt::CaseSensitive);
+    QCOMPARE(proxyModel.filterCaseSensitivity(), Qt::CaseSensitive);
+    QCOMPARE(proxyModel.rowCount(), 1);
+    proxyModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
+    QCOMPARE(proxyModel.filterCaseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(proxyModel.rowCount(), 2);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModelRegularExpression)

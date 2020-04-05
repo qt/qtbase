@@ -236,7 +236,7 @@ public:
         case ExpressionType::RegularExpression:
         {
             QRegularExpression::PatternOptions options = m_regularExpression.patternOptions();
-            options.setFlag(QRegularExpression::CaseInsensitiveOption, cs == Qt::CaseSensitive);
+            options.setFlag(QRegularExpression::CaseInsensitiveOption, cs == Qt::CaseInsensitive);
             m_regularExpression.setPatternOptions(options);
         }
             break;
@@ -2793,7 +2793,10 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QString &pattern)
 {
     Q_D(QSortFilterProxyModel);
     d->filter_about_to_be_changed();
-    QRegularExpression rx(pattern);
+    QRegularExpression rx(pattern,
+                          d->filter_data.caseSensitivity()
+                                  ? QRegularExpression::NoPatternOption
+                                  : QRegularExpression::CaseInsensitiveOption);
     d->filter_data.setRegularExpression(rx);
     d->filter_changed();
 }
