@@ -40,6 +40,18 @@
 #ifndef QSTRINGVIEW_H
 #define QSTRINGVIEW_H
 
+/*
+    This macro enables three "levels" of QStringView support:
+
+    1. offer QStringView, overload some functions taking QString with
+    QStringView
+
+    2. like 1, but remove all overloads of functions taking QStringRef,
+    leaving only the function taking QStringView.  Do this only where
+    QStringRef overloads tradionally existed.
+
+    3. like 2, but replace functions taking QString, too.
+*/
 #ifndef QT_STRINGVIEW_LEVEL
 #  define QT_STRINGVIEW_LEVEL 1
 #endif
