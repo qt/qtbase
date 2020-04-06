@@ -804,7 +804,7 @@ public:
 #if defined(QT_RESTRICTED_CAST_FROM_ASCII)
     template <int N>
     inline QString(const char (&ch)[N])
-        : d(fromAscii_helper(ch, N - 1))
+        : QString(fromUtf8(ch))
     {}
     template <int N>
     QString(char (&)[N]) = delete;
