@@ -6777,8 +6777,10 @@ public:
     explicit CountedExceptionThrower(bool throwException, QObject *parent = nullptr)
         : QObject(parent)
     {
+#ifndef QT_NO_EXCEPTIONS
         if (throwException)
             throw ObjectException();
+#endif
         ++counter;
     }
 
