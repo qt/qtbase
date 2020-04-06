@@ -1,5 +1,6 @@
-TARGET = tst_bench_qstring
+CONFIG += benchmark
 QT -= gui
 QT += core testlib
-SOURCES += main.cpp
 
+TARGET = tst_bench_qstring
+SOURCES += main.cpp

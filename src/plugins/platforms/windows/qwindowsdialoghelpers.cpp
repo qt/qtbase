@@ -130,7 +130,6 @@ namespace QWindowsDialogs
     remove all those messages (usually 1) and post the last one with a
     reset button state.
 
-    \ingroup qt-lighthouse-win
 */
 
 void eatMouseMove()
@@ -173,7 +172,6 @@ void eatMouseMove()
 
     \sa QWindowsDialogHelperBase
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsNativeDialogBase : public QObject
@@ -213,7 +211,6 @@ private:
 
     \sa QWindowsDialogThread, QWindowsNativeDialogBase
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 template <class BaseClass>
@@ -267,7 +264,6 @@ QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::ensureNativeDialo
 
     \sa QWindowsDialogHelperBase
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsDialogThread : public QThread
@@ -408,7 +404,6 @@ void QWindowsDialogHelperBase<BaseClass>::exec()
     does not reliably work. Provides thread-safe setters (for the non-modal case).
 
     \internal
-    \ingroup qt-lighthouse-win
     \sa QFileDialogOptions
 */
 
@@ -502,7 +497,6 @@ inline void QWindowsFileDialogSharedData::fromOptions(const QSharedPointer<QFile
 
     \sa QWindowsNativeFileDialogBase, QWindowsFileDialogHelper
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsNativeFileDialogBase;
@@ -548,7 +542,6 @@ IFileDialogEvents *QWindowsNativeFileDialogEventHandler::create(QWindowsNativeFi
 
     \sa QWindowsNativeFileDialogBase
     \internal
-    \ingroup qt-lighthouse-win
 */
 class QWindowsShellItem
 {
@@ -791,7 +784,6 @@ QDebug operator<<(QDebug d, IShellItem *i)
 
     \sa QWindowsNativeFileDialogEventHandler, QWindowsFileDialogHelper
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsNativeFileDialogBase : public QWindowsNativeDialogBase
@@ -1304,7 +1296,6 @@ HRESULT QWindowsNativeFileDialogEventHandler::OnFileOk(IFileDialog *)
     Implements single-selection methods.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsNativeSaveFileDialog : public QWindowsNativeFileDialogBase
@@ -1381,7 +1372,6 @@ QList<QUrl> QWindowsNativeSaveFileDialog::selectedFiles() const
     Implements multi-selection methods.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsNativeOpenFileDialog : public QWindowsNativeFileDialogBase
@@ -1554,7 +1544,6 @@ QWindowsNativeFileDialogBase *QWindowsNativeFileDialogBase::create(QFileDialogOp
     but only on QQuickWindows, which do not have a fallback.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDialogHelper>
@@ -1690,7 +1679,6 @@ QString QWindowsFileDialogHelper::selectedNameFilter() const
     \internal
     \sa QWindowsXpFileDialogHelper
 
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsXpNativeFileDialog : public QWindowsNativeDialogBase
@@ -1938,7 +1926,6 @@ QList<QUrl> QWindowsXpNativeFileDialog::execFileNames(HWND owner, int *selectedF
 
     \sa QWindowsXpNativeFileDialog
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsXpFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDialogHelper>
@@ -2015,7 +2002,6 @@ QString QWindowsXpFileDialogHelper::selectedNameFilter() const
     \sa QWindowsColorDialogHelper
     \sa #define USE_NATIVE_COLOR_DIALOG
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 using SharedPointerColor = QSharedPointer<QColor>;
@@ -2095,7 +2081,6 @@ void QWindowsNativeColorDialog::doExec(HWND owner)
     \sa #define USE_NATIVE_COLOR_DIALOG
     \sa QWindowsNativeColorDialog
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsColorDialogHelper : public QWindowsDialogHelperBase<QPlatformColorDialogHelper>

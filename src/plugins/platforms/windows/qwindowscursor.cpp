@@ -73,7 +73,6 @@ Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
     \brief Cache key for storing values in a QHash with a QCursor as key.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
@@ -97,7 +96,6 @@ QWindowsPixmapCursorCacheKey::QWindowsPixmapCursorCacheKey(const QCursor &c)
     as do the Window manager frames (resize/move handles).
 
     \internal
-    \ingroup qt-lighthouse-win
     \sa QWindowsWindowCursor
 */
 
@@ -816,7 +814,6 @@ HCURSOR QWindowsCursor::hCursor(const QCursor &c) const
      cursor handle resource.
 
     \internal
-    \ingroup qt-lighthouse-win
     \sa QWindowsCursor
 */
 

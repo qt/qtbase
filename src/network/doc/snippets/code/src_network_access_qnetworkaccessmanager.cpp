@@ -64,7 +64,7 @@ request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
 
 QNetworkReply *reply = manager->get(request);
 connect(reply, &QIODevice::readyRead, this, &MyClass::slotReadyRead);
-connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+connect(reply, &QNetworkReply::errorOccurred,
         this, &MyClass::slotError);
 connect(reply, &QNetworkReply::sslErrors,
         this, &MyClass::slotSslErrors);

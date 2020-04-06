@@ -12,4 +12,6 @@ add_qt_test(tst_qcborvalue
     INCLUDE_DIRECTORIES
         ../../../../../src/3rdparty/tinycbor/src
         ../../../../../src/3rdparty/tinycbor/tests/parser
+    PUBLIC_LIBRARIES
+        Qt::CorePrivate
 )

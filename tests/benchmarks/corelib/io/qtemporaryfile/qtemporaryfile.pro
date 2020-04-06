@@ -1,8 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_qtemporaryfile
-
+CONFIG += benchmark
 QT = core testlib
 
-CONFIG += release
-
+TARGET = tst_bench_qtemporaryfile
 SOURCES += main.cpp

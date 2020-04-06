@@ -176,6 +176,13 @@ qtConfig(network) {
 qtConfig(sql) {
     SUBDIRS += src_sql
     src_plugins.depends += src_sql
+
+    contains(QT_CONFIG, private_tests) {
+        src_sql_doc_snippets.subdir = sql/doc/snippets
+        src_sql_doc_snippets.target = sub-sql-doc-snippets
+        src_sql_doc_snippets.depends = src_sql
+        SUBDIRS += src_sql_doc_snippets
+    }
 }
 qtConfig(xml): SUBDIRS += src_xml
 qtConfig(testlib): SUBDIRS += src_testlib

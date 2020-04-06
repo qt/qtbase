@@ -308,7 +308,7 @@ void QAbstractScrollAreaPrivate::init()
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
-#ifndef Q_OS_OSX
+#ifndef Q_OS_MACOS
 #  ifndef QT_NO_GESTURES
     viewport->grabGesture(Qt::PanGesture);
 #  endif

@@ -1267,7 +1267,7 @@ void tst_QMenu::QTBUG47515_widgetActionEnterLeave()
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("Window activation is not supported");
     if (QGuiApplication::platformName() == QLatin1String("cocoa"))
-        QSKIP("See QTBUG-63031");
+        QSKIP("This test is meaningless on macOS, for additional info see QTBUG-63031");
 
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     QRect geometry(QPoint(), availableGeometry.size() / 3);

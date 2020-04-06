@@ -19,27 +19,11 @@ HTML.headerstyles  = \
     "    }, 0);\n" \
     "  </script>\n"
 
-HTML.postheader = \
-    "<body>\n" \
-    "<div class=\"header\" id=\"qtdocheader\">\n"\
-    "  <div class=\"main\">\n" \
-    "    <div class=\"main-rounded\">\n" \
-    "      <div class=\"navigationbar\">\n" \
-    "        <table><tr>\n"
-
-HTML.postpostheader = \
-    "        </tr></table>\n"\
-    "      </div>\n" \
-    "    </div>\n" \
-    "<div class=\"content\">\n" \
-    "<div class=\"line\">\n" \
-    "<div class=\"content mainContent\">\n"
-
 HTML.navigationseparator = \
     "<span class=\"naviSeparator\">  &#9702;  </span>\n"
 
 # Add some padding around code snippets, as we cannot
 # currectly style them for QTextBrowser using only CSS.
-codeindent         = 2
-codeprefix         = "\n\n"
-codesuffix         = "\n\n"
+codeindent         = 1
+codeprefix         = "\n"
+codesuffix         = "\n"

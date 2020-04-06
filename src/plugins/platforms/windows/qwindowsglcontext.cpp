@@ -858,7 +858,6 @@ static inline QOpenGLContextData createDummyWindowOpenGLContextData()
     context and to apply to a QSurfaceFormat.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
@@ -913,7 +912,6 @@ void QWindowsOpenGLContextFormat::apply(QSurfaceFormat *format) const
     is a current GL context.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QOpenGLTemporaryContext
@@ -946,7 +944,6 @@ QOpenGLTemporaryContext::~QOpenGLTemporaryContext()
 /*!
     \class QWindowsOpenGLAdditionalFormat
     \brief Additional format information that is not in QSurfaceFormat
-    \ingroup qt-lighthouse-win
 */
 
 /*!
@@ -964,7 +961,6 @@ QOpenGLTemporaryContext::~QOpenGLTemporaryContext()
 
     \sa QWindowsGLContext
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 #define SAMPLE_BUFFER_EXTENSION "GL_ARB_multisample"
@@ -1051,7 +1047,6 @@ QOpenGLStaticContext *QOpenGLStaticContext::create(bool softwareRendering)
     QOpenGLContextData and are released in doneCurrent().
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,

@@ -319,6 +319,35 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, qsizetype count)
 }
 #endif // !__AVX2__
 
+void QT_FASTCALL comp_func_solid_Source_sse2(uint *destPixels, int length, uint color, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        qt_memfill32(destPixels, color, length);
+    } else {
+        const quint32 ialpha = 255 - const_alpha;
+        color = BYTE_MUL(color, const_alpha);
+        int x = 0;
+
+        quint32 *dst = (quint32 *) destPixels;
+        const __m128i colorVector = _mm_set1_epi32(color);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const __m128i half = _mm_set1_epi16(0x80);
+        const __m128i iAlphaVector = _mm_set1_epi16(ialpha);
+
+        ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
+            destPixels[x] = color + BYTE_MUL(destPixels[x], ialpha);
+
+        for (; x < length-3; x += 4) {
+            __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+            BYTE_MUL_SSE2(dstVector, dstVector, iAlphaVector, colorMask, half);
+            dstVector = _mm_add_epi8(colorVector, dstVector);
+            _mm_store_si128((__m128i *)&dst[x], dstVector);
+        }
+        SIMD_EPILOGUE(x, length, 3)
+            destPixels[x] = color + BYTE_MUL(destPixels[x], ialpha);
+    }
+}
+
 void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha)
 {
     if ((const_alpha & qAlpha(color)) == 255) {

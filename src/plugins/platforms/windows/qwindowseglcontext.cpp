@@ -63,7 +63,6 @@ QT_BEGIN_NAMESPACE
     there is no need to differentiate between dynamic or Angle-only builds in here.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsLibEGL QWindowsEGLStaticContext::libEGL;
@@ -376,7 +375,6 @@ QSurfaceFormat QWindowsEGLStaticContext::formatFromConfig(EGLDisplay display, EG
     \endlist
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsEGLContext::QWindowsEGLContext(QWindowsEGLStaticContext *staticContext,

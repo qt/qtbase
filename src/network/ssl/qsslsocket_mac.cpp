@@ -66,7 +66,7 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #include <CoreServices/CoreServices.h>
 #endif
 

@@ -845,7 +845,7 @@ EGLint SwapChain11::copyOffscreenToBackbuffer(const gl::Context *context,
     stateManager->setRenderTarget(mBackBufferRTView.get(), nullptr);
 
     // Set the viewport
-    stateManager->setSimpleViewport(mWidth, mHeight);
+    stateManager->setSimpleViewport(width, height);
 
     // Apply textures
     stateManager->setSimplePixelTextureAndSampler(mOffscreenSRView, mPassThroughSampler);

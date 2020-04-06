@@ -26,16 +26,22 @@
 **
 ****************************************************************************/
 
+#include <cstdlib>
+
 #include <QGuiApplication>
 #include <QColorSpace>
 
-// Run this with
-// QT_LOGGING_RULES="qt.gui.icc=false"
-// to reduce noise and increase speed.
-
 extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
-    static int c = 0;
-    static QGuiApplication a(c, nullptr);
+    // to reduce noise and increase speed
+    static char quiet[] = "QT_LOGGING_RULES=qt.gui.icc=false";
+    static int pe = putenv(quiet);
+    Q_UNUSED(pe)
+    static int argc = 3;
+    static char arg1[] = "fuzzer";
+    static char arg2[] = "-platform";
+    static char arg3[] = "minimal";
+    static char *argv[] = {arg1, arg2, arg3, nullptr};
+    static QGuiApplication qga(argc, argv);
     QColorSpace cs = QColorSpace::fromIccProfile(QByteArray::fromRawData(data, size));
     return 0;
 }

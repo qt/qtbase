@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,11 @@
 #endif
 
 #include "forkfd.h"
+
+/* Macros fine-tuning the build: */
+//#define FORKFD_NO_FORKFD 1                /* disable the forkfd() function */
+//#define FORKFD_NO_SPAWNFD 1               /* disable the spawnfd() function */
+//#define FORKFD_DISABLE_FORK_FALLBACK 1    /* disable falling back to fork() from system_forkfd() */
 
 #include <sys/types.h>
 #if defined(__OpenBSD__) || defined(__NetBSD__)
@@ -94,7 +99,17 @@
 
 static int system_has_forkfd(void);
 static int system_forkfd(int flags, pid_t *ppid, int *system);
-static int system_forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage);
+static int system_forkfd_wait(int ffd, struct forkfd_info *info, int ffdwoptions, struct rusage *rusage);
+
+static int disable_fork_fallback(void)
+{
+#ifdef FORKFD_DISABLE_FORK_FALLBACK
+    /* if there's no system forkfd, we have to use the fallback */
+    return system_has_forkfd();
+#else
+    return false;
+#endif
+}
 
 #define CHILDREN_IN_SMALL_ARRAY     16
 #define CHILDREN_IN_BIG_ARRAY       256
@@ -223,6 +238,16 @@ static void convertStatusToForkfdInfo(int status, struct forkfd_info *info)
 #  endif
         info->status = WTERMSIG(status);
     }
+}
+
+static int convertForkfdWaitFlagsToWaitFlags(int ffdoptions)
+{
+    int woptions = WEXITED;
+    if (ffdoptions & FFDW_NOWAIT)
+        woptions |= WNOWAIT;
+    if (ffdoptions & FFDW_NOHANG)
+        woptions |= WNOHANG;
+    return woptions;
 }
 
 static int tryReaping(pid_t pid, struct pipe_payload *payload)
@@ -586,11 +611,17 @@ static int create_pipe(int filedes[], int flags)
  * descriptor. You probably want to set this flag, since forkfd() does not work
  * if the original parent process dies.
  *
- * @li @C FFD_USE_FORK Tell forkfd() to actually call fork() instead of a
+ * @li @c FFD_USE_FORK Tell forkfd() to actually call fork() instead of a
  * different system implementation that may be available. On systems where a
  * different implementation is available, its behavior may differ from that of
  * fork(), such as not calling the functions registered with pthread_atfork().
  * If that's necessary, pass this flag.
+ *
+ * @li @c FFD_VFORK_SEMANTICS Tell forkfd() to use semantics similar to
+ * vfork(), if that's available. For example, on Linux with pidfd support
+ * available, this will add the CLONE_VFORK option. On most other systems,
+ * including Linux without pidfd support, this option does nothing, as using
+ * the actual vfork() system call would cause a race condition.
  *
  * The file descriptor returned by forkfd() supports the following operations:
  *
@@ -619,9 +650,12 @@ int forkfd(int flags, pid_t *ppid)
     int efd;
 #endif
 
+    if (disable_fork_fallback())
+        flags &= ~FFD_USE_FORK;
+
     if ((flags & FFD_USE_FORK) == 0) {
         fd = system_forkfd(flags, ppid, &ret);
-        if (ret)
+        if (ret || disable_fork_fallback())
             return fd;
     }
 
@@ -800,14 +834,17 @@ out:
 }
 #endif // _POSIX_SPAWN && !FORKFD_NO_SPAWNFD
 
-
-int forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
+int forkfd_wait4(int ffd, struct forkfd_info *info, int options, struct rusage *rusage)
 {
     struct pipe_payload payload;
     int ret;
 
-    if (system_has_forkfd())
-        return system_forkfd_wait(ffd, info, rusage);
+    if (system_has_forkfd()) {
+        /* if this is one of our pipes, not a procdesc/pidfd, we'll get an EBADF */
+        ret = system_forkfd_wait(ffd, info, options, rusage);
+        if (disable_fork_fallback() || ret != -1 || errno != EBADF)
+            return ret;
+    }
 
     ret = read(ffd, &payload, sizeof(payload));
     if (ret == -1)
@@ -846,10 +883,11 @@ int system_forkfd(int flags, pid_t *ppid, int *system)
     return -1;
 }
 
-int system_forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
+int system_forkfd_wait(int ffd, struct forkfd_info *info, int options, struct rusage *rusage)
 {
     (void)ffd;
     (void)info;
+    (void)options;
     (void)rusage;
     return -1;
 }

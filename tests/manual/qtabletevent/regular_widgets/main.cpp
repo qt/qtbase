@@ -37,6 +37,7 @@
 #include <QStatusBar>
 #include <QVector>
 #include <QPainter>
+#include <QPainterPath>
 #include <QCursor>
 
 enum TabletPointType {

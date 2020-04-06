@@ -1337,9 +1337,12 @@ void Moc::createPropertyDef(PropertyDef &propDef)
             propDef.designable = v + v2;
             checkIsFunction(propDef.designable, "DESIGNABLE");
             break;
-        case 'E': if (l != "EDITABLE") error(2);
+        case 'E': if (l != "EDITABLE") error(2); {
+            const QByteArray msg = "EDITABLE flag for property declaration is deprecated.";
+            warning(msg.constData());
             propDef.editable = v + v2;
             checkIsFunction(propDef.editable, "EDITABLE");
+        }
             break;
         case 'N': if (l != "NOTIFY") error(2);
             propDef.notify = v;

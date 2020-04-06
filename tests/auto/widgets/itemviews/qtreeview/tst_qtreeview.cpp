@@ -303,6 +303,12 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override
     {
+        if (onlyValidCalls) {
+            Q_ASSERT(row >= 0);
+            Q_ASSERT(column >= 0);
+            Q_ASSERT(row < rows);
+            Q_ASSERT(column < cols);
+        }
         if (row < 0 || column < 0 || (level(parent) > levels) || column >= cols || row >= rows) {
             return QModelIndex();
         }
@@ -411,6 +417,7 @@ public:
     mutable bool fetched = false;
     bool decorationsEnabled = false;
     bool statusTipsEnabled = false;
+    bool onlyValidCalls = false;
 };
 
 // Testing get/set functions
@@ -2459,6 +2466,7 @@ void tst_QTreeView::hiddenItems()
 void tst_QTreeView::spanningItems()
 {
     QtTestModel model(10, 10);
+    model.onlyValidCalls = true;
     QTreeView view;
     view.setModel(&model);
     view.show();
@@ -2498,6 +2506,8 @@ void tst_QTreeView::spanningItems()
         }
     }
     QCOMPARE(view.sizeHintForColumn(0), w);
+
+    view.repaint(); // to check that this doesn't hit any assert
 }
 
 void tst_QTreeView::selectionOrderTest()

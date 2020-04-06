@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
     (instead of creating local hyperlinks).
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsDropDataObject::QWindowsDropDataObject(QMimeData *mimeData) :

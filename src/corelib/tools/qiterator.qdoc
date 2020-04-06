@@ -637,12 +637,9 @@
     \sa hasNext(), next(), peekPrevious()
 */
 
-/*! \fn template <class T> bool QListIterator<T>::hasPrevious() const
-    \fn template <class T> bool QVectorIterator<T>::hasPrevious() const
-    \fn template <class T> bool QSetIterator<T>::hasPrevious() const
-    \fn template <class T> bool QMutableListIterator<T>::hasPrevious() const
-    \fn template <class T> bool QMutableVectorIterator<T>::hasPrevious() const
+/*!
     \fn template <class T> bool QMutableSetIterator<T>::hasPrevious() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
 
     Returns \c true if there is at least one item behind the iterator,
     i.e. the iterator is \e not at the front of the container;
@@ -651,10 +648,35 @@
     \sa hasNext(), previous()
 */
 
+/*! \fn template <class T> bool QListIterator<T>::hasPrevious() const
+    \fn template <class T> bool QVectorIterator<T>::hasPrevious() const
+    \fn template <class T> bool QSetIterator<T>::hasPrevious() const
+    \fn template <class T> bool QMutableListIterator<T>::hasPrevious() const
+    \fn template <class T> bool QMutableVectorIterator<T>::hasPrevious() const
+
+    Returns \c true if there is at least one item behind the iterator,
+    i.e. the iterator is \e not at the front of the container;
+    otherwise returns \c false.
+
+    \sa hasNext(), previous()
+*/
+
+/*!
+    \fn template <class T> const T &QMutableSetIterator<T>::previous()
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
+
+    Returns the previous item and moves the iterator back by one
+    position.
+
+    Calling this function on an iterator located at the front of the
+    container leads to undefined results.
+
+    \sa hasPrevious(), peekPrevious(), next()
+*/
+
 /*! \fn template <class T> const T &QListIterator<T>::previous()
     \fn template <class T> const T &QVectorIterator<T>::previous()
     \fn template <class T> const T &QSetIterator<T>::previous()
-    \fn template <class T> const T &QMutableSetIterator<T>::previous()
 
     Returns the previous item and moves the iterator back by one
     position.
@@ -677,10 +699,21 @@
     \sa hasPrevious(), peekPrevious(), next()
 */
 
+/*!
+    \fn template <class T> const T &QMutableSetIterator<T>::peekPrevious() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
+
+    Returns the previous item without moving the iterator.
+
+    Calling this function on an iterator located at the front of the
+    container leads to undefined results.
+
+    \sa hasPrevious(), previous(), peekNext()
+*/
+
 /*! \fn template <class T> const T &QListIterator<T>::peekPrevious() const
     \fn template <class T> const T &QVectorIterator<T>::peekPrevious() const
     \fn template <class T> const T &QSetIterator<T>::peekPrevious() const
-    \fn template <class T> const T &QMutableSetIterator<T>::peekPrevious() const
 
     Returns the previous item without moving the iterator.
 
@@ -701,12 +734,25 @@
     \sa hasPrevious(), previous(), peekNext()
 */
 
+/*!
+    \fn template <class T> bool QMutableSetIterator<T>::findNext(const T &value)
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
+
+    Searches for \a value starting from the current iterator position
+    forward. Returns \c true if \a value is found; otherwise returns \c false.
+
+    After the call, if \a value was found, the iterator is positioned
+    just after the matching item; otherwise, the iterator is
+    positioned at the back of the container.
+
+    \sa findPrevious()
+*/
+
 /*! \fn template <class T> bool QListIterator<T>::findNext(const T &value)
     \fn template <class T> bool QVectorIterator<T>::findNext(const T &value)
     \fn template <class T> bool QSetIterator<T>::findNext(const T &value)
     \fn template <class T> bool QMutableListIterator<T>::findNext(const T &value)
     \fn template <class T> bool QMutableVectorIterator<T>::findNext(const T &value)
-    \fn template <class T> bool QMutableSetIterator<T>::findNext(const T &value)
 
     Searches for \a value starting from the current iterator position
     forward. Returns \c true if \a value is found; otherwise returns \c false.

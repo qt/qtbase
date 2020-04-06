@@ -41,7 +41,7 @@
 
 #include <sys/param.h>
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
 #import <AppKit/AppKit.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
 #elif defined(QT_PLATFORM_UIKIT)

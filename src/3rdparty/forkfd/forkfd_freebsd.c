@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,10 @@
 #include <sys/procdesc.h>
 
 #include "forkfd_atomic.h"
+
+// in forkfd.c
+static int convertForkfdWaitFlagsToWaitFlags(int ffdoptions);
+static void convertStatusToForkfdInfo(int status, struct forkfd_info *info);
 
 #if __FreeBSD__ >= 10
 /* On FreeBSD 10, PROCDESC was enabled by default. On v11, it's not an option
@@ -81,19 +85,23 @@ int system_forkfd(int flags, pid_t *ppid, int *system)
     return ret;
 }
 
-int system_forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
+int system_forkfd_wait(int ffd, struct forkfd_info *info, int ffdoptions, struct rusage *rusage)
 {
     pid_t pid;
     int status;
-    int options = WEXITED;
+    int options = convertForkfdWaitFlagsToWaitFlags(ffdoptions);
 
     int ret = pdgetpid(ffd, &pid);
     if (ret == -1)
         return ret;
-    ret = fcntl(ffd, F_GETFL);
-    if (ret == -1)
-        return ret;
-    options |= (ret & O_NONBLOCK) ? WNOHANG : 0;
+
+    if ((options & WNOHANG) == 0) {
+        /* check if the file descriptor is non-blocking */
+        ret = fcntl(ffd, F_GETFL);
+        if (ret == -1)
+            return ret;
+        options |= (ret & O_NONBLOCK) ? WNOHANG : 0;
+    }
     ret = wait4(pid, &status, options, rusage);
     if (ret != -1 && info)
         convertStatusToForkfdInfo(status, info);

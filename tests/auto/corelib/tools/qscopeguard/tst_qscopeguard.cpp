@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Sérgio Martins <sergio.martins@kdab.com>
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -101,8 +101,8 @@ void tst_QScopeGuard::construction()
     QScopeGuard fromNonVoidFunction(intFunc);
     QScopeGuard fromNoDiscardFunction(noDiscardFunc);
 #ifndef __apple_build_version__
-    QScopeGuard fromStdFunction{std::function(func)};
-    std::function stdFunction(func);
+    QScopeGuard fromStdFunction{std::function<void()>(func)};
+    std::function<void()> stdFunction(func);
     QScopeGuard fromNamedStdFunction(stdFunction);
 #endif
 #else

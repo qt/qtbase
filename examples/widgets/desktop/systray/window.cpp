@@ -111,7 +111,7 @@ void Window::setVisible(bool visible)
 //! [2]
 void Window::closeEvent(QCloseEvent *event)
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     if (!event->spontaneous() || !isVisible()) {
         return;
     }

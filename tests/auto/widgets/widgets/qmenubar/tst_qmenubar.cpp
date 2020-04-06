@@ -1537,7 +1537,7 @@ void tst_QMenuBar::cornerWidgets()
 
     QFETCH(Qt::Corner, corner);
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     QSKIP("Test interferes with native menu bars on this platform");
 #endif
 

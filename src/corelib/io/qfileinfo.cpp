@@ -272,7 +272,7 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     info objects, just append one to the file name given to the constructors
     or setFile().
 
-    The file's dates are returned by created(), lastModified(), lastRead() and
+    The file's dates are returned by birthTime(), lastModified(), lastRead() and
     fileTime(). Information about the file's access permissions is
     obtained with isReadable(), isWritable() and isExecutable(). The
     file's ownership is available from owner(), ownerId(), group() and

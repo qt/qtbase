@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -42,6 +42,7 @@
 #define CBOR_NO_ENCODER_API
 #include <private/qcborcommon_p.h>
 
+#include <private/qbytearray_p.h>
 #include <private/qnumeric_p.h>
 #include <private/qutfcodec_p.h>
 #include <qdebug.h>
@@ -1055,6 +1056,10 @@ bool QCborStreamReader::next(int maxRecursion)
     } else if (isString() || isByteArray()) {
         auto r = _readByteArray_helper();
         while (r.status == Ok) {
+            if (isString() && r.data.size() > MaxStringSize) {
+                d->handleError(CborErrorDataTooLarge);
+                break;
+            }
             if (isString() && !QUtf8::isValidUtf8(r.data, r.data.size()).isValidUtf8) {
                 d->handleError(CborErrorInvalidUtf8TextString);
                 break;
@@ -1337,15 +1342,23 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
     result.status = r.status;
 
     if (r.status == Ok) {
-        QTextCodec::ConverterState cs;
-        result.data = QUtf8::convertToUnicode(r.data, r.data.size(), &cs);
-        if (cs.invalidChars == 0 && cs.remainingChars == 0)
-            return result;
+        // See QUtf8::convertToUnicode() a detailed explanation of why this
+        // conversion uses the same number of words or less.
+        CborError err = CborNoError;
+        if (r.data.size() > MaxStringSize) {
+            err = CborErrorDataTooLarge;
+        } else {
+            QTextCodec::ConverterState cs;
+            result.data = QUtf8::convertToUnicode(r.data, r.data.size(), &cs);
+            if (cs.invalidChars != 0 || cs.remainingChars != 0)
+                err = CborErrorInvalidUtf8TextString;
+        }
 
-        d->handleError(CborErrorInvalidUtf8TextString);
-        result.data.clear();
-        result.status = Error;
-        return result;
+        if (err) {
+            d->handleError(err);
+            result.data.clear();
+            result.status = Error;
+        }
     }
     return result;
 }
@@ -1373,6 +1386,10 @@ QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readByteArray_he
     qsizetype len = _currentStringChunkSize();
     if (len < 0)
         return result;
+    if (len > MaxByteArraySize) {
+        d->handleError(CborErrorDataTooLarge);
+        return result;
+    }
 
     result.data.resize(len);
     auto r = readStringChunk(result.data.data(), len);

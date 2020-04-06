@@ -489,7 +489,6 @@ static QMargins invisibleMargins(QPoint screenPoint)
 
     \sa QWindowCreationContext
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 struct WindowCreationData
@@ -917,7 +916,6 @@ static QSize toNativeSizeConstrained(QSize dip, const QScreen *s)
     into account.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QMargins QWindowsGeometryHint::frameOnPrimaryScreen(DWORD style, DWORD exStyle)
@@ -1087,7 +1085,6 @@ bool QWindowsGeometryHint::positionIncludesFrame(const QWindow *w)
 
     \since 5.6
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 bool QWindowsBaseWindow::isRtlLayout(HWND hwnd)
@@ -1176,7 +1173,6 @@ QPoint QWindowsBaseWindow::mapFromGlobal(const QPoint &pos) const
     \brief Window wrapping GetDesktopWindow not allowing any manipulation.
     \since 5.6
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 /*!
@@ -1189,7 +1185,6 @@ QPoint QWindowsBaseWindow::mapFromGlobal(const QPoint &pos) const
 
     \since 5.6
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsForeignWindow::QWindowsForeignWindow(QWindow *window, HWND hwnd)
@@ -1248,7 +1243,6 @@ void QWindowsForeignWindow::setVisible(bool visible)
 
     \sa WindowCreationData, QWindowsContext
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowCreationContext::QWindowCreationContext(const QWindow *w, const QScreen *s,
@@ -1318,7 +1312,6 @@ void QWindowCreationContext::applyToMinMaxInfo(MINMAXINFO *mmi) const
     \endlist
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 const char *QWindowsWindow::embeddedNativeParentHandleProperty = "_q_embedded_native_parent_handle";
@@ -2442,7 +2435,17 @@ void QWindowsWindow::setFullFrameMargins(const QMargins &newMargins)
 
 void QWindowsWindow::updateFullFrameMargins()
 {
-    // Normally obtained from WM_NCCALCSIZE
+    // QTBUG-82580: If a native menu is present, force a WM_NCCALCSIZE.
+    if (GetMenu(m_data.hwnd))
+        QWindowsContext::forceNcCalcSize(m_data.hwnd);
+    else
+        calculateFullFrameMargins();
+}
+
+void QWindowsWindow::calculateFullFrameMargins()
+{
+    // Normally obtained from WM_NCCALCSIZE. This calculation only works
+    // when no native menu is present.
     const auto systemMargins = testFlag(DisableNonClientScaling)
         ? QWindowsGeometryHint::frameOnPrimaryScreen(m_data.hwnd)
         : frameMargins_sys();

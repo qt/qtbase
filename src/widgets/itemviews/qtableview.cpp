@@ -2985,14 +2985,17 @@ void QTableView::timerEvent(QTimerEvent *event)
     Q_D(QTableView);
 
     if (event->timerId() == d->columnResizeTimerID) {
-        updateGeometries();
-        killTimer(d->columnResizeTimerID);
-        d->columnResizeTimerID = 0;
+        const int oldScrollMax = horizontalScrollBar()->maximum();
+        if (horizontalHeader()->d_func()->state != QHeaderViewPrivate::ResizeSection) {
+            updateGeometries();
+            killTimer(d->columnResizeTimerID);
+            d->columnResizeTimerID = 0;
+        }
 
         QRect rect;
         int viewportHeight = d->viewport->height();
         int viewportWidth = d->viewport->width();
-        if (d->hasSpans()) {
+        if (d->hasSpans() || horizontalScrollBar()->value() == oldScrollMax) {
             rect = QRect(0, 0, viewportWidth, viewportHeight);
         } else {
             for (int i = d->columnsToUpdate.size()-1; i >= 0; --i) {
@@ -3010,14 +3013,17 @@ void QTableView::timerEvent(QTimerEvent *event)
     }
 
     if (event->timerId() == d->rowResizeTimerID) {
-        updateGeometries();
-        killTimer(d->rowResizeTimerID);
-        d->rowResizeTimerID = 0;
+        const int oldScrollMax = verticalScrollBar()->maximum();
+        if (verticalHeader()->d_func()->state != QHeaderViewPrivate::ResizeSection) {
+            updateGeometries();
+            killTimer(d->rowResizeTimerID);
+            d->rowResizeTimerID = 0;
+        }
 
         int viewportHeight = d->viewport->height();
         int viewportWidth = d->viewport->width();
         int top;
-        if (d->hasSpans()) {
+        if (d->hasSpans() || verticalScrollBar()->value() == oldScrollMax) {
             top = 0;
         } else {
             top = viewportHeight;

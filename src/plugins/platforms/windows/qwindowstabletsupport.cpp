@@ -173,7 +173,6 @@ QWindowsWinTab32DLL QWindowsTabletSupport::m_winTab32DLL;
     \brief Functions from wintabl32.dll shipped with WACOM tablets used by QWindowsTabletSupport.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 bool QWindowsWinTab32DLL::init()
@@ -205,7 +204,6 @@ bool QWindowsWinTab32DLL::init()
 
     \internal
     \since 5.2
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsTabletSupport::QWindowsTabletSupport(HWND window, HCTX context)

@@ -75,7 +75,6 @@ QT_BEGIN_NAMESPACE
 
     \sa QWindowsOleDropSource
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsDragCursorWindow : public QRasterWindow
@@ -135,7 +134,6 @@ void QWindowsDragCursorWindow::setPixmap(const QPixmap &p)
 
     \sa QWindowsDrag
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 IDataObject *QWindowsDropMimeData::retrieveDataObject() const
@@ -217,7 +215,6 @@ static Qt::MouseButtons lastButtons = Qt::NoButton;
 
     \sa QWindowsDrag
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsOleDropSource : public QWindowsComBase<IDropSource>
@@ -485,7 +482,6 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
 
     \sa QWindowsDrag
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsOleDropTarget::QWindowsOleDropTarget(QWindow *w) : m_window(w)
@@ -659,7 +655,6 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
     \class QWindowsDrag
     \brief Windows drag implementation.
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 bool QWindowsDrag::m_canceled = false;

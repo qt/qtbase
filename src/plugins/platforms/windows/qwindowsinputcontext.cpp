@@ -160,7 +160,6 @@ Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id); // from qlocale_win.cpp
     needs to be checked (mouse grab might interfere with candidate window).
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 

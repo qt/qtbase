@@ -150,7 +150,11 @@ QJsonObject::QJsonObject(QCborContainerPrivate *object)
 
 void QJsonObject::initialize()
 {
-    o = nullptr;
+    // Because we're being called with uninitialized state, we can't do:
+    //    o = nullptr;
+    // QExplicitlyDataSharedPointer::operator= will read the current value
+    void *ptr = &o;
+    memset(ptr, 0, sizeof(o));
 }
 
 /*!
@@ -160,7 +164,6 @@ QJsonObject::~QJsonObject() = default;
 
 QJsonObject::QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args)
 {
-    initialize();
     for (const auto &arg : args)
         insert(arg.first, arg.second);
 }
@@ -401,7 +404,9 @@ QJsonValue QJsonObject::operator [](const QString &key) const
 
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
-    Returns a reference to the value for \a key.
+    Returns a reference to the value for \a key. If there is no value with key
+    \a key in the object, one is created with a QJsonValue::Null value and then
+    returned.
 
     The return value is of type QJsonValueRef, a helper class for QJsonArray
     and QJsonObject. When you get an object of type QJsonValueRef, you can

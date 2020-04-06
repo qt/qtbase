@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename F> const QScopeGuard<F> qScopeGuard(F f)
+    \fn [qScopeGuard] template <typename F> QScopeGuard<typename std::decay<F>::type> qScopeGuard(F &&f)
     \inmodule QtCore
     \relates QScopeGuard
     \brief The qScopeGuard function can be used to call a function at the end

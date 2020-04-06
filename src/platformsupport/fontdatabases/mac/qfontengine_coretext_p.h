@@ -55,7 +55,7 @@
 #include <private/qcore_mac_p.h>
 #include <QtCore/qloggingcategory.h>
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #include <ApplicationServices/ApplicationServices.h>
 #else
 #include <CoreText/CoreText.h>

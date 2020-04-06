@@ -399,6 +399,7 @@
 */
 
 /*! \fn template <class T> QSet<T>::reverse_iterator QSet<T>::rbegin()
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
     \since 5.6
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
@@ -408,11 +409,13 @@
 */
 
 /*! \fn template <class T> QSet<T>::const_reverse_iterator QSet<T>::rbegin() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
     \since 5.6
     \overload
 */
 
 /*! \fn template <class T> QSet<T>::const_reverse_iterator QSet<T>::crbegin() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
@@ -422,6 +425,7 @@
 */
 
 /*! \fn template <class T> QSet<T>::reverse_iterator QSet<T>::rend()
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
     \since 5.6
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
@@ -431,11 +435,13 @@
 */
 
 /*! \fn template <class T> QSet<T>::const_reverse_iterator QSet<T>::rend() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
     \since 5.6
     \overload
 */
 
 /*! \fn template <class T> QSet<T>::const_reverse_iterator QSet<T>::crend() const
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
@@ -507,6 +513,7 @@
 
 /*! \typedef QSet::reverse_iterator
     \since 5.6
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
 
     The QSet::reverse_iterator typedef provides an STL-style non-const
     reverse iterator for QSet.
@@ -523,6 +530,7 @@
 
 /*! \typedef QSet::const_reverse_iterator
     \since 5.6
+    \obsolete Deprecated in order to align with std::unordered_set functionality.
 
     The QSet::const_reverse_iterator typedef provides an STL-style const
     reverse iterator for QSet.
@@ -921,8 +929,20 @@
 
 /*!
     \fn template <class T> QSet<T>::iterator &QSet<T>::iterator::operator--()
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
+
+    The prefix -- operator (\c{--it}) makes the preceding item
+    current and returns an iterator to the new current item.
+
+    Calling this function on QSet::begin() leads to undefined
+    results.
+
+    \sa operator++()
+*/
+
+/*!
     \fn template <class T> QSet<T>::const_iterator &QSet<T>::const_iterator::operator--()
-    \obsolete
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
 
     The prefix -- operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
@@ -935,8 +955,17 @@
 
 /*!
     \fn template <class T> QSet<T>::iterator QSet<T>::iterator::operator--(int)
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
+
+    \overload
+
+    The postfix -- operator (\c{it--}) makes the preceding item
+    current and returns an iterator to the previously current item.
+*/
+
+/*!
     \fn template <class T> QSet<T>::const_iterator QSet<T>::const_iterator::operator--(int)
-    \obsolete
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
 
     \overload
 
@@ -946,8 +975,19 @@
 
 /*!
     \fn template <class T> QSet<T>::iterator QSet<T>::iterator::operator+(int j) const
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
+
+    Returns an iterator to the item at \a j positions forward from
+    this iterator. (If \a j is negative, the iterator goes backward.)
+
+    This operation can be slow for large \a j values.
+
+    \sa operator-()
+*/
+
+/*!
     \fn template <class T> QSet<T>::const_iterator QSet<T>::const_iterator::operator+(int j) const
-    \obsolete
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. (If \a j is negative, the iterator goes backward.)
@@ -959,8 +999,19 @@
 
 /*!
     \fn template <class T> QSet<T>::iterator QSet<T>::iterator::operator-(int j) const
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
+
+    Returns an iterator to the item at \a j positions backward from
+    this iterator. (If \a j is negative, the iterator goes forward.)
+
+    This operation can be slow for large \a j values.
+
+    \sa operator+()
+*/
+
+/*!
     \fn template <class T> QSet<T>::const_iterator QSet<T>::const_iterator::operator-(int j) const
-    \obsolete
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. (If \a j is negative, the iterator goes forward.)
@@ -972,8 +1023,20 @@
 
 /*!
     \fn template <class T> QSet<T>::iterator &QSet<T>::iterator::operator+=(int j)
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
+
+    Advances the iterator by \a j items. (If \a j is negative, the
+    iterator goes backward.)
+
+    This operation can be slow for large \a j values.
+
+    \sa operator-=(), operator+()
+
+*/
+
+/*!
     \fn template <class T> QSet<T>::const_iterator &QSet<T>::const_iterator::operator+=(int j)
-    \obsolete
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
 
     Advances the iterator by \a j items. (If \a j is negative, the
     iterator goes backward.)
@@ -985,8 +1048,19 @@
 
 /*!
     \fn template <class T> QSet<T>::iterator &QSet<T>::iterator::operator-=(int j)
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
+
+    Makes the iterator go back by \a j items. (If \a j is negative,
+    the iterator goes forward.)
+
+    This operation can be slow for large \a j values.
+
+    \sa operator+=(), operator-()
+*/
+
+/*!
     \fn template <class T> QSet<T>::const_iterator &QSet<T>::const_iterator::operator-=(int j)
-    \obsolete
+    \obsolete This operator is deprecated in order to align with std::unordered_set functionality.
 
     Makes the iterator go back by \a j items. (If \a j is negative,
     the iterator goes forward.)

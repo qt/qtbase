@@ -1,6 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_events
-
+CONFIG += benchmark
 QT = core testlib
 
+TARGET = tst_bench_events
 SOURCES += main.cpp

@@ -83,6 +83,7 @@ Q_OBJECT
 
 private slots:
     void arrowKeyNavigation();
+    void keyNavigationPushButtons();
     void exclusive();
     void exclusiveWithActions();
     void testSignals();
@@ -183,6 +184,73 @@ void tst_QButtonGroup::arrowKeyNavigation()
     QVERIFY(bt3.hasFocus());
     QTest::keyClick(&bt3, Qt::Key_Up);
     QVERIFY(bt3.hasFocus());
+}
+
+/*
+    Test that tab and arrow key navigation through buttons
+    in an invisible button group works as expected. Tabbing
+    into the group should give focus to the checked button,
+    and arrow navigation should change the checked button and
+    move focus.
+*/
+void tst_QButtonGroup::keyNavigationPushButtons()
+{
+    if (!qt_tab_all_widgets())
+        QSKIP("This test requires full keyboard control to be enabled.");
+
+    QDialog dlg(nullptr);
+    QLineEdit *le1 = new QLineEdit;
+    le1->setObjectName("le1");
+    QPushButton *pb1 = new QPushButton("Exclusive 1");
+    pb1->setObjectName("pb1");
+    pb1->setCheckable(true);
+    pb1->setChecked(true);
+    QPushButton *pb2 = new QPushButton("Exclusive 2");
+    pb2->setObjectName("pb2");
+    pb2->setCheckable(true);
+    QPushButton *pb3 = new QPushButton("Exclusive 3");
+    pb3->setObjectName("pb3");
+    pb3->setCheckable(true);
+    QLineEdit *le2 = new QLineEdit;
+    le2->setObjectName("le2");
+
+    QVBoxLayout* layout = new QVBoxLayout(&dlg);
+    layout->addWidget(le1);
+    layout->addWidget(pb1);
+    layout->addWidget(pb2);
+    layout->addWidget(pb3);
+    layout->addWidget(le2);
+
+    QButtonGroup *buttonGroup = new QButtonGroup;
+    buttonGroup->addButton(pb1);
+    buttonGroup->addButton(pb2);
+    buttonGroup->addButton(pb3);
+
+    dlg.show();
+    qApp->setActiveWindow(&dlg);
+    if (!QTest::qWaitForWindowActive(&dlg))
+        QSKIP("Window activation failed, skipping test");
+
+    QVERIFY2(le1->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
+    QTest::keyClick(qApp->focusWidget(), Qt::Key_Tab);
+    QVERIFY2(pb1->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
+    QVERIFY2(pb1->isChecked(), qPrintable(buttonGroup->checkedButton()->objectName()));
+    QTest::keyClick(qApp->focusWidget(), Qt::Key_Down);
+    QVERIFY2(pb2->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
+    QVERIFY2(pb2->isChecked(), qPrintable(buttonGroup->checkedButton()->objectName()));
+    QTest::keyClick(qApp->focusWidget(), Qt::Key_Down);
+    QVERIFY2(pb3->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
+    QVERIFY2(pb3->isChecked(), qPrintable(buttonGroup->checkedButton()->objectName()));
+    QTest::keyClick(qApp->focusWidget(), Qt::Key_Up);
+    QVERIFY2(pb2->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
+    QVERIFY2(pb2->isChecked(), qPrintable(buttonGroup->checkedButton()->objectName()));
+    QTest::keyClick(qApp->focusWidget(), Qt::Key_Tab);
+    QVERIFY2(le2->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
+    QTest::keyClick(qApp->focusWidget(), Qt::Key_Backtab);
+    QVERIFY2(pb2->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
+    QVERIFY2(pb2->isChecked(), qPrintable(buttonGroup->checkedButton()->objectName()));
+    QTest::keyClick(qApp->focusWidget(), Qt::Key_Backtab);
+    QVERIFY2(le1->hasFocus(), qPrintable(qApp->focusWidget()->objectName()));
 }
 
 void tst_QButtonGroup::exclusiveWithActions()

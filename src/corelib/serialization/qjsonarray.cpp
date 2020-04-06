@@ -167,7 +167,11 @@ QJsonArray::QJsonArray(QCborContainerPrivate *array)
  */
 void QJsonArray::initialize()
 {
-    a = nullptr;
+    // Because we're being called with uninitialized state, we can't do:
+    //    a = nullptr;
+    // QExplicitlyDataSharedPointer::operator= will read the current value
+    void *ptr = &a;
+    memset(ptr, 0, sizeof(a));
 }
 
 /*!
@@ -177,7 +181,6 @@ QJsonArray::~QJsonArray() = default;
 
 QJsonArray::QJsonArray(std::initializer_list<QJsonValue> args)
 {
-    initialize();
     for (const auto & arg : args)
         append(arg);
 }

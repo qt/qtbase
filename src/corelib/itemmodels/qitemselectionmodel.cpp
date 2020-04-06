@@ -1473,6 +1473,9 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
     Note that this function is usually faster than calling isSelected()
     on all items in the same row and that unselectable items are
     ignored.
+
+    \note Since Qt 5.15, the default argument for \a parent is an empty
+          model index.
 */
 bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) const
 {
@@ -1545,6 +1548,9 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
     Note that this function is usually faster than calling isSelected()
     on all items in the same column and that unselectable items are
     ignored.
+
+    \note Since Qt 5.15, the default argument for \a parent is an empty
+          model index.
 */
 bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent) const
 {
@@ -1616,6 +1622,9 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
 /*!
     Returns \c true if there are any items selected in the \a row with the given
     \a parent.
+
+    \note Since Qt 5.15, the default argument for \a parent is an empty
+          model index.
 */
 bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &parent) const
 {
@@ -1649,6 +1658,9 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
 /*!
     Returns \c true if there are any items selected in the \a column with the given
     \a parent.
+
+    \note Since Qt 5.15, the default argument for \a parent is an empty
+          model index.
 */
 bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelIndex &parent) const
 {

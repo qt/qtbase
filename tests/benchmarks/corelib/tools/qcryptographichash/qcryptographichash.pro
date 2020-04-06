@@ -1,5 +1,6 @@
-TARGET = tst_bench_qcryptographichash
-CONFIG -= debug
-CONFIG += release cmdline
+CONFIG += benchmark
+CONFIG += cmdline
 QT = core testlib
+
+TARGET = tst_bench_qcryptographichash
 SOURCES += main.cpp

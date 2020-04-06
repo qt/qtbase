@@ -60,7 +60,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #include <qpa/qplatformnativeinterface.h>
 #endif
 
@@ -115,7 +115,7 @@ inline static bool verticalTabs(QTabBar::Shape shape)
 
 void QTabBarPrivate::updateMacBorderMetrics()
 {
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     Q_Q(QTabBar);
     // Extend the unified title and toolbar area to cover the tab bar iff
     // 1) the tab bar is in document mode

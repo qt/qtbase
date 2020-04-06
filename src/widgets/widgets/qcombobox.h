@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -233,7 +233,7 @@ Q_SIGNALS:
     void textActivated(const QString &);
     void highlighted(int index);
     void textHighlighted(const QString &);
-    void currentIndexChanged(int index, const QString &text);
+    void currentIndexChanged(int index);
     void currentTextChanged(const QString &);
 
 protected:

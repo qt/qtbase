@@ -1608,7 +1608,6 @@ void QWidgetPrivate::createTLExtra()
         x->opacity = 255;
         x->posIncludesFrame = 0;
         x->sizeAdjusted = false;
-        x->inTopLevelResize = false;
         x->embedded = 0;
         x->window = nullptr;
         x->initialScreenIndex = -1;
@@ -10803,7 +10802,7 @@ void QWidgetPrivate::repaint(T r)
         return;
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
+    if (tlwExtra && tlwExtra->backingStore)
         tlwExtra->repaintManager->markDirty(r, q, QWidgetRepaintManager::UpdateNow);
 }
 
@@ -10878,7 +10877,7 @@ void QWidgetPrivate::update(T r)
     }
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
+    if (tlwExtra && tlwExtra->backingStore)
         tlwExtra->repaintManager->markDirty(clipped, q);
 }
 

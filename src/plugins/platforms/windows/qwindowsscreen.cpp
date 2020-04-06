@@ -171,7 +171,6 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
     \brief Windows screen.
     \sa QWindowsScreenManager
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
@@ -432,7 +431,6 @@ QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTy
 
     \sa QWindowsScreen
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsScreenManager::QWindowsScreenManager() = default;

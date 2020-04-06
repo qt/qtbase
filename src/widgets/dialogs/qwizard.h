@@ -129,7 +129,7 @@ public:
     QWizardPage *page(int id) const;
     bool hasVisitedPage(int id) const;
 #if QT_DEPRECATED_SINCE(5, 15)
-    Q_DECL_DEPRECATED_X("Use visitedIds() instead") QList<int> visitedPages() const;
+    QT_DEPRECATED_VERSION_X_5_15("Use visitedIds() instead") QList<int> visitedPages() const;
 #endif
     QList<int> visitedIds() const;
     QList<int> pageIds() const;

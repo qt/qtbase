@@ -1,8 +1,6 @@
-TARGET = tst_bench_qdiriterator
-
+CONFIG += benchmark
 QT = core testlib
 
-CONFIG += release
 # Enable c++17 support for std::filesystem
 qtConfig(cxx17_filesystem) {
     CONFIG += c++17
@@ -10,5 +8,6 @@ qtConfig(cxx17_filesystem) {
         QMAKE_LFLAGS += -lstdc++fs
 }
 
+TARGET = tst_bench_qdiriterator
 SOURCES += main.cpp qfilesystemiterator.cpp
 HEADERS += qfilesystemiterator.h

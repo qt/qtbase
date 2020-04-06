@@ -58,7 +58,6 @@ QT_BEGIN_NAMESPACE
     \endlist
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 class QWindowsNativeInterface : public QPlatformNativeInterface

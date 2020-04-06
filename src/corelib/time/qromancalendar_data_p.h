@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2020-01-30 from the
+    This part of the file was generated on 2020-04-07 from the
     Common Locale Data Repository v36
 
     http://www.unicode.org/cldr/
@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 */
 
 static const QCalendarLocale locale_data[] = {
-   //  lang   script terr  sLng long sSrt shrt sNrw naro Sizes...
+     // lang   script terr  sLong  long sShrt short sNarw narow Sizes...
       {     1,     0,     0,    0,    0,   85,   85,  132,  155, 85, 85, 47, 47, 23, 26 },// C/AnyScript/AnyCountry
       {     3,     7,    69,  181,  181,  291,  291,  132,  132,110,110, 47, 47, 23, 23 },// Oromo/Latin/Ethiopia
       {     3,     7,   111,  181,  181,  291,  291,  338,  132,110,110, 47, 47, 23, 23 },// Oromo/Latin/Kenya

@@ -245,7 +245,7 @@ void QAbstractButtonPrivate::notifyChecked()
 
 void QAbstractButtonPrivate::moveFocus(int key)
 {
-    QList<QAbstractButton *> buttonList = queryButtonList();;
+    QList<QAbstractButton *> buttonList = queryButtonList();
 #if QT_CONFIG(buttongroup)
     bool exclusive = group ? group->d_func()->exclusive : autoExclusive;
 #else
@@ -265,7 +265,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
     for (int i = 0; i < buttonList.count(); ++i) {
         QAbstractButton *button = buttonList.at(i);
         if (button != f && button->window() == f->window() && button->isEnabled() && !button->isHidden() &&
-            (autoExclusive || (button->focusPolicy() & focus_flag) == focus_flag)) {
+            (exclusive || (button->focusPolicy() & focus_flag) == focus_flag)) {
             QRect buttonRect = button->rect().translated(button->mapToGlobal(QPoint(0,0)));
             QPoint p = buttonRect.center();
 

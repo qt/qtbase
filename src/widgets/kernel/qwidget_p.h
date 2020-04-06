@@ -155,7 +155,6 @@ struct QTLWExtra {
     uint opacity : 8;
     uint posIncludesFrame : 1;
     uint sizeAdjusted : 1;
-    uint inTopLevelResize : 1;
     uint embedded : 1;
 };
 

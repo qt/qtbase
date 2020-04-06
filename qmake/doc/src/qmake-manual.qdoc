@@ -2608,6 +2608,14 @@
     Specifies the module name to be used for automatically generated QML type
     registrations. For more information, see \l {Defining QML Types from C++}.
 
+    \section1 QML_FOREIGN_METATYPES
+
+    Specifies further JSON files with metatypes to be considered when generating
+    qmltypes files. Use this when external libraries provide types that are
+    exposed to QML, either directly or as base types or properties of other
+    types. Qt types will automatically be considered and don't have to be added
+    here.
+
     \section1 QT
 
     Specifies the \l{All Modules}{Qt modules} that are used by your project. For

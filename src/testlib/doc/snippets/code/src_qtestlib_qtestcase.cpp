@@ -47,25 +47,50 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QTest>
+#include <QSqlDatabase>
 
+// dummy
+class TestBenchmark : public QObject
+{
+    Q_OBJECT
+private slots:
+    void simple();
+};
+
+// dummy
+class MyTestClass : public QObject
+{
+    public:
+        void cleanup();
+        void addSingleStringRows();
+        void addMultStringRows();
+        void addDataRow();
+};
+// dummy
+void closeAllDatabases()
+{
+};
+
+class TestQString : public QObject
+{
+    public:
+        void toInt_data();
+        void toInt();
+        void toUpper();
+        void Compare();
+};
 
 void wrapInFunction()
 {
-
-//! [0]
- QVERIFY(spy.isValid())
-//! [0]
-
-
 //! [1]
 QVERIFY2(qIsNaN(0.0 / 0.0), "Ill-defined division produced unambiguous result.");
 //! [1]
 
-
 //! [2]
 QCOMPARE(QString("hello").toUpper(), QString("HELLO"));
 //! [2]
-
+}
 
 //! [3]
 void TestQString::toInt_data()
@@ -79,7 +104,6 @@ void TestQString::toInt_data()
 }
 //! [3]
 
-
 //! [4]
 void TestQString::toInt()
 {
@@ -90,29 +114,28 @@ void TestQString::toInt()
 }
 //! [4]
 
-
+void testInt()
+{
+// dummy
+int i = 0, j = 0;
 //! [5]
 if (sizeof(int) != 4)
     QFAIL("This test has not been ported to this platform yet.");
 //! [5]
-
 
 //! [6]
 QFETCH(QString, myString);
 QCOMPARE(QString("hello").toUpper(), myString);
 //! [6]
 
-
 //! [7]
 QTEST(QString("hello").toUpper(), "myString");
 //! [7]
-
 
 //! [8]
 if (!QSqlDatabase::drivers().contains("SQLITE"))
     QSKIP("This test requires the SQLITE database driver");
 //! [8]
-
 
 //! [9]
 QEXPECT_FAIL("", "Will fix in the next release", Continue);
@@ -120,79 +143,40 @@ QCOMPARE(i, 42);
 QCOMPARE(j, 43);
 //! [9]
 
-
 //! [10]
 QEXPECT_FAIL("data27", "Oh my, this is soooo broken", Abort);
 QCOMPARE(i, 42);
 //! [10]
-
+}
 
 //! [11]
-class TestQString: public QObject { ... };
 QTEST_MAIN(TestQString)
 //! [11]
 
-
-//! [13]
-QTest::keyClick(myWidget, 'a');
-//! [13]
-
-
-//! [14]
-QTest::keyClick(myWidget, Qt::Key_Escape);
-
-QTest::keyClick(myWidget, Qt::Key_Escape, Qt::ShiftModifier, 200);
-//! [14]
-
-
-//! [15]
-QTest::keyClicks(myWidget, "hello world");
-//! [15]
-
-
-//! [16]
-namespace QTest {
-    template<>
-    char *toString(const MyPoint &point)
-    {
-        QByteArray ba = "MyPoint(";
-        ba += QByteArray::number(point.x()) + ", " + QByteArray::number(point.y());
-        ba += ')';
-        return qstrdup(ba.data());
-    }
-}
-//! [16]
-
-//! [toString-overload]
-namespace MyNamespace {
-    char *toString(const MyPoint &point)
-    {
-        // bring QTest::toString overloads into scope:
-        using QTest::toString;
-        // delegate char* handling to QTest::toString(QByteArray):
-        return toString("MyPoint(" +
-                        QByteArray::number(point.x()) + ", " +
-                        QByteArray::number(point.y()) + ')');
-    }
-}
-//! [toString-overload]
-
+void testObject()
+{
+class MyTestObject: public QObject
+{
+    public:
+        void toString();
+};
 //! [18]
 MyTestObject test1;
 QTest::qExec(&test1);
 //! [18]
+}
 
-
+void tstQDir()
+{
 //! [19]
 QDir dir;
-
 QTest::ignoreMessage(QtWarningMsg, "QDir::mkdir: Empty or null file name(s)");
 dir.mkdir("");
 //! [19]
-
+}
 
 //! [20]
-void myTestFunction_data()
+void MyTestClass::addSingleStringRows()
 {
     QTest::addColumn<QString>("aString");
     QTest::newRow("just hello") << QString("hello");
@@ -200,152 +184,65 @@ void myTestFunction_data()
 }
 //! [20]
 
-
-//! [addRow]
-void myTestFunction_data()
+void MyTestClass::addMultStringRows()
 {
+//! [addRow]
     QTest::addColumn<int>("input");
     QTest::addColumn<QString>("output");
     QTest::addRow("%d", 0) << 0 << QString("0");
     QTest::addRow("%d", 1) << 1 << QString("1");
-}
 //! [addRow]
+}
 
-
+void MyTestClass::addDataRow()
+{
 //! [21]
-void myTestFunction_data() {
     QTest::addColumn<int>("intval");
     QTest::addColumn<QString>("str");
     QTest::addColumn<double>("dbl");
-
     QTest::newRow("row1") << 1 << "hello" << 1.5;
-}
 //! [21]
-
+}
 
 //! [22]
 void MyTestClass::cleanup()
 {
-    if (qstrcmp(currentTestFunction(), "myDatabaseTest") == 0) {
+    if (qstrcmp(QTest::currentTestFunction(), "myDatabaseTest") == 0) {
         // clean up all database connections
         closeAllDatabases();
     }
 }
 //! [22]
 
-
+void mySleep()
+{
 //! [23]
 QTest::qSleep(250);
 //! [23]
-
-
-//! [25]
-QTouchDevice *dev = QTest::createTouchDevice();
-QWidget widget;
-
-QTest::touchEvent(&widget, dev)
-    .press(0, QPoint(10, 10));
-QTest::touchEvent(&widget, dev)
-    .stationary(0)
-    .press(1, QPoint(40, 10));
-QTest::touchEvent(&widget, dev)
-    .move(0, QPoint(12, 12))
-    .move(1, QPoint(45, 5));
-QTest::touchEvent(&widget, dev)
-    .release(0, QPoint(12, 12))
-    .release(1, QPoint(45, 5));
-//! [25]
-
-
-//! [26]
-// Source: /home/user/sources/myxmlparser/tests/tst_myxmlparser/tst_myxmlparser.cpp
-// Build:  /home/user/build/myxmlparser/tests/tst_myxmlparser
-// Qt:     /usr/local/Qt-5.0.0
-void tst_MyXmlParser::parse()
-{
-    MyXmlParser parser;
-    QString input = QFINDTESTDATA("testxml/simple1.xml");
-    QVERIFY(parser.parse(input));
 }
-//! [26]
 
 //! [27]
 void TestBenchmark::simple()
 {
     QString str1 = QLatin1String("This is a test string");
     QString str2 = QLatin1String("This is a test string");
-
     QCOMPARE(str1.localeAwareCompare(str2), 0);
-
     QBENCHMARK {
         str1.localeAwareCompare(str2);
     }
 }
 //! [27]
 
-//! [28]
-QTest::keyClick(myWindow, 'a');
-//! [28]
-
-
-//! [29]
-QTest::keyClick(myWindow, Qt::Key_Escape);
-
-QTest::keyClick(myWindow, Qt::Key_Escape, Qt::ShiftModifier, 200);
-//! [29]
-
-}
-
-//! [30]
-void TestQLocale::initTestCase_data()
+void verifyString()
 {
-    QTest::addColumn<QLocale>("locale");
-    QTest::newRow("C") << QLocale::c();
-    QTest::newRow("UKish") << QLocale("en_GB");
-    QTest::newRow("USAish") << QLocale(QLocale::English);
-}
-
-void TestQLocale::roundTripInt_data()
-{
-    QTest::addColumn<int>("number");
-    QTest::newRow("one") << 1;
-    QTest::newRow("two") << 2;
-    QTest::newRow("ten") << 10;
-}
-//! [30]
-
-//! [31]
-void TestQLocale::roundTripInt()
-{
-    QFETCH_GLOBAL(QLocale, locale);
-    QFETCH(int, number);
-    bool ok;
-    QCOMPARE(locale.toInt(locale.toString(number), &ok), number);
-    QVERIFY(ok);
-}
-//! [31]
-
-
+QFile file;
 //! [32]
 bool opened = file.open(QIODevice::WriteOnly);
 QVERIFY(opened);
 //! [32]
-
-
 //! [33]
 QVERIFY2(file.open(QIODevice::WriteOnly),
-         qPrintable(QString("open %1: %2").arg(file.fileName()).arg(file.errorString()));
+         qPrintable(QString("open %1: %2")
+                    .arg(file.fileName()).arg(file.errorString())));
 //! [33]
-
-//! [34]
-QT_BEGIN_NAMESPACE
-namespace QTest {
-    template <> char *toString<MyType>(const MyType &t)
-    {
-        char *repr = new char[t.reprSize()];
-        t.writeRepr(repr);
-        return repr;
-    }
 }
-QT_END_NAMESPACE
-//! [34]

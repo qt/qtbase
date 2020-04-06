@@ -363,8 +363,9 @@ QIntValidator::~QIntValidator()
     \fn QValidator::State QIntValidator::validate(QString &input, int &pos) const
 
     Returns \l Acceptable if the \a input is an integer within the
-    valid range, \l Intermediate if the \a input is a prefix of an integer in the
-    valid range, and \l Invalid otherwise.
+    valid range. If \a input has at most as many digits as the top of the range,
+    or is a prefix of an integer in the valid range, returns \l Intermediate.
+    Otherwise, returns \l Invalid.
 
     If the valid range consists of just positive integers (e.g., 32 to 100)
     and \a input is a negative integer, then Invalid is returned. (On the other
@@ -372,6 +373,10 @@ QIntValidator::~QIntValidator()
     \a input is a positive integer, then Intermediate is returned, because
     the user might be just about to type the minus (especially for right-to-left
     languages).
+
+    Similarly, if the valid range is between 46 and 53, then 41 and 59 will be
+    evaluated as \l Intermediate, as otherwise the user wouldn't be able to
+    change a value from 49 to 51.
 
     \snippet code/src_gui_util_qvalidator.cpp 2
 

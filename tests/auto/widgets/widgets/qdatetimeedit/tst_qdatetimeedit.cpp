@@ -195,6 +195,8 @@ private slots:
     void specialValueText();
     void setRange_data();
     void setRange();
+    void editingRanged_data();
+    void editingRanged();
 
     void selectAndScrollWithKeys();
     void backspaceKey();
@@ -1310,6 +1312,120 @@ void tst_QDateTimeEdit::setRange()
         QCOMPARE(dte4.minimumTime(), expectedMin.time());
         QCOMPARE(dte4.maximumTime(), expectedMax.time());
     }
+}
+
+/*
+    Test that a user can input a date into a ranged QDateTimeEdit or QDateEdit
+    where a part of date is larger than the respective part of the maximum, or
+    smaller than the respective part of the minimum of the range.
+
+    This test is expected to fail unless keyboard tracking of the edit is set
+    to off. Otherwise the changed-signal would be emitted with values outside
+    of the allowed range as the user types.
+*/
+void tst_QDateTimeEdit::editingRanged_data()
+{
+    QTest::addColumn<QDate>("minDate");
+    QTest::addColumn<QTime>("minTime");
+    QTest::addColumn<QDate>("maxDate");
+    QTest::addColumn<QTime>("maxTime");
+    QTest::addColumn<QString>("userInput");
+    QTest::addColumn<QDateTime>("expected");
+
+    QTest::addRow("trivial")
+        << QDate(2010, 1, 1) << QTime(9, 0)
+        << QDate(2011, 12, 31) << QTime(16, 0)
+        << QString::fromLatin1("311220101600")
+        << QDateTime(QDate(2010, 12, 31), QTime(16, 0));
+
+    QTest::addRow("data0")
+        << QDate(2010, 12, 30) << QTime(16, 0)
+        << QDate(2011, 1, 2) << QTime(9, 0)
+        << QString::fromLatin1("311220102359")
+        << QDateTime(QDate(2010, 12, 31), QTime(23, 59));
+
+    QTest::addRow("data1")
+        << QDate(2010, 12, 30) << QTime(16, 0)
+        << QDate(2011, 1, 2) << QTime(9, 0)
+        << QString::fromLatin1("010120111823")
+        << QDateTime(QDate(2011, 1, 1), QTime(18, 23));
+
+    QTest::addRow("Out of range")
+        << QDate(2010, 12, 30) << QTime(16, 0)
+        << QDate(2011, 1, 2) << QTime(9, 0)
+        << QString::fromLatin1("090920111823")
+        << QDateTime(QDate(2011, 1, 2), QTime(9, 0));
+
+    QTest::addRow("only date")
+        << QDate(2010, 12, 30) << QTime()
+        << QDate(2011, 1, 2) << QTime()
+        << QString::fromLatin1("01012011")
+        << QDateTime(QDate(2011, 1, 1), QTime());
+}
+
+void tst_QDateTimeEdit::editingRanged()
+{
+    QFETCH(QDate, minDate);
+    QFETCH(QTime, minTime);
+    QFETCH(QDate, maxDate);
+    QFETCH(QTime, maxTime);
+    QFETCH(QString, userInput);
+    QFETCH(QDateTime, expected);
+
+    QDateTimeEdit *edit;
+    if (minTime.isValid()) {
+        edit = new QDateTimeEdit;
+        edit->setDisplayFormat("dd.MM.yyyy hh:mm");
+        edit->setDateTimeRange(QDateTime(minDate, minTime), QDateTime(maxDate, maxTime));
+    } else {
+        edit = new QDateEdit;
+        edit->setDisplayFormat("dd.MM.yyyy");
+        edit->setDateRange(minDate, maxDate);
+    }
+
+    int callCount = 0;
+    connect(edit, &QDateTimeEdit::dateTimeChanged, [&](const QDateTime &dateTime) {
+        ++callCount;
+        if (minTime.isValid()) {
+            QVERIFY(dateTime >= QDateTime(minDate, minTime));
+            QVERIFY(dateTime <= QDateTime(maxDate, maxTime));
+        } else {
+            QVERIFY(dateTime.date() >= minDate);
+            QVERIFY(dateTime.date() <= maxDate);
+        }
+    });
+
+    edit->show();
+    QApplication::setActiveWindow(edit);
+    if (!QTest::qWaitForWindowActive(edit))
+        QSKIP("Failed to make window active, aborting");
+    edit->setFocus();
+
+    // with keyboard tracking, never get a signal with an out-of-range value
+    edit->setKeyboardTracking(true);
+    QTest::keyClicks(edit, userInput);
+    QTest::keyClick(edit, Qt::Key_Return);
+    QVERIFY(callCount > 0);
+
+    // QDateTimeEdit blocks these dates from being entered - see QTBUG-65
+    QEXPECT_FAIL("data0", "Can't enter this date", Continue);
+    QEXPECT_FAIL("data1", "Can't enter this date", Continue);
+    QEXPECT_FAIL("Out of range", "Can't enter this date", Continue);
+    QEXPECT_FAIL("only date", "Can't enter this date", Continue);
+    QCOMPARE(edit->dateTime(), expected);
+
+    // reset
+    edit->clearFocus();
+    edit->setFocus();
+    callCount = 0;
+
+    edit->setKeyboardTracking(false);
+    QTest::keyClicks(edit, userInput);
+    QTest::keyClick(edit, Qt::Key_Return);
+    QCOMPARE(edit->dateTime(), expected);
+    QCOMPARE(callCount, 1);
+
+    delete edit;
 }
 
 void tst_QDateTimeEdit::wrappingTime_data()

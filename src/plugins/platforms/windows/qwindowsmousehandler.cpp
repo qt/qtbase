@@ -145,7 +145,6 @@ static inline QTouchDevice *createTouchDevice()
     Dispatches mouse and touch events. Separate for code cleanliness.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsMouseHandler::QWindowsMouseHandler() = default;

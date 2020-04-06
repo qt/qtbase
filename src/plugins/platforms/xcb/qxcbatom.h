@@ -183,6 +183,7 @@ public:
         XdndActionCopy,
         XdndActionLink,
         XdndActionMove,
+        XdndActionAsk,
         XdndActionPrivate,
 
         // Xkb

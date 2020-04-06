@@ -480,15 +480,15 @@
 
     The following example creates a view based on an SQL data model:
 
-    \snippet sqldatabase/sqldatabase.cpp 17
-    \snippet sqldatabase/sqldatabase.cpp 18
-    \snippet sqldatabase/sqldatabase.cpp 19
+    \snippet sqldatabase/sqldatabase_snippet.cpp 17
+    \snippet sqldatabase/sqldatabase_snippet.cpp 18
+    \snippet sqldatabase/sqldatabase_snippet.cpp 19
 
     If the model is a read-write model (e.g., QSqlTableModel), the
     view lets the user edit the fields. You can disable this by
     calling
 
-    \snippet sqldatabase/sqldatabase.cpp 20
+    \snippet sqldatabase/sqldatabase_snippet.cpp 20
 
     You can use the same model as a data source for multiple views.
     If the user edits the model through one of the views, the other

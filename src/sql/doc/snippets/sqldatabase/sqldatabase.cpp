@@ -48,17 +48,12 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QCoreApplication>
 #include <QtSql>
-
+#include <QMap>
 #include <iostream>
 
 using namespace std;
-
-QString tr(const char *text)
-{
-    return QApplication::translate(text, text);
-}
 
 void QSqlDatabase_snippets()
 {
@@ -209,11 +204,10 @@ void QSqlQuery_snippets()
     {
     // examine with named binding
 //! [14]
-    QMapIterator<QString, QVariant> i(query.boundValues());
-    while (i.hasNext()) {
-        i.next();
+    QMap<QString, QVariant> sqlIterator(query.boundValues());
+    for (auto i = sqlIterator.begin(); i != sqlIterator.end(); ++i) {
         cout << i.key().toUtf8().data() << ": "
-             << i.value().toString().toUtf8().data() << Qt::endl;
+             << i.value().toString().toUtf8().data() << "\n";
     }
 //! [14]
     }
@@ -223,30 +217,13 @@ void QSqlQuery_snippets()
 //! [15]
     QList<QVariant> list = query.boundValues().values();
     for (int i = 0; i < list.size(); ++i)
-        cout << i << ": " << list.at(i).toString().toUtf8().data() << Qt::endl;
+        cout << i << ": " << list.at(i).toString().toUtf8().data() << "\n";
 //! [15]
     }
 }
 
 void QSqlQueryModel_snippets()
 {
-    {
-//! [16]
-    QSqlQueryModel *model = new QSqlQueryModel;
-    model->setQuery("SELECT name, salary FROM employee");
-    model->setHeaderData(0, Qt::Horizontal, tr("Name"));
-    model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
-
-//! [17]
-    QTableView *view = new QTableView;
-//! [17] //! [18]
-    view->setModel(model);
-//! [18] //! [19]
-    view->show();
-//! [16] //! [19] //! [20]
-    view->setEditTriggers(QAbstractItemView::NoEditTriggers);
-//! [20]
-    }
 
 //! [21]
     QSqlQueryModel model;
@@ -273,6 +250,7 @@ class MyModel : public QSqlQueryModel
 {
 public:
     QVariant data(const QModelIndex &item, int role) const override;
+    void fetchModel();
 
     int m_specialColumnNo;
 };
@@ -289,20 +267,6 @@ QVariant MyModel::data(const QModelIndex &item, int role) const
 
 void QSqlTableModel_snippets()
 {
-//! [24]
-    QSqlTableModel *model = new QSqlTableModel(parentObject, database);
-    model->setTable("employee");
-    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    model->select();
-    model->setHeaderData(0, Qt::Horizontal, tr("Name"));
-    model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
-
-    QTableView *view = new QTableView;
-    view->setModel(model);
-    view->hideColumn(0); // don't show the ID
-    view->show();
-//! [24]
-
     {
 //! [25]
     QSqlTableModel model;
@@ -310,6 +274,7 @@ void QSqlTableModel_snippets()
     model.select();
     int salary = model.record(4).value("salary").toInt();
 //! [25]
+    Q_UNUSED(salary);
     }
 }
 
@@ -550,14 +515,14 @@ public:
               const QString & /* password */, const QString & /* host */,
               int /* port */, const QString & /* options */) override
         { return false; }
-    void close() {}
+    void close() override {}
     QSqlResult *createResult() const override { return new XyzResult(this); }
 };
 //! [48]
 
 int main(int argc, char **argv)
 {
-    QApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
 
     QSqlDatabase_snippets();
     QSqlField_snippets();

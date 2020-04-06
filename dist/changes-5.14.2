@@ -1,0 +1,117 @@
+Qt 5.14.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.14.0 through 5.14.1.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.14 series is binary compatible with the 5.13.x series.
+Applications compiled for 5.13 will continue to run with 5.14.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QCollator:
+   * QTBUG-81673: Fixed a regression introduced in 5.14.0 that caused
+     QCollator not to operate with default-constructed QStrings and print a
+     warning on Windows.
+
+ - QString, codecs:
+   * QTBUG-62011: ZWNBS is no longer discarded (mistaken for a BOM despite
+     not being at the start) when converting UCS4 to QString's UCS2.
+
+ - QLocale:
+   * QTBUG-80459: Skip digit-grouping if the system locale is configured to
+     use an empty group separator.
+   * QTBUG-81530: Use "+" if MS reports empty for the system locale's plus
+     sign, as documented in MS's API for the relevant query.
+
+ - QLockFile:
+   * Suppressed the warning on QNX that said 'setNativeLocks failed:
+     "Function not implemented"'. There is no difference in behavior: Qt
+     will continue not to be able to apply an OS- level file lock, which
+     means the lock could be accidentally stolen by buggy software. Correct
+     software using QLockFile should not be affected.
+
+ - QObject:
+   * For the purposes of QT_NO_NARROWING_CONVERSIONS_IN_CONNECT, pointer
+     (incl. pointer-to-member) to bool conversions are now considered
+     narrowing. This matches the resolution of a defect report in C++
+     itself.
+
+ - QStorageInfo:
+   * Improved discovery of device nodes on Linux if the /dev entry was
+     renamed after the filesystem was mounted and udev is in use.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QTextMarkdownImporter:
+   * Text in Markdown format is assumed to be UTF-8.
+   * The "title" in a Markdown hyperlink is now used as the tooltip,
+     not the anchor name.
+   * Fixed vulnerability oss-fuzz-20450 (invalid input resulted in an
+     attempt to insert items into a list that no longer exists).
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QLineEdit:
+   * the inputMask property has allowed any Letter or Number category
+     character for the respective mask characters, not just ASCII. The
+     documentation has been updated accordingly.
+
+****************************************************************************
+*                                  qmake                                   *
+****************************************************************************
+
+ - To remove the NDEBUG define that is added by default in MSVC mkspecs,
+   write DEFINES_RELEASE -= NDEBUG in your .pro file.
+ - Install/uninstall rules are now generated for target.targets on Windows.
+   This mirrors the behavior on Unix.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - md4c was updated to 0.4.3. This fixes vulnerability oss-fuzz-20580.
+
+ - QtSQL, sqlite:
+   * Updated to v3.31.1
+   * [QTBUG-82533] Fixed CVE-2020-9327
+
+****************************************************************************
+*                                  CMake                                   *
+****************************************************************************
+
+ - Windows:
+   * Fixed linking with Qt static build
+
+****************************************************************************
+*                                   MSVC                                   *
+****************************************************************************
+
+ - Fixed a compatibility issue found when linking code compiled with
+   version 16.6 to a Qt compiled with 16.5.
+
+****************************************************************************
+*                                   MinGW                                  *
+****************************************************************************
+
+ - Fixed build regressions.
+ - The -debug-and-release configuration has been fixed. In this
+   configuration, Qt libraries again have a 'd' suffix.
+ - In the -debug configuration, libraries do not have a 'd' suffix, similar
+   to Unix platforms.

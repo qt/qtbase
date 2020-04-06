@@ -123,6 +123,8 @@
 
         UAP3_CAPABILITIES += backgroundMediaPlayback remoteSystem userNotificationListener
 
+        IOT_CAPABILITIES += systemManagement
+
         # Capabilities are given as a string list and may change with the configuration (network, sensors, etc.)
         WINRT_MANIFEST.capabilities = $$unique(WINRT_MANIFEST.capabilities)
         WINRT_MANIFEST.capabilities_device = $$unique(WINRT_MANIFEST.capabilities_device)
@@ -133,6 +135,8 @@
                     MANIFEST_CAPABILITIES += "  <uap:Capability Name=\"$$CAPABILITY\" />"
                 else:contains(UAP3_CAPABILITIES, $$CAPABILITY): \
                     MANIFEST_CAPABILITIES += "  <uap3:Capability Name=\"$$CAPABILITY\" />"
+                else:contains(IOT_CAPABILITIES, $$CAPABILITY): \
+                    MANIFEST_CAPABILITIES += "  <iot:Capability Name=\"$$CAPABILITY\" />"
                 else: \
                     MANIFEST_CAPABILITIES += "  <Capability Name=\"$$CAPABILITY\" />"
             }

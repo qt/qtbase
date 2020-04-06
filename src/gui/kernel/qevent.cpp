@@ -2224,14 +2224,14 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
     (pressing the stylus tip against the tablet surface is equivalent to a left
     mouse button). But tablet events also pass through some extra information
     that the tablet device driver provides; for example, you might want to do
-    subpixel rendering with higher resolution coordinates (\l hiResGlobalX()
-    and \l hiResGlobalY()), adjust color brightness based on the \l pressure()
-    of the tool against the tablet surface, use different brushes depending on
-    the type of tool in use (\l device()), modulate the brush shape in some way
-    according to the X-axis and Y-axis tilt of the tool with respect to the
-    tablet surface (\l xTilt() and \l yTilt()), and use a virtual eraser
-    instead of a brush if the user switches to the other end of a double-ended
-    stylus (\l pointerType()).
+    subpixel rendering with higher resolution coordinates (\l globalPosF()),
+    adjust color brightness based on the \l pressure() of the tool against the
+    tablet surface, use different brushes depending on the type of tool in use
+    (\l deviceType()), modulate the brush shape in some way according to the
+    X-axis and Y-axis tilt of the tool with respect to the tablet surface
+    (\l xTilt() and \l yTilt()), and use a virtual eraser instead of a brush if
+    the user switches to the other end of a double-ended stylus
+    (\l pointerType()).
 
     Every event contains an accept flag that indicates whether the receiver
     wants the event. You should call QTabletEvent::accept() if you handle the
@@ -4572,19 +4572,12 @@ QPointF QTouchEvent::TouchPoint::lastNormalizedPos() const
     return d->lastNormalizedPos;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
-    Returns the rect for this touch point, relative to the widget
-    or QGraphicsItem that received the event. The rect is centered
-    around the point returned by pos().
-
-    \note This function returns an empty rect if the device does not report touch point sizes.
-
-    \obsolete This function is deprecated in 5.9 because it returns the outer bounds
+    \deprecated This function is deprecated since 5.9 because it returns the outer bounds
     of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
     modeled as an ellipse at position pos() with ellipseDiameters()
     which are independent of rotation().
-
-    \sa scenePos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::rect() const
 {
@@ -4594,16 +4587,10 @@ QRectF QTouchEvent::TouchPoint::rect() const
 }
 
 /*!
-    Returns the rect for this touch point in scene coordinates.
-
-    \note This function returns an empty rect if the device does not report touch point sizes.
-
-    \obsolete This function is deprecated in 5.9 because it returns the outer bounds
+    \deprecated This function is deprecated since 5.9 because it returns the outer bounds
     of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
     modeled as an ellipse at position scenePos() with ellipseDiameters()
     which are independent of rotation().
-
-    \sa scenePos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::sceneRect() const
 {
@@ -4613,16 +4600,10 @@ QRectF QTouchEvent::TouchPoint::sceneRect() const
 }
 
 /*!
-    Returns the rect for this touch point in screen coordinates.
-
-    \note This function returns an empty rect if the device does not report touch point sizes.
-
-    \obsolete This function is deprecated because it returns the outer bounds of the
+    \deprecated This function is deprecated since 5.9 because it returns the outer bounds of the
     touchpoint regardless of rotation, whereas a touchpoint is more correctly
     modeled as an ellipse at position screenPos() with ellipseDiameters()
     which are independent of rotation().
-
-    \sa screenPos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::screenRect() const
 {
@@ -4630,6 +4611,7 @@ QRectF QTouchEvent::TouchPoint::screenRect() const
     ret.moveCenter(d->screenPos);
     return ret;
 }
+#endif
 
 /*!
     Returns the pressure of this touch point. The return value is in
@@ -4828,6 +4810,7 @@ void QTouchEvent::TouchPoint::setLastNormalizedPos(const QPointF &lastNormalized
     d->lastNormalizedPos = lastNormalizedPos;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 // ### remove the following 3 setRect functions and their usages soon
 /*! \internal
     \obsolete
@@ -4861,6 +4844,7 @@ void QTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
     d->screenPos = screenRect.center();
     d->ellipseDiameters = screenRect.size();
 }
+#endif
 
 /*! \internal */
 void QTouchEvent::TouchPoint::setPressure(qreal pressure)

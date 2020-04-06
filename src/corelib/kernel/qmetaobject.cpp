@@ -3532,6 +3532,7 @@ bool QMetaProperty::isQProperty() const
 
     \sa isDesignable(), isScriptable(), isStored()
 */
+#if QT_DEPRECATED_SINCE(5, 15)
 bool QMetaProperty::isEditable(const QObject *object) const
 {
     if (!mobj)
@@ -3545,6 +3546,7 @@ bool QMetaProperty::isEditable(const QObject *object) const
     }
     return b;
 }
+#endif
 
 /*!
     \class QMetaClassInfo

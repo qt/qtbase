@@ -1483,7 +1483,7 @@ uint qHash(long double key, uint seed) noexcept
 
 /*! \fn template <class Key, class T> QList<Key> QHash<Key, T>::uniqueKeys() const
     \since 4.2
-    \obsolete
+    \obsolete Use QMultiHash for storing multiple values with the same key.
 
     Returns a list containing all the keys in the map. Keys that occur multiple
     times in the map (because items were inserted with insertMulti(), or
@@ -1529,8 +1529,8 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QList<T> QHash<Key, T>::values(const Key &key) const
-    \obsolete
     \overload
+    \obsolete Use QMultiHash for storing multiple values with the same key.
 
     Returns a list of all the values associated with the \a key,
     from the most recently inserted to the least recently inserted.
@@ -2095,6 +2095,7 @@ uint qHash(long double key, uint seed) noexcept
 
 /*!
     \fn template <class Key, class T> QHash<Key, T>::iterator &QHash<Key, T>::iterator::operator--()
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     The prefix -- operator (\c{--i}) makes the preceding item
     current and returns an iterator pointing to the new current item.
@@ -2107,6 +2108,7 @@ uint qHash(long double key, uint seed) noexcept
 
 /*!
     \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::iterator::operator--(int)
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     \overload
 
@@ -2116,6 +2118,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::iterator::operator+(int j) const
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. (If \a j is negative, the iterator goes backward.)
@@ -2127,6 +2130,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::iterator::operator-(int j) const
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. (If \a j is negative, the iterator goes forward.)
@@ -2137,6 +2141,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::iterator &QHash<Key, T>::iterator::operator+=(int j)
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     Advances the iterator by \a j items. (If \a j is negative, the
     iterator goes backward.)
@@ -2145,6 +2150,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::iterator &QHash<Key, T>::iterator::operator-=(int j)
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     Makes the iterator go back by \a j items. (If \a j is negative,
     the iterator goes forward.)
@@ -2288,6 +2294,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator &QHash<Key, T>::const_iterator::operator--()
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     The prefix -- operator (\c{--i}) makes the preceding item
     current and returns an iterator pointing to the new current item.
@@ -2299,6 +2306,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::const_iterator::operator--(int)
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     \overload
 
@@ -2308,6 +2316,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::const_iterator::operator+(int j) const
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     Returns an iterator to the item at \a j positions forward from
     this iterator. (If \a j is negative, the iterator goes backward.)
@@ -2318,6 +2327,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::const_iterator::operator-(int j) const
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     Returns an iterator to the item at \a j positions backward from
     this iterator. (If \a j is negative, the iterator goes forward.)
@@ -2328,6 +2338,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator &QHash<Key, T>::const_iterator::operator+=(int j)
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     Advances the iterator by \a j items. (If \a j is negative, the
     iterator goes backward.)
@@ -2338,6 +2349,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator &QHash<Key, T>::const_iterator::operator-=(int j)
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     Makes the iterator go back by \a j items. (If \a j is negative,
     the iterator goes forward.)
@@ -2432,6 +2444,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::key_iterator &QHash<Key, T>::key_iterator::operator--()
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     The prefix -- operator (\c{--i}) makes the preceding item
     current and returns an iterator pointing to the new current item.
@@ -2443,6 +2456,7 @@ uint qHash(long double key, uint seed) noexcept
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::key_iterator QHash<Key, T>::key_iterator::operator--(int)
+    \obsolete This operator is deprecated in order to align with std::unordered_map functionality.
 
     \overload
 

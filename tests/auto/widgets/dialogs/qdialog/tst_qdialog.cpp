@@ -607,7 +607,7 @@ void tst_QDialog::snapToDefaultButton()
                                + QPoint(100, 100), QSize(200, 200));
     const QPoint startingPos = dialogGeometry.bottomRight() + QPoint(100, 100);
     QCursor::setPos(startingPos);
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // On OS X we use CGEventPost to move the cursor, it needs at least
     // some time before the event handled and the position really set.
     QTest::qWait(100);

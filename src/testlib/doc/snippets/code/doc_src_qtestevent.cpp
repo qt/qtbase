@@ -48,14 +48,28 @@
 **
 ****************************************************************************/
 
+#include <QtTest/QtTest>
+#include <QLineEdit>
+
+// dummy
+class TestGui: public QObject
+{
+    Q_OBJECT
+public:
+    void testGui_data();
+};
+
+void TestGui::testGui_data()
+{
+QWidget *myParent = nullptr;
 //! [0]
 QTestEventList events;
 events.addKeyClick('a');
 events.addKeyClick(Qt::Key_Backspace);
 events.addDelay(200);
-
 QLineEdit *lineEdit = new QLineEdit(myParent);
-...
+// ...
 events.simulate(lineEdit);
 events.simulate(lineEdit);
 //! [0]
+}

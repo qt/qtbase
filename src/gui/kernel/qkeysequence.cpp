@@ -1286,7 +1286,7 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
 
     QString p = keyName(key, format);
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     if (nativeText)
         s += p;
     else

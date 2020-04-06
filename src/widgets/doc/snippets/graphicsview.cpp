@@ -123,5 +123,9 @@ void CustomItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 //! [6]
 QGraphicsView view(&scene);
-view.setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
+QOpenGLWidget *gl = new QOpenGLWidget();
+QSurfaceFormat format;
+format.setSamples(4);
+gl->setFormat(format);
+view.setViewport(gl);
 //! [6]

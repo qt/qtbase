@@ -184,7 +184,6 @@ static inline HWND createTrayIconMessageWindow()
     \brief Windows native system tray icon
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsSystemTrayIcon::QWindowsSystemTrayIcon()

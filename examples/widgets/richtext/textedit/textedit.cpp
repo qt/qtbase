@@ -96,7 +96,7 @@ const QString rsrcPath = ":/images/win";
 TextEdit::TextEdit(QWidget *parent)
     : QMainWindow(parent)
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
     setWindowTitle(QCoreApplication::applicationName());

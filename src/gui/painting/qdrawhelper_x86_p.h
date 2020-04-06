@@ -77,9 +77,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                                  int w, int h,
                                  int const_alpha);
 
-extern CompositionFunction qt_functionForMode_SSE2[];
-extern CompositionFunctionSolid qt_functionForModeSolid_SSE2[];
-
 void qt_memfill64_avx2(quint64 *dest, quint64 value, qsizetype count);
 void qt_memfill32_avx2(quint32 *dest, quint32 value, qsizetype count);
 #endif // __SSE2__

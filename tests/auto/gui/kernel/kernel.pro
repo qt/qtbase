@@ -28,7 +28,8 @@ SUBDIRS=\
    qguiapplication \
    qpixelformat \
    qopenglwindow \
-   qrasterwindow
+   qrasterwindow \
+   qaddpostroutine
 
 win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
 

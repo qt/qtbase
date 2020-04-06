@@ -47,7 +47,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlDriver>
+#include <QSqlError>
+#include <QSqlResult>
+#include <QDebug>
 
+// dummy typedef
+typedef void *sqlite3_stmt;
+
+void insertVariants()
+{
 //! [0]
 QSqlQuery q;
 q.prepare("insert into test (i1, i2, s) values (?, ?, ?)");
@@ -67,29 +78,21 @@ q.bindValue(2, col3);
 if (!q.execBatch())
     qDebug() << q.lastError();
 //! [0]
+}
 
-
+void querySqlite()
+{
 //! [1]
-QSqlQuery query = ...
+QSqlDatabase db = QSqlDatabase::database("sales");
+QSqlQuery query("SELECT NAME, DOB FROM EMPLOYEES", db);
+
 QVariant v = query.result()->handle();
 if (v.isValid() && qstrcmp(v.typeName(), "sqlite3_stmt*") == 0) {
     // v.data() returns a pointer to the handle
     sqlite3_stmt *handle = *static_cast<sqlite3_stmt **>(v.data());
     if (handle) {
-        ...
+        // ...
     }
 }
 //! [1]
-
-
-//! [2]
-if (qstrcmp(v.typeName(), "PGresult*") == 0) {
-    PGresult *handle = *static_cast<PGresult **>(v.data());
-    if (handle) ...
 }
-
-if (qstrcmp(v.typeName(), "MYSQL_STMT*") == 0) {
-    MYSQL_STMT *handle = *static_cast<MYSQL_STMT **>(v.data());
-    if (handle) ...
-}
-//! [2]

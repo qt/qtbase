@@ -868,7 +868,7 @@ void QNetworkReply::setRequest(const QNetworkRequest &request)
     Sets the error condition to be \a errorCode. The human-readable
     message is set with \a errorString.
 
-    Calling setError() does not emit the error(QNetworkReply::NetworkError)
+    Calling setError() does not emit the errorOccurred(QNetworkReply::NetworkError)
     signal.
 
     \sa error(), errorString()

@@ -478,6 +478,9 @@ void QHttpNetworkConnectionChannel::allDone()
             QHttp2ProtocolHandler *h2c = static_cast<QHttp2ProtocolHandler *>(protocolHandler.data());
             QMetaObject::invokeMethod(h2c, "_q_receiveReply", Qt::QueuedConnection);
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+            // If we only had one request sent with H2 allowed, we may fail to send
+            // a client preface and SETTINGS, which is required by RFC 7540, 3.2.
+            QMetaObject::invokeMethod(h2c, "ensureClientPrefaceSent", Qt::QueuedConnection);
             return;
         } else {
             // Ok, whatever happened, we do not try HTTP/2 anymore ...

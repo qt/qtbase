@@ -289,10 +289,10 @@ void tst_QClipboard::copyImage()
     image.fill(QColor(Qt::transparent));
     image.setPixel(QPoint(1, 0), QColor(Qt::blue).rgba());
     QGuiApplication::clipboard()->setImage(image);
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // The Pasteboard needs a moment to breathe (at least on older Macs).
     QTest::qWait(100);
-#endif // Q_OS_OSX
+#endif // Q_OS_MACOS
     // paster will perform hard-coded checks on the copied image.
     QByteArray errorMessage;
     QVERIFY2(runHelper(QStringLiteral("paster/paster"),

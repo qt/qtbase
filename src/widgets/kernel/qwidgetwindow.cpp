@@ -397,7 +397,7 @@ QPointer<QWidget> qt_last_mouse_receiver = nullptr;
 
 void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
 {
-#if !defined(Q_OS_OSX) && !defined(Q_OS_IOS) // Cocoa tracks popups
+#if !defined(Q_OS_MACOS) && !defined(Q_OS_IOS) // Cocoa tracks popups
     // Ignore all enter/leave events from QPA if we are not on the first-level context menu.
     // This prevents duplicated events on most platforms. Fake events will be delivered in
     // QWidgetWindow::handleMouseEvent(QMouseEvent *). Make an exception whether the widget
@@ -505,7 +505,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::ContextMenuOnMouseRelease).toBool() ?
         QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
     if (QApplicationPrivate::inPopupMode()) {
-        QWidget *activePopupWidget = QApplication::activePopupWidget();
+        QPointer<QWidget> activePopupWidget = QApplication::activePopupWidget();
         QPoint mapped = event->pos();
         if (activePopupWidget != m_widget)
             mapped = activePopupWidget->mapFromGlobal(event->globalPos());
@@ -544,7 +544,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             if (receiver != activePopupWidget)
                 widgetPos = receiver->mapFromGlobal(event->globalPos());
 
-#if !defined(Q_OS_OSX) && !defined(Q_OS_IOS) // Cocoa tracks popups
+#if !defined(Q_OS_MACOS) && !defined(Q_OS_IOS) // Cocoa tracks popups
             const bool reallyUnderMouse = activePopupWidget->rect().contains(mapped);
             const bool underMouse = activePopupWidget->underMouse();
             if (underMouse != reallyUnderMouse) {
@@ -565,9 +565,11 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 #endif
             if ((event->type() != QEvent::MouseButtonPress)
                     || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
-
+                // if the widget that was pressed is gone, then deliver move events without buttons
+                const auto buttons = event->type() == QEvent::MouseMove && qt_button_down == nullptr
+                                   ? Qt::NoButton : event->buttons();
                 QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(),
-                              event->button(), event->buttons(), event->modifiers(), event->source());
+                              event->button(), buttons, event->modifiers(), event->source());
                 e.setTimestamp(event->timestamp());
                 QApplicationPrivate::sendMouseEvent(receiver, &e, receiver, receiver->window(), &qt_button_down, qt_last_mouse_receiver);
                 qt_last_mouse_receiver = receiver;
@@ -764,7 +766,7 @@ void QWidgetWindow::repaintWindow()
         return;
 
     QTLWExtra *tlwExtra = m_widget->window()->d_func()->maybeTopData();
-    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
+    if (tlwExtra && tlwExtra->backingStore)
         tlwExtra->repaintManager->markDirty(m_widget->rect(), m_widget,
                                                  QWidgetRepaintManager::UpdateNow, QWidgetRepaintManager::BufferInvalid);
 }
@@ -813,16 +815,16 @@ void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 
 void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 {
-    QSize oldSize = m_widget->data->crect.size();
+    auto oldRect = m_widget->rect();
 
     if (updateSize()) {
         QGuiApplication::forwardEvent(m_widget, event);
 
         if (m_widget->d_func()->shouldPaintOnScreen()) {
-            QRegion updateRegion(geometry());
+            QRegion dirtyRegion = m_widget->rect();
             if (m_widget->testAttribute(Qt::WA_StaticContents))
-                updateRegion -= QRect(0, 0, oldSize.width(), oldSize.height());
-            m_widget->d_func()->syncBackingStore(updateRegion);
+                dirtyRegion -= oldRect;
+            m_widget->d_func()->syncBackingStore(dirtyRegion);
         } else {
             m_widget->d_func()->syncBackingStore();
         }

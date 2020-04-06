@@ -78,6 +78,7 @@ bool QLibraryPrivate::load_sys()
     //     fileName
     //
     // NB If it's a plugin we do not ever try the ".dll" extension
+    QMutexLocker locker(&mutex);
     QStringList attempts;
 
     if (pluginState != IsAPlugin)
@@ -95,6 +96,7 @@ bool QLibraryPrivate::load_sys()
         attempts.prepend(QDir::rootPath() + fileName);
 #endif
 
+    locker.unlock();
     Handle hnd = nullptr;
     for (const QString &attempt : qAsConst(attempts)) {
 #ifndef Q_OS_WINRT
@@ -115,6 +117,7 @@ bool QLibraryPrivate::load_sys()
 #ifndef Q_OS_WINRT
     SetErrorMode(oldmode);
 #endif
+    locker.relock();
     if (!hnd) {
         errorString = QLibrary::tr("Cannot load library %1: %2").arg(
                     QDir::toNativeSeparators(fileName), qt_error_string());

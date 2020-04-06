@@ -102,7 +102,7 @@ static QSet<QByteArray> keywords()
 #ifdef Q_OS_LINUX
             << "linux"
 #endif
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
             << "osx"
             << "macos"
 #endif

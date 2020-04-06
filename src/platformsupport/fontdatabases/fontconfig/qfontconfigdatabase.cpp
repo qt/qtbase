@@ -615,7 +615,7 @@ void QFontconfigDatabase::populateFontDatabase()
         ++f;
     }
 
-    //Lighthouse has very lazy population of the font db. We want it to be initialized when
+    //QPA has very lazy population of the font db. We want it to be initialized when
     //QApplication is constructed, so that the population procedure can do something like this to
     //set the default font
 //    const FcDefaultFont *s = defaults;

@@ -60,7 +60,6 @@ typedef struct {
 
     \sa QWindowsBackingStore
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 static inline HDC createDC()

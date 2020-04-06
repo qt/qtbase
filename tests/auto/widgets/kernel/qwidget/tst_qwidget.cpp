@@ -75,7 +75,7 @@
 #include <qtimer.h>
 #include <QtWidgets/QDoubleSpinBox>
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
 #include "tst_qwidget_mac_helpers.h"  // Abstract the ObjC stuff out so not everyone must run an ObjC++ compile.
 #endif
 
@@ -110,7 +110,7 @@ static HWND winHandleOf(const QWidget *w)
 #  define Q_CHECK_PAINTEVENTS
 #endif
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 #include <Security/AuthSession.h>
 bool macHasAccessToWindowsServer()
 {
@@ -216,7 +216,7 @@ private slots:
     void restoreVersion1Geometry();
 
     void widgetAt();
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     void setMask();
 #endif
     void optimizedResizeMove();
@@ -250,7 +250,7 @@ private slots:
     void update();
     void isOpaque();
 
-#ifndef Q_OS_OSX
+#ifndef Q_OS_MACOS
     void scroll();
     void scrollNativeChildren();
 #endif
@@ -381,7 +381,7 @@ private slots:
     void taskQTBUG_7532_tabOrderWithFocusProxy();
     void movedAndResizedAttributes();
     void childAt();
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     void taskQTBUG_11373();
 #endif
     void taskQTBUG_17333_ResizeInfiniteRecursion();
@@ -2301,7 +2301,7 @@ void tst_QWidget::activation()
 
 void tst_QWidget::windowState()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974");
 #endif
 
@@ -2514,7 +2514,7 @@ void tst_QWidget::showMaximized()
 
 void tst_QWidget::showFullScreen()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974");
 #endif
 
@@ -2834,14 +2834,14 @@ void tst_QWidget::showMinimizedKeepsFocus()
         window.showNormal();
         QApplication::setActiveWindow(&window);
         QVERIFY(QTest::qWaitForWindowActive(&window));
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
         if (!macHasAccessToWindowsServer())
             QEXPECT_FAIL("", "When not having WindowServer access, we lose focus.", Continue);
 #elif defined(Q_OS_WINRT)
         QEXPECT_FAIL("", "Winrt fails here - QTBUG-68297", Continue);
 #endif
         QTRY_COMPARE(window.focusWidget(), firstchild);
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
         if (!macHasAccessToWindowsServer())
             QEXPECT_FAIL("", "When not having WindowServer access, we lose focus.", Continue);
 #elif defined(Q_OS_WINRT)
@@ -2904,7 +2904,7 @@ void tst_QWidget::reparent()
 // Qt/Embedded does it differently.
 void tst_QWidget::icon()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974");
 #endif
 
@@ -2970,7 +2970,7 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
 
 void tst_QWidget::normalGeometry()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974");
 #endif
 
@@ -3230,7 +3230,7 @@ public:
 
 void tst_QWidget::lostUpdatesOnHide()
 {
-#ifndef Q_OS_OSX
+#ifndef Q_OS_MACOS
     UpdateWidget widget;
     widget.setAttribute(Qt::WA_DontShowOnScreen);
     widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -3271,7 +3271,7 @@ void tst_QWidget::raise()
     parentPtr->show();
     QVERIFY(QTest::qWaitForWindowExposed(parentPtr.data()));
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     if (child1->internalWinId()) {
         QSKIP("Cocoa has no Z-Order for views, we hack it, but it results in paint events.");
     }
@@ -3412,7 +3412,7 @@ void tst_QWidget::lower()
 
 void tst_QWidget::stackUnder()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974: Cocoa has no Z-Order for views, we hack it, but it results in paint events.");
 #endif
 
@@ -3445,7 +3445,7 @@ void tst_QWidget::stackUnder()
 
     for (UpdateWidget *child : qAsConst(allChildren)) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
-#if defined(Q_OS_WIN) || defined(Q_OS_OSX)
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
         if (expectedPaintEvents == 1 && child->numPaintEvents == 2)
             QEXPECT_FAIL(0, "Mac and Windows issues double repaints for Z-Order change", Continue);
 #endif
@@ -3479,7 +3479,7 @@ void tst_QWidget::stackUnder()
     for (UpdateWidget *child : qAsConst(allChildren)) {
         int expectedZOrderChangeEvents = child == child1 ? 1 : 0;
         if (child == child3) {
-#ifndef Q_OS_OSX
+#ifndef Q_OS_MACOS
             QEXPECT_FAIL(0, "See QTBUG-493", Continue);
 #endif
             QCOMPARE(child->numPaintEvents, 0);
@@ -3579,7 +3579,7 @@ void tst_QWidget::testContentsPropagation()
 
 void tst_QWidget::saveRestoreGeometry()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974");
 #endif
 
@@ -3817,7 +3817,7 @@ void tst_QWidget::restoreVersion1Geometry()
 
 void tst_QWidget::widgetAt()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974");
 #endif
 
@@ -4020,7 +4020,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     delete w;
 }
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 class MaskedPainter : public QWidget
 {
 public:
@@ -4887,7 +4887,7 @@ void tst_QWidget::update()
         QCOMPARE(sibling.numPaintEvents, 1);
         QCOMPARE(sibling.paintedRegion, sibling.visibleRegion());
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
         if (child.internalWinId()) // child is native
             QEXPECT_FAIL(0, "Cocoa compositor paints child and sibling", Continue);
 #endif
@@ -4904,7 +4904,7 @@ void tst_QWidget::update()
     }
 }
 
-#ifndef Q_OS_OSX
+#ifndef Q_OS_MACOS
 static inline bool isOpaque(QWidget *widget)
 {
     if (!widget)
@@ -4915,7 +4915,7 @@ static inline bool isOpaque(QWidget *widget)
 
 void tst_QWidget::isOpaque()
 {
-#ifndef Q_OS_OSX
+#ifndef Q_OS_MACOS
     QWidget w;
     QVERIFY(::isOpaque(&w));
 
@@ -4987,7 +4987,7 @@ void tst_QWidget::isOpaque()
 #endif
 }
 
-#ifndef Q_OS_OSX
+#ifndef Q_OS_MACOS
 /*
     Test that scrolling of a widget invalidates the correct regions
 */
@@ -5431,7 +5431,7 @@ void tst_QWidget::windowMoveResize()
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
             if (r.width() == 0 && r.height() > 0) {
                 widget.move(r.topLeft());
                 widget.resize(r.size());
@@ -5502,7 +5502,7 @@ void tst_QWidget::windowMoveResize()
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
             if (r.width() == 0 && r.height() > 0) {
                 widget.move(r.topLeft());
                 widget.resize(r.size());
@@ -5689,7 +5689,7 @@ void tst_QWidget::moveChild()
     QTRY_COMPARE(pos, child.pos());
 
     QTRY_COMPARE(parent.r, QRegion(oldGeometry) - child.geometry());
-#if !defined(Q_OS_OSX)
+#if !defined(Q_OS_MACOS)
     // should be scrolled in backingstore
     QCOMPARE(child.r, QRegion());
 #endif
@@ -5739,7 +5739,7 @@ void tst_QWidget::showAndMoveChild()
 
 void tst_QWidget::subtractOpaqueSiblings()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974: Cocoa only has rect granularity.");
 #endif
 
@@ -5816,7 +5816,7 @@ public slots:
 
 void tst_QWidget::multipleToplevelFocusCheck()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974");
 #endif
 
@@ -7584,7 +7584,7 @@ void tst_QWidget::render_systemClip()
     // rrrrrrrrrr
     // ...
 
-#ifndef Q_OS_OSX
+#ifndef Q_OS_MACOS
     for (int i = 0; i < image.height(); ++i) {
         for (int j = 0; j < image.width(); ++j) {
             if (i < 50 && j < i)
@@ -8618,11 +8618,11 @@ void tst_QWidget::sendUpdateRequestImmediately()
 
 void tst_QWidget::doubleRepaint()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974");
 #endif
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     if (!macHasAccessToWindowsServer())
         QSKIP("Not having window server access causes the wrong number of repaints to be issues");
 #endif
@@ -9330,7 +9330,7 @@ void tst_QWidget::setClearAndResizeMask()
     child.setMask(childMask);
     QTRY_COMPARE(child.mask(), childMask);
     // and ensure that the child widget doesn't get any update.
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QCOMPARE(child.numPaintEvents, 1);
@@ -9352,7 +9352,7 @@ void tst_QWidget::setClearAndResizeMask()
     // and ensure that that the child widget gets an update for the area outside the old mask.
     QTRY_COMPARE(child.numPaintEvents, 1);
     outsideOldMask = child.rect();
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (!child.internalWinId())
 #endif
@@ -9366,7 +9366,7 @@ void tst_QWidget::setClearAndResizeMask()
 
     // Mask child widget with a mask that is bigger than the rect
     child.setMask(QRegion(0, 0, 1000, 1000));
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QTRY_COMPARE(child.numPaintEvents, 1);
@@ -9379,7 +9379,7 @@ void tst_QWidget::setClearAndResizeMask()
     // ...and the same applies when clearing the mask.
     child.clearMask();
     QTest::qWait(100);
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QTRY_VERIFY(child.numPaintEvents > 0);
@@ -9409,7 +9409,7 @@ void tst_QWidget::setClearAndResizeMask()
 
     QTimer::singleShot(100, &resizeChild, SLOT(shrinkMask()));
     QTest::qWait(200);
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
@@ -9421,7 +9421,7 @@ void tst_QWidget::setClearAndResizeMask()
     const QRegion oldMask = resizeChild.mask();
     QTimer::singleShot(0, &resizeChild, SLOT(enlargeMask()));
     QTest::qWait(100);
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
@@ -10265,7 +10265,7 @@ void tst_QWidget::childAt()
     QCOMPARE(parent.childAt(120, 120), grandChild);
 }
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
 
 void tst_QWidget::taskQTBUG_11373()
 {
@@ -11121,7 +11121,7 @@ public:
 // when mousing over it.
 void tst_QWidget::taskQTBUG_27643_enterEvents()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     QSKIP("QTBUG-52974: this test can crash!");
 #endif
     // Move the mouse cursor to a safe location so it won't interfere
