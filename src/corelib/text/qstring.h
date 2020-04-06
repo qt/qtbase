@@ -718,15 +718,6 @@ public:
     { return fromUcs4(reinterpret_cast<const uint *>(str), size); }
 #endif
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static inline QString fromAscii(const char *str, int size = -1)
-    { return fromLatin1(str, size); }
-    QT_DEPRECATED static inline QString fromAscii(const QByteArray &str)
-    { return fromLatin1(str); }
-    Q_REQUIRED_RESULT QByteArray toAscii() const
-    { return toLatin1(); }
-#endif
-
     inline int toWCharArray(wchar_t *array) const;
     Q_REQUIRED_RESULT static inline QString fromWCharArray(const wchar_t *string, int size = -1);
 
@@ -1594,10 +1585,6 @@ public:
     inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
     inline const_reverse_iterator crend() const { return rend(); }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    Q_REQUIRED_RESULT QT_DEPRECATED QByteArray toAscii() const
-    { return toLatin1(); }
-#endif
     Q_REQUIRED_RESULT QByteArray toLatin1() const;
     Q_REQUIRED_RESULT QByteArray toUtf8() const;
     Q_REQUIRED_RESULT QByteArray toLocal8Bit() const;

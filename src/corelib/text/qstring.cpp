@@ -5170,19 +5170,6 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
     \sa fromLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
 
-/*!
-    \fn QByteArray QString::toAscii() const
-    \deprecated
-    Returns an 8-bit representation of the string as a QByteArray.
-
-    This function does the same as toLatin1().
-
-    Note that, despite the name, this function does not necessarily return an US-ASCII
-    (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
-
-    \sa fromAscii(), toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
-*/
-
 static QByteArray qt_convert_to_local_8bit(QStringView string);
 
 /*!
@@ -5411,29 +5398,6 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
 #endif // textcodec
     return fromLatin1(str, size);
 }
-
-/*! \fn QString QString::fromAscii(const char *, int size);
-    \deprecated
-
-    Returns a QString initialized with the first \a size characters
-    from the string \a str.
-
-    If \a size is -1 (default), it is taken to be strlen(\a
-    str).
-
-    This function does the same as fromLatin1().
-
-    \sa toAscii(), fromLatin1(), fromUtf8(), fromLocal8Bit()
-*/
-
-/*!
-    \fn QString QString::fromAscii(const QByteArray &str)
-    \deprecated
-    \overload
-    \since 5.0
-
-    Returns a QString initialized with the string \a str.
-*/
 
 /*! \fn QString QString::fromUtf8(const char *str, int size)
     Returns a QString initialized with the first \a size bytes
@@ -12238,21 +12202,6 @@ QByteArray QStringRef::toLatin1() const
 {
     return qt_convert_to_latin1(*this);
 }
-
-/*!
-    \fn QByteArray QStringRef::toAscii() const
-    \since 4.8
-    \deprecated
-
-    Returns an 8-bit representation of the string as a QByteArray.
-
-    This function does the same as toLatin1().
-
-    Note that, despite the name, this function does not necessarily return an US-ASCII
-    (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
-
-    \sa toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
-*/
 
 /*!
     \since 4.8

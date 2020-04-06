@@ -522,9 +522,6 @@ private slots:
     void stringRef_local8Bit_data();
     void stringRef_local8Bit();
     void fromLatin1();
-#if QT_DEPRECATED_SINCE(5, 0)
-    void fromAscii();
-#endif
     void fromUcs4();
     void toUcs4();
     void arg();
@@ -4611,32 +4608,6 @@ void tst_QString::fromLatin1()
     a = QString::fromLatin1("\0abcd", 5);
     QVERIFY(a.size() == 5);
 }
-
-#if QT_DEPRECATED_SINCE(5, 0)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-void tst_QString::fromAscii()
-{
-    QString a;
-    a = QString::fromAscii( 0 );
-    QVERIFY( a.isNull() );
-    QVERIFY( a.isEmpty() );
-    a = QString::fromAscii( "" );
-    QVERIFY( !a.isNull() );
-    QVERIFY( a.isEmpty() );
-
-    a = QString::fromAscii(0, 0);
-    QVERIFY(a.isNull());
-    a = QString::fromAscii(0, 5);
-    QVERIFY(a.isNull());
-    a = QString::fromAscii("\0abcd", 0);
-    QVERIFY(!a.isNull());
-    QVERIFY(a.isEmpty());
-    a = QString::fromAscii("\0abcd", 5);
-    QVERIFY(a.size() == 5);
-}
-QT_WARNING_POP
-#endif
 
 void tst_QString::fromUcs4()
 {
