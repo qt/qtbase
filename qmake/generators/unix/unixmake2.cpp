@@ -1560,7 +1560,7 @@ std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t,
             objectsLinkLine = "$(OBJECTS)";
         } else {
             QString ld_response_file = fileVar("OBJECTS_DIR");
-            ld_response_file += var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
+            ld_response_file += var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("QMAKE_TARGET");
             if (!var("BUILD_NAME").isEmpty())
                 ld_response_file += "." + var("BUILD_NAME");
             if (!var("MAKEFILE").isEmpty())
