@@ -778,13 +778,19 @@ function(qt_generate_global_module_pri_file)
     qt_correct_config(corrected_private_config "${private_config}")
     list(JOIN corrected_private_config " " private_config_joined)
 
-    file(GENERATE
-        OUTPUT "${qmodule_pri_target_path}"
-        CONTENT
-        "QT.global_private.enabled_features = ${corrected_enabled_features}
+    set(content "QT.global_private.enabled_features = ${corrected_enabled_features}
 QT.global_private.disabled_features = ${corrected_disabled_features}
 CONFIG += ${private_config_joined}
-"
+")
+    if(PKG_CONFIG_FOUND)
+        string(APPEND content "PKG_CONFIG_EXECUTABLE = ${PKG_CONFIG_EXECUTABLE}\n")
+    endif()
+
+    # TODO: Write QT_COORD_TYPE once we support setting it.
+
+    file(GENERATE
+        OUTPUT "${qmodule_pri_target_path}"
+        CONTENT "${content}"
     )
     qt_install(FILES "${qmodule_pri_target_path}" DESTINATION mkspecs)
 endfunction()
