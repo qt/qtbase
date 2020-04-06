@@ -115,8 +115,8 @@ struct QUtcData {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2019-10-24 from the
-    Common Locale Data Repository v36 supplemental/windowsZones.xml file $Revision$
+    This part of the file was generated on 2020-02-28 from the
+    Common Locale Data Repository v36 file supplemental/windowsZones.xml
 
     http://www.unicode.org/cldr/
 

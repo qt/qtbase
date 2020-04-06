@@ -47,20 +47,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QTest>
 
-//! [0]
+//dummy class
+class tst_Skip
+{
+ public:
+     void test_data();
+};
 
-if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-    QSKIP( "Test requires MySQL >= 5.0");
-//! [0]
-//! [1]
 void tst_Skip::test_data()
 {
+//! [1]
     QTest::addColumn<bool>("bool");
     QTest::newRow("local 1") << false;
     QTest::newRow("local 2") << true;
 
     QSKIP("skipping all");
-}
 //! [1]
-void tst_Skip::test_data()
+}

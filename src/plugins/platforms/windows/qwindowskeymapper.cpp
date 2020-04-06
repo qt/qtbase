@@ -88,7 +88,6 @@ QT_BEGIN_NAMESPACE
     \class QWindowsKeyMapper
     \brief Translates Windows keys to QWindowSystemInterface events.
     \internal
-    \ingroup qt-lighthouse-win
 
     In addition, handles some special keys to display system menus, etc.
     The code originates from \c qkeymapper_win.cpp.

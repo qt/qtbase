@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1208,7 +1208,7 @@ void tst_QComboBox::currentIndex()
         QVERIFY(testWidget->currentText().isEmpty());
 
         // spy on currentIndexChanged
-        QSignalSpy indexChangedSpy(testWidget, SIGNAL(currentIndexChanged(int, QString)));
+        QSignalSpy indexChangedInt(testWidget, SIGNAL(currentIndexChanged(int)));
 
         // stuff items into it
         foreach(QString text, initialItems) {
@@ -1232,12 +1232,12 @@ void tst_QComboBox::currentIndex()
         QCOMPARE(testWidget->currentText(), expectedCurrentText);
 
         // check that signal count is correct
-        QCOMPARE(indexChangedSpy.count(), expectedSignalCount);
+        QCOMPARE(indexChangedInt.count(), expectedSignalCount);
 
         // compare with last sent signal values
-        if (indexChangedSpy.count())
-            QCOMPARE(indexChangedSpy.at(indexChangedSpy.count() - 1).at(0).toInt(),
-                     testWidget->currentIndex());
+        if (indexChangedInt.count())
+            QCOMPARE(indexChangedInt.at(indexChangedInt.count() - 1).at(0).toInt(),
+                    testWidget->currentIndex());
 
         if (edit) {
             testWidget->setCurrentIndex(-1);
@@ -2336,8 +2336,7 @@ public:
     {
         QStringList list;
         list << "one" << "two";
-        connect(this, SIGNAL(currentIndexChanged(int, QString)),
-                this, SLOT(onCurrentIndexChanged(int)));
+        connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
         addItems(list);
     }
 public slots:

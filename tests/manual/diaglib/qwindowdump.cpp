@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -61,8 +61,8 @@ void formatObject(QTextStream &str, const QObject *o)
 
 void formatRect(QTextStream &str, const QRect &geom)
 {
-    str << geom.width() << 'x' << geom.height() << Qt::forcesign << geom.x() << geom.y()
-        << Qt::noforcesign;
+    str << geom.width() << 'x' << geom.height() << Qt::forcesign
+        << geom.x() << geom.y() << Qt::noforcesign;
 }
 
 #define debugType(s, type, typeConstant) \
@@ -163,7 +163,7 @@ static void dumpWindowRecursion(QTextStream &str, const QWindow *w,
 {
     indentStream(str, 2 * depth);
     formatWindow(str, w, options);
-    foreach (const QObject *co, w->children()) {
+    for (const QObject *co : w->children()) {
         if (co->isWindowType())
             dumpWindowRecursion(str, static_cast<const QWindow *>(co), options, depth + 1);
     }
@@ -174,7 +174,7 @@ void dumpAllWindows(FormatWindowOptions options)
     QString d;
     QTextStream str(&d);
     str << "### QWindows:\n";
-    foreach (QWindow *w, QGuiApplication::topLevelWindows())
+    for (QWindow *w : QGuiApplication::topLevelWindows())
         dumpWindowRecursion(str, w, options);
 #if QT_VERSION >= 0x050400
     qDebug().noquote() << d;

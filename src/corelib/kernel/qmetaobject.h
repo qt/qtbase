@@ -260,7 +260,9 @@ public:
     bool isDesignable(const QObject *obj = nullptr) const;
     bool isScriptable(const QObject *obj = nullptr) const;
     bool isStored(const QObject *obj = nullptr) const;
-    bool isEditable(const QObject *obj = nullptr) const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED bool isEditable(const QObject *obj = nullptr) const;
+#endif
     bool isUser(const QObject *obj = nullptr) const;
     bool isConstant() const;
     bool isFinal() const;

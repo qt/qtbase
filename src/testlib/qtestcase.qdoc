@@ -52,7 +52,7 @@
    For example, the following code shows this macro being used to verify that a
    \l QSignalSpy object is valid:
 
-   \snippet code/src_qtestlib_qtestcase.cpp 0
+   \snippet code/src_qtestlib_qtestcase_snippet.cpp 0
 
    For more information about the failure, use \c QCOMPARE(x, y) instead of
    \c QVERIFY(x == y), because it reports both the expected and actual value
@@ -136,7 +136,7 @@
    outputting into the test log.
 
    Example:
-   \snippet code/src_qtestlib_qtestcase.cpp 34
+   \snippet code/src_qtestlib_qtestcase_snippet.cpp 34
 
    The return from \c toString() must be a \c {new char []}. That is, it shall
    be released with \c delete[] (rather than \c free() or plain \c delete) once
@@ -306,14 +306,16 @@
 
    Assuming a test has the following data:
 
-   \snippet code/src_qtestlib_qtestcase.cpp 30
+   \snippet code/src_qtestlib_qtestcase_snippet.cpp 30
 
    The test's own data is a single number per row. In this case,
    \c initTestCase_data() also supplies a locale per row. Therefore,
    this test will be run with every combination of locale from the
-   latter and number from the former.
+   latter and number from the former. Thus, with four rows in the
+   global table and three in the local, the test function is run for
+   12 distinct test-cases (4 * 3 = 12).
 
-   \snippet code/src_qtestlib_qtestcase.cpp 31
+   \snippet code/src_qtestlib_qtestcase_snippet.cpp 31
 
    The locale is read from the global data table using QFETCH_GLOBAL(),
    and the number is read from the local data table using QFETCH().
@@ -492,7 +494,7 @@
    a warning is printed to the test log.
 
    For example, in this code:
-   \snippet code/src_qtestlib_qtestcase.cpp 26
+   \snippet code/src_qtestlib_qtestcase_snippet.cpp 26
 
    The testdata file will be resolved as the first existing file from:
 
@@ -656,7 +658,7 @@
     before clicking the key.
 
     Examples:
-    \snippet code/src_qtestlib_qtestcase.cpp 14
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 14
 
     The first example above simulates clicking the \c escape key on \c
     myWidget without any keyboard modifiers and without delay. The
@@ -674,7 +676,7 @@
     before clicking the key.
 
     Example:
-    \snippet code/src_qtestlib_qtestcase.cpp 13
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 13
 
     The example above simulates clicking \c a on \c myWidget without
     any keyboard modifiers and without delay of the test.
@@ -700,7 +702,7 @@
     before clicking the key.
 
     Examples:
-    \snippet code/src_qtestlib_qtestcase.cpp 29
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 29
 
     The first example above simulates clicking the \c escape key on \c
     myWindow without any keyboard modifiers and without delay. The
@@ -719,7 +721,7 @@
     before clicking the key.
 
     Example:
-    \snippet code/src_qtestlib_qtestcase.cpp 28
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 28
 
     The example above simulates clicking \c a on \c myWindow without
     any keyboard modifiers and without delay of the test.
@@ -865,7 +867,7 @@
     click.
 
     Example:
-    \snippet code/src_qtestlib_qtestcase.cpp 15
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 15
 
     The example above simulates clicking the sequence of keys
     representing "hello world" on \c myWidget without any keyboard
@@ -1040,12 +1042,12 @@
     \note The caller of toString() must delete the returned data
     using \c{delete[]}.  Your implementation should return a string
     created with \c{new[]} or qstrdup(). The easiest way to do so is to
-    create a QByteArray or QString and calling QTest::toString() on it
+    create a QByteArray or QString and call QTest::toString() on it
     (see second example below).
 
     Example for specializing (Qt ≤ 5.4):
 
-    \snippet code/src_qtestlib_qtestcase.cpp 16
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 16
 
     The example above defines a toString() specialization for a class
     called \c MyPoint. Whenever a comparison of two instances of \c
@@ -1054,7 +1056,7 @@
 
     Same example, but with overloading (Qt ≥ 5.5):
 
-    \snippet code/src_qtestlib_qtestcase.cpp toString-overload
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp toString-overload
 
     \sa QCOMPARE()
 */
@@ -1273,7 +1275,7 @@
     instance run out of scope to commit the sequence to the event system.
 
     Example:
-    \snippet code/src_qtestlib_qtestcase.cpp 25
+    \snippet code/src_qtestlib_qtestcase_snippet.cpp 25
 */
 
 /*!

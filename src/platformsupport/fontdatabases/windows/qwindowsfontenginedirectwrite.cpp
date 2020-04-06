@@ -219,7 +219,6 @@ static DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(QFont::HintingPref
     \class QWindowsFontEngineDirectWrite
     \brief Windows font engine using Direct Write.
     \internal
-    \ingroup qt-lighthouse-win
 
     Font engine for subpixel positioned text on Windows Vista
     (with platform update) and later. If selected during

@@ -2905,7 +2905,7 @@ QGraphicsSimpleTextItem *QGraphicsScene::addSimpleText(const QString &text, cons
 
     Note that widgets with the Qt::WA_PaintOnScreen widget attribute
     set and widgets that wrap an external application or controller
-    are not supported. Examples are QGLWidget and QAxWidget.
+    are not supported. Examples are QOpenGLWidget and QAxWidget.
 
     \sa addEllipse(), addLine(), addPixmap(), addPixmap(), addRect(),
     addText(), addSimpleText(), addItem()

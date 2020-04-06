@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -137,7 +137,7 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
         str << '\n';
     }
 #endif // Qt 5
-    foreach (const QObject *co, w->children()) {
+    for (const QObject *co : w->children()) {
         if (co->isWidgetType())
             dumpWidgetRecursion(str, static_cast<const QWidget *>(co), options, depth + 1);
     }
@@ -153,11 +153,11 @@ void dumpAllWidgets(FormatWindowOptions options, const QWidget *root)
         topLevels.append(const_cast<QWidget *>(root));
     else
         topLevels = QApplication::topLevelWidgets();
-    foreach (QWidget *tw, topLevels)
+    for (QWidget *tw : qAsConst(topLevels))
         dumpWidgetRecursion(str, tw, options);
 #if QT_VERSION >= 0x050400
     {
-        foreach (const QString &line, d.split(QLatin1Char('\n')))
+        for (const QString &line : d.split(QLatin1Char('\n')))
             qDebug().noquote() << line;
     }
 #else

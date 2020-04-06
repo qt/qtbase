@@ -68,7 +68,7 @@
 #include <signal.h>    // kill
 #include <unistd.h>    // gethostname
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
 #   include <libproc.h>
 #elif defined(Q_OS_LINUX)
 #   include <unistd.h>
@@ -222,7 +222,7 @@ bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
 
 QString QLockFilePrivate::processNameByPid(qint64 pid)
 {
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     char name[1024];
     proc_name(pid, name, sizeof(name) / sizeof(char));
     return QFile::decodeName(name);

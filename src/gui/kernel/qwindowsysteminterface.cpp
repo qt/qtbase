@@ -498,7 +498,7 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *window, QEvent::Type 
 
 QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *window, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     if (t == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(window, timestamp, k, mods, 0, 0, 0, text, autorep, count))
         return true;
 #endif
@@ -526,7 +526,7 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *window, ulong times
                                                     const QString& text, bool autorep,
                                                     ushort count, bool tryShortcutOverride)
 {
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(window,
             timestamp, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count)) {
         return true;

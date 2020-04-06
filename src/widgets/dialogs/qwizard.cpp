@@ -2377,10 +2377,10 @@ bool QWizard::hasVisitedPage(int theid) const
 }
 
 /*!
+    \since 5.15
+
     Returns the list of IDs of visited pages, in the order in which the pages
     were visited.
-
-    Pressing \uicontrol Back marks the current page as "unvisited" again.
 
     \sa hasVisitedPage()
 */

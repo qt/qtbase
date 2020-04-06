@@ -92,3 +92,41 @@ repeat_block draw_lines
 setPen 0xffff0000 0 dashline squarecap
 translate 100 0
 repeat_block draw_lines
+
+path_moveTo mypath 10 10
+path_lineTo mypath 87 10
+path_moveTo mypath 10 30
+path_lineTo mypath 87 30
+path_moveTo mypath 10 50
+path_lineTo mypath 87 50
+
+resetMatrix
+translate 0 150
+
+begin_block distinctLines
+
+setPen black 0 SolidLine SquareCap
+pen_setDashPattern [ 3 3 ]
+drawPath mypath
+
+translate 100 0
+setPen black 5 SolidLine SquareCap
+pen_setDashPattern [ 3 3 ]
+drawPath mypath
+
+translate 100 0
+setPen black 0 SolidLine RoundCap
+pen_setDashPattern [ 3 3 ]
+drawPath mypath
+
+translate 100 0
+setPen black 5 SolidLine RoundCap
+pen_setDashPattern [ 3 3 ]
+drawPath mypath
+
+end_block distinctLines
+
+resetMatrix
+translate 0 220
+setRenderHint Antialiasing true
+repeat_block distinctLines

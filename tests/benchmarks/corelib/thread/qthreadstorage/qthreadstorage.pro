@@ -1,5 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_qthreadstorage
-
-SOURCES += tst_qthreadstorage.cpp
+CONFIG += benchmark
 QT = core testlib
+
+TARGET = tst_bench_qthreadstorage
+SOURCES += tst_qthreadstorage.cpp

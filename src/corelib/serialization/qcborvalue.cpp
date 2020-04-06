@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -53,6 +53,7 @@
 
 #include <qendian.h>
 #include <qlocale.h>
+#include <private/qbytearray_p.h>
 #include <private/qnumeric_p.h>
 #include <private/qsimd_p.h>
 
@@ -844,11 +845,6 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
     return QCborValue::Tag;
 }
 
-#if QT_CONFIG(cborstreamreader)
-// in qcborstream.cpp
-extern void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error);
-#endif
-
 #if QT_CONFIG(cborstreamwriter)
 static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::EncodingOptions opt)
 {
@@ -1462,23 +1458,59 @@ static Element decodeBasicValueFromCbor(QCborStreamReader &reader)
     return e;
 }
 
-static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &reader)
+static inline QCborContainerPrivate *createContainerFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
 {
-    auto d = new QCborContainerPrivate;
-    d->ref.storeRelaxed(1);
-    d->decodeFromCbor(reader);
+    if (Q_UNLIKELY(remainingRecursionDepth == 0)) {
+        QCborContainerPrivate::setErrorInReader(reader, { QCborError::NestingTooDeep });
+        return nullptr;
+    }
+
+    QCborContainerPrivate *d = nullptr;
+    int mapShift = reader.isMap() ? 1 : 0;
+    if (reader.isLengthKnown()) {
+        quint64 len = reader.length();
+
+        // Clamp allocation to 1M elements (avoids crashing due to corrupt
+        // stream or loss of precision when converting from quint64 to
+        // QVector::size_type).
+        len = qMin(len, quint64(1024 * 1024 - 1));
+        if (len) {
+            d = new QCborContainerPrivate;
+            d->ref.storeRelaxed(1);
+            d->elements.reserve(qsizetype(len) << mapShift);
+        }
+    } else {
+        d = new QCborContainerPrivate;
+        d->ref.storeRelaxed(1);
+    }
+
+    reader.enterContainer();
+    if (reader.lastError() != QCborError::NoError)
+        return d;
+
+    while (reader.hasNext() && reader.lastError() == QCborError::NoError)
+        d->decodeValueFromCbor(reader, remainingRecursionDepth - 1);
+
+    if (reader.lastError() == QCborError::NoError)
+        reader.leaveContainer();
+
     return d;
 }
 
-static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
+static QCborValue taggedValueFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
 {
+    if (Q_UNLIKELY(remainingRecursionDepth == 0)) {
+        QCborContainerPrivate::setErrorInReader(reader, { QCborError::NestingTooDeep });
+        return QCborValue::Invalid;
+    }
+
     auto d = new QCborContainerPrivate;
     d->append(reader.toTag());
     reader.next();
 
     if (reader.lastError() == QCborError::NoError) {
         // decode tagged value
-        d->decodeValueFromCbor(reader);
+        d->decodeValueFromCbor(reader, remainingRecursionDepth - 1);
     }
 
     QCborValue::Type type;
@@ -1492,6 +1524,13 @@ static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
 
     // note: may return invalid state!
     return QCborContainerPrivate::makeValue(type, -1, d);
+}
+
+// in qcborstream.cpp
+extern void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error);
+inline void QCborContainerPrivate::setErrorInReader(QCborStreamReader &reader, QCborError error)
+{
+    qt_cbor_stream_set_error(reader.d.data(), error);
 }
 
 void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
@@ -1514,6 +1553,8 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
 
         // and calculate the final size
         if (add_overflow(offset, increment, &newSize))
+            return -1;
+        if (newSize > MaxByteArraySize)
             return -1;
 
         // since usedData <= data.size(), this can't overflow
@@ -1538,7 +1579,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         return;                     // error
     if (len != rawlen) {
         // truncation
-        qt_cbor_stream_set_error(reader.d.data(), { QCborError::DataTooLarge });
+        setErrorInReader(reader, { QCborError::DataTooLarge });
         return;
     }
 
@@ -1548,7 +1589,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         e.value = addByteData_local(len);
         if (e.value < 0) {
             // overflow
-            qt_cbor_stream_set_error(reader.d.data(), { QCborError::DataTooLarge });
+            setErrorInReader(reader, { QCborError::DataTooLarge });
             return;
         }
     }
@@ -1562,7 +1603,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
             auto utf8result = QUtf8::isValidUtf8(dataPtr() + data.size() - len, len);
             if (!utf8result.isValidUtf8) {
                 r.status = QCborStreamReader::Error;
-                qt_cbor_stream_set_error(reader.d.data(), { QCborError::InvalidUtf8String });
+                setErrorInReader(reader, { QCborError::InvalidUtf8String });
                 break;
             }
             isAscii = isAscii && utf8result.isValidAscii;
@@ -1586,14 +1627,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
 
         // error
         r.status = QCborStreamReader::Error;
-        qt_cbor_stream_set_error(reader.d.data(), { QCborError::DataTooLarge });
-    }
-
-    if (r.status == QCborStreamReader::Error) {
-        // There can only be errors if there was data to be read.
-        Q_ASSERT(e.flags & Element::HasByteData);
-        data.truncate(e.value);
-        return;
+        setErrorInReader(reader, { QCborError::DataTooLarge });
     }
 
     // update size
@@ -1607,14 +1641,30 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
             Q_ASSERT(e.type == QCborValue::String);
             e.flags |= Element::StringIsAscii;
         }
+
+        // check that this UTF-8 text string can be loaded onto a QString
+        if (e.type == QCborValue::String) {
+            if (Q_UNLIKELY(b->len > MaxStringSize)) {
+                setErrorInReader(reader, { QCborError::DataTooLarge });
+                r.status = QCborStreamReader::Error;
+            }
+        }
+    }
+
+    if (r.status == QCborStreamReader::Error) {
+        // There can only be errors if there was data to be read.
+        Q_ASSERT(e.flags & Element::HasByteData);
+        data.truncate(e.value);
+        return;
     }
 
     elements.append(e);
 }
 
-void QCborContainerPrivate::decodeValueFromCbor(QCborStreamReader &reader)
+void QCborContainerPrivate::decodeValueFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
 {
-    switch (reader.type()) {
+    QCborStreamReader::Type t = reader.type();
+    switch (t) {
     case QCborStreamReader::UnsignedInteger:
     case QCborStreamReader::NegativeInteger:
     case QCborStreamReader::SimpleType:
@@ -1631,36 +1681,16 @@ void QCborContainerPrivate::decodeValueFromCbor(QCborStreamReader &reader)
 
     case QCborStreamReader::Array:
     case QCborStreamReader::Map:
+        return append(makeValue(t == QCborStreamReader::Array ? QCborValue::Array : QCborValue::Map, -1,
+                                createContainerFromCbor(reader, remainingRecursionDepth),
+                                MoveContainer));
+
     case QCborStreamReader::Tag:
-        return append(QCborValue::fromCbor(reader));
+        return append(taggedValueFromCbor(reader, remainingRecursionDepth));
 
     case QCborStreamReader::Invalid:
         return;                 // probably a decode error
     }
-}
-
-void QCborContainerPrivate::decodeFromCbor(QCborStreamReader &reader)
-{
-    int mapShift = reader.isMap() ? 1 : 0;
-    if (reader.isLengthKnown()) {
-        quint64 len = reader.length();
-
-        // Clamp allocation to 1M elements (avoids crashing due to corrupt
-        // stream or loss of precision when converting from quint64 to
-        // QVector::size_type).
-        len = qMin(len, quint64(1024 * 1024 - 1));
-        elements.reserve(qsizetype(len) << mapShift);
-    }
-
-    reader.enterContainer();
-    if (reader.lastError() != QCborError::NoError)
-        return;
-
-    while (reader.hasNext() && reader.lastError() == QCborError::NoError)
-        decodeValueFromCbor(reader);
-
-    if (reader.lastError() == QCborError::NoError)
-        reader.leaveContainer();
 }
 #endif // QT_CONFIG(cborstreamreader)
 
@@ -2363,6 +2393,8 @@ QCborValueRef QCborValue::operator[](qint64 key)
 }
 
 #if QT_CONFIG(cborstreamreader)
+enum { MaximumRecursionDepth = 1024 };
+
 /*!
     Decodes one item from the CBOR stream found in \a reader and returns the
     equivalent representation. This function is recursive: if the item is a map
@@ -2423,12 +2455,12 @@ QCborValue QCborValue::fromCbor(QCborStreamReader &reader)
     case QCborStreamReader::Map:
         result.n = -1;
         result.t = reader.isArray() ? Array : Map;
-        result.container = createContainerFromCbor(reader);
+        result.container = createContainerFromCbor(reader, MaximumRecursionDepth);
         break;
 
     // tag
     case QCborStreamReader::Tag:
-        result = taggedValueFromCbor(reader);
+        result = taggedValueFromCbor(reader, MaximumRecursionDepth);
         break;
     }
 

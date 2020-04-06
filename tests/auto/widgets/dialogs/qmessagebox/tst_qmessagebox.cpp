@@ -51,7 +51,7 @@ private slots:
     void about();
     void detailsText();
     void detailsButtonText();
-    void expandDetails_QTBUG_32473();
+    void expandDetailsWithoutMoving();
 
 #ifndef Q_OS_MAC
     void shortcut();
@@ -499,7 +499,7 @@ void tst_QMessageBox::detailsButtonText()
     }
 }
 
-void tst_QMessageBox::expandDetails_QTBUG_32473()
+void tst_QMessageBox::expandDetailsWithoutMoving() // QTBUG-32473
 {
     tst_ResizingMessageBox box;
     box.setDetailedText("bla");
@@ -516,18 +516,14 @@ void tst_QMessageBox::expandDetails_QTBUG_32473()
     auto moreButton = *it;
 
     QVERIFY(QTest::qWaitForWindowExposed(&box));
+    QTRY_VERIFY2(!box.geometry().topLeft().isNull(), "window manager is expected to decorate and position the dialog");
     QRect geom = box.geometry();
     box.resized = false;
+    // now click the "more" button, and verify that the dialog resizes but does not move
     moreButton->click();
     QTRY_VERIFY(box.resized);
-    // After we receive the expose event for a second widget, it's likely
-    // that the window manager is also done manipulating the first QMessageBox.
-    QWidget fleece;
-    fleece.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&fleece));
-    if (geom.topLeft() == box.geometry().topLeft())
-        QTest::qWait(500);
-    QCOMPARE(geom.topLeft(), box.geometry().topLeft());
+    QVERIFY(box.geometry().height() > geom.height());
+    QCOMPARE(box.geometry().topLeft(), geom.topLeft());
 }
 
 void tst_QMessageBox::incorrectDefaultButton()

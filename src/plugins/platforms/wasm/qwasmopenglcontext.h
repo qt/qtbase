@@ -51,6 +51,7 @@ public:
     QFunctionPointer getProcAddress(const char *procName) override;
 
 private:
+    static bool isOpenGLVersionSupported(QSurfaceFormat format);
     bool maybeCreateEmscriptenContext(QPlatformSurface *surface);
     static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE createEmscriptenContext(const QString &canvasId, QSurfaceFormat format);
 

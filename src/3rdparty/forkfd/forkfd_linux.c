@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,10 @@
 #ifndef P_PIDFD
 #  define P_PIDFD       3
 #endif
+
+// in forkfd.c
+static int convertForkfdWaitFlagsToWaitFlags(int ffdoptions);
+static void convertStatusToForkfdInfo(int status, struct forkfd_info *info);
 
 static ffd_atomic_int system_forkfd_state = FFD_ATOMIC_INIT(0);
 
@@ -143,7 +147,10 @@ int system_forkfd(int flags, pid_t *ppid, int *system)
     }
 
     *system = 1;
-    pid = sys_clone(CLONE_PIDFD, &pidfd);
+    unsigned long cloneflags = CLONE_PIDFD;
+    if (flags & FFD_VFORK_SEMANTICS)
+        cloneflags |= CLONE_VFORK;
+    pid = sys_clone(cloneflags, &pidfd);
     if (ppid)
         *ppid = pid;
 
@@ -162,15 +169,20 @@ int system_forkfd(int flags, pid_t *ppid, int *system)
     return pidfd;
 }
 
-int system_forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
+int system_forkfd_wait(int ffd, struct forkfd_info *info, int ffdoptions, struct rusage *rusage)
 {
     siginfo_t si;
-    int options = WEXITED | __WALL;
-    int ret = fcntl(ffd, F_GETFL);
-    if (ret == -1)
-        return ret;
-    if (ret & O_NONBLOCK)
-        options |= WNOHANG;
+    int ret;
+    int options = __WALL | convertForkfdWaitFlagsToWaitFlags(ffdoptions);
+
+    if ((options & WNOHANG) == 0) {
+        /* check if the file descriptor is non-blocking */
+        ret = fcntl(ffd, F_GETFL);
+        if (ret == -1)
+            return ret;
+        if (ret & O_NONBLOCK)
+            options |= WNOHANG;
+    }
 
     ret = sys_waitid(P_PIDFD, ffd, &si, options, rusage);
     if (ret == -1 && errno == ECHILD) {

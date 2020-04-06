@@ -450,7 +450,6 @@ QDebug operator<<(QDebug d, IDataObject *dataObj)
     \class QWindowsMime
     \brief The QWindowsMime class maps open-standard MIME to Window Clipboard formats.
     \internal
-    \ingroup qt-lighthouse-win
 
     Qt's drag-and-drop and clipboard facilities use the MIME standard.
     On X11, this maps trivially to the Xdnd protocol, but on Windows
@@ -1498,7 +1497,6 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
     \class QWindowsMimeConverter
     \brief Manages the list of QWindowsMime instances.
     \internal
-    \ingroup qt-lighthouse-win
     \sa QWindowsMime
 */
 

@@ -295,7 +295,7 @@ QString OsTypeTerm::hostOs()
     return  QStringLiteral("win");
 #elif defined(Q_OS_LINUX)
     return QStringLiteral("linux");
-#elif defined(Q_OS_OSX)
+#elif defined(Q_OS_MACOS)
     return  QStringLiteral("macosx");
 #elif defined(Q_OS_ANDROID)
     return  QStringLiteral("android");

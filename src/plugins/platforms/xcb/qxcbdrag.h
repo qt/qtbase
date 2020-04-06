@@ -68,7 +68,7 @@ class QXcbScreen;
 class QDrag;
 class QShapedPixmapWindow;
 
-class QXcbDrag : public QXcbObject, public QBasicDrag
+class QXcbDrag : public QXcbObject, public QBasicDrag, public QXcbWindowEventListener
 {
 public:
     QXcbDrag(QXcbConnection *c);
@@ -81,6 +81,10 @@ public:
     void move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) override;
     void drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) override;
     void endDrag() override;
+
+    Qt::DropAction defaultAction(Qt::DropActions possibleActions, Qt::KeyboardModifiers modifiers) const override;
+
+    void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) override;
 
     void handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event, xcb_window_t proxy = 0);
     void handlePosition(QPlatformWindow *w, const xcb_client_message_event_t *event);
@@ -114,7 +118,13 @@ private:
     void send_leave();
 
     Qt::DropAction toDropAction(xcb_atom_t atom) const;
+    Qt::DropActions toDropActions(const QVector<xcb_atom_t> &atoms) const;
     xcb_atom_t toXdndAction(Qt::DropAction a) const;
+
+    void readActionList();
+    void setActionList(Qt::DropAction requestedAction, Qt::DropActions supportedActions);
+    void startListeningForActionListChanges();
+    void stopListeningForActionListChanges();
 
     QPointer<QWindow> initiatorWindow;
     QPointer<QWindow> currentWindow;
@@ -158,6 +168,9 @@ private:
     int cleanup_timer;
 
     QVector<xcb_atom_t> drag_types;
+
+    QVector<xcb_atom_t> current_actions;
+    QVector<xcb_atom_t> drop_actions;
 
     struct Transaction
     {

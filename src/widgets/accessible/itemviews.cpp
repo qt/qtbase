@@ -1035,10 +1035,14 @@ QAccessible::State QAccessibleTableCell::state() const
         st.selected = true;
     if (view->selectionModel()->currentIndex() == m_index)
         st.focused = true;
-    if (m_index.model()->data(m_index, Qt::CheckStateRole).toInt() == Qt::Checked)
+
+    QVariant checkState = m_index.model()->data(m_index, Qt::CheckStateRole);
+    if (checkState.toInt() == Qt::Checked)
         st.checked = true;
 
     Qt::ItemFlags flags = m_index.flags();
+    if ((flags & Qt::ItemIsUserCheckable) && checkState.isValid())
+        st.checkable = true;
     if (flags & Qt::ItemIsSelectable) {
         st.selectable = true;
         st.focusable = true;

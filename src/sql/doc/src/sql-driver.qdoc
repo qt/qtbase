@@ -457,7 +457,7 @@
     SQL result must get a new handle after each call to any of QSqlResult
     fetch functions. Example:
 
-    \snippet code/doc_src_sql-driver.cpp 36
+    \snippet code/doc_src_sql-driver_snippet.cpp 36
 
     While reading the results of a forward-only query with PostgreSQL,
     the database connection cannot be used to execute other queries.

@@ -47,10 +47,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlQueryModel>
+#include <QSqlError>
+#include <QDebug>
 
+void checkSqlQueryModel()
+{
 //! [0]
 QSqlQueryModel model;
 model.setQuery("select * from myTable");
 if (model.lastError().isValid())
     qDebug() << model.lastError();
 //! [0]
+}

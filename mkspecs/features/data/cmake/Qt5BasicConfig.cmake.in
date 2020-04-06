@@ -1,4 +1,3 @@
-
 if (CMAKE_VERSION VERSION_LESS 3.1.0)
     message(FATAL_ERROR \"Qt 5 $${CMAKE_MODULE_NAME} module requires at least CMake version 3.1.0\")
 endif()
@@ -406,8 +405,12 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 !!ENDIF
     endif()
 
+!!IF equals(TEMPLATE, aux)
+    add_library(Qt5::$${CMAKE_MODULE_NAME} INTERFACE IMPORTED)
+!!ELSE
     add_library(Qt5::$${CMAKE_MODULE_NAME} STATIC IMPORTED)
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
+!!ENDIF
 !!ELSE
 !!IF equals(TEMPLATE, aux)
     add_library(Qt5::$${CMAKE_MODULE_NAME} INTERFACE IMPORTED)
@@ -566,8 +569,13 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 !!ENDIF // TEMPLATE != aux
 
 !!IF isEmpty(CMAKE_INTERNAL_MODULE)
-
-    file(GLOB pluginTargets \"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}_*Plugin.cmake\")
+    # In Qt 5.15 the glob pattern was relaxed to also catch plugins not literally named "Plugin".
+    # Define QT5_STRICT_PLUGIN_GLOB or ModuleName_STRICT_PLUGIN_GLOB to revert to old behavior.
+    if (QT5_STRICT_PLUGIN_GLOB OR Qt5$${CMAKE_MODULE_NAME}_STRICT_PLUGIN_GLOB)
+        file(GLOB pluginTargets \"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}_*Plugin.cmake\")
+    else()
+        file(GLOB pluginTargets \"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}_*.cmake\")
+    endif()
 
     macro(_populate_$${CMAKE_MODULE_NAME}_plugin_properties Plugin Configuration PLUGIN_LOCATION
           IsDebugAndRelease)
@@ -628,9 +636,7 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
             include(${pluginTarget})
         endforeach()
     endif()
-
 !!ENDIF // isEmpty(CMAKE_INTERNAL_MODULE)
-
 
 !!IF !isEmpty(CMAKE_MODULE_EXTRAS)
     include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}ConfigExtras.cmake\")
@@ -640,6 +646,5 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
     include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}Macros.cmake\")
 !!ENDIF
 
-_qt5_$${CMAKE_MODULE_NAME}_check_file_exists(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}ConfigVersion.cmake\")
-
+    _qt5_$${CMAKE_MODULE_NAME}_check_file_exists(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}ConfigVersion.cmake\")
 endif()

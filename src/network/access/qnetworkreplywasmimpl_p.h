@@ -61,8 +61,7 @@
 #include <private/qabstractfileengine_p.h>
 
 #include <emscripten.h>
-#include <emscripten/html5.h>
-#include <emscripten/val.h>
+#include <emscripten/fetch.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -135,10 +134,17 @@ public:
     QIODevice *outgoingData;
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
 
-     emscripten::val m_xhr = emscripten::val::null();
-     void doAbort() const;
+    void doAbort() const;
+
+    static void downloadProgress(emscripten_fetch_t *fetch);
+    static void downloadFailed(emscripten_fetch_t *fetch);
+    static void downloadSucceeded(emscripten_fetch_t *fetch);
+    static void stateChange(emscripten_fetch_t *fetch);
 
     static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const QUrl &url);
+
+    emscripten_fetch_t *m_fetch;
+
     Q_DECLARE_PUBLIC(QNetworkReplyWasmImpl)
 };
 

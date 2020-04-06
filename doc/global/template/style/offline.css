@@ -297,9 +297,12 @@ table.buildversion {
 
 #buildversion {
     font-style: italic;
-    font-size: small;
     float: right;
     margin-right: 5px;
+}
+
+#buildversion a {
+    background: none;
 }
 
 /*

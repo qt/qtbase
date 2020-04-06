@@ -134,6 +134,7 @@ QT_BEGIN_NAMESPACE
         return __VA_ARGS__; \
     }
 
+Q_CORE_EXPORT void qt_call_post_routines();
 Q_GUI_EXPORT bool qt_is_gui_used = true;
 
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
@@ -684,6 +685,8 @@ QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
 QGuiApplication::~QGuiApplication()
 {
     Q_D(QGuiApplication);
+
+    qt_call_post_routines();
 
     d->eventDispatcher->closingDown();
     d->eventDispatcher = nullptr;
@@ -2328,7 +2331,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     static bool menuKeyPressAccepted = false;
 #endif
 
-#if !defined(Q_OS_OSX)
+#if !defined(Q_OS_MACOS)
     // FIXME: Include OS X in this code path by passing the key event through
     // QPlatformInputContext::filterEvent().
     if (e->keyType == QEvent::KeyPress && window) {

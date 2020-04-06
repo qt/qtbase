@@ -374,7 +374,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 */
 
 /*!
-    \enum QLineF::IntersectType
+    \enum QLineF::IntersectionType
 
     Describes the intersection between two lines.
 

@@ -4482,9 +4482,8 @@ static void blend_color_generic(int count, const QSpan *spans, void *userData)
     uint buffer[BufferSize];
     Operator op = getOperator(data, nullptr, 0);
     const uint color = data->solidColor.toArgb32();
-    bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
-                  || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && qAlpha(color) == 255);
-    QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
+    const bool solidFill = op.mode == QPainter::CompositionMode_Source;
+    const QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
     while (count--) {
         int x = spans->x;
@@ -4522,6 +4521,10 @@ static void blend_color_argb(int count, const QSpan *spans, void *userData)
             uint *target = ((uint *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
             if (spans->coverage == 255) {
                 qt_memfill(target, color, spans->len);
+#ifdef __SSE2__
+            } else if (spans->len > 16) {
+                op.funcSolid(target, spans->len, color, spans->coverage);
+#endif
             } else {
                 uint c = BYTE_MUL(color, spans->coverage);
                 int ialpha = 255 - spans->coverage;
@@ -4552,9 +4555,8 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
 
     alignas(8) QRgba64 buffer[BufferSize];
     const QRgba64 color = data->solidColor;
-    bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
-                  || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && color.isOpaque());
-    QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
+    const bool solidFill = op.mode == QPainter::CompositionMode_Source;
+    const QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
     while (count--) {
         int x = spans->x;
@@ -5137,7 +5139,8 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
         yoff += image_height;
 
     bool isBpp32 = qPixelLayouts[data->rasterBuffer->format].bpp == QPixelLayout::BPP32;
-    if (op.destFetch64 == destFetch64Undefined && image_width <= BufferSize && isBpp32) {
+    bool isBpp64 = qPixelLayouts[data->rasterBuffer->format].bpp == QPixelLayout::BPP64;
+    if (op.destFetch64 == destFetch64Undefined && image_width <= BufferSize && (isBpp32 || isBpp64)) {
         // If destination isn't blended into the result, we can do the tiling directly on destination pixels.
         while (count--) {
             int x = spans->x;
@@ -5171,9 +5174,14 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
                 if (sx >= image_width)
                     sx = 0;
             }
-            uint *dest = (uint*)data->rasterBuffer->scanLine(y) + x - image_width;
-            for (int i = image_width; i < length; ++i) {
-                dest[i] = dest[i - image_width];
+            if (isBpp32) {
+                uint *dest = reinterpret_cast<uint *>(data->rasterBuffer->scanLine(y)) + x - image_width;
+                for (int i = image_width; i < length; ++i)
+                    dest[i] = dest[i - image_width];
+            } else {
+                quint64 *dest = reinterpret_cast<quint64 *>(data->rasterBuffer->scanLine(y)) + x - image_width;
+                for (int i = image_width; i < length; ++i)
+                    dest[i] = dest[i - image_width];
             }
             ++spans;
         }
@@ -6766,10 +6774,12 @@ static void qInitDrawhelperFunctions()
     extern void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
     extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
     extern void QT_FASTCALL comp_func_Source_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+    extern void QT_FASTCALL comp_func_solid_Source_sse2(uint *destPixels, int length, uint color, uint const_alpha);
     extern void QT_FASTCALL comp_func_Plus_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
     qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_sse2;
     qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_sse2;
     qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_sse2;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_Source] = comp_func_solid_Source_sse2;
     qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
 
 #ifdef QT_COMPILER_SUPPORTS_SSSE3

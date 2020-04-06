@@ -601,7 +601,7 @@ public:
             FETCH_RADIAL_LOOP(FETCH_RADIAL_LOOP_CLAMP_PAD)
             break;
         default:
-            Q_ASSERT(false);
+            Q_UNREACHABLE();
         }
     }
 };

@@ -47,12 +47,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlDriver>
+#include <QDebug>
 
-//! [0]
-SELECT forename, surname FROM people;
-//! [0]
-
-
+void selectEmployees()
+{
 //! [1]
 QSqlQuery q("select * from employees");
 QSqlRecord rec = q.record();
@@ -63,8 +64,6 @@ int nameCol = rec.indexOf("name"); // index of the field "name"
 while (q.next())
     qDebug() << q.value(nameCol).toString(); // output all names
 //! [1]
-
-
 //! [2]
 QSqlQuery q;
 q.prepare("insert into myTable values (?, ?)");
@@ -80,11 +79,4 @@ q.addBindValue(names);
 if (!q.execBatch())
     qDebug() << q.lastError();
 //! [2]
-
-
-//! [3]
-1  Harald
-2  Boris
-3  Trond
-4  NULL
-//! [3]
+}

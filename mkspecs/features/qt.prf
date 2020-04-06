@@ -279,7 +279,15 @@ contains(all_qt_module_deps, qml): \
     for (QMLPATH, QMLPATHS): \
         IMPORTPATHS += -importPath $$system_quote($$QMLPATH)
 
-    #message(run $$QMLIMPORTSCANNER $$_PRO_FILE_PWD_  $$IMPORTPATHS)
+    # add qrc files, too
+    !isEmpty(RESOURCES) {
+       IMPORTPATHS += -qrcFiles
+       for (RESOURCE, RESOURCES): \
+           IMPORTPATHS += $$absolute_path($$system_quote($$RESOURCE), $$_PRO_FILE_PWD_)
+    }
+
+
+    # message(run $$QMLIMPORTSCANNER $$_PRO_FILE_PWD_  $$IMPORTPATHS)
     JSON = $$system($$QMLIMPORTSCANNER $$system_quote($$_PRO_FILE_PWD_) $$IMPORTPATHS)
 
     parseJson(JSON, IMPORTS)| error("Failed to parse qmlimportscanner output.")

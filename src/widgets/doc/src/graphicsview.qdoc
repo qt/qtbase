@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -438,8 +438,8 @@
 
         To enable OpenGL rendering, you simply set a new QOpenGLWidget as the
         viewport of QGraphicsView by calling QGraphicsView::setViewport(). If
-        you want OpenGL with antialiasing, you need OpenGL sample buffer
-        support (see QSurfaceFormat::samples()).
+        you want OpenGL with antialiasing, you need to set a QSurfaceFormat
+        with the needed sample count (see QSurfaceFormat::setSamples()).
 
         Example:
 

@@ -576,9 +576,7 @@ bool QLibraryPrivate::load()
 
     Q_TRACE(QLibraryPrivate_load_entry, fileName);
 
-    mutex.lock();
     bool ret = load_sys();
-    mutex.unlock();
     if (qt_debug_component()) {
         if (ret) {
             qDebug() << "loaded library" << fileName;

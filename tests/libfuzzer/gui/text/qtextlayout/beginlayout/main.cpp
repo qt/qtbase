@@ -26,9 +26,16 @@
 **
 ****************************************************************************/
 
+#include <QGuiApplication>
 #include <QTextLayout>
 
 extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
+    static int argc = 3;
+    static char arg1[] = "fuzzer";
+    static char arg2[] = "-platform";
+    static char arg3[] = "minimal";
+    static char *argv[] = {arg1, arg2, arg3, nullptr};
+    static QGuiApplication qga(argc, argv);
     QTextLayout tl(QByteArray::fromRawData(Data, Size));
     tl.beginLayout();
     tl.endLayout();

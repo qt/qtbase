@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -141,9 +141,9 @@ public:
     QByteArray toDer() const;
     QString toText() const;
 
-    static QList<QSslCertificate> fromPath(
-        const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
-        PatternSyntax syntax = PatternSyntax::FixedString);
+    static QList<QSslCertificate> fromPath(const QString &path,
+                                           QSsl::EncodingFormat format = QSsl::Pem,
+                                           PatternSyntax syntax = PatternSyntax::FixedString);
 
     static QList<QSslCertificate> fromDevice(
         QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);

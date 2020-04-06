@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -904,7 +904,8 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     This signal is sent when the user chooses an item in the combobox.
     The item's \a index is passed. Note that this signal is sent even
     when the choice is not changed. If you need to know when the
-    choice actually changes, use signal currentIndexChanged().
+    choice actually changes, use signal currentIndexChanged() or
+    currentTextChanged().
 */
 
 /*!
@@ -914,7 +915,8 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     This signal is sent when the user chooses an item in the combobox.
     The item's \a text is passed. Note that this signal is sent even
     when the choice is not changed. If you need to know when the
-    choice actually changes, use signal currentIndexChanged().
+    choice actually changes, use signal currentIndexChanged() or
+    currentTextChanged().
 */
 
 /*!
@@ -933,13 +935,13 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
 */
 
 /*!
-    \fn void QComboBox::currentIndexChanged(int index, const QString &text)
-    \since 5.15
+    \fn void QComboBox::currentIndexChanged(int index)
+    \since 4.1
 
     This signal is sent whenever the currentIndex in the combobox
     changes either through user interaction or programmatically. The
-    item's \a index is passed or -1 if the combobox becomes empty or
-    the currentIndex was reset. The item's \a text is also passed.
+    item's \a index is passed or -1 if the combobox becomes empty or the
+    currentIndex was reset.
 */
 
 /*!
@@ -971,7 +973,6 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     d->init();
 }
 
-
 /*!
     \class QComboBox
     \brief The QComboBox widget is a combined button and popup list.
@@ -994,9 +995,10 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     to clear the displayed string without changing the combobox's
     contents.
 
-    There are two signals emitted if the current item of a combobox
-    changes, currentIndexChanged() and activated().
-    currentIndexChanged() is always emitted regardless if the change
+    There are three signals emitted if the current item of a combobox
+    changes, currentIndexChanged(), currentTextChanged() and activated().
+    currentIndexChanged() and currentTextChanged() are always emitted
+    regardless if the change
     was done programmatically or by user interaction, while
     activated() is only emitted when the change is caused by user
     interaction. The highlighted() signal is emitted when the user
@@ -1048,7 +1050,7 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
 void QComboBoxPrivate::init()
 {
     Q_Q(QComboBox);
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // On OS X, only line edits and list views always get tab focus. It's only
     // when we enable full keyboard access that other controls can get tab focus.
     // When it's not editable, a combobox looks like a button, and it behaves as
@@ -1205,7 +1207,7 @@ void QComboBoxPrivate::updateViewContainerPaletteAndOpacity()
 
 void QComboBoxPrivate::updateFocusPolicy()
 {
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     Q_Q(QComboBox);
 
     // See comment in QComboBoxPrivate::init()
@@ -1412,7 +1414,7 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
 {
     Q_Q(QComboBox);
     const QString text = itemText(index);
-    emit q->currentIndexChanged(index.row(), text);
+    emit q->currentIndexChanged(index.row());
     // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
     if (!lineEdit)
         emit q->currentTextChanged(text);
@@ -2646,7 +2648,7 @@ bool QComboBoxPrivate::showNativePopup()
     const QRect targetRect = QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize());
     m_platformMenu->showPopup(tlw, QHighDpi::toNativePixels(targetRect, tlw), currentItem);
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
     // The Cocoa popup will swallow any mouse release event.
     // We need to fake one here to un-press the button.
     QMouseEvent mouseReleased(QEvent::MouseButtonRelease, q->pos(), Qt::LeftButton,

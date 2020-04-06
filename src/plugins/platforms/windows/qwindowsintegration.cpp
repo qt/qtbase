@@ -131,7 +131,6 @@ QT_BEGIN_NAMESPACE
     QWindowsUser32DLL and QWindowsShell32DLL. All function pointers should go to
     these structs to avoid lookups in several places.
 
-    \ingroup qt-lighthouse-win
 */
 
 struct QWindowsIntegrationPrivate

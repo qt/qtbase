@@ -39,3 +39,8 @@
                  QJsonValueRefPtr QAbstractConcatenable QStringBuilderCommon
                  QTextCodec::ConverterState QThreadStorageData QTextStreamManipulator)
 */
+
+/*!
+    \internal
+    \namespace QTextStreamFunctions
+*/

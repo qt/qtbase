@@ -93,6 +93,7 @@ public:
     QHttp2ProtocolHandler &operator = (QHttp2ProtocolHandler &&rhs) = delete;
 
     Q_INVOKABLE void handleConnectionClosure();
+    Q_INVOKABLE void ensureClientPrefaceSent();
 
 private slots:
     void _q_uploadDataReadyRead();

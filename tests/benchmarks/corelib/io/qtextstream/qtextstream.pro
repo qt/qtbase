@@ -1,8 +1,6 @@
 TEMPLATE = app
-TARGET = tst_bench_qtextstream
-
+CONFIG += benchmark
 QT = core testlib
 
-CONFIG += release
-
+TARGET = tst_bench_qtextstream
 SOURCES += main.cpp

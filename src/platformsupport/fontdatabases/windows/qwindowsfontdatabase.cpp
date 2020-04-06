@@ -100,7 +100,6 @@ static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
 /*!
     \struct QWindowsFontEngineData
     \brief Static constant data shared by the font engines.
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsFontEngineData::QWindowsFontEngineData()
@@ -154,10 +153,9 @@ qreal QWindowsFontDatabase::fontSmoothingGamma()
     delayed population of the database again passing a font name
     to EnumFontFamiliesEx(), working around the fact that
     EnumFontFamiliesEx() does not list all fonts by default.
-    This should be introduced to Lighthouse as well?
+    This should be introduced to QPA as well?
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 #ifndef QT_NO_DEBUG_STREAM

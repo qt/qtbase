@@ -199,7 +199,7 @@ void QFseventsFileSystemWatcherEngine::processEvent(ConstFSEventStreamRef stream
                                                     const FSEventStreamEventFlags eventFlags[],
                                                     const FSEventStreamEventId eventIds[])
 {
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     Q_UNUSED(streamRef);
 
     bool needsRestart = false;

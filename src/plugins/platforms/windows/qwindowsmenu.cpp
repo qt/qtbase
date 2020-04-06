@@ -65,7 +65,6 @@ QT_BEGIN_NAMESPACE
     Qt Widgets, either the containers or the items might be deleted first.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 static uint nextId = 1;
@@ -794,20 +793,13 @@ QWindowsMenuBar *QWindowsMenuBar::menuBarOf(const QWindow *notYetCreatedWindow)
         ? qobject_cast<QWindowsMenuBar *>(menuBarV.value<QObject *>()) : nullptr;
 }
 
-static inline void forceNcCalcSize(HWND hwnd)
-{
-    // Force WM_NCCALCSIZE to adjust margin: Does not appear to work?
-    SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
-                 SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
-}
-
 void QWindowsMenuBar::install(QWindowsWindow *window)
 {
     const HWND hwnd = window->handle();
     const BOOL result = SetMenu(hwnd, m_hMenuBar);
     if (result) {
         window->setMenuBar(this);
-        forceNcCalcSize(hwnd);
+        QWindowsContext::forceNcCalcSize(hwnd);
     }
 }
 
@@ -817,7 +809,7 @@ void QWindowsMenuBar::removeFromWindow()
         const HWND hwnd = window->handle();
         SetMenu(hwnd, nullptr);
         window->setMenuBar(nullptr);
-        forceNcCalcSize(hwnd);
+        QWindowsContext::forceNcCalcSize(hwnd);
     }
 }
 

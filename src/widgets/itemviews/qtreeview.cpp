@@ -3773,7 +3773,8 @@ int QTreeViewPrivate::itemDecorationAt(const QPoint &pos) const
     bool spanned = false;
     if (!spanningIndexes.isEmpty()) {
         const QModelIndex index = q->indexAt(pos);
-        spanned = q->isFirstColumnSpanned(index.row(), index.parent());
+        if (index.isValid())
+            spanned = q->isFirstColumnSpanned(index.row(), index.parent());
     }
     const int column = spanned ? 0 : header->logicalIndexAt(pos.x());
     if (!isTreePosition(column))

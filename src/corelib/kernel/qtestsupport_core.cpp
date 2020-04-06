@@ -67,7 +67,7 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
 
     Example:
 
-    \snippet code/src_corelib_kernel_qtestsupport_core.cpp 0
+    \snippet code/src_corelib_kernel_qtestsupport_core_snippet.cpp 0
 
     The code above will wait for the object to become ready, for a
     maximum of three seconds.

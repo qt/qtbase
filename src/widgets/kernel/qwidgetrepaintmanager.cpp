@@ -166,7 +166,7 @@ void QWidgetPrivate::invalidateBackingStore(const T &r)
         return;
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (!tlwExtra || tlwExtra->inTopLevelResize || !tlwExtra->backingStore)
+    if (!tlwExtra || !tlwExtra->backingStore)
         return;
 
     T clipped(r);
@@ -213,7 +213,6 @@ void QWidgetRepaintManager::markDirty(const T &r, QWidget *widget, UpdateTime up
 
     Q_ASSERT(tlw->d_func()->extra);
     Q_ASSERT(tlw->d_func()->extra->topextra);
-    Q_ASSERT(!tlw->d_func()->extra->topextra->inTopLevelResize);
     Q_ASSERT(widget->isVisible() && widget->updatesEnabled());
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!r.isEmpty());
@@ -446,8 +445,6 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
 
     QWidget *tlw = q->window();
     QTLWExtra* x = tlw->d_func()->topData();
-    if (x->inTopLevelResize)
-        return;
 
     static const bool accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_MOVE") == 0;
 
@@ -543,8 +540,6 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
     Q_Q(QWidget);
     QWidget *tlw = q->window();
     QTLWExtra* x = tlw->d_func()->topData();
-    if (x->inTopLevelResize)
-        return;
 
     QWidgetRepaintManager *repaintManager = x->repaintManager.get();
     if (!repaintManager)
@@ -722,8 +717,7 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
 {
     qCInfo(lcWidgetPainting) << "Syncing" << exposedRegion << "of" << exposedWidget;
 
-    QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
-    if (!tlw->isVisible() || !tlwExtra || tlwExtra->inTopLevelResize)
+    if (!tlw->isVisible())
         return;
 
     if (!exposedWidget || !hasPlatformWindow(exposedWidget)
@@ -815,13 +809,11 @@ void QWidgetRepaintManager::paintAndFlush()
     const bool updatesDisabled = !tlw->updatesEnabled();
     bool repaintAllWidgets = false;
 
-    const bool inTopLevelResize = tlw->d_func()->maybeTopData()->inTopLevelResize;
     const QRect tlwRect = tlw->data->crect;
-    const QRect surfaceGeometry(tlwRect.topLeft(), store->size());
-    if ((inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
+    if (!updatesDisabled && store->size() != tlwRect.size()) {
         if (hasStaticContents() && !store->size().isEmpty() ) {
             // Repaint existing dirty area and newly visible area.
-            const QRect clipRect(0, 0, surfaceGeometry.width(), surfaceGeometry.height());
+            const QRect clipRect(QPoint(0, 0), store->size());
             const QRegion staticRegion(staticContents(nullptr, clipRect));
             QRegion newVisible(0, 0, tlwRect.width(), tlwRect.height());
             newVisible -= staticRegion;
@@ -837,7 +829,7 @@ void QWidgetRepaintManager::paintAndFlush()
         }
     }
 
-    if (inTopLevelResize || surfaceGeometry.size() != tlwRect.size())
+    if (store->size() != tlwRect.size())
         store->resize(tlwRect.size());
 
     if (updatesDisabled)
@@ -1248,11 +1240,10 @@ bool QWidgetRepaintManager::hasStaticContents() const
 QRegion QWidgetRepaintManager::staticContents(QWidget *parent, const QRect &withinClipRect) const
 {
     if (!parent && tlw->testAttribute(Qt::WA_StaticContents)) {
-        const QSize surfaceGeometry(store->size());
-        QRect surfaceRect(0, 0, surfaceGeometry.width(), surfaceGeometry.height());
+        QRect backingstoreRect(QPoint(0, 0), store->size());
         if (!withinClipRect.isEmpty())
-            surfaceRect &= withinClipRect;
-        return QRegion(surfaceRect);
+            backingstoreRect &= withinClipRect;
+        return QRegion(backingstoreRect);
     }
 
     QRegion region;

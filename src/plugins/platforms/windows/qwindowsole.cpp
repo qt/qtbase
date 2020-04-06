@@ -70,7 +70,6 @@ QT_BEGIN_NAMESPACE
    \endlist
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsOleDataObject::QWindowsOleDataObject(QMimeData *mimeData) :
@@ -228,7 +227,6 @@ QWindowsOleDataObject::EnumDAdvise(LPENUMSTATDATA FAR*)
     \class QWindowsOleEnumFmtEtc
     \brief Enumerates the FORMATETC structures supported by QWindowsOleDataObject.
     \internal
-    \ingroup qt-lighthouse-win
 */
 
 QWindowsOleEnumFmtEtc::QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs)

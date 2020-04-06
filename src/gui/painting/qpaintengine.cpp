@@ -158,7 +158,7 @@ QFont QTextItem::font() const
   X11 and \macos, it is the backend for painting on QImage and it is
   used as a fallback for paint engines that do not support a certain
   capability. In addition we provide QPaintEngine implementations for
-  OpenGL (accessible through QGLWidget) and printing (which allows using
+  OpenGL (accessible through QOpenGLWidget) and printing (which allows using
   QPainter to draw on a QPrinter object).
 
   If one wants to use QPainter to draw to a different backend,

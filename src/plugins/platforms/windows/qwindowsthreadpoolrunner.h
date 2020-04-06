@@ -55,7 +55,6 @@ QT_BEGIN_NAMESPACE
     to be done by using QWaitCondition/QMutex.
 
     \internal
-    \ingroup qt-lighthouse-win
 */
 class QWindowsThreadPoolRunner
 {
