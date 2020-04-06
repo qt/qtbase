@@ -62,7 +62,7 @@ from cldr import CldrReader
 from qlocalexml import QLocaleXmlWriter
 from enumdata import language_list, script_list, country_list
 
-def usage(err, name, message = ''):
+def usage(name, err, message = ''):
     err.write("""Usage: {} path/to/cldr/common/main [out-file.xml]
 """.format(name)) # TODO: expand command-line, improve help message
     if message:
