@@ -220,6 +220,12 @@ void QHttp2ProtocolHandler::handleConnectionClosure()
     goingAway = true;
 }
 
+void QHttp2ProtocolHandler::ensureClientPrefaceSent()
+{
+    if (!prefaceSent)
+        sendClientPreface();
+}
+
 void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
 {
     if (!sender()) // QueuedConnection, firing after sender (byte device) was deleted.
