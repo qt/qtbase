@@ -189,7 +189,7 @@ def _parse_commandline():
         dest="output_file",
         type=str,
         help="Specify a file path where the generated content should be written to."
-             "Default is to write to CMakeLists.txt in the same directory as the .pro file.",
+        "Default is to write to CMakeLists.txt in the same directory as the .pro file.",
     )
 
     parser.add_argument(
@@ -201,10 +201,12 @@ def _parse_commandline():
     )
     return parser.parse_args()
 
+
 def get_top_level_repo_project_path(project_file_path: str = "") -> str:
     qmake_conf_path = find_qmake_conf(project_file_path)
     qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
     return qmake_conf_dir_path
+
 
 def is_top_level_repo_project(project_file_path: str = "") -> bool:
     qmake_conf_path = find_qmake_conf(project_file_path)
@@ -3689,7 +3691,8 @@ def write_qml_plugin_epilogue(
                 cm_fh.write(
                     f"{indent_0}set_source_files_properties({qml_file} PROPERTIES\n"
                     f"{indent_1}QT_QML_SKIP_QMLDIR_ENTRY TRUE\n"
-                    f"{indent_0})\n")
+                    f"{indent_0})\n"
+                )
 
         cm_fh.write(
             f"\n{indent_0}qt6_target_qml_files({target}\n{indent_1}FILES\n"

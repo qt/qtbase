@@ -865,9 +865,7 @@ def get_feature_mapping():
             "enable": "TEST_posix_iconv AND TEST_iconv_needlib",
             "disable": "NOT TEST_posix_iconv OR NOT TEST_iconv_needlib",
         },
-        "precompile_header": {
-            "condition": "BUILD_WITH_PCH"
-        },
+        "precompile_header": {"condition": "BUILD_WITH_PCH"},
         "profile": None,
         "qmakeargs": None,
         "qpa_default_platform": None,  # Not a bool!
@@ -876,7 +874,7 @@ def get_feature_mapping():
         "rpath_dir": None,  # merely used to fill the qmake variable EXTRA_RPATHS
         "rpath": {
             "autoDetect": "1",
-            "condition": "BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID AND NOT APPLE"
+            "condition": "BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID AND NOT APPLE",
         },
         "sanitize_address": None,  # sanitizer
         "sanitize_memory": None,
@@ -893,9 +891,9 @@ def get_feature_mapping():
                     "type": "define",
                     "name": "QT_STATIC",
                     "prerequisite": "!defined(QT_SHARED) && !defined(QT_STATIC)",
-                    "negative": True
-                }
-            ]
+                    "negative": True,
+                },
+            ],
         },
         "silent": None,
         "sql-sqlite": {"condition": "QT_FEATURE_datestring"},
