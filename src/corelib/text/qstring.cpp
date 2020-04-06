@@ -5204,7 +5204,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
     if (localeCodec)
         return localeCodec->fromUnicode(string);
 #endif // textcodec
-    return qt_convert_to_latin1(string);
+    return string.toUtf8();
 }
 
 /*!
@@ -5396,7 +5396,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     if (codec)
         return codec->toUnicode(str, size);
 #endif // textcodec
-    return fromLatin1(str, size);
+    return fromUtf8(str, size);
 }
 
 /*! \fn QString QString::fromUtf8(const char *str, int size)
