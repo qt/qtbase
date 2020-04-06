@@ -48,6 +48,7 @@
 #if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
 #endif
+#include <qstringconverter.h>
 #include <qstack.h>
 #include <qbuffer.h>
 #include <qscopeguard.h>
@@ -3009,8 +3010,7 @@ QStringRef QXmlStreamReader::documentEncoding() const
   writeProcessingInstruction(), and writeDTD(). Chaining of XML
   streams is supported with writeCurrentToken().
 
-  By default, QXmlStreamWriter encodes XML in UTF-8. Different
-  encodings can be enforced using setCodec().
+  QXmlStreamWriter always encodes XML in UTF-8.
 
   If an error occurs while writing to the underlying device, hasError()
   starts returning true and subsequent writes are ignored.
@@ -3031,9 +3031,6 @@ public:
     ~QXmlStreamWriterPrivate() {
         if (deleteDevice)
             delete device;
-#if QT_CONFIG(textcodec)
-        delete encoder;
-#endif
     }
 
     void write(const QStringRef &);
@@ -3053,16 +3050,10 @@ public:
     uint hasIoError :1;
     uint hasEncodingError :1;
     uint autoFormatting :1;
-    uint isCodecASCIICompatible :1;
     QByteArray autoFormattingIndent;
     NamespaceDeclaration emptyNamespace;
     qsizetype lastNamespaceDeclaration;
-
-#if QT_CONFIG(textcodec)
-    QTextCodec *codec;
-    QTextEncoder *encoder;
-#endif
-    void checkIfASCIICompatibleCodec();
+    QStringEncoder toUtf8;
 
     NamespaceDeclaration &findNamespace(const QString &namespaceUri, bool writeDeclaration = false, bool noDefault = false);
     void writeNamespaceDeclaration(const NamespaceDeclaration &namespaceDeclaration);
@@ -3074,17 +3065,13 @@ public:
 
 
 QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
-    :autoFormattingIndent(4, ' ')
+    : autoFormattingIndent(4, ' '),
+      toUtf8(QStringEncoder::Utf8, QStringEncoder::Flag::Stateless)
 {
     q_ptr = q;
     device = nullptr;
     stringDevice = nullptr;
     deleteDevice = false;
-#if QT_CONFIG(textcodec)
-    codec = QTextCodec::codecForMib(106); // utf8
-    encoder = codec->makeEncoder(QTextCodec::IgnoreHeader); // no byte order mark for utf8
-#endif
-    checkIfASCIICompatibleCodec();
     inStartElement = inEmptyElement = false;
     wroteSomething = false;
     hasIoError = false;
@@ -3095,37 +3082,16 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
     namespacePrefixCount = 0;
 }
 
-void QXmlStreamWriterPrivate::checkIfASCIICompatibleCodec()
-{
-#if QT_CONFIG(textcodec)
-    Q_ASSERT(encoder);
-    // test ASCII-compatibility using the letter 'a'
-    QChar letterA = QLatin1Char('a');
-    const QByteArray bytesA = encoder->fromUnicode(&letterA, 1);
-    const bool isCodecASCIICompatibleA = (bytesA.count() == 1) && (bytesA[0] == 0x61) ;
-    QChar letterLess = QLatin1Char('<');
-    const QByteArray bytesLess = encoder->fromUnicode(&letterLess, 1);
-    const bool isCodecASCIICompatibleLess = (bytesLess.count() == 1) && (bytesLess[0] == 0x3C) ;
-    isCodecASCIICompatible = isCodecASCIICompatibleA && isCodecASCIICompatibleLess ;
-#else
-    isCodecASCIICompatible = true;
-#endif
-}
-
 void QXmlStreamWriterPrivate::write(const QStringRef &s)
 {
     if (device) {
         if (hasIoError)
             return;
-#if !QT_CONFIG(textcodec)
-        QByteArray bytes = s.toLatin1();
-#else
-        QByteArray bytes = encoder->fromUnicode(s.constData(), s.size());
-        if (encoder->hasFailure()) {
+        QByteArray bytes = toUtf8(s);
+        if (toUtf8.hasError()) {
             hasEncodingError = true;
             return;
         }
-#endif
         if (device->write(bytes) != bytes.size())
             hasIoError = true;
     }
@@ -3140,15 +3106,11 @@ void QXmlStreamWriterPrivate::write(const QString &s)
     if (device) {
         if (hasIoError)
             return;
-#if !QT_CONFIG(textcodec)
-        QByteArray bytes = s.toLatin1();
-#else
-        QByteArray bytes = encoder->fromUnicode(s);
-        if (encoder->hasFailure()) {
+        QByteArray bytes = toUtf8(s);
+        if (toUtf8.hasError()) {
             hasEncodingError = true;
             return;
         }
-#endif
         if (device->write(bytes) != bytes.size())
             hasIoError = true;
     }
@@ -3210,20 +3172,18 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
     write(escaped);
 }
 
-// Converts from ASCII to output encoding
+// Writes utf8
 void QXmlStreamWriterPrivate::write(const char *s, int len)
 {
     if (device) {
         if (hasIoError)
             return;
-        if (isCodecASCIICompatible) {
-            if (device->write(s, len) != len)
-                hasIoError = true;
-            return;
-        }
+        if (device->write(s, len) != len)
+            hasIoError = true;
+        return;
     }
 
-    write(QString::fromLatin1(s, len));
+    write(QString::fromUtf8(s, len));
 }
 
 void QXmlStreamWriterPrivate::writeNamespaceDeclaration(const NamespaceDeclaration &namespaceDeclaration) {
@@ -3338,8 +3298,6 @@ QXmlStreamWriter::QXmlStreamWriter(QByteArray *array)
 
 /*!  Constructs a stream writer that writes into \a string.
  *
- * Note that when writing to QString, QXmlStreamWriter ignores the codec set
- * with setCodec(). See that function for more information.
  */
 QXmlStreamWriter::QXmlStreamWriter(QString *string)
     : d_ptr(new QXmlStreamWriterPrivate(this))
@@ -3386,67 +3344,6 @@ QIODevice *QXmlStreamWriter::device() const
     Q_D(const QXmlStreamWriter);
     return d->device;
 }
-
-
-#if QT_CONFIG(textcodec)
-/*!
-    Sets the codec for this stream to \a codec. The codec is used for
-    encoding any data that is written. By default, QXmlStreamWriter
-    uses UTF-8.
-
-    The encoding information is stored in the initial xml tag which
-    gets written when you call writeStartDocument(). Call this
-    function before calling writeStartDocument().
-
-    \note When writing the XML to a QString, the codec information is ignored
-    and the XML header will not include any encoding information, since all
-    QStrings are UTF-16. If you later convert the QString to an 8-bit format,
-    you must arrange for the encoding information to be transmitted
-    out-of-band.
-
-    \sa codec()
-*/
-void QXmlStreamWriter::setCodec(QTextCodec *codec)
-{
-    Q_D(QXmlStreamWriter);
-    if (codec) {
-        d->codec = codec;
-        delete d->encoder;
-        d->encoder = codec->makeEncoder(QTextCodec::IgnoreHeader); // no byte order mark for utf8
-        d->checkIfASCIICompatibleCodec();
-    }
-}
-
-/*!
-    Sets the codec for this stream to the QTextCodec for the encoding
-    specified by \a codecName. Common values for \c codecName include
-    "ISO 8859-1", "UTF-8", and "UTF-16". If the encoding isn't
-    recognized, nothing happens.
-
-    \note When writing the XML to a QString, the codec information is ignored
-    and the XML header will not include any encoding information, since all
-    QStrings are UTF-16. If you later convert the QString to an 8-bit format,
-    you must arrange for the encoding information to be transmitted
-    out-of-band.
-
-    \sa QTextCodec::codecForName()
-*/
-void QXmlStreamWriter::setCodec(const char *codecName)
-{
-    setCodec(QTextCodec::codecForName(codecName));
-}
-
-/*!
-    Returns the codec that is currently assigned to the stream.
-
-    \sa setCodec()
-*/
-QTextCodec *QXmlStreamWriter::codec() const
-{
-    Q_D(const QXmlStreamWriter);
-    return d->codec;
-}
-#endif // textcodec
 
 /*!
     \property  QXmlStreamWriter::autoFormatting
@@ -3886,10 +3783,9 @@ void QXmlStreamWriter::writeProcessingInstruction(const QString &target, const Q
 
 /*!\overload
 
-  Writes a document start with XML version number "1.0". This also
-  writes the encoding information.
+  Writes a document start with XML version number "1.0".
 
-  \sa writeEndDocument(), setCodec()
+  \sa writeEndDocument()
   \since 4.5
  */
 void QXmlStreamWriter::writeStartDocument()
@@ -3909,15 +3805,8 @@ void QXmlStreamWriter::writeStartDocument(const QString &version)
     d->finishStartElement(false);
     d->write("<?xml version=\"");
     d->write(version);
-    if (d->device) { // stringDevice does not get any encoding
-        d->write("\" encoding=\"");
-#if !QT_CONFIG(textcodec)
-        d->write("iso-8859-1");
-#else
-        const QByteArray name = d->codec->name();
-        d->write(name.constData(), name.length());
-#endif
-    }
+    if (d->device) // stringDevice does not get any encoding
+        d->write("\" encoding=\"UTF-8");
     d->write("\"?>");
 }
 
@@ -3933,15 +3822,8 @@ void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalon
     d->finishStartElement(false);
     d->write("<?xml version=\"");
     d->write(version);
-    if (d->device) { // stringDevice does not get any encoding
-        d->write("\" encoding=\"");
-#if !QT_CONFIG(textcodec)
-        d->write("iso-8859-1");
-#else
-        const QByteArray name = d->codec->name();
-        d->write(name.constData(), name.length());
-#endif
-    }
+    if (d->device) // stringDevice does not get any encoding
+        d->write("\" encoding=\"UTF-8");
     if (standalone)
         d->write("\" standalone=\"yes\"?>");
     else

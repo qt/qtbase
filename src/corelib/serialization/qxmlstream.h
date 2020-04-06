@@ -474,12 +474,6 @@ public:
     void setDevice(QIODevice *device);
     QIODevice *device() const;
 
-#if QT_CONFIG(textcodec)
-    void setCodec(QTextCodec *codec);
-    void setCodec(const char *codecName);
-    QTextCodec *codec() const;
-#endif
-
     void setAutoFormatting(bool);
     bool autoFormatting() const;
 

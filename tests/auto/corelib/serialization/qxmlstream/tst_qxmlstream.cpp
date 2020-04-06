@@ -560,9 +560,7 @@ private slots:
     void crashInUTF16Codec() const;
     void hasAttributeSignature() const;
     void hasAttribute() const;
-    void writeWithCodec() const;
     void writeWithUtf8Codec() const;
-    void writeWithUtf16Codec() const;
     void writeWithStandalone() const;
     void entitiesAndWhitespace_1() const;
     void entitiesAndWhitespace_2() const;
@@ -573,7 +571,6 @@ private slots:
     void checkCommentIndentation() const;
     void checkCommentIndentation_data() const;
     void crashInXmlStreamReader() const;
-    void write8bitCodec() const;
     void invalidStringCharacters_data() const;
     void invalidStringCharacters() const;
     void hasError() const;
@@ -1258,64 +1255,14 @@ void tst_QXmlStream::hasAttribute() const
     QVERIFY(!reader.hasError());
 }
 
-
-void tst_QXmlStream::writeWithCodec() const
-{
-    QByteArray outarray;
-    QXmlStreamWriter writer(&outarray);
-    writer.setAutoFormatting(true);
-
-    QTextCodec *codec = QTextCodec::codecForName("ISO 8859-15");
-    QVERIFY(codec);
-    writer.setCodec(codec);
-
-    const char *latin2 = "h\xe9 h\xe9";
-    const QString string = codec->toUnicode(latin2);
-
-
-    writer.writeStartDocument("1.0");
-
-    writer.writeTextElement("foo", string);
-    writer.writeEndElement();
-    writer.writeEndDocument();
-
-    QVERIFY(outarray.contains(latin2));
-    QVERIFY(outarray.contains(codec->name()));
-}
-
 void tst_QXmlStream::writeWithUtf8Codec() const
 {
     QByteArray outarray;
     QXmlStreamWriter writer(&outarray);
 
-    QTextCodec *codec = QTextCodec::codecForMib(106); // utf-8
-    QVERIFY(codec);
-    writer.setCodec(codec);
-
     writer.writeStartDocument("1.0");
     static const char begin[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     QVERIFY(outarray.startsWith(begin));
-}
-
-void tst_QXmlStream::writeWithUtf16Codec() const
-{
-    QByteArray outarray;
-    QXmlStreamWriter writer(&outarray);
-
-    QTextCodec *codec = QTextCodec::codecForMib(1014); // utf-16LE
-    QVERIFY(codec);
-    writer.setCodec(codec);
-
-    writer.writeStartDocument("1.0");
-    static const char begin[] = "<?xml version=\"1.0\" encoding=\"UTF-16";  // skip potential "LE" suffix
-    const int count = sizeof(begin) - 1;    // don't include 0 terminator
-    QByteArray begin_UTF16;
-    begin_UTF16.reserve(2*(count));
-    for (int i = 0; i < count; ++i) {
-        begin_UTF16.append(begin[i]);
-        begin_UTF16.append((char)'\0');
-    }
-    QVERIFY(outarray.startsWith(begin_UTF16));
 }
 
 void tst_QXmlStream::writeWithStandalone() const
@@ -1413,7 +1360,6 @@ void tst_QXmlStream::garbageInXMLPrologUTF8Explicitly() const
     QVERIFY(out.open(QIODevice::ReadWrite));
 
     QXmlStreamWriter writer (&out);
-    writer.setCodec("UTF-8");
     writer.writeStartDocument();
     writer.writeEmptyElement("Foo");
     writer.writeEndDocument();
@@ -1600,43 +1546,6 @@ void tst_QXmlStream::hasError() const
         QCOMPARE(fb.data(), QByteArray("<?xml vers"));
     }
 
-}
-
-void tst_QXmlStream::write8bitCodec() const
-{
-    QBuffer outBuffer;
-    QVERIFY(outBuffer.open(QIODevice::WriteOnly));
-    QXmlStreamWriter writer(&outBuffer);
-    writer.setAutoFormatting(false);
-
-    QTextCodec *codec = QTextCodec::codecForName("IBM500");
-    if (!codec) {
-        QSKIP("Encoding IBM500 not available.");
-    }
-    writer.setCodec(codec);
-
-    writer.writeStartDocument();
-    writer.writeStartElement("root");
-    writer.writeAttribute("attrib", "1");
-    writer.writeEndElement();
-    writer.writeEndDocument();
-    outBuffer.close();
-
-    // test 8 bit encoding
-    QByteArray values = outBuffer.data();
-    QVERIFY(values.size() > 1);
-    // check '<'
-    QCOMPARE(values[0] & 0x00FF, 0x4c);
-    // check '?'
-    QCOMPARE(values[1] & 0x00FF, 0x6F);
-
-    // convert the start of the XML
-    const QString expected = ("<?xml version=\"1.0\" encoding=\"IBM500\"?>");
-    QTextDecoder *decoder = codec->makeDecoder();
-    QVERIFY(decoder);
-    QString decodedText = decoder->toUnicode(values);
-    delete decoder;
-    QVERIFY(decodedText.startsWith(expected));
 }
 
 void tst_QXmlStream::invalidStringCharacters() const
