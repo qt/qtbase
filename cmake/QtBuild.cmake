@@ -759,6 +759,24 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
     qt_install(FILES "${qconfig_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
 endfunction()
 
+function(qt_get_build_parts out_var)
+    set(parts "libs")
+
+    if(BUILD_EXAMPLES AND NOT QT_NO_MAKE_EXAMPLES)
+        list(APPEND parts "examples")
+    endif()
+
+    if(BUILD_TESTING AND NOT QT_NO_MAKE_TESTS)
+        list(APPEND parts "tests")
+    endif()
+
+    if(NOT CMAKE_CROSSCOMPILING)
+        list(APPEND parts "tools")
+    endif()
+
+    set(${out_var} ${parts} PARENT_SCOPE)
+endfunction()
+
 # Creates mkspecs/qmodule.pri which contains private global features among other things.
 function(qt_generate_global_module_pri_file)
     qt_path_join(qmodule_pri_target_path ${PROJECT_BINARY_DIR} mkspecs)
@@ -787,6 +805,10 @@ CONFIG += ${private_config_joined}
     endif()
 
     # TODO: Write QT_COORD_TYPE once we support setting it.
+
+    qt_get_build_parts(build_parts)
+    string(REPLACE ";" " " build_parts "${build_parts}")
+    string(APPEND content "QT_BUILD_PARTS = ${build_parts}\n")
 
     file(GENERATE
         OUTPUT "${qmodule_pri_target_path}"

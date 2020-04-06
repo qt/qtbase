@@ -292,20 +292,7 @@ function(qt_configure_add_summary_build_parts)
 endfunction()
 
 function(qt_configure_process_add_summary_build_parts label)
-    set(parts "libs")
-
-    if(BUILD_EXAMPLES AND NOT QT_NO_MAKE_EXAMPLES)
-        list(APPEND parts "examples")
-    endif()
-
-    if(BUILD_TESTING AND NOT QT_NO_MAKE_TESTS)
-        list(APPEND parts "tests")
-    endif()
-
-    if(NOT CMAKE_CROSSCOMPILING)
-        list(APPEND parts "tools")
-    endif()
-
+    qt_get_build_parts(parts)
     string(REPLACE ";" " " message "${parts}")
     qt_configure_add_report_padded("${label}" "${message}")
 endfunction()
