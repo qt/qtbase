@@ -68,7 +68,12 @@ endmacro()
 macro(qt_enable_cmake_languages)
     include(CheckLanguage)
     set(__qt_required_language_list C CXX)
-    set(__qt_optional_language_list OBJC OBJCXX)
+    set(__qt_optional_language_list )
+
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/20545
+    if(APPLE)
+        list(APPEND __qt_optional_language_list OBJC OBJCXX)
+    endif()
 
     foreach(__qt_lang ${__qt_required_language_list})
         enable_language(${__qt_lang})
