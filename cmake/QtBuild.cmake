@@ -2647,12 +2647,32 @@ function(qt_add_executable name)
         qt_internal_set_no_exceptions_flags("${name}")
     endif()
 
+    # Check if target needs to be excluded from all target. Also affects qt_install.
+    # Set by qt_exclude_tool_directories_from_default_target.
+    set(exclude_from_all FALSE)
+    if(__qt_exclude_tool_directories)
+        foreach(absolute_dir ${__qt_exclude_tool_directories})
+            string(FIND "${CMAKE_CURRENT_SOURCE_DIR}" "${absolute_dir}" dir_starting_pos)
+            if(dir_starting_pos EQUAL 0)
+                set(exclude_from_all TRUE)
+                set_target_properties("${name}" PROPERTIES EXCLUDE_FROM_ALL TRUE)
+                break()
+            endif()
+        endforeach()
+    endif()
 
     if(NOT arg_NO_INSTALL)
+        set(additional_install_args "")
+        if(exclude_from_all)
+            list(APPEND additional_install_args EXCLUDE_FROM_ALL COMPONENT "ExcludedExecutables")
+        endif()
+
         qt_install(TARGETS "${name}"
+            ${additional_install_args} # Needs to be before the DESTINATIONS.
             RUNTIME DESTINATION "${arg_INSTALL_DIRECTORY}"
             LIBRARY DESTINATION "${arg_INSTALL_DIRECTORY}"
-            BUNDLE DESTINATION "${arg_INSTALL_DIRECTORY}")
+            BUNDLE DESTINATION "${arg_INSTALL_DIRECTORY}"
+            )
     endif()
 endfunction()
 
@@ -4111,25 +4131,16 @@ function(qt_enable_msvc_cplusplus_define target visibility)
 endfunction()
 
 # Equivalent of qmake's qtNomakeTools(directory1 directory2).
-# If QT_NO_MAKE_TOOLS is true, then the given directories will be excluded from the
-# default 'all' target.
+# If QT_NO_MAKE_TOOLS is true, then targets within the given directories will be excluded from the
+# default 'all' target, as well as from install phase.
+# The private variable is checked by qt_add_executable.
 function(qt_exclude_tool_directories_from_default_target)
     if(QT_NO_MAKE_TOOLS)
         set(absolute_path_directories "")
         foreach(directory ${ARGV})
             list(APPEND absolute_path_directories "${CMAKE_CURRENT_SOURCE_DIR}/${directory}")
         endforeach()
-
-        # Properties can only be set on processed directories (some might not be processed due to
-        # disabled features). So we need to exclude only processed directories.
-        get_directory_property(subdirectories SUBDIRECTORIES)
-
-        # Poor man's set intersection.
-        foreach(directory ${absolute_path_directories})
-            if(directory IN_LIST subdirectories)
-                set_property(DIRECTORY "${directory}" PROPERTY EXCLUDE_FROM_ALL TRUE)
-            endif()
-        endforeach()
+        set(__qt_exclude_tool_directories "${absolute_path_directories}" PARENT_SCOPE)
     endif()
 endfunction()
 

@@ -1800,8 +1800,8 @@ def handle_subdir(
     handle_subdir_helper(
         scope, cm_fh, indent=indent, current_conditions=current_conditions, is_example=is_example
     )
-    group_and_print_sub_dirs(scope, indent=indent)
 
+    # Make sure to exclude targets within subdirectories first.
     qt_no_make_tools = scope.get("_QT_NO_MAKE_TOOLS")
     if qt_no_make_tools:
         ind = spaces(indent + 1)
@@ -1811,6 +1811,9 @@ def handle_subdir(
         cm_fh.write(
             f"\nqt_exclude_tool_directories_from_default_target(\n{directories_string})\n\n"
         )
+
+    # Then write the subdirectories.
+    group_and_print_sub_dirs(scope, indent=indent)
 
 
 def sort_sources(sources: List[str]) -> List[str]:
