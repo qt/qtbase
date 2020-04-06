@@ -1153,29 +1153,6 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
         }
     }
 
-    // On Debian Etch up to Jessie, /etc/localtime is a copy of the relevant
-    // zoneinfo file, whose name is recorded in /etc/timezone:
-    if (ianaId.isEmpty()) {
-        QFile tzif(QStringLiteral("/etc/timezone"));
-        if (tzif.open(QIODevice::ReadOnly))
-            ianaId = tzif.readAll().trimmed();
-    }
-
-    // On some Red Hat distros /etc/localtime is real file with name held in /etc/sysconfig/clock
-    // in a line like ZONE="Europe/Oslo" or TIMEZONE="Europe/Oslo"
-    if (ianaId.isEmpty()) {
-        QFile tzif(QStringLiteral("/etc/sysconfig/clock"));
-        if (tzif.open(QIODevice::ReadOnly)) {
-            while (ianaId.isEmpty() && !tzif.atEnd()) {
-                const QByteArray line(tzif.readLine().trimmed());
-                if (line.startsWith("ZONE="))
-                    ianaId = line.mid(6, line.length() - 7);
-                else if (line.startsWith("TIMEZONE="))
-                    ianaId = line.mid(10, line.length() - 11);
-            }
-        }
-    }
-
     // Some systems (e.g. uClibc) have a default value for $TZ in /etc/TZ:
     if (ianaId.isEmpty()) {
         QFile zone(QStringLiteral("/etc/TZ"));
