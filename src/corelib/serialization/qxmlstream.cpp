@@ -60,13 +60,13 @@
 #define Q_DECLARE_TR_FUNCTIONS(context) \
 public: \
     static inline QString tr(const char *sourceText, const char *comment = nullptr) \
-        { Q_UNUSED(comment); return QString::fromLatin1(sourceText); } \
+        { Q_UNUSED(comment); return QString::fromUtf8(sourceText); } \
     static inline QString trUtf8(const char *sourceText, const char *comment = nullptr) \
-        { Q_UNUSED(comment); return QString::fromLatin1(sourceText); } \
+        { Q_UNUSED(comment); return QString::fromUtf8(sourceText); } \
     static inline QString tr(const char *sourceText, const char*, int) \
-        { return QString::fromLatin1(sourceText); } \
+        { return QString::fromUtf8(sourceText); } \
     static inline QString trUtf8(const char *sourceText, const char*, int) \
-        { return QString::fromLatin1(sourceText); } \
+        { return QString::fromUtf8(sourceText); } \
 private:
 #endif
 #include <private/qmemory_p.h>
@@ -1546,7 +1546,7 @@ uint QXmlStreamReaderPrivate::getChar_helper()
         return StreamEOF;
     }
 #else
-    readBuffer = QString::fromLatin1(rawReadBuffer.data(), nbytesread);
+    readBuffer = QString::fromUtf8(rawReadBuffer.data(), nbytesread);
 #endif // textcodec
 
     readBuffer.reserve(1); // keep capacity when calling resize() next time
@@ -1821,7 +1821,7 @@ void QXmlStreamReaderPrivate::startDocument()
                 err = QXmlStream::tr("%1 is an invalid encoding name.").arg(value);
             else {
 #if !QT_CONFIG(textcodec)
-                readBuffer = QString::fromLatin1(rawReadBuffer.data(), nbytesread);
+                readBuffer = QString::fromUtf8(rawReadBuffer.data(), nbytesread);
 #else
                 QTextCodec *const newCodec = QTextCodec::codecForName(value.toLatin1());
                 if (!newCodec)
