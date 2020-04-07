@@ -9,7 +9,7 @@ if (QT_FEATURE_private_tests)
     endif()
 
     if (QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_openssl_linked)
-        include_directories($<TARGET_PROPERTY:${INSTALL_CMAKE_NAMESPACE}::SSL_nolink,INTERFACE_INCLUDE_DIRECTORIES>)
+        include_directories($<TARGET_PROPERTY:WrapOpenSSLHeaders::WrapOpenSSLHeaders,INTERFACE_INCLUDE_DIRECTORIES>)
     endif()
 endif()
 # special case end

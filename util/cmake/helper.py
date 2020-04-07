@@ -44,6 +44,7 @@ class LibraryMapping:
         is_bundled_with_qt: bool = False,
         test_library_overwrite: str = "",
         run_library_test: bool = False,
+        no_link_so_name: str = "",
     ) -> None:
         self.soName = soName
         self.packageName = packageName
@@ -65,6 +66,9 @@ class LibraryMapping:
 
         # Run the library compile test of configure.json
         self.run_library_test = run_library_test
+
+        # The custom nolink library mapping associated with this one.
+        self.no_link_so_name = no_link_so_name
 
     def is_qt(self) -> bool:
         return self.packageName == "Qt" or self.packageName == "Qt5" or self.packageName == "Qt6"
@@ -447,20 +451,21 @@ _library_map = [
     LibraryMapping("opengl", "OpenGL", "OpenGL::GL", resultVariable="OpenGL_OpenGL"),
     LibraryMapping(
         "openssl_headers",
-        "OpenSSL",
-        "OpenSSL::SSL_nolink",
+        "WrapOpenSSLHeaders",
+        "WrapOpenSSLHeaders::WrapOpenSSLHeaders",
         resultVariable="TEST_openssl_headers",
         appendFoundSuffix=False,
-        test_library_overwrite="OpenSSL::SSL",
+        test_library_overwrite="WrapOpenSSLHeaders::WrapOpenSSLHeaders",
         run_library_test=True,
     ),
     LibraryMapping(
         "openssl",
-        "OpenSSL",
-        "OpenSSL::SSL",
+        "WrapOpenSSL",
+        "WrapOpenSSL::WrapOpenSSL",
         resultVariable="TEST_openssl",
         appendFoundSuffix=False,
         run_library_test=True,
+        no_link_so_name="openssl_headers",
     ),
     LibraryMapping("oci", "Oracle", "Oracle::OCI"),
     LibraryMapping(
@@ -698,22 +703,54 @@ def map_platform(platform: str) -> str:
 
 
 def is_known_3rd_party_library(lib: str) -> bool:
+    handling_no_link = False
     if lib.endswith("/nolink") or lib.endswith("_nolink"):
         lib = lib[:-7]
+        handling_no_link = True
     mapping = find_3rd_party_library_mapping(lib)
+    if handling_no_link and mapping and mapping.no_link_so_name:
+        no_link_mapping = find_3rd_party_library_mapping(mapping.no_link_so_name)
+        if no_link_mapping:
+            mapping = no_link_mapping
 
     return mapping is not None
 
 
 def map_3rd_party_library(lib: str) -> str:
+    handling_no_link = False
     libpostfix = ""
     if lib.endswith("/nolink"):
         lib = lib[:-7]
         libpostfix = "_nolink"
+        handling_no_link = True
+
     mapping = find_3rd_party_library_mapping(lib)
+
+    if handling_no_link and mapping and mapping.no_link_so_name:
+        no_link_mapping = find_3rd_party_library_mapping(mapping.no_link_so_name)
+        if no_link_mapping:
+            mapping = no_link_mapping
+            libpostfix = ""
+
     if not mapping or not mapping.targetName:
         return lib
+
     return mapping.targetName + libpostfix
+
+
+compile_test_dependent_library_mapping = {
+    "dtls": {"openssl": "openssl_headers"},
+    "ocsp": {"openssl": "openssl_headers"},
+}
+
+
+def get_compile_test_dependent_library_mapping(compile_test_name: str, dependency_name: str):
+    if compile_test_name in compile_test_dependent_library_mapping:
+        mapping = compile_test_dependent_library_mapping[compile_test_name]
+        if dependency_name in mapping:
+            return mapping[dependency_name]
+
+    return dependency_name
 
 
 def generate_find_package_info(

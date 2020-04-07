@@ -7,11 +7,11 @@
 #### Libraries
 
 qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy)
-qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::SSL)
+qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders)
 # openssl_headers
 qt_config_compile_test(openssl_headers
     LIBRARIES
-        OpenSSL::SSL
+        WrapOpenSSLHeaders::WrapOpenSSLHeaders
     CODE
 "
 #include <openssl/ssl.h>
@@ -32,11 +32,11 @@ int main(int argc, char **argv)
 }
 ")
 
-qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::SSL)
+qt_find_package(WrapOpenSSL PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL)
 # openssl
 qt_config_compile_test(openssl
     LIBRARIES
-        OpenSSL::SSL
+        WrapOpenSSL::WrapOpenSSL
     CODE
 "
 #include <openssl/ssl.h>
@@ -164,7 +164,7 @@ socklen_t sctpInitMsgSize = sizeof(sctpInitMsg);
 qt_config_compile_test(dtls
     LABEL "DTLS support in OpenSSL"
     LIBRARIES
-        OpenSSL::SSL
+        WrapOpenSSLHeaders::WrapOpenSSLHeaders
     CODE
 "
 #include <openssl/ssl.h>
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 qt_config_compile_test(ocsp
     LABEL "OCSP stapling support in OpenSSL"
     LIBRARIES
-        OpenSSL::SSL
+        WrapOpenSSLHeaders::WrapOpenSSLHeaders
     CODE
 "
 #include <openssl/ssl.h>

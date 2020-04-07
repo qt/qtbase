@@ -40,6 +40,7 @@ from helper import (
     map_platform,
     find_3rd_party_library_mapping,
     generate_find_package_info,
+    get_compile_test_dependent_library_mapping,
 )
 
 knownTests = set()  # type: Set[str]
@@ -700,7 +701,8 @@ def write_compile_test(
         if len(library) == 0:
             continue
 
-        library_usage = get_library_usage_for_compile_test(library)
+        adjusted_library = get_compile_test_dependent_library_mapping(name, library)
+        library_usage = get_library_usage_for_compile_test(adjusted_library)
         if "fixme" in library_usage:
             qmakeFixme += library_usage["fixme"]
             continue

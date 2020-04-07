@@ -411,12 +411,12 @@ qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE
 
 qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND NOT ANDROID
     LIBRARIES
-        OpenSSL::SSL
+        WrapOpenSSL::WrapOpenSSL
 )
 
 qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_openssl_linked
     LIBRARIES
-        OpenSSL::SSL_nolink
+        WrapOpenSSLHeaders::WrapOpenSSLHeaders
 )
 
 qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
