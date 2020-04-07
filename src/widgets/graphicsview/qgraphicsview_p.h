@@ -117,6 +117,7 @@ public:
     QTransform matrix;
     qint64 scrollX, scrollY;
     void updateScroll();
+    bool canStartScrollingAt(const QPoint &startPos) const override;
 
     qreal leftIndent;
     qreal topIndent;

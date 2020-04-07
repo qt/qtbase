@@ -615,6 +615,26 @@ void QGraphicsViewPrivate::updateScroll()
 
 /*!
     \internal
+
+    * don't start scrolling when a drag mode has been set
+    * don't start scrolling on a movable item
+*/
+bool QGraphicsViewPrivate::canStartScrollingAt(const QPoint &startPos) const
+{
+    Q_Q(const QGraphicsView);
+    if (q->dragMode() != QGraphicsView::NoDrag)
+        return false;
+
+    const QGraphicsItem *childItem = q->itemAt(startPos);
+
+    if (childItem && (childItem->flags() & QGraphicsItem::ItemIsMovable))
+        return false;
+
+    return QAbstractScrollAreaPrivate::canStartScrollingAt(startPos);
+}
+
+/*!
+    \internal
 */
 void QGraphicsViewPrivate::replayLastMouseEvent()
 {

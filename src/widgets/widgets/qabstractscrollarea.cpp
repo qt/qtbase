@@ -1361,28 +1361,13 @@ void QAbstractScrollArea::scrollContentsBy(int, int)
     viewport()->update();
 }
 
-bool QAbstractScrollAreaPrivate::canStartScrollingAt( const QPoint &startPos )
+bool QAbstractScrollAreaPrivate::canStartScrollingAt(const QPoint &startPos) const
 {
-    Q_Q(QAbstractScrollArea);
-
-#if QT_CONFIG(graphicsview)
-    // don't start scrolling when a drag mode has been set.
-    // don't start scrolling on a movable item.
-    if (QGraphicsView *view = qobject_cast<QGraphicsView *>(q)) {
-        if (view->dragMode() != QGraphicsView::NoDrag)
-            return false;
-
-        QGraphicsItem *childItem = view->itemAt(startPos);
-
-        if (childItem && (childItem->flags() & QGraphicsItem::ItemIsMovable))
-            return false;
-    }
-#endif
+    Q_Q(const QAbstractScrollArea);
 
     // don't start scrolling on a QAbstractSlider
-    if (qobject_cast<QAbstractSlider *>(q->viewport()->childAt(startPos))) {
+    if (qobject_cast<QAbstractSlider *>(q->viewport()->childAt(startPos)))
         return false;
-    }
 
     return true;
 }
