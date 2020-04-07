@@ -36,7 +36,11 @@ win32 {
                     plugin_target = $$QMAKE_PLUGIN_BUNDLE_NAME
                 else: \
                     plugin_target = $$TARGET
-                QMAKE_RESOLVED_BUNDLE = $${QMAKE_RESOLVED_TARGET}$${plugin_target}.plugin
+                isEmpty(QMAKE_BUNDLE_EXTENSION): \
+                    plugin_ext = .plugin
+                else: \
+                    plugin_ext = $$QMAKE_BUNDLE_EXTENSION
+                QMAKE_RESOLVED_BUNDLE = $${QMAKE_RESOLVED_TARGET}$${plugin_target}$${plugin_ext}
                 !shallow_bundle: \
                     QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/Contents/MacOS/$${TARGET}
                 else: \
@@ -46,7 +50,11 @@ win32 {
                     framework_target = $$QMAKE_FRAMEWORK_BUNDLE_NAME
                 else: \
                     framework_target = $$TARGET
-                QMAKE_RESOLVED_BUNDLE = $${QMAKE_RESOLVED_TARGET}$${framework_target}.framework
+                isEmpty(QMAKE_BUNDLE_EXTENSION): \
+                    framework_ext = .framework
+                else: \
+                    framework_ext = $$QMAKE_BUNDLE_EXTENSION
+                QMAKE_RESOLVED_BUNDLE = $${QMAKE_RESOLVED_TARGET}$${framework_target}$${framework_ext}
                 !shallow_bundle {
                     TEMP_VERSION = $$section(VERSION, ., 0, 0)
                     isEmpty(TEMP_VERSION):TEMP_VERSION = A
