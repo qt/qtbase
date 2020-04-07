@@ -3424,7 +3424,7 @@ void QTextEditMimeData::setup() const
 {
     QTextEditMimeData *that = const_cast<QTextEditMimeData *>(this);
 #ifndef QT_NO_TEXTHTMLPARSER
-    that->setData(QLatin1String("text/html"), fragment.toHtml("utf-8").toUtf8());
+    that->setData(QLatin1String("text/html"), fragment.toHtml().toUtf8());
 #endif
 #ifndef QT_NO_TEXTODFWRITER
     {

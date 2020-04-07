@@ -376,17 +376,16 @@ QString QTextDocumentFragment::toPlainText() const
 /*!
     \since 4.2
 
-    Returns the contents of the document fragment as HTML,
-    using the specified \a encoding (e.g., "UTF-8", "ISO 8859-1").
+    Returns the contents of the document fragment as HTML.
 
-    \sa toPlainText(), QTextDocument::toHtml(), QTextCodec
+    \sa toPlainText(), QTextDocument::toHtml()
 */
-QString QTextDocumentFragment::toHtml(const QByteArray &encoding) const
+QString QTextDocumentFragment::toHtml() const
 {
     if (!d)
         return QString();
 
-    return QTextHtmlExporter(d->doc).toHtml(encoding, QTextHtmlExporter::ExportFragment);
+    return QTextHtmlExporter(d->doc).toHtml(QTextHtmlExporter::ExportFragment);
 }
 
 #endif // QT_NO_TEXTHTMLPARSER
@@ -1268,12 +1267,6 @@ void QTextHtmlImporter::appendBlock(const QTextBlockFormat &format, QTextCharFor
 */
 
 #ifndef QT_NO_TEXTHTMLPARSER
-
-QTextDocumentFragment QTextDocumentFragment::fromHtml(const QString &html)
-{
-    return fromHtml(html, nullptr);
-}
-
 /*!
     \fn QTextDocumentFragment QTextDocumentFragment::fromHtml(const QString &text, const QTextDocument *resourceProvider)
     \since 4.2

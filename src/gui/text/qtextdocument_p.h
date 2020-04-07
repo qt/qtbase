@@ -404,7 +404,7 @@ public:
         ExportFragment
     };
 
-    QString toHtml(const QByteArray &encoding, ExportMode mode = ExportEntireDocument);
+    QString toHtml(ExportMode mode = ExportEntireDocument);
 
 private:
     enum StyleMode { EmitStyleTag, OmitStyleTag };

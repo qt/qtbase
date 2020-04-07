@@ -147,7 +147,7 @@ public:
     QString metaInformation(MetaInformation info) const;
 
 #ifndef QT_NO_TEXTHTMLPARSER
-    QString toHtml(const QByteArray &encoding = QByteArray()) const;
+    QString toHtml() const;
     void setHtml(const QString &html);
 #endif
 

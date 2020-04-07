@@ -276,11 +276,7 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
             qWarning("QTextDocumentWriter::write: the device cannot be opened for writing");
             return false;
         }
-        QTextStream ts(d->device);
-#if QT_CONFIG(textcodec)
-        ts.setCodec("utf-8");
-        ts << document->toHtml("utf-8");
-#endif
+        d->device->write(document->toHtml().toUtf8());
         d->device->close();
         return true;
     }

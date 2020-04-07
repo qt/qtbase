@@ -283,7 +283,7 @@ void tst_QTextDocument::init()
 
     htmlHead = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
             "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
             "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\">\n");
@@ -1848,7 +1848,7 @@ void tst_QTextDocument::toHtmlBodyBgColor()
 
     QString expectedHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
             "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
             "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\""
@@ -1877,7 +1877,7 @@ void tst_QTextDocument::toHtmlBodyBgColorRgba()
 
     QString expectedHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
             "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
             "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\""
@@ -1905,7 +1905,7 @@ void tst_QTextDocument::toHtmlBodyBgColorTransparent()
 
     QString expectedHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
             "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
             "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\""
@@ -2324,6 +2324,7 @@ void tst_QTextDocument::clonePreservesFormatsWhenEmpty()
     QCOMPARE(cloneCursor.blockCharFormat().fontWeight(), charFormat.fontWeight());
     QCOMPARE(cloneCursor.blockFormat().alignment(), blockFormat.alignment());
     QCOMPARE(cloneCursor.blockFormat().indent(), blockFormat.indent());
+    delete clone;
 }
 
 void tst_QTextDocument::blockCount()
@@ -2730,7 +2731,7 @@ void tst_QTextDocument::backgroundImage_checkExpectedHtml(const QTextDocument &d
 {
     QString expectedHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
             "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; }\n"
             "</style></head>"
             "<body style=\" font-family:'%1'; font-size:%2; font-weight:%3; font-style:%4;\">\n"

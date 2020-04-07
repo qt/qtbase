@@ -2202,7 +2202,7 @@ static QStringList resolvedFontFamilies(const QTextCharFormat &format)
     perfect, especially for complex documents, due to the limitations
     of HTML.
 */
-QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
+QString QTextHtmlExporter::toHtml(ExportMode mode)
 {
     html = QLatin1String("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
             "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
@@ -2211,8 +2211,7 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
 
     fragmentMarkers = (mode == ExportFragment);
 
-    if (!encoding.isEmpty())
-        html += QString::fromLatin1("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=%1\" />").arg(QString::fromLatin1(encoding));
+    html += QString::fromLatin1("<meta charset=\"utf-8\" />");
 
     QString title  = doc->metaInformation(QTextDocument::DocumentTitle);
     if (!title.isEmpty())
@@ -3239,23 +3238,17 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
 /*!
     Returns a string containing an HTML representation of the document.
 
-    The \a encoding parameter specifies the value for the charset attribute
-    in the html header. For example if 'utf-8' is specified then the
-    beginning of the generated html will look like this:
-    \snippet code/src_gui_text_qtextdocument.cpp 0
-
-    If no encoding is specified then no such meta information is generated.
-
+    The content of the document specifies its encoding to be UTF-8.
     If you later on convert the returned html string into a byte array for
-    transmission over a network or when saving to disk you should specify
-    the encoding you're going to use for the conversion to a byte array here.
+    transmission over a network or when saving to disk you should use
+    QString::toUtf8() to convert the string to a QByteArray.
 
     \sa {Supported HTML Subset}
 */
 #ifndef QT_NO_TEXTHTMLPARSER
-QString QTextDocument::toHtml(const QByteArray &encoding) const
+QString QTextDocument::toHtml() const
 {
-    return QTextHtmlExporter(this).toHtml(encoding);
+    return QTextHtmlExporter(this).toHtml();
 }
 #endif // QT_NO_TEXTHTMLPARSER
 
