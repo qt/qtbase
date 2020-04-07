@@ -998,7 +998,6 @@ QTextOdfWriter::QTextOdfWriter(const QTextDocument &document, QIODevice *device)
     m_document(&document),
     m_device(device),
     m_strategy(nullptr),
-    m_codec(nullptr),
     m_createArchive(true)
 {
 }
@@ -1015,10 +1014,6 @@ bool QTextOdfWriter::writeAll()
         return false;
     }
     QXmlStreamWriter writer(m_strategy->contentStream);
-#if QT_CONFIG(textcodec)
-    if (m_codec)
-        writer.setCodec(m_codec);
-#endif
     // prettyfy
     writer.setAutoFormatting(true);
     writer.setAutoFormattingIndent(2);

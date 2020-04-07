@@ -86,7 +86,6 @@ public:
     QTextOdfWriter(const QTextDocument &document, QIODevice *device);
     bool writeAll();
 
-    void setCodec(QTextCodec *codec) { m_codec = codec; }
     void setCreateArchive(bool on) { m_createArchive = on; }
     bool createArchive() const { return m_createArchive; }
 
@@ -116,7 +115,6 @@ private:
     QIODevice *m_device;
 
     QOutputStrategy *m_strategy;
-    QTextCodec *m_codec;
     bool m_createArchive;
 
     QStack<QTextList *> m_listStack;

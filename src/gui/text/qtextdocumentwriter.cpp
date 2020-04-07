@@ -41,9 +41,6 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qfileinfo.h>
-#if QT_CONFIG(textcodec)
-#include <QtCore/qtextcodec.h>
-#endif
 #include <QtCore/qtextstream.h>
 #include <QtCore/qdebug.h>
 #include "qtextdocument.h"
@@ -68,9 +65,6 @@ public:
     QByteArray format;
     QIODevice *device;
     bool deleteDevice;
-#if QT_CONFIG(textcodec)
-    QTextCodec *codec;
-#endif
 
     QTextDocumentWriter *q;
 };
@@ -109,9 +103,6 @@ public:
 QTextDocumentWriterPrivate::QTextDocumentWriterPrivate(QTextDocumentWriter *qq)
     : device(nullptr),
     deleteDevice(false),
-#if QT_CONFIG(textcodec)
-    codec(QTextCodec::codecForName("utf-8")),
-#endif
     q(qq)
 {
 }
@@ -263,9 +254,6 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
 #ifndef QT_NO_TEXTODFWRITER
     if (format == "odf" || format == "opendocumentformat" || format == "odt") {
         QTextOdfWriter writer(*document, d->device);
-#if QT_CONFIG(textcodec)
-        writer.setCodec(d->codec);
-#endif
         return writer.writeAll();
     }
 #endif // QT_NO_TEXTODFWRITER
@@ -290,8 +278,8 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
         }
         QTextStream ts(d->device);
 #if QT_CONFIG(textcodec)
-        ts.setCodec(d->codec);
-        ts << document->toHtml(d->codec->name());
+        ts.setCodec("utf-8");
+        ts << document->toHtml("utf-8");
 #endif
         d->device->close();
         return true;
@@ -304,7 +292,7 @@ bool QTextDocumentWriter::write(const QTextDocument *document)
         }
         QTextStream ts(d->device);
 #if QT_CONFIG(textcodec)
-        ts.setCodec(d->codec);
+        ts.setCodec("utf-8");
 #endif
         ts << document->toPlainText();
         d->device->close();
@@ -327,32 +315,6 @@ bool QTextDocumentWriter::write(const QTextDocumentFragment &fragment)
         return write(doc);
     return false;
 }
-
-/*!
-    Sets the codec for this stream to \a codec. The codec is used for
-    encoding any data that is written. By default, QTextDocumentWriter
-    uses UTF-8.
-*/
-
-#if QT_CONFIG(textcodec)
-void QTextDocumentWriter::setCodec(QTextCodec *codec)
-{
-    if (codec == nullptr)
-        codec = QTextCodec::codecForName("UTF-8");
-    Q_ASSERT(codec);
-    d->codec = codec;
-}
-#endif
-
-/*!
-    Returns the codec that is currently assigned to the writer.
-*/
-#if QT_CONFIG(textcodec)
-QTextCodec *QTextDocumentWriter::codec() const
-{
-    return d->codec;
-}
-#endif
 
 /*!
     Returns the list of document formats supported by QTextDocumentWriter.
