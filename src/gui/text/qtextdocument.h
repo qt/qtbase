@@ -62,7 +62,6 @@ class QTextObject;
 class QTextFormat;
 class QTextFrame;
 class QTextBlock;
-class QTextCodec;
 class QVariant;
 class QRectF;
 class QTextOption;
@@ -74,10 +73,6 @@ namespace Qt
 {
     Q_GUI_EXPORT bool mightBeRichText(const QString&);
     Q_GUI_EXPORT QString convertFromPlainText(const QString &plain, WhiteSpaceMode mode = WhiteSpacePre);
-
-#if QT_CONFIG(textcodec) || defined(Q_CLANG_QDOC)
-    Q_GUI_EXPORT QTextCodec *codecForHtml(const QByteArray &ba);
-#endif
 }
 
 class Q_GUI_EXPORT QAbstractUndoItem

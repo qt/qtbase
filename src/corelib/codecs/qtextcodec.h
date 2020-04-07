@@ -167,6 +167,11 @@ private:
     QTextCodec::ConverterState state;
 };
 
+namespace Qt
+{
+    Q_CORE_EXPORT QTextCodec *codecForHtml(const QByteArray &ba);
+}
+
 QT_END_NAMESPACE
 
 #endif // QTEXTCODEC_H

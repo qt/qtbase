@@ -1275,4 +1275,15 @@ bool QTextDecoder::needsMoreData() const
     return state.remainingChars;
 }
 
+/*!
+    \fn QTextCodec *Qt::codecForHtml(const QByteArray &ba)
+    \internal
+
+    This function is defined in the \c <QTextCodec> header file.
+*/
+QTextCodec *Qt::codecForHtml(const QByteArray &ba)
+{
+    return QTextCodec::codecForHtml(ba);
+}
+
 QT_END_NAMESPACE
