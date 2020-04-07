@@ -49,11 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
-
-class QTextCodec;
 class QRect;
-
 
 class Q_GUI_EXPORT QFontMetrics
 {
