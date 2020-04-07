@@ -1362,8 +1362,8 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType::Type 
     }
 
     QVector<xcb_atom_t> atoms = drag->xdnd_types;
-    QByteArray encoding;
-    xcb_atom_t a = mimeAtomForFormat(c, QLatin1String(format), requestedType, atoms, &encoding);
+    bool hasUtf8 = false;
+    xcb_atom_t a = mimeAtomForFormat(c, QLatin1String(format), requestedType, atoms, &hasUtf8);
     if (a == XCB_NONE)
         return result;
 
@@ -1375,7 +1375,7 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType::Type 
     result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection, drag->targetTime());
 #endif
 
-    return mimeConvertToFormat(c, a, result, QLatin1String(format), requestedType, encoding);
+    return mimeConvertToFormat(c, a, result, QLatin1String(format), requestedType, hasUtf8);
 }
 
 bool QXcbDropData::hasFormat_sys(const QString &format) const
