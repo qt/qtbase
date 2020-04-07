@@ -45,6 +45,7 @@
 #include <QtCore/qvector.h>
 #include <QDebug>
 
+#include <limits>
 #include <locale>
 
 QT_BEGIN_NAMESPACE
@@ -120,7 +121,7 @@ bool QAsn1Element::read(QDataStream &stream)
         return false;
 
     // length
-    qint64 length = 0;
+    quint64 length = 0;
     quint8 first;
     stream >> first;
     if (first & 0x80) {
@@ -139,11 +140,13 @@ bool QAsn1Element::read(QDataStream &stream)
         length = (first & 0x7f);
     }
 
+    if (length > quint64(std::numeric_limits<int>::max()))
+        return false;
     // value
     QByteArray tmpValue;
     tmpValue.resize(length);
     int count = stream.readRawData(tmpValue.data(), tmpValue.size());
-    if (count != length)
+    if (count != int(length))
         return false;
 
     mType = tmpType;
