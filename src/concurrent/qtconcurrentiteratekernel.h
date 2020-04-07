@@ -61,16 +61,18 @@ namespace QtConcurrent {
     reserve and process at a time. This is done by measuring the time spent
     in the user code versus the control part code, and then increasing
     the block size if the ratio between them is to small. The block size
-    management is done on the basis of the median of several timing measuremens,
-    and it is done induvidualy for each thread.
+    management is done on the basis of the median of several timing measurements,
+    and it is done individually for each thread.
 */
 class Q_CONCURRENT_EXPORT BlockSizeManager
 {
 public:
-    BlockSizeManager(int iterationCount);
+    explicit BlockSizeManager(int iterationCount);
+
     void timeBeforeUser();
     void timeAfterUser();
     int blockSize();
+
 private:
     inline bool blockSizeMaxed()
     {
@@ -80,37 +82,11 @@ private:
     const int maxBlockSize;
     qint64 beforeUser;
     qint64 afterUser;
-    Median<double> controlPartElapsed;
-    Median<double> userPartElapsed;
+    Median controlPartElapsed;
+    Median userPartElapsed;
     int m_blockSize;
 
     Q_DISABLE_COPY(BlockSizeManager)
-};
-
-// ### Qt6: Replace BlockSizeManager with V2 implementation
-class Q_CONCURRENT_EXPORT BlockSizeManagerV2
-{
-public:
-    explicit BlockSizeManagerV2(int iterationCount);
-
-    void timeBeforeUser();
-    void timeAfterUser();
-    int blockSize();
-
-private:
-    inline bool blockSizeMaxed()
-    {
-        return (m_blockSize >= maxBlockSize);
-    }
-
-    const int maxBlockSize;
-    qint64 beforeUser;
-    qint64 afterUser;
-    MedianDouble controlPartElapsed;
-    MedianDouble userPartElapsed;
-    int m_blockSize;
-
-    Q_DISABLE_COPY(BlockSizeManagerV2)
 };
 
 template <typename T>
@@ -221,7 +197,7 @@ public:
 
     ThreadFunctionResult forThreadFunction()
     {
-        BlockSizeManagerV2 blockSizeManager(iterationCount);
+        BlockSizeManager blockSizeManager(iterationCount);
         ResultReporter<T> resultReporter(this);
 
         for(;;) {

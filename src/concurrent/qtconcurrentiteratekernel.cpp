@@ -48,8 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 enum {
-    TargetRatio = 100,
-    MedianSize = 7
+    TargetRatio = 100
 };
 
 static qint64 getticks()
@@ -71,19 +70,7 @@ namespace QtConcurrent {
  */
 
 /*!
-  \class QtConcurrent::MedianDouble
-  \inmodule QtConcurrent
-  \internal
- */
-
-/*!
   \class QtConcurrent::BlockSizeManager
-  \inmodule QtConcurrent
-  \internal
- */
-
-/*!
-  \class QtConcurrent::BlockSizeManagerV2
   \inmodule QtConcurrent
   \internal
  */
@@ -116,10 +103,9 @@ namespace QtConcurrent {
 
 */
 BlockSizeManager::BlockSizeManager(int iterationCount)
-: maxBlockSize(iterationCount / (QThreadPool::globalInstance()->maxThreadCount() * 2)),
-  beforeUser(0), afterUser(0),
-  controlPartElapsed(MedianSize), userPartElapsed(MedianSize),
-  m_blockSize(1)
+    : maxBlockSize(iterationCount / (QThreadPool::globalInstance()->maxThreadCount() * 2)),
+      beforeUser(0), afterUser(0),
+      m_blockSize(1)
 { }
 
 // Records the time before user code.
@@ -161,58 +147,6 @@ void BlockSizeManager::timeAfterUser()
 }
 
 int BlockSizeManager::blockSize()
-{
-    return m_blockSize;
-}
-
-/*! \internal
-
-*/
-BlockSizeManagerV2::BlockSizeManagerV2(int iterationCount)
-    : maxBlockSize(iterationCount / (QThreadPool::globalInstance()->maxThreadCount() * 2)),
-      beforeUser(0), afterUser(0),
-      m_blockSize(1)
-{ }
-
-// Records the time before user code.
-void BlockSizeManagerV2::timeBeforeUser()
-{
-    if (blockSizeMaxed())
-        return;
-
-    beforeUser = getticks();
-    controlPartElapsed.addValue(elapsed(beforeUser, afterUser));
-}
-
- // Records the time after user code and adjust the block size if we are spending
- // to much time in the for control code compared with the user code.
-void BlockSizeManagerV2::timeAfterUser()
-{
-    if (blockSizeMaxed())
-        return;
-
-    afterUser = getticks();
-    userPartElapsed.addValue(elapsed(afterUser, beforeUser));
-
-    if (controlPartElapsed.isMedianValid() == false)
-        return;
-
-    if (controlPartElapsed.median() * TargetRatio < userPartElapsed.median())
-        return;
-
-    m_blockSize = qMin(m_blockSize * 2,  maxBlockSize);
-
-#ifdef QTCONCURRENT_FOR_DEBUG
-    qDebug() << QThread::currentThread() << "adjusting block size" << controlPartElapsed.median() << userPartElapsed.median() << m_blockSize;
-#endif
-
-    // Reset the medians after adjusting the block size so we get
-    // new measurements with the new block size.
-    controlPartElapsed.reset();
-    userPartElapsed.reset();
-}
-
-int BlockSizeManagerV2::blockSize()
 {
     return m_blockSize;
 }
