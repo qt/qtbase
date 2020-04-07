@@ -657,7 +657,6 @@ function(qt_config_compile_test name)
         endif()
 
         # Pass which packages need to be found.
-        # Very scary / ugly escaping incoming.
         if(arg_PACKAGES)
             set(packages_list "")
 
@@ -667,9 +666,8 @@ function(qt_config_compile_test name)
             foreach(p ${arg_PACKAGES})
                 if(p STREQUAL PACKAGE)
                     if(package_entry)
-                        # Use 6 backslashes + ; which will be collapsed when doing variable
-                        # expansion at multiple stages.
-                        list(JOIN package_entry "\\\\\\;" package_entry_string)
+                        # Encode the ";" into "\;" to separate the arguments of a find_package call.
+                        string(REPLACE ";" "\\;" package_entry_string "${package_entry}")
                         list(APPEND packages_list "${package_entry_string}")
                     endif()
 
@@ -680,18 +678,15 @@ function(qt_config_compile_test name)
             endforeach()
             # Parse final entry.
             if(package_entry)
-                list(JOIN package_entry "\\\\\\;" package_entry_string)
+                string(REPLACE ";" "\\;" package_entry_string "${package_entry}")
                 list(APPEND packages_list "${package_entry_string}")
             endif()
 
-            # Before the join, packages_list has 3 backslashes + ; for each package part
-            # (name, component) if you display them.
-            # After the join, packages_list has 2 backslashes + ; for each package part, and a
-            # '\;' to separate package entries.
-            list(JOIN packages_list "\;" packages_list)
+            # Encode the ";" again.
+            string(REPLACE ";" "\\;" packages_list "${packages_list}")
 
-            # Finally when appending the joined string to the flags, the flags are separated by
-            # ';', the package entries by '\;', and the packages parts of an entry by '\\;'.
+            # The flags are separated by ';', the find_package entries by '\;',
+            # and the package parts of an entry by '\\;'.
             # Example:
             # WrapFoo\\;6\\;COMPONENTS\\;bar\;WrapBaz\\;5
             list(APPEND flags "-DQT_CONFIG_COMPILE_TEST_PACKAGES:STRING=${packages_list}")
