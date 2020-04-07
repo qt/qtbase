@@ -45,6 +45,11 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}
     set_source_files_properties(../3rdparty/md4c/md4c.c PROPERTIES COMPILE_FLAGS "-Wno-error=unused-parameter -Wno-error=sign-compare -Wno-error=missing-field-initializers -Wno-error=missing-braces")
 endif()
 
+unset(qmake_module_config)
+if(QT_FEATURE_opengl)
+    list(APPEND qmake_module_config opengl)
+endif()
+
 # special case end
 
 qt_add_module(Gui
@@ -52,6 +57,7 @@ qt_add_module(Gui
     PLUGIN_TYPES platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
     FEATURE_DEPENDENCIES  # special case:
         Qt::Network # special case:
+    QMAKE_MODULE_CONFIG "${qmake_module_config}" # special case
     SOURCES
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
