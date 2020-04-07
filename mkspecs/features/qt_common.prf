@@ -25,7 +25,8 @@ contains(TEMPLATE, .*lib) {
     if(!host_build|!cross_compile):qtConfig(reduce_exports): CONFIG += hide_symbols
     unix:qtConfig(reduce_relocations): CONFIG += bsymbolic_functions
     qtConfig(separate_debug_info): CONFIG += separate_debug_info
-
+}
+contains(TEMPLATE, .*lib)|contains(TEMPLATE, aux) {
     !isEmpty(_QMAKE_SUPER_CACHE_): \
         rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
     else: \
