@@ -12,10 +12,10 @@
 defineTest(qtIsPrefixBuild) {
     prefixdir = $$1
     # qtbase non-prefix build?
-    exists($$prefixdir/.qmake.cache): \
+    exists($$prefixdir/.qmake.cache)|exists($$prefixdir/CMakeCache.txt): \
         return(false)
     # top-level non-prefix build?
-    contains(prefixdir, .*/qtbase):exists($$dirname(prefixdir)/.qmake.super): \
+    contains(prefixdir, .*/qtbase):if(exists($$dirname(prefixdir)/.qmake.super)|exists($$dirname(prefixdir)/CMakeCache.txt)): \
         return(false)
     return(true)
 }
