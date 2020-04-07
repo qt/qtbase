@@ -972,6 +972,25 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
     return result;
 }
 
+QString qFromUtfEncoded(const QByteArray &ba)
+{
+    const int arraySize = ba.size();
+    const uchar *buf = reinterpret_cast<const uchar *>(ba.constData());
+    const uint bom = 0xfeff;
+
+    if (arraySize > 3) {
+        uint uc = qFromUnaligned<uint>(buf);
+        if (uc == qToBigEndian(bom) || uc == qToLittleEndian(bom))
+            return QUtf32::convertToUnicode(ba.constData(), ba.length(), nullptr); // utf-32
+    }
+
+    if (arraySize > 1) {
+        ushort uc = qFromUnaligned<ushort>(buf);
+        if (uc == qToBigEndian(ushort(bom)) || qToLittleEndian(ushort(bom)))
+            return QUtf16::convertToUnicode(ba.constData(), ba.length(), nullptr); // utf-16
+    }
+    return QUtf8::convertToUnicode(ba.constData(), ba.length());
+}
 
 #if QT_CONFIG(textcodec)
 

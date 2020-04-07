@@ -54,6 +54,7 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qendian.h>
 
 #if QT_CONFIG(textcodec)
 #include "QtCore/qtextcodec.h"
@@ -316,6 +317,13 @@ struct QUtf32
     static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *, DataEndianness = DetectEndianness);
     static QByteArray convertFromUnicode(const QChar *, int, QTextCodec::ConverterState *, DataEndianness = DetectEndianness);
 };
+
+/*
+ Converts from different utf encodings looking at a possible byte order mark at the
+ beginning of the string. If no BOM exists, utf-8 is assumed.
+ */
+QString Q_CORE_EXPORT qFromUtfEncoded(const QByteArray &ba);
+
 
 #if QT_CONFIG(textcodec)
 

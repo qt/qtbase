@@ -47,7 +47,7 @@
 #include "qbuffer.h"
 #include "qimage.h"
 #if QT_CONFIG(textcodec)
-#include "qtextcodec.h"
+#include "private/qutfcodec_p.h"
 #endif
 
 #include "private/qguiapplication_p.h"
@@ -301,14 +301,9 @@ QString QClipboard::text(QString &subtype, Mode mode) const
     const QByteArray rawData = data->data(QLatin1String("text/") + subtype);
 
 #if QT_CONFIG(textcodec)
-    QTextCodec* codec = QTextCodec::codecForMib(106); // utf-8 is default
-    if (subtype == QLatin1String("html"))
-        codec = QTextCodec::codecForHtml(rawData, codec);
-    else
-        codec = QTextCodec::codecForUtfText(rawData, codec);
-    return codec->toUnicode(rawData);
+    return qFromUtfEncoded(rawData);
 #else // textcodec
-    return rawData;
+    return QString::fromUtf8(rawData);
 #endif // textcodec
 }
 
