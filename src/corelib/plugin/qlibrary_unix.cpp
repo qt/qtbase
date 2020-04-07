@@ -123,6 +123,7 @@ QStringList QLibraryPrivate::prefixes_sys()
 
 bool QLibraryPrivate::load_sys()
 {
+    QMutexLocker locker(&mutex);
     QString attempt;
     QFileSystemEntry fsEntry(fileName);
 
@@ -213,6 +214,7 @@ bool QLibraryPrivate::load_sys()
     }
 #endif
 
+    locker.unlock();
     bool retry = true;
     Handle hnd = nullptr;
     for (int prefix = 0; retry && !hnd && prefix < prefixes.size(); prefix++) {
@@ -273,6 +275,8 @@ bool QLibraryPrivate::load_sys()
         }
     }
 #endif
+
+    locker.relock();
     if (!hnd) {
         errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName, qdlerror());
     }

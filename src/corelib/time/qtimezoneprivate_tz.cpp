@@ -639,7 +639,7 @@ QTzTimeZonePrivate::QTzTimeZonePrivate()
 // Create a named time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
 {
-    init(ianaId);
+    init(ianaId.isEmpty() ? systemTimeZoneId() : ianaId);
 }
 
 QTzTimeZonePrivate::~QTzTimeZonePrivate()
@@ -852,13 +852,16 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::fetchEntry(const QByteArray &ianaId)
 
 void QTzTimeZonePrivate::init(const QByteArray &ianaId)
 {
+    // System ID defaults to UTC, so is never empty; and our callers default to
+    // the system ID if what they're given is empty.
+    Q_ASSERT(!ianaId.isEmpty());
     static QTzTimeZoneCache tzCache;
     const auto &entry = tzCache.fetchEntry(ianaId);
     if (entry.m_tranTimes.isEmpty() && entry.m_posixRule.isEmpty())
         return; // Invalid after all !
 
     cached_data = std::move(entry);
-    m_id = ianaId.isEmpty() ? systemTimeZoneId() : ianaId;
+    m_id = ianaId;
 }
 
 QLocale::Country QTzTimeZonePrivate::country() const
@@ -1147,29 +1150,6 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
         if (index >= 0) {
             // /etc/localtime is a symlink to the current TZ file, so extract from path
             ianaId = path.midRef(index + zoneinfo.size()).toUtf8();
-        }
-    }
-
-    // On Debian Etch up to Jessie, /etc/localtime is a copy of the relevant
-    // zoneinfo file, whose name is recorded in /etc/timezone:
-    if (ianaId.isEmpty()) {
-        QFile tzif(QStringLiteral("/etc/timezone"));
-        if (tzif.open(QIODevice::ReadOnly))
-            ianaId = tzif.readAll().trimmed();
-    }
-
-    // On some Red Hat distros /etc/localtime is real file with name held in /etc/sysconfig/clock
-    // in a line like ZONE="Europe/Oslo" or TIMEZONE="Europe/Oslo"
-    if (ianaId.isEmpty()) {
-        QFile tzif(QStringLiteral("/etc/sysconfig/clock"));
-        if (tzif.open(QIODevice::ReadOnly)) {
-            while (ianaId.isEmpty() && !tzif.atEnd()) {
-                const QByteArray line(tzif.readLine().trimmed());
-                if (line.startsWith("ZONE="))
-                    ianaId = line.mid(6, line.length() - 7);
-                else if (line.startsWith("TIMEZONE="))
-                    ianaId = line.mid(10, line.length() - 11);
-            }
         }
     }
 
