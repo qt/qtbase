@@ -2888,7 +2888,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         QCoreApplication::sendEvent(d->scene, event);
         break;
     }
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     case QEvent::ToolTip: {
         QHelpEvent *toolTip = static_cast<QHelpEvent *>(event);
         QGraphicsSceneHelpEvent helpEvent(QEvent::GraphicsSceneHelp);

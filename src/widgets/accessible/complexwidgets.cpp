@@ -57,7 +57,9 @@
 #endif
 #include <qstyle.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(tooltip)
 #include <qtooltip.h>
+#endif
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif

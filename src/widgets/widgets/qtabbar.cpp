@@ -52,7 +52,9 @@
 #if QT_CONFIG(tabwidget)
 #include "qtabwidget.h"
 #endif
+#if QT_CONFIG(tooltip)
 #include "qtooltip.h"
+#endif
 #if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
 #endif
@@ -1280,7 +1282,7 @@ void QTabBar::setTabIcon(int index, const QIcon & icon)
     }
 }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 /*!
     Sets the tool tip of the tab at position \a index to \a tip.
 */
@@ -1302,7 +1304,7 @@ QString QTabBar::tabToolTip(int index) const
         return tab->toolTip;
     return QString();
 }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 #if QT_CONFIG(whatsthis)
 /*!
@@ -1711,7 +1713,7 @@ bool QTabBar::event(QEvent *event)
         update(oldHoverRect);
         return true;
     }
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     case QEvent::ToolTip:
         if (const QTabBarPrivate::Tab *tab = d->at(tabAt(static_cast<QHelpEvent*>(event)->pos()))) {
             if (!tab->toolTip.isEmpty()) {
@@ -1720,7 +1722,7 @@ bool QTabBar::event(QEvent *event)
             }
         }
         break;
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(whatsthis)
     case QEvent::QEvent::QueryWhatsThis: {
         const QTabBarPrivate::Tab *tab = d->at(d->indexAtPos(static_cast<QHelpEvent*>(event)->pos()));
@@ -2785,7 +2787,7 @@ CloseButton::CloseButton(QWidget *parent)
 #ifndef QT_NO_CURSOR
     setCursor(Qt::ArrowCursor);
 #endif
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     setToolTip(tr("Close Tab"));
 #endif
     resize(sizeHint());

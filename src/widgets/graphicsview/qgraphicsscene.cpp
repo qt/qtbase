@@ -238,7 +238,9 @@
 #include <QtGui/qpolygon.h>
 #include <QtGui/qtouchdevice.h>
 #include <QtWidgets/qstyleoption.h>
+#if QT_CONFIG(tooltip)
 #include <QtWidgets/qtooltip.h>
+#endif
 #include <QtGui/qtransform.h>
 #include <QtGui/qinputmethod.h>
 #include <private/qapplication_p.h>
@@ -3729,7 +3731,7 @@ void QGraphicsScene::focusOutEvent(QFocusEvent *focusEvent)
 */
 void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
 {
-#ifdef QT_NO_TOOLTIP
+#if !QT_CONFIG(tooltip)
     Q_UNUSED(helpEvent);
 #else
     // Find the first item that does tooltips
@@ -3860,7 +3862,7 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
 */
 void QGraphicsScenePrivate::leaveScene(QWidget *viewport)
 {
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     QToolTip::hideText();
 #endif
     QGraphicsView *view = qobject_cast<QGraphicsView *>(viewport->parent());

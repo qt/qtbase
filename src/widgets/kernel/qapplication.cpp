@@ -58,7 +58,9 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qstylefactory.h"
+#if QT_CONFIG(tooltip)
 #include "qtooltip.h"
+#endif
 #include "qtranslator.h"
 #include "qvariant.h"
 #include "qwidget.h"
@@ -515,7 +517,7 @@ void QApplicationPrivate::init()
 
 void qt_init_tooltip_palette()
 {
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))
         QToolTip::setPalette(*toolTipPalette);
 #endif
@@ -3157,7 +3159,7 @@ QT_WARNING_POP
         break;
 #endif // QT_CONFIG(tabletevent)
 
-#if !defined(QT_NO_TOOLTIP) || QT_CONFIG(whatsthis)
+#if QT_CONFIG(tooltip) || QT_CONFIG(whatsthis)
     case QEvent::ToolTip:
     case QEvent::WhatsThis:
     case QEvent::QueryWhatsThis:

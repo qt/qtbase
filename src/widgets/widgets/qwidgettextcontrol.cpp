@@ -84,7 +84,9 @@
 #include <qurl.h>
 #include <qdesktopservices.h>
 #include <qinputmethod.h>
+#if QT_CONFIG(tooltip)
 #include <qtooltip.h>
+#endif
 #include <qstyleoption.h>
 #if QT_CONFIG(lineedit)
 #include <QtWidgets/qlineedit.h>
@@ -1074,13 +1076,13 @@ void QWidgetTextControl::processEvent(QEvent *e, const QTransform &transform, QW
             d->isEnabled = e->isAccepted();
             break;
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         case QEvent::ToolTip: {
             QHelpEvent *ev = static_cast<QHelpEvent *>(e);
             d->showToolTip(ev->globalPos(), transform.map(ev->pos()), contextWidget);
             break;
         }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 #if QT_CONFIG(draganddrop)
         case QEvent::DragEnter: {
@@ -2948,7 +2950,7 @@ void QWidgetTextControlPrivate::activateLinkUnderCursor(QString href)
         emit q_func()->linkActivated(href);
 }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 void QWidgetTextControlPrivate::showToolTip(const QPoint &globalPos, const QPointF &pos, QWidget *contextWidget)
 {
     const QString toolTip = q_func()->cursorForPosition(pos).charFormat().toolTip();
@@ -2956,7 +2958,7 @@ void QWidgetTextControlPrivate::showToolTip(const QPoint &globalPos, const QPoin
         return;
     QToolTip::showText(globalPos, toolTip, contextWidget);
 }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 bool QWidgetTextControlPrivate::isPreediting() const
 {

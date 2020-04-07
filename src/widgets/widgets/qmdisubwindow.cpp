@@ -154,7 +154,9 @@
 #if QT_CONFIG(whatsthis)
 #include <QWhatsThis>
 #endif
+#if QT_CONFIG(tooltip)
 #include <QToolTip>
+#endif
 #if QT_CONFIG(mainwindow)
 #include <QMainWindow>
 #endif
@@ -290,7 +292,7 @@ static inline bool isHoverControl(QStyle::SubControl control)
     return control != QStyle::SC_None && control != QStyle::SC_TitleBarLabel;
 }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 static void showToolTip(QHelpEvent *helpEvent, QWidget *widget, const QStyleOptionComplex &opt,
                         QStyle::ComplexControl complexControl, QStyle::SubControl subControl)
 {
@@ -355,7 +357,7 @@ static void showToolTip(QHelpEvent *helpEvent, QWidget *widget, const QStyleOpti
     const QRect rect = widget->style()->subControlRect(complexControl, &opt, subControl, widget);
     QToolTip::showText(helpEvent->globalPos(), toolTip, widget, rect);
 }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 namespace QMdi {
 /*
@@ -416,7 +418,7 @@ bool ControlLabel::event(QEvent *event)
         updateWindowIcon();
         setFixedSize(label.size());
     }
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     else if (event->type() == QEvent::ToolTip) {
         QStyleOptionTitleBar options;
         options.initFrom(this);
@@ -673,14 +675,14 @@ void ControllerWidget::leaveEvent(QEvent * /*event*/)
 */
 bool ControllerWidget::event(QEvent *event)
 {
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     if (event->type() == QEvent::ToolTip) {
         QStyleOptionComplex opt;
         initStyleOption(&opt);
         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
         showToolTip(helpEvent, this, opt, QStyle::CC_MdiControls, getSubControl(helpEvent->pos()));
     }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
     return QWidget::event(event);
 }
 
@@ -2874,7 +2876,7 @@ bool QMdiSubWindow::event(QEvent *event)
     case QEvent::FontChange:
         d->font = font();
         break;
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     case QEvent::ToolTip:
         showToolTip(static_cast<QHelpEvent *>(event), this, d->titleBarOptions(),
                     QStyle::CC_TitleBar, d->hoveredSubControl);

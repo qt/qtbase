@@ -654,7 +654,7 @@ public:
     // Implicit pointers (shared_null/shared_empty).
     QRegion opaqueChildren;
     QRegion dirty;
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     QString toolTip;
     int toolTipDuration;
 #endif

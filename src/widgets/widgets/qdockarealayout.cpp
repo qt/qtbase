@@ -2109,7 +2109,7 @@ bool QDockAreaLayoutInfo::updateTabBar() const
         quintptr id = tabId(item);
         if (tab_idx == tabBar->count()) {
             tabBar->insertTab(tab_idx, title);
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
             tabBar->setTabToolTip(tab_idx, title);
 #endif
             tabBar->setTabData(tab_idx, id);
@@ -2119,7 +2119,7 @@ bool QDockAreaLayoutInfo::updateTabBar() const
                 tabBar->removeTab(tab_idx);
             else {
                 tabBar->insertTab(tab_idx, title);
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
                 tabBar->setTabToolTip(tab_idx, title);
 #endif
                 tabBar->setTabData(tab_idx, id);
@@ -2128,7 +2128,7 @@ bool QDockAreaLayoutInfo::updateTabBar() const
 
         if (title != tabBar->tabText(tab_idx)) {
             tabBar->setTabText(tab_idx, title);
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
             tabBar->setTabToolTip(tab_idx, title);
 #endif
         }

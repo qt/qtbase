@@ -76,7 +76,7 @@ public:
     void setItemIcon(int index, const QIcon &icon);
     QIcon itemIcon(int index) const;
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     void setItemToolTip(int index, const QString &toolTip);
     QString itemToolTip(int index) const;
 #endif

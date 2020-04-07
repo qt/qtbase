@@ -48,7 +48,9 @@
 #if QT_CONFIG(label)
 #include "qlabel.h"
 #endif
+#if QT_CONFIG(tooltip)
 #include "qtooltip.h"
+#endif
 #if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
 #endif
@@ -425,7 +427,7 @@ QString QAccessibleWidget::text(QAccessible::Text t) const
         break;
     case QAccessible::Description:
         str = widget()->accessibleDescription();
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         if (str.isEmpty())
             str = widget()->toolTip();
 #endif

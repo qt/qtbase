@@ -117,7 +117,7 @@ public:
         bool visible;
         int shortcutId;
         QString text;
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         QString toolTip;
 #endif
 #if QT_CONFIG(whatsthis)

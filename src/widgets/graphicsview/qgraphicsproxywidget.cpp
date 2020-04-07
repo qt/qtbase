@@ -890,7 +890,7 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         }
         break;
     }
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     case QEvent::GraphicsSceneHelp: {
         // Propagate the help event (for tooltip) to the widget under mouse
         if (d->lastWidgetUnderMouse) {
@@ -981,7 +981,7 @@ bool QGraphicsProxyWidget::eventFilter(QObject *object, QEvent *event)
                 d->styleChangeMode = QGraphicsProxyWidgetPrivate::NoMode;
             }
             break;
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         case QEvent::ToolTipChange:
             // Propagate tooltip change to the proxy.
             if (!d->tooltipChangeMode) {

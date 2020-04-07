@@ -191,7 +191,7 @@ public:
     void setPanelModality(PanelModality panelModality);
     bool isBlockedByModalPanel(QGraphicsItem **blockingPanel = nullptr) const;
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     QString toolTip() const;
     void setToolTip(const QString &toolTip);
 #endif

@@ -2239,7 +2239,7 @@ bool QGraphicsItem::isBlockedByModalPanel(QGraphicsItem **blockingPanel) const
     return false;
 }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 /*!
     Returns the item's tool tip, or an empty QString if no tool tip has been
     set.
@@ -2263,7 +2263,7 @@ void QGraphicsItem::setToolTip(const QString &toolTip)
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraToolTip, toolTipVariant.toString());
     itemChange(ItemToolTipHasChanged, toolTipVariant);
 }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 #ifndef QT_NO_CURSOR
 /*!

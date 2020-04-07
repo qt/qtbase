@@ -57,7 +57,6 @@
 #include <qpa/qplatformcursor.h>
 #include <private/qstylesheetstyle_p.h>
 
-#ifndef QT_NO_TOOLTIP
 #include <qlabel.h>
 #include <QtWidgets/private/qlabel_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -628,4 +627,3 @@ void QToolTip::setFont(const QFont &font)
 QT_END_NAMESPACE
 
 #include "qtooltip.moc"
-#endif // QT_NO_TOOLTIP

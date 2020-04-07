@@ -45,7 +45,9 @@
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif
+#if QT_CONFIG(tooltip)
 #include <qtooltip.h>
+#endif
 #include <qevent.h>
 #include <qstring.h>
 #include <qdebug.h>
@@ -369,7 +371,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
         return false;
     Q_D(QAbstractItemDelegate);
     switch (event->type()) {
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     case QEvent::ToolTip: {
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
         const int precision = inherits("QItemDelegate") ? 10 : 6; // keep in sync with DBL_DIG in qitemdelegate.cpp

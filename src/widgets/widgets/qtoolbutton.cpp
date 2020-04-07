@@ -49,7 +49,9 @@
 #include <qpointer.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(tooltip)
 #include <qtooltip.h>
+#endif
 #if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
 #endif
@@ -944,7 +946,7 @@ void QToolButton::setDefaultAction(QAction *action)
         buttonText.replace(QLatin1String("&"), QLatin1String("&&"));
     setText(buttonText);
     setIcon(action->icon());
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     setToolTip(action->toolTip());
 #endif
 #if QT_CONFIG(statustip)

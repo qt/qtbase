@@ -49,7 +49,9 @@
 #endif
 #include <qevent.h>
 #include <qscrollbar.h>
+#if QT_CONFIG(tooltip)
 #include <qtooltip.h>
+#endif
 #include <qdatetime.h>
 #if QT_CONFIG(lineedit)
 #include <qlineedit.h>

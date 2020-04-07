@@ -113,7 +113,7 @@ public:
         { return data(Qt::StatusTipRole).toString(); }
     inline void setStatusTip(const QString &statusTip);
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     inline QString toolTip() const
         { return data(Qt::ToolTipRole).toString(); }
     inline void setToolTip(const QString &toolTip);
@@ -187,7 +187,7 @@ inline void QTableWidgetItem::setIcon(const QIcon &aicon)
 inline void QTableWidgetItem::setStatusTip(const QString &astatusTip)
 { setData(Qt::StatusTipRole, astatusTip); }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 inline void QTableWidgetItem::setToolTip(const QString &atoolTip)
 { setData(Qt::ToolTipRole, atoolTip); }
 #endif

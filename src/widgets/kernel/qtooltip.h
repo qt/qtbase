@@ -43,10 +43,8 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(tooltip);
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TOOLTIP
 
 class Q_WIDGETS_EXPORT QToolTip
 {
@@ -66,8 +64,6 @@ public:
     static QFont font();
     static void setFont(const QFont &);
 };
-
-#endif // QT_NO_TOOLTIP
 
 QT_END_NAMESPACE
 

@@ -45,7 +45,9 @@
 #include <qevent.h>
 #include <qpainter.h>
 #include <qscrollbar.h>
+#if QT_CONFIG(tooltip)
 #include <qtooltip.h>
+#endif
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif
@@ -2756,7 +2758,7 @@ bool QHeaderView::viewportEvent(QEvent *e)
 {
     Q_D(QHeaderView);
     switch (e->type()) {
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     case QEvent::ToolTip: {
         QHelpEvent *he = static_cast<QHelpEvent*>(e);
         int logical = logicalIndexAt(he->pos());

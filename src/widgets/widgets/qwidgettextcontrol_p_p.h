@@ -171,7 +171,7 @@ public:
 
     void activateLinkUnderCursor(QString href = QString());
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     void showToolTip(const QPoint &globalPos, const QPointF &pos, QWidget *contextWidget);
 #endif
 

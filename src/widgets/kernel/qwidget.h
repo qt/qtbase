@@ -182,7 +182,7 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QString windowIconText READ windowIconText WRITE setWindowIconText NOTIFY windowIconTextChanged) // deprecated
     Q_PROPERTY(double windowOpacity READ windowOpacity WRITE setWindowOpacity)
     Q_PROPERTY(bool windowModified READ isWindowModified WRITE setWindowModified)
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     Q_PROPERTY(QString toolTip READ toolTip WRITE setToolTip)
     Q_PROPERTY(int toolTipDuration READ toolTipDuration WRITE setToolTipDuration)
 #endif
@@ -382,7 +382,7 @@ public:
     qreal windowOpacity() const;
 
     bool isWindowModified() const;
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     void setToolTip(const QString &);
     QString toolTip() const;
     void setToolTipDuration(int msec);

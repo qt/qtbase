@@ -73,7 +73,9 @@
 #include "qtoolbutton.h"
 #endif
 #include "qpushbutton.h"
+#if QT_CONFIG(tooltip)
 #include "qtooltip.h"
+#endif
 #include <qwindow.h>
 #include <private/qpushbutton_p.h>
 #include <private/qaction_p.h>
@@ -3029,7 +3031,7 @@ QMenu::event(QEvent *e)
         if (d->currentAction)
             d->popupAction(d->currentAction, 0, false);
         break;
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     case QEvent::ToolTip:
         if (d->toolTipsVisible) {
             const QHelpEvent *ev = static_cast<const QHelpEvent*>(e);
@@ -3041,7 +3043,7 @@ QMenu::event(QEvent *e)
             }
         }
         break;
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(whatsthis)
     case QEvent::QueryWhatsThis:
         e->setAccepted(d->whatsThis.size());

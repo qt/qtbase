@@ -47,7 +47,9 @@
 #include <qscrollarea.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(tooltip)
 #include <qtooltip.h>
+#endif
 #include <qabstractbutton.h>
 
 #include <private/qmemory_p.h>
@@ -96,7 +98,7 @@ public:
 
         inline void setText(const QString &text) { button->setText(text); }
         inline void setIcon(const QIcon &is) { button->setIcon(is); }
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         inline void setToolTip(const QString &tip) { button->setToolTip(tip); }
         inline QString toolTip() const { return button->toolTip(); }
 #endif
@@ -638,7 +640,7 @@ void QToolBox::setItemIcon(int index, const QIcon &icon)
         c->setIcon(icon);
 }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 /*!
     Sets the tooltip of the item at position \a index to \a toolTip.
 */
@@ -650,7 +652,7 @@ void QToolBox::setItemToolTip(int index, const QString &toolTip)
     if (c)
         c->setToolTip(toolTip);
 }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 /*!
     Returns \c true if the item at position \a index is enabled; otherwise returns \c false.
@@ -687,7 +689,7 @@ QIcon QToolBox::itemIcon(int index) const
     return (c ? c->icon() : QIcon());
 }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 /*!
     Returns the tooltip of the item at position \a index, or an
     empty string if \a index is out of range.
@@ -699,7 +701,7 @@ QString QToolBox::itemToolTip(int index) const
     const QToolBoxPrivate::Page *c = d->page(index);
     return (c ? c->toolTip() : QString());
 }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 /*! \reimp */
 void QToolBox::showEvent(QShowEvent *e)

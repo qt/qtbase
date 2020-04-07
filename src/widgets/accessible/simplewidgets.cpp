@@ -545,7 +545,7 @@ void *QAccessibleDisplay::interface_cast(QAccessible::InterfaceType t)
 /*! \internal */
 QString QAccessibleDisplay::imageDescription() const
 {
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     return widget()->toolTip();
 #else
     return QString();

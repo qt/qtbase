@@ -113,7 +113,7 @@ public:
         { return data(column, Qt::StatusTipRole).toString(); }
     inline void setStatusTip(int column, const QString &statusTip);
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     inline QString toolTip(int column) const
         { return data(column, Qt::ToolTipRole).toString(); }
     inline void setToolTip(int column, const QString &toolTip);
@@ -220,7 +220,7 @@ inline void QTreeWidgetItem::setStatusTip(int column, const QString &astatusTip)
 { setData(column, Qt::StatusTipRole, astatusTip); }
 #endif
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 inline void QTreeWidgetItem::setToolTip(int column, const QString &atoolTip)
 { setData(column, Qt::ToolTipRole, atoolTip); }
 #endif

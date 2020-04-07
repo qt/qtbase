@@ -1209,7 +1209,7 @@ int QTabWidget::count() const
     return d->tabs->count();
 }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 /*!
     Sets the tab tool tip for the page at position \a index to \a tip.
 
@@ -1232,7 +1232,7 @@ QString QTabWidget::tabToolTip(int index) const
     Q_D(const QTabWidget);
     return d->tabs->tabToolTip(index);
 }
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 #if QT_CONFIG(whatsthis)
 /*!

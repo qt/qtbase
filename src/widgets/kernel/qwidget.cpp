@@ -64,7 +64,9 @@
 #include <qpa/qplatformwindow.h>
 #include "private/qwidgetwindow_p.h"
 #include "qpainter.h"
+#if QT_CONFIG(tooltip)
 #include "qtooltip.h"
+#endif
 #if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
 #endif
@@ -147,7 +149,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #if !defined(QT_NO_IM)
       , imHints(Qt::ImhNone)
 #endif
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
       , toolTipDuration(-1)
 #endif
       , directFontResolveMask(0)
@@ -8972,7 +8974,7 @@ bool QWidget::event(QEvent *event)
             }
         }
         break;
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     case QEvent::ToolTip:
         if (!d->toolTip.isEmpty())
             QToolTip::showText(static_cast<QHelpEvent*>(event)->globalPos(), d->toolTip, this, QRect(), d->toolTipDuration);
@@ -11237,7 +11239,7 @@ void QWidgetPrivate::setWindowModified_helper()
     }
 }
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
 /*!
   \property QWidget::toolTip
 
@@ -11294,7 +11296,7 @@ int QWidget::toolTipDuration() const
     return d->toolTipDuration;
 }
 
-#endif // QT_NO_TOOLTIP
+#endif // QT_CONFIG(tooltip)
 
 
 #if QT_CONFIG(statustip)

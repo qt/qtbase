@@ -65,7 +65,9 @@
 #include "private/qmath_p.h"
 #include <qabstractscrollarea.h>
 #include "private/qabstractscrollarea_p.h"
+#if QT_CONFIG(tooltip)
 #include <qtooltip.h>
+#endif
 #include <qshareddata.h>
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
@@ -987,7 +989,7 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
     int adj = -255;
     hasFont = v.extractFont(&font, &adj);
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     if (object && qstrcmp(object->metaObject()->className(), "QTipLabel") == 0)
         palette = QToolTip::palette();
 #endif
@@ -1508,7 +1510,7 @@ public:
         if (isNullNode(node))
             return QStringList();
         const QMetaObject *metaObject = OBJECT_PTR(node)->metaObject();
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         if (qstrcmp(metaObject->className(), "QTipLabel") == 0)
             return QStringList(QLatin1String("QToolTip"));
 #endif
@@ -1560,7 +1562,7 @@ public:
         if (isNullNode(node))
             return false;
         const QMetaObject *metaObject = OBJECT_PTR(node)->metaObject();
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
         if (qstrcmp(metaObject->className(), "QTipLabel") == 0)
             return nodeName == QLatin1String("QToolTip");
 #endif

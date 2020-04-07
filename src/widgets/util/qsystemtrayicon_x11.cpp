@@ -308,7 +308,7 @@ void QSystemTrayIconPrivate::updateToolTip_sys()
     }
     if (!sys)
         return;
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     sys->setToolTip(toolTip);
 #endif
 }

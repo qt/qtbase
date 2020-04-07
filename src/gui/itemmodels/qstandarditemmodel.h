@@ -79,12 +79,10 @@ public:
     }
     inline void setIcon(const QIcon &icon);
 
-#ifndef QT_NO_TOOLTIP
     inline QString toolTip() const {
         return qvariant_cast<QString>(data(Qt::ToolTipRole));
     }
     inline void setToolTip(const QString &toolTip);
-#endif
 
 #ifndef QT_NO_STATUSTIP
     inline QString statusTip() const {
@@ -260,10 +258,8 @@ inline void QStandardItem::setText(const QString &atext)
 inline void QStandardItem::setIcon(const QIcon &aicon)
 { setData(aicon, Qt::DecorationRole); }
 
-#ifndef QT_NO_TOOLTIP
 inline void QStandardItem::setToolTip(const QString &atoolTip)
 { setData(atoolTip, Qt::ToolTipRole); }
-#endif
 
 #ifndef QT_NO_STATUSTIP
 inline void QStandardItem::setStatusTip(const QString &astatusTip)

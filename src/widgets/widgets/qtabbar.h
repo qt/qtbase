@@ -120,7 +120,7 @@ public:
     Qt::TextElideMode elideMode() const;
     void setElideMode(Qt::TextElideMode mode);
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     void setTabToolTip(int index, const QString &tip);
     QString tabToolTip(int index) const;
 #endif

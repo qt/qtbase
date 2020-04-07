@@ -91,7 +91,7 @@ public:
     QIcon tabIcon(int index) const;
     void setTabIcon(int index, const QIcon & icon);
 
-#ifndef QT_NO_TOOLTIP
+#if QT_CONFIG(tooltip)
     void setTabToolTip(int index, const QString & tip);
     QString tabToolTip(int index) const;
 #endif
