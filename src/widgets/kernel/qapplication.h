@@ -155,13 +155,6 @@ public:
     static bool isEffectEnabled(Qt::UIEffect);
     static void setEffectEnabled(Qt::UIEffect, bool enable = true);
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static QLocale keyboardInputLocale()
-    { return qApp ? QGuiApplication::inputMethod()->locale() : QLocale::c(); }
-    QT_DEPRECATED static Qt::LayoutDirection keyboardInputDirection()
-    { return qApp ? QGuiApplication::inputMethod()->inputDirection() : Qt::LeftToRight; }
-#endif
-
     static int exec();
     bool notify(QObject *, QEvent *) override;
 
