@@ -125,6 +125,8 @@ static QJsonDocument jsonFromCborMetaData(const char *raw, qsizetype size, QStri
     return QJsonDocument(o);
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype sectionSize, QString *errMsg)
 {
     raw += metaDataSignatureLength();
@@ -148,6 +150,7 @@ QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype sectionSize
 
     return jsonFromCborMetaData(raw, sectionSize, errMsg);
 }
+QT_WARNING_POP
 
 class QFactoryLoaderPrivate : public QObjectPrivate
 {
