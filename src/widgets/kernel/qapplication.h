@@ -71,7 +71,6 @@ class QApplicationPrivate;
 class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
 {
     Q_OBJECT
-    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)
     Q_PROPERTY(int cursorFlashTime READ cursorFlashTime WRITE setCursorFlashTime)
     Q_PROPERTY(int doubleClickInterval  READ doubleClickInterval WRITE setDoubleClickInterval)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval WRITE setKeyboardInputInterval)
@@ -109,11 +108,6 @@ public:
     static QFont font(const char *className);
     static void setFont(const QFont &, const char* className = nullptr);
     static QFontMetrics fontMetrics();
-
-#if QT_VERSION < 0x060000 // remove these forwarders in Qt 6
-    static void setWindowIcon(const QIcon &icon);
-    static QIcon windowIcon();
-#endif
 
     static QWidgetList allWidgets();
     static QWidgetList topLevelWidgets();

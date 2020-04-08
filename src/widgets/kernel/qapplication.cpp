@@ -1479,24 +1479,6 @@ QString QApplicationPrivate::desktopStyleKey()
     return QString();
 }
 
-#if QT_VERSION < 0x060000 // remove these forwarders in Qt 6
-/*!
-    \property QApplication::windowIcon
-    \brief the default window icon
-
-    \sa QWidget::setWindowIcon(), {Setting the Application Icon}
-*/
-QIcon QApplication::windowIcon()
-{
-    return QGuiApplication::windowIcon();
-}
-
-void QApplication::setWindowIcon(const QIcon &icon)
-{
-    QGuiApplication::setWindowIcon(icon);
-}
-#endif
-
 void QApplicationPrivate::notifyWindowIconChanged()
 {
     QEvent ev(QEvent::ApplicationWindowIconChange);
