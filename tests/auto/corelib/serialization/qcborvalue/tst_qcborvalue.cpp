@@ -79,6 +79,7 @@ private slots:
     void mapEmptyDetach();
     void mapSimpleInitializerList();
     void mapMutation();
+    void mapMutateWithCopies();
     void mapStringValues();
     void mapStringKeys();
     void mapInsertRemove_data() { basics_data(); }
@@ -921,6 +922,76 @@ void tst_QCborValue::mapMutation()
     QCOMPARE(val[any].toMap().size(), 1);
     QVERIFY(val[any][3].isMap());
     QCOMPARE(val[any][3].toMap().size(), 1);
+}
+
+void tst_QCborValue::mapMutateWithCopies()
+{
+    {
+        QCborMap map;
+        map[QLatin1String("prop1")] = "TEST";
+        QCOMPARE(map.size(), 1);
+        QCOMPARE(map.value("prop1"), "TEST");
+
+        map[QLatin1String("prop2")] = map.value("prop1");
+        QCOMPARE(map.size(), 2);
+        QCOMPARE(map.value("prop1"), "TEST");
+        QCOMPARE(map.value("prop2"), "TEST");
+    }
+    {
+        // see QTBUG-83366
+        QCborMap map;
+        map[QLatin1String("value")] = "TEST";
+        QCOMPARE(map.size(), 1);
+        QCOMPARE(map.value("value"), "TEST");
+
+        QCborValue v = map.value("value");
+        map[QLatin1String("prop2")] = v;
+        QCOMPARE(map.size(), 2);
+        QCOMPARE(map.value("value"), "TEST");
+        QCOMPARE(map.value("prop2"), "TEST");
+    }
+    {
+        QCborMap map;
+        map[QLatin1String("value")] = "TEST";
+        QCOMPARE(map.size(), 1);
+        QCOMPARE(map.value("value"), "TEST");
+
+        // same as previous, but this is a QJsonValueRef
+        QCborValueRef rv = map[QLatin1String("prop2")];
+        rv = map[QLatin1String("value")];
+        QCOMPARE(map.size(), 2);
+        QCOMPARE(map.value("value"), "TEST");
+        QCOMPARE(map.value("prop2"), "TEST");
+    }
+    {
+        QCborMap map;
+        map[QLatin1String("value")] = "TEST";
+        QCOMPARE(map.size(), 1);
+        QCOMPARE(map.value("value"), "TEST");
+
+        // same as previous, but now we call the operator[] that reallocates
+        // after we create the source QCborValueRef
+        QCborValueRef rv = map[QLatin1String("value")];
+        map[QLatin1String("prop2")] = rv;
+        QCOMPARE(map.size(), 2);
+        QCOMPARE(map.value("value"), "TEST");
+        QCOMPARE(map.value("prop2"), "TEST");
+    }
+    {
+        QCborMap map;
+        map[QLatin1String("value")] = "TEST";
+        QCOMPARE(map.size(), 1);
+        QCOMPARE(map.value("value"), "TEST");
+
+        QCborValueRef v = map[QLatin1String("value")];
+        QCborMap map2 = map;
+        map.insert(QLatin1String("prop2"), v);
+        QCOMPARE(map.size(), 2);
+        QCOMPARE(map.value("value"), "TEST");
+        QCOMPARE(map.value("prop2"), "TEST");
+        QCOMPARE(map2.size(), 1);
+        QCOMPARE(map2.value("value"), "TEST");
+    }
 }
 
 void tst_QCborValue::arrayPrepend()
