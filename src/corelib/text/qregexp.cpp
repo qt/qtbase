@@ -737,6 +737,11 @@ QT_BEGIN_NAMESPACE
     \li QRegExp by default does Unicode-aware matching, while
     QRegularExpression requires a separate option; see below for more details.
 
+    \li c{.} in QRegExp does by default match all characters, including the
+    newline character. QRegularExpression excludes the newline character by
+    default. To include the newline character, set the
+    QRegularExpression::DotMatchesEverythingOption pattern option.
+
     \endlist
 
     \section2 Porting from QRegExp::exactMatch()
