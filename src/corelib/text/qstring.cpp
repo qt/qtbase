@@ -159,6 +159,11 @@ static inline bool qt_ends_with(QStringView haystack, QStringView needle, Qt::Ca
 static inline bool qt_ends_with(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
 
+#if defined(__SSE2__) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
+// We may overrun the buffer, but that's a false positive:
+// this won't crash nor produce incorrect results
+__attribute__((__no_sanitize_address__))
+#endif
 qsizetype QtPrivate::qustrlen(const ushort *str) noexcept
 {
     qsizetype result = 0;
