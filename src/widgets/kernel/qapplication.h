@@ -99,11 +99,6 @@ public:
     static QStyle *style();
     static void setStyle(QStyle*);
     static QStyle *setStyle(const QString&);
-    enum ColorSpec { NormalColor=0, CustomColor=1, ManyColor=2 };
-#if QT_DEPRECATED_SINCE(5, 8)
-    QT_DEPRECATED static int colorSpec();
-    QT_DEPRECATED static void setColorSpec(int);
-#endif // QT_DEPRECATED_SINCE(5, 8)
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static inline void setGraphicsSystem(const QString &) {}
 #endif
