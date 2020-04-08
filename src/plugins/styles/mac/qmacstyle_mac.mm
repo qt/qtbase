@@ -2502,7 +2502,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 4;
         break;
     case PM_SplitterWidth:
-        ret = qMax(7, QApplication::globalStrut().width());
+        ret = 7;
         break;
     case PM_LayoutLeftMargin:
     case PM_LayoutTopMargin:

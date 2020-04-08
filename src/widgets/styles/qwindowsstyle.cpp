@@ -481,7 +481,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 
     case PM_SplitterWidth:
-        ret = qMax(int(QStyleHelper::dpiScaled(4, opt)), QApplication::globalStrut().width());
+        ret = QStyleHelper::dpiScaled(4, opt);
         break;
 
     default:

@@ -974,8 +974,7 @@ void tst_QMenu::menuSizeHint()
 
     QSize resSize = QSize(result.x(), result.y()) + result.size() + QSize(hmargin + cm.right() + panelWidth, vmargin + cm.top() + panelWidth);
 
-    resSize = menu.style()->sizeFromContents(QStyle::CT_Menu, &opt,
-                                    resSize.expandedTo(QApplication::globalStrut()), &menu);
+    resSize = menu.style()->sizeFromContents(QStyle::CT_Menu, &opt, resSize, &menu);
 
     QCOMPARE(resSize, menu.sizeHint());
 }

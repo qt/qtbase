@@ -439,7 +439,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
         q->initStyleOption(&opt);
         sh = q->style()->sizeFromContents(QStyle::CT_ComboBox, &opt, sh, q);
     }
-    return sh.expandedTo(QApplication::globalStrut());
+    return sh;
 }
 
 void QComboBoxPrivate::adjustComboBoxSize()

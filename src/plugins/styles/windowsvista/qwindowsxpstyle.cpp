@@ -3255,8 +3255,7 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
         break;
 
     case PM_SplitterWidth:
-        res = qMax(int(QStyleHelper::dpiScaled(5., option)),
-                   QApplication::globalStrut().width());
+        res = QStyleHelper::dpiScaled(5., option);
         break;
 
     case PM_MdiSubWindowMinimizedWidth:

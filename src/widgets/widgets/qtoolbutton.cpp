@@ -369,8 +369,7 @@ QSize QToolButton::sizeHint() const
     if (d->popupMode == MenuButtonPopup)
         w += style()->pixelMetric(QStyle::PM_MenuButtonIndicator, &opt, this);
 
-    d->sizeHint = style()->sizeFromContents(QStyle::CT_ToolButton, &opt, QSize(w, h), this).
-                  expandedTo(QApplication::globalStrut());
+    d->sizeHint = style()->sizeFromContents(QStyle::CT_ToolButton, &opt, QSize(w, h), this);
     return d->sizeHint;
 }
 

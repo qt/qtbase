@@ -230,8 +230,7 @@ QSize QSizeGrip::sizeHint() const
 {
     QStyleOption opt(0);
     opt.init(this);
-    return (style()->sizeFromContents(QStyle::CT_SizeGrip, &opt, QSize(13, 13), this).
-            expandedTo(QApplication::globalStrut()));
+    return style()->sizeFromContents(QStyle::CT_SizeGrip, &opt, QSize(13, 13), this);
 }
 
 /*!

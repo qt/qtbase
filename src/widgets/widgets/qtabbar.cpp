@@ -1502,8 +1502,7 @@ QSize QTabBar::sizeHint() const
         if (d->tabList.at(i).visible)
             r = r.united(d->tabList.at(i).maxRect);
     }
-    QSize sz = QApplication::globalStrut();
-    return r.size().expandedTo(sz);
+    return r.size();
 }
 
 /*!\reimp
@@ -1519,7 +1518,7 @@ QSize QTabBar::minimumSizeHint() const
             if (d->tabList.at(i).visible)
                 r = r.united(d->tabList.at(i).minRect);
         }
-        return r.size().expandedTo(QApplication::globalStrut());
+        return r.size();
     }
     if (verticalTabs(d->shape))
         return QSize(sizeHint().width(), d->rightB->sizeHint().height() * 2 + 75);

@@ -924,8 +924,7 @@ QSize QAbstractSpinBox::sizeHint() const
         QStyleOptionSpinBox opt;
         initStyleOption(&opt);
         QSize hint(w, h);
-        d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this)
-                            .expandedTo(QApplication::globalStrut());
+        d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this);
     }
     return d->cachedSizeHint;
 }
@@ -966,8 +965,7 @@ QSize QAbstractSpinBox::minimumSizeHint() const
         initStyleOption(&opt);
         QSize hint(w, h);
 
-        d->cachedMinimumSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this)
-                                   .expandedTo(QApplication::globalStrut());
+        d->cachedMinimumSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this);
     }
     return d->cachedMinimumSizeHint;
 }

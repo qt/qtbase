@@ -307,7 +307,7 @@ QPlatformMenuItem * QMenuPrivate::insertActionInPlatformMenu(const QAction *acti
 int QMenuPrivate::scrollerHeight() const
 {
     Q_Q(const QMenu);
-    return qMax(QApplication::globalStrut().height(), q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, nullptr, q));
+    return q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, nullptr, q);
 }
 
 // Windows and KDE allow menus to cover the taskbar, while GNOME and macOS
@@ -476,7 +476,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
 
     max_column_width += tabWidth; //finally add in the tab width
     if (!tornoff || (tornoff && scroll)) { // exclude non-scrollable tear-off menu since the tear-off menu has a fixed size
-        const int sfcMargin = style->sizeFromContents(QStyle::CT_Menu, &opt, QApplication::globalStrut(), q).width() - QApplication::globalStrut().width();
+        const int sfcMargin = style->sizeFromContents(QStyle::CT_Menu, &opt, QSize(0, 0), q).width();
         const int min_column_width = q->minimumWidth() - (sfcMargin + leftmargin + rightmargin + 2 * (fw + hmargin));
         max_column_width = qMax(min_column_width, max_column_width);
     }
@@ -2308,8 +2308,7 @@ QSize QMenu::sizeHint() const
     s.rwidth() += style()->pixelMetric(QStyle::PM_MenuHMargin, &opt, this) + fw + d->rightmargin;
     s.rheight() += style()->pixelMetric(QStyle::PM_MenuVMargin, &opt, this) + fw + d->bottommargin;
 
-    return style()->sizeFromContents(QStyle::CT_Menu, &opt,
-                                    s.expandedTo(QApplication::globalStrut()), this);
+    return style()->sizeFromContents(QStyle::CT_Menu, &opt, s, this);
 }
 
 /*!

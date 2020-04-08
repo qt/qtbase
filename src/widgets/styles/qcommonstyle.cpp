@@ -2938,7 +2938,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_TabBarScrollLeftButton: {
         const bool vertical = opt->rect.width() < opt->rect.height();
         const Qt::LayoutDirection ld = widget->layoutDirection();
-        const int buttonWidth = qMax(proxy()->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, nullptr, widget), QApplication::globalStrut().width());
+        const int buttonWidth = proxy()->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, nullptr, widget);
         const int buttonOverlap = proxy()->pixelMetric(QStyle::PM_TabBar_ScrollButtonOverlap, nullptr, widget);
 
         r = vertical ? QRect(0, opt->rect.height() - (buttonWidth * 2) + buttonOverlap, opt->rect.width(), buttonWidth)
@@ -2947,7 +2947,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_TabBarScrollRightButton: {
         const bool vertical = opt->rect.width() < opt->rect.height();
         const Qt::LayoutDirection ld = widget->layoutDirection();
-        const int buttonWidth = qMax(proxy()->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, nullptr, widget), QApplication::globalStrut().width());
+        const int buttonWidth = proxy()->pixelMetric(QStyle::PM_TabBarScrollButtonWidth, nullptr, widget);
 
         r = vertical ? QRect(0, opt->rect.height() - buttonWidth, opt->rect.width(), buttonWidth)
             : QStyle::visualRect(ld, opt->rect, QRect(opt->rect.width() - buttonWidth, 0, buttonWidth, opt->rect.height()));
@@ -4192,7 +4192,6 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             bs.setHeight(qMax(8, spinbox->rect.height()/2 - fw));
             // 1.6 -approximate golden mean
             bs.setWidth(qMax(16, qMin(bs.height() * 8 / 5, spinbox->rect.width() / 4)));
-            bs = bs.expandedTo(QApplication::globalStrut());
             int y = fw + spinbox->rect.y();
             int x, lx, rx;
             x = spinbox->rect.x() + spinbox->rect.width() - fw - bs.width();
@@ -4589,14 +4588,10 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
 
 #if QT_CONFIG(scrollbar)
     case PM_ScrollBarExtent:
-        if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            int s = sb->orientation == Qt::Horizontal ?
-                    QApplication::globalStrut().height()
-                    : QApplication::globalStrut().width();
-            ret = qMax(16, s);
-        } else {
+        if (qstyleoption_cast<const QStyleOptionSlider *>(opt))
+            ret = 16;
+        else
             ret = int(QStyleHelper::dpiScaled(16, opt));
-        }
         break;
 #endif
     case PM_MaximumDragDistance:

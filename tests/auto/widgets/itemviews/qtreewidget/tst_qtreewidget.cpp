@@ -3337,8 +3337,8 @@ void tst_QTreeWidget::task239150_editorWidth()
 
     QStyleOptionFrame opt;
     opt.init(&tree);
-    const int minWidth = tree.style()->sizeFromContents(QStyle::CT_LineEdit, &opt, QSize(0, 0).
-        expandedTo(QApplication::globalStrut()), nullptr).width();
+    const int minWidth = tree.style()->sizeFromContents(QStyle::CT_LineEdit, &opt, QSize(0, 0)
+                                                        , nullptr).width();
 
     {
         QTreeWidgetItem item;

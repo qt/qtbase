@@ -464,7 +464,7 @@ QSize QDial::minimumSizeHint() const
 
 QSize QDial::sizeHint() const
 {
-    return QSize(100, 100).expandedTo(QApplication::globalStrut());
+    return QSize(100, 100);
 }
 
 /*!

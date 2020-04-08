@@ -1051,8 +1051,7 @@ QSize QDateTimeEdit::sizeHint() const
         {
             QStyleOptionSpinBox opt;
             initStyleOption(&opt);
-            d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this)
-                                .expandedTo(QApplication::globalStrut());
+            d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this);
         }
 
         d->cachedMinimumSizeHint = d->cachedSizeHint;

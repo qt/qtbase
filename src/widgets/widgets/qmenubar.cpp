@@ -1654,9 +1654,7 @@ QSize QMenuBar::minimumSizeHint() const
         opt.menuItemType = QStyleOptionMenuItem::Normal;
         opt.checkType = QStyleOptionMenuItem::NotCheckable;
         opt.palette = palette();
-        return (style()->sizeFromContents(QStyle::CT_MenuBar, &opt,
-                                         ret.expandedTo(QApplication::globalStrut()),
-                                         this));
+        return style()->sizeFromContents(QStyle::CT_MenuBar, &opt, ret, this);
     }
     return ret;
 }
@@ -1707,9 +1705,7 @@ QSize QMenuBar::sizeHint() const
         opt.menuItemType = QStyleOptionMenuItem::Normal;
         opt.checkType = QStyleOptionMenuItem::NotCheckable;
         opt.palette = palette();
-        return (style()->sizeFromContents(QStyle::CT_MenuBar, &opt,
-                                         ret.expandedTo(QApplication::globalStrut()),
-                                         this));
+        return style()->sizeFromContents(QStyle::CT_MenuBar, &opt, ret, this);
     }
     return ret;
 }

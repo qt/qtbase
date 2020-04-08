@@ -350,7 +350,6 @@ QPointer<QWidget> QApplicationPrivate::wheel_widget;
 #endif
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
-QSize QApplicationPrivate::app_strut = QSize(0,0); // no default application strut
 int QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
 bool QApplicationPrivate::widgetCount = false;
 #ifdef QT_KEYPAD_NAVIGATION
@@ -741,7 +740,6 @@ QApplication::~QApplication()
 
     QApplicationPrivate::obey_desktop_settings = true;
 
-    QApplicationPrivate::app_strut = QSize(0, 0);
     QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
     QApplicationPrivate::widgetCount = false;
 
@@ -1099,32 +1097,6 @@ QStyle* QApplication::setStyle(const QString& style)
 
     setStyle(s);
     return s;
-}
-
-/*!
-    \property QApplication::globalStrut
-    \brief the minimum size that any GUI element that the user can interact
-           with should have
-    \deprecated
-
-    For example, no button should be resized to be smaller than the global
-    strut size. The strut size should be considered when reimplementing GUI
-    controls that may be used on touch-screens or similar I/O devices.
-
-    Example:
-
-    \snippet code/src_gui_kernel_qapplication.cpp 3
-
-    By default, this property contains a QSize object with zero width and height.
-*/
-QSize QApplication::globalStrut()
-{
-    return QApplicationPrivate::app_strut;
-}
-
-void QApplication::setGlobalStrut(const QSize& strut)
-{
-    QApplicationPrivate::app_strut = strut;
 }
 
 // Widget specific palettes

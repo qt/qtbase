@@ -427,8 +427,7 @@ QSize QPushButton::sizeHint() const
     if (menu())
         w += style()->pixelMetric(QStyle::PM_MenuButtonIndicator, &opt, this);
 #endif
-    d->sizeHint = (style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this).
-                  expandedTo(QApplication::globalStrut()));
+    d->sizeHint = style()->sizeFromContents(QStyle::CT_PushButton, &opt, QSize(w, h), this);
     return d->sizeHint;
 }
 

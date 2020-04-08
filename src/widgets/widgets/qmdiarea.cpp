@@ -1751,7 +1751,7 @@ QSize QMdiArea::sizeHint() const
             continue;
         size = size.expandedTo(child->sizeHint());
     }
-    return size.expandedTo(QApplication::globalStrut());
+    return size;
 }
 
 /*!
@@ -1770,7 +1770,7 @@ QSize QMdiArea::minimumSizeHint() const
             size = size.expandedTo(child->minimumSizeHint());
         }
     }
-    return size.expandedTo(QApplication::globalStrut());
+    return size;
 }
 
 /*!

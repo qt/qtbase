@@ -448,8 +448,7 @@ QSize QScrollBar::sizeHint() const
     else
         size = QSize(scrollBarExtent, scrollBarExtent * 2 + scrollBarSliderMin);
 
-    return style()->sizeFromContents(QStyle::CT_ScrollBar, &opt, size, this)
-        .expandedTo(QApplication::globalStrut());
+    return style()->sizeFromContents(QStyle::CT_ScrollBar, &opt, size, this);
  }
 
 /*!\reimp */

@@ -255,25 +255,33 @@ void tst_QMdiSubWindow::sizeHint()
 
 void tst_QMdiSubWindow::minimumSizeHint()
 {
-    const auto globalStrut = QApplication::globalStrut();
+    class Widget : public QWidget
+    {
+    public:
+        Widget() = default;
+
+        QSize minimumSizeHint() const
+        {
+            return QSize(100, 100);
+        }
+
+    };
     QMdiSubWindow window;
     window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window.show();
 
-    QCOMPARE(window.minimumSizeHint(), globalStrut);
+    QCOMPARE(window.minimumSizeHint(), QSize(0, 0));
 
     window.setWidget(new QWidget);
-    QCOMPARE(window.minimumSizeHint(), window.layout()->minimumSize()
-                                       .expandedTo(globalStrut));
+    QCOMPARE(window.minimumSizeHint(), window.layout()->minimumSize());
 
     delete window.widget();
     delete window.layout();
-    window.setWidget(new QWidget);
-    QCOMPARE(window.minimumSizeHint(), globalStrut);
+    window.setWidget(new Widget);
+    QCOMPARE(window.minimumSizeHint(), QSize(0, 0));
 
     window.widget()->show();
-    QCOMPARE(window.minimumSizeHint(), window.widget()->minimumSizeHint()
-                                       .expandedTo(globalStrut));
+    QCOMPARE(window.minimumSizeHint(), window.widget()->minimumSizeHint());
 }
 
 void tst_QMdiSubWindow::minimumSize()

@@ -904,8 +904,7 @@ QSize QTabWidget::sizeHint() const
 
     QSize sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
 
-    return style()->sizeFromContents(QStyle::CT_TabWidget, &opt, sz, this)
-                    .expandedTo(QApplication::globalStrut());
+    return style()->sizeFromContents(QStyle::CT_TabWidget, &opt, sz, this);
 }
 
 
@@ -938,8 +937,7 @@ QSize QTabWidget::minimumSizeHint() const
     initStyleOption(&opt);
     opt.palette = palette();
     opt.state = QStyle::State_None;
-    return style()->sizeFromContents(QStyle::CT_TabWidget, &opt, sz, this)
-                    .expandedTo(QApplication::globalStrut());
+    return style()->sizeFromContents(QStyle::CT_TabWidget, &opt, sz, this);
 }
 
 /*!
@@ -953,8 +951,7 @@ int QTabWidget::heightForWidth(int width) const
     opt.state = QStyle::State_None;
 
     QSize zero(0,0);
-    const QSize padding = style()->sizeFromContents(QStyle::CT_TabWidget, &opt, zero, this)
-                                  .expandedTo(QApplication::globalStrut());
+    const QSize padding = style()->sizeFromContents(QStyle::CT_TabWidget, &opt, zero, this);
 
     QSize lc(0, 0), rc(0, 0);
     if (d->leftCornerWidget)
@@ -984,7 +981,7 @@ int QTabWidget::heightForWidth(int width) const
     QSize s(stackWidth, stackHeight);
 
     QSize contentSize = basicSize(tabIsHorizontal, lc, rc, s, t);
-    return (contentSize + padding).expandedTo(QApplication::globalStrut()).height();
+    return (contentSize + padding).height();
 }
 
 

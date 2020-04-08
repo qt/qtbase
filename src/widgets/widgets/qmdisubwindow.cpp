@@ -3516,7 +3516,7 @@ QSize QMdiSubWindow::minimumSizeHint() const
     minHeight = qMax(minHeight, decorationHeight + sizeGripHeight);
 #endif
 
-    return QSize(minWidth, minHeight).expandedTo(QApplication::globalStrut());
+    return QSize(minWidth, minHeight);
 }
 
 QT_END_NAMESPACE

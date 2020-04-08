@@ -886,7 +886,7 @@ void tst_QMdiArea::minimumSizeHint()
     QAbstractScrollArea dummyScrollArea;
     dummyScrollArea.setFrameStyle(QFrame::NoFrame);
     expectedSize = expectedSize.expandedTo(dummyScrollArea.minimumSizeHint());
-    QCOMPARE(workspace.minimumSizeHint(), expectedSize.expandedTo(qApp->globalStrut()));
+    QCOMPARE(workspace.minimumSizeHint(), expectedSize);
 
     QWidget *window = workspace.addSubWindow(new QWidget);
     qApp->processEvents();
@@ -908,7 +908,7 @@ void tst_QMdiArea::sizeHint()
     workspace.show();
     QSize desktopSize = QApplication::desktop()->size();
     QSize expectedSize(desktopSize.width() * 2/3, desktopSize.height() * 2/3);
-    QCOMPARE(workspace.sizeHint(), expectedSize.expandedTo(qApp->globalStrut()));
+    QCOMPARE(workspace.sizeHint(), expectedSize);
 
     QWidget *window = workspace.addSubWindow(new QWidget);
     qApp->processEvents();

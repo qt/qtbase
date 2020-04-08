@@ -224,8 +224,7 @@ QSize MainWindow::sizeHint() const
     for (int i = 0; i < header->count() - 1; ++i)
         width += header->sectionSize(i);
 
-    return QSize(width, QMainWindow::sizeHint().height())
-        .expandedTo(QApplication::globalStrut());
+    return QSize(width, QMainWindow::sizeHint().height());
 }
 
 const TorrentClient *MainWindow::clientForRow(int row) const

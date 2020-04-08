@@ -230,8 +230,7 @@ QSize QSplitterHandle::sizeHint() const
     QStyleOption opt(0);
     opt.init(d->s);
     opt.state = QStyle::State_None;
-    return parentWidget()->style()->sizeFromContents(QStyle::CT_Splitter, &opt, QSize(hw, hw), d->s)
-        .expandedTo(QApplication::globalStrut());
+    return parentWidget()->style()->sizeFromContents(QStyle::CT_Splitter, &opt, QSize(hw, hw), d->s);
 }
 
 /*!

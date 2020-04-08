@@ -1570,8 +1570,7 @@ void QHeaderView::resetDefaultSectionSize()
     \brief the minimum size of the header sections.
 
     The minimum section size is the smallest section size allowed. If the
-    minimum section size is set to -1, QHeaderView will use the maximum of
-    the \l{QApplication::globalStrut()}{global strut} or the
+    minimum section size is set to -1, QHeaderView will use the
     \l{fontMetrics()}{font metrics} size.
 
     This property is honored by all \l{ResizeMode}{resize modes}.
@@ -1582,11 +1581,10 @@ int QHeaderView::minimumSectionSize() const
 {
     Q_D(const QHeaderView);
     if (d->minimumSectionSize == -1) {
-        QSize strut = QApplication::globalStrut();
         int margin = 2 * style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
         if (d->orientation == Qt::Horizontal)
-            return qMax(strut.width(), (fontMetrics().maxWidth() + margin));
-        return qMax(strut.height(), (fontMetrics().height() + margin));
+            return fontMetrics().maxWidth() + margin;
+        return fontMetrics().height() + margin;
     }
     return d->minimumSectionSize;
 }

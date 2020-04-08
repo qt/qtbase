@@ -182,12 +182,10 @@ public:
         const QFontMetrics fm = fontMetrics();
         opt.text = label(ShowLabel);
         QSize sz = fm.size(Qt::TextShowMnemonic, opt.text);
-        QSize ret = style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
-                      expandedTo(QApplication::globalStrut());
+        QSize ret = style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this);
         opt.text = label(HideLabel);
         sz = fm.size(Qt::TextShowMnemonic, opt.text);
-        ret = ret.expandedTo(style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
-                      expandedTo(QApplication::globalStrut()));
+        ret = ret.expandedTo(style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this));
         return ret;
     }
 };

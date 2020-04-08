@@ -1416,10 +1416,7 @@ void tst_QMenuBar::menubarSizeHint()
     QSize resSize = QSize(result.x(), result.y()) + result.size()
         + QSize(panelWidth + hmargin, panelWidth + vmargin);
 
-
-    resSize = style.sizeFromContents(QStyle::CT_MenuBar, &opt,
-                                         resSize.expandedTo(QApplication::globalStrut()),
-                                         &mb);
+    resSize = style.sizeFromContents(QStyle::CT_MenuBar, &opt, resSize, &mb);
 
     QCOMPARE(resSize, mb.sizeHint());
 }
