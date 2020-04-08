@@ -97,10 +97,6 @@ static const int windowsItemVMargin      =  0; // menu item ver text margin
 static const int windowsArrowHMargin     =  6; // arrow horizontal margin
 static const int windowsRightBorder      = 12; // right border on windows
 
-// External function calls
-extern Q_WIDGETS_EXPORT HDC qt_win_display_dc();
-extern QRegion qt_region_from_HRGN(HRGN rgn);
-
 // Theme names matching the QWindowsXPStylePrivate::Theme enumeration.
 static const wchar_t *themeNames[QWindowsXPStylePrivate::NThemes] =
 {

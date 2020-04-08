@@ -102,10 +102,6 @@
 #include "private/qgesturemanager_p.h"
 #include <qpa/qplatformfontdatabase.h>
 
-#ifdef Q_OS_WIN
-#include <QtCore/qt_windows.h> // for qt_win_display_dc()
-#endif
-
 #include "qdatetime.h"
 
 #include <qpa/qplatformwindow.h>
@@ -755,35 +751,12 @@ QApplication::~QApplication()
 #endif
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-// #fixme: Remove.
-static HDC         displayDC        = 0;                // display device context
-
-Q_WIDGETS_EXPORT HDC qt_win_display_dc()                        // get display DC
-{
-    Q_ASSERT(qApp && qApp->thread() == QThread::currentThread());
-    if (!displayDC)
-        displayDC = GetDC(0);
-    return displayDC;
-}
-#endif
-#endif
-
 void qt_cleanup()
 {
     QPixmapCache::clear();
     QColormap::cleanup();
 
     QApplicationPrivate::active_window = nullptr; //### this should not be necessary
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    if (displayDC) {
-        ReleaseDC(0, displayDC);
-        displayDC = 0;
-    }
-#endif
-#endif
 }
 
 /*!
