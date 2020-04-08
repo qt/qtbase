@@ -132,9 +132,6 @@ public:
     static QWidget *topLevelAt(const QPoint &p);
     static inline QWidget *topLevelAt(int x, int y)  { return topLevelAt(QPoint(x, y)); }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static inline void syncX() {}
-#endif
     static void beep();
     static void alert(QWidget *widget, int duration = 0);
 
