@@ -99,9 +99,6 @@ public:
     static QStyle *style();
     static void setStyle(QStyle*);
     static QStyle *setStyle(const QString&);
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static inline void setGraphicsSystem(const QString &) {}
-#endif
 
     using QGuiApplication::palette;
     static QPalette palette(const QWidget *);
