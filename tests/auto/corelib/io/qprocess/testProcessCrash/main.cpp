@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -26,15 +27,33 @@
 **
 ****************************************************************************/
 
-
-struct Foo
+void crashFallback(volatile int *ptr = nullptr)
 {
-    int i;
-};
+    *ptr = 0;
+}
+
+#if defined(_MSC_VER)
+#  include <intrin.h>
 
 int main()
 {
-    *(volatile char*)0 = 0;
-    Foo *f = 0;
-    return f->i;
+#  if defined(_M_IX86) || defined(_M_X64)
+    __ud2();
+#  endif
+
+    crashFallback();
 }
+#elif defined(__MINGW32__)
+int main()
+{
+    asm("ud2");
+    crashFallback();
+}
+#else
+#  include <stdlib.h>
+
+int main()
+{
+    abort();
+}
+#endif
