@@ -136,6 +136,10 @@ void tst_QSaveFile::retryTransactionalWrite()
 {
 #ifndef Q_OS_UNIX
     QSKIP("This test is Unix only");
+#else
+    // root can open the read-only file for writing...
+    if (geteuid() == 0)
+        QSKIP("This test does not work as the root user");
 #endif
     QTemporaryDir dir;
     QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
