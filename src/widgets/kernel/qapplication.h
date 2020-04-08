@@ -159,12 +159,6 @@ public:
     bool notify(QObject *, QEvent *) override;
 
 #ifdef QT_KEYPAD_NAVIGATION
-# if QT_DEPRECATED_SINCE(5, 13)
-    static QT_DEPRECATED_X ("Use QApplication::setNavigationMode() instead")
-    void setKeypadNavigationEnabled(bool);
-    static QT_DEPRECATED_X ("Use QApplication::navigationMode() instead")
-    bool keypadNavigationEnabled();
-# endif
     static void setNavigationMode(Qt::NavigationMode mode);
     static Qt::NavigationMode navigationMode();
 #endif
