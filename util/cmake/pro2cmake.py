@@ -1285,7 +1285,18 @@ class Scope(object):
             else:
                 return [f"${{CMAKE_CURRENT_BINARY_DIR}}/{relative_path}"]
 
-        return self._evalOps(key, None, [], inherit=inherit)
+        # Horrible hack. If we're returning the values for some key
+        # that looks like source or header files, make sure to use a
+        # map_files transformer, so that $$PWD values are evaluated
+        # in the transformer scope, otherwise relative paths will be
+        # broken.
+        # Looking at you qmltyperegistrar.pro.
+        eval_ops_transformer = None
+        if key.endswith("SOURCES") or key.endswith("HEADERS"):
+            def file_transformer(scope, files):
+                return scope._map_files(files)
+            eval_ops_transformer = file_transformer
+        return self._evalOps(key, eval_ops_transformer, [], inherit=inherit)
 
     def get_string(self, key: str, default: str = "", inherit: bool = False) -> str:
         v = self.get(key, inherit=inherit)
