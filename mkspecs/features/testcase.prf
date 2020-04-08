@@ -63,33 +63,41 @@ debug_and_release:debug_and_release_target {
 # Allow for a custom test runner script
 
 android: isEmpty($(TESTRUNNER)) {
-    APK_PATH = $$shell_path($$OUT_PWD/android-build/$${TARGET}.apk)
-    qtPrepareTool(ANDROIDTESTRUNNER, androidtestrunner)
-    qtPrepareTool(ANDROIDDEPLOYQT, androiddeployqt)
-    isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET-deployment-settings.json
-    contains(QMAKE_HOST.os, Windows): extension = .exe
-    $${type}.commands  = $$ANDROIDTESTRUNNER --androiddeployqt \"$$ANDROIDDEPLOYQT --input $$ANDROID_DEPLOYMENT_SETTINGS_FILE\"
-    $${type}.commands += --path \"$$OUT_PWD/android-build\"
-    $${type}.commands += --adb \"$$shell_path($${ANDROID_SDK_ROOT}$${QMAKE_DIR_SEP}platform-tools$${QMAKE_DIR_SEP}adb$${extension})\"
-    $${type}.commands += --make \"$(MAKE) -f $(MAKEFILE)\"
-    $${type}.commands += --apk $$APK_PATH
-} else: $${type}.commands += $(TESTRUNNER)
-
-unix {
-    isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = .
-
-    app_bundle: \
-        $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
-    else: !android: \
-        $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET)
+    build_pass {
+        APK_PATH = $$shell_path($$OUT_PWD/android-build/$${TARGET}.apk)
+        qtPrepareTool(ANDROIDTESTRUNNER, androidtestrunner)
+        qtPrepareTool(ANDROIDDEPLOYQT, androiddeployqt)
+        isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET-deployment-settings.json
+        contains(QMAKE_HOST.os, Windows): extension = .exe
+        $${type}.commands  = $$ANDROIDTESTRUNNER --path \"$$OUT_PWD/android-build\"
+        $${type}.commands += --adb \"$$shell_path($${ANDROID_SDK_ROOT}$${QMAKE_DIR_SEP}platform-tools$${QMAKE_DIR_SEP}adb$${extension})\"
+        $${type}.commands += --make \"$(MAKE) apk\"
+        $${type}.commands += --apk $$APK_PATH
+        # Allow for custom arguments to tests
+        !catch: $${type}.commands += $(TESTARGS)
+        $${type}.commands += "--"
+        for(import, IMPORTPATH): $${type}.commands *= -import \"assets:/$$basename(_PRO_FILE_PWD_)/$$import\"
+    } else {
+        $${type}.commands = "echo \"Pass\""
+    }
 } else {
-    # Windows
-    !isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = $$shell_path($$TEST_TARGET_DIR)$${QMAKE_DIR_SEP}
-    $${type}.commands += $${TEST_TARGET_DIR}$(TARGET)
-}
+    $${type}.commands += $(TESTRUNNER)
 
-# Allow for custom arguments to tests
-!catch: $${type}.commands += $(TESTARGS)
+    unix {
+        isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = .
+
+        app_bundle: \
+            $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
+        else: !android: \
+            $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET)
+    } else {
+        # Windows
+        !isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = $$shell_path($$TEST_TARGET_DIR)$${QMAKE_DIR_SEP}
+        $${type}.commands += $${TEST_TARGET_DIR}$(TARGET)
+    }
+    # Allow for custom arguments to tests
+    !catch: $${type}.commands += $(TESTARGS)
+}
 
 !isEmpty(TESTRUN_CWD):!contains(TESTRUN_CWD, ^\\./?): \
     $${type}.commands = $$QMAKE_CD $$shell_path($$TESTRUN_CWD) && $$eval($${type}.commands)

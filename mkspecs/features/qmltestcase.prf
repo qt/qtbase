@@ -5,8 +5,12 @@
         contains(TEMPLATE, vc.*): DEFINES += QUICK_TEST_SOURCE_DIR=\"$$_PRO_FILE_PWD_\"
         else: DEFINES += QUICK_TEST_SOURCE_DIR=$$shell_quote(\"$$_PRO_FILE_PWD_\")
     } else {
-        !isEmpty(RESOURCES): warning("The RESOURCES qmake variable is empty, the test will probably fail to run")
-        DEFINES += QUICK_TEST_SOURCE_DIR=\":/\"
+        isEmpty(RESOURCES) {
+            ANDROID_EXTRA_PLUGINS *= $$_PRO_FILE_PWD_
+            DEFINES += QUICK_TEST_SOURCE_DIR=$$shell_quote(\"assets:/$$basename(_PRO_FILE_PWD_)\")
+        } else {
+            DEFINES += QUICK_TEST_SOURCE_DIR=$$shell_quote(\":/\")
+        }
     }
 
 } else {

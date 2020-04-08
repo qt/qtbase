@@ -53,7 +53,6 @@ struct Options
     bool verbose = false;
     bool skipAddInstallRoot = false;
     std::chrono::seconds timeout{300}; // 5minutes
-    QString androidDeployQtCommand;
     QString buildPath;
     QString adbCommand{QStringLiteral("adb")};
     QString makeCommand;
@@ -110,11 +109,11 @@ static Options g_options;
 static bool execCommand(const QString &command, QByteArray *output = nullptr, bool verbose = false)
 {
     if (verbose)
-        fprintf(stdout, "Execute %s\n", command.toUtf8().constData());
+        fprintf(stdout, "Execute %s.\n", command.toUtf8().constData());
     FILE *process = popen(command.toUtf8().constData(), QT_POPEN_READ);
 
     if (!process) {
-        fprintf(stderr, "Cannot execute command %s", qPrintable(command));
+        fprintf(stderr, "Cannot execute command %s.\n", qPrintable(command));
         return false;
     }
     char buffer[512];
@@ -204,12 +203,7 @@ static bool parseOptions()
     int i = 1;
     for (; i < arguments.size(); ++i) {
         const QString &argument = arguments.at(i);
-        if (argument.compare(QStringLiteral("--androiddeployqt"), Qt::CaseInsensitive) == 0) {
-            if (i + 1 == arguments.size())
-                g_options.helpRequested = true;
-            else
-                g_options.androidDeployQtCommand = arguments.at(++i).trimmed();
-        } else if (argument.compare(QStringLiteral("--adb"), Qt::CaseInsensitive) == 0) {
+        if (argument.compare(QStringLiteral("--adb"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
             else
@@ -255,7 +249,7 @@ static bool parseOptions()
     for (;i < arguments.size(); ++i)
         g_options.testArgsList << arguments.at(i);
 
-    if (g_options.helpRequested || g_options.androidDeployQtCommand.isEmpty() || g_options.buildPath.isEmpty())
+    if (g_options.helpRequested || g_options.buildPath.isEmpty() || g_options.apkPath.isEmpty())
         return false;
 
     QString serial = qEnvironmentVariable("ANDROID_DEVICE_SERIAL");
@@ -272,20 +266,18 @@ static void printHelp()
                     "  runs it on the default emulator/device or on the one specified by\n"
                     "  \"ANDROID_DEVICE_SERIAL\" environment variable.\n\n"
                     "  Mandatory arguments:\n"
-                    "    --androiddeployqt <androiddeployqt cmd>: The androiddeployqt:\n"
-                    "       path including its additional arguments.\n"
-                    "    --path <path>: The path where androiddeployqt will build the .apk.\n"
+                    "    --path <path>: The path where androiddeployqt builds the android package.\n"
+                    "    --apk <apk path>: The test apk path. The apk has to exist already, if it"
+                    "       does not exist the make command must be provided for building the apk.\n\n"
                     "  Optional arguments:\n"
+                    "    --make <make cmd>: make command, needed to install the qt library.\n"
+                    "       For Qt 5.14+ this can be \"make apk\".\n"
                     "    --adb <adb cmd>: The Android ADB command. If missing the one from\n"
                     "       $PATH will be used.\n"
                     "    --activity <acitvity>: The Activity to run. If missing the first\n"
                     "       activity from AndroidManifest.qml file will be used.\n"
                     "    --timeout <seconds>: Timeout to run the test.\n"
                     "       Default is 5 minutes.\n"
-                    "    --make <make cmd>: make command, needed to install the qt library.\n"
-                    "       If make is missing make sure the --path is set.\n"
-                    "    --apk <apk path>: If the apk is specified and if exists, we'll skip\n"
-                    "       the package building.\n"
                     "    --skip-install-root: Do not append INSTALL_ROOT=... to the make command.\n"
                     "    -- arguments that will be passed to the test application.\n"
                     "    --verbose: Prints out information during processing.\n"
@@ -342,6 +334,8 @@ static bool parseTestArgs()
     QString unhandledArgs;
     for (int i = 0; i < g_options.testArgsList.size(); ++i) {
         const QString &arg = g_options.testArgsList[i].trimmed();
+        if (arg == QStringLiteral("--"))
+            continue;
         if (arg == QStringLiteral("-o")) {
             if (i >= g_options.testArgsList.size() - 1)
                 return false; // missing file argument
@@ -452,14 +446,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    RunnerLocker lock; // do not install or run packages while another test is running
-    if (!g_options.apkPath.isEmpty() && QFile::exists(g_options.apkPath)) {
-        if (!execCommand(QStringLiteral("%1 install -r %2")
-                         .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose)) {
+    if (!QFile::exists(g_options.apkPath)) {
+        if (g_options.makeCommand.isEmpty()) {
+            fprintf(stderr,
+                    "No apk found at \"%s\". Provide a make command with the \"--make\" parameter "
+                    "to generate it first.\n",
+                    qPrintable(g_options.apkPath));
             return 1;
         }
-    } else {
-        if (!g_options.makeCommand.isEmpty()) {
+        if (!execCommand(g_options.makeCommand, nullptr, g_options.verbose)) {
             if (!g_options.skipAddInstallRoot) {
                 // we need to run make INSTALL_ROOT=path install to install the application file(s) first
                 if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
@@ -473,15 +468,20 @@ int main(int argc, char *argv[])
                 }
             }
         }
+    }
 
-        // Run androiddeployqt
-        static auto verbose = g_options.verbose ? QStringLiteral("--verbose") : QString();
-        if (!execCommand(QStringLiteral("%1 %3 --reinstall --output %2 --apk %4").arg(g_options.androidDeployQtCommand,
-                                                                                      g_options.buildPath,
-                                                                                      verbose,
-                                                                                      g_options.apkPath), nullptr, true)) {
-            return 1;
-        }
+    if (!QFile::exists(g_options.apkPath)) {
+        fprintf(stderr,
+                "No apk \"%s\" found after running the make command. Check the provided path and "
+                "the make command.\n",
+                qPrintable(g_options.apkPath));
+        return 1;
+    }
+
+    RunnerLocker lock; // do not install or run packages while another test is running
+    if (!execCommand(QStringLiteral("%1 install -r %2")
+                        .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose)) {
+        return 1;
     }
 
     QString manifest = g_options.buildPath + QStringLiteral("/AndroidManifest.xml");
