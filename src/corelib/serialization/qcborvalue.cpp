@@ -956,7 +956,7 @@ QCborContainerPrivate *QCborContainerPrivate::grow(QCborContainerPrivate *d, qsi
     d = detach(d, index + 1);
     Q_ASSERT(d);
     int j = d->elements.size();
-    while (j < index)
+    while (j++ < index)
         d->append(Undefined());
     return d;
 }

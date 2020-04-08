@@ -65,6 +65,7 @@ private slots:
     void arrayEmptyDetach();
     void arrayInitializerList();
     void arrayMutation();
+    void arrayMutateWithCopies();
     void arrayPrepend();
     void arrayInsertRemove_data() { basics_data(); }
     void arrayInsertRemove();
@@ -815,6 +816,59 @@ void tst_QCborValue::arrayMutation()
     QCOMPARE(val.toMap().size(), 5);
     QVERIFY(val[2].isArray());
     QCOMPARE(val[2].toArray().size(), 5);
+}
+
+void tst_QCborValue::arrayMutateWithCopies()
+{
+    {
+        QCborArray array;
+        array.append("TEST");
+        QCOMPARE(array.size(), 1);
+        QCOMPARE(array.at(0), "TEST");
+
+        array.append(array.at(0));
+        QCOMPARE(array.size(), 2);
+        QCOMPARE(array.at(0), "TEST");
+        QCOMPARE(array.at(1), "TEST");
+    }
+    {
+        QCborArray array;
+        array.append("TEST");
+        QCOMPARE(array.size(), 1);
+        QCOMPARE(array.at(0), "TEST");
+
+        // same as previous, but with prepend() not append()
+        array.prepend(array.at(0));
+        QCOMPARE(array.size(), 2);
+        QCOMPARE(array.at(0), "TEST");
+        QCOMPARE(array.at(1), "TEST");
+    }
+    {
+        QCborArray array;
+        array.append("TEST");
+        QCOMPARE(array.size(), 1);
+        QCOMPARE(array.at(0), "TEST");
+
+        // same as previous, but using a QCborValueRef
+        QCborValueRef rv = array[0];
+        array.prepend(rv);
+        QCOMPARE(array.size(), 2);
+        QCOMPARE(array.at(0), "TEST");
+        QCOMPARE(array.at(1), "TEST");
+    }
+    {
+        QCborArray array;
+        array.append("TEST");
+        QCOMPARE(array.size(), 1);
+        QCOMPARE(array.at(0), "TEST");
+
+        // same as previous, but now extending the array
+        QCborValueRef rv = array[0];
+        array[2] = rv;
+        QCOMPARE(array.size(), 3);
+        QCOMPARE(array.at(0), "TEST");
+        QCOMPARE(array.at(2), "TEST");
+    }
 }
 
 void tst_QCborValue::mapMutation()
