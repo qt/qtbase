@@ -43,7 +43,7 @@
 
 #include <qmutex.h>
 #include <qstringlist.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qurl.h>
 #include <private/qsystemlibrary_p.h>
 #include <qnetworkinterface.h>
@@ -212,8 +212,9 @@ static bool isBypassed(const QString &host, const QStringList &bypassList)
             return true;        // excluded
         } else {
             // do wildcard matching
-            QRegExp rx(entry, Qt::CaseInsensitive, QRegExp::Wildcard);
-            if (rx.exactMatch(host))
+            QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(entry),
+                                  QRegularExpression::CaseInsensitiveOption);
+            if (rx.match(host).hasMatch())
                 return true;
         }
     }
