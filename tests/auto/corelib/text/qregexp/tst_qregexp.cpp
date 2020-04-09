@@ -69,6 +69,20 @@ private slots:
     void validityCheck_data();
     void validityCheck();
     void escapeSequences();
+
+    void splitString_data();
+    void splitString();
+
+    void countIn();
+    void containedIn();
+
+    void replaceIn_data();
+    void replaceIn();
+    void removeIn_data();
+    void removeIn();
+
+    void filterList();
+    void replaceInList();
 };
 
 // Testing get/set functions
@@ -1381,6 +1395,155 @@ void tst_QRegExp::escapeSequences()
     }
 }
 
+void tst_QRegExp::splitString_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QStringList>("result");
+
+    QTest::newRow("data01") << "Some  text\n\twith  strange whitespace."
+                            << "\\s+"
+                            << (QStringList() << "Some" << "text" << "with" << "strange" << "whitespace." );
+
+    QTest::newRow("data02") << "This time, a normal English sentence."
+                            << "\\W+"
+                            << (QStringList() << "This" << "time" << "a" << "normal" << "English" << "sentence" << "");
+
+    QTest::newRow("data03") << "Now: this sentence fragment."
+                            << "\\b"
+                            << (QStringList() << "" << "Now" << ": " << "this" << " " << "sentence" << " " << "fragment" << ".");
+}
+
+void tst_QRegExp::splitString()
+{
+    QFETCH(QString, string);
+    QFETCH(QString, pattern);
+    QFETCH(QStringList, result);
+    QStringList list = QRegExp(pattern).splitString(string);
+    QVERIFY(list == result);
+
+    QVERIFY(list == result);
+
+    result.removeAll(QString());
+
+    list = QRegExp(pattern).splitString(string, Qt::SkipEmptyParts);
+    QVERIFY(list == result);
+}
+
+void tst_QRegExp::countIn()
+{
+    QString a;
+    a="ABCDEFGHIEfGEFG"; // 15 chars
+    QCOMPARE(QRegExp("[FG][HI]").countIn(a),1);
+    QCOMPARE(QRegExp("[G][HE]").countIn(a),2);
+}
+
+
+void tst_QRegExp::containedIn()
+{
+    QString a;
+    a="ABCDEFGHIEfGEFG"; // 15 chars
+    QVERIFY(QRegExp("[FG][HI]").containedIn(a));
+    QVERIFY(QRegExp("[G][HE]").containedIn(a));
+}
+
+void tst_QRegExp::replaceIn_data()
+{
+    QTest::addColumn<QString>("string" );
+    QTest::addColumn<QString>("regexp" );
+    QTest::addColumn<QString>("after" );
+    QTest::addColumn<QString>("result" );
+
+    QTest::newRow( "rem00" ) << QString("alpha") << QString("a+") << QString("") << QString("lph");
+    QTest::newRow( "rem01" ) << QString("banana") << QString("^.a") << QString("") << QString("nana");
+    QTest::newRow( "rem02" ) << QString("") << QString("^.a") << QString("") << QString("");
+    QTest::newRow( "rem03" ) << QString("") << QString("^.a") << QString() << QString("");
+    QTest::newRow( "rem04" ) << QString() << QString("^.a") << QString("") << QString();
+    QTest::newRow( "rem05" ) << QString() << QString("^.a") << QString() << QString();
+
+    QTest::newRow( "rep00" ) << QString("A <i>bon mot</i>.") << QString("<i>([^<]*)</i>") << QString("\\emph{\\1}") << QString("A \\emph{bon mot}.");
+    QTest::newRow( "rep01" ) << QString("banana") << QString("^.a()") << QString("\\1") << QString("nana");
+    QTest::newRow( "rep02" ) << QString("banana") << QString("(ba)") << QString("\\1X\\1") << QString("baXbanana");
+    QTest::newRow( "rep03" ) << QString("banana") << QString("(ba)(na)na") << QString("\\2X\\1") << QString("naXba");
+
+    QTest::newRow("backref00") << QString("\\1\\2\\3\\4\\5\\6\\7\\8\\9\\A\\10\\11") << QString("\\\\[34]")
+                               << QString("X") << QString("\\1\\2XX\\5\\6\\7\\8\\9\\A\\10\\11");
+    QTest::newRow("backref01") << QString("foo") << QString("[fo]") << QString("\\1") << QString("\\1\\1\\1");
+    QTest::newRow("backref02") << QString("foo") << QString("([fo])") << QString("(\\1)") << QString("(f)(o)(o)");
+    QTest::newRow("backref03") << QString("foo") << QString("([fo])") << QString("\\2") << QString("\\2\\2\\2");
+    QTest::newRow("backref04") << QString("foo") << QString("([fo])") << QString("\\10") << QString("f0o0o0");
+    QTest::newRow("backref05") << QString("foo") << QString("([fo])") << QString("\\11") << QString("f1o1o1");
+    QTest::newRow("backref06") << QString("foo") << QString("([fo])") << QString("\\19") << QString("f9o9o9");
+    QTest::newRow("backref07") << QString("foo") << QString("(f)(o+)")
+                               << QString("\\2\\1\\10\\20\\11\\22\\19\\29\\3")
+                               << QString("ooff0oo0f1oo2f9oo9\\3");
+    QTest::newRow("backref08") << QString("abc") << QString("(((((((((((((([abc]))))))))))))))")
+                               << QString("{\\14}") << QString("{a}{b}{c}");
+    QTest::newRow("backref09") << QString("abcdefghijklmn")
+                               << QString("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)")
+                               << QString("\\19\\18\\17\\16\\15\\14\\13\\12\\11\\10"
+                                          "\\9\\90\\8\\80\\7\\70\\6\\60\\5\\50\\4\\40\\3\\30\\2\\20\\1")
+                               << QString("a9a8a7a6a5nmlkjii0hh0gg0ff0ee0dd0cc0bb0a");
+    QTest::newRow("backref10") << QString("abc") << QString("((((((((((((((abc))))))))))))))")
+                               << QString("\\0\\01\\011") << QString("\\0\\01\\011");
+    QTest::newRow("invalid") << QString("") << QString("invalid regex\\") << QString("") << QString("");
+}
+
+void tst_QRegExp::replaceIn()
+{
+    QFETCH( QString, string );
+    QFETCH( QString, regexp );
+    QFETCH( QString, after );
+
+    QString s2 = string;
+    s2 = QRegExp(regexp).replaceIn(s2, after);
+    QTEST( s2, "result" );
+    s2 = string;
+}
+
+void tst_QRegExp::removeIn_data()
+{
+    replaceIn_data();
+}
+
+void tst_QRegExp::removeIn()
+{
+    QFETCH( QString, string );
+    QFETCH( QString, regexp );
+    QFETCH( QString, after );
+
+    if ( after.length() == 0 ) {
+        QString s2 = string;
+        s2 = QRegExp(regexp).removeIn(s2);
+        QTEST( s2, "result" );
+    } else {
+        QCOMPARE( 0, 0 ); // shut Qt Test
+    }
+}
+
+void tst_QRegExp::filterList()
+{
+    QStringList list3, list4;
+    list3 << "Bill Gates" << "Joe Blow" << "Bill Clinton";
+    list3 = QRegExp("[i]ll") .filterList(list3);
+    list4 << "Bill Gates" << "Bill Clinton";
+    QCOMPARE( list3, list4 );
+}
+
+void tst_QRegExp::replaceInList()
+{
+    QStringList list3, list4;
+    list3 << "alpha" << "beta" << "gamma" << "epsilon";
+    list3 = QRegExp("^a").replaceIn(list3, "o");
+    list4 << "olpha" << "beta" << "gamma" << "epsilon";
+    QCOMPARE( list3, list4 );
+
+    QStringList list5, list6;
+    list5 << "Bill Clinton" << "Gates, Bill";
+    list6 << "Bill Clinton" << "Bill Gates";
+    list5 = QRegExp("^(.*), (.*)$").replaceIn(list5, "\\2 \\1");
+    QCOMPARE( list5, list6 );
+}
 
 QTEST_APPLESS_MAIN(tst_QRegExp)
 #include "tst_qregexp.moc"

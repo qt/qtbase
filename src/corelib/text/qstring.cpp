@@ -3918,138 +3918,7 @@ Q_DECLARE_TYPEINFO(QStringCapture, Q_PRIMITIVE_TYPE);
 */
 QString& QString::replace(const QRegExp &rx, const QString &after)
 {
-    QRegExp rx2(rx);
-
-    if (isEmpty() && rx2.indexIn(*this) == -1)
-        return *this;
-
-    reallocData(uint(d.size) + 1u);
-
-    int index = 0;
-    int numCaptures = rx2.captureCount();
-    int al = after.length();
-    QRegExp::CaretMode caretMode = QRegExp::CaretAtZero;
-
-    if (numCaptures > 0) {
-        const QChar *uc = after.unicode();
-        int numBackRefs = 0;
-
-        for (int i = 0; i < al - 1; i++) {
-            if (uc[i] == QLatin1Char('\\')) {
-                int no = uc[i + 1].digitValue();
-                if (no > 0 && no <= numCaptures)
-                    numBackRefs++;
-            }
-        }
-
-        /*
-            This is the harder case where we have back-references.
-        */
-        if (numBackRefs > 0) {
-            QVarLengthArray<QStringCapture, 16> captures(numBackRefs);
-            int j = 0;
-
-            for (int i = 0; i < al - 1; i++) {
-                if (uc[i] == QLatin1Char('\\')) {
-                    int no = uc[i + 1].digitValue();
-                    if (no > 0 && no <= numCaptures) {
-                        QStringCapture capture;
-                        capture.pos = i;
-                        capture.len = 2;
-
-                        if (i < al - 2) {
-                            int secondDigit = uc[i + 2].digitValue();
-                            if (secondDigit != -1 && ((no * 10) + secondDigit) <= numCaptures) {
-                                no = (no * 10) + secondDigit;
-                                ++capture.len;
-                            }
-                        }
-
-                        capture.no = no;
-                        captures[j++] = capture;
-                    }
-                }
-            }
-
-            while (index <= length()) {
-                index = rx2.indexIn(*this, index, caretMode);
-                if (index == -1)
-                    break;
-
-                QString after2(after);
-                for (j = numBackRefs - 1; j >= 0; j--) {
-                    const QStringCapture &capture = captures[j];
-                    after2.replace(capture.pos, capture.len, rx2.cap(capture.no));
-                }
-
-                replace(index, rx2.matchedLength(), after2);
-                index += after2.length();
-
-                // avoid infinite loop on 0-length matches (e.g., QRegExp("[a-z]*"))
-                if (rx2.matchedLength() == 0)
-                    ++index;
-
-                caretMode = QRegExp::CaretWontMatch;
-            }
-            return *this;
-        }
-    }
-
-    /*
-        This is the simple and optimized case where we don't have
-        back-references.
-    */
-    while (index != -1) {
-        struct {
-            int pos;
-            int length;
-        } replacements[2048];
-
-        int pos = 0;
-        int adjust = 0;
-        while (pos < 2047) {
-            index = rx2.indexIn(*this, index, caretMode);
-            if (index == -1)
-                break;
-            int ml = rx2.matchedLength();
-            replacements[pos].pos = index;
-            replacements[pos++].length = ml;
-            index += ml;
-            adjust += al - ml;
-            // avoid infinite loop
-            if (!ml)
-                index++;
-        }
-        if (!pos)
-            break;
-        replacements[pos].pos = d.size;
-        int newlen = d.size + adjust;
-
-        // to continue searching at the right position after we did
-        // the first round of replacements
-        if (index != -1)
-            index += adjust;
-        QString newstring;
-        newstring.reserve(newlen + 1);
-        QChar *newuc = newstring.data();
-        QChar *uc = newuc;
-        int copystart = 0;
-        int i = 0;
-        while (i < pos) {
-            int copyend = replacements[i].pos;
-            int size = copyend - copystart;
-            memcpy(static_cast<void*>(uc), static_cast<const void *>(d.data() + copystart), size * sizeof(QChar));
-            uc += size;
-            memcpy(static_cast<void *>(uc), static_cast<const void *>(after.d.data()), al * sizeof(QChar));
-            uc += al;
-            copystart = copyend + replacements[i].length;
-            i++;
-        }
-        memcpy(static_cast<void *>(uc), static_cast<const void *>(d.data() + copystart), (d.size - copystart) * sizeof(QChar));
-        newstring.resize(newlen);
-        *this = newstring;
-        caretMode = QRegExp::CaretWontMatch;
-    }
+    *this = rx.replaceIn(*this, after);
     return *this;
 }
 #endif
@@ -4402,17 +4271,7 @@ int QString::lastIndexOf(QRegExp& rx, int from) const
 */
 int QString::count(const QRegExp& rx) const
 {
-    QRegExp rx2(rx);
-    int count = 0;
-    int index = -1;
-    int len = length();
-    while (index < len - 1) {                 // count overlapping matches
-        index = rx2.indexIn(*this, index + 1);
-        if (index == -1)
-            break;
-        count++;
-    }
-    return count;
+    return rx.countIn(*this);
 }
 #endif // QT_NO_REGEXP
 
@@ -4756,25 +4615,7 @@ static QString extractSections(const QVector<qt_section_chunk> &sections,
 */
 QString QString::section(const QRegExp &reg, int start, int end, SectionFlags flags) const
 {
-    const QChar *uc = unicode();
-    if(!uc)
-        return QString();
-
-    QRegExp sep(reg);
-    sep.setCaseSensitivity((flags & SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive
-                                                                : Qt::CaseSensitive);
-
-    QVector<qt_section_chunk> sections;
-    int n = length(), m = 0, last_m = 0, last_len = 0;
-    while ((m = sep.indexIn(*this, m)) != -1) {
-        sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, m - last_m)));
-        last_m = m;
-        last_len = sep.matchedLength();
-        m += qMax(sep.matchedLength(), 1);
-    }
-    sections.append(qt_section_chunk(last_len, QStringRef(this, last_m, n - last_m)));
-
-    return extractSections(sections, start, end, flags);
+    return reg.sectionIn(*this, start, end, flags);
 }
 #endif
 
@@ -7742,28 +7583,6 @@ QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior
 #endif
 
 #ifndef QT_NO_REGEXP
-namespace {
-template<class ResultList, typename MidMethod>
-static ResultList splitString(const QString &source, MidMethod mid, const QRegExp &rx, Qt::SplitBehavior behavior)
-{
-    QRegExp rx2(rx);
-    ResultList list;
-    int start = 0;
-    int extra = 0;
-    int end;
-    while ((end = rx2.indexIn(source, start + extra)) != -1) {
-        int matchedLen = rx2.matchedLength();
-        if (start != end || behavior == Qt::KeepEmptyParts)
-            list.append((source.*mid)(start, end - start));
-        start = end + matchedLen;
-        extra = (matchedLen == 0) ? 1 : 0;
-    }
-    if (start != source.size() || behavior == Qt::KeepEmptyParts)
-        list.append((source.*mid)(start, -1));
-    return list;
-}
-} // namespace
-
 /*!
     \overload
     \since 5.14
@@ -7793,7 +7612,7 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegEx
 */
 QStringList QString::split(const QRegExp &rx, Qt::SplitBehavior behavior) const
 {
-    return splitString<QStringList>(*this, &QString::mid, rx, behavior);
+    return rx.splitString(*this, behavior);
 }
 
 #  if QT_DEPRECATED_SINCE(5, 15)
@@ -7803,7 +7622,7 @@ QStringList QString::split(const QRegExp &rx, Qt::SplitBehavior behavior) const
 */
 QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 {
-    return split(rx, mapSplitBehavior(behavior));
+    return rx.splitString(*this, mapSplitBehavior(behavior));
 }
 #  endif
 
@@ -7823,7 +7642,7 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 */
 QVector<QStringRef> QString::splitRef(const QRegExp &rx, Qt::SplitBehavior behavior) const
 {
-    return splitString<QVector<QStringRef> >(*this, &QString::midRef, rx, behavior);
+    return rx.splitStringAsRef(*this, behavior);
 }
 
 #  if QT_DEPRECATED_SINCE(5, 15)
@@ -7834,7 +7653,7 @@ QVector<QStringRef> QString::splitRef(const QRegExp &rx, Qt::SplitBehavior behav
 */
 QVector<QStringRef> QString::splitRef(const QRegExp &rx, SplitBehavior behavior) const
 {
-    return splitRef(rx, mapSplitBehavior(behavior));
+    return rx.splitStringAsRef(*this, mapSplitBehavior(behavior));
 }
 #  endif
 #endif // QT_NO_REGEXP

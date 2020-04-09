@@ -460,11 +460,7 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
 */
 QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegExp &rx)
 {
-    QStringList res;
-    for (int i = 0; i < that->size(); ++i)
-        if (that->at(i).contains(rx))
-            res << that->at(i);
-    return res;
+    return rx.filterList(*that);
 }
 #endif
 
@@ -566,8 +562,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &b
 */
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &rx, const QString &after)
 {
-    for (int i = 0; i < that->size(); ++i)
-        (*that)[i].replace(rx, after);
+    *that = rx.replaceIn(*that, after);
 }
 #endif
 
@@ -716,30 +711,6 @@ QString QtPrivate::QStringList_join(const QStringList *that, QStringView sep)
 */
 
 #ifndef QT_NO_REGEXP
-static int indexOfMutating(const QStringList *that, QRegExp &rx, int from)
-{
-    if (from < 0)
-        from = qMax(from + that->size(), 0);
-    for (int i = from; i < that->size(); ++i) {
-        if (rx.exactMatch(that->at(i)))
-            return i;
-    }
-    return -1;
-}
-
-static int lastIndexOfMutating(const QStringList *that, QRegExp &rx, int from)
-{
-    if (from < 0)
-        from += that->size();
-    else if (from >= that->size())
-        from = that->size() - 1;
-    for (int i = from; i >= 0; --i) {
-        if (rx.exactMatch(that->at(i)))
-            return i;
-        }
-    return -1;
-}
-
 /*!
     \fn int QStringList::indexOf(const QRegExp &rx, int from) const
 
@@ -752,7 +723,7 @@ static int lastIndexOfMutating(const QStringList *that, QRegExp &rx, int from)
 int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegExp &rx, int from)
 {
     QRegExp rx2(rx);
-    return indexOfMutating(that, rx2, from);
+    return rx2.indexIn(*that, from);
 }
 
 /*!
@@ -771,7 +742,7 @@ int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegExp &rx, i
 */
 int QtPrivate::QStringList_indexOf(const QStringList *that, QRegExp &rx, int from)
 {
-    return indexOfMutating(that, rx, from);
+    return rx.indexIn(*that, from);
 }
 
 /*!
@@ -787,7 +758,7 @@ int QtPrivate::QStringList_indexOf(const QStringList *that, QRegExp &rx, int fro
 int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegExp &rx, int from)
 {
     QRegExp rx2(rx);
-    return lastIndexOfMutating(that, rx2, from);
+    return rx2.lastIndexIn(*that, from);
 }
 
 /*!
@@ -807,7 +778,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegExp &r
 */
 int QtPrivate::QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int from)
 {
-    return lastIndexOfMutating(that, rx, from);
+    return rx.lastIndexIn(*that, from);
 }
 #endif
 

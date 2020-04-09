@@ -4479,6 +4479,419 @@ int QRegExp::matchedLength() const
     return priv->matchState.captured[1];
 }
 
+
+/*!
+  Replaces every occurrence of this regular expression in
+  \a str with \a after and returns the result.
+
+  For regular expressions containing \l{capturing parentheses},
+  occurrences of \b{\\1}, \b{\\2}, ..., in \a after are replaced
+  with \a{rx}.cap(1), cap(2), ...
+
+  \sa indexIn(), lastIndexIn(), QRegExp::cap()
+*/
+QString QRegExp::replaceIn(const QString &str, const QString &after) const
+{
+    struct QStringCapture
+    {
+        int pos;
+        int len;
+        int no;
+    };
+
+    QRegExp rx2(*this);
+
+    if (str.isEmpty() && rx2.indexIn(str) == -1)
+        return str;
+
+    QString s(str);
+
+    int index = 0;
+    int numCaptures = rx2.captureCount();
+    int al = after.length();
+    QRegExp::CaretMode caretMode = QRegExp::CaretAtZero;
+
+    if (numCaptures > 0) {
+        const QChar *uc = after.unicode();
+        int numBackRefs = 0;
+
+        for (int i = 0; i < al - 1; i++) {
+            if (uc[i] == QLatin1Char('\\')) {
+                int no = uc[i + 1].digitValue();
+                if (no > 0 && no <= numCaptures)
+                    numBackRefs++;
+            }
+        }
+
+        /*
+            This is the harder case where we have back-references.
+        */
+        if (numBackRefs > 0) {
+            QVarLengthArray<QStringCapture, 16> captures(numBackRefs);
+            int j = 0;
+
+            for (int i = 0; i < al - 1; i++) {
+                if (uc[i] == QLatin1Char('\\')) {
+                    int no = uc[i + 1].digitValue();
+                    if (no > 0 && no <= numCaptures) {
+                        QStringCapture capture;
+                        capture.pos = i;
+                        capture.len = 2;
+
+                        if (i < al - 2) {
+                            int secondDigit = uc[i + 2].digitValue();
+                            if (secondDigit != -1 && ((no * 10) + secondDigit) <= numCaptures) {
+                                no = (no * 10) + secondDigit;
+                                ++capture.len;
+                            }
+                        }
+
+                        capture.no = no;
+                        captures[j++] = capture;
+                    }
+                }
+            }
+
+            while (index <= s.length()) {
+                index = rx2.indexIn(s, index, caretMode);
+                if (index == -1)
+                    break;
+
+                QString after2(after);
+                for (j = numBackRefs - 1; j >= 0; j--) {
+                    const QStringCapture &capture = captures[j];
+                    after2.replace(capture.pos, capture.len, rx2.cap(capture.no));
+                }
+
+                s.replace(index, rx2.matchedLength(), after2);
+                index += after2.length();
+
+                // avoid infinite loop on 0-length matches (e.g., QRegExp("[a-z]*"))
+                if (rx2.matchedLength() == 0)
+                    ++index;
+
+                caretMode = QRegExp::CaretWontMatch;
+            }
+            return s;
+        }
+    }
+
+    /*
+        This is the simple and optimized case where we don't have
+        back-references.
+    */
+    while (index != -1) {
+        struct {
+            int pos;
+            int length;
+        } replacements[2048];
+
+        int pos = 0;
+        int adjust = 0;
+        while (pos < 2047) {
+            index = rx2.indexIn(s, index, caretMode);
+            if (index == -1)
+                break;
+            int ml = rx2.matchedLength();
+            replacements[pos].pos = index;
+            replacements[pos++].length = ml;
+            index += ml;
+            adjust += al - ml;
+            // avoid infinite loop
+            if (!ml)
+                index++;
+        }
+        if (!pos)
+            break;
+        replacements[pos].pos = s.size();
+        int newlen = s.size() + adjust;
+
+        // to continue searching at the right position after we did
+        // the first round of replacements
+        if (index != -1)
+            index += adjust;
+        QString newstring;
+        newstring.reserve(newlen + 1);
+        QChar *newuc = newstring.data();
+        QChar *uc = newuc;
+        int copystart = 0;
+        int i = 0;
+        while (i < pos) {
+            int copyend = replacements[i].pos;
+            int size = copyend - copystart;
+            memcpy(static_cast<void*>(uc), static_cast<const void *>(s.constData() + copystart), size * sizeof(QChar));
+            uc += size;
+            memcpy(static_cast<void *>(uc), static_cast<const void *>(after.constData()), al * sizeof(QChar));
+            uc += al;
+            copystart = copyend + replacements[i].length;
+            i++;
+        }
+        memcpy(static_cast<void *>(uc), static_cast<const void *>(s.constData() + copystart), (s.size() - copystart) * sizeof(QChar));
+        newstring.resize(newlen);
+        s = newstring;
+        caretMode = QRegExp::CaretWontMatch;
+    }
+    return s;
+
+}
+
+
+/*!
+  \fn QString QRegExp::removeIn(const QString &str)
+
+  Removes every occurrence of this regular expression \a str, and
+  returns the result
+
+  Does the same as replaceIn(str, QString()).
+
+  \sa indexIn(), lastIndexIn(), replaceIn()
+*/
+
+
+/*!
+  \fn QString QRegExp::countIn(const QString &str)
+
+   Returns the number of times this regular expression matches
+   in \a str.
+
+  \sa indexIn(), lastIndexIn(), replaceIn()
+*/
+
+int QRegExp::countIn(const QString &str) const
+{
+    QRegExp rx2(*this);
+    int count = 0;
+    int index = -1;
+    int len = str.length();
+    while (index < len - 1) {                 // count overlapping matches
+        index = rx2.indexIn(str, index + 1);
+        if (index == -1)
+            break;
+        count++;
+    }
+    return count;
+}
+
+class qt_section_chunk {
+public:
+    qt_section_chunk() {}
+    qt_section_chunk(int l, QStringRef s) : length(l), string(std::move(s)) {}
+    int length;
+    QStringRef string;
+};
+
+static QString extractSections(const QVector<qt_section_chunk> &sections,
+                               int start,
+                               int end,
+                               QString::SectionFlags flags)
+{
+    const int sectionsSize = sections.size();
+
+    if (!(flags & QString::SectionSkipEmpty)) {
+        if (start < 0)
+            start += sectionsSize;
+        if (end < 0)
+            end += sectionsSize;
+    } else {
+        int skip = 0;
+        for (int k = 0; k < sectionsSize; ++k) {
+            const qt_section_chunk &section = sections.at(k);
+            if (section.length == section.string.length())
+                skip++;
+        }
+        if (start < 0)
+            start += sectionsSize - skip;
+        if (end < 0)
+            end += sectionsSize - skip;
+    }
+    if (start >= sectionsSize || end < 0 || start > end)
+        return QString();
+
+    QString ret;
+    int x = 0;
+    int first_i = start, last_i = end;
+    for (int i = 0; x <= end && i < sectionsSize; ++i) {
+        const qt_section_chunk &section = sections.at(i);
+        const bool empty = (section.length == section.string.length());
+        if (x >= start) {
+            if (x == start)
+                first_i = i;
+            if (x == end)
+                last_i = i;
+            if (x != start)
+                ret += section.string;
+            else
+                ret += section.string.mid(section.length);
+        }
+        if (!empty || !(flags & QString::SectionSkipEmpty))
+            x++;
+    }
+
+    if ((flags & QString::SectionIncludeLeadingSep) && first_i >= 0) {
+        const qt_section_chunk &section = sections.at(first_i);
+        ret.prepend(section.string.left(section.length));
+    }
+
+    if ((flags & QString::SectionIncludeTrailingSep)
+        && last_i < sectionsSize - 1) {
+        const qt_section_chunk &section = sections.at(last_i+1);
+        ret += section.string.left(section.length);
+    }
+
+    return ret;
+}
+/*!
+    \a str is treated as a sequence of fields separated by this
+    regular expression.
+
+    \sa splitString()
+*/
+QString QRegExp::sectionIn(const QString &str, int start, int end, QString::SectionFlags flags) const
+{
+    if (str.isEmpty())
+        return str;
+
+    QRegExp sep(*this);
+    sep.setCaseSensitivity((flags & QString::SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive
+                                                                         : Qt::CaseSensitive);
+
+    QVector<qt_section_chunk> sections;
+    int n = str.length(), m = 0, last_m = 0, last_len = 0;
+    while ((m = sep.indexIn(str, m)) != -1) {
+        sections.append(qt_section_chunk(last_len, QStringRef(&str, last_m, m - last_m)));
+        last_m = m;
+        last_len = sep.matchedLength();
+        m += qMax(sep.matchedLength(), 1);
+    }
+    sections.append(qt_section_chunk(last_len, QStringRef(&str, last_m, n - last_m)));
+
+    return extractSections(sections, start, end, flags);
+}
+
+/*!
+    Splits \a str into substrings wherever this regular expression
+    matches, and returns the list of those strings. If this regular
+    expression does not match anywhere in the string, split() returns a
+    single-element list containing \a str.
+
+    \sa QStringList::join(), section(), QString::split()
+*/
+QStringList QRegExp::splitString(const QString &str, Qt::SplitBehavior behavior) const
+{
+    QRegExp rx2(*this);
+    QStringList list;
+    int start = 0;
+    int extra = 0;
+    int end;
+    while ((end = rx2.indexIn(str, start + extra)) != -1) {
+        int matchedLen = rx2.matchedLength();
+        if (start != end || behavior == Qt::KeepEmptyParts)
+            list.append(str.mid(start, end - start));
+        start = end + matchedLen;
+        extra = (matchedLen == 0) ? 1 : 0;
+    }
+    if (start != str.size() || behavior == Qt::KeepEmptyParts)
+        list.append(str.mid(start, -1));
+    return list;
+}
+
+/*!
+    Splits \a str into substrings wherever this regular expression
+    matches, and returns the list of those strings. If this regular
+    expression does not match anywhere in the string, split() returns a
+    single-element list containing \a str.
+
+    \sa QStringList::join(), section(), QString::split()
+*/
+QVector<QStringRef> QRegExp::splitStringAsRef(const QString &str, Qt::SplitBehavior behavior) const
+{
+    QRegExp rx2(*this);
+    QVector<QStringRef> list;
+    int start = 0;
+    int extra = 0;
+    int end;
+    while ((end = rx2.indexIn(str, start + extra)) != -1) {
+        int matchedLen = rx2.matchedLength();
+        if (start != end || behavior == Qt::KeepEmptyParts)
+            list.append(str.midRef(start, end - start));
+        start = end + matchedLen;
+        extra = (matchedLen == 0) ? 1 : 0;
+    }
+    if (start != str.size() || behavior == Qt::KeepEmptyParts)
+        list.append(str.midRef(start, -1));
+    return list;
+}
+
+/*!
+    \fn QStringList QStringList::filter(const QRegExp &rx) const
+
+    \overload
+
+    Returns a list of all the strings that match the regular
+    expression \a rx.
+*/
+QStringList QRegExp::filterList(const QStringList &stringList) const
+{
+    QStringList res;
+    for (const QString &s : stringList) {
+        if (containedIn(s))
+            res << s;
+    }
+    return res;
+}
+
+/*!
+    Replaces every occurrence of the regexp \a rx, in each of the
+    string lists's strings, with \a after. Returns a reference to the
+    string list.
+*/
+QStringList QRegExp::replaceIn(const QStringList &stringList, const QString &after) const
+{
+    QStringList list;
+    for (const QString &s : stringList)
+        list << replaceIn(s, after);
+    return list;
+}
+
+/*!
+    Returns the index position of the first exact match of this regexp in
+    \a list, searching forward from index position \a from. Returns
+    -1 if no item matched.
+
+    \sa lastIndexIn(), contains(), exactMatch()
+*/
+int QRegExp::indexIn(const QStringList &list, int from)
+{
+    if (from < 0)
+        from = qMax(from + list.size(), 0);
+    for (int i = from; i < list.size(); ++i) {
+        if (exactMatch(list.at(i)))
+           return i;
+    }
+    return -1;
+}
+
+/*!
+    Returns the index position of the last exact match of this regexp in
+    \a list, searching backward from index position \a from. If \a
+    from is -1 (the default), the search starts at the last item.
+    Returns -1 if no item matched.
+
+    \sa indexOf(), contains(), QRegExp::exactMatch()
+*/
+int QRegExp::lastIndexIn(const QStringList &list, int from)
+{
+    if (from < 0)
+        from += list.size();
+    else if (from >= list.size())
+        from = list.size() - 1;
+    for (int i = from; i >= 0; --i) {
+        if (exactMatch(list.at(i)))
+            return i;
+    }
+    return -1;
+}
+
 #ifndef QT_NO_REGEXP_CAPTURE
 
 /*!
@@ -4637,6 +5050,7 @@ QString QRegExp::errorString()
 {
     return const_cast<const QRegExp *>(this)->errorString();
 }
+
 #endif
 
 /*!

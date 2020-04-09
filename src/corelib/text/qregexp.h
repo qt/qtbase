@@ -108,6 +108,22 @@ public:
     QString errorString();
 #endif
 
+    QString replaceIn(const QString &str, const QString &after) const;
+    QString removeIn(const QString &str) const
+    { return replaceIn(str, QString()); }
+    bool containedIn(const QString &str) const
+    { return indexIn(str) != -1; }
+    int countIn(const QString &str) const;
+    QString sectionIn(const QString &str, int start, int end, QString::SectionFlags flags) const;
+
+    QStringList splitString(const QString &str, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
+    QVector<QStringRef> splitStringAsRef(const QString &str, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
+
+    int indexIn(const QStringList &list, int from);
+    int lastIndexIn(const QStringList &list, int from);
+    QStringList replaceIn(const QStringList &stringList, const QString &after) const;
+    QStringList filterList(const QStringList &stringList) const;
+
     static QString escape(const QString &str);
 
     friend Q_CORE_EXPORT size_t qHash(const QRegExp &key, size_t seed) noexcept;
