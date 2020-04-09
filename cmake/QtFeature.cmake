@@ -699,7 +699,25 @@ function(qt_config_compile_test name)
 
         # Pass which libraries need to be linked against.
         if(arg_LIBRARIES)
-            list(APPEND flags "-DQT_CONFIG_COMPILE_TEST_LIBRARIES:STRING=${arg_LIBRARIES}")
+            set(link_flags "")
+            set(library_targets "")
+            # Separate targets from link flags or paths. This is to prevent configuration failures
+            # when the targets are not found due to missing packages.
+            foreach(lib ${arg_LIBRARIES})
+                string(FIND "${lib}" "::" is_library_target)
+                if(is_library_target EQUAL -1)
+                    list(APPEND link_flags "${lib}")
+                else()
+                    list(APPEND library_targets "${lib}")
+                endif()
+            endforeach()
+            if(link_flags)
+                list(APPEND flags "-DQT_CONFIG_COMPILE_TEST_LIBRARIES:STRING=${link_flags}")
+            endif()
+            if(library_targets)
+                list(APPEND flags
+                     "-DQT_CONFIG_COMPILE_TEST_LIBRARY_TARGETS:STRING=${library_targets}")
+            endif()
         endif()
 
         try_compile(HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}"
