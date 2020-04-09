@@ -153,7 +153,7 @@ void QStringMatcher::updateSkipTable()
     Create the QStringMatcher with the QString you want to search
     for. Then call indexIn() on the QString that you want to search.
 
-    \sa QString, QByteArrayMatcher, QRegExp
+    \sa QString, QByteArrayMatcher, QRegularExpression
 */
 
 /*!

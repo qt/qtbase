@@ -145,20 +145,6 @@ Widget::Widget(QWidget *parent)
 //! [13]
 
     list.clear();
-//! [14]
-    list << "alpha" << "beta" << "gamma" << "epsilon";
-    list.replaceInStrings(QRegExp("^a"), "o");
-    // list == ["olpha", "beta", "gamma", "epsilon"]
-//! [14]
-
-    list.clear();
-//! [15]
-    list << "Bill Clinton" << "Murray, Bill";
-    list.replaceInStrings(QRegExp("^(.*), (.*)$"), "\\2 \\1");
-    // list == ["Bill Clinton", "Bill Murray"]
-//! [15]
-
-    list.clear();
 //! [16]
     list << "alpha" << "beta" << "gamma" << "epsilon";
     list.replaceInStrings(QRegularExpression("^a"), "o");

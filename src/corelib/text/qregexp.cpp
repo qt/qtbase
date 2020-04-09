@@ -4672,102 +4672,6 @@ int QRegExp::countIn(const QString &str) const
     return count;
 }
 
-class qt_section_chunk {
-public:
-    qt_section_chunk() {}
-    qt_section_chunk(int l, QStringRef s) : length(l), string(std::move(s)) {}
-    int length;
-    QStringRef string;
-};
-
-static QString extractSections(const QVector<qt_section_chunk> &sections,
-                               int start,
-                               int end,
-                               QString::SectionFlags flags)
-{
-    const int sectionsSize = sections.size();
-
-    if (!(flags & QString::SectionSkipEmpty)) {
-        if (start < 0)
-            start += sectionsSize;
-        if (end < 0)
-            end += sectionsSize;
-    } else {
-        int skip = 0;
-        for (int k = 0; k < sectionsSize; ++k) {
-            const qt_section_chunk &section = sections.at(k);
-            if (section.length == section.string.length())
-                skip++;
-        }
-        if (start < 0)
-            start += sectionsSize - skip;
-        if (end < 0)
-            end += sectionsSize - skip;
-    }
-    if (start >= sectionsSize || end < 0 || start > end)
-        return QString();
-
-    QString ret;
-    int x = 0;
-    int first_i = start, last_i = end;
-    for (int i = 0; x <= end && i < sectionsSize; ++i) {
-        const qt_section_chunk &section = sections.at(i);
-        const bool empty = (section.length == section.string.length());
-        if (x >= start) {
-            if (x == start)
-                first_i = i;
-            if (x == end)
-                last_i = i;
-            if (x != start)
-                ret += section.string;
-            else
-                ret += section.string.mid(section.length);
-        }
-        if (!empty || !(flags & QString::SectionSkipEmpty))
-            x++;
-    }
-
-    if ((flags & QString::SectionIncludeLeadingSep) && first_i >= 0) {
-        const qt_section_chunk &section = sections.at(first_i);
-        ret.prepend(section.string.left(section.length));
-    }
-
-    if ((flags & QString::SectionIncludeTrailingSep)
-        && last_i < sectionsSize - 1) {
-        const qt_section_chunk &section = sections.at(last_i+1);
-        ret += section.string.left(section.length);
-    }
-
-    return ret;
-}
-/*!
-    \a str is treated as a sequence of fields separated by this
-    regular expression.
-
-    \sa splitString()
-*/
-QString QRegExp::sectionIn(const QString &str, int start, int end, QString::SectionFlags flags) const
-{
-    if (str.isEmpty())
-        return str;
-
-    QRegExp sep(*this);
-    sep.setCaseSensitivity((flags & QString::SectionCaseInsensitiveSeps) ? Qt::CaseInsensitive
-                                                                         : Qt::CaseSensitive);
-
-    QVector<qt_section_chunk> sections;
-    int n = str.length(), m = 0, last_m = 0, last_len = 0;
-    while ((m = sep.indexIn(str, m)) != -1) {
-        sections.append(qt_section_chunk(last_len, QStringRef(&str, last_m, m - last_m)));
-        last_m = m;
-        last_len = sep.matchedLength();
-        m += qMax(sep.matchedLength(), 1);
-    }
-    sections.append(qt_section_chunk(last_len, QStringRef(&str, last_m, n - last_m)));
-
-    return extractSections(sections, start, end, flags);
-}
-
 /*!
     Splits \a str into substrings wherever this regular expression
     matches, and returns the list of those strings. If this regular
@@ -4792,33 +4696,6 @@ QStringList QRegExp::splitString(const QString &str, Qt::SplitBehavior behavior)
     }
     if (start != str.size() || behavior == Qt::KeepEmptyParts)
         list.append(str.mid(start, -1));
-    return list;
-}
-
-/*!
-    Splits \a str into substrings wherever this regular expression
-    matches, and returns the list of those strings. If this regular
-    expression does not match anywhere in the string, split() returns a
-    single-element list containing \a str.
-
-    \sa QStringList::join(), section(), QString::split()
-*/
-QVector<QStringRef> QRegExp::splitStringAsRef(const QString &str, Qt::SplitBehavior behavior) const
-{
-    QRegExp rx2(*this);
-    QVector<QStringRef> list;
-    int start = 0;
-    int extra = 0;
-    int end;
-    while ((end = rx2.indexIn(str, start + extra)) != -1) {
-        int matchedLen = rx2.matchedLength();
-        if (start != end || behavior == Qt::KeepEmptyParts)
-            list.append(str.midRef(start, end - start));
-        start = end + matchedLen;
-        extra = (matchedLen == 0) ? 1 : 0;
-    }
-    if (start != str.size() || behavior == Qt::KeepEmptyParts)
-        list.append(str.midRef(start, -1));
     return list;
 }
 
@@ -4860,12 +4737,13 @@ QStringList QRegExp::replaceIn(const QStringList &stringList, const QString &aft
 
     \sa lastIndexIn(), contains(), exactMatch()
 */
-int QRegExp::indexIn(const QStringList &list, int from)
+int QRegExp::indexIn(const QStringList &list, int from) const
 {
+    QRegExp rx2(*this);
     if (from < 0)
         from = qMax(from + list.size(), 0);
     for (int i = from; i < list.size(); ++i) {
-        if (exactMatch(list.at(i)))
+        if (rx2.exactMatch(list.at(i)))
            return i;
     }
     return -1;
@@ -4879,14 +4757,15 @@ int QRegExp::indexIn(const QStringList &list, int from)
 
     \sa indexOf(), contains(), QRegExp::exactMatch()
 */
-int QRegExp::lastIndexIn(const QStringList &list, int from)
+int QRegExp::lastIndexIn(const QStringList &list, int from) const
 {
+    QRegExp rx2(*this);
     if (from < 0)
         from += list.size();
     else if (from >= list.size())
         from = list.size() - 1;
     for (int i = from; i >= 0; --i) {
-        if (exactMatch(list.at(i)))
+        if (rx2.exactMatch(list.at(i)))
             return i;
     }
     return -1;

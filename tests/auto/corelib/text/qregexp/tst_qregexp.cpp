@@ -895,19 +895,19 @@ void tst_QRegExp::testInvalidWildcard(){
 void tst_QRegExp::caretAnchoredOptimization()
 {
     QString s = "---babnana----";
-    s.replace( QRegExp("^-*|(-*)$"), "" );
+    s = QRegExp("^-*|(-*)$").replaceIn(s, "" );
     QCOMPARE(s, QLatin1String("babnana"));
 
     s = "---babnana----";
-    s.replace( QRegExp("^-*|(-{0,})$"), "" );
+    s = QRegExp("^-*|(-{0,})$").replaceIn(s, "" );
     QCOMPARE(s, QLatin1String("babnana"));
 
     s = "---babnana----";
-    s.replace( QRegExp("^-*|(-{1,})$"), "" );
+    s = QRegExp("^-*|(-{1,})$").replaceIn(s, "" );
     QCOMPARE(s, QLatin1String("babnana"));
 
     s = "---babnana----";
-    s.replace( QRegExp("^-*|(-+)$"), "" );
+    s = QRegExp("^-*|(-+)$").replaceIn(s, "" );
     QCOMPARE(s, QLatin1String("babnana"));
 }
 

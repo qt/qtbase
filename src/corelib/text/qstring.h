@@ -70,7 +70,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 
 QT_BEGIN_NAMESPACE
 
-class QRegExp;
 class QRegularExpression;
 class QRegularExpressionMatch;
 class QString;
@@ -422,17 +421,6 @@ public:
     int count(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
-#ifndef QT_NO_REGEXP
-    int indexOf(const QRegExp &, int from = 0) const;
-    int lastIndexOf(const QRegExp &, int from = -1) const;
-    inline bool contains(const QRegExp &rx) const { return indexOf(rx) != -1; }
-    int count(const QRegExp &) const;
-
-    int indexOf(QRegExp &, int from = 0) const;
-    int lastIndexOf(QRegExp &, int from = -1) const;
-    inline bool contains(QRegExp &rx) const { return indexOf(rx) != -1; }
-#endif
-
 #if QT_CONFIG(regularexpression)
     int indexOf(const QRegularExpression &re, int from = 0,
                 QRegularExpressionMatch *rmatch = nullptr) const;
@@ -453,9 +441,6 @@ public:
 
     QString section(QChar sep, int start, int end = -1, SectionFlags flags = SectionDefault) const;
     QString section(const QString &in_sep, int start, int end = -1, SectionFlags flags = SectionDefault) const;
-#ifndef QT_NO_REGEXP
-    QString section(const QRegExp &reg, int start, int end = -1, SectionFlags flags = SectionDefault) const;
-#endif
 #if QT_CONFIG(regularexpression)
     QString section(const QRegularExpression &re, int start, int end = -1, SectionFlags flags = SectionDefault) const;
 #endif
@@ -592,11 +577,6 @@ public:
                      Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &replace(QChar c, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
-#ifndef QT_NO_REGEXP
-    QString &replace(const QRegExp &rx, const QString &after);
-    inline QString &remove(const QRegExp &rx)
-    { return replace(rx, QString()); }
-#endif
 #if QT_CONFIG(regularexpression)
     QString &replace(const QRegularExpression &re, const QString  &after);
     inline QString &remove(const QRegularExpression &re)
@@ -622,12 +602,6 @@ public:
     Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
     QVector<QStringRef> splitRef(QChar sep, SplitBehavior behavior,
                                                    Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-#ifndef QT_NO_REGEXP
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QStringList split(const QRegExp &sep, SplitBehavior behavior) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QVector<QStringRef> splitRef(const QRegExp &sep, SplitBehavior behavior) const;
-#endif
 #if QT_CONFIG(regularexpression)
     Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
     QStringList split(const QRegularExpression &sep, SplitBehavior behavior) const;
@@ -650,14 +624,6 @@ public:
     Q_REQUIRED_RESULT
     QVector<QStringRef> splitRef(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
                                  Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-#ifndef QT_NO_REGEXP
-    Q_REQUIRED_RESULT
-    QStringList split(const QRegExp &sep,
-                      Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
-    Q_REQUIRED_RESULT
-    QVector<QStringRef> splitRef(const QRegExp &sep,
-                                 Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
-#endif
 #ifndef QT_NO_REGULAREXPRESSION
     Q_REQUIRED_RESULT
     QStringList split(const QRegularExpression &sep,

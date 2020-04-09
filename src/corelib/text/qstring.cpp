@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qstringlist.h"
-#include "qregexp.h"
 #if QT_CONFIG(regularexpression)
 #include "qregularexpression.h"
 #endif
@@ -1537,7 +1536,7 @@ const QString::Null QString::null = { };
     and join a list of strings into a single string with an optional
     separator using QStringList::join(). You can obtain a list of
     strings from a string list that contain a particular substring or
-    that match a particular QRegExp using the QStringList::filter()
+    that match a particular QRegularExpression using the QStringList::filter()
     function.
 
     \section1 Querying String Data
@@ -2927,17 +2926,6 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
 }
 
 /*!
-  \fn QString &QString::remove(const QRegExp &rx)
-
-  Removes every occurrence of the regular expression \a rx in the
-  string, and returns a reference to the string. For example:
-
-  \snippet qstring/main.cpp 39
-
-  \sa indexOf(), lastIndexOf(), replace()
-*/
-
-/*!
   \fn QString &QString::remove(const QRegularExpression &re)
   \since 5.0
 
@@ -3887,7 +3875,7 @@ int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs
 */
 
 
-#if !(defined(QT_NO_REGEXP) && !QT_CONFIG(regularexpression))
+#if QT_CONFIG(regularexpression)
 struct QStringCapture
 {
     int pos;
@@ -3895,35 +3883,7 @@ struct QStringCapture
     int no;
 };
 Q_DECLARE_TYPEINFO(QStringCapture, Q_PRIMITIVE_TYPE);
-#endif
 
-#ifndef QT_NO_REGEXP
-
-/*!
-  \overload replace()
-
-  Replaces every occurrence of the regular expression \a rx in the
-  string with \a after. Returns a reference to the string. For
-  example:
-
-  \snippet qstring/main.cpp 42
-
-  For regular expressions containing \l{capturing parentheses},
-  occurrences of \b{\\1}, \b{\\2}, ..., in \a after are replaced
-  with \a{rx}.cap(1), cap(2), ...
-
-  \snippet qstring/main.cpp 43
-
-  \sa indexOf(), lastIndexOf(), remove(), QRegExp::cap()
-*/
-QString& QString::replace(const QRegExp &rx, const QString &after)
-{
-    *this = rx.replaceIn(*this, after);
-    return *this;
-}
-#endif
-
-#if QT_CONFIG(regularexpression)
 /*!
   \overload replace()
   \since 5.0
@@ -4162,118 +4122,6 @@ int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 
     \sa indexOf(), count()
 */
-
-/*! \fn bool QString::contains(const QRegExp &rx) const
-
-    \overload contains()
-
-    Returns \c true if the regular expression \a rx matches somewhere in
-    this string; otherwise returns \c false.
-*/
-
-/*! \fn bool QString::contains(QRegExp &rx) const
-    \overload contains()
-    \since 4.5
-
-    Returns \c true if the regular expression \a rx matches somewhere in
-    this string; otherwise returns \c false.
-
-    If there is a match, the \a rx regular expression will contain the
-    matched captures (see QRegExp::matchedLength, QRegExp::cap).
-*/
-
-#ifndef QT_NO_REGEXP
-/*!
-    \overload indexOf()
-
-    Returns the index position of the first match of the regular
-    expression \a rx in the string, searching forward from index
-    position \a from. Returns -1 if \a rx didn't match anywhere.
-
-    Example:
-
-    \snippet qstring/main.cpp 25
-*/
-int QString::indexOf(const QRegExp& rx, int from) const
-{
-    QRegExp rx2(rx);
-    return rx2.indexIn(*this, from);
-}
-
-/*!
-    \overload indexOf()
-    \since 4.5
-
-    Returns the index position of the first match of the regular
-    expression \a rx in the string, searching forward from index
-    position \a from. Returns -1 if \a rx didn't match anywhere.
-
-    If there is a match, the \a rx regular expression will contain the
-    matched captures (see QRegExp::matchedLength, QRegExp::cap).
-
-    Example:
-
-    \snippet qstring/main.cpp 25
-*/
-int QString::indexOf(QRegExp& rx, int from) const
-{
-    return rx.indexIn(*this, from);
-}
-
-/*!
-    \overload lastIndexOf()
-
-    Returns the index position of the last match of the regular
-    expression \a rx in the string, searching backward from index
-    position \a from. Returns -1 if \a rx didn't match anywhere.
-
-    Example:
-
-    \snippet qstring/main.cpp 30
-*/
-int QString::lastIndexOf(const QRegExp& rx, int from) const
-{
-    QRegExp rx2(rx);
-    return rx2.lastIndexIn(*this, from);
-}
-
-/*!
-    \overload lastIndexOf()
-    \since 4.5
-
-    Returns the index position of the last match of the regular
-    expression \a rx in the string, searching backward from index
-    position \a from. Returns -1 if \a rx didn't match anywhere.
-
-    If there is a match, the \a rx regular expression will contain the
-    matched captures (see QRegExp::matchedLength, QRegExp::cap).
-
-    Example:
-
-    \snippet qstring/main.cpp 30
-*/
-int QString::lastIndexOf(QRegExp& rx, int from) const
-{
-    return rx.lastIndexIn(*this, from);
-}
-
-/*!
-    \overload count()
-
-    Returns the number of times the regular expression \a rx matches
-    in the string.
-
-    This function counts overlapping matches, so in the example
-    below, there are four instances of "ana" or "ama":
-
-    \snippet qstring/main.cpp 18
-
-*/
-int QString::count(const QRegExp& rx) const
-{
-    return rx.countIn(*this);
-}
-#endif // QT_NO_REGEXP
 
 #if QT_CONFIG(regularexpression)
 /*!
@@ -4596,26 +4444,6 @@ static QString extractSections(const QVector<qt_section_chunk> &sections,
     }
 
     return ret;
-}
-#endif
-
-#ifndef QT_NO_REGEXP
-/*!
-    \overload section()
-
-    This string is treated as a sequence of fields separated by the
-    regular expression, \a reg.
-
-    \snippet qstring/main.cpp 55
-
-    \warning Using this QRegExp version is much more expensive than
-    the overloaded string and character versions.
-
-    \sa split(), simplified()
-*/
-QString QString::section(const QRegExp &reg, int start, int end, SectionFlags flags) const
-{
-    return reg.sectionIn(*this, start, end, flags);
 }
 #endif
 
@@ -7581,82 +7409,6 @@ QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior
     return split(sep, mapSplitBehavior(behavior), cs);
 }
 #endif
-
-#ifndef QT_NO_REGEXP
-/*!
-    \overload
-    \since 5.14
-
-    Splits the string into substrings wherever the regular expression
-    \a rx matches, and returns the list of those strings. If \a rx
-    does not match anywhere in the string, split() returns a
-    single-element list containing this string.
-
-    Here is an example where we extract the words in a sentence
-    using one or more whitespace characters as the separator:
-
-    \snippet qstring/main.cpp 59
-
-    Here is a similar example, but this time we use any sequence of
-    non-word characters as the separator:
-
-    \snippet qstring/main.cpp 60
-
-    Here is a third example where we use a zero-length assertion,
-    \b{\\b} (word boundary), to split the string into an
-    alternating sequence of non-word and word tokens:
-
-    \snippet qstring/main.cpp 61
-
-    \sa QStringList::join(), section()
-*/
-QStringList QString::split(const QRegExp &rx, Qt::SplitBehavior behavior) const
-{
-    return rx.splitString(*this, behavior);
-}
-
-#  if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \obsolete
-*/
-QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
-{
-    return rx.splitString(*this, mapSplitBehavior(behavior));
-}
-#  endif
-
-/*!
-    \overload
-    \since 5.14
-
-    Splits the string into substring references wherever the regular expression
-    \a rx matches, and returns the list of those strings. If \a rx
-    does not match anywhere in the string, splitRef() returns a
-    single-element vector containing this string reference.
-
-    \note All references are valid as long this string is alive. Destroying this
-    string will cause all references to be dangling pointers.
-
-    \sa QStringRef split()
-*/
-QVector<QStringRef> QString::splitRef(const QRegExp &rx, Qt::SplitBehavior behavior) const
-{
-    return rx.splitStringAsRef(*this, behavior);
-}
-
-#  if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \since 5.4
-    \obsolete
-*/
-QVector<QStringRef> QString::splitRef(const QRegExp &rx, SplitBehavior behavior) const
-{
-    return rx.splitStringAsRef(*this, mapSplitBehavior(behavior));
-}
-#  endif
-#endif // QT_NO_REGEXP
 
 #if QT_CONFIG(regularexpression)
 namespace {

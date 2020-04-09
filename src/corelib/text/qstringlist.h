@@ -45,13 +45,11 @@
 
 #include <QtCore/qalgorithms.h>
 #include <QtCore/qcontainertools_impl.h>
-#include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringmatcher.h>
 
 QT_BEGIN_NAMESPACE
 
-class QRegExp;
 class QRegularExpression;
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
@@ -89,11 +87,6 @@ public:
     inline QStringList &replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     inline QStringList &replaceInStrings(const QString &before, QStringView after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     inline QStringList &replaceInStrings(QStringView before, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
-#endif
-
-#ifndef QT_NO_REGEXP
-    inline QStringList filter(const QRegExp &rx) const;
-    inline QStringList &replaceInStrings(const QRegExp &rx, const QString &after);
 #endif
 
 #if QT_CONFIG(regularexpression)
@@ -147,13 +140,6 @@ public:
     inline int lastIndexOf(QStringView str, int from = -1) const;
     inline int lastIndexOf(QLatin1String str, int from = -1) const;
 
-#ifndef QT_NO_REGEXP
-    inline int indexOf(const QRegExp &rx, int from = 0) const;
-    inline int lastIndexOf(const QRegExp &rx, int from = -1) const;
-    inline int indexOf(QRegExp &rx, int from = 0) const;
-    inline int lastIndexOf(QRegExp &rx, int from = -1) const;
-#endif
-
 #if QT_CONFIG(regularexpression)
     inline int indexOf(const QRegularExpression &re, int from = 0) const;
     inline int lastIndexOf(const QRegularExpression &re, int from = -1) const;
@@ -194,15 +180,6 @@ namespace QtPrivate {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QString &before, const QString &after,
                                       Qt::CaseSensitivity cs);
-#endif
-
-#ifndef QT_NO_REGEXP
-    void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QRegExp &rx, const QString &after);
-    QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QRegExp &re);
-    int Q_CORE_EXPORT QStringList_indexOf(const QStringList *that, const QRegExp &rx, int from);
-    int Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, const QRegExp &rx, int from);
-    int Q_CORE_EXPORT QStringList_indexOf(const QStringList *that, QRegExp &rx, int from);
-    int Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int from);
 #endif
 
 #if QT_CONFIG(regularexpression)
@@ -326,39 +303,6 @@ inline int QStringList::lastIndexOf(QLatin1String string, int from) const
 {
     return QtPrivate::lastIndexOf<QString, QLatin1String>(*this, string, from);
 }
-
-#ifndef QT_NO_REGEXP
-inline QStringList &QVectorSpecialMethods<QString>::replaceInStrings(const QRegExp &rx, const QString &after)
-{
-    QtPrivate::QStringList_replaceInStrings(self(), rx, after);
-    return *self();
-}
-
-inline QStringList QVectorSpecialMethods<QString>::filter(const QRegExp &rx) const
-{
-    return QtPrivate::QStringList_filter(self(), rx);
-}
-
-inline int QStringList::indexOf(const QRegExp &rx, int from) const
-{
-    return QtPrivate::QStringList_indexOf(this, rx, from);
-}
-
-inline int QStringList::lastIndexOf(const QRegExp &rx, int from) const
-{
-    return QtPrivate::QStringList_lastIndexOf(this, rx, from);
-}
-
-inline int QStringList::indexOf(QRegExp &rx, int from) const
-{
-    return QtPrivate::QStringList_indexOf(this, rx, from);
-}
-
-inline int QStringList::lastIndexOf(QRegExp &rx, int from) const
-{
-    return QtPrivate::QStringList_lastIndexOf(this, rx, from);
-}
-#endif
 
 #if QT_CONFIG(regularexpression)
 inline QStringList &QVectorSpecialMethods<QString>::replaceInStrings(const QRegularExpression &rx, const QString &after)

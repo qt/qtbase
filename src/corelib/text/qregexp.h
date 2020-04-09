@@ -114,13 +114,11 @@ public:
     bool containedIn(const QString &str) const
     { return indexIn(str) != -1; }
     int countIn(const QString &str) const;
-    QString sectionIn(const QString &str, int start, int end, QString::SectionFlags flags) const;
 
     QStringList splitString(const QString &str, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
-    QVector<QStringRef> splitStringAsRef(const QString &str, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
 
-    int indexIn(const QStringList &list, int from);
-    int lastIndexIn(const QStringList &list, int from);
+    int indexIn(const QStringList &list, int from) const;
+    int lastIndexIn(const QStringList &list, int from) const;
     QStringList replaceIn(const QStringList &stringList, const QString &after) const;
     QStringList filterList(const QStringList &stringList) const;
 

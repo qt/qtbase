@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include <qstringlist.h>
-#include <qregexp.h>
 #include <qset.h>
 #if QT_CONFIG(regularexpression)
 #  include <qregularexpression.h>
@@ -157,8 +156,8 @@ QT_BEGIN_NAMESPACE
 
     \snippet qstringlist/main.cpp 6
 
-    The argument to split can be a single character, a string, a
-    QRegularExpression or a (deprecated) QRegExp.
+    The argument to split can be a single character, a string or a
+    QRegularExpression.
 
     In addition, the \l {QStringList::operator+()}{operator+()}
     function allows you to concatenate two string lists into one. To
@@ -449,21 +448,6 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
     \sa indexOf(), contains()
  */
 
-#ifndef QT_NO_REGEXP
-/*!
-    \fn QStringList QStringList::filter(const QRegExp &rx) const
-
-    \overload
-
-    Returns a list of all the strings that match the regular
-    expression \a rx.
-*/
-QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegExp &rx)
-{
-    return rx.filterList(*that);
-}
-#endif
-
 #if QT_CONFIG(regularexpression)
 /*!
     \fn QStringList QStringList::filter(const QRegularExpression &re) const
@@ -533,36 +517,6 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &b
 {
     for (int i = 0; i < that->size(); ++i)
         (*that)[i].replace(before, after, cs);
-}
-#endif
-
-
-#ifndef QT_NO_REGEXP
-/*!
-    \fn QStringList &QStringList::replaceInStrings(const QRegExp &rx, const QString &after)
-    \overload
-
-    Replaces every occurrence of the regexp \a rx, in each of the
-    string lists's strings, with \a after. Returns a reference to the
-    string list.
-
-    For example:
-
-    \snippet qstringlist/main.cpp 5
-    \snippet qstringlist/main.cpp 14
-
-    For regular expressions that contain \l{capturing parentheses},
-    occurrences of \b{\\1}, \b{\\2}, ..., in \a after are
-    replaced with \a{rx}.cap(1), \a{rx}.cap(2), ...
-
-    For example:
-
-    \snippet qstringlist/main.cpp 5
-    \snippet qstringlist/main.cpp 15
-*/
-void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &rx, const QString &after)
-{
-    *that = rx.replaceIn(*that, after);
 }
 #endif
 
@@ -709,78 +663,6 @@ QString QtPrivate::QStringList_join(const QStringList *that, QStringView sep)
     Appends the \a other string list to the string list and returns a reference to
     the latter string list.
 */
-
-#ifndef QT_NO_REGEXP
-/*!
-    \fn int QStringList::indexOf(const QRegExp &rx, int from) const
-
-    Returns the index position of the first exact match of \a rx in
-    the list, searching forward from index position \a from. Returns
-    -1 if no item matched.
-
-    \sa lastIndexOf(), contains(), QRegExp::exactMatch()
-*/
-int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegExp &rx, int from)
-{
-    QRegExp rx2(rx);
-    return rx2.indexIn(*that, from);
-}
-
-/*!
-    \fn int QStringList::indexOf(QRegExp &rx, int from) const
-    \overload indexOf()
-    \since 4.5
-
-    Returns the index position of the first exact match of \a rx in
-    the list, searching forward from index position \a from. Returns
-    -1 if no item matched.
-
-    If an item matched, the \a rx regular expression will contain the
-    matched objects (see QRegExp::matchedLength, QRegExp::cap).
-
-    \sa lastIndexOf(), contains(), QRegExp::exactMatch()
-*/
-int QtPrivate::QStringList_indexOf(const QStringList *that, QRegExp &rx, int from)
-{
-    return rx.indexIn(*that, from);
-}
-
-/*!
-    \fn int QStringList::lastIndexOf(const QRegExp &rx, int from) const
-
-    Returns the index position of the last exact match of \a rx in
-    the list, searching backward from index position \a from. If \a
-    from is -1 (the default), the search starts at the last item.
-    Returns -1 if no item matched.
-
-    \sa indexOf(), contains(), QRegExp::exactMatch()
-*/
-int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegExp &rx, int from)
-{
-    QRegExp rx2(rx);
-    return rx2.lastIndexIn(*that, from);
-}
-
-/*!
-    \fn int QStringList::lastIndexOf(QRegExp &rx, int from) const
-    \overload lastIndexOf()
-    \since 4.5
-
-    Returns the index position of the last exact match of \a rx in
-    the list, searching backward from index position \a from. If \a
-    from is -1 (the default), the search starts at the last item.
-    Returns -1 if no item matched.
-
-    If an item matched, the \a rx regular expression will contain the
-    matched objects (see QRegExp::matchedLength, QRegExp::cap).
-
-    \sa indexOf(), contains(), QRegExp::exactMatch()
-*/
-int QtPrivate::QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int from)
-{
-    return rx.lastIndexIn(*that, from);
-}
-#endif
 
 #if QT_CONFIG(regularexpression)
 /*!

@@ -36,7 +36,6 @@ public:
     tst_QString();
 private slots:
     void section_regexp_data() { section_data_impl(); }
-    void section_regexp() { section_impl<QRegExp>(); }
     void section_regularexpression_data() { section_data_impl(); }
     void section_regularexpression() { section_impl<QRegularExpression>(); }
     void section_string_data() { section_data_impl(false); }

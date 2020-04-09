@@ -39,7 +39,6 @@
 
 #include <private/qglobal_p.h> // for the icu feature test
 #include <QtTest/QtTest>
-#include <qregexp.h>
 #include <qregularexpression.h>
 #include <qtextstream.h>
 #include <qstringlist.h>
@@ -567,14 +566,10 @@ private slots:
     void reverseIterators();
     void split_data();
     void split();
-    void split_regexp_data();
-    void split_regexp();
     void split_regularexpression_data();
     void split_regularexpression();
     void splitRef_data();
     void splitRef();
-    void splitRef_regexp_data();
-    void splitRef_regexp();
     void splitRef_regularexpression_data();
     void splitRef_regularexpression();
     void fromUtf16_data();
@@ -1443,26 +1438,6 @@ void tst_QString::indexOf()
     }
 
     {
-        QRegExp rx1 = QRegExp(QRegExp::escape(needle), cs);
-        QRegExp rx2 = QRegExp(needle, cs, QRegExp::FixedString);
-        QCOMPARE( haystack.indexOf(rx1, startpos), resultpos );
-        QCOMPARE( haystack.indexOf(rx2, startpos), resultpos );
-        // these QRegExp must have been modified
-        QVERIFY( resultpos == -1 || rx1.matchedLength() > 0);
-        QVERIFY( resultpos == -1 || rx2.matchedLength() > 0);
-    }
-
-    {
-        const QRegExp rx1 = QRegExp(QRegExp::escape(needle), cs);
-        const QRegExp rx2 = QRegExp(needle, cs, QRegExp::FixedString);
-        QCOMPARE( haystack.indexOf(rx1, startpos), resultpos );
-        QCOMPARE( haystack.indexOf(rx2, startpos), resultpos );
-        // our QRegExp mustn't have been modified
-        QCOMPARE( rx1.matchedLength(), -1 );
-        QCOMPARE( rx2.matchedLength(), -1 );
-    }
-
-    {
         QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
         if (!bcs)
             options |= QRegularExpression::CaseInsensitiveOption;
@@ -1666,26 +1641,6 @@ void tst_QString::lastIndexOf()
         // unfortunately, QString and QRegExp don't have the same out of bound semantics
         // I think QString is wrong -- See file log for contact information.
         {
-            QRegExp rx1 = QRegExp(QRegExp::escape(needle), cs);
-            QRegExp rx2 = QRegExp(needle, cs, QRegExp::FixedString);
-            QCOMPARE(haystack.lastIndexOf(rx1, from), expected);
-            QCOMPARE(haystack.lastIndexOf(rx2, from), expected);
-            // our QRegExp mustn't have been modified
-            QVERIFY(expected == -1 || rx1.matchedLength() > 0);
-            QVERIFY(expected == -1 || rx2.matchedLength() > 0);
-        }
-
-        {
-            const QRegExp rx1 = QRegExp(QRegExp::escape(needle), cs);
-            const QRegExp rx2 = QRegExp(needle, cs, QRegExp::FixedString);
-            QCOMPARE(haystack.lastIndexOf(rx1, from), expected);
-            QCOMPARE(haystack.lastIndexOf(rx2, from), expected);
-            // our QRegExp mustn't have been modified
-            QCOMPARE(rx1.matchedLength(), -1);
-            QCOMPARE(rx2.matchedLength(), -1);
-        }
-
-        {
             QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
             if (!caseSensitive)
                 options |= QRegularExpression::CaseInsensitiveOption;
@@ -1751,8 +1706,6 @@ void tst_QString::count()
     QCOMPARE(a.count("FG",Qt::CaseInsensitive),3);
     QCOMPARE(a.count( QString(), Qt::CaseInsensitive), 16);
     QCOMPARE(a.count( "", Qt::CaseInsensitive), 16);
-    QCOMPARE(a.count(QRegExp("[FG][HI]")),1);
-    QCOMPARE(a.count(QRegExp("[G][HE]")),2);
     QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
     QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
     QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
@@ -1782,8 +1735,6 @@ void tst_QString::contains()
     QVERIFY(a.contains(QLatin1String("fg"),Qt::CaseInsensitive));
     QVERIFY(a.contains( QString(), Qt::CaseInsensitive));
     QVERIFY(a.contains( "", Qt::CaseInsensitive));
-    QVERIFY(a.contains(QRegExp("[FG][HI]")));
-    QVERIFY(a.contains(QRegExp("[G][HE]")));
     QVERIFY(a.contains(QRegularExpression("[FG][HI]")));
     QVERIFY(a.contains(QRegularExpression("[G][HE]")));
 
@@ -2993,14 +2944,6 @@ void tst_QString::replace_string()
     QString s3 = string;
     s3.replace( before, after, cs );
     QTEST( s3, "result" );
-
-    QString s4 = string;
-    s4.replace( QRegExp(QRegExp::escape(before), cs), after );
-    QTEST( s4, "result" );
-
-    QString s5 = string;
-    s5.replace(QRegExp(before, cs, QRegExp::FixedString), after);
-    QTEST( s5, "result" );
 }
 
 void tst_QString::replace_regexp()
@@ -3010,9 +2953,6 @@ void tst_QString::replace_regexp()
     QFETCH( QString, after );
 
     QString s2 = string;
-    s2.replace( QRegExp(regexp), after );
-    QTEST( s2, "result" );
-    s2 = string;
     QRegularExpression regularExpression(regexp);
     if (!regularExpression.isValid())
         QTest::ignoreMessage(QtWarningMsg, "QString::replace: invalid QRegularExpression object");
@@ -3063,14 +3003,6 @@ void tst_QString::remove_string()
         s3.remove( before, cs );
         QTEST( s3, "result" );
 
-        QString s4 = string;
-        s4.replace( QRegExp(QRegExp::escape(before), cs), after );
-        QTEST( s4, "result" );
-
-        QString s5 = string;
-        s5.replace( QRegExp(before, cs, QRegExp::FixedString), after );
-        QTEST( s5, "result" );
-
         if (QtPrivate::isLatin1(before)) {
             QString s6 = string;
             s6.remove( QLatin1String(before.toLatin1()), cs );
@@ -3089,10 +3021,6 @@ void tst_QString::remove_regexp()
 
     if ( after.length() == 0 ) {
         QString s2 = string;
-        s2.remove( QRegExp(regexp) );
-        QTEST( s2, "result" );
-
-        s2 = string;
         s2.remove( QRegularExpression(regexp) );
         QTEST( s2, "result" );
     } else {
@@ -5135,13 +5063,11 @@ void tst_QString::section()
     QFETCH( QString, sectionString );
     QFETCH( bool, regexp );
     if (regexp) {
-        QCOMPARE( wholeString.section( QRegExp(sep), start, end, QString::SectionFlag(flags) ), sectionString );
         QCOMPARE( wholeString.section( QRegularExpression(sep), start, end, QString::SectionFlag(flags) ), sectionString );
     } else {
         if (sep.size() == 1)
             QCOMPARE( wholeString.section( sep[0], start, end, QString::SectionFlag(flags) ), sectionString );
         QCOMPARE( wholeString.section( sep, start, end, QString::SectionFlag(flags) ), sectionString );
-        QCOMPARE( wholeString.section( QRegExp(QRegExp::escape(sep)), start, end, QString::SectionFlag(flags) ), sectionString );
         QCOMPARE( wholeString.section( QRegularExpression(QRegularExpression::escape(sep)), start, end, QString::SectionFlag(flags) ), sectionString );
 
     }
@@ -5751,7 +5677,6 @@ template<> struct StringSplitWrapper<QString>
 
     QStringList split(const QString &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.split(sep, behavior, cs); }
     QStringList split(QChar sep, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.split(sep, behavior, cs); }
-    QStringList split(const QRegExp &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts) const { return string.split(sep, behavior); }
     QStringList split(const QRegularExpression &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts) const { return string.split(sep, behavior); }
 };
 
@@ -5760,7 +5685,6 @@ template<> struct StringSplitWrapper<QStringRef>
     const QString &string;
     QVector<QStringRef> split(const QString &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
     QVector<QStringRef> split(QChar sep, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
-    QVector<QStringRef> split(const QRegExp &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts) const { return string.splitRef(sep, behavior); }
     QVector<QStringRef> split(const QRegularExpression &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts) const { return string.splitRef(sep, behavior); }
 };
 
@@ -5782,15 +5706,12 @@ static inline bool operator ==(const QVector<QStringRef> &left, const QStringLis
 template<class List>
 void tst_QString::split(const QString &string, const QString &sep, QStringList result)
 {
-    QRegExp rx = QRegExp(QRegExp::escape(sep));
     QRegularExpression re(QRegularExpression::escape(sep));
 
     List list;
     StringSplitWrapper<typename List::value_type> str = {string};
 
     list = str.split(sep);
-    QVERIFY(list == result);
-    list = str.split(rx);
     QVERIFY(list == result);
     list = str.split(re);
     QVERIFY(list == result);
@@ -5803,8 +5724,6 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
     list = str.split(sep, QString::KeepEmptyParts);
     QVERIFY(list == result);
-    list = str.split(rx, QString::KeepEmptyParts);
-    QVERIFY(list == result);
     list = str.split(re, QString::KeepEmptyParts);
     QVERIFY(list == result);
     if (sep.size() == 1) {
@@ -5814,8 +5733,6 @@ QT_WARNING_DISABLE_DEPRECATED
 
     result.removeAll("");
     list = str.split(sep, QString::SkipEmptyParts);
-    QVERIFY(list == result);
-    list = str.split(rx, QString::SkipEmptyParts);
     QVERIFY(list == result);
     list = str.split(re, QString::SkipEmptyParts);
     QVERIFY(list == result);
@@ -5847,7 +5764,7 @@ void tst_QString::splitRef()
     split<QVector<QStringRef> >(str, sep, result);
 }
 
-void tst_QString::split_regexp_data()
+void tst_QString::split_regularexpression_data()
 {
     QTest::addColumn<QString>("string");
     QTest::addColumn<QString>("pattern");
@@ -5881,19 +5798,6 @@ void tst_QString::split_regexp(const QString &_string, const QString &pattern, Q
     QVERIFY(list == result);
 }
 
-void tst_QString::split_regexp()
-{
-    QFETCH(QString, string);
-    QFETCH(QString, pattern);
-    QFETCH(QStringList, result);
-    split_regexp<QStringList, QRegExp>(string, pattern, result);
-}
-
-void tst_QString::split_regularexpression_data()
-{
-    split_regexp_data();
-}
-
 void tst_QString::split_regularexpression()
 {
     QFETCH(QString, string);
@@ -5904,7 +5808,7 @@ void tst_QString::split_regularexpression()
 
 void tst_QString::splitRef_regularexpression_data()
 {
-    split_regexp_data();
+    split_regularexpression_data();
 }
 
 void tst_QString::splitRef_regularexpression()
@@ -5913,19 +5817,6 @@ void tst_QString::splitRef_regularexpression()
     QFETCH(QString, pattern);
     QFETCH(QStringList, result);
     split_regexp<QVector<QStringRef>, QRegularExpression>(string, pattern, result);
-}
-
-void tst_QString::splitRef_regexp_data()
-{
-    split_regexp_data();
-}
-
-void tst_QString::splitRef_regexp()
-{
-    QFETCH(QString, string);
-    QFETCH(QString, pattern);
-    QFETCH(QStringList, result);
-    split_regexp<QVector<QStringRef>, QRegExp>(string, pattern, result);
 }
 
 void tst_QString::fromUtf16_data()
@@ -6414,15 +6305,6 @@ void tst_QString::truncateWithNegative() const
         QString string(QLatin1String("input"));
         string.truncate(-9099);
         QCOMPARE(string, QString());
-    }
-
-    {
-        /* Example code from customer. */
-        QString test(QLatin1String("c"));
-
-        test.replace(QRegExp(QLatin1String("c")), QLatin1String("z"));
-        test.truncate(-1);
-        QCOMPARE(test, QString());
     }
 }
 
