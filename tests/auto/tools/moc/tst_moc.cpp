@@ -1542,6 +1542,7 @@ class PrivatePropertyTest : public QObject
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub4 MEMBER mBlub NOTIFY blub4Changed)
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub5 MEMBER mBlub NOTIFY blub5Changed)
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub6 MEMBER mConst CONSTANT)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QProperty<int> x)
     class MyDPointer {
     public:
         MyDPointer() : mConst("const"), mBar(0), mPlop(0) {}
@@ -1555,6 +1556,7 @@ class PrivatePropertyTest : public QObject
         void setBlub(const QString &value) { mBlub = value; }
         QString mBlub;
         const QString mConst;
+        QProperty<int> x;
     private:
         int mBar;
         int mPlop;
@@ -1590,6 +1592,9 @@ void tst_Moc::qprivateproperties()
     test.setProperty("baz", 4);
     QCOMPARE(test.property("baz"), QVariant::fromValue(4));
 
+    test.setProperty("x", 100);
+    QCOMPARE(test.property("x"), QVariant::fromValue(100));
+    QVERIFY(test.metaObject()->property(test.metaObject()->indexOfProperty("x")).isQProperty());
 }
 
 void tst_Moc::warnOnPropertyWithoutREAD()

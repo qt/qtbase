@@ -1504,8 +1504,12 @@ void Generator::generateStaticMetacall()
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (!p.isQProperty)
                     continue;
-                fprintf(out, "        case %d: observer->setSource(_t->%s); break;\n",
-                        propindex, p.name.constData());
+                QByteArray prefix = "_t->";
+                if (p.inPrivateClass.size()) {
+                    prefix += p.inPrivateClass + "->";
+                }
+                fprintf(out, "        case %d: observer->setSource(%s%s); break;\n",
+                        propindex, prefix.constData(), p.name.constData());
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
@@ -1521,8 +1525,12 @@ void Generator::generateStaticMetacall()
                 const PropertyDef &p = cdef->propertyList.at(propindex);
                 if (!p.isQProperty)
                     continue;
-                fprintf(out, "        case %d: _t->%s.setBinding(*reinterpret_cast<QPropertyBinding<%s> *>(_a[0])); break;\n",
-                        propindex, p.name.constData(), p.type.constData());
+                QByteArray prefix = "_t->";
+                if (p.inPrivateClass.size()) {
+                    prefix += p.inPrivateClass + "->";
+                }
+                fprintf(out, "        case %d: %s%s.setBinding(*reinterpret_cast<QPropertyBinding<%s> *>(_a[0])); break;\n",
+                        propindex, prefix.constData(), p.name.constData(), p.type.constData());
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");

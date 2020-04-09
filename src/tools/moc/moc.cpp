@@ -1228,9 +1228,23 @@ void Moc::createPropertyDef(PropertyDef &propDef)
 {
     propDef.location = index;
 
+    const bool isPrivateProperty = !propDef.inPrivateClass.isEmpty();
+    bool typeWrappedInQProperty = false;
+    if (isPrivateProperty) {
+        const int rewind = index;
+        if (test(IDENTIFIER) && lexem() == "QProperty" && test(LANGLE)) {
+            typeWrappedInQProperty = true;
+            propDef.isQProperty = true;
+        } else {
+            index = rewind;
+        }
+    }
+
     QByteArray type = parseType().name;
     if (type.isEmpty())
         error();
+    if (typeWrappedInQProperty)
+        next(RANGLE);
     propDef.designable = propDef.scriptable = propDef.stored = "true";
     propDef.user = "false";
 
@@ -1806,7 +1820,7 @@ void Moc::checkProperties(ClassDef *cdef)
         definedProperties.insert(p.name);
 
         if (p.read.isEmpty() && p.member.isEmpty()) {
-            if (!cdef->qPropertyMembers.contains(p.name)) {
+            if (!cdef->qPropertyMembers.contains(p.name) && !p.isQProperty) {
                 const int rewind = index;
                 if (p.location >= 0)
                     index = p.location;
