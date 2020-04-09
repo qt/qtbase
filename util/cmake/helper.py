@@ -391,6 +391,12 @@ _qt_library_map = [
         "webkitwidgets", "Qt6", "Qt::WebKitWidgets", extra=["COMPONENTS", "WebKitWidgets"]
     ),
     LibraryMapping("zlib", "Qt6", "Qt::Zlib", extra=["COMPONENTS", "Zlib"]),
+    LibraryMapping(
+        "httpserver", "Qt6", "Qt::HttpServer", extra=["COMPONENTS", "HttpServer"]
+    ),
+    LibraryMapping(
+        "sslserver", "Qt6", "Qt::SslServer", extra=["COMPONENTS", "HttpServer"]
+    )
 ]
 
 # Note that the library map is adjusted dynamically further down.
