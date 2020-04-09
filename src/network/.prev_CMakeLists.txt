@@ -100,6 +100,7 @@ qt_extend_target(Network CONDITION WASM
 
 qt_extend_target(Network CONDITION QT_FEATURE_http
     SOURCES
+        access/qdecompresshelper.cpp access/qdecompresshelper_p.h
         access/http2/bitstreams.cpp access/http2/bitstreams_p.h
         access/http2/hpack.cpp access/http2/hpack_p.h
         access/http2/hpacktable.cpp access/http2/hpacktable_p.h

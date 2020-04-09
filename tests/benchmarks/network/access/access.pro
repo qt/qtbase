@@ -4,3 +4,8 @@ SUBDIRS = \
         qnetworkreply \
         qnetworkreply_from_cache \
         qnetworkdiskcache
+
+qtConfig(private_tests): \
+    SUBDIRS += \
+        qdecompresshelper \
+
