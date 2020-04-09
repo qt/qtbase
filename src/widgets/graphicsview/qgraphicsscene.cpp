@@ -5920,10 +5920,6 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
         item->d_ptr->genericMapFromSceneTransform(static_cast<const QWidget *>(touchEvent->target()));
 
     for (auto &touchPoint : touchEvent->_touchPoints) {
-        // Deprecated TouchPoint::setRect clobbers ellipseDiameters, restore
-        const QSizeF ellipseDiameters = touchPoint.ellipseDiameters();
-        touchPoint.setRect(mapFromScene.map(touchPoint.sceneRect()).boundingRect());
-        touchPoint.setEllipseDiameters(ellipseDiameters);
         touchPoint.setPos(mapFromScene.map(touchPoint.scenePos()));
         touchPoint.setStartPos(mapFromScene.map(touchPoint.startScenePos()));
         touchPoint.setLastPos(mapFromScene.map(touchPoint.lastScenePos()));

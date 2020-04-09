@@ -687,9 +687,8 @@ QList<QTouchEvent::TouchPoint>
         states |= point->state;
         p.setState(point->state);
 
-        const QPointF screenPos = point->area.center();
-        p.setScreenPos(QHighDpi::fromNativePixels(screenPos, window));
-        p.setScreenRect(QHighDpi::fromNativePixels(point->area, window));
+        p.setScreenPos(QHighDpi::fromNativePixels(point->area.center(), window));
+        p.setEllipseDiameters(point->area.size());
 
         // The local pos and rect are not set, they will be calculated
         // when the event gets processed by QGuiApplication.
@@ -750,7 +749,9 @@ QList<QWindowSystemInterface::TouchPoint>
         p.id = pt.id();
         p.flags = pt.flags();
         p.normalPosition = QHighDpi::toNativeLocalPosition(pt.normalizedPos(), window);
-        p.area = QHighDpi::toNativePixels(pt.screenRect(), window);
+        QRectF area(QPointF(), pt.ellipseDiameters());
+        area.moveCenter(pt.screenPos());
+        p.area = QHighDpi::toNativePixels(area, window);
         p.pressure = pt.pressure();
         p.state = pt.state();
         p.velocity = QHighDpi::toNativePixels(pt.velocity(), window);
