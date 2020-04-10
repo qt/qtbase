@@ -103,17 +103,18 @@ QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
         m_options |= DebugBackingStore | EnableFonts;
     }
 
-    QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
+    m_primaryScreen = new QMinimalScreen();
 
-    mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
-    mPrimaryScreen->mDepth = 32;
-    mPrimaryScreen->mFormat = QImage::Format_ARGB32_Premultiplied;
+    m_primaryScreen->mGeometry = QRect(0, 0, 240, 320);
+    m_primaryScreen->mDepth = 32;
+    m_primaryScreen->mFormat = QImage::Format_ARGB32_Premultiplied;
 
-    QWindowSystemInterface::handleScreenAdded(mPrimaryScreen);
+    QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
 }
 
 QMinimalIntegration::~QMinimalIntegration()
 {
+    QWindowSystemInterface::handleScreenRemoved(m_primaryScreen);
     delete m_fontDatabase;
 }
 

@@ -956,7 +956,7 @@ QCborContainerPrivate *QCborContainerPrivate::grow(QCborContainerPrivate *d, qsi
     d = detach(d, index + 1);
     Q_ASSERT(d);
     int j = d->elements.size();
-    while (j < index)
+    while (j++ < index)
         d->append(Undefined());
     return d;
 }
@@ -994,8 +994,12 @@ void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &valu
         e = value.container->elements.at(value.n);
 
         // Copy string data, if any
-        if (const ByteData *b = value.container->byteData(value.n))
-            e.value = addByteData(b->byte(), b->len);
+        if (const ByteData *b = value.container->byteData(value.n)) {
+            if (this == value.container)
+                e.value = addByteData(b->toByteArray(), b->len);
+            else
+                e.value = addByteData(b->byte(), b->len);
+        }
 
         if (disp == MoveContainer)
             value.container->deref();
@@ -2649,7 +2653,7 @@ void QCborValueRef::assign(QCborValueRef that, QCborValue &&other)
 void QCborValueRef::assign(QCborValueRef that, const QCborValueRef other)
 {
     // ### optimize?
-    assign(that, other.concrete());
+    that = other.concrete();
 }
 
 QCborValue QCborValueRef::concrete(QCborValueRef self) noexcept

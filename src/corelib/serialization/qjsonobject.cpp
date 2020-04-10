@@ -452,9 +452,11 @@ QJsonValueRef QJsonObject::atImpl(T key)
     bool keyExists = false;
     int index = indexOf(o, key, &keyExists);
     if (!keyExists) {
+        detach2(o->elements.length() / 2 + 1);
         o->insertAt(index, key);
         o->insertAt(index + 1, QCborValue::fromJsonValue(QJsonValue()));
     }
+    // detaching will happen if and when this QJsonValueRef is assigned to
     return QJsonValueRef(this, index / 2);
 }
 
@@ -1469,6 +1471,7 @@ QJsonValue QJsonObject::valueAt(int i) const
 void QJsonObject::setValueAt(int i, const QJsonValue &val)
 {
     Q_ASSERT(o && i >= 0 && 2 * i + 1 < o->elements.length());
+    detach2();
     if (val.isUndefined()) {
         o->removeAt(2 * i + 1);
         o->removeAt(2 * i);

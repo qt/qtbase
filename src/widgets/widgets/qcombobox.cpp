@@ -385,6 +385,16 @@ int QComboBoxPrivate::computeWidthHint() const
     return tmp.width();
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+static constexpr QComboBox::SizeAdjustPolicy deprecatedAdjustToMinimumContentsLength()
+{
+    return QComboBox::AdjustToMinimumContentsLength;
+}
+QT_WARNING_POP
+#endif
+
 QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
 {
     Q_Q(const QComboBox);
@@ -412,10 +422,11 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
                     }
                 }
                 break;
-            case QComboBox::AdjustToMinimumContentsLength:
+            case deprecatedAdjustToMinimumContentsLength():
                 for (int i = 0; i < count && !hasIcon; ++i)
                     hasIcon = !q->itemIcon(i).isNull();
-            default:
+                break;
+            case QComboBox::AdjustToMinimumContentsLengthWithIcon:
                 ;
             }
         } else {
@@ -1742,7 +1753,7 @@ void QComboBox::setMinimumContentsLength(int characters)
     d->minimumContentsLength = characters;
 
     if (d->sizeAdjustPolicy == AdjustToContents
-            || d->sizeAdjustPolicy == AdjustToMinimumContentsLength
+            || d->sizeAdjustPolicy == deprecatedAdjustToMinimumContentsLength()
             || d->sizeAdjustPolicy == AdjustToMinimumContentsLengthWithIcon) {
         d->sizeHint = QSize();
         d->adjustComboBoxSize();
