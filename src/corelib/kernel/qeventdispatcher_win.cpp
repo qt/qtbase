@@ -971,7 +971,7 @@ int QEventDispatcherWin32::remainingTime(int timerId)
 void QEventDispatcherWin32::wakeUp()
 {
     Q_D(QEventDispatcherWin32);
-    if (d->internalHwnd && d->wakeUps.testAndSetAcquire(0, 1)) {
+    if (d->internalHwnd && d->wakeUps.testAndSetRelaxed(0, 1)) {
         // post a WM_QT_SENDPOSTEDEVENTS to this thread if there isn't one already pending
         if (!PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0))
             qErrnoWarning("QEventDispatcherWin32::wakeUp: Failed to post a message");
