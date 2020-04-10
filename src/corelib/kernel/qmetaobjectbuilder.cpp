@@ -1109,7 +1109,7 @@ int QMetaStringTable::preferredAlignment()
 // Returns the size (in bytes) required for serializing this string table.
 int QMetaStringTable::blobSize() const
 {
-    int size = m_entries.size() * 2*sizeof(uint);
+    int size = int(m_entries.size() * 2 * sizeof(uint));
     Entries::const_iterator it;
     for (it = m_entries.constBegin(); it != m_entries.constEnd(); ++it)
         size += it.key().size() + 1;
@@ -1139,7 +1139,7 @@ void QMetaStringTable::writeBlob(char *out) const
 {
     Q_ASSERT(!(reinterpret_cast<quintptr>(out) & (preferredAlignment()-1)));
 
-    int offsetOfStringdataMember = m_entries.size() * 2*sizeof(uint);
+    int offsetOfStringdataMember = int(m_entries.size() * 2 * sizeof(uint));
     int stringdataOffset = 0;
 
     // qt_metacast expects the first string in the string table to be the class name.

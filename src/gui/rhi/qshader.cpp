@@ -545,7 +545,7 @@ bool operator==(const QShader &lhs, const QShader &rhs) Q_DECL_NOTHROW
  */
 size_t qHash(const QShader &s, size_t seed) Q_DECL_NOTHROW
 {
-    uint h = s.stage();
+    size_t h = s.stage();
     for (auto it = s.d->shaders.constBegin(), itEnd = s.d->shaders.constEnd(); it != itEnd; ++it)
         h += qHash(it.key(), seed) + qHash(it.value().shader(), seed);
     return h;

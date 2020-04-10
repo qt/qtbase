@@ -78,7 +78,7 @@ inline bool operator!=(const QtFontFallbacksCacheKey &lhs, const QtFontFallbacks
     return !operator==(lhs, rhs);
 }
 
-inline uint qHash(const QtFontFallbacksCacheKey &key, uint seed = 0) noexcept
+inline size_t qHash(const QtFontFallbacksCacheKey &key, size_t seed = 0) noexcept
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, key.family);

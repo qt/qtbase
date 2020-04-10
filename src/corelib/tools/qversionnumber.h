@@ -311,7 +311,7 @@ Q_REQUIRED_RESULT inline bool operator!=(const QVersionNumber &lhs, const QVersi
 { return QVersionNumber::compare(lhs, rhs) != 0; }
 
 class QTypeRevision;
-Q_CORE_EXPORT uint qHash(const QTypeRevision &key, uint seed = 0);
+Q_CORE_EXPORT size_t qHash(const QTypeRevision &key, size_t seed = 0);
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream& operator<<(QDataStream &out, const QTypeRevision &revision);

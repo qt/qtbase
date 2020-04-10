@@ -746,7 +746,7 @@ QDebug operator<<(QDebug debug, const QTypeRevision &revision)
     Returns the hash value for the \a key, using \a seed to seed the
     calculation.
 */
-uint qHash(const QTypeRevision &key, uint seed)
+size_t qHash(const QTypeRevision &key, size_t seed)
 {
     return qHash(key.toEncodedVersion<quint16>(), seed);
 }
