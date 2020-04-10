@@ -3029,16 +3029,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 if (spontaneous && (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate))
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
-#if QT_DEPRECATED_SINCE(5, 14)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-                QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                               wheel->modifiers(), phase, wheel->source(), wheel->inverted());
-QT_WARNING_POP
-#else
                 QWheelEvent we(relpos, wheel->globalPosition(), wheel->pixelDelta(), wheel->angleDelta(), wheel->buttons(),
                                wheel->modifiers(), phase, wheel->inverted(), wheel->source());
-#endif
                 we.setTimestamp(wheel->timestamp());
                 bool eventAccepted;
                 do {
@@ -3074,16 +3066,8 @@ QT_WARNING_POP
                 // sending those events until we get a ScrollEnd, which signifies
                 // the end of the natural scrolling sequence.
                 const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPosition().toPoint());
-#if QT_DEPRECATED_SINCE(5, 0)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-                QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                               wheel->modifiers(), wheel->phase(), wheel->source());
-QT_WARNING_POP
-#else
                 QWheelEvent we(relpos, wheel->globalPosition(), wheel->pixelDelta(), wheel->angleDelta(), wheel->buttons(),
                                wheel->modifiers(), wheel->phase(), wheel->inverted(), wheel->source());
-#endif
                 we.setTimestamp(wheel->timestamp());
                 we.spont = true;
                 we.ignore();

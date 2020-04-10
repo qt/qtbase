@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -367,31 +367,6 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleCloseEvent, QWindow *window)
 \a w == 0 means that the event is in global coords only, \a local will be ignored in this case
 
 */
-#if QT_DEPRECATED_SINCE(5, 11)
-QT_DEFINE_QPA_EVENT_HANDLER(bool, handleMouseEvent, QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
-                                              Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
-{
-    return handleMouseEvent<Delivery>(window, local, global, b, Qt::NoButton, QEvent::None, mods, source);
-}
-
-QT_DEFINE_QPA_EVENT_HANDLER(bool, handleMouseEvent, QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
-                                              Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
-{
-    return handleMouseEvent<Delivery>(window, timestamp, local, global, b, Qt::NoButton, QEvent::None, mods, source);
-}
-
-bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
-                                                        Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
-{
-    return handleFrameStrutMouseEvent(window, local, global, b, Qt::NoButton, QEvent::None, mods, source);
-}
-
-bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
-                                                        Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
-{
-    return handleFrameStrutMouseEvent(window, timestamp, local, global, b, Qt::NoButton, QEvent::None, mods, source);
-}
-#endif // QT_DEPRECATED_SINCE(5, 11)
 
 QT_DEFINE_QPA_EVENT_HANDLER(bool, handleMouseEvent, QWindow *window,
                             const QPointF &local, const QPointF &global, Qt::MouseButtons state,
@@ -548,22 +523,6 @@ QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *window, ulong tim
 {
 }
 
-#if QT_DEPRECATED_SINCE(5, 10)
-bool QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
-    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return handleWheelEvent(window, time, local, global, d, o, mods);
-QT_WARNING_POP
-}
-
-bool QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
-{
-    QPoint point = (o == Qt::Vertical) ? QPoint(0, d) : QPoint(d, 0);
-    return handleWheelEvent(window, timestamp, local, global, QPoint(), point, mods);
-}
-#endif // QT_DEPRECATED_SINCE(5, 10)
-
 bool QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource source)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
@@ -688,7 +647,7 @@ QList<QTouchEvent::TouchPoint>
         p.setState(point->state);
 
         p.setScreenPos(QHighDpi::fromNativePixels(point->area.center(), window));
-        p.setEllipseDiameters(point->area.size());
+        p.setEllipseDiameters(QHighDpi::fromNativePixels(point->area.size(), window));
 
         // The local pos and rect are not set, they will be calculated
         // when the event gets processed by QGuiApplication.
@@ -751,6 +710,7 @@ QList<QWindowSystemInterface::TouchPoint>
         p.normalPosition = QHighDpi::toNativeLocalPosition(pt.normalizedPos(), window);
         QRectF area(QPointF(), pt.ellipseDiameters());
         area.moveCenter(pt.screenPos());
+        // TODO store ellipseDiameters in QWindowSystemInterface::TouchPoint or just use QTouchEvent::TouchPoint
         p.area = QHighDpi::toNativePixels(area, window);
         p.pressure = pt.pressure();
         p.state = pt.state();
@@ -899,23 +859,6 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleThemeChange, QWindow *window)
 }
 
 #if QT_CONFIG(draganddrop)
-#if QT_DEPRECATED_SINCE(5, 11)
-QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *window, const QMimeData *dropData,
-                                                           const QPoint &p, Qt::DropActions supportedActions)
-{
-    return QGuiApplicationPrivate::processDrag(window, dropData, p, supportedActions,
-                                               QGuiApplication::mouseButtons(),
-                                               QGuiApplication::keyboardModifiers());
-}
-
-QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *window, const QMimeData *dropData,
-                                                           const QPoint &p, Qt::DropActions supportedActions)
-{
-    return QGuiApplicationPrivate::processDrop(window, dropData, p, supportedActions,
-                                               QGuiApplication::mouseButtons(),
-                                               QGuiApplication::keyboardModifiers());
-}
-#endif // QT_DEPRECATED_SINCE(5, 11)
 /*!
     Drag and drop events are sent immediately.
 
@@ -996,26 +939,6 @@ bool QWindowSystemInterface::handleTabletEvent(QWindow *window, const QPointF &l
     return handleTabletEvent(window, time, local, global, device, pointerType, buttons, pressure,
                       xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
 }
-
-#if QT_DEPRECATED_SINCE(5, 10)
-void QWindowSystemInterface::handleTabletEvent(QWindow *window, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
-                                               int device, int pointerType, qreal pressure, int xTilt, int yTilt,
-                                               qreal tangentialPressure, qreal rotation, int z, qint64 uid,
-                                               Qt::KeyboardModifiers modifiers)
-{
-    handleTabletEvent(window, timestamp, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
-                      xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
-}
-
-void QWindowSystemInterface::handleTabletEvent(QWindow *window, bool down, const QPointF &local, const QPointF &global,
-                                               int device, int pointerType, qreal pressure, int xTilt, int yTilt,
-                                               qreal tangentialPressure, qreal rotation, int z, qint64 uid,
-                                               Qt::KeyboardModifiers modifiers)
-{
-    handleTabletEvent(window, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
-                      xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
-}
-#endif // QT_DEPRECATED_SINCE(5, 10)
 
 bool QWindowSystemInterface::handleTabletEnterProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid)
 {

@@ -863,12 +863,8 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
 
     QPoint mapped = widget->mapFrom(rootWidget, pos);
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QWheelEvent translated(mapped, event->globalPos(), event->pixelDelta(), event->angleDelta(), event->delta(), event->orientation(), event->buttons(), event->modifiers(), event->phase(), event->source(), event->inverted());
-#else
     QWheelEvent translated(QPointF(mapped), event->globalPosition(), event->pixelDelta(), event->angleDelta(),
                            event->buttons(), event->modifiers(), event->phase(), event->inverted(), event->source());
-#endif
     translated.setTimestamp(event->timestamp());
     QGuiApplication::forwardEvent(widget, &translated, event);
 }

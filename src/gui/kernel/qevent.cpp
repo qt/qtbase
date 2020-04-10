@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -655,7 +655,7 @@ QHoverEvent::~QHoverEvent()
 {
 }
 
-
+#if QT_CONFIG(wheelevent)
 /*!
     \class QWheelEvent
     \brief The QWheelEvent class contains parameters that describe a wheel event.
@@ -743,106 +743,6 @@ QHoverEvent::~QHoverEvent()
     \l inverted always returns false.
 */
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \fn Qt::Orientation QWheelEvent::orientation() const
-    \obsolete
-
-    Use angleDelta() instead.
-*/
-#endif
-
-#if QT_CONFIG(wheelevent)
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \obsolete
-    This constructor has been deprecated.
-*/
-QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
-                         Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
-                         Qt::Orientation orient)
-    : QInputEvent(Wheel, modifiers), p(pos), qt4D(delta), qt4O(orient), mouseState(buttons),
-      src(Qt::MouseEventNotSynthesized), invertedScrolling(false), ph(Qt::NoScrollPhase)
-{
-    g = QCursor::pos();
-    if (orient == Qt::Vertical)
-        angleD = QPoint(0, delta);
-    else
-        angleD = QPoint(delta, 0);
-}
-
-/*!
-    \obsolete
-    This constructor has been deprecated.
-*/
-QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta,
-                         Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
-                         Qt::Orientation orient)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), qt4D(delta), qt4O(orient), mouseState(buttons),
-      src(Qt::MouseEventNotSynthesized), invertedScrolling(false), ph(Qt::NoScrollPhase)
-{
-    if (orient == Qt::Vertical)
-        angleD = QPoint(0, delta);
-    else
-        angleD = QPoint(delta, 0);
-}
-
-/*!
-    \obsolete
-    This constructor has been deprecated.
-*/
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
-            QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
-            Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
-    : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
-                  buttons, modifiers, Qt::NoScrollPhase)
-{}
-QT_WARNING_POP
-
-/*!
-    \obsolete
-    This constructor has been deprecated.
-*/
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
-            QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
-            Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase)
-    : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
-                  buttons, modifiers, phase, Qt::MouseEventNotSynthesized)
-{}
-QT_WARNING_POP
-
-/*!
-    \obsolete
-    This constructor has been deprecated.
-*/
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
-            QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
-            Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source)
-    : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
-                  buttons, modifiers, phase, source, false)
-{}
-QT_WARNING_POP
-
-/*!
-    \obsolete
-    This constructor has been deprecated.
-*/
-QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
-            QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
-            Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source, bool inverted)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
-      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), src(source),
-      invertedScrolling(inverted), ph(phase)
-{}
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
 /*!
     Constructs a wheel event object.
 
@@ -877,10 +777,8 @@ QWheelEvent::QWheelEvent(QPointF pos, QPointF globalPos, QPoint pixelDelta, QPoi
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
             bool inverted, Qt::MouseEventSource source)
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta), angleD(angleDelta),
-      qt4O(qAbs(angleDelta.x()) > qAbs(angleDelta.y()) ? Qt::Horizontal : Qt::Vertical),
-      mouseState(buttons), src(source), invertedScrolling(inverted), ph(phase)
+      mouseState(buttons), src(source), ph(phase), invertedScrolling(inverted)
 {
-    qt4D = (qt4O == Qt::Horizontal ? angleDelta.x() : angleDelta.y());
 }
 
 /*!
@@ -973,72 +871,6 @@ QWheelEvent::~QWheelEvent()
 
     \sa position()
 */
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \fn int QWheelEvent::delta() const
-    \obsolete
-
-    This function has been deprecated, use pixelDelta() or angleDelta() instead.
-*/
-
-/*!
-    \fn QPoint QWheelEvent::pos() const
-    \obsolete
-
-    This function has been deprecated, use position() instead.
-*/
-
-/*!
-    \fn int QWheelEvent::x() const
-    \obsolete
-
-    This function has been deprecated, use position() instead.
-*/
-
-/*!
-    \fn int QWheelEvent::y() const
-    \obsolete
-
-    This function has been deprecated, use position() instead.
-*/
-
-
-/*!
-    \fn QPoint QWheelEvent::globalPos() const
-    \obsolete
-
-    This function has been deprecated, use globalPosition() instead.
-*/
-
-/*!
-    \fn int QWheelEvent::globalX() const
-    \obsolete
-
-    This function has been deprecated, use globalPosition() instead.
-*/
-
-/*!
-    \fn int QWheelEvent::globalY() const
-    \obsolete
-
-    This function has been deprecated, use globalPosition() instead.
-*/
-
-/*!
-    \fn const QPointF &QWheelEvent::posF() const
-    \obsolete
-
-    This function has been deprecated, use position() instead.
-*/
-
-/*!
-    \fn const QPointF &QWheelEvent::globalPosF() const
-    \obsolete
-
-    This function has been deprecated, use globalPosition() instead.
-*/
-#endif
 
 /*!
     \fn Qt::ScrollPhase QWheelEvent::phase() const
@@ -2637,18 +2469,6 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \sa Qt::NativeGestureType, QGestureEvent
 */
 
-#if QT_DEPRECATED_SINCE(5, 10)
-/*!
-    \deprecated The QTouchDevice parameter is now required
-*/
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
-                                         const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
-    : QInputEvent(QEvent::NativeGesture), mGestureType(type),
-      mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
-      mSequenceId(sequenceId), mIntValue(intValue)
-{ }
-#endif
-
 /*!
     Constructs a native gesture event of type \a type originating from \a device.
 
@@ -3880,15 +3700,8 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     case QEvent::Wheel: {
         const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
         dbg << "QWheelEvent(" << we->phase();
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED // delta() and orientation()
         if (!we->pixelDelta().isNull() || !we->angleDelta().isNull())
             dbg << ", pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta();
-#if QT_DEPRECATED_SINCE(5, 14)
-        else if (int qt4Delta = we->delta())
-            dbg << ", delta=" << qt4Delta << ", orientation=" << we->orientation();
-#endif
-QT_WARNING_POP
         dbg << ')';
     }
         break;
@@ -4573,47 +4386,6 @@ QPointF QTouchEvent::TouchPoint::lastNormalizedPos() const
     return d->lastNormalizedPos;
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \deprecated This function is deprecated since 5.9 because it returns the outer bounds
-    of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
-    modeled as an ellipse at position pos() with ellipseDiameters()
-    which are independent of rotation().
-*/
-QRectF QTouchEvent::TouchPoint::rect() const
-{
-    QRectF ret(QPointF(), d->ellipseDiameters);
-    ret.moveCenter(d->pos);
-    return ret;
-}
-
-/*!
-    \deprecated This function is deprecated since 5.9 because it returns the outer bounds
-    of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
-    modeled as an ellipse at position scenePos() with ellipseDiameters()
-    which are independent of rotation().
-*/
-QRectF QTouchEvent::TouchPoint::sceneRect() const
-{
-    QRectF ret(QPointF(), d->ellipseDiameters);
-    ret.moveCenter(d->scenePos);
-    return ret;
-}
-
-/*!
-    \deprecated This function is deprecated since 5.9 because it returns the outer bounds of the
-    touchpoint regardless of rotation, whereas a touchpoint is more correctly
-    modeled as an ellipse at position screenPos() with ellipseDiameters()
-    which are independent of rotation().
-*/
-QRectF QTouchEvent::TouchPoint::screenRect() const
-{
-    QRectF ret(QPointF(), d->ellipseDiameters);
-    ret.moveCenter(d->screenPos);
-    return ret;
-}
-#endif
-
 /*!
     Returns the pressure of this touch point. The return value is in
     the range 0.0 to 1.0.
@@ -4810,42 +4582,6 @@ void QTouchEvent::TouchPoint::setLastNormalizedPos(const QPointF &lastNormalized
         d = d->detach();
     d->lastNormalizedPos = lastNormalizedPos;
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-// ### remove the following 3 setRect functions and their usages soon
-/*! \internal
-    \obsolete
-*/
-void QTouchEvent::TouchPoint::setRect(const QRectF &rect)
-{
-    if (d->ref.loadRelaxed() != 1)
-        d = d->detach();
-    d->pos = rect.center();
-    d->ellipseDiameters = rect.size();
-}
-
-/*! \internal
-    \obsolete
-*/
-void QTouchEvent::TouchPoint::setSceneRect(const QRectF &sceneRect)
-{
-    if (d->ref.loadRelaxed() != 1)
-        d = d->detach();
-    d->scenePos = sceneRect.center();
-    d->ellipseDiameters = sceneRect.size();
-}
-
-/*! \internal
-    \obsolete
-*/
-void QTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
-{
-    if (d->ref.loadRelaxed() != 1)
-        d = d->detach();
-    d->screenPos = screenRect.center();
-    d->ellipseDiameters = screenRect.size();
-}
-#endif
 
 /*! \internal */
 void QTouchEvent::TouchPoint::setPressure(qreal pressure)

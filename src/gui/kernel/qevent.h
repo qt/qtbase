@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -173,35 +173,6 @@ class Q_GUI_EXPORT QWheelEvent : public QInputEvent
 public:
     enum { DefaultDeltasPerStep = 120 };
 
-#if QT_DEPRECATED_SINCE(5, 15)
-    // Actually deprecated since 5.0, in docs
-    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
-    QWheelEvent(const QPointF &pos, int delta,
-                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
-                Qt::Orientation orient = Qt::Vertical);
-    // Actually deprecated since 5.0, in docs
-    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
-    QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta,
-                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
-                Qt::Orientation orient = Qt::Vertical);
-    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
-    QWheelEvent(const QPointF &pos, const QPointF& globalPos,
-                QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
-                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
-    QWheelEvent(const QPointF &pos, const QPointF& globalPos,
-                QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
-                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase);
-    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
-    QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pixelDelta, QPoint angleDelta,
-                int qt4Delta, Qt::Orientation qt4Orientation, Qt::MouseButtons buttons,
-                Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source);
-    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
-    QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pixelDelta, QPoint angleDelta,
-                int qt4Delta, Qt::Orientation qt4Orientation, Qt::MouseButtons buttons,
-                Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source, bool inverted);
-#endif
-
     QWheelEvent(QPointF pos, QPointF globalPos, QPoint pixelDelta, QPoint angleDelta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
                 bool inverted, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
@@ -210,33 +181,6 @@ public:
 
     inline QPoint pixelDelta() const { return pixelD; }
     inline QPoint angleDelta() const { return angleD; }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-    // Actually deprecated since 5.0, in docs
-    QT_DEPRECATED_VERSION_X_5_15("Use angleDelta()")
-    inline int delta() const  { return qt4D; }
-    // Actually deprecated since 5.0, in docs
-    QT_DEPRECATED_VERSION_X_5_15("Use angleDelta()")
-    inline Qt::Orientation orientation() const { return qt4O; }
-#ifndef QT_NO_INTEGER_EVENT_COORDINATES
-    QT_DEPRECATED_VERSION_X_5_15("Use position()")
-    inline QPoint pos() const { return p.toPoint(); }
-    QT_DEPRECATED_VERSION_X_5_15("Use globalPosition()")
-    inline QPoint globalPos()   const { return g.toPoint(); }
-    QT_DEPRECATED_VERSION_X_5_15("Use position()")
-    inline int x() const { return int(p.x()); }
-    QT_DEPRECATED_VERSION_X_5_15("Use position()")
-    inline int y() const { return int(p.y()); }
-    QT_DEPRECATED_VERSION_X_5_15("Use globalPosition()")
-    inline int globalX() const { return int(g.x()); }
-    QT_DEPRECATED_VERSION_X_5_15("Use globalPosition()")
-    inline int globalY() const { return int(g.y()); }
-#endif
-    QT_DEPRECATED_VERSION_X_5_15("Use position()")
-    inline const QPointF &posF() const { return p; }
-    QT_DEPRECATED_VERSION_X_5_15("Use globalPosition()")
-    inline const QPointF &globalPosF()   const { return g; }
-#endif // QT_DEPRECATED_SINCE(5, 15)
 
     inline QPointF position() const { return p; }
     inline QPointF globalPosition() const { return g; }
@@ -253,14 +197,11 @@ protected:
     QPointF g;
     QPoint pixelD;
     QPoint angleD;
-    int qt4D = 0;
-    Qt::Orientation qt4O = Qt::Vertical;
-    Qt::MouseButtons mouseState = Qt::NoButton;
-    uint _unused_ : 2; // Kept for binary compatibility
+    Qt::MouseButtons mouseState;
     uint src: 2;
-    bool invertedScrolling : 1;
     uint ph : 3;
-    int reserved : 24;
+    bool invertedScrolling : 1;
+    int reserved : 26;
 
     friend class QApplication;
 };
@@ -321,10 +262,6 @@ protected:
 class Q_GUI_EXPORT QNativeGestureEvent : public QInputEvent
 {
 public:
-#if QT_DEPRECATED_SINCE(5, 10)
-    QT_DEPRECATED QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
-                        const QPointF &screenPos, qreal value, ulong sequenceId, quint64 intArgument);
-#endif
     QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
                         const QPointF &screenPos, qreal value, ulong sequenceId, quint64 intArgument);
     ~QNativeGestureEvent();
@@ -888,23 +825,6 @@ public:
         QPointF startNormalizedPos() const;
         QPointF lastNormalizedPos() const;
 
-#if QT_DEPRECATED_SINCE(5, 15)
-        // All these are actually deprecated since 5.9, in docs
-        QT_DEPRECATED_VERSION_X_5_15("Use pos() and ellipseDiameters()")
-        QRectF rect() const;
-        QT_DEPRECATED_VERSION_X_5_15("Use scenePos() and ellipseDiameters()")
-        QRectF sceneRect() const;
-        QT_DEPRECATED_VERSION_X_5_15("Use screenPos() and ellipseDiameters()")
-        QRectF screenRect() const;
-
-        // internal
-        QT_DEPRECATED_VERSION_X_5_15("Use setPos() and setEllipseDiameters()")
-        void setRect(const QRectF &rect); // deprecated
-        QT_DEPRECATED_VERSION_X_5_15("Use setScenePos() and setEllipseDiameters()")
-        void setSceneRect(const QRectF &sceneRect); // deprecated
-        QT_DEPRECATED_VERSION_X_5_15("Use setScreenPos() and setEllipseDiameters()")
-        void setScreenRect(const QRectF &screenRect); // deprecated
-#endif
         qreal pressure() const;
         qreal rotation() const;
         QSizeF ellipseDiameters() const;
