@@ -56,7 +56,9 @@ private Q_SLOTS:
 
     void testObjectSimple();
     void testObjectSmallKeys();
+    void testObjectInsertCopies();
     void testArraySimple();
+    void testArrayInsertCopies();
     void testValueObject();
     void testValueArray();
     void testObjectNested();
@@ -591,6 +593,75 @@ void tst_QtJson::testObjectSmallKeys()
     QCOMPARE(data1.end() - data1.begin(), 3);
 }
 
+void tst_QtJson::testObjectInsertCopies()
+{
+    {
+        QJsonObject obj;
+        obj["prop1"] = "TEST";
+        QCOMPARE(obj.size(), 1);
+        QCOMPARE(obj.value("prop1"), "TEST");
+
+        obj["prop2"] = obj.value("prop1");
+        QCOMPARE(obj.size(), 2);
+        QCOMPARE(obj.value("prop1"), "TEST");
+        QCOMPARE(obj.value("prop2"), "TEST");
+    }
+    {
+        // see QTBUG-83366
+        QJsonObject obj;
+        obj["value"] = "TEST";
+        QCOMPARE(obj.size(), 1);
+        QCOMPARE(obj.value("value"), "TEST");
+
+        obj["prop2"] = obj.value("value");
+        QCOMPARE(obj.size(), 2);
+        QCOMPARE(obj.value("value"), "TEST");
+        QCOMPARE(obj.value("prop2"), "TEST");
+    }
+    {
+        QJsonObject obj;
+        obj["value"] = "TEST";
+        QCOMPARE(obj.size(), 1);
+        QCOMPARE(obj.value("value"), "TEST");
+
+        // same as previous, but this is a QJsonValueRef
+        QJsonValueRef rv = obj["prop2"];
+        rv = obj["value"];
+        QCOMPARE(obj.size(), 2);
+        QCOMPARE(obj.value("value"), "TEST");
+        QCOMPARE(obj.value("prop2"), "TEST");
+    }
+    {
+        QJsonObject obj;
+        obj["value"] = "TEST";
+        QCOMPARE(obj.size(), 1);
+        QCOMPARE(obj.value("value"), "TEST");
+
+        // same as previous, but this is a QJsonValueRef
+        QJsonValueRef rv = obj["value"];
+        obj["prop2"] = rv;
+        QCOMPARE(obj.size(), 2);
+        QCOMPARE(obj.value("value"), "TEST");
+        QEXPECT_FAIL("", "QTBUG-83398: design flaw: the obj[] call invalidates the QJsonValueRef", Continue);
+        QCOMPARE(obj.value("prop2"), "TEST");
+    }
+    {
+        QJsonObject obj;
+        obj["value"] = "TEST";
+        QCOMPARE(obj.size(), 1);
+        QCOMPARE(obj.value("value"), "TEST");
+
+        QJsonValueRef v = obj["value"];
+        QJsonObject obj2 = obj;
+        obj.insert("prop2", v);
+        QCOMPARE(obj.size(), 2);
+        QCOMPARE(obj.value("value"), "TEST");
+        QCOMPARE(obj.value("prop2"), "TEST");
+        QCOMPARE(obj2.size(), 1);
+        QCOMPARE(obj2.value("value"), "TEST");
+    }
+}
+
 void tst_QtJson::testArraySimple()
 {
     QJsonArray array;
@@ -642,6 +713,32 @@ void tst_QtJson::testArraySimple()
     QCOMPARE(array.first(), QJsonValue(-555.));
     QCOMPARE(array.at(1).type(), QJsonValue::String);
     QCOMPARE(array.at(1), QJsonValue(QLatin1String("test")));
+}
+
+void tst_QtJson::testArrayInsertCopies()
+{
+    {
+        QJsonArray array;
+        array.append("TEST");
+        QCOMPARE(array.size(), 1);
+        QCOMPARE(array.at(0), "TEST");
+
+        array.append(array.at(0));
+        QCOMPARE(array.size(), 2);
+        QCOMPARE(array.at(0), "TEST");
+        QCOMPARE(array.at(1), "TEST");
+    }
+    {
+        QJsonArray array;
+        array.append("TEST");
+        QCOMPARE(array.size(), 1);
+        QCOMPARE(array.at(0), "TEST");
+
+        array.prepend(array.at(0));
+        QCOMPARE(array.size(), 2);
+        QCOMPARE(array.at(0), "TEST");
+        QCOMPARE(array.at(1), "TEST");
+    }
 }
 
 void tst_QtJson::testValueObject()

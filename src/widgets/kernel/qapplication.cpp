@@ -3958,7 +3958,7 @@ bool QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
         QTouchEvent::TouchPoint &touchPoint = touchEvent->_touchPoints[i];
 
         // preserve the sub-pixel resolution
-        const QPointF screenPos = touchPoint.screenRect().center();
+        const QPointF screenPos = touchPoint.screenPos();
         const QPointF delta = screenPos - screenPos.toPoint();
 
         touchPoint.d->pos = widget->mapFromGlobal(screenPos.toPoint()) + delta;

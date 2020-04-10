@@ -88,6 +88,7 @@ public:
 
 private:
     mutable QPlatformFontDatabase *m_fontDatabase;
+    QMinimalScreen *m_primaryScreen;
     unsigned m_options;
 };
 

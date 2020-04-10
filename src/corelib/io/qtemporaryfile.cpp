@@ -284,8 +284,10 @@ createUnnamedFile(NativeFileHandle &file, QTemporaryFileName &tfn, quint32 mode,
         return CreateUnnamedFileStatus::NotSupported;
 
     const char *p = ".";
-    int lastSlash = tfn.path.lastIndexOf('/');
-    if (lastSlash != -1) {
+    QByteArray::size_type lastSlash = tfn.path.lastIndexOf('/');
+    if (lastSlash >= 0) {
+        if (lastSlash == 0)
+            lastSlash = 1;
         tfn.path[lastSlash] = '\0';
         p = tfn.path.data();
     }

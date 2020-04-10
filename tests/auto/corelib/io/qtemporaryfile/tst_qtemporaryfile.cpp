@@ -517,6 +517,9 @@ void tst_QTemporaryFile::openOnRootDrives()
             QTemporaryFile file(driveInfo.filePath() + "XXXXXX.txt");
             file.setAutoRemove(true);
             QVERIFY(file.open());
+
+            QFileInfo fi(file.fileName());
+            QCOMPARE(fi.absoluteDir(), driveInfo.filePath());
         }
     }
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
