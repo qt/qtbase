@@ -132,6 +132,8 @@ SSL_CTX *q_SSL_CTX_new(SSL_METHOD *a);
 
 int q_SSL_library_init();
 void q_SSL_load_error_strings();
+int q_SSL_state(const SSL *a);
+#define q_SSL_in_init(a) (q_SSL_state(a) & SSL_ST_INIT)
 
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
 int q_SSL_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func, CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);

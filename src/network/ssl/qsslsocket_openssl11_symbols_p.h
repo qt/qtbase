@@ -186,4 +186,11 @@ typedef int (*q_SSL_psk_use_session_cb_func_t)(SSL *, const EVP_MD *, const unsi
 }
 void q_SSL_set_psk_use_session_callback(SSL *s, q_SSL_psk_use_session_cb_func_t);
 
+#if OPENSSL_VERSION_NUMBER < 0x10101000L
+// What a mess!
+int q_SSL_in_init(SSL *s);
+#else
+int q_SSL_in_init(const SSL *s);
+#endif // 1.1.1 or 1.1.0
+
 #endif

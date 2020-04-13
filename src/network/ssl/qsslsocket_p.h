@@ -220,6 +220,7 @@ protected:
     bool verifyErrorsHaveBeenIgnored();
     bool paused;
     bool flushTriggered;
+    bool systemOrSslErrorDetected = false;
 };
 
 QT_END_NAMESPACE

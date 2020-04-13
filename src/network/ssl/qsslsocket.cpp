@@ -2108,7 +2108,7 @@ void QSslSocketPrivate::init()
     shutdown = false;
     pendingClose = false;
     flushTriggered = false;
-
+    systemOrSslErrorDetected = false;
     // we don't want to clear the ignoreErrorsList, so
     // that it is possible setting it before connecting
 //    ignoreErrorsList.clear();
