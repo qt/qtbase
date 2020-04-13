@@ -141,10 +141,9 @@ namespace QtAndroidInput
         QWindow *tlw = topLevelWindowAt(globalPos);
         m_mouseGrabber = tlw;
         QPoint localPos = tlw ? (globalPos - tlw->position()) : globalPos;
-        QWindowSystemInterface::handleMouseEvent(tlw,
-                                                 localPos,
-                                                 globalPos,
-                                                 Qt::MouseButtons(Qt::LeftButton));
+        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+                                                 Qt::MouseButtons(Qt::LeftButton),
+                                                 Qt::LeftButton, QEvent::MouseButtonPress);
     }
 
     static void mouseUp(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
@@ -154,8 +153,9 @@ namespace QtAndroidInput
         if (!tlw)
             tlw = topLevelWindowAt(globalPos);
         QPoint localPos = tlw ? (globalPos -tlw->position()) : globalPos;
-        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos
-                                                , Qt::MouseButtons(Qt::NoButton));
+        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+                                                 Qt::MouseButtons(Qt::NoButton),
+                                                 Qt::LeftButton, QEvent::MouseButtonRelease);
         m_ignoreMouseEvents = false;
         m_mouseGrabber = 0;
     }
@@ -171,10 +171,9 @@ namespace QtAndroidInput
         if (!tlw)
             tlw = topLevelWindowAt(globalPos);
         QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
-        QWindowSystemInterface::handleMouseEvent(tlw,
-                                                 localPos,
-                                                 globalPos,
-                                                 Qt::MouseButtons(m_mouseGrabber ? Qt::LeftButton : Qt::NoButton));
+        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+                                                 Qt::MouseButtons(m_mouseGrabber ? Qt::LeftButton : Qt::NoButton),
+                                                 Qt::NoButton, QEvent::MouseMove);
     }
 
     static void mouseWheel(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y, jfloat hdelta, jfloat vdelta)
@@ -212,16 +211,14 @@ namespace QtAndroidInput
         QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
 
         // Release left button
-        QWindowSystemInterface::handleMouseEvent(tlw,
-                                                 localPos,
-                                                 globalPos,
-                                                 Qt::MouseButtons(Qt::NoButton));
+        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+                                                 Qt::MouseButtons(Qt::NoButton), Qt::LeftButton,
+                                                 QEvent::MouseButtonRelease);
 
         // Press right button
-        QWindowSystemInterface::handleMouseEvent(tlw,
-                                                 localPos,
-                                                 globalPos,
-                                                 Qt::MouseButtons(Qt::RightButton));
+        QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos,
+                                                 Qt::MouseButtons(Qt::RightButton), Qt::RightButton,
+                                                 QEvent::MouseButtonPress);
     }
 
     static void touchBegin(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/)
