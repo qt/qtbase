@@ -1318,7 +1318,6 @@ public:
         auto it = d->find(key);
         if (it.isUnused())
             return T();
-        Q_ASSERT(it.node()->value.size());
         Chain *e = it.node()->value;
         Q_ASSERT(e);
         if (!e->next)
