@@ -160,6 +160,11 @@ DEFINEFUNC(void, OPENSSL_sk_free, OPENSSL_STACK *a, a, return, DUMMYARG)
 DEFINEFUNC2(void *, OPENSSL_sk_value, OPENSSL_STACK *a, a, int b, b, return nullptr, return)
 DEFINEFUNC(int, SSL_session_reused, SSL *a, a, return 0, return)
 DEFINEFUNC2(unsigned long, SSL_CTX_set_options, SSL_CTX *ctx, ctx, unsigned long op, op, return 0, return)
+#if OPENSSL_VERSION_NUMBER < 0x10101000L
+DEFINEFUNC(int, SSL_in_init, SSL *a, a, return 0, return)
+#else
+DEFINEFUNC(int, SSL_in_init, const SSL *a, a, return 0, return)
+#endif
 #ifdef TLS1_3_VERSION
 DEFINEFUNC2(int, SSL_CTX_set_ciphersuites, SSL_CTX *ctx, ctx, const char *str, str, return 0, return)
 DEFINEFUNC2(void, SSL_set_psk_use_session_callback, SSL *ssl, ssl, q_SSL_psk_use_session_cb_func_t callback, callback, return, DUMMYARG)
@@ -242,6 +247,7 @@ DEFINEFUNC2(void, BIO_set_shutdown, BIO *a, a, int shut, shut, return, DUMMYARG)
 // Functions below are either deprecated or removed in OpenSSL >= 1.1:
 
 DEFINEFUNC(unsigned char *, ASN1_STRING_data, ASN1_STRING *a, a, return nullptr, return)
+DEFINEFUNC(int, SSL_state, const SSL *a, a, return 0, return)
 
 #ifdef SSLEAY_MACROS
 DEFINEFUNC3(void *, ASN1_dup, i2d_of_void *a, a, d2i_of_void *b, b, char *c, c, return nullptr, return)
@@ -971,6 +977,7 @@ bool q_resolveOpenSslSymbols()
 #if QT_CONFIG(opensslv11)
 
     RESOLVEFUNC(OPENSSL_init_ssl)
+    RESOLVEFUNC(SSL_in_init)
     RESOLVEFUNC(OPENSSL_init_crypto)
     RESOLVEFUNC(ASN1_STRING_get0_data)
     RESOLVEFUNC(EVP_CIPHER_CTX_reset)
@@ -1066,6 +1073,7 @@ bool q_resolveOpenSslSymbols()
 #else // !opensslv11
 
     RESOLVEFUNC(ASN1_STRING_data)
+    RESOLVEFUNC(SSL_state)
 
 #ifdef SSLEAY_MACROS
     RESOLVEFUNC(ASN1_dup)
