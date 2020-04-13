@@ -62,8 +62,13 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
     !isEmpty(ANDROID_EXTRA_LIBS): \
         FILE_CONTENT += "   \"android-extra-libs\": $$emitString($$join(ANDROID_EXTRA_LIBS, ",")),"
 
-    !isEmpty(QML_IMPORT_PATH): \
-        FILE_CONTENT += "   \"qml-import-paths\": $$emitString($$join(QML_IMPORT_PATH, ",")),"
+    qml_import_paths = $$(QML2_IMPORT_PATH)
+    qml_import_paths = $$split(qml_import_paths, $$DIRLIST_SEPARATOR)
+    qml_import_paths += $$QML_IMPORT_PATH
+    !isEmpty(qml_import_paths) {
+        FILE_CONTENT += "   \"qml-import-paths\": $$emitString($$join(qml_import_paths, ",")),"
+    }
+    unset(qml_import_paths)
 
     isEmpty(QML_ROOT_PATH): \
         QML_ROOT_PATH = $$_PRO_FILE_PWD_
