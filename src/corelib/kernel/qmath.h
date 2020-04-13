@@ -265,14 +265,16 @@ constexpr inline quint64 qConstexprNextPowerOfTwo(quint64 v) {
     return v;
 }
 
-constexpr inline quint32 qConstexprNextPowerOfTwo(qint32 v) {
+constexpr inline quint32 qConstexprNextPowerOfTwo(qint32 v)
+{
     return qConstexprNextPowerOfTwo(quint32(v));
 }
 
-constexpr inline quint32 qConstexprNextPowerOfTwo(qint64 v) {
+constexpr inline quint64 qConstexprNextPowerOfTwo(qint64 v)
+{
     return qConstexprNextPowerOfTwo(quint64(v));
 }
-}
+} // namespace QtPrivate
 
 constexpr inline quint32 qNextPowerOfTwo(quint32 v)
 {
