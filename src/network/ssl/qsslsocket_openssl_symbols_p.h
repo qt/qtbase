@@ -516,6 +516,7 @@ void q_SSL_set_bio(SSL *a, BIO *b, BIO *c);
 void q_SSL_set_accept_state(SSL *a);
 void q_SSL_set_connect_state(SSL *a);
 int q_SSL_shutdown(SSL *a);
+int q_SSL_in_init(const SSL *s);
 int q_SSL_get_shutdown(const SSL *ssl);
 int q_SSL_set_session(SSL *to, SSL_SESSION *session);
 void q_SSL_SESSION_free(SSL_SESSION *ses);

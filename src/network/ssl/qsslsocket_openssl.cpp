@@ -649,10 +649,16 @@ bool QSslSocketBackendPrivate::initSslContext()
 void QSslSocketBackendPrivate::destroySslContext()
 {
     if (ssl) {
-        // We do not send a shutdown alert here. Just mark the session as
-        // resumable for qhttpnetworkconnection's "optimization", otherwise
-        // OpenSSL won't start a session resumption.
-        q_SSL_shutdown(ssl);
+        if (!q_SSL_in_init(ssl) && !systemOrSslErrorDetected) {
+            // We do not send a shutdown alert here. Just mark the session as
+            // resumable for qhttpnetworkconnection's "optimization", otherwise
+            // OpenSSL won't start a session resumption.
+            if (q_SSL_shutdown(ssl) != 1) {
+                // Some error may be queued, clear it.
+                const auto errors = getErrorsFromOpenSsl();
+                Q_UNUSED(errors);
+            }
+        }
         q_SSL_free(ssl);
         ssl = nullptr;
     }
@@ -1126,6 +1132,7 @@ void QSslSocketBackendPrivate::transmit()
             case SSL_ERROR_SSL: // error in the SSL library
                 // we do not know exactly what the error is, nor whether we can recover from it,
                 // so just return to prevent an endless loop in the outer "while" statement
+                systemOrSslErrorDetected = true;
                 {
                     const ScopedBool bg(inSetAndEmitError, true);
                     setErrorAndEmit(QAbstractSocket::SslInternalError,
@@ -1777,8 +1784,12 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
 void QSslSocketBackendPrivate::disconnectFromHost()
 {
     if (ssl) {
-        if (!shutdown) {
-            q_SSL_shutdown(ssl);
+        if (!shutdown && !q_SSL_in_init(ssl) && !systemOrSslErrorDetected) {
+            if (q_SSL_shutdown(ssl) != 1) {
+                // Some error may be queued, clear it.
+                const auto errors = getErrorsFromOpenSsl();
+                Q_UNUSED(errors);
+            }
             shutdown = true;
             transmit();
         }
