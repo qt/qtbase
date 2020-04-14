@@ -617,22 +617,20 @@ void tst_QProperty::genericPropertyBinding()
 
     {
         QUntypedPropertyBinding doubleBinding(QMetaType::fromType<double>(),
-                                              [](const QMetaType &, void *) -> bool {
+                                              [](const QMetaType &, void *) -> QUntypedPropertyBinding::BindingEvaluationResult {
             Q_ASSERT(false);
-            return false;
+            return QPropertyBindingError::NoError;
         }, QPropertyBindingSourceLocation());
         QVERIFY(!property.setBinding(doubleBinding));
     }
 
     QUntypedPropertyBinding intBinding(QMetaType::fromType<int>(),
-                                    [](const QMetaType &metaType, void *dataPtr) -> bool {
+                                    [](const QMetaType &metaType, void *dataPtr) -> QUntypedPropertyBinding::BindingEvaluationResult {
         Q_ASSERT(metaType.id() == qMetaTypeId<int>());
 
         int *intPtr = reinterpret_cast<int*>(dataPtr);
-        if (*intPtr == 100)
-            return false;
         *intPtr = 100;
-        return true;
+        return QPropertyBindingError::NoError;
     }, QPropertyBindingSourceLocation());
 
     QVERIFY(property.setBinding(intBinding));
@@ -647,12 +645,10 @@ void tst_QProperty::genericPropertyBindingBool()
     QVERIFY(!property.value());
 
     QUntypedPropertyBinding boolBinding(QMetaType::fromType<bool>(),
-            [](const QMetaType &, void *dataPtr) -> bool {
+            [](const QMetaType &, void *dataPtr) -> QUntypedPropertyBinding::BindingEvaluationResult {
         auto boolPtr = reinterpret_cast<bool *>(dataPtr);
-        if (*boolPtr)
-            return false;
         *boolPtr = true;
-        return true;
+        return {};
     }, QPropertyBindingSourceLocation());
     QVERIFY(property.setBinding(boolBinding));
 

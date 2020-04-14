@@ -117,10 +117,8 @@ private:
 class Q_CORE_EXPORT QUntypedPropertyBinding
 {
 public:
-    // Returns either a boolean to indicate value change or an error.
-    using BindingEvaluationResult = std::variant<bool, QPropertyBindingError>;
-    // returns true if value changed, false if the binding evaluation lead to the same value as the property
-    // already has.
+    using BindingEvaluationResult = QPropertyBindingError;
+    // writes binding result into dataPtr
     using BindingEvaluationFunction = std::function<BindingEvaluationResult(const QMetaType &metaType, void *dataPtr)>;
 
     QUntypedPropertyBinding();
@@ -160,13 +158,11 @@ class QPropertyBinding : public QUntypedPropertyBinding
 
             if (auto valuePtr = std::get_if<PropertyType>(&result)) {
                 PropertyType *propertyPtr = reinterpret_cast<PropertyType *>(dataPtr);
-                if (*propertyPtr == *valuePtr)
-                    return false;
                 *propertyPtr = std::move(*valuePtr);
-                return true;
+                return {};
             }
 
-            return false;
+            return {};
         }
     };
 

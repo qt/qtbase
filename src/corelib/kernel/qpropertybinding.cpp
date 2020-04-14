@@ -41,6 +41,7 @@
 #include "qproperty_p.h"
 
 #include <QScopedValueRollback>
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,25 +81,34 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
 
     BindingEvaluationState evaluationFrame(this);
 
+    QPropertyBindingError evalError;
     QUntypedPropertyBinding::BindingEvaluationResult result;
     bool changed = false;
     if (metaType.id() == QMetaType::Bool) {
         auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
-        bool temp = propertyPtr->extraBit();
-        result = evaluationFunction(metaType, &temp);
-        if (auto changedPtr = std::get_if<bool>(&result)) {
-            changed = *changedPtr;
-            if (changed)
-                propertyPtr->setExtraBit(temp);
+        bool newValue = false;
+        evalError = evaluationFunction(metaType, &newValue);
+        if (evalError.type() == QPropertyBindingError::NoError) {
+            if (propertyPtr->extraBit() != newValue) {
+                propertyPtr->setExtraBit(newValue);
+                changed = true;
+            }
         }
     } else {
-        result = evaluationFunction(metaType, propertyDataPtr);
-        if (auto changedPtr = std::get_if<bool>(&result))
-            changed = *changedPtr;
+        QVariant resultVariant(metaType.id(), nullptr);
+        evalError = evaluationFunction(metaType, resultVariant.data());
+        if (evalError.type() == QPropertyBindingError::NoError) {
+            int compareResult = 0;
+            if (!QMetaType::compare(propertyDataPtr, resultVariant.constData(), metaType.id(), &compareResult) || compareResult != 0) {
+                changed = true;
+                metaType.destruct(propertyDataPtr);
+                metaType.construct(propertyDataPtr, resultVariant.constData());
+            }
+        }
     }
 
-    if (auto errorPtr = std::get_if<QPropertyBindingError>(&result))
-        error = std::move(*errorPtr);
+    if (evalError.type() != QPropertyBindingError::NoError)
+        error = evalError;
 
     dirty = false;
     return changed;
