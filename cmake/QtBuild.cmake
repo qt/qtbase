@@ -3118,6 +3118,8 @@ function(qt_add_3rdparty_library target)
         OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
     )
 
+    qt_autogen_tools_initial_setup(${target})
+
     if(NOT arg_INTERFACE)
         # This property is used for super builds with static libraries. We use
         # it in QtPlugins.cmake.in to avoid "polluting" the dependency chain
