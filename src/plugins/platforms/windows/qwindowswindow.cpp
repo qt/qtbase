@@ -2287,8 +2287,10 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
             if (!screen)
                 screen = QGuiApplication::primaryScreen();
             // That area of the virtual desktop might not be covered by a screen anymore.
-            if (!screen->geometry().intersects(m_savedFrameGeometry))
-                m_savedFrameGeometry.moveTo(screen->geometry().topLeft());
+            if (const auto platformScreen = screen->handle()) {
+                if (!platformScreen->geometry().intersects(m_savedFrameGeometry))
+                    m_savedFrameGeometry.moveTo(platformScreen->geometry().topLeft());
+            }
 
             if (newState & Qt::WindowMinimized) {
                 setMinimizedGeometry(m_data.hwnd, m_savedFrameGeometry);
