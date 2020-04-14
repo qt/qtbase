@@ -47,6 +47,8 @@
 #include <QScopedPointer>
 #include "qiosurfacegraphicsbuffer.h"
 
+#include <unordered_map>
+
 QT_BEGIN_NAMESPACE
 
 class QCocoaBackingStore : public QRasterBackingStore
@@ -71,8 +73,9 @@ private:
     void redrawRoundedBottomCorners(CGRect) const;
 };
 
-class QCALayerBackingStore : public QCocoaBackingStore
+class QCALayerBackingStore : public QObject, public QCocoaBackingStore
 {
+    Q_OBJECT
 public:
     QCALayerBackingStore(QWindow *window);
     ~QCALayerBackingStore();
@@ -119,6 +122,11 @@ private:
     QMacNotificationObserver m_backingPropertiesObserver;
 
     std::list<std::unique_ptr<GraphicsBuffer>> m_buffers;
+
+    void flushSubWindow(QWindow *window);
+    std::unordered_map<QWindow*, std::unique_ptr<QCALayerBackingStore>> m_subWindowBackingstores;
+    void windowDestroyed(QObject *object);
+    bool m_clearSurfaceOnPaint = true;
 };
 
 QT_END_NAMESPACE

@@ -724,54 +724,66 @@ public class QtNative
 
     public static boolean hasClipboardText()
     {
-        if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-            ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-            for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                if (primaryClip.getItemAt(i).getText() != null)
-                    return true;
+        try {
+            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
+                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
+                for (int i = 0; i < primaryClip.getItemCount(); ++i)
+                    if (primaryClip.getItemAt(i).getText() != null)
+                        return true;
+            }
+        } catch (Exception e) {
+            Log.e(QtTAG, "Failed to get clipboard data", e);
         }
         return false;
     }
 
     private static String getClipboardText()
     {
-        if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-            ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-            for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                if (primaryClip.getItemAt(i).getText() != null)
-                    return primaryClip.getItemAt(i).getText().toString();
+        try {
+            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
+                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
+                for (int i = 0; i < primaryClip.getItemCount(); ++i)
+                    if (primaryClip.getItemAt(i).getText() != null)
+                        return primaryClip.getItemAt(i).getText().toString();
+            }
+        } catch (Exception e) {
+            Log.e(QtTAG, "Failed to get clipboard data", e);
         }
         return "";
     }
 
     private static void updatePrimaryClip(ClipData clipData)
     {
-        if (m_usePrimaryClip) {
-            ClipData clip = m_clipboardManager.getPrimaryClip();
-            if (Build.VERSION.SDK_INT >= 26) {
-                if (m_addItemMethod == null) {
-                    Class[] cArg = new Class[2];
-                    cArg[0] = ContentResolver.class;
-                    cArg[1] = ClipData.Item.class;
-                    try {
-                        m_addItemMethod = m_clipboardManager.getClass().getMethod("addItem", cArg);
-                    } catch (Exception e) {
+        try {
+            if (m_usePrimaryClip) {
+                ClipData clip = m_clipboardManager.getPrimaryClip();
+                if (Build.VERSION.SDK_INT >= 26) {
+                    if (m_addItemMethod == null) {
+                        Class[] cArg = new Class[2];
+                        cArg[0] = ContentResolver.class;
+                        cArg[1] = ClipData.Item.class;
+                        try {
+                            m_addItemMethod = m_clipboardManager.getClass().getMethod("addItem", cArg);
+                        } catch (Exception e) {
+                        }
                     }
                 }
-            }
-            if (m_addItemMethod != null) {
-                try {
-                    m_addItemMethod.invoke(m_activity.getContentResolver(), clipData.getItemAt(0));
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (m_addItemMethod != null) {
+                    try {
+                        m_addItemMethod.invoke(m_activity.getContentResolver(), clipData.getItemAt(0));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    clip.addItem(clipData.getItemAt(0));
                 }
+                m_clipboardManager.setPrimaryClip(clip);
             } else {
-                clip.addItem(clipData.getItemAt(0));
+                m_clipboardManager.setPrimaryClip(clipData);
+                m_usePrimaryClip = true;
             }
-            m_clipboardManager.setPrimaryClip(clip);
-        } else {
-            m_clipboardManager.setPrimaryClip(clipData);
-            m_usePrimaryClip = true;
+        } catch (Exception e) {
+            Log.e(QtTAG, "Failed to set clipboard data", e);
         }
     }
 
@@ -785,22 +797,30 @@ public class QtNative
 
     public static boolean hasClipboardHtml()
     {
-        if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-            ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-            for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                if (primaryClip.getItemAt(i).getHtmlText() != null)
-                    return true;
+        try {
+            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
+                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
+                for (int i = 0; i < primaryClip.getItemCount(); ++i)
+                    if (primaryClip.getItemAt(i).getHtmlText() != null)
+                        return true;
+            }
+        } catch (Exception e) {
+            Log.e(QtTAG, "Failed to get clipboard data", e);
         }
         return false;
     }
 
     private static String getClipboardHtml()
     {
-        if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-            ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-            for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                if (primaryClip.getItemAt(i).getHtmlText() != null)
-                    return primaryClip.getItemAt(i).getHtmlText().toString();
+        try {
+            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
+                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
+                for (int i = 0; i < primaryClip.getItemCount(); ++i)
+                    if (primaryClip.getItemAt(i).getHtmlText() != null)
+                        return primaryClip.getItemAt(i).getHtmlText().toString();
+            }
+        } catch (Exception e) {
+            Log.e(QtTAG, "Failed to get clipboard data", e);
         }
         return "";
     }
@@ -816,11 +836,15 @@ public class QtNative
 
     public static boolean hasClipboardUri()
     {
-        if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-            ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-            for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                if (primaryClip.getItemAt(i).getUri() != null)
-                    return true;
+        try {
+            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
+                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
+                for (int i = 0; i < primaryClip.getItemCount(); ++i)
+                    if (primaryClip.getItemAt(i).getUri() != null)
+                        return true;
+            }
+        } catch (Exception e) {
+            Log.e(QtTAG, "Failed to get clipboard data", e);
         }
         return false;
     }
@@ -828,11 +852,15 @@ public class QtNative
     private static String[] getClipboardUris()
     {
         ArrayList<String> uris = new ArrayList<String>();
-        if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-            ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-            for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                if (primaryClip.getItemAt(i).getUri() != null)
-                    uris.add(primaryClip.getItemAt(i).getUri().toString());
+        try {
+            if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
+                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
+                for (int i = 0; i < primaryClip.getItemCount(); ++i)
+                    if (primaryClip.getItemAt(i).getUri() != null)
+                        uris.add(primaryClip.getItemAt(i).getUri().toString());
+            }
+        } catch (Exception e) {
+            Log.e(QtTAG, "Failed to get clipboard data", e);
         }
         String[] strings = new String[uris.size()];
         strings = uris.toArray(strings);

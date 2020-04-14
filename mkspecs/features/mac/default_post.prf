@@ -197,7 +197,7 @@ macx-xcode {
                 -isysroot$$xcodeSDKInfo(Path, $$sdk)
             QMAKE_XARCH_LFLAGS_$${arch} = $$version_min_flags \
                 -Xarch_$${arch} \
-                -Wl,-syslibroot,$$xcodeSDKInfo(Path, $$sdk)
+                -isysroot$$xcodeSDKInfo(Path, $$sdk)
 
             QMAKE_XARCH_CFLAGS += $(EXPORT_QMAKE_XARCH_CFLAGS_$${arch})
             QMAKE_XARCH_LFLAGS += $(EXPORT_QMAKE_XARCH_LFLAGS_$${arch})
@@ -218,7 +218,7 @@ macx-xcode {
         version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
         QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH $$version_min_flag
         QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH $$version_min_flag
-        QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH $$version_min_flag
+        QMAKE_LFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH $$version_min_flag
     }
 
     # Enable precompiled headers for multiple architectures
