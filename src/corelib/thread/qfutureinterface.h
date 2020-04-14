@@ -339,13 +339,8 @@ inline QList<T> QFutureInterface<T>::results()
 template<typename T>
 T QFutureInterface<T>::takeResult()
 {
-    if (isCanceled()) {
-        exceptionStore().throwPossibleException();
-        return {};
-    }
+    Q_ASSERT(isValid());
 
-    if (!isValid())
-        return {};
     // Note: we wait for all, this is intentional,
     // not to mess with other unready results.
     waitForResult(-1);
@@ -362,13 +357,7 @@ T QFutureInterface<T>::takeResult()
 template<typename T>
 std::vector<T> QFutureInterface<T>::takeResults()
 {
-    if (isCanceled()) {
-        exceptionStore().throwPossibleException();
-        return {};
-    }
-
-    if (!isValid())
-        return {};
+    Q_ASSERT(isValid());
 
     waitForResult(-1);
     std::vector<T> res;

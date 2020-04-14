@@ -116,6 +116,8 @@ private slots:
     void runAndTake();
     void resultsReadyAt_data();
     void resultsReadyAt();
+    void takeResultWorksForTypesWithoutDefaultCtor();
+    void canceledFutureIsNotValid();
 private:
     using size_type = std::vector<int>::size_type;
 
@@ -2742,6 +2744,41 @@ void tst_QFuture::resultsReadyAt()
     QCOMPARE(nExpectedResults, iface.future().resultCount());
     QCOMPARE(readyCounter.count(), 3);
     QCOMPARE(taken, 0b1111);
+}
+
+template <class T>
+auto makeFutureInterface(T &&result)
+{
+    QFutureInterface<T> f;
+
+    f.reportStarted();
+    f.reportResult(std::forward<T>(result));
+    f.reportFinished();
+
+    return f;
+}
+
+void tst_QFuture::takeResultWorksForTypesWithoutDefaultCtor()
+{
+    struct Foo
+    {
+        Foo() = delete;
+        explicit Foo(int i) : _i(i) {}
+
+        int _i = -1;
+    };
+
+    auto f = makeFutureInterface(Foo(42));
+
+    QCOMPARE(f.takeResult()._i, 42);
+}
+void tst_QFuture::canceledFutureIsNotValid()
+{
+    auto f = makeFutureInterface(42);
+
+    f.cancel();
+
+    QVERIFY(!f.isValid());
 }
 
 QTEST_MAIN(tst_QFuture)
