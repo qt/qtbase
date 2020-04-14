@@ -1673,14 +1673,16 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
     int sectionPosition = 0;
     bool ok = true;
 
-#if QT_CONFIG(textcodec)
     // detect utf8 BOM
     const uchar *dd = (const uchar *)data.constData();
     if (data.size() >= 3 && dd[0] == 0xef && dd[1] == 0xbb && dd[2] == 0xbf) {
+#if QT_CONFIG(textcodec)
         iniCodec = QTextCodec::codecForName("UTF-8");
+#else
+        ok = false;
+#endif
         dataPos = 3;
     }
-#endif
 
     while (readIniLine(data, dataPos, lineStart, lineLen, equalsPos)) {
         char ch = data.at(lineStart);
