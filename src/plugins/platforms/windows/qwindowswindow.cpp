@@ -1904,12 +1904,13 @@ void QWindowsWindow::handleResized(int wParam)
             handleWindowStateChange(m_windowState | Qt::WindowMinimized);
         return;
     case SIZE_MAXIMIZED:
+        handleGeometryChange();
         if (!testFlag(WithinSetStyle) && !testFlag(WithinSetGeometry))
             handleWindowStateChange(Qt::WindowMaximized | (isFullScreen_sys() ? Qt::WindowFullScreen
                                                                               : Qt::WindowNoState));
-        handleGeometryChange();
         break;
     case SIZE_RESTORED:
+        handleGeometryChange();
         if (!testFlag(WithinSetStyle) && !testFlag(WithinSetGeometry)) {
             if (isFullScreen_sys())
                 handleWindowStateChange(
@@ -1918,7 +1919,6 @@ void QWindowsWindow::handleResized(int wParam)
             else if (m_windowState != Qt::WindowNoState && !testFlag(MaximizeToFullScreen))
                 handleWindowStateChange(Qt::WindowNoState);
         }
-        handleGeometryChange();
         break;
     }
 }
