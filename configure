@@ -271,11 +271,8 @@ macSDKify()
                 val=$(echo $sdk_val $(echo $val | cut -s -d ' ' -f 2-))
                 echo "$var=$val"
             ;;
-            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*)
+            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*|QMAKE_LFLAGS=*)
                 echo "$line -isysroot $sysroot $version_min_flag"
-            ;;
-            QMAKE_LFLAGS=*)
-                echo "$line -Wl,-syslibroot,$sysroot $version_min_flag"
             ;;
             *)
                 echo "$line"
