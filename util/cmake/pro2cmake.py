@@ -395,6 +395,7 @@ def get_cmake_api_call(api_name: str, api_version: Optional[int] = None) -> str:
 
 def process_qrc_file(
     target: str,
+    scope: Scope,
     filepath: str,
     base_dir: str = "",
     project_file_path: str = "",
@@ -461,6 +462,7 @@ def process_qrc_file(
 
         output += write_add_qt_resource_call(
             target,
+            scope,
             full_resource_name,
             prefix,
             base_dir,
@@ -477,6 +479,7 @@ def process_qrc_file(
 
 def write_add_qt_resource_call(
     target: str,
+    scope: Scope,
     resource_name: str,
     prefix: Optional[str],
     base_dir: str,
@@ -534,11 +537,17 @@ def write_add_qt_resource_call(
             "PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n"
         )
 
+    prefix_expanded = scope.expandString(prefix)
+    if prefix_expanded:
+        prefix = perfix_expanded
     params = ""
     if lang:
         params += f'{spaces(1)}LANG\n{spaces(2)}"{lang}"\n'
     params += f'{spaces(1)}PREFIX\n{spaces(2)}"{prefix}"\n'
     if base_dir:
+        base_dir_expanded = scope.expandString(base_dir)
+        if base_dir_expanded:
+            base_dir = base_dir_expanded
         params += f'{spaces(1)}BASE\n{spaces(2)}"{base_dir}"\n'
     add_resource_command = ""
     if is_example:
@@ -2310,6 +2319,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                     continue
                 qrc_output += process_qrc_file(
                     target,
+                    scope,
                     r,
                     scope.basedir,
                     scope.file_absolute_path,
@@ -2341,6 +2351,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                     immediate_name = f"qmake_{r}"
                     qrc_output += write_add_qt_resource_call(
                         target=target,
+                        scope=scope,
                         resource_name=immediate_name,
                         prefix=immediate_prefix,
                         base_dir=immediate_base,
@@ -2378,6 +2389,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
             skip_qtquick_compiler = False
             qrc_output += write_add_qt_resource_call(
                 target=target,
+                scope=scope,
                 resource_name=name,
                 prefix=prefix,
                 base_dir=base,
