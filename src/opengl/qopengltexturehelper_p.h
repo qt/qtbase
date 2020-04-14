@@ -628,7 +628,7 @@ public:
         int val = 0;
         functions->glGetIntegerv(GL_UNPACK_ALIGNMENT, &val);
         options.setAlignment(val);
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
         functions->glGetIntegerv(GL_UNPACK_SKIP_IMAGES, &val);
         options.setSkipImages(val);
         functions->glGetIntegerv(GL_UNPACK_SKIP_ROWS, &val);
@@ -651,7 +651,7 @@ public:
     inline void setPixelUploadOptions(const QOpenGLPixelTransferOptions &options)
     {
         functions->glPixelStorei(GL_UNPACK_ALIGNMENT, options.alignment());
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
         functions->glPixelStorei(GL_UNPACK_SKIP_IMAGES, options.skipImages());
         functions->glPixelStorei(GL_UNPACK_SKIP_ROWS, options.skipRows());
         functions->glPixelStorei(GL_UNPACK_SKIP_PIXELS, options.skipPixels());

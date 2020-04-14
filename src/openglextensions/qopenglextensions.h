@@ -107,7 +107,7 @@ protected:
     QAbstractOpenGLExtensionPrivate *d_ptr;
 };
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 
 class QOpenGLExtension_3DFX_tbufferPrivate : public QAbstractOpenGLExtensionPrivate
 {

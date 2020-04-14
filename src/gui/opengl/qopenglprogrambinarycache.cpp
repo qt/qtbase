@@ -190,7 +190,7 @@ bool QOpenGLProgramBinaryCache::setProgramBinary(uint programId, uint blobFormat
         if (error == GL_NO_ERROR || error == GL_CONTEXT_LOST)
             break;
     }
-#if defined(QT_OPENGL_ES_2)
+#if QT_CONFIG(opengles2)
     if (context->isOpenGLES() && context->format().majorVersion() < 3) {
         initializeProgramBinaryOES(context);
         programBinaryOES(programId, blobFormat, p, blobSize);
@@ -412,7 +412,7 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
         *p++ = 0;
 
     GLint outSize = 0;
-#if defined(QT_OPENGL_ES_2)
+#if QT_CONFIG(opengles2)
     if (context->isOpenGLES() && context->format().majorVersion() < 3) {
         QMutexLocker lock(&m_mutex);
         initializeProgramBinaryOES(context);
@@ -443,7 +443,7 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
     }
 }
 
-#if defined(QT_OPENGL_ES_2)
+#if QT_CONFIG(opengles2)
 void QOpenGLProgramBinaryCache::initializeProgramBinaryOES(QOpenGLContext *context)
 {
     if (m_programBinaryOESInitialized)

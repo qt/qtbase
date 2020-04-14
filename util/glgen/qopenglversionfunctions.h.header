@@ -147,5 +147,5 @@ protected:
     friend class QOpenGLContext;
 };
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 

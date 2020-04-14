@@ -2129,7 +2129,7 @@ Func resolve(QOpenGLContext *context, const char *name, Func)
 #define RESOLVE(name) \
     resolve(context, "gl"#name, name)
 
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
 
 // some fallback functions
 static void QOPENGLF_APIENTRY qopenglfSpecialClearDepthf(GLclampf depth)
@@ -2167,14 +2167,14 @@ static void QOPENGLF_APIENTRY qopenglfSpecialReleaseShaderCompiler()
 {
 }
 
-#endif // !QT_OPENGL_ES_2
+#endif // !QT_CONFIG(opengles2)
 
 
 QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *c)
 {
     init(c);
 
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     // setup fallbacks in case some methods couldn't get resolved
     bool es = QOpenGLContext::currentContext()->isOpenGLES();
     if (!f.ClearDepthf || !es)

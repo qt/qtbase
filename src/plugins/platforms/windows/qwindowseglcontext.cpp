@@ -44,7 +44,7 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/qopenglcontext.h>
 
-#if defined(QT_OPENGL_ES_2_ANGLE) || defined(QT_OPENGL_DYNAMIC)
+#if QT_CONFIG(angle) || defined(QT_OPENGL_DYNAMIC)
 #  include <EGL/eglext.h>
 #endif
 

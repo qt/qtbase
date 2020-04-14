@@ -747,14 +747,14 @@ void tst_QGL::openGLVersionCheck()
     // However, the complicated parts are in openGLVersionFlags(const QString &versionString)
     // tested above
 
-#if defined(QT_OPENGL_ES_2)
+#if QT_CONFIG(opengles2)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
 #else
     if (QOpenGLContext::currentContext()->isOpenGLES())
         QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
     else
         QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_1);
-#endif //defined(QT_OPENGL_ES_2)
+#endif //QT_CONFIG(opengles2)
 }
 #endif //QT_BUILD_INTERNAL
 
@@ -1639,7 +1639,7 @@ void tst_QGL::fboFormat()
     QCOMPARE(format1.attachment(), QGLFramebufferObject::NoAttachment);
     QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_2D));
     int expectedFormat =
-#ifdef QT_OPENGL_ES_2
+#if QT_CONFIG(opengles2)
         GL_RGBA;
 #else
         QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL ? GL_RGBA : GL_RGBA8;
@@ -1716,7 +1716,7 @@ void tst_QGL::fboFormat()
     QCOMPARE(format1c, format3c);
     QVERIFY(!(format1c != format3c));
     format3c.setInternalTextureFormat(
-#ifdef QT_OPENGL_ES_2
+#if QT_CONFIG(opengles2)
         GL_RGBA
 #else
         QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL ? GL_RGBA : GL_RGBA8
@@ -1729,7 +1729,7 @@ void tst_QGL::fboFormat()
     QCOMPARE(format1c, format4c);
     QVERIFY(!(format1c != format4c));
     format4c.setInternalTextureFormat(
-#ifdef QT_OPENGL_ES_2
+#if QT_CONFIG(opengles2)
         GL_RGBA
 #else
         QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL ? GL_RGBA : GL_RGBA8

@@ -42,7 +42,7 @@
 
 #include <QtOpenGL/qtopenglglobal.h>
 
-#if defined(QT_OPENGL_ES_2) || defined(Q_QDOC)
+#if QT_CONFIG(opengles2) || defined(Q_QDOC)
 
 #include <QtOpenGL/QOpenGLVersionProfile>
 #include <QtOpenGL/QOpenGLVersionFunctions>
@@ -927,6 +927,6 @@ inline void QOpenGLFunctions_ES2::glViewport(GLint x, GLint y, GLsizei width, GL
 
 QT_END_NAMESPACE
 
-#endif // QT_OPENGL_ES_2
+#endif // QT_CONFIG(opengles2)
 
 #endif

@@ -103,7 +103,7 @@ QOpenGLVersionFunctionsStorage::QOpenGLVersionFunctionsStorage()
 
 QOpenGLVersionFunctionsStorage::~QOpenGLVersionFunctionsStorage()
 {
-#ifndef QT_OPENGL_ES
+#if !QT_CONFIG(opengles2)
     if (backends) {
 
         int i = 0;
@@ -122,7 +122,7 @@ QOpenGLVersionFunctionsStorage::~QOpenGLVersionFunctionsStorage()
 
 QOpenGLVersionFunctionsBackend *QOpenGLVersionFunctionsStorage::backend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v)
 {
-#ifdef QT_OPENGL_ES
+#if QT_CONFIG(opengles2)
     Q_UNUSED(context);
     Q_UNUSED(v);
     return 0;
@@ -339,7 +339,7 @@ QOpenGLContext *QAbstractOpenGLFunctions::owningContext() const
     return d->owningContext;
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 
 QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_0_CoreBackend, QT_OPENGL_1_0_FUNCTIONS)
 QT_OPENGL_IMPLEMENT(QOpenGLFunctions_1_1_CoreBackend, QT_OPENGL_1_1_FUNCTIONS)
@@ -376,6 +376,6 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctions_4_5_DeprecatedBackend, QT_OPENGL_4_5_DEPREC
 
 // No backends for OpenGL ES 2
 
-#endif // !QT_OPENGL_ES_2
+#endif // !QT_CONFIG(opengles2)
 
 QT_END_NAMESPACE

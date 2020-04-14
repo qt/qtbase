@@ -52,7 +52,7 @@
 #include <QtGui/QColor>
 #include <QtGui/QSurfaceFormat>
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 #include <QtOpenGL/qopenglfunctions_4_0_core.h>
 #endif
 
@@ -207,7 +207,7 @@ QT_BEGIN_NAMESPACE
 #define GL_PATCH_DEFAULT_INNER_LEVEL  0x8E73
 #endif
 
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
 static inline bool isFormatGLES(const QSurfaceFormat &f)
 {
     return (f.renderableType() == QSurfaceFormat::OpenGLES);
@@ -221,7 +221,7 @@ static inline bool supportsGeometry(const QSurfaceFormat &f)
 
 static inline bool supportsCompute(const QSurfaceFormat &f)
 {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     if (!isFormatGLES(f))
         return f.version() >= qMakePair(4, 3);
     else
@@ -233,7 +233,7 @@ static inline bool supportsCompute(const QSurfaceFormat &f)
 
 static inline bool supportsTessellation(const QSurfaceFormat &f)
 {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     if (!isFormatGLES(f))
         return f.version() >= qMakePair(4, 0);
     else
@@ -470,7 +470,7 @@ static const char qualifierDefines[] =
     "#define mediump\n"
     "#define highp\n";
 
-#if defined(QT_OPENGL_ES) && !defined(QT_OPENGL_FORCE_SHADER_DEFINES)
+#if QT_CONFIG(opengles2) && !defined(QT_OPENGL_FORCE_SHADER_DEFINES)
 // The "highp" qualifier doesn't exist in fragment shaders
 // on all ES platforms.  When it doesn't exist, use "mediump".
 #define QOpenGL_REDEFINE_HIGHP 1
@@ -787,7 +787,7 @@ public:
         , inited(false)
         , removingShaders(false)
         , glfuncs(new QOpenGLExtraFunctions)
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
         , tessellationFuncs(nullptr)
 #endif
         , linkBinaryRecursion(false)
@@ -805,7 +805,7 @@ public:
     QList<QOpenGLShader *> anonShaders;
 
     QOpenGLExtraFunctions *glfuncs;
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     // for tessellation features not in GLES 3.2
     QOpenGLFunctions_4_0_Core *tessellationFuncs;
 #endif
@@ -895,7 +895,7 @@ bool QOpenGLShaderProgram::init()
         return false;
     d->glfuncs->initializeOpenGLFunctions();
 
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     if (!context->isOpenGLES() && context->format().version() >= qMakePair(4, 0)) {
         d->tessellationFuncs = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_4_0_Core>(context);
         d->tessellationFuncs->initializeOpenGLFunctions();
@@ -3568,7 +3568,7 @@ int QOpenGLShaderProgram::patchVertexCount() const
 */
 void QOpenGLShaderProgram::setDefaultOuterTessellationLevels(const QVector<float> &levels)
 {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     Q_D(QOpenGLShaderProgram);
     if (d->tessellationFuncs) {
         QVector<float> tessLevels = levels;
@@ -3608,7 +3608,7 @@ void QOpenGLShaderProgram::setDefaultOuterTessellationLevels(const QVector<float
 */
 QVector<float> QOpenGLShaderProgram::defaultOuterTessellationLevels() const
 {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     QVector<float> tessLevels(4, 1.0f);
     Q_D(const QOpenGLShaderProgram);
     if (d->tessellationFuncs)
@@ -3641,7 +3641,7 @@ QVector<float> QOpenGLShaderProgram::defaultOuterTessellationLevels() const
 */
 void QOpenGLShaderProgram::setDefaultInnerTessellationLevels(const QVector<float> &levels)
 {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     Q_D(QOpenGLShaderProgram);
     if (d->tessellationFuncs) {
         QVector<float> tessLevels = levels;
@@ -3681,7 +3681,7 @@ void QOpenGLShaderProgram::setDefaultInnerTessellationLevels(const QVector<float
 */
 QVector<float> QOpenGLShaderProgram::defaultInnerTessellationLevels() const
 {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     QVector<float> tessLevels(2, 1.0f);
     Q_D(const QOpenGLShaderProgram);
     if (d->tessellationFuncs)

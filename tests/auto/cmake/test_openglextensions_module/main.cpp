@@ -33,7 +33,7 @@
 
 int main(int argc, char **argv)
 {
-#if defined(QT_OPENGL_ES_2)
+#if QT_CONFIG(opengles2)
     QOpenGLExtension_OES_vertex_array_object obj;
 #else
     QOpenGLExtension_ARB_draw_buffers obj;

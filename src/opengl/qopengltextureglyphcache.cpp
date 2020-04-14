@@ -92,7 +92,7 @@ QOpenGLTextureGlyphCache::~QOpenGLTextureGlyphCache()
     clear();
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 static inline bool isCoreProfile()
 {
     return QOpenGLContext::currentContext()->format().profile() == QSurfaceFormat::CoreProfile;
@@ -143,7 +143,7 @@ void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
         QVarLengthArray<uchar> data(width * height);
         for (int i = 0; i < data.size(); ++i)
             data[i] = 0;
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
         const GLint internalFormat = isCoreProfile() ? GL_R8 : GL_ALPHA;
         const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
 #else
@@ -233,11 +233,11 @@ static void load_glyph_image_to_texture(QOpenGLContext *ctx,
 
     funcs->glBindTexture(GL_TEXTURE_2D, texture);
     if (img.depth() == 32) {
-#ifdef QT_OPENGL_ES_2
+#if QT_CONFIG(opengles2)
         GLenum fmt = GL_RGBA;
 #else
         GLenum fmt = ctx->isOpenGLES() ? GL_RGBA : GL_BGRA;
-#endif // QT_OPENGL_ES_2
+#endif // QT_CONFIG(opengles2)
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
         fmt = GL_RGBA;
@@ -246,7 +246,7 @@ static void load_glyph_image_to_texture(QOpenGLContext *ctx,
     } else {
         // The scanlines in image are 32-bit aligned, even for mono or 8-bit formats. This
         // is good because it matches the default of 4 bytes for GL_UNPACK_ALIGNMENT.
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
         const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
 #else
         const GLenum format = GL_ALPHA;

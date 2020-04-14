@@ -87,7 +87,7 @@ bool QAbstractOpenGLExtension::isInitialized() const
     return d->initialized;
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 
 QOpenGLExtension_3DFX_tbuffer::QOpenGLExtension_3DFX_tbuffer()
  : QAbstractOpenGLExtension(*(new QOpenGLExtension_3DFX_tbufferPrivate))

@@ -57,7 +57,7 @@
 #include <QtPlatformHeaders/QGLXNativeContext>
 #endif
 
-#if defined(Q_OS_WIN32) && !defined(QT_OPENGL_ES_2)
+#if defined(Q_OS_WIN32) && !QT_CONFIG(opengles2)
 #include <QtPlatformHeaders/QWGLNativeContext>
 #endif
 
@@ -107,7 +107,7 @@ private slots:
     void glxContextWrap();
 #endif
 
-#if defined(Q_OS_WIN32) && !defined(QT_OPENGL_ES_2)
+#if defined(Q_OS_WIN32) && !QT_CONFIG(opengles2)
     void wglContextWrap();
 #endif
 
@@ -633,7 +633,7 @@ static bool supportsInternalFboFormat(QOpenGLContext *ctx, int glFormat)
 {
     if (ctx->format().majorVersion() < 3)
         return false;
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     if (!ctx->isOpenGLES() && ctx->format().majorVersion() >= 4) {
         GLint value = -1;
         auto *vFuncs = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_4_2_Core>(ctx);
@@ -1519,7 +1519,7 @@ void tst_QOpenGL::glxContextWrap()
 }
 #endif // USE_GLX
 
-#if defined(Q_OS_WIN32) && !defined(QT_OPENGL_ES_2)
+#if defined(Q_OS_WIN32) && !QT_CONFIG(opengles2)
 void tst_QOpenGL::wglContextWrap()
 {
     QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
@@ -1572,7 +1572,7 @@ void tst_QOpenGL::wglContextWrap()
     QVERIFY(adopted->makeCurrent(window.data()));
     adopted->doneCurrent();
 }
-#endif // Q_OS_WIN32 && !QT_OPENGL_ES_2
+#endif // Q_OS_WIN32 && !QT_CONFIG(opengles2)
 
 void tst_QOpenGL::vaoCreate()
 {

@@ -63,9 +63,9 @@
 // access to additional functionality the drivers may expose but
 // which the system headers do not.
 
-#if defined(QT_OPENGL_ES_2)
+#if QT_CONFIG(opengles2)
 # if defined(Q_OS_IOS) || defined(Q_OS_TVOS)
-#  if defined(QT_OPENGL_ES_3)
+#  if QT_CONFIG(opengles3)
 #   include <OpenGLES/ES3/gl.h>
 #   include <OpenGLES/ES3/glext.h>
 #  else
@@ -83,7 +83,7 @@ typedef void* GLeglImageOES;
 
 # elif !defined(Q_OS_DARWIN) // "uncontrolled" ES2 platforms
 
-// In "es2" builds (QT_OPENGL_ES_2) additional defines indicate GLES 3.0 or
+// In "es2" builds (QT_CONFIG(opengles2)) additional defines indicate GLES 3.0 or
 // higher is available *at build time*. In this case include the corresponding
 // header. These are backwards compatible and it should be safe to include
 // headers on top of each other, meaning that applications can include gl2.h
@@ -101,11 +101,11 @@ typedef void* GLeglImageOES;
 #   define QGL_TEMP_GLEXT_PROTO
 #  endif
 
-#  if defined(QT_OPENGL_ES_3_2)
+#  if QT_CONFIG(opengles32)
 #   include <GLES3/gl32.h>
-#  elif defined(QT_OPENGL_ES_3_1)
+#  elif QT_CONFIG(opengles31)
 #   include <GLES3/gl31.h>
-#  elif defined(QT_OPENGL_ES_3)
+#  elif QT_CONFIG(opengles3)
 #   include <GLES3/gl3.h>
 #  else
 #   include <GLES2/gl2.h>
@@ -145,10 +145,10 @@ typedef char GLchar;
 #  endif
 #  include <QtGui/qopenglext.h>
 # endif // Q_OS_MAC
-#endif // QT_OPENGL_ES_2
+#endif // !QT_CONFIG(opengles2)
 
 // Desktops can support OpenGL 4.
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 #define QT_OPENGL_3
 #define QT_OPENGL_3_2
 #define QT_OPENGL_4
@@ -162,7 +162,7 @@ QT_BEGIN_NAMESPACE
 
 // When all else fails we provide sensible fallbacks - this is needed to
 // allow compilation on OS X 10.6
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 
 // OS X 10.6 doesn't define these which are needed below
 // OS X 10.7 and later defien them in gl3.h

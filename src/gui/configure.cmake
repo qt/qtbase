@@ -541,7 +541,6 @@ qt_feature("angle" PUBLIC
     AUTODETECT QT_FEATURE_opengles2 OR QT_FEATURE_opengl_dynamic
     CONDITION NOT QT_FEATURE_opengl_desktop AND QT_FEATURE_dxguid AND tests.fxc AND ( QT_FEATURE_direct3d9 OR ( WINRT AND QT_FEATURE_direct3d11 AND libs.d3dcompiler ) ) OR FIXME
 )
-qt_feature_definition("angle" "QT_OPENGL_ES_2_ANGLE")
 qt_feature("angle_d3d11_qdtd" PRIVATE
     LABEL "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT"
     CONDITION QT_FEATURE_angle AND TEST_angle_d3d11_qdtd
@@ -710,24 +709,19 @@ qt_feature("opengles2" PUBLIC
     ENABLE INPUT_opengl STREQUAL 'es2' OR INPUT_angle STREQUAL 'yes'
     DISABLE INPUT_opengl STREQUAL 'desktop' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
-qt_feature_definition("opengles2" "QT_OPENGL_ES")
-qt_feature_definition("opengles2" "QT_OPENGL_ES_2")
 qt_feature_config("opengles2" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("opengles3" PUBLIC
     LABEL "OpenGL ES 3.0"
     CONDITION QT_FEATURE_opengles2 AND NOT QT_FEATURE_angle AND TEST_opengles3
 )
-qt_feature_definition("opengles3" "QT_OPENGL_ES_3")
 qt_feature("opengles31" PUBLIC
     LABEL "OpenGL ES 3.1"
     CONDITION QT_FEATURE_opengles3 AND TEST_opengles31
 )
-qt_feature_definition("opengles31" "QT_OPENGL_ES_3_1")
 qt_feature("opengles32" PUBLIC
     LABEL "OpenGL ES 3.2"
     CONDITION QT_FEATURE_opengles31 AND TEST_opengles32
 )
-qt_feature_definition("opengles32" "QT_OPENGL_ES_3_2")
 qt_feature("opengl-desktop"
     LABEL "Desktop OpenGL"
     CONDITION ( WIN32 AND NOT WINRT AND NOT QT_FEATURE_opengles2 AND ( MSVC OR OpenGL_OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_OpenGL_FOUND )

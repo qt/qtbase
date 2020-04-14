@@ -187,7 +187,7 @@ void CodeGenerator::writeCoreFactoryImplementation(const QString &fileName) cons
     std::sort(versions.begin(), versions.end(), std::greater<Version>());
 
     // Outout the #include statements
-    stream << QStringLiteral("#if !defined(QT_OPENGL_ES_2)") << Qt::endl;
+    stream << QStringLiteral("#if !QT_CONFIG(opengles2)") << Qt::endl;
     Q_FOREACH (const Version &classVersion, versions) {
         if (!versionHasProfiles(classVersion)) {
             stream << QString(QStringLiteral("#include \"qopenglfunctions_%1_%2.h\""))
@@ -217,7 +217,7 @@ void CodeGenerator::writeCoreFactoryImplementation(const QString &fileName) cons
     stream << QStringLiteral("QT_BEGIN_NAMESPACE") << Qt::endl << Qt::endl;
     stream << QStringLiteral("QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::create(const QOpenGLVersionProfile &versionProfile)") << Qt::endl;
     stream << QStringLiteral("{") << Qt::endl;
-    stream << QStringLiteral("#if !defined(QT_OPENGL_ES_2)") << Qt::endl;
+    stream << QStringLiteral("#if !QT_CONFIG(opengles2)") << Qt::endl;
     stream << QStringLiteral("    const int major = versionProfile.version().first;") << Qt::endl;
     stream << QStringLiteral("    const int minor = versionProfile.version().second;") << Qt::endl << Qt::endl;
 

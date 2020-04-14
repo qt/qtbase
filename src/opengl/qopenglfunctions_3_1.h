@@ -52,7 +52,7 @@
 
 #include <QtOpenGL/qtopenglglobal.h>
 
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+#if !defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)
 
 #include <QtOpenGL/QOpenGLVersionProfile>
 #include <QtOpenGL/QOpenGLVersionFunctions>
@@ -1597,6 +1597,6 @@ inline void QOpenGLFunctions_3_1::glDrawArraysInstanced(GLenum mode, GLint first
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_OPENGL && !QT_OPENGL_ES_2
+#endif // QT_NO_OPENGL && !QT_CONFIG(opengles2)
 
 #endif

@@ -171,7 +171,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
         vaoFuncs.core_3_0 = nullptr;
         vaoFuncsType = NotSupported;
         QSurfaceFormat format = ctx->format();
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
         if (format.version() >= qMakePair<int, int>(3,2)) {
             vaoFuncs.core_3_2 = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_2_Core>(ctx);
             vaoFuncsType = Core_3_2;
@@ -236,7 +236,7 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
 
     if (vao && ctx) {
         switch (vaoFuncsType) {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
         case Core_3_2:
             vaoFuncs.core_3_2->glDeleteVertexArrays(1, &vao);
             break;
@@ -273,7 +273,7 @@ void QOpenGLVertexArrayObjectPrivate::_q_contextAboutToBeDestroyed()
 void QOpenGLVertexArrayObjectPrivate::bind()
 {
     switch (vaoFuncsType) {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     case Core_3_2:
         vaoFuncs.core_3_2->glBindVertexArray(vao);
         break;
@@ -294,7 +294,7 @@ void QOpenGLVertexArrayObjectPrivate::bind()
 void QOpenGLVertexArrayObjectPrivate::release()
 {
     switch (vaoFuncsType) {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     case Core_3_2:
         vaoFuncs.core_3_2->glBindVertexArray(0);
         break;

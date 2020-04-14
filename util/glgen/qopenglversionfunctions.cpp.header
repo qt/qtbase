@@ -203,5 +203,5 @@ QOpenGLContext *QAbstractOpenGLFunctions::owningContext() const
     return d->owningContext;
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 

@@ -10447,7 +10447,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     // (f & Qt::MSWindowsOwnDC) clause (which is set on QGLWidgets on all
     // platforms).
     if (newParent
-#if defined(QT_OPENGL_ES)
+#if QT_CONFIG(opengles2)
         || (f & Qt::MSWindowsOwnDC)
 #endif
         ) {

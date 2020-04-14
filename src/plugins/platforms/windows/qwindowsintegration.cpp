@@ -84,10 +84,10 @@
 
 #include <limits.h>
 
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
+#if QT_CONFIG(opengles2) || defined(QT_OPENGL_DYNAMIC)
 #  include "qwindowseglcontext.h"
 #endif
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+#if !defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)
 #  include "qwindowsglcontext.h"
 #endif
 
@@ -455,7 +455,7 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
             return eglCtx;
     }
     return QOpenGLStaticContext::create(true);
-#elif defined(QT_OPENGL_ES_2)
+#elif QT_CONFIG(opengles2)
     QWindowsOpenGLTester::Renderers glesRenderers = QWindowsOpenGLTester::requestedGlesRenderer();
     if (glesRenderers == QWindowsOpenGLTester::InvalidRenderer)
         glesRenderers = QWindowsOpenGLTester::supportedRenderers(QWindowsOpenGLTester::AngleRendererD3d11);
@@ -483,7 +483,7 @@ QPlatformOpenGLContext *QWindowsIntegration::createPlatformOpenGLContext(QOpenGL
 
 QOpenGLContext::OpenGLModuleType QWindowsIntegration::openGLModuleType()
 {
-#if defined(QT_OPENGL_ES_2)
+#if QT_CONFIG(opengles2)
     return QOpenGLContext::LibGLES;
 #elif !defined(QT_OPENGL_DYNAMIC)
     return QOpenGLContext::LibGL;

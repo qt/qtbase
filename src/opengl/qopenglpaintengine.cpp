@@ -682,7 +682,7 @@ void QOpenGL2PaintEngineEx::beginNativePainting()
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         d->funcs.glDisableVertexAttribArray(i);
 
-#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_DYNAMIC)
+#if !QT_CONFIG(opengles2) && !defined(QT_OPENGL_DYNAMIC)
     Q_ASSERT(QOpenGLContext::currentContext());
     const QOpenGLContext *ctx = d->ctx;
     const QSurfaceFormat &fmt = d->device->context()->format();
@@ -712,7 +712,7 @@ void QOpenGL2PaintEngineEx::beginNativePainting()
         glMatrixMode(GL_MODELVIEW);
         glLoadMatrixf(&mv_matrix[0][0]);
     }
-#endif // QT_OPENGL_ES_2
+#endif // !QT_CONFIG(opengles2)
 
     d->resetGLState();
 
@@ -1472,7 +1472,7 @@ void QOpenGL2PaintEngineEx::renderHintsChanged()
 {
     state()->renderHintsChanged = true;
 
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGL2PaintEngineEx);
 QT_WARNING_PUSH
@@ -1487,7 +1487,7 @@ QT_WARNING_DISABLE_DEPRECATED
             d->funcs.glDisable(GL_MULTISAMPLE);
 QT_WARNING_POP
     }
-#endif // QT_OPENGL_ES_2
+#endif // !QT_CONFIG(opengles2)
 
     Q_D(QOpenGL2PaintEngineEx);
 
@@ -2248,13 +2248,13 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
     d->glyphCacheFormat = QFontEngine::Format_A8;
 
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         d->funcs.glDisable(GL_MULTISAMPLE);
         d->glyphCacheFormat = QFontEngine::Format_A32;
         d->multisamplingAlwaysEnabled = false;
     } else
-#endif // QT_OPENGL_ES_2
+#endif // !QT_CONFIG(opengles2)
     {
         // OpenGL ES can't switch MSAA off, so if the gl paint device is
         // multisampled, it's always multisampled.

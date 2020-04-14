@@ -53,7 +53,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 
 #include <QtGui/QOpenGLContext>
 

@@ -42,7 +42,7 @@
 
 #include <QtOpenGL/qtopenglglobal.h>
 
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+#if !defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)
 
 #include <QtCore/QObject>
 #include <QtGui/qopengl.h>

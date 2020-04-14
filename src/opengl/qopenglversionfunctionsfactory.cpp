@@ -49,7 +49,7 @@
 #include "qopenglversionfunctionsfactory.h"
 #include "qopenglversionfunctions_p.h"
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 #include "qopenglfunctions_4_5_core.h"
 #include "qopenglfunctions_4_5_compatibility.h"
 #include "qopenglfunctions_4_4_core.h"
@@ -84,7 +84,7 @@ QT_BEGIN_NAMESPACE
 
 static QAbstractOpenGLFunctions *createFunctions(const QOpenGLVersionProfile &versionProfile)
 {
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
     const int major = versionProfile.version().first;
     const int minor = versionProfile.version().second;
 
@@ -231,12 +231,12 @@ QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::get(const QOpenGLVersi
         return nullptr;
     }
 
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     if (context->isOpenGLES()) {
         qWarning("versionFunctions: Not supported on OpenGL ES");
         return nullptr;
     }
-#endif // QT_OPENGL_ES_2
+#endif // !QT_CONFIG(opengles2)
 
     const QSurfaceFormat f = context->format();
 

@@ -81,5 +81,4 @@ bool QAbstractOpenGLExtension::isInitialized() const
     return d->initialized;
 }
 
-#if !defined(QT_OPENGL_ES_2)
-
+#if !QT_CONFIG(opengles2)

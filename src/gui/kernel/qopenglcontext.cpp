@@ -206,7 +206,7 @@ int QOpenGLContextPrivate::maxTextureSize()
     QOpenGLFunctions *funcs = q->functions();
     funcs->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
-#ifndef QT_OPENGL_ES
+#if !QT_CONFIG(opengles2)
     if (!q->isOpenGLES()) {
         GLenum proxy = GL_PROXY_TEXTURE_2D;
 
@@ -232,7 +232,7 @@ int QOpenGLContextPrivate::maxTextureSize()
 
         max_texture_size = size;
     }
-#endif // QT_OPENGL_ES
+#endif // QT_CONFIG(opengles2)
 
     return max_texture_size;
 }
@@ -957,7 +957,7 @@ QOpenGLContext::OpenGLModuleType QOpenGLContext::openGLModuleType()
 #if defined(QT_OPENGL_DYNAMIC)
     Q_ASSERT(qGuiApp);
     return QGuiApplicationPrivate::instance()->platformIntegration()->openGLModuleType();
-#elif defined(QT_OPENGL_ES_2)
+#elif QT_CONFIG(opengles2)
     return LibGLES;
 #else
     return LibGL;

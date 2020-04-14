@@ -213,7 +213,7 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
     if (rect.isNull() || rect == QRect(QPoint(0,0),size)) {
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, size.width(), size.height(), 0, GL_RGBA, pixelType, image.constBits());
     } else {
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
         if (!ctx->isOpenGLES()) {
             funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.width());
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, pixelType,

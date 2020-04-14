@@ -240,7 +240,7 @@ inline QAbstractOpenGLFunctionsPrivate *QAbstractOpenGLFunctionsPrivate::get(QAb
     return q->d_func();
 }
 
-#if !defined(QT_OPENGL_ES_2)
+#if !QT_CONFIG(opengles2)
 
 class QOpenGLFunctions_1_0_CoreBackend : public QOpenGLVersionFunctionsBackend
 {
@@ -1894,7 +1894,7 @@ public:
 // No need for backend classes with function pointers with ES2.
 // All function addresses are independent of context and display.
 
-#endif // !QT_OPENGL_ES_2
+#endif // !QT_CONFIG(opengles2)
 
 #undef QT_OPENGL_DECLARE_FUNCTIONS
 #undef QT_OPENGL_COUNT_FUNCTIONS

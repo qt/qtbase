@@ -748,7 +748,7 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, stencil_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(stencil_buffer));
 
-#ifdef QT_OPENGL_ES
+#if QT_CONFIG(opengles2)
         GLenum storage = GL_STENCIL_INDEX8;
 #else
         GLenum storage = ctx->isOpenGLES() ? GL_STENCIL_INDEX8 : GL_STENCIL_INDEX;
@@ -875,7 +875,7 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
 static inline GLenum effectiveInternalFormat(GLenum internalFormat)
 {
     if (!internalFormat)
-#ifdef QT_OPENGL_ES_2
+#if QT_CONFIG(opengles2)
         internalFormat = GL_RGBA;
 #else
         internalFormat = QOpenGLContext::currentContext()->isOpenGLES() ? GL_RGBA : GL_RGBA8;

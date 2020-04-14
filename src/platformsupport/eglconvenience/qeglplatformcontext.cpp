@@ -466,7 +466,7 @@ QFunctionPointer QEGLPlatformContext::getProcAddress(const char *procName)
             const char *name;
             QFunctionPointer func;
         } standardFuncs[] = {
-#ifdef QT_OPENGL_ES_2
+#if QT_CONFIG(opengles2)
             { "glBindTexture", (QFunctionPointer) ::glBindTexture },
             { "glBlendFunc", (QFunctionPointer) ::glBlendFunc },
             { "glClear", (QFunctionPointer) ::glClear },
@@ -611,9 +611,9 @@ QFunctionPointer QEGLPlatformContext::getProcAddress(const char *procName)
 
             { "glClearDepthf", (QFunctionPointer) ::glClearDepthf },
             { "glDepthRangef", (QFunctionPointer) ::glDepthRangef },
-#endif // QT_OPENGL_ES_2
+#endif // QT_CONFIG(opengles2)
 
-#ifdef QT_OPENGL_ES_3
+#if QT_CONFIG(opengles3)
             { "glBeginQuery", (QFunctionPointer) ::glBeginQuery },
             { "glBeginTransformFeedback", (QFunctionPointer) ::glBeginTransformFeedback },
             { "glBindBufferBase", (QFunctionPointer) ::glBindBufferBase },
@@ -718,9 +718,9 @@ QFunctionPointer QEGLPlatformContext::getProcAddress(const char *procName)
             { "glVertexAttribI4uiv", (QFunctionPointer) ::glVertexAttribI4uiv },
             { "glVertexAttribIPointer", (QFunctionPointer) ::glVertexAttribIPointer },
             { "glWaitSync", (QFunctionPointer) ::glWaitSync },
-#endif // QT_OPENGL_ES_3
+#endif // QT_CONFIG(opengles3)
 
-#ifdef QT_OPENGL_ES_3_1
+#if QT_CONFIG(opengles31)
             { "glActiveShaderProgram", (QFunctionPointer) ::glActiveShaderProgram },
             { "glBindImageTexture", (QFunctionPointer) ::glBindImageTexture },
             { "glBindProgramPipeline", (QFunctionPointer) ::glBindProgramPipeline },
@@ -789,9 +789,9 @@ QFunctionPointer QEGLPlatformContext::getProcAddress(const char *procName)
             { "glVertexAttribFormat", (QFunctionPointer) ::glVertexAttribFormat },
             { "glVertexAttribIFormat", (QFunctionPointer) ::glVertexAttribIFormat },
             { "glVertexBindingDivisor", (QFunctionPointer) ::glVertexBindingDivisor },
-#endif // QT_OPENGL_ES_3_1
+#endif // QT_CONFIG(opengles31)
 
-#ifdef QT_OPENGL_ES_3_2
+#if QT_CONFIG(opengles32)
             { "glBlendBarrier", (QFunctionPointer) ::glBlendBarrier },
             { "glCopyImageSubData", (QFunctionPointer) ::glCopyImageSubData },
             { "glDebugMessageControl", (QFunctionPointer) ::glDebugMessageControl },
@@ -836,7 +836,7 @@ QFunctionPointer QEGLPlatformContext::getProcAddress(const char *procName)
             { "glTexBuffer", (QFunctionPointer) ::glTexBuffer },
             { "glTexBufferRange", (QFunctionPointer) ::glTexBufferRange },
             { "glTexStorage3DMultisample", (QFunctionPointer) ::glTexStorage3DMultisample },
-#endif // QT_OPENGL_ES_3_2
+#endif // QT_CONFIG(opengles32)
         };
 
         for (size_t i = 0; i < sizeof(standardFuncs) / sizeof(StdFunc); ++i) {

@@ -1115,7 +1115,6 @@
             "condition": "!features.opengl-desktop && features.dxguid && tests.fxc && (features.direct3d9 || (config.winrt && features.direct3d11 && libs.d3dcompiler))",
             "output": [
                 "publicFeature",
-                { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" },
                 { "type": "varAssign", "name": "QMAKE_FXC_LOCATION", "value": "tests.fxc.value" }
             ]
         },
@@ -1319,33 +1318,28 @@
             "condition": "(config.win32 && !features.opengl-dynamic) || (!config.watchos && !features.opengl-desktop && libs.opengl_es2)",
             "output": [
                 "publicFeature",
-                "publicQtConfig",
-                { "type": "define", "name": "QT_OPENGL_ES" },
-                { "type": "define", "name": "QT_OPENGL_ES_2" }
+                "publicQtConfig"
             ]
         },
         "opengles3": {
             "label": "OpenGL ES 3.0",
             "condition": "features.opengles2 && !features.angle && tests.opengles3",
             "output": [
-                "publicFeature",
-                { "type": "define", "name": "QT_OPENGL_ES_3" }
+                "publicFeature"
             ]
         },
         "opengles31": {
             "label": "OpenGL ES 3.1",
             "condition": "features.opengles3 && tests.opengles31",
             "output": [
-                "publicFeature",
-                { "type": "define", "name": "QT_OPENGL_ES_3_1" }
+                "publicFeature"
             ]
         },
         "opengles32": {
             "label": "OpenGL ES 3.2",
             "condition": "features.opengles31 && tests.opengles32",
             "output": [
-                "publicFeature",
-                { "type": "define", "name": "QT_OPENGL_ES_3_2" }
+                "publicFeature"
             ]
         },
         "opengl-desktop": {

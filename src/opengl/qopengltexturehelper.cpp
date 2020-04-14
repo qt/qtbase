@@ -143,7 +143,7 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         TextureImage2DMultisample = &QOpenGLTextureHelper::qt_TextureImage2DMultisample;
     }
 
-#if defined(QT_OPENGL_ES_2)
+#if QT_CONFIG(opengles2)
     // Here we are targeting OpenGL ES 2.0+ only. This is likely using EGL, where,
     // similarly to WGL, non-extension functions (i.e. any function that is part of the
     // GLES spec) *may* not be queried via eglGetProcAddress.
@@ -221,7 +221,7 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         }
     }
 
-#ifndef QT_OPENGL_ES_2
+#if !QT_CONFIG(opengles2)
     // OpenGL 1.0 and 1.1
     TexImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glTexImage1D"));
     TexSubImage1D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glTexSubImage1D"));\
