@@ -2053,6 +2053,14 @@ void tst_QCborValue::extendedTypeValidation_data()
             qSwap(c, dt[i]);
         }
     }
+
+    // Improperly-encoded URLs
+    {
+        const char badurl[] = "%zz";
+        QTest::newRow("Url:Invalid")
+                << encode(0xd8, int(QCborKnownTags::Url), 0x60 + int(strlen(badurl)), badurl)
+                << QCborValue(QCborKnownTags::Url, QLatin1String(badurl));
+    }
 }
 
 void tst_QCborValue::extendedTypeValidation()

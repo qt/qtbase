@@ -827,9 +827,11 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
                 // normalize to a short (decoded) form, so as to save space
                 QUrl url(e.flags & Element::StringIsUtf16 ?
                              b->asQStringRaw() :
-                             b->toUtf8String());
-                QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
-                replaceByteData(encoded, encoded.size(), {});
+                             b->toUtf8String(), QUrl::StrictMode);
+                if (url.isValid()) {
+                    QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
+                    replaceByteData(encoded, encoded.size(), {});
+                }
             }
             return QCborValue::Url;
         }
