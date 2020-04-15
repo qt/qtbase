@@ -106,6 +106,8 @@ private slots:
     void fromCborStreamReaderIODevice();
     void validation_data();
     void validation();
+    void extendedTypeValidation_data();
+    void extendedTypeValidation();
     void hugeDeviceValidation_data();
     void hugeDeviceValidation();
     void recursionLimit_data();
@@ -117,6 +119,68 @@ private slots:
     void datastreamSerialization();
     void streamVariantSerialization();
 };
+
+namespace SimpleEncodeToCbor {
+inline size_t lengthOf(int)
+{
+    return 1;       // encode as byte
+}
+
+template <typename T> inline size_t lengthOf(T)
+{
+    return sizeof(T);
+}
+
+static void encodeOneAt(char *ptr, int v)
+{
+    // encode as byte
+    *ptr = char(v);
+}
+
+template <typename T>
+static typename std::enable_if<std::is_unsigned<T>::value>::type
+encodeOneAt(char *ptr, T v)
+{
+    qToBigEndian(v, ptr);
+}
+
+template <typename T>
+static typename std::enable_if<std::is_floating_point<T>::value ||
+                               std::is_same<T, qfloat16>::value>::type
+encodeOneAt(char *ptr, T v)
+{
+    typename QIntegerForSizeof<T>::Unsigned u;
+    memcpy(&u, &v, sizeof(u));
+    qToBigEndian(u, ptr);
+}
+
+static char *encodeAt(char *ptr)
+{
+    return ptr;
+}
+
+template <typename Arg0, typename... Args>
+static char *encodeAt(char *ptr, Arg0 a0, Args... a)
+{
+    encodeOneAt(ptr, a0);
+    return encodeAt(ptr + lengthOf(a0), a...);
+}
+
+} // namespace SimpleEncodetoCbor
+
+template <typename... Args>
+static QByteArray encode(Args... a)
+{
+    // this would be much easier with C++17 fold expressions...
+    using namespace SimpleEncodeToCbor;
+    using namespace std;
+    size_t lengths[] = { lengthOf(a)... };
+    size_t total = accumulate(begin(lengths), end(lengths), size_t(0), plus<size_t>{});
+    QByteArray result(QByteArray::size_type(total), Qt::Uninitialized);
+    char *ptr = result.data();
+    encodeAt(ptr, a...);
+    return result;
+}
 
 // Get the validation data from TinyCBOR (see src/3rdparty/tinycbor/tests/parser/data.cpp)
 #include "data.cpp"
@@ -1880,6 +1944,51 @@ void tst_QCborValue::validation()
         decoded = QCborValue::fromCbor(mid, &parserError);
         QCOMPARE(parserError.error, error);
     }
+}
+
+void tst_QCborValue::extendedTypeValidation_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QCborValue>("expected");
+
+    // QDateTime currently stores time in milliseconds, so make sure
+    // we don't overflow
+    {
+        quint64 limit = std::numeric_limits<quint64>::max() / 1000;
+        QTest::newRow("UnixTime_t:integer-overflow-positive")
+                << encode(0xc1, 0x1b, limit + 1)
+                << QCborValue(QCborKnownTags::UnixTime_t, qint64(limit) + 1);
+        QTest::newRow("UnixTime_t:integer-overflow-negative")
+                << encode(0xc1, 0x3b, limit)
+                << QCborValue(QCborKnownTags::UnixTime_t, -qint64(limit) - 1);
+
+        double fplimit = std::numeric_limits<qint64>::min() / (-1000.); // 2^63 ms
+        QTest::newRow("UnixTime_t:fp-overflow-positive")
+                << encode(0xc1, 0xfb, fplimit)
+                << QCborValue(QCborKnownTags::UnixTime_t, fplimit);
+        QTest::newRow("UnixTime_t:fp-overflow-negative")
+                << encode(0xc1, 0xfb, -fplimit)
+                << QCborValue(QCborKnownTags::UnixTime_t, -fplimit);
+    }
+}
+
+void tst_QCborValue::extendedTypeValidation()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(QCborValue, expected);
+
+    QCborParserError error;
+    QCborValue decoded = QCborValue::fromCbor(data, &error);
+    QVERIFY2(error.error == QCborError(), qPrintable(error.errorString()));
+    QCOMPARE(error.offset, data.size());
+    QCOMPARE(decoded, expected);
+
+    QByteArray encoded = decoded.toCbor();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    // behavior change, see qdatetime.cpp:fromIsoTimeString
+    QEXPECT_FAIL("DateTime:Null-at-19", "QDateTime parsing fixed, but only in 6.0", Abort);
+#endif
+    QCOMPARE(encoded, data);
 }
 
 void tst_QCborValue::hugeDeviceValidation_data()
