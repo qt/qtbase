@@ -2391,16 +2391,6 @@ QList<int> QWizard::visitedIds() const
 }
 
 /*!
-    \obsolete Use visitedIds() instead
-*/
-#if QT_DEPRECATED_SINCE(5, 15)
-QList<int> QWizard::visitedPages() const
-{
-    return visitedIds();
-}
-#endif
-
-/*!
     Returns the list of page IDs.
    \since 4.5
 */

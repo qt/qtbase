@@ -128,9 +128,6 @@ public:
     void removePage(int id);
     QWizardPage *page(int id) const;
     bool hasVisitedPage(int id) const;
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_X_5_15("Use visitedIds() instead") QList<int> visitedPages() const;
-#endif
     QList<int> visitedIds() const;
     QList<int> pageIds() const;
     void setStartId(int id);
