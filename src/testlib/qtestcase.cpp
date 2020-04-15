@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -2525,16 +2525,21 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
 }
 
 template <typename T>
-static bool floatingCompare(const T &t1, const T &t2)
+static bool floatingCompare(const T &actual, const T &expected)
 {
-    switch (qFpClassify(t1))
+    switch (qFpClassify(expected))
     {
     case FP_INFINITE:
-        return (t1 < 0) == (t2 < 0) && qFpClassify(t2) == FP_INFINITE;
+        return (expected < 0) == (actual < 0) && qFpClassify(actual) == FP_INFINITE;
     case FP_NAN:
-        return qFpClassify(t2) == FP_NAN;
+        return qFpClassify(actual) == FP_NAN;
     default:
-        return qFuzzyCompare(t1, t2);
+        if (!qFuzzyIsNull(expected))
+            return qFuzzyCompare(actual, expected);
+        Q_FALLTHROUGH();
+    case FP_SUBNORMAL: // subnormal is always fuzzily null
+    case FP_ZERO:
+        return qFuzzyIsNull(actual);
     }
 }
 
