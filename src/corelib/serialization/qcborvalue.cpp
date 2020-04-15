@@ -810,10 +810,12 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
         }
         if (dt.isValid()) {
             QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
-            replaceByteData(text, text.size(), Element::StringIsAscii);
-            e.type = QCborValue::String;
-            d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
-            return QCborValue::DateTime;
+            if (!text.isEmpty()) {
+                replaceByteData(text, text.size(), Element::StringIsAscii);
+                e.type = QCborValue::String;
+                d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
+                return QCborValue::DateTime;
+            }
         }
         break;
     }

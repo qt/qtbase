@@ -1970,6 +1970,21 @@ void tst_QCborValue::extendedTypeValidation_data()
                 << encode(0xc1, 0xfb, -fplimit)
                 << QCborValue(QCborKnownTags::UnixTime_t, -fplimit);
     }
+
+    // But in fact, QCborValue stores date/times as their ISO textual
+    // representation, which means it can't represent dates before year 1 or
+    // after year 9999.
+    {
+        QDateTime dt(QDate(-1, 1, 1), QTime(0, 0), Qt::UTC);
+        QTest::newRow("UnixTime_t:negative-year")
+                << encode(0xc1, 0x3b, quint64(-dt.toSecsSinceEpoch()) - 1)
+                << QCborValue(QCborKnownTags::UnixTime_t, dt.toSecsSinceEpoch());
+
+        dt.setDate(QDate(10000, 1, 1));
+        QTest::newRow("UnixTime_t:year10k")
+                << encode(0xc1, 0x1b, quint64(dt.toSecsSinceEpoch()))
+                << QCborValue(QCborKnownTags::UnixTime_t, dt.toSecsSinceEpoch());
+    }
 }
 
 void tst_QCborValue::extendedTypeValidation()
