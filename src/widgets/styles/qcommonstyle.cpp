@@ -4776,21 +4776,11 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
             } else if (widget) {
                 isWindow = widget->isWindow();
             }
-            ret = proxy()->pixelMetric(isWindow ? PM_DefaultTopLevelMargin : PM_DefaultChildMargin, opt);
+            ret = int(QStyleHelper::dpiScaled(isWindow ? 11 : 9, opt));
         }
         break;
     case PM_LayoutHorizontalSpacing:
     case PM_LayoutVerticalSpacing:
-        ret = proxy()->pixelMetric(PM_DefaultLayoutSpacing, opt);
-        break;
-
-    case PM_DefaultTopLevelMargin:
-        ret = int(QStyleHelper::dpiScaled(11, opt));
-        break;
-    case PM_DefaultChildMargin:
-        ret = int(QStyleHelper::dpiScaled(9, opt));
-        break;
-    case PM_DefaultLayoutSpacing:
         ret = int(QStyleHelper::dpiScaled(6, opt));
         break;
 

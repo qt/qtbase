@@ -1039,8 +1039,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SE_ProgressBarLabel  Area for the text label.
     \value SE_ProgressBarLayoutItem Area that counts for the parent layout.
 
-    \omitvalue SE_ViewItemCheckIndicator
-
     \value SE_FrameContents  Area for a frame's contents.
     \value SE_ShapedFrameContents Area for a frame's contents using the shape in QStyleOptionFrame; see QFrame
     \value SE_FrameLayoutItem  Area that counts for the parent layout.
@@ -1073,8 +1071,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SE_TabBarScrollRightButton Area for the scroll right button on a tab bar with scroll buttons.
 
     \value SE_TreeViewDisclosureItem Area for the actual disclosure item in a tree branch.
-
-    \omitvalue SE_DialogButtonBoxLayoutItem
 
     \value SE_GroupBoxLayoutItem  Area that counts for the parent layout.
 
@@ -1359,9 +1355,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_SpinBoxFrameWidth  Frame width of a spin box, defaults to PM_DefaultFrameWidth.
     \value PM_ComboBoxFrameWidth Frame width of a combo box, defaults to PM_DefaultFrameWidth.
 
-    \value PM_MDIFrameWidth  Obsolete. Use PM_MdiSubWindowFrameWidth instead.
     \value PM_MdiSubWindowFrameWidth  Frame width of an MDI window.
-    \value PM_MDIMinimizedWidth  Obsolete. Use PM_MdiSubWindowMinimizedWidth instead.
     \value PM_MdiSubWindowMinimizedWidth  Width of a minimized MDI window.
 
     \value PM_LayoutLeftMargin  Default \l{QLayout::setContentsMargins()}{left margin} for a
@@ -1502,21 +1496,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value PM_CustomBase Base value for custom pixel metrics.  Custom
     values must be greater than this value.
-
-    The following values are obsolete:
-
-    \value PM_DefaultTopLevelMargin  Use PM_LayoutLeftMargin,
-                                     PM_LayoutTopMargin,
-                                     PM_LayoutRightMargin, and
-                                     PM_LayoutBottomMargin instead.
-    \value PM_DefaultChildMargin  Use PM_LayoutLeftMargin,
-                                  PM_LayoutTopMargin,
-                                  PM_LayoutRightMargin, and
-                                  PM_LayoutBottomMargin instead.
-    \value PM_DefaultLayoutSpacing  Use PM_LayoutHorizontalSpacing
-                                    and PM_LayoutVerticalSpacing
-                                    instead.
-
 
     \sa pixelMetric()
 */
@@ -1806,9 +1785,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
         maximize the client area.
 
     \value SH_TitleBar_NoBorder  The title bar has no border.
-
-    \value SH_ScrollBar_StopMouseOverSlider  Obsolete. Use
-        SH_Slider_StopMouseOverSlider instead.
 
     \value SH_Slider_StopMouseOverSlider  Stops auto-repeat when
         the slider reaches the mouse position.

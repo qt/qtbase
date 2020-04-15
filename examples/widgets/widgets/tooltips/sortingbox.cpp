@@ -129,7 +129,7 @@ bool SortingBox::event(QEvent *event)
 //! [7]
 void SortingBox::resizeEvent(QResizeEvent * /* event */)
 {
-    int margin = style()->pixelMetric(QStyle::PM_DefaultTopLevelMargin);
+    int margin = style()->pixelMetric(QStyle::PM_LayoutTopMargin);
     int x = width() - margin;
     int y = height() - margin;
 
@@ -246,7 +246,7 @@ int SortingBox::updateButtonGeometry(QToolButton *button, int x, int y)
                         size.rwidth(), size.rheight());
 
     return y - size.rheight()
-           - style()->pixelMetric(QStyle::PM_DefaultLayoutSpacing);
+           - style()->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
 }
 //! [20]
 

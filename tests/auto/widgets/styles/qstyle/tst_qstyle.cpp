@@ -83,7 +83,6 @@ private slots:
 #endif
     void testStyleFactory();
     void testProxyStyle();
-    void pixelMetric();
 #if !defined(QT_NO_STYLE_WINDOWS) && !defined(QT_NO_STYLE_FUSION)
     void progressBarChangeStyle();
 #endif
@@ -347,57 +346,6 @@ void MyWidget::paintEvent(QPaintEvent *)
     style()->drawItemPixmap(&p, rect(), Qt::AlignCenter, big);
 }
 
-
-class Qt42Style : public QCommonStyle
-{
-    Q_OBJECT
-public:
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
-                    const QWidget *widget = nullptr) const override;
-
-    int margin_toplevel = 10;
-    int margin = 5;
-    int spacing = 0;
-};
-
-int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * /* option = 0*/,
-                                   const QWidget * /* widget = 0*/ ) const
-{
-    switch (metric) {
-        case QStyle::PM_DefaultTopLevelMargin:
-            return margin_toplevel;
-        case QStyle::PM_DefaultChildMargin:
-            return margin;
-        case QStyle::PM_DefaultLayoutSpacing:
-            return spacing;
-        default:
-            break;
-    }
-    return -1;
-}
-
-
-void tst_QStyle::pixelMetric()
-{
-    QScopedPointer<Qt42Style> style(new Qt42Style);
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultTopLevelMargin), 10);
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultChildMargin), 5);
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultLayoutSpacing), 0);
-
-    style->margin_toplevel = 0;
-    style->margin = 0;
-    style->spacing = 0;
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultTopLevelMargin), 0);
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultChildMargin), 0);
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultLayoutSpacing), 0);
-
-    style->margin_toplevel = -1;
-    style->margin = -1;
-    style->spacing = -1;
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultTopLevelMargin), -1);
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultChildMargin), -1);
-    QCOMPARE(style->pixelMetric(QStyle::PM_DefaultLayoutSpacing), -1);
-}
 
 #if !defined(QT_NO_STYLE_WINDOWS) && !defined(QT_NO_STYLE_FUSION)
 void tst_QStyle::progressBarChangeStyle()

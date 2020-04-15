@@ -307,9 +307,6 @@ public:
         SE_TabWidgetRightCorner,
 
         SE_ItemViewItemCheckIndicator,
-#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
-        SE_ViewItemCheckIndicator Q_DECL_ENUMERATOR_DEPRECATED = SE_ItemViewItemCheckIndicator,
-#endif
         SE_TabBarTearIndicator,
         SE_TabBarTearIndicatorLeft = SE_TabBarTearIndicator,
 
@@ -326,10 +323,7 @@ public:
         SE_CheckBoxLayoutItem,
         SE_ComboBoxLayoutItem,
         SE_DateTimeEditLayoutItem,
-#if QT_DEPRECATED_SINCE(5, 15) // ### Qt 6: remove
-        SE_DialogButtonBoxLayoutItem Q_DECL_ENUMERATOR_DEPRECATED,
-#endif
-        SE_LabelLayoutItem = SE_DateTimeEditLayoutItem + 2,
+        SE_LabelLayoutItem,
         SE_ProgressBarLayoutItem,
         SE_PushButtonLayoutItem,
         SE_RadioButtonLayoutItem,
@@ -510,10 +504,6 @@ public:
 
         PM_MdiSubWindowFrameWidth,
         PM_MdiSubWindowMinimizedWidth,
-#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
-        PM_MDIFrameWidth Q_DECL_ENUMERATOR_DEPRECATED = PM_MdiSubWindowFrameWidth,
-        PM_MDIMinimizedWidth Q_DECL_ENUMERATOR_DEPRECATED = PM_MdiSubWindowMinimizedWidth,
-#endif
 
         PM_HeaderMargin,
         PM_HeaderMarkSize,
@@ -531,13 +521,7 @@ public:
 
         PM_SpinBoxSliderHeight,
 
-#if QT_DEPRECATED_SINCE(5, 15) // ### Qt 6: remove
-        PM_DefaultTopLevelMargin Q_DECL_ENUMERATOR_DEPRECATED,
-        PM_DefaultChildMargin Q_DECL_ENUMERATOR_DEPRECATED,
-        PM_DefaultLayoutSpacing Q_DECL_ENUMERATOR_DEPRECATED,
-#endif
-
-        PM_ToolBarIconSize = PM_SpinBoxSliderHeight + 4,
+        PM_ToolBarIconSize,
         PM_ListViewIconSize,
         PM_IconViewIconSize,
         PM_SmallIconSize,
@@ -656,9 +640,6 @@ public:
         SH_ComboBox_Popup,
         SH_TitleBar_NoBorder,
         SH_Slider_StopMouseOverSlider,
-#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
-        SH_ScrollBar_StopMouseOverSlider Q_DECL_ENUMERATOR_DEPRECATED = SH_Slider_StopMouseOverSlider,
-#endif
         SH_BlinkCursorWhenTextSelected,
         SH_RichText_FullWidthSelection,
         SH_Menu_Scrollable,

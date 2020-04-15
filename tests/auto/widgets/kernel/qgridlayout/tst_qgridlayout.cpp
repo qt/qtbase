@@ -449,33 +449,33 @@ class Qt42Style : public QProxyStyle
 public:
     Qt42Style() : QProxyStyle(QStyleFactory::create("windows"))
     {
-        spacing = 6;
-        margin = 9;
-        margin_toplevel = 11;
     }
 
-    virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
-                            const QWidget * widget = 0 ) const;
+    virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = nullptr,
+                            const QWidget * widget = nullptr ) const;
 
-    int spacing;
-    int margin;
-    int margin_toplevel;
+    int spacing = 6;
+    int margin = 9;
+    int margin_toplevel = 11;
 
 };
 
-int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * option /*= 0*/,
-                                   const QWidget * widget /*= 0*/ ) const
+int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * option,
+                           const QWidget * widget) const
 {
     switch (metric) {
-        case PM_DefaultLayoutSpacing:
-            return spacing;
-        break;
-        case PM_DefaultTopLevelMargin:
-            return margin_toplevel;
-        break;
-        case PM_DefaultChildMargin:
+        case PM_LayoutLeftMargin:
+        case PM_LayoutRightMargin:
+        case PM_LayoutTopMargin:
+        case PM_LayoutBottomMargin:
+            if (option && option->state & State_Window)
+                return margin_toplevel;
+            if (widget && widget->isWindow())
+                return margin_toplevel;
             return margin;
-        break;
+        case PM_LayoutHorizontalSpacing:
+        case PM_LayoutVerticalSpacing:
+            return spacing;
         default:
             break;
     }
