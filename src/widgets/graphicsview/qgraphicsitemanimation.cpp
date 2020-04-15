@@ -550,23 +550,6 @@ void QGraphicsItemAnimation::setStep(qreal step)
     afterAnimationStep(step);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    Resets the item to its starting position and transformation.
-
-    \obsolete
-
-    You can call setStep(0) instead.
-*/
-void QGraphicsItemAnimation::reset()
-{
-    if (!d->item)
-        return;
-    d->startPos = d->item->pos();
-    d->startTransform = d->item->transform();
-}
-#endif
-
 /*!
   \fn void QGraphicsItemAnimation::beforeAnimationStep(qreal step)
 

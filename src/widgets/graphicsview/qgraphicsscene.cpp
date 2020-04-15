@@ -1938,29 +1938,6 @@ void QGraphicsScene::setBspTreeDepth(int depth)
     bspTree->setBspTreeDepth(depth);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \property QGraphicsScene::sortCacheEnabled
-    \brief whether sort caching is enabled
-    \since 4.5
-    \obsolete
-
-    Since Qt 4.6, this property has no effect.
-*/
-bool QGraphicsScene::isSortCacheEnabled() const
-{
-    Q_D(const QGraphicsScene);
-    return d->sortCacheEnabled;
-}
-void QGraphicsScene::setSortCacheEnabled(bool enabled)
-{
-    Q_D(QGraphicsScene);
-    if (d->sortCacheEnabled == enabled)
-        return;
-    d->sortCacheEnabled = enabled;
-}
-#endif
-
 /*!
     Calculates and returns the bounding rect of all items on the scene. This
     function works by iterating over all items, and because of this, it can
@@ -1989,18 +1966,6 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
     Q_D(const QGraphicsScene);
     return d->index->items(order);
 }
-
-/*!
-    \fn QList<QGraphicsItem *> QGraphicsScene::items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode) const
-    \obsolete
-    \since 4.3
-
-    This convenience function is equivalent to calling items(QRectF(\a x, \a y, \a w, \a h), \a mode).
-
-    This function is deprecated and returns incorrect results if the scene
-    contains items that ignore transformations. Use the overload that takes
-    a QTransform instead.
-*/
 
 /*!
     \fn QList<QGraphicsItem *> QGraphicsScene::items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
@@ -2151,23 +2116,6 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 }
 
 /*!
-    \fn QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
-    \overload
-    \obsolete
-
-    Returns the topmost visible item at the specified \a position, or
-    \nullptr if there are no items at this position.
-
-    This function is deprecated and returns incorrect results if the scene
-    contains items that ignore transformations. Use the overload that takes
-    a QTransform instead.
-
-    Note: See items() for a definition of which items are considered visible by this function.
-
-    \sa items(), collidingItems(), {QGraphicsItem#Sorting}{Sorting}
-*/
-
-/*!
     \since 4.6
 
     Returns the topmost visible item at the specified \a position, or \nullptr
@@ -2200,24 +2148,6 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
 
     This convenience function is equivalent to calling \c
     {itemAt(QPointF(x, y), deviceTransform)}.
-
-    Note: See items() for a definition of which items are considered visible by this function.
-*/
-
-/*!
-    \fn QGraphicsScene::itemAt(qreal x, qreal y) const
-    \overload
-    \obsolete
-
-    Returns the topmost visible item at the position specified by (\a x, \a
-    y), or \nullptr if there are no items at this position.
-
-    This convenience function is equivalent to calling \c
-    {itemAt(QPointF(x, y))}.
-
-    This function is deprecated and returns incorrect results if the scene
-    contains items that ignore transformations. Use the overload that takes
-    a QTransform instead.
 
     Note: See items() for a definition of which items are considered visible by this function.
 */
@@ -2275,25 +2205,7 @@ QPainterPath QGraphicsScene::selectionArea() const
 */
 void QGraphicsScene::setSelectionArea(const QPainterPath &path, const QTransform &deviceTransform)
 {
-    setSelectionArea(path, Qt::IntersectsItemShape, deviceTransform);
-}
-
-/*!
-    \overload
-    \since 4.6
-
-    Sets the selection area to \a path using \a mode to determine if items are
-    included in the selection area.
-
-    \a deviceTransform is the transformation that applies to the view, and needs to
-    be provided if the scene contains items that ignore transformations.
-
-    \sa clearSelection(), selectionArea()
-*/
-void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode,
-                                      const QTransform &deviceTransform)
-{
-    setSelectionArea(path, Qt::ReplaceSelection, mode, deviceTransform);
+    setSelectionArea(path, Qt::ReplaceSelection, Qt::IntersectsItemShape, deviceTransform);
 }
 
 /*!

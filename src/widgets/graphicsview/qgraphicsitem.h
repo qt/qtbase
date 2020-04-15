@@ -169,9 +169,6 @@ public:
     QGraphicsWidget *window() const;
     QGraphicsItem *panel() const;
     void setParentItem(QGraphicsItem *parent);
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline QList<QGraphicsItem *> children() const { return childItems(); }
-#endif
     QList<QGraphicsItem *> childItems() const;
     bool isWidget() const;
     bool isWindow() const;
@@ -233,10 +230,6 @@ public:
 
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline bool acceptsHoverEvents() const { return acceptHoverEvents(); }
-    QT_DEPRECATED inline void setAcceptsHoverEvents(bool enabled) { setAcceptHoverEvents(enabled); }
-#endif
     bool acceptHoverEvents() const;
     void setAcceptHoverEvents(bool enabled);
     bool acceptTouchEvents() const;
@@ -287,12 +280,6 @@ public:
     QTransform itemTransform(const QGraphicsItem *other, bool *ok = nullptr) const;
     void setTransform(const QTransform &matrix, bool combine = false);
     void resetTransform();
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline void rotate(qreal angle) { setTransform(QTransform().rotate(angle), true); }
-    QT_DEPRECATED inline void scale(qreal sx, qreal sy) { setTransform(QTransform::fromScale(sx, sy), true); }
-    QT_DEPRECATED inline void shear(qreal sh, qreal sv) { setTransform(QTransform().shear(sh, sv), true); }
-    QT_DEPRECATED inline void translate(qreal dx, qreal dy) { setTransform(QTransform::fromTranslate(dx, dy), true); }
-#endif
     void setRotation(qreal angle);
     qreal rotation() const;
 

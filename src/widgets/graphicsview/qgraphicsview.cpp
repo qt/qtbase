@@ -198,8 +198,6 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     Note that setting a flag usually imposes a side effect, and this effect
     can vary between paint devices and platforms.
 
-    \value DontClipPainter This value is obsolete and has no effect.
-
     \value DontSavePainterState When rendering, QGraphicsView protects the
     painter state (see QPainter::save()) when rendering the background or
     foreground, and when rendering each item. This allows you to leave the

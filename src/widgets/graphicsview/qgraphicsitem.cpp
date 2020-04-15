@@ -1850,15 +1850,6 @@ void QGraphicsItem::setParentItem(QGraphicsItem *newParent)
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsItem::children() const
-    \obsolete
-
-    Use childItems() instead.
-
-    \sa setParentItem()
-*/
-
-/*!
     \since 4.4
 
     Returns a list of this item's children.
@@ -3170,12 +3161,6 @@ bool QGraphicsItem::acceptHoverEvents() const
     return d_ptr->acceptsHover;
 }
 
-/*!
-    \fn bool QGraphicsItem::acceptsHoverEvents() const
-    \obsolete
-
-    Call acceptHoverEvents() instead.
-*/
 
 /*!
     \since 4.4
@@ -3218,13 +3203,6 @@ void QGraphicsItem::setAcceptHoverEvents(bool enabled)
         d_ptr->scene->d_func()->enableMouseTrackingOnViews();
     }
 }
-
-/*!
-    \fn void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
-    \obsolete
-
-    Use setAcceptHoverEvents(\a enabled) instead.
-*/
 
 /*! \since 4.6
 
@@ -4577,81 +4555,6 @@ void QGraphicsItem::resetTransform()
 {
     setTransform(QTransform(), false);
 }
-
-/*!
-    \fn void QGraphicsItem::rotate(qreal angle)
-    \obsolete
-
-    Use
-
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 20
-
-    instead.
-
-    Rotates the current item transformation \a angle degrees clockwise around
-    its origin. To translate around an arbitrary point (x, y), you need to
-    combine translation and rotation with setTransform().
-
-    Example:
-
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 6
-
-    \sa setTransform(), transform(), scale(), shear(), translate()
-*/
-
-/*!
-    \fn void QGraphicsItem::scale(qreal sx, qreal sy)
-    \obsolete
-
-    Use
-
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 21
-
-    instead.
-
-    Scales the current item transformation by (\a sx, \a sy) around its
-    origin. To scale from an arbitrary point (x, y), you need to combine
-    translation and scaling with setTransform().
-
-    Example:
-
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 7
-
-    \sa setTransform(), transform()
-*/
-
-/*!
-    \fn void QGraphicsItem::shear(qreal sh, qreal sv)
-    \obsolete
-
-    Use
-
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 22
-
-    instead.
-
-    Shears the current item transformation by (\a sh, \a sv).
-
-    \sa setTransform(), transform()
-*/
-
-/*!
-    \fn void QGraphicsItem::translate(qreal dx, qreal dy)
-    \obsolete
-
-    Use setPos() or setTransformOriginPoint() instead. For identical
-    behavior, use
-
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 23
-
-    Translates the current item transformation by (\a dx, \a dy).
-
-    If all you want is to move an item, you should call moveBy() or
-    setPos() instead; this function changes the item's translation,
-    which is conceptually separate from its position.
-
-    \sa setTransform(), transform()
-*/
 
 /*!
     This virtual function is called twice for all items by the

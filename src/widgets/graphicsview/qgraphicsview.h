@@ -107,12 +107,9 @@ public:
     Q_ENUM(ViewportUpdateMode)
 
     enum OptimizationFlag {
-#if QT_DEPRECATED_SINCE(5, 14)
-        DontClipPainter Q_DECL_ENUMERATOR_DEPRECATED_X("This flag is unused") = 0x1, // obsolete
-#endif
-        DontSavePainterState = 0x2,
-        DontAdjustForAntialiasing = 0x4,
-        IndirectPainting = 0x8
+        DontSavePainterState = 0x1,
+        DontAdjustForAntialiasing = 0x2,
+        IndirectPainting = 0x4
     };
     Q_DECLARE_FLAGS(OptimizationFlags, OptimizationFlag)
 

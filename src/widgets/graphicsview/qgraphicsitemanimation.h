@@ -96,10 +96,6 @@ public:
 
 public Q_SLOTS:
     void setStep(qreal x);
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use setStep(0) instead")
-    void reset();
-#endif
 
 protected:
     virtual void beforeAnimationStep(qreal step);
