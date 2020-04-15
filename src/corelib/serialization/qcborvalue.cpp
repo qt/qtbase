@@ -1561,8 +1561,6 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         if (newSize > MaxByteArraySize)
             return -1;
 
-        // since usedData <= data.size(), this can't overflow
-        usedData += increment;
         data.resize(newSize);
         return offset;
     };
