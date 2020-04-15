@@ -1935,6 +1935,25 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
     return rx;
 }
 
+/*!
+  \since 6.0
+  Returns a regular expression of the glob pattern \a pattern.
+
+  Equivalent to
+  \code
+  auto reOptions = cs == Qt::CaseSensitive ? QRegularExpression::NoPatternOption :
+                                             QRegularExpression::CaseInsensitiveOption;
+  return QRegularExpression(wildcardToRegularExpression(str, options), reOptions);
+  \endcode
+*/
+QRegularExpression QRegularExpression::fromWildcard(QStringView str, Qt::CaseSensitivity cs,
+                                                    WildcardConversionOptions options)
+{
+    auto reOptions = cs == Qt::CaseSensitive ? QRegularExpression::NoPatternOption :
+                                             QRegularExpression::CaseInsensitiveOption;
+    return QRegularExpression(wildcardToRegularExpression(str, options), reOptions);
+}
+
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QRegularExpression::anchoredPattern(const QString &expression)

@@ -2148,12 +2148,10 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
 
     // Check the name regularexpression filters
     if (!(node->isDir() && (filters & QDir::AllDirs))) {
-        const QRegularExpression::PatternOptions options =
-            (filters & QDir::CaseSensitive) ? QRegularExpression::NoPatternOption
-                                            : QRegularExpression::CaseInsensitiveOption;
+        auto cs = (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive;
 
         for (const auto &nameFilter : nameFilters) {
-            QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(nameFilter), options);
+            auto rx = QRegularExpression::fromWildcard(nameFilter, cs);
             QRegularExpressionMatch match = rx.match(node->fileName);
             if (match.hasMatch())
                 return true;

@@ -1636,7 +1636,7 @@ bool QMakeEvaluator::isActiveConfig(const QStringRef &config, bool regex)
         return m_hostBuild;
 
     if (regex && (config.contains(QLatin1Char('*')) || config.contains(QLatin1Char('?')))) {
-        QRegularExpression re(QRegularExpression::wildcardToRegularExpression(config.toString()));
+        auto re = QRegularExpression::fromWildcard(config.toString());
 
         // mkspecs
         if (re.match(m_qmakespecName).hasMatch())

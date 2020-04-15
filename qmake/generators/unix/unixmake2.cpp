@@ -1533,10 +1533,9 @@ std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t,
         for (ProStringList::ConstIterator objit = objs.begin(); objit != objs.end(); ++objit) {
             bool increment = false;
             for (ProStringList::ConstIterator incrit = incrs.begin(); incrit != incrs.end(); ++incrit) {
-                auto pattern =
-                        QRegularExpression::wildcardToRegularExpression((*incrit).toQString(),
-                                                                        QRegularExpression::UnanchoredWildcardConversion);
-                if ((*objit).toQString().contains(QRegularExpression(pattern))) {
+                auto regexp = QRegularExpression::fromWildcard((*incrit).toQString(), Qt::CaseSensitive,
+                                                               QRegularExpression::UnanchoredWildcardConversion);
+                if ((*objit).toQString().contains(regexp)) {
                     increment = true;
                     incrs_out.append((*objit));
                     break;

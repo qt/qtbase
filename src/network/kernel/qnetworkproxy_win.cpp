@@ -212,8 +212,7 @@ static bool isBypassed(const QString &host, const QStringList &bypassList)
             return true;        // excluded
         } else {
             // do wildcard matching
-            QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(entry),
-                                  QRegularExpression::CaseInsensitiveOption);
+            auto rx = QRegularExpression::fromWildcard(entry, Qt::CaseInsensitive);
             if (rx.match(host).hasMatch())
                 return true;
         }

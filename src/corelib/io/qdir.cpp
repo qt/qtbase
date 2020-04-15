@@ -2150,8 +2150,7 @@ bool QDir::match(const QStringList &filters, const QString &fileName)
 {
     for (QStringList::ConstIterator sit = filters.constBegin(); sit != filters.constEnd(); ++sit) {
         // Insensitive exact match
-        QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(*sit),
-                              QRegularExpression::CaseInsensitiveOption);
+        auto rx = QRegularExpression::fromWildcard(*sit, Qt::CaseInsensitive);
         if (rx.match(fileName).hasMatch())
             return true;
     }

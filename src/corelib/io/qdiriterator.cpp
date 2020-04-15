@@ -170,9 +170,9 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QS
 #if QT_CONFIG(regularexpression)
     nameRegExps.reserve(nameFilters.size());
     for (const auto &filter : nameFilters) {
-        QString re = QRegularExpression::wildcardToRegularExpression(filter);
-        nameRegExps.append(
-            QRegularExpression(re, (filters & QDir::CaseSensitive) ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption));
+        auto re = QRegularExpression::fromWildcard(filter, (filters & QDir::CaseSensitive ?
+                                                            Qt::CaseSensitive : Qt::CaseInsensitive));
+        nameRegExps.append(re);
     }
 #endif
     QFileSystemMetaData metaData;

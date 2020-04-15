@@ -110,8 +110,7 @@ static bool isHostExcluded(CFDictionaryRef dict, const QString &host)
             return true;        // excluded
         } else {
             // do wildcard matching
-            QRegularExpression rx(QRegularExpression::wildcardToRegularExpression(entry),
-                                  QRegularExpression::CaseInsensitiveOption);
+            auto rx = QRegularExpression::fromWildcard(entry, Qt::CaseInsensitive);
             if (rx.match(host).hasMatch())
                 return true;
         }
