@@ -71,6 +71,8 @@ private:
     std::function<void ()> m_fn;
 };
 
+using UniquePtr = std::unique_ptr<int>;
+
 class tst_QFuture: public QObject
 {
     Q_OBJECT
@@ -100,12 +102,14 @@ private slots:
     void nonGlobalThreadPool();
 
     void then();
+    void thenForMoveOnlyTypes();
     void thenOnCanceledFuture();
 #ifndef QT_NO_EXCEPTIONS
     void thenOnExceptionFuture();
     void thenThrows();
     void onFailed();
     void onFailedTestCallables();
+    void onFailedForMoveOnlyTypes();
 #endif
     void takeResults();
     void takeResult();
@@ -114,7 +118,6 @@ private slots:
     void resultsReadyAt();
 private:
     using size_type = std::vector<int>::size_type;
-    using UniquePtr = std::unique_ptr<int>;
 
     static void testSingleResult(const UniquePtr &p);
     static void testSingleResult(const std::vector<int> &v);
@@ -1874,6 +1877,38 @@ void tst_QFuture::then()
     }
 }
 
+template<class Type, class Callable>
+bool runThenForMoveOnly(Callable &&callable)
+{
+    QFutureInterface<Type> promise;
+    auto future = promise.future();
+
+    auto then = future.then(std::forward<Callable>(callable));
+
+    promise.reportStarted();
+    if constexpr (!std::is_same_v<Type, void>)
+        promise.reportAndMoveResult(std::make_unique<int>(42));
+    promise.reportFinished();
+    then.waitForFinished();
+
+    bool success = true;
+    if constexpr (!std::is_same_v<decltype(then), QFuture<void>>)
+        success &= *then.takeResult() == 42;
+
+    if constexpr (!std::is_same_v<Type, void>)
+        success &= !future.isValid();
+
+    return success;
+}
+
+void tst_QFuture::thenForMoveOnlyTypes()
+{
+    QVERIFY(runThenForMoveOnly<UniquePtr>([](UniquePtr res) { return res; }));
+    QVERIFY(runThenForMoveOnly<UniquePtr>([](UniquePtr res) { Q_UNUSED(res); }));
+    QVERIFY(runThenForMoveOnly<UniquePtr>([](QFuture<UniquePtr> res) { return res.takeResult(); }));
+    QVERIFY(runThenForMoveOnly<void>([] { return std::make_unique<int>(42); }));
+}
+
 void tst_QFuture::thenOnCanceledFuture()
 {
     // Continuations on a canceled future
@@ -2480,6 +2515,28 @@ void tst_QFuture::onFailedTestCallables()
         static int foo() { return -1; }
     };
     QVERIFY(runForCallable(Functor3()));
+}
+
+template<class Callable>
+bool runOnFailedForMoveOnly(Callable &&callable)
+{
+    QFutureInterface<UniquePtr> promise;
+    auto future = promise.future();
+
+    auto failedFuture = future.onFailed(std::forward<Callable>(callable));
+
+    promise.reportStarted();
+    QException e;
+    promise.reportException(e);
+    promise.reportFinished();
+
+    return *failedFuture.takeResult() == -1;
+}
+
+void tst_QFuture::onFailedForMoveOnlyTypes()
+{
+    QVERIFY(runOnFailedForMoveOnly([](const QException &) { return std::make_unique<int>(-1); }));
+    QVERIFY(runOnFailedForMoveOnly([] { return std::make_unique<int>(-1); }));
 }
 
 #endif // QT_NO_EXCEPTIONS

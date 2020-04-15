@@ -186,6 +186,14 @@ public:
     static void create(Function &&func, QFuture<ParentResultType> *f,
                        QFutureInterface<ResultType> &p, QThreadPool *pool);
 
+private:
+    void fulfillPromiseWithResult();
+    void fulfillVoidPromise();
+    void fulfillPromiseWithVoidResult();
+
+    template<class... Args>
+    void fulfillPromise(Args &&... args);
+
 protected:
     virtual void runImpl() = 0;
 
@@ -193,7 +201,7 @@ protected:
 
 protected:
     QFutureInterface<ResultType> promise;
-    const QFuture<ParentResultType> parentFuture;
+    QFuture<ParentResultType> parentFuture;
     Function function;
 };
 
@@ -269,7 +277,7 @@ private:
 
 private:
     QFutureInterface<ResultType> promise;
-    const QFuture<ResultType> parentFuture;
+    QFuture<ResultType> parentFuture;
     Function handler;
 };
 
@@ -286,32 +294,31 @@ void Continuation<Function, ResultType, ParentResultType>::runFunction()
     try {
 #endif
         if constexpr (!std::is_void_v<ResultType>) {
-            if constexpr (std::is_invocable_v<std::decay_t<Function>, QFuture<ParentResultType>>) {
-                promise.reportResult(function(parentFuture));
-            } else if constexpr (std::is_void_v<ParentResultType>) {
-                promise.reportResult(function());
+            if constexpr (std::is_void_v<ParentResultType>) {
+                fulfillPromiseWithVoidResult();
+            } else if constexpr (std::is_invocable_v<Function, ParentResultType>) {
+                fulfillPromiseWithResult();
             } else {
                 // This assert normally should never fail, this is to make sure
                 // that nothing unexpected happend.
-                static_assert(
-                        std::is_invocable_v<std::decay_t<Function>, std::decay_t<ParentResultType>>,
-                        "The continuation is not invocable with the provided arguments");
-
-                promise.reportResult(function(parentFuture.result()));
+                static_assert(std::is_invocable_v<Function, QFuture<ParentResultType>>,
+                              "The continuation is not invocable with the provided arguments");
+                fulfillPromise(parentFuture);
             }
         } else {
-            if constexpr (std::is_invocable_v<std::decay_t<Function>, QFuture<ParentResultType>>) {
-                function(parentFuture);
-            } else if constexpr (std::is_void_v<ParentResultType>) {
-                function();
+            if constexpr (std::is_void_v<ParentResultType>) {
+                if constexpr (std::is_invocable_v<Function, QFuture<void>>)
+                    function(parentFuture);
+                else
+                    function();
+            } else if constexpr (std::is_invocable_v<Function, ParentResultType>) {
+                fulfillVoidPromise();
             } else {
                 // This assert normally should never fail, this is to make sure
                 // that nothing unexpected happend.
-                static_assert(
-                        std::is_invocable_v<std::decay_t<Function>, std::decay_t<ParentResultType>>,
-                        "The continuation is not invocable with the provided arguments");
-
-                function(parentFuture.result());
+                static_assert(std::is_invocable_v<Function, QFuture<ParentResultType>>,
+                              "The continuation is not invocable with the provided arguments");
+                function(parentFuture);
             }
         }
 #ifndef QT_NO_EXCEPTIONS
@@ -426,6 +433,43 @@ void Continuation<Function, ResultType, ParentResultType>::create(Function &&fun
     f->d.setContinuation(continuation);
 }
 
+template<typename Function, typename ResultType, typename ParentResultType>
+void Continuation<Function, ResultType, ParentResultType>::fulfillPromiseWithResult()
+{
+    if constexpr (std::is_copy_constructible_v<ParentResultType>)
+        fulfillPromise(parentFuture.result());
+    else
+        fulfillPromise(parentFuture.takeResult());
+}
+
+template<typename Function, typename ResultType, typename ParentResultType>
+void Continuation<Function, ResultType, ParentResultType>::fulfillVoidPromise()
+{
+    if constexpr (std::is_copy_constructible_v<ParentResultType>)
+        function(parentFuture.result());
+    else
+        function(parentFuture.takeResult());
+}
+
+template<typename Function, typename ResultType, typename ParentResultType>
+void Continuation<Function, ResultType, ParentResultType>::fulfillPromiseWithVoidResult()
+{
+    if constexpr (std::is_invocable_v<Function, QFuture<void>>)
+        fulfillPromise(parentFuture);
+    else
+        fulfillPromise();
+}
+
+template<typename Function, typename ResultType, typename ParentResultType>
+template<class... Args>
+void Continuation<Function, ResultType, ParentResultType>::fulfillPromise(Args &&... args)
+{
+    if constexpr (std::is_copy_constructible_v<ResultType>)
+        promise.reportResult(std::invoke(function, std::forward<Args>(args)...));
+    else
+        promise.reportAndMoveResult(std::invoke(function, std::forward<Args>(args)...));
+}
+
 #ifndef QT_NO_EXCEPTIONS
 
 template<class Function, class ResultType>
@@ -460,8 +504,12 @@ void FailureHandler<Function, ResultType>::run()
             handleException<ArgType>();
         }
     } else {
-        if constexpr (!std::is_void_v<ResultType>)
-            promise.reportResult(parentFuture.result());
+        if constexpr (!std::is_void_v<ResultType>) {
+            if constexpr (std::is_copy_constructible_v<ResultType>)
+                promise.reportResult(parentFuture.result());
+            else
+                promise.reportAndMoveResult(parentFuture.takeResult());
+        }
     }
     promise.reportFinished();
 }
@@ -478,7 +526,10 @@ void FailureHandler<Function, ResultType>::handleException()
             if constexpr (std::is_void_v<ResultType>) {
                 handler(e);
             } else {
-                promise.reportResult(handler(e));
+                if constexpr (std::is_copy_constructible_v<ResultType>)
+                    promise.reportResult(handler(e));
+                else
+                    promise.reportAndMoveResult(handler(e));
             }
         } catch (...) {
             promise.reportException(std::current_exception());
@@ -497,11 +548,12 @@ void FailureHandler<Function, ResultType>::handleAllExceptions()
         parentFuture.d.exceptionStore().throwPossibleException();
     } catch (...) {
         try {
-            if constexpr (std::is_void_v<ResultType>) {
+            if constexpr (std::is_void_v<ResultType>)
                 handler();
-            } else {
+            else if constexpr (std::is_copy_constructible_v<ResultType>)
                 promise.reportResult(handler());
-            }
+            else
+                promise.reportAndMoveResult(handler());
         } catch (...) {
             promise.reportException(std::current_exception());
         }
