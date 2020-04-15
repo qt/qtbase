@@ -160,7 +160,7 @@ QSplashScreen::QSplashScreen(QScreen *screen, const QPixmap &pixmap, Qt::WindowF
 #if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
-    \obsolete
+    \obsolete Use the constructor taking a \c {QScreen *} instead
 
     This function allows you to specify a parent for your splashscreen. The
     typical use for this constructor is if you have a multiple screens and
