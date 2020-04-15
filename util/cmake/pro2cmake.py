@@ -1613,6 +1613,7 @@ def map_condition(condition: str) -> str:
                     and not feature_name.startswith("system_assimp")
                     and not feature_name.startswith("system_doubleconversion")
                     and not feature_name.startswith("system_sqlite")
+                    and not feature_name.startswith("system_hunspell")
                 ):
                     part = "ON"
                 elif feature == "dlopen":
@@ -1633,6 +1634,7 @@ _path_replacements = {
     "$$[QT_INSTALL_EXAMPLES]": "${INSTALL_EXAMPLESDIR}",
     "$$[QT_INSTALL_TESTS]": "${INSTALL_TESTSDIR}",
     "$$OUT_PWD": "${CMAKE_CURRENT_BINARY_DIR}",
+    "$$MODULE_BASE_OUTDIR": "${QT_BUILD_DIR}",
 }
 
 

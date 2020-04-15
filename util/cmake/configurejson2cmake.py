@@ -127,6 +127,9 @@ def map_tests(test: str) -> Optional[str]:
         "libinput_axis_api": "ON",
         "xlib": "X11_FOUND",
         "wayland-scanner": "WaylandScanner_FOUND",
+        "3rdparty-hunspell": "VKB_HAVE_3RDPARTY_HUNSPELL",
+        "t9write-alphabetic": "VKB_HAVE_T9WRITE_ALPHA",
+        "t9write-cjk": "VKB_HAVE_T9WRITE_CJK",
     }
     if test in testmap:
         return testmap.get(test, None)
