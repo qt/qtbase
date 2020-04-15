@@ -263,7 +263,7 @@ public:
     bool isScriptable(const QObject *obj = nullptr) const;
     bool isStored(const QObject *obj = nullptr) const;
 #if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED bool isEditable(const QObject *obj = nullptr) const;
+    QT_DEPRECATED_VERSION_5_15 bool isEditable(const QObject *obj = nullptr) const;
 #endif
     bool isUser(const QObject *obj = nullptr) const;
     bool isConstant() const;
