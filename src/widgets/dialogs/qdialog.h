@@ -69,13 +69,6 @@ public:
 
     void setVisible(bool visible) override;
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use show/hide on the affected widget instead") void setOrientation(Qt::Orientation orientation);
-    QT_DEPRECATED_X("Use show/hide on the affected widget instead") Qt::Orientation orientation() const;
-    QT_DEPRECATED_X("Use show/hide on the affected widget instead") void setExtension(QWidget* extension);
-    QT_DEPRECATED_X("Use show/hide on the affected widget instead") QWidget* extension() const;
-#endif
-
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
@@ -96,10 +89,6 @@ public Q_SLOTS:
     virtual void done(int);
     virtual void accept();
     virtual void reject();
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use show/hide on the affected widget instead") void showExtension(bool);
-#endif
 
 protected:
     QDialog(QDialogPrivate &, QWidget *parent, Qt::WindowFlags f = Qt::WindowFlags());

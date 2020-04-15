@@ -52,9 +52,6 @@ class DummyDialog : public QDialog
 {
 public:
     DummyDialog(): QDialog() {}
-#if QT_DEPRECATED_SINCE(5, 13)
-    using QDialog::showExtension;
-#endif
 };
 
 class tst_QDialog : public QObject
@@ -66,10 +63,6 @@ public:
 private slots:
     void cleanup();
     void getSetCheck();
-#if QT_DEPRECATED_SINCE(5, 13)
-    void showExtension_data();
-    void showExtension();
-#endif
     void defaultButtons();
     void showMaximized();
     void showMinimized();
@@ -80,9 +73,6 @@ private slots:
     void deleteInExec();
 #if QT_CONFIG(sizegrip)
     void showSizeGrip();
-#if QT_DEPRECATED_SINCE(5, 13)
-    void showSizeGrip_deprecated();
-#endif
 #endif
     void setVisible();
     void reject();
@@ -96,17 +86,6 @@ private slots:
 void tst_QDialog::getSetCheck()
 {
     QDialog obj1;
-#if QT_DEPRECATED_SINCE(5, 13)
-    // QWidget* QDialog::extension()
-    // void QDialog::setExtension(QWidget*)
-    QWidget *var1 = new QWidget;
-    obj1.setExtension(var1);
-    QCOMPARE(var1, obj1.extension());
-    obj1.setExtension((QWidget *)0);
-    QCOMPARE((QWidget *)0, obj1.extension());
-    // No delete var1, since setExtension takes ownership
-#endif
-
     // int QDialog::result()
     // void QDialog::setResult(int)
     obj1.setResult(0);
@@ -155,59 +134,6 @@ void tst_QDialog::cleanup()
     QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-void tst_QDialog::showExtension_data()
-{
-    QTest::addColumn<QSize>("dlgSize");
-    QTest::addColumn<QSize>("extSize");
-    QTest::addColumn<bool>("horizontal");
-    QTest::addColumn<QSize>("result");
-
-    //next we fill it with data
-    QTest::newRow( "data0" )  << QSize(200,100) << QSize(50,50) << false << QSize(200,150);
-    QTest::newRow( "data1" )  << QSize(200,100) << QSize(220,50) << false << QSize(220,150);
-    QTest::newRow( "data2" )  << QSize(200,100) << QSize(50,50) << true << QSize(250,100);
-    QTest::newRow( "data3" )  << QSize(200,100) << QSize(50,120) << true << QSize(250,120);
-}
-
-void tst_QDialog::showExtension()
-{
-    QFETCH( QSize, dlgSize );
-    QFETCH( QSize, extSize );
-    QFETCH( bool, horizontal );
-
-    DummyDialog testWidget;
-    testWidget.resize(200, 200);
-    testWidget.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char(':')
-                              + QLatin1String(QTest::currentDataTag()));
-    testWidget.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
-
-    testWidget.setFixedSize( dlgSize );
-    QWidget *ext = new QWidget( &testWidget );
-    ext->setFixedSize( extSize );
-    testWidget.setExtension( ext );
-    testWidget.setOrientation( horizontal ? Qt::Horizontal : Qt::Vertical );
-
-    QCOMPARE( testWidget.size(), dlgSize );
-    QPoint oldPosition = testWidget.pos();
-
-    // show
-    testWidget.showExtension( true );
-//     while ( testWidget->size() == dlgSize )
-//         qApp->processEvents();
-
-    QTEST( testWidget.size(), "result"  );
-
-    QCOMPARE(testWidget.pos(), oldPosition);
-
-    // hide extension. back to old size ?
-    testWidget.showExtension( false );
-    QCOMPARE( testWidget.size(), dlgSize );
-
-    testWidget.setExtension( 0 );
-}
-#endif
 
 void tst_QDialog::defaultButtons()
 {
@@ -434,7 +360,6 @@ void tst_QDialog::deleteInExec()
 
 #if QT_CONFIG(sizegrip)
 
-// From Task 124269
 void tst_QDialog::showSizeGrip()
 {
     QDialog dialog(nullptr);
@@ -460,62 +385,6 @@ void tst_QDialog::showSizeGrip()
     dialog.show();
     QVERIFY(!sizeGrip->isVisible());
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-void tst_QDialog::showSizeGrip_deprecated()
-{
-    QDialog dialog(0);
-    dialog.show();
-    QWidget *ext = new QWidget(&dialog);
-    QVERIFY(!dialog.extension());
-    QVERIFY(!dialog.isSizeGripEnabled());
-
-    dialog.setSizeGripEnabled(true);
-    QPointer<QSizeGrip> sizeGrip = dialog.findChild<QSizeGrip *>();
-    QVERIFY(sizeGrip);
-    QVERIFY(sizeGrip->isVisible());
-    QVERIFY(dialog.isSizeGripEnabled());
-
-    dialog.setExtension(ext);
-    QVERIFY(dialog.extension() && !dialog.extension()->isVisible());
-    QVERIFY(dialog.isSizeGripEnabled());
-
-    // normal show/hide sequence
-    dialog.showExtension(true);
-    QVERIFY(dialog.extension() && dialog.extension()->isVisible());
-    QVERIFY(!dialog.isSizeGripEnabled());
-    QVERIFY(!sizeGrip);
-
-    dialog.showExtension(false);
-    QVERIFY(dialog.extension() && !dialog.extension()->isVisible());
-    QVERIFY(dialog.isSizeGripEnabled());
-    sizeGrip = dialog.findChild<QSizeGrip *>();
-    QVERIFY(sizeGrip);
-    QVERIFY(sizeGrip->isVisible());
-
-    // show/hide sequence with interleaved size grip update
-    dialog.showExtension(true);
-    QVERIFY(dialog.extension() && dialog.extension()->isVisible());
-    QVERIFY(!dialog.isSizeGripEnabled());
-    QVERIFY(!sizeGrip);
-
-    dialog.setSizeGripEnabled(false);
-    QVERIFY(!dialog.isSizeGripEnabled());
-
-    dialog.showExtension(false);
-    QVERIFY(dialog.extension() && !dialog.extension()->isVisible());
-    QVERIFY(!dialog.isSizeGripEnabled());
-
-    dialog.setSizeGripEnabled(true);
-    sizeGrip = dialog.findChild<QSizeGrip *>();
-    QVERIFY(sizeGrip);
-    QVERIFY(sizeGrip->isVisible());
-    sizeGrip->hide();
-    dialog.hide();
-    dialog.show();
-    QVERIFY(!sizeGrip->isVisible());
-}
-#endif // QT_DEPRECATED_SINCE(5, 13)
 
 #endif // QT_CONFIG(sizegrip)
 

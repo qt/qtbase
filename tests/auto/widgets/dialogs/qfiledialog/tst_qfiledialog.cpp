@@ -801,9 +801,6 @@ void tst_QFiledialog::isReadOnly()
     QAction* renameAction = fd.findChild<QAction*>("qt_rename_action");
     QAction* deleteAction = fd.findChild<QAction*>("qt_delete_action");
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QCOMPARE(fd.isReadOnly(), false);
-#endif
     QCOMPARE(fd.testOption(QFileDialog::ReadOnly), false);
 
     // This is dependent upon the file/dir, find cross platform way to test

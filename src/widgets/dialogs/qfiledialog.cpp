@@ -1386,31 +1386,6 @@ void QFileDialog::setNameFilter(const QString &filter)
 }
 
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \property QFileDialog::nameFilterDetailsVisible
-    \obsolete
-    \brief This property holds whether the filter details is shown or not.
-    \since 4.4
-
-    When this property is \c true (the default), the filter details are shown
-    in the combo box.  When the property is set to false, these are hidden.
-
-    Use setOption(HideNameFilterDetails, !\e enabled) or
-    !testOption(HideNameFilterDetails).
-*/
-void QFileDialog::setNameFilterDetailsVisible(bool enabled)
-{
-    setOption(HideNameFilterDetails, !enabled);
-}
-
-bool QFileDialog::isNameFilterDetailsVisible() const
-{
-    return !testOption(HideNameFilterDetails);
-}
-#endif
-
-
 /*
     Strip the filters by removing the details, e.g. (*.*).
 */
@@ -1897,68 +1872,6 @@ QFileDialog::AcceptMode QFileDialog::acceptMode() const
     Q_D(const QFileDialog);
     return static_cast<AcceptMode>(d->options->acceptMode());
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \property QFileDialog::readOnly
-    \obsolete
-    \brief Whether the filedialog is read-only
-
-    If this property is set to false, the file dialog will allow renaming,
-    and deleting of files and directories and creating directories.
-
-    Use setOption(ReadOnly, \e enabled) or testOption(ReadOnly) instead.
-*/
-void QFileDialog::setReadOnly(bool enabled)
-{
-    setOption(ReadOnly, enabled);
-}
-
-bool QFileDialog::isReadOnly() const
-{
-    return testOption(ReadOnly);
-}
-
-/*!
-    \property QFileDialog::resolveSymlinks
-    \obsolete
-    \brief whether the filedialog should resolve shortcuts
-
-    If this property is set to true, the file dialog will resolve
-    shortcuts or symbolic links.
-
-    Use setOption(DontResolveSymlinks, !\a enabled) or
-    !testOption(DontResolveSymlinks).
-*/
-void QFileDialog::setResolveSymlinks(bool enabled)
-{
-    setOption(DontResolveSymlinks, !enabled);
-}
-
-bool QFileDialog::resolveSymlinks() const
-{
-    return !testOption(DontResolveSymlinks);
-}
-
-/*!
-    \property QFileDialog::confirmOverwrite
-    \obsolete
-    \brief whether the filedialog should ask before accepting a selected file,
-    when the accept mode is AcceptSave
-
-    Use setOption(DontConfirmOverwrite, !\e enabled) or
-    !testOption(DontConfirmOverwrite) instead.
-*/
-void QFileDialog::setConfirmOverwrite(bool enabled)
-{
-    setOption(DontConfirmOverwrite, !enabled);
-}
-
-bool QFileDialog::confirmOverwrite() const
-{
-    return !testOption(DontConfirmOverwrite);
-}
-#endif
 
 /*!
     \property QFileDialog::defaultSuffix

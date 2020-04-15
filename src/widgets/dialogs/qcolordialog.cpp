@@ -2167,34 +2167,6 @@ QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QStr
     return dlg.selectedColor();
 }
 
-#if QT_DEPRECATED_SINCE(5, 12)
-/*!
-    \obsolete
-
-    Pops up a modal color dialog to allow the user to choose a color
-    and an alpha channel (transparency) value. The color+alpha is
-    initially set to \a initial. The dialog is a child of \a parent.
-
-    If \a ok is non-null, \e {*ok} is set to true if the user clicked
-    \uicontrol{OK}, and to false if the user clicked Cancel.
-
-    If the user clicks Cancel, the \a initial value is returned.
-
-    Use QColorDialog::getColor() instead, passing the
-    QColorDialog::ShowAlphaChannel option.
-*/
-
-QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
-{
-    const QColor color = getColor(QColor::fromRgba(initial), parent, QString(),
-                                  ShowAlphaChannel);
-    QRgb result = color.isValid() ? color.rgba() : initial;
-    if (ok)
-        *ok = color.isValid();
-    return result;
-}
-#endif
-
 /*!
     Destroys the color dialog.
 */
