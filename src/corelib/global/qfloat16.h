@@ -234,6 +234,14 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *, const qfloat16 *, qsizetype length
     return (qAbs(f1 - f2) * 102.5f <= qMin(qAbs(f1), qAbs(f2)));
 }
 
+/*!
+  \internal
+*/
+[[nodiscard]] inline bool qFuzzyIsNull(qfloat16 f) noexcept
+{
+    return qAbs(static_cast<float>(f)) <= 0.001f;
+}
+
 [[nodiscard]] inline bool qIsNull(qfloat16 f) noexcept
 {
     return (f.b16 & static_cast<quint16>(0x7fff)) == 0;
@@ -299,14 +307,6 @@ inline qfloat16::operator float() const noexcept
 #endif
 }
 #endif
-
-/*!
-  \internal
-*/
-[[nodiscard]] inline bool qFuzzyIsNull(qfloat16 f) noexcept
-{
-    return qAbs(static_cast<float>(f)) <= 0.001f;
-}
 
 /*
   qHypot compatibility; see ../kernel/qmath.h

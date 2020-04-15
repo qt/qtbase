@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 by Southwest Research Institute (R)
 ** Contact: https://www.qt.io/licensing/
 **
@@ -43,6 +43,8 @@ class tst_qfloat16: public QObject
 private slots:
     void fuzzyCompare_data();
     void fuzzyCompare();
+    void fuzzyIsNull_data();
+    void fuzzyIsNull();
     void ltgt_data();
     void ltgt();
     void qNaN();
@@ -109,6 +111,33 @@ void tst_qfloat16::fuzzyCompare()
         QVERIFY(!::qFuzzyCompare(-val1, -val2));
         QVERIFY(!::qFuzzyCompare(-val2, -val1));
     }
+}
+
+void tst_qfloat16::fuzzyIsNull_data()
+{
+    QTest::addColumn<qfloat16>("value");
+    QTest::addColumn<bool>("isNull");
+    using Bounds = std::numeric_limits<qfloat16>;
+    const qfloat16 one(1), huge(1000), tiny(0.00099f);
+
+    QTest::newRow("zero") << qfloat16(0.0f) << true;
+    QTest::newRow("min") << Bounds::min() << true;
+    QTest::newRow("denorm_min") << Bounds::denorm_min() << true;
+    QTest::newRow("tiny") << tiny << true;
+
+    QTest::newRow("deci") << qfloat16(.1) << false;
+    QTest::newRow("one") << one << false;
+    QTest::newRow("ten") << qfloat16(10) << false;
+    QTest::newRow("huge") << huge << false;
+}
+
+void tst_qfloat16::fuzzyIsNull()
+{
+    QFETCH(qfloat16, value);
+    QFETCH(bool, isNull);
+
+    QCOMPARE(::qFuzzyIsNull(value), isNull);
+    QCOMPARE(::qFuzzyIsNull(-value), isNull);
 }
 
 void tst_qfloat16::ltgt_data()

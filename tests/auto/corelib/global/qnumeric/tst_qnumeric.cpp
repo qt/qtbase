@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -52,6 +52,8 @@ class tst_QNumeric: public QObject
     // Support for floating-point:
     template<typename F> inline void fuzzyCompare_data();
     template<typename F> inline void fuzzyCompare();
+    template<typename F> inline void fuzzyIsNull_data();
+    template<typename F> inline void fuzzyIsNull();
     template<typename F> inline void checkNaN(F nan);
     template<typename F> inline void rawNaN_data();
     template<typename F> inline void rawNaN();
@@ -71,6 +73,10 @@ private slots:
     void fuzzyCompareF() { fuzzyCompare<float>(); }
     void fuzzyCompareD_data() { fuzzyCompare_data<double>(); }
     void fuzzyCompareD() { fuzzyCompare<double>(); }
+    void fuzzyIsNullF_data() { fuzzyIsNull_data<float>(); }
+    void fuzzyIsNullF() { fuzzyIsNull<float>(); }
+    void fuzzyIsNullD_data() { fuzzyIsNull_data<double>(); }
+    void fuzzyIsNullD() { fuzzyIsNull<double>(); }
     void rawNaNF_data() { rawNaN_data<float>(); }
     void rawNaNF() { rawNaN<float>(); }
     void rawNaND_data() { rawNaN_data<double>(); }
@@ -141,6 +147,36 @@ void tst_QNumeric::fuzzyCompare()
     QCOMPARE(::qFuzzyCompare(val2, val1), isEqual);
     QCOMPARE(::qFuzzyCompare(-val1, -val2), isEqual);
     QCOMPARE(::qFuzzyCompare(-val2, -val1), isEqual);
+}
+
+template<typename F>
+void tst_QNumeric::fuzzyIsNull_data()
+{
+    QTest::addColumn<F>("value");
+    QTest::addColumn<bool>("isNull");
+    using Bounds = std::numeric_limits<F>;
+    const F one(1), huge = Fuzzy<F>::scale, tiny = one / huge;
+
+    QTest::newRow("zero") << F(0) << true;
+    QTest::newRow("min") << Bounds::min() << true;
+    QTest::newRow("denorm_min") << Bounds::denorm_min() << true;
+    QTest::newRow("tiny") << tiny << true;
+
+    QTest::newRow("deci") << F(.1) << false;
+    QTest::newRow("one") << one << false;
+    QTest::newRow("ten") << F(10) << false;
+    QTest::newRow("large") << F(1e9) << false;
+    QTest::newRow("huge") << huge << false;
+}
+
+template<typename F>
+void tst_QNumeric::fuzzyIsNull()
+{
+    QFETCH(F, value);
+    QFETCH(bool, isNull);
+
+    QCOMPARE(::qFuzzyIsNull(value), isNull);
+    QCOMPARE(::qFuzzyIsNull(-value), isNull);
 }
 
 #if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)
