@@ -40,6 +40,7 @@
 #include <QProcess>
 #include <QDirIterator>
 #include <QUrl>
+#include <QRegularExpression>
 
 // extra fields, for use in image metadata storage
 const QString PI_ImageChecksum(QLS("ImageChecksum"));
@@ -532,7 +533,7 @@ PlatformInfo BaselineHandler::mapPlatformInfo(const PlatformInfo& orig) const
         host = orig.value(PI_HostAddress);
     } else {
         if (!orig.isAdHocRun()) {    // i.e. CI system run, so remove index postfix typical of vm hostnames
-            host.remove(QRegExp(QLS("\\d+$")));
+            host.remove(QRegularExpression(QLS("\\d+$")));
             if (host.endsWith(QLC('-')))
                 host.chop(1);
         }

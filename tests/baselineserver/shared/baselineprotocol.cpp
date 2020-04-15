@@ -38,7 +38,7 @@
 #include <QDir>
 #include <QTime>
 #include <QPointer>
-#include <QRegExp>
+#include <QRegularExpression>
 
 const QString PI_Project(QLS("Project"));
 const QString PI_TestCase(QLS("TestCase"));
@@ -87,7 +87,7 @@ PlatformInfo PlatformInfo::localHostInfo()
     PlatformInfo pi;
     pi.insert(PI_HostName, QHostInfo::localHostName());
     pi.insert(PI_QtVersion, QLS(qVersion()));
-    pi.insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*mkspecs/"))));
+    pi.insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegularExpression(QLS("^.*mkspecs/"))));
 #if QT_VERSION >= 0x050000
     pi.insert(PI_QtBuildMode, QLibraryInfo::isDebugBuild() ? QLS("QtDebug") : QLS("QtRelease"));
 #endif

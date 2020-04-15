@@ -32,6 +32,7 @@
 #include <QProcess>
 #include <QUrl>
 #include <QXmlStreamWriter>
+#include <QRegularExpression>
 #include <unistd.h>
 
 Report::Report()
@@ -67,7 +68,7 @@ void Report::init(const BaselineHandler *h, const QString &r, const PlatformInfo
     plat = p;
     settings = s;
     rootDir = BaselineServer::storagePath() + QLC('/');
-    baseDir = handler->pathForItem(ImageItem(), true, false).remove(QRegExp("/baselines/.*$"));
+    baseDir = handler->pathForItem(ImageItem(), true, false).remove(QRegularExpression("/baselines/.*$"));
     QString dir = baseDir + (plat.isAdHocRun() ? QLS("/adhoc-reports") : QLS("/auto-reports"));
     QDir cwd;
     if (!cwd.exists(rootDir + dir))
