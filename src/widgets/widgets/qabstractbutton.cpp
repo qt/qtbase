@@ -415,13 +415,16 @@ void QAbstractButtonPrivate::emitClicked()
     emit q->clicked(checked);
 #if QT_CONFIG(buttongroup)
     if (guard && group) {
+        const int id = group->id(q);
+        emit group->idClicked(id);
 #if QT_DEPRECATED_SINCE(5, 15)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-        emit group->buttonClicked(group->id(q));
         if (guard && group)
+            emit group->buttonClicked(id);
 QT_WARNING_POP
 #endif
+        if (guard && group)
             emit group->buttonClicked(q);
     }
 #endif
@@ -434,13 +437,16 @@ void QAbstractButtonPrivate::emitPressed()
     emit q->pressed();
 #if QT_CONFIG(buttongroup)
     if (guard && group) {
+        const int id = group->id(q);
+        emit group->idPressed(id);
 #if QT_DEPRECATED_SINCE(5, 15)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-        emit group->buttonPressed(group->id(q));
         if (guard && group)
+            emit group->buttonPressed(id);
 QT_WARNING_POP
 #endif
+        if (guard && group)
             emit group->buttonPressed(q);
     }
 #endif
@@ -453,13 +459,16 @@ void QAbstractButtonPrivate::emitReleased()
     emit q->released();
 #if QT_CONFIG(buttongroup)
     if (guard && group) {
+        const int id = group->id(q);
+        emit group->idReleased(id);
 #if QT_DEPRECATED_SINCE(5, 15)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-        emit group->buttonReleased(group->id(q));
         if (guard && group)
+            emit group->buttonReleased(id);
 QT_WARNING_POP
 #endif
+        if (guard && group)
             emit group->buttonReleased(q);
     }
 #endif
@@ -472,13 +481,16 @@ void QAbstractButtonPrivate::emitToggled(bool checked)
     emit q->toggled(checked);
 #if QT_CONFIG(buttongroup)
     if (guard && group) {
+        const int id = group->id(q);
+        emit group->idToggled(id, checked);
 #if QT_DEPRECATED_SINCE(5, 15)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-        emit group->buttonToggled(group->id(q), checked);
         if (guard && group)
+            emit group->buttonToggled(id, checked);
 QT_WARNING_POP
 #endif
+        if (guard && group)
             emit group->buttonToggled(q, checked);
     }
 #endif

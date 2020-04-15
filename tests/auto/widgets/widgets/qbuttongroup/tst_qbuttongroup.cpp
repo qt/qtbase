@@ -365,11 +365,11 @@ void tst_QButtonGroup::testSignals()
 
     qRegisterMetaType<QAbstractButton *>("QAbstractButton *");
     QSignalSpy clickedSpy(&buttons, SIGNAL(buttonClicked(QAbstractButton*)));
-    QSignalSpy clickedIdSpy(&buttons, SIGNAL(buttonClicked(int)));
+    QSignalSpy clickedIdSpy(&buttons, SIGNAL(idClicked(int)));
     QSignalSpy pressedSpy(&buttons, SIGNAL(buttonPressed(QAbstractButton*)));
-    QSignalSpy pressedIdSpy(&buttons, SIGNAL(buttonPressed(int)));
+    QSignalSpy pressedIdSpy(&buttons, SIGNAL(idPressed(int)));
     QSignalSpy releasedSpy(&buttons, SIGNAL(buttonReleased(QAbstractButton*)));
-    QSignalSpy releasedIdSpy(&buttons, SIGNAL(buttonReleased(int)));
+    QSignalSpy releasedIdSpy(&buttons, SIGNAL(idReleased(int)));
 
     pb1.animateClick();
     QTestEventLoop::instance().enterLoop(1);
@@ -409,7 +409,7 @@ void tst_QButtonGroup::testSignals()
 
 
     QSignalSpy toggledSpy(&buttons, SIGNAL(buttonToggled(QAbstractButton*, bool)));
-    QSignalSpy toggledIdSpy(&buttons, SIGNAL(buttonToggled(int, bool)));
+    QSignalSpy toggledIdSpy(&buttons, SIGNAL(idToggled(int, bool)));
 
     pb1.setCheckable(true);
     pb2.setCheckable(true);

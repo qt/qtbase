@@ -173,6 +173,16 @@ void QButtonGroup::setExclusive(bool exclusive)
 */
 
 /*!
+    \fn void QButtonGroup::idClicked(int id)
+    \since 5.15
+
+    This signal is emitted when a button with the given \a id is
+    clicked.
+
+    \sa checkedButton(), QAbstractButton::clicked()
+*/
+
+/*!
     \fn void QButtonGroup::buttonPressed(QAbstractButton *button)
     \since 4.2
 
@@ -185,6 +195,16 @@ void QButtonGroup::setExclusive(bool exclusive)
     \fn void QButtonGroup::buttonPressed(int id)
     \since 4.2
     \obsolete
+
+    This signal is emitted when a button with the given \a id is
+    pressed down.
+
+    \sa QAbstractButton::pressed()
+*/
+
+/*!
+    \fn void QButtonGroup::idPressed(int id)
+    \since 5.15
 
     This signal is emitted when a button with the given \a id is
     pressed down.
@@ -213,6 +233,16 @@ void QButtonGroup::setExclusive(bool exclusive)
 */
 
 /*!
+    \fn void QButtonGroup::idReleased(int id)
+    \since 5.15
+
+    This signal is emitted when a button with the given \a id is
+    released.
+
+    \sa QAbstractButton::released()
+*/
+
+/*!
     \fn void QButtonGroup::buttonToggled(QAbstractButton *button, bool checked)
     \since 5.2
 
@@ -233,6 +263,15 @@ void QButtonGroup::setExclusive(bool exclusive)
     \sa QAbstractButton::toggled()
 */
 
+/*!
+    \fn void QButtonGroup::idToggled(int id, bool checked)
+    \since 5.15
+
+    This signal is emitted when a button with the given \a id is toggled.
+    \a checked is true if the button is checked, or false if the button is unchecked.
+
+    \sa QAbstractButton::toggled()
+*/
 
 /*!
     Adds the given \a button to the button group. If \a id is -1,
