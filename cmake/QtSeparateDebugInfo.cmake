@@ -1,6 +1,8 @@
 include(CMakeFindBinUtils)
 
-set(QtSeparateDebugInfo_cmake_DIR ${CMAKE_CURRENT_LIST_DIR})
+if(CMAKE_VERSION VERSION_LESS 3.17.0)
+set(CMAKE_CURRENT_FUNCTION_LIST_DIR ${CMAKE_CURRENT_LIST_DIR})
+endif()
 
 # Enable separate debug information for the given target
 function(qt_enable_separate_debug_info target installDestination)
@@ -37,7 +39,7 @@ function(qt_enable_separate_debug_info target installDestination)
         set(debug_info_contents_dir "${debug_info_bundle_dir}/Contents")
         set(debug_info_target_dir "${debug_info_contents_dir}/Resources/DWARF")
         configure_file(
-            "${QtSeparateDebugInfo_cmake_DIR}/QtSeparateDebugInfo.Info.plist.in"
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/QtSeparateDebugInfo.Info.plist.in"
             "Info.dSYM.plist"
             )
         list(APPEND commands
