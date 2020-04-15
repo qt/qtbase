@@ -1633,7 +1633,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     }
 
     // update size
-    if (e.flags & Element::HasByteData) {
+    if (r.status == QCborStreamReader::EndOfString && e.flags & Element::HasByteData) {
         auto b = new (dataPtr() + e.value) ByteData;
         b->len = data.size() - e.value - int(sizeof(*b));
         usedData += b->len;
