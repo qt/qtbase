@@ -101,18 +101,22 @@ if(NOT QT_MKSPECS_DIR)
 endif()
 
 # the default RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}" isSystemDir)
-IF("${isSystemDir}" STREQUAL "-1")
-   SET(_default_install_rpath "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
-ENDIF("${isSystemDir}" STREQUAL "-1")
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+   set(_default_install_rpath "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
+endif("${isSystemDir}" STREQUAL "-1")
 
 # Default rpath settings: Use rpath for build tree as well as a full path for the installed binaries.
 # For origin builds, one needs to override CMAKE_INSTALL_RPATH for example with $ORIGIN/../lib
-SET(CMAKE_INSTALL_RPATH "${_default_install_rpath}" CACHE PATH "RPATH for installed binaries")
+# Example: -DCMAKE_INSTALL_RPATH=\$ORIGIN/../lib (backslash to escape the $ in the shell)
+# Implementation note: the cache var must be STRING and not PATH or FILEPATH, otherwise CMake will
+# transform the value into an absolute path, getting rid of '$ORIGIN'.
+set(CMAKE_INSTALL_RPATH "${_default_install_rpath}" CACHE STRING "RPATH for installed binaries")
+message(STATUS "Install RPATH set to: ${CMAKE_INSTALL_RPATH}")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Generate a module description file based on the template in ModuleDescription.json.in
 function(qt_describe_module target)
