@@ -153,6 +153,11 @@ function(qt_auto_detect_ios)
             message(FATAL_ERROR
                 "Building Qt for ${CMAKE_SYSTEM_NAME} as shared libraries is not supported.")
         endif()
+
+        # Disable qt rpaths for iOS, just like mkspecs/common/uikit.conf does, due to those
+        # bundles not being able to use paths outside the app bundle. Not sure this is strictly
+        # needed though.
+        set(QT_DISABLE_RPATH "OFF" CACHE BOOL "Disable automatic Qt rpath handling." FORCE)
     endif()
 endfunction()
 

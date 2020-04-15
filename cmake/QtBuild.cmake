@@ -106,13 +106,12 @@ if("${isSystemDir}" STREQUAL "-1")
    set(_default_install_rpath "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
 endif("${isSystemDir}" STREQUAL "-1")
 
-# Default rpath settings: Use rpath for build tree as well as a full path for the installed binaries.
-# For origin builds, one needs to override CMAKE_INSTALL_RPATH for example with $ORIGIN/../lib
-# Example: -DCMAKE_INSTALL_RPATH=\$ORIGIN/../lib (backslash to escape the $ in the shell)
-# Implementation note: the cache var must be STRING and not PATH or FILEPATH, otherwise CMake will
-# transform the value into an absolute path, getting rid of '$ORIGIN'.
-set(CMAKE_INSTALL_RPATH "${_default_install_rpath}" CACHE STRING "RPATH for installed binaries")
-message(STATUS "Install RPATH set to: ${CMAKE_INSTALL_RPATH}")
+# The default rpath settings for installed targets is empty.
+# The rpaths will instead be computed for each target separately using qt_apply_rpaths().
+# Additional rpaths can be passed via QT_EXTRA_RPATHS.
+# By default this will include $ORIGIN / @loader_path, so the installation is relocatable.
+# Bottom line: No need to pass anything to CMAKE_INSTALL_RPATH.
+set(CMAKE_INSTALL_RPATH "" CACHE STRING "RPATH for installed binaries")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
@@ -1976,6 +1975,8 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
         )
 
+    qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_LIBDIR}" RELATIVE_RPATH)
+
     if (ANDROID AND NOT arg_HEADER_MODULE)
         # Record install library location so it can be accessed by
         # qt_android_dependencies without having to specify it again.
@@ -2478,6 +2479,7 @@ function(qt_add_plugin target)
                    NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
                    DESTINATION "${config_install_dir}"
         )
+        qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${install_directory}" RELATIVE_RPATH)
     endif()
 
     # Store the plug-in type in the target property
@@ -3378,6 +3380,8 @@ function(qt_add_tool name)
         qt_install(TARGETS "${name}"
                    EXPORT "${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}ToolsTargets"
                    DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
+        qt_apply_rpaths(TARGET "${name}" INSTALL_PATH "${INSTALL_BINDIR}" RELATIVE_RPATH)
+
     endif()
 
     if(QT_FEATURE_separate_debug_info AND (UNIX OR MINGW))
@@ -4147,6 +4151,140 @@ function(qt_exclude_tool_directories_from_default_target)
             list(APPEND absolute_path_directories "${CMAKE_CURRENT_SOURCE_DIR}/${directory}")
         endforeach()
         set(__qt_exclude_tool_directories "${absolute_path_directories}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(qt_compute_relative_rpath_base rpath install_location out_var)
+    set(install_lib_dir_absolute "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
+    get_filename_component(rpath_absolute "${rpath}"
+                           ABSOLUTE BASE_DIR "${install_lib_dir_absolute}")
+
+   if(NOT IS_ABSOLUTE)
+       set(install_location_absolute "${CMAKE_INSTALL_PREFIX}/${install_location}")
+   endif()
+    # Compute relative rpath from where the target will be installed, to the place where libraries
+    # will be placed (INSTALL_LIBDIR).
+    file(RELATIVE_PATH rpath_relative "${install_location_absolute}" "${rpath_absolute}")
+
+    if("${rpath_relative}" STREQUAL "")
+        # file(RELATIVE_PATH) returns an empty string if the given absolute paths are equal
+        set(rpath_relative ".")
+    endif()
+
+    # Prepend $ORIGIN / @loader_path style tokens (qmake's QMAKE_REL_RPATH_BASE), to make the
+    # relative rpaths work. qmake does this automatically when generating a project, so it wasn't
+    # needed in the .prf files, but for CMake we need to prepend them ourselves.
+    if(APPLE)
+        set(rpath_rel_base "@loader_path")
+    elseif(LINUX)
+        set(rpath_rel_base "$ORIGIN")
+    else()
+        message(WARNING "No known RPATH_REL_BASE for target platform.")
+        set(rpath_rel_base "NO_KNOWN_RPATH_REL_BASE")
+    endif()
+
+    if(rpath_relative STREQUAL ".")
+        set(rpath_relative "${rpath_rel_base}")
+    else()
+        set(rpath_relative "${rpath_rel_base}/${rpath_relative}")
+    endif()
+
+    set("${out_var}" "${rpath_relative}" PARENT_SCOPE)
+endfunction()
+
+# Applies necessary rpaths to a target upon target installation.
+# No-op when targeting Windows, Android, or non-prefix builds.
+#
+# If no RELATIVE_RPATH option is given, embeds an absolute path rpath to ${INSTALL_LIBDIR}.
+# If RELATIVE_RPATH is given, the INSTALL_PATH value is to compute the relative path from
+# ${INSTALL_LIBDIR} to wherever the target will be installed (the value of INSTALL_PATH).
+# It's the equivalent of qmake's relative_qt_rpath.
+# INSTALL_PATH is used to implement the equivalent of qmake's $$qtRelativeRPathBase().
+#
+# A cache variable QT_DISABLE_RPATH can be set to disable embedding any rpaths when installing.
+function(qt_apply_rpaths)
+    # No rpath support for win32 and android. Also no need to apply rpaths when doing a non-prefix
+    # build.
+    if(NOT QT_WILL_INSTALL OR WIN32 OR ANDROID)
+        return()
+    endif()
+
+    # Rpaths xplicitly disabled (like for uikit), equivalent to qmake's no_qt_rpath.
+    if(QT_DISABLE_RPATH)
+        return()
+    endif()
+
+    qt_parse_all_arguments(arg "qt_apply_rpaths" "RELATIVE_RPATH" "TARGET;INSTALL_PATH" "" ${ARGN})
+    if(NOT arg_TARGET)
+        message(FATAL_ERRO "No target given to qt_apply_rpaths.")
+    else()
+        set(target "${arg_TARGET}")
+    endif()
+
+    # If a target is not built (which can happen for tools when crosscompiling, we shouldn't try
+    # to apply properties.
+    if(NOT TARGET "${target}")
+        return()
+    endif()
+
+    # Protect against interface libraries.
+    get_target_property(target_type "${target}" TYPE)
+    if (target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
+    if(NOT arg_INSTALL_PATH)
+        message(FATAL_ERROR "No INSTALL_PATH given to qt_apply_rpaths.")
+    endif()
+
+    set(rpaths "")
+
+    # Modify the install path to contain the nested structure of a framework.
+    get_target_property(is_framework "${target}" FRAMEWORK)
+    if(is_framework)
+        if(UIKIT)
+            # Shallow framework
+            string(APPEND arg_INSTALL_PATH "/Qt${target}.framework")
+        else()
+            # Full framework
+            string(APPEND arg_INSTALL_PATH "/Qt${target}.framework/Versions/Current")
+        endif()
+    endif()
+
+    # Same but for an app bundle.
+    get_target_property(is_bundle "${target}" MACOSX_BUNDLE)
+    if(is_bundle AND NOT is_framework)
+        if(UIKIT)
+            # Shallow bundle
+            string(APPEND arg_INSTALL_PATH "/${target}.app")
+        else()
+            # Full bundle
+            string(APPEND arg_INSTALL_PATH "/${target}.app/Contents/MacOS")
+        endif()
+    endif()
+
+    # Somewhat similar to mkspecs/features/qt.prf
+    if(arg_RELATIVE_RPATH)
+        qt_compute_relative_rpath_base(
+            "${_default_install_rpath}" "${arg_INSTALL_PATH}" relative_rpath)
+        list(APPEND rpaths "${relative_rpath}")
+    else()
+        list(APPEND rpaths "${_default_install_rpath}")
+    endif()
+
+    # Somewhat similar to mkspecs/features/qt_build_extra.prf.
+    foreach(rpath ${QT_EXTRA_RPATHS})
+        if(IS_ABSOLUTE)
+            list(APPEND rpaths "${rpath}")
+        else()
+            qt_compute_relative_rpath_base("${rpath}" "${arg_INSTALL_PATH}" relative_rpath)
+            list(APPEND rpaths "${relative_rpath}")
+        endif()
+    endforeach()
+
+    if(rpaths)
+        list(REMOVE_DUPLICATES rpaths)
+        set_property(TARGET "${target}" APPEND PROPERTY INSTALL_RPATH ${rpaths})
     endif()
 endfunction()
 

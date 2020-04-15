@@ -366,6 +366,18 @@ function(qt_generate_build_internals_extra_cmake_code)
                 "set(BUILD_WITH_PCH \"${BUILD_WITH_PCH}\" CACHE STRING \"\")\n")
         endif()
 
+        # Rpath related things that need to be re-used when building other repos.
+        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+            "set(CMAKE_INSTALL_RPATH \"${CMAKE_INSTALL_RPATH}\" CACHE STRING \"\")\n")
+        if(DEFINED QT_DISABLE_RPATH)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_DISABLE_RPATH \"${QT_DISABLE_RPATH}\" CACHE STRING \"\")\n")
+        endif()
+        if(DEFINED QT_EXTRA_RPATHS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_EXTRA_RPATHS \"${QT_EXTRA_RPATHS}\" CACHE STRING \"\")\n")
+        endif()
+
         qt_generate_install_prefixes(install_prefix_content)
 
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${install_prefix_content}")

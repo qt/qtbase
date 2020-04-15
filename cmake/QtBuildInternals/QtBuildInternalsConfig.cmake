@@ -259,6 +259,13 @@ macro(qt_examples_build_begin)
     set(QT_NO_CREATE_TARGETS TRUE)
     set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
+
+    # Because CMAKE_INSTALL_RPATH is empty by default in the repo project, examples need to have
+    # it set here, so they can run when installed.
+    # This means that installed examples are not relocatable at the moment. We would need to
+    # annotate where each example is installed to, to be able to derive a relative rpath, and it
+    # seems there's no way to query such information from CMake itself.
+    set(CMAKE_INSTALL_RPATH "${_default_install_rpath}")
 endmacro()
 
 macro(qt_examples_build_end)

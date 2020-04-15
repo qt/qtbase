@@ -397,7 +397,7 @@ qt_feature_config("simulator_and_device" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("rpath" PUBLIC
     LABEL "Build with RPATH"
     AUTODETECT 1
-    CONDITION BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID AND NOT APPLE
+    CONDITION BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID
 )
 qt_feature_config("rpath" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("force_asserts" PUBLIC
@@ -918,6 +918,11 @@ qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "debug-only framework builds are not supported. Configure with -no-framework if you want a pure debug build."
     CONDITION QT_FEATURE_framework AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
+)
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Static builds don't support RPATH"
+    CONDITION ( QT_FEATURE_rpath OR QT_EXTRA_RPATHS ) AND NOT QT_FEATURE_shared
 )
 qt_configure_add_report_entry(
     TYPE ERROR

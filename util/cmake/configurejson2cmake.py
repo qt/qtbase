@@ -876,10 +876,9 @@ def get_feature_mapping():
         "qpa_default_platform": None,  # Not a bool!
         "release": None,
         "release_tools": None,
-        "rpath_dir": None,  # merely used to fill the qmake variable EXTRA_RPATHS
         "rpath": {
             "autoDetect": "1",
-            "condition": "BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID AND NOT APPLE",
+            "condition": "BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID",
         },
         "sanitize_address": None,  # sanitizer
         "sanitize_memory": None,
@@ -1222,6 +1221,12 @@ def processSummaryHelper(ctx, entries, cm_fh):
             print(f"    XXXX UNHANDLED SUMMARY TYPE {entry}.")
 
 
+report_condition_mapping = {
+    "(features.rpath || features.rpath_dir) && !features.shared": "(features.rpath || QT_EXTRA_RPATHS) && !features.shared",
+    "(features.rpath || features.rpath_dir) && var.QMAKE_LFLAGS_RPATH == ''": None
+}
+
+
 def processReportHelper(ctx, entries, cm_fh):
     feature_mapping = get_feature_mapping()
 
@@ -1265,6 +1270,13 @@ def processReportHelper(ctx, entries, cm_fh):
                 if unhandled_condition:
                     print(f"    XXXX UNHANDLED CONDITION in REPORT TYPE {entry}.")
                     continue
+
+                if isinstance(condition, str) and condition in report_condition_mapping:
+                    new_condition = report_condition_mapping[condition]
+                    if new_condition is None:
+                        continue
+                    else:
+                        condition = new_condition
                 condition = map_condition(condition)
                 entry_args.append(lineify("CONDITION", condition, quote=False))
             entry_args_string = "".join(entry_args)
