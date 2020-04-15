@@ -242,6 +242,7 @@ static const Keyword keywords[] = {
     { "Q_SLOT", "Q_SLOT_TOKEN" },
     { "Q_SCRIPTABLE", "Q_SCRIPTABLE_TOKEN" },
     { "Q_PRIVATE_PROPERTY", "Q_PRIVATE_PROPERTY_TOKEN" },
+    { "Q_PRIVATE_QPROPERTY", "Q_PRIVATE_QPROPERTY_TOKEN" },
     { "Q_REVISION", "Q_REVISION_TOKEN" },
     { "Q_MOC_INCLUDE", "Q_MOC_INCLUDE_TOKEN" },
     { "\n", "NEWLINE" },

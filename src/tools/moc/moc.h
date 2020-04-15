@@ -148,6 +148,14 @@ struct PropertyDef
 };
 Q_DECLARE_TYPEINFO(PropertyDef, Q_MOVABLE_TYPE);
 
+struct PrivateQPropertyDef
+{
+    Type type;
+    QByteArray name;
+    QByteArray setter;
+    QByteArray accessor;
+};
+Q_DECLARE_TYPEINFO(PrivateQPropertyDef, Q_MOVABLE_TYPE);
 
 struct ClassInfoDef
 {
@@ -191,6 +199,7 @@ struct ClassDef : BaseDef {
     QVector<FunctionDef> signalList, slotList, methodList, publicList;
     QVector<QByteArray> nonClassSignalList;
     QVector<PropertyDef> propertyList;
+    QVector<PrivateQPropertyDef> privateQProperties;
     QSet<QByteArray> qPropertyMembers;
     int notifyableProperties = 0;
     int revisionedMethods = 0;
@@ -258,6 +267,7 @@ public:
     void parseProperty(ClassDef *def);
     void parsePluginData(ClassDef *def);
     void createPropertyDef(PropertyDef &def);
+    void parsePropertyAttributes(PropertyDef &propDef);
     void parseEnumOrFlag(BaseDef *def, bool isFlag);
     void parseFlag(BaseDef *def);
     void parseClassInfo(BaseDef *def);
@@ -266,7 +276,9 @@ public:
     void parseDeclareMetatype();
     void parseMocInclude();
     void parseSlotInPrivate(ClassDef *def, FunctionDef::Access access);
+    QByteArray parsePropertyAccessor();
     void parsePrivateProperty(ClassDef *def);
+    void parsePrivateQProperty(ClassDef *def);
 
     void parseFunctionArguments(FunctionDef *def);
 

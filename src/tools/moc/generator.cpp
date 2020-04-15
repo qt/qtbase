@@ -616,6 +616,11 @@ void Generator::generateCode()
         generateSignal(&cdef->signalList[signalindex], signalindex);
 
 //
+// Generate QProperty forwarding API
+//
+    generateQPropertyApi();
+
+//
 // Generate plugin meta data
 //
     generatePluginMetaData();
@@ -1619,6 +1624,106 @@ void Generator::generateSignal(FunctionDef *def,int index)
     if (def->normalizedType != "void")
         fprintf(out, "    return _t0;\n");
     fprintf(out, "}\n");
+}
+
+void Generator::generateQPropertyApi()
+{
+    for (const PrivateQPropertyDef &property: cdef->privateQProperties) {
+        auto printAccessor = [this, property](bool constAccessor = false) {
+            const char *constOrNot = constAccessor ? "const " : " ";
+            fprintf(out, "    const size_t propertyMemberOffset = reinterpret_cast<size_t>(&(static_cast<%s *>(nullptr)->%s));\n", cdef->qualified.constData(), property.name.constData());
+            fprintf(out, "    %sauto *thisPtr = reinterpret_cast<%s%s *>(reinterpret_cast<%schar *>(this) - propertyMemberOffset);\n", constOrNot, constOrNot, cdef->qualified.constData(), constOrNot);
+        };
+
+        // property accessor
+        fprintf(out, "\n%s %s::_qt_property_api_%s::value() const\n{\n",
+                property.type.name.constData(),
+                cdef->qualified.constData(),
+                property.name.constData());
+        printAccessor(/*const*/true);
+        fprintf(out, "    return thisPtr->%s->%s.value();\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // property value setter
+        fprintf(out, "\nvoid %s::_qt_property_api_%s::setValue(const %s &value)\n{\n",
+                cdef->qualified.constData(),
+                property.name.constData(),
+                property.type.name.constData());
+        printAccessor();
+        fprintf(out, "    return thisPtr->%s->%s.setValue(value);\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // property value move setter
+        fprintf(out, "\nvoid %s::_qt_property_api_%s::setValue(%s &&value)\n{\n",
+                cdef->qualified.constData(),
+                property.name.constData(),
+                property.type.name.constData());
+        printAccessor();
+        fprintf(out, "    return thisPtr->%s->%s.setValue(std::move(value));\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // binding setter
+        fprintf(out, "\nQPropertyBinding<%s> %s::_qt_property_api_%s::setBinding(const QPropertyBinding<%s> &binding)\n{\n",
+                property.type.name.constData(),
+                cdef->qualified.constData(),
+                property.name.constData(),
+                property.type.name.constData());
+        printAccessor();
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(binding);\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // binding move setter
+        fprintf(out, "\nQPropertyBinding<%s> %s::_qt_property_api_%s::setBinding(QPropertyBinding<%s> &&binding)\n{\n",
+                property.type.name.constData(),
+                cdef->qualified.constData(),
+                property.name.constData(),
+                property.type.name.constData());
+        printAccessor();
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(std::move(binding));\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // untyped binding setter
+        fprintf(out, "\nbool %s::_qt_property_api_%s::setBinding(const QUntypedPropertyBinding &binding)\n{\n",
+                cdef->qualified.constData(),
+                property.name.constData());
+        printAccessor();
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(binding);\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // binding bool getter
+        fprintf(out, "\nbool %s::_qt_property_api_%s::hasBinding() const\n{\n",
+                cdef->qualified.constData(),
+                property.name.constData());
+        printAccessor(/*const*/true);
+        fprintf(out, "    return thisPtr->%s->%s.hasBinding();\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // binding getter
+        fprintf(out, "\nQPropertyBinding<%s> %s::_qt_property_api_%s::binding() const\n{\n",
+                property.type.name.constData(),
+                cdef->qualified.constData(),
+                property.name.constData());
+        printAccessor(/*const*/true);
+        fprintf(out, "    return thisPtr->%s->%s.binding();\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // binding taker
+        fprintf(out, "\nQPropertyBinding<%s> %s::_qt_property_api_%s::takeBinding()\n{\n",
+                property.type.name.constData(),
+                cdef->qualified.constData(),
+                property.name.constData());
+        printAccessor();
+        fprintf(out, "    return thisPtr->%s->%s.takeBinding();\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n");
+
+        // property setter function
+        fprintf(out, "\nvoid %s::%s(const %s &value)\n{\n",
+                cdef->qualified.constData(),
+                property.setter.constData(),
+                property.type.name.constData());
+        fprintf(out, "    %s->%s.setValue(value);\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "}\n\n");
+    }
 }
 
 static CborError jsonValueToCbor(CborEncoder *parent, const QJsonValue &v);

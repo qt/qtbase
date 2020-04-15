@@ -727,6 +727,7 @@ private slots:
     void qpropertyMembers();
     void observerMetaCall();
     void setQPRopertyBinding();
+    void privateQPropertyShim();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4210,6 +4211,65 @@ void tst_Moc::setQPRopertyBinding()
 
     QCOMPARE(instance.publicProperty.value(), 42);
     QVERIFY(bindingCalled); // but now it should've been called :)
+}
+
+
+class ClassWithPrivateQPropertyShim :public QObject
+{
+    Q_OBJECT
+public:
+    Q_PRIVATE_QPROPERTY(d_func(), int, testProperty, setTestProperty, NOTIFY testPropertyChanged)
+
+    Q_PRIVATE_QPROPERTIES_BEGIN
+    Q_PRIVATE_QPROPERTY_IMPL(testProperty)
+    Q_PRIVATE_QPROPERTIES_END
+
+signals:
+    void testPropertyChanged();
+public:
+
+    struct Private {
+        Private(ClassWithPrivateQPropertyShim *pub)
+            : q(pub)
+        {}
+
+        ClassWithPrivateQPropertyShim *q = nullptr;
+
+        QProperty<int> testProperty;
+        void onTestPropertyChanged() { q->testPropertyChanged(); }
+        QPropertyMemberChangeHandler<&Private::testProperty, &Private::onTestPropertyChanged> testChangeHandler{this};
+    };
+    Private priv{this};
+
+    Private *d_func() { return &priv; }
+    const Private *d_func() const { return &priv; }
+};
+
+
+void tst_Moc::privateQPropertyShim()
+{
+    ClassWithPrivateQPropertyShim testObject;
+
+    {
+        auto metaObject = &ClassWithPrivateQPropertyShim::staticMetaObject;
+        QMetaProperty prop = metaObject->property(metaObject->indexOfProperty("testProperty"));
+        QVERIFY(prop.isValid());
+        QVERIFY(prop.notifySignal().isValid());
+    }
+
+    testObject.priv.testProperty.setValue(42);
+    QCOMPARE(testObject.property("testProperty").toInt(), 42);
+
+    // Behave like a QProperty
+    QVERIFY(!testObject.testProperty.hasBinding());
+    testObject.testProperty.setBinding([]() { return 100; });
+    QCOMPARE(testObject.testProperty.value(), 100);
+    QVERIFY(testObject.testProperty.hasBinding());
+
+    // Old style setter getters
+    testObject.setTestProperty(400);
+    QVERIFY(!testObject.testProperty.hasBinding());
+    QCOMPARE(testObject.testProperty(), 400);
 }
 
 QTEST_MAIN(tst_Moc)

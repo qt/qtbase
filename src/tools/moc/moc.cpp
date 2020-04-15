@@ -878,6 +878,9 @@ void Moc::parse()
                 case Q_PRIVATE_PROPERTY_TOKEN:
                     parsePrivateProperty(&def);
                     break;
+                case Q_PRIVATE_QPROPERTY_TOKEN:
+                    parsePrivateQProperty(&def);
+                    break;
                 case ENUM: {
                     EnumDef enumDef;
                     if (parseEnum(&enumDef))
@@ -1031,10 +1034,14 @@ static QByteArrayList requiredQtContainers(const QVector<ClassDef> &classes)
     QByteArrayList required;
     required.reserve(candidates.size());
 
+    bool needsQProperty = false;
+
     for (const auto &candidate : candidates) {
         const QByteArray pattern = candidate + '<';
 
         for (const auto &c : classes) {
+            if (!c.privateQProperties.isEmpty())
+                needsQProperty = true;
             if (any_type_contains(c.propertyList, pattern) ||
                     any_arg_contains(c.slotList, pattern) ||
                     any_arg_contains(c.signalList, pattern) ||
@@ -1044,6 +1051,9 @@ static QByteArrayList requiredQtContainers(const QVector<ClassDef> &classes)
             }
         }
     }
+
+    if (needsQProperty)
+        required.push_back("QProperty");
 
     return required;
 }
@@ -1268,6 +1278,14 @@ void Moc::createPropertyDef(PropertyDef &propDef)
 
     propDef.type = type;
 
+    next();
+    propDef.name = lexem();
+
+    parsePropertyAttributes(propDef);
+}
+
+void Moc::parsePropertyAttributes(PropertyDef &propDef)
+{
     auto checkIsFunction = [&](const QByteArray &def, const char *name) {
         if (def.endsWith(')')) {
             QByteArray msg = "Providing a function for ";
@@ -1276,9 +1294,6 @@ void Moc::createPropertyDef(PropertyDef &propDef)
             warning(msg.constData());
         }
     };
-
-    next();
-    propDef.name = lexem();
 
     while (test(IDENTIFIER)) {
         const QByteArray l = lexem();
@@ -1459,22 +1474,29 @@ void Moc::parsePluginData(ClassDef *def)
     next(RPAREN);
 }
 
-void Moc::parsePrivateProperty(ClassDef *def)
+QByteArray Moc::parsePropertyAccessor()
 {
-    next(LPAREN);
-    PropertyDef propDef;
     next(IDENTIFIER);
-    propDef.inPrivateClass = lexem();
+    QByteArray accessor = lexem();
     while (test(SCOPE)) {
-        propDef.inPrivateClass += lexem();
+        accessor += lexem();
         next(IDENTIFIER);
-        propDef.inPrivateClass += lexem();
+        accessor += lexem();
     }
     // also allow void functions
     if (test(LPAREN)) {
         next(RPAREN);
-        propDef.inPrivateClass += "()";
+        accessor += "()";
     }
+
+    return accessor;
+}
+
+void Moc::parsePrivateProperty(ClassDef *def)
+{
+    next(LPAREN);
+    PropertyDef propDef;
+    propDef.inPrivateClass = parsePropertyAccessor();
 
     next(COMMA);
 
@@ -1484,6 +1506,42 @@ void Moc::parsePrivateProperty(ClassDef *def)
         def->notifyableProperties++;
     if (propDef.revision > 0)
         ++def->revisionedProperties;
+
+    def->propertyList += propDef;
+}
+
+void Moc::parsePrivateQProperty(ClassDef *def)
+{
+    next(LPAREN);
+    const QByteArray accessor = parsePropertyAccessor();
+    next(COMMA);
+    const Type type = parseType();
+    next(COMMA);
+    next(IDENTIFIER);
+    const QByteArray name = lexem();
+    next(COMMA);
+    next(IDENTIFIER);
+    const QByteArray setter = lexem();
+
+    def->privateQProperties += PrivateQPropertyDef{type, name, setter, accessor};
+
+    PropertyDef propDef;
+    propDef.name = name;
+    propDef.type = type.name;
+    propDef.read = name + ".value";
+    propDef.write = name + ".setValue";
+    propDef.isQProperty = true;
+    propDef.inPrivateClass = accessor;
+    propDef.designable = propDef.scriptable = propDef.stored = "true";
+    propDef.user = "false";
+
+    if (test(COMMA))
+        parsePropertyAttributes(propDef);
+
+    next(RPAREN);
+
+    if (!propDef.notify.isEmpty())
+        def->notifyableProperties++;
 
     def->propertyList += propDef;
 }
