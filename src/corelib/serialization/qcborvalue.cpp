@@ -2995,68 +2995,6 @@ size_t qHash(const QCborValue &value, size_t seed)
     return qHash(value.toSimpleType(), seed);
 }
 
-#if !defined(QT_NO_DEBUG_STREAM)
-static QDebug debugContents(QDebug &dbg, const QCborValue &v)
-{
-    switch (v.type()) {
-    case QCborValue::Integer:
-        return dbg << v.toInteger();
-    case QCborValue::ByteArray:
-        return dbg << "QByteArray(" << v.toByteArray() << ')';
-    case QCborValue::String:
-        return dbg << v.toString();
-    case QCborValue::Array:
-        return dbg << v.toArray();
-    case QCborValue::Map:
-        return dbg << v.toMap();
-    case QCborValue::Tag:
-        dbg << v.tag() << ", ";
-        return debugContents(dbg, v.taggedValue());
-    case QCborValue::SimpleType:
-        break;
-    case QCborValue::True:
-        return dbg << true;
-    case QCborValue::False:
-        return dbg << false;
-    case QCborValue::Null:
-        return dbg << "nullptr";
-    case QCborValue::Undefined:
-        return dbg;
-    case QCborValue::Double: {
-        qint64 i = qint64(v.toDouble());
-        if (i == v.toDouble())
-            return dbg << i << ".0";
-        else
-            return dbg << v.toDouble();
-    }
-    case QCborValue::DateTime:
-        return dbg << v.toDateTime();
-#ifndef QT_BOOTSTRAPPED
-    case QCborValue::Url:
-        return dbg << v.toUrl();
-#endif
-#if QT_CONFIG(regularexpression)
-    case QCborValue::RegularExpression:
-        return dbg << v.toRegularExpression();
-#endif
-    case QCborValue::Uuid:
-        return dbg << v.toUuid();
-    case QCborValue::Invalid:
-        return dbg << "<invalid>";
-    default:
-        break;
-    }
-    if (v.isSimpleType())
-        return dbg << v.toSimpleType();
-    return dbg << "<unknown type " << Qt::hex << int(v.type()) << Qt::dec << '>';
-}
-QDebug operator<<(QDebug dbg, const QCborValue &v)
-{
-    QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QCborValue(";
-    return debugContents(dbg, v) << ')';
-}
-
 Q_CORE_EXPORT const char *qt_cbor_simpletype_id(QCborSimpleType st)
 {
     switch (st) {
@@ -3070,16 +3008,6 @@ Q_CORE_EXPORT const char *qt_cbor_simpletype_id(QCborSimpleType st)
         return "Undefined";
     }
     return nullptr;
-}
-
-QDebug operator<<(QDebug dbg, QCborSimpleType st)
-{
-    QDebugStateSaver saver(dbg);
-    const char *id = qt_cbor_simpletype_id(st);
-    if (id)
-        return dbg.nospace() << "QCborSimpleType::" << id;
-
-    return dbg.nospace() << "QCborSimpleType(" << uint(st) << ')';
 }
 
 Q_CORE_EXPORT const char *qt_cbor_tag_id(QCborTag tag)
@@ -3138,6 +3066,84 @@ Q_CORE_EXPORT const char *qt_cbor_tag_id(QCborTag tag)
         }
     }
     return nullptr;
+}
+
+#if !defined(QT_NO_DEBUG_STREAM)
+static QDebug debugContents(QDebug &dbg, const QCborValue &v)
+{
+    switch (v.type()) {
+    case QCborValue::Integer:
+        return dbg << v.toInteger();
+    case QCborValue::ByteArray:
+        return dbg << "QByteArray(" << v.toByteArray() << ')';
+    case QCborValue::String:
+        return dbg << v.toString();
+    case QCborValue::Array:
+        return dbg << v.toArray();
+    case QCborValue::Map:
+        return dbg << v.toMap();
+    case QCborValue::Tag: {
+        QCborTag tag = v.tag();
+        const char *id = qt_cbor_tag_id(tag);
+        if (id)
+            dbg.nospace() << "QCborKnownTags::" << id << ", ";
+        else
+            dbg.nospace() << "QCborTag(" << quint64(tag) << "), ";
+        return dbg << v.taggedValue();
+    }
+    case QCborValue::SimpleType:
+        break;
+    case QCborValue::True:
+        return dbg << true;
+    case QCborValue::False:
+        return dbg << false;
+    case QCborValue::Null:
+        return dbg << "nullptr";
+    case QCborValue::Undefined:
+        return dbg;
+    case QCborValue::Double: {
+        qint64 i;
+        if (convertDoubleTo(v.toDouble(), &i))
+            return dbg << i << ".0";
+        else
+            return dbg << v.toDouble();
+    }
+    case QCborValue::DateTime:
+        return dbg << v.toDateTime();
+#ifndef QT_BOOTSTRAPPED
+    case QCborValue::Url:
+        return dbg << v.toUrl();
+#if QT_CONFIG(regularexpression)
+    case QCborValue::RegularExpression:
+        return dbg << v.toRegularExpression();
+#endif
+    case QCborValue::Uuid:
+        return dbg << v.toUuid();
+#endif
+    case QCborValue::Invalid:
+        return dbg << "<invalid>";
+    default:
+        break;
+    }
+    if (v.isSimpleType())
+        return dbg << v.toSimpleType();
+    return dbg << "<unknown type 0x" << Qt::hex << int(v.type()) << Qt::dec << '>';
+}
+QDebug operator<<(QDebug dbg, const QCborValue &v)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QCborValue(";
+    return debugContents(dbg, v) << ')';
+}
+
+QDebug operator<<(QDebug dbg, QCborSimpleType st)
+{
+    QDebugStateSaver saver(dbg);
+    const char *id = qt_cbor_simpletype_id(st);
+    if (id)
+        return dbg.nospace() << "QCborSimpleType::" << id;
+
+    return dbg.nospace() << "QCborSimpleType(" << uint(st) << ')';
 }
 
 QDebug operator<<(QDebug dbg, QCborTag tag)

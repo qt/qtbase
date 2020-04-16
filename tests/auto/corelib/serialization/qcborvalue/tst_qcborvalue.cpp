@@ -120,6 +120,10 @@ private slots:
     void datastreamSerialization_data();
     void datastreamSerialization();
     void streamVariantSerialization();
+    void debugOutput_data();
+    void debugOutput();
+    void testlibFormatting_data();
+    void testlibFormatting();
 };
 
 namespace SimpleEncodeToCbor {
@@ -456,8 +460,8 @@ void tst_QCborValue::extendedTypes()
     QVERIFY(extended.isTag());
     QVERIFY(tagged.isTag());
     QCOMPARE(tagged.taggedValue(), correctedTaggedValue);
-    QVERIFY(extended == tagged);
-    QVERIFY(tagged == extended);
+    QCOMPARE(tagged, extended);
+    QCOMPARE(extended, tagged);
 
     QCOMPARE(extended.tag(), tagged.tag());
     QCOMPARE(extended.taggedValue(), tagged.taggedValue());
@@ -2472,6 +2476,138 @@ void tst_QCborValue::streamVariantSerialization()
         QCOMPARE(output.userType(), QMetaType::QCborValue);
         QCOMPARE(qvariant_cast<QCborValue>(output), value);
     }
+}
+
+void tst_QCborValue::debugOutput_data()
+{
+    QTest::addColumn<QCborValue>("v");
+    QTest::addColumn<QString>("expected");
+
+    QDateTime dt(QDate(2020, 4, 18), QTime(13, 41, 22, 123), Qt::UTC);
+    QBitArray bits = QBitArray::fromBits("\x79\x03", 11);
+
+    QTest::newRow("Undefined") << QCborValue() << "QCborValue()";
+    QTest::newRow("Null") << QCborValue(nullptr) << "QCborValue(nullptr)";
+    QTest::newRow("False") << QCborValue(false) << "QCborValue(false)";
+    QTest::newRow("True") << QCborValue(true) << "QCborValue(true)";
+    QTest::newRow("simpletype")
+            << QCborValue(QCborSimpleType(0)) << "QCborValue(QCborSimpleType(0))";
+    QTest::newRow("Integer:0") << QCborValue(0) << "QCborValue(0)";
+    QTest::newRow("Double:0") << QCborValue(0.) << "QCborValue(0.0)";
+    QTest::newRow("ByteArray")
+            << QCborValue(raw("Hello\0World")) << "QCborValue(QByteArray(\"Hello\\x00World\"))";
+    QTest::newRow("String")
+            << QCborValue("Hello\x7fWorld") << "QCborValue(\"Hello\\u007FWorld\")";
+    QTest::newRow("DateTime")
+            << QCborValue(dt) << "QCborValue(QDateTime(2020-04-18 13:41:22.123 UTC Qt::UTC))";
+    QTest::newRow("Url")
+            << QCborValue(QUrl("http://example.com")) << "QCborValue(QUrl(\"http://example.com\"))";
+    QTest::newRow("RegularExpression")
+            << QCborValue(QRegularExpression("^.*$"))
+            << "QCborValue(QRegularExpression(\"^.*$\", QRegularExpression::PatternOptions(\"NoPatternOption\")))";
+    QTest::newRow("Uuid")
+            << QCborValue(QUuid()) << "QCborValue(QUuid(\"{00000000-0000-0000-0000-000000000000}\"))";
+
+    QTest::newRow("Tag-1387671238")
+            << QCborValue(QCborTag(1387671238), QCborValue())
+            << "QCborValue(QCborTag(1387671238), QCborValue())";
+    QTest::newRow("Tag-55799")
+            << QCborValue(QCborKnownTags::Signature, QCborValue("Signature"))
+            << "QCborValue(QCborKnownTags::Signature, QCborValue(\"Signature\"))";
+
+    // arrays and maps
+    QTest::newRow("Array:Empty") << QCborValue(QCborArray()) << "QCborValue(QCborArray{})";
+    QTest::newRow("Map:Empty") << QCborValue(QCborMap()) << "QCborValue(QCborMap{})";
+    QTest::newRow("Array")
+            << QCborValue(QCborArray{1, 2., nullptr})
+            << "QCborValue(QCborArray{QCborValue(1), QCborValue(2.0), QCborValue(nullptr)})";
+    QTest::newRow("Map")
+            << QCborValue(QCborMap{{1, 2.}, {nullptr, "Hello"}, {"World", QCborArray()}})
+            << "QCborValue(QCborMap{"
+               "{QCborValue(1), QCborValue(2.0)}, "
+               "{QCborValue(nullptr), QCborValue(\"Hello\")}, "
+               "{QCborValue(\"World\"), QCborValue(QCborArray{})}"
+               "})";
+
+    // usually impossible types
+    QTest::newRow("Unknown-Basic")
+            << QCborValue(QCborValue::Type(0xfb)) << "QCborValue(<unknown type 0xfb>)";
+    QTest::newRow("Unknown-Extended")
+            << QCborValue(QCborValue::Type(0x10000 + 21)) << "QCborValue(<unknown type 0x10015>)";
+    QTest::newRow("Invalid") << QCborValue(QCborValue::Invalid) << "QCborValue(<invalid>)";
+}
+
+void tst_QCborValue::debugOutput()
+{
+    QFETCH(QCborValue, v);
+    QFETCH(QString, expected);
+
+    QTest::ignoreMessage(QtDebugMsg, expected.toUtf8());
+    qDebug() << v;
+}
+
+void tst_QCborValue::testlibFormatting_data()
+{
+    QTest::addColumn<QCborValue>("v");
+    QTest::addColumn<QString>("expected");
+
+    QDateTime dt = QDateTime::currentDateTimeUtc();
+
+    QTest::newRow("Undefined") << QCborValue() << "QCborValue()";
+    QTest::newRow("Null") << QCborValue(nullptr) << "QCborValue(nullptr)";
+    QTest::newRow("False") << QCborValue(false) << "QCborValue(false)";
+    QTest::newRow("True") << QCborValue(true) << "QCborValue(true)";
+    QTest::newRow("simpletype")
+            << QCborValue(QCborSimpleType(0)) << "QCborValue(QCborSimpleType(0))";
+    QTest::newRow("Integer:0") << QCborValue(0) << "QCborValue(Integer, 0)";
+    QTest::newRow("Double:0") << QCborValue(0.) << "QCborValue(Double, 0)"; // must be integer!
+    QTest::newRow("ByteArray")
+            << QCborValue(raw("Hello\0World")) << "QCborValue(ByteArray, \"Hello\\x00World\")";
+    QTest::newRow("String")
+            << QCborValue("Hej v\xc3\xa4rlden") << "QCborValue(String, \"Hej v\\u00E4rlden\")";
+    QTest::newRow("DateTime")
+            << QCborValue(dt) << QString("QCborValue(DateTime, \"%1\")").arg(dt.toString(Qt::ISODateWithMs));
+    QTest::newRow("Url")
+            << QCborValue(QUrl("http://example.com")) << "QCborValue(Url, \"http://example.com\")";
+    QTest::newRow("RegularExpression")
+            << QCborValue(QRegularExpression("^.*$")) << "QCborValue(RegularExpression, \"^.*$\")";
+    QTest::newRow("Uuid")
+            << QCborValue(QUuid()) << "QCborValue(Uuid, {00000000-0000-0000-0000-000000000000})";
+
+    QTest::newRow("Tag")
+            << QCborValue(QCborKnownTags::Signature, QCborValue())
+            << "QCborValue(QCborTag(55799), QCborValue())";
+
+    // arrays and maps
+    QTest::newRow("Array:Empty") << QCborValue(QCborArray()) << "QCborValue(Array, [])";
+    QTest::newRow("Map:Empty") << QCborValue(QCborMap()) << "QCborValue(Map, {})";
+    QTest::newRow("Array")
+            << QCborValue(QCborArray{1, 2., nullptr})
+            << "QCborValue(Array, [QCborValue(Integer, 1), QCborValue(Double, 2), QCborValue(nullptr)])";
+    QTest::newRow("Map")
+            << QCborValue(QCborMap{{1, 2.}, {nullptr, "Hello"}, {"World", QCborArray()}})
+            << "QCborValue(Map, {"
+               "QCborValue(Integer, 1): QCborValue(Double, 2), "
+               "QCborValue(nullptr): QCborValue(String, \"Hello\"), "
+               "QCborValue(String, \"World\"): QCborValue(Array, [])"
+               "})";
+
+    // usually impossible types
+    QTest::newRow("Unknown-Basic")
+            << QCborValue(QCborValue::Type(0xfb)) << "QCborValue(<unknown type 0xfb>)";
+    QTest::newRow("Unknown-Extended")
+            << QCborValue(QCborValue::Type(0x10000 + 21)) << "QCborValue(<unknown type 0x10015>)";
+    QTest::newRow("Invalid") << QCborValue(QCborValue::Invalid) << "QCborValue(<invalid>)";
+}
+
+void tst_QCborValue::testlibFormatting()
+{
+    QFETCH(QCborValue, v);
+    QFETCH(QString, expected);
+
+    QScopedArrayPointer<char> hold(QTest::toString(v));
+    QString actual = hold.get();
+    QCOMPARE(actual, expected);
 }
 
 QTEST_MAIN(tst_QCborValue)
