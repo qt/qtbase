@@ -343,10 +343,19 @@ static void setup() {}
 */
 QTextCodec::ConverterState::~ConverterState()
 {
-    if (flags & FreeFunction)
-        (QTextCodecUnalignedPointer::decode(state_data))(this);
-    else if (d)
-        free(d);
+    clear();
+}
+
+void QTextCodec::ConverterState::clear()
+{
+    if (clearFn)
+        clearFn(this);
+    remainingChars = 0;
+    invalidChars = 0;
+    state_data[0] = 0;
+    state_data[1] = 0;
+    state_data[2] = 0;
+    state_data[3] = 0;
 }
 
 /*!

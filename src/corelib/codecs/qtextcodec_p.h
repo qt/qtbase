@@ -66,21 +66,6 @@ QT_BEGIN_NAMESPACE
 
 typedef void (*QTextCodecStateFreeFunction)(QTextCodec::ConverterState*);
 
-struct QTextCodecUnalignedPointer
-{
-    static inline QTextCodecStateFreeFunction decode(const uint *src)
-    {
-        quintptr data;
-        memcpy(&data, src, sizeof(data));
-        return reinterpret_cast<QTextCodecStateFreeFunction>(data);
-    }
-    static inline void encode(uint *dst, QTextCodecStateFreeFunction fn)
-    {
-        quintptr data = reinterpret_cast<quintptr>(fn);
-        memcpy(dst, &data, sizeof(data));
-    }
-};
-
 bool qTextCodecNameMatch(const char *a, const char *b);
 
 #else // without textcodec:

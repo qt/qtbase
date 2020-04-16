@@ -364,12 +364,14 @@ static void copyConverterStateHelper(QTextCodec::ConverterState *dest,
 {
     // ### QTextCodec::ConverterState's copy constructors and assignments are
     // private. This function copies the structure manually.
-    Q_ASSERT(!src->d);
+    Q_ASSERT(!src->clearFn);
     dest->flags = src->flags;
+    dest->remainingChars = src->remainingChars;
     dest->invalidChars = src->invalidChars;
     dest->state_data[0] = src->state_data[0];
     dest->state_data[1] = src->state_data[1];
     dest->state_data[2] = src->state_data[2];
+    dest->state_data[3] = src->state_data[3];
 }
 #endif
 
@@ -787,7 +789,7 @@ inline void QTextStreamPrivate::consume(int size)
 inline void QTextStreamPrivate::saveConverterState(qint64 newPos)
 {
 #if QT_CONFIG(textcodec)
-    if (readConverterState.d) {
+    if (readConverterState.clearFn) {
         // converter cannot be copied, so don't save anything
         // don't update readBufferStartDevicePos either
         return;

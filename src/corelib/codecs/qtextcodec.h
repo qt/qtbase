@@ -92,20 +92,25 @@ public:
     enum ConversionFlag {
         DefaultConversion,
         ConvertInvalidToNull = 0x80000000,
-        IgnoreHeader = 0x1,
-        FreeFunction = 0x2
+        IgnoreHeader = 0x1
     };
     Q_DECLARE_FLAGS(ConversionFlags, ConversionFlag)
 
     struct Q_CORE_EXPORT ConverterState {
         ConverterState(ConversionFlags f = DefaultConversion)
-            : flags(f), remainingChars(0), invalidChars(0), d(nullptr) { state_data[0] = state_data[1] = state_data[2] = 0; }
+            : flags(f), state_data{0, 0, 0, 0} {}
         ~ConverterState();
         ConversionFlags flags;
-        int remainingChars;
-        int invalidChars;
-        uint state_data[3];
-        void *d;
+        int remainingChars = 0;
+        int invalidChars = 0;
+
+        union {
+            uint state_data[4];
+            void *d[2];
+        };
+        void clear();
+        using ClearDataFn = void (*)(ConverterState *);
+        ClearDataFn clearFn = nullptr;
     private:
         Q_DISABLE_COPY(ConverterState)
     };

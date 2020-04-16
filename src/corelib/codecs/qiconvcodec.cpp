@@ -121,7 +121,7 @@ void QIconvCodec::IconvState::saveChars(const char *c, int count)
 
 static void qIconvCodecStateFree(QTextCodec::ConverterState *state)
 {
-    delete reinterpret_cast<QIconvCodec::IconvState *>(state->d);
+    delete reinterpret_cast<QIconvCodec::IconvState *>(state->d[0]);
 }
 
 Q_GLOBAL_STATIC(QThreadStorage<QIconvCodec::IconvState *>, toUnicodeState)
@@ -139,15 +139,14 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
 
     if (convState) {
         // stateful conversion
-        pstate = reinterpret_cast<IconvState **>(&convState->d);
-        if (convState->d) {
+        pstate = reinterpret_cast<IconvState **>(&convState->d[0]);
+        if (convState->d[0]) {
             // restore state
             remainingCount = convState->remainingChars;
             remainingBuffer = (*pstate)->buffer;
         } else {
             // first time
-            convState->flags |= FreeFunction;
-            QTextCodecUnalignedPointer::encode(convState->state_data, qIconvCodecStateFree);
+            convState->clearFn = qIconvCodecStateFree;
         }
     } else {
         QThreadStorage<QIconvCodec::IconvState *> *ts = toUnicodeState();

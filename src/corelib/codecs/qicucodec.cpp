@@ -60,7 +60,7 @@ typedef QList<QByteArray>::ConstIterator ByteArrayListConstIt;
 
 static void qIcuCodecStateFree(QTextCodec::ConverterState *state)
 {
-    ucnv_close(static_cast<UConverter *>(state->d));
+    ucnv_close(static_cast<UConverter *>(state->d[0]));
 }
 
 bool qTextCodecNameMatch(const char *n, const char *h)
@@ -569,18 +569,17 @@ UConverter *QIcuCodec::getConverter(QTextCodec::ConverterState *state) const
 {
     UConverter *conv = nullptr;
     if (state) {
-        if (!state->d) {
+        if (!state->d[0]) {
             // first time
-            state->flags |= QTextCodec::FreeFunction;
-            QTextCodecUnalignedPointer::encode(state->state_data, qIcuCodecStateFree);
+            state->clearFn = qIcuCodecStateFree;
             UErrorCode error = U_ZERO_ERROR;
-            state->d = ucnv_open(m_name, &error);
-            ucnv_setSubstChars(static_cast<UConverter *>(state->d),
+            state->d[0] = ucnv_open(m_name, &error);
+            ucnv_setSubstChars(static_cast<UConverter *>(state->d[0]),
                                state->flags & QTextCodec::ConvertInvalidToNull ? "\0" : "?", 1, &error);
             if (U_FAILURE(error))
                 qDebug("getConverter(state) ucnv_open failed %s %s", m_name, u_errorName(error));
         }
-        conv = static_cast<UConverter *>(state->d);
+        conv = static_cast<UConverter *>(state->d[0]);
     }
     if (!conv) {
         // stateless conversion
