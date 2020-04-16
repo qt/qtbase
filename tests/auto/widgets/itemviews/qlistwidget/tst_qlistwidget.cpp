@@ -407,15 +407,6 @@ void tst_QListWidget::closePersistentEditor()
 
 void tst_QListWidget::setItemHidden()
 {
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    // Boundary checking
-    testWidget->setItemHidden(nullptr, true);
-    testWidget->setItemHidden(nullptr, false);
-QT_WARNING_POP
-#endif
-
     auto countHidden = [](QListWidget *testWidget)
     {
         int totalHidden = 0;

@@ -345,28 +345,6 @@ bool QAbstractItemDelegate::editorEvent(QEvent *,
     return false;
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use QFontMetrics::elidedText() instead.
-
-    \oldcode
-        QFontMetrics fm = ...
-        QString str = QAbstractItemDelegate::elidedText(fm, width, mode, text);
-    \newcode
-        QFontMetrics fm = ...
-        QString str = fm.elidedText(text, mode, width);
-    \endcode
-*/
-
-QString QAbstractItemDelegate::elidedText(const QFontMetrics &fontMetrics, int width,
-                                          Qt::TextElideMode mode, const QString &text)
-{
-    return fontMetrics.elidedText(text, mode, width);
-}
-#endif
-
 /*!
     \since 4.3
     Whenever a help event occurs, this function is called with the \a event

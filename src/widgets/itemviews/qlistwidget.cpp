@@ -227,7 +227,6 @@ bool QListModel::setData(const QModelIndex &index, const QVariant &value, int ro
     return true;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QListModel::clearItemData(const QModelIndex &index)
 {
     if (!checkIndex(index, CheckIndexOption::IndexIsValid))
@@ -241,7 +240,6 @@ bool QListModel::clearItemData(const QModelIndex &index)
     emit dataChanged(index, index, QVector<int>{});
     return true;
 }
-#endif
 
 QMap<int, QVariant> QListModel::itemData(const QModelIndex &index) const
 {
@@ -937,15 +935,6 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
     \sa Qt::AlignmentFlag
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QColor QListWidgetItem::backgroundColor() const
-    \obsolete
-
-    This function is deprecated. Use background() instead.
-*/
-#endif
-
 /*!
     \fn QBrush QListWidgetItem::background() const
     \since 4.2
@@ -954,17 +943,6 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
     \sa setBackground(), foreground()
 */
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QColor QListWidgetItem::textColor() const
-    \obsolete
-
-    Returns the color used to display the list item's text.
-
-    This function is deprecated. Use foreground() instead.
-*/
-#endif
 
 /*!
     \fn QBrush QListWidgetItem::foreground() const
@@ -1116,13 +1094,6 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
 */
 
 /*!
-    \fn void QListWidgetItem::setBackgroundColor(const QColor &color)
-    \obsolete
-
-    This function is deprecated. Use setBackground() instead.
-*/
-
-/*!
     \fn void QListWidgetItem::setBackground(const QBrush &brush)
     \since 4.2
 
@@ -1132,15 +1103,6 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
 
     \sa background(), setForeground()
 */
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn void QListWidgetItem::setTextColor(const QColor &color)
-    \obsolete
-
-    This function is deprecated. Use setForeground() instead.
-*/
-#endif
 
 /*!
     \fn void QListWidgetItem::setForeground(const QBrush &brush)
@@ -1791,34 +1753,6 @@ void QListWidget::setItemWidget(QListWidgetItem *item, QWidget *widget)
     QAbstractItemView::setIndexWidget(index, widget);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    Returns \c true if \a item is selected; otherwise returns \c false.
-
-    \obsolete
-
-    This function is deprecated. Use QListWidgetItem::isSelected() instead.
-*/
-bool QListWidget::isItemSelected(const QListWidgetItem *item) const
-{
-    return ((item && item->listWidget() == this) ? item->isSelected() : false);
-}
-
-/*!
-    Selects or deselects the given \a item depending on whether \a select is
-    true of false.
-
-    \obsolete
-
-    This function is deprecated. Use QListWidgetItem::setSelected() instead.
-*/
-void QListWidget::setItemSelected(const QListWidgetItem *item, bool select)
-{
-    if (item && item->listWidget() == this)
-        const_cast<QListWidgetItem*>(item)->setSelected(select);
-}
-#endif
-
 /*!
     Returns a list of all selected items in the list widget.
 */
@@ -1852,32 +1786,6 @@ QList<QListWidgetItem*> QListWidget::findItems(const QString &text, Qt::MatchFla
         items.append(d->listModel()->at(indexes.at(i).row()));
     return items;
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    Returns \c true if the \a item is explicitly hidden; otherwise returns \c false.
-
-    \obsolete
-
-    This function is deprecated. Use QListWidgetItem::isHidden() instead.
-*/
-bool QListWidget::isItemHidden(const QListWidgetItem *item) const
-{
-    return isRowHidden(row(item));
-}
-
-/*!
-    If \a hide is true, the \a item will be hidden; otherwise it will be shown.
-
-    \obsolete
-
-    This function is deprecated. Use QListWidgetItem::setHidden() instead.
-*/
-void QListWidget::setItemHidden(const QListWidgetItem *item, bool hide)
-{
-    setRowHidden(row(item), hide);
-}
-#endif
 
 /*!
     Scrolls the view if necessary to ensure that the \a item is visible.
@@ -1923,11 +1831,7 @@ QStringList QListWidget::mimeTypes() const
     If the list of items is empty, \nullptr is returned instead of a
     serialized empty list.
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QMimeData *QListWidget::mimeData(const QList<QListWidgetItem *> &items) const
-#else
-QMimeData *QListWidget::mimeData(const QList<QListWidgetItem*> items) const
-#endif
 {
     Q_D(const QListWidget);
 
@@ -2049,18 +1953,6 @@ QModelIndex QListWidget::indexFromItem(const QListWidgetItem *item) const
     Q_D(const QListWidget);
     return d->listModel()->index(item);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \internal
-    \obsolete
-    \overload
-*/
-QModelIndex QListWidget::indexFromItem(QListWidgetItem *item) const
-{
-    return indexFromItem(const_cast<const QListWidgetItem *>(item));
-}
-#endif
 
 /*!
     Returns a pointer to the QListWidgetItem associated with the given \a index.

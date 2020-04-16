@@ -114,29 +114,10 @@ public:
     inline void setTextAlignment(int alignment)
         { setData(Qt::TextAlignmentRole, alignment); }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QListWidgetItem::background() instead")
-    inline QColor backgroundColor() const
-        { return qvariant_cast<QColor>(data(Qt::BackgroundRole)); }
-#endif
-    // no QT_DEPRECATED_SINCE because it is a virtual function
-    QT_DEPRECATED_X ("Use QListWidgetItem::setBackground() instead")
-    virtual void setBackgroundColor(const QColor &color)
-        { setData(Qt::BackgroundRole, color); }
-
     inline QBrush background() const
         { return qvariant_cast<QBrush>(data(Qt::BackgroundRole)); }
     inline void setBackground(const QBrush &brush)
         { setData(Qt::BackgroundRole, brush.style() != Qt::NoBrush ? QVariant(brush) : QVariant()); }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QListWidgetItem::foreground() instead")
-    inline QColor textColor() const
-        { return qvariant_cast<QColor>(data(Qt::ForegroundRole)); }
-    QT_DEPRECATED_X ("Use QListWidgetItem::setForeground() instead")
-    inline void setTextColor(const QColor &color)
-        { setData(Qt::ForegroundRole, color); }
-#endif
 
     inline QBrush foreground() const
         { return qvariant_cast<QBrush>(data(Qt::ForegroundRole)); }
@@ -256,24 +237,15 @@ public:
     void setItemWidget(QListWidgetItem *item, QWidget *widget);
     inline void removeItemWidget(QListWidgetItem *item);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QListWidgetItem::isSelected() instead")
-    bool isItemSelected(const QListWidgetItem *item) const;
-    QT_DEPRECATED_X ("Use QListWidgetItem::setSelected() instead")
-    void setItemSelected(const QListWidgetItem *item, bool select);
-#endif
     QList<QListWidgetItem*> selectedItems() const;
     QList<QListWidgetItem*> findItems(const QString &text, Qt::MatchFlags flags) const;
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QListWidgetItem::isHidden() instead")
-    bool isItemHidden(const QListWidgetItem *item) const;
-    QT_DEPRECATED_X ("Use QListWidgetItem::setHidden() instead")
-    void setItemHidden(const QListWidgetItem *item, bool hide);
-#endif
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QList<QListWidgetItem*> items(const QMimeData *data) const;
+
+    QModelIndex indexFromItem(const QListWidgetItem *item) const;
+    QListWidgetItem *itemFromIndex(const QModelIndex &index) const;
+
 protected:
-#endif
 #if QT_CONFIG(draganddrop)
     void dropEvent(QDropEvent *event) override;
 #endif
@@ -299,28 +271,11 @@ Q_SIGNALS:
 protected:
     bool event(QEvent *e) override;
     virtual QStringList mimeTypes() const;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     virtual QMimeData *mimeData(const QList<QListWidgetItem *> &items) const;
-#else
-    virtual QMimeData *mimeData(const QList<QListWidgetItem*> items) const;
-#endif
 #if QT_CONFIG(draganddrop)
     virtual bool dropMimeData(int index, const QMimeData *data, Qt::DropAction action);
     virtual Qt::DropActions supportedDropActions() const;
 #endif
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-public:
-#else
-protected:
-#endif
-    QList<QListWidgetItem*> items(const QMimeData *data) const;
-
-    QModelIndex indexFromItem(const QListWidgetItem *item) const;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QModelIndex indexFromItem(QListWidgetItem *item) const; // ### Qt 6: remove
-#endif
-    QListWidgetItem *itemFromIndex(const QModelIndex &index) const;
 
 private:
     void setModel(QAbstractItemModel *model) override;

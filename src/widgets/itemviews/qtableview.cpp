@@ -3219,22 +3219,6 @@ void QTableView::resizeColumnsToContents()
     d->horizontalHeader->resizeSections(QHeaderView::ResizeToContents);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-  \obsolete
-  \overload
-
-  This function is deprecated. Use
-  sortByColumn(int column, Qt::SortOrder order) instead.
-  Sorts the model by the values in the given \a column.
-*/
-void QTableView::sortByColumn(int column)
-{
-    Q_D(QTableView);
-    sortByColumn(column, d->horizontalHeader->sortIndicatorOrder());
-}
-#endif
-
 /*!
   \since 4.2
 

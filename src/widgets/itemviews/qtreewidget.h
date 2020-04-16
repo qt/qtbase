@@ -134,28 +134,10 @@ public:
     inline void setTextAlignment(int column, int alignment)
         { setData(column, Qt::TextAlignmentRole, alignment); }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::background() instead")
-    inline QColor backgroundColor(int column) const
-        { return qvariant_cast<QColor>(data(column, Qt::BackgroundRole)); }
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::setBackground() instead")
-    inline void setBackgroundColor(int column, const QColor &color)
-        { setData(column, Qt::BackgroundRole, color); }
-#endif
-
     inline QBrush background(int column) const
         { return qvariant_cast<QBrush>(data(column, Qt::BackgroundRole)); }
     inline void setBackground(int column, const QBrush &brush)
         { setData(column, Qt::BackgroundRole, brush.style() != Qt::NoBrush ? QVariant(brush) : QVariant()); }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::foreground() instead")
-    inline QColor textColor(int column) const
-        { return qvariant_cast<QColor>(data(column, Qt::ForegroundRole)); }
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::setForeground() instead")
-    inline void setTextColor(int column, const QColor &color)
-        { setData(column, Qt::ForegroundRole, color); }
-#endif
 
     inline QBrush foreground(int column) const
         { return qvariant_cast<QBrush>(data(column, Qt::ForegroundRole)); }
@@ -315,32 +297,9 @@ public:
     void setItemWidget(QTreeWidgetItem *item, int column, QWidget *widget);
     inline void removeItemWidget(QTreeWidgetItem *item, int column);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::isSelected() instead")
-    bool isItemSelected(const QTreeWidgetItem *item) const;
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::setSelected() instead")
-    void setItemSelected(const QTreeWidgetItem *item, bool select);
-#endif
     QList<QTreeWidgetItem*> selectedItems() const;
     QList<QTreeWidgetItem*> findItems(const QString &text, Qt::MatchFlags flags,
                                       int column = 0) const;
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::isHidden() instead")
-    bool isItemHidden(const QTreeWidgetItem *item) const;
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::setHidden() instead")
-    void setItemHidden(const QTreeWidgetItem *item, bool hide);
-
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::isExpanded() instead")
-    bool isItemExpanded(const QTreeWidgetItem *item) const;
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::setExpanded() instead")
-    void setItemExpanded(const QTreeWidgetItem *item, bool expand);
-
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::isFirstColumnSpanned() instead")
-    bool isFirstItemColumnSpanned(const QTreeWidgetItem *item) const;
-    QT_DEPRECATED_X ("Use QTreeWidgetItem::setFirstColumnSpanned() instead")
-    void setFirstItemColumnSpanned(const QTreeWidgetItem *item, bool span);
-#endif
 
     QTreeWidgetItem *itemAbove(const QTreeWidgetItem *item) const;
     QTreeWidgetItem *itemBelow(const QTreeWidgetItem *item) const;

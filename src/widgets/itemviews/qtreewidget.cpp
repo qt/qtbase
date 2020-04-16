@@ -1256,22 +1256,6 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
     \sa font(), setText(), setForeground()
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QColor QTreeWidgetItem::backgroundColor(int column) const
-    \obsolete
-
-    This function is deprecated. Use background() instead.
-*/
-
-/*!
-    \fn void QTreeWidgetItem::setBackgroundColor(int column, const QColor &color)
-    \obsolete
-
-    This function is deprecated. Use setBackground() instead.
-*/
-#endif
-
 /*!
     \fn QBrush QTreeWidgetItem::background(int column) const
     \since 4.2
@@ -1296,21 +1280,6 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
     \sa setForeground()
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QColor QTreeWidgetItem::textColor(int column) const
-    \obsolete
-
-    This function is deprecated. Use foreground() instead.
-*/
-
-/*!
-    \fn void QTreeWidgetItem::setTextColor(int column, const QColor &color)
-    \obsolete
-
-    This function is deprecated. Use setForeground() instead.
-*/
-#endif
 
 /*!
     \fn QBrush QTreeWidgetItem::foreground(int column) const
@@ -3134,38 +3103,6 @@ void QTreeWidget::setItemWidget(QTreeWidgetItem *item, int column, QWidget *widg
     QAbstractItemView::setIndexWidget(d->index(item, column), widget);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-  Returns \c true if the \a item is selected; otherwise returns \c false.
-
-  \sa itemSelectionChanged()
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTreeWidgetItem::isSelected()} instead.
-*/
-bool QTreeWidget::isItemSelected(const QTreeWidgetItem *item) const
-{
-    return ((item && item->treeWidget() == this) ? item->isSelected() : false);
-}
-
-/*!
-  If \a select is true, the given \a item is selected; otherwise it is
-  deselected.
-
-  \sa itemSelectionChanged()
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTreeWidgetItem::setSelected()} instead.
-*/
-void QTreeWidget::setItemSelected(const QTreeWidgetItem *item, bool select)
-{
-    if (item && item->treeWidget() == this)
-        const_cast<QTreeWidgetItem*>(item)->setSelected(select);
-}
-#endif
-
 /*!
   Returns a list of all selected non-hidden items.
 
@@ -3204,99 +3141,6 @@ QList<QTreeWidgetItem*> QTreeWidget::findItems(const QString &text, Qt::MatchFla
     return items;
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-  Returns \c true if the \a item is explicitly hidden, otherwise returns \c false.
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTreeWidgetItem::isHidden()} instead.
-*/
-bool QTreeWidget::isItemHidden(const QTreeWidgetItem *item) const
-{
-    return ((item && item->treeWidget() == this) ? item->isHidden() : false);
-}
-
-/*!
-  Hides the given \a item if \a hide is true; otherwise shows the item.
-
-  \sa itemChanged()
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTreeWidgetItem::setHidden()} instead.
-*/
-void QTreeWidget::setItemHidden(const QTreeWidgetItem *item, bool hide)
-{
-    if (item && item->treeWidget() == this)
-        const_cast<QTreeWidgetItem*>(item)->setHidden(hide);
-}
-
-/*!
-  Returns \c true if the given \a item is open; otherwise returns \c false.
-
-  \sa itemExpanded()
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTreeWidgetItem::isExpanded()} instead.
-*/
-bool QTreeWidget::isItemExpanded(const QTreeWidgetItem *item) const
-{
-    return ((item && item->treeWidget() == this) ? item->isExpanded() : false);
-}
-
-/*!
-    Sets the item referred to by \a item to either closed or opened,
-    depending on the value of \a expand.
-
-    \sa expandItem(), collapseItem(), itemExpanded()
-
-    \obsolete
-
-    This function is deprecated. Use \l{QTreeWidgetItem::setExpanded()} instead.
-*/
-void QTreeWidget::setItemExpanded(const QTreeWidgetItem *item, bool expand)
-{
-    if (item && item->treeWidget() == this)
-        const_cast<QTreeWidgetItem*>(item)->setExpanded(expand);
-}
-
-/*!
-  \since 4.3
-
-  Returns \c true if the given \a item is set to show only one section over all columns;
-  otherwise returns \c false.
-
-  \sa setFirstItemColumnSpanned()
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTreeWidgetItem::isFirstColumnSpanned()} instead.
-*/
-bool QTreeWidget::isFirstItemColumnSpanned(const QTreeWidgetItem *item) const
-{
-    return ((item && item->treeWidget() == this) ? item->isFirstColumnSpanned() : false);
-}
-
-/*!
-  \since 4.3
-
-  Sets the given \a item to only show one section for all columns if \a span is true;
-  otherwise the item will show one section per column.
-
-  \sa isFirstItemColumnSpanned()
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTreeWidgetItem::setFirstColumnSpanned()} instead.
-*/
-void QTreeWidget::setFirstItemColumnSpanned(const QTreeWidgetItem *item, bool span)
-{
-    if (item && item->treeWidget() == this)
-        const_cast<QTreeWidgetItem*>(item)->setFirstColumnSpanned(span);
-}
-#endif
 
 /*!
   \since 4.3

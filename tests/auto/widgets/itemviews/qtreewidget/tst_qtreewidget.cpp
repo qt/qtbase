@@ -866,15 +866,6 @@ void tst_QTreeWidget::selectedItems()
         }
     }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    // Possible to select null without crashing?
-    testWidget->setItemSelected(nullptr, true);
-    QVERIFY(!testWidget->isItemSelected(nullptr));
-QT_WARNING_POP
-#endif
-
     // unselect
     for (const auto &itemPath : selectedItems) {
         QTreeWidgetItem *item = nullptr;

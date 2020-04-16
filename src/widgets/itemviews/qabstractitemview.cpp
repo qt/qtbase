@@ -2924,65 +2924,7 @@ void QAbstractItemView::editorDestroyed(QObject *editor)
         setState(NoState);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-    Sets the horizontal scroll bar's steps per item to \a steps.
 
-    This is the number of steps used by the horizontal scroll bar to
-    represent the width of an item.
-
-    Note that if the view has a horizontal header, the item steps
-    will be ignored and the header section size will be used instead.
-
-    \sa horizontalStepsPerItem(), setVerticalStepsPerItem()
-*/
-void QAbstractItemView::setHorizontalStepsPerItem(int steps)
-{
-    Q_UNUSED(steps)
-    // do nothing
-}
-
-/*!
-    \obsolete
-    Returns the horizontal scroll bar's steps per item.
-
-    \sa setHorizontalStepsPerItem(), verticalStepsPerItem()
-*/
-int QAbstractItemView::horizontalStepsPerItem() const
-{
-    return 1;
-}
-
-/*!
-    \obsolete
-    Sets the vertical scroll bar's steps per item to \a steps.
-
-    This is the number of steps used by the vertical scroll bar to
-    represent the height of an item.
-
-    Note that if the view has a vertical header, the item steps
-    will be ignored and the header section size will be used instead.
-
-    \sa verticalStepsPerItem(), setHorizontalStepsPerItem()
-*/
-void QAbstractItemView::setVerticalStepsPerItem(int steps)
-{
-    Q_UNUSED(steps)
-    // do nothing
-}
-
-/*!
-    \obsolete
-    Returns the vertical scroll bar's steps per item.
-
-    \sa setVerticalStepsPerItem(), horizontalStepsPerItem()
-*/
-int QAbstractItemView::verticalStepsPerItem() const
-{
-    return 1;
-}
-#endif
 
 /*!
     Moves to and selects the item best matching the string \a search.

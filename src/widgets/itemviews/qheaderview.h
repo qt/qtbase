@@ -115,19 +115,11 @@ public:
 
     void setSectionsMovable(bool movable);
     bool sectionsMovable() const;
-#if QT_DEPRECATED_SINCE(5, 0)
-    inline QT_DEPRECATED void setMovable(bool movable) { setSectionsMovable(movable); }
-    inline QT_DEPRECATED bool isMovable() const { return sectionsMovable(); }
-#endif
     void setFirstSectionMovable(bool movable);
     bool isFirstSectionMovable() const;
 
     void setSectionsClickable(bool clickable);
     bool sectionsClickable() const;
-#if QT_DEPRECATED_SINCE(5, 0)
-    inline QT_DEPRECATED void setClickable(bool clickable) { setSectionsClickable(clickable); }
-    inline QT_DEPRECATED bool isClickable() const { return sectionsClickable(); }
-#endif
 
     void setHighlightSections(bool highlight);
     bool highlightSections() const;
@@ -138,15 +130,6 @@ public:
 
     void setResizeContentsPrecision(int precision);
     int  resizeContentsPrecision() const;
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    inline QT_DEPRECATED void setResizeMode(ResizeMode mode)
-        { setSectionResizeMode(mode); }
-    inline QT_DEPRECATED void setResizeMode(int logicalindex, ResizeMode mode)
-        { setSectionResizeMode(logicalindex, mode); }
-    inline QT_DEPRECATED ResizeMode resizeMode(int logicalindex) const
-        { return sectionResizeMode(logicalindex); }
-#endif
 
     int stretchSectionCount() const;
 

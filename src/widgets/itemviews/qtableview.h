@@ -130,10 +130,6 @@ public Q_SLOTS:
     void resizeRowsToContents();
     void resizeColumnToContents(int column);
     void resizeColumnsToContents();
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QTableView::sortByColumn(int column, Qt::SortOrder order) instead")
-    void sortByColumn(int column);
-#endif
     void sortByColumn(int column, Qt::SortOrder order);
     void setShowGrid(bool show);
 

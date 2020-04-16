@@ -134,28 +134,10 @@ public:
     inline void setTextAlignment(int alignment)
         { setData(Qt::TextAlignmentRole, alignment); }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QTableWidgetItem::background() instead")
-    inline QColor backgroundColor() const
-        { return qvariant_cast<QColor>(data(Qt::BackgroundRole)); }
-    QT_DEPRECATED_X ("Use QTableWidgetItem::setBackground() instead")
-    inline void setBackgroundColor(const QColor &color)
-        { setData(Qt::BackgroundRole, color); }
-#endif
-
     inline QBrush background() const
         { return qvariant_cast<QBrush>(data(Qt::BackgroundRole)); }
     inline void setBackground(const QBrush &brush)
         { setData(Qt::BackgroundRole, brush.style() != Qt::NoBrush ? QVariant(brush) : QVariant()); }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QTableWidgetItem::foreground() instead")
-    inline QColor textColor() const
-        { return qvariant_cast<QColor>(data(Qt::ForegroundRole)); }
-    QT_DEPRECATED_X ("Use QTableWidgetItem::setForeground() instead")
-    inline void setTextColor(const QColor &color)
-        { setData(Qt::ForegroundRole, color); }
-#endif
 
     inline QBrush foreground() const
         { return qvariant_cast<QBrush>(data(Qt::ForegroundRole)); }
@@ -282,12 +264,6 @@ public:
     void setCellWidget(int row, int column, QWidget *widget);
     inline void removeCellWidget(int row, int column);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use QTableWidgetItem::isSelected() instead")
-    bool isItemSelected(const QTableWidgetItem *item) const;
-    QT_DEPRECATED_X ("Use QTableWidgetItem::setSelected() instead")
-    void setItemSelected(const QTableWidgetItem *item, bool select);
-#endif
     void setRangeSelected(const QTableWidgetSelectionRange &range, bool select);
 
     QList<QTableWidgetSelectionRange> selectedRanges() const;

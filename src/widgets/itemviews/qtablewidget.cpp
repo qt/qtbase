@@ -1249,22 +1249,6 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
     \sa font(), setText(), setForeground()
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QColor QTableWidgetItem::backgroundColor() const
-    \obsolete
-
-    This function is deprecated. Use background() instead.
-*/
-
-/*!
-    \fn void QTableWidgetItem::setBackgroundColor(const QColor &color)
-    \obsolete
-
-    This function is deprecated. Use setBackground() instead.
-*/
-#endif
-
 /*!
     \fn QBrush QTableWidgetItem::background() const
     \since 4.2
@@ -1284,22 +1268,6 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
     \sa setForeground()
 */
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QColor QTableWidgetItem::textColor() const
-    \obsolete
-
-    This function is deprecated. Use foreground() instead.
-*/
-
-/*!
-    \fn void QTableWidgetItem::setTextColor(const QColor &color)
-    \obsolete
-
-    This function is deprecated. Use setForeground() instead.
-*/
-#endif
 
 /*!
     \fn QBrush QTableWidgetItem::foreground() const
@@ -2357,34 +2325,6 @@ void QTableWidget::setCellWidget(int row, int column, QWidget *widget)
     QModelIndex index = model()->index(row, column, QModelIndex());
     QAbstractItemView::setIndexWidget(index, widget);
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-  Returns \c true if the \a item is selected, otherwise returns \c false.
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTableWidgetItem::isSelected()} instead.
-*/
-
-bool QTableWidget::isItemSelected(const QTableWidgetItem *item) const
-{
-    return ((item && item->tableWidget() == this) ? item->isSelected() : false);
-}
-
-/*!
-  Selects or deselects \a item depending on \a select.
-
-  \obsolete
-
-  This function is deprecated. Use \l{QTableWidgetItem::setSelected()} instead.
-*/
-void QTableWidget::setItemSelected(const QTableWidgetItem *item, bool select)
-{
-    if (item && item->tableWidget() == this)
-        const_cast<QTableWidgetItem*>(item)->setSelected(select);
-}
-#endif
 
 /*!
   Selects or deselects the \a range depending on \a select.
