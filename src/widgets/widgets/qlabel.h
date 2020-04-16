@@ -42,6 +42,7 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
+#include <QtGui/qpicture.h>
 
 QT_REQUIRE_CONFIG(label);
 
@@ -73,24 +74,16 @@ public:
 
     QString text() const;
 
-#if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QPixmap by-value")
-    const QPixmap *pixmap() const; // ### Qt 7: Remove function
-
-    QPixmap pixmap(Qt::ReturnByValueConstant) const;
-#else
-    QPixmap pixmap(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
-#endif // QT_DEPRECATED_SINCE(5,15)
+#if QT_DEPRECATED_SINCE(6,6)
+    QPixmap pixmap(Qt::ReturnByValueConstant) const { return pixmap(); }
+#endif
+    QPixmap pixmap() const;
 
 #ifndef QT_NO_PICTURE
-#  if QT_DEPRECATED_SINCE(5,15)
-    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QPicture by-value")
-    const QPicture *picture() const; // ### Qt 7: Remove function
-
-    QPicture picture(Qt::ReturnByValueConstant) const;
-#  else
-    QPicture picture(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
-#  endif // QT_DEPRECATED_SINCE(5,15)
+#if QT_DEPRECATED_SINCE(6,6)
+    QPicture picture(Qt::ReturnByValueConstant) const { return picture(); }
+#endif
+    QPicture picture() const;
 #endif
 #if QT_CONFIG(movie)
     QMovie *movie() const;

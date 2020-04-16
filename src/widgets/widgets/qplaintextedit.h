@@ -74,9 +74,6 @@ class Q_WIDGETS_EXPORT QPlainTextEdit : public QAbstractScrollArea
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(QString plainText READ toPlainText WRITE setPlainText NOTIFY textChanged USER true)
     Q_PROPERTY(bool overwriteMode READ overwriteMode WRITE setOverwriteMode)
-#if QT_DEPRECATED_SINCE(5, 10)
-    Q_PROPERTY(int tabStopWidth READ tabStopWidth WRITE setTabStopWidth)
-#endif
     Q_PROPERTY(qreal tabStopDistance READ tabStopDistance WRITE setTabStopDistance)
     Q_PROPERTY(int cursorWidth READ cursorWidth WRITE setCursorWidth)
     Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
@@ -170,11 +167,6 @@ public:
 
     bool overwriteMode() const;
     void setOverwriteMode(bool overwrite);
-
-#if QT_DEPRECATED_SINCE(5, 10)
-    QT_DEPRECATED int tabStopWidth() const;
-    QT_DEPRECATED void setTabStopWidth(int width);
-#endif
 
     qreal tabStopDistance() const;
     void setTabStopDistance(qreal distance);

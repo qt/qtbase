@@ -3582,18 +3582,6 @@ void tst_QLineEdit::textMargin()
     QCOMPARE(right, margins.right());
     QCOMPARE(bottom, margins.bottom());
 
-#if QT_DEPRECATED_SINCE(5, 14)
-    int l;
-    int t;
-    int r;
-    int b;
-    testWidget.getTextMargins(&l, &t, &r, &b);
-    QCOMPARE(left, l);
-    QCOMPARE(top, t);
-    QCOMPARE(right, r);
-    QCOMPARE(bottom, b);
-#endif
-
     QTest::mouseClick(&testWidget, Qt::LeftButton, {}, mousePressPos);
     QTRY_COMPARE(testWidget.cursorPosition(), cursorPosition);
 }

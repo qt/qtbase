@@ -2491,26 +2491,6 @@ void QPlainTextEdit::setOverwriteMode(bool overwrite)
     d->control->setOverwriteMode(overwrite);
 }
 
-#if QT_DEPRECATED_SINCE(5, 10)
-/*!
-    \property QPlainTextEdit::tabStopWidth
-    \brief the tab stop width in pixels
-    \deprecated in Qt 5.10. Use tabStopDistance instead.
-
-    By default, this property contains a value of 80.
-*/
-
-int QPlainTextEdit::tabStopWidth() const
-{
-    return qRound(tabStopDistance());
-}
-
-void QPlainTextEdit::setTabStopWidth(int width)
-{
-    setTabStopDistance(width);
-}
-#endif
-
 /*!
     \property QPlainTextEdit::tabStopDistance
     \brief the tab stop distance in pixels

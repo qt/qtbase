@@ -2053,27 +2053,6 @@ void QTextEdit::setOverwriteMode(bool overwrite)
     d->control->setOverwriteMode(overwrite);
 }
 
-#if QT_DEPRECATED_SINCE(5, 10)
-/*!
-    \property QTextEdit::tabStopWidth
-    \brief the tab stop width in pixels
-    \since 4.1
-    \deprecated in Qt 5.10. Use tabStopDistance instead.
-
-    By default, this property contains a value of 80 pixels.
-*/
-
-int QTextEdit::tabStopWidth() const
-{
-    return qRound(tabStopDistance());
-}
-
-void QTextEdit::setTabStopWidth(int width)
-{
-    setTabStopDistance(width);
-}
-#endif
-
 /*!
     \property QTextEdit::tabStopDistance
     \brief the tab stop distance in pixels

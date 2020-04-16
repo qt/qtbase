@@ -1240,11 +1240,6 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
                                   bar on its left side. This can be used to
                                   increase the amount of vertical space in
                                   a QMainWindow.
-    \value AllDockWidgetFeatures  (Deprecated) The dock widget can be closed, moved,
-                                  and floated. Since new features might be added in future
-                                  releases, the look and behavior of dock widgets might
-                                  change if you use this flag. Please specify individual
-                                  flags instead.
     \value NoDockWidgetFeatures   The dock widget cannot be closed, moved,
                                   or floated.
 

@@ -1780,40 +1780,6 @@ void QSplitter::setStretchFactor(int index, int stretch)
     widget->setSizePolicy(sp);
 }
 
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \relates QSplitter
-    \obsolete
-
-    Use \a ts << \a{splitter}.saveState() instead.
-*/
-
-QTextStream& operator<<(QTextStream& ts, const QSplitter& splitter)
-{
-    ts << splitter.saveState() << Qt::endl;
-    return ts;
-}
-
-/*!
-    \relates QSplitter
-    \obsolete
-
-    Use \a ts >> \a{splitter}.restoreState() instead.
-*/
-
-QTextStream& operator>>(QTextStream& ts, QSplitter& splitter)
-{
-    QString line = ts.readLine();
-    line = line.simplified();
-    line.replace(QLatin1Char(' '), QString());
-    line = std::move(line).toUpper();
-
-    splitter.restoreState(std::move(line).toLatin1());
-    return ts;
-}
-#endif
-
 QT_END_NAMESPACE
 
 #include "moc_qsplitter.cpp"

@@ -157,25 +157,6 @@ QSplashScreen::QSplashScreen(QScreen *screen, const QPixmap &pixmap, Qt::WindowF
     d_func()->setPixmap(pixmap, screen);
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \obsolete
-
-    This function allows you to specify a parent for your splashscreen. The
-    typical use for this constructor is if you have a multiple screens and
-    prefer to have the splash screen on a different screen than your primary
-    one. In that case pass the proper desktop() as the \a parent.
-*/
-QSplashScreen::QSplashScreen(QWidget *parent, const QPixmap &pixmap, Qt::WindowFlags f)
-    : QWidget(*new QSplashScreenPrivate, parent, Qt::SplashScreen | Qt::FramelessWindowHint | f)
-{
-    // Does an implicit repaint. Explicitly pass parent as QObject::parent()
-    // is still 0 here due to QWidget's special handling.
-    d_func()->setPixmap(pixmap, QSplashScreenPrivate::screenFor(parent));
-}
-#endif
-
 /*!
   Destructor.
 */
