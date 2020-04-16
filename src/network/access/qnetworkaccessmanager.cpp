@@ -2116,7 +2116,10 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
     Q_Q(QNetworkAccessManager);
 
     if (statusMonitor.isEnabled()) {
+        auto previous = networkAccessible;
         networkAccessible = isOnline ? QNetworkAccessManager::Accessible : QNetworkAccessManager::NotAccessible;
+        if (previous != networkAccessible)
+            emit q->networkAccessibleChanged(networkAccessible);
         return;
     }
 
