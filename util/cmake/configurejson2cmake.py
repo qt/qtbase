@@ -870,7 +870,7 @@ def get_feature_mapping():
             "condition": "NOT WIN32 AND ( NOT WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )"
         },
         "simulator_and_device": {"condition": "UIKIT AND NOT QT_UIKIT_SDK"},
-        "pkg-config": None,
+        "pkg-config": {"condition": "PKG_CONFIG_FOUND"},
         "posix-libiconv": {
             "condition": "NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND TEST_iconv_needlib",
             "enable": "TEST_posix_iconv AND TEST_iconv_needlib",

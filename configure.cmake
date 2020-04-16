@@ -356,6 +356,13 @@ qt_feature("use_lld_linker"
     DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'gold'
 )
 qt_feature_config("use_lld_linker" QMAKE_PRIVATE_CONFIG)
+qt_feature("pkg-config" PUBLIC
+    LABEL "Using pkg-config"
+    AUTODETECT NOT APPLE AND NOT WIN32
+    CONDITION PKG_CONFIG_FOUND
+)
+qt_feature_config("pkg-config" QMAKE_PUBLIC_QT_CONFIG
+    NEGATE)
 qt_feature("developer-build"
     LABEL "Developer build"
     AUTODETECT OFF
