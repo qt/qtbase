@@ -308,6 +308,8 @@ endif()
 # Compute the values of QT_BUILD_DIR, QT_INSTALL_DIR, QT_CONFIG_BUILD_DIR, QT_CONFIG_INSTALL_DIR
 # taking into account whether the current build is a prefix build or a non-prefix build,
 # and whether it is a superbuild or non-superbuild.
+# A third case is when another module or standalone tests are built against a super-built Qt.
+# The layout for the third case is the same as for non-superbuilds.
 #
 # These values should be prepended to file paths in commands or properties,
 # in order to correctly place generated Config files, generated Targets files,

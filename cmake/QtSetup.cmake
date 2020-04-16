@@ -56,7 +56,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 # This detection only happens when building qtbase, and later is propagated via the generated
 # QtBuildInternalsExtra.cmake file.
 if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
-    if((CMAKE_INSTALL_PREFIX STREQUAL CMAKE_BINARY_DIR) OR
+    if((CMAKE_INSTALL_PREFIX STREQUAL QtBase_BINARY_DIR) OR
         (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND FEATURE_developer_build))
 
         set(__qt_will_install_value OFF)
@@ -64,7 +64,7 @@ if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
         # dir.
         # While building another repo (like qtsvg), the CMAKE_INSTALL_PREFIX or CMAKE_PREFIX_PATH
         # (either work) should be set on the command line to point to the qtbase build dir.
-        set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH
+        set(CMAKE_INSTALL_PREFIX ${QtBase_BINARY_DIR} CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
     else()
         set(__qt_will_install_value ON)
