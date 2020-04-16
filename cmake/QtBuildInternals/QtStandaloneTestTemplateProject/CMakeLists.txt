@@ -6,6 +6,9 @@ find_package(Qt6 REQUIRED COMPONENTS BuildInternals)
 # Includes QtSetup and friends for private CMake API.
 qt_build_internals_set_up_private_api()
 
+# Restore original install prefix.
+qt_restore_backed_up_install_prefix()
+
 # Find all StandaloneTestsConfig.cmake files, and include them
 # This will find all Qt packages that are required for standalone tests.
 # It will find more packages that needed for a certain test, but will ensure any test can

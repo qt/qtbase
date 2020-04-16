@@ -8,6 +8,8 @@ endif()
 #
 ######################################
 
+set(QT_BACKUP_CMAKE_INSTALL_PREFIX_BEFORE_EXTRA_INCLUDE "${CMAKE_INSTALL_PREFIX}")
+
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake")
     include(${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake)
 endif()
@@ -234,6 +236,12 @@ macro(qt_build_tests)
         # feature variables are available, and the call in QtSetup is too early when building
         # standalone tests, because Core was not find_package()'d yet.
         qt_set_language_standards()
+
+        if(NOT QT_SUPERBUILD)
+            # Restore original install prefix. For super builds it needs to be done in
+            # qt5/CMakeLists.txt.
+            qt_restore_backed_up_install_prefix()
+        endif()
     endif()
 
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/auto/CMakeLists.txt")
@@ -246,6 +254,14 @@ macro(qt_build_tests)
         # add_subdirectory(manual) don't build manual tests for now, because qmake doesn't.
     endif()
 endmacro()
+
+function(qt_restore_backed_up_install_prefix)
+    # Restore the CMAKE_INSTALL_PREFIX that was set before loading BuildInternals.
+    # Useful for standalone tests, we don't want to accidentally install a test into the Qt prefix.
+    get_property(helpstring CACHE CMAKE_INSTALL_PREFIX PROPERTY HELPSTRING)
+    set(CMAKE_INSTALL_PREFIX "${QT_BACKUP_CMAKE_INSTALL_PREFIX_BEFORE_EXTRA_INCLUDE}"
+        CACHE STRING "${helpstring}" FORCE)
+endfunction()
 
 macro(qt_examples_build_begin)
     # Examples that are built as part of the Qt build need to use the CMake config files from the
