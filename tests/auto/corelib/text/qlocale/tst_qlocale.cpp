@@ -149,7 +149,8 @@ private slots:
     void systemLocale_data();
     void systemLocale();
 
-    void IndianNumberGrouping();
+    void numberGroupingIndia();
+    void numberFormatChakma();
 
     // *** ORDER-DEPENDENCY *** (This Is Bad.)
     // Test order is determined by order of declaration here: *all* tests that
@@ -3020,55 +3021,140 @@ void tst_QLocale::systemLocale()
     QCOMPARE(QLocale::system(), originalSystemLocale);
 }
 
-void tst_QLocale::IndianNumberGrouping()
+void tst_QLocale::numberGroupingIndia()
 {
-    QLocale indian(QLocale::Hindi, QLocale::India);
+    const QLocale indian(QLocale::Hindi, QLocale::India);
 
-    qint8 int8 = 100;
-    QString strResult8("100");
+    // A 7-bit value (fits in signed 8-bit):
+    const QString strResult8("120");
+    const qint8 int8 = 120;
     QCOMPARE(indian.toString(int8), strResult8);
     QCOMPARE(indian.toShort(strResult8), short(int8));
 
-    quint8 uint8 = 100;
+    const quint8 uint8 = 120u;
     QCOMPARE(indian.toString(uint8), strResult8);
     QCOMPARE(indian.toShort(strResult8), short(uint8));
 
-    // Boundary case 1000 for short and ushort
-    short shortInt = 1000;
-    QString strResult16("1,000");
-    QCOMPARE(indian.toString(shortInt), strResult16);
-    QCOMPARE(indian.toShort(strResult16), shortInt);
+    // Boundary case for needing a first separator:
+    const QString strResultSep("3,210");
+    const short shortSep = 3210;
+    QCOMPARE(indian.toString(shortSep), strResultSep);
+    QCOMPARE(indian.toShort(strResultSep), shortSep);
 
-    ushort uShortInt = 1000;
-    QCOMPARE(indian.toString(uShortInt), strResult16);
-    QCOMPARE(indian.toUShort(strResult16), uShortInt);
+    const ushort uShortSep = 3210u;
+    QCOMPARE(indian.toString(uShortSep), strResultSep);
+    QCOMPARE(indian.toUShort(strResultSep), uShortSep);
 
-    shortInt = 10000;
-    strResult16 = "10,000";
-    QCOMPARE(indian.toString(shortInt), strResult16);
-    QCOMPARE(indian.toShort(strResult16), shortInt);
+    // 15-bit:
+    const QString strResult16("24,310");
+    const short short16 = 24310;
+    QCOMPARE(indian.toString(short16), strResult16);
+    QCOMPARE(indian.toShort(strResult16), short16);
 
-    uShortInt = 10000;
-    QCOMPARE(indian.toString(uShortInt), strResult16);
-    QCOMPARE(indian.toUShort(strResult16), uShortInt);
+    const ushort uShort16 = 24310u;
+    QCOMPARE(indian.toString(uShort16), strResult16);
+    QCOMPARE(indian.toUShort(strResult16), uShort16);
 
-    int intInt = 1000000000;
-    QString strResult32("1,00,00,00,000");
-    QCOMPARE(indian.toString(intInt), strResult32);
-    QCOMPARE(indian.toInt(strResult32), intInt);
+    // 31-bit
+    const QString strResult32("2,03,04,05,010");
+    const int integer32 = 2030405010;
+    QCOMPARE(indian.toString(integer32), strResult32);
+    QCOMPARE(indian.toInt(strResult32), integer32);
 
-    uint uIntInt = 1000000000;
-    QCOMPARE(indian.toString(uIntInt), strResult32);
-    QCOMPARE(indian.toUInt(strResult32), uIntInt);
+    const uint uInteger32 = 2030405010u;
+    QCOMPARE(indian.toString(uInteger32), strResult32);
+    QCOMPARE(indian.toUInt(strResult32), uInteger32);
 
-    QString strResult64("10,00,00,00,00,00,00,00,000");
-    qint64 int64 = Q_INT64_C(1000000000000000000);
+    // 63-bit:
+    const QString strResult64("60,05,00,40,03,00,20,01,000");
+    const qint64 int64 = Q_INT64_C(6005004003002001000);
     QCOMPARE(indian.toString(int64), strResult64);
     QCOMPARE(indian.toLongLong(strResult64), int64);
 
-    quint64 uint64 = Q_UINT64_C(1000000000000000000);
+    const quint64 uint64 = Q_UINT64_C(6005004003002001000);
     QCOMPARE(indian.toString(uint64), strResult64);
     QCOMPARE(indian.toULongLong(strResult64), uint64);
+}
+
+void tst_QLocale::numberFormatChakma()
+{
+    // Initially India's flavour, since the number formatting is currently only
+    // done right for India.  Should change to Bangladesh once that's fixed.
+    const QLocale chakma(QLocale::Chakma, QLocale::ChakmaScript, QLocale::India);
+    const uint zeroVal = 0x11136; // Unicode's representation of Chakma zero
+    const QChar data[] = {
+        QChar::highSurrogate(zeroVal), QChar::lowSurrogate(zeroVal),
+        QChar::highSurrogate(zeroVal + 1), QChar::lowSurrogate(zeroVal + 1),
+        QChar::highSurrogate(zeroVal + 2), QChar::lowSurrogate(zeroVal + 2),
+        QChar::highSurrogate(zeroVal + 3), QChar::lowSurrogate(zeroVal + 3),
+        QChar::highSurrogate(zeroVal + 4), QChar::lowSurrogate(zeroVal + 4),
+        QChar::highSurrogate(zeroVal + 5), QChar::lowSurrogate(zeroVal + 5),
+        QChar::highSurrogate(zeroVal + 6), QChar::lowSurrogate(zeroVal + 6),
+    };
+    const QChar separator(QLatin1Char(','));
+    const QString
+        zero = QString::fromRawData(data, 2),
+        one = QString::fromRawData(data + 2, 2),
+        two = QString::fromRawData(data + 4, 2),
+        three = QString::fromRawData(data + 6, 2),
+        four = QString::fromRawData(data + 8, 2),
+        five = QString::fromRawData(data + 10, 2),
+        six = QString::fromRawData(data + 12, 2);
+
+    // A 7-bit value (fits in signed 8-bit):
+    const QString strResult8 = one + two + zero;
+    const qint8 int8 = 120;
+    QCOMPARE(chakma.toString(int8), strResult8);
+    QCOMPARE(chakma.toShort(strResult8), short(int8));
+
+    const quint8 uint8 = 120;
+    QCOMPARE(chakma.toString(uint8), strResult8);
+    QCOMPARE(chakma.toShort(strResult8), short(uint8));
+
+    // Boundary case for needing a first separator:
+    const QString strResultSep = three + separator + two + one + zero;
+    const short shortSep = 3210;
+    QCOMPARE(chakma.toString(shortSep), strResultSep);
+    QCOMPARE(chakma.toShort(strResultSep), shortSep);
+
+    const ushort uShortSep = 3210u;
+    QCOMPARE(chakma.toString(uShortSep), strResultSep);
+    QCOMPARE(chakma.toUShort(strResultSep), uShortSep);
+
+    // Fifteen-bit value:
+    const QString strResult16 = two + four + separator + three + one + zero;
+    const short short16 = 24310;
+    QCOMPARE(chakma.toString(short16), strResult16);
+    QCOMPARE(chakma.toShort(strResult16), short16);
+
+    const ushort uShort16 = 24310u;
+    QCOMPARE(chakma.toString(uShort16), strResult16);
+    QCOMPARE(chakma.toUShort(strResult16), uShort16);
+
+    // 31-bit
+    const QString strResult32 =
+        two + separator + zero + three + separator + zero + four
+        + separator + zero + five + separator + zero + one + zero;
+    const int integer32 = 2030405010;
+    QCOMPARE(chakma.toString(integer32), strResult32);
+    QCOMPARE(chakma.toInt(strResult32), integer32);
+
+    const uint uInteger32 = 2030405010u;
+    QCOMPARE(chakma.toString(uInteger32), strResult32);
+    QCOMPARE(chakma.toUInt(strResult32), uInteger32);
+
+    // 63-bit:
+    const QString strResult64 =
+        six + zero + separator + zero + five + separator + zero + zero + separator
+        + four + zero + separator + zero + three + separator + zero + zero + separator
+        + two + zero + separator + zero + one + separator + zero + zero + zero;
+    const qint64 int64 = Q_INT64_C(6005004003002001000);
+    QCOMPARE(chakma.toString(int64), strResult64);
+    QCOMPARE(chakma.toLongLong(strResult64), int64);
+
+    const quint64 uint64 = Q_UINT64_C(6005004003002001000);
+    QCOMPARE(chakma.toString(uint64), strResult64);
+    QCOMPARE(chakma.toULongLong(strResult64), uint64);
 }
 
 QTEST_MAIN(tst_QLocale)

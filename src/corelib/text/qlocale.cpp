@@ -3712,15 +3712,16 @@ QT_WARNING_POP
     uint cnt_thousand_sep = 0;
     if (base == 10) {
         if (flags & ThousandsGroup) {
-            for (int i = num_str.length() / digitWidth - 3; i > 0; i -= 3 * digitWidth) {
-                num_str.insert(i, group);
+            for (int i = num_str.length() / digitWidth - 3; i > 0; i -= 3) {
+                num_str.insert(i * digitWidth, group);
                 ++cnt_thousand_sep;
             }
         } else if (flags & IndianNumberGrouping) {
-            if (num_str.length() > 3 * digitWidth)
-                num_str.insert(num_str.length() - 3 * digitWidth , group);
-            for (int i = num_str.length() - 6 * digitWidth; i > 0; i -= 2 * digitWidth) {
-                num_str.insert(i, group);
+            const int size = num_str.length();
+            if (size > 3 * digitWidth)
+                num_str.insert(size - 3 * digitWidth , group);
+            for (int i = size / digitWidth - 5; i > 0; i -= 2) {
+                num_str.insert(i * digitWidth, group);
                 ++cnt_thousand_sep;
             }
         }
@@ -3807,15 +3808,16 @@ QString QLocaleData::unsLongLongToString(const QString &zero, const QString &gro
     uint cnt_thousand_sep = 0;
     if (base == 10) {
         if (flags & ThousandsGroup) {
-            for (int i = num_str.length() - 3 * digitWidth; i > 0; i -= 3 * digitWidth) {
-                num_str.insert(i, group);
+            for (int i = num_str.length() / digitWidth - 3; i > 0; i -= 3) {
+                num_str.insert(i * digitWidth, group);
                 ++cnt_thousand_sep;
             }
         } else if (flags & IndianNumberGrouping) {
-            if (num_str.length() > 3 * digitWidth)
-                num_str.insert(num_str.length() - 3 * digitWidth , group);
-            for (int i = num_str.length() - 6 * digitWidth; i > 0; i -= 2 * digitWidth) {
-                num_str.insert(i, group);
+            const int size = num_str.length();
+            if (size > 3 * digitWidth)
+                num_str.insert(size - 3 * digitWidth , group);
+            for (int i = size / digitWidth - 5; i > 0; i -= 2) {
+                num_str.insert(i * digitWidth, group);
                 ++cnt_thousand_sep;
             }
         }
@@ -3886,6 +3888,8 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     auto length = s.size();
     decltype(length) idx = 0;
 
+    const int leadingGroupWidth = (m_country_id == QLocale::India ? 2 : 3);
+    int digitsInGroup = 0;
     int group_cnt = 0; // counts number of group chars
     int decpt_idx = -1;
     int last_separator_idx = -1;
@@ -3937,26 +3941,26 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         if (!(number_options & QLocale::RejectGroupSeparator)) {
             if (start_of_digits_idx == -1 && out >= '0' && out <= '9') {
                 start_of_digits_idx = idx;
+                digitsInGroup++;
             } else if (out == ',') {
                 // Don't allow group chars after the decimal point or exponent
                 if (decpt_idx != -1 || exponent_idx != -1)
                     return false;
 
-                // check distance from the last separator or from the beginning of the digits
-                // ### FIXME: Some locales allow other groupings!
-                // See https://en.wikipedia.org/wiki/Thousands_separator
-                if (m_country_id == QLocale::India) {
-                    if (last_separator_idx != -1 && idx - last_separator_idx != 3)
+                if (last_separator_idx == -1) {
+                    if (start_of_digits_idx == -1 || digitsInGroup > leadingGroupWidth)
                         return false;
-                } else if (last_separator_idx != -1 && idx - last_separator_idx != 4)
-                    return false;
-                if (last_separator_idx == -1
-                    && (start_of_digits_idx == -1 || idx - start_of_digits_idx > 3)) {
-                    return false;
+                } else {
+                    // check distance from the last separator or from the beginning of the digits
+                    // ### FIXME: Some locales allow other groupings!
+                    // See https://en.wikipedia.org/wiki/Thousands_separator
+                    if (digitsInGroup != leadingGroupWidth)
+                        return false;
                 }
 
                 last_separator_idx = idx;
                 ++group_cnt;
+                digitsInGroup = 0;
 
                 // don't add the group separator
                 idx += in.size();
@@ -3965,11 +3969,13 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
                 // check distance from the last separator
                 // ### FIXME: Some locales allow other groupings!
                 // See https://en.wikipedia.org/wiki/Thousands_separator
-                if (last_separator_idx != -1 && idx - last_separator_idx != 4)
+                if (last_separator_idx != -1 && digitsInGroup != 3)
                     return false;
 
                 // stop processing separators
                 last_separator_idx = -1;
+            } else if (out >= '0' && out <= '9') {
+                digitsInGroup++;
             }
         }
 
@@ -3983,7 +3989,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         if (last_separator_idx + 1 == idx)
             return false;
         // were there enough digits since the last separator?
-        if (last_separator_idx != -1 && idx - last_separator_idx != 4)
+        if (last_separator_idx != -1 && digitsInGroup != 3)
             return false;
     }
 
