@@ -216,6 +216,12 @@ Q_DECL_CONSTEXPR inline QMargins operator/(const QMargins &margins, qreal diviso
                     qRound(margins.right() / divisor), qRound(margins.bottom() / divisor));
 }
 
+Q_DECL_CONSTEXPR inline QMargins operator|(const QMargins &m1, const QMargins &m2) noexcept
+{
+    return QMargins(qMax(m1.left(), m2.left()), qMax(m1.top(), m2.top()),
+                    qMax(m1.right(), m2.right()), qMax(m1.bottom(), m2.bottom()));
+}
+
 Q_DECL_RELAXED_CONSTEXPR inline QMargins &QMargins::operator+=(const QMargins &margins) noexcept
 {
     return *this = *this + margins;
@@ -428,6 +434,12 @@ Q_DECL_CONSTEXPR inline QMarginsF operator/(const QMarginsF &lhs, qreal divisor)
 {
     return QMarginsF(lhs.left() / divisor, lhs.top() / divisor,
                      lhs.right() / divisor, lhs.bottom() / divisor);
+}
+
+Q_DECL_CONSTEXPR inline QMarginsF operator|(const QMarginsF &m1, const QMarginsF &m2) noexcept
+{
+    return QMarginsF(qMax(m1.left(), m2.left()), qMax(m1.top(), m2.top()),
+                     qMax(m1.right(), m2.right()), qMax(m1.bottom(), m2.bottom()));
 }
 
 Q_DECL_RELAXED_CONSTEXPR inline QMarginsF &QMarginsF::operator+=(const QMarginsF &margins) noexcept

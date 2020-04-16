@@ -157,7 +157,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator+(const QMargins &m1, const QMargins &m2)
+    \fn QMargins operator+(const QMargins &m1, const QMargins &m2)
     \relates QMargins
 
     Returns a QMargins object that is the sum of the given margins, \a m1
@@ -169,7 +169,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator-(const QMargins &m1, const QMargins &m2)
+    \fn QMargins operator-(const QMargins &m1, const QMargins &m2)
     \relates QMargins
 
     Returns a QMargins object that is formed by subtracting \a m2 from
@@ -181,7 +181,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator+(const QMargins &lhs, int rhs)
+    \fn QMargins operator+(const QMargins &lhs, int rhs)
     \relates QMargins
 
     Returns a QMargins object that is formed by adding \a rhs to
@@ -193,7 +193,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator+(int lhs, const QMargins &rhs)
+    \fn QMargins operator+(int lhs, const QMargins &rhs)
     \relates QMargins
 
     Returns a QMargins object that is formed by adding \a lhs to
@@ -205,7 +205,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator-(const QMargins &lhs, int rhs)
+    \fn QMargins operator-(const QMargins &lhs, int rhs)
     \relates QMargins
 
     Returns a QMargins object that is formed by subtracting \a rhs from
@@ -217,7 +217,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator*(const QMargins &margins, int factor)
+    \fn QMargins operator*(const QMargins &margins, int factor)
     \relates QMargins
 
     Returns a QMargins object that is formed by multiplying each component
@@ -229,20 +229,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator*(int factor, const QMargins &margins)
-    \relates QMargins
-    \overload
-
-    Returns a QMargins object that is formed by multiplying each component
-    of the given \a margins by \a factor.
-
-    \sa QMargins::operator*=(), QMargins::operator/=()
-
-    \since 5.1
-*/
-
-/*!
-    \fn const QMargins operator*(const QMargins &margins, qreal factor)
+    \fn QMargins operator*(int factor, const QMargins &margins)
     \relates QMargins
     \overload
 
@@ -255,7 +242,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator*(qreal factor, const QMargins &margins)
+    \fn QMargins operator*(const QMargins &margins, qreal factor)
     \relates QMargins
     \overload
 
@@ -268,7 +255,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator/(const QMargins &margins, int divisor)
+    \fn QMargins operator*(qreal factor, const QMargins &margins)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins operator/(const QMargins &margins, int divisor)
     \relates QMargins
 
     Returns a QMargins object that is formed by dividing the components of
@@ -280,7 +280,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QMargins operator/(const QMargins &, qreal)
+    \fn QMargins operator/(const QMargins &, qreal)
     \relates QMargins
     \overload
 
@@ -308,6 +308,18 @@ QT_BEGIN_NAMESPACE
     Returns a QMargin object that is formed by negating all components of \a margins.
 
     \since 5.1
+*/
+
+/*!
+    \fn QMargins operator|(const QMargins &m1, const QMargins &m2)
+    \relates QMargins
+
+    Returns a QMargins object that is formed from the maximum of each
+    component of \a m2 and a m1.
+
+    \sa QMargins::operator+=(), QMargins::operator-=()
+
+    \since 6.0
 */
 
 /*!
@@ -648,6 +660,19 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     the given \a lhs margins by the given \a rhs divisor.
 
     \sa QMarginsF::operator*=(), QMarginsF::operator/=()
+*/
+
+/*!
+    \fn QMargins operator|(const QMargins &m1, const QMargins &m2)
+    \relates QMarginsF
+    \overload
+
+    Returns a QMarginsF object that is formed from the maximum of each
+    component of \a m2 and a m1.
+
+    \sa QMarginsF::operator+=(), QMarginsF::operator-=()
+
+    \since 6.0
 */
 
 /*!

@@ -7414,14 +7414,6 @@ void QWidgetPrivate::updateContentsRect()
     QCoreApplication::sendEvent(q, &e);
 }
 
-
-// FIXME: Move to qmargins.h for next minor Qt release
-QMargins operator|(const QMargins &m1, const QMargins &m2)
-{
-    return QMargins(qMax(m1.left(), m2.left()), qMax(m1.top(), m2.top()),
-        qMax(m1.right(), m2.right()), qMax(m1.bottom(), m2.bottom()));
-}
-
 /*!
   \since 4.6
 
