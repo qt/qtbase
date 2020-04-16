@@ -115,10 +115,17 @@ QT_BEGIN_NAMESPACE
                 QPropertyBinding<type> takeBinding(); \
             }; \
             void setter(const type &value);
+#if __has_cpp_attribute(no_unique_address)
+#define Q_PRIVATE_QPROPERTIES_BEGIN
+#define QT_PRIVATE_QPROPERTY_PREFIX [[no_unique_address]]
+#define Q_PRIVATE_QPROPERTIES_END
+#else
 #define Q_PRIVATE_QPROPERTIES_BEGIN union {
-#define Q_PRIVATE_QPROPERTY_IMPL(name) \
-            _qt_property_api_##name name;
+#define QT_PRIVATE_QPROPERTY_PREFIX
 #define Q_PRIVATE_QPROPERTIES_END };
+#endif
+#define Q_PRIVATE_QPROPERTY_IMPL(name) \
+        QT_PRIVATE_QPROPERTY_PREFIX _qt_property_api_##name name;
 #ifndef Q_REVISION
 # define Q_REVISION(...)
 #endif
