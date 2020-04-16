@@ -42,6 +42,7 @@ int main(int argc, char **argv)
     QTextEncoder *encoder = locale->makeEncoder();
     QByteArray output = encoder->fromUnicode(string);
     printf("%s\n", output.data());
+    delete encoder;
 
     return 0;
 }
