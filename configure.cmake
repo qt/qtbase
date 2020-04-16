@@ -330,6 +330,12 @@ qt_feature("static" PUBLIC
 )
 qt_feature_config("static" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature_config("static" QMAKE_PUBLIC_CONFIG)
+qt_feature("cross_compile" PUBLIC
+    LABEL "Cross compiling"
+    CONDITION CMAKE_CROSSCOMPILING
+)
+qt_feature_config("cross_compile" QMAKE_PUBLIC_CONFIG)
+qt_feature_config("cross_compile" QMAKE_PRIVATE_CONFIG)
 qt_feature("use_bfd_linker"
     LABEL "bfd"
     AUTODETECT false

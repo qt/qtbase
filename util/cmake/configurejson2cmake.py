@@ -821,7 +821,7 @@ def get_feature_mapping():
         "build_all": None,
         "ccache": None,
         "compiler-flags": None,
-        "cross_compile": None,
+        "cross_compile": {"condition": "CMAKE_CROSSCOMPILING"},
         "debug_and_release": {
             "autoDetect": "1",  # Setting this to None has weird effects...
             "condition": "QT_GENERATOR_IS_MULTI_CONFIG",
