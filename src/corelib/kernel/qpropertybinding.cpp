@@ -134,7 +134,7 @@ QUntypedPropertyBinding &QUntypedPropertyBinding::operator=(QUntypedPropertyBind
     return *this;
 }
 
-QUntypedPropertyBinding::QUntypedPropertyBinding(const QPropertyBindingPrivatePtr &priv)
+QUntypedPropertyBinding::QUntypedPropertyBinding(QPropertyBindingPrivate *priv)
     : d(priv)
 {
 }

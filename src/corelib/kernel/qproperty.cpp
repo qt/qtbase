@@ -102,7 +102,7 @@ QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding 
 
     if (auto *existingBinding = d.bindingPtr()) {
         if (existingBinding == newBinding.data())
-            return QUntypedPropertyBinding(oldBinding);
+            return QUntypedPropertyBinding(oldBinding.data());
         oldBinding = QPropertyBindingPrivatePtr(existingBinding);
         oldBinding->unlinkAndDeref();
         d_ptr &= FlagMask;
@@ -119,15 +119,15 @@ QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding 
         d_ptr &= ~BindingBit;
     }
 
-    return QUntypedPropertyBinding(oldBinding);
+    return QUntypedPropertyBinding(oldBinding.data());
 }
 
-QPropertyBindingPrivatePtr QPropertyBase::binding()
+QPropertyBindingPrivate *QPropertyBase::binding()
 {
     QPropertyBasePointer d{this};
     if (auto binding = d.bindingPtr())
-        return QPropertyBindingPrivatePtr(binding);
-    return QPropertyBindingPrivatePtr();
+        return binding;
+    return nullptr;
 }
 
 QPropertyBindingPrivate *QPropertyBasePointer::bindingPtr() const
