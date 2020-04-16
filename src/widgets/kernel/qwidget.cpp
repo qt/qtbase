@@ -3194,13 +3194,6 @@ QList<QAction*> QWidget::actions() const
 #endif // QT_NO_ACTION
 
 /*!
-  \fn bool QWidget::isEnabledToTLW() const
-  \obsolete
-
-  This function is deprecated. It is equivalent to isEnabled()
-*/
-
-/*!
     \property QWidget::enabled
     \brief whether the widget is enabled
 
@@ -7420,29 +7413,6 @@ void QWidgetPrivate::updateContentsRect()
     QCoreApplication::sendEvent(q, &e);
 }
 
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-    \obsolete
-    Use contentsMargins().
-
-  Returns the widget's contents margins for \a left, \a top, \a
-  right, and \a bottom.
-
-  \sa setContentsMargins(), contentsRect()
- */
-void QWidget::getContentsMargins(int *left, int *top, int *right, int *bottom) const
-{
-    QMargins m = contentsMargins();
-    if (left)
-        *left = m.left();
-    if (top)
-        *top = m.top();
-    if (right)
-        *right = m.right();
-    if (bottom)
-        *bottom = m.bottom();
-}
-#endif
 
 // FIXME: Move to qmargins.h for next minor Qt release
 QMargins operator|(const QMargins &m1, const QMargins &m2)

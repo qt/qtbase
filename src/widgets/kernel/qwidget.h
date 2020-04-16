@@ -238,10 +238,6 @@ public:
 
     bool isEnabled() const;
     bool isEnabledTo(const QWidget *) const;
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X ("Use isEnabled() instead")
-    bool isEnabledToTLW() const;
-#endif
 
 public Q_SLOTS:
     void setEnabled(bool);
@@ -527,10 +523,6 @@ public:
 
     void setContentsMargins(int left, int top, int right, int bottom);
     void setContentsMargins(const QMargins &margins);
-#if QT_DEPRECATED_SINCE(5, 14)
-    QT_DEPRECATED_X("use contentsMargins()")
-    void getContentsMargins(int *left, int *top, int *right, int *bottom) const;
-#endif
     QMargins contentsMargins() const;
 
     QRect contentsRect() const;
@@ -781,11 +773,6 @@ inline bool QWidget::isEnabled() const
 
 inline bool QWidget::isModal() const
 { return data->window_modality != Qt::NonModal; }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-inline bool QWidget::isEnabledToTLW() const
-{ return isEnabled(); }
-#endif
 
 inline int QWidget::minimumWidth() const
 { return minimumSize().width(); }

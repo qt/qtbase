@@ -282,40 +282,6 @@ bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
     return false;
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \property QLayout::margin
-    \brief the width of the outside border of the layout
-    \obsolete
-
-    Use setContentsMargins() and getContentsMargins() instead.
-
-    \sa contentsRect(), spacing
-*/
-
-/*!
-    \obsolete
-*/
-int QLayout::margin() const
-{
-    int left, top, right, bottom;
-    getContentsMargins(&left, &top, &right, &bottom);
-    if (left == top && top == right && right == bottom) {
-        return left;
-    } else {
-        return -1;
-    }
-}
-
-/*!
-    \obsolete
-*/
-void QLayout::setMargin(int margin)
-{
-    setContentsMargins(margin, margin, margin, margin);
-}
-
-#endif
 /*!
     \property QLayout::spacing
     \brief the spacing between widgets inside the layout

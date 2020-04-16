@@ -331,7 +331,7 @@ void QMessageBoxPrivate::setupLayout()
     }
 #ifdef Q_OS_MAC
     grid->addWidget(buttonBox, grid->rowCount(), hasIcon ? 2 : 1, 1, 1);
-    grid->setMargin(0);
+    grid->setContentsMargins(0, 0, 0, 0);
     grid->setVerticalSpacing(8);
     grid->setHorizontalSpacing(0);
     q->setContentsMargins(24, 15, 24, 20);
