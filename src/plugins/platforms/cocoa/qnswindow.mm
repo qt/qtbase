@@ -158,7 +158,78 @@ static bool isMouseEvent(NSEvent *ev)
 #define QNSWINDOW_PROTOCOL_IMPLMENTATION 1
 #include "qnswindow.mm"
 #undef QNSWINDOW_PROTOCOL_IMPLMENTATION
+
+- (BOOL)worksWhenModal
+{
+    if (!m_platformWindow)
+        return NO;
+
+    // Conceptually there are two sets of windows we need consider:
+    //
+    //   - windows 'lower' in the modal session stack
+    //   - windows 'within' the current modal session
+    //
+    // The first set of windows should always be blocked by the current
+    // modal session, regardless of window type. The latter set may contain
+    // windows with a transient parent, which from Qt's point of view makes
+    // them 'child' windows, so we treat them as operable within the current
+    // modal session.
+
+    if (!NSApp.modalWindow)
+        return NO;
+
+    // If the current modal window (top level modal session) is not a Qt window we
+    // have no way of knowing if this window is transient child of the modal window.
+    if (![NSApp.modalWindow conformsToProtocol:@protocol(QNSWindowProtocol)])
+        return NO;
+
+    if (auto *modalWindow = static_cast<QCocoaNSWindow *>(NSApp.modalWindow).platformWindow) {
+        if (modalWindow->window()->isAncestorOf(m_platformWindow->window(), QWindow::IncludeTransients))
+            return YES;
+    }
+
+    return NO;
+}
 @end
+
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+// When creating an NSWindow the worksWhenModal function is queried,
+// and the resulting state is used to set the corresponding window tag,
+// which the window server uses to determine whether or not the window
+// should be allowed to activate via mouse clicks in the title-bar.
+// Unfortunately, prior to macOS 10.15, this window tag was never
+// updated after the initial assignment in [NSWindow _commonAwake],
+// which meant that windows that dynamically change their worksWhenModal
+// state will behave as if they were never allowed to work when modal.
+// We work around this by manually updating the window tag when needed.
+
+typedef uint32_t CGSConnectionID;
+typedef uint32_t CGSWindowID;
+
+extern "C" {
+CGSConnectionID CGSMainConnectionID() __attribute__((weak_import));
+OSStatus CGSSetWindowTags(const CGSConnectionID, const CGSWindowID, int *, int) __attribute__((weak_import));
+OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int) __attribute__((weak_import));
+}
+
+@interface QNSPanel (WorksWhenModalWindowTagWorkaround) @end
+@implementation QNSPanel (WorksWhenModalWindowTagWorkaround)
+- (void)setWorksWhenModal:(BOOL)worksWhenModal
+{
+    [super setWorksWhenModal:worksWhenModal];
+
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSCatalina) {
+        if (CGSMainConnectionID && CGSSetWindowTags && CGSClearWindowTags) {
+            static int kWorksWhenModalWindowTag = 0x40;
+            auto *function = worksWhenModal ? CGSSetWindowTags : CGSClearWindowTags;
+            function(CGSMainConnectionID(), self.windowNumber, &kWorksWhenModalWindowTag, 64);
+        } else {
+            qWarning() << "Missing APIs for window tag handling, can not update worksWhenModal state";
+        }
+    }
+}
+@end
+#endif // QT_APPLE_NO_PRIVATE_APIS
 
 #else // QNSWINDOW_PROTOCOL_IMPLMENTATION
 
@@ -235,17 +306,6 @@ static bool isMouseEvent(NSEvent *ev)
         canBecomeMain = NO;
 
     return canBecomeMain;
-}
-
-- (BOOL)worksWhenModal
-{
-    if (m_platformWindow && [self isKindOfClass:[QNSPanel class]]) {
-        Qt::WindowType type = m_platformWindow->window()->type();
-        if (type == Qt::Popup || type == Qt::Dialog || type == Qt::Tool)
-            return YES;
-    }
-
-    return [super worksWhenModal];
 }
 
 - (BOOL)isOpaque
