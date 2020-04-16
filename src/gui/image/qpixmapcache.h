@@ -74,12 +74,6 @@ public:
 
     static int cacheLimit();
     static void setCacheLimit(int);
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use bool find(const QString &, QPixmap *) instead")
-    static QPixmap *find(const QString &key);
-    QT_DEPRECATED_X("Use bool find(const QString &, QPixmap *) instead")
-    static bool find(const QString &key, QPixmap &pixmap);
-#endif
     static bool find(const QString &key, QPixmap *pixmap);
     static bool find(const Key &key, QPixmap *pixmap);
     static bool insert(const QString &key, const QPixmap &pixmap);

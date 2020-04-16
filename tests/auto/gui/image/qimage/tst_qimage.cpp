@@ -70,8 +70,6 @@ private slots:
     void setAlphaChannel_data();
     void setAlphaChannel();
 
-    void alphaChannel();
-
     void convertToFormat_data();
     void convertToFormat();
     void convertToFormatWithColorTable();
@@ -544,32 +542,6 @@ void tst_QImage::setAlphaChannel()
         }
     }
     QVERIFY(allPixelsOK);
-
-    QImage outAlpha = image.alphaChannel();
-    QCOMPARE(outAlpha.size(), image.size());
-
-    bool allAlphaOk = true;
-    for (int y=0; y<height; ++y) {
-        for (int x=0; x<width; ++x) {
-            allAlphaOk &= outAlpha.pixelIndex(x, y) == alpha;
-        }
-    }
-    QVERIFY(allAlphaOk);
-
-}
-
-void tst_QImage::alphaChannel()
-{
-    QImage img(10, 10, QImage::Format_Mono);
-    img.setColor(0, Qt::transparent);
-    img.setColor(1, Qt::black);
-    img.fill(0);
-
-    QPainter p(&img);
-    p.fillRect(2, 2, 6, 6, Qt::black);
-    p.end();
-
-    QCOMPARE(img.alphaChannel(), img.convertToFormat(QImage::Format_ARGB32).alphaChannel());
 }
 
 void tst_QImage::convertToFormat_data()

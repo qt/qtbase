@@ -146,13 +146,6 @@ void tst_QImageWriter::getSetCheck()
     QCOMPARE(INT_MIN, obj1.compression());
     obj1.setCompression(INT_MAX);
     QCOMPARE(INT_MAX, obj1.compression());
-
-    // float QImageWriter::gamma()
-    // void QImageWriter::setGamma(float)
-    obj1.setGamma(0.0f);
-    QCOMPARE(0.0f, obj1.gamma());
-    obj1.setGamma(1.1f);
-    QCOMPARE(1.1f, obj1.gamma());
 }
 
 void tst_QImageWriter::writeImage_data()

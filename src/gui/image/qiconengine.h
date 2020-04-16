@@ -51,7 +51,6 @@ class Q_GUI_EXPORT QIconEngine
 {
 public:
     QIconEngine();
-    QIconEngine(const QIconEngine &other);  // ### Qt6: make protected
     virtual ~QIconEngine();
     virtual void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) = 0;
     virtual QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state);
@@ -93,13 +92,12 @@ public:
     // ### Qt6: move content to proper virtual functions
     virtual void virtual_hook(int id, void *data);
 
+protected:
+    QIconEngine(const QIconEngine &other);
+
 private:
     QIconEngine &operator=(const QIconEngine &other) = delete;
 };
-
-#if QT_DEPRECATED_SINCE(5, 0)
-typedef QIconEngine QIconEngineV2;
-#endif
 
 QT_END_NAMESPACE
 

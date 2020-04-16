@@ -92,12 +92,6 @@ public:
     static int defaultDepth();
 
     void fill(const QColor &fillColor = Qt::white);
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QPainter or fill(QColor)")
-    void fill(const QPaintDevice *device, const QPoint &ofs);
-    QT_DEPRECATED_X("Use QPainter or fill(QColor)")
-    void fill(const QPaintDevice *device, int xofs, int yofs);
-#endif
 
     QBitmap mask() const;
     void setMask(const QBitmap &);
@@ -112,15 +106,6 @@ public:
     QBitmap createHeuristicMask(bool clipTight = true) const;
 #endif
     QBitmap createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode = Qt::MaskInColor) const;
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QScreen::grabWindow() instead")
-    static QPixmap grabWindow(WId, int x = 0, int y = 0, int w = -1, int h = -1);
-    QT_DEPRECATED_X("Use QWidget::grab() instead")
-    static QPixmap grabWidget(QObject *widget, const QRect &rect);
-    QT_DEPRECATED_X("Use QWidget::grab() instead")
-    static QPixmap grabWidget(QObject *widget, int x = 0, int y = 0, int w = -1, int h = -1);
-#endif
 
     inline QPixmap scaled(int w, int h, Qt::AspectRatioMode aspectMode = Qt::IgnoreAspectRatio,
                           Qt::TransformationMode mode = Qt::FastTransformation) const
@@ -154,9 +139,6 @@ public:
     inline void scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed = nullptr);
     void scroll(int dx, int dy, const QRect &rect, QRegion *exposed = nullptr);
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline int serialNumber() const { return cacheKey() >> 32; }
-#endif
     qint64 cacheKey() const;
 
     bool isDetached() const;
@@ -167,11 +149,6 @@ public:
     QPaintEngine *paintEngine() const override;
 
     inline bool operator!() const { return isNull(); }
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline QPixmap alphaChannel() const;
-    QT_DEPRECATED inline void setAlphaChannel(const QPixmap &);
-#endif
 
 protected:
     int metric(PaintDeviceMetric) const override;
@@ -222,23 +199,6 @@ inline bool QPixmap::loadFromData(const QByteArray &buf, const char *format,
     return loadFromData(reinterpret_cast<const uchar *>(buf.constData()), buf.size(), format, flags);
 }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-inline QPixmap QPixmap::alphaChannel() const
-{
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_DEPRECATED
-    return QPixmap::fromImage(toImage().alphaChannel());
-    QT_WARNING_POP
-}
-
-inline void QPixmap::setAlphaChannel(const QPixmap &p)
-{
-    QImage image = toImage();
-    image.setAlphaChannel(p.toImage());
-    *this = QPixmap::fromImage(image);
-
-}
-#endif
 
 /*****************************************************************************
  QPixmap stream functions

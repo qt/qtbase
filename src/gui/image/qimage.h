@@ -229,10 +229,6 @@ public:
 
     bool hasAlphaChannel() const;
     void setAlphaChannel(const QImage &alphaChannel);
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X("Use convertToFormat(QImage::Format_Alpha8)")
-    QImage alphaChannel() const;
-#endif
     QImage createAlphaMask(Qt::ImageConversionFlags flags = Qt::AutoColor) const;
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
     QImage createHeuristicMask(bool clipTight = true) const;

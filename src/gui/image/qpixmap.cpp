@@ -845,37 +845,6 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
 }
 
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use QPainter or the fill(QColor) overload instead.
-*/
-
-void QPixmap::fill(const QPaintDevice *device, const QPoint &p)
-{
-    Q_UNUSED(device)
-    Q_UNUSED(p)
-    qWarning("this function is deprecated, ignored");
-}
-
-
-/*!
-    \fn void QPixmap::fill(const QPaintDevice *device, int x, int y)
-    \obsolete
-
-    Use QPainter or the fill(QColor) overload instead.
-*/
-void QPixmap::fill(const QPaintDevice *device, int xofs, int yofs)
-{
-    Q_UNUSED(device)
-    Q_UNUSED(xofs)
-    Q_UNUSED(yofs)
-    qWarning("this function is deprecated, ignored");
-}
-#endif
-
-
 /*!
     Fills the pixmap with the given \a color.
 
@@ -911,21 +880,6 @@ void QPixmap::fill(const QColor &color)
     data->fill(color);
 }
 
-/*! \fn int QPixmap::serialNumber() const
-    \obsolete
-    Returns a number that identifies the contents of this QPixmap
-    object. Distinct QPixmap objects can only have the same serial
-    number if they refer to the same contents (but they don't have
-    to).
-
-    Use cacheKey() instead.
-
-    \warning The serial number doesn't necessarily change when
-    the pixmap is altered. This means that it may be dangerous to use
-    it as a cache key. For caching pixmaps, we recommend using the
-    QPixmapCache class whenever possible.
-*/
-
 /*!
     Returns a number that identifies this QPixmap. Distinct QPixmap
     objects can only have the same cache key if they refer to the same
@@ -957,38 +911,6 @@ static void sendResizeEvents(QWidget *target)
 }
 #endif
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use QWidget::grab() instead.
-*/
-QPixmap QPixmap::grabWidget(QObject *widget, const QRect &rectangle)
-{
-    QPixmap pixmap;
-    qWarning("QPixmap::grabWidget is deprecated, use QWidget::grab() instead");
-    if (!widget)
-        return pixmap;
-    QMetaObject::invokeMethod(widget, "grab", Qt::DirectConnection,
-                              Q_RETURN_ARG(QPixmap, pixmap),
-                              Q_ARG(QRect, rectangle));
-    return pixmap;
-}
-
-/*!
-    \fn QPixmap QPixmap::grabWidget(QObject *widget, int x, int y, int w, int h)
-    \obsolete
-
-    Use QWidget::grab() instead.
-*/
-QPixmap QPixmap::grabWidget(QObject *widget, int x, int y, int w, int h)
-{
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return grabWidget(widget, QRect(x, y, w, h));
-QT_WARNING_POP
-}
-#endif
 
 /*****************************************************************************
   QPixmap stream functions
@@ -1582,62 +1504,6 @@ QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionF
     return QPixmap(data.take());
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QPixmap QPixmap::grabWindow(WId window, int x, int y, int
-    width, int height)
-
-    Creates and returns a pixmap constructed by grabbing the contents
-    of the given \a window restricted by QRect(\a x, \a y, \a width,
-    \a height).
-
-    The arguments (\a{x}, \a{y}) specify the offset in the window,
-    whereas (\a{width}, \a{height}) specify the area to be copied.  If
-    \a width is negative, the function copies everything to the right
-    border of the window. If \a height is negative, the function
-    copies everything to the bottom of the window.
-
-    The window system identifier (\c WId) can be retrieved using the
-    QWidget::winId() function. The rationale for using a window
-    identifier and not a QWidget, is to enable grabbing of windows
-    that are not part of the application, window system frames, and so
-    on.
-
-    The grabWindow() function grabs pixels from the screen, not from
-    the window, i.e. if there is another window partially or entirely
-    over the one you grab, you get pixels from the overlying window,
-    too. The mouse cursor is generally not grabbed.
-
-    Note on X11 that if the given \a window doesn't have the same depth
-    as the root window, and another window partially or entirely
-    obscures the one you grab, you will \e not get pixels from the
-    overlying window.  The contents of the obscured areas in the
-    pixmap will be undefined and uninitialized.
-
-    On Windows Vista and above grabbing a layered window, which is
-    created by setting the Qt::WA_TranslucentBackground attribute, will
-    not work. Instead grabbing the desktop widget should work.
-
-    \warning In general, grabbing an area outside the screen is not
-    safe. This depends on the underlying window system.
-
-    \warning The function is deprecated in Qt 5.0 since there might be
-    platform plugins in which window system identifiers (\c WId)
-    are local to a screen. Use QScreen::grabWindow() instead.
-
-    \sa grabWidget(), {Screenshot Example}
-    \sa QScreen
-    \deprecated
-*/
-
-QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
-{
-    qWarning("this function is deprecated, use QScreen::grabWindow() instead."
-             " Defaulting to primary screen.");
-    return QGuiApplication::primaryScreen()->grabWindow(window, x, y, w, h);
-}
-#endif
-
 /*!
   \internal
 */
@@ -1664,17 +1530,5 @@ QDebug operator<<(QDebug dbg, const QPixmap &r)
     return dbg;
 }
 #endif
-
-/*!
-    \fn QPixmap QPixmap::alphaChannel() const
-
-    Most use cases for this can be achieved using a QPainter and QPainter::CompositionMode instead.
-*/
-
-/*!
-    \fn void QPixmap::setAlphaChannel(const QPixmap &p)
-
-    Most use cases for this can be achieved using \a p with QPainter and QPainter::CompositionMode instead.
-*/
 
 QT_END_NAMESPACE

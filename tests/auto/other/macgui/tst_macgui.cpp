@@ -34,6 +34,7 @@
 #include <QScrollBar>
 #include <QProgressDialog>
 #include <QSpinBox>
+#include <QScreen>
 
 #include <guitest.h>
 
@@ -53,7 +54,12 @@ private slots:
 
 QPixmap grabWindowContents(QWidget * widget)
 {
-    return QPixmap::grabWindow(widget->winId());
+    QScreen *screen = widget->window()->windowHandle()->screen();
+    if (!screen) {
+        qWarning() << "Grabbing pixmap failed, no QScreen for" << widget;
+        return QPixmap();
+    }
+    return screen->grabWindow(widget->winId());
 }
 
 /*

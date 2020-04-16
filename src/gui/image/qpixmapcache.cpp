@@ -482,45 +482,6 @@ QPixmapCacheEntry::~QPixmapCacheEntry()
     pm_cache()->releaseKey(key);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-    \overload
-
-    Use bool find(const QString &, QPixmap *) instead.
-
-    Returns the pixmap associated with the \a key in the cache, or
-    null if there is no such pixmap.
-
-    \warning If valid, you should copy the pixmap immediately (this is
-    fast). Subsequent insertions into the cache could cause the
-    pointer to become invalid. For this reason, we recommend you use
-    bool find(const QString&, QPixmap*) instead.
-
-    Example:
-    \snippet code/src_gui_image_qpixmapcache.cpp 0
-*/
-
-QPixmap *QPixmapCache::find(const QString &key)
-{
-    if (!qt_pixmapcache_thread_test())
-        return nullptr;
-    return pm_cache()->object(key);
-}
-
-
-/*!
-    \obsolete
-
-    Use bool find(const QString &, QPixmap *) instead.
-*/
-
-bool QPixmapCache::find(const QString &key, QPixmap &pixmap)
-{
-    return find(key, &pixmap);
-}
-#endif
-
 /*!
     Looks for a cached pixmap associated with the given \a key in the cache.
     If the pixmap is found, the function sets \a pixmap to that pixmap and
