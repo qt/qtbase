@@ -96,7 +96,8 @@ public:
         Utf32,
         Utf32LE,
         Utf32BE,
-        LastEncoding = Utf32BE
+        Locale,
+        LastEncoding = Locale
     };
 protected:
 

@@ -312,6 +312,19 @@ struct QUtf32
     static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
 };
 
+struct QLocal8Bit
+{
+#if !defined(Q_OS_WIN) || defined(QT_BOOTSTRAPPED)
+    static QString convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state)
+    { return QUtf8::convertToUnicode(chars, len, state); }
+    static QByteArray convertFromUnicode(const QChar *chars, qsizetype len, QStringConverter::State *state)
+    { return QUtf8::convertFromUnicode(chars, len, state); }
+#else
+    static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *);
+    static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *);
+#endif
+};
+
 /*
  Converts from different utf encodings looking at a possible byte order mark at the
  beginning of the string. If no BOM exists, utf-8 is assumed.
