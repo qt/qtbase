@@ -40,7 +40,6 @@ qt_add_tool(qmake # special case
         ../src/3rdparty/pcre2/src/pcre2_ucp.h
         ../src/3rdparty/pcre2/src/pcre2_valid_utf.c
         ../src/3rdparty/pcre2/src/pcre2_xclass.c
-        ../src/corelib/codecs/qutfcodec.cpp ../src/corelib/codecs/qutfcodec_p.h
         ../src/corelib/global/qendian.cpp # special case
         ../src/corelib/global/qglobal.cpp ../src/corelib/global/qglobal.h
         ../src/corelib/global/qlibraryinfo.cpp
@@ -105,6 +104,7 @@ qt_add_tool(qmake # special case
         ../src/corelib/tools/qringbuffer.cpp # special case
         ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h
         ../src/corelib/text/qstringbuilder.cpp ../src/corelib/text/qstringbuilder.h
+        ../src/corelib/text/qstringconverter.cpp ../src/corelib/text/qstringconverter.h ../src/corelib/text/qstringconverter_p.h
         ../src/corelib/text/qstringlist.cpp ../src/corelib/text/qstringlist.h
         ../src/corelib/text/qstringmatcher.h
         ../src/corelib/tools/qvector.h

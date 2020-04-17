@@ -48,7 +48,7 @@
 #if QT_CONFIG(textcodec)
 #include <qtextcodec.h>
 #endif
-#include <private/qutfcodec_p.h>
+#include <private/qstringconverter_p.h>
 #include "qlocale_tools_p.h"
 #include "private/qsimd_p.h"
 #include <qnumeric.h>

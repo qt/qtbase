@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qurl.h"
-#include "private/qutfcodec_p.h"
+#include "private/qstringconverter_p.h"
 #include "private/qtools_p.h"
 #include "private/qsimd_p.h"
 

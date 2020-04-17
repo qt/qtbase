@@ -159,11 +159,11 @@ SOURCES += \
     qsettings.cpp \
     qstring.cpp \
     qstringbuilder.cpp \
+    qstringconverter.cpp \
     qstringlist.cpp \
     qsystemerror.cpp \
     qtemporaryfile.cpp \
     qtextstream.cpp \
-    qutfcodec.cpp \
     quuid.cpp \
     qvariant.cpp \
     qversionnumber.cpp \
@@ -217,12 +217,13 @@ HEADERS += \
     qromancalendar_p.h \
     qstring.h \
     qstringbuilder.h \
+    qstringconverter_p.h \
+    qstringconverter.h \
     qstringlist.h \
     qstringmatcher.h \
     qsystemerror_p.h \
     qtemporaryfile.h \
     qtextstream.h \
-    qutfcodec_p.h \
     quuid.h \
     qvector.h \
     qversionnumber.h \

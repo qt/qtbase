@@ -54,7 +54,7 @@
 #include "qcborvalue.h"
 
 #include <private/qglobal_p.h>
-#include <private/qutfcodec_p.h>
+#include <private/qstringconverter_p.h>
 
 #include <math.h>
 

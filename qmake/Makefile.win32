@@ -104,8 +104,8 @@ QTOBJS= \
 	qoperatingsystemversion_win.obj \
 	qregexp.obj \
 	qromancalendar.obj \
-	qutfcodec.obj \
 	qstring.obj \
+	qstringconverter.obj \
 	qstringlist.obj \
 	qstringbuilder.obj \
 	qsystemerror.obj \

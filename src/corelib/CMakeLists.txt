@@ -169,6 +169,7 @@ qt_add_module(Core
         text/qstring.cpp text/qstring.h
         text/qstring_compat.cpp
         text/qstringalgorithms.h text/qstringalgorithms_p.h
+        text/qstringconverter.cpp text/qstringconverter.h text/qstringconverter_p.h
         text/qstringbuilder.cpp text/qstringbuilder.h
         text/qstringiterator_p.h
         text/qstringlist.cpp text/qstringlist.h

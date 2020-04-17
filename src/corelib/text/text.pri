@@ -20,6 +20,7 @@ HEADERS +=  \
         text/qstringalgorithms_p.h \
         text/qstringbuilder.h \
         text/qstringconverter.h \
+        text/qstringconverter_p.h \
         text/qstringiterator_p.h \
         text/qstringlist.h \
         text/qstringliteral.h \

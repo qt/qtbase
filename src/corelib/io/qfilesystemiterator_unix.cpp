@@ -42,7 +42,7 @@
 
 #if QT_CONFIG(textcodec)
 #  include <qtextcodec.h>
-#  include <private/qutfcodec_p.h>
+#  include <private/qstringconverter_p.h>
 #endif
 
 #ifndef QT_NO_FILESYSTEMITERATOR

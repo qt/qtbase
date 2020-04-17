@@ -42,9 +42,6 @@ qt_extend_target(Bootstrap
         ../../3rdparty/pcre2/src/pcre2_ucp.h
         ../../3rdparty/pcre2/src/pcre2_valid_utf.c
         ../../3rdparty/pcre2/src/pcre2_xclass.c
-        ../../corelib/codecs/qlatincodec.cpp
-        ../../corelib/codecs/qtextcodec.cpp
-        ../../corelib/codecs/qutfcodec.cpp
         ../../corelib/global/qendian.cpp
         ../../corelib/global/qglobal.cpp
         ../../corelib/global/qlogging.cpp
@@ -110,7 +107,6 @@ qt_extend_target(Bootstrap
         ../../corelib/text/qstringbuilder.cpp
         ../../corelib/text/qstringconverter.cpp
         ../../corelib/text/qstringlist.cpp
-        ../../corelib/text/qstringview.cpp
         ../../corelib/text/qvsnprintf.cpp
         ../../corelib/time/qcalendar.cpp
         ../../corelib/time/qdatetime.cpp

@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qstringbuilder.h"
-#include <private/qutfcodec_p.h>
+#include <private/qstringconverter_p.h>
 
 QT_BEGIN_NAMESPACE
 

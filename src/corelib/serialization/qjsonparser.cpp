@@ -44,7 +44,7 @@
 #include <qdebug.h>
 #include "qjsonparser_p.h"
 #include "qjson_p.h"
-#include "private/qutfcodec_p.h"
+#include "private/qstringconverter_p.h"
 #include "private/qcborvalue_p.h"
 #include "private/qnumeric_p.h"
 

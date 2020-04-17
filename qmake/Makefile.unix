@@ -17,7 +17,6 @@ OBJS = \
 
 #qt code (please keep in order matching DEPEND_SRC)
 QOBJS = \
-	qutfcodec.o \
 	qendian.o qglobal.o qlogging.o qmalloc.o qnumeric.o qoperatingsystemversion.o qrandom.o \
 	qabstractfileengine.o qbuffer.o qdatastream.o qdebug.o \
 	qdir.o qdiriterator.o \
@@ -32,7 +31,7 @@ QOBJS = \
 	qcalendar.o qgregoriancalendar.o qromancalendar.o \
         qcryptographichash.o qdatetime.o qhash.o \
         qlocale.o qlocale_tools.o qmap.o qregularexpression.o qregexp.o qringbuffer.o \
-	qstringbuilder.o qstring.o qstringlist.o qversionnumber.o \
+        qstringbuilder.o qstring.o qstringconverter.o qstringlist.o qversionnumber.o \
 	qvsnprintf.o qxmlstream.o qxmlutils.o \
         pcre2_auto_possess.o pcre2_chartables.o pcre2_compile.o pcre2_config.o \
         pcre2_context.o pcre2_dfa_match.o pcre2_error.o pcre2_extuni.o \
@@ -74,7 +73,6 @@ DEPEND_SRC = \
 	   $(QMKGENSRC)/win32/msvc_vcxproj.cpp \
 	   $(QMKGENSRC)/win32/winmakefile.cpp \
 	   $(QMKGENSRC)/xmloutput.cpp \
-	   $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qendian.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qglobal.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp \
@@ -122,6 +120,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/text/qregularexpression.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qregexp.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstringbuilder.cpp \
+	   $(SOURCE_PATH)/src/corelib/text/qstringconverter.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstring.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstringlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qvsnprintf.cpp \
@@ -380,13 +379,13 @@ qoperatingsystemversion_darwin.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsy
 qcore_foundation.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-qutfcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
 qstring.o: $(SOURCE_PATH)/src/corelib/text/qstring.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qstringbuilder.o: $(SOURCE_PATH)/src/corelib/text/qstringbuilder.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qstringconverter.o: $(SOURCE_PATH)/src/corelib/text/qstringconverter.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlocale.o: $(SOURCE_PATH)/src/corelib/text/qlocale.cpp

@@ -46,9 +46,7 @@
 #include "qvariant.h"
 #include "qbuffer.h"
 #include "qimage.h"
-#if QT_CONFIG(textcodec)
-#include "private/qutfcodec_p.h"
-#endif
+#include "private/qstringconverter_p.h"
 
 #include "private/qguiapplication_p.h"
 #include <qpa/qplatformintegration.h>
