@@ -40,10 +40,7 @@
 #include "qplatformdefs.h"
 #include "qfilesystemiterator_p.h"
 
-#if QT_CONFIG(textcodec)
-#  include <qtextcodec.h>
-#  include <private/qstringconverter_p.h>
-#endif
+#include <private/qstringconverter_p.h>
 
 #ifndef QT_NO_FILESYSTEMITERATOR
 
@@ -59,39 +56,7 @@ static bool checkNameDecodable(const char *d_name, qsizetype len)
     // This function is called in a loop from advance() below, but the loop is
     // usually run only once.
 
-#if QT_CONFIG(textcodec)
-    // We identify the codecs by their RFC 2978 MIBenum values. In this
-    // function:
-    //  3   US-ASCII (ANSI X3.4-1986)
-    //  4   Latin1 (ISO-8859-1)
-    // 106  UTF-8
-    QTextCodec *codec = QTextCodec::codecForLocale();
-#  ifdef QT_LOCALE_IS_UTF8
-    int mibEnum = 106;
-#  else
-    int mibEnum = 4;                // Latin 1
-    if (codec)
-        mibEnum = codec->mibEnum();
-#  endif
-    if (Q_LIKELY(mibEnum == 106))   // UTF-8
-        return QUtf8::isValidUtf8(d_name, len).isValidUtf8;
-    if (mibEnum == 3)               // US-ASCII
-        return QtPrivate::isAscii(QLatin1String(d_name, len));
-    if (mibEnum == 4)               // Latin 1
-        return true;
-
-    // fall back to generic QTextCodec
-    QTextCodec::ConverterState cs(QTextCodec::IgnoreHeader);
-    codec->toUnicode(d_name, len, &cs);
-    return cs.invalidChars == 0 && cs.remainingChars == 0;
-#else
-    Q_UNUSED(d_name);
-    Q_UNUSED(len);
-    // if we have no text codecs, then QString::fromLocal8Bit is fromLatin1
-    Q_UNUSED(d_name)
-    Q_UNUSED(len)
-    return true;
-#endif
+    return QUtf8::isValidUtf8(d_name, len).isValidUtf8;
 }
 
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
