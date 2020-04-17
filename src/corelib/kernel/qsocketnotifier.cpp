@@ -313,6 +313,7 @@ bool QSocketNotifier::event(QEvent *e)
     \class QSocketDescriptor
     \inmodule QtCore
     \brief A class which holds a native socket descriptor.
+    \internal
 
     \ingroup network
     \ingroup io
@@ -329,12 +330,14 @@ bool QSocketNotifier::event(QEvent *e)
 
 /*!
     \fn QSocketDescriptor::QSocketDescriptor(DescriptorType descriptor)
+    \internal
 
     Construct a QSocketDescriptor from a native socket \a descriptor.
 */
 
 /*!
     \fn QSocketDescriptor::QSocketDescriptor(qintptr descriptor)
+    \internal
 
     Construct a QSocketDescriptor from a native socket \a descriptor.
 
@@ -343,6 +346,7 @@ bool QSocketNotifier::event(QEvent *e)
 
 /*!
     \fn Qt::HANDLE QSocketDescriptor::winHandle() const noexcept
+    \internal
 
     Returns the internal handle.
 
