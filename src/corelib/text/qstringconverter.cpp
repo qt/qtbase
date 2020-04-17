@@ -1296,6 +1296,33 @@ static char *toUtf32LE(char *out, QStringView in, QStringConverter::State *state
     return out + s.length();
 }
 
+void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept;
+
+static QChar *fromLatin1(QChar *out, const char *chars, qsizetype len, QStringConverter::State *)
+{
+    qt_from_latin1(reinterpret_cast<char16_t *>(out), chars, size_t(len));
+    return out + len;
+}
+
+
+static char *toLatin1(char *out, QStringView in, QStringConverter::State *state)
+{
+    const char replacement = (state && state->flags & QStringConverter::ConvertInvalidToNull) ? 0 : '?';
+    int invalid = 0;
+    for (qsizetype i = 0; i < in.length(); ++i) {
+        if (in[i] > QChar(0xff)) {
+            *out = replacement;
+            ++invalid;
+        } else {
+            *out = (char)in[i].cell();
+        }
+        ++out;
+    }
+    if (state)
+        state->invalidChars += invalid;
+    return out;
+}
+
 static QChar *fromLocal8Bit(QChar *out, const char *in, qsizetype length, QStringConverter::State *state)
 {
     QString s = QLocal8Bit::convertToUnicode(in, length, state);
@@ -1320,6 +1347,9 @@ static qsizetype toUtf16Len(qsizetype l) { return 2*(l + 1); }
 static qsizetype fromUtf32Len(qsizetype l) { return l + 1; }
 static qsizetype toUtf32Len(qsizetype l) { return 4*(l + 1); }
 
+static qsizetype fromLatin1Len(qsizetype l) { return l + 1; }
+static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
+
 const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringConverter::LastEncoding + 1] =
 {
     { fromUtf8, fromUtf8Len, toUtf8, toUtf8Len },
@@ -1329,6 +1359,7 @@ const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringCo
     { fromUtf32, fromUtf32Len, toUtf32, toUtf32Len },
     { fromUtf32LE, fromUtf32Len, toUtf32LE, toUtf32Len },
     { fromUtf32BE, fromUtf32Len, toUtf32BE, toUtf32Len },
+    { fromLatin1, fromLatin1Len, toLatin1, toLatin1Len },
     { fromLocal8Bit, fromUtf8Len, toLocal8Bit, toUtf8Len }
 };
 

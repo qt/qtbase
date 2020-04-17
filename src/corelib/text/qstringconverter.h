@@ -96,6 +96,7 @@ public:
         Utf32,
         Utf32LE,
         Utf32BE,
+        Latin1,
         Locale,
         LastEncoding = Locale
     };
