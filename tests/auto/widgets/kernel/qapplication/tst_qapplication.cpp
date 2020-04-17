@@ -1843,25 +1843,24 @@ void tst_QApplication::setAttribute()
 {
     int argc = 1;
     QApplication app(argc, &argv0);
-    QVERIFY(!QApplication::testAttribute(Qt::AA_ImmediateWidgetCreation));
+    QVERIFY(!QApplication::testAttribute(Qt::AA_NativeWindows));
     QWidget  *w = new QWidget;
-    QVERIFY(!w->testAttribute(Qt::WA_WState_Created));
+    w->show(); // trigger creation;
+    QVERIFY(!w->testAttribute(Qt::WA_NativeWindow));
     delete w;
 
-    QApplication::setAttribute(Qt::AA_ImmediateWidgetCreation);
-    QVERIFY(QApplication::testAttribute(Qt::AA_ImmediateWidgetCreation));
+    QApplication::setAttribute(Qt::AA_NativeWindows);
+    QVERIFY(QApplication::testAttribute(Qt::AA_NativeWindows));
     w = new QWidget;
-    QVERIFY(w->testAttribute(Qt::WA_WState_Created));
-    QWidget *w2 = new QWidget(w);
-    w2->setParent(nullptr);
-    QVERIFY(w2->testAttribute(Qt::WA_WState_Created));
+    w->show(); // trigger creation
+    QVERIFY(w->testAttribute(Qt::WA_NativeWindow));
     delete w;
-    delete w2;
 
-    QApplication::setAttribute(Qt::AA_ImmediateWidgetCreation, false);
-    QVERIFY(!QApplication::testAttribute(Qt::AA_ImmediateWidgetCreation));
+    QApplication::setAttribute(Qt::AA_NativeWindows, false);
+    QVERIFY(!QApplication::testAttribute(Qt::AA_NativeWindows));
     w = new QWidget;
-    QVERIFY(!w->testAttribute(Qt::WA_WState_Created));
+    w->show(); // trigger creation;
+    QVERIFY(!w->testAttribute(Qt::WA_NativeWindow));
     delete w;
 }
 

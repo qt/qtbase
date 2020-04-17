@@ -1063,9 +1063,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (++QWidgetPrivate::instanceCounter > QWidgetPrivate::maxInstances)
         QWidgetPrivate::maxInstances = QWidgetPrivate::instanceCounter;
 
-    if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation)) // ### fixme: Qt 6: Remove AA_ImmediateWidgetCreation.
-        q->create();
-
     QEvent e(QEvent::Create);
     QCoreApplication::sendEvent(q, &e);
     QCoreApplication::postEvent(q, new QEvent(QEvent::PolishRequest));
@@ -10410,10 +10407,6 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         // the old backing store to the new one.
         oldPaintManager->moveStaticWidgets(this);
     }
-
-    // ### fixme: Qt 6: Remove AA_ImmediateWidgetCreation.
-    if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation) && !testAttribute(Qt::WA_WState_Created))
-        create();
 
     d->reparentFocusWidgets(oldtlw);
     setAttribute(Qt::WA_Resized, resized);

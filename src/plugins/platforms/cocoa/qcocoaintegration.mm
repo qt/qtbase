@@ -189,7 +189,6 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
         }
     }
 
-    // ### For AA_MacPluginApplication we don't want to load the menu nib.
     // Qt 4 also does not set the application delegate, so that behavior
     // is matched here.
     if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {

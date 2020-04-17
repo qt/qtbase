@@ -491,24 +491,17 @@ namespace Qt {
 
     enum ApplicationAttribute
     {
-        AA_ImmediateWidgetCreation = 0,
-#if QT_DEPRECATED_SINCE(5, 14)
-        AA_MSWindowsUseDirect3DByDefault Q_DECL_ENUMERATOR_DEPRECATED = 1,
-#endif
+        // AA_ImmediateWidgetCreation = 0,
+        // AA_MSWindowsUseDirect3DByDefault = 1,
         AA_DontShowIconsInMenus = 2,
         AA_NativeWindows = 3,
         AA_DontCreateNativeWidgetSiblings = 4,
         AA_PluginApplication = 5,
-#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove me
-        AA_MacPluginApplication Q_DECL_ENUMERATOR_DEPRECATED = AA_PluginApplication,
-#endif
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
         AA_DisableNativeVirtualKeyboard = 9,
-#if QT_DEPRECATED_SINCE(5, 14)
-        AA_X11InitThreads Q_DECL_ENUMERATOR_DEPRECATED = 10,
-#endif
+        // AA_X11InitThreads = 10,
         AA_SynthesizeTouchForUnhandledMouseEvents = 11,
         AA_SynthesizeMouseForUnhandledTouchEvents = 12,
         AA_UseHighDpiPixmaps = 13,
