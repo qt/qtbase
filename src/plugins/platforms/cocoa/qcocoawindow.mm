@@ -904,10 +904,13 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
 
     QMacAutoReleasePool pool;
 
-    if (icon.isNull())
+    if (icon.isNull()) {
         iconButton.image = [NSWorkspace.sharedWorkspace iconForFile:m_view.window.representedFilename];
-    else
-        iconButton.image = [NSImage imageFromQIcon:icon];
+    } else {
+        // Fall back to a size that looks good on the highest resolution screen available
+        auto fallbackSize = iconButton.frame.size.height * qGuiApp->devicePixelRatio();
+        iconButton.image = [NSImage imageFromQIcon:icon withSize:fallbackSize];
+    }
 }
 
 void QCocoaWindow::setAlertState(bool enabled)
