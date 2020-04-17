@@ -42,9 +42,7 @@
 #include "private/qobject_p.h"
 #include "qurl.h"
 #include "qstringlist.h"
-#if QT_CONFIG(textcodec)
-#include "qtextcodec.h"
-#endif
+#include "qstringconverter.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -157,15 +155,18 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType::T
     if (data.userType() == QMetaType::QByteArray) {
         // see if we can convert to the requested type
         switch(type) {
-#if QT_CONFIG(textcodec)
         case QMetaType::QString: {
             const QByteArray ba = data.toByteArray();
-            QTextCodec *codec = QTextCodec::codecForName("utf-8");
-            if (format == QLatin1String("text/html"))
-                codec = QTextCodec::codecForHtml(ba, codec);
-            return codec->toUnicode(ba);
+            if (format == QLatin1String("text/html")) {
+                auto encoding = QStringConverter::encodingForHtml(ba.constData(), ba.size());
+                if (encoding) {
+                    QStringDecoder toUtf16(*encoding);
+                    return QString(toUtf16(ba));
+                }
+                // fall back to utf8
+            }
+            return QString::fromUtf8(ba);
         }
-#endif // textcodec
         case QMetaType::QColor: {
             QVariant newData = data;
             newData.convert(QMetaType::QColor);
