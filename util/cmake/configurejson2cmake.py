@@ -852,7 +852,10 @@ def get_feature_mapping():
             "condition": "NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND ( TEST_posix_iconv OR TEST_sun_iconv )"
         },
         "incredibuild_xge": None,
-        "ltcg": None,
+        "ltcg": {
+            "autoDetect": "1",
+            "condition": "CMAKE_INTERPROCEDURAL_OPTIMIZATION"
+        },
         "msvc_mp": None,
         "optimize_debug": None,
         "optimize_size": None,

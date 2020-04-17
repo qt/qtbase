@@ -509,6 +509,12 @@ qt_feature("precompile_header"
     CONDITION BUILD_WITH_PCH
 )
 qt_feature_config("precompile_header" QMAKE_PRIVATE_CONFIG)
+qt_feature("ltcg"
+    LABEL "Using LTCG"
+    AUTODETECT 1
+    CONDITION CMAKE_INTERPROCEDURAL_OPTIMIZATION
+)
+qt_feature_config("ltcg" QMAKE_PRIVATE_CONFIG)
 qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
     CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
