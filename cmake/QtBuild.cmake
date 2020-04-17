@@ -1830,6 +1830,19 @@ endfunction()
 
 variable_watch(CMAKE_CURRENT_LIST_DIR qt_watch_current_list_dir)
 
+# Set target properties that are the same for all modules, plugins, executables
+# and 3rdparty libraries.
+function(qt_set_common_target_properties target)
+   if(FEATURE_static_runtime)
+       if(MSVC)
+           set_property(TARGET ${target} PROPERTY
+               MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+       elseif(MINGW)
+           target_link_options(${target} INTERFACE "LINKER:-static")
+       endif()
+   endif()
+endfunction()
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -1868,6 +1881,10 @@ function(qt_add_module target)
         set(is_shared_lib 1)
     else()
         add_library("${target}" STATIC)
+    endif()
+
+    if(NOT is_interface_lib)
+        qt_set_common_target_properties(${target})
     endif()
 
     set(is_framework 0)
@@ -2739,6 +2756,8 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
+    qt_set_common_target_properties(${target})
+
     # Make sure the Qt6 plugin library names are like they were in Qt5 qmake land.
     # Whereas the Qt6 CMake target names are like the Qt5 CMake target names.
     set(output_name "${target}")
@@ -3039,6 +3058,7 @@ function(qt_add_executable name)
         qt6_generate_win32_rc_file(${name})
     endif()
 
+    qt_set_common_target_properties(${name})
     qt_autogen_tools_initial_setup(${name})
     qt_skip_warnings_are_errors_when_repo_unclean("${name}")
 
@@ -3520,6 +3540,10 @@ function(qt_add_3rdparty_library target)
         endif()
     else()
         add_library("${target}")
+    endif()
+
+    if(NOT arg_INTERFACE)
+        qt_set_common_target_properties(${target})
     endif()
 
     if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)

@@ -794,6 +794,14 @@ qt_feature("ccache"
     CONDITION QT_USE_CCACHE
 )
 qt_feature_config("ccache" QMAKE_PRIVATE_CONFIG)
+qt_feature("static_runtime"
+    LABEL "Statically link the C/C++ runtime library"
+    AUTODETECT OFF
+    CONDITION NOT QT_FEATURE_shared
+    EMIT_IF WIN32
+)
+qt_feature_config("static_runtime" QMAKE_PUBLIC_CONFIG)
+qt_feature_config("static_runtime" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("dlopen" PRIVATE
     LABEL "dlopen()"
     CONDITION UNIX
