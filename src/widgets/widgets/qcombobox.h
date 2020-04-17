@@ -137,11 +137,7 @@ public:
     enum SizeAdjustPolicy {
         AdjustToContents,
         AdjustToContentsOnFirstShow,
-#if QT_DEPRECATED_SINCE(5, 15)
-        AdjustToMinimumContentsLength Q_DECL_ENUMERATOR_DEPRECATED_X(
-            "Use AdjustToContents or AdjustToContentsOnFirstShow"), // ### Qt 6: remove
-#endif
-        AdjustToMinimumContentsLengthWithIcon = AdjustToContentsOnFirstShow + 2
+        AdjustToMinimumContentsLengthWithIcon
     };
     Q_ENUM(SizeAdjustPolicy)
 

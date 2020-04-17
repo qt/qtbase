@@ -302,8 +302,6 @@ void tst_QComboBox::getSetCheck()
     QCOMPARE(QComboBox::SizeAdjustPolicy(QComboBox::AdjustToContents), obj1.sizeAdjustPolicy());
     obj1.setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow));
     QCOMPARE(QComboBox::SizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow), obj1.sizeAdjustPolicy());
-    obj1.setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength));
-    QCOMPARE(QComboBox::SizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength), obj1.sizeAdjustPolicy());
     obj1.setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon));
     QCOMPARE(QComboBox::SizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon), obj1.sizeAdjustPolicy());
 
@@ -531,19 +529,10 @@ void tst_QComboBox::sizeAdjustPolicy()
     testWidget->addItem("normal item");
     QCOMPARE(testWidget->sizeHint(), firstShow);
 
-    // check that with minimumContentsLength/AdjustToMinimumContentsLength sizehint changes
-    testWidget->setMinimumContentsLength(30);
-    QCOMPARE(testWidget->sizeHint(), firstShow);
-    testWidget->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
-    QSize minimumContentsLength = testWidget->sizeHint();
-    QVERIFY(minimumContentsLength.width() > firstShow.width());
-    testWidget->setMinimumContentsLength(60);
-    QVERIFY(minimumContentsLength.width() < testWidget->sizeHint().width());
-
     // check that with minimumContentsLength/AdjustToMinimumContentsLengthWithIcon sizehint changes
     testWidget->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     testWidget->setMinimumContentsLength(30);
-    minimumContentsLength = testWidget->sizeHint();
+    QSize minimumContentsLength = testWidget->sizeHint();
     QVERIFY(minimumContentsLength.width() > firstShow.width());
     testWidget->setMinimumContentsLength(60);
     QVERIFY(minimumContentsLength.width() < testWidget->sizeHint().width());
