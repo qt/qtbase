@@ -46,8 +46,8 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGLVERSIONFUNCTION_H
-#define QOPENGLVERSIONFUNCTION_H
+#ifndef QOPENGLVERSIONFUNCTIONS_P_H
+#define QOPENGLVERSIONFUNCTIONS_P_H
 
 //
 //  W A R N I N G
@@ -84,4 +84,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QOPENGLVERSIONFUNCTIONS_P_H
