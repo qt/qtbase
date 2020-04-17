@@ -781,6 +781,12 @@ qt_feature("compile_examples"
     AUTODETECT NOT WASM
 )
 qt_feature_config("compile_examples" QMAKE_PRIVATE_CONFIG)
+qt_feature("ccache"
+    LABEL "Using ccache"
+    AUTODETECT 1
+    CONDITION QT_USE_CCACHE
+)
+qt_feature_config("ccache" QMAKE_PRIVATE_CONFIG)
 qt_feature("dlopen" PRIVATE
     LABEL "dlopen()"
     CONDITION UNIX

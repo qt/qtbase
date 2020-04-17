@@ -819,7 +819,10 @@ def get_feature_mapping():
         "alloc_malloc_h": None,
         "alloc_stdlib_h": None,
         "build_all": None,
-        "ccache": None,
+        "ccache": {
+            "autoDetect": "1",
+            "condition": "QT_USE_CCACHE"
+        },
         "compiler-flags": None,
         "cross_compile": {"condition": "CMAKE_CROSSCOMPILING"},
         "debug_and_release": {
