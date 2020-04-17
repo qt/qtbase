@@ -104,6 +104,7 @@ public:
                              const QByteArray &passPhrase);
 
     static QSslCipher QSslCipher_from_SSLCipherSuite(SSLCipherSuite cipher);
+    static SSLCipherSuite SSLCipherSuite_from_QSslCipher(const QSslCipher &cipher);
 
 private:
     // SSL context management/properties:
