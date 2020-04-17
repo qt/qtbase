@@ -2472,27 +2472,6 @@ bool QFontDatabase::removeAllApplicationFonts()
 }
 
 /*!
-    \fn bool QFontDatabase::supportsThreadedFontRendering()
-    \since 4.4
-    \deprecated
-
-    Returns \c true if font rendering is supported outside the GUI
-    thread, false otherwise. In other words, a return value of false
-    means that all QPainter::drawText() calls outside the GUI thread
-    will not produce readable output.
-
-    As of 5.0, always returns \c true.
-
-    \sa {Thread-Support in Qt Modules#Painting In Threads}{Painting In Threads}
-*/
-#if QT_DEPRECATED_SINCE(5, 2)
-bool QFontDatabase::supportsThreadedFontRendering()
-{
-    return true;
-}
-#endif
-
-/*!
     \internal
 */
 QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)

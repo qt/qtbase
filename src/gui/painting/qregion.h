@@ -107,35 +107,13 @@ public:
     Q_REQUIRED_RESULT QRegion subtracted(const QRegion &r) const;
     Q_REQUIRED_RESULT QRegion xored(const QRegion &r) const;
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    Q_REQUIRED_RESULT inline QT_DEPRECATED QRegion unite(const QRegion &r) const { return united(r); }
-    Q_REQUIRED_RESULT inline QT_DEPRECATED QRegion unite(const QRect &r) const { return united(r); }
-    Q_REQUIRED_RESULT inline QT_DEPRECATED QRegion intersect(const QRegion &r) const { return intersected(r); }
-    Q_REQUIRED_RESULT inline QT_DEPRECATED QRegion intersect(const QRect &r) const { return intersected(r); }
-    Q_REQUIRED_RESULT inline QT_DEPRECATED QRegion subtract(const QRegion &r) const { return subtracted(r); }
-    Q_REQUIRED_RESULT inline QT_DEPRECATED QRegion eor(const QRegion &r) const { return xored(r); }
-#endif
-
     bool intersects(const QRegion &r) const;
     bool intersects(const QRect &r) const;
 
     QRect boundingRect() const noexcept;
-#if QT_DEPRECATED_SINCE(5, 11)
-    QT_DEPRECATED_X("Use begin()/end() instead")
-    QVector<QRect> rects() const;
-#endif
     void setRects(const QRect *rect, int num);
     int rectCount() const noexcept;
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    // ### Qt 6: remove these, they're kept for MSVC compat
-    const QRegion operator|(const QRegion &r) const;
-    const QRegion operator+(const QRegion &r) const;
-    const QRegion operator+(const QRect &r) const;
-    const QRegion operator&(const QRegion &r) const;
-    const QRegion operator&(const QRect &r) const;
-    const QRegion operator-(const QRegion &r) const;
-    const QRegion operator^(const QRegion &r) const;
-#else
+
     QRegion operator|(const QRegion &r) const;
     QRegion operator+(const QRegion &r) const;
     QRegion operator+(const QRect &r) const;
@@ -143,7 +121,7 @@ public:
     QRegion operator&(const QRect &r) const;
     QRegion operator-(const QRegion &r) const;
     QRegion operator^(const QRegion &r) const;
-#endif // Q_COMPILER_MANGLES_RETURN_TYPE
+
     QRegion& operator|=(const QRegion &r);
     QRegion& operator+=(const QRegion &r);
     QRegion& operator+=(const QRect &r);

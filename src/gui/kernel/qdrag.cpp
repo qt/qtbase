@@ -287,36 +287,6 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions, Qt::DropAction defa
     return d->executed_action;
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    \b{Note:} It is recommended to use exec() instead of this function.
-
-    Starts the drag and drop operation and returns a value indicating the requested
-    drop action when it is completed. The drop actions that the user can choose
-    from are specified in \a request. Qt::CopyAction is always allowed.
-
-    \b{Note:} Although the drag and drop operation can take some time, this function
-    does not block the event loop. Other events are still delivered to the application
-    while the operation is performed.
-
-    \sa exec()
-*/
-Qt::DropAction QDrag::start(Qt::DropActions request)
-{
-    Q_D(QDrag);
-    if (!d->data) {
-        qWarning("QDrag: No mimedata set before starting the drag");
-        return d->executed_action;
-    }
-    d->supported_actions = request | Qt::CopyAction;
-    d->default_action = Qt::IgnoreAction;
-    d->executed_action = QDragManager::self()->drag(this);
-    return d->executed_action;
-}
-#endif
-
 /*!
     Sets the drag \a cursor for the \a action. This allows you
     to override the default native cursors. To revert to using the

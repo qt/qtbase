@@ -215,12 +215,6 @@ public:
     static QColor fromHsl(int h, int s, int l, int a = 255);
     static QColor fromHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QColor::lighter() instead")
-    Q_REQUIRED_RESULT QColor light(int f = 150) const noexcept;
-    QT_DEPRECATED_X("Use QColor::darker() instead")
-    Q_REQUIRED_RESULT QColor dark(int f = 200) const noexcept;
-#endif
     Q_REQUIRED_RESULT QColor lighter(int f = 150) const noexcept;
     Q_REQUIRED_RESULT QColor darker(int f = 200) const noexcept;
 

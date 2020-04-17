@@ -1371,24 +1371,6 @@ void QStandardItem::setCheckable(bool checkable)
 */
 
 /*!
-  \fn void QStandardItem::setTristate(bool tristate)
-  \obsolete
-
-  Use QStandardItem::setAutoTristate(bool tristate) instead.
-  For a tristate checkbox that the user can change between all three
-  states, use QStandardItem::setUserTristate(bool tristate) instead.
-*/
-
-/*!
-  \fn void QStandardItem::isTristate() const
-  \obsolete
-
-  Use QStandardItem::isAutoTristate() instead.
-  For a tristate checkbox that the user can change between all three
-  states, use QStandardItem::isUserTristate() instead.
-*/
-
-/*!
   Determines that the item is tristate and controlled by QTreeWidget if \a tristate
   is \c true.
   This enables automatic management of the state of parent items in QTreeWidget
@@ -1441,13 +1423,6 @@ void QStandardItem::setUserTristate(bool tristate)
 
   \sa setUserTristate(), isCheckable(), checkState()
 */
-
-#if QT_DEPRECATED_SINCE(5, 6)
-void QStandardItem::setTristate(bool tristate)
-{
-    setAutoTristate(tristate);
-}
-#endif
 
 #if QT_CONFIG(draganddrop)
 

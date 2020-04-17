@@ -919,24 +919,6 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
     return true;
 }
 
-/*! \fn int QPalette::serialNumber() const
-    \obsolete
-
-    Returns a number that identifies the contents of this QPalette
-    object. Distinct QPalette objects can only have the same serial
-    number if they refer to the same contents (but they don't have
-    to). Also, the serial number of a QPalette may change during the
-    lifetime of the object.
-
-    Use cacheKey() instead.
-
-    \warning The serial number doesn't necessarily change when the
-    palette is altered. This means that it may be dangerous to use it
-    as a cache key.
-
-    \sa operator==()
-*/
-
 /*!
     Returns a number that identifies the contents of this QPalette
     object. Distinct QPalette objects can have the same key if

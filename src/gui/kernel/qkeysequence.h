@@ -178,10 +178,6 @@ public:
     static QKeySequence mnemonic(const QString &text);
     static QList<QKeySequence> keyBindings(StandardKey key);
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED operator QString() const { return toString(QKeySequence::NativeText); }
-    QT_DEPRECATED operator int() const { if (1 <= count()) return operator [](0); return 0; }
-#endif
     operator QVariant() const;
     int operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);

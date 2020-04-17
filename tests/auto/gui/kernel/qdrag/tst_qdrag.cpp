@@ -72,13 +72,6 @@ void tst_QDrag::getSetCheck()
     QCOMPARE(result, Qt::IgnoreAction);
     result = obj1.exec(Qt::MoveAction | Qt::LinkAction);
     QCOMPARE(result, Qt::IgnoreAction);
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    result = obj1.start();
-    QCOMPARE(result, Qt::IgnoreAction);
-    result = obj1.start(Qt::MoveAction | Qt::LinkAction);
-    QCOMPARE(result, Qt::IgnoreAction);
-#endif
 }
 
 QTEST_MAIN(tst_QDrag)

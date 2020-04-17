@@ -565,63 +565,25 @@ void QCursor::setShape(Qt::CursorShape shape)
     }
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
 /*!
-    \deprecated
-
-    New code should use the other overload which returns QBitmap by-value.
-
-    Returns the cursor bitmap, or \nullptr if it is one of the
-    standard cursors.
-*/
-const QBitmap *QCursor::bitmap() const
-{
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
-    return d->bm;
-}
-
-/*!
-    \deprecated
-
-    New code should use the other overload which returns QBitmap by-value.
-
-    Returns the cursor bitmap mask, or \nullptr if it is one of the
-    standard cursors.
-*/
-
-const QBitmap *QCursor::mask() const
-{
-    if (!QCursorData::initialized)
-        QCursorData::initialize();
-    return d->bmm;
-}
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
-/*!
+    \fn QBitmap QCursor::bitmap(Qt::ReturnByValueConstant) const
     \since 5.15
+    \obsolete Use the overload without argument instead.
 
     Returns the cursor bitmap, or a null bitmap if it is one of the
     standard cursors.
 
     Previously, Qt provided a version of \c bitmap() which returned the bitmap
-    by-pointer. That version is now deprecated. To maintain compatibility
-    with old code, you can explicitly differentiate between the by-pointer
-    function and the by-value function:
-
-    \code
-    const QBitmap *bmpPtr = cursor->bitmap();
-    QBitmap bmpVal = cursor->bitmap(Qt::ReturnByValue);
-    \endcode
-
-    If you disable the deprecated version using the QT_DISABLE_DEPRECATED_BEFORE
-    macro, then you can omit \c Qt::ReturnByValue as shown below:
-
-    \code
-    QBitmap bmpVal = cursor->bitmap();
-    \endcode
+    by-pointer. That version is now removed. To maintain compatibility
+    with old code, this function was provided to differentiate between the by-pointer
+    function and the by-value function.
 */
-QBitmap QCursor::bitmap(Qt::ReturnByValueConstant) const
+
+/*!
+    Returns the cursor bitmap, or a null bitmap if it is one of the
+    standard cursors.
+*/
+QBitmap QCursor::bitmap() const
 {
     if (!QCursorData::initialized)
         QCursorData::initialize();
@@ -631,29 +593,24 @@ QBitmap QCursor::bitmap(Qt::ReturnByValueConstant) const
 }
 
 /*!
+    \fn QBitmap QCursor::mask(Qt::ReturnByValueConstant) const
     \since 5.15
+    \obsolete Use the overload without argument instead.
 
     Returns the cursor bitmap mask, or a null bitmap if it is one of the
     standard cursors.
 
     Previously, Qt provided a version of \c mask() which returned the bitmap
-    by-pointer. That version is now deprecated. To maintain compatibility
-    with old code, you can explicitly differentiate between the by-pointer
-    function and the by-value function:
-
-    \code
-    const QBitmap *bmpPtr = cursor->mask();
-    QBitmap bmpVal = cursor->mask(Qt::ReturnByValue);
-    \endcode
-
-    If you disable the deprecated version using the QT_DISABLE_DEPRECATED_BEFORE
-    macro, then you can omit \c Qt::ReturnByValue as shown below:
-
-    \code
-    QBitmap bmpVal = cursor->mask();
-    \endcode
+    by-pointer. That version is now removed. To maintain compatibility
+    with old code, this function was provided to differentiate between the by-pointer
+    function and the by-value function.
 */
-QBitmap QCursor::mask(Qt::ReturnByValueConstant) const
+
+/*!
+    Returns the cursor bitmap mask, or a null bitmap if it is one of the
+    standard cursors.
+*/
+QBitmap QCursor::mask() const
 {
     if (!QCursorData::initialized)
         QCursorData::initialize();

@@ -43,6 +43,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtGui/qwindowdefs.h>
+#include <QtGui/qbitmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -97,19 +98,13 @@ public:
     Qt::CursorShape shape() const;
     void setShape(Qt::CursorShape newShape);
 
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QBitmap by-value")
-    const QBitmap *bitmap() const; // ### Qt 7: Remove function
+#if QT_DEPRECATED_SINCE(6, 6)
+    QBitmap bitmap(Qt::ReturnByValueConstant) const { return bitmap(); }
+    QBitmap mask(Qt::ReturnByValueConstant) const { return mask(); }
+#endif // QT_DEPRECATED_SINCE(6, 6)
+    QBitmap bitmap() const;
+    QBitmap mask() const;
 
-    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QBitmap by-value")
-    const QBitmap *mask() const; // ### Qt 7: Remove function
-
-    QBitmap bitmap(Qt::ReturnByValueConstant) const;
-    QBitmap mask(Qt::ReturnByValueConstant) const;
-#else
-    QBitmap bitmap(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
-    QBitmap mask(Qt::ReturnByValueConstant = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
-#endif // QT_DEPRECATED_SINCE(5, 15)
     QPixmap pixmap() const;
     QPoint hotSpot() const;
 

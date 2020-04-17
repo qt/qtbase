@@ -908,20 +908,6 @@ void QBrush::setTransform(const QTransform &matrix)
 }
 
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \fn void QBrush::matrix() const
-    \since 4.2
-    \obsolete
-
-    Use transform() instead.
-
-    Returns the current transformation matrix for the brush.
-
-    \sa setMatrix()
-*/
-#endif // QT_DEPRECATED_SINCE(5, 15)
-
 /*!
     \fn bool QBrush::operator!=(const QBrush &brush) const
 

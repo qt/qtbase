@@ -171,11 +171,6 @@ public:
     }
     void setUserTristate(bool tristate);
 
-#if QT_DEPRECATED_SINCE(5, 6)
-    QT_DEPRECATED bool isTristate() const { return isAutoTristate(); }
-    QT_DEPRECATED void setTristate(bool tristate);
-#endif
-
 #if QT_CONFIG(draganddrop)
     inline bool isDragEnabled() const {
         return (flags() & Qt::ItemIsDragEnabled) != 0;

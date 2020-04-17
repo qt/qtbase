@@ -2870,28 +2870,6 @@ QColor QColor::darker(int factor) const noexcept
     return hsv.convertTo(cspec);
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Use lighter(\a factor) instead.
-*/
-QColor QColor::light(int factor) const noexcept
-{
-    return lighter(factor);
-}
-
-/*!
-    \obsolete
-
-    Use darker(\a factor) instead.
-*/
-QColor QColor::dark(int factor) const noexcept
-{
-    return darker(factor);
-}
-#endif
-
 /*! \overload
     Assigns a copy of \a color and returns a reference to this color.
  */

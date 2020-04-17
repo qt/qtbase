@@ -429,9 +429,6 @@ QDebug operator<<(QDebug s, const QRegion &r)
 
     \sa united(), operator+()
 */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const
-#endif
 QRegion QRegion::operator|(const QRegion &r) const
     { return united(r); }
 
@@ -441,9 +438,6 @@ QRegion QRegion::operator|(const QRegion &r) const
 
     \sa united(), operator|()
 */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const
-#endif
 QRegion QRegion::operator+(const QRegion &r) const
     { return united(r); }
 
@@ -451,9 +445,6 @@ QRegion QRegion::operator+(const QRegion &r) const
    \overload
    \since 4.4
  */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const
-#endif
 QRegion QRegion::operator+(const QRect &r) const
     { return united(r); }
 
@@ -463,9 +454,6 @@ QRegion QRegion::operator+(const QRect &r) const
 
     \sa intersected()
 */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const
-#endif
 QRegion QRegion::operator&(const QRegion &r) const
     { return intersected(r); }
 
@@ -473,9 +461,6 @@ QRegion QRegion::operator&(const QRegion &r) const
    \overload
    \since 4.4
  */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const
-#endif
 QRegion QRegion::operator&(const QRect &r) const
 {
     return intersected(r);
@@ -487,9 +472,6 @@ QRegion QRegion::operator&(const QRect &r) const
 
     \sa subtracted()
 */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const
-#endif
 QRegion QRegion::operator-(const QRegion &r) const
     { return subtracted(r); }
 
@@ -499,9 +481,6 @@ QRegion QRegion::operator-(const QRegion &r) const
 
     \sa xored()
 */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const
-#endif
 QRegion QRegion::operator^(const QRegion &r) const
     { return xored(r); }
 
@@ -744,21 +723,6 @@ QRegion QRegion::intersect(const QRect &r) const
 */
 
 /*!
-    \fn QRegion QRegion::unite(const QRegion &r) const
-    \obsolete
-
-    Use united(\a r) instead.
-*/
-
-/*!
-    \fn QRegion QRegion::unite(const QRect &rect) const
-    \since 4.4
-    \obsolete
-
-    Use united(\a rect) instead.
-*/
-
-/*!
     \fn QRegion QRegion::united(const QRect &rect) const
     \since 4.4
 
@@ -778,21 +742,6 @@ QRegion QRegion::intersect(const QRect &r) const
     The figure shows the union of two elliptical regions.
 
     \sa intersected(), subtracted(), xored()
-*/
-
-/*!
-    \fn QRegion QRegion::intersect(const QRegion &r) const
-    \obsolete
-
-    Use intersected(\a r) instead.
-*/
-
-/*!
-    \fn QRegion QRegion::intersect(const QRect &rect) const
-    \since 4.4
-    \obsolete
-
-    Use intersected(\a rect) instead.
 */
 
 /*!
@@ -818,13 +767,6 @@ QRegion QRegion::intersect(const QRect &r) const
 */
 
 /*!
-    \fn QRegion QRegion::subtract(const QRegion &r) const
-    \obsolete
-
-    Use subtracted(\a r) instead.
-*/
-
-/*!
     \fn QRegion QRegion::subtracted(const QRegion &r) const
     \since 4.2
 
@@ -836,13 +778,6 @@ QRegion QRegion::intersect(const QRect &r) const
     subtracted from the ellipse on the left (\c {left - right}).
 
     \sa intersected(), united(), xored()
-*/
-
-/*!
-    \fn QRegion QRegion::eor(const QRegion &r) const
-    \obsolete
-
-    Use xored(\a r) instead.
 */
 
 /*!
@@ -865,20 +800,6 @@ QRegion QRegion::intersect(const QRect &r) const
     Returns the bounding rectangle of this region. An empty region
     gives a rectangle that is QRect::isNull().
 */
-
-#if QT_DEPRECATED_SINCE(5, 11)
-/*!
-    \fn QVector<QRect> QRegion::rects() const
-    \obsolete
-
-    Use begin() and end() instead.
-
-    Returns an array of non-overlapping rectangles that make up the
-    region.
-
-    The union of all the rectangles is equal to the original region.
-*/
-#endif
 
 /*!
     \typedef QRegion::const_iterator
@@ -4311,20 +4232,6 @@ bool qt_region_strictContains(const QRegion &region, const QRect &rect)
     return (rect.left() >= r1.left() && rect.right() <= r1.right()
             && rect.top() >= r1.top() && rect.bottom() <= r1.bottom());
 }
-
-#if QT_DEPRECATED_SINCE(5, 11)
-QVector<QRect> QRegion::rects() const
-{
-    if (d->qt_rgn) {
-        d->qt_rgn->vectorize();
-        d->qt_rgn->rects.reserve(d->qt_rgn->numRects);
-        d->qt_rgn->rects.resize(d->qt_rgn->numRects);
-        return d->qt_rgn->rects;
-    } else {
-        return QVector<QRect>();
-    }
-}
-#endif
 
 QRegion::const_iterator QRegion::begin() const noexcept
 {
