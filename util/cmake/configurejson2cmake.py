@@ -258,7 +258,7 @@ def map_condition(condition):
             return "OFF"
     assert isinstance(condition, str)
 
-    mapped_features = {"gbm": "gbm_FOUND", "system-xcb": "ON"}
+    mapped_features = {"gbm": "gbm_FOUND"}
 
     # Turn foo != "bar" into (NOT foo STREQUAL 'bar')
     condition = re.sub(r"([^ ]+)\s*!=\s*('.*?')", "(! \\1 == \\2)", condition)
@@ -909,7 +909,6 @@ def get_feature_mapping():
             "enable": "TEST_sun_iconv",
             "disable": "NOT TEST_sun_iconv",
         },
-        "system-xcb": None,
         "tiff": {"condition": "QT_FEATURE_imageformatplugin AND TIFF_FOUND"},
         "use_gold_linker": None,
         "verifyspec": None,  # qmake specific...
