@@ -80,6 +80,11 @@ public:
         return QString::number(n);
     }
 
+    Number squared() const
+    {
+        return Number(n * n);
+    }
+
     bool operator==(const Number &other) const
     {
         return n == other.n;

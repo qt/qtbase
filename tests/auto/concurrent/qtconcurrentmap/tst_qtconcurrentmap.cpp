@@ -46,8 +46,12 @@ private slots:
     void blocking_mapped();
     void mappedReduced();
     void blocking_mappedReduced();
+    void mappedReducedDifferentType();
+    void blocking_mappedReducedDifferentType();
     void mappedReducedInitialValue();
     void blocking_mappedReducedInitialValue();
+    void mappedReducedDifferentTypeInitialValue();
+    void blocking_mappedReducedDifferentTypeInitialValue();
     void assignResult();
     void functionOverloads();
     void noExceptFunctionOverloads();
@@ -521,6 +525,20 @@ public:
     }
 };
 
+Number numberSquare(Number x)
+{
+    return Number(x.toInt() * x.toInt());
+}
+
+class NumberSquare
+{
+public:
+    Number operator()(Number x)
+    {
+        return Number(x.toInt() * x.toInt());
+    }
+};
+
 template <typename SourceObject, typename ResultObject, typename MapObject, typename ReduceObject>
 void testMappedReduced(const QList<SourceObject> &sourceObjectList, const ResultObject &expectedResult, MapObject mapObject, ReduceObject reduceObject)
 {
@@ -681,6 +699,106 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
     CHECK_FAIL("lambda-function");
     testBlockingMappedReduced(intList, intListOfSquares, lambdaSquare, push_back, OrderedReduce);
     CHECK_FAIL("lambda-member");
+    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, lambdaSumReduce);
+    CHECK_FAIL("lambda-lambda");
+}
+
+void tst_QtConcurrentMap::mappedReducedDifferentType()
+{
+    const QList<int> intList {1, 2, 3};
+    const QList<Number> numberList {1, 2, 3};
+    const int sumOfSquares = 14;
+
+    auto lambdaSquare = [](Number x) {
+        return Number(x.toInt() * x.toInt());
+    };
+    auto lambdaSumReduce = [](int &sum, Number x) {
+        sum += x.toInt();
+    };
+
+    // Test the case where reduce function of the form:
+    // V function(T &result, const U &intermediate)
+    // has T and U types different.
+
+    // FUNCTOR-other
+    testMappedReduced(intList, sumOfSquares, NumberSquare(), NumberSumReduce());
+    CHECK_FAIL("functor-functor");
+    testMappedReduced(intList, sumOfSquares, NumberSquare(), numberSumReduce);
+    CHECK_FAIL("functor-function");
+    testMappedReduced(intList, sumOfSquares, NumberSquare(), lambdaSumReduce);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testMappedReduced(intList, sumOfSquares, numberSquare, NumberSumReduce());
+    CHECK_FAIL("function-functor");
+    testMappedReduced(intList, sumOfSquares, numberSquare, numberSumReduce);
+    CHECK_FAIL("function-function");
+    testMappedReduced(intList, sumOfSquares, numberSquare, lambdaSumReduce);
+    CHECK_FAIL("function-lambda");
+
+    // MEMBER-other
+    testMappedReduced(numberList, sumOfSquares, &Number::squared, NumberSumReduce());
+    CHECK_FAIL("member-functor");
+    testMappedReduced(numberList, sumOfSquares, &Number::squared, numberSumReduce);
+    CHECK_FAIL("member-function");
+    testMappedReduced(numberList, sumOfSquares, &Number::squared, lambdaSumReduce);
+    CHECK_FAIL("member-lambda");
+
+    // LAMBDA-other
+    testMappedReduced(intList, sumOfSquares, lambdaSquare, NumberSumReduce());
+    CHECK_FAIL("lambda-functor");
+    testMappedReduced(intList, sumOfSquares, lambdaSquare, numberSumReduce);
+    CHECK_FAIL("lambda-function");
+    testMappedReduced(intList, sumOfSquares, lambdaSquare, lambdaSumReduce);
+    CHECK_FAIL("lambda-lambda");
+}
+
+void tst_QtConcurrentMap::blocking_mappedReducedDifferentType()
+{
+    const QList<int> intList {1, 2, 3};
+    const QList<Number> numberList {1, 2, 3};
+    const int sumOfSquares = 14;
+
+    auto lambdaSquare = [](Number x) {
+        return Number(x.toInt() * x.toInt());
+    };
+    auto lambdaSumReduce = [](int &sum, Number x) {
+        sum += x.toInt();
+    };
+
+    // Test the case where reduce function of the form:
+    // V function(T &result, const U &intermediate)
+    // has T and U types different.
+
+    // FUNCTOR-other
+    testBlockingMappedReduced(intList, sumOfSquares, NumberSquare(), NumberSumReduce());
+    CHECK_FAIL("functor-functor");
+    testBlockingMappedReduced(intList, sumOfSquares, NumberSquare(), numberSumReduce);
+    CHECK_FAIL("functor-function");
+    testBlockingMappedReduced(intList, sumOfSquares, NumberSquare(), lambdaSumReduce);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testBlockingMappedReduced(intList, sumOfSquares, numberSquare, NumberSumReduce());
+    CHECK_FAIL("function-functor");
+    testBlockingMappedReduced(intList, sumOfSquares, numberSquare, numberSumReduce);
+    CHECK_FAIL("function-function");
+    testBlockingMappedReduced(intList, sumOfSquares, numberSquare, lambdaSumReduce);
+    CHECK_FAIL("function-lambda");
+
+    // MEMBER-other
+    testBlockingMappedReduced(numberList, sumOfSquares, &Number::squared, NumberSumReduce());
+    CHECK_FAIL("member-functor");
+    testBlockingMappedReduced(numberList, sumOfSquares, &Number::squared, numberSumReduce);
+    CHECK_FAIL("member-function");
+    testBlockingMappedReduced(numberList, sumOfSquares, &Number::squared, lambdaSumReduce);
+    CHECK_FAIL("member-lambda");
+
+    // LAMBDA-other
+    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, NumberSumReduce());
+    CHECK_FAIL("lambda-functor");
+    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, numberSumReduce);
+    CHECK_FAIL("lambda-function");
     testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
 }
@@ -875,6 +993,104 @@ void tst_QtConcurrentMap::blocking_mappedReducedInitialValue()
     testBlockingMappedReducedInitialValue(intList, intListSquaresAppended, lambdaSquare, push_back, intListInitial, OrderedReduce);
     CHECK_FAIL("lambda-member");
     testBlockingMappedReducedInitialValue(intList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
+    CHECK_FAIL("lambda-lambda");
+}
+
+void tst_QtConcurrentMap::mappedReducedDifferentTypeInitialValue()
+{
+    // This is a copy of tst_QtConcurrentMap::mappedReducedDifferentType
+    // with the initial value parameter added
+
+    const QList<Number> numberList {1, 2, 3};
+    const int sumOfSquares = 24;
+    const int intInitial = 10;
+
+    auto lambdaSquare = [](Number x) {
+        return Number(x.toInt() * x.toInt());
+    };
+    auto lambdaSumReduce = [](int &sum, Number x) {
+        sum += x.toInt();
+    };
+
+    // FUNCTOR-other
+    testMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), NumberSumReduce(), intInitial);
+    CHECK_FAIL("functor-functor");
+    testMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), numberSumReduce, intInitial);
+    CHECK_FAIL("functor-function");
+    testMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), lambdaSumReduce, intInitial);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, NumberSumReduce(), intInitial);
+    CHECK_FAIL("function-functor");
+    testMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, numberSumReduce, intInitial);
+    CHECK_FAIL("function-function");
+    testMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, lambdaSumReduce, intInitial);
+    CHECK_FAIL("function-lambda");
+
+    // MEMBER-other
+    testMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, NumberSumReduce(), intInitial);
+    CHECK_FAIL("member-functor");
+    testMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, numberSumReduce, intInitial);
+    CHECK_FAIL("member-function");
+    testMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, lambdaSumReduce, intInitial);
+    CHECK_FAIL("member-lambda");
+
+    // LAMBDA-other
+    testMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, NumberSumReduce(), intInitial);
+    CHECK_FAIL("lambda-functor");
+    testMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, numberSumReduce, intInitial);
+    CHECK_FAIL("lambda-function");
+    testMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
+    CHECK_FAIL("lambda-lambda");
+}
+
+void tst_QtConcurrentMap::blocking_mappedReducedDifferentTypeInitialValue()
+{
+    // This is a copy of tst_QtConcurrentMap::blocking_mappedReducedDifferentType
+    // with the initial value parameter added
+
+    const QList<Number> numberList {1, 2, 3};
+    const int sumOfSquares = 24;
+    const int intInitial = 10;
+
+    auto lambdaSquare = [](Number x) {
+        return Number(x.toInt() * x.toInt());
+    };
+    auto lambdaSumReduce = [](int &sum, Number x) {
+        sum += x.toInt();
+    };
+
+    // FUNCTOR-other
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), NumberSumReduce(), intInitial);
+    CHECK_FAIL("functor-functor");
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), numberSumReduce, intInitial);
+    CHECK_FAIL("functor-function");
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), lambdaSumReduce, intInitial);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, NumberSumReduce(), intInitial);
+    CHECK_FAIL("function-functor");
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, numberSumReduce, intInitial);
+    CHECK_FAIL("function-function");
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, lambdaSumReduce, intInitial);
+    CHECK_FAIL("function-lambda");
+
+    // MEMBER-other
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, NumberSumReduce(), intInitial);
+    CHECK_FAIL("member-functor");
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, numberSumReduce, intInitial);
+    CHECK_FAIL("member-function");
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, lambdaSumReduce, intInitial);
+    CHECK_FAIL("member-lambda");
+
+    // LAMBDA-other
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, NumberSumReduce(), intInitial);
+    CHECK_FAIL("lambda-functor");
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, numberSumReduce, intInitial);
+    CHECK_FAIL("lambda-function");
+    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
 }
 
