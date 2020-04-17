@@ -92,7 +92,6 @@ QT_BEGIN_NAMESPACE
 QComboBoxPrivate::QComboBoxPrivate()
     : QWidgetPrivate(),
       shownOnce(false),
-      autoCompletion(true),
       duplicatesEnabled(false),
       frame(true),
       inserting(false)
@@ -1518,105 +1517,6 @@ int QComboBox::maxCount() const
     return d->maxCount;
 }
 
-#if QT_CONFIG(completer)
-#if QT_DEPRECATED_SINCE(5, 13)
-
-/*!
-    \property QComboBox::autoCompletion
-    \brief whether the combobox provides auto-completion for editable items
-    \since 4.1
-    \obsolete
-
-    Use setCompleter() instead.
-
-    By default, this property is \c true.
-
-    \sa editable
-*/
-
-/*!
-    \obsolete
-
-    Use completer() instead.
-*/
-bool QComboBox::autoCompletion() const
-{
-    Q_D(const QComboBox);
-    return d->autoCompletion;
-}
-
-/*!
-    \obsolete
-
-    Use setCompleter() instead.
-*/
-void QComboBox::setAutoCompletion(bool enable)
-{
-    Q_D(QComboBox);
-
-#ifdef QT_KEYPAD_NAVIGATION
-    if (Q_UNLIKELY(QApplicationPrivate::keypadNavigationEnabled() && !enable && isEditable()))
-        qWarning("QComboBox::setAutoCompletion: auto completion is mandatory when combo box editable");
-#endif
-
-    d->autoCompletion = enable;
-    if (!d->lineEdit)
-        return;
-    if (enable) {
-        if (d->lineEdit->completer())
-            return;
-        d->completer = new QCompleter(d->model, d->lineEdit);
-        connect(d->completer, SIGNAL(activated(QModelIndex)), this, SLOT(_q_completerActivated(QModelIndex)));
-        d->completer->setCaseSensitivity(d->autoCompletionCaseSensitivity);
-        d->completer->setCompletionMode(QCompleter::InlineCompletion);
-        d->completer->setCompletionColumn(d->modelColumn);
-        d->lineEdit->setCompleter(d->completer);
-        d->completer->setWidget(this);
-    } else {
-        d->lineEdit->setCompleter(nullptr);
-    }
-}
-
-/*!
-    \property QComboBox::autoCompletionCaseSensitivity
-    \brief whether string comparisons are case-sensitive or case-insensitive for auto-completion
-    \obsolete
-
-    By default, this property is Qt::CaseInsensitive.
-
-    Use setCompleter() instead. Case sensitivity of the auto completion can be
-    changed using QCompleter::setCaseSensitivity().
-
-    \sa autoCompletion
-*/
-
-/*!
-    \obsolete
-
-    Use setCompleter() and QCompleter::setCaseSensitivity() instead.
-*/
-Qt::CaseSensitivity QComboBox::autoCompletionCaseSensitivity() const
-{
-    Q_D(const QComboBox);
-    return d->autoCompletionCaseSensitivity;
-}
-
-/*!
-    \obsolete
-
-    Use setCompleter() and QCompleter::setCaseSensitivity() instead.
-*/
-void QComboBox::setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity)
-{
-    Q_D(QComboBox);
-    d->autoCompletionCaseSensitivity = sensitivity;
-    if (d->lineEdit && d->lineEdit->completer())
-        d->lineEdit->completer()->setCaseSensitivity(sensitivity);
-}
-#endif  //  QT_DEPRECATED_SINCE(5, 13)
-
-#endif // QT_CONFIG(completer)
-
 /*!
     \property QComboBox::duplicatesEnabled
     \brief whether the user can enter duplicate items into the combobox
@@ -1902,6 +1802,9 @@ void QComboBox::setEditable(bool editable)
     Sets the line \a edit to use instead of the current line edit widget.
 
     The combo box takes ownership of the line edit.
+
+    \note Since the combobox's line edit owns the QCompleter, any previous
+    call to setCompleter() will no longer have any effect.
 */
 void QComboBox::setLineEdit(QLineEdit *edit)
 {
@@ -1935,27 +1838,24 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     d->updateFocusPolicy();
     d->lineEdit->setFocusProxy(this);
     d->lineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
-#if QT_DEPRECATED_SINCE(5, 13)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-#if QT_CONFIG(completer)
-    setAutoCompletion(d->autoCompletion);
+
+    // create a default completer
+    if (!d->lineEdit->completer()) {
+        QCompleter *completer = new QCompleter(d->model, d->lineEdit);
+        completer->setCaseSensitivity(Qt::CaseInsensitive);
+        completer->setCompletionMode(QCompleter::InlineCompletion);
+        completer->setCompletionColumn(d->modelColumn);
 
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplicationPrivate::keypadNavigationEnabled()) {
         // Editable combo boxes will have a completer that is set to UnfilteredPopupCompletion.
         // This means that when the user enters edit mode they are immediately presented with a
         // list of possible completions.
-        setAutoCompletion(true);
-        if (d->completer) {
-            d->completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
-            connect(d->completer, SIGNAL(activated(QModelIndex)), this, SLOT(_q_completerActivated()));
-        }
+        if (QApplicationPrivate::keypadNavigationEnabled())
+            completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
+#endif
+        // sets up connections
+        setCompleter(completer);
     }
-#endif
-#endif
-QT_WARNING_POP
-#endif
 
     setAttribute(Qt::WA_InputMethodEnabled);
     d->updateLayoutDirection();
@@ -2019,7 +1919,8 @@ const QValidator *QComboBox::validator() const
     By default, for an editable combo box, a QCompleter that
     performs case insensitive inline completion is automatically created.
 
-    \note The completer is removed when the \l editable property becomes \c false.
+    \note The completer is removed when the \l editable property becomes \c false,
+    or when the line edit is replaced by a call to setLineEdit().
     Setting a completer on a QComboBox that is not editable will be ignored.
 */
 void QComboBox::setCompleter(QCompleter *c)
@@ -2104,7 +2005,10 @@ QAbstractItemModel *QComboBox::model() const
     Sets the model to be \a model. \a model must not be \nullptr.
     If you want to clear the contents of a model, call clear().
 
-    \sa clear()
+    \note If the combobox is editable, then the \a model will also be
+    set on the completer of the line edit.
+
+    \sa clear() setCompleter()
 */
 void QComboBox::setModel(QAbstractItemModel *model)
 {
@@ -2119,8 +2023,7 @@ void QComboBox::setModel(QAbstractItemModel *model)
         return;
 
 #if QT_CONFIG(completer)
-    if (d->lineEdit && d->lineEdit->completer()
-        && d->lineEdit->completer() == d->completer)
+    if (d->lineEdit && d->lineEdit->completer())
         d->lineEdit->completer()->setModel(model);
 #endif
     if (d->model) {
@@ -3579,6 +3482,9 @@ void QComboBox::setFrame(bool enable)
     default value).
 
     By default, this property has a value of 0.
+
+    \note In an editable combobox, the visible column will also become
+    the \l{QCompleter::completionColumn}{completion column}.
 */
 int QComboBox::modelColumn() const
 {
@@ -3594,8 +3500,7 @@ void QComboBox::setModelColumn(int visibleColumn)
     if (lv)
         lv->setModelColumn(visibleColumn);
 #if QT_CONFIG(completer)
-    if (d->lineEdit && d->lineEdit->completer()
-        && d->lineEdit->completer() == d->completer)
+    if (d->lineEdit && d->lineEdit->completer())
         d->lineEdit->completer()->setCompletionColumn(visibleColumn);
 #endif
     setCurrentIndex(currentIndex()); //update the text to the text of the new column;

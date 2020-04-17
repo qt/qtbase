@@ -410,9 +410,6 @@ public:
 #ifdef Q_OS_MAC
     QPlatformMenu *m_platformMenu = nullptr;
 #endif
-#if QT_CONFIG(completer)
-    QPointer<QCompleter> completer;
-#endif
     QPersistentModelIndex currentIndex;
     QPersistentModelIndex root;
     QString placeholderText;
@@ -424,7 +421,6 @@ public:
     QComboBox::SizeAdjustPolicy sizeAdjustPolicy = QComboBox::AdjustToContentsOnFirstShow;
     QStyle::StateFlag arrowState = QStyle::State_None;
     QStyle::SubControl hoverControl = QStyle::SC_None;
-    Qt::CaseSensitivity autoCompletionCaseSensitivity = Qt::CaseInsensitive;
     int minimumContentsLength = 0;
     int indexBeforeChange = -1;
     int maxVisibleItems = 10;
@@ -432,7 +428,6 @@ public:
     int modelColumn = 0;
     int placeholderIndex = -1;
     bool shownOnce : 1;
-    bool autoCompletion : 1;
     bool duplicatesEnabled : 1;
     bool frame : 1;
     bool inserting : 1;

@@ -263,15 +263,6 @@ void tst_QComboBox::getSetCheck()
     obj1.setCompleter(&completer);
     QVERIFY(obj1.completer() == nullptr); // no QLineEdit is set
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    // bool QComboBox::autoCompletion()
-    // void QComboBox::setAutoCompletion(bool)
-    obj1.setAutoCompletion(false);
-    QCOMPARE(false, obj1.autoCompletion());
-    obj1.setAutoCompletion(true);
-    QCOMPARE(true, obj1.autoCompletion());
-#endif
-
     // bool QComboBox::duplicatesEnabled()
     // void QComboBox::setDuplicatesEnabled(bool)
     obj1.setDuplicatesEnabled(false);
@@ -805,9 +796,6 @@ void tst_QComboBox::virtualAutocompletion()
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     QComboBox *testWidget = topLevel.comboBox();
     testWidget->clear();
-#if QT_DEPRECATED_SINCE(5, 13)
-    testWidget->setAutoCompletion(true);
-#endif
     testWidget->addItem("Foo");
     testWidget->addItem("Bar");
     testWidget->addItem("Boat");
@@ -870,9 +858,6 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
     QCOMPARE(qApp->focusWidget(), (QWidget *)testWidget);
 
     testWidget->clear();
-#if QT_DEPRECATED_SINCE(5, 13)
-    testWidget->setAutoCompletion(true);
-#endif
     testWidget->addItem("Cow");
     testWidget->addItem("irrelevant1");
     testWidget->addItem("aww");
@@ -3093,9 +3078,6 @@ void tst_QComboBox::task_QTBUG_31146_popupCompletion()
 
     QComboBox comboBox;
     comboBox.setEditable(true);
-#if QT_DEPRECATED_SINCE(5, 13)
-    comboBox.setAutoCompletion(true);
-#endif
     comboBox.setInsertPolicy(QComboBox::NoInsert);
     comboBox.completer()->setCaseSensitivity(Qt::CaseInsensitive);
     comboBox.completer()->setCompletionMode(QCompleter::PopupCompletion);

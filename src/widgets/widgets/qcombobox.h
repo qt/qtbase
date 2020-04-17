@@ -72,14 +72,6 @@ class Q_WIDGETS_EXPORT QComboBox : public QWidget
     Q_PROPERTY(int minimumContentsLength READ minimumContentsLength WRITE setMinimumContentsLength)
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
     Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
-
-#if QT_CONFIG(completer)
-#if QT_DEPRECATED_SINCE(5, 13)
-    Q_PROPERTY(bool autoCompletion READ autoCompletion WRITE setAutoCompletion DESIGNABLE false)
-    Q_PROPERTY(Qt::CaseSensitivity autoCompletionCaseSensitivity READ autoCompletionCaseSensitivity WRITE setAutoCompletionCaseSensitivity DESIGNABLE false)
-#endif
-#endif // QT_CONFIG(completer)
-
     Q_PROPERTY(bool duplicatesEnabled READ duplicatesEnabled WRITE setDuplicatesEnabled)
     Q_PROPERTY(bool frame READ hasFrame WRITE setFrame)
     Q_PROPERTY(int modelColumn READ modelColumn WRITE setModelColumn)
@@ -94,19 +86,6 @@ public:
     int count() const;
     void setMaxCount(int max);
     int maxCount() const;
-
-#if QT_CONFIG(completer)
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use completer() instead.")
-    bool autoCompletion() const;
-    QT_DEPRECATED_X("Use setCompleter() instead.")
-    void setAutoCompletion(bool enable);
-    QT_DEPRECATED_X("Use completer()->caseSensitivity() instead.")
-    Qt::CaseSensitivity autoCompletionCaseSensitivity() const;
-    QT_DEPRECATED_X("Use completer()->setCaseSensitivity() instead.")
-    void setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity);
-#endif
-#endif
 
     bool duplicatesEnabled() const;
     void setDuplicatesEnabled(bool enable);
