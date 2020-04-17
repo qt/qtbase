@@ -2259,7 +2259,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         unset(arg_INTERNAL_MODULE)
     endif()
 
-    qt_path_join(pri_target_path ${PROJECT_BINARY_DIR} ${INSTALL_MKSPECSDIR}/modules)
+    qt_path_join(pri_target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
     qt_generate_module_pri_file("${target}" "${pri_target_path}" ${arg_CONFIG_MODULE_NAME}
         module_pri_files
         ${arg_INTERNAL_MODULE}
