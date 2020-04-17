@@ -99,3 +99,79 @@ if (auto filePath = std::get_if<QString>(&result)) {
 else
     // process the error
 //! [4]
+
+//! [5]
+QFuture<int> future = ...;
+    future.then([](QFuture<int> f) {
+        try {
+            ...
+            auto result = f.result();
+            ...
+        } catch (QException &e) {
+            // handle the exception
+        }
+    }).then(...);
+//! [5]
+
+//! [6]
+QFuture<int> parentFuture = ...;
+auto continuation = parentFuture.then([](int res1){ ... }).then([](int res2){ ... })...
+...
+// parentFuture throws an exception
+try {
+    auto result = continuation.result();
+} catch (QException &e) {
+    // handle the exception
+}
+//! [6]
+
+//! [7]
+QFuture<int> future = ...;
+auto resultFuture = future.then([](int res) {
+    ...
+    throw Error();
+    ...
+}).onFailed([](const Error &e) {
+    // Handle exceptions of type Error
+    ...
+    return -1;
+}).onFailed([] {
+    // Handle all other types of errors
+    ...
+    return -1;
+});
+
+auto result = resultFuture.result(); // result is -1
+//! [7]
+
+//! [8]
+QFuture<int> future = ...;
+future.then([](int res) {
+    ...
+    throw std::runtime_error("message");
+    ...
+}).onFailed([](const std::exception &e) {
+    // This handler will be invoked
+}).onFailed([](const std::runtime_error &e) {
+    // This handler won't be invoked, because of the handler above.
+});
+//! [8]
+
+//! [9]
+QFuture<int> future = ...;
+auto resultFuture = future.then([](int res) {
+    ...
+    throw Error("message");
+    ...
+}).onFailed([](const std::exception &e) {
+    // Won't be invoked
+}).onFailed([](const QException &e) {
+    // Won't be invoked
+});
+
+try {
+    auto result = resultFuture.result();
+} catch(...) {
+    // Handle the exception
+}
+//! [9]

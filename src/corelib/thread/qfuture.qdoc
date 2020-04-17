@@ -835,34 +835,13 @@
     the exception of the previous future inside the continuation, to not interrupt the chain
     of multiple continuations. For example:
 
-    \code
-    QFuture<int> future = ...;
-    future.then([](QFuture<int> f) {
-        try {
-            ...
-            auto result = f.result();
-            ...
-        } catch (QException &e) {
-            // handle the exception
-        }
-    }).then(...);
-    \endcode
+    \snippet code/src_corelib_thread_qfuture.cpp 5
 
     If the previous future throws an exception and it is not handled inside the
     continuation, the exception will be propagated to the continuation future, to
     allow the caller to handle it:
 
-    \code
-    QFuture<int> parentFuture = ...;
-    auto continuation = parentFuture.then([](int res1){ ... }).then([](int res2){ ... })...
-    ...
-    // parentFuture throws an exception
-    try {
-        auto result = continuation.result();
-    } catch (QException &e) {
-        // handle the exception
-    }
-    \endcode
+    \snippet code/src_corelib_thread_qfuture.cpp 6
 
     In this case the whole chain of continuations will be interrupted.
 
@@ -931,63 +910,17 @@
 
     For example:
 
-    \code
-    QFuture<int> future = ...;
-    auto resultFuture = future.then([](int res) {
-        ...
-        throw Error();
-        ...
-    }).onFailed([](const Error &e) {
-        // Handle exceptions of type Error
-        ...
-        return -1;
-    }).onFailed([] {
-        // Handle all other types of errors
-        ...
-        return -1;
-    });
-
-    auto result = resultFuture.result(); // result is -1
-
-    \endcode
+    \snippet code/src_corelib_thread_qfuture.cpp 7
 
     If there are multiple handlers attached, the first handler that matches with the
     thrown exception type will be invoked. For example:
 
-    \code
-    QFuture<int> future = ...;
-    future.then([](int res) {
-        ...
-        throw std::runtime_error("message");
-        ...
-    }).onFailed([](const std::exception &e) {
-        // This handler will be invoked
-    }).onFailed([](const std::runtime_error &e) {
-        // This handler won't be invoked, because of the handler above.
-    });
-    \endcode
+    \snippet code/src_corelib_thread_qfuture.cpp 8
 
     If none of the handlers matches with the thrown exception type, the exception
     will be propagated to the resulted future:
 
-    \code
-    QFuture<int> future = ...;
-    auto resultFuture = future.then([](int res) {
-        ...
-        throw Error("message");
-        ...
-    }).onFailed([](const std::exception &e) {
-        // Won't be invoked
-    }).onFailed([](const QException &e) {
-        // Won't be invoked
-    });
-
-    try {
-        auto result = resultFuture.result();
-    } catch(...) {
-        // Handle the exception
-    }
-    \endcode
+    \snippet code/src_corelib_thread_qfuture.cpp 9
 
     \note You can always attach a handler taking no argument, to handle all exception
     types and avoid writing the try-catch block.
