@@ -72,3 +72,30 @@ i.toBack();
 while (i.hasPrevious())
     qDebug() << i.previous();
 //! [2]
+
+//! [3]
+using NetworkReply = std::variant<QByteArray, QNetworkReply::NetworkError>;
+
+enum class IOError { FailedToRead, FailedToWrite };
+using IOResult = std::variant<QString, IOError>;
+//! [3]
+
+//! [4]
+QFuture<IOResult> future = QtConcurrent::run([url] {
+        ...
+        return NetworkReply(QNetworkReply::TimeoutError);
+}).then([](NetworkReply reply) {
+    if (auto error = std::get_if<QNetworkReply::NetworkError>(&reply))
+        return IOResult(IOError::FailedToRead);
+
+    auto data = std::get_if<QByteArray>(&reply);
+    // try to write *data and return IOError::FailedToWrite on failure
+    ...
+});
+
+auto result = future.result();
+if (auto filePath = std::get_if<QString>(&result)) {
+    // do something with *filePath
+else
+    // process the error
+//! [4]
