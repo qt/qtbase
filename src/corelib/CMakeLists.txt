@@ -253,11 +253,6 @@ qt_add_module(Core
         Threads::Threads # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
-    # special case begin
-    # Generated in QtBaseGlobalTargets
-    EXTRA_CMAKE_FILES ${QT_CORE_RESOURCE_GENERATED_FILE_PATH}
-    EXTRA_CMAKE_INCLUDES ${QT_CORE_RESOURCE_GENERATED_FILE_NAME}
-    # special case end
 )
 
 # special case begin

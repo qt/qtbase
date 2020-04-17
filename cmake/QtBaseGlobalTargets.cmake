@@ -331,13 +331,3 @@ if(MACOS)
         DESTINATION "${__GlobalConfig_install_dir}/macos"
     )
 endif()
-
-# Generate the new resource API
-set(QT_CORE_RESOURCE_GENERATED_FILE_NAME "${INSTALL_CMAKE_NAMESPACE}CoreResource.cmake" CACHE INTERNAL "")
-set(QT_CORE_RESOURCE_GENERATED_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${QT_CORE_RESOURCE_GENERATED_FILE_NAME}" CACHE INTERNAL "")
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtResource.cmake.in"
-    "${QT_CORE_RESOURCE_GENERATED_FILE_PATH}"
-    @ONLY
-)
-include(${QT_CORE_RESOURCE_GENERATED_FILE_PATH})
