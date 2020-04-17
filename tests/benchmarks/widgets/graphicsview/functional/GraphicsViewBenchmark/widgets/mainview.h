@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -31,6 +31,7 @@
 
 #include <QGraphicsView>
 #include <QTime>
+#include <QElapsedTimer>
 #include <QTimer>
 
 #include "settings.h"
@@ -100,7 +101,7 @@ private:
     QTime m_fpsFirstTs;
     QTime m_fpsLatestTs;
     bool m_OutputFps;
-    QTime m_fpsUpdated;
+    QElapsedTimer m_fpsUpdated;
     QList<qreal> m_Fpss;
 
     int m_angle;

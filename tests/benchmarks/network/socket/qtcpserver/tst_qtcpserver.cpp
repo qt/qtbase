@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
+#include <QtCore/QElapsedTimer>
 #include <qglobal.h>
 #include <qcoreapplication.h>
 #include <qtcpsocket.h>
@@ -129,7 +130,7 @@ void tst_QTcpServer::ipv4LoopbackPerformanceTest()
     QVERIFY(clientB);
 
     QByteArray buffer(16384, '@');
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     qlonglong totalWritten = 0;
     while (stopWatch.elapsed() < 5000) {
@@ -180,7 +181,7 @@ void tst_QTcpServer::ipv6LoopbackPerformanceTest()
         QVERIFY(clientB);
 
         QByteArray buffer(16384, '@');
-        QTime stopWatch;
+        QElapsedTimer stopWatch;
         stopWatch.start();
         qlonglong totalWritten = 0;
         while (stopWatch.elapsed() < 5000) {
@@ -230,7 +231,7 @@ void tst_QTcpServer::ipv4PerformanceTest()
     QVERIFY(clientB);
 
     QByteArray buffer(16384, '@');
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     qlonglong totalWritten = 0;
     while (stopWatch.elapsed() < 5000) {

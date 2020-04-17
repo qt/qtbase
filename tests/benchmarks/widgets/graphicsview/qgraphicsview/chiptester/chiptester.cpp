@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -72,7 +72,6 @@ void ChipTester::runBenchmark()
 {
     npaints = 0;
     timerId = startTimer(0);
-    stopWatch.start();
     eventLoop.exec();
     killTimer(timerId);
 }

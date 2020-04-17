@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -28,6 +28,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QProcess>
+#include <QtCore/QElapsedTimer>
 
 class tst_QProcess : public QObject
 {
@@ -50,7 +51,7 @@ void tst_QProcess::echoTest_performance()
 
     QVERIFY(process.waitForStarted());
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     qint64 totalBytes = 0;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -32,6 +32,7 @@
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtCore/QTemporaryFile>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 
 class qfile_vs_qnetworkaccessmanager : public QObject
@@ -88,7 +89,7 @@ void qfile_vs_qnetworkaccessmanager::qnamFileRead_iteration(QNetworkAccessManage
 void qfile_vs_qnetworkaccessmanager::qnamFileRead()
 {
     QNetworkAccessManager manager;
-    QTime t;
+    QElapsedTimer t;
     QNetworkRequest request(QUrl::fromLocalFile(testFile.fileName()));
 
     // do 3 dry runs for cache warmup
@@ -121,7 +122,7 @@ void qfile_vs_qnetworkaccessmanager::qnamImmediateFileRead_iteration(QNetworkAcc
 void qfile_vs_qnetworkaccessmanager::qnamImmediateFileRead()
 {
     QNetworkAccessManager manager;
-    QTime t;
+    QElapsedTimer t;
     QNetworkRequest request(QUrl::fromLocalFile(testFile.fileName()));
 
     // do 3 dry runs for cache warmup
@@ -151,7 +152,7 @@ void qfile_vs_qnetworkaccessmanager::qfileFileRead_iteration()
 
 void qfile_vs_qnetworkaccessmanager::qfileFileRead()
 {
-    QTime t;
+    QElapsedTimer t;
 
     // do 3 dry runs for cache warmup
     qfileFileRead_iteration();
