@@ -62,6 +62,8 @@
 
 #include "qopenglversionfunctions.h"
 
+#include <QtGui/private/qopenglcontext_p.h>
+
 #include <QtOpenGL/qtopenglglobal.h>
 #include <QtOpenGL/QOpenGLVersionProfile>
 #include <QtCore/QSet>
@@ -70,16 +72,14 @@ QT_BEGIN_NAMESPACE
 
 class QAbstractOpenGLFunctions;
 
-class QOpenGLContextVersionData {
+class QOpenGLContextVersionData : public QOpenGLContextVersionFunctionHelper
+{
 public:
     QHash<QOpenGLVersionProfile, QAbstractOpenGLFunctions *> functions;
     QOpenGLVersionFunctionsStorage functionsStorage;
     QSet<QAbstractOpenGLFunctions *> externalFunctions;
-    // TODO: who calls delete?
-    ~QOpenGLContextVersionData();
+    ~QOpenGLContextVersionData() override;
     static QOpenGLContextVersionData *forContext(QOpenGLContext *context);
-private:
-    static QMap<QOpenGLContext *, QOpenGLContextVersionData *> contextData;
 };
 
 QT_END_NAMESPACE

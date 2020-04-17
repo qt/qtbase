@@ -192,6 +192,12 @@ class QPaintEngineEx;
 class QOpenGLFunctions;
 class QOpenGLTextureHelper;
 
+class Q_GUI_EXPORT QOpenGLContextVersionFunctionHelper
+{
+public:
+    virtual ~QOpenGLContextVersionFunctionHelper() {}
+};
+
 class Q_GUI_EXPORT QOpenGLContextPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QOpenGLContext)
@@ -204,6 +210,7 @@ public:
         , surface(nullptr)
         , functions(nullptr)
         , textureFunctions(nullptr)
+        , versionFunctions(nullptr)
         , max_texture_size(-1)
         , workaround_brokenFBOReadBack(false)
         , workaround_brokenTexSubImage(false)
@@ -220,6 +227,8 @@ public:
     {
         //do not delete the QOpenGLContext handle here as it is deleted in
         //QWidgetPrivate::deleteTLSysExtra()
+
+        delete versionFunctions;
     }
 
     QSurfaceFormat requestedFormat;
@@ -232,6 +241,7 @@ public:
     mutable QSet<QByteArray> extensionNames;
     QOpenGLTextureHelper* textureFunctions;
     std::function<void()> textureFunctionsDestroyCallback;
+    QOpenGLContextVersionFunctionHelper *versionFunctions;
 
     GLint max_texture_size;
 

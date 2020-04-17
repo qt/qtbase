@@ -68,19 +68,12 @@ QOpenGLContextVersionData::~QOpenGLContextVersionData()
 
 QOpenGLContextVersionData *QOpenGLContextVersionData::forContext(QOpenGLContext *context)
 {
-    auto *data = contextData.value(context);
-    if (!data) {
-        data = new QOpenGLContextVersionData;
-        // The data will live as long as the context. It could potentially be an opaque pointer
-        // member of QOpenGLContextPrivate, but this avoids polluting QOpenGLContext with version
-        // functions specifics
-        QObject::connect(context, &QObject::destroyed, context, [data](){ delete data; }, Qt::DirectConnection);
-        contextData[context] = data;
-    }
-    return data;
-}
+    QOpenGLContextPrivate *context_d = QOpenGLContextPrivate::get(context);
+    if (context_d->versionFunctions == nullptr)
+        context_d->versionFunctions = new QOpenGLContextVersionData;
 
-QMap<QOpenGLContext *, QOpenGLContextVersionData *> QOpenGLContextVersionData::contextData;
+    return static_cast<QOpenGLContextVersionData *>(context_d->versionFunctions);
+}
 
 #define QT_OPENGL_COUNT_FUNCTIONS(ret, name, args) +1
 #define QT_OPENGL_FUNCTION_NAMES(ret, name, args) \
