@@ -1320,14 +1320,16 @@ public:
             return T();
         Chain *e = it.node()->value;
         Q_ASSERT(e);
-        if (!e->next)
-            d->erase(it);
-        else
+        T t = std::move(e->value);
+        if (e->next) {
             it.node()->value = e->next;
+            delete e;
+        } else {
+            // erase() deletes the values.
+            d->erase(it);
+        }
         --m_size;
         Q_ASSERT(m_size >= 0);
-        T t = std::move(e->value);
-        delete e;
         return t;
     }
 
