@@ -87,26 +87,4 @@ Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool QTest::qWaitForWindowExposed(QWidget *wi
     return false;
 }
 
-/*! \fn bool QTest::qWaitForWindowShown(QWidget *widget, int timeout)
-    \since 5.0
-    \deprecated
-
-    Use qWaitForWindowExposed() instead.
-
-    Waits for \a timeout milliseconds or until the \a widget's window is exposed.
-    Returns \c true if \c widget's window is exposed within \a timeout milliseconds, otherwise returns \c false.
-
-    This function does the same as qWaitForWindowExposed().
-
-    Example:
-
-    \code
-        QWidget widget;
-        widget.show();
-        QTest::qWaitForWindowShown(&widget);
-    \endcode
-
-    \sa qWaitForWindowActive(), qWaitForWindowExposed()
-*/
-
 QT_END_NAMESPACE

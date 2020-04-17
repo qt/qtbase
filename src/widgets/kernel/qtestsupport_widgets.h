@@ -49,11 +49,6 @@ class QWidget;
 namespace QTest {
 Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool qWaitForWindowActive(QWidget *widget, int timeout = 5000);
 Q_WIDGETS_EXPORT Q_REQUIRED_RESULT bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000);
-
-#if QT_DEPRECATED_SINCE(5, 0)
-QT_DEPRECATED Q_REQUIRED_RESULT inline static bool qWaitForWindowShown(QWidget *widget, int timeout = 5000)
-{ return QTest::qWaitForWindowExposed(widget, timeout); }
-#endif
 }
 
 QT_END_NAMESPACE
