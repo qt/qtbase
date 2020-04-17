@@ -28,134 +28,6 @@ function(__qt_propagate_generated_resource target resource_name generated_source
     endif()
 endfunction()
 
-# Inspect all files passed to a call to qt_add_resource. If there are any
-# files present, invoke the quick compiler and return the remaining resource
-# files that have not been processed in OUTPUT_REMAINING_RESOURCES as well as the new
-# name for the resource in OUTPUT_RESOURCE_NAME.
-function(__qt_quick_compiler_process_resources target resource_name)
-
-    cmake_parse_arguments(arg
-        "" "PREFIX;OUTPUT_REMAINING_RESOURCES;OUTPUT_RESOURCE_NAME;OUTPUT_GENERATED_TARGET" "FILES" ${ARGN}
-    )
-
-    set(qml_files)
-    set(resource_files)
-    # scan for qml files
-    foreach(file IN LISTS arg_FILES)
-        # check whether this resource should not be processed by the qt quick
-        # compiler
-        get_source_file_property(skip_compiler_check ${file} QT_SKIP_QUICKCOMPILER)
-        if (skip_compiler_check)
-            list(APPEND resource_files ${file})
-            continue()
-        endif()
-
-        if (${file} MATCHES "\.js$"
-                OR ${file} MATCHES "\.mjs$"
-                OR ${file} MATCHES "\.qml$")
-            list(APPEND qml_files ${file})
-        endif()
-        list(APPEND resource_files ${file})
-    endforeach()
-    if (NOT TARGET @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen AND qml_files)
-        message(WARNING "QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE: Qml files were detected but the qmlcachgen target is not defined. Consider adding QmlTools to your find_package command.")
-    endif()
-
-    if (TARGET @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen AND qml_files)
-        # Enable qt quick compiler support
-        set(qml_resource_file "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${resource_name}.qrc")
-        if (resource_files)
-            set(chained_resource_name "${resource_name}_qmlcache")
-        endif()
-
-        foreach(file IN LISTS qml_files)
-            get_filename_component(file_absolute ${file} ABSOLUTE)
-            file(RELATIVE_PATH file_relative ${CMAKE_CURRENT_SOURCE_DIR} ${file_absolute})
-            __qt_get_relative_resource_path_for_file(file_resource_path ${file})
-            if (arg_PREFIX STREQUAL "/")
-                # TO_CMAKE_PATH does not clean up cases such as //Foo
-                set(file_resource_path "/${file_resource_path}")
-            else()
-                set(file_resource_path "${arg_PREFIX}/${file_resource_path}")
-            endif()
-            file(TO_CMAKE_PATH ${file_resource_path} file_resource_path)
-            list(APPEND file_resource_paths ${file_resource_path})
-            string(REGEX REPLACE "\.js$" "_js" compiled_file ${file_relative})
-            string(REGEX REPLACE "\.mjs$" "_mjs" compiled_file ${compiled_file})
-            string(REGEX REPLACE "\.qml$" "_qml" compiled_file ${compiled_file})
-            string(REGEX REPLACE "[\$#\?]+" "_" compiled_file ${compiled_file})
-            set(compiled_file "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmlcache/${resource_name}/${compiled_file}.cpp")
-            get_filename_component(out_dir ${compiled_file} DIRECTORY)
-            if(NOT EXISTS ${out_dir})
-                file(MAKE_DIRECTORY ${out_dir})
-            endif()
-            add_custom_command(
-                OUTPUT ${compiled_file}
-                ${QT_TOOL_PATH_SETUP_COMMAND}
-                COMMAND
-                    @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen
-                    --resource-path "${file_resource_path}"
-                    -o "${compiled_file}"
-                    "${file_absolute}"
-                DEPENDS
-                    $<TARGET_FILE:@QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen>
-                    "${file_absolute}"
-            )
-            target_sources(${target} PRIVATE ${compiled_file})
-        endforeach()
-
-        set(qmlcache_loader_list "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmlcache/${resource_name}/qml_loader_file_list.rsp")
-        file(GENERATE
-            OUTPUT ${qmlcache_loader_list}
-            CONTENT "$<JOIN:${file_resource_paths},\n>"
-        )
-
-        set(qmlcache_loader_file "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmlcache/${resource_name}/qmlcache_loader.cpp")
-        set(resource_name_arg "${resource_name}.qrc")
-        if (chained_resource_name)
-            set(resource_name_arg "${resource_name_arg}=${chained_resource_name}")
-        endif()
-
-        add_custom_command(
-            OUTPUT ${qmlcache_loader_file}
-            ${QT_TOOL_PATH_SETUP_COMMAND}
-            COMMAND
-                @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen
-                --resource-name "${resource_name_arg}"
-                -o "${qmlcache_loader_file}"
-                "@${qmlcache_loader_list}"
-            DEPENDS
-                $<TARGET_FILE:@QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen>
-                "${qmlcache_loader_list}"
-        )
-
-        __qt_propagate_generated_resource(${target}
-            ${resource_name}
-            ${qmlcache_loader_file}
-            output_target)
-
-        set(${arg_OUTPUT_GENERATED_TARGET} "${output_target}" PARENT_SCOPE)
-
-        if (resource_files)
-            set(resource_name ${chained_resource_name})
-        endif()
-
-        # The generated qmlcache_loader source file uses private headers of Qml, so make sure
-        # if the object library was created, it depends on the Qml target. If there's no target,
-        # that means the target is a shared library and the sources are directly added to the target
-        # via target_sources, so add dependency in that case as well.
-        set(chosen_target "target") # shared library case
-        if(output_target)
-            set(chosen_target "output_target") # static library case.
-        endif()
-        target_link_libraries(${${chosen_target}} PRIVATE @QT_CMAKE_EXPORT_NAMESPACE@::Qml)
-    else()
-        set(resource_files ${arg_FILES})
-    endif()
-
-    set(${arg_OUTPUT_REMAINING_RESOURCES} ${resource_files} PARENT_SCOPE)
-    set(${arg_OUTPUT_RESOURCE_NAME} ${resource_name} PARENT_SCOPE)
-endfunction()
 
 #
 # Process resources via file path instead of QRC files. Behind the
@@ -205,14 +77,20 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
         endif()
     endif()
 
-    # Apply quick compiler pass
-    __qt_quick_compiler_process_resources(${target} ${resourceName}
-        FILES ${resource_files}
-        PREFIX ${rcc_PREFIX}
-        OUTPUT_REMAINING_RESOURCES resources
-        OUTPUT_RESOURCE_NAME newResourceName
-        OUTPUT_GENERATED_TARGET output_target_quick
-    )
+    # Apply quick compiler pass. This is only enabled when Qt6QmlMacros is
+    # parsed.
+    if (QT6_ADD_RESOURCE_DECLARATIVE_EXTENSIONS)
+        qt6_quick_compiler_process_resources(${target} ${resourceName}
+            FILES ${resource_files}
+            PREFIX ${rcc_PREFIX}
+            OUTPUT_REMAINING_RESOURCES resources
+            OUTPUT_RESOURCE_NAME newResourceName
+            OUTPUT_GENERATED_TARGET output_target_quick
+        )
+    else()
+        set(newResourceName ${resourceName})
+        set(resources ${resource_files})
+    endif()
 
     if (NOT resources)
         if (rcc_OUTPUT_TARGETS)
