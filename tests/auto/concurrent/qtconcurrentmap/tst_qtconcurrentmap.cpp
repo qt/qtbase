@@ -43,15 +43,10 @@ private slots:
     void map();
     void blocking_map();
     void mapped();
-    void blocking_mapped();
     void mappedReduced();
-    void blocking_mappedReduced();
     void mappedReducedDifferentType();
-    void blocking_mappedReducedDifferentType();
     void mappedReducedInitialValue();
-    void blocking_mappedReducedInitialValue();
     void mappedReducedDifferentTypeInitialValue();
-    void blocking_mappedReducedDifferentTypeInitialValue();
     void assignResult();
     void functionOverloads();
     void noExceptFunctionOverloads();
@@ -385,6 +380,14 @@ void testMapped(const QList<SourceObject> &sourceObjectList, const QList<ResultO
     const QList<ResultObject> result2 = QtConcurrent::mapped(
                 sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject).results();
     QCOMPARE(result2, expectedResult);
+
+    const QList<ResultObject> result3 = QtConcurrent::blockingMapped(
+                sourceObjectList, mapObject);
+    QCOMPARE(result3, expectedResult);
+
+    const QList<ResultObject> result4 = QtConcurrent::blockingMapped<QList<ResultObject>>(
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject);
+    QCOMPARE(result4, expectedResult);
 }
 
 void tst_QtConcurrentMap::mapped()
@@ -443,74 +446,6 @@ void tst_QtConcurrentMap::mapped()
 #endif
 }
 
-template <typename SourceObject, typename ResultObject, typename MapObject>
-void testBlockingMapped(const QList<SourceObject> &sourceObjectList, const QList<ResultObject> &expectedResult, MapObject mapObject)
-{
-    const QList<ResultObject> result1 = QtConcurrent::blockingMapped(
-                sourceObjectList, mapObject);
-    QCOMPARE(result1, expectedResult);
-
-    const QList<ResultObject> result2 = QtConcurrent::blockingMapped<QList<ResultObject>>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject);
-    QCOMPARE(result2, expectedResult);
-}
-
-void tst_QtConcurrentMap::blocking_mapped()
-{
-    const QList<int> intList {1, 2, 3};
-    const QList<Number> numberList {1, 2, 3};
-    const QList<QString> stringList {"1", "2", "3"};
-    const QList<double> doubleList {1.0, 2.0, 3.0};
-
-    const QList<int> intListMultipiedBy2 {2, 4, 6};
-    const QList<Number> numberListMultipiedBy2 {2, 4, 6};
-
-    auto lambdaMultiplyBy2 = [](int x) {
-        return 2 * x;
-    };
-    auto lambdaIntToDouble = [](int x) {
-        return double(x);
-    };
-    auto lambdaStringToInt = [](const QString &string) {
-        return string.toInt();
-    };
-
-    testBlockingMapped(intList, intListMultipiedBy2, MultiplyBy2());
-    CHECK_FAIL("functor");
-    testBlockingMapped(intList, intListMultipiedBy2, multiplyBy2);
-    CHECK_FAIL("function");
-    testBlockingMapped(numberList, numberListMultipiedBy2, &Number::multipliedBy2);
-    CHECK_FAIL("member");
-    testBlockingMapped(intList, intListMultipiedBy2, lambdaMultiplyBy2);
-    CHECK_FAIL("lambda");
-
-    // change the value_type, same container
-    testBlockingMapped(intList, doubleList, IntToDouble());
-    CHECK_FAIL("functor");
-    testBlockingMapped(intList, doubleList, intToDouble);
-    CHECK_FAIL("function");
-    testBlockingMapped(numberList, stringList, &Number::toString);
-    CHECK_FAIL("member");
-    testBlockingMapped(intList, doubleList, lambdaIntToDouble);
-    CHECK_FAIL("lambda");
-
-    // change the value_type
-    testBlockingMapped(stringList, intList, StringToInt());
-    CHECK_FAIL("functor");
-    testBlockingMapped(stringList, intList, stringToInt);
-    CHECK_FAIL("function");
-    testBlockingMapped(numberList, intList, &Number::toInt);
-    CHECK_FAIL("member");
-    testBlockingMapped(stringList, intList, lambdaStringToInt);
-    CHECK_FAIL("lambda");
-
-    // not allowed: const member function where all arguments have default values
-#if 0
-    testBlockingMapped(stringList, intList, &QString::toInt);
-    CHECK_FAIL("member");
-#endif
-}
-
 int intSquare(int x)
 {
     return x * x;
@@ -549,6 +484,14 @@ void testMappedReduced(const QList<SourceObject> &sourceObjectList, const Result
     const ResultObject result2 = QtConcurrent::mappedReduced<ResultObject>(
                 sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
     QCOMPARE(result2, expectedResult);
+
+    const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(
+                sourceObjectList, mapObject, reduceObject);
+    QCOMPARE(result3, expectedResult);
+
+    const ResultObject result4 = QtConcurrent::blockingMappedReduced<ResultObject>(
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
+    QCOMPARE(result4, expectedResult);
 }
 
 template <typename SourceObject, typename ResultObject, typename MapObject, typename ReduceObject>
@@ -561,6 +504,14 @@ void testMappedReduced(const QList<SourceObject> &sourceObjectList, const Result
     const ResultObject result2 = QtConcurrent::mappedReduced(
                 sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, options);
     QCOMPARE(result2, expectedResult);
+
+    const ResultObject result3 = QtConcurrent::blockingMappedReduced(
+                sourceObjectList, mapObject, reduceObject, options);
+    QCOMPARE(result3, expectedResult);
+
+    const ResultObject result4 = QtConcurrent::blockingMappedReduced(
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, options);
+    QCOMPARE(result4, expectedResult);
 }
 
 void tst_QtConcurrentMap::mappedReduced()
@@ -621,88 +572,6 @@ void tst_QtConcurrentMap::mappedReduced()
     CHECK_FAIL("lambda-lambda");
 }
 
-template <typename SourceObject, typename ResultObject, typename MapObject, typename ReduceObject>
-void testBlockingMappedReduced(const QList<SourceObject> &sourceObjectList, const ResultObject &expectedResult, MapObject mapObject, ReduceObject reduceObject)
-{
-    const ResultObject result1 = QtConcurrent::blockingMappedReduced<ResultObject>(
-                sourceObjectList, mapObject, reduceObject);
-    QCOMPARE(result1, expectedResult);
-
-    const ResultObject result2 = QtConcurrent::blockingMappedReduced<ResultObject>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
-    QCOMPARE(result2, expectedResult);
-}
-
-template <typename SourceObject, typename ResultObject, typename MapObject, typename ReduceObject>
-void testBlockingMappedReduced(const QList<SourceObject> &sourceObjectList, const ResultObject &expectedResult, MapObject mapObject, ReduceObject reduceObject, QtConcurrent::ReduceOptions options)
-{
-    const ResultObject result1 = QtConcurrent::blockingMappedReduced(
-                sourceObjectList, mapObject, reduceObject, options);
-    QCOMPARE(result1, expectedResult);
-
-    const ResultObject result2 = QtConcurrent::blockingMappedReduced(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, options);
-    QCOMPARE(result2, expectedResult);
-}
-
-void tst_QtConcurrentMap::blocking_mappedReduced()
-{
-    const QList<int> intList {1, 2, 3};
-    const QList<int> intListOfSquares {1, 4, 9};
-    const QList<Number> numberList {1, 2, 3};
-    const int sum = 6;
-    const int sumOfSquares = 14;
-
-    void (QVector<int>::*push_back)(const int &) = &QVector<int>::push_back;
-
-    auto lambdaSquare = [](int x) {
-        return x * x;
-    };
-    auto lambdaSumReduce = [](int &sum, int x) {
-        sum += x;
-    };
-
-    // FUNCTOR-other
-    testBlockingMappedReduced(intList, sumOfSquares, IntSquare(), IntSumReduce());
-    CHECK_FAIL("functor-functor");
-    testBlockingMappedReduced(intList, sumOfSquares, IntSquare(), intSumReduce);
-    CHECK_FAIL("functor-function");
-    testBlockingMappedReduced(intList, intListOfSquares, IntSquare(), push_back, OrderedReduce);
-    CHECK_FAIL("functor-member");
-    testBlockingMappedReduced(intList, sumOfSquares, IntSquare(), lambdaSumReduce);
-    CHECK_FAIL("functor-lambda");
-
-    // FUNCTION-other
-    testBlockingMappedReduced(intList, sumOfSquares, intSquare, IntSumReduce());
-    CHECK_FAIL("function-functor");
-    testBlockingMappedReduced(intList, sumOfSquares, intSquare, intSumReduce);
-    CHECK_FAIL("function-function");
-    testBlockingMappedReduced(intList, intListOfSquares, intSquare, push_back, OrderedReduce);
-    CHECK_FAIL("function-member");
-    testBlockingMappedReduced(intList, sumOfSquares, intSquare, lambdaSumReduce);
-    CHECK_FAIL("function-lambda");
-
-    // MEMBER-other
-    testBlockingMappedReduced(numberList, sum, &Number::toInt, IntSumReduce());
-    CHECK_FAIL("member-functor");
-    testBlockingMappedReduced(numberList, sum, &Number::toInt, intSumReduce);
-    CHECK_FAIL("member-function");
-    testBlockingMappedReduced(numberList, intList, &Number::toInt, push_back, OrderedReduce);
-    CHECK_FAIL("member-member");
-    testBlockingMappedReduced(numberList, sum, &Number::toInt, lambdaSumReduce);
-    CHECK_FAIL("member-lambda");
-
-    // LAMBDA-other
-    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, IntSumReduce());
-    CHECK_FAIL("lambda-functor");
-    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, intSumReduce);
-    CHECK_FAIL("lambda-function");
-    testBlockingMappedReduced(intList, intListOfSquares, lambdaSquare, push_back, OrderedReduce);
-    CHECK_FAIL("lambda-member");
-    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, lambdaSumReduce);
-    CHECK_FAIL("lambda-lambda");
-}
-
 void tst_QtConcurrentMap::mappedReducedDifferentType()
 {
     const QList<int> intList {1, 2, 3};
@@ -753,56 +622,6 @@ void tst_QtConcurrentMap::mappedReducedDifferentType()
     CHECK_FAIL("lambda-lambda");
 }
 
-void tst_QtConcurrentMap::blocking_mappedReducedDifferentType()
-{
-    const QList<int> intList {1, 2, 3};
-    const QList<Number> numberList {1, 2, 3};
-    const int sumOfSquares = 14;
-
-    auto lambdaSquare = [](Number x) {
-        return Number(x.toInt() * x.toInt());
-    };
-    auto lambdaSumReduce = [](int &sum, Number x) {
-        sum += x.toInt();
-    };
-
-    // Test the case where reduce function of the form:
-    // V function(T &result, const U &intermediate)
-    // has T and U types different.
-
-    // FUNCTOR-other
-    testBlockingMappedReduced(intList, sumOfSquares, NumberSquare(), NumberSumReduce());
-    CHECK_FAIL("functor-functor");
-    testBlockingMappedReduced(intList, sumOfSquares, NumberSquare(), numberSumReduce);
-    CHECK_FAIL("functor-function");
-    testBlockingMappedReduced(intList, sumOfSquares, NumberSquare(), lambdaSumReduce);
-    CHECK_FAIL("functor-lambda");
-
-    // FUNCTION-other
-    testBlockingMappedReduced(intList, sumOfSquares, numberSquare, NumberSumReduce());
-    CHECK_FAIL("function-functor");
-    testBlockingMappedReduced(intList, sumOfSquares, numberSquare, numberSumReduce);
-    CHECK_FAIL("function-function");
-    testBlockingMappedReduced(intList, sumOfSquares, numberSquare, lambdaSumReduce);
-    CHECK_FAIL("function-lambda");
-
-    // MEMBER-other
-    testBlockingMappedReduced(numberList, sumOfSquares, &Number::squared, NumberSumReduce());
-    CHECK_FAIL("member-functor");
-    testBlockingMappedReduced(numberList, sumOfSquares, &Number::squared, numberSumReduce);
-    CHECK_FAIL("member-function");
-    testBlockingMappedReduced(numberList, sumOfSquares, &Number::squared, lambdaSumReduce);
-    CHECK_FAIL("member-lambda");
-
-    // LAMBDA-other
-    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, NumberSumReduce());
-    CHECK_FAIL("lambda-functor");
-    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, numberSumReduce);
-    CHECK_FAIL("lambda-function");
-    testBlockingMappedReduced(intList, sumOfSquares, lambdaSquare, lambdaSumReduce);
-    CHECK_FAIL("lambda-lambda");
-}
-
 template <typename SourceObject, typename ResultObject, typename InitialObject, typename MapObject, typename ReduceObject>
 void testMappedReducedInitialValue(const QList<SourceObject> &sourceObjectList,
                                    const ResultObject &expectedResult,
@@ -817,6 +636,14 @@ void testMappedReducedInitialValue(const QList<SourceObject> &sourceObjectList,
     const ResultObject result2 = QtConcurrent::mappedReduced<ResultObject>(
                 sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, initialObject);
     QCOMPARE(result2, expectedResult);
+
+    const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(
+                sourceObjectList, mapObject, reduceObject, initialObject);
+    QCOMPARE(result3, expectedResult);
+
+    const ResultObject result4 = QtConcurrent::blockingMappedReduced<ResultObject>(
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, initialObject);
+    QCOMPARE(result4, expectedResult);
 }
 
 template <typename SourceObject, typename ResultObject, typename InitialObject, typename MapObject, typename ReduceObject>
@@ -834,6 +661,14 @@ void testMappedReducedInitialValue(const QList<SourceObject> &sourceObjectList,
     const ResultObject result2 = QtConcurrent::mappedReduced(
                 sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, initialObject, options);
     QCOMPARE(result2, expectedResult);
+
+    const ResultObject result3 = QtConcurrent::blockingMappedReduced(
+                sourceObjectList, mapObject, reduceObject, initialObject, options);
+    QCOMPARE(result3, expectedResult);
+
+    const ResultObject result4 = QtConcurrent::blockingMappedReduced(
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, initialObject, options);
+    QCOMPARE(result4, expectedResult);
 }
 
 void tst_QtConcurrentMap::mappedReducedInitialValue()
@@ -899,103 +734,6 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
     CHECK_FAIL("lambda-lambda");
 }
 
-template <typename SourceObject, typename ResultObject, typename InitialObject, typename MapObject, typename ReduceObject>
-void testBlockingMappedReducedInitialValue(const QList<SourceObject> &sourceObjectList,
-                                           const ResultObject &expectedResult,
-                                           MapObject mapObject,
-                                           ReduceObject reduceObject,
-                                           InitialObject &&initialObject)
-{
-    const ResultObject result1 = QtConcurrent::blockingMappedReduced<ResultObject>(
-                sourceObjectList, mapObject, reduceObject, initialObject);
-    QCOMPARE(result1, expectedResult);
-
-    const ResultObject result2 = QtConcurrent::blockingMappedReduced<ResultObject>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, initialObject);
-    QCOMPARE(result2, expectedResult);
-}
-
-template <typename SourceObject, typename ResultObject, typename InitialObject, typename MapObject, typename ReduceObject>
-void testBlockingMappedReducedInitialValue(const QList<SourceObject> &sourceObjectList,
-                                           const ResultObject &expectedResult,
-                                           MapObject mapObject,
-                                           ReduceObject reduceObject,
-                                           InitialObject &&initialObject,
-                                           QtConcurrent::ReduceOptions options)
-{
-    const ResultObject result1 = QtConcurrent::blockingMappedReduced(
-                sourceObjectList, mapObject, reduceObject, initialObject, options);
-    QCOMPARE(result1, expectedResult);
-
-    const ResultObject result2 = QtConcurrent::blockingMappedReduced(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, initialObject, options);
-    QCOMPARE(result2, expectedResult);
-}
-
-void tst_QtConcurrentMap::blocking_mappedReducedInitialValue()
-{
-    // This is a copy of tst_QtConcurrentMap::blocking_mappedReduced with the initial value
-    // parameter added
-
-    const QList<int> intList {1, 2, 3};
-    const QList<int> intListInitial {10};
-    const QList<int> intListAppended {10, 1, 2, 3};
-    const QList<int> intListSquaresAppended {10, 1, 4, 9};
-    const QList<Number> numberList {1, 2, 3};
-    const int sum = 16;
-    const int sumOfSquares = 24;
-    const int intInitial = 10;
-
-    void (QVector<int>::*push_back)(const int &) = &QVector<int>::push_back;
-
-    auto lambdaSquare = [](int x) {
-        return x * x;
-    };
-    auto lambdaSumReduce = [](int &sum, int x) {
-        sum += x;
-    };
-
-    // FUNCTOR-other
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, IntSquare(), IntSumReduce(), intInitial);
-    CHECK_FAIL("functor-functor");
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, IntSquare(), intSumReduce, intInitial);
-    CHECK_FAIL("functor-function");
-    testBlockingMappedReducedInitialValue(intList, intListSquaresAppended, IntSquare(), push_back, intListInitial, OrderedReduce);
-    CHECK_FAIL("functor-member");
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, IntSquare(), lambdaSumReduce, intInitial);
-    CHECK_FAIL("functor-lambda");
-
-    // FUNCTION-other
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, intSquare, IntSumReduce(), intInitial);
-    CHECK_FAIL("function-functor");
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, intSquare, intSumReduce, intInitial);
-    CHECK_FAIL("function-function");
-    testBlockingMappedReducedInitialValue(intList, intListSquaresAppended, intSquare, push_back, intListInitial, OrderedReduce);
-    CHECK_FAIL("function-member");
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, intSquare, lambdaSumReduce, intInitial);
-    CHECK_FAIL("function-lambda");
-
-    // MEMBER-other
-    testBlockingMappedReducedInitialValue(numberList, sum, &Number::toInt, IntSumReduce(), intInitial);
-    CHECK_FAIL("member-functor");
-    testBlockingMappedReducedInitialValue(numberList, sum, &Number::toInt, intSumReduce, intInitial);
-    CHECK_FAIL("member-function");
-    testBlockingMappedReducedInitialValue(numberList, intListAppended, &Number::toInt, push_back, intListInitial, OrderedReduce);
-    CHECK_FAIL("member-member");
-    testBlockingMappedReducedInitialValue(numberList, sum, &Number::toInt, lambdaSumReduce, intInitial);
-    CHECK_FAIL("member-lambda");
-
-    // LAMBDA-other
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, lambdaSquare, IntSumReduce(), intInitial);
-    CHECK_FAIL("lambda-functor");
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, lambdaSquare, intSumReduce, intInitial);
-    CHECK_FAIL("lambda-function");
-    testBlockingMappedReducedInitialValue(intList, intListSquaresAppended, lambdaSquare, push_back, intListInitial, OrderedReduce);
-    CHECK_FAIL("lambda-member");
-    testBlockingMappedReducedInitialValue(intList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
-    CHECK_FAIL("lambda-lambda");
-}
-
 void tst_QtConcurrentMap::mappedReducedDifferentTypeInitialValue()
 {
     // This is a copy of tst_QtConcurrentMap::mappedReducedDifferentType
@@ -1042,55 +780,6 @@ void tst_QtConcurrentMap::mappedReducedDifferentTypeInitialValue()
     testMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, numberSumReduce, intInitial);
     CHECK_FAIL("lambda-function");
     testMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
-    CHECK_FAIL("lambda-lambda");
-}
-
-void tst_QtConcurrentMap::blocking_mappedReducedDifferentTypeInitialValue()
-{
-    // This is a copy of tst_QtConcurrentMap::blocking_mappedReducedDifferentType
-    // with the initial value parameter added
-
-    const QList<Number> numberList {1, 2, 3};
-    const int sumOfSquares = 24;
-    const int intInitial = 10;
-
-    auto lambdaSquare = [](Number x) {
-        return Number(x.toInt() * x.toInt());
-    };
-    auto lambdaSumReduce = [](int &sum, Number x) {
-        sum += x.toInt();
-    };
-
-    // FUNCTOR-other
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), NumberSumReduce(), intInitial);
-    CHECK_FAIL("functor-functor");
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), numberSumReduce, intInitial);
-    CHECK_FAIL("functor-function");
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, NumberSquare(), lambdaSumReduce, intInitial);
-    CHECK_FAIL("functor-lambda");
-
-    // FUNCTION-other
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, NumberSumReduce(), intInitial);
-    CHECK_FAIL("function-functor");
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, numberSumReduce, intInitial);
-    CHECK_FAIL("function-function");
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, numberSquare, lambdaSumReduce, intInitial);
-    CHECK_FAIL("function-lambda");
-
-    // MEMBER-other
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, NumberSumReduce(), intInitial);
-    CHECK_FAIL("member-functor");
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, numberSumReduce, intInitial);
-    CHECK_FAIL("member-function");
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, &Number::squared, lambdaSumReduce, intInitial);
-    CHECK_FAIL("member-lambda");
-
-    // LAMBDA-other
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, NumberSumReduce(), intInitial);
-    CHECK_FAIL("lambda-functor");
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, numberSumReduce, intInitial);
-    CHECK_FAIL("lambda-function");
-    testBlockingMappedReducedInitialValue(numberList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
 }
 
