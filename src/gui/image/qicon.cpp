@@ -1049,6 +1049,8 @@ static QIconEngine *iconEngineFromSuffix(const QString &fileName, const QString 
             }
         }
     }
+    qWarning("Could not find icon engine for suffix '%s' of file '%s'",
+        qUtf8Printable(suffix), qUtf8Printable(fileName));
     return nullptr;
 }
 
