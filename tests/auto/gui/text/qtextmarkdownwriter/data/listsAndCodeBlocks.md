@@ -1,6 +1,6 @@
 - something happens in the debugger like this:
 
-  ``` 
+  ```
   1   QQuickEventPoint::setGrabberItem                 qquickevents.cpp     869 0x7ffff7a963f2 
   2   QQuickItem::grabMouse                            qquickitem.cpp      7599 0x7ffff7abea29 
   3   QQuickWindowPrivate::deliverMatchingPointsToItem qquickwindow.cpp    2738 0x7ffff7aea34c 
@@ -16,8 +16,8 @@
 
 - something I tried to fix it:
 
-  ``` 
-  code goes here, probably c++
+  ```c++
+  item->ungrab();
   ```
 - still didn't fix it, expecting a breakthrough any day now
 - some sort of miracle
