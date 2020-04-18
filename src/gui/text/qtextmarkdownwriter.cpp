@@ -367,6 +367,14 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     const int ColumnLimit = 80;
     QTextBlockFormat blockFmt = block.blockFormat();
     bool missedBlankCodeBlockLine = false;
+    const bool codeBlock = blockFmt.hasProperty(QTextFormat::BlockCodeFence) ||
+            blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).length() > 0;
+    if (m_fencedCodeBlock && !codeBlock) {
+        m_stream << m_linePrefix << QString(m_wrappedLineIndent, Space)
+                 << m_codeBlockFence << Newline;
+        m_fencedCodeBlock = false;
+        m_codeBlockFence.clear();
+    }
     if (block.textList()) { // it's a list-item
         auto fmt = block.textList()->format();
         const int listLevel = fmt.indent();
@@ -427,7 +435,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     } else if (blockFmt.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
         m_stream << "- - -\n"; // unambiguous horizontal rule, not an underline under a heading
         return 0;
-    } else if (blockFmt.hasProperty(QTextFormat::BlockCodeFence) || blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).length() > 0) {
+    } else if (codeBlock) {
         // It's important to preserve blank lines in code blocks.  But blank lines in code blocks
         // inside block quotes are getting preserved anyway (along with the "> " prefix).
         if (!blockFmt.hasProperty(QTextFormat::BlockQuoteLevel))
@@ -442,13 +450,8 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                      << Space << blockFmt.stringProperty(QTextFormat::BlockCodeLanguage) << Newline;
             m_fencedCodeBlock = true;
         }
+        wrap = false;
     } else if (!blockFmt.indent()) {
-        if (m_fencedCodeBlock) {
-            m_stream << m_linePrefix << QString(m_wrappedLineIndent, Space)
-                     << m_codeBlockFence << Newline;
-            m_fencedCodeBlock = false;
-            m_codeBlockFence.clear();
-        }
         m_wrappedLineIndent = 0;
         m_linePrefix.clear();
         if (blockFmt.hasProperty(QTextFormat::BlockQuoteLevel)) {
