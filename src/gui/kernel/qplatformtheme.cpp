@@ -645,7 +645,7 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
         if (!(it->platform & platform))
             continue;
 
-        uint shortcut = it->shortcut;
+        uint shortcut = it->shortcut.toCombined();
 
         if (it->priority > 0)
             list.prepend(QKeySequence(shortcut));

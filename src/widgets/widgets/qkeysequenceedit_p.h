@@ -76,7 +76,7 @@ public:
     QLineEdit *lineEdit;
     QKeySequence keySequence;
     int keyNum;
-    int key[QKeySequencePrivate::MaxKeyCount];
+    QKeyCombination key[QKeySequencePrivate::MaxKeyCount];
     int prevKey;
     int releaseTimer;
 };

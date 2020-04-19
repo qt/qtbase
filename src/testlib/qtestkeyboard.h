@@ -172,8 +172,8 @@ namespace QTest
     Q_DECL_UNUSED inline static void keySequence(QWindow *window, const QKeySequence &keySequence)
     {
         for (int i = 0; i < keySequence.count(); ++i) {
-            const Qt::Key key = Qt::Key(keySequence[i] & ~Qt::KeyboardModifierMask);
-            const Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(keySequence[i] & Qt::KeyboardModifierMask);
+            const Qt::Key key = keySequence[i].key();
+            const Qt::KeyboardModifiers modifiers = keySequence[i].keyboardModifiers();
             keyClick(window, key, modifiers);
         }
     }
@@ -313,8 +313,8 @@ namespace QTest
     inline static void keySequence(QWidget *widget, const QKeySequence &keySequence)
     {
         for (int i = 0; i < keySequence.count(); ++i) {
-            const Qt::Key key = Qt::Key(keySequence[i] & ~Qt::KeyboardModifierMask);
-            const Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(keySequence[i] & Qt::KeyboardModifierMask);
+            const Qt::Key key = keySequence[i].key();
+            const Qt::KeyboardModifiers modifiers = keySequence[i].keyboardModifiers();
             keyClick(widget, key, modifiers);
         }
     }

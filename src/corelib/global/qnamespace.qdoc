@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2020 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -3246,3 +3247,201 @@
   \sa QLabel::picture()
   \sa QLabel::pixmap()
 */
+
+/*!
+  \class QKeyCombination
+  \inmodule QtCore
+  \since 6.0
+  \brief The QKeyCombination class stores a combination of a key with optional modifiers.
+
+  The QKeyCombination class can be used to represent a combination of a key
+  with zero or more keyboard modifiers.
+
+  \sa QKeySequence
+*/
+
+/*!
+  \fn QKeyCombination::QKeyCombination(Qt::Key key = Qt::Key_unknown) noexcept
+
+  Constructs a QKeyCombination object that represents the key \a key
+  and no modifiers.
+
+  \sa key()
+*/
+
+/*!
+  \fn QKeyCombination::QKeyCombination(Qt::Modifiers modifiers, Qt::Key key = Qt::Key_unknown) noexcept
+
+  Constructs a QKeyCombination object that represents the combination
+  of \a key with the modifiers \a modifiers.
+
+  \sa key(), keyboardModifiers()
+*/
+
+/*!
+  \fn QKeyCombination::QKeyCombination(Qt::KeyboardModifiers modifiers, Qt::Key key = Qt::Key_unknown) noexcept
+
+  Constructs a QKeyCombination object that represents the combination
+  of \a key with the modifiers \a modifiers.
+
+  \sa key(), keyboardModifiers()
+*/
+
+/*!
+  \fn Qt::KeyboardModifiers QKeyCombination::keyboardModifiers() const noexcept
+
+  Returns the keyboard modifiers represented by this QKeyCombination object.
+
+  \sa key()
+*/
+
+/*!
+  \fn Qt::Key QKeyCombination::key() const noexcept
+
+  Returns the key represented by this QKeyCombination object.
+
+  \sa keyboardModifiers()
+*/
+
+/*!
+  \fn QKeyCombination QKeyCombination::fromCombined(int combined)
+
+  Constructs a QKeyCombination object by extracting the key and the
+  modifiers out of \a combined, which must be the result of a bitwise
+  OR between a value of type Qt::Key and value of type
+  Qt::KeyboardModifiers. toCombined() can be used in order to produce
+  valid values for \a combined.
+
+  \sa toCombined()
+*/
+
+/*!
+  \fn int QKeyCombination::toCombined() const noexcept
+
+  Returns an integer value obtained by applying a bitwise OR between
+  the values of key() and keyboardModifiers() represented
+  by this object. A QKeyCombination object can be created from the
+  returned integer value by using fromCombined().
+
+  \sa fromCombined(), key(), keyboardModifiers()
+*/
+
+#if QT_DEPRECATED_SINCE(6, 0)
+/*!
+  \fn QKeyCombination::operator int() const noexcept
+  \obsolete
+
+  Use toCombined() instead.
+*/
+#endif
+
+/*!
+  \fn bool operator==(QKeyCombination lhs, QKeyCombination rhs) noexcept
+  \relates QKeyCombination
+
+  Returns \c true if \a lhs and \a rhs have the same combination
+  of key and modifiers, and \c false otherwise.
+*/
+
+/*!
+  \fn bool operator!=(QKeyCombination lhs, QKeyCombination rhs) noexcept
+  \relates QKeyCombination
+
+  Returns \c true if \a lhs and \a rhs have different combinations
+  of key and modifiers, otherwise \c false.
+*/
+
+/*!
+  \fn QKeyCombination operator|(Qt::Modifier modifier, Qt::Key key) noexcept
+  \fn QKeyCombination operator|(Qt::KeyboardModifier modifier, Qt::Key key) noexcept
+  \fn QKeyCombination operator|(Qt::Key key, Qt::Modifier modifier) noexcept
+  \fn QKeyCombination operator|(Qt::Key key, Qt::KeyboardModifier modifier) noexcept
+
+  \relates QKeyCombination
+
+  Returns a QKeyCombination object that represents the combination
+  of \a key with the modifier \a modifier.
+*/
+
+/*!
+  \fn QKeyCombination operator|(Qt::Modifiers modifiers, Qt::Key key) noexcept
+  \fn QKeyCombination operator|(Qt::KeyboardModifiers modifiers, Qt::Key key) noexcept
+  \fn QKeyCombination operator|(Qt::Key key, Qt::Modifiers modifiers) noexcept
+  \fn QKeyCombination operator|(Qt::Key key, Qt::KeyboardModifiers modifiers) noexcept
+
+  \relates QKeyCombination
+
+  Returns a QKeyCombination object that represents the combination
+  of \a key with the modifiers \a modifiers.
+*/
+
+/*!
+  \fn QKeyCombination operator+(Qt::Modifier modifier, Qt::Key key) noexcept
+  \fn QKeyCombination operator+(Qt::KeyboardModifier modifier, Qt::Key key) noexcept
+  \fn QKeyCombination operator+(Qt::Key key, Qt::Modifier modifier) noexcept
+  \fn QKeyCombination operator+(Qt::Key key, Qt::KeyboardModifier modifier) noexcept
+
+  \relates QKeyCombination
+  \obsolete
+
+  Use operator| instead.
+
+  Returns a QKeyCombination object that represents the combination
+  of \a key with the modifier \a modifier.
+*/
+
+/*!
+  \fn QKeyCombination operator+(Qt::Modifiers modifiers, Qt::Key key) noexcept
+  \fn QKeyCombination operator+(Qt::KeyboardModifiers modifiers, Qt::Key key) noexcept
+  \fn QKeyCombination operator+(Qt::Key key, Qt::Modifiers modifiers) noexcept
+  \fn QKeyCombination operator+(Qt::Key key, Qt::KeyboardModifiers modifiers) noexcept
+
+  \relates QKeyCombination
+  \obsolete
+
+  Use operator| instead.
+
+  Returns a QKeyCombination object that represents the combination
+  of \a key with the modifiers \a modifiers.
+*/
+
+/*!
+  \fn size_t qHash(QKeyCombination key, size_t seed = 0) noexcept
+  \relates QKeyCombination
+
+  Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+#ifndef QT_NO_DEBUG_STREAM
+/*!
+  \fn QDebug operator<<(QDebug debug, QKeyCombination combination)
+  \relates QKeyCombination
+
+  Writes the combination \a combination into the debug object \a debug for
+  debugging purposes.
+
+  \sa {Debugging Techniques}
+*/
+#endif
+
+#ifndef QT_NO_DATASTREAM
+/*!
+  \fn QDataStream &operator<<(QDataStream &out, QKeyCombination combination)
+  \relates QKeyCombination
+
+  Writes the combination \a combination into the stream \a out.
+  Returns \a out.
+
+  \sa {Serializing Qt Data Types}
+*/
+
+/*!
+  \fn QDataStream &operator>>(QDataStream &in, QKeyCombination &combination)
+  \relates QKeyCombination
+
+  Reads the combination \a combination from the stream \a in.
+  Returns \a in.
+
+  \sa {Serializing Qt Data Types}
+*/
+#endif

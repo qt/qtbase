@@ -99,7 +99,6 @@ struct GuiTypesFilter {
     };
 };
 
-
 static const struct : QMetaTypeModuleHelper
 {
 #define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
@@ -146,7 +145,7 @@ static const struct : QMetaTypeModuleHelper
         );
         QMETATYPE_CONVERTER(QKeySequence, QString, result = source; return true;);
         QMETATYPE_CONVERTER(Int, QKeySequence,
-            result = source.isEmpty() ? 0 : source[0];
+            result = source.isEmpty() ? 0 : source[0].toCombined();
             return true;
         );
         QMETATYPE_CONVERTER(QKeySequence, Int, result = source; return true;);

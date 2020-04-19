@@ -181,8 +181,9 @@ void tst_QKeySequence::swap()
     QKeySequence ks1(Qt::CTRL+Qt::Key_O);
     QKeySequence ks2(Qt::CTRL+Qt::Key_L);
     ks1.swap(ks2);
-    QCOMPARE(ks1[0], int(Qt::CTRL+Qt::Key_L));
-    QCOMPARE(ks2[0], int(Qt::CTRL+Qt::Key_O));
+
+    QCOMPARE(ks1[0], Qt::CTRL+Qt::Key_L);
+    QCOMPARE(ks2[0], Qt::CTRL+Qt::Key_O);
 }
 
 void tst_QKeySequence::operatorQString_data()

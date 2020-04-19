@@ -543,12 +543,12 @@ void QShortcutMap::createNewSequences(QKeyEvent *e, QList<QKeySequence> &ksl, in
                 curKsl.setKey(curSeq[2], 2);
                 curKsl.setKey(curSeq[3], 3);
             } else {
-                curKsl.setKey(0, 0);
-                curKsl.setKey(0, 1);
-                curKsl.setKey(0, 2);
-                curKsl.setKey(0, 3);
+                curKsl.setKey(QKeyCombination::fromCombined(0), 0);
+                curKsl.setKey(QKeyCombination::fromCombined(0), 1);
+                curKsl.setKey(QKeyCombination::fromCombined(0), 2);
+                curKsl.setKey(QKeyCombination::fromCombined(0), 3);
             }
-            curKsl.setKey(possibleKeys.at(pkNum) & ~ignoredModifiers, index);
+            curKsl.setKey(QKeyCombination::fromCombined(possibleKeys.at(pkNum) & ~ignoredModifiers), index);
         }
     }
 }
@@ -574,8 +574,8 @@ QKeySequence::SequenceMatch QShortcutMap::matches(const QKeySequence &seq1,
                                             : QKeySequence::PartialMatch);
 
     for (uint i = 0; i < userN; ++i) {
-        int userKey = seq1[i],
-            sequenceKey = seq2[i];
+        int userKey = seq1[i].toCombined(),
+            sequenceKey = seq2[i].toCombined();
         if ((userKey & Qt::Key_unknown) == Qt::Key_hyphen)
             userKey = (userKey & Qt::KeyboardModifierMask) | Qt::Key_Minus;
         if ((sequenceKey & Qt::Key_unknown) == Qt::Key_hyphen)

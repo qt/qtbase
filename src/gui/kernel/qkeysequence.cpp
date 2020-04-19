@@ -870,6 +870,17 @@ QKeySequence::QKeySequence(int k1, int k2, int k3, int k4)
 }
 
 /*!
+    Constructs a key sequence with up to 4 keys \a k1, \a k2,
+    \a k3 and \a k4.
+
+    \sa QKeyCombination
+*/
+QKeySequence::QKeySequence(QKeyCombination k1, QKeyCombination k2, QKeyCombination k3, QKeyCombination k4)
+    : QKeySequence(k1.toCombined(), k2.toCombined(), k3.toCombined(), k4.toCombined())
+{
+}
+
+/*!
     Copy constructor. Makes a copy of \a keysequence.
  */
 QKeySequence::QKeySequence(const QKeySequence& keysequence)
@@ -908,11 +919,11 @@ QKeySequence::~QKeySequence()
     delivery.
 */
 
-void QKeySequence::setKey(int key, int index)
+void QKeySequence::setKey(QKeyCombination key, int index)
 {
     Q_ASSERT_X(index >= 0 && index < QKeySequencePrivate::MaxKeyCount, "QKeySequence::setKey", "index out of range");
     qAtomicDetach(d);
-    d->key[index] = key;
+    d->key[index] = key.toCombined();
 }
 
 static_assert(QKeySequencePrivate::MaxKeyCount == 4, "Change docs below");
@@ -967,7 +978,7 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
             if (c.isPrint()) {
                 if (!found) {
                     c = c.toUpper();
-                    ret = QKeySequence(c.unicode() + Qt::ALT);
+                    ret = QKeySequence(QKeyCombination(Qt::ALT, Qt::Key(c.unicode())));
 #ifdef QT_NO_DEBUG
                     return ret;
 #else
@@ -1377,8 +1388,8 @@ QKeySequence::SequenceMatch QKeySequence::matches(const QKeySequence &seq) const
     SequenceMatch match = (userN == seqN ? ExactMatch : PartialMatch);
 
     for (uint i = 0; i < userN; ++i) {
-        int userKey = (*this)[i],
-            sequenceKey = seq[i];
+        QKeyCombination userKey = (*this)[i],
+                    sequenceKey = seq[i];
         if (userKey != sequenceKey)
             return NoMatch;
     }
@@ -1397,10 +1408,10 @@ QKeySequence::operator QVariant() const
     Returns a reference to the element at position \a index in the key
     sequence. This can only be used to read an element.
  */
-int QKeySequence::operator[](uint index) const
+QKeyCombination QKeySequence::operator[](uint index) const
 {
     Q_ASSERT_X(index < QKeySequencePrivate::MaxKeyCount, "QKeySequence::operator[]", "index out of range");
-    return d->key[index];
+    return QKeyCombination::fromCombined(d->key[index]);
 }
 
 

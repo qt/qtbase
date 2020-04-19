@@ -209,14 +209,14 @@ void TextEdit::setupFileActions()
     const QIcon exportPdfIcon = QIcon::fromTheme("exportpdf", QIcon(rsrcPath + "/exportpdf.png"));
     a = menu->addAction(exportPdfIcon, tr("&Export PDF..."), this, &TextEdit::filePrintPdf);
     a->setPriority(QAction::LowPriority);
-    a->setShortcut(Qt::CTRL + Qt::Key_D);
+    a->setShortcut(Qt::CTRL | Qt::Key_D);
     tb->addAction(a);
 
     menu->addSeparator();
 #endif
 
     a = menu->addAction(tr("&Quit"), this, &QWidget::close);
-    a->setShortcut(Qt::CTRL + Qt::Key_Q);
+    a->setShortcut(Qt::CTRL | Qt::Key_Q);
 }
 
 void TextEdit::setupEditActions()
@@ -266,7 +266,7 @@ void TextEdit::setupTextActions()
 
     const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/textbold.png"));
     actionTextBold = menu->addAction(boldIcon, tr("&Bold"), this, &TextEdit::textBold);
-    actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
+    actionTextBold->setShortcut(Qt::CTRL | Qt::Key_B);
     actionTextBold->setPriority(QAction::LowPriority);
     QFont bold;
     bold.setBold(true);
@@ -277,7 +277,7 @@ void TextEdit::setupTextActions()
     const QIcon italicIcon = QIcon::fromTheme("format-text-italic", QIcon(rsrcPath + "/textitalic.png"));
     actionTextItalic = menu->addAction(italicIcon, tr("&Italic"), this, &TextEdit::textItalic);
     actionTextItalic->setPriority(QAction::LowPriority);
-    actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
+    actionTextItalic->setShortcut(Qt::CTRL | Qt::Key_I);
     QFont italic;
     italic.setItalic(true);
     actionTextItalic->setFont(italic);
@@ -286,7 +286,7 @@ void TextEdit::setupTextActions()
 
     const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(rsrcPath + "/textunder.png"));
     actionTextUnderline = menu->addAction(underlineIcon, tr("&Underline"), this, &TextEdit::textUnderline);
-    actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
+    actionTextUnderline->setShortcut(Qt::CTRL | Qt::Key_U);
     actionTextUnderline->setPriority(QAction::LowPriority);
     QFont underline;
     underline.setUnderline(true);
@@ -298,31 +298,31 @@ void TextEdit::setupTextActions()
 
     const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/textleft.png"));
     actionAlignLeft = new QAction(leftIcon, tr("&Left"), this);
-    actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
+    actionAlignLeft->setShortcut(Qt::CTRL | Qt::Key_L);
     actionAlignLeft->setCheckable(true);
     actionAlignLeft->setPriority(QAction::LowPriority);
     const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(rsrcPath + "/textcenter.png"));
     actionAlignCenter = new QAction(centerIcon, tr("C&enter"), this);
-    actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
+    actionAlignCenter->setShortcut(Qt::CTRL | Qt::Key_E);
     actionAlignCenter->setCheckable(true);
     actionAlignCenter->setPriority(QAction::LowPriority);
     const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(rsrcPath + "/textright.png"));
     actionAlignRight = new QAction(rightIcon, tr("&Right"), this);
-    actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
+    actionAlignRight->setShortcut(Qt::CTRL | Qt::Key_R);
     actionAlignRight->setCheckable(true);
     actionAlignRight->setPriority(QAction::LowPriority);
     const QIcon fillIcon = QIcon::fromTheme("format-justify-fill", QIcon(rsrcPath + "/textjustify.png"));
     actionAlignJustify = new QAction(fillIcon, tr("&Justify"), this);
-    actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
+    actionAlignJustify->setShortcut(Qt::CTRL | Qt::Key_J);
     actionAlignJustify->setCheckable(true);
     actionAlignJustify->setPriority(QAction::LowPriority);
     const QIcon indentMoreIcon = QIcon::fromTheme("format-indent-more", QIcon(rsrcPath + "/format-indent-more.png"));
     actionIndentMore = menu->addAction(indentMoreIcon, tr("&Indent"), this, &TextEdit::indent);
-    actionIndentMore->setShortcut(Qt::CTRL + Qt::Key_BracketRight);
+    actionIndentMore->setShortcut(Qt::CTRL | Qt::Key_BracketRight);
     actionIndentMore->setPriority(QAction::LowPriority);
     const QIcon indentLessIcon = QIcon::fromTheme("format-indent-less", QIcon(rsrcPath + "/format-indent-less.png"));
     actionIndentLess = menu->addAction(indentLessIcon, tr("&Unindent"), this, &TextEdit::unindent);
-    actionIndentLess->setShortcut(Qt::CTRL + Qt::Key_BracketLeft);
+    actionIndentLess->setShortcut(Qt::CTRL | Qt::Key_BracketLeft);
     actionIndentLess->setPriority(QAction::LowPriority);
 
     // Make sure the alignLeft  is always left of the alignRight
@@ -358,7 +358,7 @@ void TextEdit::setupTextActions()
 
     const QIcon checkboxIcon = QIcon::fromTheme("status-checkbox-checked", QIcon(rsrcPath + "/checkbox-checked.png"));
     actionToggleCheckState = menu->addAction(checkboxIcon, tr("Chec&ked"), this, &TextEdit::setChecked);
-    actionToggleCheckState->setShortcut(Qt::CTRL + Qt::Key_K);
+    actionToggleCheckState->setShortcut(Qt::CTRL | Qt::Key_K);
     actionToggleCheckState->setCheckable(true);
     actionToggleCheckState->setPriority(QAction::LowPriority);
     tb->addAction(actionToggleCheckState);

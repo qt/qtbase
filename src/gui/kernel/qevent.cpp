@@ -1285,6 +1285,15 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
     return QInputEvent::modifiers();
 }
 
+/*!
+    \fn QKeyCombination QKeyEvent::keyCombination() const
+
+    Returns a QKeyCombination object containing both the key() and
+    the modifiers() carried by this event.
+
+    \since 6.0
+*/
+
 #if QT_CONFIG(shortcut)
 /*!
     \fn bool QKeyEvent::matches(QKeySequence::StandardKey key) const

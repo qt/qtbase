@@ -446,6 +446,17 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
     return qt_QMetaEnum_flagDebugOperator_helper(debug, flags);
 }
 
+inline QDebug operator<<(QDebug debug, QKeyCombination combination)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "QKeyCombination("
+                    << combination.keyboardModifiers()
+                    << ", "
+                    << combination.key()
+                    << ")";
+    return debug;
+}
+
 #ifdef Q_OS_MAC
 
 // We provide QDebug stream operators for commonly used Core Foundation

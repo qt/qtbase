@@ -60,6 +60,6 @@ setKey(QKeySequence());     // no signal emitted
 setKey(0x3b1);              // Greek letter alpha
 setKey(Qt::Key_D);              // 'd', e.g. to delete
 setKey('q');                // 'q', e.g. to quit
-setKey(Qt::CTRL + Qt::Key_P);       // Ctrl+P, e.g. to print document
+setKey(Qt::CTRL | Qt::Key_P);       // Ctrl+P, e.g. to print document
 setKey("Ctrl+P");           // Ctrl+P, e.g. to print document
 //! [1]

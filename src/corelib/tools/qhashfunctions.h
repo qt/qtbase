@@ -162,6 +162,8 @@ inline Q_DECL_PURE_FUNCTION size_t qHash(const QString &key, size_t seed = 0) no
 #endif
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QBitArray &key, size_t seed = 0) noexcept;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(QLatin1String key, size_t seed = 0) noexcept;
+Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(QKeyCombination key, size_t seed = 0) noexcept
+{ return qHash(key.toCombined(), seed); }
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(QStringView key, uint chained = 0) noexcept;
 
 template<typename T> inline size_t qHash(const T &t, size_t seed)

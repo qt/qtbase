@@ -71,17 +71,20 @@ QKeyMapper::~QKeyMapper()
 {
 }
 
-QList<int> QKeyMapper::possibleKeys(QKeyEvent *e)
+static QList<int> extractKeyFromEvent(QKeyEvent *e)
 {
     QList<int> result;
+    if (e->key() && (e->key() != Qt::Key_unknown))
+        result << e->keyCombination().toCombined();
+    else if (!e->text().isEmpty())
+        result << int(e->text().at(0).unicode() + (int)e->modifiers());
+    return result;
+}
 
-    if (!e->nativeScanCode()) {
-        if (e->key() && (e->key() != Qt::Key_unknown))
-            result << int(e->key() + e->modifiers());
-        else if (!e->text().isEmpty())
-            result << int(e->text().at(0).unicode() + e->modifiers());
-        return result;
-    }
+QList<int> QKeyMapper::possibleKeys(QKeyEvent *e)
+{
+    if (!e->nativeScanCode())
+        return extractKeyFromEvent(e);
 
     return instance()->d_func()->possibleKeys(e);
 }
@@ -132,11 +135,7 @@ QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
     if (!result.isEmpty())
         return result;
 
-    if (e->key() && (e->key() != Qt::Key_unknown))
-        result << int(e->key() + e->modifiers());
-    else if (!e->text().isEmpty())
-        result << int(e->text().at(0).unicode() + e->modifiers());
-    return result;
+    return extractKeyFromEvent(e);
 }
 
 QT_END_NAMESPACE

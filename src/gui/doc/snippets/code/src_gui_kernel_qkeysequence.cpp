@@ -62,13 +62,15 @@ struct Wrapper : public QWidget
 QKeySequence(QKeySequence::Print);
 QKeySequence(tr("Ctrl+P"));
 QKeySequence(tr("Ctrl+p"));
-QKeySequence(Qt::CTRL + Qt::Key_P);
+QKeySequence(Qt::CTRL | Qt::Key_P);
+QKeySequence(Qt::CTRL + Qt::Key_P); // deprecated
 //! [0]
 
 
 //! [1]
 QKeySequence(tr("Ctrl+X, Ctrl+C"));
-QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_C);
+QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_C);
+QKeySequence(Qt::CTRL + Qt::Key_X, Qt::CTRL + Qt::Key_C); // deprecated
 //! [1]
 
 */ // Wrap non-compilable code snippet

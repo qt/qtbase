@@ -241,7 +241,7 @@ QDBusMenuShortcut QDBusMenuItem::convertKeySequence(const QKeySequence &sequence
     QDBusMenuShortcut shortcut;
     for (int i = 0; i < sequence.count(); ++i) {
         QStringList tokens;
-        int key = sequence[i];
+        int key = sequence[i].toCombined();
         if (key & Qt::MetaModifier)
             tokens << QStringLiteral("Super");
         if (key & Qt::ControlModifier)

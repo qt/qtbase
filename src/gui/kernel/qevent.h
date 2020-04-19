@@ -480,6 +480,10 @@ public:
     bool matches(QKeySequence::StandardKey key) const;
 #endif
     Qt::KeyboardModifiers modifiers() const;
+    QKeyCombination keyCombination() const
+    {
+        return QKeyCombination(modifiers(), Qt::Key(m_key));
+    }
     inline QString text() const { return m_text; }
     inline bool isAutoRepeat() const { return m_autoRepeat; }
     inline int count() const { return int(m_count); }

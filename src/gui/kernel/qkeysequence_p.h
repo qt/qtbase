@@ -64,7 +64,7 @@ struct QKeyBinding
 {
     QKeySequence::StandardKey standardKey;
     uchar priority;
-    uint shortcut;
+    QKeyCombination shortcut;
     uint platform;
 };
 

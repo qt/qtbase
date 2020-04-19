@@ -43,6 +43,7 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qiodevicebase.h>
 #include <QtCore/qcontainerfwd.h>
+#include <QtCore/qnamespace.h>
 
 #ifdef Status
 #error qdatastream.h must be included before any header file that defines Status
@@ -509,6 +510,19 @@ inline QDataStreamIfHasOStreamOperators<T1, T2> operator<<(QDataStream& s, const
     return s;
 }
 #endif
+
+inline QDataStream &operator>>(QDataStream &s, QKeyCombination &combination)
+{
+    int combined;
+    s >> combined;
+    combination = QKeyCombination::fromCombined(combined);
+    return s;
+}
+
+inline QDataStream &operator<<(QDataStream &s, QKeyCombination combination)
+{
+    return s << combination.toCombined();
+}
 
 #endif // QT_NO_DATASTREAM
 

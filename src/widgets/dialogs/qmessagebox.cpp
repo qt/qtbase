@@ -1522,7 +1522,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             const QList<QAbstractButton *> buttons = d->buttonBox->buttons();
             for (auto *pb : buttons) {
                 QKeySequence shortcut = pb->shortcut();
-                if (!shortcut.isEmpty() && key == int(shortcut[0] & ~Qt::MODIFIER_MASK)) {
+                if (!shortcut.isEmpty() && key == shortcut[0].key()) {
                     pb->animateClick();
                     return;
                 }

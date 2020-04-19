@@ -155,6 +155,10 @@ public:
     QKeySequence();
     QKeySequence(const QString &key, SequenceFormat format = NativeText);
     QKeySequence(int k1, int k2 = 0, int k3 = 0, int k4 = 0);
+    QKeySequence(QKeyCombination k1,
+                 QKeyCombination k2 = QKeyCombination::fromCombined(0),
+                 QKeyCombination k3 = QKeyCombination::fromCombined(0),
+                 QKeyCombination k4 = QKeyCombination::fromCombined(0));
     QKeySequence(const QKeySequence &ks);
     QKeySequence(StandardKey key);
     ~QKeySequence();
@@ -179,7 +183,7 @@ public:
     static QList<QKeySequence> keyBindings(StandardKey key);
 
     operator QVariant() const;
-    int operator[](uint i) const;
+    QKeyCombination operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);
     QKeySequence &operator=(QKeySequence &&other) noexcept { swap(other); return *this; }
     void swap(QKeySequence &other) noexcept { qSwap(d, other.d); }
@@ -201,7 +205,7 @@ private:
     static QString encodeString(int key);
     int assign(const QString &str);
     int assign(const QString &str, SequenceFormat format);
-    void setKey(int key, int index);
+    void setKey(QKeyCombination key, int index);
 
     QKeySequencePrivate *d;
 

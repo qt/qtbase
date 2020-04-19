@@ -510,7 +510,7 @@ QWhatsThisAction::QWhatsThisAction(QObject *parent) : QAction(tr("What's This?")
     setCheckable(true);
     connect(this, SIGNAL(triggered()), this, SLOT(actionTriggered()));
 #ifndef QT_NO_SHORTCUT
-    setShortcut(Qt::ShiftModifier + Qt::Key_F1);
+    setShortcut(Qt::ShiftModifier | Qt::Key_F1);
 #endif
 }
 

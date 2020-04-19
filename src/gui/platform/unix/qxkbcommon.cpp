@@ -656,7 +656,7 @@ QList<int> QXkbCommon::possibleKeys(xkb_state *state, const QKeyEvent *event,
 
     int baseQtKey = keysymToQtKey_internal(sym, modifiers, queryState, keycode, superAsMeta, hyperAsMeta);
     if (baseQtKey)
-        result += (baseQtKey + modifiers);
+        result += (baseQtKey + int(modifiers));
 
     xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(keymap, "Shift");
     xkb_mod_index_t altMod = xkb_keymap_mod_get_index(keymap, "Alt");
@@ -711,7 +711,7 @@ QList<int> QXkbCommon::possibleKeys(xkb_state *state, const QKeyEvent *event,
             if (ambiguous)
                 continue;
 
-            result += (qtKey + mods);
+            result += (qtKey + int(mods));
         }
     }
 

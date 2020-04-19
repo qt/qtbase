@@ -90,7 +90,7 @@ Screenshot::Screenshot()
     connect(saveScreenshotButton, &QPushButton::clicked, this, &Screenshot::saveScreenshot);
     buttonsLayout->addWidget(saveScreenshotButton);
     QPushButton *quitScreenshotButton = new QPushButton(tr("Quit"), this);
-    quitScreenshotButton->setShortcut(Qt::CTRL + Qt::Key_Q);
+    quitScreenshotButton->setShortcut(Qt::CTRL | Qt::Key_Q);
     connect(quitScreenshotButton, &QPushButton::clicked, this, &QWidget::close);
     buttonsLayout->addWidget(quitScreenshotButton);
     buttonsLayout->addStretch();
