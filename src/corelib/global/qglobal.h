@@ -378,11 +378,19 @@ typedef double qreal;
 # define QT_DEPRECATED_VERSION_5_15
 #endif
 
+#if QT_DEPRECATED_WARNINGS_SINCE >= QT_VERSION_CHECK(6, 0, 0)
+# define QT_DEPRECATED_VERSION_X_6_0(text) QT_DEPRECATED_X(text)
+# define QT_DEPRECATED_VERSION_6_0         QT_DEPRECATED
+#else
+# define QT_DEPRECATED_VERSION_X_6_0(text)
+# define QT_DEPRECATED_VERSION_6_0
+#endif
+
 #define QT_DEPRECATED_VERSION_X_5(minor, text)      QT_DEPRECATED_VERSION_X_5_##minor(text)
-#define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major(minor, text)
+#define QT_DEPRECATED_VERSION_X(major, minor, text) QT_DEPRECATED_VERSION_X_##major##_##minor(text)
 
 #define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor
-#define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major(minor)
+#define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major##_##minor
 
 #ifdef __cplusplus
 // A tag to help mark stuff deprecated (cf. QStringViewLiteral)
