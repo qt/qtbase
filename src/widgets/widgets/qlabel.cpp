@@ -186,6 +186,7 @@ QLabelPrivate::~QLabelPrivate()
         {fowler}{GUI Design Handbook: Label}
 */
 
+#ifndef QT_NO_PICTURE
 /*!
     \fn QPicture QLabel::picture(Qt::ReturnByValueConstant) const
     \obsolete Use the overload without argument instead.
@@ -210,6 +211,7 @@ QPicture QLabel::picture() const
         return *(d->picture);
     return QPicture();
 }
+#endif // QT_NO_PICTURE
 
 
 /*!
