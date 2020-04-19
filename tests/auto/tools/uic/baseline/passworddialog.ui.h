@@ -10,6 +10,7 @@
 #define PASSWORDDIALOG_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -90,8 +91,8 @@ public:
 
 
         retranslateUi(PasswordDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), PasswordDialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), PasswordDialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, PasswordDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PasswordDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(PasswordDialog);
     } // setupUi

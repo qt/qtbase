@@ -37,6 +37,8 @@
 #include <qstack.h>
 #include <qtextstream.h>
 
+enum class ConnectionSyntax;
+
 QT_BEGIN_NAMESPACE
 
 class Driver;
@@ -238,6 +240,10 @@ private:
     QString writeBrushInitialization(const DomBrush *brush);
     void addButtonGroup(const DomWidget *node, const QString &varName);
     void addWizardPage(const QString &pageVarName, const DomWidget *page, const QString &parentWidget);
+    bool isCustomWidget(const QString &className) const;
+    ConnectionSyntax connectionSyntax(const QString &senderSignature,
+                                      const QString &senderClassName,
+                                      const QString &receiverClassName) const;
 
     const Uic *m_uic;
     Driver *m_driver;

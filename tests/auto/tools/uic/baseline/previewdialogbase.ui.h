@@ -10,6 +10,7 @@
 #define PREVIEWDIALOGBASE_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -162,8 +163,8 @@ public:
 #endif // QT_CONFIG(shortcut)
 
         retranslateUi(PreviewDialogBase);
-        QObject::connect(buttonBox, SIGNAL(accepted()), PreviewDialogBase, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), PreviewDialogBase, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, PreviewDialogBase, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PreviewDialogBase, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(PreviewDialogBase);
     } // setupUi

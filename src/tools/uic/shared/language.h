@@ -37,10 +37,15 @@ QT_FORWARD_DECLARE_CLASS(QTextStream)
 
 enum class Language { Cpp, Python };
 
+enum class ConnectionSyntax { StringBased, MemberFunctionPtr };
+
 namespace language {
 
 Language language();
 void setLanguage(Language);
+
+ConnectionSyntax connectionSyntax();
+void setConnectionSyntax(ConnectionSyntax cs);
 
 extern QString derefPointer;
 extern QString nullPtr;
@@ -198,7 +203,8 @@ struct SignalSlot
     QString className;
 };
 
-void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSlot &receiver);
+void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSlot &receiver,
+                      ConnectionSyntax connectionSyntax);
 
 QString boolValue(bool v);
 

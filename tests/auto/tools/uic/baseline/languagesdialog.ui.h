@@ -101,7 +101,7 @@ public:
 
 
         retranslateUi(LanguagesDialog);
-        QObject::connect(okButton, SIGNAL(clicked()), LanguagesDialog, SLOT(accept()));
+        QObject::connect(okButton, &QPushButton::clicked, LanguagesDialog, &QDialog::accept);
 
         QMetaObject::connectSlotsByName(LanguagesDialog);
     } // setupUi

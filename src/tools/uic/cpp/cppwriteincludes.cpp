@@ -229,6 +229,9 @@ void WriteIncludes::add(const QString &className, bool determineHeader, const QS
         return;
     }
 
+    if (cwi->extends(className, QLatin1String("QDialogButtonBox")))
+        add(QLatin1String("QAbstractButton")); // for signal "clicked(QAbstractButton*)"
+
     if (determineHeader)
         insertIncludeForClass(className, header, global);
 }

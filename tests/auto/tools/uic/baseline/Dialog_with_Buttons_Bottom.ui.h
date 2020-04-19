@@ -10,6 +10,7 @@
 #define DIALOG_WITH_BUTTONS_BOTTOM_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -33,8 +34,8 @@ public:
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 
         retranslateUi(Dialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), Dialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), Dialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, Dialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, Dialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(Dialog);
     } // setupUi

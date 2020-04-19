@@ -10,6 +10,7 @@
 #define COOKIESEXCEPTIONS_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -151,7 +152,7 @@ public:
 
 
         retranslateUi(CookiesExceptionsDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), CookiesExceptionsDialog, SLOT(accept()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, CookiesExceptionsDialog, &QDialog::accept);
 
         QMetaObject::connectSlotsByName(CookiesExceptionsDialog);
     } // setupUi

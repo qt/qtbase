@@ -100,6 +100,11 @@ int runUic(int argc, char *argv[])
     generatorOption.setValueName(QStringLiteral("python|cpp"));
     parser.addOption(generatorOption);
 
+    QCommandLineOption connectionsOption(QStringList{QStringLiteral("c"), QStringLiteral("connections")});
+    connectionsOption.setDescription(QStringLiteral("Connection syntax."));
+    connectionsOption.setValueName(QStringLiteral("pmf|string"));
+    parser.addOption(connectionsOption);
+
     QCommandLineOption idBasedOption(QStringLiteral("idbased"));
     idBasedOption.setDescription(QStringLiteral("Use id based function for i18n"));
     parser.addOption(idBasedOption);
@@ -122,6 +127,13 @@ int runUic(int argc, char *argv[])
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
     driver.option().includeFile = parser.value(includeOption);
+    if (parser.isSet(connectionsOption)) {
+        const auto value = parser.value(connectionsOption);
+        if (value == QLatin1String("pmf"))
+            driver.option().forceMemberFnPtrConnectionSyntax = 1;
+        else if (value == QLatin1String("string"))
+            driver.option().forceStringConnectionSyntax = 1;
+    }
 
     Language language = Language::Cpp;
     if (parser.isSet(generatorOption)) {

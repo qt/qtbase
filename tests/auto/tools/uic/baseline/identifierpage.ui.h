@@ -82,7 +82,7 @@ public:
 
 
         retranslateUi(IdentifierPage);
-        QObject::connect(globalButton, SIGNAL(toggled(bool)), prefixLineEdit, SLOT(setEnabled(bool)));
+        QObject::connect(globalButton, &QRadioButton::toggled, prefixLineEdit, &QLineEdit::setEnabled);
 
         QMetaObject::connectSlotsByName(IdentifierPage);
     } // setupUi

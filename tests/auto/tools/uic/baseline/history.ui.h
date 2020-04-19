@@ -10,6 +10,7 @@
 #define HISTORY_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -84,7 +85,7 @@ public:
 
 
         retranslateUi(HistoryDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), HistoryDialog, SLOT(accept()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, HistoryDialog, &QDialog::accept);
 
         QMetaObject::connectSlotsByName(HistoryDialog);
     } // setupUi

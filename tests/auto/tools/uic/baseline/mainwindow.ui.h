@@ -346,15 +346,15 @@ public:
         menuFile->addAction(action_Exit);
 
         retranslateUi(MainWindow);
-        QObject::connect(action_Exit, SIGNAL(triggered()), MainWindow, SLOT(close()));
-        QObject::connect(chooseFromCodePoints, SIGNAL(toggled(bool)), characterRangeView, SLOT(setEnabled(bool)));
-        QObject::connect(chooseFromCodePoints, SIGNAL(toggled(bool)), selectAll, SLOT(setEnabled(bool)));
-        QObject::connect(chooseFromCodePoints, SIGNAL(toggled(bool)), deselectAll, SLOT(setEnabled(bool)));
-        QObject::connect(chooseFromCodePoints, SIGNAL(toggled(bool)), invertSelection, SLOT(setEnabled(bool)));
-        QObject::connect(chooseFromSampleFile, SIGNAL(toggled(bool)), sampleFile, SLOT(setEnabled(bool)));
-        QObject::connect(chooseFromSampleFile, SIGNAL(toggled(bool)), browseSampleFile, SLOT(setEnabled(bool)));
-        QObject::connect(chooseFromSampleFile, SIGNAL(toggled(bool)), charCount, SLOT(setEnabled(bool)));
-        QObject::connect(chooseFromSampleFile, SIGNAL(toggled(bool)), label_5, SLOT(setEnabled(bool)));
+        QObject::connect(action_Exit, &QAction::triggered, MainWindow, &QMainWindow::close);
+        QObject::connect(chooseFromCodePoints, &QRadioButton::toggled, characterRangeView, &QListWidget::setEnabled);
+        QObject::connect(chooseFromCodePoints, &QRadioButton::toggled, selectAll, &QPushButton::setEnabled);
+        QObject::connect(chooseFromCodePoints, &QRadioButton::toggled, deselectAll, &QPushButton::setEnabled);
+        QObject::connect(chooseFromCodePoints, &QRadioButton::toggled, invertSelection, &QPushButton::setEnabled);
+        QObject::connect(chooseFromSampleFile, &QRadioButton::toggled, sampleFile, &QLineEdit::setEnabled);
+        QObject::connect(chooseFromSampleFile, &QRadioButton::toggled, browseSampleFile, &QPushButton::setEnabled);
+        QObject::connect(chooseFromSampleFile, &QRadioButton::toggled, charCount, &QLabel::setEnabled);
+        QObject::connect(chooseFromSampleFile, &QRadioButton::toggled, label_5, &QLabel::setEnabled);
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi

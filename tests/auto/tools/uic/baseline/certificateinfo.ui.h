@@ -10,6 +10,7 @@
 #define CERTIFICATEINFO_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -83,7 +84,7 @@ public:
 
 
         retranslateUi(CertificateInfo);
-        QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)), CertificateInfo, SLOT(accept()));
+        QObject::connect(buttonBox, &QDialogButtonBox::clicked, CertificateInfo, &QDialog::accept);
 
         QMetaObject::connectSlotsByName(CertificateInfo);
     } // setupUi

@@ -40,6 +40,7 @@
 #define SAVEFORMASTEMPLATE_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -123,8 +124,8 @@ public:
 #endif // QT_CONFIG(shortcut)
 
         retranslateUi(SaveFormAsTemplate);
-        QObject::connect(buttonBox, SIGNAL(accepted()), SaveFormAsTemplate, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), SaveFormAsTemplate, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, SaveFormAsTemplate, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, SaveFormAsTemplate, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(SaveFormAsTemplate);
     } // setupUi

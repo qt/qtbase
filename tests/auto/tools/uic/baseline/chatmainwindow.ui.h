@@ -139,8 +139,8 @@ public:
         menuFile->addAction(actionQuit);
 
         retranslateUi(ChatMainWindow);
-        QObject::connect(messageLineEdit, SIGNAL(returnPressed()), sendButton, SLOT(animateClick()));
-        QObject::connect(actionQuit, SIGNAL(triggered(bool)), ChatMainWindow, SLOT(close()));
+        QObject::connect(messageLineEdit, &QLineEdit::returnPressed, sendButton, &QPushButton::animateClick);
+        QObject::connect(actionQuit, &QAction::triggered, ChatMainWindow, &QMainWindow::close);
 
         QMetaObject::connectSlotsByName(ChatMainWindow);
     } // setupUi

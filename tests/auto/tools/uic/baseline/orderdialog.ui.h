@@ -40,6 +40,7 @@
 #define ORDERDIALOG_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -122,8 +123,8 @@ public:
 
 
         retranslateUi(qdesigner_internal__OrderDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), qdesigner_internal__OrderDialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), qdesigner_internal__OrderDialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__OrderDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__OrderDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(qdesigner_internal__OrderDialog);
     } // setupUi

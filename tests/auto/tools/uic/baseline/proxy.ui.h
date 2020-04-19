@@ -10,6 +10,7 @@
 #define PROXY_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -79,8 +80,8 @@ public:
 
 
         retranslateUi(ProxyDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), ProxyDialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), ProxyDialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, ProxyDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, ProxyDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(ProxyDialog);
     } // setupUi

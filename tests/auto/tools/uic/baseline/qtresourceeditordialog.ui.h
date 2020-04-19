@@ -10,6 +10,7 @@
 #define QTRESOURCEEDITORDIALOG_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -133,8 +134,8 @@ public:
 
 
         retranslateUi(QtResourceEditorDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), QtResourceEditorDialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), QtResourceEditorDialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, QtResourceEditorDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, QtResourceEditorDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(QtResourceEditorDialog);
     } // setupUi

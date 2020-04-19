@@ -143,8 +143,8 @@ public:
 
 
         retranslateUi(Form);
-        QObject::connect(hostNameEdit, SIGNAL(returnPressed()), connectButton, SLOT(animateClick()));
-        QObject::connect(sessionInput, SIGNAL(returnPressed()), sendButton, SLOT(animateClick()));
+        QObject::connect(hostNameEdit, &QLineEdit::returnPressed, connectButton, &QPushButton::animateClick);
+        QObject::connect(sessionInput, &QLineEdit::returnPressed, sendButton, &QPushButton::animateClick);
 
         connectButton->setDefault(true);
         sendButton->setDefault(true);

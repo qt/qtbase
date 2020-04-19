@@ -10,6 +10,7 @@
 #define BOOKMARKDIALOG_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -140,8 +141,8 @@ public:
 
 
         retranslateUi(BookmarkDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), BookmarkDialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), BookmarkDialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, BookmarkDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, BookmarkDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(BookmarkDialog);
     } // setupUi

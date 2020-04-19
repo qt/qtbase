@@ -10,6 +10,7 @@
 #define PREFERENCESDIALOG_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -142,8 +143,8 @@ public:
 
 
         retranslateUi(PreferencesDialog);
-        QObject::connect(m_dialogButtonBox, SIGNAL(accepted()), PreferencesDialog, SLOT(accept()));
-        QObject::connect(m_dialogButtonBox, SIGNAL(rejected()), PreferencesDialog, SLOT(reject()));
+        QObject::connect(m_dialogButtonBox, &QDialogButtonBox::accepted, PreferencesDialog, &QDialog::accept);
+        QObject::connect(m_dialogButtonBox, &QDialogButtonBox::rejected, PreferencesDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(PreferencesDialog);
     } // setupUi

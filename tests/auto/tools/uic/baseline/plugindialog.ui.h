@@ -40,6 +40,7 @@
 #define PLUGINDIALOG_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -104,7 +105,7 @@ public:
 
 
         retranslateUi(PluginDialog);
-        QObject::connect(buttonBox, SIGNAL(rejected()), PluginDialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PluginDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(PluginDialog);
     } // setupUi

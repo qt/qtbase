@@ -86,7 +86,7 @@ public:
 #endif // QT_CONFIG(shortcut)
 
         retranslateUi(Form);
-        QObject::connect(lineEdit, SIGNAL(returnPressed()), findButton, SLOT(animateClick()));
+        QObject::connect(lineEdit, &QLineEdit::returnPressed, findButton, &QPushButton::animateClick);
 
         QMetaObject::connectSlotsByName(Form);
     } // setupUi

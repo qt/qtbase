@@ -198,8 +198,8 @@ public:
         QWidget::setTabOrder(okButton, cancelButton);
 
         retranslateUi(AddTorrentFile);
-        QObject::connect(okButton, SIGNAL(clicked()), AddTorrentFile, SLOT(accept()));
-        QObject::connect(cancelButton, SIGNAL(clicked()), AddTorrentFile, SLOT(reject()));
+        QObject::connect(okButton, &QPushButton::clicked, AddTorrentFile, &QDialog::accept);
+        QObject::connect(cancelButton, &QPushButton::clicked, AddTorrentFile, &QDialog::reject);
 
         browseTorrents->setDefault(true);
 

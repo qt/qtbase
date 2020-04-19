@@ -40,6 +40,7 @@
 #define FORMWINDOWSETTINGS_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -263,8 +264,8 @@ public:
         QWidget::setTabOrder(spacingFunctionLineEdit, pixmapFunctionLineEdit);
 
         retranslateUi(FormWindowSettings);
-        QObject::connect(buttonBox, SIGNAL(accepted()), FormWindowSettings, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), FormWindowSettings, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, FormWindowSettings, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, FormWindowSettings, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(FormWindowSettings);
     } // setupUi

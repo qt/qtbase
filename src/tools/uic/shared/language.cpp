@@ -387,12 +387,57 @@ void _formatStackVariable(QTextStream &str, const char *className, QStringView v
     }
 }
 
-void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSlot &receiver)
+// Format a member function for a signal slot connection
+static void formatMemberFnPtr(QTextStream &str, const SignalSlot &s,
+                              bool useQOverload = false)
+{
+    const int parenPos = s.signature.indexOf(QLatin1Char('('));
+    Q_ASSERT(parenPos >= 0);
+    if (useQOverload) {
+        const auto parameters = s.signature.midRef(parenPos + 1,
+                                                   s.signature.size() - parenPos - 2);
+        str << "qOverload<" << parameters << ">(";
+    }
+
+    const auto functionName = s.signature.leftRef(parenPos);
+    str << '&' << s.className << "::" << functionName;
+
+    if (useQOverload)
+        str << ')';
+}
+
+static void formatMemberFnPtrConnection(QTextStream &str,
+                                        const SignalSlot &sender,
+                                        const SignalSlot &receiver)
+{
+    str << "QObject::connect(" << sender.name << ", ";
+    formatMemberFnPtr(str, sender);
+    str << ", " << receiver.name << ", ";
+    formatMemberFnPtr(str, receiver);
+    str << ')';
+}
+
+static void formatStringBasedConnection(QTextStream &str,
+                                        const SignalSlot &sender,
+                                        const SignalSlot &receiver)
+{
+    str << "QObject::connect(" << sender.name << ", SIGNAL("<< sender.signature
+        << "), " << receiver.name << ", SLOT(" << receiver.signature << "))";
+}
+
+void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSlot &receiver,
+                      ConnectionSyntax connectionSyntax)
 {
     switch (language()) {
     case Language::Cpp:
-        str << "QObject::connect(" << sender.name << ", SIGNAL("<< sender.signature
-            << "), " << receiver.name << ", SLOT("<< receiver.signature << "))";
+        switch (connectionSyntax) {
+        case ConnectionSyntax::MemberFunctionPtr:
+            formatMemberFnPtrConnection(str, sender, receiver);
+            break;
+        case ConnectionSyntax::StringBased:
+            formatStringBasedConnection(str, sender, receiver);
+            break;
+        }
         break;
     case Language::Python:
         str << sender.name << '.'

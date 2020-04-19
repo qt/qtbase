@@ -10,6 +10,7 @@
 #define COOKIES_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -84,7 +85,7 @@ public:
 
 
         retranslateUi(CookiesDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), CookiesDialog, SLOT(accept()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, CookiesDialog, &QDialog::accept);
 
         QMetaObject::connectSlotsByName(CookiesDialog);
     } // setupUi

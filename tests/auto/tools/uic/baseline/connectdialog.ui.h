@@ -10,6 +10,7 @@
 #define CONNECTDIALOG_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialog>
@@ -118,8 +119,8 @@ public:
 
 
         retranslateUi(ConnectDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), ConnectDialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), ConnectDialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, ConnectDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, ConnectDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(ConnectDialog);
     } // setupUi

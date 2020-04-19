@@ -10,6 +10,7 @@
 #define TRANSLATIONSETTINGS_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -91,8 +92,8 @@ public:
 #endif // QT_CONFIG(shortcut)
 
         retranslateUi(TranslationSettings);
-        QObject::connect(buttonBox, SIGNAL(accepted()), TranslationSettings, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), TranslationSettings, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, TranslationSettings, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, TranslationSettings, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(TranslationSettings);
     } // setupUi

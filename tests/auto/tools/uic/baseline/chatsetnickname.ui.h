@@ -104,8 +104,8 @@ public:
 
 
         retranslateUi(NicknameDialog);
-        QObject::connect(okButton, SIGNAL(clicked()), NicknameDialog, SLOT(accept()));
-        QObject::connect(cancelButton, SIGNAL(clicked()), NicknameDialog, SLOT(reject()));
+        QObject::connect(okButton, &QPushButton::clicked, NicknameDialog, &QDialog::accept);
+        QObject::connect(cancelButton, &QPushButton::clicked, NicknameDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(NicknameDialog);
     } // setupUi

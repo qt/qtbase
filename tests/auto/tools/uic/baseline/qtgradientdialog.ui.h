@@ -40,6 +40,7 @@
 #define QTGRADIENTDIALOG_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -81,8 +82,8 @@ public:
 
 
         retranslateUi(QtGradientDialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), QtGradientDialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), QtGradientDialog, SLOT(reject()));
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, QtGradientDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, QtGradientDialog, &QDialog::reject);
 
         QMetaObject::connectSlotsByName(QtGradientDialog);
     } // setupUi

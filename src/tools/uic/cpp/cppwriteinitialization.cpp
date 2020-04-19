@@ -2568,6 +2568,31 @@ WriteInitialization::Declaration WriteInitialization::findDeclaration(const QStr
     return {};
 }
 
+bool WriteInitialization::isCustomWidget(const QString &className) const
+{
+    return m_uic->customWidgetsInfo()->customWidget(className) != nullptr;
+}
+
+ConnectionSyntax WriteInitialization::connectionSyntax(const QString &senderSignature,
+                                                       const QString &senderClassName,
+                                                       const QString &receiverClassName) const
+{
+    if (m_option.forceMemberFnPtrConnectionSyntax)
+        return ConnectionSyntax::MemberFunctionPtr;
+    if (m_option.forceStringConnectionSyntax)
+        return ConnectionSyntax::StringBased;
+    // Auto mode: Use Qt 5 connection syntax for Qt classes and parameterless
+    // connections. QAxWidget is special though since it has a fake Meta object.
+    static const QStringList requiresStringSyntax{QStringLiteral("QAxWidget")};
+    if (requiresStringSyntax.contains(senderClassName)
+        || requiresStringSyntax.contains(receiverClassName)) {
+        return ConnectionSyntax::StringBased;
+    }
+    return senderSignature.endsWith(QLatin1String("()"))
+        || (!isCustomWidget(senderClassName) && !isCustomWidget(receiverClassName))
+        ? ConnectionSyntax::MemberFunctionPtr : ConnectionSyntax::StringBased;
+}
+
 void WriteInitialization::acceptConnection(DomConnection *connection)
 {
     const QString senderName = connection->elementSender();
@@ -2584,14 +2609,16 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
         fprintf(stderr, "%s\n", qPrintable(message));
         return;
     }
-
-    language::SignalSlot theSignal{senderDecl.name, connection->elementSignal(),
+    const QString senderSignature = connection->elementSignal();
+    language::SignalSlot theSignal{senderDecl.name, senderSignature,
                                    senderDecl.className};
     language::SignalSlot theSlot{receiverDecl.name, connection->elementSlot(),
                                  receiverDecl.className};
 
     m_output << m_indent;
-    language::formatConnection(m_output, theSignal, theSlot);
+    language::formatConnection(m_output, theSignal, theSlot,
+                               connectionSyntax(senderSignature, senderDecl.className,
+                                                receiverDecl.className));
     m_output << language::eol;
 }
 
