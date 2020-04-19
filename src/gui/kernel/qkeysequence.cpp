@@ -1385,18 +1385,6 @@ QKeySequence::SequenceMatch QKeySequence::matches(const QKeySequence &seq) const
     return match;
 }
 
-
-/*! \fn QKeySequence::operator QString() const
-
-    \obsolete
-
-    Use toString() instead.
-
-    Returns the key sequence as a QString. This is equivalent to
-    calling toString(QKeySequence::NativeText). Note that the
-    result is not platform independent.
-*/
-
 /*!
    Returns the key sequence as a QVariant
 */
@@ -1404,13 +1392,6 @@ QKeySequence::operator QVariant() const
 {
     return QVariant(QMetaType::QKeySequence, this);
 }
-
-/*! \fn QKeySequence::operator int () const
-
-    \obsolete
-    For backward compatibility: returns the first keycode
-    as integer. If the key sequence is empty, 0 is returned.
- */
 
 /*!
     Returns a reference to the element at position \a index in the key
