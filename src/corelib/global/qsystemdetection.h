@@ -76,6 +76,8 @@
    The following operating systems have variants:
      LINUX    - both Q_OS_LINUX and Q_OS_ANDROID are defined when building for Android
               - only Q_OS_LINUX is defined if building for other Linux systems
+     MACOS    - both Q_OS_BSD4 and Q_OS_IOS are defined when building for iOS
+              - both Q_OS_BSD4 and Q_OS_MACOS are defined when building for macOS
      FREEBSD  - Q_OS_FREEBSD is defined only when building for FreeBSD with a BSD userland
               - Q_OS_FREEBSD_KERNEL is always defined on FreeBSD, even if the userland is from GNU
 */
