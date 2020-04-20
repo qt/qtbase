@@ -50,6 +50,7 @@
 #include <qt_windows.h>
 #include <shlobj.h>
 #include <intshcut.h>
+#include <qvarlengtharray.h>
 
 #ifndef QT_NO_STANDARDPATHS
 
@@ -92,9 +93,36 @@ static inline void appendTestMode(QString &path)
         path += QLatin1String("/qttest");
 }
 
+static bool isProcessLowIntegrity() {
+#ifdef Q_CC_MINGW
+    // GetCurrentProcessToken was introduced in MinGW w64 in v7
+    // Disable function until Qt CI is updated
+    return false;
+#else
+    HANDLE process_token = GetCurrentProcessToken(); // non-leaking pseudo-handle
+
+    QVarLengthArray<char,256> token_info_buf(256);
+    auto* token_info = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(token_info_buf.data());
+    DWORD token_info_length = token_info_buf.size();
+    if (!GetTokenInformation(process_token, TokenIntegrityLevel, token_info, token_info_length, &token_info_length)) {
+        // grow bufer and retry GetTokenInformation
+        token_info_buf.resize(token_info_length);
+        token_info = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(token_info_buf.data());
+        if (!GetTokenInformation(process_token, TokenIntegrityLevel, token_info, token_info_length, &token_info_length))
+            return false; // assume "normal" process
+    }
+
+    // The GetSidSubAuthorityCount return-code is undefined on failure, so
+    // there's no point in checking before dereferencing
+    DWORD integrity_level = *GetSidSubAuthority(token_info->Label.Sid, *GetSidSubAuthorityCount(token_info->Label.Sid) - 1);
+    return (integrity_level < SECURITY_MANDATORY_MEDIUM_RID);
+#endif
+}
+
 // Map QStandardPaths::StandardLocation to KNOWNFOLDERID of SHGetKnownFolderPath()
 static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
 {
+    // folders for medium & high integrity processes
     static const GUID folderIds[] = {
         FOLDERID_Desktop,       // DesktopLocation
         FOLDERID_Documents,     // DocumentsLocation
@@ -114,9 +142,34 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_RoamingAppData,// AppDataLocation ("Roaming" path)
         FOLDERID_LocalAppData,  // AppConfigLocation ("Local" path)
     };
-
     Q_STATIC_ASSERT(sizeof(folderIds) / sizeof(folderIds[0]) == size_t(QStandardPaths::AppConfigLocation + 1));
-    return size_t(type) < sizeof(folderIds) / sizeof(folderIds[0]) ? folderIds[type] : GUID();
+
+    // folders for low integrity processes
+    static const GUID folderIds_li[] = {
+        FOLDERID_Desktop,        // DesktopLocation
+        FOLDERID_Documents,      // DocumentsLocation
+        FOLDERID_Fonts,          // FontsLocation
+        FOLDERID_Programs,       // ApplicationsLocation
+        FOLDERID_Music,          // MusicLocation
+        FOLDERID_Videos,         // MoviesLocation
+        FOLDERID_Pictures,       // PicturesLocation
+        GUID(), GUID(),          // TempLocation/HomeLocation
+        FOLDERID_LocalAppDataLow,// AppLocalDataLocation ("Local" path), AppLocalDataLocation = DataLocation
+        GUID(),                  // CacheLocation
+        FOLDERID_LocalAppDataLow,// GenericDataLocation ("Local" path)
+        GUID(),                  // RuntimeLocation
+        FOLDERID_LocalAppDataLow,// ConfigLocation ("Local" path)
+        GUID(), GUID(),          // DownloadLocation/GenericCacheLocation
+        FOLDERID_LocalAppDataLow,// GenericConfigLocation ("Local" path)
+        FOLDERID_RoamingAppData, // AppDataLocation ("Roaming" path)
+        FOLDERID_LocalAppDataLow,// AppConfigLocation ("Local" path)
+    };
+    Q_STATIC_ASSERT(sizeof(folderIds_li) == sizeof(folderIds));
+
+    static bool low_integrity_process = isProcessLowIntegrity();
+    if (size_t(type) < sizeof(folderIds) / sizeof(folderIds[0]))
+        return low_integrity_process ? folderIds_li[type] : folderIds[type];
+    return GUID();
 }
 
 // Convenience for SHGetKnownFolderPath().

@@ -47,7 +47,9 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 
 QT_BEGIN_NAMESPACE
 
-class Q_WIDGETS_EXPORT QMacNativeWidget : public QWidget
+#if QT_DEPRECATED_SINCE(5, 15)
+class QT_DEPRECATED_X("Use QWidget::winId instead")
+Q_WIDGETS_EXPORT QMacNativeWidget : public QWidget
 {
     Q_OBJECT
 public:
@@ -60,6 +62,7 @@ public:
 protected:
     bool event(QEvent *ev) override;
 };
+#endif
 
 QT_END_NAMESPACE
 

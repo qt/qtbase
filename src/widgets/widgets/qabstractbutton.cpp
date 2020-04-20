@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -413,8 +413,11 @@ void QAbstractButtonPrivate::emitClicked()
     QPointer<QAbstractButton> guard(q);
     emit q->clicked(checked);
 #if QT_CONFIG(buttongroup)
-    if (guard && group)
-        emit group->buttonClicked(q);
+    if (guard && group) {
+        emit group->idClicked(group->id(q));
+        if (guard && group)
+            emit group->buttonClicked(q);
+    }
 #endif
 }
 
@@ -424,8 +427,11 @@ void QAbstractButtonPrivate::emitPressed()
     QPointer<QAbstractButton> guard(q);
     emit q->pressed();
 #if QT_CONFIG(buttongroup)
-    if (guard && group)
-        emit group->buttonPressed(q);
+    if (guard && group) {
+        emit group->idPressed(group->id(q));
+        if (guard && group)
+            emit group->buttonPressed(q);
+    }
 #endif
 }
 
@@ -435,8 +441,11 @@ void QAbstractButtonPrivate::emitReleased()
     QPointer<QAbstractButton> guard(q);
     emit q->released();
 #if QT_CONFIG(buttongroup)
-    if (guard && group)
-        emit group->buttonReleased(q);
+    if (guard && group) {
+        emit group->idReleased(group->id(q));
+        if (guard && group)
+            emit group->buttonReleased(q);
+    }
 #endif
 }
 
@@ -446,8 +455,11 @@ void QAbstractButtonPrivate::emitToggled(bool checked)
     QPointer<QAbstractButton> guard(q);
     emit q->toggled(checked);
 #if QT_CONFIG(buttongroup)
-    if (guard && group)
-        emit group->buttonToggled(q, checked);
+    if (guard && group) {
+        emit group->idToggled(group->id(q), checked);
+        if (guard && group)
+            emit group->buttonToggled(q, checked);
+    }
 #endif
 }
 

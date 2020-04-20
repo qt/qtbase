@@ -47,8 +47,10 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 
 QT_BEGIN_NAMESPACE
 
+#if QT_DEPRECATED_SINCE(5, 15)
 class QMacCocoaViewContainerPrivate;
-class Q_WIDGETS_EXPORT QMacCocoaViewContainer : public QWidget
+class QT_DEPRECATED_X("Use QWindow::fromWinId and QWidget::createWindowContainer instead")
+Q_WIDGETS_EXPORT QMacCocoaViewContainer : public QWidget
 {
     Q_OBJECT
 public:
@@ -61,6 +63,7 @@ public:
 private:
     Q_DECLARE_PRIVATE(QMacCocoaViewContainer)
 };
+#endif
 
 QT_END_NAMESPACE
 

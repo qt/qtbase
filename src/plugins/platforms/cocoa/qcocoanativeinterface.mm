@@ -50,13 +50,13 @@
 #include <qwindow.h>
 #include <qpixmap.h>
 #include <qpa/qplatformwindow.h>
-#include "qsurfaceformat.h"
+#include <QtGui/qsurfaceformat.h>
 #ifndef QT_NO_OPENGL
 #include <qpa/qplatformopenglcontext.h>
-#include "qopenglcontext.h"
+#include <QtGui/qopenglcontext.h>
 #include "qcocoaglcontext.h"
 #endif
-#include "qguiapplication.h"
+#include <QtGui/qguiapplication.h>
 #include <qdebug.h>
 
 #if !defined(QT_NO_WIDGETS) && defined(QT_PRINTSUPPORT_LIB)

@@ -26,7 +26,6 @@
 **
 ****************************************************************************/
 
-#include <private/qt_mac_p.h>
 #include <AppKit/AppKit.h>
 
 void click_cocoa_button()

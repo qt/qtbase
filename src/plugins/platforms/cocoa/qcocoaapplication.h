@@ -83,8 +83,8 @@
 // We mean it.
 //
 
-#include "qglobal.h"
-#include "private/qcore_mac_p.h"
+#include <qglobal.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 #import <AppKit/AppKit.h>
 

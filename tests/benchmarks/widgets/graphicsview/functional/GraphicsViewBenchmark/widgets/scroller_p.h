@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -42,7 +42,7 @@
 
 #include <QPoint>
 #include <QTimer>
-#include <QTime>
+#include <QElapsedTimer>
 
 #include "scroller.h"
 
@@ -70,8 +70,8 @@ public:
     QPoint m_cursorPos;
     QPointF m_speed;
     State m_state;
-    QTime m_lastCursorTime;
-    QTime m_lastFrameTime;
+    QElapsedTimer m_lastCursorTime;
+    QElapsedTimer m_lastFrameTime;
     QTimer m_scrollTimer;
     int m_scrollSlowAccum;
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -29,7 +29,7 @@
 #include <QDebug>
 #include <QGraphicsLinearLayout>
 #include <QFont>
-#include <QTime>
+#include <QElapsedTimer>
 
 #include "simplelist.h"
 static const int MinItemWidth = 276;
@@ -99,10 +99,10 @@ void SimpleList::setListItemCaching(bool enable)
 
 void SimpleList::keyPressEvent(QKeyEvent *event)
 {
-    static QTime keyPressInterval = QTime::currentTime();
+    static QElapsedTimer keyPressInterval;
     static qreal step = 0.0;
     static bool repeat = false;
-    int interval = keyPressInterval.elapsed();
+    int interval = keyPressInterval.isValid() ? keyPressInterval.elapsed() : 0;
 
     ScrollBar* sb = verticalScrollBar();
     qreal currentValue = sb->sliderPosition();

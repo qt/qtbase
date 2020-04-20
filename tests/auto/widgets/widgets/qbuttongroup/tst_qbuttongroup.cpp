@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -365,43 +365,67 @@ void tst_QButtonGroup::testSignals()
 
     qRegisterMetaType<QAbstractButton *>("QAbstractButton *");
     QSignalSpy clickedSpy(&buttons, SIGNAL(buttonClicked(QAbstractButton*)));
+    QSignalSpy clickedIdSpy(&buttons, SIGNAL(idClicked(int)));
     QSignalSpy pressedSpy(&buttons, SIGNAL(buttonPressed(QAbstractButton*)));
+    QSignalSpy pressedIdSpy(&buttons, SIGNAL(idPressed(int)));
     QSignalSpy releasedSpy(&buttons, SIGNAL(buttonReleased(QAbstractButton*)));
+    QSignalSpy releasedIdSpy(&buttons, SIGNAL(idReleased(int)));
 
     pb1.animateClick();
     QTestEventLoop::instance().enterLoop(1);
 
     QCOMPARE(clickedSpy.count(), 1);
+    QCOMPARE(clickedIdSpy.count(), 1);
 
+    int expectedId = -2;
+
+    QCOMPARE(clickedIdSpy.takeFirst().at(0).toInt(), expectedId);
     QCOMPARE(pressedSpy.count(), 1);
+    QCOMPARE(pressedIdSpy.count(), 1);
+    QCOMPARE(pressedIdSpy.takeFirst().at(0).toInt(), expectedId);
     QCOMPARE(releasedSpy.count(), 1);
+    QCOMPARE(releasedIdSpy.count(), 1);
+    QCOMPARE(releasedIdSpy.takeFirst().at(0).toInt(), expectedId);
 
     clickedSpy.clear();
+    clickedIdSpy.clear();
     pressedSpy.clear();
+    pressedIdSpy.clear();
     releasedSpy.clear();
+    releasedIdSpy.clear();
 
     pb2.animateClick();
     QTestEventLoop::instance().enterLoop(1);
 
     QCOMPARE(clickedSpy.count(), 1);
+    QCOMPARE(clickedIdSpy.count(), 1);
+    QCOMPARE(clickedIdSpy.takeFirst().at(0).toInt(), 23);
     QCOMPARE(pressedSpy.count(), 1);
+    QCOMPARE(pressedIdSpy.count(), 1);
+    QCOMPARE(pressedIdSpy.takeFirst().at(0).toInt(), 23);
     QCOMPARE(releasedSpy.count(), 1);
+    QCOMPARE(releasedIdSpy.count(), 1);
+    QCOMPARE(releasedIdSpy.takeFirst().at(0).toInt(), 23);
 
 
     QSignalSpy toggledSpy(&buttons, SIGNAL(buttonToggled(QAbstractButton*, bool)));
+    QSignalSpy toggledIdSpy(&buttons, SIGNAL(idToggled(int, bool)));
 
     pb1.setCheckable(true);
     pb2.setCheckable(true);
     pb1.toggle();
     QCOMPARE(toggledSpy.count(), 1);
+    QCOMPARE(toggledIdSpy.count(), 1);
 
     pb2.toggle();
     QCOMPARE(toggledSpy.count(), 3);     // equals 3 since pb1 and pb2 are both toggled
+    QCOMPARE(toggledIdSpy.count(), 3);
 
     pb1.setCheckable(false);
     pb2.setCheckable(false);
     pb1.toggle();
     QCOMPARE(toggledSpy.count(), 3);
+    QCOMPARE(toggledIdSpy.count(), 3);
 }
 
 void tst_QButtonGroup::task106609()

@@ -61,11 +61,11 @@ public:
     QSmSocketReceiver(int socket)
     {
         QSocketNotifier* sn = new QSocketNotifier(socket, QSocketNotifier::Read, this);
-        connect(sn, SIGNAL(activated(int)), this, SLOT(socketActivated(int)));
+        connect(sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(socketActivated()));
     }
 
 public Q_SLOTS:
-     void socketActivated(int);
+     void socketActivated();
 };
 
 
@@ -327,7 +327,7 @@ static void sm_saveYourselfPhase2Callback(SmcConn smcConn, SmPointer clientData)
 }
 
 
-void QSmSocketReceiver::socketActivated(int)
+void QSmSocketReceiver::socketActivated()
 {
     IceProcessMessages(SmcGetIceConnection(smcConnection), nullptr, nullptr);
 }

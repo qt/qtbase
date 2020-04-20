@@ -25,7 +25,8 @@ qtConfig(stack-protector-strong): CONFIG += stack_protector_strong
 contains(TEMPLATE, .*lib) {
     # module and plugins
     unix:qtConfig(reduce_relocations): CONFIG += bsymbolic_functions
-
+}
+contains(TEMPLATE, .*lib)|contains(TEMPLATE, aux) {
     !isEmpty(_QMAKE_SUPER_CACHE_): \
         rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
     else: \

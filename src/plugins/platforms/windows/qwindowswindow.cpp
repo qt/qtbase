@@ -1401,6 +1401,11 @@ void QWindowsWindow::fireExpose(const QRegion &region, bool force)
     QWindowSystemInterface::handleExposeEvent(window(), region);
 }
 
+void QWindowsWindow::fireFullExpose(bool force)
+{
+    fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), force);
+}
+
 void QWindowsWindow::destroyWindow()
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window() << m_data.hwnd;
@@ -1561,7 +1566,7 @@ void QWindowsWindow::setVisible(bool visible)
             // over the rendering of the window
             // There is nobody waiting for this, so we don't need to flush afterwards.
             if (isLayered())
-                fireExpose(QRect(0, 0, win->width(), win->height()));
+                fireFullExpose();
             // QTBUG-44928, QTBUG-7386: This is to resolve the problem where popups are
             // opened from the system tray and not being implicitly activated
 
@@ -1904,12 +1909,13 @@ void QWindowsWindow::handleResized(int wParam)
             handleWindowStateChange(m_windowState | Qt::WindowMinimized);
         return;
     case SIZE_MAXIMIZED:
+        handleGeometryChange();
         if (!testFlag(WithinSetStyle) && !testFlag(WithinSetGeometry))
             handleWindowStateChange(Qt::WindowMaximized | (isFullScreen_sys() ? Qt::WindowFullScreen
                                                                               : Qt::WindowNoState));
-        handleGeometryChange();
         break;
     case SIZE_RESTORED:
+        handleGeometryChange();
         if (!testFlag(WithinSetStyle) && !testFlag(WithinSetGeometry)) {
             if (isFullScreen_sys())
                 handleWindowStateChange(
@@ -1918,7 +1924,6 @@ void QWindowsWindow::handleResized(int wParam)
             else if (m_windowState != Qt::WindowNoState && !testFlag(MaximizeToFullScreen))
                 handleWindowStateChange(Qt::WindowNoState);
         }
-        handleGeometryChange();
         break;
     }
 }
@@ -1966,7 +1971,7 @@ void QWindowsWindow::handleGeometryChange()
         && m_data.geometry.size() != previousGeometry.size() // Exclude plain move
         // One dimension grew -> Windows will send expose, no need to synthesize.
         && !(m_data.geometry.width() > previousGeometry.width() || m_data.geometry.height() > previousGeometry.height())) {
-        fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
+        fireFullExpose(true);
     }
 
     const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
@@ -2165,7 +2170,7 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
         QWindow *w = window();
         bool exposeEventsSent = false;
         if (isLayered()) {
-            fireExpose(QRegion(0, 0, w->width(), w->height()));
+            fireFullExpose();
             exposeEventsSent = true;
         }
         const QWindowList allWindows = QGuiApplication::allWindows();
@@ -2173,7 +2178,7 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
             if (child != w && child->isVisible() && child->transientParent() == w) {
                 QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(child);
                 if (platformWindow && platformWindow->isLayered()) {
-                    platformWindow->fireExpose(QRegion(0, 0, child->width(), child->height()));
+                    platformWindow->fireFullExpose();
                     exposeEventsSent = true;
                 }
             }
@@ -2287,8 +2292,10 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
             if (!screen)
                 screen = QGuiApplication::primaryScreen();
             // That area of the virtual desktop might not be covered by a screen anymore.
-            if (!screen->geometry().intersects(m_savedFrameGeometry))
-                m_savedFrameGeometry.moveTo(screen->geometry().topLeft());
+            if (const auto platformScreen = screen->handle()) {
+                if (!platformScreen->geometry().intersects(m_savedFrameGeometry))
+                    m_savedFrameGeometry.moveTo(platformScreen->geometry().topLeft());
+            }
 
             if (newState & Qt::WindowMinimized) {
                 setMinimizedGeometry(m_data.hwnd, m_savedFrameGeometry);

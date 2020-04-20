@@ -50,9 +50,12 @@
 //
 // We mean it.
 //
-#include "qt_mac_p.h"
+
+#include <AppKit/AppKit.h>
+
 #include <private/qguiapplication_p.h>
 #include <QtCore/qoperatingsystemversion.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qscreen.h>
 

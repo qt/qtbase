@@ -53,6 +53,7 @@
 #  undef min
 #endif // Q_CC_MSVC
 
+
 class tst_QSocketNotifier : public QObject
 {
     Q_OBJECT
@@ -63,6 +64,9 @@ private slots:
     void posixSockets();
 #endif
     void asyncMultipleDatagram();
+    void activationReason_data();
+    void activationReason();
+    void legacyConnect();
 
 protected slots:
     void async_readDatagramSlot();
@@ -97,10 +101,10 @@ public:
     {
         QSocketNotifier *notifier1 =
             new QSocketNotifier(readEnd1->socketDescriptor(), QSocketNotifier::Read, this);
-        connect(notifier1, SIGNAL(activated(int)), SLOT(handleActivated()));
+        connect(notifier1, SIGNAL(activated(QSocketDescriptor)), SLOT(handleActivated()));
         QSocketNotifier *notifier2 =
             new QSocketNotifier(readEnd2->socketDescriptor(), QSocketNotifier::Read, this);
-        connect(notifier2, SIGNAL(activated(int)), SLOT(handleActivated()));
+        connect(notifier2, SIGNAL(activated(QSocketDescriptor)), SLOT(handleActivated()));
     }
 
 public slots:
@@ -284,12 +288,12 @@ void tst_QSocketNotifier::posixSockets()
 
     {
         QSocketNotifier rn(posixSocket, QSocketNotifier::Read);
-        connect(&rn, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+        connect(&rn, SIGNAL(activated(QSocketDescriptor)), &QTestEventLoop::instance(), SLOT(exitLoop()));
         QSignalSpy readSpy(&rn, &QSocketNotifier::activated);
         QVERIFY(readSpy.isValid());
         // No write notifier, some systems trigger write notification on socket creation, but not all
         QSocketNotifier en(posixSocket, QSocketNotifier::Exception);
-        connect(&en, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+        connect(&en, SIGNAL(activated(QSocketDescriptor)), &QTestEventLoop::instance(), SLOT(exitLoop()));
         QSignalSpy errorSpy(&en, &QSocketNotifier::activated);
         QVERIFY(errorSpy.isValid());
 
@@ -306,7 +310,7 @@ void tst_QSocketNotifier::posixSockets()
         QCOMPARE(buffer, "hello");
 
         QSocketNotifier wn(posixSocket, QSocketNotifier::Write);
-        connect(&wn, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+        connect(&wn, SIGNAL(activated(QSocketDescriptor)), &QTestEventLoop::instance(), SLOT(exitLoop()));
         QSignalSpy writeSpy(&wn, &QSocketNotifier::activated);
         QVERIFY(writeSpy.isValid());
         qt_safe_write(posixSocket, "goodbye", 8);
@@ -384,6 +388,62 @@ void tst_QSocketNotifier::asyncMultipleDatagram()
     delete m_asyncReceiver;
     #endif // !Q_OS_WINRT
 }
+
+void tst_QSocketNotifier::activationReason_data()
+{
+    QTest::addColumn<QSocketNotifier::Type>("type");
+    QTest::addRow("read") << QSocketNotifier::Read;
+    QTest::addRow("write") << QSocketNotifier::Write;
+    QTest::addRow("exception") << QSocketNotifier::Exception;
+}
+void tst_QSocketNotifier::activationReason()
+{
+    QSocketDescriptor fd = 15;
+
+    QFETCH(QSocketNotifier::Type, type);
+
+    QSocketNotifier notifier(fd, type);
+    auto activation = new QEvent(QEvent::SockAct);
+    QCoreApplication::postEvent(&notifier, activation);
+
+    QSocketNotifier::Type notifierType;
+    connect(&notifier, &QSocketNotifier::activated, this,
+            [&notifierType, fd](QSocketDescriptor sockfd, QSocketNotifier::Type sntype) {
+                if (sockfd == fd)
+                    notifierType = sntype;
+                else
+                    qWarning() << "Got an unexpected socket file descriptor:" << qintptr(sockfd);
+            });
+
+    QCoreApplication::processEvents();
+    QCOMPARE(notifierType, type);
+}
+
+// This test ensures that we can connect QSocketNotifier::activated to a slot taking an integer
+// or qintptr.
+void tst_QSocketNotifier::legacyConnect()
+{
+    qintptr fd = 15;
+    QSocketNotifier notifier(fd, QSocketNotifier::Read);
+    auto activation = new QEvent(QEvent::SockAct);
+    QCoreApplication::postEvent(&notifier, activation);
+
+    bool receivedQIntPtr = false;
+    connect(&notifier, &QSocketNotifier::activated, this, [&receivedQIntPtr, fd](qintptr q){
+        if (q == fd)
+            receivedQIntPtr = true;
+    });
+    bool receivedInt = false;
+    connect(&notifier, &QSocketNotifier::activated, this, [&receivedInt, fd](int q){
+        if (q == fd)
+            receivedInt = true;
+    });
+
+    QCoreApplication::processEvents();
+    QVERIFY(receivedQIntPtr);
+    QVERIFY(receivedInt);
+}
+
 
 QTEST_MAIN(tst_QSocketNotifier)
 #include <tst_qsocketnotifier.moc>

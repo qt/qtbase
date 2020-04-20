@@ -205,6 +205,7 @@ protected:
     bool verifyErrorsHaveBeenIgnored();
     bool paused;
     bool flushTriggered;
+    bool systemOrSslErrorDetected = false;
     QVector<QOcspResponse> ocspResponses;
     bool handshakeInterrupted = false;
 };

@@ -231,7 +231,6 @@ sub classNames {
                 $line .= ";" if($line =~ m/^Q_[A-Z_0-9]*\(.*\)[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_(BEGIN|END)_HEADER[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_(BEGIN|END)_NAMESPACE(_[A-Z]+)*[\r\n]*$/); #qt macro
-                $line .= ";" if($line =~ m/^QT_DEPRECATED_X\(.*\)[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_MODULE\(.*\)[\r\n]*$/); # QT_MODULE macro
                 $line .= ";" if($line =~ m/^QT_WARNING_(PUSH|POP|DISABLE_\w+\(.*\))[\r\n]*$/); # qt macros
                 $$requires = $1 if ($line =~ m/^QT_REQUIRE_CONFIG\((.*)\);[\r\n]*$/);
@@ -298,6 +297,7 @@ sub classNames {
 
         if($definition) {
             $definition =~ s=[\n\r]==g;
+            $definition =~ s/QT_DEPRECATED_X\s*\(\s*".*?"\s*\)//g;
             my @symbols;
             my $post_kw = qr/Q_DECL_FINAL|final|sealed/; # add here macros and keywords that go after the class-name of a class definition
             if($definition =~ m/^ *typedef *.*\(\*([^\)]*)\)\(.*\);$/) {

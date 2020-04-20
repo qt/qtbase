@@ -77,7 +77,7 @@ QKqueueFileSystemWatcherEngine::QKqueueFileSystemWatcherEngine(int kqfd, QObject
       kqfd(kqfd),
       notifier(kqfd, QSocketNotifier::Read, this)
 {
-    connect(&notifier, SIGNAL(activated(int)), SLOT(readFromKqueue()));
+    connect(&notifier, SIGNAL(activated(QSocketDescriptor)), SLOT(readFromKqueue()));
 
     fcntl(kqfd, F_SETFD, FD_CLOEXEC);
 }

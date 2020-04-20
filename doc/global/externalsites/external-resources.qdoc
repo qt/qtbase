@@ -25,6 +25,22 @@
 **
 ****************************************************************************/
 /*!
+    \externalpage https://source.android.com/setup/start/build-numbers
+    \title Android: Build Numbers
+*/
+/*!
+    \externalpage https://developer.android.com/guide/topics/manifest/uses-feature-element
+    \title Android: <uses-feature>
+*/
+/*!
+    \externalpage https://developer.android.com/guide/topics/manifest/uses-permission-element
+    \title Android: <uses-permission>
+*/
+/*!
+    \externalpage https://developer.android.com/studio/publish/versioning#appversioning
+    \title Android: App Versioning
+*/
+/*!
     \externalpage http://www.freedesktop.org/
     \title freedesktop.org
 */

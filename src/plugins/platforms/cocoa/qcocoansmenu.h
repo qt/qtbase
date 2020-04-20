@@ -53,7 +53,7 @@
 
 #import <AppKit/AppKit.h>
 
-#include <qcocoahelpers.h>
+#include "qcocoahelpers.h"
 
 QT_FORWARD_DECLARE_CLASS(QCocoaMenu);
 QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);

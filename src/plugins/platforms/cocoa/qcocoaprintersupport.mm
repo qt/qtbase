@@ -41,6 +41,10 @@
 
 #ifndef QT_NO_PRINTER
 
+#include <AppKit/AppKit.h>
+
+#include <QtCore/private/qcore_mac_p.h>
+
 #include "qcocoaprintdevice.h"
 #include "qprintengine_mac_p.h"
 

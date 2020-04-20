@@ -113,6 +113,8 @@ QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool abs, 
     if (m_abs)
         m_abs = getHardwareMaximum();
 
+    detectHiResWheelSupport();
+
     // socket notifier for events on the mouse device
     m_notify = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
     connect(m_notify, &QSocketNotifier::activated,
@@ -123,6 +125,25 @@ QEvdevMouseHandler::~QEvdevMouseHandler()
 {
     if (m_fd >= 0)
         qt_safe_close(m_fd);
+}
+
+void QEvdevMouseHandler::detectHiResWheelSupport()
+{
+#if defined(REL_WHEEL_HI_RES) || defined(REL_HWHEEL_HI_RES)
+    // Check if we can expect hires events as we will get both
+    // legacy and hires event and needs to know if we should
+    // ignore the legacy events.
+    unsigned char relFeatures[(REL_MAX / 8) + 1]{};
+    if (ioctl(m_fd, EVIOCGBIT(EV_REL, sizeof (relFeatures)), relFeatures) == -1)
+        return;
+
+#if defined(REL_WHEEL_HI_RES)
+    m_hiResWheel = TEST_BIT(relFeatures, REL_WHEEL_HI_RES);
+#endif
+#if defined(REL_HWHEEL_HI_RES)
+    m_hiResHWheel = TEST_BIT(relFeatures, REL_HWHEEL_HI_RES);
+#endif
+#endif
 }
 
 // Ask touch screen hardware for information on coordinate maximums
@@ -243,14 +264,24 @@ void QEvdevMouseHandler::readMouseData()
             } else if (data->code == REL_Y) {
                 m_y += data->value;
                 posChanged = true;
-            } else if (data->code == ABS_WHEEL) { // vertical scroll
+            } else if (!m_hiResWheel && data->code == REL_WHEEL) {
                 // data->value: positive == up, negative == down
                 delta.setY(120 * data->value);
                 emit handleWheelEvent(delta);
-            } else if (data->code == ABS_THROTTLE) { // horizontal scroll
+#ifdef REL_WHEEL_HI_RES
+            } else if (data->code == REL_WHEEL_HI_RES) {
+                delta.setY(data->value);
+                emit handleWheelEvent(delta);
+#endif
+            } else if (!m_hiResHWheel && data->code == REL_HWHEEL) {
                 // data->value: positive == right, negative == left
                 delta.setX(-120 * data->value);
                 emit handleWheelEvent(delta);
+#ifdef REL_HWHEEL_HI_RES
+            } else if (data->code == REL_HWHEEL_HI_RES) {
+                delta.setX(-data->value);
+                emit handleWheelEvent(delta);
+#endif
             }
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
             // We care about touchpads only, not touchscreens -> don't map to button press.
