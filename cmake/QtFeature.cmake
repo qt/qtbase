@@ -312,14 +312,15 @@ function(qt_evaluate_qmake_config_values key)
         "FEATURE;NAME;CONFIG_VAR_NAME"
         "" ${${key}})
 
-    set(expected "NOT")
-    if (arg_NEGATE)
-        set(expected "")
-    endif()
-
     # If no custom name is specified, then the config value is the same as the feature name.
     if(NOT arg_NAME)
         set(arg_NAME "${arg_FEATURE}")
+    endif()
+
+    set(expected "NOT")
+    if (arg_NEGATE)
+        set(expected "")
+        string(PREPEND arg_NAME "no_")
     endif()
 
     # The feature condition is false, there is no need to export any config values.

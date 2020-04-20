@@ -696,12 +696,26 @@ endfunction()
 function(qt_correct_config out_var config)
     set(corrected_config "")
     foreach(name ${config})
+        # Is the config value a known feature?
         get_property(feature_original_name GLOBAL PROPERTY "QT_FEATURE_ORIGINAL_NAME_${name}")
         if(feature_original_name)
             list(APPEND corrected_config "${feature_original_name}")
-        else()
-            list(APPEND corrected_config "${name}")
+            continue()
         endif()
+
+        # Is the config value a negated known feature, e.g. no_foo?
+        # Then add the config value no-foo.
+        if(name MATCHES "^no_(.*)")
+            get_property(feature_original_name GLOBAL PROPERTY
+                "QT_FEATURE_ORIGINAL_NAME_${CMAKE_MATCH_1}")
+            if(feature_original_name)
+                list(APPEND corrected_config "no-${feature_original_name}")
+                continue()
+            endif()
+        endif()
+
+        # The config value is no known feature. Add the value as is.
+        list(APPEND corrected_config "${name}")
     endforeach()
     set(${out_var} ${corrected_config} PARENT_SCOPE)
 endfunction()
