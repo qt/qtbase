@@ -36,8 +36,9 @@
                 VCLIBS = $${VCLIBS}.Debug
             else: \
                 VCLIBS = $${VCLIBS}
-            # VS 2017 still uses vclibs 140
+            # VS 2017 and 2019 still use vclibs 140
             contains(MSVC_VER, "15.0"): VCLIBS = $$replace(VCLIBS, 150, 140)
+            contains(MSVC_VER, "16.0"): VCLIBS = $$replace(VCLIBS, 160, 140)
             VCLIBS = "$${VCLIBS}\" MinVersion=\"14.0.0.0\" Publisher=\"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
             WINRT_MANIFEST.dependencies += $$VCLIBS
         }
@@ -68,12 +69,10 @@
         isEmpty(WINRT_MANIFEST.background): WINRT_MANIFEST.background = green
         isEmpty(WINRT_MANIFEST.foreground): WINRT_MANIFEST.foreground = light
         isEmpty(WINRT_MANIFEST.default_language): WINRT_MANIFEST.default_language = en
-        *-msvc2015|*-msvc2017 {
-            isEmpty(WINRT_MANIFEST.minVersion): \
-                WINRT_MANIFEST.minVersion = $$WINDOWS_TARGET_PLATFORM_VERSION
-            isEmpty(WINRT_MANIFEST.maxVersionTested): \
-                WINRT_MANIFEST.maxVersionTested = $$WINDOWS_TARGET_PLATFORM_MIN_VERSION
-        }
+        isEmpty(WINRT_MANIFEST.minVersion): \
+            WINRT_MANIFEST.minVersion = $$WINDOWS_TARGET_PLATFORM_VERSION
+        isEmpty(WINRT_MANIFEST.maxVersionTested): \
+            WINRT_MANIFEST.maxVersionTested = $$WINDOWS_TARGET_PLATFORM_MIN_VERSION
 
         INDENT = "$$escape_expand(\\r\\n)        "
 
