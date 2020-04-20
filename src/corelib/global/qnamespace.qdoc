@@ -291,7 +291,7 @@
            application on supported platforms, use of a session manager may be
            redundant for system services.
            This attribute must be set before QGuiApplication is constructed.
-           This value was added in 5.13
+           This value was added in 5.14
 
     \value AA_DisableNativeVirtualKeyboard When this attribute is set, the native
            on-screen virtual keyboard will not be shown automatically when a
