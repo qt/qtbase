@@ -79,10 +79,6 @@
 #define QT_USE_XOPEN_LFS_EXTENSIONS
 #include "../common/posix/qplatformdefs.h"
 
-#undef QT_SOCKLEN_T
-
-#define QT_SOCKLEN_T            socklen_t
-
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
 #define QT_SNPRINTF             ::snprintf
 #define QT_VSNPRINTF            ::vsnprintf

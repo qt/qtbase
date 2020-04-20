@@ -144,11 +144,7 @@
 #define QT_SIGNAL_ARGS          int
 #define QT_SIGNAL_IGNORE        SIG_IGN
 
-#if defined(__GLIBC__) && (__GLIBC__ >= 2)
 #define QT_SOCKLEN_T            socklen_t
-#else
-#define QT_SOCKLEN_T            int
-#endif
 
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
 #define QT_SNPRINTF             ::snprintf

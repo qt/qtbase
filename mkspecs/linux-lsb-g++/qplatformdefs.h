@@ -85,15 +85,8 @@
 #include "../common/posix/qplatformdefs.h"
 
 #undef QT_OPEN_LARGEFILE
-#undef QT_SOCKLEN_T
 
 #define QT_OPEN_LARGEFILE       0
-
-#if defined(__GLIBC__) && (__GLIBC__ >= 2)
-#define QT_SOCKLEN_T            socklen_t
-#else
-#define QT_SOCKLEN_T            int
-#endif
 
 #ifndef SIOCGIFBRDADDR
 #  define SIOCGIFBRDADDR 0x8919
