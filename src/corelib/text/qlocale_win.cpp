@@ -854,9 +854,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
             return lang;
         if (type == ScriptId)
             return script == QLocale::AnyScript ? fallbackUiLocale().script() : script;
-        if (cntry == QLocale::AnyCountry)
-            return fallbackUiLocale().country();
-        return cntry;
+        return cntry == QLocale::AnyCountry ? fallbackUiLocale().country() : cntry;
     }
     case MeasurementSystem:
         return d->measurementSystem();
