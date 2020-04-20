@@ -1446,7 +1446,8 @@ public:
         TriangleFanTopology,
         ReadBackNonUniformBuffer,
         ReadBackNonBaseMipLevel,
-        TexelFetch
+        TexelFetch,
+        RenderToNonBaseMipLevel
     };
 
     enum BeginFrameFlag {

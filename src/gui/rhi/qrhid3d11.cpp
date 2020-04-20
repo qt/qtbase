@@ -470,6 +470,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::TexelFetch:
         return true;
+    case QRhi::RenderToNonBaseMipLevel:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3243,7 +3245,7 @@ bool QD3D11TextureRenderTarget::build()
             }
             ownsRtv[attIndex] = true;
             if (attIndex == 0) {
-                d.pixelSize = texD->pixelSize();
+                d.pixelSize = rhiD->q->sizeForMipLevel(colorAtt.level(), texD->pixelSize());
                 d.sampleCount = int(texD->sampleDesc.Count);
             }
         } else if (rb) {

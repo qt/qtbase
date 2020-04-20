@@ -769,6 +769,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.nonBaseLevelFramebufferTexture;
     case QRhi::TexelFetch:
         return caps.texelFetch;
+    case QRhi::RenderToNonBaseMipLevel:
+        return caps.nonBaseLevelFramebufferTexture;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3930,7 +3932,7 @@ bool QGles2TextureRenderTarget::build()
             rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.layer()),
                                             texD->texture, colorAtt.level());
             if (attIndex == 0) {
-                d.pixelSize = texD->pixelSize();
+                d.pixelSize = rhiD->q->sizeForMipLevel(colorAtt.level(), texD->pixelSize());
                 d.sampleCount = 1;
             }
         } else if (renderBuffer) {

@@ -4023,6 +4023,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::TexelFetch:
         return true;
+    case QRhi::RenderToNonBaseMipLevel:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -5911,7 +5913,7 @@ bool QVkTextureRenderTarget::build()
             }
             views.append(rtv[attIndex]);
             if (attIndex == 0) {
-                d.pixelSize = texD->pixelSize();
+                d.pixelSize = rhiD->q->sizeForMipLevel(it->level(), texD->pixelSize());
                 d.sampleCount = texD->samples;
             }
         } else if (rbD) {

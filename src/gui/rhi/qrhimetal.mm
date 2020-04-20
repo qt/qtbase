@@ -564,6 +564,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::TexelFetch:
         return true;
+    case QRhi::RenderToNonBaseMipLevel:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2863,6 +2865,7 @@ QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDesc
 
 bool QMetalTextureRenderTarget::build()
 {
+    QRHI_RES_RHI(QRhiMetal);
     const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
     Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
     Q_ASSERT(!m_desc.depthStencilBuffer() || !m_desc.depthTexture());
@@ -2879,7 +2882,7 @@ bool QMetalTextureRenderTarget::build()
         if (texD) {
             dst = texD->d->tex;
             if (attIndex == 0) {
-                d->pixelSize = texD->pixelSize();
+                d->pixelSize = rhiD->q->sizeForMipLevel(it->level(), texD->pixelSize());
                 d->sampleCount = texD->samples;
             }
         } else if (rbD) {

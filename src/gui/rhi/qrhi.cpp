@@ -582,6 +582,13 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     practice this will be reported as unsupported with OpenGL ES 2.0 and OpenGL
     2.x contexts, because GLSL 100 es and versions before 130 do not support
     this function.
+
+    \value RenderToNonBaseMipLevel Indicates that specifying a mip level other
+    than 0 is supported when creating a QRhiTextureRenderTarget with a
+    QRhiTexture as its color attachment. When not supported, build() will fail
+    whenever the target mip level is not zero. In practice this feature will be
+    unsupported with OpenGL ES 2.0, while it will likely be supported everywhere
+    else.
  */
 
 /*!

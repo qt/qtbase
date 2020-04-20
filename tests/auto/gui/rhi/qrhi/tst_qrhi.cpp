@@ -89,6 +89,10 @@ private slots:
     void invalidPipeline();
     void renderToTextureSimple_data();
     void renderToTextureSimple();
+    void renderToTextureMip_data();
+    void renderToTextureMip();
+    void renderToTextureCubemapFace_data();
+    void renderToTextureCubemapFace();
     void renderToTextureTexturedQuad_data();
     void renderToTextureTexturedQuad();
     void renderToTextureArrayOfTexturedQuad_data();
@@ -299,7 +303,8 @@ void tst_QRhi::create()
             QRhi::TriangleFanTopology,
             QRhi::ReadBackNonUniformBuffer,
             QRhi::ReadBackNonBaseMipLevel,
-            QRhi::TexelFetch
+            QRhi::TexelFetch,
+            QRhi::RenderToNonBaseMipLevel
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -1339,6 +1344,267 @@ void tst_QRhi::renderToTextureSimple()
         QVERIFY(redCount < blueCount);
     else
         QVERIFY(redCount > blueCount);
+}
+
+void tst_QRhi::renderToTextureMip_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureMip()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::RenderToNonBaseMipLevel))
+        QSKIP("Rendering to non-base mip levels is not supported on this platform, skipping test");
+
+    const QSize baseLevelSize(1024, 1024);
+    const int LEVEL = 3; // render into mip #3 (128x128)
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, baseLevelSize, 1,
+                                                        QRhiTexture::RenderTarget
+                                                        | QRhiTexture::UsedAsTransferSource
+                                                        | QRhiTexture::MipMapped));
+    QVERIFY(texture->build());
+
+    QRhiColorAttachment colorAtt(texture.data());
+    colorAtt.setLevel(LEVEL);
+    QRhiTextureRenderTargetDescription rtDesc(colorAtt);
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->build());
+
+    QCOMPARE(rt->pixelSize(), rhi->sizeForMipLevel(LEVEL, baseLevelSize));
+    const QSize mipSize(baseLevelSize.width() >> LEVEL, baseLevelSize.height() >> LEVEL);
+    QCOMPARE(rt->pixelSize(), mipSize);
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    static const float vertices[] = {
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        0.0f, 1.0f
+    };
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
+    QVERIFY(vbuf->build());
+    updates->uploadStaticBuffer(vbuf.data(), vertices);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->build());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->build());
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(rt->pixelSize().width()), float(rt->pixelSize().height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    QRhiReadbackDescription readbackDescription(texture.data());
+    readbackDescription.setLevel(LEVEL);
+    readbackBatch->readBackTexture(readbackDescription, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    if (!rhi->isFeatureSupported(QRhi::ReadBackNonBaseMipLevel))
+        QSKIP("Reading back non-base mip levels is not supported on this platform, skipping readback");
+
+    QCOMPARE(result.size(), mipSize);
+
+    if (impl == QRhi::Null)
+        return;
+
+    const int y = 100;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+    int x = result.width() - 1;
+    int redCount = 0;
+    int blueCount = 0;
+    const int maxFuzz = 1;
+    while (x-- >= 0) {
+        const QRgb c(*p++);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= (255 - maxFuzz))
+            ++blueCount;
+        else
+            QFAIL("Encountered a pixel that is neither red or blue");
+    }
+
+    QCOMPARE(redCount + blueCount, mipSize.width());
+
+    if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
+        QVERIFY(redCount > blueCount); // 100, 28
+    else
+        QVERIFY(redCount < blueCount); // 28, 100
+}
+
+void tst_QRhi::renderToTextureCubemapFace_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureCubemapFace()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    const QSize outputSize(512, 512); // width must be same as height
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget
+                                                        | QRhiTexture::UsedAsTransferSource
+                                                        | QRhiTexture::CubeMap)); // will be a cubemap, so 6 layers
+    QVERIFY(texture->build());
+
+    const int LAYER = 1; // render into the layer for face -X
+    const int BAD_LAYER = 2; // +Y
+
+    QRhiColorAttachment colorAtt(texture.data());
+    colorAtt.setLayer(LAYER);
+    QRhiTextureRenderTargetDescription rtDesc(colorAtt);
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->build());
+
+    QCOMPARE(rt->pixelSize(), texture->pixelSize());
+    QCOMPARE(rt->pixelSize(), outputSize);
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    static const float vertices[] = {
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        0.0f, 1.0f
+    };
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
+    QVERIFY(vbuf->build());
+    updates->uploadStaticBuffer(vbuf.data(), vertices);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->build());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->build());
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(rt->pixelSize().width()), float(rt->pixelSize().height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    QRhiReadbackDescription readbackDescription(texture.data());
+    readbackDescription.setLayer(LAYER);
+    readbackBatch->readBackTexture(readbackDescription, &readResult);
+
+    // also read back a layer we did not render into
+    QRhiReadbackResult readResult2;
+    QImage result2;
+    readResult2.completed = [&readResult2, &result2] {
+        result2 = QImage(reinterpret_cast<const uchar *>(readResult2.data.constData()),
+                         readResult2.pixelSize.width(), readResult2.pixelSize.height(),
+                         QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiReadbackDescription readbackDescription2(texture.data());
+    readbackDescription2.setLayer(BAD_LAYER);
+    readbackBatch->readBackTexture(readbackDescription2, &readResult2);
+
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QCOMPARE(result.size(), outputSize);
+    QCOMPARE(result2.size(), outputSize);
+
+    if (impl == QRhi::Null)
+        return;
+
+    // just want to ensure that we did not read the same thing back twice, i.e.
+    // that the 'layer' parameter was not ignored
+    QVERIFY(result != result2);
+
+    const int y = 100;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+    int x = result.width() - 1;
+    int redCount = 0;
+    int blueCount = 0;
+    const int maxFuzz = 1;
+    while (x-- >= 0) {
+        const QRgb c(*p++);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= (255 - maxFuzz))
+            ++blueCount;
+        else
+            QFAIL("Encountered a pixel that is neither red or blue");
+    }
+
+    QCOMPARE(redCount + blueCount, outputSize.width());
+
+    if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
+        QVERIFY(redCount < blueCount); // 100, 412
+    else
+        QVERIFY(redCount > blueCount); // 412, 100
 }
 
 void tst_QRhi::renderToTextureTexturedQuad_data()

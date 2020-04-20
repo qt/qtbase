@@ -740,11 +740,13 @@ QRhiRenderPassDescriptor *QNullTextureRenderTarget::newCompatibleRenderPassDescr
 
 bool QNullTextureRenderTarget::build()
 {
+    QRHI_RES_RHI(QRhiNull);
     d.rp = QRHI_RES(QNullRenderPassDescriptor, m_renderPassDesc);
     if (m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments()) {
-        QRhiTexture *tex = m_desc.cbeginColorAttachments()->texture();
-        QRhiRenderBuffer *rb = m_desc.cbeginColorAttachments()->renderBuffer();
-        d.pixelSize = tex ? tex->pixelSize() : rb->pixelSize();
+        const QRhiColorAttachment *colorAtt = m_desc.cbeginColorAttachments();
+        QRhiTexture *tex = colorAtt->texture();
+        QRhiRenderBuffer *rb = colorAtt->renderBuffer();
+        d.pixelSize = tex ? rhiD->q->sizeForMipLevel(colorAtt->level(), tex->pixelSize()) : rb->pixelSize();
     } else if (m_desc.depthStencilBuffer()) {
         d.pixelSize = m_desc.depthStencilBuffer()->pixelSize();
     } else if (m_desc.depthTexture()) {
