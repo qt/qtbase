@@ -66,6 +66,25 @@ public:
         constexpr State(Flags f = DefaultConversion)
             : flags(f), state_data{0, 0, 0, 0} {}
         ~State() { clear(); }
+        State(State &&other)
+            : flags(other.flags),
+              remainingChars(other.remainingChars),
+              invalidChars(other.invalidChars),
+              d{other.d[0], other.d[1]},
+              clearFn(other.clearFn)
+        { other.clearFn = nullptr; }
+        State &operator=(State &&other)
+        {
+            clear();
+            flags = other.flags;
+            remainingChars = other.remainingChars;
+            invalidChars = other.invalidChars;
+            d[0] = other.d[0];
+            d[1] = other.d[1];
+            clearFn = other.clearFn;
+            other.clearFn = nullptr;
+            return *this;
+        }
         Q_CORE_EXPORT void clear();
 
         Flags flags;
