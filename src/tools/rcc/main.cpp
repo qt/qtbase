@@ -352,8 +352,7 @@ int runRcc(int argc, char *argv[])
         // Make sure QIODevice does not do LF->CRLF,
         // otherwise we'll end up in CRCRLF instead of
         // CRLF.
-        if (list)
-            mode &= ~QIODevice::Text;
+        mode &= ~QIODevice::Text;
 #endif // Q_OS_WIN
         // using this overload close() only flushes.
         out.open(stdout, mode);
