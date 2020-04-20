@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -354,11 +354,8 @@ public:
     void setPasswordMaskDelay(int delay) { m_passwordMaskDelay = delay; }
 
     Qt::LayoutDirection layoutDirection() const {
-        if (m_layoutDirection == Qt::LayoutDirectionAuto) {
-            if (m_text.isEmpty())
-                return QGuiApplication::inputMethod()->inputDirection();
+        if (m_layoutDirection == Qt::LayoutDirectionAuto && !m_text.isEmpty())
             return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
-        }
         return m_layoutDirection;
     }
     void setLayoutDirection(Qt::LayoutDirection direction)
