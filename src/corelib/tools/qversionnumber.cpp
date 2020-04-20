@@ -739,7 +739,7 @@ QDebug operator<<(QDebug debug, const QTypeRevision &revision)
 #endif
 
 /*!
-    \fn uint qHash(const QTypeRevision &key, uint seed)
+    \fn size_t qHash(const QTypeRevision &key, size_t seed)
     \relates QHash
     \since 6.0
 
