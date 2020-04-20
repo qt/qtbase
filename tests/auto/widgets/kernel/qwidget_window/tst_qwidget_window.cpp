@@ -113,6 +113,8 @@ private slots:
     void tst_resize_count();
     void tst_move_count();
 
+    void tst_showhide_count();
+
     void tst_eventfilter_on_toplevel();
 
     void QTBUG_50561_QCocoaBackingStore_paintDevice_crash();
@@ -1041,6 +1043,78 @@ void tst_QWidget_window::tst_resize_count()
     }
 
 }
+
+/*!
+    This test verifies that windows get a balanced number of show
+    and hide events, no matter how the window was closed.
+*/
+void tst_QWidget_window::tst_showhide_count()
+{
+    class EventSpy : public QObject
+    {
+    public:
+        EventSpy()
+        {
+            QApplication::instance()->installEventFilter(this);
+        }
+
+        int takeCount(QWidget *widget, QEvent::Type type) {
+            const auto entry = Entry(widget, type);
+            int count = counter[entry];
+            counter[entry] = 0;
+            return count;
+        }
+    protected:
+        bool eventFilter(QObject *receiver, QEvent *event)
+        {
+            if (QWidget *widget = qobject_cast<QWidget*>(receiver)) {
+                const auto entry = Entry(widget, event->type());
+                ++counter[entry];
+                return false;
+            }
+            return QObject::eventFilter(receiver, event);
+        }
+    private:
+        using Entry = QPair<QWidget*, QEvent::Type>;
+        QHash<Entry, int> counter;
+    };
+
+    EventSpy spy;
+
+    QWidget w1;
+    w1.setGeometry(100, 100, 200, 200);
+
+    w1.show();
+    QCOMPARE(spy.takeCount(&w1, QEvent::Show), 1);
+    w1.hide();
+    QCOMPARE(spy.takeCount(&w1, QEvent::Hide), 1);
+    w1.close();
+    QCOMPARE(spy.takeCount(&w1, QEvent::Close), 1);
+    w1.show();
+    QCOMPARE(spy.takeCount(&w1, QEvent::Show), 1);
+    w1.close();
+    QCOMPARE(spy.takeCount(&w1, QEvent::Hide), 1);
+    QCOMPARE(spy.takeCount(&w1, QEvent::Close), 1);
+
+    w1.show();
+    QWidget *popup = new QWidget(&w1, Qt::Popup);
+    popup->setGeometry(120, 120, 30, 30);
+    popup->show();
+    popup->close();
+    QCOMPARE(spy.takeCount(popup, QEvent::Show), 1);
+    QCOMPARE(spy.takeCount(popup, QEvent::Hide), 1);
+    QCOMPARE(spy.takeCount(popup, QEvent::Close), 1);
+
+    popup->show();
+
+    // clicking outside the popup should close the popup
+    QTest::mousePress(popup->window(), Qt::LeftButton, {}, QPoint(-10, -10));
+
+    QCOMPARE(spy.takeCount(popup, QEvent::Show), 1);
+    QCOMPARE(spy.takeCount(popup, QEvent::Hide), 1);
+    QCOMPARE(spy.takeCount(popup, QEvent::Close), 1);
+}
+
 
 class MoveWidget : public QWidget
 {
