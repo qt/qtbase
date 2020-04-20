@@ -8102,9 +8102,11 @@ void QWidgetPrivate::setVisible(bool visible)
         if (!q->isWindow() && q->parentWidget()) // && !d->getOpaqueRegion().isEmpty())
             q->parentWidget()->d_func()->setDirtyOpaqueRegion();
 
-        q->setAttribute(Qt::WA_WState_Hidden);
-        if (q->testAttribute(Qt::WA_WState_Created))
-            hide_helper();
+        if (!q->testAttribute(Qt::WA_WState_Hidden)) {
+            q->setAttribute(Qt::WA_WState_Hidden);
+            if (q->testAttribute(Qt::WA_WState_Created))
+                hide_helper();
+        }
 
         // invalidate layout similar to updateGeometry()
         if (!q->isWindow() && q->parentWidget()) {
