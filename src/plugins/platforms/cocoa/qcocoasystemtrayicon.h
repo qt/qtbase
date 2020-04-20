@@ -46,8 +46,8 @@
 
 #if QT_CONFIG(systemtrayicon)
 
-#include "QtCore/qstring.h"
-#include "QtGui/qpa/qplatformsystemtrayicon.h"
+#include <QtCore/qstring.h>
+#include <QtGui/qpa/qplatformsystemtrayicon.h>
 
 #include "qcocoamenu.h"
 

@@ -81,6 +81,7 @@ private:
 
     void sendMouseEvent();
     bool getHardwareMaximum();
+    void detectHiResWheelSupport();
 
     QString m_device;
     int m_fd;
@@ -89,6 +90,8 @@ private:
     int m_prevx = 0, m_prevy = 0;
     bool m_abs;
     bool m_compression;
+    bool m_hiResWheel = false;
+    bool m_hiResHWheel = false;
     Qt::MouseButtons m_buttons;
     Qt::MouseButton m_button;
     QEvent::Type m_eventType;

@@ -42,7 +42,7 @@
 #include <private/qdrawhelper_x86_p.h>
 #include <private/qsimd_p.h>
 
-#if QT_CONFIG(thread)
+#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
 #include "qsemaphore.h"
 #include "qthreadpool.h"
 #endif
@@ -52,6 +52,30 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QImageScale;
+
+template<typename T>
+static inline void multithread_pixels_function(QImageScaleInfo *isi, int dh, const T &scaleSection)
+{
+#if QT_CONFIG(thread) && !defined(Q_OS_WASM)
+    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
+    segments = std::min(segments, dh);
+    if (segments > 1) {
+        QSemaphore semaphore;
+        int y = 0;
+        for (int i = 0; i < segments; ++i) {
+            int yn = (dh - y) / (segments - i);
+            QThreadPool::globalInstance()->start([&, y, yn]() {
+                scaleSection(y, y + yn);
+                semaphore.release(1);
+            });
+            y += yn;
+        }
+        semaphore.acquire(segments);
+        return;
+    }
+#endif
+    scaleSection(0, dh);
+}
 
 inline static __m128i Q_DECL_VECTORCALL
 qt_qimageScaleAARGBA_helper(const unsigned int *pix, int xyap, int Cxy, int step, const __m128i vxyap, const __m128i vCxy)
@@ -115,25 +139,7 @@ void qt_qimageScaleAARGBA_up_x_down_y_sse4(QImageScaleInfo *isi, unsigned int *d
             }
         }
     };
-#if QT_CONFIG(thread)
-    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
-    segments = std::min(segments, dh);
-    if (segments > 1) {
-        QSemaphore semaphore;
-        int y = 0;
-        for (int i = 0; i < segments; ++i) {
-            int yn = (dh - y) / (segments - i);
-            QThreadPool::globalInstance()->start([&, y, yn]() {
-                scaleSection(y, y + yn);
-                semaphore.release(1);
-            });
-            y += yn;
-        }
-        semaphore.acquire(segments);
-        return;
-    }
-#endif
-    scaleSection(0, dh);
+    multithread_pixels_function(isi, dh, scaleSection);
 }
 
 template<bool RGB>
@@ -181,25 +187,7 @@ void qt_qimageScaleAARGBA_down_x_up_y_sse4(QImageScaleInfo *isi, unsigned int *d
             }
         }
     };
-#if QT_CONFIG(thread)
-    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
-    segments = std::min(segments, dh);
-    if (segments > 1) {
-        QSemaphore semaphore;
-        int y = 0;
-        for (int i = 0; i < segments; ++i) {
-            int yn = (dh - y) / (segments - i);
-            QThreadPool::globalInstance()->start([&, y, yn]() {
-                scaleSection(y, y + yn);
-                semaphore.release(1);
-            });
-            y += yn;
-        }
-        semaphore.acquire(segments);
-        return;
-    }
-#endif
-    scaleSection(0, dh);
+    multithread_pixels_function(isi, dh, scaleSection);
 }
 
 template<bool RGB>
@@ -249,25 +237,7 @@ void qt_qimageScaleAARGBA_down_xy_sse4(QImageScaleInfo *isi, unsigned int *dest,
             }
         }
     };
-#if QT_CONFIG(thread)
-    int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
-    segments = std::min(segments, dh);
-    if (segments > 1) {
-        QSemaphore semaphore;
-        int y = 0;
-        for (int i = 0; i < segments; ++i) {
-            int yn = (dh - y) / (segments - i);
-            QThreadPool::globalInstance()->start([&, y, yn]() {
-                scaleSection(y, y + yn);
-                semaphore.release(1);
-            });
-            y += yn;
-        }
-        semaphore.acquire(segments);
-        return;
-    }
-#endif
-    scaleSection(0, dh);
+    multithread_pixels_function(isi, dh, scaleSection);
 }
 
 template void qt_qimageScaleAARGBA_up_x_down_y_sse4<false>(QImageScaleInfo *isi, unsigned int *dest,

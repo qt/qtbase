@@ -43,6 +43,7 @@
 #include "qcocoahelpers.h"
 
 #include <QtCore/qmath.h>
+#include <QtGui/qpainter.h>
 
 #include <QuartzCore/CATransaction.h>
 

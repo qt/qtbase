@@ -51,15 +51,15 @@
 // We mean it.
 //
 
-#include "QtGui/qpaintengine.h"
-#include "private/qpaintengine_p.h"
-#include "private/qpolygonclipper_p.h"
-#include "private/qfont_p.h"
-#include "QtCore/qhash.h"
-
-#include "qt_mac_p.h"
+#include <QtGui/qpaintengine.h>
+#include <QtGui/private/qpaintengine_p.h>
+#include <QtGui/private/qpolygonclipper_p.h>
+#include <QtGui/private/qfont_p.h>
+#include <QtCore/qhash.h>
 
 typedef struct CGColorSpace *CGColorSpaceRef;
+typedef struct CGContext *CGContextRef;
+
 QT_BEGIN_NAMESPACE
 
 class QCoreGraphicsPaintEnginePrivate;

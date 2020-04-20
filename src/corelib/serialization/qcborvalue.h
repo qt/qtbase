@@ -188,9 +188,8 @@ public:
     QCborValue &operator=(const QCborValue &other);
     QCborValue &operator=(QCborValue &&other) noexcept
     {
-        QCborValue tmp;
-        qSwap(*this, tmp);
-        qSwap(other, *this);
+        QCborValue tmp(std::move(other));
+        swap(tmp);
         return *this;
     }
 

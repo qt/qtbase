@@ -41,7 +41,7 @@
 #include <private/qsessionmanager_p.h>
 #include <private/qguiapplication_p.h>
 
-#include <qcocoasessionmanager.h>
+#include "qcocoasessionmanager.h"
 #include <qstring.h>
 
 QT_BEGIN_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -29,6 +29,7 @@
 #include <qtest.h>
 
 #include <QtCore/qmath.h>
+#include <QtCore/QElapsedTimer>
 #include <QtWidgets/QWidget>
 
 #include "benchmarktests.h"
@@ -44,7 +45,7 @@ public:
     qreal result() const { return m_result; }
 
 public:
-    QTime timer;
+    QElapsedTimer timer;
 
     Benchmark *m_benchmark;
 
@@ -77,7 +78,7 @@ void BenchWidget::paintEvent(QPaintEvent *)
 
     ++m_iteration;
 
-    uint currentElapsed = timer.isNull() ? 0 : timer.elapsed();
+    uint currentElapsed = timer.isValid() ? timer.elapsed() : 0;
     timer.restart();
 
     m_total += currentElapsed;

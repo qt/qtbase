@@ -13,7 +13,6 @@ qt_add_plugin(QCocoaIntegrationPlugin
     TYPE platforms
     SOURCES
         main.mm
-        messages.cpp messages.h
         qcocoaapplication.h qcocoaapplication.mm
         qcocoaapplicationdelegate.h qcocoaapplicationdelegate.mm
         qcocoabackingstore.h qcocoabackingstore.mm
@@ -45,6 +44,8 @@ qt_add_plugin(QCocoaIntegrationPlugin
         qnsview.h qnsview.mm
         qnswindow.h qnswindow.mm
         qnswindowdelegate.h qnswindowdelegate.mm
+    DEFINES
+        QT_NO_FOREACH
     PUBLIC_LIBRARIES
         ${FWAppKit}
         ${FWCarbon}

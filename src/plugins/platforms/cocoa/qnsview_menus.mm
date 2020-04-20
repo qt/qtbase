@@ -39,11 +39,11 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
-#include <qcocoaapplicationdelegate.h>
-#include <qcocoansmenu.h>
-#include <qcocoamenuitem.h>
-#include <qcocoamenu.h>
-#include <qcocoamenubar.h>
+#include "qcocoaapplicationdelegate.h"
+#include "qcocoansmenu.h"
+#include "qcocoamenuitem.h"
+#include "qcocoamenu.h"
+#include "qcocoamenubar.h"
 
 static bool selectorIsCutCopyPaste(SEL selector)
 {

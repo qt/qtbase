@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -81,6 +81,10 @@ Q_SIGNALS:
     void buttonPressed(QAbstractButton *);
     void buttonReleased(QAbstractButton *);
     void buttonToggled(QAbstractButton *, bool);
+    void idClicked(int);
+    void idPressed(int);
+    void idReleased(int);
+    void idToggled(int, bool);
 
 private:
     Q_DISABLE_COPY(QButtonGroup)

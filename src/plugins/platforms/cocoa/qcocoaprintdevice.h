@@ -55,8 +55,6 @@
 
 #ifndef QT_NO_PRINTER
 
-#include "qt_mac_p.h"
-
 #include <cups/ppd.h>
 
 QT_BEGIN_NAMESPACE

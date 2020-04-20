@@ -40,7 +40,6 @@
 #import <AppKit/AppKit.h>
 
 #include "qcocoatheme.h"
-#include "messages.h"
 
 #include <QtCore/QOperatingSystemVersion>
 #include <QtCore/QVariant>
@@ -547,7 +546,9 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
 
 QString QCocoaTheme::standardButtonText(int button) const
 {
-    return button == QPlatformDialogHelper::Discard ? msgDialogButtonDiscard() : QPlatformTheme::standardButtonText(button);
+    return button == QPlatformDialogHelper::Discard ?
+        QCoreApplication::translate("QCocoaTheme", "Don't Save")
+      : QPlatformTheme::standardButtonText(button);
 }
 
 QKeySequence QCocoaTheme::standardButtonShortcut(int button) const

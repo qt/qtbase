@@ -43,8 +43,6 @@
 #include <qpa/qplatformprintersupport.h>
 #ifndef QT_NO_PRINTER
 
-#include "qt_mac_p.h"
-
 QT_BEGIN_NAMESPACE
 
 class QCocoaPrinterSupport : public QPlatformPrinterSupport

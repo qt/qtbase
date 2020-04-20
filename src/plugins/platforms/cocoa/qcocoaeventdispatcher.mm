@@ -73,18 +73,21 @@
 
 #include "qcocoaeventdispatcher.h"
 #include "qcocoawindow.h"
-
 #include "qcocoahelpers.h"
-#include "qguiapplication.h"
-#include "qevent.h"
-#include "qmutex.h"
-#include "qsocketnotifier.h"
+
+#include <QtGui/qevent.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/private/qguiapplication_p.h>
+
+#include <QtCore/qmutex.h>
+#include <QtCore/qscopeguard.h>
+#include <QtCore/qsocketnotifier.h>
+#include <QtCore/private/qthread_p.h>
+
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformnativeinterface.h>
-#include "private/qthread_p.h"
-#include "private/qguiapplication_p.h"
-#include <qdebug.h>
-#include <qscopeguard.h>
+
+#include <QtCore/qdebug.h>
 
 #include <AppKit/AppKit.h>
 

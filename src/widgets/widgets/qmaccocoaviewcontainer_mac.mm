@@ -114,7 +114,7 @@ QT_BEGIN_NAMESPACE
 
 class QMacCocoaViewContainerPrivate : public QWidgetPrivate
 {
-    Q_DECLARE_PUBLIC(QMacCocoaViewContainer)
+    QT_IGNORE_DEPRECATIONS(Q_DECLARE_PUBLIC(QMacCocoaViewContainer))
 public:
     NSView *nsview;
     QMacCocoaViewContainerPrivate();

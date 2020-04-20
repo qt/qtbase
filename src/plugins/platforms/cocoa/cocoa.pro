@@ -31,8 +31,7 @@ SOURCES += main.mm \
     qcocoaintrospection.mm \
     qcocoakeymapper.mm \
     qcocoamimetypes.mm \
-    qiosurfacegraphicsbuffer.mm \
-    messages.cpp
+    qiosurfacegraphicsbuffer.mm
 
 HEADERS += qcocoaintegration.h \
     qcocoascreen.h \
@@ -63,7 +62,6 @@ HEADERS += qcocoaintegration.h \
     qcocoasystemtrayicon.h \
     qcocoaintrospection.h \
     qcocoakeymapper.h \
-    messages.h \
     qiosurfacegraphicsbuffer.h \
     qcocoamimetypes.h
 
@@ -93,6 +91,8 @@ qtConfig(sessionmanager) {
 RESOURCES += qcocoaresources.qrc
 
 LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework CoreVideo -framework Metal -framework IOSurface -lcups
+
+DEFINES += QT_NO_FOREACH
 
 QT += \
     core-private gui-private \

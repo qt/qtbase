@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,33 +37,9 @@
 **
 ****************************************************************************/
 
-#ifndef MESSAGES_H
-#define MESSAGES_H
+#ifndef QPLATFORMDEFS_H
+#define QPLATFORMDEFS_H
 
-#include <QString>
-#include <qpa/qplatformmenu.h>
+#include "../../common/integrity/qplatformdefs.h"
 
-QT_BEGIN_NAMESPACE
-
-enum {
-    AboutAppMenuItem = 0,
-    PreferencesAppMenuItem,
-    ServicesAppMenuItem,
-    HideAppMenuItem,
-    HideOthersAppMenuItem,
-    ShowAllAppMenuItem,
-    QuitAppMenuItem
-};
-
-
-QString msgAboutQt();
-
-QString qt_mac_applicationmenu_string(int type);
-
-QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption);
-
-QString msgDialogButtonDiscard();
-
-QT_END_NAMESPACE
-
-#endif // MESSAGES_H
+#endif // QPLATFORMDEFS_H

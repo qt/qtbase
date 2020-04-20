@@ -45,16 +45,37 @@
 #include "qcocoansmenu.h"
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
-#include "messages.h"
 #include "qcocoahelpers.h"
-#include "qt_mac_p.h"
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoamenuloader.h"
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtCore/qregularexpression.h>
 
 #include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
+
+static const char *application_menu_strings[] =
+{
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1")
+};
+
+QString qt_mac_applicationmenu_string(int type)
+{
+    QString menuString = QString::fromLatin1(application_menu_strings[type]);
+    const QString translated = QCoreApplication::translate("QMenuBar", application_menu_strings[type]);
+    if (translated != menuString) {
+        return translated;
+    } else {
+        return QCoreApplication::translate("MAC_APPLICATION_MENU", application_menu_strings[type]);
+    }
+}
 
 static quint32 constructModifierMask(quint32 accel_key)
 {
@@ -225,6 +246,40 @@ void QCocoaMenuItem::setNativeContents(WId item)
     m_itemView.needsDisplay = YES;
 }
 
+static QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption)
+{
+    QString captionNoAmpersand(caption);
+    captionNoAmpersand.remove(QLatin1Char('&'));
+    const QString aboutString = QCoreApplication::translate("QCocoaMenuItem", "About");
+    if (captionNoAmpersand.startsWith(aboutString, Qt::CaseInsensitive)
+        || captionNoAmpersand.endsWith(aboutString, Qt::CaseInsensitive)) {
+        static const QRegularExpression qtRegExp(QLatin1String("qt$"), QRegularExpression::CaseInsensitiveOption);
+        if (captionNoAmpersand.contains(qtRegExp))
+            return QPlatformMenuItem::AboutQtRole;
+        return QPlatformMenuItem::AboutRole;
+    }
+    if (captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Config"), Qt::CaseInsensitive)
+        || captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Preference"), Qt::CaseInsensitive)
+        || captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Options"), Qt::CaseInsensitive)
+        || captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Setting"), Qt::CaseInsensitive)
+        || captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Setup"), Qt::CaseInsensitive)) {
+        return QPlatformMenuItem::PreferencesRole;
+    }
+    if (captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Quit"), Qt::CaseInsensitive)
+        || captionNoAmpersand.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Exit"), Qt::CaseInsensitive)) {
+        return QPlatformMenuItem::QuitRole;
+    }
+    if (!captionNoAmpersand.compare(QCoreApplication::translate("QCocoaMenuItem", "Cut"), Qt::CaseInsensitive))
+        return QPlatformMenuItem::CutRole;
+    if (!captionNoAmpersand.compare(QCoreApplication::translate("QCocoaMenuItem", "Copy"), Qt::CaseInsensitive))
+        return QPlatformMenuItem::CopyRole;
+    if (!captionNoAmpersand.compare(QCoreApplication::translate("QCocoaMenuItem", "Paste"), Qt::CaseInsensitive))
+        return QPlatformMenuItem::PasteRole;
+    if (!captionNoAmpersand.compare(QCoreApplication::translate("QCocoaMenuItem", "Select All"), Qt::CaseInsensitive))
+        return QPlatformMenuItem::SelectAllRole;
+    return QPlatformMenuItem::NoRole;
+}
+
 NSMenuItem *QCocoaMenuItem::sync()
 {
     if (m_isSeparator != m_native.separatorItem) {
@@ -353,7 +408,7 @@ QString QCocoaMenuItem::mergeText()
         return qt_mac_applicationmenu_string(AboutAppMenuItem).arg(qt_mac_applicationName());
     } else if (m_native== [loader aboutQtMenuItem]) {
         if (m_text == QString("About Qt"))
-            return msgAboutQt();
+            return QCoreApplication::translate("QCocoaMenuItem", "About Qt");
         else
             return m_text;
     } else if (m_native == [loader preferencesMenuItem]) {

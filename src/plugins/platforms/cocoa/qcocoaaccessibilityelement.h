@@ -41,7 +41,7 @@
 
 #include <QtCore/qglobal.h>
 
-#include "qt_mac_p.h"
+#include <QtCore/private/qcore_mac_p.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 

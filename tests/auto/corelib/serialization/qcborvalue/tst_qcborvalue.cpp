@@ -385,8 +385,20 @@ void tst_QCborValue::copyCompare()
 {
     QFETCH(QCborValue, v);
     QCborValue other = v;
+
+    // self-moving
+    v = std::move(v);
+    QCOMPARE(v, other); // make sure it's still valid
+
+    // moving
+    v = std::move(other);
+    other = std::move(v);
+
+    // normal copying
+    other = v;
     other = v;
     v = other;
+
 
     QCOMPARE(v.compare(other), 0);
     QCOMPARE(v, other);

@@ -191,7 +191,7 @@ void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
     QMacAutoReleasePool pool;
 
     QCocoaMenu *cocoaMenu = static_cast<QCocoaMenu *>(menu);
-    Q_FOREACH (QCocoaMenuItem *item, cocoaMenu->items())
+    for (QCocoaMenuItem *item : cocoaMenu->items())
         cocoaMenu->syncMenuItem_helper(item, menubarUpdate);
 
     BOOL shouldHide = YES;

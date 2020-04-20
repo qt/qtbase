@@ -20,7 +20,7 @@ MacFarlane writes:
 > equivalent sample of Markdown. Here is a sample of AsciiDoc from the AsciiDoc
 > manual:
 
-> ``` AsciiDoc
+> ```AsciiDoc
 > 1. List item one.
 > +
 > List item one continued with a second paragraph followed by an
@@ -50,7 +50,7 @@ Now let's have an indented code block:
     }
 
 and end with a fenced code block:
-~~~ pseudocode
+~~~pseudocode
 #include <something.h>
 #include <else.h>
 

@@ -96,7 +96,7 @@ void QQnxNavigatorEventNotifier::start()
     }
 
     m_readNotifier = new QSocketNotifier(m_fd, QSocketNotifier::Read);
-    connect(m_readNotifier, SIGNAL(activated(int)), this, SLOT(readData()));
+    connect(m_readNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(readData()));
 }
 
 void QQnxNavigatorEventNotifier::parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id)
