@@ -124,7 +124,7 @@ public:
             ++pos;
     }
 
-    inline uint peekNextUnchecked() const
+    inline char32_t peekNextUnchecked() const
     {
         Q_ASSERT_X(hasNext(), Q_FUNC_INFO, "iterator hasn't a next item");
 
@@ -134,7 +134,7 @@ public:
         return pos->unicode();
     }
 
-    inline uint peekNext(uint invalidAs = QChar::ReplacementCharacter) const
+    inline char32_t peekNext(char32_t invalidAs = QChar::ReplacementCharacter) const
     {
         Q_ASSERT_X(hasNext(), Q_FUNC_INFO, "iterator hasn't a next item");
 
@@ -150,7 +150,7 @@ public:
         return pos->unicode();
     }
 
-    inline uint nextUnchecked()
+    inline char32_t nextUnchecked()
     {
         Q_ASSERT_X(hasNext(), Q_FUNC_INFO, "iterator hasn't a next item");
 
@@ -160,7 +160,7 @@ public:
         return cur.unicode();
     }
 
-    inline uint next(uint invalidAs = QChar::ReplacementCharacter)
+    inline char32_t next(char32_t invalidAs = QChar::ReplacementCharacter)
     {
         Q_ASSERT_X(hasNext(), Q_FUNC_INFO, "iterator hasn't a next item");
 
@@ -200,7 +200,7 @@ public:
             --pos;
     }
 
-    inline uint peekPreviousUnchecked() const
+    inline char32_t peekPreviousUnchecked() const
     {
         Q_ASSERT_X(hasPrevious(), Q_FUNC_INFO, "iterator hasn't a previous item");
 
@@ -209,7 +209,7 @@ public:
         return pos[-1].unicode();
     }
 
-    inline uint peekPrevious(uint invalidAs = QChar::ReplacementCharacter) const
+    inline char32_t peekPrevious(char32_t invalidAs = QChar::ReplacementCharacter) const
     {
         Q_ASSERT_X(hasPrevious(), Q_FUNC_INFO, "iterator hasn't a previous item");
 
@@ -225,7 +225,7 @@ public:
         return pos[-1].unicode();
     }
 
-    inline uint previousUnchecked()
+    inline char32_t previousUnchecked()
     {
         Q_ASSERT_X(hasPrevious(), Q_FUNC_INFO, "iterator hasn't a previous item");
 
@@ -235,7 +235,7 @@ public:
         return cur.unicode();
     }
 
-    inline uint previous(uint invalidAs = QChar::ReplacementCharacter)
+    inline char32_t previous(char32_t invalidAs = QChar::ReplacementCharacter)
     {
         Q_ASSERT_X(hasPrevious(), Q_FUNC_INFO, "iterator hasn't a previous item");
 

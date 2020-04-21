@@ -593,11 +593,11 @@ bool QtPrivate::isLatin1(QStringView s) noexcept
 
 bool QtPrivate::isValidUtf16(QStringView s) noexcept
 {
-    Q_CONSTEXPR uint InvalidCodePoint = UINT_MAX;
+    Q_CONSTEXPR char32_t InvalidCodePoint = UINT_MAX;
 
     QStringIterator i(s);
     while (i.hasNext()) {
-        uint c = i.next(InvalidCodePoint);
+        const auto c = i.next(InvalidCodePoint);
         if (c == InvalidCodePoint)
             return false;
     }
@@ -5077,7 +5077,7 @@ bool QString::isUpper() const
     QStringIterator it(*this);
 
     while (it.hasNext()) {
-        uint uc = it.nextUnchecked();
+        const auto uc = it.nextUnchecked();
         if (qGetProp(uc)->cases[QUnicodeTables::UpperCase].diff)
             return false;
     }
@@ -5103,7 +5103,7 @@ bool QString::isLower() const
     QStringIterator it(*this);
 
     while (it.hasNext()) {
-        uint uc = it.nextUnchecked();
+        const auto uc = it.nextUnchecked();
         if (qGetProp(uc)->cases[QUnicodeTables::LowerCase].diff)
             return false;
     }
@@ -6546,7 +6546,7 @@ static QString detachAndConvertCase(T &str, QStringIterator it, QUnicodeTables::
     QChar *pp = s.begin() + it.index(); // will detach if necessary
 
     do {
-        uint uc = it.nextUnchecked();
+        auto uc = it.nextUnchecked();
 
         const auto fold = qGetProp(uc)->cases[which];
         signed short caseDiff = fold.diff;
@@ -6594,7 +6594,7 @@ static QString convertCase(T &str, QUnicodeTables::Case which)
 
     QStringIterator it(p, e);
     while (it.hasNext()) {
-        uint uc = it.nextUnchecked();
+        const auto uc = it.nextUnchecked();
         if (qGetProp(uc)->cases[which].diff) {
             it.recedeUnchecked();
             return detachAndConvertCase(str, it, which);

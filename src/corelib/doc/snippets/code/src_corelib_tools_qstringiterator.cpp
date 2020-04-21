@@ -62,8 +62,6 @@ QStringIterator i(string); // implicitly converted to QStringView
 //! [0]
 
 //! [1]
-// will print 97, 32, 115, 116, etc.;
-// that is, the decimal value of the code points in the Unicode string "a string"
 while (i.hasNext())
     qDebug() << i.next();
 //! [1]
@@ -72,9 +70,9 @@ while (i.hasNext())
 {
 //! [2]
 QStringIterator i(u"𝄞 is the G clef");
-qDebug() << Qt::hex << i.next(); // will print 1d11e (U+1D11E, MUSICAL SYMBOL G CLEF)
-qDebug() << Qt::hex << i.next(); // will print 20 (U+0020, SPACE)
-qDebug() << Qt::hex << i.next(); // will print 69 (U+0069, LATIN SMALL LETTER I)
+qDebug() << Qt::hex << i.next(); // will print '𝄞' (U+1D11E, MUSICAL SYMBOL G CLEF)
+qDebug() << Qt::hex << i.next(); // will print ' ' (U+0020, SPACE)
+qDebug() << Qt::hex << i.next(); // will print 'i' (U+0069, LATIN SMALL LETTER I)
 //! [2]
 }
 
