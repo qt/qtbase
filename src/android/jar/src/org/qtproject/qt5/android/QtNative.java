@@ -157,6 +157,11 @@ public class QtNative
         }
     }
 
+    public static String[] getStringArray(String joinedString)
+    {
+        return joinedString.split(",");
+    }
+
     private static Uri getUriWithValidPermission(Context context, String uri, String openMode)
     {
         try {
