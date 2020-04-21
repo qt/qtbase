@@ -1,0 +1,46 @@
+diff --git a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+index 2355de091f..5d311b750d 100644
+--- a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
++++ b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+@@ -3167,7 +3167,7 @@ void *aligned_alloc(size_t alignment, size_t size)
+ 
+     return memalign(alignment, size);
+ }
+-#elif defined(__APPLE__) || defined(__ANDROID__)
++#elif defined(__ANDROID__)
+ #include <cstdlib>
+ void *aligned_alloc(size_t alignment, size_t size)
+ {
+@@ -3182,6 +3182,23 @@ void *aligned_alloc(size_t alignment, size_t size)
+         return pointer;
+     return VMA_NULL;
+ }
++#elif defined(__APPLE__)
++#include <cstdlib>
++// aligned_alloc() is marked as macOS 10.15 only in the 10.15 SDK,
++// avoid the mess by using a different name
++void *vma_aligned_alloc(size_t alignment, size_t size)
++{
++    // alignment must be >= sizeof(void*)
++    if(alignment < sizeof(void*))
++    {
++        alignment = sizeof(void*);
++    }
++
++    void *pointer;
++    if(posix_memalign(&pointer, alignment, size) == 0)
++        return pointer;
++    return VMA_NULL;
++}
+ #endif
+ 
+ // If your compiler is not compatible with C++11 and definition of
+@@ -3215,6 +3232,8 @@ void *aligned_alloc(size_t alignment, size_t size)
+ #ifndef VMA_SYSTEM_ALIGNED_MALLOC
+    #if defined(_WIN32)
+        #define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (_aligned_malloc((size), (alignment)))
++   #elif defined(__APPLE__)
++       #define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (vma_aligned_alloc((alignment), (size) ))
+    #else
+        #define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (aligned_alloc((alignment), (size) ))
+    #endif
