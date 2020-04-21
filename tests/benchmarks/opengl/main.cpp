@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -27,6 +27,7 @@
 ****************************************************************************/
 #include <QtGui>
 #include <QtOpenGL>
+#include <QtCore/QElapsedTimer>
 
 #include <qtest.h>
 
@@ -400,7 +401,7 @@ void OpenGLBench::textureUpload()
 
     pb->makeCurrent();
     QGLContext *context = const_cast<QGLContext *>(QGLContext::currentContext());
-    QTime time;
+    QElapsedTimer time;
 
     time.start();
     context->bindTexture(pixmap, GL_TEXTURE_2D, format, (QGLContext::BindOptions) flags);

@@ -143,7 +143,7 @@ bool QQnxVirtualKeyboardPps::connect()
         return false;
 
     m_readNotifier = new QSocketNotifier(m_fd, QSocketNotifier::Read);
-    QObject::connect(m_readNotifier, SIGNAL(activated(int)), this, SLOT(ppsDataReady()));
+    QObject::connect(m_readNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(ppsDataReady()));
 
     return true;
 }

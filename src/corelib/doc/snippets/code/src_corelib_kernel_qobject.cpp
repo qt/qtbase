@@ -403,20 +403,28 @@ public:
 
 
 //! [39]
-class QLibrary : public QObject
+class QItemSelectionModel : public QObject
 {
     Q_OBJECT
 
 public:
     ...
-
-    enum LoadHint {
-        ResolveAllSymbolsHint = 0x01,
-        ExportExternalSymbolsHint = 0x02,
-        LoadArchiveMemberHint = 0x04
+    enum SelectionFlag {
+        NoUpdate       = 0x0000,
+        Clear          = 0x0001,
+        Select         = 0x0002,
+        Deselect       = 0x0004,
+        Toggle         = 0x0008,
+        Current        = 0x0010,
+        Rows           = 0x0020,
+        Columns        = 0x0040,
+        SelectCurrent  = Select | Current,
+        ToggleCurrent  = Toggle | Current,
+        ClearAndSelect = Clear | Select
     };
-    Q_DECLARE_FLAGS(LoadHints, LoadHint)
-    Q_FLAG(LoadHint)
+
+    Q_DECLARE_FLAGS(SelectionFlags, SelectionFlag)
+    Q_FLAG(SelectionFlags)
     ...
 }
 //! [39]

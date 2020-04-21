@@ -173,7 +173,7 @@ public:
 
 public:
     // typedefs
-    typedef QMultiHash<int, Watcher> WatcherHash;
+    typedef QMultiHash<qintptr, Watcher> WatcherHash;
     typedef QHash<int, DBusTimeout *> TimeoutHash;
     typedef QVector<QDBusMessage> PendingMessageList;
 
@@ -283,8 +283,8 @@ public slots:
     // public slots
     void setDispatchEnabled(bool enable);
     void doDispatch();
-    void socketRead(int);
-    void socketWrite(int);
+    void socketRead(qintptr);
+    void socketWrite(qintptr);
     void objectDestroyed(QObject *o);
     void relaySignal(QObject *obj, const QMetaObject *, int signalId, const QVariantList &args);
     bool addSignalHook(const QString &key, const SignalHook &hook);

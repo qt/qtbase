@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -31,6 +31,7 @@
 #include <qtest.h>
 #include <QtTest/QtTest>
 #include <QtCore/qrandom.h>
+#include <QtCore/QElapsedTimer>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
@@ -93,7 +94,7 @@ protected:
         QEventLoop eventLoop;
         QTimer::singleShot(timeout, &eventLoop, SLOT(quit()));
 
-        QTime timer;
+        QElapsedTimer timer;
         timer.start();
         eventLoop.exec();
         disconnect(client, SIGNAL(bytesWritten(qint64)), this, 0);
@@ -187,7 +188,7 @@ protected:
         DataReader reader(client, false);
         QObject::connect(client, SIGNAL(disconnected()), &eventLoop, SLOT(quit()));
 
-        QTime timer;
+        QElapsedTimer timer;
         timer.start();
         eventLoop.exec();
         qint64 elapsed = timer.elapsed();
@@ -280,7 +281,7 @@ protected:
         DataReader reader(client, false);
         QObject::connect(client, SIGNAL(disconnected()), &eventLoop, SLOT(quit()));
 
-        QTime timer;
+        QElapsedTimer timer;
         timer.start();
         eventLoop.exec();
         qint64 elapsed = timer.elapsed();
@@ -639,7 +640,7 @@ void tst_qnetworkreply::downloadPerformance()
     QNetworkReplyPtr reply(manager.get(request));
     DataReader reader(reply, false);
 
-    QTime loopTime;
+    QElapsedTimer loopTime;
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     loopTime.start();
     QTestEventLoop::instance().enterLoop(40);
@@ -682,7 +683,7 @@ void tst_qnetworkreply::httpUploadPerformance()
 
       connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-      QTime time;
+      QElapsedTimer time;
       generator.start();
       time.start();
       QTestEventLoop::instance().enterLoop(40);
@@ -710,7 +711,7 @@ void tst_qnetworkreply::performanceControlRate()
     sink.connectToHost("127.0.0.1", sender.serverPort());
     DataReader reader(&sink, false);
 
-    QTime loopTime;
+    QElapsedTimer loopTime;
     connect(&sink, SIGNAL(disconnected()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     loopTime.start();
     QTestEventLoop::instance().enterLoop(40);
@@ -748,7 +749,7 @@ void tst_qnetworkreply::httpDownloadPerformance()
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
     HttpDownloadPerformanceClient client(reply.data());
 
-    QTime time;
+    QElapsedTimer time;
     time.start();
     QTestEventLoop::instance().enterLoop(40);
     QCOMPARE(reply->error(), QNetworkReply::NoError);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -132,7 +132,7 @@ qreal MainView::fps()
 void MainView::fpsReset()
 {
     m_frameCount = 0;
-    m_fpsFirstTs.start();
+    m_fpsFirstTs = QTime::currentTime();
     m_fpsLatestTs = m_fpsFirstTs;
     m_fpsUpdated.start();
 }
@@ -201,7 +201,7 @@ void MainView::paintEvent (QPaintEvent *event)
         emit repainted();
 
     m_frameCount++;
-    m_fpsLatestTs.start();
+    m_fpsLatestTs = QTime::currentTime();
     if(m_fpsUpdated.elapsed() > 2000) {
         updateFps();
         m_fpsUpdated.start();

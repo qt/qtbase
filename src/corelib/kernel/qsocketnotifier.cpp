@@ -37,23 +37,32 @@
 **
 ****************************************************************************/
 
+#define BUILDING_QSOCKETNOTIFIER
 #include "qsocketnotifier.h"
+#undef BUILDING_QSOCKETNOTIFIER
 
 #include "qplatformdefs.h"
 
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
 
+#include "qmetatype.h"
+
 #include "qobject_p.h"
 #include <private/qthread_p.h>
 
+#include <QtCore/QLoggingCategory>
+
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcSocketNotifierDeprecation)
+Q_LOGGING_CATEGORY(lcSocketNotifierDeprecation, "qt.core.socketnotifier_deprecation");
 
 class QSocketNotifierPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QSocketNotifier)
 public:
-    qintptr sockfd;
+    QSocketDescriptor sockfd;
     QSocketNotifier::Type sntype;
     bool snenabled;
 };
@@ -143,13 +152,17 @@ QSocketNotifier::QSocketNotifier(qintptr socket, Type type, QObject *parent)
     : QObject(*new QSocketNotifierPrivate, parent)
 {
     Q_D(QSocketNotifier);
+
+    qRegisterMetaType<QSocketDescriptor>();
+    qRegisterMetaType<QSocketNotifier::Type>();
+
     d->sockfd = socket;
     d->sntype = type;
     d->snenabled = true;
 
     auto thisThreadData = d->threadData.loadRelaxed();
 
-    if (socket < 0)
+    if (!d->sockfd.isValid())
         qWarning("QSocketNotifier: Invalid socket specified");
     else if (!thisThreadData->hasEventDispatcher())
         qWarning("QSocketNotifier: Can only be used with threads started with QThread");
@@ -169,9 +182,26 @@ QSocketNotifier::~QSocketNotifier()
 
 /*!
     \fn void QSocketNotifier::activated(int socket)
+    \obsolete To avoid unintended truncation of the descriptor, use
+    the QSocketDescriptor overload of this function. If you need
+    compatibility with versions older than 5.15 you need to change
+    the slot to accept qintptr if it currently accepts an int, and
+    then connect using Functor-Based Connection.
 
     This signal is emitted whenever the socket notifier is enabled and
     a socket event corresponding to its \l {Type}{type} occurs.
+
+    The socket identifier is passed in the \a socket parameter.
+
+    \sa type(), socket()
+*/
+
+/*!
+    \fn void QSocketNotifier::activated(QSocketDescriptor socket, QSocketNotifier::Type type)
+    \since 5.15
+
+    This signal is emitted whenever the socket notifier is enabled and
+    a socket event corresponding to its \a type occurs.
 
     The socket identifier is passed in the \a socket parameter.
 
@@ -187,7 +217,7 @@ QSocketNotifier::~QSocketNotifier()
 qintptr QSocketNotifier::socket() const
 {
     Q_D(const QSocketNotifier);
-    return d->sockfd;
+    return qintptr(d->sockfd);
 }
 
 /*!
@@ -230,7 +260,7 @@ bool QSocketNotifier::isEnabled() const
 void QSocketNotifier::setEnabled(bool enable)
 {
     Q_D(QSocketNotifier);
-    if (d->sockfd < 0)
+    if (!d->sockfd.isValid())
         return;
     if (d->snenabled == enable)                        // no change
         return;
@@ -268,11 +298,60 @@ bool QSocketNotifier::event(QEvent *e)
     }
     QObject::event(e);                        // will activate filters
     if ((e->type() == QEvent::SockAct) || (e->type() == QEvent::SockClose)) {
-        emit activated(d->sockfd, QPrivateSignal());
+        QPointer<QSocketNotifier> alive(this);
+        emit activated(d->sockfd, d->sntype, QPrivateSignal());
+        // ### Qt7: Remove emission if the activated(int) signal is removed
+        if (alive)
+            emit activated(int(qintptr(d->sockfd)), QPrivateSignal());
+
         return true;
     }
     return false;
 }
+
+/*!
+    \class QSocketDescriptor
+    \inmodule QtCore
+    \brief A class which holds a native socket descriptor.
+    \internal
+
+    \ingroup network
+    \ingroup io
+
+    \since 5.15
+
+    QSocketDescriptor makes it easier to handle native socket
+    descriptors in cross-platform code.
+
+    On Windows it holds a \c {Qt::HANDLE} and on Unix it holds an \c int.
+    The class will implicitly convert between the class and the
+    native descriptor type.
+*/
+
+/*!
+    \fn QSocketDescriptor::QSocketDescriptor(DescriptorType descriptor)
+    \internal
+
+    Construct a QSocketDescriptor from a native socket \a descriptor.
+*/
+
+/*!
+    \fn QSocketDescriptor::QSocketDescriptor(qintptr descriptor)
+    \internal
+
+    Construct a QSocketDescriptor from a native socket \a descriptor.
+
+    \note This constructor is only available on Windows.
+*/
+
+/*!
+    \fn Qt::HANDLE QSocketDescriptor::winHandle() const noexcept
+    \internal
+
+    Returns the internal handle.
+
+    \note This function is only available on Windows.
+*/
 
 QT_END_NAMESPACE
 
