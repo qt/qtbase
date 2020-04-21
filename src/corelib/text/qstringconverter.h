@@ -41,6 +41,9 @@
 #define QSTRINGCONVERTER_H
 
 #include <QtCore/qstring.h>
+#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
+#include <QtCore/qstringbuilder.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -169,10 +172,36 @@ public:
         : QStringConverter(encoding, flags)
     {}
 
+#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
+    template<typename T>
+    struct DecodedData
+    {
+        QStringEncoder *encoder;
+        T data;
+        operator QByteArray() const { return encoder->encode(QStringView(data)); }
+    };
+    DecodedData<const QString &> operator()(const QString &str)
+    { return DecodedData<const QString &>{this, str}; }
+    DecodedData<QStringView> operator()(QStringView in)
+    { return DecodedData<QStringView>{this, in}; }
+#else
+    QByteArray operator()(const QString &in)
+    {
+        return encode(QStringView(in));
+    }
+    QByteArray operator()(QStringView in)
+    {
+        return encode(in);
+    }
+#endif
     QByteArray operator()(const QChar *in, qsizetype length)
     { return (*this)(QStringView(in, length)); }
 
-    QByteArray operator()(QStringView in)
+    qsizetype requiredSpace(qsizetype inputLength) const
+    { return iface->fromUtf16Len(inputLength); }
+    char *decodeIntoBuffer(char *out, const QChar *in, qsizetype length)
+    { return iface->fromUtf16(out, QStringView(in, length), state.flags & Stateless ? nullptr : &state); }
+    QByteArray encode(QStringView in)
     {
         QByteArray result(iface->fromUtf16Len(in.size()), Qt::Uninitialized);
         char *out = result.data();
@@ -181,10 +210,20 @@ public:
         result.truncate(out - result.constData());
         return result;
     }
+
 };
 
 class QStringDecoder : public QStringConverter
 {
+#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
+    struct View {
+        const char *ch;
+        qsizetype l;
+        const char *data() const { return ch; }
+        qsizetype length() const { return l; }
+    };
+#endif
+
 protected:
     QSTRINGCONVERTER_CONSTEXPR QStringDecoder(const Interface *i)
         : QStringConverter(i)
@@ -194,20 +233,74 @@ public:
         : QStringConverter(encoding, flags)
     {}
 
+#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
+    template<typename T>
+    struct EncodedData
+    {
+        QStringDecoder *decoder;
+        T data;
+        operator QString() const { return decoder->decode(data.data(), data.length()); }
+    };
+    EncodedData<const QByteArray &> operator()(const QByteArray &ba)
+    { return EncodedData<const QByteArray &>{this, ba}; }
+    EncodedData<View> operator()(const char *in, qsizetype length)
+    { return EncodedData<View>{this, {in, length}}; }
+    EncodedData<View> operator()(const char *chars)
+    { return EncodedData<View>{this, {chars, qsizetype(strlen(chars))}}; }
+#else
+    QString operator()(const QByteArray &ba)
+    { return decode(ba.data(), ba.length()); }
     QString operator()(const char *in, qsizetype length)
+    { return decode(in, length); }
+    QString operator()(const char *chars)
+    { return decode(chars, strlen(chars)); }
+#endif
+
+    qsizetype requiredSpace(qsizetype inputLength) const
+    { return iface->toUtf16Len(inputLength); }
+    QChar *decodeIntoBuffer(QChar *out, const char *in, qsizetype length)
+    { return iface->toUtf16(out, in, length, state.flags & Stateless ? nullptr : &state); }
+    QString decode(const char *in, qsizetype length)
     {
         QString result(iface->toUtf16Len(length), Qt::Uninitialized);
         QChar *out  = result.data();
-        // ### Fixme: needs to be moved into the conversion methods
+        // ### Fixme: state handling needs to be moved into the conversion methods
         out = iface->toUtf16(out, in, length, state.flags & Stateless ? nullptr : &state);
         result.truncate(out - result.constData());
         return result;
     }
-    QString operator()(const QByteArray &ba)
-    { return (*this)(ba.constData(), ba.size()); }
-    QString operator()(const char *chars)
-    { return (*this)(chars, strlen(chars)); }
 };
+
+
+#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
+template <typename T>
+struct QConcatenable<QStringDecoder::EncodedData<T>>
+        : private QAbstractConcatenable
+{
+    typedef QChar type;
+    typedef QString ConvertTo;
+    enum { ExactSize = false };
+    static qsizetype size(const QStringDecoder::EncodedData<T> &s) { return s.decoder->requiredSpace(s.data.length()); }
+    static inline void appendTo(const QStringDecoder::EncodedData<T> &s, QChar *&out)
+    {
+        out = s.decoder->decodeIntoBuffer(out, s.data.data(), s.data.length());
+    }
+};
+
+template <typename T>
+struct QConcatenable<QStringEncoder::DecodedData<T>>
+        : private QAbstractConcatenable
+{
+    typedef char type;
+    typedef QByteArray ConvertTo;
+    enum { ExactSize = false };
+    static qsizetype size(const QStringEncoder::DecodedData<T> &s) { return s.encoder->requiredSpace(s.data.length()); }
+    static inline void appendTo(const QStringEncoder::DecodedData<T> &s, char *&out)
+    {
+        out = s.decoder->decodeIntoBuffer(out, s.data.data(), s.data.length());
+    }
+};
+#endif
 
 QT_END_NAMESPACE
 
