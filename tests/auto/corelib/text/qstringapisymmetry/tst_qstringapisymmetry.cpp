@@ -492,13 +492,15 @@ private:
     template <typename Haystack, typename Needle> void split_impl() const;
 
 private Q_SLOTS:
-    // test all combinations of {QString, QStringRef} x {QString, QLatin1String, QChar}:
+    // test all combinations of {QString, QStringRef} x {QString, QLatin1String, QChar, char16_t}:
     void split_QString_QString_data() { split_data(); }
     void split_QString_QString() { split_impl<QString, QString>(); }
     void split_QString_QLatin1String_data() { split_data(); }
     void split_QString_QLatin1String() { split_impl<QString, QLatin1String>(); }
     void split_QString_QChar_data() { split_data(false); }
     void split_QString_QChar() { split_impl<QString, QChar>(); }
+    void split_QString_char16_t_data() { split_data(false); }
+    void split_QString_char16_t() { split_impl<QString, char16_t>(); }
 
     void split_QStringRef_QString_data() { split_data(); }
     void split_QStringRef_QString() { split_impl<QStringRef, QString>(); }
@@ -506,6 +508,8 @@ private Q_SLOTS:
     void split_QStringRef_QLatin1String() { split_impl<QStringRef, QLatin1String>(); }
     void split_QStringRef_QChar_data() { split_data(false); }
     void split_QStringRef_QChar() { split_impl<QStringRef, QChar>(); }
+    void split_QStringRef_char16_t_data() { split_data(false); }
+    void split_QStringRef_char16_t() { split_impl<QStringRef, char16_t>(); }
 
 private:
     void mid_data();
