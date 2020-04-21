@@ -2634,7 +2634,7 @@ endfunction()
 function(qt_internal_check_directory_or_type name dir type default result_var)
     if ("x${dir}" STREQUAL x)
         if("x${type}" STREQUAL x)
-            message(FATAL_ERROR "qt_add_plugin called without setting either TYPE or ${name}.")
+            message(FATAL_ERROR "qt_internal_add_plugin called without setting either TYPE or ${name}.")
         endif()
         set(${result_var} "${default}" PARENT_SCOPE)
     else()
@@ -2686,12 +2686,12 @@ set(__qt_add_plugin_multi_args
 # This is the main entry point for defining Qt plugins.
 # A CMake target is created with the given target. The TYPE parameter is needed to place the
 # plugin into the correct plugins/ sub-directory.
-function(qt_add_plugin target)
+function(qt_internal_add_plugin target)
     qt_internal_module_info(module "${target}")
 
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
-    qt_parse_all_arguments(arg "qt_add_plugin"
+    qt_parse_all_arguments(arg "qt_internal_add_plugin"
         "${__qt_add_plugin_optional_args};SKIP_INSTALL"
         "${__qt_add_plugin_single_args}"
         "${__qt_add_plugin_multi_args}"

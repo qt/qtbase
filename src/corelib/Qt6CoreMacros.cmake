@@ -1135,3 +1135,57 @@ function(QT6_PROCESS_RESOURCE target resourceName)
         set(${rcc_OUTPUT_TARGETS} "${output_targets}" PARENT_SCOPE)
     endif()
 endfunction()
+
+function(qt6_add_plugin target)
+    cmake_parse_arguments(arg
+        "STATIC"
+        "OUTPUT_NAME"
+        ""
+        ${ARGN}
+    )
+    if (arg_STATIC)
+        add_library(${target} STATIC)
+    else()
+        add_library(${target} MODULE)
+        if(APPLE)
+            # CMake defaults to using .so extensions for loadable modules, aka plugins,
+            # but Qt plugins are actually suffixed with .dylib.
+            set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
+        endif()
+    endif()
+
+    set(output_name ${target})
+    if (arg_OUTPUT_NAME)
+        set(output_name ${arg_OUTPUT_NAME})
+    endif()
+    set_property(TARGET "${target}" PROPERTY OUTPUT_NAME "${output_name}")
+
+    if (ANDROID)
+        qt_android_apply_arch_suffix("${target}")
+        set_target_properties(${target}
+            PROPERTIES
+            LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${output_name}"
+        )
+    endif()
+
+    set(static_plugin_define "")
+    if (arg_STATIC)
+        set(static_plugin_define "QT_STATICPLUGIN")
+    endif()
+    target_compile_definitions(${target} PRIVATE
+        QT_PLUGIN
+        QT_DEPRECATED_WARNINGS
+        ${static_plugin_define}
+    )
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_add_plugin)
+        if (NOT DEFINED QT_DISABLE_QT_ADD_PLUGIN_COMPATIBILITY
+                OR NOT QT_DISABLE_QT_ADD_PLUGIN_COMPATIBILITY)
+            qt_internal_add_plugin(${ARGV})
+        else()
+            qt6_add_plugin(${ARGV})
+        endif()
+    endfunction()
+endif()

@@ -15,7 +15,5 @@ add_subdirectory(undoframework)
 
 if(QT_FEATURE_library) # special case
     add_subdirectory(echoplugin)
-    # FIXME: Currently broken # special case
-    # Fails to link (ld: error: undefined symbol: qt_static_plugin_BasicToolsPlugin()) # special case
-    #add_subdirectory(plugandpaint) # special case
+    add_subdirectory(plugandpaint) # special case
 endif()

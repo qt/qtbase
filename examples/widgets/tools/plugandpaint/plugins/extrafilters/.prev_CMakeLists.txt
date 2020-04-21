@@ -15,7 +15,8 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_library(pnp_extrafilters MODULE
+qt_add_plugin(pnp_extrafilters)
+target_sources(pnp_extrafilters PRIVATE
     extrafiltersplugin.cpp extrafiltersplugin.h
 )
 target_include_directories(pnp_extrafilters PUBLIC

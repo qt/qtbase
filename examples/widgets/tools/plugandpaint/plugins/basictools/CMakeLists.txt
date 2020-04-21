@@ -15,7 +15,8 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_library(pnp_basictools MODULE
+qt_add_plugin(pnp_basictools STATIC)
+target_sources(pnp_basictools PRIVATE
     basictoolsplugin.cpp basictoolsplugin.h
 )
 target_include_directories(pnp_basictools PUBLIC

@@ -339,7 +339,7 @@ def set_up_cmake_api_calls():
 
     api[2]["qt_extend_target"] = "qt_extend_target"
     api[2]["qt_add_module"] = "qt_add_module"
-    api[2]["qt_add_plugin"] = "qt_add_plugin"
+    api[2]["qt_add_plugin"] = "qt_internal_add_plugin"
     api[2]["qt_add_tool"] = "qt_add_tool"
     api[2]["qt_add_test"] = "qt_add_test"
     api[2]["qt_add_test_helper"] = "qt_add_test_helper"
@@ -3396,7 +3396,11 @@ def write_example(
             add_target += "    INSTALL_LOCATION ${INSTALL_EXAMPLEDIR}\n)\n\n"
             add_target += f"target_sources({binary_name} PRIVATE"
         else:
-            add_target = f"add_library({binary_name} MODULE"
+            add_target = f"qt_add_plugin({binary_name}"
+            if "static" in scope.get("CONFIG"):
+                add_target += " STATIC"
+            add_target += ")\n"
+            add_target += f"target_sources({binary_name} PRIVATE"
 
     else:
         add_target = f'add_{"qt_gui_" if gui else ""}executable({binary_name}'
