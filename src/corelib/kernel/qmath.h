@@ -65,85 +65,85 @@ QT_BEGIN_NAMESPACE
 
 extern Q_CORE_EXPORT const qreal qt_sine_table[QT_SINE_TABLE_SIZE];
 
-inline int qCeil(qreal v)
+template <typename T> int qCeil(T v)
 {
     using std::ceil;
     return int(ceil(v));
 }
 
-inline int qFloor(qreal v)
+template <typename T> int qFloor(T v)
 {
     using std::floor;
     return int(floor(v));
 }
 
-inline qreal qFabs(qreal v)
+template <typename T> auto qFabs(T v)
 {
     using std::fabs;
     return fabs(v);
 }
 
-inline qreal qSin(qreal v)
+template <typename T> auto qSin(T v)
 {
     using std::sin;
     return sin(v);
 }
 
-inline qreal qCos(qreal v)
+template <typename T> auto qCos(T v)
 {
     using std::cos;
     return cos(v);
 }
 
-inline qreal qTan(qreal v)
+template <typename T> auto qTan(T v)
 {
     using std::tan;
     return tan(v);
 }
 
-inline qreal qAcos(qreal v)
+template <typename T> auto qAcos(T v)
 {
     using std::acos;
     return acos(v);
 }
 
-inline qreal qAsin(qreal v)
+template <typename T> auto qAsin(T v)
 {
     using std::asin;
     return asin(v);
 }
 
-inline qreal qAtan(qreal v)
+template <typename T> auto qAtan(T v)
 {
     using std::atan;
     return atan(v);
 }
 
-inline qreal qAtan2(qreal y, qreal x)
+template <typename T1, typename T2> auto qAtan2(T1 y, T2 x)
 {
     using std::atan2;
     return atan2(y, x);
 }
 
-inline qreal qSqrt(qreal v)
+template <typename T> auto qSqrt(T v)
 {
     using std::sqrt;
     return sqrt(v);
 }
 
-inline qreal qLn(qreal v)
+template <typename T> auto qLn(T v)
 {
     using std::log;
     return log(v);
 }
 
-inline qreal qExp(qreal v)
+template <typename T> auto qExp(T v)
 {
     using std::exp;
     return exp(v);
 }
 
-inline qreal qPow(qreal x, qreal y)
+template <typename T1, typename T2> auto qPow(T1 x, T2 y)
 {
     using std::pow;
     return pow(x, y);

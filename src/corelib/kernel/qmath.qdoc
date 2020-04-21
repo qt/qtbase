@@ -76,14 +76,14 @@
 */
 
 /*!
-    \fn qreal qFabs(qreal v)
-    Returns the absolute value of \a v as a qreal.
+    \fn template <typename T> auto qFabs(T v)
+    Returns the absolute value of \a v.
 
     \relates <QtMath>
 */
 
 /*!
-    \fn qreal qSin(qreal v)
+    \fn template <typename T> auto qSin(T v)
     Returns the sine of the angle \a v in radians.
 
     \relates <QtMath>
@@ -91,7 +91,7 @@
 */
 
 /*!
-    \fn  qreal qCos(qreal v)
+    \fn  template <typename T> auto qCos(T v)
     Returns the cosine of an angle \a v in radians.
 
     \relates <QtMath>
@@ -99,7 +99,7 @@
 */
 
 /*!
-    \fn qreal qTan(qreal v)
+    \fn template <typename T> auto qTan(T v)
     Returns the tangent of an angle \a v in radians.
 
     \relates <QtMath>
@@ -107,7 +107,7 @@
 */
 
 /*!
-    \fn qreal qAcos(qreal v)
+    \fn template <typename T> auto qAcos(T v)
     Returns the arccosine of \a v as an angle in radians.
     Arccosine is the inverse operation of cosine.
 
@@ -116,7 +116,7 @@
 */
 
 /*!
-    \fn qreal qAsin(qreal v)
+    \fn template <typename T> auto qAsin(T v)
     Returns the arcsine of \a v as an angle in radians.
     Arcsine is the inverse operation of sine.
 
@@ -125,7 +125,7 @@
 */
 
 /*!
-    \fn qreal qAtan(qreal v)
+    \fn template <typename T> auto qAtan(T v)
     Returns the arctangent of \a v as an angle in radians.
     Arctangent is the inverse operation of tangent.
 
@@ -134,7 +134,7 @@
 */
 
 /*!
-    \fn qreal qAtan2(qreal y, qreal x)
+    \fn template <typename T1, typename T2> auto qAtan2(T1 y, T2 x)
     Returns the arctangent of a point specified by the coordinates \a y and \a x.
     This function will return the angle (argument) of that point.
 
@@ -143,7 +143,7 @@
 */
 
 /*!
-    \fn qreal qSqrt(qreal v)
+    \fn template <typename T> auto qSqrt(T v)
     Returns the square root of \a v.
     This function returns a NaN if \a v is a negative number.
 
@@ -152,7 +152,7 @@
 */
 
 /*!
-    \fn qreal qLn(qreal v)
+    \fn template <typename T> auto qLn(T v)
     Returns the natural logarithm of \a v. Natural logarithm uses base e.
 
     \relates <QtMath>
@@ -160,7 +160,7 @@
 */
 
 /*!
-    \fn qreal qExp(qreal v)
+    \fn template <typename T> auto qExp(T v)
     Returns the exponential function of \c e to the power of \a v.
 
     \relates <QtMath>
@@ -168,7 +168,7 @@
 */
 
 /*!
-    \fn qreal qPow(qreal x, qreal y)
+    \fn template <typename T1, typename T2> auto qPow(T1 x, T2 y)
     Returns the value of \a x raised to the power of \a y.
     That is, \a x is the base and \a y is the exponent.
 
