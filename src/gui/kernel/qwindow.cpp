@@ -515,6 +515,11 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
     if (platformWindow)
         return;
 
+    // avoid losing update requests when re-creating
+    const bool needsUpdate = updateRequestPending;
+    // the platformWindow, if there was one, is now gone, so make this flag reflect reality now
+    updateRequestPending = false;
+
     if (q->parent())
         q->parent()->create();
 
@@ -553,8 +558,8 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
     QGuiApplication::sendEvent(q, &e);
 
-    if (updateRequestPending)
-        platformWindow->requestUpdate();
+    if (needsUpdate)
+        q->requestUpdate();
 }
 
 void QWindowPrivate::clearFocusObject()
