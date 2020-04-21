@@ -3179,7 +3179,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             //
             // We assume that, when supported, the phase cycle follows the pattern:
             //
-            //         ScrollBegin (ScrollUpdate* ScrollEnd)+
+            //         ScrollBegin (ScrollUpdate* ScrollMomentum* ScrollEnd)+
             //
             // This means that we can have scrolling sequences (starting with ScrollBegin)
             // or partial sequences (after a ScrollEnd and starting with ScrollUpdate).
@@ -3193,7 +3193,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 if (spontaneous && phase == Qt::ScrollBegin)
                     QApplicationPrivate::wheel_widget = nullptr;
 
-                QPoint relpos = wheel->position().toPoint();
+                const QPoint relpos = wheel->position().toPoint();
 
                 if (spontaneous && (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate))
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
@@ -3219,7 +3219,7 @@ QT_WARNING_POP
                         // A new scrolling sequence or partial sequence starts and w has accepted
                         // the event. Therefore, we can set wheel_widget, but only if it's not
                         // the end of a sequence.
-                        if (spontaneous && (phase == Qt::ScrollBegin || phase == Qt::ScrollUpdate))
+                        if (QApplicationPrivate::wheel_widget == nullptr && (phase == Qt::ScrollBegin || phase == Qt::ScrollUpdate))
                             QApplicationPrivate::wheel_widget = w;
                         break;
                     }
@@ -3238,7 +3238,7 @@ QT_WARNING_POP
                 // we can send it straight to the receiver.
                 d->notify_helper(w, wheel);
             } else {
-                // The phase is either ScrollUpdate or ScrollEnd, and wheel_widget
+                // The phase is either ScrollUpdate, ScrollMomentum, or ScrollEnd, and wheel_widget
                 // is set. Since it accepted the wheel event previously, we continue
                 // sending those events until we get a ScrollEnd, which signifies
                 // the end of the natural scrolling sequence.
