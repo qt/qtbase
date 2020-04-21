@@ -1779,6 +1779,15 @@ bool QMainWindowTabBar::event(QEvent *e)
 
 QTabBar *QMainWindowLayout::getTabBar()
 {
+    if (!usedTabBars.isEmpty()) {
+        /*
+            If dock widgets have been removed and added while the main window was
+            hidden, then the layout hasn't been activated yet, and tab bars from empty
+            docking areas haven't been put in the cache yet.
+        */
+        activate();
+    }
+
     QTabBar *result = nullptr;
     if (!unusedTabBars.isEmpty()) {
         result = unusedTabBars.takeLast();
