@@ -198,6 +198,9 @@ private slots:
 
     void resourceProvider();
 
+    void contentsChangeIndices_data();
+    void contentsChangeIndices();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -3867,6 +3870,63 @@ void tst_QTextDocument::resourceProvider()
     QCOMPARE(res2, res);
     QCOMPARE(providerCalled, 2);
 }
+
+void tst_QTextDocument::contentsChangeIndices_data()
+{
+    QTest::addColumn<QString>("html");
+    // adding list entries change the entire block, so change position is
+    // not the same as the cursor position if this value is >= 0
+    QTest::addColumn<int>("expectedBegin");
+
+    QTest::addRow("text") << "Test" << -1;
+    QTest::addRow("unnumbered list") << "<ul><li>Test</li></ul>" << 0;
+    QTest::addRow("numbered list") << "<ol><li>Test</li></ol>" << 0;
+    QTest::addRow("table") << "<table><tr><td>Test</td></tr></table>" << -1;
+}
+
+void tst_QTextDocument::contentsChangeIndices()
+{
+    QFETCH(QString, html);
+    QFETCH(int, expectedBegin);
+
+    QTextDocument doc;
+    QTestDocumentLayout *layout = new QTestDocumentLayout(&doc);
+    doc.setDocumentLayout(layout);
+    doc.setHtml(QString("<html><body>%1</body></html>").arg(html));
+
+    int documentLength = 0;
+    int cursorLength = 0;
+    int changeBegin = 0;
+    int changeRemoved = 0;
+    int changeAdded = 0;
+    connect(&doc, &QTextDocument::contentsChange, this, [&](int pos, int removed, int added){
+        documentLength = doc.characterCount();
+
+        QTextCursor cursor(&doc);
+        cursor.movePosition(QTextCursor::End);
+        // includes end-of-paragraph character
+        cursorLength = cursor.position() + 1;
+
+        changeBegin = pos;
+        changeRemoved = removed;
+        changeAdded = added;
+    });
+
+    QTextCursor cursor(&doc);
+    cursor.movePosition(QTextCursor::End);
+    if (expectedBegin < 0)
+        expectedBegin = cursor.position();
+    cursor.insertBlock();
+
+    const int changeEnd = changeBegin + changeAdded;
+
+    QVERIFY(documentLength > 0);
+    QCOMPARE(documentLength, cursorLength);
+    QVERIFY(documentLength >= changeEnd);
+    QCOMPARE(changeBegin, expectedBegin);
+    QCOMPARE(changeAdded - changeRemoved, 1);
+}
+
 
 QTEST_MAIN(tst_QTextDocument)
 #include "tst_qtextdocument.moc"
