@@ -567,6 +567,7 @@ bool QWindowsScreenManager::handleScreenChanges()
     }     // not lock screen
     if (primaryScreenChanged)
         QWindowsTheme::instance()->refreshFonts();
+    QHighDpiScaling::updateHighDpiScaling();
     return true;
 }
 
