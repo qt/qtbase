@@ -2937,7 +2937,7 @@ void QSortFilterProxyModel::setFilterRole(int role)
 
 /*!
     \since 5.15
-    \fn void QSortFilterProxyModel::recursiveFilteringEnabledChanged(int recursiveFilteringEnabled)
+    \fn void QSortFilterProxyModel::recursiveFilteringEnabledChanged(bool recursiveFilteringEnabled)
     \brief This signal is emitted when the recursive filter setting is changed
            to \a recursiveFilteringEnabled.
 */

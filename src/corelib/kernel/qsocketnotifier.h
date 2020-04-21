@@ -94,7 +94,7 @@ private:
 class QSocketDescriptor
 {
 public:
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
     using DescriptorType = Qt::HANDLE;
 #define Q_DECL_CONSTEXPR_NOT_WIN
 #else
