@@ -339,7 +339,8 @@ QWasmEventTranslator::QWasmEventTranslator(QWasmScreen *screen)
 
 void QWasmEventTranslator::initEventHandlers()
 {
-    QByteArray canvasSelector = "#" + screen()->canvasId().toUtf8();
+    QByteArray _canvasId = screen()->canvasId().toUtf8();
+    const char *canvasId = _canvasId.constData();
 
     // The Platform Detect: expand coverage and move as needed
     enum Platform {
@@ -363,21 +364,21 @@ void QWasmEventTranslator::initEventHandlers()
         }
     }
 
-    emscripten_set_keydown_callback(canvasSelector.constData(), (void *)this, 1, &keyboard_cb);
-    emscripten_set_keyup_callback(canvasSelector.constData(), (void *)this, 1, &keyboard_cb);
+    emscripten_set_keydown_callback(canvasId, (void *)this, 1, &keyboard_cb);
+    emscripten_set_keyup_callback(canvasId, (void *)this, 1, &keyboard_cb);
 
-    emscripten_set_mousedown_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
-    emscripten_set_mouseup_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
-    emscripten_set_mousemove_callback(canvasSelector.constData(), (void *)this, 1, &mouse_cb);
+    emscripten_set_mousedown_callback(canvasId, (void *)this, 1, &mouse_cb);
+    emscripten_set_mouseup_callback(canvasId, (void *)this, 1, &mouse_cb);
+    emscripten_set_mousemove_callback(canvasId, (void *)this, 1, &mouse_cb);
 
-    emscripten_set_focus_callback(canvasSelector.constData(), (void *)this, 1, &focus_cb);
+    emscripten_set_focus_callback(canvasId, (void *)this, 1, &focus_cb);
 
-    emscripten_set_wheel_callback(canvasSelector.constData(), (void *)this, 1, &wheel_cb);
+    emscripten_set_wheel_callback(canvasId, (void *)this, 1, &wheel_cb);
 
-    emscripten_set_touchstart_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
-    emscripten_set_touchend_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
-    emscripten_set_touchmove_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
-    emscripten_set_touchcancel_callback(canvasSelector.constData(), (void *)this, 1, &touchCallback);
+    emscripten_set_touchstart_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchend_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchmove_callback(canvasId, (void *)this, 1, &touchCallback);
+    emscripten_set_touchcancel_callback(canvasId, (void *)this, 1, &touchCallback);
 }
 
 template <typename Event>
