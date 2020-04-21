@@ -200,13 +200,12 @@ public:
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->fromUtf16Len(inputLength); }
     char *decodeIntoBuffer(char *out, const QChar *in, qsizetype length)
-    { return iface->fromUtf16(out, QStringView(in, length), state.flags & Flag::Stateless ? nullptr : &state); }
+    { return iface->fromUtf16(out, QStringView(in, length), &state); }
     QByteArray encode(QStringView in)
     {
         QByteArray result(iface->fromUtf16Len(in.size()), Qt::Uninitialized);
         char *out = result.data();
-        // ### Fixme: needs to be moved into the conversion methods to honor the other flags
-        out = iface->fromUtf16(out, in, state.flags & Flag::Stateless ? nullptr : &state);
+        out = iface->fromUtf16(out, in, &state);
         result.truncate(out - result.constData());
         return result;
     }
@@ -259,13 +258,13 @@ public:
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->toUtf16Len(inputLength); }
     QChar *decodeIntoBuffer(QChar *out, const char *in, qsizetype length)
-    { return iface->toUtf16(out, in, length, state.flags & Flag::Stateless ? nullptr : &state); }
+    { return iface->toUtf16(out, in, length, &state); }
     QString decode(const char *in, qsizetype length)
     {
         QString result(iface->toUtf16Len(length), Qt::Uninitialized);
         QChar *out  = result.data();
         // ### Fixme: state handling needs to be moved into the conversion methods
-        out = iface->toUtf16(out, in, length, state.flags & Flag::Stateless ? nullptr : &state);
+        out = iface->toUtf16(out, in, length, &state);
         result.truncate(out - result.constData());
         return result;
     }

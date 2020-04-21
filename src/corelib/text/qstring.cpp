@@ -5206,7 +5206,8 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
 {
     if (string.isNull())
         return QByteArray();
-    return QLocal8Bit::convertFromUnicode(string.data(), string.length(), nullptr);
+    QStringEncoder fromUtf16(QStringEncoder::Locale, QStringEncoder::Flag::Stateless);
+    return fromUtf16(string);
 }
 
 /*!
@@ -5391,7 +5392,8 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
         QString::DataPointer empty = { pair.first, pair.second, 0 };
         return QString(empty);
     }
-    return QLocal8Bit::convertToUnicode(str, size, nullptr);
+    QStringDecoder toUtf16(QStringDecoder::Locale, QStringDecoder::Flag::Stateless);
+    return toUtf16(str, size);
 }
 
 /*! \fn QString QString::fromUtf8(const char *str, int size)
@@ -5458,7 +5460,8 @@ QString QString::fromUtf16(const char16_t *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QUtf16::convertToUnicode((const char *)unicode, size*2, nullptr);
+    QStringDecoder toUtf16(QStringDecoder::Utf16, QStringDecoder::Flag::Stateless);
+    return toUtf16(reinterpret_cast<const char *>(unicode), size*2);
 }
 
 /*!
@@ -5495,7 +5498,8 @@ QString QString::fromUcs4(const char32_t *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QUtf32::convertToUnicode((const char *)unicode, size*4, nullptr);
+    QStringDecoder toUtf16(QStringDecoder::Utf32, QStringDecoder::Flag::Stateless);
+    return toUtf16(reinterpret_cast<const char *>(unicode), size*4);
 }
 
 

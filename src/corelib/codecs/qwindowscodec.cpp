@@ -52,11 +52,17 @@ QWindowsLocalCodec::~QWindowsLocalCodec()
 
 QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     return QLocal8Bit::convertToUnicode(chars, length, state);
 }
 
 QByteArray QWindowsLocalCodec::convertFromUnicode(const QChar *ch, int uclen, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     return QLocal8Bit::convertFromUnicode(ch, uclen, state);
 }
 

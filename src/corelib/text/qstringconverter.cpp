@@ -404,6 +404,10 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, qsizetype len)
 
 QByteArray QUtf8::convertFromUnicode(const QChar *uc, qsizetype len, QStringConverter::State *state)
 {
+    Q_ASSERT(state);
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     uchar replacement = '?';
     qsizetype rlen = 3*len;
     int surrogate_high = -1;
@@ -549,6 +553,10 @@ QChar *QUtf8::convertToUnicode(QChar *buffer, const char *chars, qsizetype len) 
 
 QString QUtf8::convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state)
 {
+    Q_ASSERT(state);
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     bool headerdone = state && state->internalState & HeaderDone;
     ushort replacement = QChar::ReplacementCharacter;
     int invalid = 0;
@@ -754,6 +762,10 @@ int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, QLatin1String s)
 
 QByteArray QUtf16::convertFromUnicode(const QChar *uc, qsizetype len, QStringConverter::State *state, DataEndianness endian)
 {
+    Q_ASSERT(state);
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     bool writeBom = state && !(state->internalState & HeaderDone) && state->flags & QStringConverter::Flag::WriteBom;
     qsizetype length =  2*len;
     if (writeBom)
@@ -787,6 +799,10 @@ QByteArray QUtf16::convertFromUnicode(const QChar *uc, qsizetype len, QStringCon
 
 QString QUtf16::convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness endian)
 {
+    Q_ASSERT(state);
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     bool half = false;
     uchar buf = 0;
     bool headerdone = state && state->internalState & HeaderDone;
@@ -862,6 +878,10 @@ QString QUtf16::convertToUnicode(const char *chars, qsizetype len, QStringConver
 
 QByteArray QUtf32::convertFromUnicode(const QChar *uc, qsizetype len, QStringConverter::State *state, DataEndianness endian)
 {
+    Q_ASSERT(state);
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     bool writeBom = state && !(state->internalState & HeaderDone) && state->flags & QStringConverter::Flag::WriteBom;
     qsizetype length =  4*len;
     if (writeBom)
@@ -911,6 +931,10 @@ QByteArray QUtf32::convertFromUnicode(const QChar *uc, qsizetype len, QStringCon
 
 QString QUtf32::convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness endian)
 {
+    Q_ASSERT(state);
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     uchar tuple[4];
     int num = 0;
     bool headerdone = state && state->internalState & HeaderDone;
@@ -995,6 +1019,10 @@ QString qFromUtfEncoded(const QByteArray &ba)
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
 static QString convertToUnicodeCharByChar(const char *chars, qsizetype length, QStringConverter::State *state)
 {
+    Q_ASSERT(state);
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     if (!chars || !length)
         return QString();
 
@@ -1144,6 +1172,11 @@ QString QLocal8Bit::convertToUnicode(const char *chars, qsizetype length, QStrin
 QByteArray QLocal8Bit::convertFromUnicode(const QChar *ch, qsizetype uclen, QStringConverter::State *state)
 {
     Q_ASSERT(uclen < INT_MAX); // ### FIXME
+    Q_ASSERT(state);
+    Q_UNUSED(state); // ### Fixme
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     if (!ch)
         return QByteArray();
     if (uclen == 0)
@@ -1307,8 +1340,11 @@ static char *toUtf32LE(char *out, QStringView in, QStringConverter::State *state
 
 void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept;
 
-static QChar *fromLatin1(QChar *out, const char *chars, qsizetype len, QStringConverter::State *)
+static QChar *fromLatin1(QChar *out, const char *chars, qsizetype len, QStringConverter::State *state)
 {
+    Q_ASSERT(state);
+    Q_UNUSED(state);
+
     qt_from_latin1(reinterpret_cast<char16_t *>(out), chars, size_t(len));
     return out + len;
 }
@@ -1316,6 +1352,10 @@ static QChar *fromLatin1(QChar *out, const char *chars, qsizetype len, QStringCo
 
 static char *toLatin1(char *out, QStringView in, QStringConverter::State *state)
 {
+    Q_ASSERT(state);
+    if (state->flags & QStringConverter::Flag::Stateless) // temporary
+        state = nullptr;
+
     const char replacement = (state && state->flags & QStringConverter::Flag::ConvertInvalidToNull) ? 0 : '?';
     int invalid = 0;
     for (qsizetype i = 0; i < in.length(); ++i) {

@@ -56,16 +56,25 @@ QUtf8Codec::~QUtf8Codec()
 
 QByteArray QUtf8Codec::convertFromUnicode(const QChar *uc, int len, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     return QUtf8::convertFromUnicode(uc, len, state);
 }
 
 void QUtf8Codec::convertToUnicode(QString *target, const char *chars, int len, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     *target += QUtf8::convertToUnicode(chars, len, state);
 }
 
 QString QUtf8Codec::convertToUnicode(const char *chars, int len, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     return QUtf8::convertToUnicode(chars, len, state);
 }
 
@@ -85,11 +94,17 @@ QUtf16Codec::~QUtf16Codec()
 
 QByteArray QUtf16Codec::convertFromUnicode(const QChar *uc, int len, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     return QUtf16::convertFromUnicode(uc, len, state, e);
 }
 
 QString QUtf16Codec::convertToUnicode(const char *chars, int len, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     return QUtf16::convertToUnicode(chars, len, state, e);
 }
 
@@ -146,11 +161,17 @@ QUtf32Codec::~QUtf32Codec()
 
 QByteArray QUtf32Codec::convertFromUnicode(const QChar *uc, int len, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     return QUtf32::convertFromUnicode(uc, len, state, e);
 }
 
 QString QUtf32Codec::convertToUnicode(const char *chars, int len, ConverterState *state) const
 {
+    ConverterState s(QStringConverter::Flag::Stateless);
+    if (!state)
+        state = &s;
     return QUtf32::convertToUnicode(chars, len, state, e);
 }
 
