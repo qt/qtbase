@@ -47,7 +47,7 @@
 #include "private/qtldurl_p.h"
 #else
 QT_BEGIN_NAMESPACE
-static bool qIsEffectiveTLD(QString domain)
+static bool qIsEffectiveTLD(QStringView domain)
 {
     // provide minimal checking by not accepting cookies on real TLDs
     return !domain.contains(QLatin1Char('.'));

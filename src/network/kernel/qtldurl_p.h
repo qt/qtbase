@@ -60,10 +60,10 @@ QT_REQUIRE_CONFIG(topleveldomain);
 QT_BEGIN_NAMESPACE
 
 Q_NETWORK_EXPORT QString qTopLevelDomain(const QString &domain);
-Q_NETWORK_EXPORT bool qIsEffectiveTLD(const QStringRef &domain);
+Q_NETWORK_EXPORT bool qIsEffectiveTLD(QStringView domain);
 inline bool qIsEffectiveTLD(const QString &domain)
 {
-    return qIsEffectiveTLD(QStringRef(&domain));
+    return qIsEffectiveTLD(qToStringViewIgnoringNull(domain));
 }
 
 QT_END_NAMESPACE

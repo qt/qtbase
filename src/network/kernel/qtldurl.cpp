@@ -114,9 +114,11 @@ Q_NETWORK_EXPORT QString qTopLevelDomain(const QString &domain)
     \internal
 
     Return true if \a domain is a top-level-domain per Qt's copy of the Mozilla public suffix list.
+
+    The \a domain must be in lower-case format (as per QString::toLower()).
 */
 
-Q_NETWORK_EXPORT bool qIsEffectiveTLD(const QStringRef &domain)
+Q_NETWORK_EXPORT bool qIsEffectiveTLD(QStringView domain)
 {
     // for domain 'foo.bar.com':
     // 1. return if TLD table contains 'foo.bar.com'
@@ -126,7 +128,7 @@ Q_NETWORK_EXPORT bool qIsEffectiveTLD(const QStringRef &domain)
     if (containsTLDEntry(domain, ExactMatch)) // 1
         return true;
 
-    const int dot = domain.indexOf(QLatin1Char('.'));
+    const auto dot = domain.indexOf(QLatin1Char('.'));
     if (dot < 0) // Actual TLD: may be effective if the subject of a wildcard rule:
         return containsTLDEntry(QString(QLatin1Char('.') + domain), SuffixMatch);
     if (containsTLDEntry(domain.mid(dot), SuffixMatch))   // 2
