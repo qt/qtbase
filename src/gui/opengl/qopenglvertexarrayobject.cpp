@@ -102,6 +102,7 @@ public:
         : vao(0)
         , vaoFuncsType(NotSupported)
         , context(nullptr)
+        , guiThread(nullptr)
     {
     }
 
@@ -136,6 +137,7 @@ public:
     } vaoFuncsType;
 
     QOpenGLContext *context;
+    QThread *guiThread;
 };
 
 bool QOpenGLVertexArrayObjectPrivate::create()
@@ -159,6 +161,8 @@ bool QOpenGLVertexArrayObjectPrivate::create()
 
     context = ctx;
     QObject::connect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
+
+    guiThread = qGuiApp->thread();
 
     if (ctx->isOpenGLES()) {
         if (ctx->format().majorVersion() >= 3 || ctx->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object"))) {
@@ -209,7 +213,7 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
         // Before going through the effort of creating an offscreen surface
         // check that we are on the GUI thread because otherwise many platforms
         // will not able to create that offscreen surface.
-        if (QThread::currentThread() != qGuiApp->thread()) {
+        if (QThread::currentThread() != guiThread) {
             ctx = nullptr;
         } else {
             // Cannot just make the current surface current again with another context.
