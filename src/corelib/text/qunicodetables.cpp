@@ -9603,9 +9603,19 @@ Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4) noexce
     return uc_properties + GET_PROP_INDEX(ucs4);
 }
 
+Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char32_t ucs4) noexcept
+{
+    return qGetProp(uint{ucs4});
+}
+
 Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2) noexcept
 {
     return uc_properties + GET_PROP_INDEX_UCS2(ucs2);
+}
+
+Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char16_t ucs2) noexcept
+{
+    return qGetProp(ushort{ucs2});
 }
 
 Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) noexcept

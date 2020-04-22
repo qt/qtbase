@@ -753,8 +753,10 @@ QT_BEGIN_NAMESPACE
 
     Note that this gives no indication of whether the character is
     available in a particular font.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-bool QChar::isPrint(uint ucs4) noexcept
+bool QChar::isPrint(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -775,19 +777,21 @@ bool QChar::isPrint(uint ucs4) noexcept
 */
 
 /*!
-    \fn bool QChar::isSpace(uint ucs4)
+    \fn bool QChar::isSpace(char32_t ucs4)
     \overload
     \since 5.0
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a separator character (Separator_* categories or certain code points
     from Other_Control category); otherwise returns \c false.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
 
 /*!
     \internal
 */
-bool QT_FASTCALL QChar::isSpace_helper(uint ucs4) noexcept
+bool QT_FASTCALL QChar::isSpace_helper(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -812,8 +816,10 @@ bool QT_FASTCALL QChar::isSpace_helper(uint ucs4) noexcept
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a mark (Mark_* categories); otherwise returns \c false.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-bool QChar::isMark(uint ucs4) noexcept
+bool QChar::isMark(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -836,8 +842,10 @@ bool QChar::isMark(uint ucs4) noexcept
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a punctuation mark (Punctuation_* categories); otherwise returns \c false.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-bool QChar::isPunct(uint ucs4) noexcept
+bool QChar::isPunct(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -864,8 +872,10 @@ bool QChar::isPunct(uint ucs4) noexcept
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a symbol (Symbol_* categories); otherwise returns \c false.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-bool QChar::isSymbol(uint ucs4) noexcept
+bool QChar::isSymbol(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -884,18 +894,20 @@ bool QChar::isSymbol(uint ucs4) noexcept
 */
 
 /*!
-    \fn bool QChar::isLetter(uint ucs4)
+    \fn bool QChar::isLetter(char32_t ucs4)
     \overload
     \since 5.0
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a letter (Letter_* categories); otherwise returns \c false.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
 
 /*!
     \internal
 */
-bool QT_FASTCALL QChar::isLetter_helper(uint ucs4) noexcept
+bool QT_FASTCALL QChar::isLetter_helper(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -917,12 +929,14 @@ bool QT_FASTCALL QChar::isLetter_helper(uint ucs4) noexcept
 */
 
 /*!
-    \fn bool QChar::isNumber(uint ucs4)
+    \fn bool QChar::isNumber(char32_t ucs4)
     \overload
     \since 5.0
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a number (Number_* categories, not just 0-9); otherwise returns \c false.
+
+    \note Before Qt 6, this function took a \c uint argument.
 
     \sa isDigit()
 */
@@ -930,7 +944,7 @@ bool QT_FASTCALL QChar::isLetter_helper(uint ucs4) noexcept
 /*!
     \internal
 */
-bool QT_FASTCALL QChar::isNumber_helper(uint ucs4) noexcept
+bool QT_FASTCALL QChar::isNumber_helper(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -948,18 +962,20 @@ bool QT_FASTCALL QChar::isNumber_helper(uint ucs4) noexcept
 */
 
 /*!
-    \fn bool QChar::isLetterOrNumber(uint ucs4)
+    \fn bool QChar::isLetterOrNumber(char32_t ucs4)
     \overload
     \since 5.0
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a letter or number (Letter_* or Number_* categories); otherwise returns \c false.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
 
 /*!
     \internal
 */
-bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) noexcept
+bool QT_FASTCALL QChar::isLetterOrNumber_helper(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -984,12 +1000,14 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) noexcept
 */
 
 /*!
-    \fn bool QChar::isDigit(uint ucs4)
+    \fn bool QChar::isDigit(char32_t ucs4)
     \overload
     \since 5.0
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a decimal digit (Number_DecimalDigit); otherwise returns \c false.
+
+    \note Before Qt 6, this function took a \c uint argument.
 
     \sa isNumber()
 */
@@ -1031,7 +1049,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) noexcept
 */
 
 /*!
-    \fn static bool QChar::isNonCharacter(uint ucs4)
+    \fn static bool QChar::isNonCharacter(char32_t ucs4)
     \overload
     \since 5.0
 
@@ -1043,28 +1061,34 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) noexcept
     in applications but cannot be used for text interchange.
     Those are the last two entries each Unicode Plane ([0xfffe..0xffff],
     [0x1fffe..0x1ffff], etc.) as well as the entries in range [0xfdd0..0xfdef].
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
 
 /*!
-    \fn static bool QChar::isHighSurrogate(uint ucs4)
+    \fn static bool QChar::isHighSurrogate(char32_t ucs4)
     \overload
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is the high part of a UTF16 surrogate
     (for example if its code point is in range [0xd800..0xdbff]); false otherwise.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
 
 /*!
-    \fn static bool QChar::isLowSurrogate(uint ucs4)
+    \fn static bool QChar::isLowSurrogate(char32_t ucs4)
     \overload
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is the low part of a UTF16 surrogate
     (for example if its code point is in range [0xdc00..0xdfff]); false otherwise.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
 
 /*!
-    \fn static bool QChar::isSurrogate(uint ucs4)
+    \fn static bool QChar::isSurrogate(char32_t ucs4)
     \overload
     \since 5.0
 
@@ -1072,43 +1096,55 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) noexcept
     contains a code point that is in either the high or the low part of the
     UTF-16 surrogate range (for example if its code point is in range [0xd800..0xdfff]);
     false otherwise.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
 
 /*!
-    \fn static bool QChar::requiresSurrogates(uint ucs4)
+    \fn static bool QChar::requiresSurrogates(char32_t ucs4)
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4
     can be split into the high and low parts of a UTF16 surrogate
     (for example if its code point is greater than or equals to 0x10000);
     false otherwise.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
 
 /*!
-    \fn static uint QChar::surrogateToUcs4(ushort high, ushort low)
+    \fn static char32_t QChar::surrogateToUcs4(char16_t high, char16_t low)
 
     Converts a UTF16 surrogate pair with the given \a high and \a low values
     to it's UCS-4-encoded code point.
+
+    \note Before Qt 6, this function took \c ushort arguments and returned \c uint.
 */
 
 /*!
-    \fn static uint QChar::surrogateToUcs4(QChar high, QChar low)
+    \fn static char32_t QChar::surrogateToUcs4(QChar high, QChar low)
     \overload
 
     Converts a UTF16 surrogate pair (\a high, \a low) to it's UCS-4-encoded code point.
+
+    \note Before Qt 6, this function returned \c uint.
 */
 
 /*!
-    \fn static ushort QChar::highSurrogate(uint ucs4)
+    \fn static char16_t QChar::highSurrogate(char32_t ucs4)
 
     Returns the high surrogate part of a UCS-4-encoded code point.
     The returned result is undefined if \a ucs4 is smaller than 0x10000.
+
+    \note Before Qt 6, this function took a \c uint argument and returned \c ushort.
 */
 
 /*!
-    \fn static ushort QChar::lowSurrogate(uint ucs4)
+    \fn static char16_t QChar::lowSurrogate(char32_t ucs4)
 
     Returns the low surrogate part of a UCS-4-encoded code point.
     The returned result is undefined if \a ucs4 is smaller than 0x10000.
+
+    \note Before Qt 6, this function took a \c uint argument and returned \c ushort.
 */
 
 /*!
@@ -1121,8 +1157,10 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4) noexcept
     \overload
     Returns the numeric value of the digit specified by the UCS-4-encoded
     character, \a ucs4, or -1 if the character is not a digit.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-int QChar::digitValue(uint ucs4) noexcept
+int QChar::digitValue(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return -1;
@@ -1138,8 +1176,10 @@ int QChar::digitValue(uint ucs4) noexcept
 /*!
     \overload
     Returns the category of the UCS-4-encoded character specified by \a ucs4.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-QChar::Category QChar::category(uint ucs4) noexcept
+QChar::Category QChar::category(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::Other_NotAssigned;
@@ -1155,8 +1195,10 @@ QChar::Category QChar::category(uint ucs4) noexcept
 /*!
     \overload
     Returns the direction of the UCS-4-encoded character specified by \a ucs4.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-QChar::Direction QChar::direction(uint ucs4) noexcept
+QChar::Direction QChar::direction(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::DirL;
@@ -1178,8 +1220,10 @@ QChar::Direction QChar::direction(uint ucs4) noexcept
     Returns information about the joining type attributes of the UCS-4-encoded
     character specified by \a ucs4
     (needed for certain languages such as Arabic or Syriac).
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-QChar::JoiningType QChar::joiningType(uint ucs4) noexcept
+QChar::JoiningType QChar::joiningType(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::Joining_None;
@@ -1201,8 +1245,10 @@ QChar::JoiningType QChar::joiningType(uint ucs4) noexcept
 
     Returns information about the joining properties of the UCS-4-encoded
     character specified by \a ucs4 (needed for certain languages such as Arabic).
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-QChar::Joining QChar::joining(uint ucs4) noexcept
+QChar::Joining QChar::joining(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::OtherJoining;
@@ -1236,9 +1282,11 @@ QChar::Joining QChar::joining(uint ucs4) noexcept
 
     A bit faster equivalent of (QChar::mirroredChar(ucs4) != ucs4).
 
+    \note Before Qt 6, this function took a \c uint argument.
+
     \sa mirroredChar()
 */
-bool QChar::hasMirrored(uint ucs4) noexcept
+bool QChar::hasMirrored(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return false;
@@ -1255,12 +1303,14 @@ bool QChar::hasMirrored(uint ucs4) noexcept
 */
 
 /*!
-    \fn static bool QChar::isLower(uint ucs4)
+    \fn static bool QChar::isLower(char32_t ucs4)
     \overload
     \since 5.0
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is a lowercase letter, for example category() is Letter_Lowercase.
+
+    \note Before Qt 6, this function took a \c uint argument.
 
     \sa isUpper(), toLower(), toUpper()
 */
@@ -1275,12 +1325,14 @@ bool QChar::hasMirrored(uint ucs4) noexcept
 */
 
 /*!
-    \fn static bool QChar::isUpper(uint ucs4)
+    \fn static bool QChar::isUpper(char32_t ucs4)
     \overload
     \since 5.0
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is an uppercase letter, for example category() is Letter_Uppercase.
+
+    \note Before Qt 6, this function took a \c uint argument.
 
     \sa isLower(), toUpper(), toLower()
 */
@@ -1295,12 +1347,14 @@ bool QChar::hasMirrored(uint ucs4) noexcept
 */
 
 /*!
-    \fn static bool QChar::isTitleCase(uint ucs4)
+    \fn static bool QChar::isTitleCase(char32_t ucs4)
     \overload
     \since 5.0
 
     Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is a titlecase letter, for example category() is Letter_Titlecase.
+
+    \note Before Qt 6, this function took a \c uint argument.
 
     \sa isLower(), toUpper(), toLower(), toTitleCase()
 */
@@ -1318,9 +1372,11 @@ bool QChar::hasMirrored(uint ucs4) noexcept
     Returns the mirrored character if the UCS-4-encoded character specified
     by \a ucs4 is a mirrored character; otherwise returns the character itself.
 
+    \note Before Qt 6, this function took a \c uint argument and returned \c uint.
+
     \sa hasMirrored()
 */
-uint QChar::mirroredChar(uint ucs4) noexcept
+char32_t QChar::mirroredChar(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
@@ -1382,8 +1438,10 @@ QString QChar::decomposition() const
     \overload
     Decomposes the UCS-4-encoded character specified by \a ucs4 into it's
     constituent parts. Returns an empty string if no decomposition exists.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-QString QChar::decomposition(uint ucs4)
+QString QChar::decomposition(char32_t ucs4)
 {
     unsigned short buffer[3];
     int length;
@@ -1403,8 +1461,10 @@ QString QChar::decomposition(uint ucs4)
     \overload
     Returns the tag defining the composition of the UCS-4-encoded character
     specified by \a ucs4. Returns QChar::NoDecomposition if no decomposition exists.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-QChar::Decomposition QChar::decompositionTag(uint ucs4) noexcept
+QChar::Decomposition QChar::decompositionTag(char32_t ucs4) noexcept
 {
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount)
         return QChar::Canonical;
@@ -1429,8 +1489,10 @@ QChar::Decomposition QChar::decompositionTag(uint ucs4) noexcept
     \overload
     Returns the combining class for the UCS-4-encoded character specified by
     \a ucs4, as defined in the Unicode standard.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-unsigned char QChar::combiningClass(uint ucs4) noexcept
+unsigned char QChar::combiningClass(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return 0;
@@ -1450,8 +1512,10 @@ unsigned char QChar::combiningClass(uint ucs4) noexcept
 
     Returns the Unicode script property value for the character specified in
     its UCS-4-encoded form as \a ucs4.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-QChar::Script QChar::script(uint ucs4) noexcept
+QChar::Script QChar::script(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::Script_Unknown;
@@ -1468,8 +1532,10 @@ QChar::Script QChar::script(uint ucs4) noexcept
     \overload
     Returns the Unicode version that introduced the character specified in
     its UCS-4-encoded form as \a ucs4.
+
+    \note Before Qt 6, this function took a \c uint argument.
 */
-QChar::UnicodeVersion QChar::unicodeVersion(uint ucs4) noexcept
+QChar::UnicodeVersion QChar::unicodeVersion(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::Unicode_Unassigned;
@@ -1511,8 +1577,10 @@ Q_DECL_CONST_FUNCTION static inline T convertCase_helper(T uc, QUnicodeTables::C
     Returns the lowercase equivalent of the UCS-4-encoded character specified
     by \a ucs4 if the character is uppercase or titlecase; otherwise returns
     the character itself.
+
+    \note Before Qt 6, this function took a \c uint argument and returned \c uint.
 */
-uint QChar::toLower(uint ucs4) noexcept
+char32_t QChar::toLower(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
@@ -1531,8 +1599,10 @@ uint QChar::toLower(uint ucs4) noexcept
     Returns the uppercase equivalent of the UCS-4-encoded character specified
     by \a ucs4 if the character is lowercase or titlecase; otherwise returns
     the character itself.
+
+    \note Before Qt 6, this function took a \c uint argument and returned \c uint.
 */
-uint QChar::toUpper(uint ucs4) noexcept
+char32_t QChar::toUpper(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
@@ -1551,8 +1621,10 @@ uint QChar::toUpper(uint ucs4) noexcept
     Returns the title case equivalent of the UCS-4-encoded character specified
     by \a ucs4 if the character is lowercase or uppercase; otherwise returns
     the character itself.
+
+    \note Before Qt 6, this function took a \c uint argument and returned \c uint.
 */
-uint QChar::toTitleCase(uint ucs4) noexcept
+char32_t QChar::toTitleCase(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
@@ -1597,8 +1669,10 @@ static inline QChar foldCase(QChar ch) noexcept
     \overload
     Returns the case folded equivalent of the UCS-4-encoded character specified
     by \a ucs4. For most Unicode characters this is the same as toLower().
+
+    \note Before Qt 6, this function took a \c uint argument and returned \c uint.
 */
-uint QChar::toCaseFolded(uint ucs4) noexcept
+char32_t QChar::toCaseFolded(char32_t ucs4) noexcept
 {
     if (ucs4 > LastValidCodePoint)
         return ucs4;
