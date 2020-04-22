@@ -148,7 +148,10 @@ public:
     \value ResetNotification Enables notifications about resets of the OpenGL context. The status is then
         queryable via the context's \l{QOpenGLContext::isValid()}{isValid()} function. Note that not setting
         this flag does not guarantee that context state loss never occurs. Additionally, some implementations
-        may choose to report context loss regardless of this flag.
+        may choose to report context loss regardless of this flag. Platforms that support dynamically enabling
+        the monitoring of the loss of context, such as, Windows with WGL, or Linux/X11 (xcb) with GLX, will
+        monitor the status in every call to \l{QOpenGLContext::makeCurrent()}{makeCurrent()}. See
+        \l{QOpenGLContext::isValid()}{isValid()} for more information on this.
 */
 
 /*!
