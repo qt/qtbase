@@ -909,10 +909,50 @@ void QListView::dragLeaveEvent(QDragLeaveEvent *e)
 /*!
   \reimp
 */
-void QListView::dropEvent(QDropEvent *e)
+void QListView::dropEvent(QDropEvent *event)
 {
-    if (!d_func()->commonListView->filterDropEvent(e))
-        QAbstractItemView::dropEvent(e);
+    Q_D(QListView);
+
+    if (event->source() == this && (event->dropAction() == Qt::MoveAction ||
+                                    dragDropMode() == QAbstractItemView::InternalMove)) {
+        QModelIndex topIndex;
+        bool topIndexDropped = false;
+        int col = -1;
+        int row = -1;
+        if (d->dropOn(event, &row, &col, &topIndex)) {
+            const QModelIndexList selIndexes = selectedIndexes();
+            QVector<QPersistentModelIndex> persIndexes;
+            persIndexes.reserve(selIndexes.count());
+
+            for (const auto &index : selIndexes) {
+                persIndexes.append(index);
+                if (index == topIndex) {
+                    topIndexDropped = true;
+                    break;
+                }
+            }
+
+            if (!topIndexDropped) {
+                std::sort(persIndexes.begin(), persIndexes.end()); // The dropped items will remain in the same visual order.
+
+                QPersistentModelIndex dropRow = model()->index(row, col, topIndex);
+
+                int r = row == -1 ? model()->rowCount() : (dropRow.row() >= 0 ? dropRow.row() : row);
+                for (int i = 0; i < persIndexes.count(); ++i) {
+                    const QPersistentModelIndex &pIndex = persIndexes.at(i);
+                    model()->moveRow(QModelIndex(), pIndex.row(), QModelIndex(), r);
+                    r = pIndex.row() + 1;   // Dropped items are inserted contiguously and in the right order.
+                }
+
+                event->accept();
+                // Don't want QAbstractItemView to delete it because it was "moved" we already did it
+                event->setDropAction(Qt::CopyAction);
+            }
+        }
+    }
+
+    if (!d->commonListView->filterDropEvent(event))
+        QAbstractItemView::dropEvent(event);
 }
 
 /*!
