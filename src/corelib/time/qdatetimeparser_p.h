@@ -220,12 +220,12 @@ private:
                   int year, QString *monthName = nullptr, int *used = nullptr) const;
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
                 QString *dayName = nullptr, int *used = nullptr) const;
+    ParsedSection findUtcOffset(QStringRef str) const;
+    ParsedSection findTimeZoneName(QStringRef str, const QDateTime &when) const;
     ParsedSection findTimeZone(QStringRef str, const QDateTime &when,
                                int maxVal, int minVal) const;
-#if QT_CONFIG(timezone)
     // Implemented in qdatetime.cpp:
     static int startsWithLocalTimeZone(const QStringRef name);
-#endif
 
     enum AmPmFinder {
         Neither = -1,
