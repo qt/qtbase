@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -44,30 +44,49 @@ qt5_wrap_cpp(<VAR> src_file1 [src_file2 ...]
 
 \section1 Description
 
-Creates rules for calling the \l{moc}{Meta-Object Compiler (moc)} on the given
-source files. For each input file, an output file is generated in the build
-directory. The paths of the generated files are added to \c{<VAR>}.
+\include includes/qt_wrap_cpp.qdocinc description
 
-\note This is a low-level macro. See the \l{CMake AUTOMOC Documentation} for a
-more convenient way to let source files be processed with \c{moc}.
+\note For compatibility with Qt 6, the command is also available under the name \l qt_wrap_cpp.
 
-\section1 Options
+\section1 Arguments
 
-You can set an explicit \c{TARGET}. This will make sure that the target
-properties \c{INCLUDE_DIRECTORIES} and \c{COMPILE_DEFINITIONS} are also used
-when scanning the source files with \c{moc}.
-
-You can set additional \c{OPTIONS} that should be added to the \c{moc} calls.
-You can find possible options in the \l{moc}{moc documentation}.
-
-\c{DEPENDS} allows you to add additional dependencies for recreation of the
-generated files. This is useful when the sources have implicit dependencies,
-like code for a Qt plugin that includes a \c{.json} file using the
-Q_PLUGIN_METADATA() macro.
+\include includes/qt_wrap_cpp.qdocinc arguments
 
 \section1 Examples
 
 \snippet cmake-macros/examples.cmake qt5_wrap_cpp
+*/
+
+/*!
+\page qtcore-cmake-qt-wrap-cpp.html
+\ingroup cmake-macros-qtcore
+
+\title qt_wrap_cpp
+
+\brief Creates \c{.moc} files from sources.
+
+\section1 Synopsis
+
+\badcode
+qt_wrap_cpp(<VAR> src_file1 [src_file2 ...]
+            [TARGET target]
+            [OPTIONS ...]
+            [DEPENDS ...])
+\endcode
+
+\section1 Description
+
+\include includes/qt_wrap_cpp.qdocinc description
+
+This command was introduced in Qt 5.15. You can use \l qt5_wrap_cpp in older versions of Qt.
+
+\section1 Arguments
+
+\include includes/qt_wrap_cpp.qdocinc arguments
+
+\section1 Examples
+
+\snippet cmake-macros/examples.cmake qt_wrap_cpp
 */
 
 /*!
@@ -87,22 +106,51 @@ qt5_add_resources(<VAR> file1.qrc [file2.qrc ...]
 
 \section1 Description
 
-Creates source code from Qt resource files using the
-\l{Resource Compiler (rcc)}. Paths to the generated source files are added to
-\c{<VAR>}.
+\include includes/qt_add_resources.qdocinc arguments
 
-\note This is a low-level macro. See the \l{CMake AUTORCC Documentation} for a
-more convenient way to let Qt resource files be processed with \c{rcc}.
 For embedding bigger resources, see \l qt5_add_big_resources.
+
+\note For compatibility with Qt 6, the command is also available under the name \l qt_add_resources.
 
 \section1 Arguments
 
-You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
-You can find possible options in the \l{rcc}{rcc documentation}.
+\include includes/qt_add_resources.qdocinc arguments
 
 \section1 Examples
 
 \snippet cmake-macros/examples.cmake qt5_add_resources
+*/
+
+/*!
+\page qtcore-cmake-qt-add-resources.html
+\ingroup cmake-macros-qtcore
+
+\title qt_add_resources
+
+\brief Compiles binary resources into source code.
+
+\section1 Synopsis
+
+\badcode
+qt_add_resources(<VAR> file1.qrc [file2.qrc ...]
+                  [OPTIONS ...])
+\endcode
+
+\section1 Description
+
+\include includes/qt_add_resources.qdocinc arguments
+
+For embedding bigger resources, see \l qt_add_big_resources.
+
+This command was introduced in Qt 5.15. You can use \l qt5_add_resources in older versions of Qt.
+
+\section1 Arguments
+
+\include includes/qt_add_resources.qdocinc arguments
+
+\section1 Examples
+
+\snippet cmake-macros/examples.cmake qt_add_resources
 */
 
 /*!
@@ -122,25 +170,47 @@ qt5_add_big_resources(<VAR> file1.qrc [file2.qrc ...]
 
 \section1 Description
 
-Creates compiled object files from Qt resource files using the
-\l{Resource Compiler (rcc)}. Paths to the generated files are added to
-\c{<VAR>}.
+\include includes/qt_add_big_resources.qdocinc description
 
-This is similar to \l qt5_add_resources, but directly generates object
-files (\c .o, \c .obj) files instead of C++ source code. This allows to
-embed bigger resources, where compiling to C++ sources and then to
-binaries would be too time consuming or memory intensive.
-
-Note that this macro is only available if using \c{CMake} 3.9 or later.
+\note For compatibility with Qt 6, the command is also available under the name \l qt_add_big_resources.
 
 \section1 Arguments
 
-You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
-You can find possible options in the \l{rcc}{rcc documentation}.
+\include includes/qt_add_big_resources.qdocinc arguments
 
 \section1 Examples
 
 \snippet cmake-macros/examples.cmake qt5_add_big_resources
+*/
+
+/*!
+\page qtcore-cmake-qt-add-big-resources.html
+\ingroup cmake-macros-qtcore
+
+\title qt_add_big_resources
+
+\brief Compiles big binary resources into object code.
+
+\section1 Synopsis
+
+\badcode
+qt_add_big_resources(<VAR> file1.qrc [file2.qrc ...]
+                     [OPTIONS ...])
+\endcode
+
+\section1 Description
+
+\include includes/qt_add_big_resources.qdocinc description
+
+This command was introduced in Qt 5.15. You can use \l qt5_add_big_resources in older versions of Qt.
+
+\section1 Arguments
+
+\include includes/qt_add_big_resources.qdocinc arguments
+
+\section1 Examples
+
+\snippet cmake-macros/examples.cmake qt_add_big_resources
 */
 
 /*!
@@ -161,20 +231,48 @@ qt5_add_binary_resources(target file1.qrc [file2.qrc ...]
 
 \section1 Description
 
-Adds a custom \c target that compiles Qt resource files into a binary \c{.rcc}
-file.
+\include includes/qt_add_binary_resources.qdocinc description
+
+\note For compatibility with Qt 6, the command is also available under the name \l qt_add_binary_resources.
 
 \section1 Arguments
 
-\c{DESTINATION} sets the path of the generated \c{.rcc} file. The default is
-\c{${CMAKE_CURRENT_BINARY_DIR}/${target}.rcc}.
-
-You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
-You can find possible options in the \l{rcc}{rcc documentation}.
+\include includes/qt_add_binary_resources.qdocinc arguments
 
 \section1 Examples
 
 \snippet cmake-macros/examples.cmake qt5_add_binary_resources
+*/
+
+/*!
+\page qtcore-cmake-qt_add_binary_resources.html
+\ingroup cmake-macros-qtcore
+
+\title qt_add_binary_resources
+
+\brief Creates an \c{RCC} file from a list of Qt resource files.
+
+\section1 Synopsis
+
+\badcode
+qt_add_binary_resources(target file1.qrc [file2.qrc ...]
+                        [DESTINATION ...]
+                        [OPTIONS ...])
+\endcode
+
+\section1 Description
+
+\include includes/qt_add_binary_resources.qdocinc description
+
+This command was introduced in Qt 5.15. You can use \l qt5_add_binary_resources in older versions of Qt.
+
+\section1 Arguments
+
+\include includes/qt_add_binary_resources.qdocinc arguments
+
+\section1 Examples
+
+\snippet cmake-macros/examples.cmake qt_add_binary_resources
 */
 
 /*!
@@ -194,25 +292,48 @@ qt5_generate_moc(src_file dest_file
 
 \section1 Description
 
-Creates a rule to call the \l{moc}{Meta-Object Compiler (moc)} on \c src_file
-and store the output in \c dest_file.
+\include includes/qt_generate_moc.qdocinc description
 
-\note This is a low-level macro. See the \l{CMake AUTOMOC Documentation} for a
-more convenient way to let source files be processed with \c{moc}.
-\l qt5_wrap_cpp is also similar, but automatically generates a temporary file
-path for you.
+\note For compatibility with Qt 6, the command is also available under the name \l qt_generate_moc.
 
 \section1 Arguments
 
-You can set an explicit \c{TARGET}. This will make sure that the target
-properties \c{INCLUDE_DIRECTORIES} and \c{COMPILE_DEFINITIONS} are also used
-when scanning the source files with \c{moc}.
+\include includes/qt_generate_moc.qdocinc arguments
 
 \section1 Examples
 
 \snippet cmake-macros/examples.cmake qt5_generate_moc
 */
 
+/*!
+\page qtcore-cmake-qt-generate-moc.html
+\ingroup cmake-macros-qtcore
+
+\title qt_generate_moc
+
+\brief Calls moc on an input file.
+
+\section1 Synopsis
+
+\badcode
+qt_generate_moc(src_file dest_file
+                [TARGET target])
+\endcode
+
+\section1 Description
+
+\include includes/qt_generate_moc.qdocinc description
+
+This command was introduced in Qt 5.15. You can use \l qt5_generate_moc in older versions of Qt.
+
+\section1 Arguments
+
+\include includes/qt_generate_moc.qdocinc arguments
+
+\section1 Examples
+
+\snippet cmake-macros/examples.cmake qt_generate_moc
+*/
 
 /*!
 \page qtcore-cmake-qt5-import-plugins.html
@@ -234,37 +355,11 @@ qt5_import_plugins(target
 
 \section1 Description
 
-Specifies a custom set of plugins to import. The optional arguments:
-\c INCLUDE, \c EXCLUDE, \c INCLUDE_BY_TYPE, and \c EXCLUDE_BY_TYPE,
-can be used more than once.
+\include includes/qt_import_plugins.qdocinc description
 
-This CMake command was introduced in Qt 5.14.
+\note For compatibility with Qt 6, the command is also available under the name \l qt_import_plugins.
 
-\list
-\li \c INCLUDE -- can be used to specify a list of plugins to import.
-\li \c EXCLUDE -- can be used to specify a list of plugins to exclude.
-\li \c INCLUDE_BY_TYPE -- can be used to override the list of plugins to
-       import for a certain plugin type.
-\li \c EXCLUDE_BY_TYPE -- can be used to specify a plugin type to exclude;
-       then no plugins of that type are imported.
-\endlist
-
-Qt provides plugin types such as \c imageformats, \c platforms,
-and \c sqldrivers.
-
-If \c qt5_import_plugins() isn't called, the target automatically links against
-a sane set of default plugins, for each Qt module that the target is linked
-against. For more information, see
-\l{CMake target_link_libraries Documentation}{target_link_libraries}.
-
-Each plugin comes with a C++ stub file that automatically
-initializes the plugin. Consequently, any target that links against a plugin
-has this C++ file added to its \c SOURCES.
-
-\note This macro imports plugins from static Qt builds only.
-On shared builds, it does nothing.
-
-\section1 Example
+\section1 Examples
 
 \snippet cmake-macros/examples.cmake qt5_import_plugins
 
@@ -278,6 +373,44 @@ In the snippet above, the following occurs with the executable \c myapp:
     overridden to only include Qt5::QGifPlugin and Qt5::QJpegPlugin.
 \li All \c sqldrivers plugins are excluded from automatic importing.
 \endlist
-
 */
 
+/*!
+\page qtcore-cmake-qt-import-plugins.html
+\ingroup cmake-macros-qtcore
+
+\title qt_import_plugins
+
+\brief Specifies a custom set of plugins to import for a static Qt build
+
+\section1 Synopsis
+
+\badcode
+qt_import_plugins(target
+                  [INCLUDE plugin ...]
+                  [EXCLUDE plugin ...]
+                  [INCLUDE_BY_TYPE plugin_type plugin ...]
+                  [EXCLUDE_BY_TYPE plugin_type])
+\endcode
+
+\section1 Description
+
+\include includes/qt_import_plugins.qdocinc description
+
+This command was introduced in Qt 5.15. You can use \l qt5_import_plugins in older versions of Qt.
+
+\section1 Examples
+
+\snippet cmake-macros/examples.cmake qt_import_plugins
+
+In the snippet above, the following occurs with the executable \c myapp:
+
+\list
+\li The \c Qt::QCocoaIntegrationPlugin is imported into myapp.
+\li The \c Qt::QMinimalIntegrationPlugin plugin is
+    excluded from being automatically imported into myapp.
+\li The default list of plugins for \c imageformats is
+    overridden to only include Qt::QGifPlugin and Qt::QJpegPlugin.
+\li All \c sqldrivers plugins are excluded from automatic importing.
+\endlist
+*/

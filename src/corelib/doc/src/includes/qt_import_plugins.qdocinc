@@ -25,62 +25,34 @@
 **
 ****************************************************************************/
 
-/*!
-\page qtwidgets-cmake-qt5-wrap-ui.html
-\ingroup cmake-macros-qtwidgets
+//! [description]
+Specifies a custom set of plugins to import. The optional arguments:
+\c INCLUDE, \c EXCLUDE, \c INCLUDE_BY_TYPE, and \c EXCLUDE_BY_TYPE,
+can be used more than once.
 
-\title qt5_wrap_ui
+This CMake command was introduced in Qt 5.14.
 
-\brief Creates sources for \c{.ui} files.
+\list
+\li \c INCLUDE -- can be used to specify a list of plugins to import.
+\li \c EXCLUDE -- can be used to specify a list of plugins to exclude.
+\li \c INCLUDE_BY_TYPE -- can be used to override the list of plugins to
+       import for a certain plugin type.
+\li \c EXCLUDE_BY_TYPE -- can be used to specify a plugin type to exclude;
+       then no plugins of that type are imported.
+\endlist
 
-\section1 Synopsis
+Qt provides plugin types such as \c imageformats, \c platforms,
+and \c sqldrivers.
 
-\badcode
-qt5_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
-            [OPTIONS ...])
-\endcode
+If the command isn't used the target automatically links against
+a sane set of default plugins, for each Qt module that the target is linked
+against. For more information, see
+\l{CMake target_link_libraries Documentation}{target_link_libraries}.
 
-\section1 Description
+Each plugin comes with a C++ stub file that automatically
+initializes the plugin. Consequently, any target that links against a plugin
+has this C++ file added to its \c SOURCES.
 
-\include includes/qt_wrap_ui.qdocinc description
-
-\note For compatibility with Qt 6, the command is also available under the name \l qt_wrap_ui.
-
-\section1 Options
-
-\include includes/qt_wrap_ui.qdocinc options
-
-\section1 Examples
-
-\snippet cmake-macros/examples.cmake qt5_wrap_ui
-*/
-
-/*!
-\page qtwidgets-cmake-qt-wrap-ui.html
-\ingroup cmake-macros-qtwidgets
-
-\title qt_wrap_ui
-
-\brief Creates sources for \c{.ui} files.
-
-\section1 Synopsis
-
-\badcode
-qt_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
-           [OPTIONS ...])
-\endcode
-
-\section1 Description
-
-\include includes/qt_wrap_ui.qdocinc description
-
-This command was introduced in Qt 5.15. You can use \l qt5_wrap_ui in older versions of Qt.
-
-\section1 Options
-
-\include includes/qt_wrap_ui.qdocinc options
-
-\section1 Examples
-
-\snippet cmake-macros/examples.cmake qt_wrap_ui
-*/
+\note This command imports plugins from static Qt builds only.
+On shared builds, it does nothing.
+//! [description]

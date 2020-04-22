@@ -25,62 +25,15 @@
 **
 ****************************************************************************/
 
-/*!
-\page qtwidgets-cmake-qt5-wrap-ui.html
-\ingroup cmake-macros-qtwidgets
+//! [description]
+Adds a custom \c target that compiles Qt resource files into a binary \c{.rcc}
+file.
+//! [description]
 
-\title qt5_wrap_ui
+//! [arguments]
+\c{DESTINATION} sets the path of the generated \c{.rcc} file. The default is
+\c{${CMAKE_CURRENT_BINARY_DIR}/${target}.rcc}.
 
-\brief Creates sources for \c{.ui} files.
-
-\section1 Synopsis
-
-\badcode
-qt5_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
-            [OPTIONS ...])
-\endcode
-
-\section1 Description
-
-\include includes/qt_wrap_ui.qdocinc description
-
-\note For compatibility with Qt 6, the command is also available under the name \l qt_wrap_ui.
-
-\section1 Options
-
-\include includes/qt_wrap_ui.qdocinc options
-
-\section1 Examples
-
-\snippet cmake-macros/examples.cmake qt5_wrap_ui
-*/
-
-/*!
-\page qtwidgets-cmake-qt-wrap-ui.html
-\ingroup cmake-macros-qtwidgets
-
-\title qt_wrap_ui
-
-\brief Creates sources for \c{.ui} files.
-
-\section1 Synopsis
-
-\badcode
-qt_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
-           [OPTIONS ...])
-\endcode
-
-\section1 Description
-
-\include includes/qt_wrap_ui.qdocinc description
-
-This command was introduced in Qt 5.15. You can use \l qt5_wrap_ui in older versions of Qt.
-
-\section1 Options
-
-\include includes/qt_wrap_ui.qdocinc options
-
-\section1 Examples
-
-\snippet cmake-macros/examples.cmake qt_wrap_ui
-*/
+You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
+You can find possible options in the \l{rcc}{rcc documentation}.
+//! [arguments]
