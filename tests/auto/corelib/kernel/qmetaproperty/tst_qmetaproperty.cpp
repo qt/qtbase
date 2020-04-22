@@ -65,6 +65,7 @@ private slots:
     void readAndWriteWithLazyRegistration();
     void mapProperty();
     void conversion();
+    void enumsFlags();
 
 public:
     enum EnumType { EnumType1 };
@@ -181,6 +182,33 @@ public:
     {}
 };
 
+class EnumFlagsTester : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(TestEnum enumProperty READ enumProperty WRITE setEnumProperty)
+    Q_PROPERTY(TestFlags flagProperty READ flagProperty WRITE setFlagProperty)
+public:
+    enum TestEnum { e1, e2 };
+    Q_ENUM(TestEnum)
+
+    enum TestFlag { flag1 = 0x1, flag2 = 0x2 };
+    Q_DECLARE_FLAGS(TestFlags, TestFlag)
+
+    using QObject::QObject;
+
+    TestEnum enumProperty() const { return m_enum; }
+    void setEnumProperty(TestEnum e) { m_enum = e; }
+
+    TestFlags flagProperty() const { return m_flags; }
+    void setFlagProperty(TestFlags f) { m_flags = f; }
+
+private:
+    TestEnum m_enum = e1;
+    TestFlags m_flags;
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(EnumFlagsTester::TestFlags)
+
 void tst_QMetaProperty::readAndWriteWithLazyRegistration()
 {
     QCOMPARE(QMetaType::type("CustomReadObject*"), int(QMetaType::UnknownType));
@@ -244,6 +272,29 @@ void tst_QMetaProperty::conversion()
     // or reset resetable
     QVERIFY(value7P.write(this, QVariant()));
     QCOMPARE(value7, QLatin1String("reset"));
+}
+
+void tst_QMetaProperty::enumsFlags()
+{
+    // QTBUG-83689, verify that enumerations and flags can be assigned from int,
+    // which is important for Qt Designer.
+    EnumFlagsTester t;
+
+    auto mo = t.metaObject();
+
+    const int enumIndex = mo->indexOfProperty("enumProperty");
+    QVERIFY(enumIndex >= 0);
+    auto enumProperty = mo->property(enumIndex);
+    QVERIFY(enumProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(enumProperty.write(&t, QVariant(int(EnumFlagsTester::e2))));
+    QCOMPARE(t.enumProperty(), EnumFlagsTester::e2);
+
+    const int flagsIndex = mo->indexOfProperty("flagProperty");
+    QVERIFY(flagsIndex >= 0);
+    auto flagsProperty = mo->property(flagsIndex);
+    QVERIFY(flagsProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(flagsProperty.write(&t, QVariant(int(EnumFlagsTester::flag2))));
+    QCOMPARE(t.flagProperty(), EnumFlagsTester::flag2);
 }
 
 QTEST_MAIN(tst_QMetaProperty)

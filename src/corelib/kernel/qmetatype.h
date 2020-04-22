@@ -432,7 +432,16 @@ struct ConverterFunctor : public AbstractConverterFunction
     struct IsMetaTypePair;
     template<typename, typename>
     struct MetaTypeSmartPointerHelper;
-}
+
+    template<typename T>
+    struct IsQFlags : std::false_type {};
+
+    template<typename Enum>
+    struct IsQFlags<QFlags<Enum>> : std::true_type {};
+
+    template<typename T>
+    struct IsEnumOrFlags : std::disjunction<std::is_enum<T>, IsQFlags<T>> {};
+}  // namespace QtPrivate
 
 class Q_CORE_EXPORT QMetaType {
 public:
@@ -1730,7 +1739,7 @@ namespace QtPrivate {
                      | (IsSharedPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::SharedPointerToQObject : 0)
                      | (IsWeakPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::WeakPointerToQObject : 0)
                      | (IsTrackingPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::TrackingPointerToQObject : 0)
-                     | (std::is_enum<T>::value ? QMetaType::IsEnumeration : 0)
+                     | (IsEnumOrFlags<T>::value ? QMetaType::IsEnumeration : 0)
                      | (IsGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::IsGadget : 0)
                      | (IsPointerToGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::PointerToGadget : 0)
                      | (QTypeInfo<T>::isPointer ? QMetaType::IsPointer : 0)
