@@ -289,8 +289,10 @@ struct QUtf8
     static QChar *convertToUnicode(QChar *, const char *, qsizetype) noexcept;
     static QString convertToUnicode(const char *, qsizetype);
     static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *);
+    static QChar *convertToUnicode(QChar *out, const char *in, qsizetype length, QStringConverter::State *state);
     static QByteArray convertFromUnicode(const QChar *, qsizetype);
     static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *);
+    static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state);
     struct ValidUtf8Result {
         bool isValidUtf8;
         bool isValidAscii;
