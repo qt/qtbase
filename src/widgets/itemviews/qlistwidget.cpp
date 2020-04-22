@@ -1875,45 +1875,8 @@ bool QListWidget::dropMimeData(int index, const QMimeData *data, Qt::DropAction 
 }
 
 /*! \reimp */
-void QListWidget::dropEvent(QDropEvent *event) {
-    Q_D(QListWidget);
-    if (event->source() == this && d->movement != Static) {
-        QListView::dropEvent(event);
-        return;
-    }
-
-    if (event->source() == this && (event->dropAction() == Qt::MoveAction ||
-                                    dragDropMode() == QAbstractItemView::InternalMove)) {
-        QModelIndex topIndex;
-        int col = -1;
-        int row = -1;
-        if (d->dropOn(event, &row, &col, &topIndex)) {
-            QList<QModelIndex> selIndexes = selectedIndexes();
-            QList<QPersistentModelIndex> persIndexes;
-            const int selIndexesCount = selIndexes.count();
-            persIndexes.reserve(selIndexesCount);
-            for (int i = 0; i < selIndexesCount; i++)
-                persIndexes.append(selIndexes.at(i));
-
-            if (persIndexes.contains(topIndex))
-                return;
-            std::sort(persIndexes.begin(), persIndexes.end()); // The dropped items will remain in the same visual order.
-
-            QPersistentModelIndex dropRow = model()->index(row, col, topIndex);
-
-            int r = row == -1 ? count() : (dropRow.row() >= 0 ? dropRow.row() : row);
-            for (int i = 0; i < persIndexes.count(); ++i) {
-                const QPersistentModelIndex &pIndex = persIndexes.at(i);
-                d->listModel()->move(pIndex.row(), r);
-                r = pIndex.row() + 1;   // Dropped items are inserted contiguously and in the right order.
-            }
-
-            event->accept();
-            // Don't want QAbstractItemView to delete it because it was "moved" we already did it
-            event->setDropAction(Qt::CopyAction);
-        }
-    }
-
+void QListWidget::dropEvent(QDropEvent *event)
+{
     QListView::dropEvent(event);
 }
 
