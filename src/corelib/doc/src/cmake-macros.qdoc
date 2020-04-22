@@ -44,9 +44,9 @@ qt5_wrap_cpp(<VAR> src_file1 [src_file2 ...]
 
 \section1 Description
 
-Creates rules for calling \l{moc}{Meta-Object Compiler (moc)} on the given
+Creates rules for calling the \l{moc}{Meta-Object Compiler (moc)} on the given
 source files. For each input file, an output file is generated in the build
-directory. The paths of the generated files are added to\c{<VAR>}.
+directory. The paths of the generated files are added to \c{<VAR>}.
 
 \note This is a low-level macro. See the \l{CMake AUTOMOC Documentation} for a
 more convenient way to let source files be processed with \c{moc}.
