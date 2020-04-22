@@ -99,6 +99,8 @@ void QFocusFramePrivate::updateSize()
         return;
 
     q->setGeometry(geom);
+
+    opt.rect = q->rect();
     QStyleHintReturnMask mask;
     if (q->style()->styleHint(QStyle::SH_FocusFrame_Mask, &opt, q, &mask))
         q->setMask(mask.region);
