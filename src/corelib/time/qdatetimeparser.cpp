@@ -218,9 +218,11 @@ int QDateTimeParser::absoluteMax(int s, const QDateTime &cur) const
 {
     const SectionNode &sn = sectionNode(s);
     switch (sn.type) {
-#if QT_CONFIG(timezone)
     case TimeZoneSection:
+#if QT_CONFIG(timezone)
         return QTimeZone::MaxUtcOffsetSecs;
+#else
+        return +14 * 3600;  // NB: copied from QTimeZone
 #endif
     case Hour24Section:
     case Hour12Section:
@@ -263,8 +265,11 @@ int QDateTimeParser::absoluteMin(int s) const
 {
     const SectionNode &sn = sectionNode(s);
     switch (sn.type) {
+    case TimeZoneSection:
 #if QT_CONFIG(timezone)
-    case TimeZoneSection: return QTimeZone::MinUtcOffsetSecs;
+        return QTimeZone::MinUtcOffsetSecs;
+#else
+        return -14 * 3600;  // NB: copied from QTimeZone
 #endif
     case Hour24Section:
     case Hour12Section:
@@ -1200,24 +1205,29 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         case TimeZoneSection:
             current = &zoneOffset;
             if (sect.used > 0) {
-#if QT_CONFIG(timezone) // Synchronize with what findTimeZone() found:
+                // Synchronize with what findTimeZone() found:
                 QStringRef zoneName = input->midRef(pos, sect.used);
                 Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
-                const QByteArray latinZone(zoneName == QLatin1String("Z")
-                                           ? QByteArray("UTC") : zoneName.toLatin1());
-                if (latinZone.startsWith("UTC") &&
-                    (latinZone.size() == 3 || latinZone.at(3) == '+' || latinZone.at(3) == '-' )) {
-                    timeZone = QTimeZone(sect.value);
+
+                const QStringRef offsetStr = zoneName.startsWith(QLatin1String("UTC"))
+                                             ? zoneName.mid(3) : zoneName;
+                const bool isUtcOffset = offsetStr.startsWith(QLatin1Char('+'))
+                                         || offsetStr.startsWith(QLatin1Char('-'));
+                const bool isUtc = zoneName == QLatin1String("Z")
+                                   || zoneName == QLatin1String("UTC");
+
+                if (isUtc || isUtcOffset) {
                     tspec = sect.value ? Qt::OffsetFromUTC : Qt::UTC;
                 } else {
-                    timeZone = QTimeZone(latinZone);
+#if QT_CONFIG(timezone)
+                    timeZone = QTimeZone(zoneName.toLatin1());
                     tspec = timeZone.isValid()
                         ? Qt::TimeZone
                         : (Q_ASSERT(startsWithLocalTimeZone(zoneName)), Qt::LocalTime);
-                }
 #else
-                tspec = Qt::LocalTime;
+                    tspec = Qt::LocalTime;
 #endif
+                }
             }
             break;
         case Hour24Section: current = &hour; break;
@@ -1640,6 +1650,111 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
 /*!
   \internal
 
+  Return's .value is UTC offset in seconds.
+  The caller must verify that the offset is within a valid range.
+ */
+QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringRef str) const
+{
+    const bool startsWithUtc = str.startsWith(QLatin1String("UTC"));
+    // Get rid of UTC prefix if it exists
+    if (startsWithUtc)
+        str = str.mid(3);
+
+    const bool negativeSign = str.startsWith(QLatin1Char('-'));
+    // Must start with a sign:
+    if (!negativeSign && !str.startsWith(QLatin1Char('+')))
+        return ParsedSection();
+    str = str.mid(1);  // drop sign
+
+    const int colonPosition = str.indexOf(QLatin1Char(':'));
+    // Colon that belongs to offset is at most at position 2 (hh:mm)
+    bool hasColon = (colonPosition >= 0 && colonPosition < 3);
+
+    // We deal only with digits at this point (except ':'), so collect them
+    const int digits = hasColon ? colonPosition + 3 : 4;
+    int i = 0;
+    for (const int offsetLength = qMin(digits, str.size()); i < offsetLength; ++i) {
+        if (i != colonPosition && !str.at(i).isDigit())
+            break;
+    }
+    const int hoursLength = qMin(i, hasColon ? colonPosition : 2);
+    if (hoursLength < 1)
+        return ParsedSection();
+    // Field either ends with hours or also has two digits of minutes
+    if (i < digits) {
+        // Only allow single-digit hours with UTC prefix or :mm suffix
+        if (!startsWithUtc && hoursLength != 2)
+            return ParsedSection();
+        i = hoursLength;
+        hasColon = false;
+    }
+    str.truncate(i);  // The rest of the string is not part of the UTC offset
+
+    bool isInt = false;
+    const int hours = str.mid(0, hoursLength).toInt(&isInt);
+    if (!isInt)
+        return ParsedSection();
+    const QStringRef minutesStr = str.mid(hasColon ? colonPosition + 1 : 2, 2);
+    const int minutes = minutesStr.isEmpty() ? 0 : minutesStr.toInt(&isInt);
+    if (!isInt)
+        return ParsedSection();
+
+    // Keep in sync with QTimeZone::maxUtcOffset hours (14 at most). Also, user
+    // could be in the middle of updating the offset (e.g. UTC+14:23) which is
+    // an intermediate state
+    const State status = (hours > 14 || minutes >= 60) ? Invalid
+                         : (hours == 14 && minutes > 0) ? Intermediate : Acceptable;
+
+    int offset = 3600 * hours + 60 * minutes;
+    if (negativeSign)
+        offset = -offset;
+
+    // Used: UTC, sign, hours, colon, minutes
+    const int usedSymbols = (startsWithUtc ? 3 : 0) + 1 + hoursLength + (hasColon ? 1 : 0)
+                            + minutesStr.size();
+
+    return ParsedSection(status, offset, usedSymbols);
+}
+
+/*!
+  \internal
+
+  Return's .value is zone's offset, zone time - UTC time, in seconds.
+  The caller must verify that the offset is within a valid range.
+  See QTimeZonePrivate::isValidId() for the format of zone names.
+ */
+QDateTimeParser::ParsedSection
+QDateTimeParser::findTimeZoneName(QStringRef str, const QDateTime &when) const
+{
+    int index = startsWithLocalTimeZone(str);
+    if (index > 0)  // won't actually use the offset, but need it to be valid
+        return ParsedSection(Acceptable, when.toLocalTime().offsetFromUtc(), index);
+
+#if QT_CONFIG(timezone)
+    const int size = str.length();
+
+    // Collect up plausibly-valid characters; let QTimeZone work out what's
+    // truly valid.
+    for (; index < size; ++index) {
+        const QChar here = str[index];
+        if (here >= 127 || (!here.isLetterOrNumber() && !QLatin1String("/-_.+:").contains(here)))
+            break;
+    }
+
+    while (index > 0) {
+        str.truncate(index);
+        QTimeZone zone(str.toLatin1());
+        if (zone.isValid())
+            return ParsedSection(Acceptable, zone.offsetFromUtc(when), index);
+        index--; // maybe we collected too much ...
+    }
+#endif
+    return ParsedSection();
+}
+
+/*!
+  \internal
+
   Return's .value is zone's offset, zone time - UTC time, in seconds.
   See QTimeZonePrivate::isValidId() for the format of zone names.
  */
@@ -1647,55 +1762,21 @@ QDateTimeParser::ParsedSection
 QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when,
                               int maxVal, int minVal) const
 {
-#if QT_CONFIG(timezone)
-    int index = startsWithLocalTimeZone(str);
-    int offset;
+    ParsedSection section = findUtcOffset(str);
+    if (section.used <= 0)  // if nothing used, try time zone parsing
+        section = findTimeZoneName(str, when);
+    // It can be a well formed time zone specifier, but with value out of range
+    if (section.state == Acceptable && (section.value < minVal || section.value > maxVal))
+        section.state = Intermediate;
+    if (section.used > 0)
+        return section;
 
-    if (index > 0) {
-        // We won't actually use this, but we need a valid return:
-        offset = QDateTime(when.date(), when.time(), Qt::LocalTime).offsetFromUtc();
-    } else {
-        int size = str.length();
-        offset = std::numeric_limits<int>::max(); // deliberately out of range
-        Q_ASSERT(offset > QTimeZone::MaxUtcOffsetSecs); // cf. absoluteMax()
+    // Check if string is UTC or alias to UTC, after all other options
+    if (str.startsWith(QLatin1String("UTC")))
+        return ParsedSection(Acceptable, 0, 3);
+    if (str.startsWith(QLatin1Char('Z')))
+        return ParsedSection(Acceptable, 0, 1);
 
-        // Collect up plausibly-valid characters; let QTimeZone work out what's truly valid.
-        while (index < size) {
-            QChar here = str[index];
-            if (here < 127
-                && (here.isLetterOrNumber()
-                    || here == '/' || here == '-'
-                    || here == '_' || here == '.'
-                    || here == '+' || here == ':'))
-                index++;
-            else
-                break;
-        }
-
-        while (index > 0) {
-            str.truncate(index);
-            if (str == QLatin1String("Z")) {
-                offset = 0; // "Zulu" time - a.k.a. UTC
-                break;
-            }
-            QTimeZone zone(str.toLatin1());
-            if (zone.isValid()) {
-                offset = zone.offsetFromUtc(when);
-                break;
-            }
-            index--; // maybe we collected too much ...
-        }
-    }
-
-    if (index > 0 && maxVal >= offset && offset >= minVal)
-        return ParsedSection(Acceptable, offset, index);
-
-#else // timezone
-    Q_UNUSED(str);
-    Q_UNUSED(when);
-    Q_UNUSED(maxVal);
-    Q_UNUSED(minVal);
-#endif
     return ParsedSection();
 }
 

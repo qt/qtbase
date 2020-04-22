@@ -2530,11 +2530,136 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data13") << QString("30.02.2004") << QString("dd.MM.yyyy") << invalidDateTime();
     QTest::newRow("data14") << QString("32.01.2004") << QString("dd.MM.yyyy") << invalidDateTime();
     QTest::newRow("data15") << QString("Thu January 2004") << QString("ddd MMMM yyyy") << QDateTime(QDate(2004, 1, 1), QTime());
-#if QT_CONFIG(timezone)
-    // Qt::UTC and Qt::OffsetFromUTC not supported without timezone: QTBUG-83844
     QTest::newRow("data16") << QString("2005-06-28T07:57:30.001Z")
                             << QString("yyyy-MM-ddThh:mm:ss.zt")
                             << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
+    QTest::newRow("utc-time-spec-as:UTC+0")
+        << QString("2005-06-28T07:57:30.001UTC+0") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);
+    QTest::newRow("utc-time-spec-as:UTC-0")
+        << QString("2005-06-28T07:57:30.001UTC-0") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);
+    QTest::newRow("offset-from-utc:UTC+1")
+        << QString("2001-09-13T07:33:01.001 UTC+1") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << QDateTime(QDate(2001, 9, 13), QTime(7, 33, 1, 1), Qt::OffsetFromUTC, 3600);
+    QTest::newRow("offset-from-utc:UTC-11:01")
+        << QString("2008-09-13T07:33:01.001 UTC-11:01") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << QDateTime(QDate(2008, 9, 13), QTime(7, 33, 1, 1), Qt::OffsetFromUTC, -39660);
+    QTest::newRow("offset-from-utc:UTC+02:57")
+        << QString("2001-09-15T09:33:01.001UTC+02:57") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << QDateTime(QDate(2001, 9, 15), QTime(9, 33, 1, 1), Qt::OffsetFromUTC, 10620);
+    QTest::newRow("offset-from-utc:-03:00")  // RFC 3339 offset format
+        << QString("2001-09-15T09:33:01.001-03:00") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << QDateTime(QDate(2001, 9, 15), QTime(9, 33, 1, 1), Qt::OffsetFromUTC, -10800);
+    QTest::newRow("offset-from-utc:+0205")  // ISO 8601 basic offset format
+        << QString("2001-09-15T09:33:01.001+0205") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << QDateTime(QDate(2001, 9, 15), QTime(9, 33, 1, 1), Qt::OffsetFromUTC, 7500);
+    QTest::newRow("offset-from-utc:-0401")  // ISO 8601 basic offset format
+        << QString("2001-09-15T09:33:01.001-0401") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << QDateTime(QDate(2001, 9, 15), QTime(9, 33, 1, 1), Qt::OffsetFromUTC, -14460);
+    QTest::newRow("offset-from-utc:+10")  // ISO 8601 basic (hour-only) offset format
+        << QString("2001-09-15T09:33:01.001 +10") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << QDateTime(QDate(2001, 9, 15), QTime(9, 33, 1, 1), Qt::OffsetFromUTC, 36000);
+    QTest::newRow("offset-from-utc:UTC+10:00")  // Time-spec specifier at the beginning
+        << QString("UTC+10:00 2008-10-13T07:33") << QString("t yyyy-MM-ddThh:mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(7, 33), Qt::OffsetFromUTC, 36000);
+    QTest::newRow("offset-from-utc:UTC-03:30")  // Time-spec specifier in the middle
+        << QString("2008-10-13 UTC-03:30 11.50") << QString("yyyy-MM-dd t hh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, -12600);
+    QTest::newRow("offset-from-utc:UTC-2")  // Time-spec specifier joined with text/time
+        << QString("2008-10-13 UTC-2Z11.50") << QString("yyyy-MM-dd tZhh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, -7200);
+    QTest::newRow("offset-from-utc:followed-by-colon")
+        << QString("2008-10-13 UTC-0100:11.50") << QString("yyyy-MM-dd t:hh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, -3600);
+    QTest::newRow("offset-from-utc:late-colon")
+        << QString("2008-10-13 UTC+05T:11.50") << QString("yyyy-MM-dd tT:hh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 18000);
+    QTest::newRow("offset-from-utc:merged-with-time")
+        << QString("2008-10-13 UTC+010011.50") << QString("yyyy-MM-dd thh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 3600);
+    QTest::newRow("offset-from-utc:double-colon-delimiter")
+        << QString("2008-10-13 UTC+12::11.50") << QString("yyyy-MM-dd t::hh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 43200);
+    QTest::newRow("offset-from-utc:3-digit-with-colon")
+        << QString("2008-10-13 -4:30 11.50") << QString("yyyy-MM-dd t hh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, -16200);
+    QTest::newRow("offset-from-utc:merged-with-time")
+        << QString("2008-10-13 UTC+010011.50") << QString("yyyy-MM-dd thh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 3600);
+    QTest::newRow("offset-from-utc:with-colon-merged-with-time")
+        << QString("2008-10-13 UTC+01:0011.50") << QString("yyyy-MM-dd thh.mm")
+        << QDateTime(QDate(2008, 10, 13), QTime(11, 50), Qt::OffsetFromUTC, 3600);
+    QTest::newRow("invalid-offset-from-utc:out-of-range")
+        << QString("2001-09-15T09:33:01.001-50") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:single-digit-format")
+        << QString("2001-09-15T09:33:01.001+5") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:three-digit-format")
+        << QString("2001-09-15T09:33:01.001-701") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:three-digit-minutes")
+        << QString("2001-09-15T09:33:01.001+11:570") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:single-digit-minutes")
+        << QString("2001-09-15T09:33:01.001+11:5") << QString("yyyy-MM-ddThh:mm:ss.zt")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:invalid-sign-symbol")
+        << QString("2001-09-15T09:33:01.001 ~11:30") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:symbol-in-hours")
+        << QString("2001-09-15T09:33:01.001 UTC+o8:30") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:symbol-in-minutes")
+        << QString("2001-09-15T09:33:01.001 UTC+08:3i") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:UTC+123")  // Invalid offset (UTC and 3 digit format)
+        << QString("2001-09-15T09:33:01.001 UTC+123") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:UTC+00005")  // Invalid offset with leading zeroes
+        << QString("2001-09-15T09:33:01.001 UTC+00005") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:three-digit-with-colon-delimiter")
+        << QString("2008-10-13 +123:11.50") << QString("yyyy-MM-dd t:hh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:double-colon-as-part-of-offset")
+        << QString("2008-10-13 UTC+12::11.50") << QString("yyyy-MM-dd thh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:single-colon-as-part-of-offset")
+        << QString("2008-10-13 UTC+12::11.50") << QString("yyyy-MM-dd t:hh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:starts-with-colon")
+        << QString("2008-10-13 UTC+:59 11.50") << QString("yyyy-MM-dd t hh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:empty-offset")
+        << QString("2008-10-13 UTC+ 11.50") << QString("yyyy-MM-dd t hh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:time-section-instead-of-offset")
+        << QString("2008-10-13 UTC+11.50") << QString("yyyy-MM-dd thh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:missing-minutes-if-colon")
+        << QString("2008-10-13 +05: 11.50") << QString("yyyy-MM-dd t hh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:1-digit-minutes-if-colon")
+        << QString("2008-10-13 UTC+05:1 11.50") << QString("yyyy-MM-dd t hh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-time-spec:random-symbol")
+        << QString("2001-09-15T09:33:01.001 $") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << invalidDateTime();
+    QTest::newRow("invalid-time-spec:random-digit")
+        << QString("2001-09-15T09:33:01.001 1") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:merged-with-time")
+        << QString("2008-10-13 UTC+0111.50") << QString("yyyy-MM-dd thh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-offset-from-utc:with-colon-3-digit-merged-with-time")
+        << QString("2008-10-13 UTC+01:011.50") << QString("yyyy-MM-dd thh.mm")
+        << invalidDateTime();
+    QTest::newRow("invalid-time-spec:empty")
+        << QString("2001-09-15T09:33:01.001 ") << QString("yyyy-MM-ddThh:mm:ss.z t")
+        << invalidDateTime();
+#if QT_CONFIG(timezone)
     QTimeZone southBrazil("America/Sao_Paulo");
     if (southBrazil.isValid()) {
         QTest::newRow("spring-forward-midnight")
@@ -2575,6 +2700,8 @@ void tst_QDateTime::fromStringStringFormat()
         if (expected.timeSpec() == Qt::TimeZone)
             QCOMPARE(dt.timeZone(), expected.timeZone());
 #endif
+        // OffsetFromUTC needs an offset check - we may as well do it for all:
+        QCOMPARE(dt.offsetFromUtc(), expected.offsetFromUtc());
     }
     QCOMPARE(dt, expected);
 }
@@ -2621,15 +2748,7 @@ void tst_QDateTime::fromStringToStringLocale()
     ROUNDTRIP(Qt::SystemLocaleDate);
     ROUNDTRIP(Qt::LocaleDate);
 
-#if !QT_CONFIG(timezone)
-    QEXPECT_FAIL("", "Long date formats (with time-zone specifiers) need timezone feature enabled",
-                 Continue);
-#endif
     ROUNDTRIP(Qt::DefaultLocaleLongDate);
-#if !QT_CONFIG(timezone)
-    QEXPECT_FAIL("", "Long date formats (with time-zone specifiers) need timezone feature enabled",
-                 Continue);
-#endif
     ROUNDTRIP(Qt::SystemLocaleLongDate);
 #undef ROUNDTRIP
     QLocale::setDefault(def);
