@@ -48,6 +48,8 @@
 #include <QtGui/private/qdnd_p.h>
 #include <QtGui/private/qinternalmimedata_p.h>
 
+#include <QtCore/qeventloop.h>
+
 QT_BEGIN_NAMESPACE
 
 class QCocoaDrag : public QPlatformDrag
@@ -69,11 +71,15 @@ public:
     void setLastMouseEvent(NSEvent *event, NSView *view);
 
     void setAcceptedAction(Qt::DropAction act);
+    void exitDragLoop();
 private:
     QDrag *m_drag;
     NSEvent *m_lastEvent;
     NSView *m_lastView;
     Qt::DropAction m_executed_drop_action;
+    QEventLoop internalDragLoop;
+
+    bool maybeDragMultipleItems();
 
     QPixmap dragPixmap(QDrag *drag, QPoint &hotSpot) const;
 };
