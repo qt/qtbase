@@ -6,7 +6,7 @@
 
 #### Libraries
 
-qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
+qt_find_package(Cups PROVIDED_TARGETS Cups::Cups MODULE_NAME printsupport QMAKE_LIB cups)
 
 
 #### Tests

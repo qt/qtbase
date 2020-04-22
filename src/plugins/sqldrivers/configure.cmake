@@ -10,12 +10,15 @@ set_property(CACHE INPUT_sqlite PROPERTY STRINGS undefined qt system)
 
 #### Libraries
 
-qt_find_package(DB2 PROVIDED_TARGETS DB2::DB2)
-qt_find_package(MySQL PROVIDED_TARGETS MySQL::MySQL)
-qt_find_package(PostgreSQL PROVIDED_TARGETS PostgreSQL::PostgreSQL)
-qt_find_package(Oracle PROVIDED_TARGETS Oracle::OCI)
-qt_find_package(ODBC PROVIDED_TARGETS ODBC::ODBC)
-qt_find_package(SQLite3 PROVIDED_TARGETS SQLite::SQLite3)
+qt_find_package(DB2 PROVIDED_TARGETS DB2::DB2 MODULE_NAME sqldrivers QMAKE_LIB db2)
+qt_find_package(MySQL PROVIDED_TARGETS MySQL::MySQL MODULE_NAME sqldrivers QMAKE_LIB mysql)
+qt_find_package(PostgreSQL PROVIDED_TARGETS PostgreSQL::PostgreSQL MODULE_NAME sqldrivers QMAKE_LIB psql)
+qt_find_package(Oracle PROVIDED_TARGETS Oracle::OCI MODULE_NAME sqldrivers QMAKE_LIB oci)
+qt_find_package(ODBC PROVIDED_TARGETS ODBC::ODBC MODULE_NAME sqldrivers QMAKE_LIB odbc)
+qt_find_package(SQLite3 PROVIDED_TARGETS SQLite::SQLite3 MODULE_NAME sqldrivers QMAKE_LIB sqlite3)
+if(NOT WIN32 AND QT_FEATURE_system_zlib)
+    qt_add_qmake_lib_dependency(sqlite3 zlib)
+endif()
 
 
 #### Tests

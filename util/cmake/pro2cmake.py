@@ -2965,6 +2965,7 @@ def write_3rdparty_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> 
 
     target_name = re.sub(r"^qt", "", scope.TARGET)
     target_name = target_name.replace("-", "_")
+    qmake_lib_name = target_name
 
     # Capitalize the first letter for a nicer name.
     target_name = target_name.title()
@@ -2978,7 +2979,7 @@ def write_3rdparty_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> 
     else:
         library_type = "STATIC"
 
-    extra_lines = []
+    extra_lines = [f"QMAKE_LIB_NAME {qmake_lib_name}"]
 
     if library_type:
         extra_lines.append(library_type)

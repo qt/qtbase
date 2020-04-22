@@ -321,6 +321,7 @@ qt_copy_or_install(FILES
                    cmake/QtFindWrapHelper.cmake
                    cmake/QtFindWrapConfigExtra.cmake.in
                    cmake/QtFileConfigure.txt.in
+                   cmake/QtGenerateExtPri.cmake
                    cmake/QtPlatformSupport.cmake
                    cmake/QtPlatformAndroid.cmake
                    cmake/QtPostProcess.cmake

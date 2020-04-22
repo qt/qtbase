@@ -778,6 +778,7 @@ def generate_find_package_info(
     indent: int = 0,
     emit_if: str = "",
     use_system_package_name: bool = False,
+    module: str = "",
 ) -> str:
     isRequired = False
 
@@ -801,8 +802,12 @@ def generate_find_package_info(
         package_name = package_name.replace(*replace_args)
         cmake_target_name = cmake_target_name.replace(*replace_args)
 
-    if cmake_target_name and use_qt_find_package:
-        extra += ["PROVIDED_TARGETS", cmake_target_name]
+    if use_qt_find_package:
+        if cmake_target_name:
+            extra += ["PROVIDED_TARGETS", cmake_target_name]
+        if module:
+            extra += ["MODULE_NAME", module]
+            extra += ["QMAKE_LIB", lib.soName]
 
     result = ""
     one_ind = "    "

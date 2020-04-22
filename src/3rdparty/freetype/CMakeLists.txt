@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_3rdparty_library(BundledFreetype
+    QMAKE_LIB_NAME freetype
     STATIC
     INSTALL
     SOURCES

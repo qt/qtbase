@@ -6,8 +6,8 @@
 
 #### Libraries
 
-qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy)
-qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders)
+qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy MODULE_NAME network QMAKE_LIB libproxy)
+qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME network QMAKE_LIB openssl_headers)
 # openssl_headers
 qt_config_compile_test(openssl_headers
     LIBRARIES
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 }
 ")
 
-qt_find_package(WrapOpenSSL PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL)
+qt_find_package(WrapOpenSSL PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL MODULE_NAME network QMAKE_LIB openssl)
 # openssl
 qt_config_compile_test(openssl
     LIBRARIES
@@ -57,7 +57,7 @@ SSL_free(SSL_new(0));
 }
 ")
 
-qt_find_package(GSSAPI PROVIDED_TARGETS GSSAPI::GSSAPI)
+qt_find_package(GSSAPI PROVIDED_TARGETS GSSAPI::GSSAPI MODULE_NAME network QMAKE_LIB gssapi)
 
 
 #### Tests

@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_3rdparty_library(BundledLibpng
+    QMAKE_LIB_NAME libpng
     STATIC
     INSTALL
     SOURCES

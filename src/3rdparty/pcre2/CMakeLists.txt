@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_3rdparty_library(BundledPcre2
+    QMAKE_LIB_NAME pcre2
     STATIC
     SOURCES
         src/config.h

@@ -604,6 +604,88 @@ function(qt_is_imported_target target out_var)
     set(${out_var} "${is_imported}" PARENT_SCOPE)
 endfunction()
 
+# Creates a regular expression that exactly matches the given string
+# Found in https://gitlab.kitware.com/cmake/cmake/issues/18580
+function(qt_re_escape out_var str)
+    string(REGEX REPLACE "([][+.*()^])" "\\\\\\1" regex "${str}")
+    set(${out_var} ${regex} PARENT_SCOPE)
+endfunction()
+
+# Extracts the 3rdparty libraries for the module ${module_name} in module .pri file format
+# and stores the content in ${out_var}.
+#
+# This function "follows" INTERFACE_LIBRARY targets to "real" targets
+# and collects defines, include dirs and lib dirs on the way.
+function(qt_get_qmake_libraries_pri_content out_var module_name)
+    set(content "")
+
+    # Set up a regular expression that matches all implicit include dirs
+    set(implicit_include_dirs_regex "")
+    foreach(dir ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+        qt_re_escape(regex "${dir}")
+        list(APPEND implicit_include_dirs_regex ${regex})
+    endforeach()
+    list(JOIN implicit_include_dirs_regex "|" implicit_include_dirs_regex)
+
+    foreach(lib ${QT_QMAKE_LIBS_FOR_${module_name}})
+        set(lib_targets ${QT_QMAKE_LIB_TARGETS_${lib}})
+        string(TOUPPER ${lib} uclib)
+        set(lib_defines "")
+        set(lib_incdir "")
+        set(lib_libdir "")
+        set(lib_libs "")
+        while(lib_targets)
+            list(POP_BACK lib_targets lib_target)
+            if(TARGET ${lib_target})
+                get_target_property(lib_target_type ${lib_target} TYPE)
+                if(lib_target_type STREQUAL "INTERFACE_LIBRARY")
+                    get_target_property(iface_libs ${lib_target} INTERFACE_LINK_LIBRARIES)
+                    if(iface_libs)
+                        list(PREPEND lib_targets ${iface_libs})
+                    endif()
+                else()
+                    list(APPEND lib_libs "$<TARGET_LINKER_FILE:${lib_target}>")
+                endif()
+                list(APPEND lib_libdir  "$<TARGET_PROPERTY:${lib_target},INTERFACE_LINK_DIRECTORIES>")
+                list(APPEND lib_incdir  "$<TARGET_PROPERTY:${lib_target},INTERFACE_INCLUDE_DIRECTORIES>")
+                list(APPEND lib_defines "$<TARGET_PROPERTY:${lib_target},INTERFACE_COMPILE_DEFINITIONS>")
+            else()
+                list(APPEND lib_libs "${lib_target}")
+            endif()
+        endwhile()
+
+        # Wrap in $<REMOVE_DUPLICATES:...> but not the libs, because
+        # we would have to preserve the right order for the linker.
+        foreach(sfx libdir incdir defines)
+            string(PREPEND lib_${sfx} "$<REMOVE_DUPLICATES:")
+            string(APPEND lib_${sfx} ">")
+        endforeach()
+
+        # Filter out implicit include directories
+        string(PREPEND lib_incdir "$<FILTER:")
+        string(APPEND lib_incdir ",EXCLUDE,${implicit_include_dirs_regex}>")
+
+        # Wrap in $<JOIN:..., > to create qmake-style lists.
+        foreach(sfx libs libdir incdir defines)
+            string(PREPEND lib_${sfx} "$<JOIN:")
+            string(APPEND lib_${sfx} ", >")
+        endforeach()
+
+        string(APPEND content "QMAKE_LIBS_${uclib} = ${lib_libs}
+QMAKE_LIBDIR_${uclib} = ${lib_libdir}
+QMAKE_INCDIR_${uclib} = ${lib_incdir}
+QMAKE_DEFINES_${uclib} = ${lib_defines}
+")
+        if(QT_QMAKE_LIB_DEPS_${lib})
+            list(JOIN QT_QMAKE_LIB_DEPS_${lib} " " deps)
+            string(APPEND content "QMAKE_DEPENDS_${uclib}_CC = ${deps}
+QMAKE_DEPENDS_${uclib}_LD = ${deps}
+")
+        endif()
+    endforeach()
+    set(${out_var} "${content}" PARENT_SCOPE)
+endfunction()
+
 # Generates module .pri files for consumption by qmake
 function(qt_generate_module_pri_file target target_path config_module_name pri_files_var)
     set(flags INTERNAL_MODULE HEADER_MODULE)
@@ -703,6 +785,8 @@ QT_MODULES += ${config_module_name}
     qt_path_join(private_pri_file "${target_path}" "qt_lib_${config_module_name}_private.pri")
     list(APPEND pri_files "${private_pri_file}")
 
+    qt_get_qmake_libraries_pri_content(libraries_content ${config_module_name})
+
     file(GENERATE
         OUTPUT "${private_pri_file}"
         CONTENT
@@ -717,10 +801,52 @@ QT.${config_module_name}_private.uses =
 QT.${config_module_name}_private.module_config = ${joined_module_internal_config}
 QT.${config_module_name}_private.enabled_features = ${enabled_private_features}
 QT.${config_module_name}_private.disabled_features = ${disabled_private_features}
-"
+${libraries_content}"
     )
 
     set("${pri_files_var}" "${pri_files}" PARENT_SCOPE)
+endfunction()
+
+# Generates qt_ext_XXX.pri files for consumption by qmake
+function(qt_generate_3rdparty_lib_pri_file target lib pri_file_var)
+    if(NOT lib)
+        # Don't write a pri file for projects that don't set QMAKE_LIB_NAME yet.
+        return()
+    endif()
+
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        set(configs ${CMAKE_CONFIGURATION_TYPES})
+    else()
+        set(configs ${CMAKE_BUILD_TYPE})
+    endif()
+
+    file(GENERATE
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/qt_ext_${lib}.cmake"
+        CONTENT "set(cfg $<CONFIG>)
+set(incdir $<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>)
+set(defines $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS>)
+set(libs $<TARGET_FILE:${target}>)
+")
+
+    set(inputs "")
+    foreach(cfg ${configs})
+        list(APPEND inputs "${CMAKE_CURRENT_BINARY_DIR}/${cfg}/qt_ext_${lib}.cmake")
+    endforeach()
+
+    qt_path_join(pri_target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
+    qt_path_join(pri_file "${pri_target_path}" "qt_ext_${lib}.pri")
+    qt_path_join(qt_build_libdir ${QT_BUILD_DIR} ${INSTALL_LIBDIR})
+    add_custom_command(
+        OUTPUT "${pri_file}"
+        DEPENDS ${inputs}
+        COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${pri_file}" -DLIB=${lib}
+                "-DCONFIGS=${configs}"
+                "-DQT_BUILD_LIBDIR=${qt_build_libdir}"
+                -P "${QT_CMAKE_DIR}/QtGenerateExtPri.cmake"
+        VERBATIM)
+    add_custom_target(${target}_ext_pri DEPENDS "${pri_file}")
+    add_dependencies(${target} ${target}_ext_pri)
+    set(${pri_file_var} ${pri_file} PARENT_SCOPE)
 endfunction()
 
 function(qt_cmake_build_type_to_qmake_build_config out_var build_type)
@@ -892,6 +1018,9 @@ CONFIG += ${private_config_joined}
     qt_get_build_parts(build_parts)
     string(REPLACE ";" " " build_parts "${build_parts}")
     string(APPEND content "QT_BUILD_PARTS = ${build_parts}\n")
+
+    qt_get_qmake_libraries_pri_content(libraries_content global)
+    string(APPEND content "${libraries_content}")
 
     file(GENERATE
         OUTPUT "${qmodule_pri_target_path}"
@@ -3661,7 +3790,7 @@ function(qt_add_3rdparty_library target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_3rdparty_library"
         "SHARED;MODULE;STATIC;INTERFACE;EXCEPTIONS;INSTALL;SKIP_AUTOMOC"
-        "OUTPUT_DIRECTORY"
+        "OUTPUT_DIRECTORY;QMAKE_LIB_NAME"
         "${__default_private_args};${__default_public_args}"
         ${ARGN}
     )
@@ -3736,6 +3865,11 @@ function(qt_add_3rdparty_library target)
 
     if(NOT arg_EXCEPTIONS AND NOT arg_INTERFACE)
         qt_internal_set_no_exceptions_flags("${target}")
+    endif()
+
+    qt_generate_3rdparty_lib_pri_file("${target}" "${arg_QMAKE_LIB_NAME}" pri_file)
+    if(pri_file)
+        qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
     endif()
 
     qt_extend_target("${target}"
@@ -4398,7 +4532,7 @@ endfunction()
 macro(qt_find_package)
     # Get the target names we expect to be provided by the package.
     set(options CONFIG NO_MODULE MODULE REQUIRED)
-    set(oneValueArgs)
+    set(oneValueArgs MODULE_NAME QMAKE_LIB)
     set(multiValueArgs PROVIDED_TARGETS COMPONENTS)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -4519,7 +4653,20 @@ macro(qt_find_package)
             endif()
 
         endforeach()
+
+        if(arg_MODULE_NAME AND arg_QMAKE_LIB
+           AND (NOT arg_QMAKE_LIB IN_LIST QT_QMAKE_LIBS_FOR_${arg_MODULE_NAME}))
+            set(QT_QMAKE_LIBS_FOR_${arg_MODULE_NAME}
+                ${QT_QMAKE_LIBS_FOR_${arg_MODULE_NAME}};${arg_QMAKE_LIB} CACHE INTERNAL "")
+            set(QT_QMAKE_LIB_TARGETS_${arg_QMAKE_LIB} ${arg_PROVIDED_TARGETS} CACHE INTERNAL "")
+        endif()
     endif()
+endmacro()
+
+macro(qt_add_qmake_lib_dependency lib dep)
+    string(REPLACE "-" "_" dep ${dep})
+    string(TOUPPER "${dep}" ucdep)
+    list(APPEND QT_QMAKE_LIB_DEPS_${lib} ${ucdep})
 endmacro()
 
 macro(qt_find_apple_system_frameworks)

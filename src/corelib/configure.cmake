@@ -14,19 +14,23 @@ set_property(CACHE INPUT_iconv PROPERTY STRINGS undefined no yes posix sun gnu)
 
 #### Libraries
 
-qt_find_package(WrapDoubleConversion PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion)
-qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2)
-qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data)
-qt_find_package(Libsystemd PROVIDED_TARGETS PkgConfig::Libsystemd)
-qt_find_package(WrapAtomic PROVIDED_TARGETS WrapAtomic::WrapAtomic)
-qt_find_package(WrapRt PROVIDED_TARGETS WrapRt::WrapRt)
-qt_find_package(LTTngUST PROVIDED_TARGETS LTTng::UST)
-qt_find_package(WrapSystemPCRE2 PROVIDED_TARGETS WrapSystemPCRE2::WrapSystemPCRE2)
+qt_find_package(WrapDoubleConversion PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion MODULE_NAME core QMAKE_LIB doubleconversion)
+qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2 MODULE_NAME core QMAKE_LIB glib)
+qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data MODULE_NAME core QMAKE_LIB icu)
+if(QT_FEATURE_dlopen)
+    qt_add_qmake_lib_dependency(icu libdl)
+endif()
+qt_find_package(Libsystemd PROVIDED_TARGETS PkgConfig::Libsystemd MODULE_NAME core QMAKE_LIB journald)
+qt_find_package(WrapAtomic PROVIDED_TARGETS WrapAtomic::WrapAtomic MODULE_NAME core QMAKE_LIB libatomic)
+qt_find_package(WrapRt PROVIDED_TARGETS WrapRt::WrapRt MODULE_NAME core QMAKE_LIB librt)
+qt_find_package(LTTngUST PROVIDED_TARGETS LTTng::UST MODULE_NAME core QMAKE_LIB lttng-ust)
+qt_add_qmake_lib_dependency(lttng-ust libdl)
+qt_find_package(WrapSystemPCRE2 PROVIDED_TARGETS WrapSystemPCRE2::WrapSystemPCRE2 MODULE_NAME core QMAKE_LIB pcre2)
 set_package_properties(WrapPCRE2 PROPERTIES TYPE REQUIRED)
 if((QNX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
-    qt_find_package(PPS PROVIDED_TARGETS PPS::PPS)
+    qt_find_package(PPS PROVIDED_TARGETS PPS::PPS MODULE_NAME core QMAKE_LIB pps)
 endif()
-qt_find_package(Slog2 PROVIDED_TARGETS Slog2::Slog2)
+qt_find_package(Slog2 PROVIDED_TARGETS Slog2::Slog2 MODULE_NAME core QMAKE_LIB slog2)
 
 
 #### Tests
@@ -209,7 +213,7 @@ futimens(-1, 0);
     /* END TEST: */
     return 0;
 }
-"# FIXME: qmake: ["# Block futimens() on Apple platforms unless it's available on ALL", '# deployment targets. This simplifies the logic at the call site', "# dramatically, as it isn't strictly needed compared to futimes().", 'darwin: QMAKE_CXXFLAGS += -Werror=unguarded-availability']
+"# FIXME: qmake: ["# Block futimens() on Apple platforms unless it's available on ALL", '# deployment targets. This simplifies the logic at the call site', "# dramatically, as it isn't strictly needed compared to futimes().", 'darwin: QMAKE_CXXFLAGS += -Werror=unguarded-availability -Werror=unguarded-availability-new', 'CONFIG += warn_on']
 )
 
 # futimes

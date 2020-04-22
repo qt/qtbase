@@ -6,10 +6,10 @@
 
 #### Libraries
 
-qt_find_package(ZLIB PROVIDED_TARGETS ZLIB::ZLIB)
-qt_find_package(ZSTD PROVIDED_TARGETS ZSTD::ZSTD)
-qt_find_package(WrapDBus1 PROVIDED_TARGETS dbus-1)
-qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev)
+qt_find_package(ZLIB PROVIDED_TARGETS ZLIB::ZLIB MODULE_NAME global QMAKE_LIB zlib)
+qt_find_package(ZSTD PROVIDED_TARGETS ZSTD::ZSTD MODULE_NAME global QMAKE_LIB zstd)
+qt_find_package(WrapDBus1 PROVIDED_TARGETS dbus-1 MODULE_NAME global QMAKE_LIB dbus)
+qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global QMAKE_LIB libudev)
 
 
 #### Tests
