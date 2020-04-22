@@ -63,6 +63,7 @@ SslClient::SslClient(QWidget *parent)
 
 SslClient::~SslClient()
 {
+    delete socket;
     delete form;
 }
 
