@@ -3185,17 +3185,24 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             // or partial sequences (after a ScrollEnd and starting with ScrollUpdate).
             // If wheel_widget is null because it was deleted, we also take the same
             // code path as an initial sequence.
-            if (phase == Qt::NoScrollPhase || phase == Qt::ScrollBegin || !QApplicationPrivate::wheel_widget) {
-
+            if (!spontaneous) {
+                // wheel_widget may forward the wheel event to a delegate widget,
+                // either directly or indirectly (e.g. QAbstractScrollArea will
+                // forward to its QScrollBars through viewportEvent()). In that
+                // case, the event will not be spontaneous but synthesized, so
+                // we can send it straight to the receiver.
+                wheel->ignore();
+                res = d->notify_helper(w, wheel);
+            } else if (phase == Qt::NoScrollPhase || phase == Qt::ScrollBegin || !QApplicationPrivate::wheel_widget) {
                 // A system-generated ScrollBegin event starts a new user scrolling
                 // sequence, so we reset wheel_widget in case no one accepts the event
                 // or if we didn't get (or missed) a ScrollEnd previously.
-                if (spontaneous && phase == Qt::ScrollBegin)
+                if (phase == Qt::ScrollBegin)
                     QApplicationPrivate::wheel_widget = nullptr;
 
                 const QPoint relpos = wheel->position().toPoint();
 
-                if (spontaneous && (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate))
+                if (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate)
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
 #if QT_DEPRECATED_SINCE(5, 14)
@@ -3211,7 +3218,7 @@ QT_WARNING_POP
                 we.setTimestamp(wheel->timestamp());
                 bool eventAccepted;
                 do {
-                    we.spont = spontaneous && w == receiver;
+                    we.spont = w == receiver;
                     we.ignore();
                     res = d->notify_helper(w, &we);
                     eventAccepted = we.isAccepted();
@@ -3230,13 +3237,6 @@ QT_WARNING_POP
                     w = w->parentWidget();
                 } while (w);
                 wheel->setAccepted(eventAccepted);
-            } else if (!spontaneous) {
-                // wheel_widget may forward the wheel event to a delegate widget,
-                // either directly or indirectly (e.g. QAbstractScrollArea will
-                // forward to its QScrollBars through viewportEvent()). In that
-                // case, the event will not be spontaneous but synthesized, so
-                // we can send it straight to the receiver.
-                d->notify_helper(w, wheel);
             } else {
                 // The phase is either ScrollUpdate, ScrollMomentum, or ScrollEnd, and wheel_widget
                 // is set. Since it accepted the wheel event previously, we continue
