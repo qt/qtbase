@@ -3257,7 +3257,7 @@ void QTextStream::setGenerateByteOrderMark(bool generate)
 {
     Q_D(QTextStream);
     if (d->writeBuffer.isEmpty()) {
-        d->writeConverterState.flags.setFlag(QTextCodec::IgnoreHeader, !generate);
+        d->writeConverterState.flags.setFlag(QStringConverter::Flag::WriteBom, generate);
     }
 }
 
@@ -3271,7 +3271,7 @@ void QTextStream::setGenerateByteOrderMark(bool generate)
 bool QTextStream::generateByteOrderMark() const
 {
     Q_D(const QTextStream);
-    return (d->writeConverterState.flags & QTextCodec::IgnoreHeader) == 0;
+    return (d->writeConverterState.flags & QStringConverter::Flag::WriteBom);
 }
 
 #endif

@@ -109,7 +109,7 @@ void tst_QStringConverter::nonFlaggedCodepointFFFF() const
     QCOMPARE(asDecoded, QByteArray("\357\277\277"));
 
     QByteArray ffff("\357\277\277");
-    QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::ConvertInvalidToNull);
+    QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::Flag::ConvertInvalidToNull);
     QVERIFY(decoder.isValid());
     QVERIFY(decoder(ffff) == QString(1, ch));
 }
@@ -138,7 +138,7 @@ void tst_QStringConverter::flagF7808080() const
     input[2] = char(0x80);
     input[3] = char(0x80);
 
-    QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::ConvertInvalidToNull);
+    QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::Flag::ConvertInvalidToNull);
     QVERIFY(decoder.isValid());
 
     QCOMPARE(decoder(input), QString(input.size(), QChar(0)));
@@ -156,7 +156,7 @@ void tst_QStringConverter::nonFlaggedEFBFBF() const
     validInput[2] = char(0xBF);
 
     {
-        QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::ConvertInvalidToNull);
+        QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::Flag::ConvertInvalidToNull);
         QVERIFY(decoder.isValid());
         QVERIFY(decoder(validInput) == QString::fromUtf8(QByteArray::fromHex("EFBFBF")));
     }
@@ -166,7 +166,7 @@ void tst_QStringConverter::nonFlaggedEFBFBF() const
         QByteArray start("B");
         start.append(validInput);
 
-        QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::ConvertInvalidToNull);
+        QStringDecoder decoder(QStringEncoder::Utf8, QStringDecoder::Flag::ConvertInvalidToNull);
         QVERIFY(decoder.isValid());
         QVERIFY(decoder(start) == QString::fromUtf8(QByteArray("B").append(QByteArray::fromHex("EFBFBF"))));
     }
@@ -1202,7 +1202,7 @@ void tst_QStringConverter::utf8Codec()
     QFETCH(QString, res);
     QFETCH(int, len);
 
-    QStringDecoder decoder(QStringDecoder::Utf8, QStringDecoder::Stateless);
+    QStringDecoder decoder(QStringDecoder::Utf8, QStringDecoder::Flag::Stateless);
     QString str = decoder(utf8.isNull() ? 0 : utf8.constData(),
                                    len < 0 ? qstrlen(utf8.constData()) : len);
     QCOMPARE(str, res);
@@ -1364,154 +1364,154 @@ void tst_QStringConverter::utfHeaders_data()
 
     QTest::newRow("utf8 bom")
         << QStringConverter::Utf8
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\xef\xbb\xbfhello")
         << QString::fromLatin1("hello");
     QTest::newRow("utf8 nobom")
         << QStringConverter::Utf8
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("hello")
         << QString::fromLatin1("hello");
     QTest::newRow("utf8 bom ignore header")
         << QStringConverter::Utf8
-        << QStringConverter::IgnoreHeader
+        << QStringConverter::Flag::DontSkipInitialBom
         << QByteArray("\xef\xbb\xbfhello")
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hello"));
     QTest::newRow("utf8 nobom ignore header")
         << QStringConverter::Utf8
-        << QStringConverter::IgnoreHeader
+        << QStringConverter::Flag::DontSkipInitialBom
         << QByteArray("hello")
         << QString::fromLatin1("hello");
 
     QTest::newRow("utf16 bom be")
         << QStringConverter::Utf16
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\xfe\xff\0h\0e\0l", 8)
         << QString::fromLatin1("hel");
     QTest::newRow("utf16 bom le")
         << QStringConverter::Utf16
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\xff\xfeh\0e\0l\0", 8)
         << QString::fromLatin1("hel");
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
         QTest::newRow("utf16 nobom")
             << QStringConverter::Utf16
-            << QStringConverter::DefaultConversion
+            << QStringConverter::Flag::WriteBom
             << QByteArray("\0h\0e\0l", 6)
             << QString::fromLatin1("hel");
         QTest::newRow("utf16 bom be ignore header")
             << QStringConverter::Utf16
-            << QStringConverter::IgnoreHeader
+            << QStringConverter::Flag::DontSkipInitialBom
             << QByteArray("\xfe\xff\0h\0e\0l", 8)
             << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
     } else {
         QTest::newRow("utf16 nobom")
             << QStringConverter::Utf16
-            << QStringConverter::DefaultConversion
+            << QStringConverter::Flag::WriteBom
             << QByteArray("h\0e\0l\0", 6)
             << QString::fromLatin1("hel");
         QTest::newRow("utf16 bom le ignore header")
             << QStringConverter::Utf16
-            << QStringConverter::IgnoreHeader
+            << QStringConverter::Flag::DontSkipInitialBom
             << QByteArray("\xff\xfeh\0e\0l\0", 8)
             << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
     }
 
     QTest::newRow("utf16-be bom be")
         << QStringConverter::Utf16BE
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\xfe\xff\0h\0e\0l", 8)
         << QString::fromLatin1("hel");
     QTest::newRow("utf16-be nobom")
         << QStringConverter::Utf16BE
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\0h\0e\0l", 6)
         << QString::fromLatin1("hel");
     QTest::newRow("utf16-be bom be ignore header")
         << QStringConverter::Utf16BE
-        << QStringConverter::IgnoreHeader
+        << QStringConverter::Flag::DontSkipInitialBom
         << QByteArray("\xfe\xff\0h\0e\0l", 8)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
 
     QTest::newRow("utf16-le bom le")
         << QStringConverter::Utf16LE
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\xff\xfeh\0e\0l\0", 8)
         << QString::fromLatin1("hel");
     QTest::newRow("utf16-le nobom")
         << QStringConverter::Utf16LE
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("h\0e\0l\0", 6)
         << QString::fromLatin1("hel");
     QTest::newRow("utf16-le bom le ignore header")
         << QStringConverter::Utf16LE
-        << QStringConverter::IgnoreHeader
+        << QStringConverter::Flag::DontSkipInitialBom
         << QByteArray("\xff\xfeh\0e\0l\0", 8)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
 
     QTest::newRow("utf32 bom be")
         << QStringConverter::Utf32
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
         << QString::fromLatin1("hel");
     QTest::newRow("utf32 bom le")
         << QStringConverter::Utf32
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
         << QString::fromLatin1("hel");
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
         QTest::newRow("utf32 nobom")
             << QStringConverter::Utf32
-            << QStringConverter::DefaultConversion
+            << QStringConverter::Flag::WriteBom
             << QByteArray("\0\0\0h\0\0\0e\0\0\0l", 12)
             << QString::fromLatin1("hel");
         QTest::newRow("utf32 bom be ignore header")
             << QStringConverter::Utf32
-            << QStringConverter::IgnoreHeader
+            << QStringConverter::Flag::DontSkipInitialBom
             << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
             << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
     } else {
         QTest::newRow("utf32 nobom")
             << QStringConverter::Utf32
-            << QStringConverter::DefaultConversion
+            << QStringConverter::Flag::WriteBom
             << QByteArray("h\0\0\0e\0\0\0l\0\0\0", 12)
             << QString::fromLatin1("hel");
         QTest::newRow("utf32 bom le ignore header")
             << QStringConverter::Utf32
-            << QStringConverter::IgnoreHeader
+            << QStringConverter::Flag::DontSkipInitialBom
             << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
             << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
     }
 
     QTest::newRow("utf32-be bom be")
         << QStringConverter::Utf32BE
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
         << QString::fromLatin1("hel");
     QTest::newRow("utf32-be nobom")
         << QStringConverter::Utf32BE
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\0\0\0h\0\0\0e\0\0\0l", 12)
         << QString::fromLatin1("hel");
     QTest::newRow("utf32-be bom be ignore header")
         << QStringConverter::Utf32BE
-        << QStringConverter::IgnoreHeader
+        << QStringConverter::Flag::DontSkipInitialBom
         << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
 
     QTest::newRow("utf32-le bom le")
         << QStringConverter::Utf32LE
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
         << QString::fromLatin1("hel");
     QTest::newRow("utf32-le nobom")
         << QStringConverter::Utf32LE
-        << QStringConverter::DefaultConversion
+        << QStringConverter::Flag::WriteBom
         << QByteArray("h\0\0\0e\0\0\0l\0\0\0", 12)
         << QString::fromLatin1("hel");
     QTest::newRow("utf32-le bom le ignore header")
         << QStringConverter::Utf32LE
-        << QStringConverter::IgnoreHeader
+        << QStringConverter::Flag::DontSkipInitialBom
         << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
 }

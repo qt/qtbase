@@ -57,16 +57,17 @@ QT_BEGIN_NAMESPACE
 class QStringConverterBase
 {
 public:
-    enum Flag {
-        DefaultConversion,
-        ConvertInvalidToNull = 0x1,
-        IgnoreHeader = 0x2,
-        Stateless = 0x4
+    enum class Flag {
+        Default = 0,
+        Stateless = 0x1,
+        ConvertInvalidToNull = 0x2,
+        WriteBom = 0x4,
+        DontSkipInitialBom = 0x8
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
     struct State {
-        constexpr State(Flags f = DefaultConversion)
+        constexpr State(Flags f = Flag::Default)
             : flags(f), state_data{0, 0, 0, 0} {}
         ~State() { clear(); }
         State(State &&other)
@@ -91,6 +92,7 @@ public:
         Q_CORE_EXPORT void clear();
 
         Flags flags;
+        int internalState = 0;
         qsizetype remainingChars = 0;
         qsizetype invalidChars = 0;
 
@@ -166,9 +168,7 @@ protected:
         : QStringConverter(i)
     {}
 public:
-    // ### We shouldn't write a BOM by default. Need to resolve this
-    // while keeping compat with QTextCodec
-    QSTRINGCONVERTER_CONSTEXPR QStringEncoder(Encoding encoding, Flags flags = IgnoreHeader)
+    QSTRINGCONVERTER_CONSTEXPR QStringEncoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
     {}
 
@@ -200,13 +200,13 @@ public:
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->fromUtf16Len(inputLength); }
     char *decodeIntoBuffer(char *out, const QChar *in, qsizetype length)
-    { return iface->fromUtf16(out, QStringView(in, length), state.flags & Stateless ? nullptr : &state); }
+    { return iface->fromUtf16(out, QStringView(in, length), state.flags & Flag::Stateless ? nullptr : &state); }
     QByteArray encode(QStringView in)
     {
         QByteArray result(iface->fromUtf16Len(in.size()), Qt::Uninitialized);
         char *out = result.data();
         // ### Fixme: needs to be moved into the conversion methods to honor the other flags
-        out = iface->fromUtf16(out, in, state.flags & Stateless ? nullptr : &state);
+        out = iface->fromUtf16(out, in, state.flags & Flag::Stateless ? nullptr : &state);
         result.truncate(out - result.constData());
         return result;
     }
@@ -229,7 +229,7 @@ protected:
         : QStringConverter(i)
     {}
 public:
-    QSTRINGCONVERTER_CONSTEXPR QStringDecoder(Encoding encoding, Flags flags = DefaultConversion)
+    QSTRINGCONVERTER_CONSTEXPR QStringDecoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
     {}
 
@@ -259,13 +259,13 @@ public:
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->toUtf16Len(inputLength); }
     QChar *decodeIntoBuffer(QChar *out, const char *in, qsizetype length)
-    { return iface->toUtf16(out, in, length, state.flags & Stateless ? nullptr : &state); }
+    { return iface->toUtf16(out, in, length, state.flags & Flag::Stateless ? nullptr : &state); }
     QString decode(const char *in, qsizetype length)
     {
         QString result(iface->toUtf16Len(length), Qt::Uninitialized);
         QChar *out  = result.data();
         // ### Fixme: state handling needs to be moved into the conversion methods
-        out = iface->toUtf16(out, in, length, state.flags & Stateless ? nullptr : &state);
+        out = iface->toUtf16(out, in, length, state.flags & Flag::Stateless ? nullptr : &state);
         result.truncate(out - result.constData());
         return result;
     }

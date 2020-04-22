@@ -373,6 +373,8 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
 }
 #endif
 
+enum { HeaderDone = 1 };
+
 QByteArray QUtf8::convertFromUnicode(const QChar *uc, qsizetype len)
 {
     // create a QByteArray with the worst case scenario size
@@ -405,15 +407,17 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, qsizetype len, QStringConv
     uchar replacement = '?';
     qsizetype rlen = 3*len;
     int surrogate_high = -1;
+    bool writeBom = false;
     if (state) {
-        if (state->flags & QStringConverter::ConvertInvalidToNull)
+        if (state->flags & QStringConverter::Flag::ConvertInvalidToNull)
             replacement = 0;
-        if (!(state->flags & QStringConverter::IgnoreHeader))
+        if (!(state->internalState & HeaderDone) && state->flags & QStringConverter::Flag::WriteBom) {
             rlen += 3;
+            writeBom = true;
+        }
         if (state->remainingChars)
             surrogate_high = state->state_data[0];
     }
-
 
     QByteArray rstr(rlen, Qt::Uninitialized);
     uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(rstr.constData()));
@@ -421,7 +425,7 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, qsizetype len, QStringConv
     const ushort *const end = src + len;
 
     int invalid = 0;
-    if (state && !(state->flags & QStringConverter::IgnoreHeader)) {
+    if (writeBom) {
         // append UTF-8 BOM
         *cursor++ = utf8bom[0];
         *cursor++ = utf8bom[1];
@@ -459,7 +463,7 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, qsizetype len, QStringConv
     rstr.resize(cursor - (const uchar*)rstr.constData());
     if (state) {
         state->invalidChars += invalid;
-        state->flags |= QStringConverter::IgnoreHeader;
+        state->internalState |= HeaderDone;
         state->remainingChars = 0;
         if (surrogate_high >= 0) {
             state->remainingChars = 1;
@@ -545,7 +549,7 @@ QChar *QUtf8::convertToUnicode(QChar *buffer, const char *chars, qsizetype len) 
 
 QString QUtf8::convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state)
 {
-    bool headerdone = false;
+    bool headerdone = state && state->internalState & HeaderDone;
     ushort replacement = QChar::ReplacementCharacter;
     int invalid = 0;
     int res;
@@ -568,9 +572,9 @@ QString QUtf8::convertToUnicode(const char *chars, qsizetype len, QStringConvert
     const uchar *end = src + len;
 
     if (state) {
-        if (state->flags & QStringConverter::IgnoreHeader)
+        if (state->flags & QStringConverter::Flag::DontSkipInitialBom)
             headerdone = true;
-        if (state->flags & QStringConverter::ConvertInvalidToNull)
+        if (state->flags & QStringConverter::Flag::ConvertInvalidToNull)
             replacement = QChar::Null;
         if (state->remainingChars) {
             // handle incoming state first
@@ -636,7 +640,7 @@ QString QUtf8::convertToUnicode(const char *chars, qsizetype len, QStringConvert
         }
     }
 
-    if (!state && res == QUtf8BaseTraits::EndOfString) {
+    if ((!state || state->flags & QStringConverter::Flag::Stateless) && res == QUtf8BaseTraits::EndOfString) {
         // unterminated UTF sequence
         *dst++ = QChar::ReplacementCharacter;
         while (src++ < end)
@@ -647,7 +651,7 @@ QString QUtf8::convertToUnicode(const char *chars, qsizetype len, QStringConvert
     if (state) {
         state->invalidChars += invalid;
         if (headerdone)
-            state->flags |= QStringConverter::IgnoreHeader;
+            state->internalState |= HeaderDone;
         if (res == QUtf8BaseTraits::EndOfString) {
             --src; // unread the byte in ch
             state->remainingChars = end - src;
@@ -748,21 +752,20 @@ int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, QLatin1String s)
     return (end1 > src1) - (end2 > src2);
 }
 
-QByteArray QUtf16::convertFromUnicode(const QChar *uc, qsizetype len, QStringConverter::State *state, DataEndianness e)
+QByteArray QUtf16::convertFromUnicode(const QChar *uc, qsizetype len, QStringConverter::State *state, DataEndianness endian)
 {
-    DataEndianness endian = e;
+    bool writeBom = state && !(state->internalState & HeaderDone) && state->flags & QStringConverter::Flag::WriteBom;
     qsizetype length =  2*len;
-    if (!state || (!(state->flags & QStringConverter::IgnoreHeader))) {
+    if (writeBom)
         length += 2;
-    }
-    if (e == DetectEndianness) {
+
+    if (endian == DetectEndianness)
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BigEndianness : LittleEndianness;
-    }
 
     QByteArray d;
     d.resize(length);
     char *data = d.data();
-    if (!state || !(state->flags & QStringConverter::IgnoreHeader)) {
+    if (writeBom) {
         QChar bom(QChar::ByteOrderMark);
         if (endian == BigEndianness)
             qToBigEndian(bom.unicode(), data);
@@ -777,19 +780,19 @@ QByteArray QUtf16::convertFromUnicode(const QChar *uc, qsizetype len, QStringCon
 
     if (state) {
         state->remainingChars = 0;
-        state->flags |= QStringConverter::IgnoreHeader;
+        state->internalState |= HeaderDone;
     }
     return d;
 }
 
-QString QUtf16::convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness e)
+QString QUtf16::convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness endian)
 {
-    DataEndianness endian = e;
     bool half = false;
     uchar buf = 0;
-    bool headerdone = false;
+    bool headerdone = state && state->internalState & HeaderDone;
     if (state) {
-        headerdone = state->flags & QStringConverter::IgnoreHeader;
+        if (state->flags & QStringConverter::Flag::DontSkipInitialBom)
+            headerdone = true;
         if (endian == DetectEndianness)
             endian = (DataEndianness)state->state_data[Endian];
         if (state->remainingChars) {
@@ -844,7 +847,7 @@ QString QUtf16::convertToUnicode(const char *chars, qsizetype len, QStringConver
 
     if (state) {
         if (headerdone)
-            state->flags |= QStringConverter::IgnoreHeader;
+            state->internalState |= HeaderDone;
         state->state_data[Endian] = endian;
         if (half) {
             state->remainingChars = 1;
@@ -857,20 +860,19 @@ QString QUtf16::convertToUnicode(const char *chars, qsizetype len, QStringConver
     return result;
 }
 
-QByteArray QUtf32::convertFromUnicode(const QChar *uc, qsizetype len, QStringConverter::State *state, DataEndianness e)
+QByteArray QUtf32::convertFromUnicode(const QChar *uc, qsizetype len, QStringConverter::State *state, DataEndianness endian)
 {
-    DataEndianness endian = e;
+    bool writeBom = state && !(state->internalState & HeaderDone) && state->flags & QStringConverter::Flag::WriteBom;
     qsizetype length =  4*len;
-    if (!state || (!(state->flags & QStringConverter::IgnoreHeader))) {
+    if (writeBom)
         length += 4;
-    }
-    if (e == DetectEndianness) {
+
+    if (endian == DetectEndianness)
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BigEndianness : LittleEndianness;
-    }
 
     QByteArray d(length, Qt::Uninitialized);
     char *data = d.data();
-    if (!state || !(state->flags & QStringConverter::IgnoreHeader)) {
+    if (writeBom) {
         if (endian == BigEndianness) {
             data[0] = 0;
             data[1] = 0;
@@ -902,22 +904,21 @@ QByteArray QUtf32::convertFromUnicode(const QChar *uc, qsizetype len, QStringCon
 
     if (state) {
         state->remainingChars = 0;
-        state->flags |= QStringConverter::IgnoreHeader;
+        state->internalState |= HeaderDone;
     }
     return d;
 }
 
-QString QUtf32::convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness e)
+QString QUtf32::convertToUnicode(const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness endian)
 {
-    DataEndianness endian = e;
     uchar tuple[4];
     int num = 0;
-    bool headerdone = false;
+    bool headerdone = state && state->internalState & HeaderDone;
     if (state) {
-        headerdone = state->flags & QStringConverter::IgnoreHeader;
-        if (endian == DetectEndianness) {
+        if (state->flags & QStringConverter::Flag::DontSkipInitialBom)
+            headerdone = true;
+        if (endian == DetectEndianness)
             endian = (DataEndianness)state->state_data[Endian];
-        }
         num = state->remainingChars;
         memcpy(tuple, &state->state_data[Data], 4);
     }
@@ -963,7 +964,7 @@ QString QUtf32::convertToUnicode(const char *chars, qsizetype len, QStringConver
 
     if (state) {
         if (headerdone)
-            state->flags |= QStringConverter::IgnoreHeader;
+            state->internalState |= HeaderDone;
         state->state_data[Endian] = endian;
         state->remainingChars = num;
         memcpy(&state->state_data[Data], tuple, 4);
@@ -1178,10 +1179,17 @@ QByteArray QLocal8Bit::convertFromUnicode(const QChar *ch, qsizetype uclen, QStr
 /*!
     \enum QStringConverter::Flag
 
-    \value DefaultConversion  No flag is set.
+    \value Default Default conversion rules apply.
     \value ConvertInvalidToNull  If this flag is set, each invalid input
-                                 character is output as a null character.
-    \value IgnoreHeader  Ignore any Unicode byte-order mark and don't generate any.
+                                 character is output as a null character. If it is not set,
+                                 invalid input characters are represented as QChar::ReplacementCharacter
+                                 if the output encoding can represent that character, otherwise as a question mark.
+    \value WriteBom When converting from a QString to an output encoding, write a QChar::ByteOrderMark as the first
+                    character if the output encoding supports this. This is the case for UTF-8, UTF-16 and UTF-32
+                    encodings.
+    \value DontSkipInitialBom When converting from an input encoding to a QString the QTextDecoder usually skips an
+                              leading QChar::ByteOrderMark. When this flag is set, the byte order mark will not be
+                              skipped, but inserted at the start of the created QString.
 
     \value Stateless Ignore possible converter states between different function calls
            to encode or decode strings.
@@ -1196,6 +1204,7 @@ void QStringConverter::State::clear()
         state_data[0] = state_data[1] = state_data[2] = state_data[3] = 0;
     remainingChars = 0;
     invalidChars = 0;
+    internalState = 0;
 }
 
 static QChar *fromUtf8(QChar *out, const char *in, qsizetype length, QStringConverter::State *state)
@@ -1307,7 +1316,7 @@ static QChar *fromLatin1(QChar *out, const char *chars, qsizetype len, QStringCo
 
 static char *toLatin1(char *out, QStringView in, QStringConverter::State *state)
 {
-    const char replacement = (state && state->flags & QStringConverter::ConvertInvalidToNull) ? 0 : '?';
+    const char replacement = (state && state->flags & QStringConverter::Flag::ConvertInvalidToNull) ? 0 : '?';
     int invalid = 0;
     for (qsizetype i = 0; i < in.length(); ++i) {
         if (in[i] > QChar(0xff)) {

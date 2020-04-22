@@ -60,6 +60,10 @@ public:
     using ConversionFlags = QStringConverterBase::Flags;
     using ConverterState = QStringConverterBase::State;
 
+    static constexpr Flag ConvertInvalidToNull = Flag::ConvertInvalidToNull;
+    static constexpr Flag DefaultConversion = Flag::WriteBom;
+    static constexpr Flag IgnoreHeader = Flag::DontSkipInitialBom;
+
     static QTextCodec* codecForName(const QByteArray &name);
     static QTextCodec* codecForName(const char *name) { return codecForName(QByteArray(name)); }
     static QTextCodec* codecForMib(int mib);
