@@ -524,6 +524,14 @@ QOpenGLContext::~QOpenGLContext()
     OpenGL context by calling create(), call makeCurrent() again and then
     reinitialize all OpenGL resources.
 
+    On some platforms context loss situations is not something that can
+    avoided. On others however, they may need to be opted-in to. This can be
+    done by enabling \l{QSurfaceFormat::ResetNotification}{ResetNotification} in
+    the QSurfaceFormat. This will lead to setting
+    \c{RESET_NOTIFICATION_STRATEGY_EXT} to \c{LOSE_CONTEXT_ON_RESET_EXT} in the
+    underlying native OpenGL context. QOpenGLContext will then monitor the
+    status via \c{glGetGraphicsResetStatusEXT()} in every makeCurrent().
+
     \sa create()
 */
 bool QOpenGLContext::isValid() const
