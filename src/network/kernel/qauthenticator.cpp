@@ -531,6 +531,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
                 response = qNtlmPhase3(this, QByteArray::fromBase64(challenge)).toBase64();
                 phase = Done;
             }
+            challenge = "";
         }
 
         break;
@@ -560,6 +561,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
             if (!phase3Token.isEmpty()) {
                 response = phase3Token.toBase64();
                 phase = Done;
+                challenge = "";
             }
         }
 
