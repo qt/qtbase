@@ -282,6 +282,9 @@ tags
 *.appxmanifest
 .qmake.winrt_uuid_*
 
+# Visual Studio Code generated files
+.vscode
+
 # INTEGRITY generated files
 *.ael
 *.dla
