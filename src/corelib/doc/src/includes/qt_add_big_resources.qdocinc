@@ -25,62 +25,20 @@
 **
 ****************************************************************************/
 
-/*!
-\page qtwidgets-cmake-qt5-wrap-ui.html
-\ingroup cmake-macros-qtwidgets
+//! [description]
+Creates compiled object files from Qt resource files using the
+\l{Resource Compiler (rcc)}. Paths to the generated files are added to
+\c{<VAR>}.
 
-\title qt5_wrap_ui
+This is similar to \l qt5_add_resources / \l qt_add_resources, but directly
+generates object files (\c .o, \c .obj) files instead of C++ source code.
+This allows to embed bigger resources, where compiling to C++ sources and then
+to binaries would be too time consuming or memory intensive.
 
-\brief Creates sources for \c{.ui} files.
+\note This macro is only available if using \c{CMake} 3.9 or later.
+//! [description]
 
-\section1 Synopsis
-
-\badcode
-qt5_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
-            [OPTIONS ...])
-\endcode
-
-\section1 Description
-
-\include includes/qt_wrap_ui.qdocinc description
-
-\note For compatibility with Qt 6, the command is also available under the name \l qt_wrap_ui.
-
-\section1 Options
-
-\include includes/qt_wrap_ui.qdocinc options
-
-\section1 Examples
-
-\snippet cmake-macros/examples.cmake qt5_wrap_ui
-*/
-
-/*!
-\page qtwidgets-cmake-qt-wrap-ui.html
-\ingroup cmake-macros-qtwidgets
-
-\title qt_wrap_ui
-
-\brief Creates sources for \c{.ui} files.
-
-\section1 Synopsis
-
-\badcode
-qt_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
-           [OPTIONS ...])
-\endcode
-
-\section1 Description
-
-\include includes/qt_wrap_ui.qdocinc description
-
-This command was introduced in Qt 5.15. You can use \l qt5_wrap_ui in older versions of Qt.
-
-\section1 Options
-
-\include includes/qt_wrap_ui.qdocinc options
-
-\section1 Examples
-
-\snippet cmake-macros/examples.cmake qt_wrap_ui
-*/
+//! [arguments]
+You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
+You can find possible options in the \l{rcc}{rcc documentation}.
+//! [arguments]
