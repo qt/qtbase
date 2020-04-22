@@ -1356,26 +1356,20 @@ QFont QApplication::font(const char *className)
 
 void QApplication::setFont(const QFont &font, const char *className)
 {
-    bool all = false;
     FontHash *hash = app_fonts();
     if (!className) {
         QGuiApplication::setFont(font);
-        if (hash && hash->size()) {
-            all = true;
+        if (hash && hash->size())
             hash->clear();
-        }
     } else if (hash) {
         hash->insert(className, font);
     }
     if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
-        // Send ApplicationFontChange to qApp itself, and to the widgets.
         QEvent e(QEvent::ApplicationFontChange);
-        QCoreApplication::sendEvent(QApplication::instance(), &e);
-
         QWidgetList wids = QApplication::allWidgets();
         for (QWidgetList::ConstIterator it = wids.constBegin(), cend = wids.constEnd(); it != cend; ++it) {
             QWidget *w = *it;
-            if (all || (!className && w->isWindow()) || w->inherits(className)) // matching class
+            if (!w->isWindow() && w->inherits(className)) // matching class
                 sendEvent(w, &e);
         }
 
@@ -1740,14 +1734,14 @@ bool QApplication::event(QEvent *e)
 #endif
     }
 
-    if(e->type() == QEvent::LanguageChange) {
+    if (e->type() == QEvent::LanguageChange || e->type() == QEvent::ApplicationFontChange) {
         // QGuiApplication::event does not account for the cases where
         // there is a top level widget without a window handle. So they
         // need to have the event posted here
         const QWidgetList list = topLevelWidgets();
         for (auto *w : list) {
             if (!w->windowHandle() && (w->windowType() != Qt::Desktop))
-                postEvent(w, new QEvent(QEvent::LanguageChange));
+                postEvent(w, new QEvent(e->type()));
         }
     }
 

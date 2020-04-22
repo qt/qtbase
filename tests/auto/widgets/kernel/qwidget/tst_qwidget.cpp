@@ -417,6 +417,7 @@ private slots:
 
     void winIdAfterClose();
     void receivesLanguageChangeEvent();
+    void receivesApplicationFontChangeEvent();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -11626,30 +11627,36 @@ void tst_QWidget::winIdAfterClose()
     delete spy;
 }
 
-class LanguageChangeEventWidget : public QWidget
+class ChangeEventWidget : public QWidget
 {
 public:
-    LanguageChangeEventWidget(QWidget *parent = nullptr) : QWidget(parent) {}
+    ChangeEventWidget(QWidget *parent = nullptr) : QWidget(parent) {}
     int languageChangeCount = 0;
+    int applicationFontChangeCount = 0;
 protected:
     bool event(QEvent *e) override
     {
         if (e->type() == QEvent::LanguageChange)
             languageChangeCount++;
+        else if (e->type() == QEvent::ApplicationFontChange)
+            applicationFontChangeCount++;
         return QWidget::event(e);
     }
 };
 
-class LanguageChangeEventWindow : public QWindow
+class ChangeEventWindow : public QWindow
 {
 public:
-    LanguageChangeEventWindow(QWindow *parent = nullptr) : QWindow(parent) {}
+    ChangeEventWindow(QWindow *parent = nullptr) : QWindow(parent) {}
     int languageChangeCount = 0;
+    int applicationFontChangeCount = 0;
 protected:
     bool event(QEvent *e) override
     {
         if (e->type() == QEvent::LanguageChange)
             languageChangeCount++;
+        else if (e->type() == QEvent::ApplicationFontChange)
+            applicationFontChangeCount++;
         return QWindow::event(e);
     }
 };
@@ -11658,14 +11665,14 @@ void tst_QWidget::receivesLanguageChangeEvent()
 {
     // Confirm that any QWindow or QWidget only gets a single
     // LanguageChange event when a translator is installed
-    LanguageChangeEventWidget topLevel;
-    auto childWidget = new LanguageChangeEventWidget(&topLevel);
+    ChangeEventWidget topLevel;
+    auto childWidget = new ChangeEventWidget(&topLevel);
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
-    LanguageChangeEventWindow ww;
+    ChangeEventWindow ww;
     ww.show();
     QVERIFY(QTest::qWaitForWindowExposed(&ww));
-    LanguageChangeEventWidget topLevelNotShown;
+    ChangeEventWidget topLevelNotShown;
     QTranslator t;
     QVERIFY(t.load("hellotr_la.qm", ":/"));
     QVERIFY(qApp->installTranslator(&t));
@@ -11674,6 +11681,33 @@ void tst_QWidget::receivesLanguageChangeEvent()
     QCOMPARE(topLevelNotShown.languageChangeCount, 1);
     QCOMPARE(childWidget->languageChangeCount, 1);
     QCOMPARE(ww.languageChangeCount, 1);
+}
+
+void tst_QWidget::receivesApplicationFontChangeEvent()
+{
+    // Confirm that any QWindow or top level QWidget only gets a single
+    // ApplicationFontChange event when the font is changed
+    const QFont origFont = QApplication::font();
+
+    ChangeEventWidget topLevel;
+    auto childWidget = new ChangeEventWidget(&topLevel);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    ChangeEventWindow ww;
+    ww.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&ww));
+    ChangeEventWidget topLevelNotShown;
+    QFont changedFont = origFont;
+    changedFont.setPointSize(changedFont.pointSize() + 2);
+    QApplication::setFont(changedFont);
+    QCoreApplication::sendPostedEvents(0, QEvent::ApplicationFontChange);
+    QCOMPARE(topLevel.applicationFontChangeCount, 1);
+    QCOMPARE(topLevelNotShown.applicationFontChangeCount, 1);
+    // QWidget should not be passing the event on automatically
+    QCOMPARE(childWidget->applicationFontChangeCount, 0);
+    QCOMPARE(ww.applicationFontChangeCount, 1);
+
+    QApplication::setFont(origFont);
 }
 
 QTEST_MAIN(tst_QWidget)

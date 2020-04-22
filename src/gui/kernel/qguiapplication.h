@@ -190,8 +190,9 @@ Q_SIGNALS:
 #endif
     void paletteChanged(const QPalette &pal);
     void applicationDisplayNameChanged();
+#if QT_DEPRECATED_SINCE(6, 0)
     void fontChanged(const QFont &font);
-
+#endif
 protected:
     bool event(QEvent *) override;
     bool compressEvent(QEvent *, QObject *receiver, QPostEventList *) override;

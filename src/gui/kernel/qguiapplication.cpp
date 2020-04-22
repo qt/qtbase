@@ -1900,6 +1900,11 @@ bool QGuiApplication::event(QEvent *e)
             if (topLevelWindow->flags() != Qt::Desktop)
                 postEvent(topLevelWindow, new QEvent(QEvent::LanguageChange));
         }
+    } else if (e->type() == QEvent::ApplicationFontChange) {
+        for (auto *topLevelWindow : QGuiApplication::topLevelWindows()) {
+            if (topLevelWindow->flags() != Qt::Desktop)
+                postEvent(topLevelWindow, new QEvent(QEvent::ApplicationFontChange));
+        }
     } else if (e->type() == QEvent::Quit) {
         // Close open windows. This is done in order to deliver de-expose
         // events while the event loop is still running.
@@ -3408,8 +3413,10 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 /*!
     \since 5.11
     \fn void QGuiApplication::fontChanged(const QFont &font)
+    \obsolete
 
-    This signal is emitted when the \a font of the application changes.
+    This signal is emitted when the \a font of the application changes. Use
+    QEvent::ApplicationFontChanged instead.
 
     \sa font()
 */
@@ -3450,6 +3457,8 @@ void QGuiApplication::setFont(const QFont &font)
         auto font = *QGuiApplicationPrivate::app_font;
         locker.unlock();
         emit qGuiApp->fontChanged(font);
+        QEvent event(QEvent::ApplicationFontChange);
+        QGuiApplication::sendEvent(qGuiApp, &event);
     }
 }
 
