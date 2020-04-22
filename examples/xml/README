@@ -1,9 +1,7 @@
-XML parsing and handling is supported through SAX and DOM compliant APIs.
+XML parsing and handling is supported through DOM compliant APIs.
 
-Qt's SAX compliant classes allow you to parse XML incrementally; the DOM
-classes enable more complex document-level operations to be performed on
-XML files.
-
+For reading or writing XML documents iteratively we recommend
+using Qt Core's QXmlStreamReader and QXmlStreamWriter classes.
 
 Documentation for these examples can be found via the Examples
 link in the main Qt documentation.
