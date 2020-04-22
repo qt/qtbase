@@ -2340,7 +2340,7 @@ bool QOCIDriver::open(const QString & db,
 #if QT_CONFIG(regularexpression)
         auto match = QRegularExpression(QLatin1String("([0-9]+)\\.[0-9\\.]+[0-9]")).match(versionStr);
         if (match.hasMatch())
-            d->serverVersion = vers.captured(1).toInt();
+            d->serverVersion = match.captured(1).toInt();
 #endif
         if (d->serverVersion == 0)
             d->serverVersion = -1;
