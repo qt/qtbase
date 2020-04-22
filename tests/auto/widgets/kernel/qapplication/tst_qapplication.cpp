@@ -2150,33 +2150,53 @@ void tst_QApplication::touchEventPropagation()
     For scenario 2 "outer", the expectation is that the outer scrollarea handles all wheel
     events.
 */
-using PhaseList = QList<Qt::ScrollPhase>;
+struct WheelEvent
+{
+    WheelEvent(Qt::ScrollPhase p = Qt::NoScrollPhase, Qt::Orientation o = Qt::Vertical)
+    : phase(p), orientation(o)
+    {}
+    Qt::ScrollPhase phase = Qt::NoScrollPhase;
+    Qt::Orientation orientation = Qt::Vertical;
+};
+using WheelEventList = QList<WheelEvent>;
 
 void tst_QApplication::wheelEventPropagation_data()
 {
-    qRegisterMetaType<PhaseList>();
+    qRegisterMetaType<WheelEventList>();
 
     QTest::addColumn<bool>("innerScrolls");
-    QTest::addColumn<PhaseList>("phases");
+    QTest::addColumn<WheelEventList>("events");
 
     QTest::addRow("inner, classic")
         << true
-        << PhaseList{Qt::NoScrollPhase, Qt::NoScrollPhase, Qt::NoScrollPhase};
+        << WheelEventList{{}, {}, {}};
     QTest::addRow("outer, classic")
         << false
-        << PhaseList{Qt::NoScrollPhase, Qt::NoScrollPhase, Qt::NoScrollPhase};
+        << WheelEventList{{}, {}, {}};
     QTest::addRow("inner, kinetic")
         << true
-        << PhaseList{Qt::ScrollBegin, Qt::ScrollUpdate, Qt::ScrollMomentum, Qt::ScrollEnd};
+        << WheelEventList{Qt::ScrollBegin, Qt::ScrollUpdate, Qt::ScrollMomentum, Qt::ScrollEnd};
     QTest::addRow("outer, kinetic")
         << false
-        << PhaseList{Qt::ScrollBegin, Qt::ScrollUpdate, Qt::ScrollMomentum, Qt::ScrollEnd};
+        << WheelEventList{Qt::ScrollBegin, Qt::ScrollUpdate, Qt::ScrollMomentum, Qt::ScrollEnd};
+    QTest::addRow("inner, partial kinetic")
+        << true
+        << WheelEventList{Qt::ScrollUpdate, Qt::ScrollMomentum, Qt::ScrollEnd};
+    QTest::addRow("outer, partial kinetic")
+        << false
+        << WheelEventList{Qt::ScrollUpdate, Qt::ScrollMomentum, Qt::ScrollEnd};
+    QTest::addRow("inner, changing direction")
+        << true
+        << WheelEventList{Qt::ScrollUpdate, {Qt::ScrollUpdate, Qt::Horizontal}, Qt::ScrollMomentum, Qt::ScrollEnd};
+    QTest::addRow("outer, changing direction")
+        << false
+        << WheelEventList{Qt::ScrollUpdate, {Qt::ScrollUpdate, Qt::Horizontal}, Qt::ScrollMomentum, Qt::ScrollEnd};
 }
 
 void tst_QApplication::wheelEventPropagation()
 {
     QFETCH(bool, innerScrolls);
-    QFETCH(PhaseList, phases);
+    QFETCH(WheelEventList, events);
 
     const QSize baseSize(500, 500);
     const QPointF center(baseSize.width() / 2, baseSize.height() / 2);
@@ -2199,7 +2219,7 @@ void tst_QApplication::wheelEventPropagation()
     largeWidget.setFixedSize(baseSize * 8);
 
     // classic wheel events will be grabbed by the widget under the mouse, so don't place a trap
-    if (phases.at(0) == Qt::NoScrollPhase)
+    if (events.at(0).phase == Qt::NoScrollPhase)
         trap.hide();
     // kinetic wheel events should all go to the first widget; place a trap
     else
@@ -2220,24 +2240,41 @@ void tst_QApplication::wheelEventPropagation()
     auto innerVBar = innerArea.verticalScrollBar();
     innerVBar->setObjectName("innerArea_vbar");
     QCOMPARE(innerVBar->isVisible(), innerScrolls);
+    auto innerHBar = innerArea.horizontalScrollBar();
+    innerHBar->setObjectName("innerArea_hbar");
+    QCOMPARE(innerHBar->isVisible(), innerScrolls);
     auto outerVBar = outerArea.verticalScrollBar();
     outerVBar->setObjectName("outerArea_vbar");
     QVERIFY(outerVBar->isVisible());
+    auto outerHBar = outerArea.horizontalScrollBar();
+    outerHBar->setObjectName("outerArea_hbar");
+    QVERIFY(outerHBar->isVisible());
 
     const QPointF global(outerArea.mapToGlobal(center.toPoint()));
 
-    QSignalSpy innerSpy(innerVBar, &QAbstractSlider::valueChanged);
-    QSignalSpy outerSpy(outerVBar, &QAbstractSlider::valueChanged);
+    QSignalSpy innerVSpy(innerVBar, &QAbstractSlider::valueChanged);
+    QSignalSpy innerHSpy(innerHBar, &QAbstractSlider::valueChanged);
+    QSignalSpy outerVSpy(outerVBar, &QAbstractSlider::valueChanged);
+    QSignalSpy outerHSpy(outerHBar, &QAbstractSlider::valueChanged);
 
-    int count = 0;
-    for (const auto &phase : qAsConst(phases)) {
+    int vcount = 0;
+    int hcount = 0;
+
+    for (const auto &event : qAsConst(events)) {
+        const QPoint pixelDelta = event.orientation == Qt::Vertical ? QPoint(0, -scrollStep) : QPoint(-scrollStep, 0);
+        const QPoint angleDelta = event.orientation == Qt::Vertical ? QPoint(0, -120) : QPoint(-120, 0);
         QWindowSystemInterface::handleWheelEvent(outerArea.windowHandle(), center, global,
-                                                 QPoint(0, -scrollStep), QPoint(0, -120), Qt::NoModifier,
-                                                 phase);
-        ++count;
+                                                 pixelDelta, angleDelta, Qt::NoModifier,
+                                                 event.phase);
+        if (event.orientation == Qt::Vertical)
+            ++vcount;
+        else
+            ++hcount;
         QCoreApplication::processEvents();
-        QCOMPARE(innerSpy.count(), innerScrolls ? count : 0);
-        QCOMPARE(outerSpy.count(), innerScrolls ? 0 : count);
+        QCOMPARE(innerVSpy.count(), innerScrolls ? vcount : 0);
+        QCOMPARE(innerHSpy.count(), innerScrolls ? hcount : 0);
+        QCOMPARE(outerVSpy.count(), innerScrolls ? 0 : vcount);
+        QCOMPARE(outerHSpy.count(), innerScrolls ? 0 : hcount);
     }
 }
 

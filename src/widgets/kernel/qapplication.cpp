@@ -2992,8 +2992,18 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
 
             QWheelEvent* wheel = static_cast<QWheelEvent*>(e);
-            const bool spontaneous = wheel->spontaneous();
+            if (!wheel->spontaneous()) {
+                /*
+                   Synthesized events shouldn't propagate, e.g. QScrollArea passes events from the
+                   viewport on to the scrollbars, which might ignore the event if there is no more
+                   space to scroll. If we would propagate, the event would come back to the viewport.
+                */
+                res = d->notify_helper(w, wheel);
+                break;
+            }
+
             const Qt::ScrollPhase phase = wheel->phase();
+            QPoint relpos = wheel->position().toPoint();
 
             // Ideally, we should lock on a widget when it starts receiving wheel
             // events. This avoids other widgets to start receiving those events
@@ -3014,68 +3024,54 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             //
             // This means that we can have scrolling sequences (starting with ScrollBegin)
             // or partial sequences (after a ScrollEnd and starting with ScrollUpdate).
-            // If wheel_widget is null because it was deleted, we also take the same
-            // code path as an initial sequence.
-            if (phase == Qt::NoScrollPhase || phase == Qt::ScrollBegin || !QApplicationPrivate::wheel_widget) {
 
-                // A system-generated ScrollBegin event starts a new user scrolling
-                // sequence, so we reset wheel_widget in case no one accepts the event
-                // or if we didn't get (or missed) a ScrollEnd previously.
-                if (spontaneous && phase == Qt::ScrollBegin)
-                    QApplicationPrivate::wheel_widget = nullptr;
-
-                const QPoint relpos = wheel->position().toPoint();
-
-                if (spontaneous && (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate))
-                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
-
-                QWheelEvent we(relpos, wheel->globalPosition(), wheel->pixelDelta(), wheel->angleDelta(), wheel->buttons(),
-                               wheel->modifiers(), phase, wheel->inverted(), wheel->source());
-                we.setTimestamp(wheel->timestamp());
-                bool eventAccepted;
-                do {
-                    we.spont = spontaneous && w == receiver;
-                    we.ignore();
-                    res = d->notify_helper(w, &we);
-                    eventAccepted = we.isAccepted();
-                    if (res && eventAccepted) {
-                        // A new scrolling sequence or partial sequence starts and w has accepted
-                        // the event. Therefore, we can set wheel_widget, but only if it's not
-                        // the end of a sequence.
-                        if (QApplicationPrivate::wheel_widget == nullptr && (phase == Qt::ScrollBegin || phase == Qt::ScrollUpdate))
-                            QApplicationPrivate::wheel_widget = w;
-                        break;
-                    }
-                    if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
-                        break;
-
-                    we.p += w->pos();
-                    w = w->parentWidget();
-                } while (w);
-                wheel->setAccepted(eventAccepted);
-            } else if (!spontaneous) {
-                // wheel_widget may forward the wheel event to a delegate widget,
-                // either directly or indirectly (e.g. QAbstractScrollArea will
-                // forward to its QScrollBars through viewportEvent()). In that
-                // case, the event will not be spontaneous but synthesized, so
-                // we can send it straight to the receiver.
-                d->notify_helper(w, wheel);
-            } else {
-                // The phase is either ScrollUpdate, ScrollMomentum, or ScrollEnd, and wheel_widget
-                // is set. Since it accepted the wheel event previously, we continue
-                // sending those events until we get a ScrollEnd, which signifies
-                // the end of the natural scrolling sequence.
-                const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPosition().toPoint());
-                QWheelEvent we(relpos, wheel->globalPosition(), wheel->pixelDelta(), wheel->angleDelta(), wheel->buttons(),
-                               wheel->modifiers(), wheel->phase(), wheel->inverted(), wheel->source());
-                we.setTimestamp(wheel->timestamp());
-                we.spont = true;
-                we.ignore();
-                d->notify_helper(QApplicationPrivate::wheel_widget, &we);
-                wheel->setAccepted(we.isAccepted());
-                if (phase == Qt::ScrollEnd)
-                    QApplicationPrivate::wheel_widget = nullptr;
+            // a widget has already grabbed the wheel for a sequence
+            if (QApplicationPrivate::wheel_widget) {
+                Q_ASSERT(phase != Qt::NoScrollPhase);
+                w = QApplicationPrivate::wheel_widget;
+                relpos = w->mapFromGlobal(wheel->globalPosition().toPoint());
             }
+            /*
+                Start or finish a scrolling sequence by grabbing/releasing the wheel via
+                wheel_widget. The sequence might be partial (ie. not start with ScrollBegin),
+                e.g. if the previous wheel_widget was destroyed mid-sequence.
+            */
+            switch (phase) {
+            case Qt::ScrollEnd:
+                QApplicationPrivate::wheel_widget = nullptr;
+                break;
+            case Qt::ScrollBegin:
+                QApplicationPrivate::wheel_widget = w;
+                Q_FALLTHROUGH();
+            case Qt::ScrollUpdate:
+            case Qt::ScrollMomentum:
+                if (!QApplicationPrivate::wheel_widget)
+                    QApplicationPrivate::wheel_widget = w;
+                Q_FALLTHROUGH();
+            case Qt::NoScrollPhase:
+                QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
+                break;
+            // no default: - we want warnings if we don't handle all phases explicitly
+            }
+
+            QWheelEvent we(relpos, wheel->globalPosition(), wheel->pixelDelta(), wheel->angleDelta(), wheel->buttons(),
+                            wheel->modifiers(), phase, wheel->inverted(), wheel->source());
+
+            we.setTimestamp(wheel->timestamp());
+            bool eventAccepted;
+            do {
+                we.spont = wheel->spontaneous() && w == receiver;
+                res = d->notify_helper(w, &we);
+                eventAccepted = we.isAccepted();
+                if (res && eventAccepted)
+                    break;
+                if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
+                    break;
+
+                we.p += w->pos();
+                w = w->parentWidget();
+            } while (w);
+            wheel->setAccepted(eventAccepted);
         }
         break;
 #endif
