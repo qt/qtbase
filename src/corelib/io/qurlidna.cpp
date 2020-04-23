@@ -2487,10 +2487,10 @@ static int nextDotDelimiter(const QString &domain, int from = 0)
 
 QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
 {
-    if (domain.isEmpty())
-        return domain;
-
     QString result;
+    if (domain.isEmpty())
+        return result;
+
     result.reserve(domain.length());
 
     const bool isIdnEnabled = op == NormalizeAce ? qt_is_idn_enabled(domain) : false;
