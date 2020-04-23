@@ -624,19 +624,16 @@ void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory
 }
 #endif // !defined(QT_NO_DIRECTWRITE)
 
+static int s_defaultVerticalDPI = 96; // Native Pixels
+
 int QWindowsFontDatabaseBase::defaultVerticalDPI()
 {
-    static int vDPI = -1;
-    if (vDPI == -1) {
-        if (HDC defaultDC = GetDC(0)) {
-            vDPI = GetDeviceCaps(defaultDC, LOGPIXELSY);
-            ReleaseDC(0, defaultDC);
-        } else {
-            // FIXME: Resolve now or return 96 and keep unresolved?
-            vDPI = 96;
-        }
-    }
-    return vDPI;
+    return s_defaultVerticalDPI;
+}
+
+void QWindowsFontDatabaseBase::setDefaultVerticalDPI(int d)
+{
+    s_defaultVerticalDPI = d;
 }
 
 LOGFONT QWindowsFontDatabaseBase::fontDefToLOGFONT(const QFontDef &request, const QString &faceName)
