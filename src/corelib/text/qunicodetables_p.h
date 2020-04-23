@@ -98,8 +98,8 @@ struct Properties {
     ushort script              : 8;
 };
 
-Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) noexcept;
-Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) noexcept;
+Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept;
+Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept;
 
 Q_STATIC_ASSERT(sizeof(Properties) == 20);
 
@@ -189,19 +189,19 @@ enum LineBreakClass {
     NumLineBreakClasses
 };
 
-Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) noexcept;
+Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(char32_t ucs4) noexcept;
 inline GraphemeBreakClass graphemeBreakClass(QChar ch) noexcept
 { return graphemeBreakClass(ch.unicode()); }
 
-Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) noexcept;
+Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(char32_t ucs4) noexcept;
 inline WordBreakClass wordBreakClass(QChar ch) noexcept
 { return wordBreakClass(ch.unicode()); }
 
-Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) noexcept;
+Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(char32_t ucs4) noexcept;
 inline SentenceBreakClass sentenceBreakClass(QChar ch) noexcept
 { return sentenceBreakClass(ch.unicode()); }
 
-Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) noexcept;
+Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(char32_t ucs4) noexcept;
 inline LineBreakClass lineBreakClass(QChar ch) noexcept
 { return lineBreakClass(ch.unicode()); }
 

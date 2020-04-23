@@ -103,7 +103,7 @@ static void getGraphemeBreaks(const ushort *string, quint32 len, QCharAttributes
     GB::State state = GB::Break; // only required to track some of the rules
     for (quint32 i = 0; i != len; ++i) {
         quint32 pos = i;
-        uint ucs4 = string[i];
+        char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
@@ -200,7 +200,7 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
     QUnicodeTables::WordBreakClass cls = QUnicodeTables::WordBreak_LF; // to meet WB1
     for (quint32 i = 0; i != len; ++i) {
         quint32 pos = i;
-        uint ucs4 = string[i];
+        char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
@@ -348,7 +348,7 @@ static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes
     uchar state = SB::BAfter; // to meet SB1
     for (quint32 i = 0; i != len; ++i) {
         quint32 pos = i;
-        uint ucs4 = string[i];
+        char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
@@ -551,7 +551,7 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
     QUnicodeTables::LineBreakClass cls = lcls;
     for (quint32 i = 0; i != len; ++i) {
         quint32 pos = i;
-        uint ucs4 = string[i];
+        char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 != len) {
             ushort low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {
@@ -2254,7 +2254,7 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, ScriptItemArray
     QChar::Script script = QChar::Script_Common;
 
     for (int i = 0; i < length; ++i, eor = i) {
-        uint ucs4 = string[i];
+        char32_t ucs4 = string[i];
         if (QChar::isHighSurrogate(ucs4) && i + 1 < length) {
             ushort low = string[i + 1];
             if (QChar::isLowSurrogate(low)) {

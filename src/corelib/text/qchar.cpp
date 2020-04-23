@@ -1633,7 +1633,7 @@ char32_t QChar::toTitleCase(char32_t ucs4) noexcept
 
 static inline uint foldCase(const ushort *ch, const ushort *start)
 {
-    uint ucs4 = *ch;
+    char32_t ucs4 = *ch;
     if (QChar::isLowSurrogate(ucs4) && ch > start && QChar::isHighSurrogate(*(ch - 1)))
         ucs4 = QChar::surrogateToUcs4(*(ch - 1), ucs4);
     return convertCase_helper(ucs4, QUnicodeTables::CaseFold);
@@ -1641,7 +1641,7 @@ static inline uint foldCase(const ushort *ch, const ushort *start)
 
 static inline uint foldCase(uint ch, uint &last) noexcept
 {
-    uint ucs4 = ch;
+    char32_t ucs4 = ch;
     if (QChar::isLowSurrogate(ucs4) && QChar::isHighSurrogate(last))
         ucs4 = QChar::surrogateToUcs4(last, ucs4);
     last = ch;
@@ -1650,7 +1650,7 @@ static inline uint foldCase(uint ch, uint &last) noexcept
 
 static inline ushort foldCase(ushort ch) noexcept
 {
-    return convertCase_helper(ch, QUnicodeTables::CaseFold);
+    return convertCase_helper(char16_t{ch}, QUnicodeTables::CaseFold);
 }
 
 static inline QChar foldCase(QChar ch) noexcept
@@ -1953,7 +1953,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
     int pos = from;
     while (pos < s.length()) {
         int i = pos;
-        uint uc = s.at(pos).unicode();
+        char32_t uc = s.at(pos).unicode();
         if (QChar(uc).isHighSurrogate() && pos < s.length()-1) {
             ushort low = s.at(pos+1).unicode();
             if (QChar(low).isLowSurrogate()) {
@@ -2007,16 +2007,16 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
     QString &s = *str;
     const int l = s.length()-1;
 
-    uint u1, u2;
-    ushort c1, c2;
+    char32_t u1, u2;
+    char16_t c1, c2;
 
     int pos = from;
     while (pos < l) {
         int p2 = pos+1;
         u1 = s.at(pos).unicode();
-        if (QChar(u1).isHighSurrogate()) {
-            ushort low = s.at(p2).unicode();
-            if (QChar(low).isLowSurrogate()) {
+        if (QChar::isHighSurrogate(u1)) {
+            const char16_t low = s.at(p2).unicode();
+            if (QChar::isLowSurrogate(low)) {
                 u1 = QChar::surrogateToUcs4(u1, low);
                 if (p2 >= l)
                     break;
@@ -2027,9 +2027,9 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
 
     advance:
         u2 = s.at(p2).unicode();
-        if (QChar(u2).isHighSurrogate() && p2 < l) {
-            ushort low = s.at(p2+1).unicode();
-            if (QChar(low).isLowSurrogate()) {
+        if (QChar::isHighSurrogate(u2) && p2 < l) {
+            const char16_t low = s.at(p2+1).unicode();
+            if (QChar::isLowSurrogate(low)) {
                 u2 = QChar::surrogateToUcs4(u2, low);
                 ++p2;
             }
@@ -2111,7 +2111,7 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
     uchar lastCombining = 0;
     for (int i = from; i < length; ++i) {
         int pos = i;
-        uint uc = string[i];
+        char32_t uc = string[i];
         if (uc < 0x80) {
             // ASCII characters are stable code points
             lastCombining = 0;

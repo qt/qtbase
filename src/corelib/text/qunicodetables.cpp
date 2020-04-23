@@ -9598,52 +9598,42 @@ static const Properties uc_properties[] = {
     { 12, 0, 0, 0, -1, 0, 2, 0,  { {0, 0}, {0, 0}, {0, 0}, {0, 0} }, 0, 0, 12, 0, 0 }
 };
 
-Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4) noexcept
+Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char32_t ucs4) noexcept
 {
     return uc_properties + GET_PROP_INDEX(ucs4);
 }
 
-Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char32_t ucs4) noexcept
-{
-    return qGetProp(uint{ucs4});
-}
-
-Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2) noexcept
+Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char16_t ucs2) noexcept
 {
     return uc_properties + GET_PROP_INDEX_UCS2(ucs2);
 }
 
-Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(char16_t ucs2) noexcept
-{
-    return qGetProp(ushort{ucs2});
-}
-
-Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) noexcept
+Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept
 {
     return qGetProp(ucs4);
 }
 
-Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) noexcept
+Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char16_t ucs2) noexcept
 {
     return qGetProp(ucs2);
 }
 
-Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(uint ucs4) noexcept
+Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(char32_t ucs4) noexcept
 {
     return static_cast<GraphemeBreakClass>(qGetProp(ucs4)->graphemeBreakClass);
 }
 
-Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(uint ucs4) noexcept
+Q_CORE_EXPORT WordBreakClass QT_FASTCALL wordBreakClass(char32_t ucs4) noexcept
 {
     return static_cast<WordBreakClass>(qGetProp(ucs4)->wordBreakClass);
 }
 
-Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(uint ucs4) noexcept
+Q_CORE_EXPORT SentenceBreakClass QT_FASTCALL sentenceBreakClass(char32_t ucs4) noexcept
 {
     return static_cast<SentenceBreakClass>(qGetProp(ucs4)->sentenceBreakClass);
 }
 
-Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4) noexcept
+Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(char32_t ucs4) noexcept
 {
     return static_cast<LineBreakClass>(qGetProp(ucs4)->lineBreakClass);
 }

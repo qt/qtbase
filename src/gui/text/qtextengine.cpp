@@ -257,7 +257,7 @@ struct QBidiAlgorithm {
         // load directions of string, and determine isolate pairs
         for (int i = 0; i < length; ++i) {
             int pos = i;
-            uint uc = text[i].unicode();
+            char32_t uc = text[i].unicode();
             if (QChar::isHighSurrogate(uc) && i < length - 1) {
                 ++i;
                 analysis[i].bidiDirection = QChar::DirNSM;
@@ -829,7 +829,7 @@ struct QBidiAlgorithm {
                 int pos = *it;
                 QChar::Direction dir = analysis[pos].bidiDirection;
                 if (dir == QChar::DirON) {
-                    const QUnicodeTables::Properties *p = QUnicodeTables::properties(text[pos].unicode());
+                    const QUnicodeTables::Properties *p = QUnicodeTables::properties(char16_t{text[pos].unicode()});
                     if (p->mirrorDiff) {
                         // either opening or closing bracket
                         if (p->category == QChar::Punctuation_Open) {
