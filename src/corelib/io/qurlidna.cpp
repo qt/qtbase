@@ -2440,9 +2440,8 @@ static bool qt_is_idn_enabled(QStringView domain)
     if (idx == -1)
         return false;
 
-    int len = domain.size() - idx - 1;
-    QString tldString = qt_ACE_do(QString::fromRawData(domain.data() + idx + 1, len), ToAceOnly, ForbidLeadingDot);
-    len = tldString.size();
+    QString tldString = qt_ACE_do(domain.mid(idx + 1), ToAceOnly, ForbidLeadingDot);
+    const auto len = tldString.size();
 
     const QChar *tld = tldString.constData();
 
