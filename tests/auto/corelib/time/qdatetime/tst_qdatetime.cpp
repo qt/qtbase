@@ -73,6 +73,7 @@ private slots:
     void setSecsSinceEpoch();
     void setMSecsSinceEpoch_data();
     void setMSecsSinceEpoch();
+    void fromSecsSinceEpoch();
     void fromMSecsSinceEpoch_data();
     void fromMSecsSinceEpoch();
     void toString_isoDate_data();
@@ -788,6 +789,36 @@ void tst_QDateTime::fromMSecsSinceEpoch()
         QCOMPARE(dtLocal, reference.addMSecs(msecs));
     QCOMPARE(dtUtc, reference.addMSecs(msecs));
     QCOMPARE(dtOffset, reference.addMSecs(msecs));
+}
+
+void tst_QDateTime::fromSecsSinceEpoch()
+{
+    const qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
+
+    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1).isValid());
+    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1).isValid());
+
+    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::UTC).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1, Qt::UTC).isValid());
+    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds, Qt::UTC).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1, Qt::UTC).isValid());
+
+    // Use an offset for which .toUTC()'s return would flip the validity:
+    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::OffsetFromUTC, 7200).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1, Qt::OffsetFromUTC, -7200).isValid());
+    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds, Qt::OffsetFromUTC, -7200).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1, Qt::OffsetFromUTC, 7200).isValid());
+
+#if QT_CONFIG(timezone)
+    // As for offset, use zones each side of UTC:
+    const QTimeZone west("UTC-02:00"), east("UTC+02:00");
+    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds, east).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1, west).isValid());
+    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds, west).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1, east).isValid());
+#endif // timezone
 }
 
 void tst_QDateTime::toString_isoDate_data()

@@ -4608,6 +4608,10 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int of
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offsetSeconds)
 {
+    constexpr qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
+    constexpr qint64 minSeconds = std::numeric_limits<qint64>::min() / 1000;
+    if (secs > maxSeconds || secs < minSeconds)
+        return QDateTime(); // Would {und,ov}erflow
     return fromMSecsSinceEpoch(secs * 1000, spec, offsetSeconds);
 }
 
@@ -4641,6 +4645,10 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone
 */
 QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone)
 {
+    constexpr qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
+    constexpr qint64 minSeconds = std::numeric_limits<qint64>::min() / 1000;
+    if (secs > maxSeconds || secs < minSeconds)
+        return QDateTime(); // Would {und,ov}erflow
     return fromMSecsSinceEpoch(secs * 1000, timeZone);
 }
 #endif
