@@ -51,6 +51,7 @@
 #if QT_CONFIG(systemtrayicon)
 #  include "qwindowssystemtrayicon.h"
 #endif
+#include "qwindowsscreen.h"
 #include "qt_windows.h"
 #include <commctrl.h>
 #include <objbase.h>
@@ -564,13 +565,32 @@ void QWindowsTheme::refresh()
     refreshFonts();
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const LOGFONT &lf); // in platformsupport
+
+QDebug operator<<(QDebug d, const NONCLIENTMETRICS &m)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d.noquote();
+    d << "NONCLIENTMETRICS(iMenu=" << m.iMenuWidth  << 'x' << m.iMenuHeight
+      << ", lfCaptionFont=" << m.lfCaptionFont << ", lfSmCaptionFont="
+      << m.lfSmCaptionFont << ", lfMenuFont=" << m.lfMenuFont
+      <<  ", lfMessageFont=" << m.lfMessageFont << ", lfStatusFont="
+      << m.lfStatusFont << ')';
+    return d;
+}
+#endif // QT_NO_DEBUG_STREAM
+
 void QWindowsTheme::refreshFonts()
 {
     clearFonts();
     if (!QGuiApplication::desktopSettingsAware())
         return;
     NONCLIENTMETRICS ncm;
-    QWindowsContext::nonClientMetrics(&ncm);
+    auto screenManager = QWindowsContext::instance()->screenManager();
+    QWindowsContext::nonClientMetricsForScreen(&ncm, screenManager.screens().value(0));
+    qCDebug(lcQpaWindows) << __FUNCTION__ << ncm;
     const QFont menuFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMenuFont);
     const QFont messageBoxFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMessageFont);
     const QFont statusFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfStatusFont);
