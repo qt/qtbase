@@ -1359,7 +1359,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
         return setHost(s, 0, s.length(), QUrl::StrictMode);
     }
 
-    s = qt_ACE_do(QString::fromRawData(begin, len), NormalizeAce, ForbidLeadingDot);
+    s = qt_ACE_do(QStringView(begin, len), NormalizeAce, ForbidLeadingDot);
     if (s.isEmpty()) {
         setError(InvalidRegNameError, value);
         return false;
