@@ -1207,12 +1207,16 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
                 Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
                 const QByteArray latinZone(zoneName == QLatin1String("Z")
                                            ? QByteArray("UTC") : zoneName.toLatin1());
-                timeZone = QTimeZone(latinZone);
-                tspec = timeZone.isValid()
-                    ? (QTimeZone::isTimeZoneIdAvailable(latinZone)
-                       ? Qt::TimeZone
-                       : Qt::OffsetFromUTC)
-                    : (Q_ASSERT(startsWithLocalTimeZone(zoneName)), Qt::LocalTime);
+                if (latinZone.startsWith("UTC") &&
+                    (latinZone.size() == 3 || latinZone.at(3) == '+' || latinZone.at(3) == '-' )) {
+                    timeZone = QTimeZone(sect.value);
+                    tspec = sect.value ? Qt::OffsetFromUTC : Qt::UTC;
+                } else {
+                    timeZone = QTimeZone(latinZone);
+                    tspec = timeZone.isValid()
+                        ? Qt::TimeZone
+                        : (Q_ASSERT(startsWithLocalTimeZone(zoneName)), Qt::LocalTime);
+                }
 #else
                 tspec = Qt::LocalTime;
 #endif
@@ -1537,12 +1541,10 @@ QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValu
         }
     }
     text = scan.input = input;
-    // Set spec *after* all checking, so validity is a property of the string:
-    scan.value = scan.value.toTimeSpec(spec);
 
     /*
-        However, even with a valid string we might have ended up with an invalid datetime:
-        the non-existent hour during dst changes, for instance.
+        We might have ended up with an invalid datetime: the non-existent hour
+        during dst changes, for instance.
     */
     if (!scan.value.isValid() && scan.state == Acceptable)
         scan.state = Intermediate;
@@ -2018,13 +2020,12 @@ QString QDateTimeParser::stateName(State s) const
 #if QT_CONFIG(datestring)
 bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) const
 {
-    QDateTime val(QDate(1900, 1, 1).startOfDay());
-    const StateNode tmp = parse(t, -1, val, false);
-    if (tmp.state != Acceptable || tmp.conflicts) {
+    QDateTime datetime;
+    if (!fromString(t, &datetime))
         return false;
-    }
+
     if (time) {
-        const QTime t = tmp.value.time();
+        const QTime t = datetime.time();
         if (!t.isValid()) {
             return false;
         }
@@ -2032,7 +2033,7 @@ bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) con
     }
 
     if (date) {
-        const QDate d = tmp.value.date();
+        const QDate d = datetime.date();
         if (!d.isValid()) {
             return false;
         }
@@ -2040,26 +2041,43 @@ bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) con
     }
     return true;
 }
+
+bool QDateTimeParser::fromString(const QString &t, QDateTime* datetime) const
+{
+    QDateTime val(QDate(1900, 1, 1).startOfDay());
+    const StateNode tmp = parse(t, -1, val, false);
+    if (tmp.state != Acceptable || tmp.conflicts)
+        return false;
+    if (datetime) {
+        if (!tmp.value.isValid())
+            return false;
+        *datetime = tmp.value;
+    }
+
+    return true;
+}
 #endif // datestring
 
 QDateTime QDateTimeParser::getMinimum() const
 {
-    // Cache the most common case
-    if (spec == Qt::LocalTime) {
-        static const QDateTime localTimeMin(QDATETIMEEDIT_DATE_MIN.startOfDay(Qt::LocalTime));
-        return localTimeMin;
-    }
-    return QDateTime(QDATETIMEEDIT_DATE_MIN.startOfDay(spec));
+    // NB: QDateTimeParser always uses Qt::LocalTime time spec by default. If
+    //     any subclass needs a changing time spec, it must override this
+    //     method. At the time of writing, this is done by QDateTimeEditPrivate.
+
+    // Cache the only case
+    static const QDateTime localTimeMin(QDATETIMEEDIT_DATE_MIN.startOfDay(Qt::LocalTime));
+    return localTimeMin;
 }
 
 QDateTime QDateTimeParser::getMaximum() const
 {
-    // Cache the most common case
-    if (spec == Qt::LocalTime) {
-        static const QDateTime localTimeMax(QDATETIMEEDIT_DATE_MAX.endOfDay(Qt::LocalTime));
-        return localTimeMax;
-    }
-    return QDateTime(QDATETIMEEDIT_DATE_MAX.endOfDay(spec));
+    // NB: QDateTimeParser always uses Qt::LocalTime time spec by default. If
+    //     any subclass needs a changing time spec, it must override this
+    //     method. At the time of writing, this is done by QDateTimeEditPrivate.
+
+    // Cache the only case
+    static const QDateTime localTimeMax(QDATETIMEEDIT_DATE_MAX.endOfDay(Qt::LocalTime));
+    return localTimeMax;
 }
 
 QString QDateTimeParser::getAmPmText(AmPm ap, Case cs) const

@@ -1762,9 +1762,9 @@ QT_WARNING_POP
     be given in the user's local language. It is only possible to use the English
     names if the user's language is English.
 
-    All other input characters will be treated as text. Any sequence
-    of characters that are enclosed in single quotes will also be
-    treated as text and will not be used as an expression. For example:
+    All other input characters will be treated as text. Any non-empty sequence
+    of characters enclosed in single quotes will also be treated (stripped of
+    the quotes) as text and not be interpreted as expressions. For example:
 
     \snippet code/src_corelib_tools_qdatetime.cpp 1
 
@@ -2132,11 +2132,11 @@ QT_WARNING_POP
     \row \li t \li The timezone (for example "CEST")
     \endtable
 
-    Any sequence of characters enclosed in single quotes will be included
-    verbatim in the output string (stripped of the quotes), even if it contains
-    formatting characters. Two consecutive single quotes ("''") are replaced by
-    a single quote in the output. All other characters in the format string are
-    included verbatim in the output string.
+    Any non-empty sequence of characters enclosed in single quotes will be
+    included verbatim in the output string (stripped of the quotes), even if it
+    contains formatting characters. Two consecutive single quotes ("''") are
+    replaced by a single quote in the output. All other characters in the format
+    string are included verbatim in the output string.
 
     Formats without separators (e.g. "ddMM") are supported but must be used with
     care, as the resulting strings aren't always reliably readable (e.g. if "dM"
@@ -2536,9 +2536,9 @@ QT_WARNING_POP
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
-    All other input characters will be treated as text. Any sequence
-    of characters that are enclosed in single quotes will also be
-    treated as text and not be used as an expression.
+    All other input characters will be treated as text. Any non-empty sequence
+    of characters enclosed in single quotes will also be treated (stripped of
+    the quotes) as text and not be interpreted as expressions.
 
     \snippet code/src_corelib_tools_qdatetime.cpp 6
 
@@ -5480,9 +5480,9 @@ QT_WARNING_POP
 
     See QDate::fromString() and QTime::fromString() for the expressions
     recognized in the format string to represent parts of the date and time.
-    All other input characters will be treated as text. Any sequence of
-    characters that are enclosed in single quotes will also be treated as text
-    and not be used as an expression.
+    All other input characters will be treated as text. Any non-empty sequence
+    of characters enclosed in single quotes will also be treated (stripped of
+    the quotes) as text and not be interpreted as expressions.
 
     \snippet code/src_corelib_tools_qdatetime.cpp 12
 
@@ -5537,13 +5537,12 @@ QT_WARNING_POP
 QDateTime QDateTime::fromString(const QString &string, const QString &format, QCalendar cal)
 {
 #if QT_CONFIG(datetimeparser)
-    QTime time;
-    QDate date;
+    QDateTime datetime;
 
     QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
-    if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
-        return QDateTime(date, time);
+    if (dt.parseFormat(format) && dt.fromString(string, &datetime))
+        return datetime;
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);

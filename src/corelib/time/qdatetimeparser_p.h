@@ -85,7 +85,7 @@ public:
     };
     QDateTimeParser(QMetaType::Type t, Context ctx, const QCalendar &cal = QCalendar())
         : currentSectionIndex(-1), cachedDay(-1), parserType(t),
-        fixday(false), spec(Qt::LocalTime), context(ctx), calendar(cal)
+        fixday(false), context(ctx), calendar(cal)
     {
         defaultLocale = QLocale::system();
         first.type = FirstSection;
@@ -181,6 +181,7 @@ public:
 #if QT_CONFIG(datestring)
     StateNode parse(QString input, int position, const QDateTime &defaultValue, bool fixup) const;
     bool fromString(const QString &text, QDate *date, QTime *time) const;
+    bool fromString(const QString &text, QDateTime* datetime) const;
 #endif
     bool parseFormat(const QString &format);
 
@@ -297,7 +298,6 @@ protected: // for the benefit of QDateTimeEditPrivate
     QLocale defaultLocale;
     QMetaType::Type parserType;
     bool fixday;
-    Qt::TimeSpec spec; // spec if used by QDateTimeEdit
     Context context;
     QCalendar calendar;
 };
