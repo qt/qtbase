@@ -2525,16 +2525,14 @@ QString qt_ACE_do(QStringView domain, AceOperation op, AceLeadingDot dot)
         result.resize(prevLen + labelLength);
         {
             QChar *out = result.data() + prevLen;
-            const QChar *in = domain.data() + lastIdx;
-            const QChar *e = in + labelLength;
-            for (; in < e; ++in, ++out) {
-                ushort uc = in->unicode();
+            for (QChar c : domain.mid(lastIdx, labelLength)) {
+                const auto uc = c.unicode();
                 if (uc > 0x7f)
                     simple = false;
                 if (uc >= 'A' && uc <= 'Z')
-                    *out = QChar(uc | 0x20);
+                    *out++ = QChar(uc | 0x20);
                 else
-                    *out = *in;
+                    *out++ = c;
             }
         }
 
