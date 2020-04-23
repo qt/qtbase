@@ -4246,9 +4246,14 @@ macro(qt_find_package)
     # targets to be global. This behavior is not enabled by default, because there are cases
     # when a regular find_package() (non qt_) can find a package (Freetype -> PNG), and a subsequent
     # qt_find_package(PNG PROVIDED_TARGET PNG::PNG) still needs to succeed and register the provided
-    # targets. To enable the debugging behavior, set QT_DEBUG_QT_FIND_PACKAGE to 1.
+    # targets.
+    # Recently we have observed that some projects, such as QtVirtualKeyboard, will error out in
+    # static build because of the global promotion error. The previous code only enabled the if
+    # statement below when QT_DEBUG_QT_FIND_PACKAGE was set to true. Now we have this check enabled
+    # by default unless QT_FIND_PACKAGE_DISABLE_DEBUG_BEHAVIOR is defined and set to true.
     set(_qt_find_package_skip_find_package FALSE)
-    if(QT_DEBUG_QT_FIND_PACKAGE AND ${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
+    if((NOT DEFINED QT_FIND_PACKAGE_DISABLE_DEBUG_BEHAVIOR OR NOT QT_FIND_PACKAGE_DISABLE_DEBUG_BEHAVIOR)
+        AND ${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
         set(_qt_find_package_skip_find_package TRUE)
         foreach(qt_find_package_target_name ${arg_PROVIDED_TARGETS})
             if(NOT TARGET ${qt_find_package_target_name})
