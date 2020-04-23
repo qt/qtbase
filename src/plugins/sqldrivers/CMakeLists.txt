@@ -1,6 +1,22 @@
 # Generated from sqldrivers.pro.
 
 # special case begin
+if (NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
+    cmake_minimum_required(VERSION 3.17)
+    project(QSQLiteDriverPlugins
+        VERSION 6.0.0
+        DESCRIPTION "Qt6 SQL driver plugins"
+        HOMEPAGE_URL "https://qt.io/"
+        LANGUAGES CXX C ASM
+    )
+    find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS
+        BuildInternals
+        Core
+        Sql
+     )
+    qt_prepare_standalone_project()
+endif()
+
 # Currently handled completely manually.
 
 # TODO sqldrivers_standalone {

@@ -89,6 +89,14 @@ macro(qt_enable_cmake_languages)
     endforeach()
 endmacro()
 
+# Minimum setup required to have any CMakeList.txt build as as a standalone
+# project after importing BuildInternals
+macro(qt_prepare_standalone_project)
+    qt_set_up_build_internals_paths()
+    qt_build_internals_set_up_private_api()
+    qt_enable_cmake_languages()
+endmacro()
+
 macro(qt_build_repo_begin)
     qt_build_internals_set_up_private_api()
     qt_enable_cmake_languages()
