@@ -2063,19 +2063,16 @@ QFont QWindowsFontDatabase::LOGFONT_to_QFont(const LOGFONT& logFont, int vertica
     return qFont;
 }
 
+static int s_defaultVerticalDPI = 96; // Native Pixels
+
 int QWindowsFontDatabase::defaultVerticalDPI()
 {
-    static int vDPI = -1;
-    if (vDPI == -1) {
-        if (HDC defaultDC = GetDC(0)) {
-            vDPI = GetDeviceCaps(defaultDC, LOGPIXELSY);
-            ReleaseDC(0, defaultDC);
-        } else {
-            // FIXME: Resolve now or return 96 and keep unresolved?
-            vDPI = 96;
-        }
-    }
-    return vDPI;
+    return s_defaultVerticalDPI;
+}
+
+void QWindowsFontDatabase::setDefaultVerticalDPI(int d)
+{
+    s_defaultVerticalDPI = d;
 }
 
 bool QWindowsFontDatabase::isPrivateFontFamily(const QString &family) const

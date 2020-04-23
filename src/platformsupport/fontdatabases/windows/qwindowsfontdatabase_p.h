@@ -129,6 +129,7 @@ public:
     static QString familyForStyleHint(QFont::StyleHint styleHint);
 
     static int defaultVerticalDPI();
+    static void setDefaultVerticalDPI(int d);
 
     static void setFontOptions(unsigned options);
     static unsigned fontOptions();
