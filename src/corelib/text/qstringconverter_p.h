@@ -314,6 +314,7 @@ struct QUtf32
 {
     static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
     static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
+    static char *convertFromUnicode(char *out, const QChar *uc, qsizetype len, QStringConverter::State *state, DataEndianness endian);
 };
 
 struct QLocal8Bit
