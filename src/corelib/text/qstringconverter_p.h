@@ -305,7 +305,9 @@ struct QUtf8
 struct QUtf16
 {
     static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
+    static QChar *convertToUnicode(QChar *out, const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness endian);
     static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
+    static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state, DataEndianness endian);
 };
 
 struct QUtf32
