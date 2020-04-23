@@ -422,6 +422,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// in qstring.cpp:
+void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept;
+
 inline static bool isHex(char c)
 {
     c |= 0x20;
@@ -3509,7 +3512,11 @@ QString QUrl::fromEncodedComponent_helper(const QByteArray &ba)
 */
 QString QUrl::fromAce(const QByteArray &domain)
 {
-    return qt_ACE_do(QString::fromLatin1(domain), NormalizeAce, ForbidLeadingDot /*FIXME: make configurable*/);
+    QVarLengthArray<ushort> buffer;
+    buffer.resize(domain.size());
+    qt_from_latin1(buffer.data(), domain.data(), domain.size());
+    return qt_ACE_do(QStringView{buffer.data(), buffer.size()},
+                     NormalizeAce, ForbidLeadingDot /*FIXME: make configurable*/);
 }
 
 /*!
