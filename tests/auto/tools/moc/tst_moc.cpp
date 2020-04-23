@@ -63,6 +63,7 @@
 #include "cxx11-enums.h"
 #include "cxx11-final-classes.h"
 #include "cxx11-explicit-override-control.h"
+#include "cxx11-trailing-return.h"
 
 #include "parse-defines.h"
 #include "related-metaobjects-in-namespaces.h"
@@ -700,6 +701,7 @@ private slots:
     void privateClass();
     void cxx11Enums_data();
     void cxx11Enums();
+    void cxx11TrailingReturn();
     void returnRefs();
     void memberProperties_data();
     void memberProperties();
@@ -2231,6 +2233,30 @@ void tst_Moc::warnings_data()
         << QString()
         << QString("standard input:2:1: error: Plugin Metadata file \"does.not.exists\" does not exist. Declaration will be ignored");
 
+    QTest::newRow("Auto-declared, missing trailing return")
+        << QByteArray("class X { \n public slots: \n auto fun() { return 1; } };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:3:1: error: Function declared with auto as return type but missing trailing return type. Return type deduction is not supported.");
+
+    QTest::newRow("Auto-declared, volatile auto as trailing return type")
+        << QByteArray("class X { \n public slots: \n auto fun() -> volatile auto { return 1; } };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:3:1: error: Function declared with auto as return type but missing trailing return type. Return type deduction is not supported.");
+
+    // We don't currently support the decltype keyword, so it's not the same error as above.
+    // The test is just here to make sure this keeps generating an error until return type deduction
+    // is supported.
+    QTest::newRow("Auto-declared, decltype in trailing return type")
+        << QByteArray("class X { \n public slots: \n auto fun() -> decltype(0+1) { return 1; } };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:3:1: error: Parse error at \"decltype\"");
+
 #ifdef Q_OS_UNIX  // Limit to Unix because the error message is platform-dependent
     QTest::newRow("Q_PLUGIN_METADATA: unreadable file")
         << QByteArray("class X { \n Q_PLUGIN_METADATA(FILE \".\") \n };")
@@ -2357,6 +2383,18 @@ void tst_Moc::cxx11Enums()
         QCOMPARE(meta->enumerator(idx).valueToKey(value), v.constData());
     }
     QCOMPARE(meta->enumerator(idx).isScoped(), isScoped);
+}
+
+void tst_Moc::cxx11TrailingReturn()
+{
+    CXX11TrailingReturn retClass;
+    const QMetaObject *mobj = retClass.metaObject();
+    QVERIFY(mobj->indexOfSlot("fun()") != -1);
+    QVERIFY(mobj->indexOfSlot("arguments(int,char)") != -1);
+    QVERIFY(mobj->indexOfSlot("inlineFunc(int)") != -1);
+    QVERIFY(mobj->indexOfSlot("constRefReturn()") != -1);
+    QVERIFY(mobj->indexOfSlot("constConstRefReturn()") != -1);
+    QVERIFY(mobj->indexOfSignal("trailingSignalReturn(int)") != -1);
 }
 
 void tst_Moc::returnRefs()
