@@ -312,9 +312,10 @@ struct QUtf16
 
 struct QUtf32
 {
+    static QChar *convertToUnicode(QChar *out, const char *chars, qsizetype len, QStringConverter::State *state, DataEndianness endian);
     static QString convertToUnicode(const char *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
     static QByteArray convertFromUnicode(const QChar *, qsizetype, QStringConverter::State *, DataEndianness = DetectEndianness);
-    static char *convertFromUnicode(char *out, const QChar *uc, qsizetype len, QStringConverter::State *state, DataEndianness endian);
+    static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state, DataEndianness endian);
 };
 
 struct QLocal8Bit
