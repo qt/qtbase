@@ -1209,7 +1209,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
 
         // uppercase the version, if necessary
         if (begin[2].unicode() >= 'a')
-            host[host.length() - 2] = begin[2].unicode() - 0x20;
+            host[host.length() - 2] = QChar{begin[2].unicode() - 0x20};
 
         begin += 4;
         --end;
