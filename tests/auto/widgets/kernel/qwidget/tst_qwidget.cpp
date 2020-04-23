@@ -373,6 +373,7 @@ private slots:
 
     void openModal_taskQTBUG_5804();
 
+    void focusProxy();
     void focusProxyAndInputMethods();
 #ifdef QT_BUILD_INTERNAL
     void scrollWithoutBackingStore();
@@ -10076,6 +10077,99 @@ void tst_QWidget::openModal_taskQTBUG_5804()
     new Widget(win.data());
     win->show();
     QVERIFY(QTest::qWaitForWindowExposed(win.data()));
+}
+
+/*!
+    Test that the focus proxy receives focus, and that changing the
+    focus proxy of a widget that has focus passes focus on correctly.
+
+    The test uses a single window, so we can rely on the window's focus
+    widget and the QApplication focus widget to be the same.
+*/
+void tst_QWidget::focusProxy()
+{
+    QWidget window;
+    class Container : public QWidget
+    {
+    public:
+        Container()
+        {
+            edit = new QLineEdit;
+            edit->installEventFilter(this);
+            setFocusProxy(edit);
+            QHBoxLayout *layout = new QHBoxLayout;
+            layout->addWidget(edit);
+            setLayout(layout);
+        }
+
+        QLineEdit *edit;
+        int focusInCount = 0;
+        int focusOutCount = 0;
+
+    protected:
+        bool eventFilter(QObject *receiver, QEvent *event)
+        {
+            if (receiver == edit) {
+                switch (event->type()) {
+                case QEvent::FocusIn:
+                    ++focusInCount;
+                    break;
+                case QEvent::FocusOut:
+                    ++focusOutCount;
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            return QWidget::eventFilter(receiver, event);
+        }
+    };
+
+    auto container1 = new Container;
+    container1->edit->setObjectName("edit1");
+    auto container2 = new Container;
+    container2->edit->setObjectName("edit2");
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(container1);
+    layout->addWidget(container2);
+    window.setLayout(layout);
+
+    window.show();
+    window.activateWindow();
+    if (!QTest::qWaitForWindowExposed(&window) || !QTest::qWaitForWindowActive(&window))
+        QSKIP("Window activation failed");
+
+    QCOMPARE(container1->focusInCount, 1);
+    QCOMPARE(container1->focusOutCount, 0);
+
+    // given a widget with a nested focus proxy
+    window.setFocusProxy(container1);
+    QCOMPARE(window.focusWidget(), container1->edit);
+    QCOMPARE(window.focusWidget(), QApplication::focusWidget());
+    QVERIFY(container1->edit->hasFocus());
+    QCOMPARE(container1->focusInCount, 1);
+
+    // changing the focus proxy should move focus to the new proxy
+    window.setFocusProxy(container2);
+    QCOMPARE(window.focusWidget(), container2->edit);
+    QCOMPARE(window.focusWidget(), QApplication::focusWidget());
+    QVERIFY(!container1->edit->hasFocus());
+    QVERIFY(container2->edit->hasFocus());
+    QCOMPARE(container1->focusInCount, 1);
+    QCOMPARE(container1->focusOutCount, 1);
+    QCOMPARE(container2->focusInCount, 1);
+    QCOMPARE(container2->focusOutCount, 0);
+
+    // clearing the focus proxy moves focus
+    window.setFocusProxy(nullptr);
+    QCOMPARE(window.focusWidget(), &window);
+    QCOMPARE(window.focusWidget(), QApplication::focusWidget());
+    QCOMPARE(container1->focusInCount, 1);
+    QCOMPARE(container1->focusOutCount, 1);
+    QCOMPARE(container2->focusInCount, 1);
+    QCOMPARE(container2->focusOutCount, 1);
 }
 
 void tst_QWidget::focusProxyAndInputMethods()
