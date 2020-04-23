@@ -1337,21 +1337,40 @@ void tst_QStringConverter::utf8stateful()
     QFETCH(QByteArray, buffer2);
     QFETCH(QString, result);
 
-    QStringDecoder decoder(QStringDecoder::Utf8);
-    QVERIFY(decoder.isValid());
+    {
+        QStringDecoder decoder(QStringDecoder::Utf8);
+        QVERIFY(decoder.isValid());
 
-    QString decoded = decoder(buffer1);
-    if (result.isNull()) {
-        if (!decoder.hasError()) {
-            // incomplete data
+        QString decoded = decoder(buffer1);
+        if (result.isNull()) {
+            if (!decoder.hasError()) {
+                // incomplete data
+                decoded += decoder(buffer2);
+                QVERIFY(decoder.hasError());
+            }
+        } else {
+            QVERIFY(!decoder.hasError());
             decoded += decoder(buffer2);
-            QVERIFY(decoder.hasError());
+            QVERIFY(!decoder.hasError());
+            QCOMPARE(decoded, result);
         }
-    } else {
-        QVERIFY(!decoder.hasError());
-        decoded += decoder(buffer2);
-        QVERIFY(!decoder.hasError());
-        QCOMPARE(decoded, result);
+    }
+
+    if (!buffer2.isEmpty()) {
+        QStringDecoder decoder(QStringDecoder::Utf8);
+        QVERIFY(decoder.isValid());
+
+        QString decoded;
+        for (char c : buffer1)
+            decoded += decoder(&c, 1);
+        for (char c : buffer2)
+            decoded += decoder(&c, 1);
+        if (result.isNull()) {
+            QVERIFY(decoder.hasError());
+        } else {
+            QVERIFY(!decoder.hasError());
+            QCOMPARE(decoded, result);
+        }
     }
 }
 
@@ -1526,18 +1545,42 @@ void tst_QStringConverter::utfHeaders()
     QLatin1String ignoreReverseTestOn = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? QLatin1String(" le") : QLatin1String(" be");
     QString rowName(QTest::currentDataTag());
 
-    QStringDecoder decode(encoding, flags);
-    QVERIFY(decode.isValid());
+    {
+        QStringDecoder decode(encoding, flags);
+        QVERIFY(decode.isValid());
 
-    QString result = decode(encoded);
-    QCOMPARE(result.length(), unicode.length());
-    QCOMPARE(result, unicode);
+        QString result = decode(encoded);
+        QCOMPARE(result.length(), unicode.length());
+        QCOMPARE(result, unicode);
+    }
+
+    {
+        QStringDecoder decode(encoding, flags);
+        QVERIFY(decode.isValid());
+
+        QString result;
+        for (char c : encoded)
+            result += decode(&c, 1);
+        QCOMPARE(result.length(), unicode.length());
+        QCOMPARE(result, unicode);
+    }
 
     if (!rowName.endsWith("nobom") && !rowName.contains(ignoreReverseTestOn)) {
-        QStringEncoder encode(encoding, flags);
-        QVERIFY(encode.isValid());
-        QByteArray reencoded = encode(unicode);
-        QCOMPARE(reencoded, encoded);
+        {
+            QStringEncoder encode(encoding, flags);
+            QVERIFY(encode.isValid());
+            QByteArray reencoded = encode(unicode);
+            QCOMPARE(reencoded, encoded);
+        }
+
+        {
+            QStringEncoder encode(encoding, flags);
+            QVERIFY(encode.isValid());
+            QByteArray reencoded;
+            for (QChar c : unicode)
+                reencoded += encode(&c, 1);
+            QCOMPARE(reencoded, encoded);
+        }
     }
 }
 
