@@ -55,7 +55,9 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(timezone)
 class QTimeZone;
+#endif
 class QDateTime;
 
 class Q_CORE_EXPORT QDate // ### Qt 6: change to be used by value, not const &

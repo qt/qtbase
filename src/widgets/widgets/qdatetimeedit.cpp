@@ -1728,9 +1728,12 @@ QDateTime QDateTimeEditPrivate::convertTimeSpec(const QDateTime &datetime)
         return datetime.toLocalTime();
     case Qt::OffsetFromUTC:
         return datetime.toOffsetFromUtc(value.toDateTime().offsetFromUtc());
-#if QT_CONFIG(timezone)
     case Qt::TimeZone:
+#if QT_CONFIG(timezone)
         return datetime.toTimeZone(value.toDateTime().timeZone());
+#else
+        qWarning("QDateTimeEdit: Internal: enable timezone feature to support Qt::TimeZone");
+        return datetime;
 #endif
     }
     Q_UNREACHABLE();

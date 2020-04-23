@@ -4018,6 +4018,7 @@ void tst_QSqlQuery::QTBUG_36211()
         QSqlQuery q(db);
         QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dtwtz timestamptz, dtwotz timestamp)").arg(tableName)));
 
+#if QT_CONFIG(timezone)
         QTimeZone l_tzBrazil("America/Sao_Paulo");
         QTimeZone l_tzChina("Asia/Shanghai");
         QVERIFY(l_tzBrazil.isValid());
@@ -4044,6 +4045,7 @@ void tst_QSqlQuery::QTBUG_36211()
                 QVERIFY(diff <= 1000 - keep);
             }
         }
+#endif
     }
 }
 
@@ -4546,6 +4548,7 @@ void tst_QSqlQuery::dateTime_data()
     QTest::addColumn<QList<QDateTime> >("initialDateTimes");
     QTest::addColumn<QList<QDateTime> >("expectedDateTimes");
 
+#if QT_CONFIG(timezone)
     // Using time zones which are highly unlikely to be the same as the testing machine's one
     // as it could pass as a result despite it.
     // +8.5 hours from UTC to North Korea
@@ -4553,17 +4556,37 @@ void tst_QSqlQuery::dateTime_data()
     // -8 hours from UTC to Belize
     const QTimeZone beforeUTCTimeZone(-28800);
     const QTimeZone utcTimeZone("UTC");
-    const QDateTime dt(QDate(2015, 5, 18), QTime(4, 26, 30));
-    const QDateTime dtWithMS(QDate(2015, 5, 18), QTime(4, 26, 30, 500));
+
     const QDateTime dtWithAfterTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), afterUTCTimeZone);
     const QDateTime dtWithBeforeTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), beforeUTCTimeZone);
     const QDateTime dtWithUTCTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), utcTimeZone);
-    const QList<QDateTime> dateTimes = { dt, dtWithMS, dtWithAfterTZ, dtWithBeforeTZ, dtWithUTCTZ };
-    const QList<QDateTime> expectedDateTimesLocalTZ = { dt, dtWithMS, dtWithAfterTZ.toLocalTime(),
-                                                        dtWithBeforeTZ.toLocalTime(),
-                                                        dtWithUTCTZ.toLocalTime() };
-    const QList<QDateTime> expectedTimeStampDateTimes = { dt, dtWithMS, dtWithMS, dtWithMS, dtWithMS };
-    const QList<QDateTime> expectedDateTimes = { dt, dt, dt, dt, dt };
+#endif
+    const QDateTime dt(QDate(2015, 5, 18), QTime(4, 26, 30));
+    const QDateTime dtWithMS(QDate(2015, 5, 18), QTime(4, 26, 30, 500));
+    const QList<QDateTime> dateTimes = {
+        dt, dtWithMS,
+#if QT_CONFIG(timezone)
+        dtWithAfterTZ, dtWithBeforeTZ, dtWithUTCTZ
+#endif
+    };
+    const QList<QDateTime> expectedDateTimesLocalTZ = {
+        dt, dtWithMS,
+#if QT_CONFIG(timezone)
+        dtWithAfterTZ.toLocalTime(), dtWithBeforeTZ.toLocalTime(), dtWithUTCTZ.toLocalTime()
+#endif
+    };
+    const QList<QDateTime> expectedTimeStampDateTimes = {
+        dt, dtWithMS,
+#if QT_CONFIG(timezone)
+        dtWithMS, dtWithMS, dtWithMS
+#endif
+    };
+    const QList<QDateTime> expectedDateTimes = {
+        dt, dt,
+#if QT_CONFIG(timezone)
+        dt, dt, dt
+#endif
+    };
 
     for (const QString &dbName : qAsConst(dbs.dbNames)) {
         QSqlDatabase db = QSqlDatabase::database(dbName);

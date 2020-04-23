@@ -709,9 +709,11 @@ void tst_QDateTime::setMSecsSinceEpoch()
         QCOMPARE(localDt.timeSpec(), Qt::LocalTime);
 
         // Compare result for LocalTime to TimeZone
-        QTimeZone europe("Europe/Oslo");
         QDateTime dt2;
+#if QT_CONFIG(timezone)
+        QTimeZone europe("Europe/Oslo");
         dt2.setTimeZone(europe);
+#endif
         dt2.setMSecsSinceEpoch(msecs);
         QCOMPARE(dt2.date(), cet.date());
 
@@ -720,8 +722,10 @@ void tst_QDateTime::setMSecsSinceEpoch()
         // have hard limits. Let's restrict it to the 32-bit Unix range
         if (dt2.date().year() >= 1970 && dt2.date().year() <= 2037)
             QCOMPARE(dt2.time(), cet.time());
+#if QT_CONFIG(timezone)
         QCOMPARE(dt2.timeSpec(), Qt::TimeZone);
         QCOMPARE(dt2.timeZone(), europe);
+#endif
     }
 
     QCOMPARE(dt.toMSecsSinceEpoch(), msecs);
@@ -958,14 +962,15 @@ void tst_QDateTime::toString_textDate_extra()
     QVERIFY(!dt.toString().endsWith(GMT));
     dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC).toLocalTime();
     QVERIFY(!dt.toString().endsWith(GMT));
-    if (QTimeZone::systemTimeZone().offsetFromUtc(dt))
-        QVERIFY(dt.toString() != QLatin1String("Thu Jan 1 00:00:00 1970"));
-    else
-        QCOMPARE(dt.toString(), QLatin1String("Thu Jan 1 00:00:00 1970"));
+
 #if QT_CONFIG(timezone)
 # if defined Q_OS_UNIX && !defined Q_OS_DARWIN && !defined Q_OS_ANDROID
 #  define CORRECT_ZONE_ABBREV
 # endif // QTBUG-57320, QTBUG-57298, QTBUG-68833
+    if (QTimeZone::systemTimeZone().offsetFromUtc(dt))
+        QVERIFY(dt.toString() != QLatin1String("Thu Jan 1 00:00:00 1970"));
+    else
+        QCOMPARE(dt.toString(), QLatin1String("Thu Jan 1 00:00:00 1970"));
 
     QTimeZone PST("America/Vancouver");
     if (PST.isValid()) {
@@ -993,7 +998,12 @@ void tst_QDateTime::toString_textDate_extra()
     } else {
         qDebug("Missed zone test: no Europe/Berlin zone available");
     }
-#endif // timezone
+#else // timezone
+    if (dt.offsetFromUtc())
+        QVERIFY(dt.toString() != QLatin1String("Thu Jan 1 00:00:00 1970"));
+    else
+        QCOMPARE(dt.toString(), QLatin1String("Thu Jan 1 00:00:00 1970"));
+#endif
     dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC);
     QVERIFY(dt.toString().endsWith(GMT));
 }
@@ -2501,10 +2511,11 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data13") << QString("30.02.2004") << QString("dd.MM.yyyy") << invalidDateTime();
     QTest::newRow("data14") << QString("32.01.2004") << QString("dd.MM.yyyy") << invalidDateTime();
     QTest::newRow("data15") << QString("Thu January 2004") << QString("ddd MMMM yyyy") << QDateTime(QDate(2004, 1, 1), QTime());
+#if QT_CONFIG(timezone)
+    // Qt::UTC and Qt::OffsetFromUTC not supported without timezone: QTBUG-83844
     QTest::newRow("data16") << QString("2005-06-28T07:57:30.001Z")
                             << QString("yyyy-MM-ddThh:mm:ss.zt")
                             << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
-#if QT_CONFIG(timezone)
     QTimeZone southBrazil("America/Sao_Paulo");
     if (southBrazil.isValid()) {
         QTest::newRow("spring-forward-midnight")
@@ -2541,8 +2552,10 @@ void tst_QDateTime::fromStringStringFormat()
 
     if (expected.isValid()) {
         QCOMPARE(dt.timeSpec(), expected.timeSpec());
+#if QT_CONFIG(timezone)
         if (expected.timeSpec() == Qt::TimeZone)
             QCOMPARE(dt.timeZone(), expected.timeZone());
+#endif
     }
     QCOMPARE(dt, expected);
 }
@@ -2589,7 +2602,15 @@ void tst_QDateTime::fromStringToStringLocale()
     ROUNDTRIP(Qt::SystemLocaleDate);
     ROUNDTRIP(Qt::LocaleDate);
 
+#if !QT_CONFIG(timezone)
+    QEXPECT_FAIL("", "Long date formats (with time-zone specifiers) need timezone feature enabled",
+                 Continue);
+#endif
     ROUNDTRIP(Qt::DefaultLocaleLongDate);
+#if !QT_CONFIG(timezone)
+    QEXPECT_FAIL("", "Long date formats (with time-zone specifiers) need timezone feature enabled",
+                 Continue);
+#endif
     ROUNDTRIP(Qt::SystemLocaleLongDate);
 #undef ROUNDTRIP
     QLocale::setDefault(def);
@@ -2605,7 +2626,9 @@ void tst_QDateTime::offsetFromUtc()
     // Offset constructor
     QDateTime dt1(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, 60 * 60);
     QCOMPARE(dt1.offsetFromUtc(), 60 * 60);
+#if QT_CONFIG(timezone)
     QVERIFY(dt1.timeZone().isValid());
+#endif
     dt1 = QDateTime(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, -60 * 60);
     QCOMPARE(dt1.offsetFromUtc(), -60 * 60);
 
@@ -2625,11 +2648,13 @@ void tst_QDateTime::offsetFromUtc()
          QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
      }
 
+#if QT_CONFIG(timezone)
     QDateTime dt5(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Pacific/Auckland"));
     QCOMPARE(dt5.offsetFromUtc(), 46800);
 
     QDateTime dt6(QDate(2013, 6, 1), QTime(0, 0, 0), QTimeZone("Pacific/Auckland"));
     QCOMPARE(dt6.offsetFromUtc(), 43200);
+#endif
 }
 
 void tst_QDateTime::setOffsetFromUtc()
@@ -2785,6 +2810,7 @@ void tst_QDateTime::zoneAtTime_data()
 
 void tst_QDateTime::zoneAtTime()
 {
+#if QT_CONFIG(timezone)
     QFETCH(QByteArray, ianaID);
     QFETCH(QDate, date);
     QFETCH(int, offset);
@@ -2797,6 +2823,9 @@ void tst_QDateTime::zoneAtTime()
         QCOMPARE(zone.standardTimeOffset(QDateTime(date, noon, zone)), offset);
     else // zone.offsetFromUtc *does* include DST, even before epoch
         QCOMPARE(zone.offsetFromUtc(QDateTime(date, noon, zone)), offset);
+#else
+    QSKIP("Needs timezone feature enabled");
+#endif
 }
 
 void tst_QDateTime::timeZoneAbbreviation()
@@ -2838,6 +2867,7 @@ void tst_QDateTime::timeZoneAbbreviation()
     const QString cest(QStringLiteral("CEST"));
 #endif
 
+#if QT_CONFIG(timezone)
     QDateTime dt5(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
     QEXPECT_FAIL("", "Windows only reports long names (QTBUG-32759)", Continue);
@@ -2848,6 +2878,7 @@ void tst_QDateTime::timeZoneAbbreviation()
     QEXPECT_FAIL("", "Windows only reports long names (QTBUG-32759)", Continue);
 #endif
     QCOMPARE(dt6.timeZoneAbbreviation(), cest);
+#endif
 }
 
 void tst_QDateTime::getDate()
@@ -3323,6 +3354,7 @@ void tst_QDateTime::daylightTransitions() const
 
 void tst_QDateTime::timeZones() const
 {
+#if QT_CONFIG(timezone)
     QTimeZone invalidTz = QTimeZone("Vulcan/ShiKahr");
     QCOMPARE(invalidTz.isValid(), false);
     QDateTime invalidDateTime = QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0), invalidTz);
@@ -3518,6 +3550,9 @@ void tst_QDateTime::timeZones() const
     QDateTime future(QDate(2015, 1, 1), QTime(0, 0, 0), sgt);
     QVERIFY(future.isValid());
     QCOMPARE(future.offsetFromUtc(), 28800);
+#else
+    QSKIP("Needs timezone feature enabled");
+#endif
 }
 
 void tst_QDateTime::systemTimeZoneChange() const
@@ -3530,13 +3565,17 @@ void tst_QDateTime::systemTimeZoneChange() const
 
     QDateTime localDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::LocalTime);
     QDateTime utcDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC);
+#if QT_CONFIG(timezone)
     QDateTime tzDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), QTimeZone("Australia/Brisbane"));
+#endif
     qint64 localMsecs = localDate.toMSecsSinceEpoch();
     qint64 utcMsecs = utcDate.toMSecsSinceEpoch();
+#if QT_CONFIG(timezone)
     qint64 tzMsecs = tzDate.toMSecsSinceEpoch();
 
     // check that Australia/Brisbane is known
     QVERIFY(tzDate.timeZone().isValid());
+#endif
 
     // Change to Indian time
     useZone.reset(QByteArray("IST-05:30"));
@@ -3545,8 +3584,10 @@ void tst_QDateTime::systemTimeZoneChange() const
     QVERIFY(localMsecs != localDate.toMSecsSinceEpoch());
     QCOMPARE(utcDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC));
     QCOMPARE(utcDate.toMSecsSinceEpoch(), utcMsecs);
+#if QT_CONFIG(timezone)
     QCOMPARE(tzDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), QTimeZone("Australia/Brisbane")));
     QCOMPARE(tzDate.toMSecsSinceEpoch(), tzMsecs);
+#endif
 }
 
 void tst_QDateTime::invalid_data() const
@@ -3561,6 +3602,7 @@ void tst_QDateTime::invalid_data() const
     QTest::newRow("UTC") << invalidDate.toUTC() << Qt::UTC << true;
     QTest::newRow("offset")
         << invalidDate.toOffsetFromUtc(3600) << Qt::OffsetFromUTC << true;
+#if QT_CONFIG(timezone)
     QTest::newRow("CET")
         << invalidDate.toTimeZone(QTimeZone("Europe/Oslo")) << Qt::TimeZone << true;
 
@@ -3571,6 +3613,7 @@ void tst_QDateTime::invalid_data() const
         << QDateTime::fromMSecsSinceEpoch(42, QTimeZone()) << Qt::TimeZone << false;
     QDateTime valid(QDate(1970, 1, 1), QTime(12, 0), Qt::UTC);
     QTest::newRow("tonozone") << valid.toTimeZone(QTimeZone()) << Qt::TimeZone << false;
+#endif
 }
 
 void tst_QDateTime::invalid() const
@@ -3584,7 +3627,9 @@ void tst_QDateTime::invalid() const
     if (!goodZone)
         QCOMPARE(when.toMSecsSinceEpoch(), 0);
     QVERIFY(!when.isDaylightTime());
+#if QT_CONFIG(timezone)
     QCOMPARE(when.timeZone().isValid(), goodZone);
+#endif
 }
 
 void tst_QDateTime::range() const
