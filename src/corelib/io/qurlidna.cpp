@@ -2471,9 +2471,9 @@ static inline bool isDotDelimiter(ushort uc)
     return uc == 0x2e || uc == 0x3002 || uc == 0xff0e || uc == 0xff61;
 }
 
-static int nextDotDelimiter(const QString &domain, int from = 0)
+static qsizetype nextDotDelimiter(QStringView domain, qsizetype from = 0)
 {
-    const QChar *b = domain.unicode();
+    const QChar *b = domain.data();
     const QChar *ch = b + from;
     const QChar *e = b + domain.length();
     while (ch < e) {
@@ -2494,12 +2494,12 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
     result.reserve(domain.length());
 
     const bool isIdnEnabled = op == NormalizeAce ? qt_is_idn_enabled(domain) : false;
-    int lastIdx = 0;
+    qsizetype lastIdx = 0;
     QString aceForm; // this variable is here for caching
 
     while (1) {
-        int idx = nextDotDelimiter(domain, lastIdx);
-        int labelLength = idx - lastIdx;
+        const auto idx = nextDotDelimiter(domain, lastIdx);
+        const auto labelLength = idx - lastIdx;
         if (labelLength == 0) {
             if (idx == domain.length())
                 break;
@@ -2558,8 +2558,7 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
             // That means we need one or two temporaries
             if (!qt_nameprep(&result, prevLen))
                 return QString();   // failed
-            labelLength = result.length() - prevLen;
-            int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
+            const auto toReserve = result.length() - prevLen + 4 + 6; // "xn--" plus some extra bytes
             aceForm.resize(0);
             if (toReserve > aceForm.capacity())
                 aceForm.reserve(toReserve);
