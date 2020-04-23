@@ -788,11 +788,9 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
             text->replace(offset, used, sectiontext.constData(), used);
         break; }
     case TimeZoneSection:
-#if QT_CONFIG(timezone)
         result = findTimeZone(sectionTextRef, currentValue,
                               absoluteMax(sectionIndex),
                               absoluteMin(sectionIndex));
-#endif
         break;
     case MonthSection:
     case DayOfWeekSectionShort:
@@ -1692,7 +1690,12 @@ QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when,
     if (index > 0 && maxVal >= offset && offset >= minVal)
         return ParsedSection(Acceptable, offset, index);
 
-#endif // timezone
+#else // timezone
+    Q_UNUSED(str);
+    Q_UNUSED(when);
+    Q_UNUSED(maxVal);
+    Q_UNUSED(minVal);
+#endif
     return ParsedSection();
 }
 

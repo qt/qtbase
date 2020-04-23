@@ -140,8 +140,10 @@ void tst_toolsupport::offsets_data()
             << pmm_to_offsetof(&QDateTimePrivate::m_status) << 4 << 4;
         QTest::newRow("QDateTimePrivate::m_offsetFromUtc")
             << pmm_to_offsetof(&QDateTimePrivate::m_offsetFromUtc) << 16 << 16;
+#if QT_CONFIG(timezone)
         QTest::newRow("QDateTimePrivate::m_timeZone")
             << pmm_to_offsetof(&QDateTimePrivate::m_timeZone) << 20 << 24;
+#endif
     }
 #endif // RUN_MEMBER_OFFSET_TEST
 }

@@ -3,5 +3,5 @@ SUBDIRS = \
     qcalendar \
     qdate \
     qdatetime \
-    qtime \
-    qtimezone
+    qtime
+qtConfig(timezone): SUBDIRS += qtimezone

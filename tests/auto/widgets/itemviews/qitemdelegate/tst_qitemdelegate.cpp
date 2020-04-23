@@ -1605,7 +1605,9 @@ void tst_QItemDelegate::dateTextForRole_data()
     // Ensure we exercise every time-spec variant:
     QTest::newRow("local") << QDateTime(date, time, Qt::LocalTime);
     QTest::newRow("UTC") << QDateTime(date, time, Qt::UTC);
+#if QT_CONFIG(timezone)
     QTest::newRow("zone") << QDateTime(date, time, QTimeZone("Europe/Dublin"));
+#endif
     QTest::newRow("offset") << QDateTime(date, time, Qt::OffsetFromUTC, 36000);
 #endif
 }

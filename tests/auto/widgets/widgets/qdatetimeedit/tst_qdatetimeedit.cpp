@@ -4460,6 +4460,7 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
     QCOMPARE(value.toDate(), expectedDate);
 }
 
+#if QT_CONFIG(timezone)
 /*
     The following tests verify correct handling of the spring forward gap; which
     hour is skipped, and on which day, depends on the local time zone. We try to
@@ -4485,6 +4486,7 @@ static QDateTime findSpring(int year, const QTimeZone &timeZone)
 
     return spring;
 };
+#endif
 
 /*!
     Test that typing in a time that is invalid due to spring forward gap
@@ -4492,6 +4494,7 @@ static QDateTime findSpring(int year, const QTimeZone &timeZone)
 */
 void tst_QDateTimeEdit::springForward_data()
 {
+#if QT_CONFIG(timezone)
     QTest::addColumn<QDateTime>("start");
     QTest::addColumn<QAbstractSpinBox::CorrectionMode>("correctionMode");
     QTest::addColumn<QTime>("inputTime");
@@ -4539,10 +4542,14 @@ void tst_QDateTimeEdit::springForward_data()
         << QAbstractSpinBox::CorrectToNearestValue
         << springGapMiddle
         << springTransition;
+#else
+    QSKIP("Needs timezone feature enabled");
+#endif
 }
 
 void tst_QDateTimeEdit::springForward()
 {
+#if QT_CONFIG(timezone)
     QFETCH(QDateTime, start);
     QFETCH(QAbstractSpinBox::CorrectionMode, correctionMode);
     QFETCH(QTime, inputTime);
@@ -4571,6 +4578,7 @@ void tst_QDateTimeEdit::springForward()
     QTest::keyClick(&edit, Qt::Key_Return, {});
 
     QCOMPARE(edit.dateTime(), expected);
+#endif
 }
 
 /*!
@@ -4582,6 +4590,7 @@ void tst_QDateTimeEdit::springForward()
 */
 void tst_QDateTimeEdit::stepIntoDSTGap_data()
 {
+#if QT_CONFIG(timezone)
     QTest::addColumn<QDateTime>("start");
     QTest::addColumn<QDateTimeEdit::Section>("section");
     QTest::addColumn<int>("steps");
@@ -4656,10 +4665,14 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
         << QDateTimeEdit::YearSection
         << -1
         << springTransition;
+#else
+    QSKIP("Needs timezone feature enabled");
+#endif
 }
 
 void tst_QDateTimeEdit::stepIntoDSTGap()
 {
+#if QT_CONFIG(timezone)
     QFETCH(QDateTime, start);
     QFETCH(QDateTimeEdit::Section, section);
     QFETCH(int, steps);
@@ -4682,6 +4695,7 @@ void tst_QDateTimeEdit::stepIntoDSTGap()
         QTest::keyClick(&edit, steps > 0 ? Qt::Key_Up : Qt::Key_Down, {});
 
     QCOMPARE(edit.dateTime(), end);
+#endif
 }
 
 QTEST_MAIN(tst_QDateTimeEdit)

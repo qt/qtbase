@@ -1765,6 +1765,7 @@ void tst_QLocale::formatTimeZone()
     const QString cest(QStringLiteral("CEST"));
 #endif
 
+#if QT_CONFIG(timezone)
     QDateTime dt6(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
 #ifdef Q_OS_WIN
     QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
@@ -1776,6 +1777,7 @@ void tst_QLocale::formatTimeZone()
     QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
 #endif
     QCOMPARE(enUS.toString(dt7, "t"), cest);
+#endif
 
     // Current datetime should return current abbreviation
     QCOMPARE(enUS.toString(QDateTime::currentDateTime(), "t"),

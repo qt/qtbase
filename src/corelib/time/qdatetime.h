@@ -55,7 +55,9 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
 QT_BEGIN_NAMESPACE
 
 class QCalendar;
+#if QT_CONFIG(timezone)
 class QTimeZone;
+#endif
 class QDateTime;
 
 class Q_CORE_EXPORT QDate // ### Qt 6: change to be used by value, not const &
@@ -389,7 +391,9 @@ public:
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC);
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC, Qt::TimeSpec spec,
                                 int offsetFromUtc = 0);
+#  if QT_CONFIG(timezone)
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC, const QTimeZone &timeZone);
+#  endif
 #endif
 
     static QDateTime fromMSecsSinceEpoch(qint64 msecs);
