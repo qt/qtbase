@@ -13,6 +13,7 @@ set(JSON_HEADERS
         cxx11-enums.h
         cxx11-explicit-override-control.h
         cxx11-final-classes.h
+        cxx11-trailing-return.h
         cxx17-namespaces.h
         dir-in-include-path.h
         escapes-in-string-literals.h

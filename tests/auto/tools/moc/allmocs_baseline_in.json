@@ -648,6 +648,79 @@
     {
         "classes": [
             {
+                "className": "CXX11TrailingReturn",
+                "object": true,
+                "qualifiedClassName": "CXX11TrailingReturn",
+                "signals": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "i",
+                                "type": "int"
+                            }
+                        ],
+                        "name": "trailingSignalReturn",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "public",
+                        "name": "fun",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "i",
+                                "type": "int"
+                            },
+                            {
+                                "name": "b",
+                                "type": "char"
+                            }
+                        ],
+                        "name": "arguments",
+                        "returnType": "int"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "i",
+                                "type": "int"
+                            }
+                        ],
+                        "name": "inlineFunc",
+                        "returnType": "int"
+                    },
+                    {
+                        "access": "public",
+                        "name": "constRefReturn",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "name": "constConstRefReturn",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "cxx11-trailing-return.h",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
                 "className": "ClassInNamespace",
                 "enums": [
                     {
