@@ -2485,7 +2485,7 @@ static qsizetype nextDotDelimiter(QStringView domain, qsizetype from = 0)
     return ch - b;
 }
 
-QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
+QString qt_ACE_do(QStringView domain, AceOperation op, AceLeadingDot dot)
 {
     QString result;
     if (domain.isEmpty())
@@ -2501,7 +2501,7 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
         const auto idx = nextDotDelimiter(domain, lastIdx);
         const auto labelLength = idx - lastIdx;
         if (labelLength == 0) {
-            if (idx == domain.length())
+            if (idx == domain.size())
                 break;
             if (dot == ForbidLeadingDot || idx > 0)
                 return QString(); // two delimiters in a row -- empty label not allowed
@@ -2526,7 +2526,7 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
         result.resize(prevLen + labelLength);
         {
             QChar *out = result.data() + prevLen;
-            const QChar *in = domain.constData() + lastIdx;
+            const QChar *in = domain.data() + lastIdx;
             const QChar *e = in + labelLength;
             for (; in < e; ++in, ++out) {
                 ushort uc = in->unicode();
