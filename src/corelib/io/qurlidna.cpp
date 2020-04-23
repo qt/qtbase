@@ -2434,14 +2434,14 @@ static bool equal(const QChar *a, int l, const char *b)
     return l == 0;
 }
 
-static bool qt_is_idn_enabled(const QString &domain)
+static bool qt_is_idn_enabled(QStringView domain)
 {
-    int idx = domain.lastIndexOf(QLatin1Char('.'));
+    const auto idx = domain.lastIndexOf(QLatin1Char('.'));
     if (idx == -1)
         return false;
 
     int len = domain.size() - idx - 1;
-    QString tldString = qt_ACE_do(QString::fromRawData(domain.constData() + idx + 1, len), ToAceOnly, ForbidLeadingDot);
+    QString tldString = qt_ACE_do(QString::fromRawData(domain.data() + idx + 1, len), ToAceOnly, ForbidLeadingDot);
     len = tldString.size();
 
     const QChar *tld = tldString.constData();
