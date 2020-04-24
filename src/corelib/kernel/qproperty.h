@@ -230,7 +230,9 @@ public:
 #ifndef Q_CLANG_QDOC
     template <typename Functor>
     explicit QProperty(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
-                       typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = 0);
+                       typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = 0)
+        : QProperty(QPropertyBinding<T>(std::forward<Functor>(f), location))
+    {}
 #else
     template <typename Functor>
     explicit QProperty(Functor &&f);
@@ -356,15 +358,6 @@ private:
     // non-const functions on QPropertyBase.
     mutable QtPrivate::QPropertyValueStorage<T> d;
 };
-
-#ifndef Q_CLANG_QDOC
-template <typename PropertyType>
-template <typename Functor>
-QProperty<PropertyType>::QProperty(Functor &&f, const QPropertyBindingSourceLocation &location,
-                                   typename std::enable_if_t<std::is_invocable_r_v<PropertyType, Functor&>> *)
-    : QProperty(QPropertyBinding<PropertyType>(std::forward<Functor>(f), location))
-{}
-#endif
 
 namespace Qt {
     template <typename PropertyType>
