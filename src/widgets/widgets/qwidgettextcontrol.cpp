@@ -58,6 +58,7 @@
 #include "private/qapplication_p.h"
 #include "private/qtextdocumentlayout_p.h"
 #include "private/qabstracttextdocumentlayout_p.h"
+#include "private/qmenu_p.h"
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
 #include "qtextlist.h"
@@ -1941,6 +1942,10 @@ void QWidgetTextControlPrivate::contextMenuEvent(const QPoint &screenPos, const 
     if (!menu)
         return;
     menu->setAttribute(Qt::WA_DeleteOnClose);
+    if (auto *window = static_cast<QWidget *>(parent)->window()->windowHandle()) {
+        QMenuPrivate::get(menu)->topData()->initialScreenIndex =
+                QGuiApplication::screens().indexOf(window->screen());
+    }
     menu->popup(screenPos);
 #endif
 }
