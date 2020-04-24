@@ -225,6 +225,21 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
     if (windowGroup.isValid() && windowGroup.canConvert<QByteArray>())
         joinWindowGroup(windowGroup.toByteArray());
 
+    QVariant pipelineValue = window->property("_q_platform_qnxPipeline");
+    if (pipelineValue.isValid()) {
+        bool ok = false;
+        int pipeline = pipelineValue.toInt(&ok);
+        if (ok) {
+            qWindowDebug() << "Set pipeline value to" << pipeline;
+
+            Q_SCREEN_CHECKERROR(
+                screen_set_window_property_iv(m_window, SCREEN_PROPERTY_PIPELINE, &pipeline),
+                "Failed to set window pipeline");
+        } else {
+            qWindowDebug() << "Invalid pipeline value:" << pipelineValue;
+        }
+    }
+
     int debug = 0;
     if (Q_UNLIKELY(debug_fps())) {
         debug |= SCREEN_DEBUG_GRAPH_FPS;
