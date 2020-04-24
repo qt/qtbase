@@ -725,9 +725,11 @@ inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, in
 // the decodedXXX tables are run with the delimiters set to "decode" by default
 // (except for the query, which doesn't use these functions)
 
-#define decode(x) ushort(x)
-#define leave(x)  ushort(0x100 | (x))
-#define encode(x) ushort(0x200 | (x))
+namespace {
+template <typename T> constexpr ushort decode(T x) noexcept { return ushort(x); }
+template <typename T> constexpr ushort leave(T x) noexcept { return ushort(0x100 | x); }
+template <typename T> constexpr ushort encode(T x) noexcept { return ushort(0x200 | x); }
+}
 
 static const ushort userNameInIsolation[] = {
     decode(':'), // 0
