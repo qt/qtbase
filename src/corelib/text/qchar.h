@@ -115,9 +115,9 @@ public:
 #endif
 
 #ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(char c) noexcept : ucs(uchar(c)) { }
+    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR QChar(char c) noexcept : ucs(uchar(c)) { }
 #ifndef QT_RESTRICTED_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(uchar c) noexcept : ucs(c) { }
+    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR QChar(uchar c) noexcept : ucs(c) { }
 #endif
 #endif
     // Unicode information
