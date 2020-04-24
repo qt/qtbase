@@ -40,6 +40,7 @@
 #include "qmenu.h"
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtWidgets/private/qwidgetwindow_p.h>
 
 #include "qdebug.h"
 #include "qstyle.h"
@@ -2366,15 +2367,23 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     // Use d->popupScreen to remember, because initialScreenIndex will be reset after the first showing.
     // However if eventLoop exists, then exec() already did this by calling createWinId(); so leave it alone. (QTBUG-76162)
     if (!d->eventLoop) {
+        bool screenSet = false;
         const int screenIndex = d->topData()->initialScreenIndex;
         if (screenIndex >= 0)
             d->popupScreen = screenIndex;
         if (auto s = QGuiApplication::screens().value(d->popupScreen)) {
             if (d->setScreen(s))
                 d->itemsDirty = true;
-        } else if (d->setScreenForPoint(p)) {
-            d->itemsDirty = true;
+            screenSet = true;
+        } else if (QMenu *parentMenu = qobject_cast<QMenu *>(parent())) {
+            // a submenu is always opened from an open parent menu,
+            // so show it on the same screen where the parent is.
+            if (d->setScreen(QMenuPrivate::get(parentMenu)->windowHandle()->screen()))
+                d->itemsDirty = true;
+            screenSet = true;
         }
+        if (!screenSet && d->setScreenForPoint(p))
+            d->itemsDirty = true;
     }
 
     const bool contextMenu = d->isContextMenu();
