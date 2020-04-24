@@ -45,6 +45,7 @@
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
 #include "quiview.h"
+#include "qiostheme.h"
 
 #include <QtCore/private/qcore_mac_p.h>
 
@@ -205,6 +206,18 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 {
     QScopedValueRollback<BOOL> sendingEvent(self->_sendingEvent, YES);
     [super sendEvent:event];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    if (self.screen == UIScreen.mainScreen) {
+        if (previousTraitCollection.userInterfaceStyle != self.traitCollection.userInterfaceStyle) {
+            QIOSTheme::initializeSystemPalette();
+            QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>(nullptr);
+        }
+    }
 }
 
 @end
