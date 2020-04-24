@@ -2581,6 +2581,7 @@ static QByteArray createSpecialCaseMap()
     out += "static const unsigned short specialCaseMap[] = {\n"
            "    0x0, // placeholder";
     int i = 1;
+    int maxN = 0;
     while (i < specialCaseMap.size()) {
         out += "\n   ";
         int n = specialCaseMap.at(i);
@@ -2589,9 +2590,12 @@ static QByteArray createSpecialCaseMap()
             out += ",";
         }
         i += n + 1;
+        maxN = std::max(maxN, n);
     }
     out.chop(1);
-    out += "\n};\n\n";
+    out += "\n};\n\nconst unsigned int MaxSpecialCaseLength = ";
+    out += QByteArray::number(maxN);
+    out += ";\n\n\n";
 
     qDebug("    memory usage: %ld bytes", specialCaseMap.size()*sizeof(unsigned short));
 

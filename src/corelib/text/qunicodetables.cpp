@@ -9946,6 +9946,8 @@ static const unsigned short specialCaseMap[] = {
     0x1, 0xa64b
 };
 
+const unsigned int MaxSpecialCaseLength = 3;
+
 
 static const unsigned short uc_decomposition_trie[] = {
     // 0 - 0x3400

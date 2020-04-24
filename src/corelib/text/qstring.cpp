@@ -6533,36 +6533,32 @@ static QString detachAndConvertCase(T &str, QStringIterator it, QUnicodeTables::
     QChar *pp = s.begin() + it.index(); // will detach if necessary
 
     do {
-        auto uc = it.nextUnchecked();
-
-        const auto fold = qGetProp(uc)->cases[which];
-        signed short caseDiff = fold.diff;
-
-        if (Q_UNLIKELY(fold.special)) {
-            const ushort *specialCase = specialCaseMap + caseDiff;
-            ushort length = *specialCase++;
-
-            if (Q_LIKELY(length == 1)) {
-                *pp++ = QChar(*specialCase);
+        const auto folded = fullConvertCase(it.nextUnchecked(), which);
+        if (Q_UNLIKELY(folded[1])) {
+            if (folded[0] == *pp && !folded[2]) {
+                // special case: only second actually changed (e.g. surrogate pairs),
+                // avoid slow case
+                ++pp;
+                *pp++ = folded[1];
             } else {
                 // slow path: the string is growing
                 int inpos = it.index() - 1;
                 int outpos = pp - s.constBegin();
 
-                s.replace(outpos, 1, reinterpret_cast<const QChar *>(specialCase), length);
-                pp = const_cast<QChar *>(s.constBegin()) + outpos + length;
+                int foldedSize = 2; // must be at least 2, b/c folded[1] != NUL
+                while (folded[foldedSize])
+                    ++foldedSize;
+
+                s.replace(outpos, 1, reinterpret_cast<const QChar *>(folded.data()), foldedSize);
+                pp = const_cast<QChar *>(s.constBegin()) + outpos + foldedSize;
 
                 // do we need to adjust the input iterator too?
                 // if it is pointing to s's data, str is empty
                 if (str.isEmpty())
-                    it = QStringIterator(s.constBegin(), inpos + length, s.constEnd());
+                    it = QStringIterator(s.constBegin(), inpos + foldedSize, s.constEnd());
             }
-        } else if (Q_UNLIKELY(QChar::requiresSurrogates(uc))) {
-            // so far, case convertion never changes planes (guaranteed by the qunicodetables generator)
-            pp++;
-            *pp++ = QChar(QChar::lowSurrogate(uc + caseDiff));
         } else {
-            *pp++ = QChar(uc + caseDiff);
+            *pp++ = folded[0];
         }
     } while (it.hasNext());
 

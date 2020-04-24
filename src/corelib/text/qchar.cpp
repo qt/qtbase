@@ -1550,6 +1550,29 @@ QChar::UnicodeVersion QChar::currentUnicodeVersion() noexcept
     return UNICODE_DATA_VERSION;
 }
 
+using FullConvertCaseResult = std::array<char16_t, MaxSpecialCaseLength + 1>;
+static FullConvertCaseResult fullConvertCase(char32_t uc, QUnicodeTables::Case which) noexcept
+{
+    FullConvertCaseResult result = {};
+    auto pp = result.begin();
+
+    const auto fold = qGetProp(uc)->cases[which];
+    const auto caseDiff = fold.diff;
+
+    if (Q_UNLIKELY(fold.special)) {
+        const auto *specialCase = specialCaseMap + caseDiff;
+        auto length = *specialCase++;
+        while (length--)
+            *pp++ = *specialCase++;
+    } else if (Q_UNLIKELY(QChar::requiresSurrogates(uc))) {
+        // so far, case convertion never changes planes (guaranteed by the qunicodetables generator)
+        *pp++ = QChar::highSurrogate(uc);
+        *pp++ = QChar::lowSurrogate(uc + caseDiff);
+    } else {
+        *pp++ = uc + caseDiff;
+    }
+    return result;
+}
 
 template <typename T>
 Q_DECL_CONST_FUNCTION static inline T convertCase_helper(T uc, QUnicodeTables::Case which) noexcept
