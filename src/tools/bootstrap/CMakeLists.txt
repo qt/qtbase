@@ -147,6 +147,7 @@ qt_extend_target(Bootstrap
         QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ..
+        ../../3rdparty/pcre2/src
         ../../3rdparty/tinycbor/src
     PUBLIC_INCLUDE_DIRECTORIES  # special case
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/pcre2/src>

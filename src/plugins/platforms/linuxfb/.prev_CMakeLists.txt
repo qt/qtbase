@@ -4,7 +4,7 @@
 ## QLinuxFbIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QLinuxFbIntegrationPlugin
+qt_internal_add_plugin(QLinuxFbIntegrationPlugin
     OUTPUT_NAME qlinuxfb
     TYPE platforms
     SOURCES

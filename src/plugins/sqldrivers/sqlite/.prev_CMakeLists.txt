@@ -4,7 +4,7 @@
 ## QSQLiteDriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QSQLiteDriverPlugin
+qt_internal_add_plugin(QSQLiteDriverPlugin
     OUTPUT_NAME qsqlite
     TYPE sqldrivers
     SOURCES

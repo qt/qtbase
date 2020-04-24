@@ -7,7 +7,7 @@ qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
 ## QCocoaIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QCocoaIntegrationPlugin
+qt_internal_add_plugin(QCocoaIntegrationPlugin
     OUTPUT_NAME qcocoa
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES cocoa # special case
     TYPE platforms

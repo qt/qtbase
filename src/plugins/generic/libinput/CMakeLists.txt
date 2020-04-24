@@ -4,7 +4,7 @@
 ## QLibInputPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QLibInputPlugin
+qt_internal_add_plugin(QLibInputPlugin
     OUTPUT_NAME qlibinputplugin
     TYPE generic
     SOURCES

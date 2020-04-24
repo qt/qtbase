@@ -4,7 +4,7 @@
 ## QGifPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QGifPlugin
+qt_internal_add_plugin(QGifPlugin
     OUTPUT_NAME qgif
     TYPE imageformats
     SOURCES

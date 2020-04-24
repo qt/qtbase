@@ -4,7 +4,7 @@
 ## QTsLibPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QTsLibPlugin
+qt_internal_add_plugin(QTsLibPlugin
     OUTPUT_NAME qtslibplugin
     TYPE generic
     SOURCES

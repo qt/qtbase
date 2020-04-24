@@ -4,7 +4,7 @@
 ## QPSQLDriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QPSQLDriverPlugin
+qt_internal_add_plugin(QPSQLDriverPlugin
     OUTPUT_NAME qsqlpsql
     TYPE sqldrivers
     SOURCES

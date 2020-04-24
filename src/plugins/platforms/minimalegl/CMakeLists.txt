@@ -4,7 +4,7 @@
 ## QMinimalEglIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QMinimalEglIntegrationPlugin
+qt_internal_add_plugin(QMinimalEglIntegrationPlugin
     OUTPUT_NAME qminimalegl
     TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimalegl # special case

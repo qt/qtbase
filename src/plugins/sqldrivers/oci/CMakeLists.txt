@@ -4,7 +4,7 @@
 ## QOCIDriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QOCIDriverPlugin
+qt_internal_add_plugin(QOCIDriverPlugin
     OUTPUT_NAME qsqloci
     TYPE sqldrivers
     SOURCES

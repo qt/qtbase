@@ -4,7 +4,7 @@
 ## QVncIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QVncIntegrationPlugin
+qt_internal_add_plugin(QVncIntegrationPlugin
     OUTPUT_NAME qvnc
     TYPE platforms
     SOURCES

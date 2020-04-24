@@ -5,7 +5,8 @@
 #####################################################################
 
 qt_find_package(ODBC) # special case
-qt_add_plugin(QODBCDriverPlugin
+
+qt_internal_add_plugin(QODBCDriverPlugin
     OUTPUT_NAME qsqlodbc
     TYPE sqldrivers
     SOURCES

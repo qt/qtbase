@@ -152,6 +152,7 @@ qt_add_module(Bootstrap
         QT_VERSION_STR=\"\"
     INCLUDE_DIRECTORIES
         ..
+        ../../3rdparty/pcre2/src
         ../../3rdparty/tinycbor/src
     PUBLIC_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/pcre2/src>

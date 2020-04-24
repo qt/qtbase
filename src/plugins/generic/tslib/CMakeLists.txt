@@ -6,7 +6,7 @@ qt_find_package(Tslib) # special case
 ## QTsLibPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QTsLibPlugin
+qt_internal_add_plugin(QTsLibPlugin
     OUTPUT_NAME qtslibplugin
     TYPE generic
     SOURCES

@@ -4,7 +4,7 @@
 ## QEvdevKeyboardPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QEvdevKeyboardPlugin
+qt_internal_add_plugin(QEvdevKeyboardPlugin
     OUTPUT_NAME qevdevkeyboardplugin
     TYPE generic
     SOURCES

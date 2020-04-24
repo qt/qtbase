@@ -7,7 +7,7 @@ qt_find_package(X11) # special case
 ## QGtk3ThemePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QGtk3ThemePlugin
+qt_internal_add_plugin(QGtk3ThemePlugin
     OUTPUT_NAME qgtk3
     TYPE platformthemes
     SOURCES

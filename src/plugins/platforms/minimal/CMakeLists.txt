@@ -6,7 +6,7 @@
 
 qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype) # special case
 
-qt_add_plugin(QMinimalIntegrationPlugin
+qt_internal_add_plugin(QMinimalIntegrationPlugin
     OUTPUT_NAME qminimal
     TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimal # special case

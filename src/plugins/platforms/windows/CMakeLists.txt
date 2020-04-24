@@ -4,7 +4,7 @@
 ## QWindowsIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QWindowsIntegrationPlugin
+qt_internal_add_plugin(QWindowsIntegrationPlugin
     OUTPUT_NAME qwindows
     TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES windows # special case

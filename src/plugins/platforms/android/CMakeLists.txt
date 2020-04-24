@@ -4,7 +4,7 @@
 ## QAndroidIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QAndroidIntegrationPlugin
+qt_internal_add_plugin(QAndroidIntegrationPlugin
     OUTPUT_NAME qtforandroid
     TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android # special case

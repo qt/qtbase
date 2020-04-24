@@ -4,7 +4,7 @@
 ## QEvdevTabletPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QEvdevTabletPlugin
+qt_internal_add_plugin(QEvdevTabletPlugin
     OUTPUT_NAME qevdevtabletplugin
     TYPE generic
     SOURCES

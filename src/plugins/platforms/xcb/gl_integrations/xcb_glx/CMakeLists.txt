@@ -4,7 +4,7 @@
 ## QXcbGlxIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QXcbGlxIntegrationPlugin
+qt_internal_add_plugin(QXcbGlxIntegrationPlugin
     OUTPUT_NAME qxcb-glx-integration
     TYPE xcbglintegrations
     SOURCES

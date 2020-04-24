@@ -4,7 +4,7 @@
 ## QDB2DriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QDB2DriverPlugin
+qt_internal_add_plugin(QDB2DriverPlugin
     OUTPUT_NAME qsqldb2
     TYPE sqldrivers
     SOURCES

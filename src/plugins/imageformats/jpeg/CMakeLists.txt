@@ -6,7 +6,7 @@ qt_find_package(JPEG) # special case
 ## QJpegPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QJpegPlugin
+qt_internal_add_plugin(QJpegPlugin
     OUTPUT_NAME qjpeg
     TYPE imageformats
     SOURCES

@@ -4,7 +4,7 @@
 ## QMacStylePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QMacStylePlugin
+qt_internal_add_plugin(QMacStylePlugin
     OUTPUT_NAME qmacstyle
     TYPE styles
     SOURCES

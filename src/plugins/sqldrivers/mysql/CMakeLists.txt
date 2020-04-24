@@ -4,7 +4,7 @@
 ## QMYSQLDriverPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QMYSQLDriverPlugin
+qt_internal_add_plugin(QMYSQLDriverPlugin
     OUTPUT_NAME qsqlmysql
     TYPE sqldrivers
     SOURCES

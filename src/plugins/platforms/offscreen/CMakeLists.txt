@@ -4,7 +4,7 @@
 ## QOffscreenIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QOffscreenIntegrationPlugin
+qt_internal_add_plugin(QOffscreenIntegrationPlugin
     OUTPUT_NAME qoffscreen
     TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES offscreen # special case

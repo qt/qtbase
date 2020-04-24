@@ -4,7 +4,7 @@
 ## QWindowsVistaStylePlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QWindowsVistaStylePlugin
+qt_internal_add_plugin(QWindowsVistaStylePlugin
     OUTPUT_NAME qwindowsvistastyle
     TYPE styles
     SOURCES

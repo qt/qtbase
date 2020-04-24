@@ -8,7 +8,7 @@ qt_find_package(DirectFB)
 ## QDirectFbIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QDirectFbIntegrationPlugin
+qt_internal_add_plugin(QDirectFbIntegrationPlugin
     OUTPUT_NAME qdirectfb
     TYPE platforms
     SOURCES

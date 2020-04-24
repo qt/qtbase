@@ -4,7 +4,7 @@
 ## QEglFSX11IntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QEglFSX11IntegrationPlugin
+qt_internal_add_plugin(QEglFSX11IntegrationPlugin
     OUTPUT_NAME qeglfs-x11-integration
     TYPE egldeviceintegrations
     SOURCES

@@ -4,7 +4,7 @@
 ## QIosOptionalPlugin_NSPhotoLibrary Plugin:
 #####################################################################
 
-add_qt_plugin(QIosOptionalPlugin_NSPhotoLibrary
+qt_internal_add_plugin(QIosOptionalPlugin_NSPhotoLibrary
     OUTPUT_NAME qiosnsphotolibrarysupport
     TYPE platforms/darwin
     SOURCES

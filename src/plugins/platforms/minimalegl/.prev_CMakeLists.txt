@@ -4,7 +4,7 @@
 ## QMinimalEglIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QMinimalEglIntegrationPlugin
+qt_internal_add_plugin(QMinimalEglIntegrationPlugin
     OUTPUT_NAME qminimalegl
     TYPE platforms
     SOURCES

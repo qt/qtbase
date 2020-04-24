@@ -4,7 +4,7 @@
 ## QCocoaIntegrationPlugin Plugin:
 #####################################################################
 
-qt_add_plugin(QCocoaIntegrationPlugin
+qt_internal_add_plugin(QCocoaIntegrationPlugin
     OUTPUT_NAME qcocoa
     TYPE platforms
     SOURCES

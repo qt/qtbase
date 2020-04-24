@@ -397,42 +397,45 @@ qt_extend_target(Gui CONDITION WIN32
 #### Keys ignored in scope 8:.:.:gui.pro:WIN32:
 # CMAKE_WINDOWS_BUILD = "True"
 
-#### Keys ignored in scope 11:.:.:gui.pro:QT_FEATURE_egl:
+#### Keys ignored in scope 10:.:.:gui.pro:NOT mingw OR QT_FEATURE_debug_and_release:
+# debug_suffix = "d"
+
+#### Keys ignored in scope 12:.:.:gui.pro:QT_FEATURE_egl:
 # CMAKE_EGL_LIBS = "$$cmakeProcessLibs($$QMAKE_LIBS_EGL)"
 
-#### Keys ignored in scope 12:.:.:gui.pro:NOT QMAKE_LIBDIR_EGL_ISEMPTY:
+#### Keys ignored in scope 13:.:.:gui.pro:NOT QMAKE_LIBDIR_EGL_ISEMPTY:
 # CMAKE_EGL_LIBDIR = "$$cmakeTargetPath($$QMAKE_LIBDIR_EGL)"
 
-#### Keys ignored in scope 13:.:.:gui.pro:QT_FEATURE_opengles2:
+#### Keys ignored in scope 14:.:.:gui.pro:QT_FEATURE_opengles2:
 # CMAKE_GL_HEADER_NAME = "GLES2/gl2.h"
 # CMAKE_OPENGL_INCDIRS = "$$cmakePortablePaths($$QMAKE_INCDIR_OPENGL_ES2)"
 # CMAKE_OPENGL_LIBS = "$$cmakeProcessLibs($$QMAKE_LIBS_OPENGL_ES2)"
 # CMAKE_QT_OPENGL_IMPLEMENTATION = "GLESv2"
 
-#### Keys ignored in scope 14:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ES2_ISEMPTY:
+#### Keys ignored in scope 15:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ES2_ISEMPTY:
 # CMAKE_GL_INCDIRS = "$$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL_ES2)"
 
-#### Keys ignored in scope 15:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ES2_ISEMPTY:
+#### Keys ignored in scope 16:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ES2_ISEMPTY:
 # CMAKE_OPENGL_LIBDIR = "$$cmakePortablePaths($$QMAKE_LIBDIR_OPENGL_ES2)"
 
-#### Keys ignored in scope 17:.:.:gui.pro:QT_FEATURE_opengl:
+#### Keys ignored in scope 18:.:.:gui.pro:QT_FEATURE_opengl:
 # CMAKE_GL_HEADER_NAME = "GL/gl.h"
 # CMAKE_OPENGL_INCDIRS = "$$cmakePortablePaths($$QMAKE_INCDIR_OPENGL)"
 # CMAKE_QT_OPENGL_IMPLEMENTATION = "GL"
 
-#### Keys ignored in scope 18:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ISEMPTY:
+#### Keys ignored in scope 19:.:.:gui.pro:NOT QMAKE_INCDIR_OPENGL_ISEMPTY:
 # CMAKE_GL_INCDIRS = "$$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL)"
 
-#### Keys ignored in scope 19:.:.:gui.pro:NOT QT_FEATURE_dynamicgl:
+#### Keys ignored in scope 20:.:.:gui.pro:NOT QT_FEATURE_dynamicgl:
 # CMAKE_OPENGL_LIBS = "$$cmakeProcessLibs($$QMAKE_LIBS_OPENGL)"
 
-#### Keys ignored in scope 20:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ISEMPTY:
+#### Keys ignored in scope 21:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ISEMPTY:
 # CMAKE_OPENGL_LIBDIR = "$$cmakePortablePaths($$QMAKE_LIBDIR_OPENGL)"
 
-#### Keys ignored in scope 21:.:.:gui.pro:APPLE:
+#### Keys ignored in scope 22:.:.:gui.pro:APPLE:
 # CMAKE_GL_HEADER_NAME = "gl.h"
 
-#### Keys ignored in scope 22:.:.:gui.pro:QT_FEATURE_egl:
+#### Keys ignored in scope 23:.:.:gui.pro:QT_FEATURE_egl:
 # CMAKE_EGL_INCDIRS = "$$cmakePortablePaths($$QMAKE_INCDIR_EGL)"
 
 qt_extend_target(Gui CONDITION QT_FEATURE_accessibility
@@ -491,7 +494,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_png
         WrapPNG::WrapPNG
 )
 
-#### Keys ignored in scope 38:.:image:image/image.pri:WIN32 AND mingw:
+#### Keys ignored in scope 39:.:image:image/image.pri:WIN32 AND mingw:
 # GCC_VERSION = "$${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.$${QMAKE_GCC_PATCH_VERSION}"
 
 qt_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND mingw)) AND (GCC_VERSION___equals___8.1.0)
@@ -690,7 +693,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
-#### Keys ignored in scope 82:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # special case begin
 # We must always generate syncqt-injected header files,
 # because we added a custom command earlier for those for framework builds.
@@ -746,10 +748,10 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 83:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 85:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM
