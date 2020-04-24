@@ -59,7 +59,6 @@ QT_REQUIRE_CONFIG(topleveldomain);
 
 QT_BEGIN_NAMESPACE
 
-Q_NETWORK_EXPORT QString qTopLevelDomain(const QString &domain);
 Q_NETWORK_EXPORT bool qIsEffectiveTLD(QStringView domain);
 inline bool qIsEffectiveTLD(const QString &domain)
 {

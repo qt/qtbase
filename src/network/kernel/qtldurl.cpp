@@ -90,29 +90,6 @@ static bool containsTLDEntry(QStringView entry, TLDMatchType match)
 /*!
     \internal
 
-    Return the top-level-domain per Qt's copy of the Mozilla public suffix list of
-    \a domain.
-*/
-
-Q_NETWORK_EXPORT QString qTopLevelDomain(const QString &domain)
-{
-    const QString domainLower = domain.toLower();
-    QVector<QStringRef> sections = domainLower.splitRef(QLatin1Char('.'), Qt::SkipEmptyParts);
-    if (sections.isEmpty())
-        return QString();
-
-    QString level, tld;
-    for (int j = sections.count() - 1; j >= 0; --j) {
-        level.prepend(QLatin1Char('.') + sections.at(j));
-        if (qIsEffectiveTLD(level.rightRef(level.size() - 1)))
-            tld = level;
-    }
-    return tld;
-}
-
-/*!
-    \internal
-
     Return true if \a domain is a top-level-domain per Qt's copy of the Mozilla public suffix list.
 
     The \a domain must be in lower-case format (as per QString::toLower()).
