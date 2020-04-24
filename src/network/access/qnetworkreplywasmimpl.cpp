@@ -61,12 +61,16 @@ QNetworkReplyWasmImplPrivate::QNetworkReplyWasmImplPrivate()
     , downloadBufferCurrentSize(0)
     , totalDownloadSize(0)
     , percentFinished(0)
+    , m_fetch(0)
 {
 }
 
 QNetworkReplyWasmImplPrivate::~QNetworkReplyWasmImplPrivate()
 {
-    emscripten_fetch_close(m_fetch);
+    if (m_fetch) {
+        emscripten_fetch_close(m_fetch);
+        m_fetch = 0;
+    }
 }
 
 QNetworkReplyWasmImpl::QNetworkReplyWasmImpl(QObject *parent)
@@ -115,12 +119,10 @@ void QNetworkReplyWasmImpl::abort()
     if (d->state == QNetworkReplyPrivate::Finished || d->state == QNetworkReplyPrivate::Aborted)
         return;
 
-    setError(QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
-
-    d->doAbort();
-
-    close();
     d->state = QNetworkReplyPrivate::Aborted;
+    d->doAbort();
+    d->m_fetch = 0;
+    close();
 }
 
 qint64 QNetworkReplyWasmImpl::bytesAvailable() const
@@ -266,7 +268,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     attr.onerror = QNetworkReplyWasmImplPrivate::downloadFailed;
     attr.onprogress = QNetworkReplyWasmImplPrivate::downloadProgress;
     attr.onreadystatechange = QNetworkReplyWasmImplPrivate::stateChange;
-    attr.timeoutMSecs = 2 * 6000; // FIXME
+    attr.timeoutMSecs = QNetworkRequest::DefaultTransferTimeoutConstant;
     attr.userData = reinterpret_cast<void *>(this);
 
     QString dPath = QStringLiteral("/home/web_user/") + request.url().fileName();
@@ -277,14 +279,13 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
 
 void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError errorCode, const QString &errorString)
 {
-    Q_UNUSED(errorCode)
     Q_Q(QNetworkReplyWasmImpl);
 
     q->setError(errorCode, errorString);
-    emit q->error(errorCode);
-
-    q->setFinished(true);
-    emit q->finished();
+    emit q->errorOccurred(errorCode);
+    doAbort();
+    m_fetch = 0;
+    q->close();
 }
 
 void QNetworkReplyWasmImplPrivate::emitDataReadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -450,11 +451,10 @@ void QNetworkReplyWasmImplPrivate::_q_bufferOutgoingData()
 
 void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
 {
-    QByteArray buffer(fetch->data, fetch->numBytes);
-
     QNetworkReplyWasmImplPrivate *reply =
             reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
     if (reply) {
+        QByteArray buffer(fetch->data, fetch->numBytes);
         reply->dataReceived(buffer, buffer.size());
     }
 }
@@ -478,24 +478,26 @@ void QNetworkReplyWasmImplPrivate::downloadProgress(emscripten_fetch_t *fetch)
             reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
     Q_ASSERT(reply);
 
-    if (fetch->status < 400)
-        reply->emitDataReadProgress((fetch->dataOffset + fetch->numBytes), fetch->totalBytes);
+    if (fetch->status < 400) {
+        uint64_t bytes = fetch->dataOffset + fetch->numBytes;
+        uint64_t tBytes = fetch->totalBytes; // totalBytes can be 0 if server not reporting content length
+        if (tBytes == 0)
+            tBytes = bytes;
+        reply->emitDataReadProgress(bytes, tBytes);
+    }
 }
 
 void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
 {
     QNetworkReplyWasmImplPrivate *reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
-    Q_ASSERT(reply);
-
-    QString reasonStr = QString::fromUtf8(fetch->statusText);
-
-    reply->setReplyAttributes(reinterpret_cast<quintptr>(fetch->userData), fetch->status, reasonStr);
-
-    if (fetch->status >= 400 && !reasonStr.isEmpty())
+    if (reply) {
+        QString reasonStr;
+        if (fetch->status > 600 ||  reply->state == QNetworkReplyPrivate::Aborted)
+            reasonStr = QStringLiteral("Operation canceled");
+        else
+            reasonStr = QString::fromUtf8(fetch->statusText);
         reply->emitReplyError(reply->statusCodeFromHttp(fetch->status, reply->request.url()), reasonStr);
-
-    if (fetch->status >= 400)
-        emscripten_fetch_close(fetch); // Also free data on failure.
+    }
 }
 
 //taken from qhttpthreaddelegate.cpp
@@ -552,6 +554,9 @@ QNetworkReply::NetworkError QNetworkReplyWasmImplPrivate::statusCodeFromHttp(int
         code = QNetworkReply::ServiceUnavailableError;
         break;
 
+    case 65535: //emscripten reply when aborted
+        code =  QNetworkReply::OperationCanceledError;
+        break;
     default:
         if (httpStatusCode > 500) {
             // some kind of server error
