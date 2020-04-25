@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const ushort QLatin1Char::unicode() const
+    \fn QLatin1Char::unicode() const
 
     Converts a Latin-1 character to an 16-bit-encoded Unicode representation
     of the character.
@@ -1759,19 +1759,19 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 {
     quint16 u;
     in >> u;
-    chr.unicode() = ushort(u);
+    chr.unicode() = char16_t(u);
     return in;
 }
 #endif // QT_NO_DATASTREAM
 
 /*!
-    \fn ushort & QChar::unicode()
+    \fn QChar::unicode()
 
     Returns a reference to the numeric Unicode value of the QChar.
 */
 
 /*!
-    \fn ushort QChar::unicode() const
+    \fn QChar::unicode() const
 
     Returns the numeric Unicode value of the QChar.
 */

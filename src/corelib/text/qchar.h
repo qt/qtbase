@@ -54,7 +54,7 @@ struct QLatin1Char
 public:
     Q_DECL_CONSTEXPR inline explicit QLatin1Char(char c) noexcept : ch(c) {}
     Q_DECL_CONSTEXPR inline char toLatin1() const noexcept { return ch; }
-    Q_DECL_CONSTEXPR inline ushort unicode() const noexcept { return ushort(uchar(ch)); }
+    Q_DECL_CONSTEXPR inline char16_t unicode() const noexcept { return char16_t(uchar(ch)); }
 
 private:
     char ch;
@@ -95,22 +95,22 @@ public:
     };
 
     Q_DECL_CONSTEXPR QChar() noexcept : ucs(0) {}
-    Q_DECL_CONSTEXPR QChar(ushort rc) noexcept : ucs(rc) {} // implicit
-    Q_DECL_CONSTEXPR QChar(uchar c, uchar r) noexcept : ucs(ushort((r << 8) | c)) {}
-    Q_DECL_CONSTEXPR QChar(short rc) noexcept : ucs(ushort(rc)) {} // implicit
-    Q_DECL_CONSTEXPR QChar(uint rc) noexcept : ucs(ushort(rc & 0xffff)) {}
-    Q_DECL_CONSTEXPR QChar(int rc) noexcept : ucs(ushort(rc & 0xffff)) {}
-    Q_DECL_CONSTEXPR QChar(SpecialCharacter s) noexcept : ucs(ushort(s)) {} // implicit
+    Q_DECL_CONSTEXPR QChar(ushort rc) noexcept : ucs(rc) {}
+    Q_DECL_CONSTEXPR QChar(uchar c, uchar r) noexcept : ucs(char16_t((r << 8) | c)) {}
+    Q_DECL_CONSTEXPR QChar(short rc) noexcept : ucs(char16_t(rc)) {}
+    Q_DECL_CONSTEXPR QChar(uint rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
+    Q_DECL_CONSTEXPR QChar(int rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
+    Q_DECL_CONSTEXPR QChar(SpecialCharacter s) noexcept : ucs(char16_t(s)) {} // implicit
     Q_DECL_CONSTEXPR QChar(QLatin1Char ch) noexcept : ucs(ch.unicode()) {} // implicit
 #if defined(Q_COMPILER_UNICODE_STRINGS)
-    Q_DECL_CONSTEXPR QChar(char16_t ch) noexcept : ucs(ushort(ch)) {} // implicit
+    Q_DECL_CONSTEXPR QChar(char16_t ch) noexcept : ucs(ch) {} // implicit
 #endif
 #if defined(Q_OS_WIN)
-    Q_STATIC_ASSERT(sizeof(wchar_t) == sizeof(ushort));
+    Q_STATIC_ASSERT(sizeof(wchar_t) == sizeof(char16_t));
 #endif
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 #   if !defined(_WCHAR_T_DEFINED) || defined(_NATIVE_WCHAR_T_DEFINED)
-    Q_DECL_CONSTEXPR QChar(wchar_t ch) noexcept : ucs(ushort(ch)) {} // implicit
+    Q_DECL_CONSTEXPR QChar(wchar_t ch) noexcept : ucs(char16_t(ch)) {} // implicit
 #   endif
 #endif
 
@@ -488,14 +488,14 @@ public:
     QT_DEPRECATED Q_DECL_CONSTEXPR inline char toAscii() const noexcept { return toLatin1(); }
 #endif
     Q_DECL_CONSTEXPR inline char toLatin1() const noexcept { return ucs > 0xff ? '\0' : char(ucs); }
-    Q_DECL_CONSTEXPR inline ushort unicode() const noexcept { return ucs; }
-    Q_DECL_RELAXED_CONSTEXPR inline ushort &unicode() noexcept { return ucs; }
+    Q_DECL_CONSTEXPR inline char16_t unicode() const noexcept { return ucs; }
+    Q_DECL_RELAXED_CONSTEXPR inline char16_t &unicode() noexcept { return ucs; }
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static Q_DECL_CONSTEXPR inline QChar fromAscii(char c) noexcept
     { return fromLatin1(c); }
 #endif
-    static Q_DECL_CONSTEXPR inline QChar fromLatin1(char c) noexcept { return QChar(ushort(uchar(c))); }
+    static Q_DECL_CONSTEXPR QChar fromLatin1(char c) noexcept { return QLatin1Char(c); }
 
     Q_DECL_CONSTEXPR inline bool isNull() const noexcept { return ucs == 0; }
 
@@ -519,8 +519,8 @@ public:
 
     Q_DECL_CONSTEXPR inline uchar cell() const noexcept { return uchar(ucs & 0xff); }
     Q_DECL_CONSTEXPR inline uchar row() const noexcept { return uchar((ucs>>8)&0xff); }
-    Q_DECL_RELAXED_CONSTEXPR inline void setCell(uchar acell) noexcept { ucs = ushort((ucs & 0xff00) + acell); }
-    Q_DECL_RELAXED_CONSTEXPR inline void setRow(uchar arow) noexcept { ucs = ushort((ushort(arow)<<8) + (ucs&0xff)); }
+    Q_DECL_RELAXED_CONSTEXPR inline void setCell(uchar acell) noexcept { ucs = char16_t((ucs & 0xff00) + acell); }
+    Q_DECL_RELAXED_CONSTEXPR inline void setRow(uchar arow) noexcept { ucs = char16_t((char16_t(arow)<<8) + (ucs&0xff)); }
 
     static Q_DECL_CONSTEXPR inline bool isNonCharacter(char32_t ucs4) noexcept
     {
@@ -630,7 +630,7 @@ private:
 
     friend Q_DECL_CONSTEXPR bool operator==(QChar, QChar) noexcept;
     friend Q_DECL_CONSTEXPR bool operator< (QChar, QChar) noexcept;
-    ushort ucs;
+    char16_t ucs;
 };
 
 Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
