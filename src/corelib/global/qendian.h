@@ -131,6 +131,17 @@ template <> inline Q_DECL_CONSTEXPR quint8 qbswap<quint8>(quint8 source)
     return source;
 }
 
+// charNN_t specializations
+template <> inline Q_DECL_CONSTEXPR char32_t qbswap<char32_t>(char32_t source)
+{
+    return qbswap(quint32(source));
+}
+
+template <> inline Q_DECL_CONSTEXPR char16_t qbswap<char16_t>(char16_t source)
+{
+    return qbswap(quint16(source));
+}
+
 // signed specializations
 template <> inline Q_DECL_CONSTEXPR qint64 qbswap<qint64>(qint64 source)
 {
