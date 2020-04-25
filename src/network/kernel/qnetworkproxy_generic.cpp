@@ -57,30 +57,34 @@ static bool ignoreProxyFor(const QNetworkProxyQuery &query)
     if (noProxy.isEmpty())
         return false;
 
+    const QString host = query.peerHostName();
+
     const QList<QByteArray> noProxyTokens = noProxy.split(',');
 
     for (const QByteArray &rawToken : noProxyTokens) {
-        QByteArray token = rawToken.trimmed();
-        QString peerHostName = query.peerHostName();
+        auto token = QLatin1String(rawToken).trimmed();
 
         // Since we use suffix matching, "*" is our 'default' behaviour
-        if (token.startsWith('*'))
+        if (token.startsWith(u'*'))
             token = token.mid(1);
 
         // Harmonize trailing dot notation
-        if (token.endsWith('.') && !peerHostName.endsWith('.'))
-            token = token.left(token.length()-1);
+        if (token.endsWith(u'.') && !host.endsWith(u'.'))
+            token = token.chopped(1);
 
-        // We prepend a dot to both values, so that when we do a suffix match,
-        // we don't match "donotmatch.com" with "match.com"
-        if (!token.startsWith('.'))
-            token.prepend('.');
+        if (token.startsWith(u'.')) // leading dot is implied
+            token = token.mid(1);
 
-        if (!peerHostName.startsWith('.'))
-            peerHostName.prepend('.');
+        if (host.endsWith(token)) {
 
-        if (peerHostName.endsWith(QLatin1String(token)))
-            return true;
+            // Make sure that when we have a suffix match,
+            // we don't match "donotmatch.com" with "match.com"
+
+            if (host.size() == token.size())                  // iow: host == token
+                return true;
+            if (host[host.size() - token.size() - 1] == u'.') // match follows a dot
+                return true;
+        }
     }
 
     return false;
