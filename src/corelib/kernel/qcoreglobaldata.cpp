@@ -38,31 +38,17 @@
 ****************************************************************************/
 
 #include "qcoreglobaldata_p.h"
-#if QT_CONFIG(textcodec)
-#include "qtextcodec.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QCoreGlobalData, globalInstance)
 
 QCoreGlobalData::QCoreGlobalData()
-#if QT_CONFIG(textcodec)
-    : codecForLocale(nullptr)
-#endif
 {
 }
 
 QCoreGlobalData::~QCoreGlobalData()
 {
-#if QT_CONFIG(textcodec)
-    codecForLocale = nullptr;
-    QList<QTextCodec *> tmp = allCodecs;
-    allCodecs.clear();
-    codecCache.clear();
-    for (QList<QTextCodec *>::const_iterator it = tmp.constBegin(); it != tmp.constEnd(); ++it)
-        delete *it;
-#endif
 }
 
 QCoreGlobalData *QCoreGlobalData::instance()

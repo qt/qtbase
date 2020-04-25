@@ -43,7 +43,6 @@
 #include "qutfcodec_p.h"
 #include "qlatincodec_p.h"
 #include "qsimplecodec_p.h"
-#include "private/qcoreglobaldata_p.h"
 #include "qdebug.h"
 
 #include "unicode/ucnv.h"
@@ -436,7 +435,7 @@ QList<int> QIcuCodec::availableMibs()
 
 QTextCodec *QIcuCodec::defaultCodecUnlocked()
 {
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    QTextCodecData *globalData = QTextCodecData::instance();
     if (!globalData)
         return nullptr;
     QTextCodec *c = globalData->codecForLocale.loadAcquire();
@@ -491,7 +490,7 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
             standardName = "windows-949";
     }
 
-    QCoreGlobalData *globalData = QCoreGlobalData::instance();
+    QTextCodecData *globalData = QTextCodecData::instance();
     QTextCodecCache *cache = &globalData->codecCache;
 
     QTextCodec *codec;

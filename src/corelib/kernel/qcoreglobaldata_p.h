@@ -57,14 +57,9 @@
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qbytearray.h"
-#if QT_CONFIG(textcodec)
-#include "QtCore/qtextcodec.h"
-#endif
 #include "QtCore/qmutex.h"
 
 QT_BEGIN_NAMESPACE
-
-typedef QHash<QByteArray, QTextCodec *> QTextCodecCache;
 
 struct QCoreGlobalData {
     QCoreGlobalData();
@@ -72,12 +67,6 @@ struct QCoreGlobalData {
 
     QMap<QString, QStringList> dirSearchPaths;
     QReadWriteLock dirSearchPathsLock;
-
-#if QT_CONFIG(textcodec)
-    QList<QTextCodec*> allCodecs;
-    QAtomicPointer<QTextCodec> codecForLocale;
-    QTextCodecCache codecCache;
-#endif
 
     static QCoreGlobalData *instance();
 };

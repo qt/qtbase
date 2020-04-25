@@ -117,7 +117,7 @@ protected:
     virtual ~QTextCodec();
 
 private:
-    friend struct QCoreGlobalData;
+    friend struct QTextCodecData;
 };
 
 class Q_CORE_EXPORT QTextEncoder {
