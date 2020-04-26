@@ -1348,7 +1348,7 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
         if (r.data.size() > MaxStringSize) {
             err = CborErrorDataTooLarge;
         } else {
-            QTextCodec::ConverterState cs;
+            QStringConverter::State cs(QStringConverter::Flag::Stateless);
             result.data = QUtf8::convertToUnicode(r.data, r.data.size(), &cs);
             if (cs.invalidChars != 0 || cs.remainingChars != 0)
                 err = CborErrorInvalidUtf8TextString;
