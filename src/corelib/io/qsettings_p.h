@@ -235,18 +235,16 @@ public:
     static QVariant stringToVariant(const QString &s);
     static void iniEscapedKey(const QString &key, QByteArray &result);
     static bool iniUnescapedKey(const QByteArray &key, int from, int to, QString &result);
-    static void iniEscapedString(const QString &str, QByteArray &result, QTextCodec *codec);
-    static void iniEscapedStringList(const QStringList &strs, QByteArray &result, QTextCodec *codec);
+    static void iniEscapedString(const QString &str, QByteArray &result);
+    static void iniEscapedStringList(const QStringList &strs, QByteArray &result);
     static bool iniUnescapedStringList(const QByteArray &str, int from, int to,
-                                       QString &stringResult, QStringList &stringListResult,
-                                       QTextCodec *codec);
+                                       QString &stringResult, QStringList &stringListResult);
     static QStringList splitArgs(const QString &s, int idx);
 
     QSettings::Format format;
     QSettings::Scope scope;
     QString organizationName;
     QString applicationName;
-    QTextCodec *iniCodec;
 
 protected:
     QStack<QSettingsGroup> groupStack;
@@ -283,7 +281,7 @@ public:
 
     bool readIniFile(const QByteArray &data, UnparsedSettingsMap *unparsedIniSections);
     static bool readIniSection(const QSettingsKey &section, const QByteArray &data,
-                               ParsedSettingsMap *settingsMap, QTextCodec *codec);
+                               ParsedSettingsMap *settingsMap);
     static bool readIniLine(const QByteArray &data, int &dataPos, int &lineStart, int &lineLen,
                             int &equalsPos);
 

@@ -52,10 +52,7 @@
 #include "qtemporaryfile.h"
 #include "qstandardpaths.h"
 #include <qdatastream.h>
-
-#if QT_CONFIG(textcodec)
-#  include "qtextcodec.h"
-#endif
+#include <qstringconverter.h>
 
 #ifndef QT_NO_GEOM_VARIANT
 #include "qsize.h"
@@ -230,7 +227,7 @@ void QConfFile::clearCache()
 // QSettingsPrivate
 
 QSettingsPrivate::QSettingsPrivate(QSettings::Format format)
-    : format(format), scope(QSettings::UserScope /* nothing better to put */), iniCodec(nullptr), fallbacks(true),
+    : format(format), scope(QSettings::UserScope /* nothing better to put */), fallbacks(true),
       pendingChanges(false), status(QSettings::NoError)
 {
 }
@@ -238,7 +235,7 @@ QSettingsPrivate::QSettingsPrivate(QSettings::Format format)
 QSettingsPrivate::QSettingsPrivate(QSettings::Format format, QSettings::Scope scope,
                                    const QString &organization, const QString &application)
     : format(format), scope(scope), organizationName(organization), applicationName(application),
-      iniCodec(nullptr), fallbacks(true), pendingChanges(false), status(QSettings::NoError)
+      fallbacks(true), pendingChanges(false), status(QSettings::NoError)
 {
 }
 
@@ -616,15 +613,17 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
     return lowercaseOnly;
 }
 
-void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, QTextCodec *codec)
+void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result)
 {
     bool needsQuotes = false;
     bool escapeNextIfDigit = false;
-    bool useCodec = codec && !str.startsWith(QLatin1String("@ByteArray("))
+    bool useCodec = !str.startsWith(QLatin1String("@ByteArray("))
                     && !str.startsWith(QLatin1String("@Variant("));
 
     int i;
     int startPos = result.size();
+
+    QStringEncoder toUtf8(QStringEncoder::Utf8);
 
     result.reserve(startPos + str.size() * 3 / 2);
     const QChar *unicode = str.unicode();
@@ -678,11 +677,9 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
             if (ch <= 0x1F || (ch >= 0x7F && !useCodec)) {
                 result += "\\x" + QByteArray::number(ch, 16);
                 escapeNextIfDigit = true;
-#if QT_CONFIG(textcodec)
             } else if (useCodec) {
                 // slow
-                result += codec->fromUnicode(&unicode[i], 1);
-#endif
+                result += toUtf8(&unicode[i], 1);
             } else {
                 result += (char)ch;
             }
@@ -705,7 +702,7 @@ inline static void iniChopTrailingSpaces(QString &str, int limit)
         str.truncate(n--);
 }
 
-void QSettingsPrivate::iniEscapedStringList(const QStringList &strs, QByteArray &result, QTextCodec *codec)
+void QSettingsPrivate::iniEscapedStringList(const QStringList &strs, QByteArray &result)
 {
     if (strs.isEmpty()) {
         /*
@@ -721,14 +718,13 @@ void QSettingsPrivate::iniEscapedStringList(const QStringList &strs, QByteArray 
         for (int i = 0; i < strs.size(); ++i) {
             if (i != 0)
                 result += ", ";
-            iniEscapedString(strs.at(i), result, codec);
+            iniEscapedString(strs.at(i), result);
         }
     }
 }
 
 bool QSettingsPrivate::iniUnescapedStringList(const QByteArray &str, int from, int to,
-                                              QString &stringResult, QStringList &stringListResult,
-                                              QTextCodec *codec)
+                                              QString &stringResult, QStringList &stringListResult)
 {
     static const char escapeCodes[][2] =
     {
@@ -751,6 +747,7 @@ bool QSettingsPrivate::iniUnescapedStringList(const QByteArray &str, int from, i
     char16_t escapeVal = 0;
     int i = from;
     char ch;
+    QStringDecoder fromUtf8(QStringDecoder::Utf8);
 
 StSkipSpaces:
     while (i < to && ((ch = str.at(i)) == ' ' || ch == '\t'))
@@ -830,20 +827,7 @@ StNormal:
                 ++j;
             }
 
-#if !QT_CONFIG(textcodec)
-            Q_UNUSED(codec)
-#else
-            if (codec) {
-                stringResult += codec->toUnicode(str.constData() + i, j - i);
-            } else
-#endif
-            {
-                int n = stringResult.size();
-                stringResult.resize(n + (j - i));
-                QChar *resultData = stringResult.data() + n;
-                for (int k = i; k < j; ++k)
-                    *resultData++ = QLatin1Char(str.at(k));
-            }
+            stringResult += fromUtf8(str.constData() + i, j - i);
             i = j;
         }
         }
@@ -1675,16 +1659,10 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
     int sectionPosition = 0;
     bool ok = true;
 
-    // detect utf8 BOM
+    // skip potential utf8 BOM
     const uchar *dd = (const uchar *)data.constData();
-    if (data.size() >= 3 && dd[0] == 0xef && dd[1] == 0xbb && dd[2] == 0xbf) {
-#if QT_CONFIG(textcodec)
-        iniCodec = QTextCodec::codecForName("UTF-8");
-#else
-        ok = false;
-#endif
+    if (data.size() >= 3 && dd[0] == 0xef && dd[1] == 0xbb && dd[2] == 0xbf)
         dataPos = 3;
-    }
 
     while (readIniLine(data, dataPos, lineStart, lineLen, equalsPos)) {
         char ch = data.at(lineStart);
@@ -1728,7 +1706,7 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
 }
 
 bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, const QByteArray &data,
-                                              ParsedSettingsMap *settingsMap, QTextCodec *codec)
+                                              ParsedSettingsMap *settingsMap)
 {
     QStringList strListValue;
     bool sectionIsLowercase = (section == section.originalCaseKey());
@@ -1761,7 +1739,7 @@ bool QConfFileSettingsPrivate::readIniSection(const QSettingsKey &section, const
         QString strValue;
         strValue.reserve(lineLen - (valueStart - lineStart));
         bool isStringList = iniUnescapedStringList(data, valueStart, lineStart + lineLen,
-                                                   strValue, strListValue, codec);
+                                                   strValue, strListValue);
         QVariant variant;
         if (isStringList) {
             variant = stringListToVariantList(strListValue);
@@ -1894,9 +1872,9 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
             */
             if (value.userType() == QMetaType::QStringList
                     || (value.userType() == QMetaType::QVariantList && value.toList().size() != 1)) {
-                iniEscapedStringList(variantListToStringList(value.toList()), block, iniCodec);
+                iniEscapedStringList(variantListToStringList(value.toList()), block);
             } else {
-                iniEscapedString(variantToString(value), block, iniCodec);
+                iniEscapedString(variantToString(value), block);
             }
             block += eol;
             if (device.write(block) == -1) {
@@ -1914,7 +1892,7 @@ void QConfFileSettingsPrivate::ensureAllSectionsParsed(QConfFile *confFile) cons
     const UnparsedSettingsMap::const_iterator end = confFile->unparsedIniSections.constEnd();
 
     for (; i != end; ++i) {
-        if (!QConfFileSettingsPrivate::readIniSection(i.key(), i.value(), &confFile->originalKeys, iniCodec))
+        if (!QConfFileSettingsPrivate::readIniSection(i.key(), i.value(), &confFile->originalKeys))
             setStatus(QSettings::FormatError);
     }
     confFile->unparsedIniSections.clear();
@@ -1942,7 +1920,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
             return;
     }
 
-    if (!QConfFileSettingsPrivate::readIniSection(i.key(), i.value(), &confFile->originalKeys, iniCodec))
+    if (!QConfFileSettingsPrivate::readIniSection(i.key(), i.value(), &confFile->originalKeys))
         setStatus(QSettings::FormatError);
     confFile->unparsedIniSections.erase(i);
 }
@@ -2508,13 +2486,20 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         such as "General/someKey", the key will be located in the
         "%General" section, \e not in the "General" section.
 
-    \li  Following the philosophy that we should be liberal in what
-        we accept and conservative in what we generate, QSettings
-        will accept Latin-1 encoded INI files, but generate pure
-        ASCII files, where non-ASCII values are encoded using standard
-        INI escape sequences. To make the INI files more readable (but
-        potentially less compatible), call setIniCodec().
+    \li In line with most implementations today, QSettings will
+        assume the INI file is utf-8 encoded. This means that keys and values
+        will be decoded as utf-8 encoded entries and written back as utf-8.
+
     \endlist
+
+    \section2 Compatibility with older Qt versions
+
+    Please note that this behavior is different to how QSettings behaved
+    in versions of Qt prior to Qt 6. INI files written with Qt 5 or earlier aree
+    however fully readable by a Qt 6 based application (unless a ini codec
+    different from utf8 had been set). But INI files written with Qt 6
+    will only be readable by older Qt versions if you set the "iniCodec" to
+    a utf-8 textcodec.
 
     \sa registerFormat(), setPath()
 */
@@ -2871,61 +2856,6 @@ QString QSettings::applicationName() const
     Q_D(const QSettings);
     return d->applicationName;
 }
-
-#if QT_CONFIG(textcodec)
-
-/*!
-    \since 4.5
-
-    Sets the codec for accessing INI files (including \c .conf files on Unix)
-    to \a codec. The codec is used for decoding any data that is read from
-    the INI file, and for encoding any data that is written to the file. By
-    default, no codec is used, and non-ASCII characters are encoded using
-    standard INI escape sequences.
-
-    \warning The codec must be set immediately after creating the QSettings
-    object, before accessing any data.
-
-    \sa iniCodec()
-*/
-void QSettings::setIniCodec(QTextCodec *codec)
-{
-    Q_D(QSettings);
-    d->iniCodec = codec;
-}
-
-/*!
-    \since 4.5
-    \overload
-
-    Sets the codec for accessing INI files (including \c .conf files on Unix)
-    to the QTextCodec for the encoding specified by \a codecName. Common
-    values for \c codecName include "ISO 8859-1", "UTF-8", and "UTF-16".
-    If the encoding isn't recognized, nothing happens.
-
-    \sa QTextCodec::codecForName()
-*/
-void QSettings::setIniCodec(const char *codecName)
-{
-    Q_D(QSettings);
-    if (QTextCodec *codec = QTextCodec::codecForName(codecName))
-        d->iniCodec = codec;
-}
-
-/*!
-    \since 4.5
-
-    Returns the codec that is used for accessing INI files. By default,
-    no codec is used, so \nullptr is returned.
-*/
-
-QTextCodec *QSettings::iniCodec() const
-{
-    Q_D(const QSettings);
-    return d->iniCodec;
-}
-
-#endif // textcodec
 
 /*!
     Returns a status code indicating the first error that was met by

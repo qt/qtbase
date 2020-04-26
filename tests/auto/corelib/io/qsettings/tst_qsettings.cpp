@@ -170,7 +170,6 @@ private slots:
     void childGroups();
     void childKeys_data();
     void childKeys();
-    void setIniCodec();
     void testIniParsing_data();
     void testIniParsing();
     void testEscapes();
@@ -188,7 +187,6 @@ private slots:
     void testByteArray_data();
     void testByteArray();
     void testByteArrayNativeFormat();
-    void iniCodec();
     void bom();
     void embeddedZeroByte_data();
     void embeddedZeroByte();
@@ -693,28 +691,6 @@ void tst_QSettings::testByteArrayNativeFormat()
     QSettings settings(":/resourcefile6.plist", QSettings::NativeFormat);
     QCOMPARE(settings.value("passwordData"), QVariant(QByteArray::fromBase64("RBxVAAsDVsO/")));
 #endif
-}
-
-void tst_QSettings::iniCodec()
-{
-    {
-        QSettings settings("QtProject", "tst_qsettings");
-        settings.setIniCodec("cp1251");
-        QByteArray ba;
-        ba.resize(256);
-        for (int i = 0; i < ba.size(); i++)
-            ba[i] = i;
-        settings.setValue("array",ba);
-    }
-    {
-        QSettings settings("QtProject", "tst_qsettings");
-        settings.setIniCodec("cp1251");
-        QByteArray ba = settings.value("array").toByteArray();
-        QCOMPARE(ba.size(), 256);
-        for (int i = 0; i < ba.size(); i++)
-            QCOMPARE((uchar)ba.at(i), (uchar)i);
-    }
-
 }
 
 void tst_QSettings::bom()
@@ -2416,71 +2392,6 @@ void tst_QSettings::fromFile()
     QDir::setCurrent(oldCur);
 }
 
-#ifdef QT_BUILD_INTERNAL
-void tst_QSettings::setIniCodec()
-{
-    QByteArray expeContents4, expeContents5;
-    QByteArray actualContents4, actualContents5;
-
-    {
-        QFile inFile(":/resourcefile4.ini");
-        inFile.open(QIODevice::ReadOnly);
-        expeContents4 = inFile.readAll();
-        inFile.close();
-    }
-
-    {
-        QFile inFile(":/resourcefile5.ini");
-        inFile.open(QIODevice::ReadOnly);
-        expeContents5 = inFile.readAll();
-        inFile.close();
-    }
-
-    {
-        QSettings settings4(QSettings::IniFormat, QSettings::UserScope, "software.org", "KillerAPP");
-        settings4.setIniCodec("UTF-8");
-        settings4.setValue(QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"), QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"));
-        settings4.sync();
-
-        QSettings settings5(QSettings::IniFormat, QSettings::UserScope, "other.software.org", "KillerAPP");
-        settings5.setIniCodec("ISO 8859-1");
-        settings5.setValue(QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"), QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"));
-        settings5.sync();
-
-        {
-            QFile inFile(settings4.fileName());
-            inFile.open(QIODevice::ReadOnly | QIODevice::Text);
-            actualContents4 = inFile.readAll();
-            inFile.close();
-        }
-
-        {
-            QFile inFile(settings5.fileName());
-            inFile.open(QIODevice::ReadOnly | QIODevice::Text);
-            actualContents5 = inFile.readAll();
-            inFile.close();
-        }
-    }
-
-    QConfFile::clearCache();
-
-    QCOMPARE(actualContents4, expeContents4);
-    QCOMPARE(actualContents5, expeContents5);
-
-    QSettings settings4(QSettings::IniFormat, QSettings::UserScope, "software.org", "KillerAPP");
-    settings4.setIniCodec("UTF-8");
-    QSettings settings5(QSettings::IniFormat, QSettings::UserScope, "other.software.org", "KillerAPP");
-    settings5.setIniCodec("Latin-1");
-
-    QCOMPARE(settings4.allKeys().count(), 1);
-    QCOMPARE(settings5.allKeys().count(), 1);
-
-    QCOMPARE(settings4.allKeys().first(), settings5.allKeys().first());
-    QCOMPARE(settings4.value(settings4.allKeys().first()).toString(),
-             settings5.value(settings5.allKeys().first()).toString());
-}
-#endif
-
 static bool containsSubList(QStringList mom, QStringList son)
 {
     for (int i = 0; i < son.size(); ++i) {
@@ -2782,7 +2693,7 @@ static QString iniUnescapedKey(const QByteArray &ba)
 static QByteArray iniEscapedStringList(const QStringList &strList)
 {
     QByteArray result;
-    QSettingsPrivate::iniEscapedStringList(strList, result, 0);
+    QSettingsPrivate::iniEscapedStringList(strList, result);
     return result;
 }
 
@@ -2790,23 +2701,9 @@ static QStringList iniUnescapedStringList(const QByteArray &ba)
 {
     QStringList result;
     QString str;
-#if QSETTINGS_P_H_VERSION >= 2
-    bool isStringList = QSettingsPrivate::iniUnescapedStringList(ba, 0, ba.size(), str, result
-#if QSETTINGS_P_H_VERSION >= 3
-                                                                 , 0
-#endif
-                                                                    );
+    bool isStringList = QSettingsPrivate::iniUnescapedStringList(ba, 0, ba.size(), str, result);
     if (!isStringList)
         result = QStringList(str);
-#else
-    QStringList *strList = QSettingsPrivate::iniUnescapedStringList(ba, 0, ba.size(), str);
-    if (strList) {
-        result = *strList;
-        delete strList;
-    } else {
-        result = QStringList(str);
-    }
-#endif
     return result;
 }
 #endif
@@ -2905,8 +2802,8 @@ void tst_QSettings::testEscapes()
     testEscapedStringList(QChar(0) + QString("0"), "\\0\\x30");
     testEscapedStringList("~!@#$%^&*()_+.-/\\=", "\"~!@#$%^&*()_+.-/\\\\=\"");
     testEscapedStringList("~!@#$%^&*()_+.-/\\", "~!@#$%^&*()_+.-/\\\\");
-    testEscapedStringList(QString("\x7F") + "12aFz", "\\x7f\\x31\\x32\\x61\\x46z");
-    testEscapedStringList(QString("   \t\n\\n") + QChar(0x123) + QChar(0x4567), "\"   \\t\\n\\\\n\\x123\\x4567\"");
+    testEscapedStringList(QString("\x7F") + "12aFz", QByteArray("\x7f") + "12aFz");
+    testEscapedStringList(QString("   \t\n\\n") + QChar(0x123) + QChar(0x4567), "\"   \\t\\n\\\\n\xC4\xA3\xE4\x95\xA7\"");
     testEscapedStringList(QString("\a\b\f\n\r\t\v'\"?\001\002\x03\x04"), "\\a\\b\\f\\n\\r\\t\\v'\\\"?\\x1\\x2\\x3\\x4");
     testEscapedStringList(QStringList() << "," << ";" << "a" << "ab,  \tc, d ", "\",\", \";\", a, \"ab,  \\tc, d \"");
 
@@ -2921,7 +2818,7 @@ void tst_QSettings::testEscapes()
                             QString() + QChar(0) + QChar(0) + QChar(0) + QChar(0) + QChar(1)
                             + QChar(0111) + QChar(011111) + QChar(0) + QChar(0xCDEF) + "GH"
                             + QChar(0x3456),
-                            "\\0\\0\\0\\0\\x1I\\x1249\\0\\xcdefGH\\x3456");
+                            "\\0\\0\\0\\0\\x1I\xE1\x89\x89\\0\xEC\xB7\xAFGH\xE3\x91\x96");
     testUnescapedStringList(QByteArray("\\c\\d\\e\\f\\g\\$\\*\\\0", 16), "\f", "\\f");
     testUnescapedStringList("\"a\",  \t\"bc \", \"  d\" , \"ef  \" ,,g,   hi  i,,, ,",
                             QStringList() << "a" << "bc " << "  d" << "ef  " << "" << "g" << "hi  i"

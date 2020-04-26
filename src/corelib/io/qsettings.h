@@ -179,12 +179,6 @@ public:
     QString organizationName() const;
     QString applicationName() const;
 
-#if QT_CONFIG(textcodec)
-    void setIniCodec(QTextCodec *codec);
-    void setIniCodec(const char *codecName);
-    QTextCodec *iniCodec() const;
-#endif
-
     static void setDefaultFormat(Format format);
     static Format defaultFormat();
 #if QT_DEPRECATED_SINCE(5, 13)
