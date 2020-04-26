@@ -320,6 +320,7 @@ private:
     friend class QRasterPlatformPixmap;
     friend class QBlittablePlatformPixmap;
     friend class QPixmapCacheEntry;
+    friend struct QImageData;
 
 public:
     typedef QImageData * DataPtr;

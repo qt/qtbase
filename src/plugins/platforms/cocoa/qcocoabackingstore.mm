@@ -536,8 +536,10 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
         flushedView.layer.contentsScale = m_buffers.back()->devicePixelRatio();
     }
 
+    const bool isSingleBuffered = window()->format().swapBehavior() == QSurfaceFormat::SingleBuffer;
+
     id backBufferSurface = (__bridge id)m_buffers.back()->surface();
-    if (flushedView.layer.contents == backBufferSurface) {
+    if (!isSingleBuffered && flushedView.layer.contents == backBufferSurface) {
         // We've managed to paint to the back buffer again before Core Animation had time
         // to flush the transaction and persist the layer changes to the window server, or
         // we've been asked to flush without painting anything. The layer already knows about
@@ -554,7 +556,7 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
     // with other pending view and layer updates.
     flushedView.window.viewsNeedDisplay = YES;
 
-    if (window()->format().swapBehavior() == QSurfaceFormat::SingleBuffer) {
+    if (isSingleBuffered) {
         // The private API [CALayer reloadValueForKeyPath:@"contents"] would be preferable,
         // but barring any side effects or performance issues we opt for the hammer for now.
         flushedView.layer.contents = nil;
