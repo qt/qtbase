@@ -2631,7 +2631,6 @@ QT_WARNING_POP
     \row \li ap or a
          \li Interpret as an am/pm time. \e a/ap will match a lower-case version
              of either QLocale::amText() or QLocale::pmText().
-    \row \li t \li the timezone (for example "CEST")
     \endtable
 
     All other input characters will be treated as text. Any non-empty sequence
@@ -5554,8 +5553,15 @@ QT_WARNING_POP
 
     Uses the calendar \a cal if supplied, else Gregorian.
 
-    See QDate::fromString() and QTime::fromString() for the expressions
-    recognized in the format string to represent parts of the date and time.
+    In addition to the expressions, recognized in the format string to represent
+    parts of the date and time, by QDate::fromString() and QTime::fromString(),
+    this method supports:
+
+    \table
+    \header \li Expression \li Output
+    \row \li t \li the timezone (for example "CEST")
+    \endtable
+
     All other input characters will be treated as text. Any non-empty sequence
     of characters enclosed in single quotes will also be treated (stripped of
     the quotes) as text and not be interpreted as expressions.
