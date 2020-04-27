@@ -281,7 +281,7 @@ bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result, QMimeBin
     while (min <= max) {
         const int mid = (min + max) / 2;
         const int off = firstOffset + 12 * mid;
-        const QChar ch = cacheFile->getUint32(off);
+        const QChar ch = char16_t(cacheFile->getUint32(off));
         if (ch < fileChar)
             min = mid + 1;
         else if (ch > fileChar)

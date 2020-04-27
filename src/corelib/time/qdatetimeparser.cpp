@@ -1663,9 +1663,9 @@ QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when,
 
         // Collect up plausibly-valid characters; let QTimeZone work out what's truly valid.
         while (index < size) {
-            QChar here = str[index];
+            const auto here = str[index].unicode();
             if (here < 127
-                && (here.isLetterOrNumber()
+                && (QChar::isLetterOrNumber(here)
                     || here == '/' || here == '-'
                     || here == '_' || here == '.'
                     || here == '+' || here == ':'))

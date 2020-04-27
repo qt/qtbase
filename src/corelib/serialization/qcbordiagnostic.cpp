@@ -112,7 +112,7 @@ static QString makeFpString(double d)
             s.prepend(QLatin1Char('-'));
     } else {
         s = QString::number(d, 'g', QLocale::FloatingPointShortest);
-        if (!s.contains(QLatin1Char('.')) && !s.contains('e'))
+        if (!s.contains(u'.') && !s.contains(u'e'))
             s += QLatin1Char('.');
     }
     return s;
@@ -171,14 +171,17 @@ void DiagnosticNotation::appendString(const QString &s)
             buf[1] = QChar(uc);
 
         if (buf[1] == QChar::Null) {
-            using QtMiscUtils::toHexUpper;
+            const auto toHexUpper = [](char32_t value) -> QChar {
+                // QtMiscUtils::toHexUpper() returns char, we need QChar, so wrap
+                return char16_t(QtMiscUtils::toHexUpper(value));
+            };
             if (ptr->isHighSurrogate() && (ptr + 1) != end && ptr[1].isLowSurrogate()) {
                 // properly-paired surrogates
                 ++ptr;
                 char32_t ucs4 = QChar::surrogateToUcs4(uc, ptr->unicode());
-                buf[1] = 'U';
-                buf[2] = '0'; // toHexUpper(ucs4 >> 28);
-                buf[3] = '0'; // toHexUpper(ucs4 >> 24);
+                buf[1] = u'U';
+                buf[2] = u'0'; // toHexUpper(ucs4 >> 28);
+                buf[3] = u'0'; // toHexUpper(ucs4 >> 24);
                 buf[4] = toHexUpper(ucs4 >> 20);
                 buf[5] = toHexUpper(ucs4 >> 16);
                 buf[6] = toHexUpper(ucs4 >> 12);
@@ -187,7 +190,7 @@ void DiagnosticNotation::appendString(const QString &s)
                 buf[9] = toHexUpper(ucs4);
                 buflen = 10;
             } else {
-                buf[1] = 'u';
+                buf[1] = u'u';
                 buf[2] = toHexUpper(uc >> 12);
                 buf[3] = toHexUpper(uc >> 8);
                 buf[4] = toHexUpper(uc >> 4);

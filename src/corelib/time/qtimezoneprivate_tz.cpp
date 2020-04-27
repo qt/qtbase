@@ -91,7 +91,7 @@ static QTzTimeZoneHash loadTzTimeZones()
     while (!ts.atEnd()) {
         const QString line = ts.readLine();
         // Comment lines are prefixed with a #
-        if (!line.isEmpty() && line.at(0) != '#') {
+        if (!line.isEmpty() && line.at(0) != u'#') {
             // Data rows are tab-separated columns Region, Coordinates, ID, Optional Comments
             const auto parts = line.splitRef(QLatin1Char('\t'));
             QTzTimeZone zone;
