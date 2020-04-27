@@ -204,7 +204,7 @@ void XbelTree::parseFolderElement(const QDomElement &element,
         } else if (child.tagName() == QLatin1String("separator")) {
             QTreeWidgetItem *childItem = createItem(child, item);
             childItem->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
-            childItem->setText(0, QString(30, 0xB7));
+            childItem->setText(0, QString(30, u'\xB7'));
         }
         child = child.nextSiblingElement();
     }

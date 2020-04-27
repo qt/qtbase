@@ -632,7 +632,7 @@ void decode_pos(const QString &pos, int *row, int *col)
 
 QString encode_pos(int row, int col)
 {
-    return QString(col + 'A') + QString::number(row + 1);
+    return QString(char16_t(col + 'A')) + QString::number(row + 1);
 }
 
 

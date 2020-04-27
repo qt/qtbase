@@ -129,7 +129,7 @@ void XbelReader::readSeparator(QTreeWidgetItem *item)
 
     QTreeWidgetItem *separator = createChildItem(item);
     separator->setFlags(item->flags() & ~Qt::ItemIsSelectable);
-    separator->setText(0, QString(30, 0xB7));
+    separator->setText(0, QString(30, u'\xB7'));
     xml.skipCurrentElement();
 }
 //! [5]
