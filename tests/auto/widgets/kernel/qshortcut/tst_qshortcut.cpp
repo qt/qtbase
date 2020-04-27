@@ -127,8 +127,8 @@ protected:
     QShortcut *setupShortcut(QWidget *parent, const QString &name, Widget testWidget,
                              const QKeySequence &ks, Qt::ShortcutContext context = Qt::WindowShortcut);
 
-    static void sendKeyEvents(QWidget *w, int k1, QChar c1 = 0, int k2 = 0, QChar c2 = 0,
-                              int k3 = 0, QChar c3 = 0, int k4 = 0, QChar c4 = 0);
+    static void sendKeyEvents(QWidget *w, int k1, QChar c1 = {}, int k2 = 0, QChar c2 = {},
+                              int k3 = 0, QChar c3 = {}, int k4 = 0, QChar c4 = {});
 
     void testElement();
 
@@ -723,11 +723,11 @@ void tst_QShortcut::disabledItems()
     cut4->setEnabled(false);
 
     currentResult = NoResult;
-    sendKeyEvents(&mainW, Qt::Key_F5, 0 );
+    sendKeyEvents(&mainW, Qt::Key_F5);
     QCOMPARE( currentResult, Slot1Triggered );
 
     currentResult = NoResult;
-    sendKeyEvents(&mainW, shiftF5, 0 );
+    sendKeyEvents(&mainW, shiftF5);
     QCOMPARE( currentResult, NoResult );
 }
 // ------------------------------------------------------------------
@@ -945,7 +945,7 @@ void tst_QShortcut::unicodeCompare()
     setupShortcut(pb2, "shortcut2-pb2", TriggerSlot2, ks2);
 
     currentResult = NoResult;
-    sendKeyEvents(&mainW, Qt::CTRL + Qt::Key_M, 0);
+    sendKeyEvents(&mainW, Qt::CTRL + Qt::Key_M);
     QCOMPARE( currentResult, Ambiguous );
     // They _are_ ambiguous, so the QKeySequence operator==
     // should indicate the same
@@ -974,7 +974,7 @@ void tst_QShortcut::keypressConsumption()
 
     currentResult = NoResult;
     ambigResult = NoResult;
-    sendKeyEvents(edit, ctrlI, 0);   // Send key to edit
+    sendKeyEvents(edit, ctrlI);   // Send key to edit
     QCOMPARE( currentResult, NoResult );
     QCOMPARE( ambigResult, NoResult );
     QCOMPARE(edit->toPlainText(), QString());
@@ -1001,7 +1001,7 @@ void tst_QShortcut::keypressConsumption()
 
     // Make sure keypresses is passed on, since all multiple keysequences
     // with Ctrl+I are disabled
-    sendKeyEvents(edit, Qt::CTRL + Qt::Key_I, 0);   // Send key to edit
+    sendKeyEvents(edit, Qt::CTRL + Qt::Key_I);   // Send key to edit
     QCOMPARE( currentResult, NoResult );
     QCOMPARE( ambigResult, NoResult );
     QVERIFY(edit->toPlainText().endsWith("<Ctrl+I>"));
@@ -1017,7 +1017,7 @@ void tst_QShortcut::keypressConsumption()
 
     auto cut = setupShortcut(edit, QLatin1String("first"), QKeySequence(Qt::CTRL + Qt::Key_A));
     connect(cut, &QShortcut::activated, edit, [this, edit] () {
-        this->sendKeyEvents(edit, Qt::CTRL + Qt::Key_B, 0);
+        this->sendKeyEvents(edit, Qt::CTRL + Qt::Key_B);
         this->currentResult = tst_QShortcut::SentKeyEvent;
     });
 
@@ -1025,7 +1025,7 @@ void tst_QShortcut::keypressConsumption()
     // of shortcut processing.
     currentResult = NoResult;
     ambigResult = NoResult;
-    sendKeyEvents(edit, Qt::CTRL + Qt::Key_A, 0);
+    sendKeyEvents(edit, Qt::CTRL + Qt::Key_A);
     QCOMPARE(currentResult, SentKeyEvent);
     QCOMPARE(ambigResult, NoResult);
     QCOMPARE(edit->toPlainText(), QLatin1String("<Ctrl+B>"));
@@ -1293,7 +1293,7 @@ void tst_QShortcut::testElement()
                       ? QKeySequence(k1, k2, k3, k4) : QKeySequence::fromString(txt));
         break;
     case TestAccel:
-        sendKeyEvents(mainW.data(), k1, c1, k2, c2, k3, c3, k4, c4);
+        sendKeyEvents(mainW.data(), k1, char16_t(c1), k2, char16_t(c2), k3, char16_t(c3), k4, char16_t(c4));
         QCOMPARE(currentResult, result);
         break;
     case TestEnd:
