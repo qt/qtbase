@@ -118,14 +118,6 @@ void QAndroidPlatformFileDialogHelper::takePersistableUriPermission(const QJNIOb
                                      uri.object(), modeFlags);
 }
 
-void QAndroidPlatformFileDialogHelper::setLocalFilesOnly(bool localOnly)
-{
-    const QJNIObjectPrivate extraLocalOnly = QJNIObjectPrivate::getStaticObjectField(
-            JniIntentClass, "EXTRA_LOCAL_ONLY", "Ljava/lang/String;");
-    m_intent.callObjectMethod("putExtra", "(Ljava/lang/String;Z)Landroid/content/Intent;",
-                              extraLocalOnly.object(), localOnly);
-}
-
 void QAndroidPlatformFileDialogHelper::setIntentTitle(const QString &title)
 {
     const QJNIObjectPrivate extraTitle = QJNIObjectPrivate::getStaticObjectField(
@@ -237,7 +229,6 @@ bool QAndroidPlatformFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::Win
     }
 
     setIntentTitle(options()->windowTitle());
-    setLocalFilesOnly(true);
 
     QtAndroidPrivate::registerActivityResultListener(this);
     m_activity.callMethod<void>("startActivityForResult", "(Landroid/content/Intent;I)V",
