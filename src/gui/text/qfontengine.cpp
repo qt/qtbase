@@ -1834,12 +1834,12 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
     int lastFallback = -1;
     while (it.hasNext()) {
-        const uint ucs4 = it.peekNext();
+        const char32_t ucs4 = it.peekNext();
 
         // If we applied a fallback font to previous glyph, and the current is either
         // ZWJ or ZWNJ, we should also try applying the same fallback font to that, in order
         // to get the correct shaping rules applied.
-        if (lastFallback >= 0 && (ucs4 == QChar(0x200d) || ucs4 == QChar(0x200c))) {
+        if (lastFallback >= 0 && (ucs4 == 0x200d || ucs4 == 0x200c)) {
             QFontEngine *engine = m_engines.at(lastFallback);
             glyph_t glyph = engine->glyphIndex(ucs4);
             if (glyph != 0) {

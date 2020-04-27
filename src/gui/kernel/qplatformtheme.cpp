@@ -750,7 +750,7 @@ QString QPlatformTheme::defaultStandardButtonText(int button)
 
 QString QPlatformTheme::removeMnemonics(const QString &original)
 {
-    QString returnText(original.size(), 0);
+    QString returnText(original.size(), u'\0');
     int finalDest = 0;
     int currPos = 0;
     int l = original.length();

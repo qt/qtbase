@@ -156,7 +156,7 @@ void QRangeCollection::clear()
 bool QRangeCollection::parse(const QString &ranges)
 {
     Q_D(QRangeCollection);
-    const QStringList items = ranges.split(',');
+    const QStringList items = ranges.split(u',');
     for (const QString &item : items) {
         if (item.isEmpty()) {
             d->intervals.clear();
@@ -164,7 +164,7 @@ bool QRangeCollection::parse(const QString &ranges)
         }
 
         if (item.contains(QLatin1Char('-'))) {
-            const QStringList rangeItems = item.split('-');
+            const QStringList rangeItems = item.split(u'-');
             if (rangeItems.count() != 2) {
                 d->intervals.clear();
                 return false;
