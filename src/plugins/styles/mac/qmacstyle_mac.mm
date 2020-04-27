@@ -3977,13 +3977,19 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // which makes no sense on tabs.
                 NSPopUpArrowPosition oldPosition = NSPopUpArrowAtCenter;
                 NSPopUpButtonCell *pbCell = nil;
-                if (isPopupButton) {
+                auto rAdjusted = r;
+                if (isPopupButton && tp == QStyleOptionTab::OnlyOneTab) {
                     pbCell = static_cast<NSPopUpButtonCell *>(pb.cell);
                     oldPosition = pbCell.arrowPosition;
                     pbCell.arrowPosition = NSPopUpNoArrow;
+                    if (pb.state == NSOffState) {
+                        // NSPopUpButton in this state is smaller.
+                        rAdjusted.origin.x -= 3;
+                        rAdjusted.size.width += 6;
+                    }
                 }
 
-                [pb.cell drawBezelWithFrame:r inView:pb.superview];
+                [pb.cell drawBezelWithFrame:rAdjusted inView:pb.superview];
 
                 if (pbCell) // Restore, we may reuse it for a ComboBox.
                     pbCell.arrowPosition = oldPosition;
