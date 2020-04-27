@@ -39,6 +39,8 @@ class tst_QStringConverter : public QObject
 private slots:
     void threadSafety();
 
+    void constructByName();
+
     void convertUtf8();
 
     void nonFlaggedCodepointFFFF() const;
@@ -58,6 +60,31 @@ private slots:
     void utfHeaders_data();
     void utfHeaders();
 };
+
+void tst_QStringConverter::constructByName()
+{
+    QStringDecoder decoder("UTF-8");
+    QVERIFY(decoder.isValid());
+    QVERIFY(!strcmp(decoder.name(), "UTF-8"));
+    decoder = QStringDecoder("XXX");
+    QVERIFY(!decoder.isValid());
+    decoder = QStringDecoder("ISO-8859-1");
+    QVERIFY(decoder.isValid());
+    QVERIFY(!strcmp(decoder.name(), "ISO-8859-1"));
+    decoder = QStringDecoder("UTF-16LE");
+    QVERIFY(decoder.isValid());
+    QVERIFY(!strcmp(decoder.name(), "UTF-16LE"));
+
+    decoder = QStringDecoder("utf8");
+    QVERIFY(decoder.isValid());
+    QVERIFY(!strcmp(decoder.name(), "UTF-8"));
+    decoder = QStringDecoder("iso8859-1");
+    QVERIFY(decoder.isValid());
+    QVERIFY(!strcmp(decoder.name(), "ISO-8859-1"));
+    decoder = QStringDecoder("utf-16");
+    QVERIFY(decoder.isValid());
+    QVERIFY(!strcmp(decoder.name(), "UTF-16"));
+}
 
 void tst_QStringConverter::convertUtf8()
 {

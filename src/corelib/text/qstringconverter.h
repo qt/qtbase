@@ -132,18 +132,23 @@ protected:
         using DecoderFn = QChar * (*)(QChar *out, const char *in, qsizetype length, State *state);
         using LengthFn = qsizetype (*)(qsizetype inLength);
         using EncoderFn = char * (*)(char *out, QStringView in, State *state);
+        const char *name = nullptr;
         DecoderFn toUtf16 = nullptr;
         LengthFn toUtf16Len = nullptr;
         EncoderFn fromUtf16 = nullptr;
         LengthFn fromUtf16Len = nullptr;
     };
 
+    QSTRINGCONVERTER_CONSTEXPR QStringConverter()
+        : iface(nullptr)
+    {}
     QSTRINGCONVERTER_CONSTEXPR QStringConverter(Encoding encoding, Flags f)
         : iface(&encodingInterfaces[int(encoding)]), state(f)
     {}
     QSTRINGCONVERTER_CONSTEXPR QStringConverter(const Interface *i)
         : iface(i)
     {}
+    QStringConverter(const char *name);
 
 public:
     bool isValid() const { return iface != nullptr; }
@@ -153,6 +158,9 @@ public:
         state.clear();
     }
     bool hasError() const { return state.invalidChars != 0; }
+
+    const char *name() const
+    { return isValid() ? iface->name : nullptr; }
 
 protected:
     const Interface *iface;
@@ -168,8 +176,14 @@ protected:
         : QStringConverter(i)
     {}
 public:
+    QSTRINGCONVERTER_CONSTEXPR QStringEncoder()
+        : QStringConverter()
+    {}
     QSTRINGCONVERTER_CONSTEXPR QStringEncoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
+    {}
+    QStringEncoder(const char *name)
+        : QStringConverter(name)
     {}
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
@@ -230,6 +244,12 @@ protected:
 public:
     QSTRINGCONVERTER_CONSTEXPR QStringDecoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
+    {}
+    QSTRINGCONVERTER_CONSTEXPR QStringDecoder()
+        : QStringConverter()
+    {}
+    QStringDecoder(const char *name)
+        : QStringConverter(name)
     {}
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)

@@ -1441,15 +1441,46 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
 
 const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringConverter::LastEncoding + 1] =
 {
-    { QUtf8::convertToUnicode, fromUtf8Len, QUtf8::convertFromUnicode, toUtf8Len },
-    { fromUtf16, fromUtf16Len, toUtf16, toUtf16Len },
-    { fromUtf16LE, fromUtf16Len, toUtf16LE, toUtf16Len },
-    { fromUtf16BE, fromUtf16Len, toUtf16BE, toUtf16Len },
-    { fromUtf32, fromUtf32Len, toUtf32, toUtf32Len },
-    { fromUtf32LE, fromUtf32Len, toUtf32LE, toUtf32Len },
-    { fromUtf32BE, fromUtf32Len, toUtf32BE, toUtf32Len },
-    { fromLatin1, fromLatin1Len, toLatin1, toLatin1Len },
-    { fromLocal8Bit, fromUtf8Len, toLocal8Bit, toUtf8Len }
+    { "UTF-8", QUtf8::convertToUnicode, fromUtf8Len, QUtf8::convertFromUnicode, toUtf8Len },
+    { "UTF-16", fromUtf16, fromUtf16Len, toUtf16, toUtf16Len },
+    { "UTF-16LE", fromUtf16LE, fromUtf16Len, toUtf16LE, toUtf16Len },
+    { "UTF-16BE", fromUtf16BE, fromUtf16Len, toUtf16BE, toUtf16Len },
+    { "UTF-32", fromUtf32, fromUtf32Len, toUtf32, toUtf32Len },
+    { "UTF-32LE", fromUtf32LE, fromUtf32Len, toUtf32LE, toUtf32Len },
+    { "UTF-32BE", fromUtf32BE, fromUtf32Len, toUtf32BE, toUtf32Len },
+    { "ISO-8859-1", fromLatin1, fromLatin1Len, toLatin1, toLatin1Len },
+    { "Locale", fromLocal8Bit, fromUtf8Len, toLocal8Bit, toUtf8Len }
 };
+
+// match names case insensitive and skipping '-' and '_'
+static bool nameMatch(const char *a, const char *b)
+{
+    while (*a && *b) {
+        if (*a == '-' || *a == '_') {
+            ++a;
+            continue;
+        }
+        if (*b == '-' || *b == '_') {
+            ++b;
+            continue;
+        }
+        if (toupper(*a) != toupper(*b))
+            return false;
+        ++a;
+        ++b;
+    }
+    return !*a && !*b;
+}
+
+QStringConverter::QStringConverter(const char *name)
+    : iface(nullptr)
+{
+    for (int i = 0; i < LastEncoding + 1; ++i) {
+        if (nameMatch(encodingInterfaces[i].name, name)) {
+            iface = encodingInterfaces + i;
+            break;
+        }
+    }
+}
 
 QT_END_NAMESPACE
