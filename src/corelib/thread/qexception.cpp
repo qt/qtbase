@@ -47,12 +47,12 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QException
     \inmodule QtCore
-    \brief The QException class provides a base class for exceptions that can transferred across threads.
+    \brief The QException class provides a base class for exceptions that can be transferred across threads.
     \since 5.0
 
     Qt Concurrent supports throwing and catching exceptions across thread
-    boundaries, provided that the exception inherit from QException
-    and implement two helper functions:
+    boundaries, provided that the exception inherits from QException
+    and implements two helper functions:
 
     \snippet code/src_corelib_thread_qexception.cpp 0
 
