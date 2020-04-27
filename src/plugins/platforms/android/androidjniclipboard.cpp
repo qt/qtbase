@@ -63,9 +63,13 @@ namespace QtAndroidClipboard
             return;
         }
     }
-    void setClipboardMimeData(QMimeData *data)
+    void clearClipboardData()
     {
         QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "clearClipData");
+    }
+    void setClipboardMimeData(QMimeData *data)
+    {
+        clearClipboardData();
         if (data->hasText()) {
             QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
                                                       "setClipboardText", "(Ljava/lang/String;)V",
