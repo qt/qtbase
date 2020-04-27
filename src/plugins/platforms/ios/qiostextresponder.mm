@@ -416,6 +416,17 @@
 
     if (unknownAction)
         return [super canPerformAction:action withSender:sender];
+
+    QObject *focusObject = QGuiApplication::focusObject();
+    if (focusObject && focusObject->property("qt_im_readonly").toBool()) {
+        // exceptional menu items for read-only views: do include Copy, do not include Paste etc.
+        if (action == @selector(cut:)
+                || action == @selector(paste:)
+                || action == @selector(delete:))
+            return NO;
+        if (action == @selector(copy:))
+            return YES;
+    }
     return (hasSelection && isEditAction) || (!hasSelection && isSelectAction);
 }
 
