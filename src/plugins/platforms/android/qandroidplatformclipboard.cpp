@@ -48,12 +48,19 @@ QAndroidPlatformClipboard::QAndroidPlatformClipboard()
     QtAndroidClipboard::setClipboardManager(this);
 }
 
+QAndroidPlatformClipboard::~QAndroidPlatformClipboard()
+{
+    if (data)
+        delete data;
+}
+
 QMimeData *QAndroidPlatformClipboard::mimeData(QClipboard::Mode mode)
 {
     Q_UNUSED(mode);
     Q_ASSERT(supportsMode(mode));
-    QMimeData *data = QtAndroidClipboard::getClipboardMimeData();
-    data->setParent(this);
+    if (data)
+        data->deleteLater();
+    data = QtAndroidClipboard::getClipboardMimeData();
     return data;
 }
 
