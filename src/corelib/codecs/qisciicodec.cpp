@@ -262,7 +262,7 @@ QString QIsciiCodec::convertToUnicode(const char* chars, int len, ConverterState
     const int base = codecs[idx].base;
 
     for (int i = 0; i < len; ++i) {
-        ushort ch = (uchar) chars[i];
+        char16_t ch = (uchar) chars[i];
         if (ch < 0xa0)
             *uc++ = ch;
         else {

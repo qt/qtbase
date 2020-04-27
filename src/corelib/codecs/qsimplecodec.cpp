@@ -48,7 +48,7 @@ static const struct {
     const char *mime;
     const char *aliases[7];
     int mib;
-    quint16 values[128];
+    char16_t values[128];
 } unicodevalues[QSimpleTextCodec::numSimpleCodecs] = {
     // from RFC 1489, ftp://ftp.isi.edu/in-notes/rfc1489.txt
     { "KOI8-R", { "csKOI8R", nullptr }, 2084,
