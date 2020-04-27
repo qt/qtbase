@@ -151,6 +151,7 @@
 /.
 
 #include <QtCore/private/qglobal_p.h>
+#include <qstringconverter.h>
 
 template <typename T> class QXmlStreamSimpleStack {
     T *data;
@@ -318,10 +319,7 @@ public:
 
     QIODevice *device;
     bool deleteDevice;
-#if QT_CONFIG(textcodec)
-    QTextCodec *codec;
-    QTextDecoder *decoder;
-#endif
+    QStringDecoder decoder;
     bool atEnd;
 
     /*!
@@ -611,13 +609,11 @@ bool QXmlStreamReaderPrivate::parse()
         lockEncoding = true;
         documentVersion.clear();
         documentEncoding.clear();
-#if QT_CONFIG(textcodec)
-        if (decoder && decoder->hasFailure()) {
+        if (decoder.isValid() && decoder.hasError()) {
             raiseWellFormedError(QXmlStream::tr("Encountered incorrectly encoded content."));
             readBuffer.clear();
             return false;
         }
-#endif
         Q_FALLTHROUGH();
     default:
         clearTextBuffer();

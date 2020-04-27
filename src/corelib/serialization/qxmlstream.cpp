@@ -432,25 +432,15 @@ QXmlStreamReader::QXmlStreamReader(const QByteArray &data)
 /*!
   Creates a new stream reader that reads from \a data.
 
-  This function should only be used if the XML header either says the encoding
-  is "UTF-8" or lacks any encoding information (the latter is the case of
-  QXmlStreamWriter writing to a QString). Any other encoding is likely going to
-  cause data corruption ("mojibake").
-
   \sa addData(), clear(), setDevice()
  */
 QXmlStreamReader::QXmlStreamReader(const QString &data)
     : d_ptr(new QXmlStreamReaderPrivate(this))
 {
     Q_D(QXmlStreamReader);
-#if !QT_CONFIG(textcodec)
-    d->dataBuffer = data.toLatin1();
-#else
-    d->dataBuffer = d->codec->fromUnicode(data);
-    d->decoder = d->codec->makeDecoder();
-#endif
+    d->dataBuffer = data.toUtf8();
+    d->decoder = QStringDecoder(QStringDecoder::Utf8);
     d->lockEncoding = true;
-
 }
 
 /*!
@@ -538,11 +528,9 @@ void QXmlStreamReader::addData(const QString &data)
 {
     Q_D(QXmlStreamReader);
     d->lockEncoding = true;
-#if !QT_CONFIG(textcodec)
-    addData(data.toLatin1());
-#else
-    addData(d->codec->fromUnicode(data));
-#endif
+    if (!d->decoder.isValid())
+        d->decoder = QStringDecoder(QStringDecoder::Utf8);
+    addData(data.toUtf8());
 }
 
 /*!
@@ -815,9 +803,6 @@ QXmlStreamReaderPrivate::QXmlStreamReaderPrivate(QXmlStreamReader *q)
 {
     device = nullptr;
     deleteDevice = false;
-#if QT_CONFIG(textcodec)
-    decoder = nullptr;
-#endif
     stack_size = 64;
     sym_stack = nullptr;
     state_stack = nullptr;
@@ -861,11 +846,7 @@ void QXmlStreamReaderPrivate::init()
     lineNumber = lastLineStart = characterOffset = 0;
     readBufferPos = 0;
     nbytesread = 0;
-#if QT_CONFIG(textcodec)
-    codec = QTextCodec::codecForMib(106); // utf8
-    delete decoder;
-    decoder = nullptr;
-#endif
+    decoder = QStringDecoder();
     attributeStack.clear();
     attributeStack.reserve(16);
     entityParser.reset();
@@ -926,9 +907,6 @@ inline void QXmlStreamReaderPrivate::reallocateStack()
 
 QXmlStreamReaderPrivate::~QXmlStreamReaderPrivate()
 {
-#if QT_CONFIG(textcodec)
-    delete decoder;
-#endif
     free(sym_stack);
     free(state_stack);
 }
@@ -1508,9 +1486,7 @@ uint QXmlStreamReaderPrivate::getChar_helper()
     characterOffset += readBufferPos;
     readBufferPos = 0;
     readBuffer.resize(0);
-#if QT_CONFIG(textcodec)
-    if (decoder)
-#endif
+    if (decoder.isValid())
         nbytesread = 0;
     if (device) {
         rawReadBuffer.resize(BUFFER_SIZE);
@@ -1529,49 +1505,26 @@ uint QXmlStreamReaderPrivate::getChar_helper()
         return StreamEOF;
     }
 
-#if QT_CONFIG(textcodec)
-    if (!decoder) {
+    if (!decoder.isValid()) {
         if (nbytesread < 4) { // the 4 is to cover 0xef 0xbb 0xbf plus
                               // one extra for the utf8 codec
             atEnd = true;
             return StreamEOF;
         }
-        int mib = 106; // UTF-8
-
-        // look for byte order mark
-        uchar ch1 = rawReadBuffer.at(0);
-        uchar ch2 = rawReadBuffer.at(1);
-        uchar ch3 = rawReadBuffer.at(2);
-        uchar ch4 = rawReadBuffer.at(3);
-
-        if ((ch1 == 0 && ch2 == 0 && ch3 == 0xfe && ch4 == 0xff) ||
-            (ch1 == 0xff && ch2 == 0xfe && ch3 == 0 && ch4 == 0))
-            mib = 1017; // UTF-32 with byte order mark
-        else if (ch1 == 0x3c && ch2 == 0x00 && ch3 == 0x00 && ch4 == 0x00)
-            mib = 1019; // UTF-32LE
-        else if (ch1 == 0x00 && ch2 == 0x00 && ch3 == 0x00 && ch4 == 0x3c)
-            mib = 1018; // UTF-32BE
-        else if ((ch1 == 0xfe && ch2 == 0xff) || (ch1 == 0xff && ch2 == 0xfe))
-            mib = 1015; // UTF-16 with byte order mark
-        else if (ch1 == 0x3c && ch2 == 0x00)
-            mib = 1014; // UTF-16LE
-        else if (ch1 == 0x00 && ch2 == 0x3c)
-            mib = 1013; // UTF-16BE
-        codec = QTextCodec::codecForMib(mib);
-        Q_ASSERT(codec);
-        decoder = codec->makeDecoder();
+        auto encoding = QStringDecoder::encodingForData(rawReadBuffer.constData(), rawReadBuffer.size(), char16_t('<'));
+        if (!encoding)
+            // assume utf-8
+            encoding = QStringDecoder::Utf8;
+        decoder = QStringDecoder(*encoding);
     }
 
-    decoder->toUnicode(&readBuffer, rawReadBuffer.constData(), nbytesread);
+    readBuffer = decoder(rawReadBuffer.constData(), nbytesread);
 
-    if(lockEncoding && decoder->hasFailure()) {
+    if (lockEncoding && decoder.hasError()) {
         raiseWellFormedError(QXmlStream::tr("Encountered incorrectly encoded content."));
         readBuffer.clear();
         return StreamEOF;
     }
-#else
-    readBuffer = QString::fromUtf8(rawReadBuffer.data(), nbytesread);
-#endif // textcodec
 
     readBuffer.reserve(1); // keep capacity when calling resize() next time
 
@@ -1841,19 +1794,15 @@ void QXmlStreamReaderPrivate::startDocument()
             if (!QXmlUtils::isEncName(value))
                 err = QXmlStream::tr("%1 is an invalid encoding name.").arg(value);
             else {
-#if !QT_CONFIG(textcodec)
-                readBuffer = QString::fromUtf8(rawReadBuffer.data(), nbytesread);
-#else
-                QTextCodec *const newCodec = QTextCodec::codecForName(value.toLatin1());
-                if (!newCodec)
-                    err = QXmlStream::tr("Encoding %1 is unsupported").arg(value);
-                else if (newCodec != codec && !lockEncoding) {
-                    codec = newCodec;
-                    delete decoder;
-                    decoder = codec->makeDecoder();
-                    decoder->toUnicode(&readBuffer, rawReadBuffer.data(), nbytesread);
+                QByteArray enc = value.toString().toUtf8();
+                if (!lockEncoding) {
+                    decoder = QStringDecoder(enc.constData());
+                    if (!decoder.isValid()) {
+                        err = QXmlStream::tr("Encoding %1 is unsupported").arg(value);
+                    } else {
+                        readBuffer = decoder(rawReadBuffer.data(), nbytesread);
+                    }
                 }
-#endif // textcodec
             }
         } else if (prefix.isEmpty() && key == QLatin1String("standalone")) {
             hasStandalone = true;
