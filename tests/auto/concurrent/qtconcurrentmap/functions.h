@@ -91,6 +91,20 @@ public:
     }
 };
 
+bool keepEvenNumbers(const Number &x)
+{
+    return (x.toInt() & 1) == 0;
+}
+
+class KeepEvenNumbers
+{
+public:
+    bool operator()(const Number &x)
+    {
+        return (x.toInt() & 1) == 0;
+    }
+};
+
 void intSumReduce(int &sum, int x)
 {
     sum += x;

@@ -40,7 +40,9 @@ private slots:
     void filter();
     void filtered();
     void filteredReduced();
+    void filteredReducedDifferentType();
     void filteredReducedInitialValue();
+    void filteredReducedDifferentTypeInitialValue();
     void resultAt();
     void incrementalResults();
     void noDetach();
@@ -275,6 +277,55 @@ void tst_QtConcurrentFilter::filteredReduced()
     CHECK_FAIL("lambda-lambda");
 }
 
+void tst_QtConcurrentFilter::filteredReducedDifferentType()
+{
+    const QList<Number> numberList {1, 2, 3, 4};
+    const int sum = 6; // sum of even values
+
+    auto lambdaIsEven = [](const Number &x) {
+        return (x.toInt() & 1) == 0;
+    };
+    auto lambdaSumReduce = [](int &sum, const Number &x) {
+        sum += x.toInt();
+    };
+
+    // Test the case where reduce function of the form:
+    // V function(T &result, const U &intermediate)
+    // has T and U types different.
+
+    // FUNCTOR-other
+    testFilteredReduced(numberList, sum, KeepEvenNumbers(), NumberSumReduce());
+    CHECK_FAIL("functor-functor");
+    testFilteredReduced(numberList, sum, KeepEvenNumbers(), numberSumReduce);
+    CHECK_FAIL("functor-function");
+    testFilteredReduced(numberList, sum, KeepEvenNumbers(), lambdaSumReduce);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testFilteredReduced(numberList, sum, keepEvenNumbers, NumberSumReduce());
+    CHECK_FAIL("function-functor");
+    testFilteredReduced(numberList, sum, keepEvenNumbers, numberSumReduce);
+    CHECK_FAIL("function-function");
+    testFilteredReduced(numberList, sum, keepEvenNumbers, lambdaSumReduce);
+    CHECK_FAIL("function-lambda");
+
+    // MEMBER-other
+    testFilteredReduced(numberList, sum, &Number::isEven, NumberSumReduce());
+    CHECK_FAIL("member-functor");
+    testFilteredReduced(numberList, sum, &Number::isEven, numberSumReduce);
+    CHECK_FAIL("member-function");
+    testFilteredReduced(numberList, sum, &Number::isEven, lambdaSumReduce);
+    CHECK_FAIL("member-lambda");
+
+    // LAMBDA-other
+    testFilteredReduced(numberList, sum, lambdaIsEven, NumberSumReduce());
+    CHECK_FAIL("lambda-functor");
+    testFilteredReduced(numberList, sum, lambdaIsEven, numberSumReduce);
+    CHECK_FAIL("lambda-function");
+    testFilteredReduced(numberList, sum, lambdaIsEven, lambdaSumReduce);
+    CHECK_FAIL("lambda-lambda");
+}
+
 template <typename SourceObject,
           typename ResultObject,
           typename InitialObject,
@@ -418,6 +469,56 @@ void tst_QtConcurrentFilter::filteredReducedInitialValue()
     CHECK_FAIL("lambda-member");
     testFilteredReducedInitialValue(intList, intSum, lambdaIsEven,
                                     lambdaIntSumReduce, intInitial);
+    CHECK_FAIL("lambda-lambda");
+}
+
+void tst_QtConcurrentFilter::filteredReducedDifferentTypeInitialValue()
+{
+    const QList<Number> numberList {1, 2, 3, 4};
+    const int initial = 10;
+    const int sum = 16; // sum of even values and initial value
+
+    auto lambdaIsEven = [](const Number &x) {
+        return (x.toInt() & 1) == 0;
+    };
+    auto lambdaSumReduce = [](int &sum, const Number &x) {
+        sum += x.toInt();
+    };
+
+    // Test the case where reduce function of the form:
+    // V function(T &result, const U &intermediate)
+    // has T and U types different.
+
+    // FUNCTOR-other
+    testFilteredReducedInitialValue(numberList, sum, KeepEvenNumbers(), NumberSumReduce(), initial);
+    CHECK_FAIL("functor-functor");
+    testFilteredReducedInitialValue(numberList, sum, KeepEvenNumbers(), numberSumReduce, initial);
+    CHECK_FAIL("functor-function");
+    testFilteredReducedInitialValue(numberList, sum, KeepEvenNumbers(), lambdaSumReduce, initial);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testFilteredReducedInitialValue(numberList, sum, keepEvenNumbers, NumberSumReduce(), initial);
+    CHECK_FAIL("function-functor");
+    testFilteredReducedInitialValue(numberList, sum, keepEvenNumbers, numberSumReduce, initial);
+    CHECK_FAIL("function-function");
+    testFilteredReducedInitialValue(numberList, sum, keepEvenNumbers, lambdaSumReduce, initial);
+    CHECK_FAIL("function-lambda");
+
+    // MEMBER-other
+    testFilteredReducedInitialValue(numberList, sum, &Number::isEven, NumberSumReduce(), initial);
+    CHECK_FAIL("member-functor");
+    testFilteredReducedInitialValue(numberList, sum, &Number::isEven, numberSumReduce, initial);
+    CHECK_FAIL("member-function");
+    testFilteredReducedInitialValue(numberList, sum, &Number::isEven, lambdaSumReduce, initial);
+    CHECK_FAIL("member-lambda");
+
+    // LAMBDA-other
+    testFilteredReducedInitialValue(numberList, sum, lambdaIsEven, NumberSumReduce(), initial);
+    CHECK_FAIL("lambda-functor");
+    testFilteredReducedInitialValue(numberList, sum, lambdaIsEven, numberSumReduce, initial);
+    CHECK_FAIL("lambda-function");
+    testFilteredReducedInitialValue(numberList, sum, lambdaIsEven, lambdaSumReduce, initial);
     CHECK_FAIL("lambda-lambda");
 }
 
