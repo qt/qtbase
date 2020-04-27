@@ -1,0 +1,144 @@
+# special case skip regeneration
+# Generated from moc.pro.
+
+#####################################################################
+## tst_moc Test:
+#####################################################################
+
+
+set(JSON_HEADERS
+        backslash-newlines.h
+        c-comments.h
+        cstyle-enums.h
+        cxx11-enums.h
+        cxx11-explicit-override-control.h
+        cxx11-final-classes.h
+        cxx17-namespaces.h
+        dir-in-include-path.h
+        escapes-in-string-literals.h
+        enum_with_include.h
+        forward-declared-param.h
+        function-with-attributes.h
+        gadgetwithnoenums.h
+        grand-parent-gadget-class.h
+        moc_include.h
+        namespace.h
+        namespaced-flags.h
+        no-keywords.h
+        non-gadget-parent-class.h
+        oldstyle-casts.h
+        parse-defines.h
+        plugin_metadata.h
+        pointery_to_incomplete.h
+        pure-virtual-signals.h
+        qinvokable.h
+        qprivateslots.h
+        qtbug-35657-gadget.h
+        related-metaobjects-in-gadget.h
+        related-metaobjects-in-namespaces.h
+        related-metaobjects-name-conflict.h
+        single-quote-digit-separator-n3781.h
+        single_function_keyword.h
+        slots-with-void-template.h
+        task192552.h
+        task234909.h
+        task240368.h
+        task87883.h
+        trigraphs.h
+        using-namespaces.h
+)
+
+qt_wrap_cpp(comparison_relevant_moc_list ${JSON_HEADERS}
+    TARGET tst_moc
+    OPTIONS
+        "-Muri=com.company.app"
+        "-Muri=com.company.app.private"
+        "-DDEFINE_CMDLINE_EMPTY="
+        "-DDEFINE_CMDLINE_SIGNAL=void cmdlineSignal(const QMap<int, int> &i)"
+        "--output-json"
+)
+
+list(TRANSFORM comparison_relevant_moc_list  APPEND ".json" OUTPUT_VARIABLE moc_json_files)
+
+qt_add_test(tst_moc
+    SOURCES
+        cxx-attributes.h
+        tst_moc.cpp
+        ${comparison_relevant_moc_list}
+    INCLUDE_DIRECTORIES
+        testproject
+        testproject/include
+    MOC_OPTIONS
+        "-Muri=com.company.app"
+        "-Muri=com.company.app.private"
+        "-DDEFINE_CMDLINE_EMPTY="
+        "-DDEFINE_CMDLINE_SIGNAL=void cmdlineSignal(const QMap<int, int> &i)"
+        "--output-json"
+    EXCEPTIONS
+)
+
+qt_extend_target(tst_moc PUBLIC_LIBRARIES Qt::CorePrivate)
+
+qt_extend_target(tst_moc CONDITION CMAKE_CROSSCOMPILING
+    DEFINES
+        MOC_CROSS_COMPILED
+)
+
+if (UNIX AND (CLANG OR GCC OR ICC))
+    qt_wrap_cpp(os9_moc os9-newlines.h)
+endif()
+
+qt_extend_target(tst_moc CONDITION UNIX AND (CLANG OR GCC OR ICC)
+    SOURCES
+        os9-newlines.h
+        win-newlines.h
+        ${os9_moc}
+)
+
+qt_extend_target(tst_moc CONDITION CLANG OR GCC
+    SOURCES
+        dollars.h
+)
+
+qt_extend_target(tst_moc CONDITION TARGET Qt::DBus
+    PUBLIC_LIBRARIES
+        Qt::DBus
+)
+
+qt_extend_target(tst_moc CONDITION TARGET Qt::Concurrent
+    PUBLIC_LIBRARIES
+        Qt::Concurrent
+)
+
+qt_extend_target(tst_moc CONDITION TARGET Qt::Network
+    PUBLIC_LIBRARIES
+        Qt::Network
+)
+
+qt_extend_target(tst_moc CONDITION TARGET Qt::Sql
+    PUBLIC_LIBRARIES
+        Qt::Sql
+)
+
+get_target_property(target_binary_dir tst_moc BINARY_DIR)
+set(cmake_autogen_cache_file
+    "${target_binary_dir}/CMakeFiles/tst_moc_autogen.dir/ParseCache.txt")
+set(cmake_autogen_info_file
+    "${target_binary_dir}/CMakeFiles/tst_moc_autogen.dir/AutogenInfo.json")
+set(moc_json_out ${target_binary_dir}/moc_json_out)
+
+file(REMOVE ${moc_json_out})
+foreach(filename ${moc_json_files})
+    file(APPEND ${moc_json_out} "${filename}\n")
+endforeach()
+
+set(metatype_file "allmocs.json")
+configure_file("allmocs_baseline_in.json" "${target_binary_dir}/allmocs_baseline.json")
+
+add_custom_command(TARGET tst_moc
+    POST_BUILD
+    COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc
+        -o "allmocs.json"
+        --collect-json  "@${moc_json_out}"
+    COMMENT "Running moc with --collect-json"
+)

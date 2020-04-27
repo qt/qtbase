@@ -3970,14 +3970,20 @@ void tst_Moc::mocJsonOutput()
         return QJsonDocument::fromJson(f.readAll());
     };
 
-    const QString actualFile = QStringLiteral(":/allmocs.json");
-    const QString expectedFile = QStringLiteral(":/allmocs_baseline.json");
+    QString actualFile = QStringLiteral(":/allmocs.json");
+    QString expectedFile = QStringLiteral(":/allmocs_baseline.json");
+    if (!QFile::exists(actualFile)) {
+        // TODO: necessary with cmake as we cannot generate the qrc file soon enough
+        auto const appDir = QCoreApplication::applicationDirPath();
+        actualFile = appDir + QDir::separator() + QLatin1String("./allmocs.json");
+        expectedFile = appDir + QDir::separator() + QLatin1String("./allmocs_baseline.json");
+    }
 
     QVERIFY2(QFile::exists(actualFile), qPrintable(actualFile));
     QVERIFY2(QFile::exists(expectedFile), qPrintable(expectedFile));
 
-    QJsonDocument actualOutput = readFile(QLatin1String(":/allmocs.json"));
-    QJsonDocument expectedOutput = readFile(QLatin1String(":/allmocs_baseline.json"));
+    QJsonDocument actualOutput = readFile(actualFile);
+    QJsonDocument expectedOutput = readFile(expectedFile);
 
     const auto showPotentialDiff = [](const QJsonDocument &actual, const QJsonDocument &expected) -> QByteArray {
 #if defined(Q_OS_UNIX)
@@ -4275,4 +4281,3 @@ QTEST_MAIN(tst_Moc)
 #undef emit
 
 #include "tst_moc.moc"
-
