@@ -4,7 +4,8 @@
 ## moc Tool:
 #####################################################################
 
-qt_add_tool(moc
+qt_get_tool_target_name(target_name moc)
+qt_add_tool(${target_name}
     BOOTSTRAP
     TARGET_DESCRIPTION "Qt Meta Object Compiler"
     TOOLS_TARGET Core # special case

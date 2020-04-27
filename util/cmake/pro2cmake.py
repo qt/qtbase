@@ -2307,7 +2307,10 @@ def expand_resource_glob(cm_fh: IO[str], expression: str) -> str:
     return expanded_var
 
 
-def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
+def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False,
+                    target_ref: str = None):
+    if target_ref is None:
+        target_ref = target
     # vpath = scope.expand('VPATH')
 
     # Handle QRC files by turning them into qt_add_resource:
@@ -2325,7 +2328,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                     cm_fh.write(f"#### Ignored generated resource: {r}")
                     continue
                 qrc_output += process_qrc_file(
-                    target,
+                    target_ref,
                     scope,
                     r,
                     scope.basedir,
@@ -2357,7 +2360,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                     immediate_lang = None
                     immediate_name = f"qmake_{r}"
                     qrc_output += write_add_qt_resource_call(
-                        target=target,
+                        target=target_ref,
                         scope=scope,
                         resource_name=immediate_name,
                         prefix=immediate_prefix,
@@ -2395,7 +2398,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
             files = {f: "" for f in standalone_files}
             skip_qtquick_compiler = False
             qrc_output += write_add_qt_resource_call(
-                target=target,
+                target=target_ref,
                 scope=scope,
                 resource_name=name,
                 prefix=prefix,
@@ -2483,7 +2486,9 @@ def expand_project_requirements(scope: Scope, skip_message: bool = False) -> str
     return requirements
 
 
-def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, target_ref: str = None):
+    if target_ref is None:
+        target_ref = target
     ind = spaces(indent)
     extend_qt_io_string = io.StringIO()
     write_sources_section(extend_qt_io_string, scope)
@@ -2495,7 +2500,7 @@ def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int =
 
     cmake_api_call = get_cmake_api_call("qt_extend_target")
     extend_scope = (
-        f"\n{ind}{cmake_api_call}({target} CONDITION"
+        f"\n{ind}{cmake_api_call}({target_ref} CONDITION"
         f" {condition}\n"
         f"{extend_qt_string}{ind})\n"
     )
@@ -2506,7 +2511,7 @@ def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int =
     cm_fh.write(extend_scope)
 
     io_string = io.StringIO()
-    write_resources(io_string, target, scope, indent + 1)
+    write_resources(io_string, target, scope, indent + 1, target_ref=target_ref)
     resource_string = io_string.getvalue()
     if len(resource_string) != 0:
         resource_string = resource_string.strip("\n").rstrip(f"\n{spaces(indent + 1)}")
@@ -2892,6 +2897,12 @@ def write_main_part(
                     cm_fh.write(f'{spaces(indent)}list(APPEND test_data "{data}")\n')
             cm_fh.write("\n")
 
+    target_ref = name
+    if typename == "Tool":
+        target_ref = "${target_name}"
+        comment_line = "#" * 69
+        cm_fh.write(f"{spaces(indent)}qt_get_tool_target_name(target_name {name})\n")
+
     # Check for DESTDIR override
     destdir = scope.get_string("DESTDIR")
     if destdir:
@@ -2904,7 +2915,7 @@ def write_main_part(
             destdir = replace_path_constants(destdir, scope)
             extra_lines.append(f'OUTPUT_DIRECTORY "{destdir}"')
 
-    cm_fh.write(f"{spaces(indent)}{cmake_function}({name}\n")
+    cm_fh.write(f"{spaces(indent)}{cmake_function}({target_ref}\n")
     for extra_line in extra_lines:
         cm_fh.write(f"{spaces(indent)}    {extra_line}\n")
 
@@ -2915,7 +2926,7 @@ def write_main_part(
     # Footer:
     cm_fh.write(f"{spaces(indent)})\n")
 
-    write_resources(cm_fh, name, scope, indent)
+    write_resources(cm_fh, name, scope, indent, target_ref=target_ref)
 
     write_statecharts(cm_fh, name, scope, indent)
 
@@ -2951,7 +2962,7 @@ def write_main_part(
         c.reset_visited_keys()
         write_android_part(cm_fh, name, c, indent=indent)
         write_wayland_part(cm_fh, name, c, indent=indent)
-        write_extend_target(cm_fh, name, c, indent=indent)
+        write_extend_target(cm_fh, name, c, target_ref=target_ref, indent=indent)
         write_simd_part(cm_fh, name, c, indent=indent)
 
         ignored_keys_report = write_ignored_keys(c, spaces(indent))
@@ -3154,7 +3165,7 @@ def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         extra_keys=["CONFIG"],
     )
 
-    return tool_name
+    return tool_name, "${target_name}"
 
 
 def write_test(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0) -> str:
@@ -3770,6 +3781,7 @@ def handle_app_or_lib(
     is_plugin = "plugin" in config
     is_qt_plugin = any("qt_plugin" == s for s in scope.get("_LOADED")) or is_qml_plugin
     target = ""
+    target_ref = None
     gui = all(val not in config for val in ["console", "cmdline", "-app_bundle"]) and all(
         val not in scope.expand("QT") for val in ["testlib", "testlib-private"]
     )
@@ -3792,13 +3804,16 @@ def handle_app_or_lib(
         target = write_module(cm_fh, scope, indent=indent)
     elif "qt_tool" in scope.get("_LOADED"):
         assert not is_example
-        target = write_tool(cm_fh, scope, indent=indent)
+        target, target_ref = write_tool(cm_fh, scope, indent=indent)
     else:
         if "testcase" in config or "testlib" in config or "qmltestcase" in config:
             assert not is_example
             target = write_test(cm_fh, scope, gui, indent=indent)
         else:
             target = write_binary(cm_fh, scope, gui, indent=indent)
+
+    if target_ref is None:
+        target_ref = target
 
     # ind = spaces(indent)
     cmake_api_call = get_cmake_api_call("qt_add_docs")
@@ -3808,14 +3823,14 @@ def handle_app_or_lib(
         "",
         ["QMAKE_DOCS"],
         indent,
-        header=f"{cmake_api_call}({target}\n",
+        header=f"{cmake_api_call}({target_ref}\n",
         footer=")\n",
     )
 
     # Generate qmltypes instruction for anything that may have CONFIG += qmltypes
     # that is not a qml plugin
     if "qmltypes" in scope.get("CONFIG") and "qml_plugin" not in scope.get("_LOADED"):
-        cm_fh.write(f"\n{spaces(indent)}set_target_properties({target} PROPERTIES\n")
+        cm_fh.write(f"\n{spaces(indent)}set_target_properties({target_ref} PROPERTIES\n")
 
         install_dir = scope.expandString("QMLTYPES_INSTALL_DIR")
         if install_dir:
@@ -3842,7 +3857,7 @@ def handle_app_or_lib(
             cm_fh.write(f'{spaces(indent+1)}QT_QML_MODULE_INSTALL_DIR "{install_dir}"\n')
 
         cm_fh.write(f"{spaces(indent)})\n\n")
-        cm_fh.write(f"qt6_qml_type_registration({target})\n")
+        cm_fh.write(f"qt6_qml_type_registration({target_ref})\n")
 
 
 def handle_top_level_repo_project(scope: Scope, cm_fh: IO[str]):

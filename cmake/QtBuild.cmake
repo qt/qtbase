@@ -1088,7 +1088,7 @@ function(qt_get_build_parts out_var)
         list(APPEND parts "tests")
     endif()
 
-    if(NOT CMAKE_CROSSCOMPILING)
+    if(NOT CMAKE_CROSSCOMPILING OR QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
         list(APPEND parts "tools")
     endif()
 
@@ -2860,10 +2860,13 @@ QMAKE_PRL_LIBS_FOR_CMAKE = ${prl_libs}
 endfunction()
 
 function(qt_export_tools module_name)
-    # If no tools were defined belonging to this module, don't create a config and targets file.
-    # Guards against the case when doing a cross-build.
+    # Bail out when cross-compiling, unless QT_BUILD_TOOLS_WHEN_CROSSCOMPILING is on.
+    if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        return()
+    endif()
 
-    if(NOT "${module_name}" IN_LIST QT_KNOWN_MODULES_WITH_TOOLS OR CMAKE_CROSSCOMPILING)
+    # If no tools were defined belonging to this module, don't create a config and targets file.
+    if(NOT "${module_name}" IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
         return()
     endif()
 
@@ -2892,6 +2895,9 @@ function(qt_export_tools module_name)
             list(APPEND package_deps "${extra_packages}")
         endif()
 
+        if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+            string(REGEX REPLACE "_native$" "" tool_name ${tool_name})
+        endif()
         set(extra_cmake_statements "${extra_cmake_statements}
 if (NOT QT_NO_CREATE_TARGETS)
     get_property(is_global TARGET ${INSTALL_CMAKE_NAMESPACE}::${tool_name} PROPERTY IMPORTED_GLOBAL)
@@ -3832,10 +3838,10 @@ endfunction()
 
 # Sets QT_WILL_BUILD_TOOLS if tools will be built.
 function(qt_check_if_tools_will_be_built)
-    if(NOT CMAKE_CROSSCOMPILING AND NOT QT_FORCE_FIND_TOOLS)
-        set(will_build_tools TRUE)
-    else()
+    if(QT_FORCE_FIND_TOOLS OR (CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING))
         set(will_build_tools FALSE)
+    else()
+        set(will_build_tools TRUE)
     endif()
     set(QT_WILL_BUILD_TOOLS ${will_build_tools} CACHE INTERNAL "Are tools going to be built" FORCE)
 endfunction()
@@ -4114,10 +4120,40 @@ function(qt_get_main_cmake_configuration out_var)
     set("${out_var}" "${config}" PARENT_SCOPE)
 endfunction()
 
+# Returns the target name for the tool with the given name.
+#
+# In most cases, the target name is the same as the tool name.
+# If the user specifies to build tools when cross-compiling, then the
+# suffix "_native" is appended.
+function(qt_get_tool_target_name out_var name)
+    if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        set(${out_var} ${name}_native PARENT_SCOPE)
+    else()
+        set(${out_var} ${name} PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Returns the tool name for a given tool target.
+# This is the inverse of qt_get_tool_target_name.
+function(qt_tool_target_to_name out_var target)
+    set(name ${target})
+    if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        string(REGEX REPLACE "_native$" "" name ${target})
+    endif()
+    set(${out_var} ${name} PARENT_SCOPE)
+endfunction()
+
 # This function is used to define a "Qt tool", such as moc, uic or rcc.
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
-function(qt_add_tool name)
+#
+# We must pass this function a target name obtained from
+# qt_get_tool_target_name like this:
+#     qt_get_tool_target_name(target_name my_tool)
+#     qt_add_tool(${target_name})
+#
+function(qt_add_tool target_name)
+    qt_tool_target_to_name(name ${target_name})
     qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL"
                                "TOOLS_TARGET;${__default_target_info_args}"
                                "${__default_private_args}" ${ARGN})
@@ -4130,14 +4166,24 @@ function(qt_add_tool name)
                             " (QT_WILL_BUILD_TOOLS is ${QT_WILL_BUILD_TOOLS}).")
     endif()
 
+    if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING AND (name STREQUAL target_name))
+        message(FATAL_ERROR
+            "qt_add_tool must be passed a target obtained from qt_get_tool_target_name.")
+    endif()
+
     set(full_name "${QT_CMAKE_EXPORT_NAMESPACE}::${name}")
+    set(imported_tool_target_found FALSE)
     if(TARGET ${full_name})
         get_property(path TARGET ${full_name} PROPERTY LOCATION)
         message(STATUS "Tool '${full_name}' was found at ${path}.")
-        return()
+        set(imported_tool_target_found TRUE)
+        if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+            return()
+        endif()
     endif()
 
-    if(arg_TOOLS_TARGET AND NOT QT_WILL_BUILD_TOOLS)
+    if(arg_TOOLS_TARGET AND (NOT QT_WILL_BUILD_TOOLS OR QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+            AND NOT imported_tool_target_found)
         set(tools_package_name "Qt6${arg_TOOLS_TARGET}Tools")
         message(STATUS "Searching for tool '${full_name}' in package ${tools_package_name}.")
 
@@ -4173,7 +4219,9 @@ function(qt_add_tool name)
             qt_internal_append_known_modules_with_tools("${arg_TOOLS_TARGET}")
             get_property(path TARGET ${full_name} PROPERTY LOCATION)
             message(STATUS "${full_name} was found at ${path} using package ${tools_package_name}.")
-            return()
+            if (NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+                return()
+            endif()
         endif()
     endif()
 
@@ -4182,7 +4230,11 @@ function(qt_add_tool name)
                            "${tools_package_name} package. "
                            "Package found: ${${tools_package_name}_FOUND}")
     else()
-        message(STATUS "Tool '${full_name}' will be built from source.")
+        if(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+            message(STATUS "Tool '${target_name}' will be cross-built from source.")
+        else()
+            message(STATUS "Tool '${full_name}' will be built from source.")
+        endif()
     endif()
 
     set(disable_autogen_tools "${arg_DISABLE_AUTOGEN_TOOLS}")
@@ -4211,7 +4263,7 @@ function(qt_add_tool name)
         set(no_qt NO_QT)
     endif()
 
-    qt_add_executable("${name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+    qt_add_executable("${target_name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
         ${bootstrap}
         ${no_qt}
         NO_INSTALL
@@ -4231,12 +4283,19 @@ function(qt_add_tool name)
         TARGET_COMPANY "${arg_TARGET_COMPANY}"
         TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
     )
-    qt_internal_add_target_aliases("${name}")
+    qt_internal_add_target_aliases("${target_name}")
+
+    if (NOT target_name STREQUAL name)
+        set_target_properties(${target_name} PROPERTIES
+            OUTPUT_NAME ${name}
+            EXPORT_NAME ${name}
+        )
+    endif()
 
     # If building with a multi-config configuration, the main configuration tool will be placed in
     # ./bin, while the rest will be in <CONFIG> specific subdirectories.
     qt_get_tool_cmake_configuration(tool_cmake_configuration)
-    set_target_properties("${name}" PROPERTIES
+    set_target_properties("${target_name}" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_${tool_cmake_configuration} "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
     )
 
@@ -4245,7 +4304,7 @@ function(qt_add_tool name)
         qt_internal_append_known_modules_with_tools("${arg_TOOLS_TARGET}")
 
         # Also append the tool to the module list.
-        qt_internal_append_known_module_tool("${arg_TOOLS_TARGET}" "${name}")
+        qt_internal_append_known_module_tool("${arg_TOOLS_TARGET}" "${target_name}")
 
         qt_get_cmake_configurations(cmake_configs)
 
@@ -4257,19 +4316,19 @@ function(qt_add_tool name)
                 OUT_VAR install_targets_default_args
                 CMAKE_CONFIG "${cmake_config}"
                 ALL_CMAKE_CONFIGS "${cmake_configs}")
-            qt_install(TARGETS "${name}"
+            qt_install(TARGETS "${target_name}"
                        ${install_initial_call_args}
                        CONFIGURATIONS ${cmake_config}
                        ${install_targets_default_args})
             unset(install_initial_call_args)
         endforeach()
 
-        qt_apply_rpaths(TARGET "${name}" INSTALL_PATH "${INSTALL_BINDIR}" RELATIVE_RPATH)
+        qt_apply_rpaths(TARGET "${target_name}" INSTALL_PATH "${INSTALL_BINDIR}" RELATIVE_RPATH)
 
     endif()
 
     if(QT_FEATURE_separate_debug_info AND (UNIX OR MINGW))
-        qt_enable_separate_debug_info(${name} ${INSTALL_BINDIR})
+        qt_enable_separate_debug_info(${target_name} ${INSTALL_BINDIR})
     endif()
 endfunction()
 

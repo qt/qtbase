@@ -2,7 +2,8 @@
 ## moc Tool:
 #####################################################################
 
-qt_add_tool(cmake_automoc_parser
+qt_get_tool_target_name(target_name cmake_automoc_parser)
+qt_add_tool(${target_name}
     BOOTSTRAP
     TOOLS_TARGET Core # special case
     SOURCES

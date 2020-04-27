@@ -4,7 +4,8 @@
 ## qdbuscpp2xml Tool:
 #####################################################################
 
-qt_add_tool(qdbuscpp2xml
+qt_get_tool_target_name(target_name qdbuscpp2xml)
+qt_add_tool(${target_name}
     TARGET_DESCRIPTION "Qt D-Bus C++ to XML Compiler"
     TOOLS_TARGET DBus # special case
     SOURCES
@@ -46,4 +47,3 @@ qt_add_tool(qdbuscpp2xml
 # extend_target(qdbuscpp2xml CONDITION force_bootstrap [...])
 # extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap [...])
 # special case end
-

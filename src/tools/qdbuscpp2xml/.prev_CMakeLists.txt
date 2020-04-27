@@ -4,7 +4,8 @@
 ## qdbuscpp2xml Tool:
 #####################################################################
 
-qt_add_tool(qdbuscpp2xml
+qt_get_tool_target_name(target_name qdbuscpp2xml)
+qt_add_tool(${target_name}
     TARGET_DESCRIPTION "Qt D-Bus C++ to XML Compiler"
     SOURCES
         ../moc/cbordevice.h
@@ -35,12 +36,12 @@ qt_add_tool(qdbuscpp2xml
 ## Scopes:
 #####################################################################
 
-qt_extend_target(qdbuscpp2xml CONDITION force_bootstrap
+qt_extend_target(${target_name} CONDITION force_bootstrap
     PUBLIC_LIBRARIES
         bootstrap_dbusPrivate
 )
 
-qt_extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap
+qt_extend_target(${target_name} CONDITION NOT force_bootstrap
     PUBLIC_LIBRARIES
         Qt::DBusPrivate
 )

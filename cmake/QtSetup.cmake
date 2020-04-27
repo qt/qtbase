@@ -125,8 +125,13 @@ option(QT_NO_MAKE_TESTS "Should tests be built as part of the default 'all' targ
 # When cross-building, we don't build tools by default. Sometimes this also covers Qt apps as well.
 # Like in qttools/assistant/assistant.pro, load(qt_app), which is guarded by a qtNomakeTools() call.
 
+set(qt_no_make_tools_default OFF)
+if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    set(qt_no_make_tools_default ON)
+endif()
 option(QT_NO_MAKE_TOOLS "Should tools be built as part of the default 'all' target."
-       "${CMAKE_CROSSCOMPILING}")
+       "${qt_no_make_tools_default}")
+unset(qt_no_make_tools_default)
 
 include(CTest)
 enable_testing()

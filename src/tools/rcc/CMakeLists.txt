@@ -4,7 +4,8 @@
 ## rcc Tool:
 #####################################################################
 
-qt_add_tool(rcc
+qt_get_tool_target_name(target_name rcc)
+qt_add_tool(${target_name}
     BOOTSTRAP
     TARGET_DESCRIPTION "Qt Resource Compiler"
     TOOLS_TARGET Core # special case
@@ -26,14 +27,14 @@ qt_add_tool(rcc
 ## Scopes:
 #####################################################################
 
-qt_extend_target(rcc CONDITION QT_FEATURE_zstd AND NOT CMAKE_CROSSCOMPILING
+qt_extend_target(${target_name} CONDITION QT_FEATURE_zstd AND NOT CMAKE_CROSSCOMPILING
     DEFINES
         QT_FEATURE_zstd=1
     LIBRARIES
         ZSTD::ZSTD
 )
 
-qt_extend_target(rcc CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_zstd
+qt_extend_target(${target_name} CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_zstd
     DEFINES
         QT_FEATURE_zstd=-1
 )
