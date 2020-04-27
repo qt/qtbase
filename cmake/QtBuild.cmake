@@ -793,7 +793,7 @@ endfunction()
 
 # Creates mkspecs/qmodule.pri which contains private global features among other things.
 function(qt_generate_global_module_pri_file)
-    qt_path_join(qmodule_pri_target_path ${PROJECT_BINARY_DIR} mkspecs)
+    qt_path_join(qmodule_pri_target_path ${PROJECT_BINARY_DIR} ${INSTALL_MKSPECSDIR})
     qt_path_join(qmodule_pri_target_path "${qmodule_pri_target_path}" "qmodule.pri")
 
     get_target_property(enabled_features GlobalConfig INTERFACE_QT_ENABLED_PRIVATE_FEATURES)
@@ -828,7 +828,7 @@ CONFIG += ${private_config_joined}
         OUTPUT "${qmodule_pri_target_path}"
         CONTENT "${content}"
     )
-    qt_install(FILES "${qmodule_pri_target_path}" DESTINATION mkspecs)
+    qt_install(FILES "${qmodule_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
 endfunction()
 
 function(qt_generate_qt_conf)
