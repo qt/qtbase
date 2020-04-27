@@ -1077,8 +1077,8 @@ void QXmlAttributes::append(const QString &qName, const QString &uri, const QStr
 */
 
 // the following two are guaranteed not to be a character
-const ushort QXmlInputSource::EndOfData = 0xfffe;
-const ushort QXmlInputSource::EndOfDocument = 0xffff;
+const char16_t QXmlInputSource::EndOfData = 0xfffe;
+const char16_t QXmlInputSource::EndOfDocument = 0xffff;
 
 /*
     Common part of the constructors.
@@ -1170,20 +1170,20 @@ QChar QXmlInputSource::next()
             d->nextReturnedEndOfData = false;
             fetchData();
             if (d->pos >= d->length) {
-                return QChar(EndOfDocument);
+                return EndOfDocument;
             }
             return next();
         }
         d->nextReturnedEndOfData = true;
-        return QChar(EndOfData);
+        return EndOfData;
     }
 
     // QXmlInputSource has no way to signal encoding errors. The best we can do
     // is return EndOfDocument. We do *not* return EndOfData, because the reader
     // will then just call this function again to get the next char.
     QChar c = d->unicode[d->pos++];
-    if (c.unicode() == EndOfData)
-        c = QChar(EndOfDocument);
+    if (c == EndOfData)
+        c = EndOfDocument;
     return c;
 }
 
@@ -7830,7 +7830,7 @@ void QXmlSimpleReaderPrivate::next()
     c = inputSource->next();
     // If we are not incremental parsing, we just skip over EndOfData chars to give the
     // parser an uninterrupted stream of document chars.
-    if (c == QChar(QXmlInputSource::EndOfData) && parseStack == nullptr)
+    if (c == QXmlInputSource::EndOfData && parseStack == nullptr)
         c = inputSource->next();
     if (uc == '\n') {
         lineNr++;
@@ -7910,7 +7910,7 @@ QT_WARNING_POP
 */
 void QXmlSimpleReaderPrivate::initData()
 {
-    c = QChar(QXmlInputSource::EndOfData);
+    c = QXmlInputSource::EndOfData;
     xmlRefStack.clear();
     next();
 }
@@ -7961,7 +7961,7 @@ void QXmlSimpleReaderPrivate::unexpectedEof(ParseFunction where, int state)
     if (parseStack == nullptr) {
         reportParseError(QLatin1String(XMLERR_UNEXPECTEDEOF));
     } else {
-        if (c == QChar(QXmlInputSource::EndOfDocument)) {
+        if (c == QXmlInputSource::EndOfDocument) {
             reportParseError(QLatin1String(XMLERR_UNEXPECTEDEOF));
         } else {
             pushParseState(where, state);

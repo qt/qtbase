@@ -208,8 +208,8 @@ public:
     virtual QChar next();
     virtual void reset();
 
-    static const ushort EndOfData;
-    static const ushort EndOfDocument;
+    static const char16_t EndOfData;
+    static const char16_t EndOfDocument;
 
 protected:
     virtual QString fromRawData(const QByteArray &data, bool beginning = false);
