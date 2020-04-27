@@ -405,7 +405,7 @@ bool MainWindow::addTorrent(const QString &fileName, const QString &destinationF
     QTreeWidgetItem *item = new QTreeWidgetItem(torrentView);
 
     QString baseFileName = QFileInfo(fileName).fileName();
-    if (baseFileName.toLower().endsWith(".torrent"))
+    if (baseFileName.endsWith(u".torrent", Qt::CaseInsensitive))
         baseFileName.chop(8);
 
     item->setText(0, baseFileName);
