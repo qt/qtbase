@@ -617,7 +617,7 @@ void QVncClient::keyEvent()
             m_keymod = ev.down ? m_keymod | Qt::AltModifier :
                                  m_keymod & ~Qt::AltModifier;
         if (ev.unicode || ev.keycode)
-            QWindowSystemInterface::handleKeyEvent(nullptr, ev.down ? QEvent::KeyPress : QEvent::KeyRelease, ev.keycode, m_keymod, QString(ev.unicode));
+            QWindowSystemInterface::handleKeyEvent(nullptr, ev.down ? QEvent::KeyPress : QEvent::KeyRelease, ev.keycode, m_keymod, QString(QChar::fromUcs2(ev.unicode)));
         m_handleMsg = false;
     }
 }
