@@ -963,8 +963,7 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
     int delimiter = maskFields.indexOf(QLatin1Char(';'));
     if (maskFields.isEmpty() || delimiter == 0) {
         if (m_maskData) {
-            delete [] m_maskData;
-            m_maskData = nullptr;
+            m_maskData.reset();
             m_maxLength = 32767;
             internalSetText(QString(), -1, false);
         }
@@ -1002,8 +1001,7 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
             m_maxLength++;
     }
 
-    delete [] m_maskData;
-    m_maskData = new MaskInputData[m_maxLength];
+    m_maskData = std::make_unique<MaskInputData[]>(m_maxLength);
 
     MaskInputData::Casemode m = MaskInputData::NoCaseMode;
     bool s;
