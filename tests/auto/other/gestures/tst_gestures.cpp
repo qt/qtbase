@@ -1401,13 +1401,13 @@ void tst_Gestures::ungrabGesture() // a method on QWidget
 
         QSet<QGesture*> gestures;
     protected:
-        bool event(QEvent *event)
+        bool event(QEvent *event) override
         {
             if (event->type() == QEvent::Gesture) {
                 QGestureEvent *gestureEvent = static_cast<QGestureEvent*>(event);
-                if (gestureEvent)
-                    foreach (QGesture *g, gestureEvent->gestures())
-                        gestures.insert(g);
+                const auto eventGestures = gestureEvent->gestures();
+                for (QGesture *g : eventGestures)
+                    gestures.insert(g);
             }
             return GestureWidget::event(event);
         }
