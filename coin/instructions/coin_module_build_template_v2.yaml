@@ -6,13 +6,23 @@ instructions:
       - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
       - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts.yaml"
     enable_if:
-      condition: property
-      property: host.os
-      equals_property: target.os
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_property: target.os
+        - condition: property
+          property: target.osVersion
+          not_equals_value: QEMU
   - type: Group
     instructions:
       - !include "{{qt/qtbase}}/cmake_cross_compilation_module_build_instructions.yaml"
     disable_if:
-      condition: property
-      property: host.os
-      equals_property: target.os
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_property: target.os
+        - condition: property
+          property: target.osVersion
+          not_equals_value: QEMU
