@@ -66,6 +66,10 @@ QMimeData *QAndroidPlatformClipboard::mimeData(QClipboard::Mode mode)
 
 void QAndroidPlatformClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 {
+    if (!data) {
+        QtAndroidClipboard::clearClipboardData();
+        return;
+    }
     if (data && supportsMode(mode))
         QtAndroidClipboard::setClipboardMimeData(data);
     if (data != 0)

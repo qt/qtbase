@@ -53,6 +53,7 @@ namespace QtAndroidClipboard
     void setClipboardManager(QAndroidPlatformClipboard *manager);
     void setClipboardMimeData(QMimeData *data);
     QMimeData *getClipboardMimeData();
+    void clearClipboardData();
     void onClipboardDataChanged(JNIEnv */*env*/, jobject /*thiz*/);
     // Clipboard support
 }
