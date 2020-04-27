@@ -162,3 +162,4 @@ if (NOT CMAKE_VERSION VERSION_LESS 3.8)
 endif()
 
 expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})
+expect_pass(test_versionless_targets)
