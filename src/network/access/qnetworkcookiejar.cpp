@@ -154,12 +154,12 @@ static inline bool isParentPath(const QString &path, const QString &reference)
             return true;
         //The cookie-path is a prefix of the request-path, and the last
         //character of the cookie-path is %x2F ("/").
-        if (reference.endsWith('/'))
+        if (reference.endsWith(u'/'))
             return true;
         //The cookie-path is a prefix of the request-path, and the first
         //character of the request-path that is not included in the cookie-
         //path is a %x2F ("/") character.
-        if (path.at(reference.length()) == '/')
+        if (path.at(reference.length()) == u'/')
             return true;
     }
     return false;
