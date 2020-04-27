@@ -1182,7 +1182,7 @@ QString QCommonStylePrivate::toolButtonElideText(const QStyleOptionToolButton *o
         return option->text;
 
     QString text = option->text;
-    text.replace('\n', QChar::LineSeparator);
+    text.replace(u'\n', QChar::LineSeparator);
     QTextOption textOption;
     textOption.setWrapMode(QTextOption::ManualWrap);
     textOption.setTextDirection(option->direction);

@@ -804,7 +804,7 @@ void QWidgetLineControl::addCommand(const Command &cmd)
     m_history.erase(m_history.begin() + m_undoState, m_history.end());
 
     if (m_separator && m_undoState && m_history[m_undoState - 1].type != Separator)
-        m_history.push_back(Command(Separator, m_cursor, 0, m_selstart, m_selend));
+        m_history.push_back(Command(Separator, m_cursor, u'\0', m_selstart, m_selend));
 
     m_separator = false;
     m_history.push_back(cmd);
@@ -836,7 +836,7 @@ void QWidgetLineControl::internalInsert(const QString &s)
             m_passwordEchoTimer = startTimer(delay);
     }
     if (hasSelectedText())
-        addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
+        addCommand(Command(SetSelection, m_cursor, u'\0', m_selstart, m_selend));
     if (m_maskData) {
         QString ms = maskString(m_cursor, s);
         if (ms.isEmpty() && !s.isEmpty())
@@ -890,7 +890,7 @@ void QWidgetLineControl::internalDelete(bool wasBackspace)
     if (m_cursor < (int) m_text.length()) {
         cancelPasswordEchoTimer();
         if (hasSelectedText())
-            addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
+            addCommand(Command(SetSelection, m_cursor, u'\0', m_selstart, m_selend));
         addCommand(Command((CommandType)((m_maskData ? 2 : 0) + (wasBackspace ? Remove : Delete)),
                    m_cursor, m_text.at(m_cursor), -1, -1));
 #ifndef QT_NO_ACCESSIBILITY
@@ -922,7 +922,7 @@ void QWidgetLineControl::removeSelectedText()
         cancelPasswordEchoTimer();
         separate();
         int i ;
-        addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
+        addCommand(Command(SetSelection, m_cursor, u'\0', m_selstart, m_selend));
         if (m_selstart <= m_cursor && m_cursor < m_selend) {
             // cursor is within the selection. Split up the commands
             // to be able to restore the correct cursor position
@@ -981,17 +981,16 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
 
     // calculate m_maxLength / m_maskData length
     m_maxLength = 0;
-    QChar c = 0;
     bool escaped = false;
     for (int i=0; i<m_inputMask.length(); i++) {
-        c = m_inputMask.at(i);
+        const auto c = m_inputMask.at(i);
         if (escaped) {
            ++m_maxLength;
            escaped = false;
            continue;
         }
 
-        if (c == '\\') {
+        if (c == u'\\') {
            escaped = true;
            continue;
         }
@@ -1007,12 +1006,11 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
     m_maskData = new MaskInputData[m_maxLength];
 
     MaskInputData::Casemode m = MaskInputData::NoCaseMode;
-    c = 0;
     bool s;
     bool escape = false;
     int index = 0;
     for (int i = 0; i < m_inputMask.length(); i++) {
-        c = m_inputMask.at(i);
+        const auto c = m_inputMask.at(i);
         if (escape) {
             s = true;
             m_maskData[index].maskChar = c;

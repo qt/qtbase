@@ -110,7 +110,7 @@ public:
         // password data to stay in the process memory, therefore we need
         // to zero it out
         if (m_echoMode != QLineEdit::Normal)
-            m_text.fill('\0');
+            m_text.fill(u'\0');
 
         delete [] m_maskData;
     }

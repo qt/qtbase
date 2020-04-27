@@ -2259,7 +2259,7 @@ void QLineEdit::changeEvent(QEvent *ev)
         {
             QStyleOptionFrame opt;
             initStyleOption(&opt);
-            d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, this));
+            d->control->setPasswordCharacter(char16_t(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, this)));
             d->control->setPasswordMaskDelay(style()->styleHint(QStyle::SH_LineEdit_PasswordMaskDelay, &opt, this));
         }
         update();

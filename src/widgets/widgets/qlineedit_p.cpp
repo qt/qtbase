@@ -225,7 +225,7 @@ void QLineEditPrivate::init(const QString& txt)
 
     QStyleOptionFrame opt;
     q->initStyleOption(&opt);
-    control->setPasswordCharacter(q->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, q));
+    control->setPasswordCharacter(char16_t(q->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, q)));
     control->setPasswordMaskDelay(q->style()->styleHint(QStyle::SH_LineEdit_PasswordMaskDelay, &opt, q));
 #ifndef QT_NO_CURSOR
     q->setCursor(Qt::IBeamCursor);

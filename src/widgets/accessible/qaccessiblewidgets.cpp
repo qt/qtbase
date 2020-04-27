@@ -852,12 +852,12 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
     AttributeFormatter attrs;
     QString family = charFormatFont.family();
     if (!family.isEmpty()) {
-        family = family.replace('\\', QLatin1String("\\\\"));
-        family = family.replace(':', QLatin1String("\\:"));
-        family = family.replace(',', QLatin1String("\\,"));
-        family = family.replace('=', QLatin1String("\\="));
-        family = family.replace(';', QLatin1String("\\;"));
-        family = family.replace('\"', QLatin1String("\\\""));
+        family = family.replace(u'\\', QLatin1String("\\\\"));
+        family = family.replace(u':', QLatin1String("\\:"));
+        family = family.replace(u',', QLatin1String("\\,"));
+        family = family.replace(u'=', QLatin1String("\\="));
+        family = family.replace(u';', QLatin1String("\\;"));
+        family = family.replace(u'\"', QLatin1String("\\\""));
         attrs["font-family"] = QLatin1Char('"') + family + QLatin1Char('"');
     }
 
