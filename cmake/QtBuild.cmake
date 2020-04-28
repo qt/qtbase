@@ -3515,7 +3515,7 @@ endfunction()
 function(qt_add_3rdparty_library target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_3rdparty_library"
-        "SHARED;MODULE;STATIC;INTERFACE;EXCEPTIONS;INSTALL"
+        "SHARED;MODULE;STATIC;INTERFACE;EXCEPTIONS;INSTALL;SKIP_AUTOMOC"
         "OUTPUT_DIRECTORY"
         "${__default_private_args};${__default_public_args}"
         ${ARGN}
@@ -3574,7 +3574,9 @@ function(qt_add_3rdparty_library target)
         OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
     )
 
-    qt_autogen_tools_initial_setup(${target})
+    if(NOT arg_SKIP_AUTOMOC)
+        qt_autogen_tools_initial_setup(${target})
+    endif()
 
     if(NOT arg_INTERFACE)
         # This property is used for super builds with static libraries. We use

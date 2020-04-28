@@ -6,6 +6,7 @@
 
 qt_add_3rdparty_library(BundledHarfbuzz
     STATIC
+    SKIP_AUTOMOC # special case
     SOURCES
         hb-dummy.cc
         src/hb.h
