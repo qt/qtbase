@@ -38,9 +38,14 @@ instructions:
         variableName: CONFIGURE_ARGS
         variableValue: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ "
         enable_if:
-          condition: property
-          property: host.compiler
-          contains_value: GCC
+          condition: or
+          conditions:
+            - condition: property
+              property: host.compiler
+              contains_value: GCC
+            - condition: property
+              property: host.compiler
+              contains_value: Mingw
       - type: PrependToEnvironmentVariable
         variableName: CONFIGURE_ARGS
         variableValue: "-DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe "
@@ -60,9 +65,14 @@ instructions:
   # Export TARGET_ARCHITECTURE and WINDOWS_SDK_VERSION for MSVC cross compilation
   - type: Group
     enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: host.compiler
+          not_contains_value: Mingw
     instructions:
       - type: EnvironmentVariable
         variableName: TARGET_ARCHITECTURE
@@ -114,9 +124,14 @@ instructions:
   # or we use compiler specific generator (probably superior solution as it allows to get rid of ENV_PREFIX).
   - type: Group
     enable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
+      condition: and
+      conditions:
+        - condition: property
+          property: host.os
+          equals_value: Windows
+        - condition: property
+          property: host.compiler
+          not_contains_value: Mingw
     instructions:
       # Try to pick one of many coexistent MSVC installation to use
       # TODO cleanup, that could be much simpler if all tools are installed to similar paths, so it would
@@ -183,23 +198,38 @@ instructions:
       maxTimeInSeconds: 20
       maxTimeBetweenOutput: 20
       enable_if:
-        condition: property
-        property: host.os
-        equals_value: Windows
+        condition: and
+        conditions:
+          - condition: property
+            property: host.os
+            equals_value: Windows
+          - condition: property
+            property: host.compiler
+            not_contains_value: Mingw
     - type: EnvironmentVariable
       variableName: ENV_PREFIX
       variableValue: "c:\\users\\qt\\prefix.bat"
       enable_if:
-        condition: property
-        property: host.os
-        equals_value: Windows
+        condition: and
+        conditions:
+          - condition: property
+            property: host.os
+            equals_value: Windows
+          - condition: property
+            property: host.compiler
+            not_contains_value: Mingw
     - type: EnvironmentVariable
       variableName: ENV_PREFIX
       variableValue: ""
       disable_if:
-        condition: property
-        property: host.os
-        equals_value: Windows
+        condition: and
+        conditions:
+          - condition: property
+            property: host.os
+            equals_value: Windows
+          - condition: property
+            property: host.compiler
+            not_contains_value: Mingw
 
   - type: Group
     instructions:
