@@ -685,7 +685,6 @@ typedef QVector<int> IntList;
 
 tst_QString::tst_QString()
 {
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName("ISO 8859-1"));
 }
 
 void tst_QString::remove_uint_uint_data()
@@ -1061,13 +1060,6 @@ void tst_QString::acc_01()
     a = (const char*)0;
     QVERIFY(a.isNull());
     QVERIFY(*a.toLatin1().constData() == '\0');
-    {
-        QFile f("COMPARE.txt");
-        f.open(QIODevice::ReadOnly);
-        QTextStream ts( &f );
-        ts.setCodec(QTextCodec::codecForName("UTF-16"));
-        ts << "Abc";
-    }
 }
 
 QT_WARNING_PUSH
