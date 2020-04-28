@@ -37,7 +37,6 @@
 
 #include "parser.h"
 
-static QTextStream qout(stdout, QIODevice::WriteOnly);
 static QTextStream qerr(stderr, QIODevice::WriteOnly);
 
 static void usage()
@@ -79,19 +78,15 @@ int main(int argc, const char *argv[])
     if (out_file_name.isEmpty())
         out_file_name = file_name + ".ref";
 
-    QFile _out_file;
-    QTextStream _out_stream;
-    QTextStream *out_stream;
+    QFile out_file;
     if (out_file_name == "-") {
-        out_stream = &qout;
+        out_file.open(stdout, QFile::WriteOnly);
     } else {
-        _out_file.setFileName(out_file_name);
-        if (!_out_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        out_file.setFileName(out_file_name);
+        if (!out_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             qerr << "Could not open " << out_file_name << ": " << strerror(errno) << Qt::endl;
             return 1;
         }
-        _out_stream.setDevice(&_out_file);
-        out_stream = &_out_stream;
     }
 
     Parser parser;
@@ -102,9 +97,7 @@ int main(int argc, const char *argv[])
 
     parser.parseFile(&in_file);
 
-    out_stream->setCodec("utf8");
-
-    *out_stream << parser.result();
+    out_file.write(parser.result().toUtf8());
 
     return 0;
 }

@@ -142,11 +142,12 @@ bool ContentHandler::startElement(const QString &namespaceURI,
 QString ContentHandler::escapeStr(const QString &s)
 {
     QString result = s;
-    result.replace(QRegularExpression("\""), "\\\"");
-    result.replace(QRegularExpression("\\"), "\\\\");
-    result.replace(QRegularExpression("\n"), "\\n");
-    result.replace(QRegularExpression("\r"), "\\r");
-    result.replace(QRegularExpression("\t"), "\\t");
+    result.replace(QChar(0), "\\0");
+    result.replace("\\", "\\\\");
+    result.replace("\"", "\\\"");
+    result.replace("\n", "\\n");
+    result.replace("\r", "\\r");
+    result.replace("\t", "\\t");
     return result;
 }
 

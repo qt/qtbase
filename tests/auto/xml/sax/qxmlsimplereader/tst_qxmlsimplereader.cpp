@@ -311,14 +311,12 @@ void tst_QXmlSimpleReader::testGoodXmlFile()
     QVERIFY(file.open(QIODevice::ReadOnly));
     Parser parser;
 
-    QEXPECT_FAIL(QFINDTESTDATA("xmldocs/valid/sa/089.xml").toLocal8Bit().constData(), "a form feed character is not accepted in XML", Continue);
     QVERIFY(parser.parseFile(&file));
 
     QFile ref_file(file_name + ".ref");
     QVERIFY(ref_file.open(QIODevice::ReadOnly | QIODevice::Text));
-    QTextStream ref_stream(&ref_file);
-    ref_stream.setCodec("UTF-8");
-    QString ref_file_contents = ref_stream.readAll();
+    QByteArray data = ref_file.readAll();
+    QString ref_file_contents = QString::fromUtf8(data.constData(), data.size());
 
     QCOMPARE(parser.result(), ref_file_contents);
 }
@@ -393,9 +391,7 @@ void tst_QXmlSimpleReader::testBadXmlFile()
 
     QFile ref_file(file_name + ".ref");
     QVERIFY(ref_file.open(QIODevice::ReadOnly | QIODevice::Text));
-    QTextStream ref_stream(&ref_file);
-    ref_stream.setCodec("UTF-8");
-    QString ref_file_contents = ref_stream.readAll();
+    QString ref_file_contents = QString::fromUtf8(ref_file.readAll());
 
     QEXPECT_FAIL(QFINDTESTDATA("xmldocs/not-wf/sa/145.xml").toLocal8Bit().constData(), "Surrogate code point 0xD800 should be rejected", Continue);
 
@@ -469,9 +465,7 @@ void tst_QXmlSimpleReader::testIncrementalParsing()
 
     QFile ref_file(file_name + ".ref");
     QVERIFY(ref_file.open(QIODevice::ReadOnly | QIODevice::Text));
-    QTextStream ref_stream(&ref_file);
-    ref_stream.setCodec("UTF-8");
-    QString ref_file_contents = ref_stream.readAll();
+    QString ref_file_contents = QString::fromUtf8(ref_file.readAll());
 
     QCOMPARE(parser.result(), ref_file_contents);
 }

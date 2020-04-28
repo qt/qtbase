@@ -7475,7 +7475,12 @@ bool QXmlSimpleReaderPrivate::parseReference()
             case DoneD:
                 tmp = ref().toUInt(&ok, 10);
                 if (ok) {
-                    stringAddC(QChar(tmp));
+                    if (tmp > 0xffff) {
+                        stringAddC(QChar::highSurrogate(tmp));
+                        stringAddC(QChar::lowSurrogate(tmp));
+                    } else {
+                        stringAddC(QChar(tmp));
+                    }
                 } else {
                     reportParseError(QLatin1String(XMLERR_ERRORPARSINGREFERENCE));
                     return false;
@@ -7486,7 +7491,12 @@ bool QXmlSimpleReaderPrivate::parseReference()
             case DoneH:
                 tmp = ref().toUInt(&ok, 16);
                 if (ok) {
-                    stringAddC(QChar(tmp));
+                    if (tmp > 0xffff) {
+                        stringAddC(QChar::highSurrogate(tmp));
+                        stringAddC(QChar::lowSurrogate(tmp));
+                    } else {
+                        stringAddC(QChar(tmp));
+                    }
                 } else {
                     reportParseError(QLatin1String(XMLERR_ERRORPARSINGREFERENCE));
                     return false;
