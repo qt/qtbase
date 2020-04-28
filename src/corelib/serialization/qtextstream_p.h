@@ -118,6 +118,7 @@ public:
     int stringOffset;
     QIODevice::OpenMode stringOpenMode;
 
+    QStringConverter::Encoding encoding = QStringConverter::Utf8;
 #if QT_CONFIG(textcodec)
     // codec
     QTextCodec *codec;

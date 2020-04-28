@@ -135,5 +135,5 @@ stream << '\n' << Qt::flush;
 
 //! [10]
 QTextStream out(&file);
-out.setCodec("UTF-8");
+out.setEncoding(QStringConverter::Utf8);
 //! [10]

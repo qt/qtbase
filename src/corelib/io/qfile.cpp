@@ -173,9 +173,8 @@ QAbstractFileEngine *QFilePrivate::engine() const
 
     QTextStream takes care of converting the 8-bit data stored on
     disk into a 16-bit Unicode QString. By default, it assumes that
-    the user system's local 8-bit encoding is used (e.g., UTF-8
-    on most unix based operating systems; see QTextCodec::codecForLocale() for
-    details). This can be changed using \l QTextStream::setCodec().
+    the file is encoded in UTF-8. This can be changed using
+    \l QTextStream::setEncoding().
 
     To write text, we can use operator<<(), which is overloaded to
     take a QTextStream on the left and various data types (including

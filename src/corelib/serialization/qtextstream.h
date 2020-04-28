@@ -45,6 +45,7 @@
 #include <QtCore/qchar.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/qscopedpointer.h>
+#include <QtCore/qstringconverter.h>
 
 #include <stdio.h>
 
@@ -98,6 +99,8 @@ public:
     explicit QTextStream(const QByteArray &array, QIODevice::OpenMode openMode = QIODevice::ReadOnly);
     virtual ~QTextStream();
 
+    void setEncoding(QStringConverter::Encoding encoding);
+    QStringConverter::Encoding encoding() const;
 #if QT_CONFIG(textcodec)
     void setCodec(QTextCodec *codec);
     void setCodec(const char *codecName);

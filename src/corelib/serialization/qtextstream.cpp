@@ -3157,6 +3157,45 @@ QTextStream &bom(QTextStream &stream)
 
 } // namespace Qt
 
+
+/*!
+    Sets the encoding for this stream to \a encoding. The encoding is used for
+    decoding any data that is read from the assigned device, and for
+    encoding any data that is written. By default,
+    QStringConverter::Utf8 is used, and automatic unicode
+    detection is enabled.
+
+    If QTextStream operates on a string, this function does nothing.
+
+    \warning If you call this function while the text stream is reading
+    from an open sequential socket, the internal buffer may still contain
+    text decoded using the old encoding.
+
+    \sa encoding(), setAutoDetectUnicode(), setLocale()
+*/
+void QTextStream::setEncoding(QStringConverter::Encoding encoding)
+{
+    Q_D(QTextStream);
+    d->encoding = encoding;
+#if QT_CONFIG(textcodec)
+    // FIXME: This is temporary until QTextStream is converted to use QStringConverter
+    const char *name = QStringConverter::nameForEncoding(encoding);
+    auto codec = QTextCodec::codecForName(name);
+    setCodec(codec);
+#endif
+}
+
+/*!
+    Returns the encoding that is current assigned to the stream.
+
+    \sa setEncoding(), setAutoDetectUnicode(), locale()
+*/
+QStringConverter::Encoding QTextStream::encoding() const
+{
+    Q_D(const QTextStream);
+    return d->encoding;
+}
+
 /*!
     Sets the codec for this stream to \a codec. The codec is used for
     decoding any data that is read from the assigned device, and for

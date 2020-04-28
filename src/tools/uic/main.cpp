@@ -161,9 +161,7 @@ int runUic(int argc, char *argv[])
             return 1;
         }
         out = new QTextStream(&f);
-#if QT_CONFIG(textcodec)
-        out->setCodec(QTextCodec::codecForName("UTF-8"));
-#endif
+        out->setEncoding(QStringConverter::Utf8);
     }
 
     bool rtn = driver.uic(inputFile, out);

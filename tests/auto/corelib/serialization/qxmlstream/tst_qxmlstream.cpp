@@ -698,7 +698,7 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
     QByteArray outarray;
     QTextStream writer(&outarray);
     // We always want UTF-8, and not what the system picks up.
-    writer.setCodec("UTF-8");
+    writer.setEncoding(QStringConverter::Utf8);
 
     while (!reader.atEnd()) {
         reader.readNext();

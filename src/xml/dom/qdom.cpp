@@ -5964,8 +5964,6 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
 #if QT_CONFIG(textcodec) && QT_CONFIG(regularexpression)
         const QDomNodePrivate* n = first;
 
-        QTextCodec *codec = nullptr;
-
         if (n && n->isProcessingInstruction() && n->nodeName() == QLatin1String("xml")) {
             // we have an XML declaration
             QString data = n->nodeValue();
@@ -5974,13 +5972,14 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
             QString enc = match.captured(3);
             if (enc.isEmpty())
                 enc = match.captured(5);
-            if (!enc.isEmpty())
-                codec = QTextCodec::codecForName(std::move(enc).toLatin1());
+            if (!enc.isEmpty()) {
+                auto encoding = QStringConverter::encodingForName(enc.toUtf8().constData());
+                if (!encoding)
+                    qWarning() << "QDomDocument::save(): Unsupported encoding" << enc << "specified.";
+                else
+                    s.setEncoding(encoding.value());
+            }
         }
-        if (!codec)
-            codec = QTextCodec::codecForName("UTF-8");
-        if (codec)
-            s.setCodec(codec);
 #endif
         bool doc = false;
 
@@ -5998,11 +5997,9 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
 
         // Write out the XML declaration.
 #if !QT_CONFIG(textcodec)
-        const QLatin1String codecName("iso-8859-1");
+        const QLatin1String codecName("UTF-8");
 #else
-        const QTextCodec *const codec = s.codec();
-        Q_ASSERT_X(codec, "QDomNode::save()", "A codec must be specified in the text stream.");
-        const QByteArray codecName = codec->name();
+        const QByteArray codecName = QStringConverter::nameForEncoding(s.encoding());
 #endif
 
         s << "<?xml version=\"1.0\" encoding=\""
