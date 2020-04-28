@@ -43,7 +43,6 @@
 #include "qfilesystemengine_p.h"
 #include "qfile.h"
 #include "qstorageinfo.h"
-#include "qtextstream.h"
 
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qcore_unix_p.h>
@@ -1393,14 +1392,12 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         return false;
     }
 
-    QTextStream out(&infoFile);
-#if QT_CONFIG(textcodec)
-    out.setCodec("UTF-8");
-#endif
-    out << "[Trash Info]" << Qt::endl;
-    out << "Path=" << sourcePath << Qt::endl;
-    out << "DeletionDate="
-        << QDateTime::currentDateTime().toString(QLatin1String("yyyy-MM-ddThh:mm:ss")) << Qt::endl;
+    QByteArray info =
+            "[Trash Info]\n"
+            "Path=" + sourcePath.toUtf8() + "\n"
+            "DeletionDate=" + QDateTime::currentDateTime().toString(QLatin1String("yyyy-MM-ddThh:mm:ss")).toUtf8()
+            + "\n";
+    infoFile.write(info);
     infoFile.close();
 
     newLocation = QFileSystemEntry(targetPath);
