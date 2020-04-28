@@ -43,7 +43,7 @@ macx-xcode {
             warning("You need to update Xcode to version 6 or newer to fully support iPhone6/6+")
         } else {
             # Set up default LaunchScreen to support iPhone6/6+
-            qmake_launch_screen = LaunchScreen.xib
+            qmake_launch_screen = LaunchScreen.storyboard
             qmake_copy_launch_screen.input = $$QMAKESPEC/$$qmake_launch_screen
             qmake_copy_launch_screen.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$qmake_launch_screen
             QMAKE_SUBSTITUTES += qmake_copy_launch_screen

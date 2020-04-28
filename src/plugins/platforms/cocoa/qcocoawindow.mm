@@ -376,8 +376,18 @@ void QCocoaWindow::setVisible(bool visible)
                 } else if (window()->modality() == Qt::ApplicationModal) {
                     // Show the window as application modal
                     eventDispatcher()->beginModalSession(window());
-                } else if (m_view.window.canBecomeKeyWindow && !eventDispatcher()->hasModalSession()) {
-                    [m_view.window makeKeyAndOrderFront:nil];
+                } else if (m_view.window.canBecomeKeyWindow) {
+                    bool shouldBecomeKeyNow = !NSApp.modalWindow || m_view.window.worksWhenModal;
+
+                    // Panels with becomesKeyOnlyIfNeeded set should not activate until a view
+                    // with needsPanelToBecomeKey, for example a line edit, is clicked.
+                    if ([m_view.window isKindOfClass:[NSPanel class]])
+                        shouldBecomeKeyNow &= !(static_cast<NSPanel*>(m_view.window).becomesKeyOnlyIfNeeded);
+
+                    if (shouldBecomeKeyNow)
+                        [m_view.window makeKeyAndOrderFront:nil];
+                    else
+                        [m_view.window orderFront:nil];
                 } else {
                     [m_view.window orderFront:nil];
                 }
@@ -894,10 +904,13 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
 
     QMacAutoReleasePool pool;
 
-    if (icon.isNull())
+    if (icon.isNull()) {
         iconButton.image = [NSWorkspace.sharedWorkspace iconForFile:m_view.window.representedFilename];
-    else
-        iconButton.image = [NSImage imageFromQIcon:icon];
+    } else {
+        // Fall back to a size that looks good on the highest resolution screen available
+        auto fallbackSize = iconButton.frame.size.height * qGuiApp->devicePixelRatio();
+        iconButton.image = [NSImage imageFromQIcon:icon withSize:fallbackSize];
+    }
 }
 
 void QCocoaWindow::setAlertState(bool enabled)

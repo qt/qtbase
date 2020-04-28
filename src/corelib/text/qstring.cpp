@@ -1803,15 +1803,10 @@ const QString::Null QString::null = { };
 
 /*! \typedef QString::const_iterator
 
-    This typedef provides an STL-style const iterator for QString.
-
     \sa QString::iterator
 */
 
 /*! \typedef QString::iterator
-
-    The QString::iterator typedef provides an STL-style non-const
-    iterator for QString.
 
     \sa QString::const_iterator
 */
@@ -1819,41 +1814,28 @@ const QString::Null QString::null = { };
 /*! \typedef QString::const_reverse_iterator
     \since 5.6
 
-    This typedef provides an STL-style const reverse iterator for QString.
-
     \sa QString::reverse_iterator, QString::const_iterator
 */
 
 /*! \typedef QString::reverse_iterator
     \since 5.6
 
-    This typedef provides an STL-style non-const reverse iterator for QString.
-
     \sa QString::const_reverse_iterator, QString::iterator
 */
 
 /*!
     \typedef QString::size_type
-
-    The QString::size_type typedef provides an STL-style type for sizes (int).
 */
 
 /*!
     \typedef QString::difference_type
-
-    The QString::size_type typedef provides an STL-style type for difference between pointers.
 */
 
 /*!
     \typedef QString::const_reference
-
-    This typedef provides an STL-style const reference for a QString element (QChar).
 */
 /*!
     \typedef QString::reference
-
-    This typedef provides an STL-style
-    reference for a QString element (QChar).
 */
 
 /*!
@@ -1871,8 +1853,6 @@ const QString::Null QString::null = { };
 
 /*!
     \typedef QString::value_type
-
-    This typedef provides an STL-style value type for QString.
 */
 
 /*! \fn QString::iterator QString::begin()
@@ -9537,8 +9517,6 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \typedef QLatin1String::iterator
     \since 5.10
 
-    This typedef provides an STL-style const iterator for QLatin1String.
-
     QLatin1String does not support mutable iterators, so this is the same
     as const_iterator.
 
@@ -9549,16 +9527,12 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \typedef QLatin1String::const_iterator
     \since 5.10
 
-    This typedef provides an STL-style const iterator for QLatin1String.
-
     \sa iterator, const_reverse_iterator
 */
 
 /*!
     \typedef QLatin1String::reverse_iterator
     \since 5.10
-
-    This typedef provides an STL-style const reverse iterator for QLatin1String.
 
     QLatin1String does not support mutable reverse iterators, so this is the
     same as const_reverse_iterator.
@@ -9569,8 +9543,6 @@ QString &QString::setRawData(const QChar *unicode, int size)
 /*!
     \typedef QLatin1String::const_reverse_iterator
     \since 5.10
-
-    This typedef provides an STL-style const reverse iterator for QLatin1String.
 
     \sa reverse_iterator, const_iterator
 */
@@ -10472,16 +10444,12 @@ QDataStream &operator>>(QDataStream &in, QString &str)
     \typedef QStringRef::const_iterator
     \since 5.4
 
-    This typedef provides an STL-style const iterator for QStringRef.
-
     \sa QStringRef::const_reverse_iterator
 */
 
 /*!
     \typedef QStringRef::const_reverse_iterator
     \since 5.7
-
-    This typedef provides an STL-style const reverse iterator for QStringRef.
 
     \sa QStringRef::const_iterator
 */

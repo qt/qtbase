@@ -278,8 +278,6 @@
 
 /*!
     \typedef QDtls::GeneratorParameters
-
-    This is a synonym for QDtlsClientVerifier::GeneratorParameters.
 */
 
 /*!
