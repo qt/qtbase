@@ -122,9 +122,9 @@ void MainWindow::save()
         return;
     }
 
-    QTextStream out(&file);
-    out.setCodec(codecName.constData());
-    out << textEdit->toPlainText();
+    QTextCodec *codec = QTextCodec::codecForName(codecName.constData());
+    QByteArray text = codec->fromUnicode(textEdit->toPlainText());
+    file.write(text);
 }
 
 void MainWindow::about()
