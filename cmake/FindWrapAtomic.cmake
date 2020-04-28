@@ -1,7 +1,7 @@
 # We can't create the same interface imported target multiple times, CMake will complain if we do
 # that. This can happen if the find_package call is done in multiple different subdirectories.
-if(TARGET Atomic)
-    set(Atomic_FOUND ON)
+if(TARGET WrapAtomic::WrapAtomic)
+    set(WrapAtomic_FOUND ON)
     return()
 endif()
 
@@ -36,9 +36,9 @@ if(NOT HAVE_STDATOMIC)
     set(CMAKE_REQUIRE_LIBRARIES "${_req_libraries}")
 endif()
 
-add_library(Atomic INTERFACE IMPORTED)
+add_library(WrapAtomic::WrapAtomic INTERFACE IMPORTED)
 if(HAVE_STDATOMIC_WITH_LIB)
-    target_link_libraries(Atomic INTERFACE atomic)
+    target_link_libraries(WrapAtomic::WrapAtomic INTERFACE atomic)
 endif()
 
-set(Atomic_FOUND 1)
+set(WrapAtomic_FOUND 1)

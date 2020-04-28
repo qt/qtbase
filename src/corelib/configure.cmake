@@ -18,8 +18,8 @@ qt_find_package(WrapDoubleConversion PROVIDED_TARGETS WrapDoubleConversion::Wrap
 qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2)
 qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data)
 qt_find_package(Libsystemd PROVIDED_TARGETS PkgConfig::Libsystemd)
-qt_find_package(Atomic PROVIDED_TARGETS Atomic)
-qt_find_package(WrapRt PROVIDED_TARGETS WrapRt)
+qt_find_package(WrapAtomic PROVIDED_TARGETS WrapAtomic::WrapAtomic)
+qt_find_package(WrapRt PROVIDED_TARGETS WrapRt::WrapRt)
 qt_find_package(LTTngUST PROVIDED_TARGETS LTTng::UST)
 qt_find_package(WrapSystemPCRE2 PROVIDED_TARGETS WrapSystemPCRE2::WrapSystemPCRE2)
 set_package_properties(WrapPCRE2 PROPERTIES TYPE REQUIRED)
@@ -65,7 +65,7 @@ test(fptr);
 qt_config_compile_test(clock_monotonic
     LABEL "POSIX monotonic clock"
     LIBRARIES
-        WrapRt
+        WrapRt::WrapRt
     CODE
 "
 #include <unistd.h>
@@ -640,7 +640,7 @@ qt_feature("linkat" PRIVATE
 )
 qt_feature("std-atomic64" PUBLIC
     LABEL "64 bit atomic operations"
-    CONDITION Atomic_FOUND
+    CONDITION WrapAtomic_FOUND
 )
 qt_feature("mimetype" PUBLIC
     SECTION "Utilities"

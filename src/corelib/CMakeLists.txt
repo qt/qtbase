@@ -671,7 +671,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_future
 
 qt_extend_target(Core CONDITION QT_FEATURE_std_atomic64
     PUBLIC_LIBRARIES
-        Atomic
+        WrapAtomic::WrapAtomic
 )
 
 qt_extend_target(Core CONDITION ICC
@@ -1070,7 +1070,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_glib AND UNIX
 
 qt_extend_target(Core CONDITION QT_FEATURE_clock_gettime AND UNIX
     LIBRARIES
-        WrapRt
+        WrapRt::WrapRt
 )
 
 qt_extend_target(Core CONDITION UNIX AND NOT ANDROID

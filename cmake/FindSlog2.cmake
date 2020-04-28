@@ -11,9 +11,7 @@ find_package_handle_standard_args(Slog2 DEFAULT_MSG Slog2_INCLUDE_DIR Slog2_LIBR
 mark_as_advanced(Slog2_INCLUDE_DIR Slog2_LIBRARY)
 
 if(Slog2_FOUND)
-    add_library(__Slog2 INTERFACE IMPORTED)
-    target_link_libraries(__Slog2 INTERFACE ${Slog2_LIBRARY})
-    target_include_directories(__Slog2 INTERFACE ${Slog2_INCLUDE_DIR})
-
-    add_library(Slog2::Slog2 ALIAS __Slog2)
+    add_library(Slog2::Slog2 INTERFACE IMPORTED)
+    target_link_libraries(Slog2::Slog2 INTERFACE ${Slog2_LIBRARY})
+    target_include_directories(Slog2::Slog2 INTERFACE ${Slog2_INCLUDE_DIR})
 endif()

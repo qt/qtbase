@@ -440,14 +440,14 @@ _library_map = [
     ),
     LibraryMapping("journald", "Libsystemd", "PkgConfig::Libsystemd"),
     LibraryMapping("jpeg", "JPEG", "JPEG::JPEG"),  # see also libjpeg
-    LibraryMapping("libatomic", "Atomic", "Atomic"),
+    LibraryMapping("libatomic", "WrapAtomic", "WrapAtomic::WrapAtomic"),
     LibraryMapping("libclang", "WrapLibClang", "WrapLibClang::WrapLibClang"),
     LibraryMapping("libdl", None, "${CMAKE_DL_LIBS}"),
     LibraryMapping("libinput", "Libinput", "Libinput::Libinput"),
     LibraryMapping("libjpeg", "JPEG", "JPEG::JPEG"),  # see also jpeg
     LibraryMapping("libpng", "WrapPNG", "WrapPNG::WrapPNG", is_bundled_with_qt=True),
     LibraryMapping("libproxy", "Libproxy", "PkgConfig::Libproxy"),
-    LibraryMapping("librt", "WrapRt", "WrapRt"),
+    LibraryMapping("librt", "WrapRt", "WrapRt::WrapRt"),
     LibraryMapping("libudev", "Libudev", "PkgConfig::Libudev"),
     LibraryMapping("lttng-ust", "LTTngUST", "LTTng::UST", resultVariable="LTTNGUST"),
     LibraryMapping("mtdev", "Mtdev", "PkgConfig::Mtdev"),
