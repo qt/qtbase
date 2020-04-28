@@ -189,7 +189,7 @@ static inline bool isPortalReturnPermanent(const QDBusError &error)
     // A service unknown error isn't permanent, it just indicates that we
     // should fall back to the regular way. This check includes
     // QDBusError::NoError.
-    return error.type() != QDBusError::ServiceUnknown;
+    return error.type() != QDBusError::ServiceUnknown && error.type() != QDBusError::AccessDenied;
 }
 
 static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url)
