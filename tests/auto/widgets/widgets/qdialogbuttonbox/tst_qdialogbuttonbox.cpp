@@ -599,29 +599,28 @@ void tst_QDialogButtonBox::testSignals_data()
 void tst_QDialogButtonBox::testSignals()
 {
     QFETCH(QDialogButtonBox::ButtonRole, buttonToClick);
+    QFETCH(int, clicked2Count);
     QDialogButtonBox buttonBox;
     qRegisterMetaType<QAbstractButton *>("QAbstractButton*");
-    QSignalSpy clicked2(&buttonBox, SIGNAL(clicked(QAbstractButton*)));
-    QSignalSpy accept(&buttonBox, SIGNAL(accepted()));
-    QSignalSpy reject(&buttonBox, SIGNAL(rejected()));
-    QSignalSpy helpRequested(&buttonBox, SIGNAL(helpRequested()));
+    QSignalSpy clicked2(&buttonBox, &QDialogButtonBox::clicked);
+    QSignalSpy accept(&buttonBox, &QDialogButtonBox::accepted);
+    QSignalSpy reject(&buttonBox, &QDialogButtonBox::rejected);
+    QSignalSpy helpRequested(&buttonBox, &QDialogButtonBox::helpRequested);
 
-    QPushButton *clickMe = 0;
+    QAbstractButton *clickMe = nullptr;
     for (int i = QDialogButtonBox::AcceptRole; i < QDialogButtonBox::NRoles; ++i) {
-        QPushButton *button = buttonBox.addButton(QString::number(i),
-                                                  QDialogButtonBox::ButtonRole(i));
+        auto button = buttonBox.addButton(QString::number(i),
+                                          QDialogButtonBox::ButtonRole(i));
 
         if (i == buttonToClick)
             clickMe = button;
     }
-    if (clickMe) {
-        clickMe->animateClick(0);
-        QTest::qWait(100);
-    }
+    if (clickMe)
+        clickMe->click();
 
-    QTEST(clicked2.count(), "clicked2Count");
+    QTRY_COMPARE(clicked2.count(), clicked2Count);
     if (clicked2.count() > 0)
-        QCOMPARE(qvariant_cast<QAbstractButton *>(clicked2.at(0).at(0)), (QAbstractButton *)clickMe);
+        QCOMPARE(qvariant_cast<QAbstractButton *>(clicked2.at(0).at(0)), clickMe);
 
     QTEST(accept.count(), "acceptCount");
     QTEST(reject.count(), "rejectCount");
@@ -630,15 +629,14 @@ void tst_QDialogButtonBox::testSignals()
 
 void tst_QDialogButtonBox::testSignalOrder()
 {
-    const qint64 longLongZero = 0;
     buttonClicked1TimeStamp = acceptTimeStamp
-            = rejectTimeStamp = helpRequestedTimeStamp = timeStamp = 0;
+            = rejectTimeStamp = helpRequestedTimeStamp = timeStamp = 0LL;
     QDialogButtonBox buttonBox;
-    connect(&buttonBox, SIGNAL(clicked(QAbstractButton*)),
-            this, SLOT(buttonClicked1(QAbstractButton*)));
-    connect(&buttonBox, SIGNAL(accepted()), this, SLOT(acceptClicked()));
-    connect(&buttonBox, SIGNAL(rejected()), this, SLOT(rejectClicked()));
-    connect(&buttonBox, SIGNAL(helpRequested()), this, SLOT(helpRequestedClicked()));
+    connect(&buttonBox, &QDialogButtonBox::clicked,
+            this, &tst_QDialogButtonBox::buttonClicked1);
+    connect(&buttonBox, &QDialogButtonBox::accepted, this, &tst_QDialogButtonBox::acceptClicked);
+    connect(&buttonBox, &QDialogButtonBox::rejected, this, &tst_QDialogButtonBox::rejectClicked);
+    connect(&buttonBox, &QDialogButtonBox::helpRequested, this, &tst_QDialogButtonBox::helpRequestedClicked);
 
     QPushButton *acceptButton = buttonBox.addButton("OK", QDialogButtonBox::AcceptRole);
     QPushButton *rejectButton = buttonBox.addButton("Cancel", QDialogButtonBox::RejectRole);
@@ -646,31 +644,31 @@ void tst_QDialogButtonBox::testSignalOrder()
     QPushButton *helpButton = buttonBox.addButton("Help Me!", QDialogButtonBox::HelpRole);
 
     // Try accept
-    acceptButton->animateClick(0);
-    QTest::qWait(100);
-    QCOMPARE(rejectTimeStamp, longLongZero);
-    QCOMPARE(helpRequestedTimeStamp, longLongZero);
+    acceptButton->click();
+    QTRY_VERIFY(acceptTimeStamp > 0LL);
+    QCOMPARE(rejectTimeStamp, 0LL);
+    QCOMPARE(helpRequestedTimeStamp, 0LL);
 
     QVERIFY(buttonClicked1TimeStamp < acceptTimeStamp);
     acceptTimeStamp = 0;
 
-    rejectButton->animateClick(0);
-    QTest::qWait(100);
-    QCOMPARE(acceptTimeStamp, longLongZero);
-    QCOMPARE(helpRequestedTimeStamp, longLongZero);
+    rejectButton->click();
+    QTRY_VERIFY(rejectTimeStamp > 0LL);
+    QCOMPARE(acceptTimeStamp, 0LL);
+    QCOMPARE(helpRequestedTimeStamp, 0LL);
     QVERIFY(buttonClicked1TimeStamp < rejectTimeStamp);
 
     rejectTimeStamp = 0;
-    actionButton->animateClick(0);
+    actionButton->click();
     QTest::qWait(100);
-    QCOMPARE(acceptTimeStamp, longLongZero);
-    QCOMPARE(rejectTimeStamp, longLongZero);
-    QCOMPARE(helpRequestedTimeStamp, longLongZero);
+    QCOMPARE(acceptTimeStamp, 0LL);
+    QCOMPARE(rejectTimeStamp, 0LL);
+    QCOMPARE(helpRequestedTimeStamp, 0LL);
 
-    helpButton->animateClick(0);
-    QTest::qWait(100);
-    QCOMPARE(acceptTimeStamp, longLongZero);
-    QCOMPARE(rejectTimeStamp, longLongZero);
+    helpButton->click();
+    QTRY_VERIFY(helpRequestedTimeStamp > 0LL);
+    QCOMPARE(acceptTimeStamp, 0LL);
+    QCOMPARE(rejectTimeStamp, 0LL);
     QVERIFY(buttonClicked1TimeStamp < helpRequestedTimeStamp);
 }
 
@@ -774,13 +772,13 @@ void tst_QDialogButtonBox::testRemove()
 {
     // Make sure that removing a button and clicking it, doesn't trigger any latent signals
     QDialogButtonBox buttonBox;
-    QSignalSpy clicked(&buttonBox, SIGNAL(clicked(QAbstractButton*)));
+    QSignalSpy clicked(&buttonBox, &QDialogButtonBox::clicked);
 
     QAbstractButton *button = buttonBox.addButton(QDialogButtonBox::Ok);
 
     buttonBox.removeButton(button);
 
-    button->animateClick(0);
+    button->click();
     QTest::qWait(100);
     QCOMPARE(clicked.count(), 0);
     delete button;
@@ -833,7 +831,7 @@ void tst_QDialogButtonBox::task191642_default()
 
     QDialog dlg;
     QPushButton *def = new QPushButton(&dlg);
-    QSignalSpy clicked(def, SIGNAL(clicked(bool)));
+    QSignalSpy clicked(def, &QPushButton::clicked);
     def->setDefault(true);
     QDialogButtonBox *bb = new QDialogButtonBox(&dlg);
     bb->addButton(QDialogButtonBox::Ok);
