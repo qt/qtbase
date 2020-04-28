@@ -299,8 +299,6 @@ void tst_QDom::toString_01_data()
     QTest::newRow( "04" ) << QString(prefix + "/doc04.xml");
     QTest::newRow( "05" ) << QString(prefix + "/doc05.xml");
 
-    QTest::newRow( "euc-jp" ) << QString(prefix + "/doc_euc-jp.xml");
-    QTest::newRow( "iso-2022-jp" ) << QString(prefix + "/doc_iso-2022-jp.xml");
     QTest::newRow( "little-endian" ) << QString(prefix + "/doc_little-endian.xml");
     QTest::newRow( "utf-16" ) << QString(prefix + "/doc_utf-16.xml");
     QTest::newRow( "utf-8" ) << QString(prefix + "/doc_utf-8.xml");
@@ -576,48 +574,39 @@ void tst_QDom::saveWithSerialization() const
     // Read the document
     QVERIFY(doc.setContent(&f));
 
-    QByteArray codecName;
 
-    foreach (codecName, m_testCodecs) {
+    QByteArray storage;
+    QBuffer writeDevice(&storage);
+    QVERIFY(writeDevice.open(QIODevice::WriteOnly));
 
-        /* Write out doc in the specified codec. */
-        QByteArray storage;
-        QBuffer writeDevice(&storage);
-        QVERIFY(writeDevice.open(QIODevice::WriteOnly));
+    QTextStream s(&writeDevice);
 
-        QTextStream s(&writeDevice);
-        QTextCodec *codec = QTextCodec::codecForName(codecName);
-        QVERIFY2(codec, qPrintable(QString::fromLatin1("Failed to load codec %1").arg(QString::fromLatin1(codecName.constData()))));
-        s.setCodec(codec);
+    doc.save(s, 0, QDomNode::EncodingFromTextStream);
+    s.flush();
+    writeDevice.close();
 
-        doc.save(s, 0, QDomNode::EncodingFromTextStream);
-        s.flush();
-        writeDevice.close();
+    QBuffer readDevice(&storage);
+    QVERIFY(readDevice.open(QIODevice::ReadOnly));
 
-        QBuffer readDevice(&storage);
-        QVERIFY(readDevice.open(QIODevice::ReadOnly));
+    QDomDocument result;
 
-        QDomDocument result;
+    QString msg;
+    int line = 0;
+    int column = 0;
 
-        QString msg;
-        int line = 0;
-        int column = 0;
+    QVERIFY2(result.setContent(&readDevice, &msg, &line, &column),
+             qPrintable(QString::fromLatin1("Failed: line %2, column %3: %4, content: %5")
+                                            .arg(QString::number(line),
+                                                 QString::number(column),
+                                                 msg,
+                                                 QString::fromUtf8(storage))));
+    if (!compareDocuments(doc, result))
+    {
+        QCOMPARE(doc.toString(), result.toString());
 
-        QVERIFY2(result.setContent(&readDevice, &msg, &line, &column),
-                 qPrintable(QString::fromLatin1("Failed for codec %1: line %2, column %3: %4, content: %5")
-                                                .arg(QString::fromLatin1(codecName.constData()),
-                                                     QString::number(line),
-                                                     QString::number(column),
-                                                     msg,
-                                                     codec->toUnicode(storage))));
-        if(!compareDocuments(doc, result))
-        {
-            QCOMPARE(doc.toString(), result.toString());
-
-            /* We put this one here as well, in case the QCOMPARE above for some strange reason
-             * nevertheless succeeds. */
-            QVERIFY2(false, qPrintable(QString::fromLatin1("Failed for codec %1").arg(QString::fromLatin1(codecName.constData()))));
-        }
+        /* We put this one here as well, in case the QCOMPARE above for some strange reason
+         * nevertheless succeeds. */
+        QVERIFY2(false, qPrintable(QString::fromLatin1("Failed to serialize test data")));
     }
 }
 
@@ -633,8 +622,6 @@ void tst_QDom::saveWithSerialization_data() const
     QTest::newRow("doc04.xml") << QString(prefix + "/doc04.xml");
     QTest::newRow("doc05.xml") << QString(prefix + "/doc05.xml");
 
-    QTest::newRow("doc_euc-jp.xml") << QString(prefix + "/doc_euc-jp.xml");
-    QTest::newRow("doc_iso-2022-jp.xml") << QString(prefix + "/doc_iso-2022-jp.xml");
     QTest::newRow("doc_little-endian.xml") << QString(prefix + "/doc_little-endian.xml");
     QTest::newRow("doc_utf-16.xml") << QString(prefix + "/doc_utf-16.xml");
     QTest::newRow("doc_utf-8.xml") << QString(prefix + "/doc_utf-8.xml");
@@ -1800,7 +1787,6 @@ void tst_QDom::germanUmlautToByteArray() const
     QBuffer buffer(&data);
     QVERIFY(buffer.open(QIODevice::WriteOnly));
     QTextStream ts(&buffer);
-    ts.setCodec("UTF-8");
     ts << d.toString();
     buffer.close();
 
@@ -1832,7 +1818,6 @@ void tst_QDom::germanUmlautToFile() const
     QTemporaryFile file;
     QVERIFY(file.open());
     QTextStream ts(&file);
-    ts.setCodec("UTF-8");
     ts << d.toString();
     file.close();
 

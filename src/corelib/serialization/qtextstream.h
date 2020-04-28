@@ -101,15 +101,10 @@ public:
 
     void setEncoding(QStringConverter::Encoding encoding);
     QStringConverter::Encoding encoding() const;
-#if QT_CONFIG(textcodec)
-    void setCodec(QTextCodec *codec);
-    void setCodec(const char *codecName);
-    QTextCodec *codec() const;
     void setAutoDetectUnicode(bool enabled);
     bool autoDetectUnicode() const;
     void setGenerateByteOrderMark(bool generate);
     bool generateByteOrderMark() const;
-#endif
 
     void setLocale(const QLocale &locale);
     QLocale locale() const;

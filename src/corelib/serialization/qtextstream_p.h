@@ -54,9 +54,6 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include "qtextstream.h"
-#if QT_CONFIG(textcodec)
-#include "qtextcodec.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -119,13 +116,9 @@ public:
     QIODevice::OpenMode stringOpenMode;
 
     QStringConverter::Encoding encoding = QStringConverter::Utf8;
-#if QT_CONFIG(textcodec)
-    // codec
-    QTextCodec *codec;
-    QTextCodec::ConverterState readConverterState;
-    QTextCodec::ConverterState writeConverterState;
-    QTextCodec::ConverterState *readConverterSavedState;
-#endif
+    QStringEncoder fromUtf16;
+    QStringDecoder toUtf16;
+    QStringDecoder savedToUtf16;
 
     QString writeBuffer;
     QString readBuffer;
@@ -142,9 +135,9 @@ public:
 
     int lastTokenSize;
     bool deleteDevice;
-#if QT_CONFIG(textcodec)
     bool autoDetectUnicode;
-#endif
+    bool hasWrittenData = false;
+    bool generateBOM = false;
 
     // i/o
     enum TokenDelimiter {

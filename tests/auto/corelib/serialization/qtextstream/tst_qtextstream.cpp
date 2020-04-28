@@ -37,10 +37,10 @@
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QFile>
+#include <QStringConverter>
 #include <QTcpSocket>
 #include <QTemporaryDir>
 #include <QTextStream>
-#include <QTextCodec>
 #if QT_CONFIG(process)
 # include <QProcess>
 #endif
@@ -245,7 +245,7 @@ private:
 void runOnExit()
 {
     QByteArray buffer;
-    QTextStream(&buffer) << "This will try to use QTextCodec::codecForLocale" << Qt::endl;
+    QTextStream(&buffer) << "This will try to use QStringConverter::Utf8" << Qt::endl;
 }
 Q_DESTRUCTOR_FUNCTION(runOnExit)
 
@@ -277,8 +277,8 @@ void tst_QTextStream::getSetCheck()
 {
     // Initialize codecs
     QTextStream obj1;
-    // QTextCodec * QTextStream::encoding()
-    // void QTextStream::setEncoding()
+    // QTextStream::encoding()
+    // QTextStream::setEncoding()
     obj1.setEncoding(QStringConverter::Utf32BE);
     QCOMPARE(QStringConverter::Utf32BE, obj1.encoding());
     obj1.setEncoding(QStringConverter::Utf8);
@@ -402,7 +402,7 @@ void tst_QTextStream::cleanupTestCase()
 void tst_QTextStream::construction()
 {
     QTextStream stream;
-    QCOMPARE(stream.codec(), QTextCodec::codecForLocale());
+    QCOMPARE(stream.encoding(), QStringConverter::Utf8);
     QCOMPARE(stream.device(), static_cast<QIODevice *>(0));
     QCOMPARE(stream.string(), static_cast<QString *>(0));
 
@@ -1766,7 +1766,6 @@ void tst_QTextStream::utf8IncompleteAtBufferBoundary()
     QFile::remove(testFileName);
     QFile data(testFileName);
 
-    QTextCodec *utf8Codec = QTextCodec::codecForMib(106);
     QString lineContents = QString::fromUtf8("\342\200\223" // U+2013 EN DASH
                                              "\342\200\223"
                                              "\342\200\223"
