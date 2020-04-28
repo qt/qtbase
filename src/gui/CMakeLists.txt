@@ -767,7 +767,7 @@ qt_extend_target(Gui CONDITION IOS OR MACOS
         ${FWMetal}
 )
 
-qt_extend_target(Gui CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL 5
+qt_extend_target(Gui # special case CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL 5 # source subtraction gone wrong
     SOURCES
         painting/qdrawhelper.cpp
     NO_PCH_SOURCES

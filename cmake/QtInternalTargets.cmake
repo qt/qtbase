@@ -148,3 +148,52 @@ if (MSVC)
         $<$<CONFIG:RelWithDebInfo>:-OPT:REF>
     )
 endif()
+
+function(qt_get_implicit_sse2_genex_condition out_var)
+    set(is_shared_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>")
+    set(is_static_lib "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>")
+    set(is_static_qt_build "$<NOT:$<BOOL:${QT_BUILD_SHARED_LIBS}>>")
+    set(is_staitc_lib_during_static_qt_build "$<AND:${is_static_qt_build},${is_static_lib}>")
+    set(enable_sse2_condition "$<OR:${is_shared_lib},${is_staitc_lib_during_static_qt_build}>")
+    set(${out_var} "${enable_sse2_condition}" PARENT_SCOPE)
+endfunction()
+
+function(qt_auto_detect_implicit_sse2)
+    # sse2 configuration adjustment in qt_module.prf
+    # If the compiler supports SSE2, enable it unconditionally in all of Qt shared libraries
+    # (and only the libraries). This is not expected to be a problem because:
+    # - on Windows, sharing of libraries is uncommon
+    # - on Mac OS X, all x86 CPUs already have SSE2 support (we won't even reach here)
+    # - on Linux, the dynamic loader can find the libraries on LIBDIR/sse2/
+    # The last guarantee does not apply to executables and plugins, so we can't enable for them.
+    set(__implicit_sse2_for_qt_modules_enabled FALSE PARENT_SCOPE)
+    if(TEST_subarch_sse2 AND NOT TEST_arch_${TEST_architecture_arch}_subarch_sse2)
+        qt_get_implicit_sse2_genex_condition(enable_sse2_condition)
+        set(enable_sse2_genex "$<${enable_sse2_condition}:${QT_CFLAGS_SSE2}>")
+        target_compile_options(PlatformModuleInternal INTERFACE ${enable_sse2_genex})
+        set(__implicit_sse2_for_qt_modules_enabled TRUE PARENT_SCOPE)
+    endif()
+endfunction()
+qt_auto_detect_implicit_sse2()
+
+function(qt_auto_detect_fpmath)
+    # fpmath configuration adjustment in qt_module.prf
+    set(fpmath_supported FALSE)
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "3.4")
+            set(fpmath_supported TRUE)
+        endif()
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "5.1")
+            set(fpmath_supported TRUE)
+        endif()
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        set(fpmath_supported TRUE)
+    endif()
+    if(fpmath_supported AND TEST_architecture_arch STREQUAL "i386" AND __implicit_sse2_for_qt_modules_enabled)
+        qt_get_implicit_sse2_genex_condition(enable_sse2_condition)
+        set(enable_fpmath_genex "$<${enable_sse2_condition}:-mfpmath=sse>")
+        target_compile_options(PlatformModuleInternal INTERFACE ${enable_fpmath_genex})
+    endif()
+endfunction()
+qt_auto_detect_fpmath()
