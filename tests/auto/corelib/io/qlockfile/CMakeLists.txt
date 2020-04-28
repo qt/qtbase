@@ -7,10 +7,9 @@
 add_qt_test(tst_qlockfile
     SOURCES
         tst_qlockfile.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Concurrent
+        Qt::CorePrivate
 )
 
 ## Scopes:

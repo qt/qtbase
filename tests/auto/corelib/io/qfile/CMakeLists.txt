@@ -23,7 +23,7 @@ add_qt_test(tst_qfile
         tst_qfile.cpp
     INCLUDE_DIRECTORIES
         ../../../../shared
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::CorePrivate
     TESTDATA ${test_data}
 )
