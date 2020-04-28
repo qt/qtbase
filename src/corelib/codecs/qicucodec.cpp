@@ -614,6 +614,9 @@ QString QIcuCodec::convertToUnicode(const char *chars, int length, QTextCodec::C
             qDebug("convertToUnicode failed: %s", u_errorName(error));
             break;
         }
+        // flag the state if we have incomplete input
+        if (error == U_TRUNCATED_CHAR_FOUND)
+            state->remainingChars = 1;
 
         convertedChars = uc - (UChar *)string.data();
         if (chars >= end)
@@ -649,6 +652,10 @@ QByteArray QIcuCodec::convertFromUnicode(const QChar *unicode, int length, QText
                          nullptr, false, &error);
         if (!U_SUCCESS(error))
             qDebug("convertFromUnicode failed: %s", u_errorName(error));
+        // flag the state if we have incomplete input
+        if (error == U_TRUNCATED_CHAR_FOUND)
+            state->remainingChars = 1;
+
         convertedChars = ch - string.data();
         if (uc >= end)
             break;
