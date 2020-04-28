@@ -50,7 +50,6 @@
 #include <QtSql/private/qsqldriver_p.h>
 #include <qlist.h>
 #include <qvector.h>
-#include <qtextcodec.h>
 #include <qmutex.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -68,11 +67,7 @@ QT_BEGIN_NAMESPACE
 
 enum { QIBaseChunkSize = SHRT_MAX / 2 };
 
-#if defined(FB_API_VER) && FB_API_VER >= 20
-static bool getIBaseError(QString& msg, const ISC_STATUS* status, ISC_LONG &sqlcode, QTextCodec *tc)
-#else
-static bool getIBaseError(QString& msg, ISC_STATUS* status, ISC_LONG &sqlcode, QTextCodec *tc)
-#endif
+static bool getIBaseError(QString& msg, const ISC_STATUS* status, ISC_LONG &sqlcode)
 {
     if (status[0] != 1 || status[1] <= 0)
         return false;
@@ -80,17 +75,10 @@ static bool getIBaseError(QString& msg, ISC_STATUS* status, ISC_LONG &sqlcode, Q
     msg.clear();
     sqlcode = isc_sqlcode(status);
     char buf[512];
-#if defined(FB_API_VER) && FB_API_VER >= 20
     while(fb_interpret(buf, 512, &status)) {
-#else
-    while(isc_interprete(buf, &status)) {
-#endif
         if(!msg.isEmpty())
             msg += QLatin1String(" - ");
-        if (tc)
-            msg += tc->toUnicode(buf);
-        else
-            msg += QString::fromUtf8(buf);
+        msg += QString::fromUtf8(buf);
     }
     return true;
 }
@@ -287,21 +275,9 @@ static QDate fromDate(char *buffer)
     return d;
 }
 
-static QByteArray encodeString(QTextCodec *tc, const QString &str)
-{
-    if (tc)
-        return tc->fromUnicode(str);
-    return str.toUtf8();
-}
-
 struct QIBaseEventBuffer {
-#if defined(FB_API_VER) && FB_API_VER >= 20
     ISC_UCHAR *eventBuffer;
     ISC_UCHAR *resultBuffer;
-#else
-    char *eventBuffer;
-    char *resultBuffer;
-#endif
     ISC_LONG bufferLength;
     ISC_LONG eventId;
 
@@ -313,14 +289,15 @@ class QIBaseDriverPrivate : public QSqlDriverPrivate
 {
     Q_DECLARE_PUBLIC(QIBaseDriver)
 public:
-    QIBaseDriverPrivate() : QSqlDriverPrivate(), ibase(0), trans(0), tc(0) { dbmsType = QSqlDriver::Interbase; }
+    QIBaseDriverPrivate() : QSqlDriverPrivate(), ibase(0), trans(0)
+    { dbmsType = QSqlDriver::Interbase; }
 
     bool isError(const char *msg, QSqlError::ErrorType typ = QSqlError::UnknownError)
     {
         Q_Q(QIBaseDriver);
         QString imsg;
         ISC_LONG sqlcode;
-        if (!getIBaseError(imsg, status, sqlcode, tc))
+        if (!getIBaseError(imsg, status, sqlcode))
             return false;
 
         q->setLastError(QSqlError(QCoreApplication::translate("QIBaseDriver", msg),
@@ -332,7 +309,6 @@ public:
 public:
     isc_db_handle ibase;
     isc_tr_handle trans;
-    QTextCodec *tc;
     ISC_STATUS status[20];
     QMap<QString, QIBaseEventBuffer*> eventBuffers;
 };
@@ -386,7 +362,7 @@ public:
         Q_Q(QIBaseResult);
         QString imsg;
         ISC_LONG sqlcode;
-        if (!getIBaseError(imsg, status, sqlcode, tc))
+        if (!getIBaseError(imsg, status, sqlcode))
             return false;
 
         q->setLastError(QSqlError(QCoreApplication::translate("QIBaseResult", msg),
@@ -414,7 +390,6 @@ public:
     XSQLDA *sqlda; // output sqlda
     XSQLDA *inda; // input parameters
     int queryType;
-    QTextCodec *tc;
 };
 
 
@@ -426,8 +401,7 @@ QIBaseResultPrivate::QIBaseResultPrivate(QIBaseResult *q, const QIBaseDriver *dr
       ibase(drv_d_func()->ibase),
       sqlda(0),
       inda(0),
-      queryType(-1),
-      tc(drv_d_func()->tc)
+      queryType(-1)
 {
 }
 
@@ -530,8 +504,7 @@ QList<QVariant> toList<long>(char** buf, int count, long*)
 }
 
 static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
-                             short* numElements, ISC_ARRAY_DESC *arrayDesc,
-                             QTextCodec *tc)
+                             short* numElements, ISC_ARRAY_DESC *arrayDesc)
 {
     const short dim = arrayDesc->array_desc_dimensions - 1;
     const unsigned char dataType = arrayDesc->array_desc_dtype;
@@ -540,8 +513,7 @@ static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
 
     if (curDim != dim) {
         for(int i = 0; i < numElements[curDim]; ++i)
-            buffer = readArrayBuffer(list, buffer, curDim + 1, numElements,
-                                     arrayDesc, tc);
+            buffer = readArrayBuffer(list, buffer, curDim + 1, numElements, arrayDesc);
     } else {
         switch(dataType) {
             case blr_varying:
@@ -555,11 +527,7 @@ static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
                     for(o = 0; o < strLen && buffer[o]!=0; ++o )
                         ;
 
-                    if (tc)
-                        valList.append(tc->toUnicode(buffer, o));
-                    else
-                        valList.append(QString::fromUtf8(buffer, o));
-
+                    valList.append(QString::fromUtf8(buffer, o));
                     buffer += strLen;
                 }
                 break; }
@@ -653,7 +621,7 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
                 QSqlError::StatementError))
         return list;
 
-    readArrayBuffer(list, ba.data(), 0, numElements.data(), &desc, tc);
+    readArrayBuffer(list, ba.data(), 0, numElements.data(), &desc);
 
     return QVariant(list);
 }
@@ -685,10 +653,9 @@ char* fillList<float>(char *buffer, const QList<QVariant> &list, float*)
 }
 
 static char* qFillBufferWithString(char *buffer, const QString& string,
-                                   short buflen, bool varying, bool array,
-                                   QTextCodec *tc)
+                                   short buflen, bool varying, bool array)
 {
-    QByteArray str = encodeString(tc, string); // keep a copy of the string alive in this scope
+    QByteArray str = string.toUtf8(); // keep a copy of the string alive in this scope
     if (varying) {
         short tmpBuflen = buflen;
         if (str.length() < buflen)
@@ -711,7 +678,7 @@ static char* qFillBufferWithString(char *buffer, const QString& string,
 
 static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
                                QVariant::Type type, short curDim, ISC_ARRAY_DESC *arrayDesc,
-                               QString& error, QTextCodec *tc)
+                               QString& error)
 {
     int i;
     ISC_ARRAY_BOUND *bounds = arrayDesc->array_desc_bounds;
@@ -736,7 +703,7 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
           }
 
           buffer = createArrayBuffer(buffer, list.at(i).toList(), type, curDim + 1,
-                                     arrayDesc, error, tc);
+                                     arrayDesc, error);
           if (!buffer)
               return 0;
         }
@@ -766,7 +733,7 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
                 buffer = qFillBufferWithString(buffer, list.at(i).toString(),
                                                arrayDesc->array_desc_length,
                                                arrayDesc->array_desc_dtype == blr_varying,
-                                               true, tc);
+                                               true);
             break;
         case QVariant::Date:
             for (i = 0; i < list.size(); ++i) {
@@ -839,7 +806,7 @@ bool QIBaseResultPrivate::writeArray(int column, const QList<QVariant> &list)
 
     if (!createArrayBuffer(ba.data(), list,
                            qIBaseTypeName(desc.array_desc_dtype, inda->sqlvar[column].sqlscale < 0),
-                           0, &desc, error, tc)) {
+                           0, &desc, error)) {
         q->setLastError(QSqlError(error.arg(QLatin1String(sqlname)), QLatin1String(""),
                         QSqlError::StatementError));
         return false;
@@ -940,7 +907,7 @@ bool QIBaseResult::prepare(const QString& query)
                    QSqlError::StatementError))
         return false;
     isc_dsql_prepare(d->status, &d->trans, &d->stmt, 0,
-        const_cast<char*>(encodeString(d->tc, query).constData()), FBVERSION, d->sqlda);
+        const_cast<char*>(query.toUtf8().constData()), FBVERSION, d->sqlda);
     if (d->isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not prepare statement"),
                    QSqlError::StatementError))
         return false;
@@ -1072,7 +1039,7 @@ bool QIBaseResult::exec()
             case SQL_TEXT:
                 qFillBufferWithString(d->inda->sqlvar[para].sqldata, val.toString(),
                                       d->inda->sqlvar[para].sqllen,
-                                      (d->inda->sqlvar[para].sqltype & ~1) == SQL_VARYING, false, d->tc);
+                                      (d->inda->sqlvar[para].sqltype & ~1) == SQL_VARYING, false);
                 break;
             case SQL_BLOB:
                     ok &= d->writeBlob(para, val.toByteArray());
@@ -1185,10 +1152,7 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
         switch(d->sqlda->sqlvar[i].sqltype & ~1) {
         case SQL_VARYING:
             // pascal strings - a short with a length information followed by the data
-            if (d->tc)
-                row[idx] = d->tc->toUnicode(buf + sizeof(short), *(short*)buf);
-            else
-                row[idx] = QString::fromUtf8(buf + sizeof(short), *(short*)buf);
+            row[idx] = QString::fromUtf8(buf + sizeof(short), *(short*)buf);
             break;
         case SQL_INT64:
             if (d->sqlda->sqlvar[i].sqlscale < 0)
@@ -1227,10 +1191,7 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             row[idx] = fromDate(buf);
             break;
         case SQL_TEXT:
-            if (d->tc)
-                row[idx] = d->tc->toUnicode(buf, size);
-            else
-                row[idx] = QString::fromUtf8(buf, size);
+            row[idx] = QString::fromUtf8(buf, size);
             break;
         case SQL_BLOB:
             row[idx] = d->fetchBlob((ISC_QUAD*)buf);
@@ -1479,7 +1440,6 @@ bool QIBaseDriver::open(const QString & db,
 
     const QStringList opts(connOpts.split(QLatin1Char(';'), Qt::SkipEmptyParts));
 
-    QString encString;
     QByteArray role;
     for (int i = 0; i < opts.count(); ++i) {
         QString tmp(opts.at(i).simplified());
@@ -1487,30 +1447,16 @@ bool QIBaseDriver::open(const QString & db,
         if ((idx = tmp.indexOf(QLatin1Char('='))) != -1) {
             QString val = tmp.mid(idx + 1).simplified();
             QString opt = tmp.left(idx).simplified();
-            if (opt.toUpper() == QLatin1String("ISC_DPB_LC_CTYPE"))
-                encString = val;
-            else if (opt.toUpper() == QLatin1String("ISC_DPB_SQL_ROLE_NAME")) {
+            if (opt.toUpper() == QLatin1String("ISC_DPB_SQL_ROLE_NAME")) {
                 role = val.toLocal8Bit();
                 role.truncate(255);
             }
         }
     }
 
-    // Use UNICODE_FSS when no ISC_DPB_LC_CTYPE is provided
-    if (encString.isEmpty())
-        encString = QLatin1String("UNICODE_FSS");
-    else {
-        d->tc = QTextCodec::codecForName(encString.toLocal8Bit());
-        if (!d->tc) {
-            qWarning("Unsupported encoding: %s. Using UNICODE_FFS for ISC_DPB_LC_CTYPE.", encString.toLocal8Bit().constData());
-            encString = QLatin1String("UNICODE_FSS"); // Fallback to UNICODE_FSS
-        }
-    }
-
-    QByteArray enc = encString.toLocal8Bit();
+    QByteArray enc = "UTF8";
     QByteArray usr = user.toLocal8Bit();
     QByteArray pass = password.toLocal8Bit();
-    enc.truncate(255);
     usr.truncate(255);
     pass.truncate(255);
 
@@ -1788,11 +1734,7 @@ QVariant QIBaseDriver::handle() const
     return QVariant(qRegisterMetaType<isc_db_handle>("isc_db_handle"), &d->ibase);
 }
 
-#if defined(FB_API_VER) && FB_API_VER >= 20
 static ISC_EVENT_CALLBACK qEventCallback(char *result, ISC_USHORT length, const ISC_UCHAR *updated)
-#else
-static isc_callback qEventCallback(char *result, short length, char *updated)
-#endif
 {
     if (!updated)
         return 0;
@@ -1844,13 +1786,8 @@ bool QIBaseDriver::subscribeToNotification(const QString &name)
                    &eBuffer->eventId,
                    eBuffer->bufferLength,
                    eBuffer->eventBuffer,
-#if defined (FB_API_VER) && FB_API_VER >= 20
                    reinterpret_cast<ISC_EVENT_CALLBACK>(reinterpret_cast<void *>
                                                                      (&qEventCallback)),
-#else
-                   reinterpret_cast<isc_callback>(reinterpret_cast<void *>
-                                                        (&qEventCallback)),
-#endif
                    eBuffer->resultBuffer);
 
     if (status[0] == 1 && status[1]) {
@@ -1924,13 +1861,8 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
                            &eBuffer->eventId,
                            eBuffer->bufferLength,
                            eBuffer->eventBuffer,
-#if defined (FB_API_VER) && FB_API_VER >= 20
                            reinterpret_cast<ISC_EVENT_CALLBACK>(reinterpret_cast<void *>
                                                                 (&qEventCallback)),
-#else
-                           reinterpret_cast<isc_callback>(reinterpret_cast<void *>
-                                                          (&qEventCallback)),
-#endif
                                    eBuffer->resultBuffer);
             if (Q_UNLIKELY(status[0] == 1 && status[1])) {
                 qCritical("QIBaseDriver::qHandleEventNotification: could not resubscribe to '%s'",

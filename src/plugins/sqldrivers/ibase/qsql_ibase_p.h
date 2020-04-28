@@ -60,6 +60,8 @@
 #define Q_EXPORT_SQLDRIVER_IBASE Q_SQL_EXPORT
 #endif
 
+static_assert(FB_API_VER >= 20, "Qt requires at least the Firebird 2.0 client APIs.");
+
 QT_BEGIN_NAMESPACE
 
 class QSqlResult;
