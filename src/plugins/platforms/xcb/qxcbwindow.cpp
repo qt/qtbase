@@ -75,7 +75,6 @@
 #include <qpa/qplatformbackingstore.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QTextCodec>
 #include <stdio.h>
 
 #if QT_CONFIG(xcb_xlib)
@@ -184,23 +183,16 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         free_prop = true;
     }
 
-#if QT_CONFIG(textcodec)
-    static const QTextCodec* mapper = QTextCodec::codecForLocale();
     int errCode = 0;
-    if (mapper) {
-        QByteArray mapped = mapper->fromUnicode(s);
-        char* tl[2];
-        tl[0] = mapped.data();
-        tl[1] = nullptr;
-        errCode = XmbTextListToTextProperty(dpy, tl, 1, XStdICCTextStyle, &tp);
-        if (errCode < 0)
-            qCDebug(lcQpaXcb, "XmbTextListToTextProperty result code %d", errCode);
-    }
-    if (!mapper || errCode < 0) {
-        mapper = QTextCodec::codecForName("latin1");
-        if (!mapper || !mapper->canEncode(s))
-            return nullptr;
-#endif
+    QByteArray mapped = s.toLocal8Bit(); // should always be utf-8
+    char* tl[2];
+    tl[0] = mapped.data();
+    tl[1] = nullptr;
+    errCode = XmbTextListToTextProperty(dpy, tl, 1, XStdICCTextStyle, &tp);
+    if (errCode < 0)
+        qCDebug(lcQpaXcb, "XmbTextListToTextProperty result code %d", errCode);
+
+    if (errCode < 0) {
         static QByteArray qcs;
         qcs = s.toLatin1();
         tp.value = (uchar*)qcs.data();
@@ -208,11 +200,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         tp.format = 8;
         tp.nitems = qcs.length();
         free_prop = false;
-#if QT_CONFIG(textcodec)
     }
-#else
-    Q_UNUSED(dpy);
-#endif
     return &tp;
 }
 #endif // QT_CONFIG(xcb_xlib)

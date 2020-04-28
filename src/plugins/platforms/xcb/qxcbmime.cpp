@@ -39,7 +39,6 @@
 
 #include "qxcbmime.h"
 
-#include <QtCore/QTextCodec>
 #include <QtGui/QImageWriter>
 #include <QtCore/QBuffer>
 #include <qdebug.h>
