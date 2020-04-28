@@ -188,7 +188,7 @@ def _parse_commandline():
         "--output-file",
         dest="output_file",
         type=str,
-        help="Specify a file path where the generated content should be written to."
+        help="Specify a file path where the generated content should be written to. "
         "Default is to write to CMakeLists.txt in the same directory as the .pro file.",
     )
 
