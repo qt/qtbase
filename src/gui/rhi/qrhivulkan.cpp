@@ -1219,12 +1219,24 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     for (auto it = firstColorAttachment; it != lastColorAttachment; ++it) {
         if (it->resolveTexture()) {
             QVkTexture *rtexD = QRHI_RES(QVkTexture, it->resolveTexture());
+            const VkFormat dstFormat = rtexD->vkformat;
             if (rtexD->samples > VK_SAMPLE_COUNT_1_BIT)
                 qWarning("Resolving into a multisample texture is not supported");
 
+            QVkTexture *texD = QRHI_RES(QVkTexture, it->texture());
+            QVkRenderBuffer *rbD = QRHI_RES(QVkRenderBuffer, it->renderBuffer());
+            const VkFormat srcFormat = texD ? texD->vkformat : rbD->vkformat;
+            if (srcFormat != dstFormat) {
+                // This is a validation error. But some implementations survive,
+                // actually. Warn about it however, because it's an error with
+                // some other backends (like D3D) as well.
+                qWarning("Multisample resolve between different formats (%d and %d) is not supported.",
+                         int(srcFormat), int(dstFormat));
+            }
+
             VkAttachmentDescription attDesc;
             memset(&attDesc, 0, sizeof(attDesc));
-            attDesc.format = rtexD->vkformat;
+            attDesc.format = dstFormat;
             attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
             attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // ignored
             attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;

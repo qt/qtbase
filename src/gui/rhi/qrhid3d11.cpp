@@ -1707,7 +1707,8 @@ void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
             if (srcTexD) {
                 cmd.args.resolveSubRes.src = srcTexD->tex;
                 if (srcTexD->dxgiFormat != dstTexD->dxgiFormat) {
-                    qWarning("Resolve source and destination formats do not match");
+                    qWarning("Resolve source (%d) and destination (%d) formats do not match",
+                             int(srcTexD->dxgiFormat), int(dstTexD->dxgiFormat));
                     continue;
                 }
                 if (srcTexD->sampleDesc.Count <= 1) {
@@ -1721,7 +1722,8 @@ void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
             } else {
                 cmd.args.resolveSubRes.src = srcRbD->tex;
                 if (srcRbD->dxgiFormat != dstTexD->dxgiFormat) {
-                    qWarning("Resolve source and destination formats do not match");
+                    qWarning("Resolve source (%d) and destination (%d) formats do not match",
+                             int(srcRbD->dxgiFormat), int(dstTexD->dxgiFormat));
                     continue;
                 }
                 if (srcRbD->m_pixelSize != dstTexD->m_pixelSize) {
