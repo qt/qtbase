@@ -456,11 +456,12 @@ void QMimeBinaryProvider::loadMimeTypeList()
         // So we have to parse the plain-text files called "types".
         QFile file(m_directory + QStringLiteral("/types"));
         if (file.open(QIODevice::ReadOnly)) {
-            QTextStream stream(&file);
-            stream.setCodec("ISO 8859-1");
-            QString line;
-            while (stream.readLineInto(&line))
-                m_mimetypeNames.insert(line);
+            while (!file.atEnd()) {
+                QByteArray line = file.readLine();
+                if (line.endsWith('\n'))
+                    line.chop(1);
+                m_mimetypeNames.insert(QString::fromLatin1(line));
+            }
         }
     }
 }
