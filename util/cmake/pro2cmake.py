@@ -3846,8 +3846,9 @@ def handle_top_level_repo_project(scope: Scope, cm_fh: IO[str]):
         f"""\
                 cmake_minimum_required(VERSION {cmake_version_string})
 
+                include(.cmake.conf)
                 project({qt_lib}
-                    VERSION 6.0.0
+                    VERSION "${{QT_REPO_MODULE_VERSION}}"
                     DESCRIPTION "Qt {qt_lib_no_prefix} Libraries"
                     HOMEPAGE_URL "https://qt.io/"
                     LANGUAGES CXX C
@@ -3866,6 +3867,15 @@ def handle_top_level_repo_project(scope: Scope, cm_fh: IO[str]):
     )
 
     cm_fh.write(f"{header}{expand_project_requirements(scope)}{build_repo}")
+
+
+def create_top_level_cmake_conf():
+    conf_file_name = ".cmake.conf"
+    try:
+        with open(conf_file_name, 'x') as file:
+            file.write("set(QT_REPO_MODULE_VERSION \"6.0.0\")\n")
+    except FileExistsError as _:
+        pass
 
 
 def find_top_level_repo_project_file(project_file_path: str = "") -> Optional[str]:
@@ -4034,6 +4044,7 @@ def cmakeify_scope(
 
     # Handle top level repo project in a special way.
     if is_top_level_repo_project(scope.file_absolute_path):
+        create_top_level_cmake_conf()
         handle_top_level_repo_project(scope, temp_buffer)
     # Same for top-level tests.
     elif is_top_level_repo_tests_project(scope.file_absolute_path):

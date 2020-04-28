@@ -14,8 +14,9 @@ if (CMAKE_CROSSCOMPILING AND CMAKE_SYSROOT)
     set(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
 endif()
 
+include(".cmake.conf")
 project(QtBase
-    VERSION 6.0.0
+    VERSION "${QT_REPO_MODULE_VERSION}"
     DESCRIPTION "Qt Base Libraries"
     HOMEPAGE_URL "https://qt.io/"
     LANGUAGES CXX C ASM
