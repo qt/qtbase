@@ -1815,8 +1815,17 @@ void QCocoaWindow::updateNSToolbar()
 
 bool QCocoaWindow::testContentBorderAreaPosition(int position) const
 {
-    return isContentView() && m_drawContentBorderGradient &&
-            0 <= position && position < [m_view.window contentBorderThicknessForEdge:NSMaxYEdge];
+    if (!m_drawContentBorderGradient || !isContentView())
+        return false;
+
+    // Determine if the given y postion (relative to the content area) is inside the
+    // unified toolbar area. Note that the value returned by contentBorderThicknessForEdge
+    // includes the title bar height; subtract it.
+    const int contentBorderThickness = [m_view.window contentBorderThicknessForEdge:NSMaxYEdge];
+    const NSRect frameRect = m_view.window.frame;
+    const NSRect contentRect = [m_view.window contentRectForFrameRect:frameRect];
+    const CGFloat titlebarHeight = frameRect.size.height - contentRect.size.height;
+    return 0 <= position && position < (contentBorderThickness - titlebarHeight);
 }
 
 qreal QCocoaWindow::devicePixelRatio() const
