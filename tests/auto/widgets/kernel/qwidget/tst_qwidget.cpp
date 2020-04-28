@@ -2236,12 +2236,16 @@ void tst_QWidget::appFocusWidgetWhenLosingFocusProxy()
     QApplication::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QCOMPARE(QApplication::focusWidget(), lineEditFocusProxy);
+    QVERIFY(lineEdit->hasFocus());
+    QVERIFY(lineEditFocusProxy->hasFocus());
 
     // When unsetting the focus proxy
     lineEdit->setFocusProxy(nullptr);
 
-    // Then the application focus widget should be back to the lineedit
-    QCOMPARE(QApplication::focusWidget(), lineEdit);
+    // then the focus widget should not change
+    QCOMPARE(QApplication::focusWidget(), lineEditFocusProxy);
+    QVERIFY(!lineEdit->hasFocus());
+    QVERIFY(lineEditFocusProxy->hasFocus());
 }
 
 void tst_QWidget::explicitTabOrderWithComplexWidget()
@@ -10090,6 +10094,7 @@ void tst_QWidget::openModal_taskQTBUG_5804()
 void tst_QWidget::focusProxy()
 {
     QWidget window;
+    window.setFocusPolicy(Qt::StrongFocus);
     class Container : public QWidget
     {
     public:
@@ -10137,25 +10142,40 @@ void tst_QWidget::focusProxy()
     layout->addWidget(container2);
     window.setLayout(layout);
 
+    window.setFocus();
     window.show();
     window.activateWindow();
     if (!QTest::qWaitForWindowExposed(&window) || !QTest::qWaitForWindowActive(&window))
         QSKIP("Window activation failed");
 
-    QCOMPARE(container1->focusInCount, 1);
+    // given a widget without focus proxy
+    QVERIFY(window.hasFocus());
+    QCOMPARE(&window, QApplication::focusWidget());
+    QVERIFY(!container1->hasFocus());
+    QVERIFY(!container2->hasFocus());
+    QCOMPARE(container1->focusInCount, 0);
     QCOMPARE(container1->focusOutCount, 0);
 
-    // given a widget with a nested focus proxy
+    // setting a (nested) focus proxy moves focus
     window.setFocusProxy(container1);
     QCOMPARE(window.focusWidget(), container1->edit);
     QCOMPARE(window.focusWidget(), QApplication::focusWidget());
+    QVERIFY(window.hasFocus()); // and redirects hasFocus correctly
     QVERIFY(container1->edit->hasFocus());
     QCOMPARE(container1->focusInCount, 1);
 
-    // changing the focus proxy should move focus to the new proxy
+    // changing the focus proxy should not move focus
     window.setFocusProxy(container2);
+    QCOMPARE(window.focusWidget(), container1->edit);
+    QCOMPARE(window.focusWidget(), QApplication::focusWidget());
+    QVERIFY(!window.hasFocus());
+    QCOMPARE(container1->focusOutCount, 0);
+
+    // but setting focus again does
+    window.setFocus();
     QCOMPARE(window.focusWidget(), container2->edit);
     QCOMPARE(window.focusWidget(), QApplication::focusWidget());
+    QVERIFY(window.hasFocus());
     QVERIFY(!container1->edit->hasFocus());
     QVERIFY(container2->edit->hasFocus());
     QCOMPARE(container1->focusInCount, 1);
@@ -10163,13 +10183,22 @@ void tst_QWidget::focusProxy()
     QCOMPARE(container2->focusInCount, 1);
     QCOMPARE(container2->focusOutCount, 0);
 
-    // clearing the focus proxy moves focus
+    // clearing the focus proxy does not move focus
     window.setFocusProxy(nullptr);
-    QCOMPARE(window.focusWidget(), &window);
+    QCOMPARE(window.focusWidget(), container2->edit);
     QCOMPARE(window.focusWidget(), QApplication::focusWidget());
+    QVERIFY(!window.hasFocus());
     QCOMPARE(container1->focusInCount, 1);
     QCOMPARE(container1->focusOutCount, 1);
     QCOMPARE(container2->focusInCount, 1);
+    QCOMPARE(container2->focusOutCount, 0);
+
+    // but clearing focus does
+    window.focusWidget()->clearFocus();
+    QCOMPARE(QApplication::focusWidget(), nullptr);
+    QVERIFY(!window.hasFocus());
+    QVERIFY(!container2->hasFocus());
+    QVERIFY(!container2->edit->hasFocus());
     QCOMPARE(container2->focusOutCount, 1);
 }
 

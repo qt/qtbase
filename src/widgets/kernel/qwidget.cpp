@@ -6176,7 +6176,8 @@ void QWidget::setWindowRole(const QString &role)
 
     setFocusProxy() sets the widget which will actually get focus when
     "this widget" gets it. If there is a focus proxy, setFocus() and
-    hasFocus() operate on the focus proxy.
+    hasFocus() operate on the focus proxy. If "this widget" is the focus
+    widget, then setFocusProxy() moves focus to the new focus proxy.
 
     \sa focusProxy()
 */
@@ -6194,16 +6195,12 @@ void QWidget::setFocusProxy(QWidget * w)
         }
     }
 
-    QWidget *oldDeepestFocusProxy = d->deepestFocusProxy();
-    if (!oldDeepestFocusProxy)
-        oldDeepestFocusProxy = this;
-
-    const bool focusProxyHadFocus = (QApplicationPrivate::focus_widget == oldDeepestFocusProxy);
+    const bool moveFocusToProxy = (QApplicationPrivate::focus_widget == this);
 
     d->createExtra();
     d->extra->focus_proxy = w;
 
-    if (focusProxyHadFocus)
+    if (moveFocusToProxy)
         setFocus(Qt::OtherFocusReason);
 }
 
