@@ -1199,7 +1199,8 @@ void QCocoaWindow::windowDidBecomeKey()
     }
 
     if (!windowIsPopupType())
-        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(window());
+        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(
+            window(), Qt::ActiveWindowFocusReason);
 }
 
 void QCocoaWindow::windowDidResignKey()
@@ -1217,7 +1218,8 @@ void QCocoaWindow::windowDidResignKey()
     if (!keyWindow || keyWindow == m_view.window) {
         // No new key window, go ahead and set the active window to zero
         if (!windowIsPopupType())
-            QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(0);
+            QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(
+                nullptr, Qt::ActiveWindowFocusReason);
     }
 }
 
