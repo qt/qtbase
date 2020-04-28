@@ -2731,8 +2731,12 @@ function(qt_internal_add_plugin target)
     # Derive the class name from the target name if it's not explicitly specified.
     # Don't set it for qml plugins though.
     set(plugin_class_name "")
-    if (NOT arg_CLASS_NAME AND NOT "${plugin_type_escaped}" STREQUAL "qml_plugin")
-        set(plugin_class_name "${target}")
+    if (NOT "${plugin_type_escaped}" STREQUAL "qml_plugin")
+        if (NOT arg_CLASS_NAME)
+            set(plugin_class_name "${target}")
+        else()
+            set(plugin_class_name "${arg_CLASS_NAME}")
+        endif()
     endif()
 
     qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"

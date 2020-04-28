@@ -1140,6 +1140,7 @@ function(qt6_add_plugin target)
     cmake_parse_arguments(arg
         "STATIC"
         "OUTPUT_NAME"
+        "CLASS_NAME"
         ""
         ${ARGN}
     )
@@ -1167,6 +1168,15 @@ function(qt6_add_plugin target)
             LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${output_name}"
         )
     endif()
+
+    # Derive the class name from the target name if it's not explicitly specified.
+    set(plugin_class_name "")
+    if (NOT arg_CLASS_NAME)
+        set(plugin_class_name "${target}")
+    else()
+        set(plugin_class_name "${arg_CLASS_NAME}")
+    endif()
+    set_target_properties(${target} PROPERTIES QT_PLUGIN_CLASS_NAME "${plugin_class_name}")
 
     set(static_plugin_define "")
     if (arg_STATIC)
