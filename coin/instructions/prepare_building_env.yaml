@@ -200,3 +200,30 @@ instructions:
         condition: property
         property: host.os
         equals_value: Windows
+
+  - type: Group
+    instructions:
+    - type: WriteFile
+      fileContents: "#!/bin/bash\nunset LD_LIBRARY_PATH\n. {{.Env.QT_YOCTO_ENVSETUP}}\nexport PATH={{.Env.QT_CMAKE_DIR}}:$PATH;\n$*"
+      filename: "{{.Env.HOME}}/prefix.sh"
+      fileMode: 493
+      maxTimeInSeconds: 20
+      maxTimeBetweenOutput: 20
+      enable_if:
+        condition: property
+        property: target.osVersion
+        equals_value: QEMU
+    - type: EnvironmentVariable
+      variableName: TARGET_ENV_PREFIX
+      variableValue: "{{.Env.HOME}}/prefix.sh"
+      enable_if:
+        condition: property
+        property: target.osVersion
+        equals_value: QEMU
+    - type: EnvironmentVariable
+      variableName: TARGET_ENV_PREFIX
+      variableValue: ""
+      disable_if:
+        condition: property
+        property: target.osVersion
+        equals_value: QEMU
