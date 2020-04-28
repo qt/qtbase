@@ -2123,6 +2123,10 @@ def write_library_section(
             else:
                 if dep not in public_module_public_deps:
                     public_module_public_deps.append(dep)
+
+        private_module_interface_deps.extend([map_qt_library(q) for q in scope.expand("QT_FOR_PRIVATE")])
+        private_module_interface_deps.extend(_map_libraries_to_cmake(scope.expand("QMAKE_USE_FOR_PRIVATE"), known_libraries))
+
         write_list(cm_fh, public_module_private_deps, "LIBRARIES", indent + 1)
         write_list(cm_fh, public_module_public_deps, "PUBLIC_LIBRARIES", indent + 1)
         write_list(cm_fh, private_module_interface_deps, "PRIVATE_MODULE_INTERFACE", indent + 1)
