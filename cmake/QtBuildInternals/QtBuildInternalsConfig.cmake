@@ -267,8 +267,21 @@ function(qt_restore_backed_up_install_prefix)
     # Restore the CMAKE_INSTALL_PREFIX that was set before loading BuildInternals.
     # Useful for standalone tests, we don't want to accidentally install a test into the Qt prefix.
     get_property(helpstring CACHE CMAKE_INSTALL_PREFIX PROPERTY HELPSTRING)
-    set(CMAKE_INSTALL_PREFIX "${QT_BACKUP_CMAKE_INSTALL_PREFIX_BEFORE_EXTRA_INCLUDE}"
-        CACHE STRING "${helpstring}" FORCE)
+
+    # If CMAKE_INSTALL_PREFIX was default initialized, that means it points to something
+    # like /usr/local which we don't want. Why? When metatype json files are created
+    # during standalone tests configuration, the folder creation might fail due to missing
+    # permissions in the /usr/local (which is the wrong place anyway).
+    # Instead specify a dummy install prefix in the current build dir.
+    # If the prefix was specified by the user at the command line, honor it, hoping that the
+    # user knows what they are doing.
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(new_install_prefix "${CMAKE_BINARY_DIR}/standalone_tests_fake_install_prefix")
+    else()
+        set(new_install_prefix "${QT_BACKUP_CMAKE_INSTALL_PREFIX_BEFORE_EXTRA_INCLUDE}")
+    endif()
+
+    set(CMAKE_INSTALL_PREFIX "${new_install_prefix}" CACHE STRING "${helpstring}" FORCE)
 endfunction()
 
 macro(qt_examples_build_begin)
