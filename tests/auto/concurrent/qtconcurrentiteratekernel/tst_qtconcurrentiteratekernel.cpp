@@ -88,7 +88,7 @@ QAtomicInt iterations;
 class PrintFor : public IterateKernel<TestIterator, void>
 {
 public:
-    PrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.storeRelaxed(0); }
+    PrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(QThreadPool::globalInstance(), begin, end) { iterations.storeRelaxed(0); }
     bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         iterations.fetchAndAddRelaxed(end - begin);
@@ -107,7 +107,7 @@ public:
 class SleepPrintFor : public IterateKernel<TestIterator, void>
 {
 public:
-    SleepPrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.storeRelaxed(0); }
+    SleepPrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(QThreadPool::globalInstance(), begin, end) { iterations.storeRelaxed(0); }
     inline bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         QTest::qSleep(200);
@@ -147,7 +147,7 @@ QAtomicInt counter;
 class CountFor : public IterateKernel<TestIterator, void>
 {
 public:
-    CountFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.storeRelaxed(0); }
+    CountFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(QThreadPool::globalInstance(), begin, end) { iterations.storeRelaxed(0); }
     inline bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         counter.fetchAndAddRelaxed(end - begin);
@@ -175,7 +175,7 @@ void tst_QtConcurrentIterateKernel::noIterations()
 {
     const int times = 20000;
     for (int i = 0; i < times; ++i)
-        startThreadEngine(new IterateKernel<TestIterator, void>(0, 0)).startBlocking();
+        startThreadEngine(new IterateKernel<TestIterator, void>(QThreadPool::globalInstance(), 0, 0)).startBlocking();
 }
 
 QMutex threadsMutex;
@@ -186,7 +186,7 @@ public:
     // this class throttles between iterations 100 and 200,
     // and then records how many threads that run between
     // iterations 140 and 160.
-    ThrottleFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) { iterations.storeRelaxed(0); throttling = false; }
+    ThrottleFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(QThreadPool::globalInstance(), begin, end) { iterations.storeRelaxed(0); throttling = false; }
     inline bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         if (200 >= begin && 200 < end) {
@@ -242,7 +242,7 @@ void tst_QtConcurrentIterateKernel::throttling()
 class MultipleResultsFor : public IterateKernel<TestIterator, int>
 {
 public:
-    MultipleResultsFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, int>(begin, end) { }
+    MultipleResultsFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, int>(QThreadPool::globalInstance(), begin, end) { }
     inline bool runIterations(TestIterator, int begin, int end, int *results)
     {
         for (int i = begin; i < end; ++i)

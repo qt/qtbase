@@ -43,9 +43,12 @@ private slots:
     void map();
     void blocking_map();
     void mapped();
+    void mappedThreadPool();
     void mappedReduced();
+    void mappedReducedThreadPool();
     void mappedReducedDifferentType();
     void mappedReducedInitialValue();
+    void mappedReducedInitialValueThreadPool();
     void mappedReducedDifferentTypeInitialValue();
     void assignResult();
     void functionOverloads();
@@ -446,6 +449,92 @@ void tst_QtConcurrentMap::mapped()
 #endif
 }
 
+static QSemaphore semaphore(1);
+static QSet<QThread *> workingThreads;
+
+void storeCurrentThread()
+{
+    semaphore.acquire();
+    workingThreads.insert(QThread::currentThread());
+    semaphore.release();
+}
+
+int threadCount()
+{
+    semaphore.acquire();
+    const int count = workingThreads.size();
+    semaphore.release();
+    return count;
+}
+
+template <typename SourceObject, typename ResultObject, typename MapObject>
+void testMappedThreadPool(QThreadPool *pool,
+                          const QList<SourceObject> &sourceObjectList,
+                          const QList<ResultObject> &expectedResult,
+                          MapObject mapObject)
+{
+    const QList<ResultObject> result1 = QtConcurrent::mapped(pool,
+                sourceObjectList, mapObject).results();
+    QCOMPARE(result1, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+    const QList<ResultObject> result2 = QtConcurrent::mapped(pool,
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject).results();
+    QCOMPARE(result2, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+// TODO: enable when QTBUG-83918 is fixed
+
+//    const QList<ResultObject> result3 = QtConcurrent::blockingMapped(pool,
+//                sourceObjectList, mapObject);
+//    QCOMPARE(result3, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+//    const QList<ResultObject> result4 = QtConcurrent::blockingMapped<QList<ResultObject>>(pool,
+//                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject);
+//    QCOMPARE(result4, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+}
+
+int multiplyBy3(int x)
+{
+    storeCurrentThread();
+    return x * 3;
+}
+
+class MultiplyBy3
+{
+public:
+    int operator()(int x) const
+    {
+        storeCurrentThread();
+        return x * 3;
+    }
+};
+
+void tst_QtConcurrentMap::mappedThreadPool()
+{
+    const QList<int> intList {1, 2, 3};
+    const QList<int> intListMultipiedBy3 {3, 6, 9};
+
+    auto lambdaMultiplyBy3 = [](int x) {
+        storeCurrentThread();
+        return x * 3;
+    };
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    QCOMPARE(semaphore.available(), 1);
+    workingThreads.clear();
+
+    testMappedThreadPool(&pool, intList, intListMultipiedBy3, MultiplyBy3());
+    CHECK_FAIL("functor");
+    testMappedThreadPool(&pool, intList, intListMultipiedBy3, multiplyBy3);
+    CHECK_FAIL("function");
+    testMappedThreadPool(&pool, intList, intListMultipiedBy3, lambdaMultiplyBy3);
+    CHECK_FAIL("lambda");
+}
+
 int intSquare(int x)
 {
     return x * x;
@@ -569,6 +658,94 @@ void tst_QtConcurrentMap::mappedReduced()
     testMappedReduced(intList, intListOfSquares, lambdaSquare, push_back, OrderedReduce);
     CHECK_FAIL("lambda-member");
     testMappedReduced(intList, sumOfSquares, lambdaSquare, lambdaSumReduce);
+    CHECK_FAIL("lambda-lambda");
+}
+
+template <typename SourceObject, typename ResultObject, typename MapObject, typename ReduceObject>
+void testMappedReducedThreadPool(QThreadPool *pool,
+                                 const QList<SourceObject> &sourceObjectList,
+                                 const ResultObject &expectedResult,
+                                 MapObject mapObject,
+                                 ReduceObject reduceObject)
+{
+    const ResultObject result1 = QtConcurrent::mappedReduced<ResultObject>(pool,
+                sourceObjectList, mapObject, reduceObject);
+    QCOMPARE(result1, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+    const ResultObject result2 = QtConcurrent::mappedReduced<ResultObject>(pool,
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
+    QCOMPARE(result2, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+// TODO: enable when QTBUG-83918 is fixed
+
+//    const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(pool,
+//                sourceObjectList, mapObject, reduceObject);
+//    QCOMPARE(result3, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+//    const ResultObject result4 = QtConcurrent::blockingMappedReduced<ResultObject>(pool,
+//                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
+//    QCOMPARE(result4, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+}
+
+int intCube(int x)
+{
+    storeCurrentThread();
+    return x * x * x;
+}
+
+class IntCube
+{
+public:
+    int operator()(int x)
+    {
+        storeCurrentThread();
+        return x * x * x;
+    }
+};
+
+void tst_QtConcurrentMap::mappedReducedThreadPool()
+{
+    const QList<int> intList {1, 2, 3};
+    const int sumOfCubes = 36;
+
+    auto lambdaCube = [](int x) {
+        return x * x * x;
+    };
+    auto lambdaSumReduce = [](int &sum, int x) {
+        sum += x;
+    };
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    QCOMPARE(semaphore.available(), 1);
+    workingThreads.clear();
+
+    // FUNCTOR-other
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, IntCube(), IntSumReduce());
+    CHECK_FAIL("functor-functor");
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, IntCube(), intSumReduce);
+    CHECK_FAIL("functor-function");
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, IntCube(), lambdaSumReduce);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, intCube, IntSumReduce());
+    CHECK_FAIL("function-functor");
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, intCube, intSumReduce);
+    CHECK_FAIL("function-function");
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, intCube, lambdaSumReduce);
+    CHECK_FAIL("function-lambda");
+
+    // LAMBDA-other
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, lambdaCube, IntSumReduce());
+    CHECK_FAIL("lambda-functor");
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, lambdaCube, intSumReduce);
+    CHECK_FAIL("lambda-function");
+    testMappedReducedThreadPool(&pool, intList, sumOfCubes, lambdaCube, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
 }
 
@@ -731,6 +908,93 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
     testMappedReducedInitialValue(intList, intListSquaresAppended, lambdaSquare, push_back, intListInitial, OrderedReduce);
     CHECK_FAIL("lambda-member");
     testMappedReducedInitialValue(intList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
+    CHECK_FAIL("lambda-lambda");
+}
+
+template <typename SourceObject, typename ResultObject, typename InitialObject, typename MapObject, typename ReduceObject>
+void testMappedReducedInitialValueThreadPool(QThreadPool *pool,
+                                             const QList<SourceObject> &sourceObjectList,
+                                             const ResultObject &expectedResult,
+                                             MapObject mapObject,
+                                             ReduceObject reduceObject,
+                                             InitialObject &&initialObject)
+{
+    const ResultObject result1 = QtConcurrent::mappedReduced<ResultObject>(
+                pool, sourceObjectList, mapObject, reduceObject, initialObject);
+    QCOMPARE(result1, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+    const ResultObject result2 = QtConcurrent::mappedReduced<ResultObject>(
+                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                mapObject, reduceObject, initialObject);
+    QCOMPARE(result2, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+// TODO: enable when QTBUG-83918 is fixed
+
+//    const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(
+//                pool, sourceObjectList, mapObject, reduceObject, initialObject);
+//    QCOMPARE(result3, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+//    const ResultObject result4 = QtConcurrent::blockingMappedReduced<ResultObject>(
+//                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+//                mapObject, reduceObject, initialObject);
+//    QCOMPARE(result4, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+}
+
+void tst_QtConcurrentMap::mappedReducedInitialValueThreadPool()
+{
+    // This is a copy of tst_QtConcurrentMap::mappedReduced with the initial value parameter added
+
+    const QList<int> intList {1, 2, 3};
+    const int sumOfCubes = 46;
+    const int intInitial = 10;
+
+    auto lambdaCube = [](int x) {
+        return x * x * x;
+    };
+    auto lambdaSumReduce = [](int &sum, int x) {
+        sum += x;
+    };
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    QCOMPARE(semaphore.available(), 1);
+    workingThreads.clear();
+
+    // FUNCTOR-other
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, IntCube(),
+                                            IntSumReduce(), intInitial);
+    CHECK_FAIL("functor-functor");
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, IntCube(),
+                                            intSumReduce, intInitial);
+    CHECK_FAIL("functor-function");
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, IntCube(),
+                                            lambdaSumReduce, intInitial);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, intCube,
+                                            IntSumReduce(), intInitial);
+    CHECK_FAIL("function-functor");
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, intCube,
+                                            intSumReduce, intInitial);
+    CHECK_FAIL("function-function");
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, intCube,
+                                            lambdaSumReduce, intInitial);
+    CHECK_FAIL("function-lambda");
+
+    // LAMBDA-other
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, lambdaCube,
+                                            IntSumReduce(), intInitial);
+    CHECK_FAIL("lambda-functor");
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, lambdaCube,
+                                            intSumReduce, intInitial);
+    CHECK_FAIL("lambda-function");
+    testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, lambdaCube,
+                                            lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
 }
 

@@ -88,7 +88,7 @@ class Q_CONCURRENT_EXPORT ThreadEngineBase: public QRunnable
 {
 public:
     // Public API:
-    ThreadEngineBase();
+    ThreadEngineBase(QThreadPool *pool);
     virtual ~ThreadEngineBase();
     void startSingleThreaded();
     void startBlocking();
@@ -130,6 +130,8 @@ class ThreadEngine : public ThreadEngineBase
 {
 public:
     typedef T ResultType;
+
+    ThreadEngine(QThreadPool *pool) : ThreadEngineBase(pool) {}
 
     virtual T *result() { return nullptr; }
 

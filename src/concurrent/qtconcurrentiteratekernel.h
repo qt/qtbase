@@ -158,8 +158,8 @@ class IterateKernel : public ThreadEngine<T>
 public:
     typedef T ResultType;
 
-    IterateKernel(Iterator _begin, Iterator _end)
-        : begin(_begin), end(_end), current(_begin), currentIndex(0),
+    IterateKernel(QThreadPool *pool, Iterator _begin, Iterator _end)
+        : ThreadEngine<T>(pool), begin(_begin), end(_end), current(_begin), currentIndex(0),
            forIteration(selectIteration(typename std::iterator_traits<Iterator>::iterator_category())), progressReportingEnabled(true)
     {
         iterationCount =  forIteration ? std::distance(_begin, _end) : 0;

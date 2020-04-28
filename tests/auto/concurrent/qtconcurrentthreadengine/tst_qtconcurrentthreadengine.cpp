@@ -55,6 +55,7 @@ private slots:
 class PrintUser : public ThreadEngine<void>
 {
 public:
+    PrintUser() : ThreadEngine(QThreadPool::globalInstance()) {}
     ThreadFunctionResult threadFunction()
     {
         QTest::qSleep(50);
@@ -82,7 +83,8 @@ class StringResultUser : public ThreadEngine<QString>
 public:
     typedef QString ResultType;
     StringResultUser()
-    : done(false) { }
+    : ThreadEngine(QThreadPool::globalInstance())
+    , done(false) { }
 
     bool shouldStartThread()
     {
@@ -113,6 +115,8 @@ void tst_QtConcurrentThreadEngine::result()
 class VoidResultUser : public ThreadEngine<void>
 {
 public:
+    VoidResultUser() : ThreadEngine(QThreadPool::globalInstance()) {}
+
     bool shouldStartThread()
     {
         return !done;
@@ -149,6 +153,8 @@ void tst_QtConcurrentThreadEngine::runThroughStarter()
 class CancelUser : public ThreadEngine<void>
 {
 public:
+    CancelUser() : ThreadEngine(QThreadPool::globalInstance()) {}
+
     void *result()
     {
         return 0;
@@ -186,6 +192,7 @@ class ThrottleAlwaysUser : public ThreadEngine<void>
 {
 public:
     ThrottleAlwaysUser()
+    : ThreadEngine(QThreadPool::globalInstance())
     {
         count.storeRelaxed(initialCount = 100);
         finishing = false;
@@ -240,6 +247,7 @@ class ThreadCountUser : public ThreadEngine<void>
 {
 public:
     ThreadCountUser(bool finishImmediately = false)
+    : ThreadEngine(QThreadPool::globalInstance())
     {
         threads.clear();
         finishing = finishImmediately;
@@ -306,6 +314,7 @@ void tst_QtConcurrentThreadEngine::threadCount()
 class MultipleResultsUser : public ThreadEngine<int>
 {
 public:
+    MultipleResultsUser() : ThreadEngine(QThreadPool::globalInstance()) {}
     bool shouldStartThread()
     {
         return false;
@@ -375,6 +384,7 @@ const int sleepTime = 20;
 class SlowUser : public ThreadEngine<void>
 {
 public:
+    SlowUser() : ThreadEngine(QThreadPool::globalInstance()) {}
     bool shouldStartThread() { return false; }
     ThreadFunctionResult threadFunction() { QTest::qSleep(sleepTime); return ThreadFinished; }
 };
@@ -406,6 +416,7 @@ class QtConcurrentExceptionThrower : public ThreadEngine<void>
 {
 public:
     QtConcurrentExceptionThrower(QThread *blockThread = 0)
+    : ThreadEngine(QThreadPool::globalInstance())
     {
         this->blockThread = blockThread;
     }
@@ -423,6 +434,7 @@ class UnrelatedExceptionThrower : public ThreadEngine<void>
 {
 public:
     UnrelatedExceptionThrower(QThread *blockThread = 0)
+    : ThreadEngine(QThreadPool::globalInstance())
     {
         this->blockThread = blockThread;
     }

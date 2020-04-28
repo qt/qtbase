@@ -38,10 +38,14 @@ class tst_QtConcurrentFilter : public QObject
 
 private slots:
     void filter();
+    void filterThreadPool();
     void filtered();
+    void filteredThreadPool();
     void filteredReduced();
+    void filteredReducedThreadPool();
     void filteredReducedDifferentType();
     void filteredReducedInitialValue();
+    void filteredReducedInitialValueThreadPool();
     void filteredReducedDifferentTypeInitialValue();
     void resultAt();
     void incrementalResults();
@@ -96,6 +100,85 @@ void tst_QtConcurrentFilter::filter()
     CHECK_FAIL("lambda");
 }
 
+static QSemaphore semaphore(1);
+static QSet<QThread *> workingThreads;
+
+void storeCurrentThread()
+{
+    semaphore.acquire();
+    workingThreads.insert(QThread::currentThread());
+    semaphore.release();
+}
+
+int threadCount()
+{
+    semaphore.acquire();
+    const int count = workingThreads.size();
+    semaphore.release();
+    return count;
+}
+
+template <typename SourceObject,
+          typename ResultObject,
+          typename FilterObject>
+void testFilterThreadPool(QThreadPool *pool,
+                          const QList<SourceObject> &sourceObjectList,
+                          const QList<ResultObject> &expectedResult,
+                          FilterObject filterObject)
+{
+    QList<SourceObject> copy1 = sourceObjectList;
+//    QList<SourceObject> copy2 = sourceObjectList;
+
+    QtConcurrent::filter(pool, copy1, filterObject).waitForFinished();
+    QCOMPARE(copy1, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+// TODO: enable when QTBUG-83918 is fixed
+
+//    QtConcurrent::blockingFilter(pool, copy2, filterObject);
+//    QCOMPARE(copy2, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+}
+
+class KeepOddIntegers
+{
+public:
+    bool operator()(const int &x)
+    {
+        storeCurrentThread();
+        return x & 1;
+    }
+};
+
+bool keepOddIntegers(const int &x)
+{
+    storeCurrentThread();
+    return x & 1;
+}
+
+void tst_QtConcurrentFilter::filterThreadPool()
+{
+    const QList<int> intList {1, 2, 3, 4};
+    const QList<int> intListEven {1, 3};
+
+    auto lambdaIsOdd = [](const int &x) {
+        storeCurrentThread();
+        return x & 1;
+    };
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    QCOMPARE(semaphore.available(), 1);
+    workingThreads.clear();
+
+    testFilterThreadPool(&pool, intList, intListEven, KeepOddIntegers());
+    CHECK_FAIL("functor");
+    testFilterThreadPool(&pool, intList, intListEven, keepOddIntegers);
+    CHECK_FAIL("function");
+    testFilterThreadPool(&pool, intList, intListEven, lambdaIsOdd);
+    CHECK_FAIL("lambda");
+}
+
 template <typename SourceObject,
           typename ResultObject,
           typename FilterObject>
@@ -139,6 +222,61 @@ void tst_QtConcurrentFilter::filtered()
     testFiltered(numberList, numberListEven, &Number::isEven);
     CHECK_FAIL("member");
     testFiltered(intList, intListEven, lambdaIsEven);
+    CHECK_FAIL("lambda");
+}
+
+template <typename SourceObject,
+          typename ResultObject,
+          typename FilterObject>
+void testFilteredThreadPool(QThreadPool *pool,
+                            const QList<SourceObject> &sourceObjectList,
+                            const QList<ResultObject> &expectedResult,
+                            FilterObject filterObject)
+{
+    const QList<ResultObject> result1 = QtConcurrent::filtered(
+                pool, sourceObjectList, filterObject).results();
+    QCOMPARE(result1, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+    const QList<ResultObject> result2 = QtConcurrent::filtered(
+                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                filterObject).results();
+    QCOMPARE(result2, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+// TODO: enable when QTBUG-83918 is fixed
+
+//    const QList<ResultObject> result3 = QtConcurrent::blockingFiltered(
+//                pool, sourceObjectList, filterObject);
+//    QCOMPARE(result3, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+//    const QList<ResultObject> result4 = QtConcurrent::blockingFiltered<QList<ResultObject>>(
+//                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(), filterObject);
+//    QCOMPARE(result4, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+}
+
+void tst_QtConcurrentFilter::filteredThreadPool()
+{
+    const QList<int> intList {1, 2, 3, 4};
+    const QList<int> intListEven {1, 3};
+
+    auto lambdaIsOdd = [](const int &x) {
+        storeCurrentThread();
+        return x & 1;
+    };
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    QCOMPARE(semaphore.available(), 1);
+    workingThreads.clear();
+
+    testFilteredThreadPool(&pool, intList, intListEven, KeepOddIntegers());
+    CHECK_FAIL("functor");
+    testFilteredThreadPool(&pool, intList, intListEven, keepOddIntegers);
+    CHECK_FAIL("function");
+    testFilteredThreadPool(&pool, intList, intListEven, lambdaIsOdd);
     CHECK_FAIL("lambda");
 }
 
@@ -274,6 +412,84 @@ void tst_QtConcurrentFilter::filteredReduced()
     testFilteredReduced(intList, intListEven, lambdaIsEven, pushBackInt, OrderedReduce);
     CHECK_FAIL("lambda-member");
     testFilteredReduced(intList, intSum, lambdaIsEven, lambdaIntSumReduce);
+    CHECK_FAIL("lambda-lambda");
+}
+
+template <typename SourceObject,
+          typename ResultObject,
+          typename FilterObject,
+          typename ReduceObject>
+void testFilteredReducedThreadPool(QThreadPool *pool,
+                                   const QList<SourceObject> &sourceObjectList,
+                                   const ResultObject &expectedResult,
+                                   FilterObject filterObject,
+                                   ReduceObject reduceObject)
+{
+    const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
+                pool, sourceObjectList, filterObject, reduceObject);
+    QCOMPARE(result1, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+    const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
+                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                filterObject, reduceObject);
+    QCOMPARE(result2, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+// TODO: enable when QTBUG-83918 is fixed
+
+//    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+//                pool, sourceObjectList, filterObject, reduceObject);
+//    QCOMPARE(result3, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+//    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+//                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+//                filterObject, reduceObject);
+//    QCOMPARE(result4, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+}
+
+void tst_QtConcurrentFilter::filteredReducedThreadPool()
+{
+    const QList<int> intList {1, 2, 3, 4};
+    const int intSum = 4; // sum of even values
+
+    auto lambdaIsOdd = [](const int &x) {
+        storeCurrentThread();
+        return x & 1;
+    };
+    auto lambdaSumReduce = [](int &sum, const int &x) {
+        sum += x;
+    };
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    QCOMPARE(semaphore.available(), 1);
+    workingThreads.clear();
+
+    // FUNCTOR-other
+    testFilteredReducedThreadPool(&pool, intList, intSum, KeepOddIntegers(), IntSumReduce());
+    CHECK_FAIL("functor-functor");
+    testFilteredReducedThreadPool(&pool, intList, intSum, KeepOddIntegers(), intSumReduce);
+    CHECK_FAIL("functor-function");
+    testFilteredReducedThreadPool(&pool, intList, intSum, KeepOddIntegers(), lambdaSumReduce);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testFilteredReducedThreadPool(&pool, intList, intSum, keepOddIntegers, IntSumReduce());
+    CHECK_FAIL("function-functor");
+    testFilteredReducedThreadPool(&pool, intList, intSum, keepOddIntegers, intSumReduce);
+    CHECK_FAIL("function-function");
+    testFilteredReducedThreadPool(&pool, intList, intSum, keepOddIntegers, lambdaSumReduce);
+    CHECK_FAIL("function-lambda");
+
+    // LAMBDA-other
+    testFilteredReducedThreadPool(&pool, intList, intSum, lambdaIsOdd, IntSumReduce());
+    CHECK_FAIL("lambda-functor");
+    testFilteredReducedThreadPool(&pool, intList, intSum, lambdaIsOdd, intSumReduce);
+    CHECK_FAIL("lambda-function");
+    testFilteredReducedThreadPool(&pool, intList, intSum, lambdaIsOdd, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
 }
 
@@ -469,6 +685,96 @@ void tst_QtConcurrentFilter::filteredReducedInitialValue()
     CHECK_FAIL("lambda-member");
     testFilteredReducedInitialValue(intList, intSum, lambdaIsEven,
                                     lambdaIntSumReduce, intInitial);
+    CHECK_FAIL("lambda-lambda");
+}
+
+template <typename SourceObject,
+          typename ResultObject,
+          typename InitialObject,
+          typename FilterObject,
+          typename ReduceObject>
+void testFilteredReducedInitialValueThreadPool(QThreadPool *pool,
+                                               const QList<SourceObject> &sourceObjectList,
+                                               const ResultObject &expectedResult,
+                                               FilterObject filterObject,
+                                               ReduceObject reduceObject,
+                                               InitialObject &&initialObject)
+{
+    const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
+                pool, sourceObjectList, filterObject, reduceObject, initialObject);
+    QCOMPARE(result1, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+    const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
+                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                filterObject, reduceObject, initialObject);
+    QCOMPARE(result2, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+// TODO: enable when QTBUG-83918 is fixed
+
+//    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+//                pool, sourceObjectList, filterObject, reduceObject, initialObject);
+//    QCOMPARE(result3, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+//    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+//                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+//                filterObject, reduceObject, initialObject);
+//    QCOMPARE(result4, expectedResult);
+//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+}
+
+void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()
+{
+    const QList<int> intList {1, 2, 3, 4};
+    const int intInitial = 10;
+    const int intSum = 14; // sum of even values and initial value
+
+    auto lambdaIsOdd = [](const int &x) {
+        storeCurrentThread();
+        return x & 1;
+    };
+    auto lambdaSumReduce = [](int &sum, const int &x) {
+        sum += x;
+    };
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    QCOMPARE(semaphore.available(), 1);
+    workingThreads.clear();
+
+    // FUNCTOR-other
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, KeepOddIntegers(),
+                                              IntSumReduce(), intInitial);
+    CHECK_FAIL("functor-functor");
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, KeepOddIntegers(),
+                                              intSumReduce, intInitial);
+    CHECK_FAIL("functor-function");
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, KeepOddIntegers(),
+                                              lambdaSumReduce, intInitial);
+    CHECK_FAIL("functor-lambda");
+
+    // FUNCTION-other
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, keepOddIntegers,
+                                              IntSumReduce(), intInitial);
+    CHECK_FAIL("function-functor");
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, keepOddIntegers,
+                                              intSumReduce, intInitial);
+    CHECK_FAIL("function-function");
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, keepOddIntegers,
+                                              lambdaSumReduce, intInitial);
+    CHECK_FAIL("function-lambda");
+
+    // LAMBDA-other
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, lambdaIsOdd,
+                                              IntSumReduce(), intInitial);
+    CHECK_FAIL("lambda-functor");
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, lambdaIsOdd,
+                                              intSumReduce, intInitial);
+    CHECK_FAIL("lambda-function");
+    testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, lambdaIsOdd,
+                                              lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
 }
 

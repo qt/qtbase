@@ -160,8 +160,8 @@ bool ThreadEngineBarrier::releaseUnlessLast()
     }
 }
 
-ThreadEngineBase::ThreadEngineBase()
-:futureInterface(0), threadPool(QThreadPool::globalInstance())
+ThreadEngineBase::ThreadEngineBase(QThreadPool *pool)
+    : futureInterface(0), threadPool(pool)
 {
     setAutoDelete(false);
 }

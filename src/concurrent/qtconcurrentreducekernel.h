@@ -224,21 +224,24 @@ public:
 template <typename Sequence, typename Base, typename Functor1, typename Functor2>
 struct SequenceHolder2 : public Base
 {
-    SequenceHolder2(const Sequence &_sequence,
+    SequenceHolder2(QThreadPool *pool,
+                    const Sequence &_sequence,
                     Functor1 functor1,
                     Functor2 functor2,
                     ReduceOptions reduceOptions)
-        : Base(_sequence.begin(), _sequence.end(), functor1, functor2, reduceOptions),
+        : Base(pool, _sequence.begin(), _sequence.end(), functor1, functor2, reduceOptions),
           sequence(_sequence)
     { }
 
     template <typename InitialValueType>
-    SequenceHolder2(const Sequence &_sequence,
+    SequenceHolder2(QThreadPool *pool,
+                    const Sequence &_sequence,
                     Functor1 functor1,
                     Functor2 functor2,
                     InitialValueType &&initialValue,
                     ReduceOptions reduceOptions)
-        : Base(_sequence.begin(), _sequence.end(), functor1, functor2, std::forward<InitialValueType>(initialValue), reduceOptions),
+        : Base(pool, _sequence.begin(), _sequence.end(), functor1, functor2,
+               std::forward<InitialValueType>(initialValue), reduceOptions),
           sequence(_sequence)
     { }
 
