@@ -2106,16 +2106,12 @@ void tst_QFile::i18nFileName()
      {
         QFile file(fileName);
         QVERIFY2(file.open(QFile::WriteOnly | QFile::Text), msgOpenFailed(file).constData());
-        QTextStream ts(&file);
-        ts.setCodec("UTF-8");
-        ts << fileName << Qt::endl;
+        file.write(fileName.toUtf8());
      }
      {
         QFile file(fileName);
         QVERIFY2(file.open(QFile::ReadOnly | QFile::Text), msgOpenFailed(file).constData());
-        QTextStream ts(&file);
-        ts.setCodec("UTF-8");
-        QString line = ts.readLine();
+        QString line = QString::fromUtf8(file.readAll());
         QCOMPARE(line, fileName);
      }
 }
@@ -2157,23 +2153,19 @@ void tst_QFile::longFileName()
     {
         QFile file(fileName);
         QVERIFY2(file.open(QFile::WriteOnly | QFile::Text), msgOpenFailed(file).constData());
-        QTextStream ts(&file);
-        ts << fileName << Qt::endl;
+        file.write(fileName.toUtf8());
     }
     {
         QFile file(fileName);
         QVERIFY2(file.open(QFile::ReadOnly | QFile::Text), msgOpenFailed(file).constData());
-        QTextStream ts(&file);
-        QString line = ts.readLine();
-        QCOMPARE(line, fileName);
+        QString line = QString::fromUtf8(file.readAll());
     }
     QString newName = fileName + QLatin1Char('1');
     {
         QVERIFY(QFile::copy(fileName, newName));
         QFile file(newName);
         QVERIFY2(file.open(QFile::ReadOnly | QFile::Text), msgOpenFailed(file).constData());
-        QTextStream ts(&file);
-        QString line = ts.readLine();
+        QString line = QString::fromUtf8(file.readAll());
         QCOMPARE(line, fileName);
 
     }
@@ -2182,8 +2174,7 @@ void tst_QFile::longFileName()
         QVERIFY(QFile::rename(fileName, newName));
         QFile file(newName);
         QVERIFY2(file.open(QFile::ReadOnly | QFile::Text), msgOpenFailed(file).constData());
-        QTextStream ts(&file);
-        QString line = ts.readLine();
+        QString line = QString::fromUtf8(file.readAll());
         QCOMPARE(line, fileName);
     }
     QVERIFY2(QFile::exists(newName), msgFileDoesNotExist(newName).constData());
