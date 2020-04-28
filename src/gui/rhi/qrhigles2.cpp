@@ -690,6 +690,87 @@ static inline GLenum toGlCompressedTextureFormat(QRhiTexture::Format format, QRh
     }
 }
 
+static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2::Caps &caps,
+                                     GLenum *glintformat, GLenum *glsizedintformat,
+                                     GLenum *glformat, GLenum *gltype)
+{
+    switch (format) {
+    case QRhiTexture::RGBA8:
+        *glintformat = GL_RGBA;
+        *glsizedintformat = caps.rgba8Format ? GL_RGBA8 : GL_RGBA;
+        *glformat = GL_RGBA;
+        *gltype = GL_UNSIGNED_BYTE;
+        break;
+    case QRhiTexture::BGRA8:
+        *glintformat = caps.bgraInternalFormat ? GL_BGRA : GL_RGBA;
+        *glsizedintformat = caps.rgba8Format ? GL_RGBA8 : GL_RGBA;
+        *glformat = GL_BGRA;
+        *gltype = GL_UNSIGNED_BYTE;
+        break;
+    case QRhiTexture::R16:
+        *glintformat = GL_R16;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RED;
+        *gltype = GL_UNSIGNED_SHORT;
+        break;
+    case QRhiTexture::R8:
+        *glintformat = GL_R8;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RED;
+        *gltype = GL_UNSIGNED_BYTE;
+        break;
+    case QRhiTexture::RED_OR_ALPHA8:
+        *glintformat = caps.coreProfile ? GL_R8 : GL_ALPHA;
+        *glsizedintformat = *glintformat;
+        *glformat = caps.coreProfile ? GL_RED : GL_ALPHA;
+        *gltype = GL_UNSIGNED_BYTE;
+        break;
+    case QRhiTexture::RGBA16F:
+        *glintformat = GL_RGBA16F;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RGBA;
+        *gltype = GL_HALF_FLOAT;
+        break;
+    case QRhiTexture::RGBA32F:
+        *glintformat = GL_RGBA32F;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RGBA;
+        *gltype = GL_FLOAT;
+        break;
+    case QRhiTexture::R16F:
+        *glintformat = GL_R16F;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RED;
+        *gltype = GL_HALF_FLOAT;
+        break;
+    case QRhiTexture::R32F:
+        *glintformat = GL_R32F;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RED;
+        *gltype = GL_FLOAT;
+        break;
+    case QRhiTexture::D16:
+        *glintformat = GL_DEPTH_COMPONENT16;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_DEPTH_COMPONENT;
+        *gltype = GL_UNSIGNED_SHORT;
+        break;
+    case QRhiTexture::D32F:
+        *glintformat = GL_DEPTH_COMPONENT32F;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_DEPTH_COMPONENT;
+        *gltype = GL_FLOAT;
+        break;
+    default:
+        Q_UNREACHABLE();
+        *glintformat = GL_RGBA;
+        *glsizedintformat = caps.rgba8Format ? GL_RGBA8 : GL_RGBA;
+        *glformat = GL_RGBA;
+        *gltype = GL_UNSIGNED_BYTE;
+        break;
+    }
+}
+
 bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture::Flags flags) const
 {
     if (isCompressedFormat(format))
@@ -833,9 +914,10 @@ bool QRhiGles2::isDeviceLost() const
 }
 
 QRhiRenderBuffer *QRhiGles2::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
-                                                int sampleCount, QRhiRenderBuffer::Flags flags)
+                                                int sampleCount, QRhiRenderBuffer::Flags flags,
+                                                QRhiTexture::Format backingFormatHint)
 {
-    return new QGles2RenderBuffer(this, type, pixelSize, sampleCount, flags);
+    return new QGles2RenderBuffer(this, type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
 QRhiTexture *QRhiGles2::createTexture(QRhiTexture::Format format, const QSize &pixelSize,
@@ -3435,8 +3517,9 @@ QRhiBuffer::NativeBuffer QGles2Buffer::nativeBuffer()
 }
 
 QGles2RenderBuffer::QGles2RenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
-                                       int sampleCount, QRhiRenderBuffer::Flags flags)
-    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags)
+                                       int sampleCount, QRhiRenderBuffer::Flags flags,
+                                       QRhiTexture::Format backingFormatHint)
+    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags, backingFormatHint)
 {
 }
 
@@ -3522,13 +3605,26 @@ bool QGles2RenderBuffer::build()
         QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
         break;
     case QRhiRenderBuffer::Color:
-        if (rhiD->caps.msaaRenderBuffer && samples > 1)
-            rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8,
+    {
+        GLenum internalFormat = GL_RGBA4; // ES 2.0
+        if (rhiD->caps.rgba8Format) {
+            internalFormat = GL_RGBA8;
+            if (m_backingFormatHint != QRhiTexture::UnknownFormat) {
+                GLenum glintformat, glformat, gltype;
+                // only care about the sized internal format, the rest is not used here
+                toGlTextureFormat(m_backingFormatHint, rhiD->caps,
+                                  &glintformat, &internalFormat, &glformat, &gltype);
+            }
+        }
+        if (rhiD->caps.msaaRenderBuffer && samples > 1) {
+            rhiD->f->glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalFormat,
                                                       size.width(), size.height());
-        else
-            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, rhiD->caps.rgba8Format ? GL_RGBA8 : GL_RGBA4,
+        } else {
+            rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, internalFormat,
                                            size.width(), size.height());
+        }
         QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
+    }
         break;
     default:
         Q_UNREACHABLE();
@@ -3541,7 +3637,10 @@ bool QGles2RenderBuffer::build()
 
 QRhiTexture::Format QGles2RenderBuffer::backingFormat() const
 {
-    return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
+    if (m_backingFormatHint != QRhiTexture::UnknownFormat)
+        return m_backingFormatHint;
+    else
+        return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
 }
 
 QGles2Texture::QGles2Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
@@ -3608,76 +3707,8 @@ bool QGles2Texture::prepareBuild(QSize *adjustedSize)
         glsizedintformat = glintformat;
         glformat = GL_RGBA;
     } else {
-        switch (m_format) {
-        case QRhiTexture::RGBA8:
-            glintformat = GL_RGBA;
-            glsizedintformat = rhiD->caps.rgba8Format ? GL_RGBA8 : GL_RGBA;
-            glformat = GL_RGBA;
-            break;
-        case QRhiTexture::BGRA8:
-            glintformat = rhiD->caps.bgraInternalFormat ? GL_BGRA : GL_RGBA;
-            glsizedintformat = rhiD->caps.rgba8Format ? GL_RGBA8 : GL_RGBA;
-            glformat = GL_BGRA;
-            break;
-        case QRhiTexture::R16:
-            glintformat = GL_R16;
-            glsizedintformat = glintformat;
-            glformat = GL_RED;
-            gltype = GL_UNSIGNED_SHORT;
-            break;
-        case QRhiTexture::R8:
-            glintformat = GL_R8;
-            glsizedintformat = glintformat;
-            glformat = GL_RED;
-            break;
-        case QRhiTexture::RED_OR_ALPHA8:
-            glintformat = rhiD->caps.coreProfile ? GL_R8 : GL_ALPHA;
-            glsizedintformat = glintformat;
-            glformat = rhiD->caps.coreProfile ? GL_RED : GL_ALPHA;
-            break;
-        case QRhiTexture::RGBA16F:
-            glintformat = GL_RGBA16F;
-            glsizedintformat = glintformat;
-            glformat = GL_RGBA;
-            gltype = GL_HALF_FLOAT;
-            break;
-        case QRhiTexture::RGBA32F:
-            glintformat = GL_RGBA32F;
-            glsizedintformat = glintformat;
-            glformat = GL_RGBA;
-            gltype = GL_FLOAT;
-            break;
-        case QRhiTexture::R16F:
-            glintformat = GL_R16F;
-            glsizedintformat = glintformat;
-            glformat = GL_RED;
-            gltype = GL_HALF_FLOAT;
-            break;
-        case QRhiTexture::R32F:
-            glintformat = GL_R32F;
-            glsizedintformat = glintformat;
-            glformat = GL_RED;
-            gltype = GL_FLOAT;
-            break;
-        case QRhiTexture::D16:
-            glintformat = GL_DEPTH_COMPONENT16;
-            glsizedintformat = glintformat;
-            glformat = GL_DEPTH_COMPONENT;
-            gltype = GL_UNSIGNED_SHORT;
-            break;
-        case QRhiTexture::D32F:
-            glintformat = GL_DEPTH_COMPONENT32F;
-            glsizedintformat = glintformat;
-            glformat = GL_DEPTH_COMPONENT;
-            gltype = GL_FLOAT;
-            break;
-        default:
-            Q_UNREACHABLE();
-            glintformat = GL_RGBA;
-            glsizedintformat = rhiD->caps.rgba8Format ? GL_RGBA8 : GL_RGBA;
-            glformat = GL_RGBA;
-            break;
-        }
+        toGlTextureFormat(m_format, rhiD->caps,
+                          &glintformat, &glsizedintformat, &glformat, &gltype);
     }
 
     samplerState = QGles2SamplerData();

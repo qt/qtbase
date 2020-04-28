@@ -908,11 +908,12 @@ public:
 
 protected:
     QRhiRenderBuffer(QRhiImplementation *rhi, Type type_, const QSize &pixelSize_,
-                     int sampleCount_, Flags flags_);
+                     int sampleCount_, Flags flags_, QRhiTexture::Format backingFormatHint_);
     Type m_type;
     QSize m_pixelSize;
     int m_sampleCount;
     Flags m_flags;
+    QRhiTexture::Format m_backingFormatHint;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiRenderBuffer::Flags)
@@ -1493,7 +1494,8 @@ public:
     QRhiRenderBuffer *newRenderBuffer(QRhiRenderBuffer::Type type,
                                       const QSize &pixelSize,
                                       int sampleCount = 1,
-                                      QRhiRenderBuffer::Flags flags = QRhiRenderBuffer::Flags());
+                                      QRhiRenderBuffer::Flags flags = QRhiRenderBuffer::Flags(),
+                                      QRhiTexture::Format backingFormatHint = QRhiTexture::UnknownFormat);
 
     QRhiTexture *newTexture(QRhiTexture::Format format,
                             const QSize &pixelSize,

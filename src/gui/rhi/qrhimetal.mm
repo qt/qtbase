@@ -621,9 +621,10 @@ bool QRhiMetal::isDeviceLost() const
 }
 
 QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
-                                                int sampleCount, QRhiRenderBuffer::Flags flags)
+                                                int sampleCount, QRhiRenderBuffer::Flags flags,
+                                                QRhiTexture::Format backingFormatHint)
 {
-    return new QMetalRenderBuffer(this, type, pixelSize, sampleCount, flags);
+    return new QMetalRenderBuffer(this, type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
 QRhiTexture *QRhiMetal::createTexture(QRhiTexture::Format format, const QSize &pixelSize,
@@ -2232,149 +2233,6 @@ QRhiBuffer::NativeBuffer QMetalBuffer::nativeBuffer()
     return { { &d->buf[0] }, 1 };
 }
 
-QMetalRenderBuffer::QMetalRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
-                                       int sampleCount, QRhiRenderBuffer::Flags flags)
-    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags),
-      d(new QMetalRenderBufferData)
-{
-}
-
-QMetalRenderBuffer::~QMetalRenderBuffer()
-{
-    release();
-    delete d;
-}
-
-void QMetalRenderBuffer::release()
-{
-    if (!d->tex)
-        return;
-
-    QRhiMetalData::DeferredReleaseEntry e;
-    e.type = QRhiMetalData::DeferredReleaseEntry::RenderBuffer;
-    e.lastActiveFrameSlot = lastActiveFrameSlot;
-
-    e.renderbuffer.texture = d->tex;
-    d->tex = nil;
-
-    QRHI_RES_RHI(QRhiMetal);
-    rhiD->d->releaseQueue.append(e);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseRenderBuffer(this));
-    rhiD->unregisterResource(this);
-}
-
-bool QMetalRenderBuffer::build()
-{
-    if (d->tex)
-        release();
-
-    if (m_pixelSize.isEmpty())
-        return false;
-
-    QRHI_RES_RHI(QRhiMetal);
-    samples = rhiD->effectiveSampleCount(m_sampleCount);
-
-    MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
-    desc.textureType = samples > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
-    desc.width = NSUInteger(m_pixelSize.width());
-    desc.height = NSUInteger(m_pixelSize.height());
-    if (samples > 1)
-        desc.sampleCount = NSUInteger(samples);
-    desc.resourceOptions = MTLResourceStorageModePrivate;
-    desc.usage = MTLTextureUsageRenderTarget;
-
-    bool transientBacking = false;
-    switch (m_type) {
-    case DepthStencil:
-#ifdef Q_OS_MACOS
-        desc.storageMode = MTLStorageModePrivate;
-        d->format = rhiD->d->dev.depth24Stencil8PixelFormatSupported
-                ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
-#else
-        desc.storageMode = MTLStorageModeMemoryless;
-        transientBacking = true;
-        d->format = MTLPixelFormatDepth32Float_Stencil8;
-#endif
-        desc.pixelFormat = d->format;
-        break;
-    case Color:
-        desc.storageMode = MTLStorageModePrivate;
-        d->format = MTLPixelFormatRGBA8Unorm;
-        desc.pixelFormat = d->format;
-        break;
-    default:
-        Q_UNREACHABLE();
-        break;
-    }
-
-    d->tex = [rhiD->d->dev newTextureWithDescriptor: desc];
-    [desc release];
-
-    if (!m_objectName.isEmpty())
-        d->tex.label = [NSString stringWithUTF8String: m_objectName.constData()];
-
-    QRHI_PROF;
-    QRHI_PROF_F(newRenderBuffer(this, transientBacking, false, samples));
-
-    lastActiveFrameSlot = -1;
-    generation += 1;
-    rhiD->registerResource(this);
-    return true;
-}
-
-QRhiTexture::Format QMetalRenderBuffer::backingFormat() const
-{
-    return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
-}
-
-QMetalTexture::QMetalTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
-                             int sampleCount, Flags flags)
-    : QRhiTexture(rhi, format, pixelSize, sampleCount, flags),
-      d(new QMetalTextureData(this))
-{
-    for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
-        d->stagingBuf[i] = nil;
-
-    for (int i = 0; i < QRhi::MAX_LEVELS; ++i)
-        d->perLevelViews[i] = nil;
-}
-
-QMetalTexture::~QMetalTexture()
-{
-    release();
-    delete d;
-}
-
-void QMetalTexture::release()
-{
-    if (!d->tex)
-        return;
-
-    QRhiMetalData::DeferredReleaseEntry e;
-    e.type = QRhiMetalData::DeferredReleaseEntry::Texture;
-    e.lastActiveFrameSlot = lastActiveFrameSlot;
-
-    e.texture.texture = d->owns ? d->tex : nil;
-    d->tex = nil;
-
-    for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
-        e.texture.stagingBuffers[i] = d->stagingBuf[i];
-        d->stagingBuf[i] = nil;
-    }
-
-    for (int i = 0; i < QRhi::MAX_LEVELS; ++i) {
-        e.texture.views[i] = d->perLevelViews[i];
-        d->perLevelViews[i] = nil;
-    }
-
-    QRHI_RES_RHI(QRhiMetal);
-    rhiD->d->releaseQueue.append(e);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseTexture(this));
-    rhiD->unregisterResource(this);
-}
-
 static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags)
 {
     const bool srgb = flags.testFlag(QRhiTexture::sRGB);
@@ -2505,6 +2363,156 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
         Q_UNREACHABLE();
         return MTLPixelFormatRGBA8Unorm;
     }
+}
+
+QMetalRenderBuffer::QMetalRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
+                                       int sampleCount, QRhiRenderBuffer::Flags flags,
+                                       QRhiTexture::Format backingFormatHint)
+    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags, backingFormatHint),
+      d(new QMetalRenderBufferData)
+{
+}
+
+QMetalRenderBuffer::~QMetalRenderBuffer()
+{
+    release();
+    delete d;
+}
+
+void QMetalRenderBuffer::release()
+{
+    if (!d->tex)
+        return;
+
+    QRhiMetalData::DeferredReleaseEntry e;
+    e.type = QRhiMetalData::DeferredReleaseEntry::RenderBuffer;
+    e.lastActiveFrameSlot = lastActiveFrameSlot;
+
+    e.renderbuffer.texture = d->tex;
+    d->tex = nil;
+
+    QRHI_RES_RHI(QRhiMetal);
+    rhiD->d->releaseQueue.append(e);
+    QRHI_PROF;
+    QRHI_PROF_F(releaseRenderBuffer(this));
+    rhiD->unregisterResource(this);
+}
+
+bool QMetalRenderBuffer::build()
+{
+    if (d->tex)
+        release();
+
+    if (m_pixelSize.isEmpty())
+        return false;
+
+    QRHI_RES_RHI(QRhiMetal);
+    samples = rhiD->effectiveSampleCount(m_sampleCount);
+
+    MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
+    desc.textureType = samples > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
+    desc.width = NSUInteger(m_pixelSize.width());
+    desc.height = NSUInteger(m_pixelSize.height());
+    if (samples > 1)
+        desc.sampleCount = NSUInteger(samples);
+    desc.resourceOptions = MTLResourceStorageModePrivate;
+    desc.usage = MTLTextureUsageRenderTarget;
+
+    bool transientBacking = false;
+    switch (m_type) {
+    case DepthStencil:
+#ifdef Q_OS_MACOS
+        desc.storageMode = MTLStorageModePrivate;
+        d->format = rhiD->d->dev.depth24Stencil8PixelFormatSupported
+                ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
+#else
+        desc.storageMode = MTLStorageModeMemoryless;
+        transientBacking = true;
+        d->format = MTLPixelFormatDepth32Float_Stencil8;
+#endif
+        desc.pixelFormat = d->format;
+        break;
+    case Color:
+        desc.storageMode = MTLStorageModePrivate;
+        if (m_backingFormatHint != QRhiTexture::UnknownFormat)
+            d->format = toMetalTextureFormat(m_backingFormatHint, {});
+        else
+            d->format = MTLPixelFormatRGBA8Unorm;
+        desc.pixelFormat = d->format;
+        break;
+    default:
+        Q_UNREACHABLE();
+        break;
+    }
+
+    d->tex = [rhiD->d->dev newTextureWithDescriptor: desc];
+    [desc release];
+
+    if (!m_objectName.isEmpty())
+        d->tex.label = [NSString stringWithUTF8String: m_objectName.constData()];
+
+    QRHI_PROF;
+    QRHI_PROF_F(newRenderBuffer(this, transientBacking, false, samples));
+
+    lastActiveFrameSlot = -1;
+    generation += 1;
+    rhiD->registerResource(this);
+    return true;
+}
+
+QRhiTexture::Format QMetalRenderBuffer::backingFormat() const
+{
+    if (m_backingFormatHint != QRhiTexture::UnknownFormat)
+        return m_backingFormatHint;
+    else
+        return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
+}
+
+QMetalTexture::QMetalTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
+                             int sampleCount, Flags flags)
+    : QRhiTexture(rhi, format, pixelSize, sampleCount, flags),
+      d(new QMetalTextureData(this))
+{
+    for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
+        d->stagingBuf[i] = nil;
+
+    for (int i = 0; i < QRhi::MAX_LEVELS; ++i)
+        d->perLevelViews[i] = nil;
+}
+
+QMetalTexture::~QMetalTexture()
+{
+    release();
+    delete d;
+}
+
+void QMetalTexture::release()
+{
+    if (!d->tex)
+        return;
+
+    QRhiMetalData::DeferredReleaseEntry e;
+    e.type = QRhiMetalData::DeferredReleaseEntry::Texture;
+    e.lastActiveFrameSlot = lastActiveFrameSlot;
+
+    e.texture.texture = d->owns ? d->tex : nil;
+    d->tex = nil;
+
+    for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
+        e.texture.stagingBuffers[i] = d->stagingBuf[i];
+        d->stagingBuf[i] = nil;
+    }
+
+    for (int i = 0; i < QRhi::MAX_LEVELS; ++i) {
+        e.texture.views[i] = d->perLevelViews[i];
+        d->perLevelViews[i] = nil;
+    }
+
+    QRHI_RES_RHI(QRhiMetal);
+    rhiD->d->releaseQueue.append(e);
+    QRHI_PROF;
+    QRHI_PROF_F(releaseTexture(this));
+    rhiD->unregisterResource(this);
 }
 
 bool QMetalTexture::prepareBuild(QSize *adjustedSize)

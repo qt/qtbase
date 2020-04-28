@@ -80,7 +80,8 @@ public:
     virtual QRhiRenderBuffer *createRenderBuffer(QRhiRenderBuffer::Type type,
                                                  const QSize &pixelSize,
                                                  int sampleCount,
-                                                 QRhiRenderBuffer::Flags flags) = 0;
+                                                 QRhiRenderBuffer::Flags flags,
+                                                 QRhiTexture::Format backingFormatHint) = 0;
     virtual QRhiTexture *createTexture(QRhiTexture::Format format,
                                        const QSize &pixelSize,
                                        int sampleCount,

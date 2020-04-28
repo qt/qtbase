@@ -182,9 +182,10 @@ bool QRhiNull::isDeviceLost() const
 }
 
 QRhiRenderBuffer *QRhiNull::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
-                                               int sampleCount, QRhiRenderBuffer::Flags flags)
+                                               int sampleCount, QRhiRenderBuffer::Flags flags,
+                                               QRhiTexture::Format backingFormatHint)
 {
-    return new QNullRenderBuffer(this, type, pixelSize, sampleCount, flags);
+    return new QNullRenderBuffer(this, type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
 QRhiTexture *QRhiNull::createTexture(QRhiTexture::Format format, const QSize &pixelSize,
@@ -564,8 +565,9 @@ bool QNullBuffer::build()
 }
 
 QNullRenderBuffer::QNullRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
-                                     int sampleCount, QRhiRenderBuffer::Flags flags)
-    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags)
+                                     int sampleCount, QRhiRenderBuffer::Flags flags,
+                                     QRhiTexture::Format backingFormatHint)
+    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags, backingFormatHint)
 {
 }
 

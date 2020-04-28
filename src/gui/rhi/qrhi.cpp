@@ -2123,9 +2123,11 @@ QRhiBuffer::NativeBuffer QRhiBuffer::nativeBuffer()
     \internal
  */
 QRhiRenderBuffer::QRhiRenderBuffer(QRhiImplementation *rhi, Type type_, const QSize &pixelSize_,
-                                   int sampleCount_, Flags flags_)
+                                   int sampleCount_, Flags flags_,
+                                   QRhiTexture::Format backingFormatHint_)
     : QRhiResource(rhi),
-      m_type(type_), m_pixelSize(pixelSize_), m_sampleCount(sampleCount_), m_flags(flags_)
+      m_type(type_), m_pixelSize(pixelSize_), m_sampleCount(sampleCount_), m_flags(flags_),
+      m_backingFormatHint(backingFormatHint_)
 {
 }
 
@@ -5488,14 +5490,29 @@ QRhiBuffer *QRhi::newBuffer(QRhiBuffer::Type type,
     \return a new renderbuffer with the specified \a type, \a pixelSize, \a
     sampleCount, and \a flags.
 
+    When \a backingFormatHint is set to a texture format other than
+    QRhiTexture::UnknownFormat, it may be used by the backend to decide what
+    format to use for the storage backing the renderbuffer.
+
+    \note \a backingFormatHint becomes relevant typically when multisampling
+    and floating point texture formats are involved: rendering into a
+    multisample QRhiRenderBuffer and then resolving into a non-RGBA8
+    QRhiTexture implies (with some graphics APIs) that the storage backing the
+    QRhiRenderBuffer uses the matching non-RGBA8 format. That means that
+    passing a format like QRhiTexture::RGBA32F is important, because backends
+    will typically opt for QRhiTexture::RGBA8 by default, which would then
+    break later on due to attempting to set up RGBA8->RGBA32F multisample
+    resolve in the color attachment(s) of the QRhiTextureRenderTarget.
+
     \sa QRhiResource::release()
  */
 QRhiRenderBuffer *QRhi::newRenderBuffer(QRhiRenderBuffer::Type type,
                                         const QSize &pixelSize,
                                         int sampleCount,
-                                        QRhiRenderBuffer::Flags flags)
+                                        QRhiRenderBuffer::Flags flags,
+                                        QRhiTexture::Format backingFormatHint)
 {
-    return d->createRenderBuffer(type, pixelSize, sampleCount, flags);
+    return d->createRenderBuffer(type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
 /*!

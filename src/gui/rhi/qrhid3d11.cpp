@@ -528,9 +528,10 @@ bool QRhiD3D11::isDeviceLost() const
 }
 
 QRhiRenderBuffer *QRhiD3D11::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
-                                                int sampleCount, QRhiRenderBuffer::Flags flags)
+                                                int sampleCount, QRhiRenderBuffer::Flags flags,
+                                                QRhiTexture::Format backingFormatHint)
 {
-    return new QD3D11RenderBuffer(this, type, pixelSize, sampleCount, flags);
+    return new QD3D11RenderBuffer(this, type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
 QRhiTexture *QRhiD3D11::createTexture(QRhiTexture::Format format, const QSize &pixelSize,
@@ -2613,8 +2614,9 @@ ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()
 }
 
 QD3D11RenderBuffer::QD3D11RenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
-                                       int sampleCount, QRhiRenderBuffer::Flags flags)
-    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags)
+                                       int sampleCount, QRhiRenderBuffer::Flags flags,
+                                       QRhiTexture::Format backingFormatHint)
+    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags, backingFormatHint)
 {
 }
 
@@ -2668,7 +2670,8 @@ bool QD3D11RenderBuffer::build()
     desc.Usage = D3D11_USAGE_DEFAULT;
 
     if (m_type == Color) {
-        dxgiFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+        dxgiFormat = m_backingFormatHint == QRhiTexture::UnknownFormat ? DXGI_FORMAT_R8G8B8A8_UNORM
+                                                                       : toD3DTextureFormat(m_backingFormatHint, {});
         desc.Format = dxgiFormat;
         desc.BindFlags = D3D11_BIND_RENDER_TARGET;
         HRESULT hr = rhiD->dev->CreateTexture2D(&desc, nullptr, &tex);
@@ -2721,7 +2724,10 @@ bool QD3D11RenderBuffer::build()
 
 QRhiTexture::Format QD3D11RenderBuffer::backingFormat() const
 {
-    return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
+    if (m_backingFormatHint != QRhiTexture::UnknownFormat)
+        return m_backingFormatHint;
+    else
+        return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
 }
 
 QD3D11Texture::QD3D11Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,

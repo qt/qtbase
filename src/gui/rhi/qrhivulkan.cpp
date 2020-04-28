@@ -4084,9 +4084,10 @@ bool QRhiVulkan::isDeviceLost() const
 }
 
 QRhiRenderBuffer *QRhiVulkan::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
-                                                 int sampleCount, QRhiRenderBuffer::Flags flags)
+                                                 int sampleCount, QRhiRenderBuffer::Flags flags,
+                                                 QRhiTexture::Format backingFormatHint)
 {
-    return new QVkRenderBuffer(this, type, pixelSize, sampleCount, flags);
+    return new QVkRenderBuffer(this, type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
 QRhiTexture *QRhiVulkan::createTexture(QRhiTexture::Format format, const QSize &pixelSize,
@@ -5241,8 +5242,9 @@ QRhiBuffer::NativeBuffer QVkBuffer::nativeBuffer()
 }
 
 QVkRenderBuffer::QVkRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
-                                 int sampleCount, Flags flags)
-    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags)
+                                 int sampleCount, Flags flags,
+                                 QRhiTexture::Format backingFormatHint)
+    : QRhiRenderBuffer(rhi, type, pixelSize, sampleCount, flags, backingFormatHint)
 {
 }
 
@@ -5300,7 +5302,7 @@ bool QVkRenderBuffer::build()
     case QRhiRenderBuffer::Color:
     {
         if (!backingTexture) {
-            backingTexture = QRHI_RES(QVkTexture, rhiD->createTexture(QRhiTexture::RGBA8,
+            backingTexture = QRHI_RES(QVkTexture, rhiD->createTexture(backingFormat(),
                                                                       m_pixelSize,
                                                                       m_sampleCount,
                                                                       QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
@@ -5344,7 +5346,10 @@ bool QVkRenderBuffer::build()
 
 QRhiTexture::Format QVkRenderBuffer::backingFormat() const
 {
-    return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
+    if (m_backingFormatHint != QRhiTexture::UnknownFormat)
+        return m_backingFormatHint;
+    else
+        return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
 }
 
 QVkTexture::QVkTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,

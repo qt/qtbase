@@ -79,7 +79,8 @@ struct QMetalRenderBufferData;
 struct QMetalRenderBuffer : public QRhiRenderBuffer
 {
     QMetalRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
-                       int sampleCount, QRhiRenderBuffer::Flags flags);
+                       int sampleCount, QRhiRenderBuffer::Flags flags,
+                       QRhiTexture::Format backingFormatHint);
     ~QMetalRenderBuffer();
     void release() override;
     bool build() override;
@@ -349,7 +350,8 @@ public:
     QRhiRenderBuffer *createRenderBuffer(QRhiRenderBuffer::Type type,
                                          const QSize &pixelSize,
                                          int sampleCount,
-                                         QRhiRenderBuffer::Flags flags) override;
+                                         QRhiRenderBuffer::Flags flags,
+                                         QRhiTexture::Format backingFormatHint) override;
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
                                int sampleCount,
