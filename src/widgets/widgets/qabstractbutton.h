@@ -116,7 +116,7 @@ public:
 
 public Q_SLOTS:
     void setIconSize(const QSize &size);
-    void animateClick(int msec = 100);
+    void animateClick();
     void click();
     void toggle();
     void setChecked(bool);

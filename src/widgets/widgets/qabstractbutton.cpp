@@ -818,7 +818,7 @@ QButtonGroup *QAbstractButton::group() const
 
 /*!
 Performs an animated click: the button is pressed immediately, and
-released \a msec milliseconds later (the default is 100 ms).
+released 100ms later.
 
 Calling this function again before the button is released resets
 the release timer.
@@ -829,7 +829,7 @@ This function does nothing if the button is \l{setEnabled()}{disabled.}
 
 \sa click()
 */
-void QAbstractButton::animateClick(int msec)
+void QAbstractButton::animateClick()
 {
     if (!isEnabled())
         return;
@@ -840,7 +840,7 @@ void QAbstractButton::animateClick(int msec)
     repaint();
     if (!d->animateTimer.isActive())
         d->emitPressed();
-    d->animateTimer.start(msec, this);
+    d->animateTimer.start(100, this);
 }
 
 /*!
