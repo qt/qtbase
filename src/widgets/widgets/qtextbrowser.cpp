@@ -48,9 +48,6 @@
 #include <qdebug.h>
 #include <qabstracttextdocumentlayout.h>
 #include "private/qtextdocumentlayout_p.h"
-#if QT_CONFIG(textcodec)
-#include <qtextcodec.h>
-#endif
 #include <qpainter.h>
 #include <qdir.h>
 #if QT_CONFIG(whatsthis)
@@ -314,16 +311,16 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
         if (data.userType() == QMetaType::QString) {
             txt = data.toString();
         } else if (data.userType() == QMetaType::QByteArray) {
+            QByteArray ba = data.toByteArray();
             if (type == QTextDocument::HtmlResource) {
-#if QT_CONFIG(textcodec)
-                QByteArray ba = data.toByteArray();
-                QTextCodec *codec = Qt::codecForHtml(ba);
-                txt = codec->toUnicode(ba);
-#else
-                txt = data.toString();
-#endif
+                auto encoding = QStringConverter::encodingForHtml(ba.constData(), ba.size());
+                if (!encoding)
+                    // fall back to utf8
+                    encoding = QStringDecoder::Utf8;
+                QStringDecoder toUtf16(*encoding);
+                txt = toUtf16(ba);
             } else {
-                txt = QString::fromUtf8(data.toByteArray());
+                txt = QString::fromUtf8(ba);
             }
         }
         if (Q_UNLIKELY(txt.isEmpty()))
