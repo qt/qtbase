@@ -126,7 +126,7 @@ protected:
 
 
 template <typename T>
-class ThreadEngine : public virtual ThreadEngineBase
+class ThreadEngine : public ThreadEngineBase
 {
 public:
     typedef T ResultType;
