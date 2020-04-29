@@ -27,6 +27,7 @@
 
 /*!
     \example gallery
+    \meta {tag} {gallery}
     \title Widgets Gallery Example
     \ingroup examples-widgets
     \brief The Widgets Gallery example shows widgets relevant for designing UIs.
