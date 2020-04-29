@@ -96,7 +96,7 @@ public:
 
     FormatVector formats;
     QVector<qint32> objFormats;
-    QMultiHash<uint,int> hashes;
+    QMultiHash<size_t,int> hashes;
 
     inline QFont defaultFont() const { return defaultFnt; }
     void setDefaultFont(const QFont &f);
