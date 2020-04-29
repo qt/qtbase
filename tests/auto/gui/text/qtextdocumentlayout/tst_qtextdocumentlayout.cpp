@@ -301,11 +301,8 @@ void tst_QTextDocumentLayout::imageAtRightAlignedTab()
     imgFormat.setName(name);
     cursor.insertImage(imgFormat);
 
-    // Everything should fit into the 300 pixels
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "Fails on winrt. Figure out why - QTBUG-68297", Continue);
-#endif
-    QCOMPARE(doc->idealWidth(), 300.0);
+    qreal bearing = QFontMetricsF(doc->defaultFont()).rightBearing(QLatin1Char('t'));
+    QCOMPARE(doc->idealWidth(), std::max(300.0, 300.0 - bearing));
 }
 
 void tst_QTextDocumentLayout::blockVisibility()
