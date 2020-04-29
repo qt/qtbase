@@ -73,14 +73,6 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaDrawing)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaMouse)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen)
 
-#ifndef QT_IGNORE_DEPRECATIONS
-#define QT_IGNORE_DEPRECATIONS(statement) \
-    QT_WARNING_PUSH \
-    QT_WARNING_DISABLE_DEPRECATED \
-    statement \
-    QT_WARNING_POP
-#endif
-
 class QPixmap;
 class QString;
 
