@@ -82,7 +82,9 @@ public:
 
     bool hasBinding() const { return d_ptr & BindingBit; }
 
-    QUntypedPropertyBinding setBinding(const QUntypedPropertyBinding &newBinding, void *propertyDataPtr);
+    QUntypedPropertyBinding setBinding(const QUntypedPropertyBinding &newBinding,
+                                       void *propertyDataPtr, void *staticObserver = nullptr,
+                                       void (*staticObserverCallback)(void*) = nullptr);
     QPropertyBindingPrivate *binding();
 
     void evaluateIfDirty();

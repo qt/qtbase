@@ -85,6 +85,7 @@ struct Q_CORE_EXPORT QPropertyBindingSourceLocation
 template <typename Functor> class QPropertyChangeHandler;
 
 template <typename T> class QProperty;
+template <typename T, auto callbackMember> class QNotifiedProperty;
 
 class QPropertyBindingErrorPrivate;
 
@@ -178,12 +179,15 @@ public:
         : QUntypedPropertyBinding(property.d.priv.binding())
     {}
 
-private:
+    template<auto notifier>
+    QPropertyBinding(const QNotifiedProperty<PropertyType, notifier> &property)
+        : QUntypedPropertyBinding(property.d.priv.binding())
+    {}
+
     // Internal
     explicit QPropertyBinding(const QUntypedPropertyBinding &binding)
         : QUntypedPropertyBinding(binding)
     {}
-    friend class QProperty<PropertyType>;
 };
 
 namespace QtPrivate {
@@ -370,6 +374,140 @@ namespace Qt {
     }
 }
 
+template <typename T, typename Class, void(Class::*Callback)()>
+class QNotifiedProperty<T, Callback>
+{
+public:
+    using value_type = T;
+
+    QNotifiedProperty() = default;
+
+    explicit QNotifiedProperty(const T &initialValue) : d(initialValue) {}
+    explicit QNotifiedProperty(T &&initialValue) : d(std::move(initialValue)) {}
+
+    QNotifiedProperty(Class *owner, const QPropertyBinding<T> &binding)
+        : QNotifiedProperty()
+    { setBinding(owner, binding); }
+    QNotifiedProperty(Class *owner, QPropertyBinding<T> &&binding)
+        : QNotifiedProperty()
+    { setBinding(owner, std::move(binding)); }
+
+#ifndef Q_CLANG_QDOC
+    template <typename Functor>
+    explicit QNotifiedProperty(Class *owner, Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
+                       typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = 0)
+        : QNotifiedProperty(QPropertyBinding<T>(owner, std::forward<Functor>(f), location))
+    {}
+#else
+    template <typename Functor>
+    explicit QProperty(Class *owner, Functor &&f);
+#endif
+
+    ~QNotifiedProperty() = default;
+
+    T value() const
+    {
+        if (d.priv.hasBinding())
+            d.priv.evaluateIfDirty();
+        d.priv.registerWithCurrentlyEvaluatingBinding();
+        return d.getValue();
+    }
+
+    operator T() const
+    {
+        return value();
+    }
+
+    void setValue(Class *owner, T &&newValue)
+    {
+        if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
+            notify(owner);
+        d.priv.removeBinding();
+    }
+
+    void setValue(Class *owner, const T &newValue)
+    {
+        if (d.setValueAndReturnTrueIfChanged(newValue))
+            notify(owner);
+        d.priv.removeBinding();
+    }
+
+    QPropertyBinding<T> setBinding(Class *owner, const QPropertyBinding<T> &newBinding)
+    {
+        QPropertyBinding<T> oldBinding(d.priv.setBinding(newBinding, &d, owner, [](void *o) {
+            (reinterpret_cast<Class *>(o)->*Callback)();
+        }));
+        notify(owner);
+        return oldBinding;
+    }
+
+    QPropertyBinding<T> setBinding(Class *owner, QPropertyBinding<T> &&newBinding)
+    {
+        QPropertyBinding<T> b(std::move(newBinding));
+        QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d, owner, [](void *o) {
+            (reinterpret_cast<Class *>(o)->*Callback)();
+        }));
+        notify(owner);
+        return oldBinding;
+    }
+
+    bool setBinding(Class *owner, const QUntypedPropertyBinding &newBinding)
+    {
+        if (newBinding.valueMetaType().id() != qMetaTypeId<T>())
+            return false;
+        d.priv.setBinding(newBinding, &d, owner, [](void *o) {
+            (reinterpret_cast<Class *>(o)->*Callback)();
+        });
+        notify(owner);
+        return true;
+    }
+
+#ifndef Q_CLANG_QDOC
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Class *owner, Functor &&f,
+                                   const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
+                                   std::enable_if_t<std::is_invocable_v<Functor>> * = nullptr)
+    {
+        return setBinding(owner, Qt::makePropertyBinding(std::forward<Functor>(f), location));
+    }
+#else
+    template <typename Functor>
+    QPropertyBinding<T> setBinding(Class *owner, Functor f);
+#endif
+
+    bool hasBinding() const { return d.priv.hasBinding(); }
+
+    QPropertyBinding<T> binding() const
+    {
+        return QPropertyBinding<T>(*this);
+    }
+
+    QPropertyBinding<T> takeBinding()
+    {
+        return QPropertyBinding<T>(d.priv.setBinding(QUntypedPropertyBinding(), &d));
+    }
+
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> onValueChanged(Functor f);
+    template<typename Functor>
+    QPropertyChangeHandler<Functor> subscribe(Functor f);
+
+private:
+    void notify(Class *owner)
+    {
+        d.priv.notifyObservers(&d);
+        (owner->*Callback)();
+    }
+
+    Q_DISABLE_COPY_MOVE(QNotifiedProperty)
+
+    friend class QPropertyBinding<T>;
+    friend class QPropertyObserver;
+    // Mutable because querying for the value may require evalating the binding expression, calling
+    // non-const functions on QPropertyBase.
+    mutable QtPrivate::QPropertyValueStorage<T> d;
+};
+
 struct QPropertyObserverPrivate;
 struct QPropertyObserverPointer;
 
@@ -390,6 +528,10 @@ public:
 
     template <typename PropertyType>
     void setSource(const QProperty<PropertyType> &property)
+    { setSource(property.d.priv); }
+
+    template <typename PropertyType, auto notifier>
+    void setSource(const QNotifiedProperty<PropertyType, notifier> &property)
     { setSource(property.d.priv); }
 
 protected:

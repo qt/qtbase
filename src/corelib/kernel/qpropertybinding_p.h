@@ -71,6 +71,9 @@ private:
     QPropertyObserverPointer firstObserver;
     std::array<QPropertyObserver, 4> inlineDependencyObservers;
     QScopedPointer<std::vector<QPropertyObserver>> heapObservers;
+    // ### merge with inline dependency observer storage
+    void *staticObserver = nullptr;
+    void (*staticObserverCallback)(void*) = nullptr;
 
     void *propertyDataPtr = nullptr;
 
@@ -96,6 +99,7 @@ public:
 
     void setDirty(bool d) { dirty = d; }
     void setProperty(void *propertyPtr) { propertyDataPtr = propertyPtr; }
+    void setStaticObserver(void *observer, void (*callback)(void*)) { staticObserver = observer; staticObserverCallback = callback; }
     void prependObserver(QPropertyObserverPointer observer) {
         observer.ptr->prev = const_cast<QPropertyObserver **>(&firstObserver.ptr);
         firstObserver = observer;

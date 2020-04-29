@@ -71,6 +71,7 @@ private slots:
     void setBindingFunctor();
     void multipleObservers();
     void propertyAlias();
+    void notifiedProperty();
 };
 
 void tst_QProperty::functorBinding()
@@ -767,6 +768,43 @@ void tst_QProperty::propertyAlias()
     QCOMPARE(alias.value(), int());
     QCOMPARE(value1, 22);
     QCOMPARE(value2, 22);
+}
+
+struct ClassWithNotifiedProperty
+{
+    QVector<int> recordedValues;
+
+    void callback() { recordedValues << property.value(); }
+
+    QNotifiedProperty<int, &ClassWithNotifiedProperty::callback> property;
+};
+
+void tst_QProperty::notifiedProperty()
+{
+    ClassWithNotifiedProperty instance;
+    QVERIFY(instance.recordedValues.isEmpty());
+
+    instance.property.setValue(&instance, 42);
+    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.at(0), 42);
+    instance.recordedValues.clear();
+
+    instance.property.setValue(&instance, 42);
+    QVERIFY(instance.recordedValues.isEmpty());
+
+    QProperty<int> injectedValue(100);
+    instance.property.setBinding(&instance, [&injectedValue]() { return injectedValue.value(); });
+
+    QCOMPARE(instance.property.value(), 100);
+    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.at(0), 100);
+    instance.recordedValues.clear();
+
+    injectedValue = 200;
+    QCOMPARE(instance.property.value(), 200);
+    QCOMPARE(instance.recordedValues.count(), 1);
+    QCOMPARE(instance.recordedValues.at(0), 200);
+    instance.recordedValues.clear();
 }
 
 QTEST_MAIN(tst_QProperty);

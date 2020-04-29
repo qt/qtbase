@@ -63,6 +63,8 @@ void QPropertyBindingPrivate::unlinkAndDeref()
 void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
 {
     dirty = true;
+    if (staticObserver)
+        staticObserverCallback(staticObserver);
     if (firstObserver)
         firstObserver.notify(this, propertyDataPtr);
 }
