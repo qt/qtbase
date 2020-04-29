@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -80,6 +80,14 @@ void tst_Warnings::testWarnings()
     // accept redundant space at end to keep compatibility with Qt < 5.2
     QTest::ignoreMessage(QtDebugMsg, "Bubu ");
     qDebug() << "Bubu";
+
+    // Cope with non-ASCII messages; should be understood as UTF-8 (it comes
+    // from source code on both sides), even if the system encoding is
+    // different:
+    QTest::ignoreMessage(QtDebugMsg, "Hej v\xc3\xa4rlden");
+    qDebug() << "Hej v\xc3\xa4rlden";
+    QTest::ignoreMessage(QtInfoMsg, "Hej v\xc3\xa4rlden");
+    qInfo() << "Hej v\xc3\xa4rlden";
 }
 
 void tst_Warnings::testMissingWarnings()

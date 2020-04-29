@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -521,7 +521,7 @@ void QTestLog::ignoreMessage(QtMsgType type, const char *msg)
 {
     QTEST_ASSERT(msg);
 
-    QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QString::fromLocal8Bit(msg));
+    QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QString::fromUtf8(msg));
 }
 
 #if QT_CONFIG(regularexpression)
