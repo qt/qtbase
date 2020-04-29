@@ -2234,7 +2234,7 @@ void QWindow::showNormal()
     quitting the application. Returns \c true on success, false if it has a parent
     window (in which case the top level window should be closed instead).
 
-    \sa destroy(), QGuiApplication::quitOnLastWindowClosed()
+    \sa destroy(), QGuiApplication::quitOnLastWindowClosed(), closeEvent()
 */
 bool QWindow::close()
 {
@@ -2320,6 +2320,19 @@ void QWindow::hideEvent(QHideEvent *ev)
 }
 
 /*!
+    Override this to handle close events (\a ev).
+
+    The function is called when the window is requested to close. Call \l{QEvent::ignore()}
+    on the event if you want to prevent the window from being closed.
+
+    \sa close()
+*/
+void QWindow::closeEvent(QCloseEvent *ev)
+{
+    Q_UNUSED(ev);
+}
+
+/*!
     Override this to handle any event (\a ev) sent to the window.
     Return \c true if the event was recognized and processed.
 
@@ -2395,6 +2408,7 @@ bool QWindow::event(QEvent *ev)
 #endif
 
     case QEvent::Close:
+        closeEvent(static_cast<QCloseEvent*>(ev));
         if (ev->isAccepted()) {
             Q_D(QWindow);
             bool wasVisible = isVisible();
