@@ -200,6 +200,19 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
     }
 }
 
+void QWindowsUiaMainProvider::notifyNameChange(QAccessibleEvent *event)
+{
+    if (QAccessibleInterface *accessible = event->accessibleInterface()) {
+        if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+            VARIANT oldVal, newVal;
+            clearVariant(&oldVal);
+            setVariantString(accessible->text(QAccessible::Name), &newVal);
+            QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_NamePropertyId, oldVal, newVal);
+            ::SysFreeString(newVal.bstrVal);
+        }
+    }
+}
+
 void QWindowsUiaMainProvider::notifySelectionChange(QAccessibleEvent *event)
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
