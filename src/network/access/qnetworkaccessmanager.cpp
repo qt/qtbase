@@ -1248,10 +1248,14 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     }
 
     if (d->statusMonitor.isEnabled()) {
+        if (!d->statusMonitor.isMonitoring() && !d->statusMonitor.start())
+            qWarning(lcNetMon, "failed to start network status monitoring");
+
         // See the code in ctor - QNetworkStatusMonitor allows us to
         // immediately set 'networkAccessible' even before we start
-        // the monitor.
-        if (!d->networkAccessible && !isLocalFile) {
+        // the monitor. If the monitor is unable to monitor then let's
+        // assume there's something wrong with the monitor and keep going.
+        if (d->statusMonitor.isMonitoring() && !d->networkAccessible && !isLocalFile) {
             QHostAddress dest;
             QString host = req.url().host().toLower();
             if (!(dest.setAddress(host) && dest.isLoopback())
@@ -1260,9 +1264,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
                 return new QDisabledNetworkReply(this, req, op);
             }
         }
-
-        if (!d->statusMonitor.isMonitoring() && !d->statusMonitor.start())
-            qWarning(lcNetMon, "failed to start network status monitoring");
     }
 #endif
     QNetworkRequest request = req;
