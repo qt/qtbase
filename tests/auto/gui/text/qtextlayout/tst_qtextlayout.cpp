@@ -142,6 +142,7 @@ private slots:
     void koreanWordWrap();
     void tooManyDirectionalCharctersCrash_qtbug77819();
     void softHyphens();
+    void min_maximumWidth();
 
 private:
     QFont testFont;
@@ -2485,6 +2486,42 @@ void tst_QTextLayout::softHyphens()
         QCOMPARE(line.textLength(), 1);
         QVERIFY(qAbs(line.naturalTextWidth() - shyAdvance) <= 1);
         layout.endLayout();
+    }
+}
+
+void tst_QTextLayout::min_maximumWidth()
+{
+    QString longString("lmong_long_crazy_87235982735_23857239682376923876923876-fuwhfhfw-names-AAAA-deeaois2019-03-03.and.more");
+    QTextLayout layout(longString, testFont);
+
+    for (int wrapMode = QTextOption::NoWrap; wrapMode <= QTextOption::WrapAtWordBoundaryOrAnywhere; ++wrapMode) {
+        QTextOption opt;
+        opt.setWrapMode((QTextOption::WrapMode)wrapMode);
+        layout.setTextOption(opt);
+        layout.beginLayout();
+        while (layout.createLine().isValid()) { }
+        layout.endLayout();
+        const qreal minWidth = layout.minimumWidth();
+        const qreal maxWidth = layout.maximumWidth();
+
+        // Try the layout from slightly wider than the widest (maxWidth)
+        // and narrow it down to slighly narrower than minWidth
+        // layout.maximumWidth() should return the same regardless
+        qreal width = qCeil(maxWidth/10)*10 + 10;    // begin a bit wider
+        const qreal stepSize = 20;
+        while (width >= minWidth - stepSize) {
+            layout.beginLayout();
+            for (;;) {
+                QTextLine line = layout.createLine();
+                if (!line.isValid())
+                    break;
+                line.setLineWidth(width);
+            }
+            layout.endLayout();
+            QCOMPARE(layout.minimumWidth(), minWidth);
+            QCOMPARE(layout.maximumWidth(), maxWidth);
+            width -= stepSize;
+        }
     }
 }
 

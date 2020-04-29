@@ -1757,7 +1757,6 @@ inline bool LineBreakHelper::checkFullOtherwiseExtend(QScriptLine &line)
         return true;
 
     const QFixed oldTextWidth = line.textWidth;
-    minw = qMax(minw, tmpData.textWidth);
     line += tmpData;
     line.textWidth += spaceData.textWidth;
 
@@ -1780,13 +1779,14 @@ inline bool LineBreakHelper::checkFullOtherwiseExtend(QScriptLine &line)
 
 static inline void addNextCluster(int &pos, int end, QScriptLine &line, int &glyphCount,
                                   const QScriptItem &current, const unsigned short *logClusters,
-                                  const QGlyphLayout &glyphs)
+                                  const QGlyphLayout &glyphs, QFixed *clusterWidth = nullptr)
 {
     int glyphPosition = logClusters[pos];
     do { // got to the first next cluster
         ++pos;
         ++line.length;
     } while (pos < end && logClusters[pos] == glyphPosition);
+    QFixed clusterWid = line.textWidth;
     do { // calculate the textWidth for the rest of the current cluster.
         if (!glyphs.attributes[glyphPosition].dontPrint)
             line.textWidth += glyphs.advances[glyphPosition];
@@ -1795,6 +1795,8 @@ static inline void addNextCluster(int &pos, int end, QScriptLine &line, int &gly
 
     Q_ASSERT((pos == end && glyphPosition == current.num_glyphs) || logClusters[pos] == glyphPosition);
 
+    if (clusterWidth)
+        *clusterWidth += (line.textWidth - clusterWid);
     ++glyphCount;
 }
 
@@ -1821,6 +1823,7 @@ void QTextLine::layout_helper(int maxGlyphs)
 
     QTextOption::WrapMode wrapMode = eng->option.wrapMode();
     bool breakany = (wrapMode == QTextOption::WrapAnywhere);
+    const bool breakWordOrAny = breakany || (wrapMode == QTextOption::WrapAtWordBoundaryOrAnywhere);
     lbh.manualWrap = (wrapMode == QTextOption::ManualWrap || wrapMode == QTextOption::NoWrap);
 
     int item = -1;
@@ -1957,9 +1960,10 @@ void QTextLine::layout_helper(int maxGlyphs)
             lbh.whiteSpaceOrObject = false;
             bool sb_or_ws = false;
             lbh.saveCurrentGlyph();
+            QFixed accumulatedTextWidth;
             do {
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
-                               current, lbh.logClusters, lbh.glyphs);
+                               current, lbh.logClusters, lbh.glyphs, &accumulatedTextWidth);
 
                 // This is a hack to fix a regression caused by the introduction of the
                 // whitespace flag to non-breakable spaces and will cause the non-breakable
@@ -1975,11 +1979,16 @@ void QTextLine::layout_helper(int maxGlyphs)
                     || attributes[lbh.currentPosition].lineBreak) {
                     sb_or_ws = true;
                     break;
-                } else if (breakany && attributes[lbh.currentPosition].graphemeBoundary) {
-                    break;
+                } else if (attributes[lbh.currentPosition].graphemeBoundary) {
+                    if (breakWordOrAny) {
+                        lbh.minw = qMax(accumulatedTextWidth, lbh.minw);
+                        accumulatedTextWidth = 0;
+                    }
+                    if (breakany)
+                        break;
                 }
             } while (lbh.currentPosition < end);
-            lbh.minw = qMax(lbh.tmpData.textWidth, lbh.minw);
+            lbh.minw = qMax(accumulatedTextWidth, lbh.minw);
 
             if (lbh.currentPosition > 0 && lbh.currentPosition <= end
                 && (lbh.currentPosition == end || attributes[lbh.currentPosition].lineBreak)
@@ -2106,6 +2115,20 @@ found:
            line.descent.toReal(), line.textWidth.toReal(), lbh.spaceData.width.toReal());
     LB_DEBUG("        : '%s'", eng->layoutData->string.mid(line.from, line.length).toUtf8().data());
 
+    const QFixed trailingSpace = (eng->option.flags() & QTextOption::IncludeTrailingSpaces
+                              ? lbh.spaceData.textWidth
+                              : QFixed(0));
+    if (eng->option.wrapMode() == QTextOption::WrapAtWordBoundaryOrAnywhere) {
+        if ((lbh.maxGlyphs != INT_MAX && lbh.glyphCount > lbh.maxGlyphs)
+            || (lbh.maxGlyphs == INT_MAX && line.textWidth > (line.width -  trailingSpace))) {
+
+            eng->option.setWrapMode(QTextOption::WrapAnywhere);
+            layout_helper(lbh.maxGlyphs);
+            eng->option.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+            return;
+        }
+    }
+
     if (lbh.manualWrap) {
         eng->minWidth = qMax(eng->minWidth, line.textWidth);
         eng->maxWidth = qMax(eng->maxWidth, line.textWidth);
@@ -2116,8 +2139,8 @@ found:
 
     if (line.textWidth > 0 && item < eng->layoutData->items.size())
         eng->maxWidth += lbh.spaceData.textWidth;
-    if (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
-        line.textWidth += lbh.spaceData.textWidth;
+
+    line.textWidth += trailingSpace;
     if (lbh.spaceData.length) {
         line.trailingSpaces = lbh.spaceData.length;
         line.hasTrailingSpaces = true;
@@ -2125,18 +2148,6 @@ found:
 
     line.justified = false;
     line.gridfitted = false;
-
-    if (eng->option.wrapMode() == QTextOption::WrapAtWordBoundaryOrAnywhere) {
-        if ((lbh.maxGlyphs != INT_MAX && lbh.glyphCount > lbh.maxGlyphs)
-            || (lbh.maxGlyphs == INT_MAX && line.textWidth > line.width)) {
-
-            eng->option.setWrapMode(QTextOption::WrapAnywhere);
-            line.length = 0;
-            line.textWidth = 0;
-            layout_helper(lbh.maxGlyphs);
-            eng->option.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-        }
-    }
 }
 
 /*!
