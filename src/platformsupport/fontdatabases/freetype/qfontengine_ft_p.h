@@ -192,7 +192,6 @@ private:
     int synthesized() const override;
 
     void initializeHeightMetrics() const override;
-    bool processHheaTable() const override;
     QFixed capHeight() const override;
     QFixed xHeight() const override;
     QFixed averageCharWidth() const override;

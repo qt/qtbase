@@ -122,7 +122,7 @@ public:
 
     void setUniqueFamilyName(const QString &newName) { m_uniqueFamilyName = newName; }
 
-    bool processHheaTable() const override;
+    void initializeHeightMetrics() const override;
 
 private:
     QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform, const QColor &color = QColor());

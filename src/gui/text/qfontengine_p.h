@@ -375,8 +375,8 @@ protected:
     mutable bool m_heightMetricsQueried;
 
     virtual void initializeHeightMetrics() const;
-    virtual bool processHheaTable() const;
-    virtual bool processOS2Table() const;
+    bool processHheaTable() const;
+    bool processOS2Table() const;
 
 private:
     struct GlyphCacheEntry {

@@ -130,7 +130,7 @@ public:
     void setUniqueFamilyName(const QString &newName) { uniqueFamilyName = newName; }
 
 protected:
-    bool processHheaTable() const override;
+    void initializeHeightMetrics() const override;
 
 private:
     QWindowsNativeImage *drawGDIGlyph(HFONT font, glyph_t, int margin, const QTransform &xform,

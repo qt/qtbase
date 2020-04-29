@@ -450,13 +450,14 @@ bool QFontEngine::processHheaTable() const
 
 void QFontEngine::initializeHeightMetrics() const
 {
-    if (!processHheaTable()) {
-        qWarning() << "Cannot determine metrics for font" << fontDef.family;
-        m_ascent = m_descent = m_leading = 1;
-    }
+    bool hasEmbeddedBitmaps = !getSfntTable(MAKE_TAG('E', 'B', 'L', 'C')).isEmpty() || !getSfntTable(MAKE_TAG('C', 'B', 'L', 'C')).isEmpty();
+    if (!hasEmbeddedBitmaps) {
+        // Get HHEA table values if available
+        processHheaTable();
 
-    // Allow OS/2 metrics to override if present
-    processOS2Table();
+        // Allow OS/2 metrics to override if present
+        processOS2Table();
+    }
 
     m_heightMetricsQueried = true;
 }

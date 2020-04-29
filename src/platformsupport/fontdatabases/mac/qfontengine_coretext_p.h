@@ -139,7 +139,7 @@ protected:
     bool hasColorGlyphs() const;
     bool shouldAntialias() const;
     bool shouldSmoothFont() const;
-    bool processHheaTable() const override;
+    void initializeHeightMetrics() const override;
 
     QCFType<CTFontRef> ctfont;
     QCFType<CGFontRef> cgFont;

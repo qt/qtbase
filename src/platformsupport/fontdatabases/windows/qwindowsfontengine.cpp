@@ -610,15 +610,13 @@ void QWindowsFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qre
 }
 #endif // Q_CC_MINGW
 
-bool QWindowsFontEngine::processHheaTable() const
+void QWindowsFontEngine::initializeHeightMetrics() const
 {
-    if (!QFontEngine::processHheaTable()) {
-        m_ascent = tm.tmAscent;
-        m_descent = tm.tmDescent;
-        m_leading = tm.tmExternalLeading;
-    }
+    m_ascent = tm.tmAscent;
+    m_descent = tm.tmDescent;
+    m_leading = tm.tmExternalLeading;
 
-    return true;
+    QFontEngine::initializeHeightMetrics();
 }
 
 bool QWindowsFontEngine::hasUnreliableGlyphOutline() const

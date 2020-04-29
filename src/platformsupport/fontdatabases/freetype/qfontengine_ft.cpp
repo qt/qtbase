@@ -1243,6 +1243,10 @@ int QFontEngineFT::synthesized() const
 
 void QFontEngineFT::initializeHeightMetrics() const
 {
+    m_ascent = QFixed::fromFixed(metrics.ascender);
+    m_descent = QFixed::fromFixed(-metrics.descender);
+    m_leading = QFixed::fromFixed(metrics.height - metrics.ascender + metrics.descender);
+
     QFontEngine::initializeHeightMetrics();
 
     if (scalableBitmapScaleFactor != 1) {
@@ -1250,17 +1254,6 @@ void QFontEngineFT::initializeHeightMetrics() const
         m_descent *= scalableBitmapScaleFactor;
         m_leading *= scalableBitmapScaleFactor;
     }
-}
-
-bool QFontEngineFT::processHheaTable() const
-{
-    if (!QFontEngine::processHheaTable()) {
-        m_ascent = QFixed::fromFixed(metrics.ascender);
-        m_descent = QFixed::fromFixed(-metrics.descender);
-        m_leading = QFixed::fromFixed(metrics.height - metrics.ascender + metrics.descender);
-    }
-
-    return true;
 }
 
 QFixed QFontEngineFT::capHeight() const

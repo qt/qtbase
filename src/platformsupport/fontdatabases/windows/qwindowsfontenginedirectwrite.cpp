@@ -343,18 +343,16 @@ QString QWindowsFontEngineDirectWrite::filenameFromFontFile(IDWriteFontFile *fon
     return ret;
 }
 
-bool QWindowsFontEngineDirectWrite::processHheaTable() const
+void QWindowsFontEngineDirectWrite::initializeHeightMetrics() const
 {
-    if (!QFontEngine::processHheaTable()) {
-        DWRITE_FONT_METRICS metrics;
-        m_directWriteFontFace->GetMetrics(&metrics);
+    DWRITE_FONT_METRICS metrics;
+    m_directWriteFontFace->GetMetrics(&metrics);
 
-        m_ascent = DESIGN_TO_LOGICAL(metrics.ascent);
-        m_descent = DESIGN_TO_LOGICAL(metrics.descent);
-        m_leading = DESIGN_TO_LOGICAL(metrics.lineGap);
-    }
+    m_ascent = DESIGN_TO_LOGICAL(metrics.ascent);
+    m_descent = DESIGN_TO_LOGICAL(metrics.descent);
+    m_leading = DESIGN_TO_LOGICAL(metrics.lineGap);
 
-    return true;
+    QFontEngine::initializeHeightMetrics();
 }
 
 void QWindowsFontEngineDirectWrite::collectMetrics()

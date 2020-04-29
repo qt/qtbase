@@ -381,15 +381,13 @@ QT_WARNING_POP
     return ret;
 }
 
-bool QCoreTextFontEngine::processHheaTable() const
+void QCoreTextFontEngine::initializeHeightMetrics() const
 {
-    if (!QFontEngine::processHheaTable()) {
-        m_ascent = QFixed::fromReal(CTFontGetAscent(ctfont));
-        m_descent = QFixed::fromReal(CTFontGetDescent(ctfont));
-        m_leading = QFixed::fromReal(CTFontGetLeading(ctfont));
-    }
+    m_ascent = QFixed::fromReal(CTFontGetAscent(ctfont));
+    m_descent = QFixed::fromReal(CTFontGetDescent(ctfont));
+    m_leading = QFixed::fromReal(CTFontGetLeading(ctfont));
 
-    return true;
+    QFontEngine::initializeHeightMetrics();
 }
 
 QFixed QCoreTextFontEngine::capHeight() const
