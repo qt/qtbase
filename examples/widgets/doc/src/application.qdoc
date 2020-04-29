@@ -312,9 +312,8 @@
     If we successfully opened the file, we use a QTextStream object
     to read in the data. QTextStream automatically converts the 8-bit
     data into a Unicode QString and supports various encodings. If no
-    encoding is specified, QTextStream assumes the file is written
-    using the system's default 8-bit encoding (for example, Latin-1;
-    see QTextCodec::codecForLocale() for details).
+    encoding is specified, QTextStream assumes the file is encoded in
+    UTF-8.
 
     Since the call to QTextStream::readAll() might take some time, we
     set the cursor to be Qt::WaitCursor for the entire application

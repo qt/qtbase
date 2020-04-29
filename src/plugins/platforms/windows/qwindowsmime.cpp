@@ -42,7 +42,6 @@
 
 #include <QtGui/private/qinternalmimedata_p.h>
 #include <QtCore/qbytearraymatcher.h>
-#include <QtCore/qtextcodec.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qdir.h>

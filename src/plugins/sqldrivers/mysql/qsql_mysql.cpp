@@ -48,9 +48,6 @@
 #include <qsqlquery.h>
 #include <qsqlrecord.h>
 #include <qstringlist.h>
-#if QT_CONFIG(textcodec)
-#include <qtextcodec.h>
-#endif
 #include <qvector.h>
 #include <qfile.h>
 #include <qdebug.h>

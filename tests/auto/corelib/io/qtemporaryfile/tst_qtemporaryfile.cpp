@@ -36,7 +36,6 @@
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qset.h>
-#include <qtextcodec.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 

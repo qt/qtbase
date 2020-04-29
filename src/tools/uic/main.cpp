@@ -35,7 +35,6 @@
 #include <qdir.h>
 #include <qhashfunctions.h>
 #include <qtextstream.h>
-#include <qtextcodec.h>
 #include <qcoreapplication.h>
 #include <qcommandlineoption.h>
 #include <qcommandlineparser.h>

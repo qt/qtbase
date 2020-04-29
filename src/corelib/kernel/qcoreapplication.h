@@ -60,7 +60,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QCoreApplicationPrivate;
-class QTextCodec;
 class QTranslator;
 class QPostEventList;
 class QStringList;

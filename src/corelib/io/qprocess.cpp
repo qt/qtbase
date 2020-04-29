@@ -148,7 +148,7 @@ QT_BEGIN_NAMESPACE
     binary data (except for the NUL character). QProcessEnvironment will preserve
     such variables, but does not support manipulating variables whose names or
     values cannot be encoded by the current locale settings (see
-    QTextCodec::codecForLocale).
+    QString::toLocal8Bit).
 
     On Windows, the variable names are case-insensitive, but case-preserving.
     QProcessEnvironment behaves accordingly.

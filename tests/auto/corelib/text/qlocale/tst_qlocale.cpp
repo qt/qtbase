@@ -33,7 +33,6 @@
 #include <qdir.h>
 #include <qfileinfo.h>
 #include <QScopedArrayPointer>
-#include <qtextcodec.h>
 #include <qdatetime.h>
 #if QT_CONFIG(process)
 # include <qprocess.h>

@@ -165,7 +165,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     parameter: qSetFieldWidth(), qSetPadChar(), and
     qSetRealNumberPrecision().
 
-    \sa QDataStream, QIODevice, QFile, QBuffer, QTcpSocket, {Text Codecs Example}
+    \sa QDataStream, QIODevice, QFile, QBuffer, QTcpSocket
 */
 
 /*! \enum QTextStream::RealNumberNotation

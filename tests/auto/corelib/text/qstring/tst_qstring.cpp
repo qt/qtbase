@@ -41,7 +41,6 @@
 #include <QtTest/QtTest>
 #include <qregexp.h>
 #include <qregularexpression.h>
-#include <qtextcodec.h>
 #include <qtextstream.h>
 #include <qstringlist.h>
 #include <qstringmatcher.h>
@@ -4184,7 +4183,6 @@ void tst_QString::stringRef_utf8()
     QCOMPARE( utf8, QByteArray(ref.toUtf8()) );
 }
 
-// copied to tst_QTextCodec::utf8Codec_data()
 void tst_QString::fromUtf8_data()
 {
     QTest::addColumn<QByteArray>("utf8");

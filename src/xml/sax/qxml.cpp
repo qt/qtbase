@@ -39,10 +39,8 @@
 
 #include "qxml.h"
 #include "qxml_p.h"
-#if QT_CONFIG(textcodec)
-#include "qtextcodec.h"
-#endif
 #include "qbuffer.h"
+#include "qstringconverter.h"
 #if QT_CONFIG(regularexpression)
 #include "qregularexpression.h"
 #endif
@@ -1301,7 +1299,6 @@ void QXmlInputSource::fetchData()
     }
 }
 
-#if QT_CONFIG(textcodec)
 static QString extractEncodingDecl(const QString &text, bool *needMoreText)
 {
     *needMoreText = false;
@@ -1343,7 +1340,6 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
 
     return encoding;
 }
-#endif // textcodec
 
 /*!
     This function reads the XML file from \a data and tries to
@@ -1358,10 +1354,6 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
 */
 QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
 {
-#if !QT_CONFIG(textcodec)
-    Q_UNUSED(beginning);
-    return QString::fromLatin1(data.constData(), data.size());
-#else
     if (data.size() == 0)
         return QString();
     if (beginning) {
@@ -1443,7 +1435,6 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     }
 
     return input;
-#endif
 }
 
 

@@ -34,7 +34,6 @@
 #include <qfile.h>
 #include <qdir.h>
 #include <qset.h>
-#include <qtextcodec.h>
 #include <QtTest/private/qtesthelpers_p.h>
 #ifdef Q_OS_WIN
 # include <windows.h>

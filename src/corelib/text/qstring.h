@@ -75,7 +75,6 @@ class QRegularExpression;
 class QRegularExpressionMatch;
 class QString;
 class QStringList;
-class QTextCodec;
 class QStringRef;
 template <typename T> class QVector;
 
@@ -1021,7 +1020,6 @@ private:
     static qlonglong toIntegral_helper(const QChar *data, int len, bool *ok, int base);
     static qulonglong toIntegral_helper(const QChar *data, uint len, bool *ok, int base);
     void replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen);
-    friend class QTextCodec;
     friend class QStringRef;
     friend class QStringView;
     friend class QByteArray;

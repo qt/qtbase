@@ -52,9 +52,6 @@
 #if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
 #endif
-#if QT_CONFIG(textcodec)
-#include <qtextcodec.h>
-#endif
 #include <qtextstream.h>
 #include <qxml.h>
 #include <qvariant.h>
@@ -5942,7 +5939,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     const QDomNodePrivate* n = first;
 
     if(encUsed == QDomNode::EncodingFromDocument) {
-#if QT_CONFIG(textcodec) && QT_CONFIG(regularexpression)
+#if QT_CONFIG(regularexpression)
         const QDomNodePrivate* n = first;
 
         if (n && n->isProcessingInstruction() && n->nodeName() == QLatin1String("xml")) {
@@ -5977,11 +5974,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     else {
 
         // Write out the XML declaration.
-#if !QT_CONFIG(textcodec)
-        const QLatin1String codecName("UTF-8");
-#else
         const QByteArray codecName = QStringConverter::nameForEncoding(s.encoding());
-#endif
 
         s << "<?xml version=\"1.0\" encoding=\""
           << codecName

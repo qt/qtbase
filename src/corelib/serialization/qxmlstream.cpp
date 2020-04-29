@@ -45,9 +45,6 @@
 #include <qdebug.h>
 #include <qfile.h>
 #include <stdio.h>
-#if QT_CONFIG(textcodec)
-#include <qtextcodec.h>
-#endif
 #include <qstringconverter.h>
 #include <qstack.h>
 #include <qbuffer.h>

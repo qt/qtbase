@@ -36,7 +36,6 @@
 #include <qcoreapplication.h>
 
 #include <qfileinfo.h>
-#include <qtextcodec.h>
 #include <qmap.h>
 
 Q_DECLARE_METATYPE(QUrl::FormattingOptions)

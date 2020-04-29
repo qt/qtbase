@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qlibinputkeyboard_p.h"
-#include <QtCore/QTextCodec>
 #include <QtCore/QLoggingCategory>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qinputdevicemanager_p.h>
