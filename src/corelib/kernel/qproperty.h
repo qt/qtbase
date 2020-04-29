@@ -316,10 +316,11 @@ public:
 
 #ifndef Q_CLANG_QDOC
     template <typename Functor>
-    QPropertyBinding<T> setBinding(Functor f,
-                                   const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION)
+    QPropertyBinding<T> setBinding(Functor &&f,
+                                   const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
+                                   std::enable_if_t<std::is_invocable_v<Functor>> * = nullptr)
     {
-        return setBinding(Qt::makePropertyBinding(f, location));
+        return setBinding(Qt::makePropertyBinding(std::forward<Functor>(f), location));
     }
 #else
     template <typename Functor>

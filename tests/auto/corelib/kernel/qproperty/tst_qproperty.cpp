@@ -68,6 +68,7 @@ private slots:
     void genericPropertyBinding();
     void genericPropertyBindingBool();
     void staticChangeHandler();
+    void setBindingFunctor();
 };
 
 void tst_QProperty::functorBinding()
@@ -672,6 +673,17 @@ void tst_QProperty::staticChangeHandler()
     t.x = 100;
     QVector<int> values{42, 100};
     QCOMPARE(t.observedValues, values);
+}
+
+void tst_QProperty::setBindingFunctor()
+{
+    QProperty<int> property;
+    QProperty<int> injectedValue(100);
+    // Make sure that this picks the setBinding overload that takes a functor and
+    // moves it correctly.
+    property.setBinding([&injectedValue]() { return injectedValue.value(); });
+    injectedValue = 200;
+    QCOMPARE(property.value(), 200);
 }
 
 QTEST_MAIN(tst_QProperty);
