@@ -5206,7 +5206,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
 {
     if (string.isNull())
         return QByteArray();
-    QStringEncoder fromUtf16(QStringEncoder::Locale, QStringEncoder::Flag::Stateless);
+    QStringEncoder fromUtf16(QStringEncoder::System, QStringEncoder::Flag::Stateless);
     return fromUtf16(string);
 }
 
@@ -5392,7 +5392,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
         QString::DataPointer empty = { pair.first, pair.second, 0 };
         return QString(empty);
     }
-    QStringDecoder toUtf16(QStringDecoder::Locale, QStringDecoder::Flag::Stateless);
+    QStringDecoder toUtf16(QStringDecoder::System, QStringDecoder::Flag::Stateless);
     return toUtf16(str, size);
 }
 

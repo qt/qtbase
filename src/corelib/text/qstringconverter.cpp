@@ -582,7 +582,7 @@ QChar *QUtf8::convertToUnicode(QChar *out, const char *chars, qsizetype len, QSt
 {
     Q_ASSERT(state);
 
-    bool headerdone = state->internalState & HeaderDone || state->flags & QStringConverter::Flag::DontSkipInitialBom;
+    bool headerdone = state->internalState & HeaderDone || state->flags & QStringConverter::Flag::ConvertInitialBom;
 
     ushort replacement = QChar::ReplacementCharacter;
     if (state->flags & QStringConverter::Flag::ConvertInvalidToNull)
@@ -840,7 +840,7 @@ QChar *QUtf16::convertToUnicode(QChar *out, const char *chars, qsizetype len, QS
     }
 
     bool headerdone = state && state->internalState & HeaderDone;
-    if (state->flags & QStringConverter::Flag::DontSkipInitialBom)
+    if (state->flags & QStringConverter::Flag::ConvertInitialBom)
         headerdone = true;
 
     if (!headerdone || state->remainingChars) {
@@ -1016,7 +1016,7 @@ QChar *QUtf32::convertToUnicode(QChar *out, const char *chars, qsizetype len, QS
     }
 
     bool headerdone = state->internalState & HeaderDone;
-    if (state->flags & QStringConverter::Flag::DontSkipInitialBom)
+    if (state->flags & QStringConverter::Flag::ConvertInitialBom)
         headerdone = true;
 
     int num = state->remainingChars;
@@ -1288,26 +1288,6 @@ QByteArray QLocal8Bit::convertFromUnicode(const QChar *ch, qsizetype uclen, QStr
 }
 #endif
 
-/*!
-    \enum QStringConverter::Flag
-
-    \value Default Default conversion rules apply.
-    \value ConvertInvalidToNull  If this flag is set, each invalid input
-                                 character is output as a null character. If it is not set,
-                                 invalid input characters are represented as QChar::ReplacementCharacter
-                                 if the output encoding can represent that character, otherwise as a question mark.
-    \value WriteBom When converting from a QString to an output encoding, write a QChar::ByteOrderMark as the first
-                    character if the output encoding supports this. This is the case for UTF-8, UTF-16 and UTF-32
-                    encodings.
-    \value DontSkipInitialBom When converting from an input encoding to a QString the QTextDecoder usually skips an
-                              leading QChar::ByteOrderMark. When this flag is set, the byte order mark will not be
-                              skipped, but inserted at the start of the created QString.
-
-    \value Stateless Ignore possible converter states between different function calls
-           to encode or decode strings.
-*/
-
-
 void QStringConverter::State::clear()
 {
     if (clearFn)
@@ -1440,6 +1420,132 @@ static qsizetype toUtf32Len(qsizetype l) { return 4*(l + 1); }
 static qsizetype fromLatin1Len(qsizetype l) { return l + 1; }
 static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
 
+
+
+/*!
+  \class QStringConverterBase
+  \internal
+
+  Just a common base class for QStringConverter and QTextCodec
+*/
+
+/*!
+    \class QStringConverter
+    \inmodule QtCore
+    \brief The QStringConverter class provides a base class for encoding and decoding text.
+    \reentrant
+    \ingroup i18n
+
+    Qt uses UTF-16 to store, draw and manipulate strings. In many
+    situations you may wish to deal with data that uses a different
+    encoding. Most text data transferred over files and network connections is encoded
+    in UTF-8.
+
+    The QStringConverter class is a base class for the \l {QStringEncoder} and
+    \l {QStringDecoder} classes that help with converting between different
+    text encodings. QStringDecoder can decode a string from an encoded representation
+    into UTF-16, the format Qt uses internally. QStringEncoder does the opposite
+    operation, encoding UTF-16 encoded data (usually in the form of a QString) to
+    the requested encoding.
+
+    The supported encodings are:
+
+    \list
+    \li UTF-8
+    \li UTF-16
+    \li UTF-16BE
+    \li UTF-16LE
+    \li UTF-32
+    \li UTF-32BE
+    \li UTF-32LE
+    \li ISO-8859-1 (Latin-1)
+    \li The system encoding
+    \endlist
+
+    \l {QStringConverter}s can be used as follows to convert some encoded
+    string to and from UTF-16.
+
+    Suppose you have some string encoded in UTF-8, and
+    want to convert it to a QString. The simple way
+    to do it is to use a \l {QStringDecoder} like this:
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 0
+
+    After this, \c string holds the text in decoded form.
+    Converting a string from Unicode to the local encoding is just as
+    easy using the \l {QStringEncoder} class:
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 1
+
+    To read or write text files in various encodings, use QTextStream and
+    its \l{QTextStream::setEncoding()}{setEncoding()} function.
+
+    Some care must be taken when trying to convert the data in chunks,
+    for example, when receiving it over a network. In such cases it is
+    possible that a multi-byte character will be split over two
+    chunks. At best this might result in the loss of a character and
+    at worst cause the entire conversion to fail.
+
+    Both QStringEncoder and QStringDecoder make this easy, by tracking
+    this in an internal state. So simply calling the encoder or decoder
+    again with the next chunk of data will automatically continue encoding
+    or decoding the data correctly:
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 2
+
+    The QStringDecoder object maintains state between chunks and therefore
+    works correctly even if a multi-byte character is split between
+    chunks.
+
+    QStringConverter objects can't be copied because of their internal state, but
+    can be moved.
+
+    \sa QTextStream, QStringDecoder, QStringEncoder
+*/
+
+/*!
+    \enum QStringConverter::Flag
+
+    \value Default Default conversion rules apply.
+    \value ConvertInvalidToNull  If this flag is set, each invalid input
+                                 character is output as a null character. If it is not set,
+                                 invalid input characters are represented as QChar::ReplacementCharacter
+                                 if the output encoding can represent that character, otherwise as a question mark.
+    \value WriteBom When converting from a QString to an output encoding, write a QChar::ByteOrderMark as the first
+                    character if the output encoding supports this. This is the case for UTF-8, UTF-16 and UTF-32
+                    encodings.
+    \value ConvertInitialBom When converting from an input encoding to a QString the QStringDecoder usually skips an
+                              leading QChar::ByteOrderMark. When this flag is set, the byte order mark will not be
+                              skipped, but converted to utf-16 and inserted at the start of the created QString.
+    \value Stateless Ignore possible converter states between different function calls
+           to encode or decode strings. This will also cause the QStringConverter to raise an error if an incomplete
+           sequence of data is encountered.
+*/
+
+/*!
+    \enum QStringConverter::Encoding
+    \value Utf8 Create a converter to or from UTF-8
+    \value Utf16 Create a converter to or from UTF-16. When decoding, the byte order will get automatically
+           detected by a leading byte order mark. If none exists or when encoding, the system byte order will
+           be assumed.
+    \value Utf16BE Create a converter to or from big endian UTF-16.
+    \value Utf16LE Create a converter to or from litte endian UTF-16.
+    \value Utf32 Create a converter to or from UTF-32. When decoding, the byte order will get automatically
+           detected by a leading byte order mark. If none exists or when encoding, the system byte order will
+           be assumed.
+    \value Utf32BE Create a converter to or from big endian UTF-32.
+    \value Utf32LE Create a converter to or from litte endian UTF-32.
+    \value Latin1 Create a converter to or from ISO-8859-1 (Latin1).
+    \value System Create a converter to or from the underlying encoding of the
+           operating systems locale. This is always assumed to be UTF-8 for Unix based
+           systems. On Windows, this converts to and from the locale code page.
+*/
+
+/*!
+    \struct QStringConverter::Interface
+    \internal
+*/
+
 const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringConverter::LastEncoding + 1] =
 {
     { "UTF-8", QUtf8::convertToUnicode, fromUtf8Len, QUtf8::convertFromUnicode, toUtf8Len },
@@ -1473,14 +1579,66 @@ static bool nameMatch(const char *a, const char *b)
     return !*a && !*b;
 }
 
-QStringConverter::QStringConverter(const char *name)
-    : iface(nullptr)
+
+/*!
+    \fn constexpr QStringConverter::QStringConverter()
+    \internal
+*/
+
+/*!
+    \fn constexpr QStringConverter::QStringConverter(Encoding, Flags)
+    \internal
+*/
+
+/*!
+    \internal
+*/
+QStringConverter::QStringConverter(const char *name, Flags f)
+    : iface(nullptr), state(f)
 {
     auto e = encodingForName(name);
     if (e)
         iface = encodingInterfaces + int(e.value());
 }
 
+/*!
+    \fn bool QStringConverter::isValid() const
+
+    Returns true if this is a valid string converter that can be used for encoding or
+    decoding text.
+
+    Default constructed string converters or converters constructed with an unsupported
+    name are not valid.
+*/
+
+/*!
+    \fn void QStringConverter::resetState()
+
+    Resets the internal state of the converter, clearing potential errors or partial
+    conversions.
+*/
+
+/*!
+    \fn bool QStringConverter::hasError() const
+
+    Returns true if a conversion could not correctly convert a character. This could for example
+    get triggered by an invalid UTF-8 sequence or when a character can't get converted due to
+    limitations in the target encoding.
+*/
+
+/*!
+    \fn const char *QStringConverter::name() const
+
+    Returns the canonical name of the encoding this QStringConverter can encode or decode.
+    Returns a nullptr if the converter is not valid.
+
+    \sa isValid()
+*/
+
+/*!
+    Returns an optional encoding for \a name. The optional is empty if the name could
+    not get converted to a valid encoding.
+*/
 std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name)
 {
     for (int i = 0; i < LastEncoding + 1; ++i) {
@@ -1492,6 +1650,13 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(cons
     return std::nullopt;
 }
 
+/*!
+   Returns the encoding for the content of \a buf if it can be determined.
+   \a expectedFirstCharacter can be passed as an additional hint to help determine
+   the encoding.
+
+   The returned optional is empty, if the encoding is unclear.
+ */
 std::optional<QStringConverter::Encoding> QStringConverter::encodingForData(const char *buf, qsizetype arraySize, char16_t expectedFirstCharacter)
 {
     if (arraySize > 3) {
@@ -1583,5 +1748,205 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 {
     return encodingInterfaces[int(e)].name;
 }
+
+/*!
+    \class QStringEncoder
+    \inmodule QtCore
+    \brief The QStringEncoder class provides a state-based encoder for text.
+    \reentrant
+    \ingroup i18n
+
+    A text encoder converts text from Qt's internal representation into an encoded
+    text format using a specific encoding.
+
+    Converting a string from Unicode to the local encoding can be achieved
+    using the following code:
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 1
+
+    The encoder remembers any state that is required between calls, so converting
+    data received in chunks, for example, when receiving it over a network, is just as
+    easy, by calling the encoder whenever new data is available:
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 3
+
+    The QStringEncoder object maintains state between chunks and therefore
+    works correctly even if a UTF-16 surrogate character is split between
+    chunks.
+
+    QStringEncoder objects can't be copied because of their internal state, but
+    can be moved.
+
+    \sa QStringConverter, QStringDecoder
+*/
+
+/*!
+    \fn constexpr QStringEncoder::QStringEncoder(const Interface *i)
+    \internal
+*/
+
+/*!
+    \fn constexpr QStringEncoder::QStringEncoder()
+
+    Default constructs an encoder. The default encoder is not valid,
+    and can't be used for converting text.
+*/
+
+/*!
+    \fn constexpr QStringEncoder::QStringEncoder(Encoding encoding, Flags flags = Flag::Default)
+
+    Creates an encoder object using \a encoding and \a flags.
+*/
+
+/*!
+    \fn constexpr QStringEncoder::QStringEncoder(const char *name, Flags flags = Flag::Default)
+
+    Creates an encoder object using \a name and \a flags.
+    If \a name is not the name of a known encoding an invalid converter will get created.
+
+    \sa isValid()
+*/
+
+/*!
+    \fn QByteArray QStringEncoder::operator()(const QString &in)
+
+    Converts \a in and returns the data as a byte array.
+*/
+
+/*!
+    \fn QByteArray QStringEncoder::operator()(const QStringView in)
+    \overload
+
+    Converts \a in and returns the data as a byte array.
+*/
+
+/*!
+    \fn QByteArray QStringEncoder::operator()(const QChar *in, qsizetype length)
+    \overload
+
+    Converts \a length QChars from \a in and returns the data as a byte array.
+*/
+
+/*!
+    \fn qsizetype QStringEncoder::requiredSpace(qsizetype inputLength) const
+
+    Returns the maximum amount of characters required to be able to process
+    \a inputLength decoded data.
+
+    \sa appendToBuffer
+*/
+
+/*!
+    \fn char *QStringEncoder::appendToBuffer(char *out, const QChar *in, qsizetype length)
+
+    Encodes \a length QChars from \a in and writes the encoded result into the buffer
+    starting at \a out. Returns a pointer to the end of data written.
+
+    \a out needs to be large enough to be able to hold all the decoded data. Use
+    \l{requiredSpace} to determine the maximum size requirements to be able to encode
+    a QChar buffer of \a length.
+
+    \sa requiredSpace
+*/
+
+/*!
+    \class QStringDecoder
+    \inmodule QtCore
+    \brief The QStringDecoder class provides a state-based decoder for text.
+    \reentrant
+    \ingroup i18n
+
+    A text decoder converts text an encoded text format that uses a specific encoding
+    into Qt's internal representation.
+
+    Converting encoded data into a QString can be achieved
+    using the following code:
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 0
+
+    The decoder remembers any state that is required between calls, so converting
+    data received in chunks, for example, when receiving it over a network, is just as
+    easy, by calling the decoder whenever new data is available:
+
+    \snippet code/src_corelib_text_qstringconverter.cpp 2
+
+    The QStringDecoder object maintains state between chunks and therefore
+    works correctly even if chunks are split in the middle of a multi-byte character
+    sequence.
+
+    QStringDecoder objects can't be copied because of their internal state, but
+    can be moved.
+
+    \sa QStringConverter, QStringEncoder
+*/
+
+/*!
+    \fn constexpr QStringDecoder::QStringDecoder(const Interface *i)
+    \internal
+*/
+
+/*!
+    \fn constexpr QStringDecoder::QStringDecoder()
+
+    Default constructs an decoder. The default decoder is not valid,
+    and can't be used for converting text.
+*/
+
+/*!
+    \fn constexpr QStringDecoder::QStringDecoder(Encoding encoding, Flags flags = Flag::Default)
+
+    Creates an decoder object using \a encoding and \a flags.
+*/
+
+/*!
+    \fn constexpr QStringDecoder::QStringDecoder(const char *name, Flags flags = Flag::Default)
+
+    Creates an decoder object using \a name and \a flags.
+    If \a name is not the name of a known encoding an invalid converter will get created.
+
+    \sa isValid()
+*/
+
+/*!
+    \fn QByteArray QStringDecoder::operator()(const QString &in)
+
+    Converts \a in and returns the data as a QString.
+*/
+
+/*!
+    \fn QByteArray QStringDecoder::operator()(const QStringView in)
+    \overload
+
+    Converts \a in and returns the data as a QString.
+*/
+
+/*!
+    \fn QByteArray QStringDecoder::operator()(const QChar *in, qsizetype length)
+    \overload
+
+    Converts \a length QChars from \a in and returns the data as a QString.
+*/
+
+/*!
+    \fn qsizetype QStringDecoder::requiredSpace(qsizetype inputLength) const
+
+    Returns the maximum amount of UTF-16 code units required to be able to process
+    \a inputLength encoded data.
+
+    \sa appendToBuffer
+*/
+
+/*!
+    \fn QChar *QStringDecoder::appendToBuffer(QChar *out, const char *in, qsizetype length)
+
+    Decodes \a length bytes from \a in and writes the decoded result into the buffer
+    starting at \a out. Returns a pointer to the end of data written.
+
+    \a out needs to be large enough to be able to hold all the decoded data. Use
+    \l{requiredSpace} to determine the maximum size requirements to decode an encoded
+    data buffer of \a length.
+
+    \sa requiredSpace
+*/
 
 QT_END_NAMESPACE

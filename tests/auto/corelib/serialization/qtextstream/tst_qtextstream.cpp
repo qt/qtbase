@@ -1792,7 +1792,7 @@ void tst_QTextStream::utf8IncompleteAtBufferBoundary()
     if (!useLocale)
         in.setEncoding(QStringConverter::Utf8);
     else
-        in.setEncoding(QStringConverter::Locale);
+        in.setEncoding(QStringConverter::System);
 
     int i = 0;
     do {

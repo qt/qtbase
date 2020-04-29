@@ -1432,12 +1432,12 @@ void tst_QStringConverter::utfHeaders_data()
         << QString::fromLatin1("hello");
     QTest::newRow("utf8 bom ignore header")
         << QStringConverter::Utf8
-        << QStringConverter::Flag::DontSkipInitialBom
+        << QStringConverter::Flag::ConvertInitialBom
         << QByteArray("\xef\xbb\xbfhello")
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hello"));
     QTest::newRow("utf8 nobom ignore header")
         << QStringConverter::Utf8
-        << QStringConverter::Flag::DontSkipInitialBom
+        << QStringConverter::Flag::ConvertInitialBom
         << QByteArray("hello")
         << QString::fromLatin1("hello");
 
@@ -1459,7 +1459,7 @@ void tst_QStringConverter::utfHeaders_data()
             << QString::fromLatin1("hel");
         QTest::newRow("utf16 bom be ignore header")
             << QStringConverter::Utf16
-            << QStringConverter::Flag::DontSkipInitialBom
+            << QStringConverter::Flag::ConvertInitialBom
             << QByteArray("\xfe\xff\0h\0e\0l", 8)
             << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
     } else {
@@ -1470,7 +1470,7 @@ void tst_QStringConverter::utfHeaders_data()
             << QString::fromLatin1("hel");
         QTest::newRow("utf16 bom le ignore header")
             << QStringConverter::Utf16
-            << QStringConverter::Flag::DontSkipInitialBom
+            << QStringConverter::Flag::ConvertInitialBom
             << QByteArray("\xff\xfeh\0e\0l\0", 8)
             << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
     }
@@ -1487,7 +1487,7 @@ void tst_QStringConverter::utfHeaders_data()
         << QString::fromLatin1("hel");
     QTest::newRow("utf16-be bom be ignore header")
         << QStringConverter::Utf16BE
-        << QStringConverter::Flag::DontSkipInitialBom
+        << QStringConverter::Flag::ConvertInitialBom
         << QByteArray("\xfe\xff\0h\0e\0l", 8)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
 
@@ -1503,7 +1503,7 @@ void tst_QStringConverter::utfHeaders_data()
         << QString::fromLatin1("hel");
     QTest::newRow("utf16-le bom le ignore header")
         << QStringConverter::Utf16LE
-        << QStringConverter::Flag::DontSkipInitialBom
+        << QStringConverter::Flag::ConvertInitialBom
         << QByteArray("\xff\xfeh\0e\0l\0", 8)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
 
@@ -1525,7 +1525,7 @@ void tst_QStringConverter::utfHeaders_data()
             << QString::fromLatin1("hel");
         QTest::newRow("utf32 bom be ignore header")
             << QStringConverter::Utf32
-            << QStringConverter::Flag::DontSkipInitialBom
+            << QStringConverter::Flag::ConvertInitialBom
             << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
             << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
     } else {
@@ -1536,7 +1536,7 @@ void tst_QStringConverter::utfHeaders_data()
             << QString::fromLatin1("hel");
         QTest::newRow("utf32 bom le ignore header")
             << QStringConverter::Utf32
-            << QStringConverter::Flag::DontSkipInitialBom
+            << QStringConverter::Flag::ConvertInitialBom
             << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
             << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
     }
@@ -1553,7 +1553,7 @@ void tst_QStringConverter::utfHeaders_data()
         << QString::fromLatin1("hel");
     QTest::newRow("utf32-be bom be ignore header")
         << QStringConverter::Utf32BE
-        << QStringConverter::Flag::DontSkipInitialBom
+        << QStringConverter::Flag::ConvertInitialBom
         << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
 
@@ -1569,7 +1569,7 @@ void tst_QStringConverter::utfHeaders_data()
         << QString::fromLatin1("hel");
     QTest::newRow("utf32-le bom le ignore header")
         << QStringConverter::Utf32LE
-        << QStringConverter::Flag::DontSkipInitialBom
+        << QStringConverter::Flag::ConvertInitialBom
         << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"));
 }

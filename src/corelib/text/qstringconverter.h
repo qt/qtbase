@@ -64,7 +64,7 @@ public:
         Stateless = 0x1,
         ConvertInvalidToNull = 0x2,
         WriteBom = 0x4,
-        DontSkipInitialBom = 0x8
+        ConvertInitialBom = 0x8
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -123,9 +123,21 @@ public:
         Utf32LE,
         Utf32BE,
         Latin1,
-        Locale,
-        LastEncoding = Locale
+        System,
+        LastEncoding = System
     };
+#ifdef Q_QDOC
+    // document the flags here
+    enum class Flag {
+        Default = 0,
+        Stateless = 0x1,
+        ConvertInvalidToNull = 0x2,
+        WriteBom = 0x4,
+        ConvertInitialBom = 0x8
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+#endif
+
 protected:
 
     struct Interface
@@ -150,7 +162,7 @@ protected:
     QSTRINGCONVERTER_CONSTEXPR QStringConverter(const Interface *i)
         : iface(i)
     {}
-    Q_CORE_EXPORT QStringConverter(const char *name);
+    Q_CORE_EXPORT QStringConverter(const char *name, Flags f);
 
 
 public:
@@ -190,8 +202,8 @@ public:
     QSTRINGCONVERTER_CONSTEXPR QStringEncoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
     {}
-    QStringEncoder(const char *name)
-        : QStringConverter(name)
+    QStringEncoder(const char *name, Flags flags = Flag::Default)
+        : QStringConverter(name, flags)
     {}
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
@@ -221,8 +233,9 @@ public:
 
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->fromUtf16Len(inputLength); }
-    char *decodeIntoBuffer(char *out, const QChar *in, qsizetype length)
+    char *appendToBuffer(char *out, const QChar *in, qsizetype length)
     { return iface->fromUtf16(out, QStringView(in, length), &state); }
+private:
     QByteArray encode(QStringView in)
     {
         QByteArray result(iface->fromUtf16Len(in.size()), Qt::Uninitialized);
@@ -256,8 +269,8 @@ public:
     QSTRINGCONVERTER_CONSTEXPR QStringDecoder()
         : QStringConverter()
     {}
-    QStringDecoder(const char *name)
-        : QStringConverter(name)
+    QStringDecoder(const char *name, Flags f = Flag::Default)
+        : QStringConverter(name, f)
     {}
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
@@ -285,8 +298,9 @@ public:
 
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->toUtf16Len(inputLength); }
-    QChar *decodeIntoBuffer(QChar *out, const char *in, qsizetype length)
+    QChar *appendToBuffer(QChar *out, const char *in, qsizetype length)
     { return iface->toUtf16(out, in, length, &state); }
+private:
     QString decode(const char *in, qsizetype length)
     {
         QString result(iface->toUtf16Len(length), Qt::Uninitialized);
@@ -310,7 +324,7 @@ struct QConcatenable<QStringDecoder::EncodedData<T>>
     static qsizetype size(const QStringDecoder::EncodedData<T> &s) { return s.decoder->requiredSpace(s.data.length()); }
     static inline void appendTo(const QStringDecoder::EncodedData<T> &s, QChar *&out)
     {
-        out = s.decoder->decodeIntoBuffer(out, s.data.data(), s.data.length());
+        out = s.decoder->appendToBuffer(out, s.data.data(), s.data.length());
     }
 };
 
@@ -324,7 +338,7 @@ struct QConcatenable<QStringEncoder::DecodedData<T>>
     static qsizetype size(const QStringEncoder::DecodedData<T> &s) { return s.encoder->requiredSpace(s.data.length()); }
     static inline void appendTo(const QStringEncoder::DecodedData<T> &s, char *&out)
     {
-        out = s.decoder->decodeIntoBuffer(out, s.data.data(), s.data.length());
+        out = s.decoder->appendToBuffer(out, s.data.data(), s.data.length());
     }
 };
 

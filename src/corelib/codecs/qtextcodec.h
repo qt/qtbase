@@ -62,7 +62,7 @@ public:
 
     static constexpr Flag ConvertInvalidToNull = Flag::ConvertInvalidToNull;
     static constexpr Flag DefaultConversion = Flag::WriteBom;
-    static constexpr Flag IgnoreHeader = Flag::DontSkipInitialBom;
+    static constexpr Flag IgnoreHeader = Flag::ConvertInitialBom;
 
     static QTextCodec* codecForName(const QByteArray &name);
     static QTextCodec* codecForName(const char *name) { return codecForName(QByteArray(name)); }
