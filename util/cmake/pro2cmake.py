@@ -3800,6 +3800,10 @@ def handle_app_or_lib(
         if import_name:
             cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_URI {import_name}\n")
 
+        json_output_filename = scope.expandString("QMLTYPES_FILENAME")
+        if json_output_filename:
+            cm_fh.write(f"{spaces(indent+1)}QT_QMLTYPES_FILENAME {json_output_filename}\n")
+
         target_path = scope.get("TARGETPATH")
         if target_path:
             cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_TARGET_PATH {target_path}\n")
