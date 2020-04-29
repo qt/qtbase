@@ -351,6 +351,22 @@ template <typename QStringLike, typename std::enable_if<
 inline QStringView qToStringViewIgnoringNull(const QStringLike &s) noexcept
 { return QStringView(s.data(), s.size()); }
 
+// QChar inline functions:
+
+Q_REQUIRED_RESULT constexpr auto QChar::fromUcs4(char32_t c) noexcept
+{
+    struct R {
+        char16_t chars[2];
+        Q_REQUIRED_RESULT constexpr operator QStringView() const noexcept { return {begin(), end()}; }
+        Q_REQUIRED_RESULT constexpr qsizetype size() const noexcept { return chars[1] ? 2 : 1; }
+        Q_REQUIRED_RESULT constexpr const char16_t *begin() const noexcept { return chars; }
+        Q_REQUIRED_RESULT constexpr const char16_t *end() const noexcept { return begin() + size(); }
+    };
+    return requiresSurrogates(c) ? R{{QChar::highSurrogate(c),
+                                      QChar::lowSurrogate(c)}} :
+                                   R{{char16_t(c), u'\0'}} ;
+}
+
 QT_END_NAMESPACE
 
 #endif /* QSTRINGVIEW_H */

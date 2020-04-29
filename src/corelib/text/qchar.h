@@ -120,6 +120,10 @@ public:
     QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR QChar(uchar c) noexcept : ucs(c) { }
 #endif
 #endif
+
+    static constexpr QChar fromUcs2(char16_t c) noexcept { return QChar{c}; }
+    static constexpr inline auto fromUcs4(char32_t c) noexcept;
+
     // Unicode information
 
     enum Category
@@ -680,3 +684,5 @@ struct hash<QT_PREPEND_NAMESPACE(QChar)>
 } // namespace std
 
 #endif // QCHAR_H
+
+#include <QtCore/qstringview.h> // for QChar::fromUcs4() definition

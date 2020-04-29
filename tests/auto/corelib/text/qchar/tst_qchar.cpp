@@ -37,6 +37,8 @@ class tst_QChar : public QObject
     Q_OBJECT
 private slots:
     void fromChar16_t();
+    void fromUcs4_data();
+    void fromUcs4();
     void fromWchar_t();
     void operator_eqeq_null();
     void operators_data();
@@ -87,6 +89,34 @@ void tst_QChar::fromChar16_t()
 #else
     QSKIP("This test requires C++11 char16_t support enabled in the compiler.");
 #endif
+}
+
+void tst_QChar::fromUcs4_data()
+{
+    QTest::addColumn<uint>("ucs4");
+    auto row = [](uint ucs4) {
+        QTest::addRow("0x%08X", ucs4) << ucs4;
+    };
+
+    row(0x2f868);
+    row(0x1D157);
+    row(0x1D157);
+}
+
+void tst_QChar::fromUcs4()
+{
+    QFETCH(const uint, ucs4);
+
+    const auto result = QChar::fromUcs4(ucs4);
+    if (QChar::requiresSurrogates(ucs4)) {
+        QCOMPARE(result.chars[0], QChar::highSurrogate(ucs4));
+        QCOMPARE(result.chars[1], QChar::lowSurrogate(ucs4));
+        QCOMPARE(QStringView{result}.size(), 2);
+    } else {
+        QCOMPARE(result.chars[0], ucs4);
+        QCOMPARE(result.chars[1], 0u);
+        QCOMPARE(QStringView{result}.size(), 1);
+    }
 }
 
 void tst_QChar::fromWchar_t()
@@ -835,13 +865,7 @@ void tst_QChar::normalization_data()
             for (int j = 0; j < c.size(); ++j) {
                 bool ok;
                 uint uc = c.at(j).toInt(&ok, 16);
-                if (!QChar::requiresSurrogates(uc)) {
-                    columns[i].append(QChar(uc));
-                } else {
-                    // convert to utf16
-                    columns[i].append(QChar(QChar::highSurrogate(uc)));
-                    columns[i].append(QChar(QChar::lowSurrogate(uc)));
-                }
+                columns[i].append(QChar::fromUcs4(uc));
             }
         }
 

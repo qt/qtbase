@@ -711,6 +711,46 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn static QChar QChar::fromUcs2(char16_t c)
+    \since 6.0
+
+    Constructs a QChar from UTF-16 character \a c.
+
+    \sa fromUcs4()
+*/
+
+/*!
+    \fn static auto QChar::fromUcs4(char32_t c)
+    \since 6.0
+
+    Returns an anonymous struct that
+    \list
+    \li contains a \c{char16_t chars[2]} array,
+    \li can be implicitly converted to a QStringView, and
+    \li iterated over with a C++11 ranged for loop.
+    \endlist
+
+    If \a c requires surrogates, \c{chars[0]} contains the high surrogate
+    and \c{chars[1]} the low surrogate, and the QStringView has size 2.
+    Otherwise, \c{chars[0]} contains \a c and \c{chars[1]} is
+    \l{QChar::isNull}{null}, and the QStringView has size 1.
+
+    This allows easy use of the result:
+
+    \code
+    QString s;
+    s += QChar::fromUcs4(ch);
+    \endcode
+
+    \code
+    for (char16_t c16 : QChar::fromUcs4(ch))
+        use(c16);
+    \endcode
+
+    \sa fromUcs2(), requiresSurrogates()
+*/
+
+/*!
     \fn bool QChar::isNull() const
 
     Returns \c true if the character is the Unicode character 0x0000
@@ -1564,12 +1604,10 @@ static FullConvertCaseResult fullConvertCase(char32_t uc, QUnicodeTables::Case w
         auto length = *specialCase++;
         while (length--)
             *pp++ = *specialCase++;
-    } else if (Q_UNLIKELY(QChar::requiresSurrogates(uc))) {
-        // so far, case convertion never changes planes (guaranteed by the qunicodetables generator)
-        *pp++ = QChar::highSurrogate(uc);
-        *pp++ = QChar::lowSurrogate(uc + caseDiff);
     } else {
-        *pp++ = uc + caseDiff;
+        // so far, case convertion never changes planes (guaranteed by the qunicodetables generator)
+        for (char16_t c : QChar::fromUcs4(uc + caseDiff))
+            *pp++ = c;
     }
     return result;
 }
@@ -2002,14 +2040,10 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
                 stcode = ligature;
                 QChar *d = s.data();
                 // ligatureHelper() never changes planes
-                if (QChar::requiresSurrogates(ligature)) {
-                    d[starter] = QChar(QChar::highSurrogate(ligature));
-                    d[starter + 1] = QChar(QChar::lowSurrogate(ligature));
-                    s.remove(i, 2);
-                } else {
-                    d[starter] = QChar(ligature);
-                    s.remove(i, 1);
-                }
+                int j = 0;
+                for (QChar ch : QChar::fromUcs4(ligature))
+                    d[starter + j++] = ch;
+                s.remove(i, j);
                 continue;
             }
         }
@@ -2079,18 +2113,10 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
             QChar *uc = s.data();
             int p = pos;
             // exchange characters
-            if (!QChar::requiresSurrogates(u2)) {
-                uc[p++] = QChar(u2);
-            } else {
-                uc[p++] = QChar(QChar::highSurrogate(u2));
-                uc[p++] = QChar(QChar::lowSurrogate(u2));
-            }
-            if (!QChar::requiresSurrogates(u1)) {
-                uc[p++] = QChar(u1);
-            } else {
-                uc[p++] = QChar(QChar::highSurrogate(u1));
-                uc[p++] = QChar(QChar::lowSurrogate(u1));
-            }
+            for (QChar ch : QChar::fromUcs4(u2))
+                uc[p++] = ch;
+            for (QChar ch : QChar::fromUcs4(u1))
+                uc[p++] = ch;
             if (pos > 0)
                 --pos;
             if (pos > 0 && s.at(pos).isLowSurrogate())
