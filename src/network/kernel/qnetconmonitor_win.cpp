@@ -618,6 +618,14 @@ bool QNetworkListManagerEvents::start()
                             << errorStringFromHResult(hr);
         return false;
     }
+
+    // Update connectivity since it might have changed since this class was constructed
+    NLM_CONNECTIVITY connectivity;
+    hr = networkListManager->GetConnectivity(&connectivity);
+    if (FAILED(hr))
+        qCWarning(lcNetMon) << "Could not get connectivity:" << errorStringFromHResult(hr);
+    else
+        monitor->setConnectivity(connectivity);
     return true;
 }
 
