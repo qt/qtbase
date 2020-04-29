@@ -74,8 +74,8 @@ struct Q_CORE_EXPORT QJsonParseError
 
     QString    errorString() const;
 
-    int        offset;
-    ParseError error;
+    int        offset = -1;
+    ParseError error = NoError;
 };
 
 class QJsonDocumentPrivate;
