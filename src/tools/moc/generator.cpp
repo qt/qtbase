@@ -1335,8 +1335,18 @@ void Generator::generateStaticMetacall()
                     fprintf(out, "        case %d: %s%s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
                             propindex, prefix.constData(), p.write.constData());
                 } else if (!p.write.isEmpty()) {
-                    fprintf(out, "        case %d: %s%s(*reinterpret_cast< %s*>(_v)); break;\n",
-                            propindex, prefix.constData(), p.write.constData(), p.type.constData());
+                    QByteArray optionalQPropertyOwner;
+                    if (p.isQPropertyWithNotifier) {
+                        optionalQPropertyOwner = "_t";
+                        if (p.inPrivateClass.size()) {
+                            optionalQPropertyOwner += "->";
+                            optionalQPropertyOwner += p.inPrivateClass;
+                        }
+                        optionalQPropertyOwner += ", ";
+                    }
+
+                    fprintf(out, "        case %d: %s%s(%s*reinterpret_cast< %s*>(_v)); break;\n",
+                            propindex, prefix.constData(), p.write.constData(), optionalQPropertyOwner.constData(), p.type.constData());
                 } else {
                     fprintf(out, "        case %d:\n", propindex);
                     fprintf(out, "            if (%s%s != *reinterpret_cast< %s*>(_v)) {\n",
@@ -1416,11 +1426,18 @@ void Generator::generateStaticMetacall()
                 if (!p.isQProperty)
                     continue;
                 QByteArray prefix = "_t->";
+                QByteArray objectAccessor = "_t";
                 if (p.inPrivateClass.size()) {
                     prefix += p.inPrivateClass + "->";
+                    objectAccessor += "->";
+                    objectAccessor += p.inPrivateClass;
                 }
-                fprintf(out, "        case %d: %s%s.setBinding(*reinterpret_cast<QPropertyBinding<%s> *>(_a[0])); break;\n",
-                        propindex, prefix.constData(), p.name.constData(), p.type.constData());
+                if (p.isQPropertyWithNotifier)
+                    objectAccessor += ", ";
+                else
+                    objectAccessor.clear();
+                fprintf(out, "        case %d: %s%s.setBinding(%s*reinterpret_cast<QPropertyBinding<%s> *>(_a[0])); break;\n",
+                        propindex, prefix.constData(), p.name.constData(), objectAccessor.constData(), p.type.constData());
             }
             fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
@@ -1535,7 +1552,7 @@ void Generator::generateQPropertyApi()
                 property.name.constData(),
                 property.type.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setValue(value);\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setValue(thisPtr->%s, value);\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // property value move setter
@@ -1544,7 +1561,7 @@ void Generator::generateQPropertyApi()
                 property.name.constData(),
                 property.type.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setValue(std::move(value));\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setValue(thisPtr->%s, std::move(value));\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // binding setter
@@ -1554,7 +1571,7 @@ void Generator::generateQPropertyApi()
                 property.name.constData(),
                 property.type.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setBinding(binding);\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // binding move setter
@@ -1564,7 +1581,7 @@ void Generator::generateQPropertyApi()
                 property.name.constData(),
                 property.type.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setBinding(std::move(binding));\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, std::move(binding));\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // untyped binding setter
@@ -1572,7 +1589,7 @@ void Generator::generateQPropertyApi()
                 cdef->qualified.constData(),
                 property.name.constData());
         printAccessor();
-        fprintf(out, "    return thisPtr->%s->%s.setBinding(binding);\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    return thisPtr->%s->%s.setBinding(thisPtr->%s, binding);\n", property.accessor.constData(), property.name.constData(), property.accessor.constData());
         fprintf(out, "}\n");
 
         // binding bool getter
@@ -1606,7 +1623,7 @@ void Generator::generateQPropertyApi()
                 cdef->qualified.constData(),
                 property.setter.constData(),
                 property.type.name.constData());
-        fprintf(out, "    %s->%s.setValue(value);\n", property.accessor.constData(), property.name.constData());
+        fprintf(out, "    this->%s.setValue(value);\n", property.name.constData());
         fprintf(out, "}\n\n");
     }
 }

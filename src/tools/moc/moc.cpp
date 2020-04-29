@@ -582,8 +582,12 @@ bool Moc::parseMaybeQProperty(ClassDef *def)
     if (!test(IDENTIFIER))
         return false;
 
-    if (lexem() != "QProperty")
+    bool hasNotifier = false;
+    if (lexem() == "QNotifiedProperty") {
+        hasNotifier = true;
+    } else if (lexem() != "QProperty") {
         return false;
+    }
 
     if (!test(LANGLE))
         return false;
@@ -596,7 +600,7 @@ bool Moc::parseMaybeQProperty(ClassDef *def)
     if (!test(SEMIC))
         return false;
 
-    def->qPropertyMembers.insert(propName);
+    def->qPropertyMembersMaybeWithNotifier.insert(propName, hasNotifier);
 
     return true;
 }
@@ -1525,6 +1529,7 @@ void Moc::parsePrivateQProperty(ClassDef *def)
     propDef.read = name + ".value";
     propDef.write = name + ".setValue";
     propDef.isQProperty = true;
+    propDef.isQPropertyWithNotifier = true;
     propDef.inPrivateClass = accessor;
     propDef.designable = propDef.scriptable = propDef.stored = "true";
     propDef.user = "false";
@@ -1868,7 +1873,10 @@ void Moc::checkProperties(ClassDef *cdef)
         }
 
         if (p.read.isEmpty() && p.member.isEmpty()) {
-            if (!cdef->qPropertyMembers.contains(p.name) && !p.isQProperty) {
+
+            auto qPropertyMemberIt = cdef->qPropertyMembersMaybeWithNotifier.constFind(p.name);
+            const bool knownQPropertyMember = qPropertyMemberIt != cdef->qPropertyMembersMaybeWithNotifier.constEnd();
+            if (!knownQPropertyMember && !p.isQProperty) {
                 const int rewind = index;
                 if (p.location >= 0)
                     index = p.location;
@@ -1885,6 +1893,8 @@ void Moc::checkProperties(ClassDef *cdef)
             p.read = p.name + ".value";
             p.write = p.name + ".setValue";
             p.isQProperty = true;
+            const bool hasNotifier = knownQPropertyMember && qPropertyMemberIt.value();
+            p.isQPropertyWithNotifier = hasNotifier;
             p.designable = p.scriptable = p.stored = "true";
             p.user = "false";
         }

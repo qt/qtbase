@@ -4116,11 +4116,13 @@ class ClassWithQPropertyMembers : public QObject
     Q_PROPERTY(int privateExposedProperty)
 public:
 
-    QProperty<int> publicProperty;
-    QProperty<int> notExposed;
-
 signals:
     void publicPropertyChanged();
+
+public:
+    QNotifiedProperty<int, &ClassWithQPropertyMembers::publicPropertyChanged> publicProperty;
+    QProperty<int> notExposed;
+
 
 protected:
     QProperty<int> protectedProperty;
@@ -4128,7 +4130,6 @@ protected:
 private:
     QProperty<int> privateProperty;
     QProperty<int> privateExposedProperty;
-    QPropertyMemberChangeHandler<&ClassWithQPropertyMembers::publicProperty, &ClassWithQPropertyMembers::publicPropertyChanged> connector{this};
 };
 
 void tst_Moc::qpropertyMembers()
@@ -4151,7 +4152,7 @@ void tst_Moc::qpropertyMembers()
 
     QSignalSpy publicPropertySpy(&instance, SIGNAL(publicPropertyChanged()));
 
-    instance.publicProperty.setValue(100);
+    instance.publicProperty.setValue(&instance, 100);
     QCOMPARE(prop.read(&instance).toInt(), 100);
     QCOMPARE(publicPropertySpy.count(), 1);
 
@@ -4182,9 +4183,9 @@ void tst_Moc::observerMetaCall()
         instance.qt_metacall(QMetaObject::RegisterQPropertyObserver, prop.propertyIndex(), argv);
     }
 
-    instance.publicProperty.setValue(100);
+    instance.publicProperty.setValue(&instance, 100);
     QCOMPARE(observerCallCount, 1);
-    instance.publicProperty.setValue(101);
+    instance.publicProperty.setValue(&instance, 101);
     QCOMPARE(observerCallCount, 2);
 }
 
@@ -4235,9 +4236,8 @@ public:
 
         ClassWithPrivateQPropertyShim *q = nullptr;
 
-        QProperty<int> testProperty;
         void onTestPropertyChanged() { q->testPropertyChanged(); }
-        QPropertyMemberChangeHandler<&Private::testProperty, &Private::onTestPropertyChanged> testChangeHandler{this};
+        QNotifiedProperty<int, &Private::onTestPropertyChanged> testProperty;
     };
     Private priv{this};
 
@@ -4257,7 +4257,7 @@ void tst_Moc::privateQPropertyShim()
         QVERIFY(prop.notifySignal().isValid());
     }
 
-    testObject.priv.testProperty.setValue(42);
+    testObject.priv.testProperty.setValue(&testObject.priv, 42);
     QCOMPARE(testObject.property("testProperty").toInt(), 42);
 
     // Behave like a QProperty

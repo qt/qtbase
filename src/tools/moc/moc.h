@@ -141,6 +141,7 @@ struct PropertyDef
     bool final = false;
     bool required = false;
     bool isQProperty = false;
+    bool isQPropertyWithNotifier = false;
 
     int location = -1; // token index, used for error reporting
 
@@ -200,7 +201,7 @@ struct ClassDef : BaseDef {
     QVector<QByteArray> nonClassSignalList;
     QVector<PropertyDef> propertyList;
     QVector<PrivateQPropertyDef> privateQProperties;
-    QSet<QByteArray> qPropertyMembers;
+    QHash<QByteArray, bool> qPropertyMembersMaybeWithNotifier;
     int revisionedMethods = 0;
 
     bool hasQObject = false;
