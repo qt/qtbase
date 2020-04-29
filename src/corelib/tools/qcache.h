@@ -202,14 +202,14 @@ public:
     }
     inline int totalCost() const noexcept { return total; }
 
-    inline int size() const noexcept { return d.size; }
-    inline int count() const noexcept { return d.size; }
+    inline qsizetype size() const noexcept { return d.size; }
+    inline qsizetype count() const noexcept { return d.size; }
     inline bool isEmpty() const noexcept { return !d.size; }
     inline QVector<Key> keys() const
     {
         QVector<Key> k;
         if (d.size) {
-            k.reserve(d.size);
+            k.reserve(typename QVector<Key>::size_type(d.size));
             for (auto it = d.begin(); it != d.end(); ++it)
                 k << it.node()->key;
         }
