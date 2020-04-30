@@ -145,15 +145,17 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
                 disableEventFilter();
                 exitDndEventLoop();
 
+            } else if (ke->modifiers() != QGuiApplication::keyboardModifiers()) {
+                move(m_lastPos, QGuiApplication::mouseButtons(), ke->modifiers());
             }
             return true; // Eat all key events
         }
 
         case QEvent::MouseMove:
         {
-            QPoint nativePosition = getNativeMousePos(e, m_drag_icon_window);
+            m_lastPos = getNativeMousePos(e, m_drag_icon_window);
             auto mouseMove = static_cast<QMouseEvent *>(e);
-            move(nativePosition, mouseMove->buttons(), mouseMove->modifiers());
+            move(m_lastPos, mouseMove->buttons(), mouseMove->modifiers());
             return true; // Eat all mouse move events
         }
         case QEvent::MouseButtonRelease:
@@ -230,6 +232,7 @@ void QBasicDrag::startDrag()
         pos = QPoint();
     }
 #endif
+    m_lastPos = pos;
     recreateShapedPixmapWindow(m_screen, pos);
     enableEventFilter();
 }

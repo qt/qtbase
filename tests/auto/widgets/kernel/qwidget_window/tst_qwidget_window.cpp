@@ -725,7 +725,7 @@ protected:
     {
         e->accept();
         _dndEvents.append(QStringLiteral("DragMove "));
-        emit releaseMouseButton();
+        emit dragMoveReceived();
     }
     void dragLeaveEvent(QDragLeaveEvent *e)
     {
@@ -739,7 +739,7 @@ protected:
     }
 
 signals:
-    void releaseMouseButton();
+    void dragMoveReceived();
 };
 
 void tst_QWidget_window::tst_dnd_events()
@@ -774,7 +774,7 @@ void tst_QWidget_window::tst_dnd_events()
 
     // Some dnd implementation rely on running internal event loops, so we have to use
     // the following queued signal hack to simulate mouse clicks in the widget.
-    QObject::connect(&dndWidget, &DnDEventRecorder::releaseMouseButton, this, [=]() {
+    QObject::connect(&dndWidget, &DnDEventRecorder::dragMoveReceived, this, [=]() {
         QTest::mouseRelease(window, Qt::LeftButton);
     }, Qt::QueuedConnection);
 
@@ -783,6 +783,27 @@ void tst_QWidget_window::tst_dnd_events()
     QTest::mousePress(window, Qt::LeftButton);
 
     QCOMPARE(dndWidget._dndEvents, expectedDndEvents);
+
+    dndWidget._dndEvents.clear();
+    dndWidget.disconnect();
+    int step = 0;
+    QObject::connect(&dndWidget, &DnDEventRecorder::dragMoveReceived, this, [window, &step]() {
+        switch (step++) {
+        case 0:
+            QTest::keyPress(window, Qt::Key_Shift, Qt::ShiftModifier);
+            break;
+        case 1:
+            QTest::keyRelease(window, Qt::Key_Shift, Qt::NoModifier);
+            break;
+        default:
+            QTest::mouseRelease(window, Qt::LeftButton);
+            break;
+        }
+    }, Qt::QueuedConnection);
+
+    QTest::mousePress(window, Qt::LeftButton);
+    const QString expectedDndWithModsEvents = "DragEnter DragMove DragMove DragMove DropEvent ";
+    QCOMPARE(dndWidget._dndEvents, expectedDndWithModsEvents);
 }
 
 class DropTarget : public QWidget
