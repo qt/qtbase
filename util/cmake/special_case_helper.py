@@ -30,13 +30,13 @@
 """
 This is a helper script that takes care of reapplying special case
 modifications when regenerating a CMakeLists.txt file using
-pro2cmake.py.
+pro2cmake.py or configure.cmake with configurejson2cmake.py.
 
 It has two modes of operation:
 1) Dumb "special case" block removal and re-application.
 2) Smart "special case" diff application, using a previously generated
-   "clean" CMakeLists.txt as a source. "clean" in this case means a
-   generated file which has no "special case" modifications.
+   "clean" CMakeLists.txt/configure.cmake as a source. "clean" in this
+   case means a generated file which has no "special case" modifications.
 
 Both modes use a temporary git repository to compute and reapply
 "special case" diffs.
@@ -61,11 +61,11 @@ SOURCES
  # special case end
 
 The second mode, as mentioned, requires a previous "clean"
-CMakeLists.txt file.
+CMakeLists.txt/configure.cmake file.
 
 The script can then compute the exact diff between
 a "clean" and "modified" (with special cases) file, and reapply that
-diff to a newly generated "CMakeLists.txt" file.
+diff to a newly generated "CMakeLists.txt"/"configure.cmake" file.
 
 This implies that we always have to keep a "clean" file alongside the
 "modified" project file for each project (corelib, gui, etc.) So we
@@ -187,7 +187,7 @@ def create_file_with_no_special_cases(
     original_file_path: str, no_special_cases_file_path: str, debug=False
 ):
     """
-    Reads content of original CMakeLists.txt, removes all content
+    Reads content of original CMakeLists.txt/configure.cmake, removes all content
     between "# special case" markers or lines, saves the result into a
     new file.
     """
@@ -222,6 +222,7 @@ class SpecialCaseHandler(object):
         base_dir: str,
         keep_temporary_files=False,
         debug=False,
+        convertingProFiles=True,
     ) -> None:
         self.base_dir = base_dir
         self.original_file_path = original_file_path
@@ -229,24 +230,40 @@ class SpecialCaseHandler(object):
         self.keep_temporary_files = keep_temporary_files
         self.use_heuristic = False
         self.debug = debug
+        self.convertingProFiles = convertingProFiles
 
     @property
     def prev_file_path(self) -> str:
-        return os.path.join(self.base_dir, ".prev_CMakeLists.txt")
+        if self.convertingProFiles:
+            filename = ".prev_CMakeLists.txt"
+        else:
+            filename = ".prev_configure.cmake"
+        return os.path.join(self.base_dir, filename)
 
     @property
     def post_merge_file_path(self) -> str:
-        return os.path.join(self.base_dir, "CMakeLists-post-merge.txt")
+        if self.convertingProFiles:
+            filename = "CMakeLists-post-merge.txt"
+        else:
+            filename = "configure-post-merge.cmake"
+        return os.path.join(self.base_dir, filename)
 
     @property
     def no_special_file_path(self) -> str:
-        return os.path.join(self.base_dir, "CMakeLists.no-special.txt")
+        if self.convertingProFiles:
+            filename = "CMakeLists.no-special.txt"
+        else:
+            filename = "configure.no-special.cmake"
+        return os.path.join(self.base_dir, filename)
 
     def apply_git_merge_magic(self, no_special_cases_file_path: str) -> None:
         # Create new folder for temporary repo, and ch dir into it.
         repo = os.path.join(self.base_dir, "tmp_repo")
         repo_absolute_path = os.path.abspath(repo)
-        txt = "CMakeLists.txt"
+        if self.convertingProFiles:
+            txt = "CMakeLists.txt"
+        else:
+            txt = "configure.cmake"
 
         try:
             os.mkdir(repo)
@@ -262,7 +279,7 @@ class SpecialCaseHandler(object):
         post_merge_file_path = os.path.join("..", self.post_merge_file_path)
 
         try:
-            # Create new repo with the "clean" CMakeLists.txt file.
+            # Create new repo with the "clean" CMakeLists.txt/configure.cmake file.
             run_process_quiet("git init .", debug=self.debug)
             run_process_quiet("git config user.name fake", debug=self.debug)
             run_process_quiet("git config user.email fake@fake", debug=self.debug)
@@ -345,7 +362,7 @@ class SpecialCaseHandler(object):
     def handle_special_cases_helper(self) -> bool:
         """
         Uses git to reapply special case modifications to the "new"
-        generated CMakeLists.gen.txt file.
+        generated CMakeLists.gen.txt/configure.cmake.gen file.
 
         If use_heuristic is True, a new file is created from the
         original file, with special cases removed.

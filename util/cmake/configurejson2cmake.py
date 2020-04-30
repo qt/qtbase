@@ -33,7 +33,9 @@ import re
 import sys
 from typing import Optional, Set
 from textwrap import dedent
+import os
 
+from special_case_helper import SpecialCaseHandler
 from helper import (
     map_qt_library,
     featureName,
@@ -1359,7 +1361,9 @@ def processJson(path, ctx, data):
 
     ctx = processFiles(ctx, data)
 
-    with open(posixpath.join(path, "configure.cmake"), "w") as cm_fh:
+    destination = posixpath.join(path, "configure.cmake")
+    generated_file = destination + '.gen'
+    with open(generated_file, "w") as cm_fh:
         cm_fh.write("\n\n#### Inputs\n\n")
 
         processInputs(ctx, data, cm_fh)
@@ -1388,6 +1392,16 @@ def processJson(path, ctx, data):
 
     # do this late:
     processSubconfigs(path, ctx, data)
+
+    handler = SpecialCaseHandler(
+        os.path.abspath(destination),
+        os.path.abspath(generated_file),
+        os.path.abspath(path),
+        convertingProFiles=False,
+        debug=False,
+    )
+    if handler.handle_special_cases():
+        os.replace(generated_file, destination)
 
 
 def main():
