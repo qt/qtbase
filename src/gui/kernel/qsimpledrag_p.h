@@ -126,6 +126,7 @@ private:
     QShapedPixmapWindow *m_drag_icon_window = nullptr;
     bool m_useCompositing = true;
     QScreen *m_screen = nullptr;
+    QPoint m_lastPos;
 };
 
 class Q_GUI_EXPORT QSimpleDrag : public QBasicDrag
