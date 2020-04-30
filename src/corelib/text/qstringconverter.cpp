@@ -1475,12 +1475,25 @@ static bool nameMatch(const char *a, const char *b)
 QStringConverter::QStringConverter(const char *name)
     : iface(nullptr)
 {
+    auto e = encodingForName(name);
+    if (e)
+        iface = encodingInterfaces + int(e.value());
+}
+
+std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name)
+{
     for (int i = 0; i < LastEncoding + 1; ++i) {
-        if (nameMatch(encodingInterfaces[i].name, name)) {
-            iface = encodingInterfaces + i;
-            break;
-        }
+        if (nameMatch(encodingInterfaces[i].name, name))
+            return QStringConverter::Encoding(i);
     }
+    if (nameMatch(name, "latin1"))
+        return QStringConverter::Latin1;
+    return std::nullopt;
+}
+
+const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
+{
+    return encodingInterfaces[int(e)].name;
 }
 
 QT_END_NAMESPACE

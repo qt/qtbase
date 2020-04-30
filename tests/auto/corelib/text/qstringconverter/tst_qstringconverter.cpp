@@ -59,6 +59,12 @@ private slots:
 
     void utfHeaders_data();
     void utfHeaders();
+
+    void encodingForName_data();
+    void encodingForName();
+
+    void nameForEncoding_data();
+    void nameForEncoding();
 };
 
 void tst_QStringConverter::constructByName()
@@ -1609,6 +1615,53 @@ void tst_QStringConverter::utfHeaders()
             QCOMPARE(reencoded, encoded);
         }
     }
+}
+
+void tst_QStringConverter::encodingForName_data()
+{
+    QTest::addColumn<QByteArray>("name");
+    QTest::addColumn<std::optional<QStringConverter::Encoding>>("encoding");
+
+    QTest::newRow("UTF-8") << QByteArray("UTF-8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+    QTest::newRow("utf8") << QByteArray("utf8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+    QTest::newRow("Utf-8") << QByteArray("Utf-8") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+    QTest::newRow("UTF-16") << QByteArray("UTF-16") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16);
+    QTest::newRow("UTF-16le") << QByteArray("UTF-16le") << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16LE);
+    QTest::newRow("ISO-8859-1") << QByteArray("ISO-8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
+    QTest::newRow("ISO8859-1") << QByteArray("ISO8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
+    QTest::newRow("iso8859-1") << QByteArray("iso8859-1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
+    QTest::newRow("latin1") << QByteArray("latin1") << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
+    QTest::newRow("latin2") << QByteArray("latin2") << std::optional<QStringConverter::Encoding>();
+    QTest::newRow("latin15") << QByteArray("latin15") << std::optional<QStringConverter::Encoding>();
+}
+
+void tst_QStringConverter::encodingForName()
+{
+    QFETCH(QByteArray, name);
+    QFETCH(std::optional<QStringConverter::Encoding>, encoding);
+
+    auto e = QStringConverter::encodingForName(name);
+    QCOMPARE(e, encoding);
+}
+
+void tst_QStringConverter::nameForEncoding_data()
+{
+    QTest::addColumn<QByteArray>("name");
+    QTest::addColumn<QStringConverter::Encoding>("encoding");
+
+    QTest::newRow("UTF-8") << QByteArray("UTF-8") << QStringConverter::Utf8;
+    QTest::newRow("UTF-16") << QByteArray("UTF-16") << QStringConverter::Utf16;
+    QTest::newRow("UTF-16LE") << QByteArray("UTF-16LE") << QStringConverter::Utf16LE;
+    QTest::newRow("ISO-8859-1") << QByteArray("ISO-8859-1") << QStringConverter::Latin1;
+}
+
+void tst_QStringConverter::nameForEncoding()
+{
+    QFETCH(QByteArray, name);
+    QFETCH(QStringConverter::Encoding, encoding);
+
+    QByteArray n = QStringConverter::nameForEncoding(encoding);
+    QCOMPARE(n, name);
 }
 
 class LoadAndConvert: public QRunnable

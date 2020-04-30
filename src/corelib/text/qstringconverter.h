@@ -45,6 +45,8 @@
 #include <QtCore/qstringbuilder.h>
 #endif
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 // work around a compiler bug in GCC 7
@@ -148,7 +150,8 @@ protected:
     QSTRINGCONVERTER_CONSTEXPR QStringConverter(const Interface *i)
         : iface(i)
     {}
-    QStringConverter(const char *name);
+    Q_CORE_EXPORT QStringConverter(const char *name);
+
 
 public:
     bool isValid() const { return iface != nullptr; }
@@ -161,6 +164,9 @@ public:
 
     const char *name() const
     { return isValid() ? iface->name : nullptr; }
+
+    Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name);
+    Q_CORE_EXPORT static const char *nameForEncoding(Encoding e);
 
 protected:
     const Interface *iface;
