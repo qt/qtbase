@@ -67,7 +67,6 @@ private slots:
     void settingPropertyValueDoesRemoveBinding();
     void genericPropertyBinding();
     void genericPropertyBindingBool();
-    void staticChangeHandler();
     void setBindingFunctor();
     void multipleObservers();
     void propertyAlias();
@@ -659,25 +658,6 @@ void tst_QProperty::genericPropertyBindingBool()
     QVERIFY(property.setBinding(boolBinding));
 
     QVERIFY(property.value());
-}
-
-struct ItemType
-{
-    QProperty<int> x;
-    QVector<int> observedValues;
-    void xChanged() {
-        observedValues << x.value();
-    }
-    QPropertyMemberChangeHandler<&ItemType::x, &ItemType::xChanged> test{this};
-};
-
-void tst_QProperty::staticChangeHandler()
-{
-    ItemType t;
-    t.x = 42;
-    t.x = 100;
-    QVector<int> values{42, 100};
-    QCOMPARE(t.observedValues, values);
 }
 
 void tst_QProperty::setBindingFunctor()
