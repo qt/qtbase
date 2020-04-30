@@ -49,7 +49,7 @@
 
 #include "qpainter.h"
 #include "qprintdialog.h"
-#include "qtextcodec.h"
+#include "qstringconverter.h"
 #include "qdialogbuttonbox.h"
 #include <ui_qpagesetupwidget.h>
 
@@ -592,10 +592,14 @@ void QPageSetupWidget::pageSizeChanged()
 #if QT_CONFIG(cups)
         if (m_pageSizePpdOption) {
             ppd_file_t *ppd = qvariant_cast<ppd_file_t*>(m_printDevice->property(PDPK_PpdFile));
-            QTextCodec *cupsCodec = QTextCodec::codecForName(ppd->lang_encoding);
+            QStringDecoder toUtf16(ppd->lang_encoding, QStringDecoder::Flag::Stateless);
+            if (!toUtf16.isValid()) {
+                qWarning() << "QPrinSupport: Cups uses unsupported encoding" << ppd->lang_encoding;
+                toUtf16 = QStringDecoder(QStringDecoder::Utf8);
+            }
             for (int i = 0; i < m_pageSizePpdOption->num_choices; ++i) {
                 const ppd_choice_t *choice = &m_pageSizePpdOption->choices[i];
-                if (cupsCodec->toUnicode(choice->text) == m_ui.pageSizeCombo->currentText()) {
+                if (toUtf16(choice->text) == m_ui.pageSizeCombo->currentText()) {
                     const auto values = QStringList{} << QString::fromLatin1(m_pageSizePpdOption->keyword)
                                                       << QString::fromLatin1(choice->choice);
                     m_printDevice->setProperty(PDPK_PpdOption, values);

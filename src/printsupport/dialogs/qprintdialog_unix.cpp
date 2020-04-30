@@ -51,7 +51,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qglobal.h>
-#include <QtCore/qtextcodec.h>
+#include <QtCore/qstringconverter.h>
 #include <QtGui/qevent.h>
 #if QT_CONFIG(filesystemmodel)
 #include <QtWidgets/qfilesystemmodel.h>
@@ -164,7 +164,8 @@ private:
     bool anyAdvancedOptionConflict() const;
 
     QPrintDevice *m_currentPrintDevice;
-    QTextCodec *m_cupsCodec = nullptr;
+
+    QStringDecoder toUnicode;
     QVector<QComboBox*> m_advancedOptionsCombos;
 #endif
 };
@@ -434,7 +435,11 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
     ppd_file_t *ppd = qvariant_cast<ppd_file_t*>(m_currentPrintDevice->property(PDPK_PpdFile));
 
     if (ppd) {
-        m_cupsCodec = QTextCodec::codecForName(ppd->lang_encoding);
+        toUnicode = QStringDecoder(ppd->lang_encoding, QStringDecoder::Flag::Stateless);
+        if (!toUnicode.isValid()) {
+            qWarning() << "QPrinSupport: Cups uses unsupported encoding" << ppd->lang_encoding;
+            toUnicode = QStringDecoder(QStringDecoder::Utf8, QStringDecoder::Flag::Stateless);
+        }
 
         QWidget *holdingWidget = new QWidget();
         QVBoxLayout *layout = new QVBoxLayout(holdingWidget);
@@ -471,7 +476,7 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                             if (choiceIsInstallableConflict && static_cast<int>(choice->marked) == 1) {
                                 markedChoiceNotAvailable = true;
                             } else if (!choiceIsInstallableConflict) {
-                                choicesCb->addItem(m_cupsCodec->toUnicode(choice->text), i);
+                                choicesCb->addItem(toUnicode(choice->text), i);
                                 if (static_cast<int>(choice->marked) == 1) {
                                     choicesCb->setCurrentIndex(choicesCb->count() - 1);
                                     choicesCb->setProperty(ppdOriginallySelectedChoiceProperty, QVariant(i));
@@ -502,7 +507,7 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                             choicesCbWithLabelLayout->addWidget(choicesCb);
                             choicesCbWithLabelLayout->addWidget(warningLabel);
 
-                            QLabel *optionLabel = new QLabel(m_cupsCodec->toUnicode(option->text));
+                            QLabel *optionLabel = new QLabel(toUnicode(option->text));
                             groupLayout->addRow(optionLabel, choicesCbWithLabel);
                             anyWidgetCreated = true;
                             choicesCb->setProperty(ppdOptionProperty, QVariant::fromValue(option));
@@ -515,7 +520,7 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                 }
 
                 if (groupLayout->rowCount() > 0) {
-                    QGroupBox *groupBox = new QGroupBox(m_cupsCodec->toUnicode(group->text));
+                    QGroupBox *groupBox = new QGroupBox(toUnicode(group->text));
                     groupBox->setLayout(groupLayout);
                     layout->addWidget(groupBox);
                 } else {
@@ -527,9 +532,6 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
         layout->addStretch();
         widget.scrollArea->setWidget(holdingWidget);
     }
-
-    if (!m_cupsCodec)
-        m_cupsCodec = QTextCodec::codecForLocale();
 
     return anyWidgetCreated;
 }
