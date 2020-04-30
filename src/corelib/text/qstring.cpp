@@ -1561,7 +1561,7 @@ const QString::Null QString::null = { };
     the QChar data. The pointer is guaranteed to remain valid until a
     non-const function is called on the QString.
 
-    \section1 Converting Between 8-Bit Strings and Unicode Strings
+    \section1 Converting Between encoded strings data and QString
 
     QString provides the following three functions that return a
     \c{const char *} version of the string as QByteArray: toUtf8(),
@@ -1573,12 +1573,13 @@ const QString::Null QString::null = { };
        superset of US-ASCII (ANSI X3.4-1986) that supports the entire
        Unicode character set through multibyte sequences.
     \li toLocal8Bit() returns an 8-bit string using the system's local
-       encoding.
+       encoding. This is the same as toUtf8() on Unix systems.
     \endlist
 
     To convert from one of these encodings, QString provides
     fromLatin1(), fromUtf8(), and fromLocal8Bit(). Other
-    encodings are supported through the QTextCodec class.
+    encodings are supported through the QStringEncoder and QStringDecoder
+    classes.
 
     As mentioned above, QString provides a lot of functions and
     operators that make it easy to interoperate with \c{const char *}
@@ -1613,8 +1614,7 @@ const QString::Null QString::null = { };
 
     Similarly, you must call toLatin1(), toUtf8(), or
     toLocal8Bit() explicitly to convert the QString to an 8-bit
-    string.  (Other encodings are supported through the QTextCodec
-    class.)
+    string.
 
     \table 100 %
     \header
@@ -5174,7 +5174,7 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
     characters. Those characters may be suppressed or replaced with a
     question mark.
 
-    \sa fromLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
+    \sa fromLatin1(), toUtf8(), toLocal8Bit(), QStringEncoder
 */
 
 static QByteArray qt_convert_to_local_8bit(QStringView string);
@@ -5186,15 +5186,14 @@ static QByteArray qt_convert_to_local_8bit(QStringView string);
     QByteArray. The returned byte array is undefined if the string
     contains characters not supported by the local 8-bit encoding.
 
-    QTextCodec::codecForLocale() is used to perform the conversion from
-    Unicode. If the locale encoding could not be determined, this function
-    does the same as toLatin1().
+    On Unix systems this is equivalen to toUtf8(), on Windows the systems
+    current code page is being used.
 
     If this string contains any characters that cannot be encoded in the
     locale, the returned byte array is undefined. Those characters may be
     suppressed or replaced by another.
 
-    \sa fromLocal8Bit(), toLatin1(), toUtf8(), QTextCodec
+    \sa fromLocal8Bit(), toLatin1(), toUtf8(), QStringEncoder
 */
 
 QByteArray QString::toLocal8Bit_helper(const QChar *data, int size)
@@ -5217,8 +5216,8 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
 
     Returns a local 8-bit representation of \a string as a QByteArray.
 
-    QTextCodec::codecForLocale() is used to perform the conversion from
-    Unicode.
+    On Unix systems this is equivalen to toUtf8(), on Windows the systems
+    current code page is being used.
 
     The behavior is undefined if \a string contains characters not
     supported by the locale's 8-bit encoding.
@@ -5240,7 +5239,7 @@ static QByteArray qt_convert_to_utf8(QStringView str);
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
 
-    \sa fromUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
+    \sa fromUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder
 */
 
 QByteArray QString::toUtf8_helper(const QString &str)
@@ -5287,7 +5286,7 @@ static QVector<uint> qt_convert_to_ucs4(QStringView string);
 
     The returned vector is not \\0'-terminated.
 
-    \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
+    \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder, fromUcs4(), toWCharArray()
 */
 QVector<uint> QString::toUcs4() const
 {
@@ -5371,7 +5370,8 @@ QString::DataPointer QString::fromLatin1_helper(const char *str, int size)
     If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
-    QTextCodec::codecForLocale() is used to perform the conversion.
+    On Unix systems this is equivalen to fromUtf8(), on Windows the systems
+    current code page is being used.
 
     \sa toLocal8Bit(), fromLatin1(), fromUtf8()
 */
@@ -12149,7 +12149,7 @@ qsizetype QtPrivate::lastIndexOf(QLatin1String haystack, qsizetype from, QLatin1
     characters. Those characters may be suppressed or replaced with a
     question mark.
 
-    \sa toUtf8(), toLocal8Bit(), QTextCodec
+    \sa toUtf8(), toLocal8Bit(), QStringEncoder
 */
 QByteArray QStringRef::toLatin1() const
 {
@@ -12163,15 +12163,14 @@ QByteArray QStringRef::toLatin1() const
     QByteArray. The returned byte array is undefined if the string
     contains characters not supported by the local 8-bit encoding.
 
-    QTextCodec::codecForLocale() is used to perform the conversion from
-    Unicode. If the locale encoding could not be determined, this function
-    does the same as toLatin1().
+    On Unix systems this is equivalen to toUtf8(), on Windows the systems
+    current code page is being used.
 
     If this string contains any characters that cannot be encoded in the
     locale, the returned byte array is undefined. Those characters may be
     suppressed or replaced by another.
 
-    \sa toLatin1(), toUtf8(), QTextCodec
+    \sa toLatin1(), toUtf8(), QStringEncoder
 */
 QByteArray QStringRef::toLocal8Bit() const
 {
@@ -12186,7 +12185,7 @@ QByteArray QStringRef::toLocal8Bit() const
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
 
-    \sa toLatin1(), toLocal8Bit(), QTextCodec
+    \sa toLatin1(), toLocal8Bit(), QStringEncoder
 */
 QByteArray QStringRef::toUtf8() const
 {
@@ -12205,7 +12204,7 @@ QByteArray QStringRef::toUtf8() const
 
     The returned vector is not \\0'-terminated.
 
-    \sa toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
+    \sa toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder
 */
 QVector<uint> QStringRef::toUcs4() const
 {

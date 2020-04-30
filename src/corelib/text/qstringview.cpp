@@ -810,7 +810,7 @@ QT_BEGIN_NAMESPACE
 
     The behavior is undefined if the string contains non-Latin1 characters.
 
-    \sa toUtf8(), toLocal8Bit(), QTextCodec
+    \sa toUtf8(), toLocal8Bit(), QStringEncoder
 */
 
 /*!
@@ -818,14 +818,13 @@ QT_BEGIN_NAMESPACE
 
     Returns a local 8-bit representation of the string as a QByteArray.
 
-    QTextCodec::codecForLocale() is used to perform the conversion from
-    Unicode. If the locale's encoding could not be determined, this function
-    does the same as toLatin1().
+    On Unix systems this is equivalen to toUtf8(), on Windows the systems
+    current code page is being used.
 
     The behavior is undefined if the string contains characters not
     supported by the locale's 8-bit encoding.
 
-    \sa toLatin1(), toUtf8(), QTextCodec
+    \sa toLatin1(), toUtf8(), QStringEncoder
 */
 
 /*!
@@ -836,7 +835,7 @@ QT_BEGIN_NAMESPACE
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
 
-    \sa toLatin1(), toLocal8Bit(), QTextCodec
+    \sa toLatin1(), toLocal8Bit(), QStringEncoder
 */
 
 /*!
@@ -851,7 +850,7 @@ QT_BEGIN_NAMESPACE
 
     The returned vector is not 0-terminated.
 
-    \sa toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
+    \sa toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder
 */
 
 /*!
