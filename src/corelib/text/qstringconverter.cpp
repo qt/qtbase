@@ -44,6 +44,7 @@
 
 #include "private/qsimd_p.h"
 #include "private/qstringiterator_p.h"
+#include "qbytearraymatcher.h"
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -1531,6 +1532,53 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForData(cons
     return std::nullopt;
 }
 
+/*!
+   Tries to determine the encoding of the HTML in \a buf by looking at leading byte order marks or
+   a charset specifier in the HTML meta tag. If the optional is empty, the encoding specified is
+   not supported by QStringConverter. If no encoding is detected, the method returns Utf8.
+ */
+std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(const char *buf, qsizetype arraySize)
+{
+    // determine charset
+    auto encoding = encodingForData(buf, arraySize);
+    if (encoding)
+        // trust the initial BOM
+        return encoding;
+
+    QByteArray header = QByteArray(buf, qMin(arraySize, qsizetype(1024))).toLower();
+    int pos = header.indexOf("meta ");
+    if (pos != -1) {
+        pos = header.indexOf("charset=", pos);
+        if (pos != -1) {
+            pos += qstrlen("charset=");
+            if (pos < header.size() && (header.at(pos) == '\"' || header.at(pos) == '\''))
+                ++pos;
+
+            int pos2 = pos;
+            // The attribute can be closed with either """, "'", ">" or "/",
+            // none of which are valid charset characters.
+            while (++pos2 < header.size()) {
+                char ch = header.at(pos2);
+                if (ch == '\"' || ch == '\'' || ch == '>' || ch == '/') {
+                    QByteArray name = header.mid(pos, pos2 - pos);
+                    int colon = name.indexOf(':');
+                    if (colon > 0)
+                        name = name.left(colon);
+                    name = name.simplified();
+                    if (name == "unicode") // QTBUG-41998, ICU will return UTF-16.
+                        name = QByteArrayLiteral("UTF-8");
+                    if (!name.isEmpty())
+                        return encodingForName(name);
+                }
+            }
+        }
+    }
+    return Utf8;
+}
+
+/*!
+    Returns the canonical name for \a encoding.
+*/
 const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 {
     return encodingInterfaces[int(e)].name;

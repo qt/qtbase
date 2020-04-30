@@ -68,6 +68,9 @@ private slots:
 
     void encodingForData_data();
     void encodingForData();
+
+    void encodingForHtml_data();
+    void encodingForHtml();
 };
 
 void tst_QStringConverter::constructByName()
@@ -1720,6 +1723,92 @@ void tst_QStringConverter::encodingForData()
 
     auto e = QStringConverter::encodingForData(encoded.constData(), encoded.size(), char16_t('<'));
     QCOMPARE(e, encoding);
+}
+
+
+void tst_QStringConverter::encodingForHtml_data()
+{
+    QTest::addColumn<QByteArray>("html");
+    QTest::addColumn<std::optional<QStringConverter::Encoding>>("encoding");
+
+    QByteArray html = "<html><head></head><body>blah</body></html>";
+    QTest::newRow("no charset") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-15\" /></head></html>";
+    QTest::newRow("latin 15") << html << std::optional<QStringConverter::Encoding>();
+
+    html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-1\" /></head></html>";
+    QTest::newRow("latin 1") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
+
+    html = "<!DOCTYPE html><html><head><meta charset=\"ISO_8859-1:1987\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><title>Test</title></head>";
+    QTest::newRow("latin 1 (#2)") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Latin1);
+
+    html = "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><title>Test</title></head>";
+    QTest::newRow("UTF-8") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><meta charset=\"utf-8\"><title>Test</title></head>";
+    QTest::newRow("UTF-8 (#2)") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8/></head></html>";
+    QTest::newRow("UTF-8, no quotes") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset='UTF-8'/></head></html>";
+    QTest::newRow("UTF-8, single quotes") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    html = "<!DOCTYPE html><html><head><meta charset=utf-8><title>Test</title></head>";
+    QTest::newRow("UTF-8, > terminator") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    html = "<!DOCTYPE html><html><head><meta charset= utf-8 ><title>Test</title></head>";
+    QTest::newRow("UTF-8, > terminator with spaces") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    // Test invalid charsets.
+    html = "<!DOCTYPE html><html><head><meta charset= utf/8 ><title>Test</title></head>";
+    QTest::newRow("utf/8") << html << std::optional<QStringConverter::Encoding>();
+
+    html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=invalid-foo\" /></head></html>";
+    QTest::newRow("invalid charset, no default") << html << std::optional<QStringConverter::Encoding>();
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><meta charset=\"";
+    html.prepend(QByteArray().fill(' ', 512 - html.size()));
+    QTest::newRow("invalid charset (large header)") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><meta charset=\"utf-8";
+    QTest::newRow("invalid charset (no closing double quote)") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><meta charset='utf-8";
+    QTest::newRow("invalid charset (no closing single quote)") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    html = "<!DOCTYPE html><html><head><meta charset=utf-8 foo=bar><title>Test</title></head>";
+    QTest::newRow("invalid (space terminator)") << html << std::optional<QStringConverter::Encoding>();
+
+    html = "<!DOCTYPE html><html><head><meta charset=\" utf' 8 /><title>Test</title></head>";
+    QTest::newRow("invalid charset, early terminator (')") << html << std::optional<QStringConverter::Encoding>();
+
+    const char src[] = { char(0xff), char(0xfe), char(0x7a), char(0x03), 0, 0 };
+    html = src;
+    QTest::newRow("greek text UTF-16LE") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16LE);
+
+
+    html = "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"><span style=\"color: rgb(0, 0, 0); font-family: "
+        "'Galatia SIL'; font-size: 27px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; "
+        "line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: "
+        "auto; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; display: inline !important; float: "
+        "none;\">&#x37b</span>\000";
+    QTest::newRow("greek text UTF-8") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=unicode\">"
+            "<head/><body><p>bla</p></body></html>"; // QTBUG-41998, ICU will return UTF-16.
+    QTest::newRow("legacy unicode UTF-8") << html << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+}
+
+void tst_QStringConverter::encodingForHtml()
+{
+    QFETCH(QByteArray, html);
+    QFETCH(std::optional<QStringConverter::Encoding>, encoding);
+
+    QCOMPARE(QStringConverter::encodingForHtml(html.constData(), html.size()), encoding);
 }
 
 class LoadAndConvert: public QRunnable

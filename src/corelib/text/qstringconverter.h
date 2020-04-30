@@ -168,6 +168,7 @@ public:
     Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name);
     Q_CORE_EXPORT static const char *nameForEncoding(Encoding e);
     Q_CORE_EXPORT static std::optional<Encoding> encodingForData(const char *buf, qsizetype arraySize, char16_t expectedFirstCharacter = 0);
+    Q_CORE_EXPORT static std::optional<Encoding> encodingForHtml(const char *buf, qsizetype arraySize);
 
 protected:
     const Interface *iface;
