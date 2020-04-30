@@ -607,6 +607,13 @@ function(qt_generate_module_pri_file target target_path config_module_name pri_f
     endif()
 
     if (NOT ${arg_INTERNAL_MODULE})
+        if(arg_HEADER_MODULE)
+            set(module_plugin_types "")
+        else()
+            get_target_property(module_plugin_types ${target} MODULE_PLUGIN_TYPES)
+            list(JOIN module_plugin_types " " module_plugin_types)
+        endif()
+
         qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
         list(APPEND pri_files "${pri_file_name}")
 
@@ -620,6 +627,7 @@ QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
 QT.${config_module_name}.includes = $$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}
 QT.${config_module_name}.frameworks =
 QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE
+QT.${config_module_name}.plugin_types = ${module_plugin_types}
 QT.${config_module_name}.depends =
 QT.${config_module_name}.uses =
 QT.${config_module_name}.module_config = ${joined_module_internal_config}
