@@ -597,7 +597,7 @@ bool QtPrivate::isValidUtf16(QStringView s) noexcept
 
     QStringIterator i(s);
     while (i.hasNext()) {
-        const auto c = i.next(InvalidCodePoint);
+        const char32_t c = i.next(InvalidCodePoint);
         if (c == InvalidCodePoint)
             return false;
     }
@@ -5077,7 +5077,7 @@ bool QString::isUpper() const
     QStringIterator it(*this);
 
     while (it.hasNext()) {
-        const auto uc = it.nextUnchecked();
+        const char32_t uc = it.nextUnchecked();
         if (qGetProp(uc)->cases[QUnicodeTables::UpperCase].diff)
             return false;
     }
@@ -5103,7 +5103,7 @@ bool QString::isLower() const
     QStringIterator it(*this);
 
     while (it.hasNext()) {
-        const auto uc = it.nextUnchecked();
+        const char32_t uc = it.nextUnchecked();
         if (qGetProp(uc)->cases[QUnicodeTables::LowerCase].diff)
             return false;
     }
@@ -6594,7 +6594,7 @@ static QString convertCase(T &str, QUnicodeTables::Case which)
 
     QStringIterator it(p, e);
     while (it.hasNext()) {
-        const auto uc = it.nextUnchecked();
+        const char32_t uc = it.nextUnchecked();
         if (qGetProp(uc)->cases[which].diff) {
             it.recedeUnchecked();
             return detachAndConvertCase(str, it, which);
