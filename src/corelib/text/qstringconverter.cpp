@@ -1491,6 +1491,46 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(cons
     return std::nullopt;
 }
 
+std::optional<QStringConverter::Encoding> QStringConverter::encodingForData(const char *buf, qsizetype arraySize, char16_t expectedFirstCharacter)
+{
+    if (arraySize > 3) {
+        uint uc = qFromUnaligned<uint>(buf);
+        if (uc == qToBigEndian(uint(QChar::ByteOrderMark)))
+            return QStringConverter::Utf32BE;
+        if (uc == qToLittleEndian(uint(QChar::ByteOrderMark)))
+            return QStringConverter::Utf32LE;
+        if (expectedFirstCharacter) {
+            // catch also anything starting with the expected character
+            if (qToLittleEndian(uc) == expectedFirstCharacter)
+                return QStringConverter::Utf32LE;
+            else if (qToBigEndian(uc) == expectedFirstCharacter)
+                return QStringConverter::Utf32BE;
+        }
+    }
+
+    if (arraySize > 2) {
+        static const char utf8bom[] = "\xef\xbb\xbf";
+        if (memcmp(buf, utf8bom, sizeof(utf8bom) - 1) == 0)
+            return QStringConverter::Utf8;
+    }
+
+    if (arraySize > 1) {
+        ushort uc = qFromUnaligned<ushort>(buf);
+        if (uc == qToBigEndian(ushort(QChar::ByteOrderMark)))
+            return QStringConverter::Utf16BE;
+        if (uc == qToLittleEndian(ushort(QChar::ByteOrderMark)))
+            return QStringConverter::Utf16LE;
+        if (expectedFirstCharacter) {
+            // catch also anything starting with the expected character
+            if (qToLittleEndian(uc) == expectedFirstCharacter)
+                return QStringConverter::Utf16LE;
+            else if (qToBigEndian(uc) == expectedFirstCharacter)
+                return QStringConverter::Utf16BE;
+        }
+    }
+    return std::nullopt;
+}
+
 const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 {
     return encodingInterfaces[int(e)].name;

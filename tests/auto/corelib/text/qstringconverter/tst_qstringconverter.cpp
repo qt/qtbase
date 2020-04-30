@@ -65,6 +65,9 @@ private slots:
 
     void nameForEncoding_data();
     void nameForEncoding();
+
+    void encodingForData_data();
+    void encodingForData();
 };
 
 void tst_QStringConverter::constructByName()
@@ -1662,6 +1665,61 @@ void tst_QStringConverter::nameForEncoding()
 
     QByteArray n = QStringConverter::nameForEncoding(encoding);
     QCOMPARE(n, name);
+}
+
+void tst_QStringConverter::encodingForData_data()
+{
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<std::optional<QStringConverter::Encoding>>("encoding");
+
+
+    QTest::newRow("utf8 bom")
+        << QByteArray("\xef\xbb\xbfhello")
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf8);
+    QTest::newRow("utf8 nobom")
+        << QByteArray("hello")
+        << std::optional<QStringConverter::Encoding>();
+
+    QTest::newRow("utf16 bom be")
+        << QByteArray("\xfe\xff\0h\0e\0l", 8)
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16BE);
+    QTest::newRow("utf16 bom le")
+        << QByteArray("\xff\xfeh\0e\0l\0", 8)
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16LE);
+    QTest::newRow("utf16 nobom be")
+        << QByteArray("\0<\0e\0l", 6)
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16BE);
+    QTest::newRow("utf16 nobom le")
+        << QByteArray("<\0e\0l\0", 6)
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf16LE);
+    QTest::newRow("utf16 nobom no match")
+        << QByteArray("h\0e\0l\0", 6)
+        << std::optional<QStringConverter::Encoding>();
+
+    QTest::newRow("utf32 bom be")
+        << QByteArray("\0\0\xfe\xff\0\0\0h\0\0\0e\0\0\0l", 16)
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf32BE);
+    QTest::newRow("utf32 bom le")
+        << QByteArray("\xff\xfe\0\0h\0\0\0e\0\0\0l\0\0\0", 16)
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf32LE);
+    QTest::newRow("utf32 nobom be")
+        << QByteArray("\0\0\0<\0\0\0e\0\0\0l", 12)
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf32BE);
+    QTest::newRow("utf32 nobom")
+        << QByteArray("<\0\0\0e\0\0\0l\0\0\0", 12)
+        << std::optional<QStringConverter::Encoding>(QStringConverter::Utf32LE);
+    QTest::newRow("utf32 nobom no match")
+        << QByteArray("\0\0\0h\0\0\0e\0\0\0l", 12)
+        << std::optional<QStringConverter::Encoding>();
+}
+
+void tst_QStringConverter::encodingForData()
+{
+    QFETCH(QByteArray, encoded);
+    QFETCH(std::optional<QStringConverter::Encoding>, encoding);
+
+    auto e = QStringConverter::encodingForData(encoded.constData(), encoded.size(), char16_t('<'));
+    QCOMPARE(e, encoding);
 }
 
 class LoadAndConvert: public QRunnable
