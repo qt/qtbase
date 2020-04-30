@@ -763,8 +763,6 @@ static void updateSystemPrivate()
         const ushort group = res.toString().at(0).unicode();
         if (group != globalLocaleData.m_decimal)
             globalLocaleData.m_group = group;
-        else if (group == globalLocaleData.m_group)
-            qWarning("System-supplied decimal and grouping character are both 0x%hx", group);
     }
 
     res = sys_locale->query(QSystemLocale::ZeroDigit, QVariant());
