@@ -40,7 +40,6 @@
 #include <qtexttable.h>
 #include <qabstracttextdocumentlayout.h>
 #include <qtextlist.h>
-#include <qtextcodec.h>
 #include <qguiapplication.h>
 #include <qurl.h>
 #include <qpainter.h>
@@ -110,8 +109,6 @@ private slots:
     void cursorPositionChangedOnSetText();
 
     void textFrameIterator();
-
-    void codecForHtml();
 
     void markContentsDirty();
 
@@ -2113,14 +2110,6 @@ void tst_QTextDocument::textFrameIterator()
     QEXPECT_FAIL("", "This is currently worked around in the html export but needs fixing!", Continue);
     QCOMPARE(blockCount, 0);
     QCOMPARE(frameCount, 1);
-}
-
-void tst_QTextDocument::codecForHtml()
-{
-    const QByteArray header("<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html;charset=utf-16\">");
-    QTextCodec *c = Qt::codecForHtml(header);
-    QVERIFY(c);
-    QCOMPARE(c->name(), QByteArray("UTF-16"));
 }
 
 class TestSyntaxHighlighter : public QObject
