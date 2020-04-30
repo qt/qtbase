@@ -29,7 +29,6 @@
 #include <QtTest/QtTest>
 
 #include <qtextboundaryfinder.h>
-#include <qtextcodec.h>
 #include <qfile.h>
 #include <qdebug.h>
 #include <qlist.h>
@@ -783,10 +782,7 @@ void tst_QTextBoundaryFinder::thaiLineBreak()
     if (!init_libthai())
         QSKIP("This test requires libThai-0.1.1x to be installed.");
 #if 0
-    // สวัสดีครับ นี่เป็นการงทดสอบตัวเอ
-    QTextCodec *codec = QTextCodec::codecForMib(2259);
-    QString text = codec->toUnicode(QByteArray("\xca\xc7\xd1\xca\xb4\xd5\xa4\xc3\xd1\xba\x20\xb9\xd5\xe8\xe0\xbb\xe7\xb9\xa1\xd2\xc3\xb7\xb4\xca\xcd\xba\xb5\xd1\xc7\xe0\xcd\xa7"));
-    QCOMPARE(text.length(), 32);
+    QString text = QString::fromUtf8("สวัสดีครับ นี่เป็นการงทดสอบตัวเอ");
 
     QTextBoundaryFinder finder(QTextBoundaryFinder::Line, text);
     finder.setPosition(0);
