@@ -102,10 +102,8 @@ public:
     QStringList allQueryItemValues(const QString &key, QUrl::ComponentFormattingOptions encoding = QUrl::PrettyDecoded) const;
     void removeAllQueryItems(const QString &key);
 
-    static QChar defaultQueryValueDelimiter()
-    { return QChar(ushort('=')); }
-    static QChar defaultQueryPairDelimiter()
-    { return QChar(ushort('&')); }
+    static constexpr char16_t defaultQueryValueDelimiter() noexcept { return u'='; }
+    static constexpr char16_t defaultQueryPairDelimiter() noexcept { return u'&'; }
 
 private:
     friend class QUrl;

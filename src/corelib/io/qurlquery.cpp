@@ -768,17 +768,21 @@ void QUrlQuery::removeAllQueryItems(const QString &key)
 }
 
 /*!
-    \fn QChar QUrlQuery::defaultQueryValueDelimiter()
+    \fn QUrlQuery::defaultQueryValueDelimiter()
     Returns the default character for separating keys from values in the query,
     an equal sign ("=").
+
+    \note Prior to Qt 6, this function returned QChar.
 
     \sa setQueryDelimiters(), queryValueDelimiter(), defaultQueryPairDelimiter()
 */
 
 /*!
-    \fn QChar QUrlQuery::defaultQueryPairDelimiter()
+    \fn QUrlQuery::defaultQueryPairDelimiter()
     Returns the default character for separating keys-value pairs from each
     other, an ampersand ("&").
+
+    \note Prior to Qt 6, this function returned QChar.
 
     \sa setQueryDelimiters(), queryPairDelimiter(), defaultQueryValueDelimiter()
 */
