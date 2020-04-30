@@ -3310,17 +3310,34 @@ function(qt_add_test name)
     if (arg_TIMEOUT)
         set_tests_properties(${name} PROPERTIES TIMEOUT ${arg_TIMEOUT})
     endif()
-    # Get path to qtbase/bin, then prepend this path containing the shared libraries to PATH
-    set(INSTALL_PREFIX_BIN "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
-    set(test_env_path "PATH=${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}${INSTALL_PREFIX_BIN}${QT_PATH_SEPARATOR}$ENV{PATH}")
+
+    # Get path to <original_qtbase_install_prefix>/bin, as well as CMAKE_INSTALL_PREFIX/bin, then
+    # prepend them to the PATH environment variable.
+    # It's needed on Windows to find the shared libraries and plugins.
+    # original_qtbase_install_prefix is the CMAKE_INSTALL_PREFIX specified when building qtbase.
+    # The regular CMAKE_INSTALL_PREFIX can be different for example when building standalone tests.
+    # Latest CMAKE_INSTALL_PREFIX takes priority for the PATH environment variable.
+    set(install_prefixes "${CMAKE_INSTALL_PREFIX}")
+    if(QT_BUILD_INTERNALS_ORIGINAL_INSTALL_PREFIX)
+        list(APPEND install_prefixes "${QT_BUILD_INTERNALS_ORIGINAL_INSTALL_PREFIX}")
+    endif()
+
+    set(test_env_path "PATH=${CMAKE_CURRENT_BINARY_DIR}")
+    foreach(install_prefix ${install_prefixes})
+        set(test_env_path "${test_env_path}${QT_PATH_SEPARATOR}${install_prefix}/${INSTALL_BINDIR}")
+    endforeach()
+    set(test_env_path "${test_env_path}${QT_PATH_SEPARATOR}$ENV{PATH}")
     string(REPLACE ";" "\;" test_env_path "${test_env_path}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "${test_env_path}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST=1")
 
     # Add the install prefix to list of plugin paths when doing a prefix build
     if(NOT QT_INSTALL_DIR)
-        list(APPEND plugin_paths "${CMAKE_INSTALL_PREFIX}/${INSTALL_PLUGINSDIR}")
+        foreach(install_prefix ${install_prefixes})
+            list(APPEND plugin_paths "${install_prefix}/${INSTALL_PLUGINSDIR}")
+        endforeach()
     endif()
+
     #TODO: Collect all paths from known repositories when performing a super
     # build.
     list(APPEND plugin_paths "${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}")

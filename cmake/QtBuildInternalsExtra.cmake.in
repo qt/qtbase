@@ -10,6 +10,14 @@ set(QT_BUILD_INTERNALS_PATH "${CMAKE_CURRENT_LIST_DIR}")
 set(CMAKE_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@ CACHE PATH
     "Install path prefix, prepended onto install directories." FORCE)
 
+# Save the original install prefix in an additional variable.
+# While CMAKE_INSTALL_PREFIX may be overridden in certain cases (like for standalone tests building
+# or for singular qt-cmake-standalone-test usage), we still need the original qtbase install prefix
+# to know where the shared libraries are located to inject them into PATH when running tests via
+# ctest.
+set(QT_BUILD_INTERNALS_ORIGINAL_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@ CACHE PATH
+    "Original install prefix specified when building qtbase." FORCE)
+
 # Propagate developer builds to other modules via BuildInternals package.
 if(@FEATURE_developer_build@)
     set(FEATURE_developer_build ON CACHE BOOL "Developer build." FORCE)
