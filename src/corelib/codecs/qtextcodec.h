@@ -40,7 +40,7 @@
 #ifndef QTEXTCODEC_H
 #define QTEXTCODEC_H
 
-#include <QtCore/qstring.h>
+#include <QtCore/qstringconverter.h>
 #include <QtCore/qlist.h>
 
 QT_REQUIRE_CONFIG(textcodec);
@@ -53,10 +53,13 @@ class QIODevice;
 class QTextDecoder;
 class QTextEncoder;
 
-class Q_CORE_EXPORT QTextCodec
+class Q_CORE_EXPORT QTextCodec : public QStringConverterBase
 {
     Q_DISABLE_COPY(QTextCodec)
 public:
+    using ConversionFlags = QStringConverterBase::Flags;
+    using ConverterState = QStringConverterBase::State;
+
     static QTextCodec* codecForName(const QByteArray &name);
     static QTextCodec* codecForName(const char *name) { return codecForName(QByteArray(name)); }
     static QTextCodec* codecForMib(int mib);
@@ -89,31 +92,6 @@ public:
     QByteArray fromUnicode(const QString& uc) const;
 #endif
     QByteArray fromUnicode(QStringView uc) const;
-    enum ConversionFlag {
-        DefaultConversion,
-        ConvertInvalidToNull = 0x80000000,
-        IgnoreHeader = 0x1
-    };
-    Q_DECLARE_FLAGS(ConversionFlags, ConversionFlag)
-
-    struct Q_CORE_EXPORT ConverterState {
-        ConverterState(ConversionFlags f = DefaultConversion)
-            : flags(f), state_data{0, 0, 0, 0} {}
-        ~ConverterState();
-        ConversionFlags flags;
-        int remainingChars = 0;
-        int invalidChars = 0;
-
-        union {
-            uint state_data[4];
-            void *d[2];
-        };
-        void clear();
-        using ClearDataFn = void (*)(ConverterState *);
-        ClearDataFn clearFn = nullptr;
-    private:
-        Q_DISABLE_COPY(ConverterState)
-    };
 
     QString toUnicode(const char *in, int length, ConverterState *state = nullptr) const
         { return convertToUnicode(in, length, state); }
@@ -137,7 +115,6 @@ protected:
 private:
     friend struct QCoreGlobalData;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QTextCodec::ConversionFlags)
 
 class Q_CORE_EXPORT QTextEncoder {
     Q_DISABLE_COPY(QTextEncoder)

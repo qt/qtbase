@@ -93,6 +93,7 @@ SOURCES += \
            ../../corelib/text/qregularexpression.cpp \
            ../../corelib/text/qstring.cpp \
            ../../corelib/text/qstringbuilder.cpp \
+           ../../corelib/text/qstringconverter.cpp \
            ../../corelib/text/qstring_compat.cpp \
            ../../corelib/text/qstringlist.cpp \
            ../../corelib/text/qstringview.cpp \

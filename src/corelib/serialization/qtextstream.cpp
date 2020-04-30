@@ -355,7 +355,7 @@ QTextStreamPrivate::~QTextStreamPrivate()
 #if QT_CONFIG(textcodec)
 static void resetCodecConverterStateHelper(QTextCodec::ConverterState *state)
 {
-    state->~ConverterState();
+    state->~State();
     new (state) QTextCodec::ConverterState;
 }
 

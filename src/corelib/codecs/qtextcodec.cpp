@@ -339,26 +339,6 @@ static void setup() {}
 */
 
 /*!
-    Destroys the ConverterState object.
-*/
-QTextCodec::ConverterState::~ConverterState()
-{
-    clear();
-}
-
-void QTextCodec::ConverterState::clear()
-{
-    if (clearFn)
-        clearFn(this);
-    remainingChars = 0;
-    invalidChars = 0;
-    state_data[0] = 0;
-    state_data[1] = 0;
-    state_data[2] = 0;
-    state_data[3] = 0;
-}
-
-/*!
     \class QTextCodec
     \inmodule QtCore
     \brief The QTextCodec class provides conversions between text encodings.

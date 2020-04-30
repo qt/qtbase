@@ -1686,7 +1686,6 @@ void tst_QTextCodec::utf8stateful()
     QVERIFY(utf8codec);
 
     QTextCodec::ConverterState state;
-    memset(&state, 0, sizeof state);
 
     QString decoded1 = utf8codec->toUnicode(buffer1, buffer1.size(), &state);
     if (result.isNull()) {

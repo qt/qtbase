@@ -108,6 +108,7 @@ qt_extend_target(Bootstrap
         ../../corelib/text/qstring.cpp
         ../../corelib/text/qstring_compat.cpp
         ../../corelib/text/qstringbuilder.cpp
+        ../../corelib/text/qstringconverter.cpp
         ../../corelib/text/qstringlist.cpp
         ../../corelib/text/qstringview.cpp
         ../../corelib/text/qvsnprintf.cpp

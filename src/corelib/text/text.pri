@@ -19,6 +19,7 @@ HEADERS +=  \
         text/qstringalgorithms.h \
         text/qstringalgorithms_p.h \
         text/qstringbuilder.h \
+        text/qstringconverter.h \
         text/qstringiterator_p.h \
         text/qstringlist.h \
         text/qstringliteral.h \
@@ -39,6 +40,7 @@ SOURCES += \
         text/qregexp.cpp \
         text/qstring.cpp \
         text/qstringbuilder.cpp \
+        text/qstringconverter.cpp \
         text/qstringlist.cpp \
         text/qstringview.cpp \
         text/qtextboundaryfinder.cpp \
