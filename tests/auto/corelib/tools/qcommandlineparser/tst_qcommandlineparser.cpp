@@ -78,6 +78,7 @@ private slots:
     void testUnknownOption();
     void testHelpAll_data();
     void testHelpAll();
+    void testVeryLongOptionNames();
 };
 
 static char *empty_argv[] = { 0 };
@@ -734,6 +735,38 @@ void tst_QCommandLineParser::testHelpAll()
 #endif
     QCOMPARE(output.split('\n'), expectedHelpOutput.split('\n')); // easier to debug than the next line, on failure
     QCOMPARE(output, expectedHelpOutput);
+#endif // QT_CONFIG(process)
+}
+
+void tst_QCommandLineParser::testVeryLongOptionNames()
+{
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess support");
+#else
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    QSKIP("Deploying executable applications to file system on Android not supported.");
+#endif
+
+    QCoreApplication app(empty_argc, empty_argv);
+    QProcess process;
+    process.start("testhelper/qcommandlineparser_test_helper", QStringList() << "0" << "long" << "--help");
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QString output = process.readAll();
+#ifdef Q_OS_WIN
+    output.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+#endif
+    const QStringList lines = output.split('\n');
+    const int last = lines.count() - 1;
+    // Let's not compare everything, just the final parts.
+    QCOMPARE(lines.at(last - 7), "                                                     cdefghijklmnopqrstuvwxyz");
+    QCOMPARE(lines.at(last - 6), "  --looooooooooooong-option, --looooong-opt-alias <l Short description");
+    QCOMPARE(lines.at(last - 5), "  ooooooooooooong-value-name>");
+    QCOMPARE(lines.at(last - 4), "");
+    QCOMPARE(lines.at(last - 3), "Arguments:");
+    QCOMPARE(lines.at(last - 2), "  parsingMode                                        The parsing mode to test.");
+    QCOMPARE(lines.at(last - 1), "  command                                            The command to execute.");
+
 #endif // QT_CONFIG(process)
 }
 
