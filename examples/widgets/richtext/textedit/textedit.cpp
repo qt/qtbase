@@ -60,7 +60,6 @@
 #include <QFontDatabase>
 #include <QMenu>
 #include <QMenuBar>
-#include <QTextCodec>
 #include <QTextEdit>
 #include <QStatusBar>
 #include <QToolBar>
@@ -417,20 +416,19 @@ bool TextEdit::load(const QString &f)
         return false;
 
     QByteArray data = file.readAll();
-    QTextCodec *codec = Qt::codecForHtml(data);
-    QString str = codec->toUnicode(data);
-    if (Qt::mightBeRichText(str)) {
+    QMimeDatabase db;
+    if (db.mimeTypeForFileNameAndData(f, data).name() == QLatin1String("text/html")) {
+        auto encoding = QStringDecoder::encodingForHtml(data.constData(), data.size());
+        QString str = QStringDecoder(encoding ? *encoding : QStringDecoder::Utf8)(data);
         QUrl baseUrl = (f.front() == QLatin1Char(':') ? QUrl(f) : QUrl::fromLocalFile(f)).adjusted(QUrl::RemoveFilename);
         textEdit->document()->setBaseUrl(baseUrl);
         textEdit->setHtml(str);
-    } else {
 #if QT_CONFIG(textmarkdownreader)
-        QMimeDatabase db;
-        if (db.mimeTypeForFileNameAndData(f, data).name() == QLatin1String("text/markdown"))
-            textEdit->setMarkdown(QString::fromUtf8(data));
-        else
+    } else if (db.mimeTypeForFileNameAndData(f, data).name() == QLatin1String("text/markdown")) {
+        textEdit->setMarkdown(QString::fromUtf8(data));
 #endif
-            textEdit->setPlainText(QString::fromUtf8(data));
+    } else {
+        textEdit->setPlainText(QString::fromUtf8(data));
     }
 
     setCurrentFileName(f);
