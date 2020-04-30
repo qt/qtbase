@@ -245,6 +245,10 @@ macro(ecm_find_package_handle_library_components module_name)
             set(${module_name}_VERSION ${${module_name}_${ecm_fpwc_comp}_VERSION})
         endif()
 
+        set(_name_mismatched_arg)
+        if(NOT CMAKE_VERSION VERSION_LESS 3.17)
+            set(_name_mismatched_arg NAME_MISMATCHED)
+        endif()
         find_package_handle_standard_args(${module_name}_${ecm_fpwc_comp}
             FOUND_VAR
                 ${module_name}_${ecm_fpwc_comp}_FOUND
@@ -254,6 +258,7 @@ macro(ecm_find_package_handle_library_components module_name)
                 ${ecm_fpwc_dep_vars}
             VERSION_VAR
                 ${module_name}_${ecm_fpwc_comp}_VERSION
+            ${_name_mismatched_arg}
             )
 
         mark_as_advanced(
