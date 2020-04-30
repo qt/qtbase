@@ -76,7 +76,4 @@
 #include <qstringlist.h>
 #include <qtimer.h>
 #include <qvector.h>
-#if QT_CONFIG(textcodec)
-#include <qtextcodec.h>
-#endif
 #endif
