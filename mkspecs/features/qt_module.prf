@@ -79,9 +79,9 @@ load(qt_build_paths)
 
 header_module {
     TEMPLATE     = aux
-    CONFIG      += force_qt  # Needed for the headers_clean tests.
-    !lib_bundle: \
-        CONFIG  += qt_no_install_library
+    CONFIG      += \
+        force_qt \ # Needed for the headers_clean tests.
+        qt_no_install_library
 
     # Allow creation of .prl, .la and .pc files.
     target.path = $$[QT_INSTALL_LIBS]
