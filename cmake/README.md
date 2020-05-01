@@ -76,7 +76,7 @@ make, so you may want to use that:
 ```
 
 You can look into the generated ``build.ninja`` file if you're curious and you can also build
-targets directory such as ``ninja lib/libQt6Core.so``.
+targets directly, such as ``ninja lib/libQt6Core.so``.
 
 Make sure to remove CMakeCache.txt if you forgot to set the CMAKE_INSTALL_PREFIX on the first
 configuration, otherwise a second re-configuration will not pick up the new install prefix.
