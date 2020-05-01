@@ -36,6 +36,7 @@ class tst_QShader : public QObject
     Q_OBJECT
 
 private slots:
+    void serializeDeserialize();
     void simpleCompileCheckResults();
     void genVariants();
     void shaderDescImplicitSharing();
@@ -54,6 +55,22 @@ static QShader getShader(const QString &name)
         return QShader::fromSerialized(f.readAll());
 
     return QShader();
+}
+
+void tst_QShader::serializeDeserialize()
+{
+    QShader s = getShader(QLatin1String(":/data/texture_all_v4.frag.qsb"));
+    QVERIFY(s.isValid());
+
+    QByteArray data = s.serialized();
+    QVERIFY(!data.isEmpty());
+
+    QShader s2;
+    QVERIFY(!s2.isValid());
+    QVERIFY(s != s2);
+    s2 = QShader::fromSerialized(data);
+    QVERIFY(s2.isValid());
+    QCOMPARE(s, s2);
 }
 
 void tst_QShader::simpleCompileCheckResults()
