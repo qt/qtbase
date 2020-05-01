@@ -225,7 +225,7 @@ static bool isValidIccProfile(const ICCProfileHeader &header)
     }
 
     // Don't overflow 32bit integers:
-    if (header.tagCount >= INT32_MAX / sizeof(TagTableEntry)) {
+    if (header.tagCount >= (INT32_MAX - sizeof(ICCProfileHeader)) / sizeof(TagTableEntry)) {
         qCWarning(lcIcc, "Failed tag count sanity");
         return false;
     }
@@ -629,6 +629,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     // Read tag index
     const TagTableEntry *tagTable = (const TagTableEntry *)(data.constData() + sizeof(ICCProfileHeader));
     const qsizetype offsetToData = sizeof(ICCProfileHeader) + header->tagCount * sizeof(TagTableEntry);
+    Q_ASSERT(offsetToData > 0);
     if (offsetToData > data.size()) {
         qCWarning(lcIcc) << "fromIccProfile: failed index size sanity";
         return false;
