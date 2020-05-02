@@ -44,6 +44,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QBuffer>
 #include <QtCore/private/qstringiterator_p.h>
+#include <QtCore/private/qduplicatetracker_p.h>
 
 #include <QtGui/private/qpaintengine_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -346,7 +347,7 @@ bool QFontEngineQPF2::stringToCMap(const QChar *str, int len, QGlyphLayout *glyp
     }
 
 #if defined(DEBUG_FONTENGINE)
-    QSet<QChar> seenGlyphs;
+    QDuplicateTracker<QChar> seenGlyphs;
 #endif
 
     int glyph_pos = 0;
@@ -366,10 +367,8 @@ bool QFontEngineQPF2::stringToCMap(const QChar *str, int len, QGlyphLayout *glyp
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
-            if (!findGlyph(glyphs[glyph_pos].glyph) && !seenGlyphs.contains(c))
+            if (!findGlyph(glyphs[glyph_pos].glyph) && !seenGlyphs.hasSeen(c))
                 qDebug() << "glyph for character" << c << '/' << Qt::hex << uc << "is" << Qt::dec << glyphs[glyph_pos].glyph;
-
-            seenGlyphs.insert(c);
 #endif
             ++glyph_pos;
         }

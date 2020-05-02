@@ -39,6 +39,7 @@
 
 // for normalizeTypeInternal
 #include <private/qmetaobject_moc_p.h>
+#include <private/qduplicatetracker_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1868,14 +1869,13 @@ void Moc::checkProperties(ClassDef *cdef)
     // specify get function, for compatibiliy we accept functions
     // returning pointers, or const char * for QByteArray.
     //
-    QSet<QByteArray> definedProperties;
+    QDuplicateTracker<QByteArray> definedProperties;
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         PropertyDef &p = cdef->propertyList[i];
-        if (definedProperties.contains(p.name)) {
+        if (definedProperties.hasSeen(p.name)) {
             QByteArray msg = "The property '" + p.name + "' is defined multiple times in class " + cdef->classname + ".";
             warning(msg.constData());
         }
-        definedProperties.insert(p.name);
 
         if (p.read.isEmpty() && p.member.isEmpty()) {
             if (!cdef->qPropertyMembers.contains(p.name) && !p.isQProperty) {
