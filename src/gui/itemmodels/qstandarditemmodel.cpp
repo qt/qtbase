@@ -48,7 +48,7 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qbitarray.h>
 #include <QtCore/qmimedata.h>
-
+#include <private/qduplicatetracker_p.h>
 #include <private/qstandarditemmodel_p.h>
 #include <qdebug.h>
 #include <algorithm>
@@ -3114,12 +3114,11 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
 
     //remove duplicates childrens
     {
-        QSet<QStandardItem *> seen;
+        QDuplicateTracker<QStandardItem *> seen;
         while (!stack.isEmpty()) {
             QStandardItem *itm = stack.pop();
-            if (seen.contains(itm))
+            if (seen.hasSeen(itm))
                 continue;
-            seen.insert(itm);
 
             const QVector<QStandardItem*> &childList = itm->d_func()->children;
             for (int i = 0; i < childList.count(); ++i) {
