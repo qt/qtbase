@@ -319,8 +319,7 @@ void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
         return;
 
     // Stop link loops
-    if (!visitedLinks.isEmpty() &&
-        visitedLinks.contains(fileInfo.canonicalFilePath()))
+    if (visitedLinks.contains(fileInfo.canonicalFilePath()))
         return;
 
     pushDirectory(fileInfo);
