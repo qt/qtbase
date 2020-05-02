@@ -45,6 +45,7 @@
 #ifdef QT_BUILD_CORE_LIB
 #include <QtCore/private/qresource_p.h>
 #endif
+#include <QtCore/private/qduplicatetracker_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,9 +65,9 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
     QString tmpPath = path;
     int separatorPos = 0;
     QSet<QString> nonSymlinks;
-    QSet<QString> known;
+    QDuplicateTracker<QString> known;
 
-    known.insert(path);
+    (void)known.hasSeen(path);
     do {
 #ifdef Q_OS_WIN
         if (separatorPos == 0) {
@@ -94,9 +95,8 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
                 tmpPath = QDir::cleanPath(target);
                 separatorPos = 0;
 
-                if (known.contains(tmpPath))
+                if (known.hasSeen(tmpPath))
                     return QString();
-                known.insert(tmpPath);
             } else {
                 nonSymlinks.insert(prefix);
             }
