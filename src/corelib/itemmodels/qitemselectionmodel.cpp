@@ -39,6 +39,7 @@
 
 #include "qitemselectionmodel.h"
 #include <private/qitemselectionmodel_p.h>
+#include <private/qduplicatetracker_p.h>
 #include <qdebug.h>
 
 #include <algorithm>
@@ -1738,6 +1739,8 @@ size_t qHash(const RowOrColumnDefinition &key, size_t seed = 0) noexcept
     return seed;
 }
 
+QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF(RowOrColumnDefinition)
+
 /*!
     \since 4.2
     Returns the indexes in the given \a column for the rows where all columns are selected.
@@ -1749,16 +1752,14 @@ QModelIndexList QItemSelectionModel::selectedRows(int column) const
 {
     QModelIndexList indexes;
 
-    QSet<RowOrColumnDefinition> rowsSeen;
+    QDuplicateTracker<RowOrColumnDefinition> rowsSeen;
 
     const QItemSelection ranges = selection();
     for (int i = 0; i < ranges.count(); ++i) {
         const QItemSelectionRange &range = ranges.at(i);
         QModelIndex parent = range.parent();
         for (int row = range.top(); row <= range.bottom(); row++) {
-            RowOrColumnDefinition rowDef = {parent, row};
-            if (!rowsSeen.contains(rowDef)) {
-                rowsSeen << rowDef;
+            if (!rowsSeen.hasSeen({parent, row})) {
                 if (isRowSelected(row, parent)) {
                     indexes.append(model()->index(row, column, parent));
                 }
@@ -1780,16 +1781,14 @@ QModelIndexList QItemSelectionModel::selectedColumns(int row) const
 {
     QModelIndexList indexes;
 
-    QSet<RowOrColumnDefinition> columnsSeen;
+    QDuplicateTracker<RowOrColumnDefinition> columnsSeen;
 
     const QItemSelection ranges = selection();
     for (int i = 0; i < ranges.count(); ++i) {
         const QItemSelectionRange &range = ranges.at(i);
         QModelIndex parent = range.parent();
         for (int column = range.left(); column <= range.right(); column++) {
-            RowOrColumnDefinition columnDef = {parent, column};
-            if (!columnsSeen.contains(columnDef)) {
-                columnsSeen << columnDef;
+            if (!columnsSeen.hasSeen({parent, column})) {
                 if (isColumnSelected(column, parent)) {
                     indexes.append(model()->index(row, column, parent));
                 }
