@@ -55,6 +55,7 @@
 #include <qplatformdefs.h>
 #include <qendian.h>
 #include "private/qabstractfileengine_p.h"
+#include "private/qduplicatetracker_p.h"
 #include "private/qnumeric_p.h"
 #include "private/qsimd_p.h"
 #include "private/qtools_p.h"
@@ -417,25 +418,22 @@ QResourcePrivate::ensureChildren() const
     QString path = absoluteFilePath, k;
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
-    QSet<QString> kids;
+    QDuplicateTracker<QString> kids;
+    kids.reserve(related.size());
     QString cleaned = cleanPath(path);
     for(int i = 0; i < related.size(); ++i) {
         QResourceRoot *res = related.at(i);
         if(res->mappingRootSubdir(path, &k) && !k.isEmpty()) {
-            if(!kids.contains(k)) {
+            if (!kids.hasSeen(k))
                 children += k;
-                kids.insert(k);
-            }
         } else {
             const int node = res->findNode(cleaned);
             if(node != -1) {
                 QStringList related_children = res->children(node);
                 for(int kid = 0; kid < related_children.size(); ++kid) {
                     k = related_children.at(kid);
-                    if(!kids.contains(k)) {
+                    if (!kids.hasSeen(k))
                         children += k;
-                        kids.insert(k);
-                    }
                 }
             }
         }
