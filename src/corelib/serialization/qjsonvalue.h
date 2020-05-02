@@ -158,6 +158,7 @@ private:
 class Q_CORE_EXPORT QJsonValueRef
 {
 public:
+    QJsonValueRef(const QJsonValueRef &) = default; // ### Qt6: delete (maybe)
     QJsonValueRef(QJsonArray *array, int idx)
         : a(array), is_object(false), index(static_cast<uint>(idx)) {}
     QJsonValueRef(QJsonObject *object, int idx)

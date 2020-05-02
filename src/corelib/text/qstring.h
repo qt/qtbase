@@ -1186,6 +1186,7 @@ QCharRef { // ### Qt 7: remove
         : s(str),i(idx) {}
     friend class QString;
 public:
+    QCharRef(const QCharRef &) = default;
 
     // most QChar operations repeated here
 

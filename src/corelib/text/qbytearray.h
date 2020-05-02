@@ -568,6 +568,7 @@ QByteRef {  // ### Qt 7: remove
         : a(array),i(idx) {}
     friend class QByteArray;
 public:
+    QByteRef(const QByteRef &) = default;
     inline operator char() const
     {
         using namespace QtPrivate::DeprecatedRefClassBehavior;

@@ -149,6 +149,7 @@ private:
     inline QBitRef(QBitArray& array, int idx) : a(array), i(idx) {}
     friend class QBitArray;
 public:
+    QBitRef(const QBitRef &) = default;
     inline operator bool() const { return a.testBit(i); }
     inline bool operator!() const { return !a.testBit(i); }
     QBitRef& operator=(const QBitRef& val) { a.setBit(i, val); return *this; }
