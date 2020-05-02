@@ -3276,13 +3276,13 @@ void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
         //if the container already exists, then d->viewContainer() is safe to call
         if (container) {
+#else
+        if (true) {
 #endif
             // We've restricted the next couple of lines, because by not calling
             // viewContainer(), we avoid creating the QComboBoxPrivateContainer.
             viewContainer()->initialClickPosition = q->mapToGlobal(e->pos());
-#ifdef QT_KEYPAD_NAVIGATION
         }
-#endif
         q->showPopup();
         // The code below ensures that regular mousepress and pick item still works
         // If it was not called the viewContainer would ignore event since it didn't have
