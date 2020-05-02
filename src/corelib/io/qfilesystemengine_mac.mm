@@ -76,6 +76,9 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     newLocation = QFileSystemEntry(QUrl::fromNSURL(resultingUrl).path());
     return true;
 #else // watch, tv, iOS don't have a trash can
+    Q_UNUSED(source);
+    Q_UNUSED(newLocation);
+    Q_UNUSED(error);
     return false;
 #endif
 }
