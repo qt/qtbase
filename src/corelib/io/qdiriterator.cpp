@@ -108,6 +108,7 @@
 #include <QtCore/private/qfilesystemmetadata_p.h>
 #include <QtCore/private/qfilesystemengine_p.h>
 #include <QtCore/private/qfileinfo_p.h>
+#include <QtCore/private/qduplicatetracker_p.h>
 
 #include <memory>
 
@@ -159,7 +160,7 @@ public:
     QFileInfo nextFileInfo;
 
     // Loop protection
-    QSet<QString> visitedLinks;
+    QDuplicateTracker<QString> visitedLinks;
 };
 
 /*!
@@ -210,12 +211,11 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
         path = fileInfo.canonicalFilePath();
 #endif
 
-    // Stop link loops
-    if (visitedLinks.contains(fileInfo.canonicalFilePath()))
-        return;
-
-    if (iteratorFlags & QDirIterator::FollowSymlinks)
-        visitedLinks << fileInfo.canonicalFilePath();
+    if ((iteratorFlags & QDirIterator::FollowSymlinks)) {
+        // Stop link loops
+        if (visitedLinks.hasSeen(fileInfo.canonicalFilePath()))
+            return;
+    }
 
     if (engine) {
         engine->setFileName(path);
