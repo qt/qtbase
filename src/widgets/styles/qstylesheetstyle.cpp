@@ -123,6 +123,8 @@
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qscreen.h>
 
+#include <QtCore/private/qduplicatetracker_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QCss;
@@ -2582,15 +2584,14 @@ void QStyleSheetStyle::setProperties(QWidget *w)
 
     {
         // scan decls for final occurrence of each "qproperty"
-        QSet<const QString> propertySet;
+        QDuplicateTracker<QString> propertySet;
+        propertySet.reserve(decls.size());
         for (int i = decls.count() - 1; i >= 0; --i) {
             const QString property = decls.at(i).d->property;
             if (!property.startsWith(QLatin1String("qproperty-"), Qt::CaseInsensitive))
                 continue;
-            if (!propertySet.contains(property)) {
-                propertySet.insert(property);
+            if (!propertySet.hasSeen(property))
                 finals.append(i);
-            }
         }
     }
 
