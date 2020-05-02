@@ -210,6 +210,10 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
         path = fileInfo.canonicalFilePath();
 #endif
 
+    // Stop link loops
+    if (visitedLinks.contains(fileInfo.canonicalFilePath()))
+        return;
+
     if (iteratorFlags & QDirIterator::FollowSymlinks)
         visitedLinks << fileInfo.canonicalFilePath();
 
@@ -316,10 +320,6 @@ void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
 
     // No hidden directories unless requested
     if (!(filters & QDir::AllDirs) && !(filters & QDir::Hidden) && fileInfo.isHidden())
-        return;
-
-    // Stop link loops
-    if (visitedLinks.contains(fileInfo.canonicalFilePath()))
         return;
 
     pushDirectory(fileInfo);
