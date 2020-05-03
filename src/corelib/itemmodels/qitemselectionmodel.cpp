@@ -1721,6 +1721,23 @@ QModelIndexList QItemSelectionModel::selectedIndexes() const
     return selected.indexes();
 }
 
+struct RowOrColumnDefinition {
+    QModelIndex parent;
+    int rowOrColumn;
+
+    friend bool operator==(const RowOrColumnDefinition &lhs, const RowOrColumnDefinition &rhs) noexcept
+    { return lhs.parent == rhs.parent && lhs.rowOrColumn == rhs.rowOrColumn; }
+    friend bool operator!=(const RowOrColumnDefinition &lhs, const RowOrColumnDefinition &rhs) noexcept
+    { return !operator==(lhs, rhs); }
+};
+size_t qHash(const RowOrColumnDefinition &key, size_t seed = 0) noexcept
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.parent);
+    seed = hash(seed, key.rowOrColumn);
+    return seed;
+}
+
 /*!
     \since 4.2
     Returns the indexes in the given \a column for the rows where all columns are selected.
@@ -1731,16 +1748,15 @@ QModelIndexList QItemSelectionModel::selectedIndexes() const
 QModelIndexList QItemSelectionModel::selectedRows(int column) const
 {
     QModelIndexList indexes;
-    //the QSet contains pairs of parent modelIndex
-    //and row number
-    QSet< QPair<QModelIndex, int> > rowsSeen;
+
+    QSet<RowOrColumnDefinition> rowsSeen;
 
     const QItemSelection ranges = selection();
     for (int i = 0; i < ranges.count(); ++i) {
         const QItemSelectionRange &range = ranges.at(i);
         QModelIndex parent = range.parent();
         for (int row = range.top(); row <= range.bottom(); row++) {
-            QPair<QModelIndex, int> rowDef = qMakePair(parent, row);
+            RowOrColumnDefinition rowDef = {parent, row};
             if (!rowsSeen.contains(rowDef)) {
                 rowsSeen << rowDef;
                 if (isRowSelected(row, parent)) {
@@ -1763,16 +1779,15 @@ QModelIndexList QItemSelectionModel::selectedRows(int column) const
 QModelIndexList QItemSelectionModel::selectedColumns(int row) const
 {
     QModelIndexList indexes;
-    //the QSet contains pairs of parent modelIndex
-    //and column number
-    QSet< QPair<QModelIndex, int> > columnsSeen;
+
+    QSet<RowOrColumnDefinition> columnsSeen;
 
     const QItemSelection ranges = selection();
     for (int i = 0; i < ranges.count(); ++i) {
         const QItemSelectionRange &range = ranges.at(i);
         QModelIndex parent = range.parent();
         for (int column = range.left(); column <= range.right(); column++) {
-            QPair<QModelIndex, int> columnDef = qMakePair(parent, column);
+            RowOrColumnDefinition columnDef = {parent, column};
             if (!columnsSeen.contains(columnDef)) {
                 columnsSeen << columnDef;
                 if (isColumnSelected(column, parent)) {
