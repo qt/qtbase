@@ -2118,7 +2118,10 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
 {
     Q_Q(QNetworkAccessManager);
 
-    if (statusMonitor->isEnabled()) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
+        if (statusMonitor->isEnabled()) {
         auto previous = networkAccessible;
         networkAccessible = isOnline ? QNetworkAccessManager::Accessible : QNetworkAccessManager::NotAccessible;
 QT_WARNING_PUSH
@@ -2128,9 +2131,6 @@ QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_POP
         return;
     }
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
 
    // if the user set a config, we only care whether this one is active.
     // Otherwise, this QNAM is online if there is an online config.
