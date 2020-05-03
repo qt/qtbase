@@ -52,6 +52,9 @@
 //
 
 #ifdef QT_EGL_NO_X11
+# ifndef EGL_NO_X11
+#  define EGL_NO_X11
+# endif
 # ifndef MESA_EGL_NO_X11_HEADERS
 #  define MESA_EGL_NO_X11_HEADERS // MESA
 # endif
