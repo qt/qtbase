@@ -247,7 +247,7 @@ void QEglFSKmsGbmCursor::setPos(const QPoint &pos)
             }
         } else {
             int ret;
-            if (kmsScreen->isCursorOutOfRange()) {
+            if (kmsScreen->isCursorOutOfRange() && m_bo) {
                 kmsScreen->setCursorOutOfRange(false);
                 uint32_t handle = gbm_bo_get_handle(m_bo).u32;
                 ret = drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id,
