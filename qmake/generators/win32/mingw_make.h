@@ -41,7 +41,6 @@ protected:
     ProString fixLibFlag(const ProString &lib) override;
     bool processPrlFileBase(QString &origFile, const QStringRef &origName,
                             const QStringRef &fixedBase, int slashOff) override;
-    QString getManifestFileForRcFile() const override;
     bool writeMakefile(QTextStream &) override;
     void init() override;
     QString installRoot() const override;

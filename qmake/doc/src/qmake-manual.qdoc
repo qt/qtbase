@@ -796,8 +796,8 @@
     variables \l{QMAKE_TARGET_COMPANY}, \l{QMAKE_TARGET_DESCRIPTION},
     \l{QMAKE_TARGET_COPYRIGHT}, \l{QMAKE_TARGET_PRODUCT},
     \l{QMAKE_TARGET_ORIGINAL_FILENAME}, \l{QMAKE_TARGET_INTERNALNAME},
-    \l{QMAKE_TARGET_COMMENTS}, \l{QMAKE_TARGET_TRADEMARKS}, \l{RC_CODEPAGE},
-    \l{RC_ICONS}, \l{RC_LANG} and \l{VERSION}.
+    \l{QMAKE_TARGET_COMMENTS}, \l{QMAKE_TARGET_TRADEMARKS}, \l{QMAKE_MANIFEST},
+    \l{RC_CODEPAGE}, \l{RC_ICONS}, \l{RC_LANG} and \l{VERSION}.
 
     If these elements are not sufficient, qmake has the two system variables
     \l{RC_FILE} and \l{RES_FILE} that point directly to an externally created
@@ -2783,6 +2783,14 @@
     application's properties. This is only utilized if the \l{VERSION} or
     \l{RC_ICONS} variable is set and the \l{RC_FILE} and \l{RES_FILE} variables
     are not set.
+
+    \target QMAKE_MANIFEST
+    \section1 QMAKE_MANIFEST
+
+    Windows only. Specifies the manifest file for the project target.
+    This is only utilized if the \l{RC_FILE} and \l{RES_FILE} variables are not set.
+    Don't forget to remove embed_manifest_exe and embed_manifest_dll from
+    the CONFIG variable, otherwise it will conflict with the compiler generated one.
 
     \section1 QMAKE_TVOS_DEPLOYMENT_TARGET
 
