@@ -3346,7 +3346,7 @@ void QFileDialogPrivate::createMenuActions()
     QAction *goToParent =  new QAction(q);
     goToParent->setObjectName(QLatin1String("qt_goto_parent_action"));
 #ifndef QT_NO_SHORTCUT
-    goToParent->setShortcut(Qt::CTRL + Qt::UpArrow);
+    goToParent->setShortcut(Qt::CTRL | Qt::Key_Up);
 #endif
     QObject::connect(goToParent, SIGNAL(triggered()), q, SLOT(_q_navigateToParent()));
     q->addAction(goToParent);
