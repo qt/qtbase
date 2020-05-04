@@ -92,4 +92,8 @@ else: qtConfig(libproxy) {
     SOURCES += kernel/qnetworkproxy_libproxy.cpp
     QMAKE_USE_PRIVATE += libproxy libdl
 }
-else:SOURCES += kernel/qnetworkproxy_generic.cpp
+else:android: SOURCES += kernel/qnetworkproxy_android.cpp
+else: SOURCES += kernel/qnetworkproxy_generic.cpp
+
+android: ANDROID_BUNDLED_JAR_DEPENDENCIES = \
+        jar/QtAndroidNetwork.jar
