@@ -65,9 +65,12 @@ public:
 
     static const char *name;
 
+    static void initializeSystemPalette();
+
 private:
     mutable QHash<QPlatformTheme::Font, QFont *> m_fonts;
-    QPalette m_systemPalette;
+
+    static QPalette s_systemPalette;
 };
 
 QT_END_NAMESPACE

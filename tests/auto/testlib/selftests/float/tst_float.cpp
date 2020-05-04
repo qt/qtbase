@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -30,6 +30,8 @@
 #include <QtCore/qfloat16.h>
 #include <QtTest/QtTest>
 #include <QDebug>
+
+#include "emulationdetector.h"
 
 // Test proper handling of floating-point types
 class tst_float: public QObject
@@ -113,16 +115,18 @@ void tst_float::doubleComparisons_data() const
     QTest::newRow("should PASS 1") << zero << zero;
     QTest::newRow("should FAIL 2") << 1.e-7 << 3.e-7;
 
-    // QCOMPARE for doubles uses qFuzzyCompare(), which succeeds if the numbers
-    // differ by no more than 1e-12 times the smaller value.  Thus
-    // QCOMPARE(1e12-2, 1e12-1) should fail, while QCOMPARE(1e12+1, 1e12+2)
-    // should pass.
+    // QCOMPARE() uses qFuzzyCompare(), which succeeds if doubles differ by no
+    // more than 1e-12 times the smaller value; but QCOMPARE() also considers
+    // values equal if qFuzzyIsNull() is true for both, so all doubles smaller
+    // than 1e-12 are equal.  Thus QCOMPARE(1e12-2, 1e12-1) should fail, while
+    // QCOMPARE(1e12+1, 1e12+2) should pass, as should QCOMPARE(1e-12-2e-24,
+    // 1e-12-1e-24), despite the values differing by more than one part in 1e12.
 
     QTest::newRow("should PASS 2") << 1e12 + one << 1e12 + 2.;
     QTest::newRow("should FAIL 3") << 1e12 - one << 1e12 - 2.;
+    QTest::newRow("should PASS 3") << 1e-12 << -1e-12;
     // ... but rounding makes that a bit unrelaible when scaled close to the bounds.
-    QTest::newRow("should PASS 3") << 1e-310 + 1e-322 << 1e-310 + 2e-322;
-    QTest::newRow("should FAIL 4") << 1e-310 - 1e-322 << 1e-310 - 3e-322;
+    QTest::newRow("should FAIL 4") << 1e-12 + 1e-24 << 1e-12 - 1e-24;
     QTest::newRow("should PASS 4") << 1e307 + 1e295 << 1e307 + 2e295;
     QTest::newRow("should FAIL 5") << 1e307 - 1e295 << 1e307 - 3e295;
 
@@ -145,18 +149,20 @@ void tst_float::floatComparisons_data() const
 
     QTest::newRow("should FAIL 1") << one << 3.f;
     QTest::newRow("should PASS 1") << zero << zero;
-    QTest::newRow("should FAIL 2") << 1.e-7f << 3.e-7f;
+    QTest::newRow("should FAIL 2") << 1.e-5f << 3.e-5f;
 
-    // QCOMPARE for floats uses qFuzzyCompare(), which succeeds if the numbers
-    // differ by no more than 1e-5 times the smaller value.  Thus
-    // QCOMPARE(1e5-2, 1e5-1) should fail, while QCOMPARE(1e5+1, 1e5+2)
-    // should pass.
+    // QCOMPARE() uses qFuzzyCompare(), which succeeds if the floats differ by
+    // no more than 1e-5 times the smaller value; but QCOMPARE() also considers
+    // values equal if qFuzzyIsNull is true for both, so all floats smaller than
+    // 1e-5 are equal.  Thus QCOMPARE(1e5-2, 1e5-1) should fail, while
+    // QCOMPARE(1e5+1, 1e5+2) should pass, as should QCOMPARE(1e-5-2e-10,
+    // 1e-5-1e-10), despite the values differing by more than one part in 1e5.
 
     QTest::newRow("should PASS 2") << 1e5f + one << 1e5f + 2.f;
     QTest::newRow("should FAIL 3") << 1e5f - one << 1e5f - 2.f;
+    QTest::newRow("should PASS 3") << 1e-5f << -1e-5f;
     // ... but rounding makes that a bit unrelaible when scaled close to the bounds.
-    QTest::newRow("should PASS 3") << 1e-39f + 1e-44f << 1e-39f + 2e-44f;
-    QTest::newRow("should FAIL 4") << 1e-39f - 1e-44f << 1e-39f - 3e-44f;
+    QTest::newRow("should FAIL 4") << 1e-5f + 1e-10f << 1e-5f - 1e-10f;
     QTest::newRow("should PASS 4") << 1e38f + 1e33f << 1e38f + 2e33f;
     QTest::newRow("should FAIL 5") << 1e38f - 1e33f << 1e38f - 3e33f;
 
@@ -175,18 +181,21 @@ void tst_float::float16Comparisons_data() const
 {
     QTest::addColumn<qfloat16>("operandLeft");
     QTest::addColumn<qfloat16>("operandRight");
-    qfloat16 zero(0), one(1);
+    const qfloat16 zero(0), one(1);
+    const qfloat16 tiny(EmulationDetector::isRunningArmOnX86() ? 0.00099f : 0.001f);
 
     QTest::newRow("should FAIL 1") << one << qfloat16(3);
     QTest::newRow("should PASS 1") << zero << zero;
-    QTest::newRow("should FAIL 2") << qfloat16(1e-4f) << qfloat16(3e-4f);
+    QTest::newRow("should FAIL 2") << qfloat16(1e-3f) << qfloat16(3e-3f);
 
-    // QCOMPARE for qfloat16s uses qFuzzyCompare()
+    // QCOMPARE for uses qFuzzyCompare(), which ignores differences of one part
+    // in 102.5 and considers any two qFuzzyIsNull() values, i.e. values smaller
+    // than 1e-3, equal
     QTest::newRow("should PASS 2") << qfloat16(1001) << qfloat16(1002);
     QTest::newRow("should FAIL 3") << qfloat16(98) << qfloat16(99);
+    QTest::newRow("should PASS 3") << tiny << -tiny;
     // ... which gets a bit unreliable near to the type's bounds
-    QTest::newRow("should PASS 3") << qfloat16(6e-5f) + qfloat16(6e-7f) << qfloat16(6e-5f) + qfloat16(11e-7f);
-    QTest::newRow("should FAIL 4") << qfloat16(6e-5f) - qfloat16(7e-7f) << qfloat16(6e-5f) - qfloat16(13e-7f);
+    QTest::newRow("should FAIL 4") << qfloat16(1.01e-3f) << qfloat16(0.99e-3f);
     QTest::newRow("should PASS 4") << qfloat16(6e4) + qfloat16(700) << qfloat16(6e4) + qfloat16(1200);
     QTest::newRow("should FAIL 5") << qfloat16(6e4) - qfloat16(600) << qfloat16(6e4) - qfloat16(1200);
 
@@ -200,7 +209,7 @@ void tst_float::compareFloatTests() const
     // Create two more values
     // t2 differs from t1 by 1 ppm (part per million)
     // t3 differs from t1 by 200%
-    // we should consider that t1 == t2 and t1 != t3
+    // We should consider that t1 == t2 and t1 != t3 (provided at least one is > 1e-5)
     const float t2 = t1 + (t1 / 1e6);
     const float t3 = 3 * t1;
 
@@ -214,7 +223,7 @@ void tst_float::compareFloatTests_data() const
 {
     QTest::addColumn<float>("t1");
     QTest::newRow("1e0") << 1e0f;
-    QTest::newRow("1e-7") << 1e-7f;
+    QTest::newRow("1e-5") << 1e-5f;
     QTest::newRow("1e+7") << 1e+7f;
 }
 

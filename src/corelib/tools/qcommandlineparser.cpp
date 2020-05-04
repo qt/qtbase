@@ -1063,18 +1063,23 @@ QString QCommandLineParser::helpText() const
     return d->helpText(false);
 }
 
-static QString wrapText(const QString &names, int longestOptionNameString, const QString &description)
+static QString wrapText(const QString &names, int optionNameMaxWidth, const QString &description)
 {
     const QLatin1Char nl('\n');
     const QLatin1String indentation("  ");
-    if (description.isEmpty())
-        return indentation + names + nl;
 
-    QString text = indentation + names.leftJustified(longestOptionNameString) + QLatin1Char(' ');
-    const int indent = text.length();
+    // In case the list of option names is very long, wrap it as well
+    int nameIndex = 0;
+    auto nextNameSection = [&]() {
+        QString section = names.mid(nameIndex, optionNameMaxWidth);
+        nameIndex += section.size();
+        return section;
+    };
+
+    QString text;
     int lineStart = 0;
     int lastBreakable = -1;
-    const int max = 79 - indent;
+    const int max = 79 - (indentation.size() + optionNameMaxWidth + 1);
     int x = 0;
     const int len = description.length();
 
@@ -1103,8 +1108,7 @@ static QString wrapText(const QString &names, int longestOptionNameString, const
         if (breakAt != -1) {
             const int numChars = breakAt - lineStart;
             //qDebug() << "breakAt=" << description.at(breakAt) << "breakAtSpace=" << breakAtSpace << lineStart << "to" << breakAt << description.mid(lineStart, numChars);
-            if (lineStart > 0)
-                text += QString(indent, QLatin1Char(' '));
+            text += indentation + nextNameSection().leftJustified(optionNameMaxWidth) + QLatin1Char(' ');
             text += description.midRef(lineStart, numChars) + nl;
             x = 0;
             lastBreakable = -1;
@@ -1113,6 +1117,10 @@ static QString wrapText(const QString &names, int longestOptionNameString, const
                 ++lineStart; // don't start a line with a space
             i = lineStart;
         }
+    }
+
+    while (nameIndex < names.size()) {
+        text += indentation + nextNameSection() + nl;
     }
 
     return text;
@@ -1158,11 +1166,12 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         longestOptionNameString = qMax(longestOptionNameString, optionNamesString.length());
     }
     ++longestOptionNameString;
+    const int optionNameMaxWidth = qMin(50, longestOptionNameString);
     auto optionNameIterator = optionNameList.cbegin();
     for (const QCommandLineOption &option : qAsConst(options)) {
         if (option.flags() & QCommandLineOption::HiddenFromHelp)
             continue;
-        text += wrapText(*optionNameIterator, longestOptionNameString, option.description());
+        text += wrapText(*optionNameIterator, optionNameMaxWidth, option.description());
         ++optionNameIterator;
     }
     if (!positionalArgumentDefinitions.isEmpty()) {
@@ -1170,7 +1179,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
             text += nl;
         text += QCommandLineParser::tr("Arguments:") + nl;
         for (const PositionalArgumentDefinition &arg : positionalArgumentDefinitions)
-            text += wrapText(arg.name, longestOptionNameString, arg.description);
+            text += wrapText(arg.name, optionNameMaxWidth, arg.description);
     }
     return text;
 }

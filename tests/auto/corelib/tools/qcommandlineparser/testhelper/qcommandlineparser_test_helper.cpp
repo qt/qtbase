@@ -97,6 +97,13 @@ int main(int argc, char *argv[])
         parser.process(app);
         const QString size = parser.value("size");
         printf("Resizing %s to %s and saving to %s\n", qPrintable(parser.value("load")), qPrintable(size), qPrintable(parser.value("o")));
+    } else if (command == "long") {
+        // A very long option (QTBUG-79926)
+        QCommandLineOption longOption(QStringList{QStringLiteral("looooooooooooong-option"), QStringLiteral("looooong-opt-alias")});
+        longOption.setDescription(QStringLiteral("Short description"));
+        longOption.setValueName(QStringLiteral("looooooooooooong-value-name"));
+        parser.addOption(longOption);
+        parser.process(app);
     } else {
         // Call process again, to handle unknown options this time.
         parser.process(app);

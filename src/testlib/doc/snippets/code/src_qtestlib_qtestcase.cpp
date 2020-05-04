@@ -84,7 +84,7 @@ class TestQString : public QObject
 void wrapInFunction()
 {
 //! [1]
-QVERIFY2(qIsNaN(0.0 / 0.0), "Ill-defined division produced unambiguous result.");
+QVERIFY2(QFileInfo("file.txt").exists(), "file.txt does not exist.");
 //! [1]
 
 //! [2]

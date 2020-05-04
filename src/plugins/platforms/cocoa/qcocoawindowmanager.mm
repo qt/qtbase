@@ -100,6 +100,18 @@ void QCocoaWindowManager::modalSessionChanged()
             }
         }
     }
+
+    // Our worksWhenModal implementation is declarative and will normally be picked
+    // up by AppKit when needed, but to make sure AppKit also reflects the state
+    // in the window tag, so that the window can be ordered front by clicking it,
+    // we need to explicitly call setWorksWhenModal.
+    for (id window in NSApp.windows) {
+        if ([window isKindOfClass:[QNSPanel class]]) {
+            auto *panel = static_cast<QNSPanel *>(window);
+            // Call setter to tell AppKit that our state has changed
+            [panel setWorksWhenModal:panel.worksWhenModal];
+        }
+    }
 }
 
 static void initializeWindowManager() { Q_UNUSED(QCocoaWindowManager::instance()); }

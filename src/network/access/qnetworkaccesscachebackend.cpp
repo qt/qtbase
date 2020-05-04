@@ -123,6 +123,12 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     return true;
 }
 
+bool QNetworkAccessCacheBackend::start()
+{
+    open();
+    return true;
+}
+
 void QNetworkAccessCacheBackend::closeDownstreamChannel()
 {
 }

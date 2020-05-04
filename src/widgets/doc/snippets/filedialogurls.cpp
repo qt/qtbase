@@ -49,11 +49,10 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QFileDialog>
 
-int main(int argv, char **args)
+int loadFileDialog()
 {
-    QApplication app(argv, args);
-
 //![0]
     QList<QUrl> urls;
     urls << QUrl::fromLocalFile("/Users/foo/Code/qt5")
@@ -66,6 +65,5 @@ int main(int argv, char **args)
         // ...
     }
 //![0]
-
-    return app.exec();
+    return 1;
 }

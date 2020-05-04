@@ -44,6 +44,7 @@
 #include <QtCore/private/qcore_mac_p.h>
 
 #include <QtGui/QFont>
+#include <QtGui/private/qcoregraphics_p.h>
 
 #include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -63,10 +64,8 @@ QT_BEGIN_NAMESPACE
 const char *QIOSTheme::name = "ios";
 
 QIOSTheme::QIOSTheme()
-    : m_systemPalette(*QPlatformTheme::palette(QPlatformTheme::SystemPalette))
 {
-    m_systemPalette.setBrush(QPalette::Highlight, QColor(204, 221, 237));
-    m_systemPalette.setBrush(QPalette::HighlightedText, Qt::black);
+    initializeSystemPalette();
 }
 
 QIOSTheme::~QIOSTheme()
@@ -74,10 +73,41 @@ QIOSTheme::~QIOSTheme()
     qDeleteAll(m_fonts);
 }
 
+QPalette QIOSTheme::s_systemPalette;
+
+void QIOSTheme::initializeSystemPalette()
+{
+    Q_DECL_IMPORT QPalette qt_fusionPalette(void);
+    s_systemPalette = qt_fusionPalette();
+
+    if (@available(ios 13.0, *)) {
+        s_systemPalette.setBrush(QPalette::Window, qt_mac_toQBrush(UIColor.systemGroupedBackgroundColor.CGColor));
+        s_systemPalette.setBrush(QPalette::Active, QPalette::WindowText, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+
+        s_systemPalette.setBrush(QPalette::Base, qt_mac_toQBrush(UIColor.secondarySystemGroupedBackgroundColor.CGColor));
+        s_systemPalette.setBrush(QPalette::Active, QPalette::Text, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+
+        s_systemPalette.setBrush(QPalette::Button, qt_mac_toQBrush(UIColor.secondarySystemBackgroundColor.CGColor));
+        s_systemPalette.setBrush(QPalette::Active, QPalette::ButtonText, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+
+        s_systemPalette.setBrush(QPalette::Active, QPalette::BrightText, qt_mac_toQBrush(UIColor.lightTextColor.CGColor));
+        s_systemPalette.setBrush(QPalette::Active, QPalette::PlaceholderText, qt_mac_toQBrush(UIColor.placeholderTextColor.CGColor));
+
+        s_systemPalette.setBrush(QPalette::Active, QPalette::Link, qt_mac_toQBrush(UIColor.linkColor.CGColor));
+        s_systemPalette.setBrush(QPalette::Active, QPalette::LinkVisited, qt_mac_toQBrush(UIColor.linkColor.CGColor));
+
+        s_systemPalette.setBrush(QPalette::Highlight, QColor(11, 70, 150, 60));
+        s_systemPalette.setBrush(QPalette::HighlightedText, qt_mac_toQBrush(UIColor.labelColor.CGColor));
+    } else {
+        s_systemPalette.setBrush(QPalette::Highlight, QColor(204, 221, 237));
+        s_systemPalette.setBrush(QPalette::HighlightedText, Qt::black);
+    }
+}
+
 const QPalette *QIOSTheme::palette(QPlatformTheme::Palette type) const
 {
     if (type == QPlatformTheme::SystemPalette)
-        return &m_systemPalette;
+        return &s_systemPalette;
     return 0;
 }
 

@@ -245,7 +245,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
         attr.password = request.url().password().toUtf8();
     }
 
-    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY | EMSCRIPTEN_FETCH_PERSIST_FILE | EMSCRIPTEN_FETCH_REPLACE;
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
 
     QNetworkRequest::CacheLoadControl CacheLoadControlAttribute =
         (QNetworkRequest::CacheLoadControl)request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt();

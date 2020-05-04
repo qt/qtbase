@@ -987,9 +987,16 @@ void tst_QtJson::testObjectIteration()
         QCOMPARE(object, object2);
 
         QJsonObject::iterator it = object2.find(QString::number(5));
+        QJsonValue val = *it;
         object2.erase(it);
         QCOMPARE(object.size(), 10);
         QCOMPARE(object2.size(), 9);
+
+        for (QJsonObject::const_iterator it = object2.constBegin(); it != object2.constEnd(); ++it) {
+            QJsonValue value = it.value();
+            QVERIFY(it.value() != val);
+            QCOMPARE((double)it.key().toInt(), value.toDouble());
+        }
     }
 
     {

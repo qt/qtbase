@@ -279,11 +279,22 @@ contains(all_qt_module_deps, qml): \
     for (QMLPATH, QMLPATHS): \
         IMPORTPATHS += -importPath $$system_quote($$QMLPATH)
 
-    # add qrc files, too
-    !isEmpty(RESOURCES) {
-       IMPORTPATHS += -qrcFiles
-       for (RESOURCE, RESOURCES): \
-           IMPORTPATHS += $$absolute_path($$system_quote($$RESOURCE), $$_PRO_FILE_PWD_)
+    # add resources to qmlimportscanner
+    for (RESOURCE, RESOURCES) {
+        defined($${RESOURCE}.files, var) {
+            # in case of a "struct", add the struct's files
+            base = $$RESOURCE.base
+            for (f, $$RESOURCE.files): SCANNERRESOURCES += "$$base/$$f"
+        } else {
+            # if the resource is a file, just add it
+            SCANNERRESOURCES += $$RESOURCE
+        }
+    }
+
+    !isEmpty(SCANNERRESOURCES) {
+        IMPORTPATHS += -qrcFiles
+        for (RESOURCE, SCANNERRESOURCES)
+            IMPORTPATHS += $$absolute_path($$system_quote($$RESOURCE), $$_PRO_FILE_PWD_)
     }
 
 

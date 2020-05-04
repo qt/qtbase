@@ -2016,6 +2016,21 @@ static void convert_Mono_to_Indexed8(QImageData *dest, const QImageData *src, Qt
     }
 }
 
+static void copy_8bit_pixels(QImageData *dest, const QImageData *src)
+{
+    if (src->bytes_per_line == dest->bytes_per_line) {
+        memcpy(dest->data, src->data, src->bytes_per_line * src->height);
+    } else {
+        const uchar *sdata = src->data;
+        uchar *ddata = dest->data;
+        for (int y = 0; y < src->height; ++y) {
+            memcpy(ddata, sdata, src->width);
+            sdata += src->bytes_per_line;
+            ddata += dest->bytes_per_line;
+        }
+    }
+}
+
 static void convert_Indexed8_to_Alpha8(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_Indexed8);
@@ -2031,11 +2046,15 @@ static void convert_Indexed8_to_Alpha8(QImageData *dest, const QImageData *src, 
     }
 
     if (simpleCase)
-        memcpy(dest->data, src->data, src->bytes_per_line * src->height);
+        copy_8bit_pixels(dest, src);
     else {
-        qsizetype size = src->bytes_per_line * src->height;
-        for (qsizetype i = 0; i < size; ++i) {
-            dest->data[i] = translate[src->data[i]];
+        const uchar *sdata = src->data;
+        uchar *ddata = dest->data;
+        for (int y = 0; y < src->height; ++y) {
+            for (int x = 0; x < src->width; ++x)
+                ddata[x] = translate[sdata[x]];
+            sdata += src->bytes_per_line;
+            ddata += dest->bytes_per_line;
         }
     }
 }
@@ -2055,11 +2074,15 @@ static void convert_Indexed8_to_Grayscale8(QImageData *dest, const QImageData *s
     }
 
     if (simpleCase)
-        memcpy(dest->data, src->data, src->bytes_per_line * src->height);
+        copy_8bit_pixels(dest, src);
     else {
-        qsizetype size = src->bytes_per_line * src->height;
-        for (qsizetype i = 0; i < size; ++i) {
-            dest->data[i] = translate[src->data[i]];
+        const uchar *sdata = src->data;
+        uchar *ddata = dest->data;
+        for (int y = 0; y < src->height; ++y) {
+            for (int x = 0; x < src->width; ++x)
+                ddata[x] = translate[sdata[x]];
+            sdata += src->bytes_per_line;
+            ddata += dest->bytes_per_line;
         }
     }
 }
@@ -2107,7 +2130,7 @@ static void convert_Alpha8_to_Indexed8(QImageData *dest, const QImageData *src, 
     Q_ASSERT(src->format == QImage::Format_Alpha8);
     Q_ASSERT(dest->format == QImage::Format_Indexed8);
 
-    memcpy(dest->data, src->data, src->bytes_per_line * src->height);
+    copy_8bit_pixels(dest, src);
 
     dest->colortable = defaultColorTables->alpha;
 }
@@ -2117,8 +2140,7 @@ static void convert_Grayscale8_to_Indexed8(QImageData *dest, const QImageData *s
     Q_ASSERT(src->format == QImage::Format_Grayscale8);
     Q_ASSERT(dest->format == QImage::Format_Indexed8);
 
-    memcpy(dest->data, src->data, src->bytes_per_line * src->height);
-
+    copy_8bit_pixels(dest, src);
 
     dest->colortable = defaultColorTables->gray;
 }

@@ -788,17 +788,34 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
             // The data is supposed to be US-ASCII. If it isn't (contains UTF-8),
             // QDateTime::fromString will fail anyway.
             dt = QDateTime::fromString(b->asLatin1(), Qt::ISODateWithMs);
-        } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Integer) {
-            dt = QDateTime::fromSecsSinceEpoch(e.value, Qt::UTC);
-        } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Double) {
-            dt = QDateTime::fromMSecsSinceEpoch(qint64(e.fpvalue() * 1000), Qt::UTC);
+        } else if (tag == qint64(QCborKnownTags::UnixTime_t)) {
+            qint64 msecs;
+            bool ok = false;
+            if (e.type == QCborValue::Integer) {
+#if QT_POINTER_SIZE == 8
+                // we don't have a fast 64-bit mul_overflow implementation on
+                // 32-bit architectures.
+                ok = !mul_overflow(e.value, qint64(1000), &msecs);
+#else
+                static const qint64 Limit = std::numeric_limits<qint64>::max() / 1000;
+                ok = (e.value > -Limit && e.value < Limit);
+                if (ok)
+                    msecs = e.value * 1000;
+#endif
+            } else if (e.type == QCborValue::Double) {
+                ok = convertDoubleTo(round(e.fpvalue() * 1000), &msecs);
+            }
+            if (ok)
+                dt = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
         }
         if (dt.isValid()) {
             QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
-            replaceByteData(text, text.size(), Element::StringIsAscii);
-            e.type = QCborValue::String;
-            d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
-            return QCborValue::DateTime;
+            if (!text.isEmpty()) {
+                replaceByteData(text, text.size(), Element::StringIsAscii);
+                e.type = QCborValue::String;
+                d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
+                return QCborValue::DateTime;
+            }
         }
         break;
     }
@@ -810,9 +827,11 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
                 // normalize to a short (decoded) form, so as to save space
                 QUrl url(e.flags & Element::StringIsUtf16 ?
                              b->asQStringRaw() :
-                             b->toUtf8String());
-                QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
-                replaceByteData(encoded, encoded.size(), {});
+                             b->toUtf8String(), QUrl::StrictMode);
+                if (url.isValid()) {
+                    QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
+                    replaceByteData(encoded, encoded.size(), {});
+                }
             }
             return QCborValue::Url;
         }
@@ -1561,8 +1580,6 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         if (newSize > MaxByteArraySize)
             return -1;
 
-        // since usedData <= data.size(), this can't overflow
-        usedData += increment;
         data.resize(newSize);
         return offset;
     };
@@ -1635,7 +1652,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     }
 
     // update size
-    if (e.flags & Element::HasByteData) {
+    if (r.status == QCborStreamReader::EndOfString && e.flags & Element::HasByteData) {
         auto b = new (dataPtr() + e.value) ByteData;
         b->len = data.size() - e.value - int(sizeof(*b));
         usedData += b->len;

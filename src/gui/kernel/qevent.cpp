@@ -951,6 +951,7 @@ QWheelEvent::~QWheelEvent()
 
 /*!
     \fn QPoint QWheelEvent::position() const
+    \since 5.14
 
     Returns the position of the mouse cursor relative to the widget
     that received the event.
