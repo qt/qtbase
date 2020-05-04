@@ -309,6 +309,13 @@ void tst_QHashFunctions::stdHash()
         QCOMPARE(s.size(), 2UL);
     }
 
+    {
+        std::unordered_set<QChar> s = {u'H', u'W'};
+        QCOMPARE(s.size(), 2UL);
+        s.insert(u'H');
+        QCOMPARE(s.size(), 2UL);
+    }
+
 }
 
 void tst_QHashFunctions::setGlobalQHashSeed()

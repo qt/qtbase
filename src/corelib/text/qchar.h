@@ -42,6 +42,8 @@
 
 #include <QtCore/qglobal.h>
 
+#include <functional> // for std::hash
+
 QT_BEGIN_NAMESPACE
 
 
@@ -663,5 +665,18 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QChar &);
 #endif
 
 QT_END_NAMESPACE
+
+namespace std {
+template <>
+struct hash<QT_PREPEND_NAMESPACE(QChar)>
+{
+    template <typename = void> // for transparent constexpr tracking
+    constexpr size_t operator()(QT_PREPEND_NAMESPACE(QChar) c) const
+        noexcept(noexcept(std::hash<char16_t>{}(u' ')))
+    {
+        return std::hash<char16_t>{}(c.unicode());
+    }
+};
+} // namespace std
 
 #endif // QCHAR_H
