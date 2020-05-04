@@ -64,7 +64,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
         return 0;
 
     // optimization: exactly one bit is set
-    if ((controls & (controls - 1)) == 0) {
+    if (qPopulationCount(uint(controls)) == 1) {
         array[0] = QSizePolicy::ControlType(uint(controls));
         return 1;
     }

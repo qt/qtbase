@@ -103,11 +103,11 @@ public:
 
     inline void setDefaultSpacing(Qt::Orientation o, qreal spacing){
         if (spacing >= 0)
-            m_defaultSpacing[o - 1] = spacing;
+            m_defaultSpacing[int(o) - 1] = spacing;
     }
 
     inline qreal defaultSpacing(Qt::Orientation o) const {
-        return m_defaultSpacing[o - 1];
+        return m_defaultSpacing[int(o) - 1];
     }
 
     inline qreal perItemSpacing(QSizePolicy::ControlType control1,
