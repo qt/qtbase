@@ -48,6 +48,9 @@
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtCore/qvarlengtharray.h>
+#ifndef QT_BOOTSTRAPPED
+# include <QtCore/qstandardpaths.h>
+#endif // QT_BOOTSTRAPPED
 
 #include <pwd.h>
 #include <stdlib.h> // for realpath()
@@ -1213,6 +1216,7 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
                         | QFileDevice::WriteOwner
                         | QFileDevice::ExeOwner;
         QString targetDir = topDir.filePath(trashDir);
+        // deliberately not using mkpath, since we want to fail if topDir doesn't exist
         if (topDir.mkdir(trashDir))
             QFile::setPermissions(targetDir, ownerPerms);
         if (QFileInfo(targetDir).isDir())
@@ -1228,11 +1232,11 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
     };
 
     QString trash;
-    const QLatin1String dotTrash(".Trash");
     const QStorageInfo sourceStorage(sourcePath);
     const QStorageInfo homeStorage(QDir::home());
     // We support trashing of files outside the users home partition
     if (sourceStorage != homeStorage) {
+        const QLatin1String dotTrash(".Trash");
         QDir topDir(sourceStorage.rootPath());
         /*
             Method 1:
@@ -1289,13 +1293,17 @@ static QString freeDesktopTrashLocation(const QString &sourcePath)
          file into the user's “home trash” or refuse to trash it."
 
          We trash the file into the user's home trash.
+
+        "Its name and location are $XDG_DATA_HOME/Trash"; $XDG_DATA_HOME is what
+        QStandardPaths returns for GenericDataLocation. If that doesn't exist, then
+        we are not running on a freedesktop.org-compliant environment, and give up.
     */
     if (trash.isEmpty()) {
-        QDir topDir = QDir::home();
-        trash = makeTrashDir(topDir, dotTrash);
+        QDir topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        trash = makeTrashDir(topDir, QLatin1String("Trash"));
         if (!QFileInfo(trash).isDir()) {
-            qWarning("Unable to establish trash directory %s in %s",
-                     dotTrash.latin1(), topDir.path().toLocal8Bit().constData());
+            qWarning("Unable to establish trash directory in %s",
+                     topDir.path().toLocal8Bit().constData());
         }
     }
 
