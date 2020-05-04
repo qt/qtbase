@@ -240,6 +240,9 @@ static void convertStatusToForkfdInfo(int status, struct forkfd_info *info)
     }
 }
 
+#ifdef __GNUC__
+__attribute__((unused))
+#endif
 static int convertForkfdWaitFlagsToWaitFlags(int ffdoptions)
 {
     int woptions = WEXITED;
