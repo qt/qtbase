@@ -341,7 +341,24 @@ void Win32MakefileGenerator::processRcFileVar()
         else
             productName = project->first("TARGET").toQString();
 
-        QString originalName = project->first("TARGET") + project->first("TARGET_EXT");
+        QString originalName;
+        if (!project->values("QMAKE_TARGET_ORIGINAL_FILENAME").isEmpty())
+            originalName = project->values("QMAKE_TARGET_ORIGINAL_FILENAME").join(' ');
+        else
+            originalName = project->first("TARGET") + project->first("TARGET_EXT");
+
+        QString internalName;
+        if (!project->values("QMAKE_TARGET_INTERNALNAME").isEmpty())
+            internalName = project->values("QMAKE_TARGET_INTERNALNAME").join(' ');
+
+        QString comments;
+        if (!project->values("QMAKE_TARGET_COMMENTS").isEmpty())
+            comments = project->values("QMAKE_TARGET_COMMENTS").join(' ');
+
+        QString trademarks;
+        if (!project->values("QMAKE_TARGET_TRADEMARKS").isEmpty())
+            trademarks = project->values("QMAKE_TARGET_TRADEMARKS").join(' ');
+
         int rcLang = project->intValue("RC_LANG", 1033);            // default: English(USA)
         int rcCodePage = project->intValue("RC_CODEPAGE", 1200);    // default: Unicode
 
@@ -389,6 +406,9 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "\t\t\t\tVALUE \"OriginalFilename\", \"" << originalName << "\\0\"\n";
         ts << "\t\t\t\tVALUE \"ProductName\", \"" << productName << "\\0\"\n";
         ts << "\t\t\t\tVALUE \"ProductVersion\", \"" << versionString << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"InternalName\", \"" << internalName << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"Comments\", \"" << comments << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"LegalTrademarks\", \"" << trademarks << "\\0\"\n";
         ts << "\t\t\tEND\n";
         ts << "\t\tEND\n";
         ts << "\t\tBLOCK \"VarFileInfo\"\n";

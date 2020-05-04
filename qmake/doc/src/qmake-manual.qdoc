@@ -794,8 +794,10 @@
     and \l{RC_ICONS}. The generated .rc file is automatically compiled and
     linked. Elements that are added to the .rc file are defined by the system
     variables \l{QMAKE_TARGET_COMPANY}, \l{QMAKE_TARGET_DESCRIPTION},
-    \l{QMAKE_TARGET_COPYRIGHT}, \l{QMAKE_TARGET_PRODUCT}, \l{RC_CODEPAGE},
-    \l{RC_ICONS}, \l{RC_LANG},and \l{VERSION}.
+    \l{QMAKE_TARGET_COPYRIGHT}, \l{QMAKE_TARGET_PRODUCT},
+    \l{QMAKE_TARGET_ORIGINAL_FILENAME}, \l{QMAKE_TARGET_INTERNALNAME},
+    \l{QMAKE_TARGET_COMMENTS}, \l{QMAKE_TARGET_TRADEMARKS}, \l{RC_CODEPAGE},
+    \l{RC_ICONS}, \l{RC_LANG} and \l{VERSION}.
 
     If these elements are not sufficient, qmake has the two system variables
     \l{RC_FILE} and \l{RES_FILE} that point directly to an externally created
@@ -2747,6 +2749,40 @@
     where applicable for putting the product in the application's properties.
     This is only utilized if the \l{VERSION} or \l{RC_ICONS} variable is set
     and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
+
+    \target QMAKE_TARGET_ORIGINAL_FILENAME
+    \section1 QMAKE_TARGET_ORIGINAL_FILENAME
+
+    Windows only. Specifies the original file name for the project target;
+    this is used where applicable for putting the original file name in the
+    application's properties. This is only utilized if the \l{VERSION} or
+    \l{RC_ICONS} variable is set and the \l{RC_FILE} and \l{RES_FILE}
+    variables are not set.
+
+    \target QMAKE_TARGET_INTERNALNAME
+    \section1 QMAKE_TARGET_INTERNALNAME
+
+    Windows only. Specifies the internal name for the project target; this is
+    used where applicable for putting the internal name in the application's
+    properties. This is only utilized if the \l{VERSION} or \l{RC_ICONS}
+    variable is set and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
+
+    \target QMAKE_TARGET_COMMENTS
+    \section1 QMAKE_TARGET_COMMENTS
+
+    Windows only. Specifies the comments for the project target; this is
+    used where applicable for putting the comments in the application's
+    properties. This is only utilized if the \l{VERSION} or \l{RC_ICONS}
+    variable is set and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
+
+    \target QMAKE_TARGET_TRADEMARKS
+    \section1 QMAKE_TARGET_TRADEMARKS
+
+    Windows only. Specifies the trademark information for the project target;
+    this is used where applicable for putting the trademark information in the
+    application's properties. This is only utilized if the \l{VERSION} or
+    \l{RC_ICONS} variable is set and the \l{RC_FILE} and \l{RES_FILE} variables
+    are not set.
 
     \section1 QMAKE_TVOS_DEPLOYMENT_TARGET
 
