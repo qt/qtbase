@@ -1580,7 +1580,11 @@ void QMainWindowLayout::setTabShape(QTabWidget::TabShape tabShape)
 
 QTabWidget::TabPosition QMainWindowLayout::tabPosition(Qt::DockWidgetArea area) const
 {
-    return tabPositions[toDockPos(area)];
+    const auto dockPos = toDockPos(area);
+    if (dockPos < QInternal::DockCount)
+        return tabPositions[dockPos];
+    qWarning("QMainWindowLayout::tabPosition called with out-of-bounds value '%d'", int(area));
+    return QTabWidget::North;
 }
 
 void QMainWindowLayout::setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::TabPosition tabPosition)
