@@ -507,24 +507,21 @@ void QGridLayoutRowData::dump(int indent) const
 
 QGridLayoutItem::QGridLayoutItem(int row, int column, int rowSpan, int columnSpan,
                                  Qt::Alignment alignment)
-    : q_alignment(alignment)
+    : q_firstRows{column, row},
+      q_rowSpans{columnSpan, rowSpan},
+      q_stretches{-1, -1},
+      q_alignment(alignment)
 {
-    q_firstRows[Hor] = column;
-    q_firstRows[Ver] = row;
-    q_rowSpans[Hor] = columnSpan;
-    q_rowSpans[Ver] = rowSpan;
-    q_stretches[Hor] = -1;
-    q_stretches[Ver] = -1;
 }
 
 int QGridLayoutItem::firstRow(Qt::Orientation orientation) const
 {
-    return q_firstRows[orientation == Qt::Vertical];
+    return q_firstRows[orientation];
 }
 
 int QGridLayoutItem::firstColumn(Qt::Orientation orientation) const
 {
-    return q_firstRows[orientation == Qt::Horizontal];
+    return q_firstRows.transposed()[orientation];
 }
 
 int QGridLayoutItem::lastRow(Qt::Orientation orientation) const
@@ -539,27 +536,27 @@ int QGridLayoutItem::lastColumn(Qt::Orientation orientation) const
 
 int QGridLayoutItem::rowSpan(Qt::Orientation orientation) const
 {
-    return q_rowSpans[orientation == Qt::Vertical];
+    return q_rowSpans[orientation];
 }
 
 int QGridLayoutItem::columnSpan(Qt::Orientation orientation) const
 {
-    return q_rowSpans[orientation == Qt::Horizontal];
+    return q_rowSpans.transposed()[orientation];
 }
 
 void QGridLayoutItem::setFirstRow(int row, Qt::Orientation orientation)
 {
-    q_firstRows[orientation == Qt::Vertical] = row;
+    q_firstRows[orientation] = row;
 }
 
 void QGridLayoutItem::setRowSpan(int rowSpan, Qt::Orientation orientation)
 {
-    q_rowSpans[orientation == Qt::Vertical] = rowSpan;
+    q_rowSpans[orientation] = rowSpan;
 }
 
 int QGridLayoutItem::stretchFactor(Qt::Orientation orientation) const
 {
-    int stretch = q_stretches[orientation == Qt::Vertical];
+    int stretch = q_stretches[orientation];
     if (stretch >= 0)
         return stretch;
 
@@ -577,7 +574,7 @@ int QGridLayoutItem::stretchFactor(Qt::Orientation orientation) const
 void QGridLayoutItem::setStretchFactor(int stretch, Qt::Orientation orientation)
 {
     Q_ASSERT(stretch >= 0); // ### deal with too big stretches
-    q_stretches[orientation == Qt::Vertical] = stretch;
+    q_stretches[orientation] = stretch;
 }
 
 QLayoutPolicy::ControlTypes QGridLayoutItem::controlTypes(LayoutSide /*side*/) const
@@ -695,9 +692,9 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
 
 void QGridLayoutItem::transpose()
 {
-    qSwap(q_firstRows[Hor], q_firstRows[Ver]);
-    qSwap(q_rowSpans[Hor], q_rowSpans[Ver]);
-    qSwap(q_stretches[Hor], q_stretches[Ver]);
+    q_firstRows.transpose();
+    q_rowSpans.transpose();
+    q_stretches.transpose();
 }
 
 void QGridLayoutItem::insertOrRemoveRows(int row, int delta, Qt::Orientation orientation)
@@ -746,10 +743,10 @@ void QGridLayoutItem::dump(int indent) const
     qDebug("%*s (%d, %d) %d x %d", indent, "", firstRow(), firstColumn(),   //###
            rowSpan(), columnSpan());
 
-    if (q_stretches[Hor] >= 0)
-        qDebug("%*s Horizontal stretch: %d", indent, "", q_stretches[Hor]);
-    if (q_stretches[Ver] >= 0)
-        qDebug("%*s Vertical stretch: %d", indent, "", q_stretches[Ver]);
+    if (q_stretches[Qt::Horizontal] >= 0)
+        qDebug("%*s Horizontal stretch: %d", indent, "", q_stretches[Qt::Horizontal]);
+    if (q_stretches[Qt::Vertical] >= 0)
+        qDebug("%*s Vertical stretch: %d", indent, "", q_stretches[Qt::Vertical]);
     if (q_alignment != 0)
         qDebug("%*s Alignment: %x", indent, "", uint(q_alignment));
     qDebug("%*s Horizontal size policy: %x Vertical size policy: %x",

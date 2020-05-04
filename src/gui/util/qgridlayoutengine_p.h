@@ -102,6 +102,37 @@ enum {
     UnfeasibleConstraint    // not feasible, it be has some items with Vertical and others with Horizontal constraints
 };
 
+/*
+    Minimal container to store Qt::Orientation-discriminated values.
+
+    The salient feature is the indexing operator, which takes
+    Qt::Orientation (and assumes it's passed only Qt::Horizonal or Qt::Vertical).
+*/
+template <typename T>
+class QHVContainer {
+    T m_data[2];
+
+    Q_STATIC_ASSERT(Qt::Horizontal == 0x1);
+    Q_STATIC_ASSERT(Qt::Vertical == 0x2);
+    static constexpr int map(Qt::Orientation o) noexcept
+    {
+        return int(o) - 1;
+    }
+public:
+    constexpr QHVContainer(const T &h, const T &v)
+            noexcept(std::is_nothrow_copy_constructible_v<T>)
+        : m_data{h, v} {}
+    QHVContainer() = default;
+
+    constexpr T &operator[](Qt::Orientation o) noexcept { return m_data[map(o)]; }
+    constexpr const T &operator[](Qt::Orientation o) const noexcept { return m_data[map(o)]; }
+
+    constexpr void transpose() noexcept { qSwap(m_data[0], m_data[1]); }
+    constexpr QHVContainer transposed() const
+        noexcept(std::is_nothrow_copy_constructible_v<T>)
+    { return {m_data[1], m_data[0]}; }
+};
+
 template <typename T>
 class QLayoutParameter
 {
@@ -279,10 +310,10 @@ public:
                     Qt::Alignment alignment = { });
     virtual ~QGridLayoutItem() {}
 
-    inline int firstRow() const { return q_firstRows[Ver]; }
-    inline int firstColumn() const { return q_firstRows[Hor]; }
-    inline int rowSpan() const { return q_rowSpans[Ver]; }
-    inline int columnSpan() const { return q_rowSpans[Hor]; }
+    inline int firstRow() const { return q_firstRows[Qt::Vertical]; }
+    inline int firstColumn() const { return q_firstRows[Qt::Horizontal]; }
+    inline int rowSpan() const { return q_rowSpans[Qt::Vertical]; }
+    inline int columnSpan() const { return q_rowSpans[Qt::Horizontal]; }
     inline int lastRow() const { return firstRow() + rowSpan() - 1; }
     inline int lastColumn() const { return firstColumn() + columnSpan() - 1; }
 
@@ -329,9 +360,9 @@ public:
 #endif
 
 private:
-    int q_firstRows[NOrientations];
-    int q_rowSpans[NOrientations];
-    int q_stretches[NOrientations];
+    QHVContainer<int> q_firstRows;
+    QHVContainer<int> q_rowSpans;
+    QHVContainer<int> q_stretches;
     Qt::Alignment q_alignment;
 
 };

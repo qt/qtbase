@@ -54,6 +54,7 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qframe_p.h"
 #include "qabstractscrollarea.h"
+#include <QtGui/private/qgridlayoutengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,7 +74,7 @@ public:
 
     void replaceScrollBar(QScrollBar *scrollBar, Qt::Orientation orientation);
 
-    QAbstractScrollAreaScrollBarContainer *scrollBarContainers[int(Qt::Vertical) + 1];
+    QHVContainer<QAbstractScrollAreaScrollBarContainer *> scrollBarContainers;
     QScrollBar *hbar, *vbar;
     Qt::ScrollBarPolicy vbarpolicy, hbarpolicy;
 
