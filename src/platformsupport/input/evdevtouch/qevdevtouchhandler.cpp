@@ -58,6 +58,14 @@
 #include <linux/input.h>
 #endif
 
+#ifndef input_event_sec
+#define input_event_sec time.tv_sec
+#endif
+
+#ifndef input_event_usec
+#define input_event_usec time.tv_usec
+#endif
+
 #include <math.h>
 
 #if QT_CONFIG(mtdev)
@@ -573,7 +581,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
         // update timestamps
         m_lastTimeStamp = m_timeStamp;
-        m_timeStamp = data->time.tv_sec + data->time.tv_usec / 1000000.0;
+        m_timeStamp = data->input_event_sec + data->input_event_usec / 1000000.0;
 
         m_lastTouchPoints = m_touchPoints;
         m_touchPoints.clear();
