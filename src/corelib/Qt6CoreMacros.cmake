@@ -805,7 +805,7 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
 endif()
 
 # Generate Win32 RC files for a target. All entries in the RC file are generated
-# from target prorties:
+# from target properties:
 #
 # QT_TARGET_COMPANY_NAME: RC Company name
 # QT_TARGET_DESCRIPTION: RC File Description
@@ -814,10 +814,9 @@ endif()
 # QT_TARGET_PRODUCT_NAME: RC ProductName
 # QT_TARGET_RC_ICONS: List of paths to icon files
 #
-# If you don not wish to auto-generate rc files, it's possible to provide your
+# If you do not wish to auto-generate rc files, it's possible to provide your
 # own RC file by setting the property QT_TARGET_WINDOWS_RC_FILE with a path to
 # an existing rc file.
-#
 function(qt6_generate_win32_rc_file target)
     set(prohibited_target_types INTERFACE_LIBRARY STATIC_LIBRARY OBJECT_LIBRARY)
     get_target_property(target_type ${target} TYPE)
@@ -834,9 +833,16 @@ function(qt6_generate_win32_rc_file target)
         return()
     endif()
 
-    if (NOT target_rc_file)
+    if (target_rc_file)
+        # Use the provided RC file
+        target_sources(${target} PRIVATE "${target_rc_file}")
+    else()
         # Generate RC File
-        set(rc_file_output "${target_binary_dir}/${target}_resource.rc")
+        set(rc_file_output "${target_binary_dir}/")
+        if(QT_GENERATOR_IS_MULTI_CONFIG)
+            string(APPEND rc_file_output "$<CONFIG>/")
+        endif()
+        string(APPEND rc_file_output "${target}_resource.rc")
         set(target_rc_file "${rc_file_output}")
 
         set(company_name "")
@@ -940,16 +946,34 @@ END
             CONTENT "${contents}"
         )
 
-        add_custom_command(OUTPUT "${target_rc_file}"
-            DEPENDS "${rc_file_output}.tmp"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${target_rc_file}.tmp"
-                "${target_rc_file}"
-        )
+        if(QT_GENERATOR_IS_MULTI_CONFIG)
+            set(cfgs ${CMAKE_CONFIGURATION_TYPES})
+            set(outputs "")
+            foreach(cfg ${cfgs})
+                string(REPLACE "$<CONFIG>" "${cfg}" expanded_rc_file_output "${rc_file_output}")
+                list(APPEND outputs "${expanded_rc_file_output}")
+            endforeach()
+        else()
+            set(cfgs "${CMAKE_BUILD_TYPE}")
+            set(outputs "${rc_file_output}")
+        endif()
+        while(outputs)
+            list(POP_FRONT cfgs cfg)
+            list(POP_FRONT outputs output)
+            set(input "${output}.tmp")
+            add_custom_command(OUTPUT "${output}"
+                DEPENDS "${input}"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${input}" "${output}"
+            )
+
+            # We would like to do the following:
+            #     target_sources(${target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
+            # However, https://gitlab.kitware.com/cmake/cmake/-/issues/20682 doesn't let us.
+            add_library(${target}_${cfg}_rc INTERFACE)
+            target_sources(${target}_${cfg}_rc INTERFACE "${output}")
+            target_link_libraries(${target} PRIVATE "$<$<CONFIG:${cfg}>:${target}_${cfg}_rc>")
+        endwhile()
     endif()
-
-    target_sources(${target} PRIVATE ${target_rc_file})
-
 endfunction()
 
 function(__qt_get_relative_resource_path_for_file output_alias file)
