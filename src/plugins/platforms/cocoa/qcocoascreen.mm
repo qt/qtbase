@@ -614,7 +614,11 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
         QRect windowRect;
         for (uint i = 0; i < displayCount; ++i) {
             QRect displayBounds = QRectF::fromCGRect(CGDisplayBounds(displays[i])).toRect();
-            windowRect = windowRect.united(displayBounds);
+            // Only include the screen if it is positioned past the x/y position
+            if ((displayBounds.x() >= x || displayBounds.right() > x) &&
+                (displayBounds.y() >= y || displayBounds.bottom() > y)) {
+                windowRect = windowRect.united(displayBounds);
+            }
         }
         if (grabRect.width() < 0)
             grabRect.setWidth(windowRect.width());
@@ -631,6 +635,11 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
         auto display = displays[i];
         QRect displayBounds = QRectF::fromCGRect(CGDisplayBounds(display)).toRect();
         QRect grabBounds = displayBounds.intersected(grabRect);
+        if (grabBounds.isNull()) {
+            destinations.append(QRect());
+            images.append(QImage());
+            continue;
+        }
         QRect displayLocalGrabBounds = QRect(QPoint(grabBounds.topLeft() - displayBounds.topLeft()), grabBounds.size());
         QImage displayImage = qt_mac_toQImage(QCFType<CGImageRef>(CGDisplayCreateImageForRect(display, displayLocalGrabBounds.toCGRect())));
         displayImage.setDevicePixelRatio(displayImage.size().width() / displayLocalGrabBounds.size().width());

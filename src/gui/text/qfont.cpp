@@ -420,7 +420,9 @@ QFontEngineData::~QFontEngineData()
     be removed with removeSubstitutions(). Use substitute() to retrieve
     a family's first substitute, or the family name itself if it has
     no substitutes. Use substitutes() to retrieve a list of a family's
-    substitutes (which may be empty).
+    substitutes (which may be empty). After substituting a font, you must
+    trigger the updating of the font by destroying and re-creating all
+    QFont objects.
 
     Every QFont has a key() which you can use, for example, as the key
     in a cache or dictionary. If you want to store a user's font
@@ -1864,6 +1866,9 @@ QStringList QFont::substitutes(const QString &familyName)
     Inserts \a substituteName into the substitution
     table for the family \a familyName.
 
+    After substituting a font, trigger the updating of the font by destroying
+    and re-creating all QFont objects.
+
     \sa insertSubstitutions(), removeSubstitutions(), substitutions(), substitute(), substitutes()
 */
 void QFont::insertSubstitution(const QString &familyName,
@@ -1881,6 +1886,10 @@ void QFont::insertSubstitution(const QString &familyName,
 /*!
     Inserts the list of families \a substituteNames into the
     substitution list for \a familyName.
+
+    After substituting a font, trigger the updating of the font by destroying
+    and re-creating all QFont objects.
+
 
     \sa insertSubstitution(), removeSubstitutions(), substitutions(), substitute()
 */

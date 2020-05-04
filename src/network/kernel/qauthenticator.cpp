@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
 #if QT_CONFIG(sspi) // SSPI
+static bool q_SSPI_library_load();
 static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
                                const QString& host);
 static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
@@ -503,8 +504,13 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
         if (challenge.isEmpty()) {
 #if QT_CONFIG(sspi) // SSPI
             QByteArray phase1Token;
-            if (user.isEmpty()) // Only pull from system if no user was specified in authenticator
+            if (user.isEmpty()) { // Only pull from system if no user was specified in authenticator
                 phase1Token = qSspiStartup(this, method, host);
+            } else if (!q_SSPI_library_load()) {
+                // Since we're not running qSspiStartup we have to make sure the library is loaded
+                qWarning("Failed to load the SSPI libraries");
+                return "";
+            }
             if (!phase1Token.isEmpty()) {
                 response = phase1Token.toBase64();
                 phase = Phase2;

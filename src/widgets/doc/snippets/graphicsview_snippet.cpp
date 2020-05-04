@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -48,34 +48,16 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include <QGraphicsScene>
-#include <QGraphicsEllipseItem>
-#include <QStyleOptionGraphicsItem>
-
-class CustomScene : public QGraphicsScene
+//! [2]
+class View : public QGraphicsView
 {
-public:
-    CustomScene()
-        { addItem(new QGraphicsEllipseItem(QRect(10, 10, 30, 30))); }
-
-    void drawItems(QPainter *painter, int numItems, QGraphicsItem *items[],
-                   const QStyleOptionGraphicsItem options[],
-                   QWidget *widget = 0) override;
+Q_OBJECT
+    ...
+public slots:
+    void zoomIn() { scale(1.2, 1.2); }
+    void zoomOut() { scale(1 / 1.2, 1 / 1.2); }
+    void rotateLeft() { rotate(-10); }
+    void rotateRight() { rotate(10); }
+    ...
 };
-
-//! [0]
-void CustomScene::drawItems(QPainter *painter, int numItems,
-                            QGraphicsItem *items[],
-                            const QStyleOptionGraphicsItem options[],
-                            QWidget *widget)
-{
-    for (int i = 0; i < numItems; ++i) {
-         // Draw the item
-         painter->save();
-         painter->setTransform(items[i]->sceneTransform(), true);
-         items[i]->paint(painter, &options[i], widget);
-         painter->restore();
-     }
-}
-//! [0]
+//! [2]

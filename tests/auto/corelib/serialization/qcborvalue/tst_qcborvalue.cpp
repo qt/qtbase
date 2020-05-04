@@ -106,6 +106,8 @@ private slots:
     void fromCborStreamReaderIODevice();
     void validation_data();
     void validation();
+    void extendedTypeValidation_data();
+    void extendedTypeValidation();
     void hugeDeviceValidation_data();
     void hugeDeviceValidation();
     void recursionLimit_data();
@@ -117,6 +119,84 @@ private slots:
     void datastreamSerialization();
     void streamVariantSerialization();
 };
+
+namespace SimpleEncodeToCbor {
+inline size_t lengthOf(int)
+{
+    return 1;       // encode as byte
+}
+
+template <unsigned N> inline size_t lengthOf(const char (&)[N])
+{
+    return N - 1;
+}
+
+
+inline size_t lengthOf(const char *str)
+{
+    return strlen(str);
+}
+
+template <typename T> inline size_t lengthOf(T)
+{
+    return sizeof(T);
+}
+
+static void encodeOneAt(char *ptr, int v, size_t)
+{
+    // encode as byte
+    *ptr = char(v);
+}
+
+static void encodeOneAt(char *ptr, const char *v, size_t size)
+{
+    memcpy(ptr, v, size);
+}
+
+template <typename T>
+static typename std::enable_if<std::is_unsigned<T>::value>::type
+encodeOneAt(char *ptr, T v, size_t)
+{
+    qToBigEndian(v, ptr);
+}
+
+template <typename T>
+static typename std::enable_if<std::is_floating_point<T>::value ||
+                               std::is_same<T, qfloat16>::value>::type
+encodeOneAt(char *ptr, T v, size_t)
+{
+    typename QIntegerForSizeof<T>::Unsigned u;
+    memcpy(&u, &v, sizeof(u));
+    qToBigEndian(u, ptr);
+}
+
+static char *encodeAt(char *ptr)
+{
+    return ptr;
+}
+
+template <typename Arg0, typename... Args>
+static char *encodeAt(char *ptr, Arg0 a0, Args... a)
+{
+    encodeOneAt(ptr, a0, lengthOf(a0));
+    return encodeAt(ptr + lengthOf(a0), a...);
+}
+
+} // namespace SimpleEncodetoCbor
+
+template <typename... Args>
+static QByteArray encode(Args... a)
+{
+    // this would be much easier with C++17 fold expressions...
+    using namespace SimpleEncodeToCbor;
+    using namespace std;
+    size_t lengths[] = { lengthOf(a)... };
+    size_t total = accumulate(begin(lengths), end(lengths), size_t(0), plus<size_t>{});
+    QByteArray result(QByteArray::size_type(total), Qt::Uninitialized);
+    char *ptr = result.data();
+    encodeAt(ptr, a...);
+    return result;
+}
 
 // Get the validation data from TinyCBOR (see src/3rdparty/tinycbor/tests/parser/data.cpp)
 #include "data.cpp"
@@ -1714,6 +1794,15 @@ void tst_QCborValue::fromCbor_data()
 
     QTest::newRow("DateTime:NoMilli") << QCborValue(QDateTime::fromSecsSinceEpoch(1515565477, Qt::UTC))
                                       << raw("\xc0\x74" "2018-01-10T06:24:37Z");
+    // date-only is only permitted local time
+    QTest::newRow("DateTime:NoTime:Local") << QCborValue(QDateTime(QDate(2020, 4, 15), QTime(0, 0), Qt::LocalTime))
+                                           << raw("\xc0\x6a" "2020-04-15");
+    QTest::newRow("DateTime:24:00:00") << QCborValue(QDateTime(QDate(2020, 4, 16), QTime(0, 0), Qt::UTC))
+                                       << raw("\xc0\x74" "2020-04-15T24:00:00Z");
+    QTest::newRow("DateTime:+00:00") << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125, Qt::UTC))
+                                     << raw("\xc0\x78\x1d" "2018-01-10T06:24:37.125+00:00");
+    QTest::newRow("DateTime:+01:00") << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125, Qt::OffsetFromUTC, 60*60))
+                                     << raw("\xc0\x78\x1d" "2018-01-10T07:24:37.125+01:00");
     QTest::newRow("UnixTime_t:Integer") << QCborValue(QDateTime::fromSecsSinceEpoch(1515565477, Qt::UTC))
                                         << raw("\xc1\x1a\x5a\x55\xb1\xa5");
     QTest::newRow("UnixTime_t:Double") << QCborValue(QDateTime::fromMSecsSinceEpoch(1515565477125, Qt::UTC))
@@ -1880,6 +1969,117 @@ void tst_QCborValue::validation()
         decoded = QCborValue::fromCbor(mid, &parserError);
         QCOMPARE(parserError.error, error);
     }
+}
+
+void tst_QCborValue::extendedTypeValidation_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QCborValue>("expected");
+
+    // QDateTime currently stores time in milliseconds, so make sure
+    // we don't overflow
+    {
+        quint64 limit = std::numeric_limits<quint64>::max() / 1000;
+        QTest::newRow("UnixTime_t:integer-overflow-positive")
+                << encode(0xc1, 0x1b, limit + 1)
+                << QCborValue(QCborKnownTags::UnixTime_t, qint64(limit) + 1);
+        QTest::newRow("UnixTime_t:integer-overflow-negative")
+                << encode(0xc1, 0x3b, limit)
+                << QCborValue(QCborKnownTags::UnixTime_t, -qint64(limit) - 1);
+
+        double fplimit = std::numeric_limits<qint64>::min() / (-1000.); // 2^63 ms
+        QTest::newRow("UnixTime_t:fp-overflow-positive")
+                << encode(0xc1, 0xfb, fplimit)
+                << QCborValue(QCborKnownTags::UnixTime_t, fplimit);
+        QTest::newRow("UnixTime_t:fp-overflow-negative")
+                << encode(0xc1, 0xfb, -fplimit)
+                << QCborValue(QCborKnownTags::UnixTime_t, -fplimit);
+    }
+
+    // But in fact, QCborValue stores date/times as their ISO textual
+    // representation, which means it can't represent dates before year 1 or
+    // after year 9999.
+    {
+        QDateTime dt(QDate(-1, 1, 1), QTime(0, 0), Qt::UTC);
+        QTest::newRow("UnixTime_t:negative-year")
+                << encode(0xc1, 0x3b, quint64(-dt.toSecsSinceEpoch()) - 1)
+                << QCborValue(QCborKnownTags::UnixTime_t, dt.toSecsSinceEpoch());
+
+        dt.setDate(QDate(10000, 1, 1));
+        QTest::newRow("UnixTime_t:year10k")
+                << encode(0xc1, 0x1b, quint64(dt.toSecsSinceEpoch()))
+                << QCborValue(QCborKnownTags::UnixTime_t, dt.toSecsSinceEpoch());
+    }
+
+    // Invalid ISO date/time strings
+    {
+        auto add = [](const char *tag, const char *str) {
+            QByteArray raw;
+            if (strlen(str) < 0x18)
+                raw = encode(0xc0, 0x60 + int(strlen(str)), str);
+            else
+                raw = encode(0xc0, 0x78, quint8(strlen(str)), str);
+            QTest::addRow("DateTime:%s", tag)
+                    << raw << QCborValue(QCborKnownTags::DateTimeString, QString(str));
+        };
+        // tst_QDateTime::fromStringDateFormat has more tests
+        add("junk", "jjj");
+        add("zoned-date-only", "2020-04-15Z");
+        add("month-13", "2020-13-01T00:00:00Z");
+        add("negative-month", "2020--1-01T00:00:00Z");
+        add("jan-32", "2020-01-32T00:00:00Z");
+        add("apr-31", "2020-04-31T00:00:00Z");
+        add("feb-30", "2020-02-30T00:00:00Z");
+        add("feb-29-nonleap", "2021-02-29T00:00:00Z");
+        add("negative-day", "2020-01--1T00:00:00Z");
+        add("bad-separator", "2020-04-15j13:30:59Z");
+        add("hour-25", "2020-04-15T25:00:00Z");
+        add("negative-hour", "2020-04-15T-1:00:00Z");
+        add("minute-60", "2020-04-15T23:60:00Z");
+        add("negative-minute", "2020-04-15T23:-1:00Z");
+        add("second-60", "2020-04-15T23:59:60Z");   // not a leap second
+        add("negative-second", "2020-04-15T23:59:-1Z");
+        add("negative-milli", "2020-04-15T23.59:59.-1Z");
+
+        // walking null
+        char dt[] = "2020-04-15T17:33:32.125Z";
+        quint8 len = strlen(dt);
+        for (int i = 0; i < int(len); ++i) {
+            char c = '\0';
+            qSwap(c, dt[i]);
+            QTest::addRow("DateTime:Null-at-%d", i)
+                    << encode(0xc0, 0x78, len) + QByteArray(dt, len)
+                    << QCborValue(QCborKnownTags::DateTimeString, QLatin1String(dt, len));
+            qSwap(c, dt[i]);
+        }
+    }
+
+    // Improperly-encoded URLs
+    {
+        const char badurl[] = "%zz";
+        QTest::newRow("Url:Invalid")
+                << encode(0xd8, int(QCborKnownTags::Url), 0x60 + int(strlen(badurl)), badurl)
+                << QCborValue(QCborKnownTags::Url, QLatin1String(badurl));
+    }
+}
+
+void tst_QCborValue::extendedTypeValidation()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(QCborValue, expected);
+
+    QCborParserError error;
+    QCborValue decoded = QCborValue::fromCbor(data, &error);
+    QVERIFY2(error.error == QCborError(), qPrintable(error.errorString()));
+    QCOMPARE(error.offset, data.size());
+    QCOMPARE(decoded, expected);
+
+    QByteArray encoded = decoded.toCbor();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    // behavior change, see qdatetime.cpp:fromIsoTimeString
+    QEXPECT_FAIL("DateTime:Null-at-19", "QDateTime parsing fixed, but only in 6.0", Abort);
+#endif
+    QCOMPARE(encoded, data);
 }
 
 void tst_QCborValue::hugeDeviceValidation_data()

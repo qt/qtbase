@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -109,19 +109,18 @@
    continues. If not, a failure is recorded in the test log and the test
    function returns without attempting any later checks.
 
-   Always respect QCOMPARE() parameter semantics. The first parameter passed to it
-   should always be the actual value produced by the code-under-test, while the
-   second parameter should always be the expected value. When the values don't
-   match, QCOMPARE() prints them with the labels \e Actual and \e Expected.
-   If the parameter order is swapped, debugging a failing test can be confusing.
+   Always respect QCOMPARE() parameter semantics. The first parameter passed to
+   it should always be the actual value produced by the code-under-test, while
+   the second parameter should always be the expected value. When the values
+   don't match, QCOMPARE() prints them with the labels \e Actual and \e
+   Expected.  If the parameter order is swapped, debugging a failing test can be
+   confusing and tests expecting zero may fail due to rounding errors.
 
    When comparing floating-point types (\c float, \c double, and \c qfloat16),
-   \l qFuzzyCompare() is used for finite values. Infinities match if they have
+   \l qFuzzyCompare() is used for finite values. If qFuzzyIsNull() is true for
+   both values, they are also considered equal. Infinities match if they have
    the same sign, and any NaN as actual value matches with any NaN as expected
-   value (even though NaN != NaN, even when they're identical). This means that
-   expecting 0 can fail when the actual value may be affected by rounding errors.
-   One solution to this is to offset both actual and expected values by adding
-   some suitable constant (such as 1).
+   value (even though NaN != NaN, even when they're identical).
 
    QCOMPARE() tries to output the contents of the values if the comparison fails,
    so it is visible from the test log why the comparison failed.

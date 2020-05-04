@@ -162,11 +162,11 @@ QT_END_NAMESPACE
     if (icon.isNull())
         return nil;
 
-    auto nsImage = [[NSImage alloc] initWithSize:NSZeroSize];
-
     auto availableSizes = icon.availableSizes();
     if (availableSizes.isEmpty() && size > 0)
         availableSizes << QSize(size, size);
+
+    auto nsImage = [[[NSImage alloc] initWithSize:NSZeroSize] autorelease];
 
     for (QSize size : qAsConst(availableSizes)) {
         QImage image = icon.pixmap(size).toImage();
@@ -182,12 +182,15 @@ QT_END_NAMESPACE
         [nsImage addRepresentation:[imageRep autorelease]];
     }
 
+    if (!nsImage.representations.count)
+        return nil;
+
     [nsImage setTemplate:icon.isMask()];
 
     if (size)
         nsImage.size = CGSizeMake(size, size);
 
-    return [nsImage autorelease];
+    return nsImage;
 }
 @end
 

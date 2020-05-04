@@ -17,8 +17,8 @@ FAIL!  : tst_float::doubleComparisons(should FAIL 3) Compared doubles are not th
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::doubleComparisons(should PASS 3)
 FAIL!  : tst_float::doubleComparisons(should FAIL 4) Compared doubles are not the same (fuzzy compare)
-   Actual   (operandLeft) : 9.99999999999e-311
-   Expected (operandRight): 9.99999999997e-311
+   Actual   (operandLeft) : 1e-12
+   Expected (operandRight): 9.99999999999e-13
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::doubleComparisons(should PASS 4)
 FAIL!  : tst_float::doubleComparisons(should FAIL 5) Compared doubles are not the same (fuzzy compare)
@@ -138,8 +138,8 @@ FAIL!  : tst_float::floatComparisons(should FAIL 1) Compared floats are not the 
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::floatComparisons(should PASS 1)
 FAIL!  : tst_float::floatComparisons(should FAIL 2) Compared floats are not the same (fuzzy compare)
-   Actual   (operandLeft) : 1e-07
-   Expected (operandRight): 3e-07
+   Actual   (operandLeft) : 1e-05
+   Expected (operandRight): 3e-05
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::floatComparisons(should PASS 2)
 FAIL!  : tst_float::floatComparisons(should FAIL 3) Compared floats are not the same (fuzzy compare)
@@ -148,8 +148,8 @@ FAIL!  : tst_float::floatComparisons(should FAIL 3) Compared floats are not the 
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::floatComparisons(should PASS 3)
 FAIL!  : tst_float::floatComparisons(should FAIL 4) Compared floats are not the same (fuzzy compare)
-   Actual   (operandLeft) : 9.9999e-40
-   Expected (operandRight): 9.99971e-40
+   Actual   (operandLeft) : 1.00001e-05
+   Expected (operandRight): 9.9999e-06
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::floatComparisons(should PASS 4)
 FAIL!  : tst_float::floatComparisons(should FAIL 5) Compared floats are not the same (fuzzy compare)
@@ -269,8 +269,8 @@ FAIL!  : tst_float::float16Comparisons(should FAIL 1) Compared qfloat16s are not
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::float16Comparisons(should PASS 1)
 FAIL!  : tst_float::float16Comparisons(should FAIL 2) Compared qfloat16s are not the same (fuzzy compare)
-   Actual   (operandLeft) : 0.0001
-   Expected (operandRight): 0.0003
+   Actual   (operandLeft) : 0.000999
+   Expected (operandRight): 0.003
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::float16Comparisons(should PASS 2)
 FAIL!  : tst_float::float16Comparisons(should FAIL 3) Compared qfloat16s are not the same (fuzzy compare)
@@ -279,8 +279,8 @@ FAIL!  : tst_float::float16Comparisons(should FAIL 3) Compared qfloat16s are not
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::float16Comparisons(should PASS 3)
 FAIL!  : tst_float::float16Comparisons(should FAIL 4) Compared qfloat16s are not the same (fuzzy compare)
-   Actual   (operandLeft) : 5.93e-05
-   Expected (operandRight): 5.87e-05
+   Actual   (operandLeft) : 0.00101
+   Expected (operandRight): 0.00099
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 PASS   : tst_float::float16Comparisons(should PASS 4)
 FAIL!  : tst_float::float16Comparisons(should FAIL 5) Compared qfloat16s are not the same (fuzzy compare)
@@ -398,9 +398,9 @@ FAIL!  : tst_float::compareFloatTests(1e0) Compared floats are not the same (fuz
    Actual   (t1): 1
    Expected (t3): 3
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
-FAIL!  : tst_float::compareFloatTests(1e-7) Compared floats are not the same (fuzzy compare)
-   Actual   (t1): 1e-07
-   Expected (t3): 3e-07
+FAIL!  : tst_float::compareFloatTests(1e-5) Compared floats are not the same (fuzzy compare)
+   Actual   (t1): 1e-05
+   Expected (t3): 3e-05
    Loc: [qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(0)]
 FAIL!  : tst_float::compareFloatTests(1e+7) Compared floats are not the same (fuzzy compare)
    Actual   (t1): 1e+07

@@ -577,7 +577,7 @@ void QJsonObject::removeImpl(T key)
     if (!keyExists)
         return;
 
-    removeAt(index);
+    removeAt(index / 2);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -629,7 +629,7 @@ QJsonValue QJsonObject::takeImpl(T key)
         return QJsonValue(QJsonValue::Undefined);
 
     const QJsonValue v = QJsonPrivate::Value::fromTrustedCbor(o->extractAt(index + 1));
-    removeAt(index);
+    removeAt(index / 2);
     return v;
 }
 
@@ -1486,8 +1486,8 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
 void QJsonObject::removeAt(int index)
 {
     detach2();
-    o->removeAt(index + 1);
-    o->removeAt(index);
+    o->removeAt(2 * index + 1);
+    o->removeAt(2 * index);
 }
 
 size_t qHash(const QJsonObject &object, size_t seed)

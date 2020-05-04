@@ -85,6 +85,7 @@ void addingSubWindowsExample()
     mdiArea.show();
 }
 
+/*
 int main(int argv, char **args)
 {
     QApplication app(argv, args);
@@ -103,5 +104,5 @@ int main(int argv, char **args)
 
     return app.exec();
 }
-
+*/
 

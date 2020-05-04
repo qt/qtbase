@@ -74,6 +74,7 @@ sourcefiles += \
 extras = \
     $$_PRO_FILE_PWD_/README \
     $$_PRO_FILE_PWD_/README.TXT \
+    $$_PRO_FILE_PWD_/qmldir \
     $$files($$_PRO_FILE_PWD_/*.pri) \
     $$replace(_PRO_FILE_, \\.pro$, .qmlproject) \
     $$replace(_PRO_FILE_, \\.pro$, .json) \
@@ -140,6 +141,9 @@ equals(TEMPLATE, app)|equals(TEMPLATE, lib) {
     SOURCES =
     OBJECTIVE_SOURCES =
     INSTALLS -= target
+    QMAKE_SUBSTITUTES =
+    QMAKE_EXTRA_COMPILERS =
+    COPIES =
 } else {
     CONFIG += relative_qt_rpath  # Examples built as part of Qt should be relocatable
 }
