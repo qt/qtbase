@@ -4781,14 +4781,19 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
             } else if (widget) {
                 isWindow = widget->isWindow();
             }
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
             ret = proxy()->pixelMetric(isWindow ? PM_DefaultTopLevelMargin : PM_DefaultChildMargin, opt);
+QT_WARNING_POP
         }
         break;
     case PM_LayoutHorizontalSpacing:
     case PM_LayoutVerticalSpacing:
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
         ret = proxy()->pixelMetric(PM_DefaultLayoutSpacing, opt);
+QT_WARNING_POP
         break;
 
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     case PM_DefaultTopLevelMargin:
         ret = int(QStyleHelper::dpiScaled(11, opt));
         break;
@@ -4798,6 +4803,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_DefaultLayoutSpacing:
         ret = int(QStyleHelper::dpiScaled(6, opt));
         break;
+QT_WARNING_POP
 
     case PM_ToolBarIconSize:
         ret = 0;
