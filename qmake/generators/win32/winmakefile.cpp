@@ -301,7 +301,7 @@ void Win32MakefileGenerator::processRcFileVar()
     if (Option::qmake_mode == Option::QMAKE_GENERATE_NOTHING)
         return;
 
-    const QString manifestFile = getManifestFileForRcFile();
+    const QString manifestFile = project->first("QMAKE_MANIFEST").toQString();
     if (((!project->values("VERSION").isEmpty() || !project->values("RC_ICONS").isEmpty() || !manifestFile.isEmpty())
         && project->values("RC_FILE").isEmpty()
         && project->values("RES_FILE").isEmpty()
@@ -856,11 +856,6 @@ QString Win32MakefileGenerator::cQuoted(const QString &str)
     ret.prepend(QLatin1Char('"'));
     ret.append(QLatin1Char('"'));
     return ret;
-}
-
-QString Win32MakefileGenerator::getManifestFileForRcFile() const
-{
-    return QString();
 }
 
 ProKey Win32MakefileGenerator::fullTargetVariable() const

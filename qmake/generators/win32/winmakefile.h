@@ -63,7 +63,6 @@ protected:
     void fixTargetExt();
     void processRcFileVar();
     static QString cQuoted(const QString &str);
-    virtual QString getManifestFileForRcFile() const;
 
 public:
     ProKey fullTargetVariable() const override;
