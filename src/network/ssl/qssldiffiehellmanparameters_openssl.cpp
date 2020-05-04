@@ -44,9 +44,12 @@
 #include "qsslsocket.h"
 #include "qsslsocket_p.h"
 
+#include "private/qssl_p.h"
+
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qiodevice.h>
+#include <QtCore/qscopeguard.h>
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
 #endif
@@ -55,6 +58,57 @@
 #include <openssl/dh.h>
 
 QT_BEGIN_NAMESPACE
+
+#ifdef OPENSSL_NO_DEPRECATED_3_0
+
+static int q_DH_check(DH *dh, int *status)
+{
+    // DH_check was first deprecated in OpenSSL 3.0.0, as low-level
+    // API; the EVP_PKEY family of functions was advised as an alternative.
+    // As of now EVP_PKEY_params_check ends up calling ... DH_check,
+    // which is good enough.
+
+    Q_ASSERT(dh);
+    Q_ASSERT(status);
+
+    EVP_PKEY *key = q_EVP_PKEY_new();
+    if (!key) {
+        qCWarning(lcSsl, "EVP_PKEY_new failed");
+        QSslSocketBackendPrivate::logAndClearErrorQueue();
+        return 0;
+    }
+    const auto keyDeleter = qScopeGuard([key](){
+        q_EVP_PKEY_free(key);
+    });
+    if (!q_EVP_PKEY_set1_DH(key, dh)) {
+        qCWarning(lcSsl, "EVP_PKEY_set1_DH failed");
+        QSslSocketBackendPrivate::logAndClearErrorQueue();
+        return 0;
+    }
+
+    EVP_PKEY_CTX *keyCtx = q_EVP_PKEY_CTX_new(key, nullptr);
+    if (!keyCtx) {
+        qCWarning(lcSsl, "EVP_PKEY_CTX_new failed");
+        QSslSocketBackendPrivate::logAndClearErrorQueue();
+        return 0;
+    }
+    const auto ctxDeleter = qScopeGuard([keyCtx]{
+        q_EVP_PKEY_CTX_free(keyCtx);
+    });
+
+    const int result = q_EVP_PKEY_param_check(keyCtx);
+    QSslSocketBackendPrivate::logAndClearErrorQueue();
+    // Note: unlike DH_check, we cannot obtain the 'status',
+    // if the 'result' is 0 (actually the result is 1 only
+    // if this 'status' was 0). We could probably check the
+    // errors from the error queue, but it's not needed anyway
+    // - see the 'isSafeDH' below, how it returns immediately
+    // on 0.
+    Q_UNUSED(status)
+
+    return result;
+}
+#endif // OPENSSL_NO_DEPRECATED_3_0
 
 static bool isSafeDH(DH *dh)
 {
@@ -75,7 +129,6 @@ static bool isSafeDH(DH *dh)
     //     Without the test, the IETF parameters would
     //     fail validation. For details, see Diffie-Hellman
     //     Parameter Check (when g = 2, must p mod 24 == 11?).
-#if QT_CONFIG(opensslv11)
     // Mark p < 1024 bits as unsafe.
     if (q_DH_bits(dh) < 1024)
         return false;
@@ -89,25 +142,10 @@ static bool isSafeDH(DH *dh)
     q_DH_get0_pqg(dh, &p, &q, &g);
 
     if (q_BN_is_word(const_cast<BIGNUM *>(g), DH_GENERATOR_2)) {
-        long residue = q_BN_mod_word(p, 24);
+        const unsigned long residue = q_BN_mod_word(p, 24);
         if (residue == 11 || residue == 23)
             status &= ~DH_NOT_SUITABLE_GENERATOR;
     }
-
-#else
-    // Mark p < 1024 bits as unsafe.
-    if (q_BN_num_bits(dh->p) < 1024)
-        return false;
-
-    if (q_DH_check(dh, &status) != 1)
-        return false;
-
-    if (q_BN_is_word(dh->g, DH_GENERATOR_2)) {
-        long residue = q_BN_mod_word(dh->p, 24);
-        if (residue == 11 || residue == 23)
-            status &= ~DH_NOT_SUITABLE_GENERATOR;
-    }
-#endif
 
     bad |= DH_CHECK_P_NOT_PRIME;
     bad |= DH_CHECK_P_NOT_SAFE_PRIME;

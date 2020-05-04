@@ -145,6 +145,9 @@ DEFINEFUNC(const BIO_METHOD *, BIO_s_mem, void, DUMMYARG, return nullptr, return
 DEFINEFUNC2(int, BN_is_word, BIGNUM *a, a, BN_ULONG w, w, return 0, return)
 DEFINEFUNC(int, EVP_CIPHER_CTX_reset, EVP_CIPHER_CTX *c, c, return 0, return)
 DEFINEFUNC(int, EVP_PKEY_up_ref, EVP_PKEY *a, a, return 0, return)
+DEFINEFUNC2(EVP_PKEY_CTX *, EVP_PKEY_CTX_new, EVP_PKEY *pkey, pkey, ENGINE *e, e, return nullptr, return)
+DEFINEFUNC(int, EVP_PKEY_param_check, EVP_PKEY_CTX *ctx, ctx, return 0, return)
+DEFINEFUNC(void, EVP_PKEY_CTX_free, EVP_PKEY_CTX *ctx, ctx, return, return)
 DEFINEFUNC(int, EVP_PKEY_base_id, EVP_PKEY *a, a, return NID_undef, return)
 DEFINEFUNC(int, RSA_bits, RSA *a, a, return 0, return)
 DEFINEFUNC(int, DSA_bits, DSA *a, a, return 0, return)
@@ -432,7 +435,13 @@ DEFINEFUNC(X509_STORE *, X509_STORE_CTX_get0_store, X509_STORE_CTX *ctx, ctx, re
 DEFINEFUNC(X509_STORE_CTX *, X509_STORE_CTX_new, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC2(void *, X509_STORE_CTX_get_ex_data, X509_STORE_CTX *ctx, ctx, int idx, idx, return nullptr, return)
 DEFINEFUNC(int, SSL_get_ex_data_X509_STORE_CTX_idx, DUMMYARG, DUMMYARG, return -1, return)
+
+#if OPENSSL_VERSION_MAJOR < 3
 DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *CAfile, CAfile, const char *CApath, CApath, return 0, return)
+#else
+DEFINEFUNC2(int, SSL_CTX_load_verify_dir, SSL_CTX *ctx, ctx, const char *CApath, CApath, return 0, return)
+#endif // OPENSSL_VERSION_MAJOR
+
 DEFINEFUNC2(int, i2d_SSL_SESSION, SSL_SESSION *in, in, unsigned char **pp, pp, return 0, return)
 DEFINEFUNC3(SSL_SESSION *, d2i_SSL_SESSION, SSL_SESSION **a, a, const unsigned char **pp, pp, long length, length, return nullptr, return)
 
@@ -478,7 +487,9 @@ DEFINEFUNC(DH *, DH_new, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(void, DH_free, DH *dh, dh, return, DUMMYARG)
 DEFINEFUNC3(DH *, d2i_DHparams, DH**a, a, const unsigned char **pp, pp, long length, length, return nullptr, return)
 DEFINEFUNC2(int, i2d_DHparams, DH *a, a, unsigned char **p, p, return -1, return)
+#ifndef OPENSSL_NO_DEPRECATED_3_0
 DEFINEFUNC2(int, DH_check, DH *dh, dh, int *codes, codes, return 0, return)
+#endif // OPENSSL_NO_DEPRECATED_3_0
 DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return nullptr, return)
 
 #ifndef OPENSSL_NO_EC
@@ -832,6 +843,9 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(ASN1_STRING_get0_data)
     RESOLVEFUNC(EVP_CIPHER_CTX_reset)
     RESOLVEFUNC(EVP_PKEY_up_ref)
+    RESOLVEFUNC(EVP_PKEY_CTX_new)
+    RESOLVEFUNC(EVP_PKEY_param_check)
+    RESOLVEFUNC(EVP_PKEY_CTX_free)
     RESOLVEFUNC(EVP_PKEY_base_id)
     RESOLVEFUNC(RSA_bits)
     RESOLVEFUNC(OPENSSL_sk_new_null)
@@ -1126,7 +1140,11 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(X509_verify_cert)
     RESOLVEFUNC(d2i_X509)
     RESOLVEFUNC(i2d_X509)
+#if OPENSSL_VERSION_MAJOR < 3
     RESOLVEFUNC(SSL_CTX_load_verify_locations)
+#else
+    RESOLVEFUNC(SSL_CTX_load_verify_dir)
+#endif // OPENSSL_VERSION_MAJOR
     RESOLVEFUNC(i2d_SSL_SESSION)
     RESOLVEFUNC(d2i_SSL_SESSION)
 
@@ -1151,7 +1169,9 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(DH_free)
     RESOLVEFUNC(d2i_DHparams)
     RESOLVEFUNC(i2d_DHparams)
+#ifndef OPENSSL_NO_DEPRECATED_3_0
     RESOLVEFUNC(DH_check)
+#endif // OPENSSL_NO_DEPRECATED_3_0
     RESOLVEFUNC(BN_bin2bn)
 
 #ifndef OPENSSL_NO_EC
