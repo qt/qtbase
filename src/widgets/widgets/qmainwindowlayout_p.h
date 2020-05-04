@@ -523,7 +523,7 @@ public:
     int sep; // separator extent
 
 #if QT_CONFIG(tabwidget)
-    QTabWidget::TabPosition tabPositions[4];
+    QTabWidget::TabPosition tabPositions[QInternal::DockCount];
     QTabWidget::TabShape _tabShape;
 
     QTabWidget::TabShape tabShape() const;
