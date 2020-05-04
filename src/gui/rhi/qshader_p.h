@@ -81,6 +81,9 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QShaderVersion::Flags)
 Q_DECLARE_TYPEINFO(QShaderVersion, Q_MOVABLE_TYPE);
 
+class QShaderCode;
+Q_GUI_EXPORT size_t qHash(const QShaderCode &, size_t = 0) noexcept;
+
 class Q_GUI_EXPORT QShaderCode
 {
 public:
@@ -94,6 +97,8 @@ public:
     void setEntryPoint(const QByteArray &entry) { m_entryPoint = entry; }
 
 private:
+    friend Q_GUI_EXPORT size_t qHash(const QShaderCode &, size_t) noexcept;
+
     QByteArray m_shader;
     QByteArray m_entryPoint;
 };
