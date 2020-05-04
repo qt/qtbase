@@ -236,6 +236,13 @@ QString QSslSocketBackendPrivate::getErrorsFromOpenSsl()
     return errorString;
 }
 
+void QSslSocketBackendPrivate::logAndClearErrorQueue()
+{
+    const auto errors = getErrorsFromOpenSsl();
+    if (errors.size())
+        qCWarning(lcSsl) << "Discarding errors:" << errors;
+}
+
 extern "C" {
 
 #ifndef OPENSSL_NO_PSK

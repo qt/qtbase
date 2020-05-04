@@ -182,11 +182,11 @@ public:
     static QList<QSslCertificate> STACKOFX509_to_QSslCertificates(STACK_OF(X509) *x509);
     static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain, const QString &hostName);
     static QString getErrorsFromOpenSsl();
+    static void logAndClearErrorQueue();
     static bool importPkcs12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,
                              QList<QSslCertificate> *caCertificates,
                              const QByteArray &passPhrase);
-
     static QString msgErrorsDuringHandshake();
 };
 
