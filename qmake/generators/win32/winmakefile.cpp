@@ -386,12 +386,12 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "#else\n";
         ts << "\tFILEFLAGS 0x0L\n";
         ts << "#endif\n";
-        ts << "\tFILEOS VOS__WINDOWS32\n";
+        ts << "\tFILEOS VOS_NT_WINDOWS32\n";
         if (project->isActiveConfig("shared"))
             ts << "\tFILETYPE VFT_DLL\n";
         else
             ts << "\tFILETYPE VFT_APP\n";
-        ts << "\tFILESUBTYPE 0x0L\n";
+        ts << "\tFILESUBTYPE VFT2_UNKNOWN\n";
         ts << "\tBEGIN\n";
         ts << "\t\tBLOCK \"StringFileInfo\"\n";
         ts << "\t\tBEGIN\n";
