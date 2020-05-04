@@ -73,7 +73,7 @@ public:
 
     void replaceScrollBar(QScrollBar *scrollBar, Qt::Orientation orientation);
 
-    QAbstractScrollAreaScrollBarContainer *scrollBarContainers[Qt::Vertical + 1];
+    QAbstractScrollAreaScrollBarContainer *scrollBarContainers[int(Qt::Vertical) + 1];
     QScrollBar *hbar, *vbar;
     Qt::ScrollBarPolicy vbarpolicy, hbarpolicy;
 
