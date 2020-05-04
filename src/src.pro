@@ -165,6 +165,7 @@ win32:SUBDIRS += src_winmain
 qtConfig(network) {
     SUBDIRS += src_network
     src_plugins.depends += src_network
+    android: SUBDIRS += network/android/jar
 }
 qtConfig(sql) {
     SUBDIRS += src_sql

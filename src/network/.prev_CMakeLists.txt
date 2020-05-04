@@ -238,10 +238,21 @@ qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND UNIX AND NOT MACOS
         PkgConfig::Libproxy
 )
 
-qt_extend_target(Network CONDITION UNIX AND NOT MACOS AND NOT QT_FEATURE_libproxy
+qt_extend_target(Network CONDITION ANDROID AND NOT QT_FEATURE_libproxy
+    SOURCES
+        kernel/qnetworkproxy_android.cpp
+)
+
+qt_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT MACOS AND NOT QT_FEATURE_libproxy
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )
+
+if(ANDROID AND (ANDROID))
+    set_property(TARGET Network APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
+        jar/QtAndroidNetwork.jar
+    )
+endif()
 
 qt_extend_target(Network CONDITION QT_FEATURE_socks5
     SOURCES
