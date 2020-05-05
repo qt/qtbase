@@ -392,30 +392,9 @@ public:
         MaxPreferredToMaximum
     };
 
-    // Several structures internal to the layout are duplicated to handle
-    // both Horizontal and Vertical restrictions.
-    //
-    // Orientation is used to reference the right structure in each context
-    enum Orientation {
-        Horizontal = 0,
-        Vertical,
-    };
-
-    template <typename T>
-    class QHVContainer : public QT_PREPEND_NAMESPACE(QHVContainer)<T>
-    {
-        using Base = QT_PREPEND_NAMESPACE(QHVContainer)<T>;
-        static constexpr Qt::Orientation map(Orientation o) noexcept
-        { return static_cast<Qt::Orientation>(int(o) + 1); }
-    public:
-        using Base::Base;
-        using Base::operator[];
-
-        constexpr const T &operator[](Orientation o) const noexcept
-        { return this->operator[](map(o)); }
-        constexpr T &operator[](Orientation o) noexcept
-        { return this->operator[](map(o)); }
-    };
+    typedef Qt::Orientation Orientation [[deprecated]];
+    [[deprecated]] static inline constexpr Qt::Orientation Horizontal = Qt::Horizontal;
+    [[deprecated]] static inline constexpr Qt::Orientation Vertical = Qt::Vertical;
 
     QGraphicsAnchorLayoutPrivate();
 
