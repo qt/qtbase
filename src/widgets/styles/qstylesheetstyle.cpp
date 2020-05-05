@@ -2597,11 +2597,12 @@ void QStyleSheetStyle::setProperties(QWidget *w)
 
     for (int i = finals.count() - 1; i >= 0; --i) {
         const Declaration &decl = decls.at(finals[i]);
-        QString property = decl.d->property;
-        property.remove(0, 10); // strip "qproperty-"
+        QStringView property = decl.d->property;
+        property = property.mid(10); // strip "qproperty-"
+        const auto propertyL1 = property.toLatin1();
 
         const QMetaObject *metaObject = w->metaObject();
-        int index = metaObject->indexOfProperty(property.toLatin1());
+        int index = metaObject->indexOfProperty(propertyL1);
         if (Q_UNLIKELY(index == -1)) {
             qWarning() << w << " does not have a property named " << property;
             continue;
@@ -2613,7 +2614,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         }
 
         QVariant v;
-        const QVariant value = w->property(property.toLatin1());
+        const QVariant value = w->property(propertyL1);
         switch (value.userType()) {
         case QMetaType::QIcon: v = decl.iconValue(); break;
         case QMetaType::QImage: v = QImage(decl.uriValue()); break;
@@ -2628,7 +2629,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         default: v = decl.d->values.at(0).variant; break;
         }
 
-        w->setProperty(property.toLatin1(), v);
+        w->setProperty(propertyL1, v);
     }
 }
 
