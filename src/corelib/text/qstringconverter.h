@@ -327,6 +327,28 @@ struct QConcatenable<QStringEncoder::DecodedData<T>>
         out = s.decoder->decodeIntoBuffer(out, s.data.data(), s.data.length());
     }
 };
+
+template <typename T>
+QString &operator+=(QString &a, const QStringDecoder::EncodedData<T> &b)
+{
+    qsizetype len = a.size() + QConcatenable<QStringDecoder::EncodedData<T>>::size(b);
+    a.reserve(len);
+    QChar *it = a.data() + a.size();
+    QConcatenable<QStringDecoder::EncodedData<T>>::appendTo(b, it);
+    a.resize(qsizetype(it - a.constData())); //may be smaller than len
+    return a;
+}
+
+template <typename T>
+QByteArray &operator+=(QByteArray &a, const QStringEncoder::DecodedData<T> &b)
+{
+    qsizetype len = a.size() + QConcatenable<QStringEncoder::DecodedData<T>>::size(b);
+    a.reserve(len);
+    char *it = a.data() + a.size();
+    QConcatenable<QStringEncoder::DecodedData<T>>::appendTo(b, it);
+    a.resize(qsizetype(it - a.constData())); //may be smaller than len
+    return a;
+}
 #endif
 
 QT_END_NAMESPACE
