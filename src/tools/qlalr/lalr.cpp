@@ -244,16 +244,16 @@ void Grammar::buildExtendedGrammar ()
   non_terminals.insert (accept_symbol);
 }
 
-struct Nullable
+struct NotNullable
 {
   typedef Name argument_type;
   Automaton *_M_automaton;
 
-  Nullable (Automaton *aut):
+  NotNullable (Automaton *aut):
     _M_automaton (aut) {}
 
   bool operator () (Name name) const
-  { return _M_automaton->nullables.find (name) != _M_automaton->nullables.end (); }
+  { return _M_automaton->nullables.find (name) == _M_automaton->nullables.end (); }
 };
 
 Automaton::Automaton (Grammar *g):
@@ -297,12 +297,6 @@ void Automaton::build ()
   buildDefaultReduceActions ();
 }
 
-#if defined(__cpp_lib_not_fn) && __cpp_lib_not_fn >= 201603
-# define Q_NOT_FN std::not_fn
-#else
-# define Q_NOT_FN std::not1
-#endif
-
 void Automaton::buildNullables ()
 {
   bool changed = true;
@@ -313,7 +307,7 @@ void Automaton::buildNullables ()
 
       for (RulePointer rule = _M_grammar->rules.begin (); rule != _M_grammar->rules.end (); ++rule)
         {
-          NameList::iterator nn = std::find_if(rule->rhs.begin(), rule->rhs.end(), Q_NOT_FN(Nullable(this)));
+          NameList::iterator nn = std::find_if(rule->rhs.begin(), rule->rhs.end(), NotNullable(this));
 
           if (nn == rule->rhs.end ())
             changed |= nullables.insert (rule->lhs).second;
@@ -654,7 +648,7 @@ void Automaton::buildIncludesDigraph ()
                   if (! _M_grammar->isNonTerminal (*A))
                     continue;
 
-                  NameList::iterator first_not_nullable = std::find_if(dot, rule->rhs.end(), Q_NOT_FN(Nullable(this)));
+                  NameList::iterator first_not_nullable = std::find_if(dot, rule->rhs.end(), NotNullable(this));
                   if (first_not_nullable != rule->rhs.end ())
                     continue;
 
