@@ -968,13 +968,31 @@ void QStandardItem::clearData()
 */
 QVariant QStandardItem::data(int role) const
 {
+    QModelRoleData result(role);
+    multiData(result);
+    return result.data();
+}
+
+void QStandardItem::multiData(QModelRoleDataSpan roleDataSpan) const
+{
     Q_D(const QStandardItem);
-    const int r = (role == Qt::EditRole) ? Qt::DisplayRole : role;
-    for (const auto &value : d->values) {
-        if (value.role == r)
-            return value.value;
+
+    const auto valuesBegin = d->values.begin();
+    const auto valuesEnd = d->values.end();
+
+    for (auto &roleData : roleDataSpan) {
+        const int role = (roleData.role() == Qt::EditRole) ? Qt::DisplayRole : roleData.role();
+        const auto hasSameRole = [role](const QStandardItemData &data)
+        {
+            return data.role == role;
+        };
+
+        auto dataIt = std::find_if(valuesBegin, valuesEnd, hasSameRole);
+        if (dataIt != valuesEnd)
+            roleData.setData(dataIt->value);
+        else
+            roleData.clearData();
     }
-    return QVariant();
 }
 
 /*!
@@ -2821,6 +2839,17 @@ QVariant QStandardItemModel::data(const QModelIndex &index, int role) const
     Q_D(const QStandardItemModel);
     QStandardItem *item = d->itemFromIndex(index);
     return item ? item->data(role) : QVariant();
+}
+
+/*!
+  \reimp
+*/
+void QStandardItemModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
+{
+    Q_D(const QStandardItemModel);
+    QStandardItem *item = d->itemFromIndex(index);
+    if (item)
+        item->multiData(roleDataSpan);
 }
 
 /*!

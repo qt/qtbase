@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -49,6 +50,108 @@ QT_REQUIRE_CONFIG(itemmodel);
 
 QT_BEGIN_NAMESPACE
 
+class QModelRoleData
+{
+    int m_role;
+    QVariant m_data;
+
+public:
+    explicit QModelRoleData(int role) noexcept
+        : m_role(role)
+    {}
+
+    constexpr int role() const noexcept { return m_role; }
+    constexpr QVariant &data() noexcept { return m_data; }
+    constexpr const QVariant &data() const noexcept { return m_data; }
+
+    template <typename T>
+    constexpr void setData(T &&value) noexcept(noexcept(m_data.setValue(std::forward<T>(value))))
+    { m_data.setValue(std::forward<T>(value)); }
+
+    void clearData() noexcept { m_data.clear(); }
+};
+
+Q_DECLARE_TYPEINFO(QModelRoleData, Q_MOVABLE_TYPE);
+
+class QModelRoleDataSpan;
+
+namespace QtPrivate {
+template <typename T, typename Enable = void>
+struct IsContainerCompatibleWithModelRoleDataSpan : std::false_type {};
+
+template <typename T>
+struct IsContainerCompatibleWithModelRoleDataSpan<T, std::enable_if_t<std::conjunction_v<
+            // lacking concepts and ranges, we accept any T whose std::data yields a suitable pointer ...
+            std::is_convertible<decltype( std::data(std::declval<T &>()) ), QModelRoleData *>,
+            // ... and that has a suitable size ...
+            std::is_convertible<decltype( std::size(std::declval<T &>()) ), qsizetype>,
+            // ... and it's a range as it defines an iterator-like API
+            std::is_convertible<
+                typename std::iterator_traits<decltype( std::begin(std::declval<T &>()) )>::value_type,
+                QModelRoleData
+            >,
+            std::is_convertible<
+                decltype( std::begin(std::declval<T &>()) != std::end(std::declval<T &>()) ),
+                bool>,
+            // Don't make an accidental copy constructor
+            std::negation<std::is_same<std::decay_t<T>, QModelRoleDataSpan>>
+        >>> : std::true_type {};
+} // namespace QtPrivate
+
+class QModelRoleDataSpan
+{
+    QModelRoleData *m_modelRoleData = nullptr;
+    qsizetype m_len = 0;
+
+    template <typename T>
+    using if_compatible_container = std::enable_if_t<QtPrivate::IsContainerCompatibleWithModelRoleDataSpan<T>::value, bool>;
+
+public:
+    constexpr QModelRoleDataSpan() noexcept {}
+
+    constexpr QModelRoleDataSpan(QModelRoleData &modelRoleData) noexcept
+        : m_modelRoleData(&modelRoleData),
+          m_len(1)
+    {}
+
+    constexpr QModelRoleDataSpan(QModelRoleData *modelRoleData, qsizetype len)
+        : m_modelRoleData(modelRoleData),
+          m_len(len)
+    {}
+
+    template <typename Container, if_compatible_container<Container> = true>
+    constexpr QModelRoleDataSpan(Container &c) noexcept(noexcept(std::data(c)) && noexcept(std::size(c)))
+        : m_modelRoleData(std::data(c)),
+          m_len(qsizetype(std::size(c)))
+    {}
+
+    constexpr qsizetype size() const noexcept { return m_len; }
+    constexpr qsizetype length() const noexcept { return m_len; }
+    constexpr QModelRoleData *data() const noexcept { return m_modelRoleData; }
+    constexpr QModelRoleData *begin() const noexcept { return m_modelRoleData; }
+    constexpr QModelRoleData *end() const noexcept { return m_modelRoleData + m_len; }
+    constexpr QModelRoleData &operator[](qsizetype index) const { return m_modelRoleData[index]; }
+
+    constexpr QVariant *dataForRole(int role) const
+    {
+#ifdef __cpp_lib_constexpr_algorithms
+        auto result = std::find_if(begin(), end(), [role](const QModelRoleData &roleData) {
+            return roleData.role() == role;
+        });
+#else
+        auto result = begin();
+        const auto e = end();
+        for (; result != e; ++result) {
+            if (result->role() == role)
+                break;
+        }
+#endif
+
+        return Q_ASSERT(result != end()), &result->data();
+    }
+};
+
+Q_DECLARE_TYPEINFO(QModelRoleDataSpan, Q_MOVABLE_TYPE);
 
 class QAbstractItemModel;
 class QPersistentModelIndex;
@@ -69,6 +172,7 @@ public:
     inline QModelIndex siblingAtColumn(int column) const;
     inline QModelIndex siblingAtRow(int row) const;
     inline QVariant data(int role = Qt::DisplayRole) const;
+    inline void multiData(QModelRoleDataSpan roleDataSpan) const;
     inline Qt::ItemFlags flags() const;
     constexpr inline const QAbstractItemModel *model() const noexcept { return m; }
     constexpr inline bool isValid() const noexcept { return (r >= 0) && (c >= 0) && (m != nullptr); }
@@ -132,6 +236,7 @@ public:
     QModelIndex parent() const;
     QModelIndex sibling(int row, int column) const;
     QVariant data(int role = Qt::DisplayRole) const;
+    void multiData(QModelRoleDataSpan roleDataSpan) const;
     Qt::ItemFlags flags() const;
     const QAbstractItemModel *model() const;
     bool isValid() const;
@@ -255,6 +360,8 @@ public:
     Q_DECLARE_FLAGS(CheckIndexOptions, CheckIndexOption)
 
     Q_REQUIRED_RESULT bool checkIndex(const QModelIndex &index, CheckIndexOptions options = CheckIndexOption::NoOption) const;
+
+    virtual void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const;
 
 Q_SIGNALS:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
@@ -420,6 +527,9 @@ inline QModelIndex QModelIndex::siblingAtRow(int arow) const
 
 inline QVariant QModelIndex::data(int arole) const
 { return m ? m->data(*this, arole) : QVariant(); }
+
+inline void QModelIndex::multiData(QModelRoleDataSpan roleDataSpan) const
+{ if (m) m->multiData(*this, roleDataSpan); }
 
 inline Qt::ItemFlags QModelIndex::flags() const
 { return m ? m->flags(*this) : Qt::ItemFlags(); }

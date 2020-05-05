@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -89,6 +90,226 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
     }
     delete data;
 }
+
+/*!
+    \class QModelRoleData
+    \inmodule QtCore
+    \since 6.0
+    \ingroup model-view
+    \brief The QModelRoleData class holds a role and the data associated to that role.
+
+    QModelRoleData objects store an item role (which is a value from the
+    Qt::ItemDataRole enumeration, or an arbitrary integer for a custom role)
+    as well as the data associated with that role.
+
+    A QModelRoleData object is typically created by views or delegates,
+    setting which role they want to fetch the data for. The object
+    is then passed to models (see QAbstractItemModel::multiData()),
+    which populate the data corresponding to the role stored. Finally,
+    the view visualizes the data retrieved from the model.
+
+    \sa {Model/View Programming}, QModelRoleDataSpan
+*/
+
+/*!
+    QModelRoleData::QModelRoleData(int role) noexcept
+
+    Constructs a QModelRoleData object for the given \a role.
+
+    \sa Qt::ItemDataRole
+*/
+
+/*!
+    int QModelRoleData::role() const noexcept
+
+    Returns the role held by this object.
+
+    \sa Qt::ItemDataRole
+*/
+
+/*!
+    const QVariant &QModelRoleData::data() const noexcept
+
+    Returns the data held by this object.
+
+    \sa setData()
+*/
+
+/*!
+    QVariant &QModelRoleData::data() noexcept
+
+    Returns the data held by this object as a modifiable reference.
+
+    \sa setData()
+*/
+
+/*!
+    template <typename T> void QModelRoleData::setData(T &&value)
+
+    Sets the data held by this object to \a value.
+    \a value must be of a datatype which can be stored in a QVariant.
+
+    \sa data(), clearData(), Q_DECLARE_METATYPE
+*/
+
+/*!
+    void QModelRoleData::clearData() noexcept
+
+    Clears the data held by this object. Note that the role is
+    unchanged; only the data is cleared.
+
+    \sa data()
+*/
+
+/*!
+    \class QModelRoleDataSpan
+    \inmodule QtCore
+    \since 6.0
+    \ingroup model-view
+    \brief The QModelRoleDataSpan class provides a span over QModelRoleData objects.
+
+    A QModelRoleDataSpan is used as an abstraction over an array of
+    QModelRoleData objects.
+
+    Like a view, QModelRoleDataSpan provides a small object (pointer
+    and size) that can be passed to functions that need to examine the
+    contents of the array. A QModelRoleDataSpan can be constructed from
+    any array-like sequence (plain arrays, QVector, std::vector,
+    QVarLengthArray, and so on). Moreover, it does not own the
+    sequence, which must therefore be kept alive longer than any
+    QModelRoleDataSpan objects referencing it.
+
+    Unlike a view, QModelRoleDataSpan is a span, so it allows for
+    modifications to the underlying elements.
+
+    QModelRoleDataSpan's main use case is making it possible
+    for a model to return the data corresponding to different roles
+    in one call.
+
+    In order to draw one element from a model, a view (through its
+    delegates) will generally request multiple roles for the same index
+    by calling \c{data()} as many times as needed:
+
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 13
+
+    QModelRoleDataSpan allows a view to request the same data
+    using just one function call.
+
+    This is achieved by having the view prepare a suitable array of
+    QModelRoleData objects, each initialized with the role that should
+    be fetched. The array is then wrapped in a QModelRoleDataSpan
+    object, which is then passed to a model's \c{multiData()} function.
+
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 14
+
+    Views are encouraged to store the array of QModelRoleData objects
+    (and, possibly, the corresponding span) and re-use it in subsequent
+    calls to the model. This allows to reduce the memory allocations
+    related with creating and returning QVariant objects.
+
+    Finally, given a QModelRoleDataSpan object, the model's
+    responsibility is to fill in the data corresponding to each role in
+    the span. How this is done depends on the concrete model class.
+    Here's a sketch of a possible implementation that iterates over the
+    span and uses \c{setData()} on each element:
+
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 15
+
+    \sa {Model/View Programming}, QAbstractItemModel::multiData()
+*/
+
+/*!
+    QModelRoleDataSpan::QModelRoleDataSpan() noexcept
+
+    Constructs an empty QModelRoleDataSpan. Its data() will be set to
+    \nullptr, and its length to zero.
+*/
+
+/*!
+    QModelRoleDataSpan::QModelRoleDataSpan(QModelRoleData &modelRoleData) noexcept
+
+    Constructs an QModelRoleDataSpan spanning over \a modelRoleData,
+    seen as a 1-element array.
+*/
+
+/*!
+    QModelRoleDataSpan::QModelRoleDataSpan(QModelRoleData *modelRoleData, qsizetype len)
+
+    Constructs an QModelRoleDataSpan spanning over the array beginning
+    at \a modelRoleData and with length \a len.
+
+    \note The array must be kept alive as long as this object has not
+    been destructed.
+*/
+
+/*!
+    template <typename Container> QModelRoleDataSpan::QModelRoleDataSpan(Container &c) noexcept
+
+    Constructs an QModelRoleDataSpan spanning over the container \a c,
+    which can be any contiguous container of QModelRoleData objects.
+    For instance, it can be a \c{QVector<QModelRoleData>},
+    a \c{std::array<QModelRoleData, 10>} and so on.
+
+    \note The container must be kept alive as long as this object has not
+    been destructed.
+*/
+
+/*!
+    qsizetype QModelRoleDataSpan::size() const noexcept
+
+    Returns the length of the span represented by this object.
+*/
+
+/*!
+    qsizetype QModelRoleDataSpan::length() const noexcept
+
+    Returns the length of the span represented by this object.
+*/
+
+/*!
+    QModelRoleData *QModelRoleDataSpan::data() const noexcept
+
+    Returns a pointer to the beginning of the span represented by this
+    object.
+*/
+
+/*!
+    QModelRoleData *QModelRoleDataSpan::begin() const noexcept
+
+    Returns a pointer to the beginning of the span represented by this
+    object.
+*/
+
+/*!
+    QModelRoleData *QModelRoleDataSpan::end() const noexcept
+
+    Returns a pointer to the imaginary element one past the end of the
+    span represented by this object.
+*/
+
+/*!
+    QModelRoleData &QModelRoleDataSpan::operator[](qsizetype index) const
+
+    Returns a modifiable reference to the QModelRoleData at position
+    \a index in the span.
+
+    \note \a index must be a valid index for this span (0 <= \a index < size()).
+*/
+
+/*!
+    const QVariant *QModelRoleDataSpan::dataForRole(int role) const
+
+    Returns the data associated with the first QModelRoleData in the
+    span that has its role equal to \a role. If such a QModelRoleData
+    object does not exist, the behavior is undefined.
+
+    \note Avoid calling this function from the model's side, as a
+    model cannot possibly know in advance which roles are in a given
+    QModelRoleDataSpan. This function is instead suitable for views and
+    delegates, which have control over the roles in the span.
+
+    \sa QModelRoleData::data()
+*/
 
 /*!
   \class QPersistentModelIndex
@@ -421,6 +642,20 @@ QVariant QPersistentModelIndex::data(int role) const
     if (d)
         return d->index.data(role);
     return QVariant();
+}
+
+
+/*!
+    Populates the given \a roleDataSpan for the item referred to by the
+    index.
+
+    \since 6.0
+    \sa Qt::ItemDataRole, QAbstractItemModel::setData()
+*/
+void QPersistentModelIndex::multiData(QModelRoleDataSpan roleDataSpan) const
+{
+    if (d)
+        d->index.multiData(roleDataSpan);
 }
 
 /*!
@@ -1105,6 +1340,14 @@ void QAbstractItemModel::resetInternalData()
     \fn QVariant QModelIndex::data(int role) const
 
     Returns the data for the given \a role for the item referred to by the
+    index.
+*/
+
+/*!
+    \fn void QModelIndex::multiData(QModelRoleDataSpan roleDataSpan) const
+    \since 6.0
+
+    Populates the given \a roleDataSpan for the item referred to by the
     index.
 */
 
@@ -3398,6 +3641,61 @@ bool QAbstractItemModel::checkIndex(const QModelIndex &index, CheckIndexOptions 
     }
 
     return true;
+}
+
+/*!
+    \since 6.0
+
+    Fills the \a roleDataSpan with the requested data for the given \a index.
+
+    The default implementation will call simply data() for each role in
+    the span. A subclass can reimplement this function to provide data
+    to views more efficiently:
+
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 15
+
+    In the snippet above, \c{index} is the same for the entire call.
+    This means that accessing to the necessary data structures in order
+    to retrieve the information for \c{index} can be done only once
+    (hoisting the relevant code out of the loop).
+
+    The usage of QModelRoleData::setData(), or similarly
+    QVariant::setValue(), is encouraged over constructing a QVariant
+    separately and  using a plain assignment operator; this is
+    because the former allow to re-use the memory already allocated for
+    the QVariant object stored inside a QModelRoleData, while the latter
+    always allocates the new variant and then destroys the old one.
+
+    Note that views may call multiData() with spans that have been used
+    in previous calls, and therefore may already contain some data.
+    Therefore, it is imperative that if the model cannot return the
+    data for a given role, then it must clear the data in the
+    corresponding QModelRoleData object. This can be done by calling
+    QModelRoleData::clearData(), or similarly by setting a default
+    constructed QVariant, and so on. Failure to clear the data will
+    result in the view believing that the "old" data is meant to be
+    used for the corresponding role.
+
+    Finally, in order to avoid code duplication, a subclass may also
+    decide to reimplement data() in terms of multiData(), by supplying
+    a span of just one element:
+
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 16
+
+    \note Models are not allowed to modify the roles in the span, or
+    to rearrange the span elements. Doing so results in undefined
+    behavior.
+
+    \note It is illegal to pass an invalid model index to this function.
+
+    \sa QModelRoleDataSpan, data()
+*/
+void QAbstractItemModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
+{
+    Q_ASSERT(checkIndex(index, CheckIndexOption::IndexIsValid));
+
+    for (QModelRoleData &d : roleDataSpan)
+        d.setData(data(index, d.role()));
 }
 
 /*!

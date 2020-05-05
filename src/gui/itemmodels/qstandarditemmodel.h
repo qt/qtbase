@@ -66,6 +66,7 @@ public:
     virtual ~QStandardItem();
 
     virtual QVariant data(int role = Qt::UserRole + 1) const;
+    virtual void multiData(QModelRoleDataSpan roleDataSpan) const;
     virtual void setData(const QVariant &value, int role = Qt::UserRole + 1);
     void clearData();
 
@@ -331,6 +332,7 @@ public:
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     bool clearItemData(const QModelIndex &index) override;
 

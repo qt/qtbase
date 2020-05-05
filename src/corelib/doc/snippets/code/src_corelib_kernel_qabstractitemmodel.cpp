@@ -141,3 +141,48 @@ private:
 };
 //! [12]
 
+//! [13]
+QVariant text = model->data(index, Qt::DisplayRole);
+QVariant decoration = model->data(index, Qt::DecorationRole);
+QVariant checkState = model->data(index, Qt::CheckStateRole);
+// etc.
+//! [13]
+
+//! [14]
+std::array<QModelRoleData, 3> roleData = { {
+    QModelRoleData(Qt::DisplayRole),
+    QModelRoleData(Qt::DecorationRole),
+    QModelRoleData(Qt::CheckStateRole)
+} };
+
+// Usually, this is not necessary: A QModelRoleDataSpan
+// will be built automatically for you when passing an array-like
+// container to multiData().
+QModelRoleDataSpan span(roleData);
+
+model->multiData(index, span);
+
+// Use roleData[0].data(), roleData[1].data(), etc.
+//! [14]
+
+//! [15]
+void MyModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
+{
+    for (QModelRoleData &roleData : roleDataSpan) {
+        int role = roleData.role();
+
+        // ... obtain the data for index and role ...
+
+        roleData.setData(result);
+    }
+}
+//! [15]
+
+//! [16]
+QVariant MyModel::data(const QModelIndex &index, int role) const
+{
+    QModelRoleData roleData(role);
+    multiData(index, roleData);
+    return roleData.data();
+}
+//! [16]

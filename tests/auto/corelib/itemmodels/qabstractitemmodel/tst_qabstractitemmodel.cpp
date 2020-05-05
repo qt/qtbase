@@ -35,6 +35,13 @@
 
 #include "dynamictreemodel.h"
 
+// for testing QModelRoleDataSpan construction
+#include <QVarLengthArray>
+#include <array>
+#include <vector>
+#include <deque>
+#include <list>
+
 /*!
     Note that this doesn't test models, but any functionality that QAbstractItemModel should provide
  */
@@ -108,6 +115,10 @@ private slots:
 
     void checkIndex();
 
+    void modelRoleDataSpanConstruction();
+    void modelRoleDataSpan();
+
+    void multiData();
 private:
     DynamicTreeModel *m_model;
 };
@@ -2382,6 +2393,136 @@ void tst_QAbstractItemModel::checkIndex()
     QVERIFY(!model.checkIndex(topLevelIndex, QAbstractItemModel::CheckIndexOption::ParentIsInvalid));
     QTest::ignoreMessage(QtWarningMsg, ignorePattern);
     QVERIFY(!model.checkIndex(topLevelIndex, QAbstractItemModel::CheckIndexOption::IndexIsValid));
+}
+
+template <typename T>
+inline constexpr bool CanConvertToSpan = std::is_convertible_v<T, QModelRoleDataSpan>;
+
+void tst_QAbstractItemModel::modelRoleDataSpanConstruction()
+{
+    // Compile time test
+    static_assert(CanConvertToSpan<QModelRoleData &>);
+    static_assert(CanConvertToSpan<QModelRoleData (&)[123]>);
+    static_assert(CanConvertToSpan<QVector<QModelRoleData> &>);
+    static_assert(CanConvertToSpan<QVarLengthArray<QModelRoleData> &>);
+    static_assert(CanConvertToSpan<std::vector<QModelRoleData> &>);
+    static_assert(CanConvertToSpan<std::array<QModelRoleData, 123> &>);
+
+    static_assert(!CanConvertToSpan<QModelRoleData>);
+    static_assert(!CanConvertToSpan<QVector<QModelRoleData>>);
+    static_assert(!CanConvertToSpan<const QVector<QModelRoleData> &>);
+    static_assert(!CanConvertToSpan<std::vector<QModelRoleData>>);
+    static_assert(!CanConvertToSpan<std::deque<QModelRoleData>>);
+    static_assert(!CanConvertToSpan<std::deque<QModelRoleData> &>);
+    static_assert(!CanConvertToSpan<std::list<QModelRoleData> &>);
+    static_assert(!CanConvertToSpan<std::list<QModelRoleData>>);
+}
+
+void tst_QAbstractItemModel::modelRoleDataSpan()
+{
+    QModelRoleData data[3] = {
+        QModelRoleData(Qt::DisplayRole),
+        QModelRoleData(Qt::DecorationRole),
+        QModelRoleData(Qt::EditRole)
+    };
+    QModelRoleData *dataPtr = data;
+
+    QModelRoleDataSpan span(data);
+
+    QCOMPARE(span.size(), 3);
+    QCOMPARE(span.length(), 3);
+    QCOMPARE(span.data(), dataPtr);
+    QCOMPARE(span.begin(), dataPtr);
+    QCOMPARE(span.end(), dataPtr + 3);
+    for (int i = 0; i < 3; ++i)
+        QCOMPARE(span[i].role(), data[i].role());
+
+    data[0].setData(42);
+    data[1].setData(QStringLiteral("a string"));
+    data[2].setData(123.5);
+
+    QCOMPARE(span.dataForRole(Qt::DisplayRole)->toInt(), 42);
+    QCOMPARE(span.dataForRole(Qt::DecorationRole)->toString(), "a string");
+    QCOMPARE(span.dataForRole(Qt::EditRole)->toDouble(), 123.5);
+}
+
+// model implementing data(), but not multiData(); check that the
+// default implementation of multiData() does the right thing
+class NonMultiDataRoleModel : public QAbstractListModel
+{
+    Q_OBJECT
+
+public:
+    int rowCount(const QModelIndex &) const override
+    {
+        return 1000;
+    }
+
+    // We handle roles <= 10. All such roles return a QVariant(int) containing
+    // the same value as the role, except for 10 which returns a string.
+    QVariant data(const QModelIndex &index, int role) const override
+    {
+        Q_ASSERT(checkIndex(index, CheckIndexOption::IndexIsValid));
+
+        if (role < 10)
+            return QVariant::fromValue(role);
+        else if (role == 10)
+            return QVariant::fromValue(QStringLiteral("Hello!"));
+
+        return QVariant();
+    }
+};
+
+void tst_QAbstractItemModel::multiData()
+{
+    QModelRoleData data[] = {
+        QModelRoleData(1),
+        QModelRoleData(42),
+        QModelRoleData(5),
+        QModelRoleData(2),
+        QModelRoleData(12),
+        QModelRoleData(2),
+        QModelRoleData(10),
+        QModelRoleData(-123)
+    };
+
+    QModelRoleDataSpan span(data);
+
+    for (const auto &roledata : span)
+        QVERIFY(roledata.data().isNull());
+
+    NonMultiDataRoleModel model;
+    const QModelIndex index = model.index(0, 0);
+    QVERIFY(index.isValid());
+
+    const auto check = [&]() {
+        for (auto &roledata : span) {
+            const auto role = roledata.role();
+            if (role < 10) {
+                QVERIFY(!roledata.data().isNull());
+                QVERIFY(roledata.data().userType() == qMetaTypeId<int>());
+                QCOMPARE(roledata.data().toInt(), role);
+            } else if (role == 10) {
+                QVERIFY(!roledata.data().isNull());
+                QVERIFY(roledata.data().userType() == qMetaTypeId<QString>());
+                QCOMPARE(roledata.data().toString(), QStringLiteral("Hello!"));
+            } else {
+                QVERIFY(roledata.data().isNull());
+            }
+        }
+    };
+
+    model.multiData(index, span);
+    check();
+
+    model.multiData(index, span);
+    check();
+
+    for (auto &roledata : span)
+        roledata.clearData();
+
+    model.multiData(index, span);
+    check();
 }
 
 QTEST_MAIN(tst_QAbstractItemModel)
