@@ -227,7 +227,7 @@ void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
             prefSizeHint = anchorPrivate->preferredSize;
         } else {
             // Fetch size information from style
-            const Qt::Orientation orient = Qt::Orientation(QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge) + 1);
+            const Qt::Orientation orient = QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge);
             qreal s = styleInfo->defaultSpacing(orient);
             if (s < 0) {
                 QSizePolicy::ControlType controlTypeFrom = from->m_item->sizePolicy().controlType();
@@ -1343,10 +1343,10 @@ void QGraphicsAnchorLayoutPrivate::restoreVertices(Orientation orientation)
     toRestore.clear();
 }
 
-QGraphicsAnchorLayoutPrivate::Orientation
-QGraphicsAnchorLayoutPrivate::edgeOrientation(Qt::AnchorPoint edge)
+Qt::Orientation
+QGraphicsAnchorLayoutPrivate::edgeOrientation(Qt::AnchorPoint edge) noexcept
 {
-    return edge > Qt::AnchorRight ? Vertical : Horizontal;
+    return edge > Qt::AnchorRight ? Qt::Vertical : Qt::Horizontal;
 }
 
 /*!
@@ -1718,7 +1718,7 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    const Orientation orientation = edgeOrientation(firstEdge);
+    const Qt::Orientation orientation = edgeOrientation(firstEdge);
 
     // Create or increase the reference count for the related vertices.
     AnchorVertex *v1 = addInternalVertex(firstItem, firstEdge);
@@ -1733,7 +1733,7 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
     if (firstItem == secondItem)
         data->item = firstItem;
 
-    data->isVertical = orientation == Vertical;
+    data->isVertical = orientation == Qt::Vertical;
 
     // Create a bi-directional edge in the sense it can be transversed both
     // from v1 or v2. "data" however is shared between the two references
@@ -1759,7 +1759,7 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *fi
     if (firstItem == secondItem)
         return nullptr;
 
-    const Orientation orientation = edgeOrientation(firstEdge);
+    const Qt::Orientation orientation = edgeOrientation(firstEdge);
     AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
 
@@ -1864,7 +1864,7 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor_helper(AnchorVertex *v1, AnchorV
     Q_ASSERT(v1 && v2);
 
     // Remove edge from graph
-    const Orientation o = edgeOrientation(v1->m_edge);
+    const Qt::Orientation o = edgeOrientation(v1->m_edge);
     graph[o].removeEdge(v1, v2);
 
     // Decrease vertices reference count (may trigger a deletion)
@@ -1925,7 +1925,7 @@ void QGraphicsAnchorLayoutPrivate::removeVertex(QGraphicsLayoutItem *item, Qt::A
 {
     if (AnchorVertex *v = internalVertex(item, edge)) {
         Graph<AnchorVertex, AnchorData> &g = graph[edgeOrientation(edge)];
-        const QList<AnchorVertex *> allVertices = graph[edgeOrientation(edge)].adjacentVertices(v);
+        const auto allVertices = g.adjacentVertices(v);
         for (auto *v2 : allVertices) {
             g.removeEdge(v, v2);
             removeInternalVertex(item, edge);

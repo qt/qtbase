@@ -427,7 +427,7 @@ public:
     static Qt::AnchorPoint oppositeEdge(
         Qt::AnchorPoint edge);
 
-    static Orientation edgeOrientation(Qt::AnchorPoint edge);
+    static Qt::Orientation edgeOrientation(Qt::AnchorPoint edge) noexcept;
 
     static Qt::AnchorPoint pickEdge(Qt::AnchorPoint edge, Orientation orientation)
     {
