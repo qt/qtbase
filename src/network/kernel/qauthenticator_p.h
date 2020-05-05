@@ -71,7 +71,7 @@ class QGssApiHandles;
 class Q_AUTOTEST_EXPORT QAuthenticatorPrivate
 {
 public:
-    enum Method { None, Basic, Ntlm, DigestMd5, Negotiate };
+    enum Method { None, Basic, Negotiate, Ntlm, DigestMd5, };
     QAuthenticatorPrivate();
     ~QAuthenticatorPrivate();
 
