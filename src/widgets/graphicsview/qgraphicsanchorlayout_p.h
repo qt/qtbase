@@ -408,11 +408,11 @@ public:
 
     static Qt::Orientation edgeOrientation(Qt::AnchorPoint edge) noexcept;
 
-    static Qt::AnchorPoint pickEdge(Qt::AnchorPoint edge, Orientation orientation)
+    static Qt::AnchorPoint pickEdge(Qt::AnchorPoint edge, Qt::Orientation orientation)
     {
-        if (orientation == Vertical && int(edge) <= 2)
+        if (orientation == Qt::Vertical && int(edge) <= 2)
             return (Qt::AnchorPoint)(edge + 3);
-        else if (orientation == Horizontal && int(edge) >= 3) {
+        else if (orientation == Qt::Horizontal && int(edge) >= 3) {
             return (Qt::AnchorPoint)(edge - 3);
         }
         return edge;
@@ -424,7 +424,7 @@ public:
     void createItemEdges(QGraphicsLayoutItem *item);
     void createCenterAnchors(QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge);
     void removeCenterAnchors(QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge, bool substitute = true);
-    void removeCenterConstraints(QGraphicsLayoutItem *item, Orientation orientation);
+    void removeCenterConstraints(QGraphicsLayoutItem *item, Qt::Orientation orientation);
 
     QGraphicsAnchor *acquireGraphicsAnchor(AnchorData *data)
     {
@@ -471,40 +471,40 @@ public:
 
     // Activation
     void calculateGraphs();
-    void calculateGraphs(Orientation orientation);
+    void calculateGraphs(Qt::Orientation orientation);
 
     // Simplification
-    bool simplifyGraph(Orientation orientation);
-    bool simplifyVertices(Orientation orientation);
-    bool simplifyGraphIteration(Orientation orientation, bool *feasible);
+    bool simplifyGraph(Qt::Orientation orientation);
+    bool simplifyVertices(Qt::Orientation orientation);
+    bool simplifyGraphIteration(Qt::Orientation orientation, bool *feasible);
 
-    bool replaceVertex(Orientation orientation, AnchorVertex *oldV,
+    bool replaceVertex(Qt::Orientation orientation, AnchorVertex *oldV,
                        AnchorVertex *newV, const QList<AnchorData *> &edges);
 
 
-    void restoreSimplifiedGraph(Orientation orientation);
+    void restoreSimplifiedGraph(Qt::Orientation orientation);
     void restoreSimplifiedAnchor(AnchorData *edge);
     void restoreSimplifiedConstraints(ParallelAnchorData *parallel);
-    void restoreVertices(Orientation orientation);
+    void restoreVertices(Qt::Orientation orientation);
 
-    bool calculateTrunk(Orientation orientation, const GraphPath &trunkPath,
+    bool calculateTrunk(Qt::Orientation orientation, const GraphPath &trunkPath,
                         const QList<QSimplexConstraint *> &constraints,
                         const QList<AnchorData *> &variables);
     bool calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
                            const QList<AnchorData *> &variables);
 
     // Support functions for calculateGraph()
-    void refreshAllSizeHints(Orientation orientation);
-    void findPaths(Orientation orientation);
-    void constraintsFromPaths(Orientation orientation);
-    void updateAnchorSizes(Orientation orientation);
+    void refreshAllSizeHints(Qt::Orientation orientation);
+    void findPaths(Qt::Orientation orientation);
+    void constraintsFromPaths(Qt::Orientation orientation);
+    void updateAnchorSizes(Qt::Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
     struct GraphParts {
         QList<QSimplexConstraint *> trunkConstraints;
         QList<QSimplexConstraint *> nonTrunkConstraints;
     };
-    GraphParts getGraphParts(Orientation orientation);
-    void identifyFloatItems(const QSet<AnchorData *> &visited, Orientation orientation);
+    GraphParts getGraphParts(Qt::Orientation orientation);
+    void identifyFloatItems(const QSet<AnchorData *> &visited, Qt::Orientation orientation);
     void identifyNonFloatItems_helper(const AnchorData *ad, QSet<QGraphicsLayoutItem *> *nonFloatingItemsIdentifiedSoFar);
 
     inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge) const
@@ -517,7 +517,7 @@ public:
         return internalVertex(qMakePair(const_cast<QGraphicsLayoutItem *>(item), edge));
     }
 
-    inline void changeLayoutVertex(Orientation orientation, AnchorVertex *oldV, AnchorVertex *newV)
+    inline void changeLayoutVertex(Qt::Orientation orientation, AnchorVertex *oldV, AnchorVertex *newV)
     {
         if (layoutFirstVertex[orientation] == oldV)
             layoutFirstVertex[orientation] = newV;
@@ -534,8 +534,8 @@ public:
     // Geometry interpolation methods
     void setItemsGeometries(const QRectF &geom);
 
-    void calculateVertexPositions(Orientation orientation);
-    void setupEdgesInterpolation(Orientation orientation);
+    void calculateVertexPositions(Qt::Orientation orientation);
+    void setupEdgesInterpolation(Qt::Orientation orientation);
     void interpolateEdge(AnchorVertex *base, AnchorData *edge);
 
     // Linear Programming solver methods

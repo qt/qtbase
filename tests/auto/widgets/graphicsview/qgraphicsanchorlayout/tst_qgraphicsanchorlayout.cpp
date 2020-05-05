@@ -159,11 +159,7 @@ static bool layoutHasConflict(QGraphicsAnchorLayout *l)
 
 static bool usedSimplex(QGraphicsAnchorLayout *l, Qt::Orientation o)
 {
-    QGraphicsAnchorLayoutPrivate::Orientation oo = (o == Qt::Horizontal) ?
-        QGraphicsAnchorLayoutPrivate::Horizontal :
-        QGraphicsAnchorLayoutPrivate::Vertical;
-
-    return QGraphicsAnchorLayoutPrivate::get(l)->lastCalculationUsedSimplex[oo];
+    return QGraphicsAnchorLayoutPrivate::get(l)->lastCalculationUsedSimplex[o];
 }
 
 void tst_QGraphicsAnchorLayout::simple()

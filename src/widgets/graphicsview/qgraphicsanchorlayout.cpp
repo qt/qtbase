@@ -234,8 +234,8 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
         }
     }
 
-    d->removeCenterConstraints(this, QGraphicsAnchorLayoutPrivate::Horizontal);
-    d->removeCenterConstraints(this, QGraphicsAnchorLayoutPrivate::Vertical);
+    d->removeCenterConstraints(this, Qt::Horizontal);
+    d->removeCenterConstraints(this, Qt::Vertical);
     d->deleteLayoutEdges();
 
     Q_ASSERT(d->itemCenterConstraints[Qt::Horizontal].isEmpty());
@@ -438,8 +438,8 @@ void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
     Q_D(QGraphicsAnchorLayout);
 
     QGraphicsLayout::setGeometry(geom);
-    d->calculateVertexPositions(QGraphicsAnchorLayoutPrivate::Horizontal);
-    d->calculateVertexPositions(QGraphicsAnchorLayoutPrivate::Vertical);
+    d->calculateVertexPositions(Qt::Horizontal);
+    d->calculateVertexPositions(Qt::Vertical);
     d->setItemsGeometries(geom);
 }
 
@@ -460,8 +460,8 @@ void QGraphicsAnchorLayout::removeAt(int index)
         return;
 
     // Removing an item affects both horizontal and vertical graphs
-    d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Horizontal);
-    d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Vertical);
+    d->removeCenterConstraints(item, Qt::Horizontal);
+    d->removeCenterConstraints(item, Qt::Vertical);
     d->removeAnchors(item);
     d->items.remove(index);
 
@@ -518,9 +518,8 @@ QSizeF QGraphicsAnchorLayout::sizeHint(Qt::SizeHint which, const QSizeF &constra
     const_cast<QGraphicsAnchorLayoutPrivate *>(d)->calculateGraphs();
 
     // ### apply constraint!
-    QSizeF engineSizeHint(
-        d->sizeHints[QGraphicsAnchorLayoutPrivate::Horizontal][which],
-        d->sizeHints[QGraphicsAnchorLayoutPrivate::Vertical][which]);
+    QSizeF engineSizeHint{d->sizeHints[Qt::Horizontal][which],
+                          d->sizeHints[Qt::Vertical][which]};
 
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
