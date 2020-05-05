@@ -114,7 +114,7 @@ public:
     }
 
 public:
-    inline QVector() noexcept { }
+    constexpr inline QVector() noexcept { }
     explicit QVector(int size)
         : d(Data::allocate(size))
     {
