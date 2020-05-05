@@ -263,6 +263,40 @@ macro(qt_build_tests)
     endif()
 endmacro()
 
+function(qt_compute_relative_path_from_cmake_config_dir_to_prefix)
+    # Compute the reverse relative path from the CMake config dir to the install prefix.
+    # This is used in QtBuildInternalsExtras to create a relocatable relative install prefix path.
+    # This path is used for finding syncqt and other things, regardless of initial install prefix
+    # (e.g installed Qt was archived and unpacked to a different path on a different machine).
+    #
+    # This is meant to be called only once when configuring qtbase.
+    #
+    # Similar code exists in Qt6CoreConfigExtras.cmake.in and src/corelib/CMakeLists.txt which
+    # might not be needed anymore.
+    if(QT_WILL_INSTALL)
+        get_filename_component(clean_config_prefix
+                               "${CMAKE_INSTALL_PREFIX}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
+    else()
+        get_filename_component(clean_config_prefix "${QT_CONFIG_BUILD_DIR}" ABSOLUTE)
+    endif()
+    file(RELATIVE_PATH
+         qt_path_from_cmake_config_dir_to_prefix
+         ${clean_config_prefix} ${CMAKE_INSTALL_PREFIX})
+     set(qt_path_from_cmake_config_dir_to_prefix "${qt_path_from_cmake_config_dir_to_prefix}"
+         PARENT_SCOPE)
+endfunction()
+
+function(qt_get_relocatable_install_prefix out_var)
+    # We need to compute it only once while building qtbase. Afterwards it's loaded from
+    # QtBuildInternalsExtras.cmake.
+    if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+        return()
+    endif()
+    # The QtBuildInternalsExtras value is dynamically computed, whereas the initial qtbase
+    # configuration uses an absolute path.
+    set(${out_var} "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
+endfunction()
+
 function(qt_restore_backed_up_install_prefix)
     # Restore the CMAKE_INSTALL_PREFIX that was set before loading BuildInternals.
     # Useful for standalone tests, we don't want to accidentally install a test into the Qt prefix.

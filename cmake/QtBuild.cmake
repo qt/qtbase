@@ -13,7 +13,8 @@ function(qt_configure_process_path name default docstring)
     else()
         get_filename_component(given_path_as_abs "${${name}}" ABSOLUTE BASE_DIR
                                "${CMAKE_INSTALL_PREFIX}")
-        file(RELATIVE_PATH rel_path "${CMAKE_INSTALL_PREFIX}" "${given_path_as_abs}")
+        file(RELATIVE_PATH rel_path "${CMAKE_INSTALL_PREFIX}"
+                                    "${given_path_as_abs}")
 
         # If absolute path given, check that it's inside the prefix (error out if not).
         # TODO: Figure out if we need to support paths that are outside the prefix.
@@ -75,6 +76,59 @@ qt_configure_process_path(INSTALL_DESCRIPTIONSDIR
                          "${INSTALL_DATADIR}/modules"
                           "Module description files directory")
 
+function(qt_internal_set_up_global_paths)
+    # Compute the values of QT_BUILD_DIR, QT_INSTALL_DIR, QT_CONFIG_BUILD_DIR, QT_CONFIG_INSTALL_DIR
+    # taking into account whether the current build is a prefix build or a non-prefix build,
+    # and whether it is a superbuild or non-superbuild.
+    # A third case is when another module or standalone tests are built against a super-built Qt.
+    # The layout for the third case is the same as for non-superbuilds.
+    #
+    # These values should be prepended to file paths in commands or properties,
+    # in order to correctly place generated Config files, generated Targets files,
+    # excutables / libraries, when copying / installing files, etc.
+    #
+    # The build dir variables will always be absolute paths.
+    # The QT_INSTALL_DIR variable will have a relative path in a prefix build,
+    # which means that it can be empty, so use qt_join_path to prevent accidental absolute paths.
+    if(QT_SUPERBUILD)
+        # In this case, we always copy all the build products in qtbase/{bin,lib,...}
+        if(QT_WILL_INSTALL)
+            set(QT_BUILD_DIR "${QtBase_BINARY_DIR}")
+            set(QT_INSTALL_DIR "")
+        else()
+            set(QT_BUILD_DIR "${QtBase_BINARY_DIR}")
+            set(QT_INSTALL_DIR "${QtBase_BINARY_DIR}")
+        endif()
+    else()
+        if(QT_WILL_INSTALL)
+            # In the usual prefix build case, the build dir is the current module build dir,
+            # and the install dir is the prefix, so we don't set it.
+            set(QT_BUILD_DIR "${CMAKE_BINARY_DIR}")
+            set(QT_INSTALL_DIR "")
+        else()
+            # When doing a non-prefix build, both the build dir and install dir are the same,
+            # pointing to the qtbase build dir.
+            set(QT_BUILD_DIR "${CMAKE_INSTALL_PREFIX}")
+            set(QT_INSTALL_DIR "${QT_BUILD_DIR}")
+        endif()
+    endif()
+
+    set(__config_path_part "${INSTALL_LIBDIR}/cmake")
+    set(QT_CONFIG_BUILD_DIR "${QT_BUILD_DIR}/${__config_path_part}")
+    set(QT_CONFIG_INSTALL_DIR "${QT_INSTALL_DIR}")
+    if(QT_CONFIG_INSTALL_DIR)
+        string(APPEND QT_CONFIG_INSTALL_DIR "/")
+    endif()
+    string(APPEND QT_CONFIG_INSTALL_DIR ${__config_path_part})
+
+    set(QT_BUILD_DIR "${QT_BUILD_DIR}" PARENT_SCOPE)
+    set(QT_INSTALL_DIR "${QT_INSTALL_DIR}" PARENT_SCOPE)
+    set(QT_CONFIG_BUILD_DIR "${QT_CONFIG_BUILD_DIR}" PARENT_SCOPE)
+    set(QT_CONFIG_INSTALL_DIR "${QT_CONFIG_INSTALL_DIR}" PARENT_SCOPE)
+endfunction()
+qt_internal_set_up_global_paths()
+qt_get_relocatable_install_prefix(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+
 # The variables might have already been set in QtBuildInternalsExtra.cmake if the file is included
 # while building a new module and not QtBase. In that case, stop overriding the value.
 if(NOT INSTALL_CMAKE_NAMESPACE)
@@ -94,8 +148,11 @@ if(NOT QT_MKSPECS_DIR)
     if("${QT_BUILD_INTERNALS_PATH}" STREQUAL "")
       get_filename_component(QT_MKSPECS_DIR "${CMAKE_CURRENT_LIST_DIR}/../mkspecs" ABSOLUTE)
     else()
-      # We can rely on CMAKE_INSTALL_PREFIX being set by QtBuildInternalsExtra.cmake
-      get_filename_component(QT_MKSPECS_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_MKSPECSDIR}" ABSOLUTE)
+      # We can rely on QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX being set by
+      # QtBuildInternalsExtra.cmake.
+      get_filename_component(
+          QT_MKSPECS_DIR
+          "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_MKSPECSDIR}" ABSOLUTE)
     endif()
     set(QT_MKSPECS_DIR "${QT_MKSPECS_DIR}" CACHE INTERNAL "")
 endif()
@@ -138,7 +195,7 @@ function(qt_setup_tool_path_command)
     if(NOT WIN32)
         return()
     endif()
-    set(bindir "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
+    set(bindir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
     file(TO_NATIVE_PATH "${bindir}" bindir)
     list(APPEND command COMMAND)
     list(APPEND command set PATH=${bindir}$<SEMICOLON>%PATH%)
@@ -304,51 +361,6 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 else()
     set(QT_PATH_SEPARATOR ":")
 endif()
-
-# Compute the values of QT_BUILD_DIR, QT_INSTALL_DIR, QT_CONFIG_BUILD_DIR, QT_CONFIG_INSTALL_DIR
-# taking into account whether the current build is a prefix build or a non-prefix build,
-# and whether it is a superbuild or non-superbuild.
-# A third case is when another module or standalone tests are built against a super-built Qt.
-# The layout for the third case is the same as for non-superbuilds.
-#
-# These values should be prepended to file paths in commands or properties,
-# in order to correctly place generated Config files, generated Targets files,
-# excutables / libraries, when copying / installing files, etc.
-#
-# The build dir variables will always be absolute paths.
-# The QT_INSTALL_DIR variable will have a relative path in a prefix build,
-# which means that it can be empty, so use qt_join_path to prevent accidental absolute paths.
-if(QT_SUPERBUILD)
-    # In this case, we always copy all the build products in qtbase/{bin,lib,...}
-    if(QT_WILL_INSTALL)
-        set(QT_BUILD_DIR "${QtBase_BINARY_DIR}")
-        set(QT_INSTALL_DIR "")
-    else()
-        set(QT_BUILD_DIR "${QtBase_BINARY_DIR}")
-        set(QT_INSTALL_DIR "${QtBase_BINARY_DIR}")
-    endif()
-else()
-    if(QT_WILL_INSTALL)
-        # In the usual prefix build case, the build dir is the current module build dir,
-        # and the install dir is the prefix, so we don't set it.
-        set(QT_BUILD_DIR "${CMAKE_BINARY_DIR}")
-        set(QT_INSTALL_DIR "")
-    else()
-        # When doing a non-prefix build, both the build dir and install dir are the same,
-        # pointing to the qtbase build dir.
-        set(QT_BUILD_DIR "${CMAKE_INSTALL_PREFIX}")
-        set(QT_INSTALL_DIR "${QT_BUILD_DIR}")
-    endif()
-endif()
-
-set(__config_path_part "${INSTALL_LIBDIR}/cmake")
-set(QT_CONFIG_BUILD_DIR "${QT_BUILD_DIR}/${__config_path_part}")
-set(QT_CONFIG_INSTALL_DIR "${QT_INSTALL_DIR}")
-if(QT_CONFIG_INSTALL_DIR)
-    string(APPEND QT_CONFIG_INSTALL_DIR "/")
-endif()
-string(APPEND QT_CONFIG_INSTALL_DIR ${__config_path_part})
-unset(__config_path_part)
 
 # This is used to hold extra cmake code that should be put into QtBuildInternalsExtra.cmake file
 # at the QtPostProcess stage.
@@ -848,10 +860,10 @@ function(qt_generate_qt_conf)
         "[EffectivePaths]
 Prefix=..
 [DevicePaths]
-Prefix=${CMAKE_INSTALL_PREFIX}
+Prefix=${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}
 [Paths]
-Prefix=${CMAKE_INSTALL_PREFIX}
-HostPrefix=${CMAKE_INSTALL_PREFIX}
+Prefix=${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}
+HostPrefix=${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}
 Sysroot=
 SysrootifyPrefix=false
 TargetSpec=${QT_QMAKE_TARGET_MKSPEC}
@@ -1021,7 +1033,7 @@ function(qt_ensure_sync_qt)
         message(STATUS "Using host syncqt found at: ${QT_SYNCQT}")
     else()
         get_filename_component(syncqt_absolute_path
-                               "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/syncqt.pl"
+                               "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/syncqt.pl"
                                ABSOLUTE)
         set(QT_SYNCQT "${syncqt_absolute_path}" CACHE FILEPATH "syncqt script")
         message(STATUS "Using installed syncqt found at: ${QT_SYNCQT}")
@@ -3319,15 +3331,17 @@ function(qt_add_test name)
         set_tests_properties(${name} PROPERTIES TIMEOUT ${arg_TIMEOUT})
     endif()
 
-    # Get path to <original_qtbase_install_prefix>/bin, as well as CMAKE_INSTALL_PREFIX/bin, then
+    # Get path to <qt_relocatable_install_prefix>/bin, as well as CMAKE_INSTALL_PREFIX/bin, then
     # prepend them to the PATH environment variable.
     # It's needed on Windows to find the shared libraries and plugins.
-    # original_qtbase_install_prefix is the CMAKE_INSTALL_PREFIX specified when building qtbase.
+    # qt_relocatable_install_prefix is dynamically computed from the location of where the Qt CMake
+    # package is found.
     # The regular CMAKE_INSTALL_PREFIX can be different for example when building standalone tests.
-    # Latest CMAKE_INSTALL_PREFIX takes priority for the PATH environment variable.
+    # Any given CMAKE_INSTALL_PREFIX takes priority over qt_relocatable_install_prefix for the
+    # PATH environment variable.
     set(install_prefixes "${CMAKE_INSTALL_PREFIX}")
-    if(QT_BUILD_INTERNALS_ORIGINAL_INSTALL_PREFIX)
-        list(APPEND install_prefixes "${QT_BUILD_INTERNALS_ORIGINAL_INSTALL_PREFIX}")
+    if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+        list(APPEND install_prefixes "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
     endif()
 
     set(test_env_path "PATH=${CMAKE_CURRENT_BINARY_DIR}")
@@ -4083,13 +4097,13 @@ function(qt_add_docs)
     endif()
 
     if (NOT QT_SUPERBUILD OR QT_WILL_INSTALL)
-        set(qdoc_bin "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qdoc")
-        set(qtattributionsscanner_bin "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qtattributionsscanner")
-        set(qhelpgenerator_bin "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qhelpgenerator")
+        set(qdoc_bin "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qdoc")
+        set(qtattributionsscanner_bin "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qtattributionsscanner")
+        set(qhelpgenerator_bin "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qhelpgenerator")
     else()
-        set(qdoc_bin "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_BINDIR}/qdoc")
-        set(qtattributionsscanner_bin "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_BINDIR}/qtattributionsscanner")
-        set(qhelpgenerator_bin "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_BINDIR}/qhelpgenerator")
+        set(qdoc_bin "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/qtbase/${INSTALL_BINDIR}/qdoc")
+        set(qtattributionsscanner_bin "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/qtbase/${INSTALL_BINDIR}/qtattributionsscanner")
+        set(qhelpgenerator_bin "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/qtbase/${INSTALL_BINDIR}/qhelpgenerator")
     endif()
 
     get_target_property(target_type ${target} TYPE)
@@ -4122,11 +4136,11 @@ function(qt_add_docs)
         set(qdoc_output_dir "${CMAKE_BINARY_DIR}/${INSTALL_DOCDIR}/${doc_target}")
         set(index_dir "${CMAKE_BINARY_DIR}/${INSTALL_DOCDIR}")
     elseif (QT_SUPERBUILD)
-        set(qdoc_output_dir "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}/${doc_target}")
-        set(index_dir "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}")
+        set(qdoc_output_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}/${doc_target}")
+        set(index_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}")
     else()
-        set(qdoc_output_dir "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}/${doc_target}")
-        set(index_dir "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
+        set(qdoc_output_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}/${doc_target}")
+        set(index_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
     endif()
 
     # qtattributionsscanner
@@ -4149,10 +4163,12 @@ function(qt_add_docs)
         "${include_path_args}"
     )
 
-    if (QT_SUPERBUILD AND NOT QT_WILL_INSTALL)
-        set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}")
-    else()
+    if (QT_WILL_INSTALL)
         set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
+    elseif (QT_SUPERBUILD)
+        set(qt_install_docs_env "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/qtbase/${INSTALL_DOCDIR}")
+    else()
+        set(qt_install_docs_env "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
     endif()
 
     set(qdoc_env_args
@@ -4560,19 +4576,22 @@ function(qt_generate_qconfig_cpp)
     # TODO: Clean this up, there's a bunch of unrealistic assumptions here.
     # See qtConfOutput_preparePaths in qtbase/configure.pri.
     if(WIN32)
-        set(lib_location_absolute_path "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
+        set(lib_location_absolute_path
+            "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
     else()
-        set(lib_location_absolute_path "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
+        set(lib_location_absolute_path
+            "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
     endif()
     file(RELATIVE_PATH from_lib_location_to_prefix
-         "${lib_location_absolute_path}" "${CMAKE_INSTALL_PREFIX}")
+         "${lib_location_absolute_path}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
 
     if(QT_HOST_PATH)
         set(host_prefix "${QT_HOST_PATH}")
         set(host_bin_dir_absolute_path "${QT_HOST_PATH}/${INSTALL_BINDIR}")
     else()
-        set(host_prefix "${CMAKE_INSTALL_PREFIX}")
-        set(host_bin_dir_absolute_path "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
+        set(host_prefix "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+        set(host_bin_dir_absolute_path
+            "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
     endif()
 
     file(RELATIVE_PATH from_host_bin_dir_to_host_prefix
@@ -4581,7 +4600,7 @@ function(qt_generate_qconfig_cpp)
     # TODO: Fix this to use the equivalent of extprefix on CMake (CMAKE_STAGING_PREFIX?)
     # For now just assume ext prefix is same as regular prefix.
     file(RELATIVE_PATH from_host_bin_dir_to_ext_prefix
-         "${host_bin_dir_absolute_path}" "${CMAKE_INSTALL_PREFIX}")
+         "${host_bin_dir_absolute_path}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
 
 
     set(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH "${from_lib_location_to_prefix}")

@@ -5,18 +5,26 @@ set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
 set(INSTALL_CMAKE_NAMESPACE @INSTALL_CMAKE_NAMESPACE@)
 set(QT_BUILD_INTERNALS_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
-# Propagate the original install prefix, so that a developer building a child module can
-# specify CMAKE_PREFIX_PATH for finding the Qt modules instead of CMAKE_INSTALL_PREFIX.
-set(CMAKE_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@ CACHE PATH
-    "Install path prefix, prepended onto install directories." FORCE)
+# The relocatable install prefix is meant to be used to find things like host binaries (syncqt),
+# when the CMAKE_INSTALL_PREFIX is overridden to point to a different path (like when building a
+# a Qt repo using Conan, which will set a random install prefix instead of installing into the
+# original Qt install prefix).
+get_filename_component(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX
+                       ${CMAKE_CURRENT_LIST_DIR}/../@qt_path_from_cmake_config_dir_to_prefix@
+                       ABSOLUTE)
 
-# Save the original install prefix in an additional variable.
-# While CMAKE_INSTALL_PREFIX may be overridden in certain cases (like for standalone tests building
-# or for singular qt-cmake-standalone-test usage), we still need the original qtbase install prefix
-# to know where the shared libraries are located to inject them into PATH when running tests via
-# ctest.
-set(QT_BUILD_INTERNALS_ORIGINAL_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@ CACHE PATH
-    "Original install prefix specified when building qtbase." FORCE)
+# If no explicit CMAKE_INSTALL_PREFIX is provided, force set the original Qt installation prefix,
+# so that further modules / repositories are  installed into same original location.
+# This means by default when configuring qtsvg / qtdeclarative, they will be installed the regular
+# Qt installation prefix.
+# If an explicit installation prefix is specified,  honor it.
+# This is an attempt to support Conan, aka handle installation of modules into a
+# different installation prefix than the original one. Also allow to opt out via a special variable.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND
+   NOT QT_BUILD_INTERNALS_NO_FORCE_SET_INSTALL_PREFIX)
+    set(CMAKE_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@ CACHE PATH
+        "Install path prefix, prepended onto install directories." FORCE)
+endif()
 
 # Propagate developer builds to other modules via BuildInternals package.
 if(@FEATURE_developer_build@)

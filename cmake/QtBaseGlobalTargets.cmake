@@ -23,12 +23,21 @@ set(__GlobalConfig_path_suffix "${INSTALL_CMAKE_NAMESPACE}")
 qt_path_join(__GlobalConfig_build_dir ${QT_CONFIG_BUILD_DIR} ${__GlobalConfig_path_suffix})
 qt_path_join(__GlobalConfig_install_dir ${QT_CONFIG_INSTALL_DIR} ${__GlobalConfig_path_suffix})
 set(__GlobalConfig_install_dir_absolute "${__GlobalConfig_install_dir}")
+set(__qt_bin_dir_absolute "${QT_INSTALL_DIR}/${INSTALL_BINDIR}")
 if(QT_WILL_INSTALL)
     # Need to prepend the install prefix when doing prefix builds, because the config install dir
     # is relative then.
     qt_path_join(__GlobalConfig_install_dir_absolute
-                 ${CMAKE_INSTALL_PREFIX} ${__GlobalConfig_install_dir_absolute})
+                 ${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}
+                 ${__GlobalConfig_install_dir_absolute})
+    qt_path_join(__qt_bin_dir_absolute
+                 ${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX} ${__qt_bin_dir_absolute})
 endif()
+# Compute relative path from $qt_prefix/bin dir to global CMake config install dir, to use in the
+# unix-y qt-cmake shell script, to make it work even if the installed Qt is relocated.
+file(RELATIVE_PATH
+     __GlobalConfig_relative_path_from_bin_dir_to_cmake_config_dir
+     ${__qt_bin_dir_absolute} ${__GlobalConfig_install_dir_absolute})
 
 # Generate and install Qt6 config file.
 configure_package_config_file(
@@ -158,7 +167,9 @@ endif()
 string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
 string(REPLACE ";" "\n" init_platform "${init_platform}")
 string(REPLACE "LITERAL_SEMICOLON" ";" init_platform "${init_platform}")
+qt_compute_relative_path_from_cmake_config_dir_to_prefix()
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/qt.toolchain.cmake.in" "${__GlobalConfig_build_dir}/qt.toolchain.cmake" @ONLY)
+unset(qt_path_from_cmake_config_dir_to_prefix)
 qt_install(FILES "${__GlobalConfig_build_dir}/qt.toolchain.cmake" DESTINATION "${__GlobalConfig_install_dir}" COMPONENT Devel)
 
 # Also provide a convenience cmake wrapper
@@ -196,7 +207,8 @@ unset(__qt_cmake_extra)
 # Instead a template CMakeLists.txt project is used which sets up all the necessary private bits
 # and then calls add_subdirectory on the provided project path.
 set(__qt_cmake_standalone_test_bin_name "qt-cmake-standalone-test")
-set(__qt_cmake_private_path "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
+set(__qt_cmake_private_path
+    "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
 set(__qt_cmake_standalone_test_path
     "${__build_internals_install_dir}/${__build_internals_standalone_test_template_dir}")
 if(UNIX)

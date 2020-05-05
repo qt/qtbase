@@ -1,1 +1,10 @@
-"@CMAKE_COMMAND@" -DCMAKE_TOOLCHAIN_FILE="@__GlobalConfig_install_dir_absolute@/qt.toolchain.cmake" @__qt_cmake_extra@ %*
+@echo off
+:: The directory of this script is the expanded absolute path of the "$qt_prefix/bin" directory.
+set script_dir_path=%~dp0
+
+:: Try to use original cmake, otherwise to make it relocatable, use any cmake found in PATH.
+set cmake_path=@CMAKE_COMMAND@
+if not exist "%cmake_path%" set cmake_path=cmake
+
+set toolchain_path=%script_dir_path%/@__GlobalConfig_relative_path_from_bin_dir_to_cmake_config_dir@/qt.toolchain.cmake
+"%cmake_path%" -DCMAKE_TOOLCHAIN_FILE="%toolchain_path%" @__qt_cmake_extra@ %*

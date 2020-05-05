@@ -8,11 +8,13 @@ qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
 # compute the reverse relative path from QtCoreConfigExtras to the install prefix
 # this is used in QtCoreConfigExtras to make its install paths relocatable
 if(QT_WILL_INSTALL)
-    get_filename_component(_clean_prefix "${CMAKE_INSTALL_PREFIX}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
+    get_filename_component(_clean_prefix
+        "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
 else()
     get_filename_component(_clean_prefix "${QT_CONFIG_BUILD_DIR}" ABSOLUTE)
 endif()
-file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR ${_clean_prefix} ${CMAKE_INSTALL_PREFIX})
+file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR
+    ${_clean_prefix} ${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX})
 
 # special case end
 
