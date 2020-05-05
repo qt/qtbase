@@ -72,13 +72,13 @@ struct QUtf8BaseTraits
     static void appendByte(uchar *&ptr, uchar b)
     { *ptr++ = b; }
 
-    static uchar peekByte(const uchar *ptr, int n = 0)
+    static uchar peekByte(const uchar *ptr, qsizetype n = 0)
     { return ptr[n]; }
 
     static qptrdiff availableBytes(const uchar *ptr, const uchar *end)
     { return end - ptr; }
 
-    static void advanceByte(const uchar *&ptr, int n = 1)
+    static void advanceByte(const uchar *&ptr, qsizetype n = 1)
     { ptr += n; }
 
     static void appendUtf16(ushort *&ptr, ushort uc)
@@ -90,13 +90,13 @@ struct QUtf8BaseTraits
         appendUtf16(ptr, QChar::lowSurrogate(uc));
     }
 
-    static ushort peekUtf16(const ushort *ptr, int n = 0)
+    static ushort peekUtf16(const ushort *ptr, qsizetype n = 0)
     { return ptr[n]; }
 
     static qptrdiff availableUtf16(const ushort *ptr, const ushort *end)
     { return end - ptr; }
 
-    static void advanceUtf16(const ushort *&ptr, int n = 1)
+    static void advanceUtf16(const ushort *&ptr, qsizetype n = 1)
     { ptr += n; }
 
     // it's possible to output to UCS-4 too
@@ -182,9 +182,9 @@ namespace QUtf8Functions
     /// returns the number of characters consumed (including \a b) in case of success;
     /// returns negative in case of error: Traits::Error or Traits::EndOfString
     template <typename Traits, typename OutputPtr, typename InputPtr> inline
-    int fromUtf8(uchar b, OutputPtr &dst, InputPtr &src, InputPtr end)
+    qsizetype fromUtf8(uchar b, OutputPtr &dst, InputPtr &src, InputPtr end)
     {
-        int charsNeeded;
+        qsizetype charsNeeded;
         uint min_uc;
         uint uc;
 
@@ -217,7 +217,7 @@ namespace QUtf8Functions
             return Traits::Error;
         }
 
-        int bytesAvailable = Traits::availableBytes(src, end);
+        qptrdiff bytesAvailable = Traits::availableBytes(src, end);
         if (Q_UNLIKELY(bytesAvailable < charsNeeded - 1)) {
             // it's possible that we have an error instead of just unfinished bytes
             if (bytesAvailable > 0 && !isContinuationByte(Traits::peekByte(src, 0)))

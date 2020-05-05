@@ -268,7 +268,7 @@ struct QUrlUtf8Traits : public QUtf8BaseTraitsNoAscii
         *ptr++ = encodeNibble(b & 0xf);
     }
 
-    static uchar peekByte(const ushort *ptr, int n = 0)
+    static uchar peekByte(const ushort *ptr, qsizetype n = 0)
     {
         // decodePercentEncoding returns ushort(-1) if it can't decode,
         // which means we return 0xff, which is not a valid continuation byte.
