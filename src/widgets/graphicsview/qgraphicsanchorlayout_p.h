@@ -129,7 +129,7 @@ struct AnchorData : public QSimplexVariable {
           sizeAtMinimum(0), sizeAtPreferred(0),
           sizeAtMaximum(0), item(nullptr), graphicsAnchor(nullptr),
           type(Normal), isLayoutAnchor(false),
-          isCenterAnchor(false), orientation(0),
+          isCenterAnchor(false), isVertical(false),
           dependency(Independent) {}
     virtual ~AnchorData();
 
@@ -176,7 +176,7 @@ struct AnchorData : public QSimplexVariable {
     uint type : 2;            // either Normal, Sequential or Parallel
     uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
     uint isCenterAnchor : 1;
-    uint orientation : 1;
+    uint isVertical : 1;
     uint dependency : 2;      // either Independent, Master or Slave
 };
 
@@ -193,7 +193,7 @@ struct SequentialAnchorData : public AnchorData
         : AnchorData(), m_children(vertices), m_edges(edges)
     {
         type = AnchorData::Sequential;
-        orientation = m_edges.at(0)->orientation;
+        isVertical = m_edges.at(0)->isVertical;
 #ifdef QT_DEBUG
         name = QString::fromLatin1("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
 #endif
@@ -212,7 +212,7 @@ struct ParallelAnchorData : public AnchorData
         : AnchorData(), firstEdge(first), secondEdge(second)
     {
         type = AnchorData::Parallel;
-        orientation = first->orientation;
+        isVertical = first->isVertical;
 
         // This assert whether the child anchors share their vertices
         Q_ASSERT(((first->from == second->from) && (first->to == second->to)) ||

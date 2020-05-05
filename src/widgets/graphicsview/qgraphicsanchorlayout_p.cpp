@@ -193,7 +193,7 @@ void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
             maxPrefSize = maxSize;
             return;
         } else {
-            if (orientation == QGraphicsAnchorLayoutPrivate::Horizontal) {
+            if (!isVertical) {
                 policy = item->sizePolicy().horizontalPolicy();
                 minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).width();
                 prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).width();
@@ -673,7 +673,7 @@ Qt::AnchorPoint QGraphicsAnchorLayoutPrivate::oppositeEdge(Qt::AnchorPoint edge)
 */
 AnchorData *QGraphicsAnchorLayoutPrivate::addAnchorMaybeParallel(AnchorData *newAnchor, bool *feasible)
 {
-    Orientation orientation = Orientation(newAnchor->orientation);
+    Orientation orientation = newAnchor->isVertical ? Vertical : Horizontal;
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
     *feasible = true;
 
@@ -1184,6 +1184,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
 
 void QGraphicsAnchorLayoutPrivate::restoreSimplifiedAnchor(AnchorData *edge)
 {
+    const Orientation orientation = edge->isVertical ? Vertical : Horizontal;
 #if 0
     static const char *anchortypes[] = {"Normal",
                                         "Sequential",
@@ -1191,7 +1192,7 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedAnchor(AnchorData *edge)
     qDebug("Restoring %s edge.", anchortypes[int(edge->type)]);
 #endif
 
-    Graph<AnchorVertex, AnchorData> &g = graph[edge->orientation];
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
 
     if (edge->type == AnchorData::Normal) {
         g.createEdge(edge->from, edge->to, edge);
@@ -1211,7 +1212,7 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedAnchor(AnchorData *edge)
         // Skip parallel anchors that were created by vertex simplification, they will be processed
         // later, when restoring vertex simplification.
         // ### we could improve this check bit having a bit inside 'edge'
-        if (anchorsFromSimplifiedVertices[edge->orientation].contains(edge))
+        if (anchorsFromSimplifiedVertices[orientation].contains(edge))
             return;
 
         ParallelAnchorData* parallel = static_cast<ParallelAnchorData*>(edge);
@@ -1745,7 +1746,7 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
     if (firstItem == secondItem)
         data->item = firstItem;
 
-    data->orientation = orientation;
+    data->isVertical = orientation == Vertical;
 
     // Create a bi-directional edge in the sense it can be transversed both
     // from v1 or v2. "data" however is shared between the two references
@@ -2402,7 +2403,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
 
     // Look for the layout edge. That can be either the first half in case the
     // layout is split in two, or the whole layout anchor.
-    Orientation orient = Orientation(anchors.first()->orientation);
+    Orientation orient = anchors.first()->isVertical ? Vertical : Horizontal;
     AnchorData *layoutEdge = nullptr;
     if (layoutCentralVertex[orient]) {
         layoutEdge = graph[orient].edgeData(layoutFirstVertex[orient], layoutCentralVertex[orient]);
@@ -2756,7 +2757,7 @@ void QGraphicsAnchorLayoutPrivate::setupEdgesInterpolation(
 */
 void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base, AnchorData *edge)
 {
-    const Orientation orientation = Orientation(edge->orientation);
+    const Orientation orientation = edge->isVertical ? Vertical : Horizontal;
     const QPair<Interval, qreal> factor(interpolationInterval[orientation],
                                         interpolationProgress[orientation]);
 
