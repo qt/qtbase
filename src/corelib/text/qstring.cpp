@@ -8255,7 +8255,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
 
             if (field_width > 0) { // left padded
                 for (uint i = 0; i < pad_chars; ++i)
-                    (rc++)->unicode() = fillChar.unicode();
+                    *rc++ = fillChar;
             }
 
             if (locale_arg) {
@@ -8269,7 +8269,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
 
             if (field_width < 0) { // right padded
                 for (uint i = 0; i < pad_chars; ++i)
-                    (rc++)->unicode() = fillChar.unicode();
+                    *rc++ = fillChar;
             }
 
             if (++repl_cnt == d.occurrences) {
