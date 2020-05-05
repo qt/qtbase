@@ -129,7 +129,7 @@ void RateController::transfer()
             auto current = it++;
             PeerWireClient *socket = *current;
             if (socket->state() != QAbstractSocket::ConnectedState) {
-                pendingSockets.erase(current);
+                it = pendingSockets.erase(current);
                 continue;
             }
 
@@ -158,7 +158,7 @@ void RateController::transfer()
             if (dataTransferred && socket->canTransferMore())
                 canTransferMore = true;
             else
-                pendingSockets.erase(current);
+                it = pendingSockets.erase(current);
         }
     } while (canTransferMore && (bytesToWrite > 0 || bytesToRead > 0) && !pendingSockets.isEmpty());
 
