@@ -80,13 +80,6 @@ enum {
 };
 
 // do not reorder
-enum {
-    Hor,
-    Ver,
-    NOrientations
-};
-
-// do not reorder
 enum LayoutSide {
     Left,
     Top,
