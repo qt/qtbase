@@ -38,6 +38,7 @@ private Q_SLOTS:
     void canReadLine();
     void positionHandling();
     void appendBuffer();
+    void moveAppendBuffer();
     void readCompleteBuffer_data();
     void readCompleteBuffer();
     void readPartialBuffer_data();
@@ -91,12 +92,24 @@ void tst_QByteDataBuffer::positionHandling()
 void tst_QByteDataBuffer::appendBuffer()
 {
     QByteDataBuffer buf;
-    buf.append(QByteArray("\1\2\3"));
+    QByteArray local("\1\2\3");
+    buf.append(local);
     buf.getChar();
 
     QByteDataBuffer tmp;
     tmp.append(buf);
     QCOMPARE(tmp.readAll(), buf.readAll());
+}
+
+void tst_QByteDataBuffer::moveAppendBuffer()
+{
+    QByteDataBuffer buf;
+    buf.append(QByteArray("hello world"));
+    QCOMPARE(buf.getChar(), 'h');
+
+    QByteDataBuffer tmp;
+    tmp.append(std::move(buf));
+    QCOMPARE(tmp.readAll(), "ello world");
 }
 
 static QByteArray makeByteArray(int size)

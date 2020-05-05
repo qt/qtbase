@@ -53,6 +53,7 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <qbytearray.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,25 +91,48 @@ public:
             popFront(buffers[bufferCount() - other.bufferCount()], other.firstPos);
     }
 
+    inline void append(QByteDataBuffer &&other)
+    {
+        if (other.isEmpty())
+            return;
+
+        auto otherBufferCount = other.bufferCount();
+        auto otherByteAmount = other.byteAmount();
+        buffers.append(std::move(other.buffers));
+        bufferCompleteSize += otherByteAmount;
+
+        if (other.firstPos > 0)
+            popFront(buffers[bufferCount() - otherBufferCount], other.firstPos);
+    }
 
     inline void append(const QByteArray& bd)
+    {
+        append(QByteArray(bd));
+    }
+
+    inline void append(QByteArray &&bd)
     {
         if (bd.isEmpty())
             return;
 
-        buffers.append(bd);
         bufferCompleteSize += bd.size();
+        buffers.append(std::move(bd));
     }
 
     inline void prepend(const QByteArray& bd)
+    {
+        prepend(QByteArray(bd));
+    }
+
+    inline void prepend(QByteArray &&bd)
     {
         if (bd.isEmpty())
             return;
 
         squeezeFirst();
 
-        buffers.prepend(bd);
         bufferCompleteSize += bd.size();
+        buffers.prepend(std::move(bd));
     }
 
     // return the first QByteData. User of this function has to free() its .data!
