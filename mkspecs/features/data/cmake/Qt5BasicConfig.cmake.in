@@ -419,14 +419,6 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 !!ENDIF
 !!ENDIF
 
-    # Add a versionless target, for compatibility with Qt6.
-    if(NOT \"${QT_NO_CREATE_VERSIONLESS_TARGETS}\" AND NOT TARGET Qt::$${CMAKE_MODULE_NAME})
-        add_library(Qt::$${CMAKE_MODULE_NAME} INTERFACE IMPORTED)
-        set_target_properties(Qt::$${CMAKE_MODULE_NAME} PROPERTIES
-            INTERFACE_LINK_LIBRARIES \"Qt5::$${CMAKE_MODULE_NAME}\"
-        )
-    endif()
-
 !!IF !equals(TEMPLATE, aux)
 !!IF !isEmpty(CMAKE_BUILD_IS_FRAMEWORK)
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY FRAMEWORK 1)
@@ -647,4 +639,12 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 !!ENDIF
 
     _qt5_$${CMAKE_MODULE_NAME}_check_file_exists(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}ConfigVersion.cmake\")
+endif()
+
+# Add a versionless target, for compatibility with Qt6.
+if(NOT \"${QT_NO_CREATE_VERSIONLESS_TARGETS}\" AND TARGET Qt5::$${CMAKE_MODULE_NAME} AND NOT TARGET Qt::$${CMAKE_MODULE_NAME})
+    add_library(Qt::$${CMAKE_MODULE_NAME} INTERFACE IMPORTED)
+    set_target_properties(Qt::$${CMAKE_MODULE_NAME} PROPERTIES
+        INTERFACE_LINK_LIBRARIES \"Qt5::$${CMAKE_MODULE_NAME}\"
+    )
 endif()
