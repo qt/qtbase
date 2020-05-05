@@ -118,6 +118,10 @@ class QHVContainer {
     {
         return int(o) - 1;
     }
+    static constexpr int mapOther(Qt::Orientation o) noexcept
+    {
+        return 2 - int(o);
+    }
 public:
     constexpr QHVContainer(const T &h, const T &v)
             noexcept(std::is_nothrow_copy_constructible_v<T>)
@@ -126,6 +130,9 @@ public:
 
     constexpr T &operator[](Qt::Orientation o) noexcept { return m_data[map(o)]; }
     constexpr const T &operator[](Qt::Orientation o) const noexcept { return m_data[map(o)]; }
+
+    constexpr T &other(Qt::Orientation o) noexcept { return m_data[mapOther(o)]; }
+    constexpr const T &other(Qt::Orientation o) const noexcept { return m_data[mapOther(o)]; }
 
     constexpr void transpose() noexcept { qSwap(m_data[0], m_data[1]); }
     constexpr QHVContainer transposed() const
@@ -375,8 +382,8 @@ public:
 
     int rowCount(Qt::Orientation orientation) const;
     int columnCount(Qt::Orientation orientation) const;
-    inline int rowCount() const { return q_infos[Ver].count; }
-    inline int columnCount() const { return q_infos[Hor].count; }
+    inline int rowCount() const { return q_infos[Qt::Vertical].count; }
+    inline int columnCount() const { return q_infos[Qt::Horizontal].count; }
     // returns the number of items inserted, which may be less than (rowCount * columnCount)
     int itemCount() const;
     QGridLayoutItem *itemAt(int index) const;
@@ -472,8 +479,8 @@ protected:
 private:
     // User input
     QVector<QGridLayoutItem *> q_grid;
-    QLayoutParameter<qreal> q_defaultSpacings[NOrientations];
-    QGridLayoutRowInfo q_infos[NOrientations];
+    QHVContainer<QLayoutParameter<qreal>> q_defaultSpacings;
+    QHVContainer<QGridLayoutRowInfo> q_infos;
     Qt::LayoutDirection m_visualDirection;
 
     // Configuration
@@ -481,18 +488,18 @@ private:
     unsigned m_snapToPixelGrid : 1;
 
     // Lazily computed from the above user input
-    mutable int q_cachedEffectiveFirstRows[NOrientations];
-    mutable int q_cachedEffectiveLastRows[NOrientations];
+    mutable QHVContainer<int> q_cachedEffectiveFirstRows;
+    mutable QHVContainer<int> q_cachedEffectiveLastRows;
     mutable quint8 q_cachedConstraintOrientation : 3;
 
     // this is useful to cache
-    mutable QGridLayoutBox q_totalBoxes[NOrientations];
+    mutable QHVContainer<QGridLayoutBox> q_totalBoxes;
     enum {
         NotCached = -2,             // Cache is empty. Happens when the engine is invalidated.
         CachedWithNoConstraint = -1 // cache has a totalBox without any HFW/WFH constraints.
         // >= 0                     // cache has a totalBox with this specific constraint.
     };
-    mutable qreal q_totalBoxCachedConstraints[NOrientations];   // holds the constraint used for the cached totalBox
+    mutable QHVContainer<qreal> q_totalBoxCachedConstraints;   // holds the constraint used for the cached totalBox
 
     // Layout item input
     mutable QGridLayoutRowData q_columnData;
