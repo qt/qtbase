@@ -495,6 +495,28 @@ void Continuation<Function, ResultType, ParentResultType>::fulfillPromise(Args &
         promise.reportAndMoveResult(std::invoke(function, std::forward<Args>(args)...));
 }
 
+template<class T>
+void fulfillPromise(QFutureInterface<T> &promise, QFuture<T> &future)
+{
+    if constexpr (!std::is_void_v<T>) {
+        if constexpr (std::is_copy_constructible_v<T>)
+            promise.reportResult(future.result());
+        else
+            promise.reportAndMoveResult(future.takeResult());
+    }
+}
+
+template<class T, class Function>
+void fulfillPromise(QFutureInterface<T> &promise, Function &&handler)
+{
+    if constexpr (std::is_void_v<T>)
+        handler();
+    else if constexpr (std::is_copy_constructible_v<T>)
+        promise.reportResult(handler());
+    else
+        promise.reportAndMoveResult(handler());
+}
+
 #ifndef QT_NO_EXCEPTIONS
 
 template<class Function, class ResultType>
@@ -529,12 +551,7 @@ void FailureHandler<Function, ResultType>::run()
             handleException<ArgType>();
         }
     } else {
-        if constexpr (!std::is_void_v<ResultType>) {
-            if constexpr (std::is_copy_constructible_v<ResultType>)
-                promise.reportResult(parentFuture.result());
-            else
-                promise.reportAndMoveResult(parentFuture.takeResult());
-        }
+        QtPrivate::fulfillPromise(promise, parentFuture);
     }
     promise.reportFinished();
 }
@@ -573,12 +590,7 @@ void FailureHandler<Function, ResultType>::handleAllExceptions()
         parentFuture.d.exceptionStore().throwPossibleException();
     } catch (...) {
         try {
-            if constexpr (std::is_void_v<ResultType>)
-                handler();
-            else if constexpr (std::is_copy_constructible_v<ResultType>)
-                promise.reportResult(handler());
-            else
-                promise.reportAndMoveResult(handler());
+            QtPrivate::fulfillPromise(promise, std::forward<Function>(handler));
         } catch (...) {
             promise.reportException(std::current_exception());
         }
@@ -586,6 +598,45 @@ void FailureHandler<Function, ResultType>::handleAllExceptions()
 }
 
 #endif // QT_NO_EXCEPTIONS
+
+template<class Function, class ResultType>
+class CanceledHandler
+{
+public:
+    static QFuture<ResultType> create(Function &&handler, QFuture<ResultType> *future,
+                                      QFutureInterface<ResultType> promise)
+    {
+        Q_ASSERT(future);
+
+        auto canceledContinuation = [parentFuture = *future, promise,
+                                     handler = std::move(handler)]() mutable {
+            promise.reportStarted();
+
+            if (parentFuture.isCanceled()) {
+#ifndef QT_NO_EXCEPTIONS
+                if (parentFuture.d.exceptionStore().hasException()) {
+                    // Propagate the exception to the result future
+                    promise.reportException(parentFuture.d.exceptionStore().exception());
+                } else {
+                    try {
+#endif
+                        QtPrivate::fulfillPromise(promise, std::forward<Function>(handler));
+#ifndef QT_NO_EXCEPTIONS
+                    } catch (...) {
+                        promise.reportException(std::current_exception());
+                    }
+                }
+#endif
+            } else {
+                QtPrivate::fulfillPromise(promise, parentFuture);
+            }
+
+            promise.reportFinished();
+        };
+        future->d.setContinuation(std::move(canceledContinuation));
+        return promise.future();
+    }
+};
 
 } // namespace QtPrivate
 

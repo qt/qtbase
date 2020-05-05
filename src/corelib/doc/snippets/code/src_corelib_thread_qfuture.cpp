@@ -220,3 +220,35 @@ QtFuture::connect(&object, &Object::singleArgSignal).then([](int value) {
     // handle other exceptions
 });
 //! [14]
+
+//! [15]
+QFuture<int> testFuture = ...;
+auto resultFuture = testFuture.then([](int res) {
+    // Block 1
+}).onCanceled([] {
+    // Block 2
+}).onFailed([] {
+    // Block 3
+}).then([] {
+    // Block 4
+}).onFailed([] {
+    // Block 5
+}).onCanceled([] {
+    // Block 6
+});
+//! [15]
+
+//! [16]
+QFuture<int> testFuture = ...;
+auto resultFuture = testFuture.then([](int res) {
+    // Block 1
+}).onFailed([] {
+    // Block 3
+}).then([] {
+    // Block 4
+}).onFailed([] {
+    // Block 5
+}).onCanceled([] {
+    // Block 6
+});
+//! [16]

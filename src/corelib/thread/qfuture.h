@@ -168,6 +168,9 @@ public:
     QFuture<T> onFailed(Function &&handler);
 #endif
 
+    template<class Function, typename = std::enable_if_t<std::is_invocable_r_v<T, Function>>>
+    QFuture<T> onCanceled(Function &&handler);
+
     class const_iterator
     {
     public:
@@ -281,6 +284,9 @@ private:
     template<class Function, class ResultType, class ParentResultType>
     friend class QtPrivate::Continuation;
 
+    template<class Function, class ResultType>
+    friend class QtPrivate::CanceledHandler;
+
 #ifndef QT_NO_EXCEPTIONS
     template<class Function, class ResultType>
     friend class QtPrivate::FailureHandler;
@@ -358,6 +364,15 @@ QFuture<T> QFuture<T>::onFailed(Function &&handler)
 }
 
 #endif
+
+template<class T>
+template<class Function, typename>
+QFuture<T> QFuture<T>::onCanceled(Function &&handler)
+{
+    QFutureInterface<T> promise(QFutureInterfaceBase::State::Pending);
+    QtPrivate::CanceledHandler<Function, T>::create(std::forward<Function>(handler), this, promise);
+    return promise.future();
+}
 
 inline QFuture<void> QFutureInterface<void>::future()
 {

@@ -64,6 +64,9 @@ namespace QtPrivate {
 template<typename Function, typename ResultType, typename ParentResultType>
 class Continuation;
 
+template<class Function, class ResultType>
+class CanceledHandler;
+
 #ifndef QT_NO_EXCEPTIONS
 template<class Function, class ResultType>
 class FailureHandler;
@@ -162,6 +165,9 @@ private:
 
     template<typename Function, typename ResultType, typename ParentResultType>
     friend class QtPrivate::Continuation;
+
+    template<class Function, class ResultType>
+    friend class QtPrivate::CanceledHandler;
 
 #ifndef QT_NO_EXCEPTIONS
     template<class Function, class ResultType>

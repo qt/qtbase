@@ -131,6 +131,7 @@ private slots:
     void onFailedTestCallables();
     void onFailedForMoveOnlyTypes();
 #endif
+    void onCanceled();
     void takeResults();
     void takeResult();
     void runAndTake();
@@ -1933,18 +1934,24 @@ void tst_QFuture::thenForMoveOnlyTypes()
     QVERIFY(runThenForMoveOnly<void>([] { return std::make_unique<int>(42); }));
 }
 
+template<class T>
+QFuture<T> createCanceledFuture()
+{
+    QFutureInterface<T> promise;
+    promise.reportStarted();
+    promise.reportCanceled();
+    promise.reportFinished();
+    return promise.future();
+}
+
 void tst_QFuture::thenOnCanceledFuture()
 {
     // Continuations on a canceled future
     {
-        QFutureInterface<void> promise;
-        promise.reportStarted();
-        promise.reportCanceled();
-        promise.reportFinished();
-
         int thenResult = 0;
-        QFuture<void> then =
-                promise.future().then([&]() { ++thenResult; }).then([&]() { ++thenResult; });
+        QFuture<void> then = createCanceledFuture<void>().then([&]() { ++thenResult; }).then([&]() {
+            ++thenResult;
+        });
 
         QVERIFY(then.isCanceled());
         QCOMPARE(thenResult, 0);
@@ -1970,16 +1977,10 @@ void tst_QFuture::thenOnCanceledFuture()
 
     // Continuations on a canceled future
     {
-        QFutureInterface<void> promise;
-        promise.reportStarted();
-        promise.reportCanceled();
-        promise.reportFinished();
-
         int thenResult = 0;
-        QFuture<void> then =
-                promise.future().then(QtFuture::Launch::Async, [&]() { ++thenResult; }).then([&]() {
-                    ++thenResult;
-                });
+        QFuture<void> then = createCanceledFuture<void>()
+                                     .then(QtFuture::Launch::Async, [&]() { ++thenResult; })
+                                     .then([&]() { ++thenResult; });
 
         QVERIFY(then.isCanceled());
         QCOMPARE(thenResult, 0);
@@ -2486,6 +2487,15 @@ void tst_QFuture::onFailed()
         QCOMPARE(checkpoint, 3);
         QCOMPARE(res, 0);
     }
+
+    // onFailed on a canceled future
+    {
+        auto future = createCanceledFuture<int>()
+                              .then([](int) { return 42; })
+                              .onCanceled([] { return -1; })
+                              .onFailed([] { return -2; });
+        QCOMPARE(future.result(), -1);
+    }
 }
 
 template<class Callable>
@@ -2564,6 +2574,84 @@ void tst_QFuture::onFailedForMoveOnlyTypes()
 }
 
 #endif // QT_NO_EXCEPTIONS
+
+void tst_QFuture::onCanceled()
+{
+    // Canceled int future
+    {
+        auto future = createCanceledFuture<int>().then([](int) { return 42; }).onCanceled([] {
+            return -1;
+        });
+        QCOMPARE(future.result(), -1);
+    }
+
+    // Canceled void future
+    {
+        int checkpoint = 0;
+        auto future = createCanceledFuture<void>().then([&] { checkpoint = 42; }).onCanceled([&] {
+            checkpoint = -1;
+        });
+        QCOMPARE(checkpoint, -1);
+    }
+
+    // onCanceled propagates result
+    {
+        QFutureInterface<int> promise;
+        auto future =
+                promise.future().then([](int res) { return res; }).onCanceled([] { return -1; });
+
+        promise.reportStarted();
+        promise.reportResult(42);
+        promise.reportFinished();
+        QCOMPARE(future.result(), 42);
+    }
+
+    // onCanceled propagates move-only result
+    {
+        QFutureInterface<UniquePtr> promise;
+        auto future = promise.future().then([](UniquePtr res) { return res; }).onCanceled([] {
+            return std::make_unique<int>(-1);
+        });
+
+        promise.reportStarted();
+        promise.reportAndMoveResult(std::make_unique<int>(42));
+        promise.reportFinished();
+        QCOMPARE(*future.takeResult(), 42);
+    }
+
+#ifndef QT_NO_EXCEPTIONS
+    // onCanceled propagates exceptions
+    {
+        QFutureInterface<int> promise;
+        auto future = promise.future()
+                              .then([](int res) {
+                                  throw std::runtime_error("error");
+                                  return res;
+                              })
+                              .onCanceled([] { return 2; })
+                              .onFailed([] { return 3; });
+
+        promise.reportStarted();
+        promise.reportResult(1);
+        promise.reportFinished();
+        QCOMPARE(future.result(), 3);
+    }
+
+    // onCanceled throws
+    {
+        auto future = createCanceledFuture<int>()
+                              .then([](int) { return 42; })
+                              .onCanceled([] {
+                                  throw std::runtime_error("error");
+                                  return -1;
+                              })
+                              .onFailed([] { return -2; });
+
+        QCOMPARE(future.result(), -2);
+    }
+
+#endif // QT_NO_EXCEPTIONS
+}
 
 void tst_QFuture::testSingleResult(const UniquePtr &p)
 {

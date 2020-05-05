@@ -55,8 +55,9 @@
     results in the future.
 
     If the result of one asynchronous computation needs to be passed
-    to another, QFuture provides a convenient way of chaining multiple
-    sequential computations using then(). Additionally, onFailed() can be used
+    to another, QFuture provides a convenient way of chaining multiple sequential
+    computations using then(). onCanceled() can be used for adding a handler to
+    be called if the QFuture is canceled. Additionally, onFailed() can be used
     to handle any failures that occurred in the chain. Note that QFuture relies
     on exceptions for the error handling. If using exceptions is not an option,
     you can still indicate the error state of QFuture, by making the error type
@@ -75,6 +76,31 @@
     And we combine the two operations using then():
 
     \snippet code/src_corelib_thread_qfuture.cpp 4
+
+    It's possible to chain multiple continuations and handlers in any order.
+    The first handler that can handle the state of its parent is invoked first.
+    If there's no proper handler, the state is propagated to the next continuation
+    or handler. For example:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 15
+
+    If \c testFuture is successfully fulfilled \c {Block 1} will be called. If
+    it succeeds as well, the next then() (\c {Block 4}) is called. If \c testFuture
+    gets canceled or fails with an exception, either \c {Block 2} or \c {Block 3}
+    will be called respectively. The next then() will be called afterwards, and the
+    story repeats.
+
+    \note If \c {Block 2} is invoked and throws an exception, the following
+    onFailed() (\c {Block 3}) will handle it. If the order of onFailed() and
+    onCanceled() were reversed, the exception state would propagate to the
+    next continuations and eventually would be caught in \c {Block 5}.
+
+    In the next example the first onCanceled() (\c {Block 2}) is removed:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 16
+
+    If \c testFuture gets canceled, its state is propagated to the next then(),
+    which will be also canceled. So in this case \c {Block 6} will be called.
 
     QFuture also offers ways to interact with a runnning computation. For
     instance, the computation can be canceled with the cancel() function. To
@@ -893,7 +919,7 @@
     \note If the parent future gets canceled, its continuations will
     also be canceled.
 
-    \sa onFailed()
+    \sa onFailed(), onCanceled()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(QtFuture::Launch policy, Function &&function)
@@ -926,7 +952,7 @@
           .then(QtFuture::Launch::Inherit, [](int res2){ ... });
     \endcode
 
-    \sa onFailed()
+    \sa onFailed(), onCanceled()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(QThreadPool *pool, Function &&function)
@@ -939,7 +965,7 @@
     future finishes, \a function will be invoked in a separate thread taken from the
     QThreadPool \a pool.
 
-    \sa onFailed()
+    \sa onFailed(), onCanceled()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onFailed(Function &&handler)
@@ -970,5 +996,16 @@
     \note You can always attach a handler taking no argument, to handle all exception
     types and avoid writing the try-catch block.
 
-    \sa then()
+    \sa then(), onCanceled()
+*/
+
+/*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onCanceled(Function &&handler)
+
+    \since 6.0
+
+    Attaches a cancellation \a handler to this future, to be called when the future is
+    canceled. The \a handler is a callable which doesn't take any arguments. It will be
+    invoked in the same thread in which this future has been running.
+
+    \sa then(), onFailed()
 */
