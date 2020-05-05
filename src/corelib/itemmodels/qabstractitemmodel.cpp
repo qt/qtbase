@@ -352,6 +352,22 @@ void *QPersistentModelIndex::internalPointer() const
 }
 
 /*!
+    \fn const void *QPersistentModelIndex::constInternalPointer() const
+    \since 6.0
+    \internal
+
+    Returns a \c{const void} \c{*} pointer used by the model to
+    associate the index with the internal data structure.
+*/
+
+const void *QPersistentModelIndex::constInternalPointer() const
+{
+    if (d)
+        return d->index.constInternalPointer();
+    return nullptr;
+}
+
+/*!
     \fn quintptr QPersistentModelIndex::internalId() const
 
     \internal
@@ -1059,6 +1075,15 @@ void QAbstractItemModel::resetInternalData()
     \fn void *QModelIndex::internalPointer() const
 
     Returns a \c{void} \c{*} pointer used by the model to associate
+    the index with the internal data structure.
+
+    \sa QAbstractItemModel::createIndex()
+*/
+
+/*!
+    \fn const void *QModelIndex::constInternalPointer() const
+
+    Returns a \c{const void} \c{*} pointer used by the model to associate
     the index with the internal data structure.
 
     \sa QAbstractItemModel::createIndex()
@@ -2589,7 +2614,7 @@ bool QAbstractItemModel::setHeaderData(int section, Qt::Orientation orientation,
 }
 
 /*!
-    \fn QModelIndex QAbstractItemModel::createIndex(int row, int column, void *ptr) const
+    \fn QModelIndex QAbstractItemModel::createIndex(int row, int column, const void *ptr) const
 
     Creates a model index for the given \a row and \a column with the internal
     pointer \a ptr.

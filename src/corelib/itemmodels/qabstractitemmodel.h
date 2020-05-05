@@ -63,6 +63,7 @@ public:
     Q_DECL_CONSTEXPR inline int column() const noexcept { return c; }
     Q_DECL_CONSTEXPR inline quintptr internalId() const noexcept { return i; }
     inline void *internalPointer() const noexcept { return reinterpret_cast<void*>(i); }
+    inline const void *constInternalPointer() const noexcept { return reinterpret_cast<const void *>(i); }
     inline QModelIndex parent() const;
     inline QModelIndex sibling(int row, int column) const;
     inline QModelIndex siblingAtColumn(int column) const;
@@ -86,7 +87,7 @@ public:
                                                   || (i == other.i && std::less<const QAbstractItemModel *>()(m, other.m))))));
         }
 private:
-    inline QModelIndex(int arow, int acolumn, void *ptr, const QAbstractItemModel *amodel) noexcept
+    inline QModelIndex(int arow, int acolumn, const void *ptr, const QAbstractItemModel *amodel) noexcept
         : r(arow), c(acolumn), i(reinterpret_cast<quintptr>(ptr)), m(amodel) {}
     Q_DECL_CONSTEXPR inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel) noexcept
         : r(arow), c(acolumn), i(id), m(amodel) {}
@@ -129,6 +130,7 @@ public:
     int row() const;
     int column() const;
     void *internalPointer() const;
+    const void *constInternalPointer() const;
     quintptr internalId() const;
     QModelIndex parent() const;
     QModelIndex sibling(int row, int column) const;
@@ -307,7 +309,7 @@ protected Q_SLOTS:
 protected:
     QAbstractItemModel(QAbstractItemModelPrivate &dd, QObject *parent = nullptr);
 
-    inline QModelIndex createIndex(int row, int column, void *data = nullptr) const;
+    inline QModelIndex createIndex(int row, int column, const void *data = nullptr) const;
     inline QModelIndex createIndex(int row, int column, quintptr id) const;
 
     void encodeData(const QModelIndexList &indexes, QDataStream &stream) const;
@@ -378,7 +380,7 @@ inline bool QAbstractItemModel::moveRow(const QModelIndex &sourceParent, int sou
 inline bool QAbstractItemModel::moveColumn(const QModelIndex &sourceParent, int sourceColumn,
                                            const QModelIndex &destinationParent, int destinationChild)
 { return moveColumns(sourceParent, sourceColumn, 1, destinationParent, destinationChild); }
-inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, void *adata) const
+inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, const void *adata) const
 { return QModelIndex(arow, acolumn, adata, this); }
 inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, quintptr aid) const
 { return QModelIndex(arow, acolumn, aid, this); }
