@@ -341,8 +341,9 @@ public:
     Translation files are created using \l{Qt Linguist}.
 
     The most common use of QTranslator is to: load a translation
-    file, install it using QCoreApplication::installTranslator(), and use
-    it via QObject::tr(). Here's an example \c main() function using the
+    file, and install it using QCoreApplication::installTranslator().
+
+    Here's an example \c main() function using the
     QTranslator:
 
     \snippet hellotrmain.cpp 0

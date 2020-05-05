@@ -54,15 +54,15 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     QTranslator translator;
-    // look up e.g. :/translations/myapp_de.qm
-    if (translator.load(QLocale(), QLatin1String("myapp"), QLatin1String("_"), QLatin1String(":/translations")))
+    // look up e.g. :/i18n/myapp_de.qm
+    if (translator.load(QLocale(), QLatin1String("myapp"), QLatin1String("_"), QLatin1String(":/i18n")))
         QCoreApplication::installTranslator(&translator);
 
     QPushButton hello(QCoreApplication::translate("main", "Hello world!"));
     hello.resize(100, 30);
 
     hello.show();
-    return QCoreApplication::exec();
+    return app.exec();
 }
 //! [0]
 

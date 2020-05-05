@@ -1,3 +1,6 @@
+requires(qtHaveModule(sql))
+requires(qtHaveModule(widgets))
+
 TEMPLATE = app
 TARGET = testlib_cppsnippet
 QT = core testlib sql widgets

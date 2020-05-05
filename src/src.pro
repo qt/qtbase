@@ -162,7 +162,7 @@ src_android.subdir = $$PWD/android
     }
 }
 SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_tracegen
-qtConfig(regularexpression):pcre2 {
+qtConfig(regularexpression):!qtConfig(system-pcre2):pcre2 {
     SUBDIRS += src_3rdparty_pcre2
     src_corelib.depends += src_3rdparty_pcre2
 }
@@ -172,12 +172,18 @@ win32:SUBDIRS += src_winmain
 qtConfig(network) {
     SUBDIRS += src_network
     src_plugins.depends += src_network
+    qtHaveModule(gui):qtConfig(private_tests) {
+        src_network_doc_snippets.subdir = network/doc/snippets
+        src_network_doc_snippets.target = sub-network-doc-snippets
+        src_network_doc_snippets.depends = src_network
+        SUBDIRS += src_network_doc_snippets
+    }
 }
 qtConfig(sql) {
     SUBDIRS += src_sql
     src_plugins.depends += src_sql
 
-    contains(QT_CONFIG, private_tests) {
+    qtConfig(private_tests) {
         src_sql_doc_snippets.subdir = sql/doc/snippets
         src_sql_doc_snippets.target = sub-sql-doc-snippets
         src_sql_doc_snippets.depends = src_sql
@@ -185,7 +191,16 @@ qtConfig(sql) {
     }
 }
 qtConfig(xml): SUBDIRS += src_xml
-qtConfig(testlib): SUBDIRS += src_testlib
+qtConfig(testlib) {
+    SUBDIRS += src_testlib
+    qtConfig(private_tests) {
+        src_testlib_doc_snippets.subdir = testlib/doc/snippets
+        src_testlib_doc_snippets.target = sub-testlib-doc-snippets
+        src_testlib_doc_snippets.depends = src_testlib
+        SUBDIRS += src_testlib_doc_snippets
+    }
+}
+
 qtConfig(dbus) {
     force_dbus_bootstrap|qtConfig(private_tests): \
         SUBDIRS += src_tools_bootstrap_dbus
@@ -247,6 +262,12 @@ qtConfig(gui) {
         }
         qtConfig(opengl) {
             SUBDIRS += src_openglwidgets
+        }
+        qtConfig(private_tests) {
+            src_widgets_doc_snippets.subdir = widgets/doc/snippets
+            src_widgets_doc_snippets.target = sub-widgets-doc-snippets
+            src_widgets_doc_snippets.depends = src_widgets
+            SUBDIRS += src_widgets_doc_snippets
         }
     }
 }
