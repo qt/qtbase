@@ -87,10 +87,6 @@ public:
         Antialiasing = 0x01,
         TextAntialiasing = 0x02,
         SmoothPixmapTransform = 0x04,
-#if QT_DEPRECATED_SINCE(5, 14)
-        HighQualityAntialiasing Q_DECL_ENUMERATOR_DEPRECATED_X("Use Antialiasing instead") = 0x08,
-        NonCosmeticDefaultPen Q_DECL_ENUMERATOR_DEPRECATED_X("Default pen is non-cosmetic now") = 0x10,
-#endif
         Qt4CompatiblePainting = 0x20,
         LosslessImageRendering = 0x40,
     };
@@ -131,11 +127,6 @@ public:
     bool begin(QPaintDevice *);
     bool end();
     bool isActive() const;
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use begin(QPaintDevice*) instead")
-    void initFrom(const QPaintDevice *device);
-#endif
 
     enum CompositionMode {
         CompositionMode_SourceOver,
@@ -346,15 +337,6 @@ public:
     inline void drawRoundedRect(const QRect &rect, qreal xRadius, qreal yRadius,
                                 Qt::SizeMode mode = Qt::AbsoluteSize);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use drawRoundedRect(..., Qt::RelativeSize) instead")
-    void drawRoundRect(const QRectF &r, int xround = 25, int yround = 25);
-    QT_DEPRECATED_X("Use drawRoundedRect(..., Qt::RelativeSize) instead")
-    void drawRoundRect(int x, int y, int w, int h, int = 25, int = 25);
-    QT_DEPRECATED_X("Use drawRoundedRect(..., Qt::RelativeSize) instead")
-    void drawRoundRect(const QRect &r, int xround = 25, int yround = 25);
-#endif
-
     void drawTiledPixmap(const QRectF &rect, const QPixmap &pm, const QPointF &offset = QPointF());
     inline void drawTiledPixmap(int x, int y, int w, int h, const QPixmap &, int sx=0, int sy=0);
     inline void drawTiledPixmap(const QRect &, const QPixmap &, const QPoint & = QPoint());
@@ -459,16 +441,6 @@ public:
     inline bool testRenderHint(RenderHint hint) const { return renderHints() & hint; }
 
     QPaintEngine *paintEngine() const;
-
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QWidget::render() instead")
-    static void setRedirected(const QPaintDevice *device, QPaintDevice *replacement,
-                              const QPoint& offset = QPoint());
-    QT_DEPRECATED_X("Use QWidget::render() instead")
-    static QPaintDevice *redirected(const QPaintDevice *device, QPoint *offset = nullptr);
-    QT_DEPRECATED_X("Use QWidget::render() instead")
-    static void restoreRedirected(const QPaintDevice *device);
-#endif
 
     void beginNativePainting();
     void endNativePainting();

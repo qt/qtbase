@@ -124,20 +124,12 @@ private slots:
     void drawPath2();
     void drawPath3();
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    void drawRoundRect_data() { fillData(); }
-    void drawRoundRect();
-#endif
     void drawRoundedRect_data() { fillData(); }
     void drawRoundedRect();
 
     void qimageFormats_data();
     void qimageFormats();
     void textOnTransparentImage();
-
-#if !defined(QT_NO_WIDGETS) && QT_DEPRECATED_SINCE(5, 13)
-    void initFrom();
-#endif
 
     void setWindow();
 
@@ -679,33 +671,6 @@ static QRect getPaintedSize(const QPixmap &pm, const QColor &background)
 }
 
 #ifndef QT_NO_WIDGETS
-
-#if QT_DEPRECATED_SINCE(5, 13)
-void tst_QPainter::initFrom()
-{
-    QWidget *widget = new QWidget();
-    QPalette pal = widget->palette();
-    pal.setColor(QPalette::WindowText, QColor(255, 0, 0));
-    pal.setBrush(QPalette::Window, QColor(0, 255, 0));
-    widget->setPalette(pal);
-    widget->show();
-
-    QFont font = widget->font();
-    font.setPointSize(26);
-    font.setItalic(true);
-    widget->setFont(font);
-
-    QPixmap pm(100, 100);
-    QPainter p(&pm);
-    p.initFrom(widget);
-
-    QCOMPARE(p.font(), font);
-    QCOMPARE(p.pen().color(), pal.color(QPalette::WindowText));
-    QCOMPARE(p.background(), pal.window());
-
-    delete widget;
-}
-#endif
 
 void tst_QPainter::drawBorderPixmap()
 {
@@ -1548,43 +1513,6 @@ void tst_QPainter::drawClippedEllipse()
     QCOMPARE(painted.height(), expected.height());
 
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-void tst_QPainter::drawRoundRect()
-{
-    QFETCH(QRect, rect);
-    QFETCH(bool, usePen);
-
-#ifdef Q_OS_MAC
-    if (QTest::currentDataTag() == QByteArray("rect(6, 12, 3, 14) with pen") ||
-        QTest::currentDataTag() == QByteArray("rect(6, 17, 3, 25) with pen") ||
-        QTest::currentDataTag() == QByteArray("rect(10, 6, 10, 3) with pen") ||
-        QTest::currentDataTag() == QByteArray("rect(10, 12, 10, 14) with pen") ||
-        QTest::currentDataTag() == QByteArray("rect(13, 45, 17, 80) with pen") ||
-        QTest::currentDataTag() == QByteArray("rect(13, 50, 17, 91) with pen") ||
-        QTest::currentDataTag() == QByteArray("rect(17, 6, 24, 3) with pen") ||
-        QTest::currentDataTag() == QByteArray("rect(24, 12, 38, 14) with pen"))
-        QSKIP("The Mac paint engine is off-by-one on certain rect sizes");
-#endif
-    QPixmap pixmap(rect.x() + rect.width() + 10,
-                   rect.y() + rect.height() + 10);
-    {
-        pixmap.fill(Qt::white);
-        QPainter p(&pixmap);
-        p.setRenderHint(QPainter::Qt4CompatiblePainting);
-        p.setPen(usePen ? QPen(Qt::black) : QPen(Qt::NoPen));
-        p.setBrush(Qt::black);
-        p.drawRoundRect(rect);
-        p.end();
-
-        int increment = usePen ? 1 : 0;
-
-        const QRect painted = getPaintedSize(pixmap, Qt::white);
-        QCOMPARE(painted.width(), rect.width() + increment);
-        QCOMPARE(painted.height(), rect.height() + increment);
-    }
-}
-#endif
 
 void tst_QPainter::drawRoundedRect()
 {

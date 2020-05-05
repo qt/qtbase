@@ -941,16 +941,10 @@ public:
     {
         Q_Q(QWindowsDirect2DPaintEngine);
 
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
         // Default path (no optimization)
         if (!(path.shape() == QVectorPath::LinesHint || path.shape() == QVectorPath::PolygonHint)
                 || !pen.dashBrush
-#if QT_DEPRECATED_SINCE(5, 14)
-                || q->state()->renderHints.testFlag(QPainter::HighQualityAntialiasing)
-#endif
                 || q->state()->renderHints.testFlag(QPainter::Antialiasing)) {
-QT_WARNING_POP
             ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path);
             if (!geometry) {
                 qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);

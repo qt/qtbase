@@ -1475,17 +1475,10 @@ void QOpenGL2PaintEngineEx::renderHintsChanged()
 #if !QT_CONFIG(opengles2)
     if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGL2PaintEngineEx);
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        if ((state()->renderHints & QPainter::Antialiasing)
-#if QT_DEPRECATED_SINCE(5, 14)
-            || (state()->renderHints & QPainter::HighQualityAntialiasing)
-#endif
-            )
+        if (state()->renderHints & QPainter::Antialiasing)
             d->funcs.glEnable(GL_MULTISAMPLE);
         else
             d->funcs.glDisable(GL_MULTISAMPLE);
-QT_WARNING_POP
     }
 #endif // !QT_CONFIG(opengles2)
 

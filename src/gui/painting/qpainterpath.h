@@ -142,19 +142,6 @@ public:
                                qreal xRadius, qreal yRadius,
                                Qt::SizeMode mode = Qt::AbsoluteSize);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use addRoundedRect(..., Qt::RelativeSize) instead")
-    void addRoundRect(const QRectF &rect, int xRnd, int yRnd);
-    QT_DEPRECATED_X("Use addRoundedRect(..., Qt::RelativeSize) instead")
-    void addRoundRect(qreal x, qreal y, qreal w, qreal h,
-                      int xRnd, int yRnd);
-    QT_DEPRECATED_X("Use addRoundedRect(..., Qt::RelativeSize) instead")
-    void addRoundRect(const QRectF &rect, int roundness);
-    QT_DEPRECATED_X("Use addRoundedRect(..., Qt::RelativeSize) instead")
-    void addRoundRect(qreal x, qreal y, qreal w, qreal h,
-                      int roundness);
-#endif
-
     void connectPath(const QPainterPath &path);
 
     bool contains(const QPointF &pt) const;
@@ -196,10 +183,6 @@ public:
     Q_REQUIRED_RESULT QPainterPath united(const QPainterPath &r) const;
     Q_REQUIRED_RESULT QPainterPath intersected(const QPainterPath &r) const;
     Q_REQUIRED_RESULT QPainterPath subtracted(const QPainterPath &r) const;
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use r.subtracted() instead")
-    Q_REQUIRED_RESULT QPainterPath subtractedInverted(const QPainterPath &r) const;
-#endif
 
     Q_REQUIRED_RESULT QPainterPath simplified() const;
 

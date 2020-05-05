@@ -1430,12 +1430,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     a smooth pixmap transformation algorithm (such as bilinear) rather
     than nearest neighbor.
 
-    \value HighQualityAntialiasing This value is obsolete and will be ignored,
-    use the Antialiasing render hint instead.
-
-    \value NonCosmeticDefaultPen This value is obsolete, the default for QPen
-    is now non-cosmetic.
-
     \value Qt4CompatiblePainting Compatibility hint telling the engine to use the
     same X11 based fill rules as in Qt 4, where aliased rendering is offset
     by slightly less than half a pixel. Also will treat default constructed pens
@@ -1550,23 +1544,6 @@ bool QPainter::isActive() const
     Q_D(const QPainter);
     return d->engine;
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    Initializes the painters pen, background and font to the same as
-    the given \a device.
-
-    \obsolete
-
-    \sa begin(), {QPainter#Settings}{Settings}
-*/
-void QPainter::initFrom(const QPaintDevice *device)
-{
-    Q_ASSERT_X(device, "QPainter::initFrom(const QPaintDevice *device)", "QPaintDevice cannot be 0");
-    Q_D(QPainter);
-    d->initFrom(device);
-}
-#endif
 
 void QPainterPrivate::initFrom(const QPaintDevice *device)
 {
@@ -4001,54 +3978,6 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
     Draws the given rectangle \a x, \a y, \a w, \a h with rounded corners.
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-
-    Draws a rectangle \a r with rounded corners.
-
-    The \a xRnd and \a yRnd arguments specify how rounded the corners
-    should be. 0 is angled corners, 99 is maximum roundedness.
-
-    A filled rectangle has a size of r.size(). A stroked rectangle
-    has a size of r.size() plus the pen width.
-
-    \sa drawRoundedRect()
-*/
-void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
-{
-    drawRoundedRect(r, xRnd, yRnd, Qt::RelativeSize);
-}
-
-
-/*!
-    \fn void QPainter::drawRoundRect(const QRect &r, int xRnd = 25, int yRnd = 25)
-
-    \overload
-    \obsolete
-
-    Draws the rectangle \a r with rounded corners.
-*/
-void QPainter::drawRoundRect(const QRect &rect, int xRnd, int yRnd)
-{
-    drawRoundedRect(QRectF(rect), xRnd, yRnd, Qt::RelativeSize);
-}
-
-/*!
-    \obsolete
-
-    \fn QPainter::drawRoundRect(int x, int y, int w, int h, int xRnd, int yRnd)
-
-    \overload
-
-    Draws the rectangle \a x, \a y, \a w, \a h with rounded corners.
-*/
-void QPainter::drawRoundRect(int x, int y, int w, int h, int xRnd, int yRnd)
-{
-    drawRoundedRect(QRectF(x, y, w, h), xRnd, yRnd, Qt::RelativeSize);
-}
-#endif
-
 /*!
     \fn void QPainter::drawEllipse(const QRectF &rectangle)
 
@@ -5692,22 +5621,6 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
     if (!d->engine || str.isEmpty() || pen().style() == Qt::NoPen)
         return;
 
-#if QT_DEPRECATED_SINCE(5, 11) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (tf & Qt::TextBypassShaping) {
-        // Skip complex shaping, shape using glyph advances only
-        int len = str.length();
-        int numGlyphs = len;
-        QVarLengthGlyphLayoutArray glyphs(len);
-        QFontEngine *fontEngine = d->state->font.d->engineForScript(QChar::Script_Common);
-        if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, { }))
-            Q_UNREACHABLE();
-
-        QTextItemInt gf(glyphs, &d->state->font, str.data(), len, fontEngine);
-        drawTextItem(p, gf);
-        return;
-    }
-#endif
-
     QStackTextEngine engine(str, d->state->font);
     engine.option.setTextDirection(d->state->layoutDirection);
     if (tf & (Qt::TextForceLeftToRight|Qt::TextForceRightToLeft)) {
@@ -7192,89 +7105,6 @@ void QPainter::setViewTransformEnabled(bool enable)
     d->state->VxF = enable;
     d->updateMatrix();
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \threadsafe
-
-    \obsolete
-
-    Please use QWidget::render() instead.
-
-    Redirects all paint commands for the given paint \a device, to the
-    \a replacement device. The optional point \a offset defines an
-    offset within the source device.
-
-    The redirection will not be effective until the begin() function
-    has been called; make sure to call end() for the given \a
-    device's painter (if any) before redirecting. Call
-    restoreRedirected() to restore the previous redirection.
-
-    \warning Making use of redirections in the QPainter API implies
-    that QPainter::begin() and QPaintDevice destructors need to hold
-    a mutex for a short period. This can impact performance. Use of
-    QWidget::render is strongly encouraged.
-
-    \sa redirected(), restoreRedirected()
-*/
-void QPainter::setRedirected(const QPaintDevice *device,
-                             QPaintDevice *replacement,
-                             const QPoint &offset)
-{
-    Q_ASSERT(device != nullptr);
-    Q_UNUSED(device)
-    Q_UNUSED(replacement)
-    Q_UNUSED(offset)
-    qWarning("QPainter::setRedirected(): ignoring call to deprecated function, use QWidget::render() instead");
-}
-
-/*!
-    \threadsafe
-
-    \obsolete
-
-    Using QWidget::render() obsoletes the use of this function.
-
-    Restores the previous redirection for the given \a device after a
-    call to setRedirected().
-
-    \warning Making use of redirections in the QPainter API implies
-    that QPainter::begin() and QPaintDevice destructors need to hold
-    a mutex for a short period. This can impact performance. Use of
-    QWidget::render is strongly encouraged.
-
-    \sa redirected()
- */
-void QPainter::restoreRedirected(const QPaintDevice *device)
-{
-    Q_UNUSED(device)
-    qWarning("QPainter::restoreRedirected(): ignoring call to deprecated function, use QWidget::render() instead");
-}
-
-/*!
-    \threadsafe
-
-    \obsolete
-
-    Using QWidget::render() obsoletes the use of this function.
-
-    Returns the replacement for given \a device. The optional out
-    parameter \a offset returns the offset within the replaced device.
-
-    \warning Making use of redirections in the QPainter API implies
-    that QPainter::begin() and QPaintDevice destructors need to hold
-    a mutex for a short period. This can impact performance. Use of
-    QWidget::render is strongly encouraged.
-
-    \sa setRedirected(), restoreRedirected()
-*/
-QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
-{
-    Q_UNUSED(device)
-    Q_UNUSED(offset)
-    return nullptr;
-}
-#endif
 
 void qt_format_text(const QFont &fnt, const QRectF &_r,
                     int tf, const QString& str, QRectF *brect,
