@@ -217,10 +217,10 @@ qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_standalone_t
 ## files always lived in Qt::Core, so we keep it that way
 add_library(GlobalConfig INTERFACE)
 target_include_directories(GlobalConfig INTERFACE
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore>
-    $<INSTALL_INTERFACE:include>
-    $<INSTALL_INTERFACE:include/QtCore>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/${INSTALL_INCLUDEDIR}/QtCore>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore>
 )
 qt_feature_module_begin(NO_MODULE
     PUBLIC_FILE src/corelib/global/qconfig.h
@@ -248,10 +248,10 @@ add_library(Qt::GlobalConfig ALIAS GlobalConfig)
 add_library(GlobalConfigPrivate INTERFACE)
 target_link_libraries(GlobalConfigPrivate INTERFACE GlobalConfig)
 target_include_directories(GlobalConfigPrivate INTERFACE
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}>
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore>
-    $<INSTALL_INTERFACE:include/QtCore/${PROJECT_VERSION}>
-    $<INSTALL_INTERFACE:include/QtCore/${PROJECT_VERSION}/QtCore>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}/QtCore>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}/QtCore>
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
