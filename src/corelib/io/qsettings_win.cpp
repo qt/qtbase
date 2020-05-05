@@ -102,7 +102,7 @@ static QString escapedKey(QString uKey)
     QChar *data = uKey.data();
     int l = uKey.length();
     for (int i = 0; i < l; ++i) {
-        ushort &ucs = data[i].unicode();
+        auto &ucs = data[i].unicode();
         if (ucs == '\\')
             ucs = '/';
         else if (ucs == '/')
