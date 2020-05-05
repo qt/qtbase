@@ -470,6 +470,11 @@ void WriteInitialization::acceptUI(DomUI *node)
     if (node->hasAttributeConnectslotsbyname())
         m_connectSlotsByName = node->attributeConnectslotsbyname();
 
+    if (auto customSlots = node->elementSlots()) {
+        m_customSlots = customSlots->elementSlot();
+        m_customSignals = customSlots->elementSignal();
+    }
+
     acceptLayoutDefault(node->elementLayoutDefault());
     acceptLayoutFunction(node->elementLayoutFunction());
 
@@ -2573,9 +2578,8 @@ bool WriteInitialization::isCustomWidget(const QString &className) const
     return m_uic->customWidgetsInfo()->customWidget(className) != nullptr;
 }
 
-ConnectionSyntax WriteInitialization::connectionSyntax(const QString &senderSignature,
-                                                       const QString &senderClassName,
-                                                       const QString &receiverClassName) const
+ConnectionSyntax WriteInitialization::connectionSyntax(const language::SignalSlot &sender,
+                                                       const language::SignalSlot &receiver) const
 {
     if (m_option.forceMemberFnPtrConnectionSyntax)
         return ConnectionSyntax::MemberFunctionPtr;
@@ -2584,12 +2588,18 @@ ConnectionSyntax WriteInitialization::connectionSyntax(const QString &senderSign
     // Auto mode: Use Qt 5 connection syntax for Qt classes and parameterless
     // connections. QAxWidget is special though since it has a fake Meta object.
     static const QStringList requiresStringSyntax{QStringLiteral("QAxWidget")};
-    if (requiresStringSyntax.contains(senderClassName)
-        || requiresStringSyntax.contains(receiverClassName)) {
+    if (requiresStringSyntax.contains(sender.className)
+        || requiresStringSyntax.contains(receiver.className)) {
         return ConnectionSyntax::StringBased;
     }
-    return senderSignature.endsWith(QLatin1String("()"))
-        || (!isCustomWidget(senderClassName) && !isCustomWidget(receiverClassName))
+
+    if ((sender.name == m_mainFormVarName && m_customSignals.contains(sender.signature))
+         || (receiver.name == m_mainFormVarName && m_customSlots.contains(receiver.signature))) {
+        return ConnectionSyntax::StringBased;
+    }
+
+    return sender.signature.endsWith(QLatin1String("()"))
+        || (!isCustomWidget(sender.className) && !isCustomWidget(receiver.className))
         ? ConnectionSyntax::MemberFunctionPtr : ConnectionSyntax::StringBased;
 }
 
@@ -2617,8 +2627,7 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
 
     m_output << m_indent;
     language::formatConnection(m_output, theSignal, theSlot,
-                               connectionSyntax(senderSignature, senderDecl.className,
-                                                receiverDecl.className));
+                               connectionSyntax(theSignal, theSlot));
     m_output << language::eol;
 }
 

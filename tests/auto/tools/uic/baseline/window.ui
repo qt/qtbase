@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tests that custom slots on the form use string-based connections. Source: svggenerator -->
+<ui version="4.0">
+ <class>Window</class>
+ <widget class="QWidget" name="Window">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>339</width>
+    <height>353</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>SVG Generator</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
+   <item row="0" column="0">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="1">
+    <widget class="DisplayWidget" name="displayWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>200</horstretch>
+       <verstretch>200</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>200</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>200</width>
+       <height>200</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <spacer name="horizontalSpacer_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>&amp;Shape:</string>
+       </property>
+       <property name="buddy">
+        <cstring>shapeComboBox</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="shapeComboBox">
+       <item>
+        <property name="text">
+         <string>House</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Car</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>&amp;Color:</string>
+       </property>
+       <property name="buddy">
+        <cstring>colorButton</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QToolButton" name="colorButton">
+       <property name="text">
+        <string>Choose Color...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>&amp;Background:</string>
+       </property>
+       <property name="buddy">
+        <cstring>shapeComboBox_2</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="shapeComboBox_2">
+       <item>
+        <property name="text">
+         <string>Sky</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Trees</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Road</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0" colspan="3">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QToolButton" name="toolButton_2">
+       <property name="text">
+        <string>Save &amp;As...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DisplayWidget</class>
+   <extends>QWidget</extends>
+   <header>displaywidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>shapeComboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>Window</receiver>
+   <slot>updateShape(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>288</x>
+     <y>232</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>336</x>
+     <y>234</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>colorButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Window</receiver>
+   <slot>updateColor()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>301</x>
+     <y>262</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>337</x>
+     <y>267</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>shapeComboBox_2</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>Window</receiver>
+   <slot>updateBackground(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>306</x>
+     <y>299</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>337</x>
+     <y>311</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>Window</receiver>
+   <slot>saveSvg()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>298</x>
+     <y>336</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>307</x>
+     <y>348</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>updateBackground(int)</slot>
+  <slot>updateColor()</slot>
+  <slot>updateShape(int)</slot>
+  <slot>saveSvg()</slot>
+ </slots>
+</ui>

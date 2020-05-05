@@ -38,6 +38,7 @@
 #include <qtextstream.h>
 
 enum class ConnectionSyntax;
+namespace language { struct SignalSlot; }
 
 QT_BEGIN_NAMESPACE
 
@@ -241,9 +242,8 @@ private:
     void addButtonGroup(const DomWidget *node, const QString &varName);
     void addWizardPage(const QString &pageVarName, const DomWidget *page, const QString &parentWidget);
     bool isCustomWidget(const QString &className) const;
-    ConnectionSyntax connectionSyntax(const QString &senderSignature,
-                                      const QString &senderClassName,
-                                      const QString &receiverClassName) const;
+    ConnectionSyntax connectionSyntax(const language::SignalSlot &sender,
+                                      const language::SignalSlot &receiver) const;
 
     const Uic *m_uic;
     Driver *m_driver;
@@ -305,6 +305,8 @@ private:
 
     QString m_generatedClass;
     QString m_mainFormVarName;
+    QStringList m_customSlots;
+    QStringList m_customSignals;
     bool m_mainFormUsedInRetranslateUi = false;
 
     QString m_delayedInitialization;
