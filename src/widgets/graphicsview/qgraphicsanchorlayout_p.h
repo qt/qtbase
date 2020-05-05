@@ -60,6 +60,10 @@
 #include "qgraph_p.h"
 #include "qsimplex_p.h"
 
+#include <QtGui/private/qgridlayoutengine_p.h>
+
+#include <array>
+
 QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
@@ -395,7 +399,22 @@ public:
     enum Orientation {
         Horizontal = 0,
         Vertical,
-        NOrientations
+    };
+
+    template <typename T>
+    class QHVContainer : public QT_PREPEND_NAMESPACE(QHVContainer)<T>
+    {
+        using Base = QT_PREPEND_NAMESPACE(QHVContainer)<T>;
+        static constexpr Qt::Orientation map(Orientation o) noexcept
+        { return static_cast<Qt::Orientation>(int(o) + 1); }
+    public:
+        using Base::Base;
+        using Base::operator[];
+
+        constexpr const T &operator[](Orientation o) const noexcept
+        { return this->operator[](map(o)); }
+        constexpr T &operator[](Orientation o) noexcept
+        { return this->operator[](map(o)); }
     };
 
     QGraphicsAnchorLayoutPrivate();
@@ -552,9 +571,9 @@ public:
 #endif
 
 
-    qreal spacings[NOrientations];
+    QHVContainer<qreal> spacings = {-1, -1};
     // Size hints from simplex engine
-    qreal sizeHints[2][3];
+    QHVContainer<std::array<qreal, 3>> sizeHints = {{-1, -1, -1}, {-1, -1, -1}};
 
     // Items
     QVector<QGraphicsLayoutItem *> items;
@@ -565,31 +584,31 @@ public:
     QHash<QPair<QGraphicsLayoutItem*, Qt::AnchorPoint>, QPair<AnchorVertex *, int> > m_vertexList;
 
     // Internal graph of anchorage points and anchors, for both orientations
-    Graph<AnchorVertex, AnchorData> graph[2];
+    QHVContainer<Graph<AnchorVertex, AnchorData>> graph;
 
-    AnchorVertex *layoutFirstVertex[2];
-    AnchorVertex *layoutCentralVertex[2];
-    AnchorVertex *layoutLastVertex[2];
+    QHVContainer<AnchorVertex *> layoutFirstVertex = {};
+    QHVContainer<AnchorVertex *> layoutCentralVertex = {};
+    QHVContainer<AnchorVertex *> layoutLastVertex = {};
 
     // Combined anchors in order of creation
-    QList<AnchorVertexPair *> simplifiedVertices[2];
-    QList<AnchorData *> anchorsFromSimplifiedVertices[2];
+    QHVContainer<QList<AnchorVertexPair *>> simplifiedVertices;
+    QHVContainer<QList<AnchorData *>> anchorsFromSimplifiedVertices;
 
     // Graph paths and constraints, for both orientations
-    QMultiHash<AnchorVertex *, GraphPath> graphPaths[2];
-    QList<QSimplexConstraint *> constraints[2];
-    QList<QSimplexConstraint *> itemCenterConstraints[2];
+    QHVContainer<QMultiHash<AnchorVertex *, GraphPath>> graphPaths;
+    QHVContainer<QList<QSimplexConstraint *>> constraints;
+    QHVContainer<QList<QSimplexConstraint *>> itemCenterConstraints;
 
     // The interpolation interval and progress based on the current size
     // as well as the key values (minimum, preferred and maximum)
-    Interval interpolationInterval[2];
-    qreal interpolationProgress[2];
+    QHVContainer<Interval> interpolationInterval;
+    QHVContainer<qreal> interpolationProgress = {-1, -1};
 
-    bool graphHasConflicts[2];
-    QSet<QGraphicsLayoutItem *> m_floatItems[2];
+    QHVContainer<bool> graphHasConflicts = {};
+    QHVContainer<QSet<QGraphicsLayoutItem *>> m_floatItems;
 
 #if defined(QT_DEBUG) || defined(QT_BUILD_INTERNAL)
-    bool lastCalculationUsedSimplex[2];
+    QHVContainer<bool> lastCalculationUsedSimplex;
 #endif
 
     uint calculateGraphCacheDirty : 1;

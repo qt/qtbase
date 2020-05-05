@@ -621,19 +621,6 @@ QString GraphPath::toString() const
 QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
     : calculateGraphCacheDirty(true), styleInfoDirty(true)
 {
-    for (int i = 0; i < NOrientations; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            sizeHints[i][j] = -1;
-        }
-        interpolationProgress[i] = -1;
-
-        spacings[i] = -1;
-        graphHasConflicts[i] = false;
-
-        layoutFirstVertex[i] = nullptr;
-        layoutCentralVertex[i] = nullptr;
-        layoutLastVertex[i] = nullptr;
-    }
 }
 
 Qt::AnchorPoint QGraphicsAnchorLayoutPrivate::oppositeEdge(Qt::AnchorPoint edge)
@@ -2032,8 +2019,8 @@ QLayoutStyleInfo &QGraphicsAnchorLayoutPrivate::styleInfo() const
 
         QStyle *style = w ? w->style() : QApplication::style();
         cachedStyleInfo = QLayoutStyleInfo(style, wid);
-        cachedStyleInfo.setDefaultSpacing(Qt::Horizontal, spacings[0]);
-        cachedStyleInfo.setDefaultSpacing(Qt::Vertical, spacings[1]);
+        cachedStyleInfo.setDefaultSpacing(Qt::Horizontal, spacings[Qt::Horizontal]);
+        cachedStyleInfo.setDefaultSpacing(Qt::Vertical, spacings[Qt::Vertical]);
 
         styleInfoDirty = false;
     }
@@ -2953,9 +2940,9 @@ bool QGraphicsAnchorLayoutPrivate::hasConflicts() const
     QGraphicsAnchorLayoutPrivate *that = const_cast<QGraphicsAnchorLayoutPrivate*>(this);
     that->calculateGraphs();
 
-    bool floatConflict = !m_floatItems[0].isEmpty() || !m_floatItems[1].isEmpty();
+    bool floatConflict = !m_floatItems[Qt::Horizontal].isEmpty() || !m_floatItems[Qt::Vertical].isEmpty();
 
-    return graphHasConflicts[0] || graphHasConflicts[1] || floatConflict;
+    return graphHasConflicts[Qt::Horizontal] || graphHasConflicts[Qt::Vertical] || floatConflict;
 }
 
 #ifdef QT_DEBUG
@@ -2966,8 +2953,8 @@ void QGraphicsAnchorLayoutPrivate::dumpGraph(const QString &name)
         qWarning("Could not write to %ls", qUtf16Printable(file.fileName()));
 
     QString str = QString::fromLatin1("digraph anchorlayout {\nnode [shape=\"rect\"]\n%1}");
-    QString dotContents = graph[0].serializeToDot();
-    dotContents += graph[1].serializeToDot();
+    QString dotContents = graph[Qt::Horizontal].serializeToDot();
+    dotContents += graph[Qt::Vertical].serializeToDot();
     file.write(str.arg(dotContents).toLocal8Bit());
 
     file.close();

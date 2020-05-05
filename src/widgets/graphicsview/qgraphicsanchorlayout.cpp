@@ -238,8 +238,8 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
     d->removeCenterConstraints(this, QGraphicsAnchorLayoutPrivate::Vertical);
     d->deleteLayoutEdges();
 
-    Q_ASSERT(d->itemCenterConstraints[0].isEmpty());
-    Q_ASSERT(d->itemCenterConstraints[1].isEmpty());
+    Q_ASSERT(d->itemCenterConstraints[Qt::Horizontal].isEmpty());
+    Q_ASSERT(d->itemCenterConstraints[Qt::Vertical].isEmpty());
     Q_ASSERT(d->items.isEmpty());
     Q_ASSERT(d->m_vertexList.isEmpty());
 }
@@ -372,7 +372,7 @@ void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
 
-    d->spacings[0] = spacing;
+    d->spacings[Qt::Horizontal] = spacing;
     invalidate();
 }
 
@@ -385,7 +385,7 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
 
-    d->spacings[1] = spacing;
+    d->spacings[Qt::Vertical] = spacing;
     invalidate();
 }
 
@@ -404,7 +404,7 @@ void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
 
-    d->spacings[0] = d->spacings[1] = spacing;
+    d->spacings = {spacing, spacing};
     invalidate();
 }
 
