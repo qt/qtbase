@@ -341,6 +341,7 @@ void sql_intro_snippets()
         numRows = query.at() + 1;
     }
 //! [33]
+    Q_UNUSED(numRows);
     }
 
     {
