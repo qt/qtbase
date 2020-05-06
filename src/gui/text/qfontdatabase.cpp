@@ -2019,224 +2019,90 @@ QString QFontDatabase::writingSystemName(WritingSystem writingSystem)
     return QCoreApplication::translate("QFontDatabase", name);
 }
 
+static QStringView writing_system_sample(QFontDatabase::WritingSystem writingSystem)
+{
+    switch (writingSystem) {
+    case QFontDatabase::Any:
+    case QFontDatabase::Symbol:
+        // show only ascii characters
+        return u"AaBbzZ";
+    case QFontDatabase::Latin:
+        // This is cheating... we only show latin-1 characters so that we don't
+        // end up loading lots of fonts - at least on X11...
+        return u"Aa\x00C3\x00E1Zz";
+    case QFontDatabase::Greek:
+        return u"\x0393\x03B1\x03A9\x03C9";
+    case QFontDatabase::Cyrillic:
+        return u"\x0414\x0434\x0436\x044f";
+    case QFontDatabase::Armenian:
+        return u"\x053f\x054f\x056f\x057f";
+    case QFontDatabase::Hebrew:
+        return u"\x05D0\x05D1\x05D2\x05D3";
+    case QFontDatabase::Arabic:
+        return u"\x0623\x0628\x062C\x062F\x064A\x0629\x0020\x0639\x0631\x0628\x064A\x0629";
+    case QFontDatabase::Syriac:
+        return u"\x0715\x0725\x0716\x0726";
+    case QFontDatabase::Thaana:
+        return u"\x0784\x0794\x078c\x078d";
+    case QFontDatabase::Devanagari:
+        return u"\x0905\x0915\x0925\x0935";
+    case QFontDatabase::Bengali:
+        return u"\x0986\x0996\x09a6\x09b6";
+    case QFontDatabase::Gurmukhi:
+        return u"\x0a05\x0a15\x0a25\x0a35";
+    case QFontDatabase::Gujarati:
+        return u"\x0a85\x0a95\x0aa5\x0ab5";
+    case QFontDatabase::Oriya:
+        return u"\x0b06\x0b16\x0b2b\x0b36";
+    case QFontDatabase::Tamil:
+        return u"\x0b89\x0b99\x0ba9\x0bb9";
+    case QFontDatabase::Telugu:
+        return u"\x0c05\x0c15\x0c25\x0c35";
+    case QFontDatabase::Kannada:
+        return u"\x0c85\x0c95\x0ca5\x0cb5";
+    case QFontDatabase::Malayalam:
+        return u"\x0d05\x0d15\x0d25\x0d35";
+    case QFontDatabase::Sinhala:
+        return u"\x0d90\x0da0\x0db0\x0dc0";
+    case QFontDatabase::Thai:
+        return u"\x0e02\x0e12\x0e22\x0e32";
+    case QFontDatabase::Lao:
+        return u"\x0e8d\x0e9d\x0ead\x0ebd";
+    case QFontDatabase::Tibetan:
+        return u"\x0f00\x0f01\x0f02\x0f03";
+    case QFontDatabase::Myanmar:
+        return u"\x1000\x1001\x1002\x1003";
+    case QFontDatabase::Georgian:
+        return u"\x10a0\x10b0\x10c0\x10d0";
+    case QFontDatabase::Khmer:
+        return u"\x1780\x1790\x17b0\x17c0";
+    case QFontDatabase::SimplifiedChinese:
+        return u"\x4e2d\x6587\x8303\x4f8b";
+    case QFontDatabase::TraditionalChinese:
+        return u"\x4e2d\x6587\x7bc4\x4f8b";
+    case QFontDatabase::Japanese:
+        return u"\x30b5\x30f3\x30d7\x30eb\x3067\x3059";
+    case QFontDatabase::Korean:
+        return u"\xac00\xac11\xac1a\xac2f";
+    case QFontDatabase::Vietnamese:
+        return u"\x1ED7\x1ED9\x1ED1\x1ED3";
+    case QFontDatabase::Ogham:
+        return u"\x1681\x1682\x1683\x1684";
+    case QFontDatabase::Runic:
+        return u"\x16a0\x16a1\x16a2\x16a3";
+    case QFontDatabase::Nko:
+        return u"\x7ca\x7cb\x7cc\x7cd";
+    default:
+        return nullptr;
+    }
+}
 
 /*!
     Returns a string with sample characters from \a writingSystem.
 */
 QString QFontDatabase::writingSystemSample(WritingSystem writingSystem)
 {
-    QString sample;
-    switch (writingSystem) {
-    case Any:
-    case Symbol:
-        // show only ascii characters
-        sample += QLatin1String("AaBbzZ");
-        break;
-    case Latin:
-        // This is cheating... we only show latin-1 characters so that we don't
-        // end up loading lots of fonts - at least on X11...
-        sample = QLatin1String("Aa");
-        sample += QChar(0x00C3);
-        sample += QChar(0x00E1);
-        sample += QLatin1String("Zz");
-        break;
-    case Greek:
-        sample += QChar(0x0393);
-        sample += QChar(0x03B1);
-        sample += QChar(0x03A9);
-        sample += QChar(0x03C9);
-        break;
-    case Cyrillic:
-        sample += QChar(0x0414);
-        sample += QChar(0x0434);
-        sample += QChar(0x0436);
-        sample += QChar(0x044f);
-        break;
-    case Armenian:
-        sample += QChar(0x053f);
-        sample += QChar(0x054f);
-        sample += QChar(0x056f);
-        sample += QChar(0x057f);
-        break;
-    case Hebrew:
-        sample += QChar(0x05D0);
-        sample += QChar(0x05D1);
-        sample += QChar(0x05D2);
-        sample += QChar(0x05D3);
-        break;
-    case Arabic:
-        sample += QChar(0x0623);
-        sample += QChar(0x0628);
-        sample += QChar(0x062C);
-        sample += QChar(0x062F);
-        sample += QChar(0x064A);
-        sample += QChar(0x0629);
-        sample += QChar(0x0020);
-        sample += QChar(0x0639);
-        sample += QChar(0x0631);
-        sample += QChar(0x0628);
-        sample += QChar(0x064A);
-        sample += QChar(0x0629);
-        break;
-    case Syriac:
-        sample += QChar(0x0715);
-        sample += QChar(0x0725);
-        sample += QChar(0x0716);
-        sample += QChar(0x0726);
-        break;
-    case Thaana:
-        sample += QChar(0x0784);
-        sample += QChar(0x0794);
-        sample += QChar(0x078c);
-        sample += QChar(0x078d);
-        break;
-    case Devanagari:
-        sample += QChar(0x0905);
-        sample += QChar(0x0915);
-        sample += QChar(0x0925);
-        sample += QChar(0x0935);
-        break;
-    case Bengali:
-        sample += QChar(0x0986);
-        sample += QChar(0x0996);
-        sample += QChar(0x09a6);
-        sample += QChar(0x09b6);
-        break;
-    case Gurmukhi:
-        sample += QChar(0x0a05);
-        sample += QChar(0x0a15);
-        sample += QChar(0x0a25);
-        sample += QChar(0x0a35);
-        break;
-    case Gujarati:
-        sample += QChar(0x0a85);
-        sample += QChar(0x0a95);
-        sample += QChar(0x0aa5);
-        sample += QChar(0x0ab5);
-        break;
-    case Oriya:
-        sample += QChar(0x0b06);
-        sample += QChar(0x0b16);
-        sample += QChar(0x0b2b);
-        sample += QChar(0x0b36);
-        break;
-    case Tamil:
-        sample += QChar(0x0b89);
-        sample += QChar(0x0b99);
-        sample += QChar(0x0ba9);
-        sample += QChar(0x0bb9);
-        break;
-    case Telugu:
-        sample += QChar(0x0c05);
-        sample += QChar(0x0c15);
-        sample += QChar(0x0c25);
-        sample += QChar(0x0c35);
-        break;
-    case Kannada:
-        sample += QChar(0x0c85);
-        sample += QChar(0x0c95);
-        sample += QChar(0x0ca5);
-        sample += QChar(0x0cb5);
-        break;
-    case Malayalam:
-        sample += QChar(0x0d05);
-        sample += QChar(0x0d15);
-        sample += QChar(0x0d25);
-        sample += QChar(0x0d35);
-        break;
-    case Sinhala:
-        sample += QChar(0x0d90);
-        sample += QChar(0x0da0);
-        sample += QChar(0x0db0);
-        sample += QChar(0x0dc0);
-        break;
-    case Thai:
-        sample += QChar(0x0e02);
-        sample += QChar(0x0e12);
-        sample += QChar(0x0e22);
-        sample += QChar(0x0e32);
-        break;
-    case Lao:
-        sample += QChar(0x0e8d);
-        sample += QChar(0x0e9d);
-        sample += QChar(0x0ead);
-        sample += QChar(0x0ebd);
-        break;
-    case Tibetan:
-        sample += QChar(0x0f00);
-        sample += QChar(0x0f01);
-        sample += QChar(0x0f02);
-        sample += QChar(0x0f03);
-        break;
-    case Myanmar:
-        sample += QChar(0x1000);
-        sample += QChar(0x1001);
-        sample += QChar(0x1002);
-        sample += QChar(0x1003);
-        break;
-    case Georgian:
-        sample += QChar(0x10a0);
-        sample += QChar(0x10b0);
-        sample += QChar(0x10c0);
-        sample += QChar(0x10d0);
-        break;
-    case Khmer:
-        sample += QChar(0x1780);
-        sample += QChar(0x1790);
-        sample += QChar(0x17b0);
-        sample += QChar(0x17c0);
-        break;
-    case SimplifiedChinese:
-        sample += QChar(0x4e2d);
-        sample += QChar(0x6587);
-        sample += QChar(0x8303);
-        sample += QChar(0x4f8b);
-        break;
-    case TraditionalChinese:
-        sample += QChar(0x4e2d);
-        sample += QChar(0x6587);
-        sample += QChar(0x7bc4);
-        sample += QChar(0x4f8b);
-        break;
-    case Japanese:
-        sample += QChar(0x30b5);
-        sample += QChar(0x30f3);
-        sample += QChar(0x30d7);
-        sample += QChar(0x30eb);
-        sample += QChar(0x3067);
-        sample += QChar(0x3059);
-        break;
-    case Korean:
-        sample += QChar(0xac00);
-        sample += QChar(0xac11);
-        sample += QChar(0xac1a);
-        sample += QChar(0xac2f);
-        break;
-    case Vietnamese:
-        sample += u"\x1ED7\x1ED9\x1ED1\x1ED3";
-        break;
-    case Ogham:
-        sample += QChar(0x1681);
-        sample += QChar(0x1682);
-        sample += QChar(0x1683);
-        sample += QChar(0x1684);
-        break;
-    case Runic:
-        sample += QChar(0x16a0);
-        sample += QChar(0x16a1);
-        sample += QChar(0x16a2);
-        sample += QChar(0x16a3);
-        break;
-    case Nko:
-        sample += QChar(0x7ca);
-        sample += QChar(0x7cb);
-        sample += QChar(0x7cc);
-        sample += QChar(0x7cd);
-        break;
-    default:
-        break;
-    }
-    return sample;
+    return writing_system_sample(writingSystem).toString();
 }
 
 
