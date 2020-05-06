@@ -821,7 +821,7 @@ QString QUtf16::convertToUnicode(const char *chars, int len, QTextCodec::Convert
                             endian = BigEndianness;
                         } else {
                             endian = LittleEndianness;
-                            ch = QChar((ch.unicode() >> 8) | ((ch.unicode() & 0xff) << 8));
+                            ch = QChar::fromUcs2((ch.unicode() >> 8) | ((ch.unicode() & 0xff) << 8));
                         }
                         *qch++ = ch;
                     }
@@ -951,12 +951,8 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
                 }
             }
             uint code = (endian == BigEndianness) ? qFromBigEndian<quint32>(tuple) : qFromLittleEndian<quint32>(tuple);
-            if (QChar::requiresSurrogates(code)) {
-                *qch++ = QChar(QChar::highSurrogate(code));
-                *qch++ = QChar(QChar::lowSurrogate(code));
-            } else {
-                *qch++ = QChar(code);
-            }
+            for (char16_t c : QChar::fromUcs4(code))
+                *qch++ = c;
             num = 0;
         }
     }

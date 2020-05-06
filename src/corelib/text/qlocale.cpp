@@ -3897,7 +3897,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
 
         char out = numericToCLocale(in);
         if (out == 0) {
-            const QChar simple(in.size() == 1 ? in.front() : QChar(0));
+            const QChar simple = in.size() == 1 ? in.front() : QChar::Null;
             if (in == listSeparator())
                 out = ';';
             else if (in == percentSign())

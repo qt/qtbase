@@ -525,14 +525,14 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QMetaType::Short:
         case QMetaType::Long:
         case QMetaType::Float:
-            *c = QChar(ushort(qMetaTypeNumber(d)));
+            *c = QChar::fromUcs2(qMetaTypeNumber(d));
             break;
         case QMetaType::UInt:
         case QMetaType::ULongLong:
         case QMetaType::UChar:
         case QMetaType::UShort:
         case QMetaType::ULong:
-            *c = QChar(ushort(qMetaTypeUNumber(d)));
+            *c = QChar::fromUcs2(qMetaTypeUNumber(d));
             break;
         default:
             return false;
