@@ -6015,11 +6015,11 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
         if (subRule.hasBox() || !subRule.hasNativeBorder()) {
             if (se == SE_TabBarTabText) {
-                if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(opt)) {
+                if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
                     const QTabBar *bar = qobject_cast<const QTabBar *>(w);
                     const QRect optRect = bar && tab->tabIndex != -1 ? bar->tabRect(tab->tabIndex) : opt->rect;
                     const QRect r = positionRect(w, subRule, PseudoElement_TabBarTab, optRect, opt->direction);
-                    QStyleOptionTabV4 tabCopy(*tab);
+                    QStyleOptionTab tabCopy(*tab);
                     tabCopy.rect = subRule.contentsRect(r);
                     return ParentStyle::subElementRect(se, &tabCopy, w);
                 }

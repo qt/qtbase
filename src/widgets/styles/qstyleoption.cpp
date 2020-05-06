@@ -1267,6 +1267,14 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
 */
 
 /*!
+    \typedef QStyleOptionTabV4
+    \relates QStyleOptionTab
+    \obsolete
+
+    Synonym for QStyleOptionTab.
+*/
+
+/*!
     Constructs a QStyleOptionTab object, initializing the members
     variables to their default values.
 */
@@ -1471,16 +1479,7 @@ QStyleOptionTab::QStyleOptionTab(int version)
 */
 
 /*!
-    Constructs a QStyleOptionTabV4 object, initializing the members
-    variables to their default values.
- */
-
-QStyleOptionTabV4::QStyleOptionTabV4() : QStyleOptionTab(QStyleOptionTabV4::Version)
-{
-}
-
-/*!
-    \variable QStyleOptionTabV4::tabIndex
+    \variable QStyleOptionTab::tabIndex
     \brief the index for the tab being represented.
 
     The default value is -1, i.e. a tab not on a tabbar;

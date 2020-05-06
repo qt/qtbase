@@ -231,8 +231,7 @@ void QTabBarPrivate::initBasicStyleOption(QStyleOptionTab *option, int tabIndex)
             option->cornerWidgets |= QStyleOptionTab::RightCornerWidget;
     }
 #endif
-    if (QStyleOptionTabV4 *optv4 = qstyleoption_cast<QStyleOptionTabV4 *>(option))
-        optv4->tabIndex = tabIndex;
+    option->tabIndex = tabIndex;
 }
 
 /*!
@@ -632,7 +631,7 @@ QRect QTabBarPrivate::normalizedScrollRect(int index)
     // tab bar itself is in a different orientation.
 
     Q_Q(QTabBar);
-    QStyleOptionTabV4 opt;
+    QStyleOptionTab opt;
     q->initStyleOption(&opt, currentIndex);
     opt.rect = q->rect();
 
@@ -761,7 +760,7 @@ void QTabBarPrivate::layoutTab(int index)
     if (!(tab.leftWidget || tab.rightWidget))
         return;
 
-    QStyleOptionTabV4 opt;
+    QStyleOptionTab opt;
     q->initStyleOption(&opt, index);
     if (tab.leftWidget) {
         QRect rect = q->style()->subElementRect(QStyle::SE_TabBarTabLeftButton, &opt, q);
@@ -1007,7 +1006,7 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
     }
 
     if (d->closeButtonOnTabs) {
-        QStyleOptionTabV4 opt;
+        QStyleOptionTab opt;
         initStyleOption(&opt, index);
         ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
         QAbstractButton *closeButton = new CloseButton(this);
@@ -1577,7 +1576,7 @@ QSize QTabBar::tabSizeHint(int index) const
     //Note: this must match with the computations in QCommonStylePrivate::tabLayout
     Q_D(const QTabBar);
     if (const QTabBarPrivate::Tab *tab = d->at(index)) {
-        QStyleOptionTabV4 opt;
+        QStyleOptionTab opt;
         d->initBasicStyleOption(&opt, index);
         opt.text = d->tabList.at(index).text;
         QSize iconSize = tab->icon.isNull() ? QSize(0, 0) : opt.iconSize;
@@ -1832,7 +1831,7 @@ void QTabBar::paintEvent(QPaintEvent *)
     for (int i = 0; i < d->tabList.count(); ++i) {
         if (!d->at(i)->visible)
             continue;
-        QStyleOptionTabV4 tab;
+        QStyleOptionTab tab;
         initStyleOption(&tab, i);
         if (d->paintWithOffsets && d->tabList[i].dragOffset != 0) {
             if (vertical) {
@@ -1872,7 +1871,7 @@ void QTabBar::paintEvent(QPaintEvent *)
 
     // Draw the selected tab last to get it "on top"
     if (selected >= 0) {
-        QStyleOptionTabV4 tab;
+        QStyleOptionTab tab;
         initStyleOption(&tab, selected);
         if (d->paintWithOffsets && d->tabList[selected].dragOffset != 0) {
             if (vertical)
@@ -2222,7 +2221,7 @@ void QTabBarPrivate::setupMovableTab()
     grabImage.fill(Qt::transparent);
     QStylePainter p(&grabImage, q);
 
-    QStyleOptionTabV4 tab;
+    QStyleOptionTab tab;
     q->initStyleOption(&tab, pressedIndex);
     tab.position = QStyleOptionTab::OnlyOneTab;
     if (verticalTabs(shape))

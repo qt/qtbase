@@ -265,7 +265,7 @@ class Q_WIDGETS_EXPORT QStyleOptionTab : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Tab };
-    enum StyleOptionVersion { Version = 3 };
+    enum StyleOptionVersion { Version = 4 };
 
     enum TabPosition { Beginning, Middle, End, OnlyOneTab };
     enum SelectedPosition { NotAdjacent, NextIsSelected, PreviousIsSelected };
@@ -287,6 +287,7 @@ public:
     QSize leftButtonSize;
     QSize rightButtonSize;
     TabFeatures features;
+    int tabIndex = -1;
 
     QStyleOptionTab();
     QStyleOptionTab(const QStyleOptionTab &other) : QStyleOption(Version, Type) { *this = other; }
@@ -296,18 +297,11 @@ protected:
     QStyleOptionTab(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionTabV4 : public QStyleOptionTab
-{
-public:
-    enum StyleOptionVersion { Version = 4 };
-    QStyleOptionTabV4();
-    int tabIndex = -1;
-};
-
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionTab::CornerWidgets)
 
 typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV2;
 typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV3;
+typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV4;
 #endif // QT_CONFIG(tabbar)
 
 
