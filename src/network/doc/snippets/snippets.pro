@@ -7,3 +7,5 @@ QT += network
 # ![0]
 
 SOURCES += network/tcpwait.cpp
+
+load(qt_common)

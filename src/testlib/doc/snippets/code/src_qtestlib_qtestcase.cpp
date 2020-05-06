@@ -158,7 +158,7 @@ void testObject()
 class MyTestObject: public QObject
 {
     public:
-        void toString();
+        void toString() {}
 };
 //! [18]
 MyTestObject test1;

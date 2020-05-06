@@ -11,3 +11,4 @@ SOURCES += sqldatabase/sqldatabase.cpp \
            code/src_sql_kernel_qsqldriver.cpp \
            code/src_sql_models_qsqlquerymodel.cpp
 
+load(qt_common)
