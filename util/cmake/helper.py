@@ -372,6 +372,7 @@ _library_map = [
     # 3rd party:
     LibraryMapping("atspi", "ATSPI2", "PkgConfig::ATSPI2"),
     LibraryMapping("bluez", "BlueZ", "PkgConfig::BlueZ"),
+    LibraryMapping("brotli", "WrapBrotli", "WrapBrotli::WrapBrotliDec"),
     LibraryMapping("corewlan", None, None),
     LibraryMapping("cups", "Cups", "Cups::Cups"),
     LibraryMapping("directfb", "DirectFB", "PkgConfig::DirectFB"),

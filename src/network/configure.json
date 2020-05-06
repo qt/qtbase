@@ -25,6 +25,21 @@
     },
 
     "libraries": {
+        "brotli": {
+            "label": "Brotli Decompression",
+            "test": {
+                "main": [
+                  "BrotliDecoderState *state = BrotliDecoderCreateInstance(nullptr, nullptr, nullptr);"
+                ]
+            },
+            "headers": [
+                "brotli/decode.h"
+            ],
+            "sources": [
+                { "type": "pkgConfig", "args": "libbrotlidec" },
+                "-lbrotlidec"
+            ]
+        },
         "corewlan": {
             "label": "CoreWLan",
             "export": "",
@@ -387,6 +402,13 @@
             "condition": "features.temporaryfile",
             "output": [ "publicFeature", "feature" ]
         },
+        "brotli": {
+            "label": "Brotli Decompression Support",
+            "purpose": "Support for downloading and decompressing resources compressed with Brotli through QNetworkAccessManager.",
+            "section": "Networking",
+            "condition": "libs.brotli",
+            "output": [ "publicFeature", "feature" ]
+        },
         "localserver": {
             "label": "QLocalServer",
             "purpose": "Provides a local socket based server.",
@@ -479,7 +501,8 @@ For example:
                 "ftp",
                 "sctp",
                 "system-proxies",
-                "gssapi"
+                "gssapi",
+                "brotli"
             ]
         }
     ]

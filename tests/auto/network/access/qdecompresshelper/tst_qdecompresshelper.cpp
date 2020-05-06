@@ -90,6 +90,12 @@ void tst_QDecompressHelper::encodingSupported()
     QVERIFY(accepted.contains("gzip"));
     int expected = 2;
 
+#if QT_CONFIG(brotli)
+    QVERIFY(QDecompressHelper::isSupportedEncoding("br"));
+    QVERIFY(accepted.contains("br"));
+    ++expected;
+#endif
+
     QCOMPARE(expected, accepted.size());
 }
 
@@ -115,6 +121,12 @@ void tst_QDecompressHelper::sharedDecompress_data()
     QTest::newRow("deflate-hello-world")
             << QByteArray("deflate") << QByteArray::fromBase64("eJzLSM3JyVcozy/KSQEAGgsEXQ==")
             << QByteArray("hello world");
+
+#if QT_CONFIG(brotli)
+    QTest::newRow("brotli-hello-world")
+            << QByteArray("br") << QByteArray::fromBase64("DwWAaGVsbG8gd29ybGQD")
+            << QByteArray("hello world");
+#endif
 }
 
 void tst_QDecompressHelper::decompress_data()
@@ -322,6 +334,10 @@ void tst_QDecompressHelper::decompressBigData_data()
     QTest::newRow("gzip-4G") << QByteArray("gzip") << QString(":/4G.gz") << fourGiB;
     QTest::newRow("deflate-5G") << QByteArray("deflate") << QString(":/5GiB.txt.inflate")
                                 << fiveGiB;
+
+#if QT_CONFIG(brotli)
+    QTest::newRow("brotli-4G") << QByteArray("br") << (srcDir + "/4G.br") << fourGiB;
+#endif
 }
 
 void tst_QDecompressHelper::decompressBigData()

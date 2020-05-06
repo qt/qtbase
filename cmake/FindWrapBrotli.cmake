@@ -1,0 +1,43 @@
+if(TARGET WrapBrotli::WrapBrotliDec)
+    set(WrapBrotli_FOUND ON)
+    return()
+endif()
+
+# From VCPKG
+find_package(unofficial-brotli CONFIG QUIET)
+if (unofficial-brotli_FOUND)
+    add_library(WrapBrotli::WrapBrotliDec INTERFACE IMPORTED)
+    target_link_libraries(WrapBrotli::WrapBrotliDec INTERFACE unofficial::brotli::brotlidec)
+
+    add_library(WrapBrotli::WrapBrotliEnc INTERFACE IMPORTED)
+    target_link_libraries(WrapBrotli::WrapBrotliEnc INTERFACE unofficial::brotli::brotlienc)
+
+    add_library(WrapBrotli::WrapBrotliCommon INTERFACE IMPORTED)
+    target_link_libraries(WrapBrotli::WrapBrotliCommon INTERFACE unofficial::brotli::brotlicommon)
+
+    set(WrapBrotli_FOUND ON)
+else()
+    find_package(PkgConfig QUIET)
+    if (PKG_CONFIG_FOUND)
+        pkg_check_modules(libbrotlidec QUIET libbrotlidec IMPORTED_TARGET)
+        if (libbrotlidec_FOUND)
+            add_library(WrapBrotli::WrapBrotliDec INTERFACE IMPORTED)
+            target_link_libraries(WrapBrotli::WrapBrotliDec INTERFACE PkgConfig::libbrotlidec)
+            set(WrapBrotli_FOUND ON)
+        endif()
+
+        pkg_check_modules(libbrotlienc QUIET libbrotlienc IMPORTED_TARGET)
+        if (libbrotlienc_FOUND)
+            add_library(WrapBrotli::WrapBrotliEnc INTERFACE IMPORTED)
+            target_link_libraries(WrapBrotli::WrapBrotliEnc INTERFACE PkgConfig::libbrotlienc)
+            set(WrapBrotli_FOUND ON)
+        endif()
+
+        pkg_check_modules(libbrotlicommon QUIET libbrotlicommon IMPORTED_TARGET)
+        if (libbrotlicommon_FOUND)
+            add_library(WrapBrotli::WrapBrotliCommon INTERFACE IMPORTED)
+            target_link_libraries(WrapBrotli::WrapBrotliCommon INTERFACE PkgConfig::libbrotlicommon)
+            set(WrapBrotli_FOUND ON)
+        endif()
+    endif()
+endif()

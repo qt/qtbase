@@ -66,6 +66,7 @@ public:
         None,
         Deflate,
         GZip,
+        Brotli,
     };
 
     QDecompressHelper() = default;
@@ -101,6 +102,7 @@ private:
     qint64 encodedBytesAvailable() const;
 
     qsizetype readZLib(char *data, qsizetype maxSize);
+    qsizetype readBrotli(char *data, qsizetype maxSize);
 
     QByteDataBuffer compressedDataBuffer;
     bool decoderHasData = false;
@@ -112,6 +114,10 @@ private:
     ContentEncoding contentEncoding = None;
 
     void *decoderPointer = nullptr;
+#if QT_CONFIG(brotli)
+    const uint8_t *brotliUnconsumedDataPtr = nullptr;
+    size_t brotliUnconsumedAmount = 0;
+#endif
 };
 
 QT_END_NAMESPACE

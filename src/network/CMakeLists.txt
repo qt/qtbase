@@ -123,6 +123,11 @@ qt_extend_target(Network CONDITION QT_FEATURE_http
         socket/qhttpsocketengine.cpp socket/qhttpsocketengine_p.h
 )
 
+qt_extend_target(Network CONDITION QT_FEATURE_brotli AND QT_FEATURE_http
+    LIBRARIES
+        WrapBrotli::WrapBrotliDec
+)
+
 qt_extend_target(Network CONDITION QT_FEATURE_system_zlib
     LIBRARIES
         ZLIB::ZLIB

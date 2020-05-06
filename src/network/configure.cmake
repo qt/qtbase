@@ -6,6 +6,7 @@
 
 #### Libraries
 
+qt_find_package(WrapBrotli PROVIDED_TARGETS WrapBrotli::WrapBrotliDec)
 qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy MODULE_NAME network QMAKE_LIB libproxy)
 qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME network QMAKE_LIB openssl_headers)
 # openssl_headers
@@ -366,6 +367,13 @@ qt_feature("networkdiskcache" PUBLIC
     CONDITION QT_FEATURE_temporaryfile
 )
 qt_feature_definition("networkdiskcache" "QT_NO_NETWORKDISKCACHE" NEGATE VALUE "1")
+qt_feature("brotli" PUBLIC
+    SECTION "Networking"
+    LABEL "Brotli Decompression Support"
+    PURPOSE "Support for downloading and decompressing resources compressed with Brotli through QNetworkAccessManager."
+    CONDITION WrapBrotli_FOUND
+)
+qt_feature_definition("brotli" "QT_NO_BROTLI" NEGATE VALUE "1")
 qt_feature("localserver" PUBLIC
     SECTION "Networking"
     LABEL "QLocalServer"
@@ -432,6 +440,7 @@ qt_configure_add_summary_entry(ARGS "ftp")
 qt_configure_add_summary_entry(ARGS "sctp")
 qt_configure_add_summary_entry(ARGS "system-proxies")
 qt_configure_add_summary_entry(ARGS "gssapi")
+qt_configure_add_summary_entry(ARGS "brotli")
 qt_configure_end_summary_section() # end of "Qt Network" section
 qt_configure_add_report_entry(
     TYPE NOTE

@@ -34,7 +34,6 @@ class tst_QDecompressHelper : public QObject
 {
     Q_OBJECT
 private slots:
-
     void decompress_data();
     void decompress();
 };
@@ -52,6 +51,10 @@ void tst_QDecompressHelper::decompress_data()
     bool dataAdded = false;
 #ifndef QT_NO_COMPRESS
     QTest::addRow("gzip") << QByteArray("gzip") << srcDir + QString("50mb.txt.gz");
+    dataAdded = true;
+#endif
+#if QT_CONFIG(brotli)
+    QTest::addRow("brotli") << QByteArray("br") << srcDir + QString("50mb.txt.br");
     dataAdded = true;
 #endif
     if (!dataAdded)

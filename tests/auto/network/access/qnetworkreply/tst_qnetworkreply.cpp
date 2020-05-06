@@ -9264,6 +9264,12 @@ void tst_QNetworkReply::contentEncoding_data()
     QTest::newRow("deflate-hello-world")
             << QByteArray("deflate") << QByteArray::fromBase64("eJzLSM3JyVcozy/KSQEAGgsEXQ==")
             << QByteArray("hello world");
+
+#if QT_CONFIG(brotli)
+    QTest::newRow("brotli-hello-world")
+            << QByteArray("br") << QByteArray::fromBase64("DwWAaGVsbG8gd29ybGQD")
+            << QByteArray("hello world");
+#endif
 }
 
 void tst_QNetworkReply::contentEncoding()

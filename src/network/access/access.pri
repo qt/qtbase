@@ -116,4 +116,8 @@ qtConfig(http) {
         access/qhttpthreaddelegate_p.h \
         access/qnetworkreplyhttpimpl_p.h \
         access/qhttp2configuration.h
+
+    qtConfig(brotli) {
+        QMAKE_USE_PRIVATE += brotli
+    }
 }

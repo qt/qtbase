@@ -796,6 +796,11 @@ void tst_Http2::contentEncoding_data()
     contentEncodingData.emplace_back(
             "deflate", QByteArray::fromBase64("eJzLSM3JyVcozy/KSQEAGgsEXQ=="), "hello world");
 
+#if QT_CONFIG(brotli)
+    contentEncodingData.emplace_back("br", QByteArray::fromBase64("DwWAaGVsbG8gd29ybGQD"),
+                                     "hello world");
+#endif
+
     // Loop through and add the data...
     for (const auto &data : contentEncodingData) {
         const char *name = data.contentEncoding.data();

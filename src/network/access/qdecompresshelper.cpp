@@ -44,6 +44,10 @@
 
 #include <zlib.h>
 
+#if QT_CONFIG(brotli)
+#    include <brotli/decode.h>
+#endif
+
 #include <array>
 
 QT_BEGIN_NAMESPACE
@@ -57,6 +61,9 @@ struct ContentEncodingMapping
 constexpr ContentEncodingMapping contentEncodingMapping[] {
     { "deflate", QDecompressHelper::Deflate },
     { "gzip", QDecompressHelper::GZip },
+#if QT_CONFIG(brotli)
+    { "br", QDecompressHelper::Brotli },
+#endif
 };
 
 QDecompressHelper::ContentEncoding encodingFromByteArray(const QByteArray &ce) noexcept
@@ -72,6 +79,13 @@ z_stream *toZlibPointer(void *ptr)
 {
     return static_cast<z_stream_s *>(ptr);
 }
+
+#if QT_CONFIG(brotli)
+BrotliDecoderState *toBrotliPointer(void *ptr)
+{
+    return static_cast<BrotliDecoderState *>(ptr);
+}
+#endif
 }
 
 bool QDecompressHelper::isSupportedEncoding(const QByteArray &encoding)
@@ -134,6 +148,13 @@ bool QDecompressHelper::setEncoding(ContentEncoding ce)
         decoderPointer = inflateStream;
         break;
     }
+    case Brotli:
+#if QT_CONFIG(brotli)
+        decoderPointer = BrotliDecoderCreateInstance(nullptr, nullptr, nullptr);
+#else
+        Q_UNREACHABLE();
+#endif
+        break;
     }
     if (!decoderPointer) {
         qWarning("Failed to initialize the decoder.");
@@ -325,6 +346,9 @@ qsizetype QDecompressHelper::read(char *data, qsizetype maxSize)
     case GZip:
         bytesRead = readZLib(data, maxSize);
         break;
+    case Brotli:
+        bytesRead = readBrotli(data, maxSize);
+        break;
     }
     if (bytesRead == -1)
         clear();
@@ -367,6 +391,14 @@ void QDecompressHelper::clear()
         if (inflateStream)
             inflateEnd(inflateStream);
         delete inflateStream;
+        break;
+    }
+    case Brotli: {
+#if QT_CONFIG(brotli)
+        BrotliDecoderState *brotliDecoderState = toBrotliPointer(decoderPointer);
+        if (brotliDecoderState)
+            BrotliDecoderDestroyInstance(brotliDecoderState);
+#endif
         break;
     }
     }
@@ -487,6 +519,89 @@ qsizetype QDecompressHelper::readZLib(char *data, const qsizetype maxSize)
     }
 
     return bytesDecoded;
+}
+
+qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
+{
+#if !QT_CONFIG(brotli)
+    Q_UNUSED(data);
+    Q_UNUSED(maxSize);
+    Q_UNREACHABLE();
+#else
+    qint64 bytesDecoded = 0;
+
+    BrotliDecoderState *brotliDecoderState = toBrotliPointer(decoderPointer);
+
+    while (decoderHasData && bytesDecoded < maxSize) {
+        Q_ASSERT(brotliUnconsumedDataPtr || BrotliDecoderHasMoreOutput(brotliDecoderState));
+        if (brotliUnconsumedDataPtr) {
+            Q_ASSERT(brotliUnconsumedAmount);
+            size_t toRead = std::min(size_t(maxSize - bytesDecoded), brotliUnconsumedAmount);
+            memcpy(data + bytesDecoded, brotliUnconsumedDataPtr, toRead);
+            bytesDecoded += toRead;
+            brotliUnconsumedAmount -= toRead;
+            brotliUnconsumedDataPtr += toRead;
+            if (brotliUnconsumedAmount == 0) {
+                brotliUnconsumedDataPtr = nullptr;
+                decoderHasData = false;
+            }
+        }
+        if (BrotliDecoderHasMoreOutput(brotliDecoderState) == BROTLI_TRUE) {
+            brotliUnconsumedDataPtr =
+                    BrotliDecoderTakeOutput(brotliDecoderState, &brotliUnconsumedAmount);
+            decoderHasData = true;
+        }
+    }
+    if (bytesDecoded == maxSize)
+        return bytesDecoded;
+    Q_ASSERT(bytesDecoded < maxSize);
+
+    QByteArray input;
+    if (!compressedDataBuffer.isEmpty())
+        input = compressedDataBuffer.read();
+    const uint8_t *encodedPtr = reinterpret_cast<const uint8_t *>(input.constData());
+    size_t encodedBytesRemaining = input.size();
+
+    uint8_t *decodedPtr = reinterpret_cast<uint8_t *>(data + bytesDecoded);
+    size_t unusedDecodedSize = size_t(maxSize - bytesDecoded);
+    while (unusedDecodedSize > 0) {
+        auto previousUnusedDecodedSize = unusedDecodedSize;
+        BrotliDecoderResult result = BrotliDecoderDecompressStream(
+                brotliDecoderState, &encodedBytesRemaining, &encodedPtr, &unusedDecodedSize,
+                &decodedPtr, nullptr);
+        bytesDecoded += previousUnusedDecodedSize - unusedDecodedSize;
+
+        switch (result) {
+        case BROTLI_DECODER_RESULT_ERROR:
+            qWarning("Brotli error: %s",
+                     BrotliDecoderErrorString(BrotliDecoderGetErrorCode(brotliDecoderState)));
+            return -1;
+        case BROTLI_DECODER_RESULT_SUCCESS:
+            BrotliDecoderDestroyInstance(brotliDecoderState);
+            decoderPointer = nullptr;
+            return bytesDecoded;
+        case BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT:
+            if (!compressedDataBuffer.isEmpty()) {
+                input = compressedDataBuffer.read();
+                encodedPtr = reinterpret_cast<const uint8_t *>(input.constData());
+                encodedBytesRemaining = input.size();
+                break;
+            }
+            return bytesDecoded;
+        case BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT:
+            // Some data is leftover inside the brotli decoder, remember for next time
+            decoderHasData = BrotliDecoderHasMoreOutput(brotliDecoderState);
+            Q_ASSERT(unusedDecodedSize == 0);
+            break;
+        }
+    }
+    if (encodedBytesRemaining) {
+        // Some input was left unused; move back to the buffer
+        input = input.right(QByteArray::size_type(encodedBytesRemaining));
+        compressedDataBuffer.prepend(input);
+    }
+    return bytesDecoded;
+#endif
 }
 
 QT_END_NAMESPACE
