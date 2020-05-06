@@ -51,6 +51,11 @@
 
 #include <string>
 
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+Q_FORWARD_DECLARE_CF_TYPE(CFString);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QString;
@@ -215,6 +220,11 @@ public:
         : QStringView(str.data(), qsizetype(str.size())) {}
 
     Q_REQUIRED_RESULT inline QString toString() const; // defined in qstring.h
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+    // defined in qcore_foundation.mm
+    Q_REQUIRED_RESULT Q_CORE_EXPORT CFStringRef toCFString() const Q_DECL_CF_RETURNS_RETAINED;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT NSString *toNSString() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#endif
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR qsizetype size() const noexcept { return m_size; }
     Q_REQUIRED_RESULT const_pointer data() const noexcept { return reinterpret_cast<const_pointer>(m_data); }

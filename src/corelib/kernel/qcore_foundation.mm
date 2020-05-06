@@ -197,7 +197,7 @@ NSData *QByteArray::toRawNSData() const
 
     Constructs a new QString containing a copy of the \a string CFString.
 
-    \note this function is only available on OS X and iOS.
+    \note this function is only available on \macos and iOS.
 */
 QString QString::fromCFString(CFStringRef string)
 {
@@ -222,11 +222,24 @@ QString QString::fromCFString(CFStringRef string)
     Creates a CFString from a QString. The caller owns the CFString and is
     responsible for releasing it.
 
-    \note this function is only available on OS X and iOS.
+    \note this function is only available on \macos and iOS.
 */
 CFStringRef QString::toCFString() const
 {
-    return CFStringCreateWithCharacters(0, reinterpret_cast<const UniChar *>(unicode()), length());
+    return QStringView{*this}.toCFString();
+}
+
+/*!
+    \since 6.0
+
+    Creates a CFString from this QStringView. The caller owns the CFString and is
+    responsible for releasing it.
+
+    \note this function is only available on \macos and iOS.
+*/
+CFStringRef QStringView::toCFString() const
+{
+    return CFStringCreateWithCharacters(0, reinterpret_cast<const UniChar *>(data()), size());
 }
 
 /*!
@@ -234,7 +247,7 @@ CFStringRef QString::toCFString() const
 
     Constructs a new QString containing a copy of the \a string NSString.
 
-    \note this function is only available on OS X and iOS.
+    \note this function is only available on \macos and iOS.
 */
 QString QString::fromNSString(const NSString *string)
 {
@@ -251,11 +264,23 @@ QString QString::fromNSString(const NSString *string)
 
     Creates a NSString from a QString. The NSString is autoreleased.
 
-    \note this function is only available on OS X and iOS.
+    \note this function is only available on \macos and iOS.
 */
 NSString *QString::toNSString() const
 {
-    return [NSString stringWithCharacters: reinterpret_cast<const UniChar*>(unicode()) length: length()];
+    return QStringView{*this}.toNSString();
+}
+
+/*!
+    \since 6.0
+
+    Creates an NSString from this QStringView. The NSString is autoreleased.
+
+    \note this function is only available on \macos and iOS.
+*/
+NSString *QStringView::toNSString() const
+{
+    return [NSString stringWithCharacters:reinterpret_cast<const UniChar*>(data()) length:size()];
 }
 
 // ----------------------------------------------------------------------------
