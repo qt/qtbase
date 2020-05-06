@@ -11743,19 +11743,18 @@ static inline qsizetype qt_string_count(QStringView haystack, QStringView needle
 static inline qsizetype qt_string_count(QStringView haystack, QChar ch,
                                   Qt::CaseSensitivity cs)
 {
-    ushort c = ch.unicode();
     qsizetype num = 0;
-    const ushort *b = reinterpret_cast<const ushort*>(haystack.data());
-    const ushort *i = b + haystack.size();
     if (cs == Qt::CaseSensitive) {
-        while (i != b)
-            if (*--i == c)
+        for (QChar c : haystack) {
+            if (c == ch)
                 ++num;
+        }
     } else {
-        c = foldCase(c);
-        while (i != b)
-            if (foldCase(*(--i)) == c)
+        ch = foldCase(ch);
+        for (QChar c : haystack) {
+            if (foldCase(c) == ch)
                 ++num;
+        }
     }
     return num;
 }
