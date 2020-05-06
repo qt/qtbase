@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 static QByteArray envVarLocale()
 {
-    static QByteArray lang;
+    QByteArray
 #ifdef Q_OS_UNIX
     lang = qgetenv("LC_ALL");
     if (lang.isEmpty())
