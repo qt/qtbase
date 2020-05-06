@@ -56,7 +56,7 @@
 #include <QDrag>
 #include <QGraphicsSceneMouseEvent>
 
-int main()
+void main()
 {
 //! [0]
 QGraphicsScene scene;
