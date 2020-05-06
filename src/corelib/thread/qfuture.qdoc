@@ -103,7 +103,13 @@
 
     To interact with running tasks using signals and slots, use QFutureWatcher.
 
-    \sa QFutureWatcher, {Qt Concurrent}
+    You can also use QtFuture::connect to connect signals to a QFuture object
+    which will be resolved when a signal is emitted. This allows working with
+    signals like with QFuture objects. For example, if you combine it with then(),
+    you can attach multiple continuations to a signal, which are invoked in the
+    same thread or a new thread.
+
+    \sa QtFuture::connect(), QFutureWatcher, {Qt Concurrent}
 */
 
 /*! \fn template <typename T> QFuture<T>::QFuture()
@@ -797,6 +803,45 @@
 
   \sa QFuture::then(), QThreadPool::globalInstance()
 
+*/
+
+/*! \fn template<class Sender, class Signal> static QFuture<ArgsType<Signal>> QtFuture::connect(Sender *sender, Signal signal)
+
+    Creates and returns a QFuture which will become available when the \a sender emits
+    the \a signal. If the \a signal takes no arguments, a QFuture<void> is returned. If
+    the \a signal takes a single argument, the resulted QFuture will be filled with the
+    signal's argument value. If the \a signal takes multiple arguments, the resulted QFuture
+    is filled with std::tuple storing the values of signal's arguments. If the \a sender
+    is destroyed before the \a signal is emitted, the resulted QFuture will be canceled.
+
+    For example, let's say we have the following object:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 10
+
+    We can connect its signals to QFuture objects in the following way:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 11
+
+    We can also chain continuations to be run when a signal is emitted:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 12
+
+    You can also start the continuation in a new thread or a custom thread pool
+    using QtFuture::Launch policies. For example:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 13
+
+    Throwing an exception from a slot invoked by Qt's signal-slot connection
+    is considered to be an undefined behavior, if it is not handled within the
+    slot. But with QFuture::connect(), you can throw and handle exceptions from
+    the continuations:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 14
+
+    \note The connected future will be fulfilled only once, when the signal is
+    emitted for the first time.
+
+    \sa QFuture, QFuture::then()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(Function &&function)

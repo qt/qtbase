@@ -118,6 +118,12 @@ struct ArgsType<Arg, Args...>
 {
     using First = Arg;
     static const bool HasExtraArgs = (sizeof...(Args) > 0);
+    using AllArgs =
+            std::conditional_t<HasExtraArgs, std::tuple<std::decay_t<Arg>, std::decay_t<Args>...>,
+                               std::decay_t<Arg>>;
+
+    template<class Class, class Callable>
+    static const bool CanInvokeWithArgs = std::is_invocable_v<Callable, Class, Arg, Args...>;
 };
 
 template<>
@@ -125,6 +131,10 @@ struct ArgsType<>
 {
     using First = void;
     static const bool HasExtraArgs = false;
+    using AllArgs = void;
+
+    template<class Class, class Callable>
+    static const bool CanInvokeWithArgs = std::is_invocable_v<Callable, Class>;
 };
 
 template<typename F>
@@ -166,6 +176,21 @@ template<typename Class, typename R, typename... Args>
 struct ArgResolver<R (Class::*)(Args...) const noexcept> : public ArgsType<Args...>
 {
 };
+
+template<class Class, class Callable>
+using EnableIfInvocable = std::enable_if_t<
+        QtPrivate::ArgResolver<Callable>::template CanInvokeWithArgs<Class, Callable>>;
+
+template<class>
+struct isTuple : std::false_type
+{
+};
+template<class... T>
+struct isTuple<std::tuple<T...>> : std::true_type
+{
+};
+template<class T>
+inline constexpr bool isTupleV = isTuple<T>::value;
 
 template<typename Function, typename ResultType, typename ParentResultType>
 class Continuation
@@ -563,5 +588,58 @@ void FailureHandler<Function, ResultType>::handleAllExceptions()
 #endif // QT_NO_EXCEPTIONS
 
 } // namespace QtPrivate
+
+namespace QtFuture {
+
+template<class Signal>
+using ArgsType = typename QtPrivate::ArgResolver<Signal>::AllArgs;
+
+template<class Sender, class Signal, typename = QtPrivate::EnableIfInvocable<Sender, Signal>>
+static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
+{
+    using ArgsType = ArgsType<Signal>;
+    QFutureInterface<ArgsType> promise;
+    promise.reportStarted();
+
+    using Connections = std::pair<QMetaObject::Connection, QMetaObject::Connection>;
+    auto connections = std::make_shared<Connections>();
+
+    if constexpr (std::is_void_v<ArgsType>) {
+        connections->first =
+                QObject::connect(sender, signal, sender, [promise, connections]() mutable {
+                    promise.reportFinished();
+                    QObject::disconnect(connections->first);
+                    QObject::disconnect(connections->second);
+                });
+    } else if constexpr (QtPrivate::isTupleV<ArgsType>) {
+        connections->first = QObject::connect(sender, signal, sender,
+                                              [promise, connections](auto... values) mutable {
+                                                  promise.reportResult(std::make_tuple(values...));
+                                                  promise.reportFinished();
+                                                  QObject::disconnect(connections->first);
+                                                  QObject::disconnect(connections->second);
+                                              });
+    } else {
+        connections->first = QObject::connect(sender, signal, sender,
+                                              [promise, connections](ArgsType value) mutable {
+                                                  promise.reportResult(value);
+                                                  promise.reportFinished();
+                                                  QObject::disconnect(connections->first);
+                                                  QObject::disconnect(connections->second);
+                                              });
+    }
+
+    connections->second =
+            QObject::connect(sender, &QObject::destroyed, sender, [promise, connections]() mutable {
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject::disconnect(connections->first);
+                QObject::disconnect(connections->second);
+            });
+
+    return promise.future();
+}
+
+} // namespace QtFuture
 
 QT_END_NAMESPACE

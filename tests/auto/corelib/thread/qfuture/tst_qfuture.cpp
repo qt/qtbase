@@ -53,6 +53,26 @@ struct ResultStoreInt : QtPrivate::ResultStoreBase
     ~ResultStoreInt() { clear<int>(); }
 };
 
+class SenderObject : public QObject
+{
+    Q_OBJECT
+
+public:
+    void emitNoArg() { emit noArgSignal(); }
+    void emitIntArg(int value) { emit intArgSignal(value); }
+    void emitConstRefArg(const QString &value) { emit constRefArg(value); }
+    void emitMultipleArgs(int value1, double value2, const QString &value3)
+    {
+        emit multipleArgs(value1, value2, value3);
+    }
+
+signals:
+    void noArgSignal();
+    void intArgSignal(int value);
+    void constRefArg(const QString &value);
+    void multipleArgs(int value1, double value2, const QString &value3);
+};
+
 class LambdaThread : public QThread
 {
 public:
@@ -118,6 +138,8 @@ private slots:
     void resultsReadyAt();
     void takeResultWorksForTypesWithoutDefaultCtor();
     void canceledFutureIsNotValid();
+    void signalConnect();
+
 private:
     using size_type = std::vector<int>::size_type;
 
@@ -2779,6 +2801,71 @@ void tst_QFuture::canceledFutureIsNotValid()
     f.cancel();
 
     QVERIFY(!f.isValid());
+}
+
+void tst_QFuture::signalConnect()
+{
+    // No arg
+    {
+        SenderObject sender;
+        auto future =
+                QtFuture::connect(&sender, &SenderObject::noArgSignal).then([&] { return true; });
+        sender.emitNoArg();
+        QCOMPARE(future.result(), true);
+    }
+
+    // One arg
+    {
+        SenderObject sender;
+        auto future = QtFuture::connect(&sender, &SenderObject::intArgSignal).then([](int value) {
+            return value;
+        });
+        sender.emitIntArg(42);
+        QCOMPARE(future.result(), 42);
+    }
+
+    // Const ref arg
+    {
+        SenderObject sender;
+        auto future =
+                QtFuture::connect(&sender, &SenderObject::constRefArg).then([](QString value) {
+                    return value;
+                });
+        sender.emitConstRefArg(QString("42"));
+        QCOMPARE(future.result(), "42");
+    }
+
+    // Multiple args
+    {
+        SenderObject sender;
+        using TupleArgs = std::tuple<int, double, QString>;
+        auto future =
+                QtFuture::connect(&sender, &SenderObject::multipleArgs).then([](TupleArgs values) {
+                    return values;
+                });
+        sender.emitMultipleArgs(42, 42.5, "42");
+        auto result = future.result();
+        QCOMPARE(std::get<0>(result), 42);
+        QCOMPARE(std::get<1>(result), 42.5);
+        QCOMPARE(std::get<2>(result), "42");
+    }
+
+    // Sender destroyed
+    {
+        SenderObject *sender = new SenderObject();
+
+        auto future = QtFuture::connect(sender, &SenderObject::intArgSignal);
+
+        QSignalSpy spy(sender, &QObject::destroyed);
+        sender->deleteLater();
+
+        // emit the signal when sender is being destroyed
+        QObject::connect(sender, &QObject::destroyed, [sender] { sender->emitIntArg(42); });
+        spy.wait();
+
+        QVERIFY(future.isCanceled());
+        QVERIFY(!future.isValid());
+    }
 }
 
 QTEST_MAIN(tst_QFuture)

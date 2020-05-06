@@ -175,3 +175,48 @@ try {
     // Handle the exception
 }
 //! [9]
+
+//! [10]
+class Object : public QObject
+{
+    Q_OBJECT
+    ...
+signals:
+    void noArgSignal();
+    void singleArgSignal(int value);
+    void multipleArgs(int value1, double value2, const QString &value3);
+};
+//! [10]
+
+//! [11]
+Object object;
+QFuture<void> voidFuture = QtFuture::connect(&object, &Object::noArgSignal);
+QFuture<int> intFuture = QtFuture::connect(&object, &Object::singleArgSignal);
+
+using Args = std::tuple<int, double, QString>;
+QFuture<Args> tupleFuture = QtFuture::connect(&object, &Object::multipleArgs)
+//! [11]
+
+//! [12]
+QtFuture::connect(&object, &Object::singleArgSignal).then([](int value) {
+    // do something with the value
+});
+//! [12]
+
+//! [13]
+QtFuture::connect(&object, &Object::singleArgSignal).then(QtFuture::Launch::Async, [](int value) {
+    // this will run in a new thread
+});
+//! [13]
+
+//! [14]
+QtFuture::connect(&object, &Object::singleArgSignal).then([](int value) {
+    ...
+    throw std::exception();
+    ...
+}).onFailed([](const std::exception &e) {
+    // handle the exception
+}).onFailed([] {
+    // handle other exceptions
+});
+//! [14]
