@@ -260,11 +260,11 @@ bool qrhi_toTopLeftRenderTargetRect(const QSize &outputSize, const std::array<T,
 
     const T widthOffset = *x < 0 ? -*x : 0;
     const T heightOffset = *y < 0 ? -*y : 0;
+    *w = *x < outputWidth ? qMax<T>(0, inputWidth - widthOffset) : 0;
+    *h = *y < outputHeight ? qMax<T>(0, inputHeight - heightOffset) : 0;
 
     *x = qBound<T>(0, *x, outputWidth - 1);
     *y = qBound<T>(0, *y, outputHeight - 1);
-    *w = qMax<T>(0, inputWidth - widthOffset);
-    *h = qMax<T>(0, inputHeight - heightOffset);
 
     if (*x + *w > outputWidth)
         *w = qMax<T>(0, outputWidth - *x);
