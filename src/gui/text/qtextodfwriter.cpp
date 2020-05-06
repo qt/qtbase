@@ -159,29 +159,32 @@ private:
     QString manifestNS;
 };
 
+static QStringView bullet_char(QTextListFormat::Style style)
+{
+    static_assert(int(QTextListFormat::ListDisc) == -1);
+    static_assert(int(QTextListFormat::ListUpperRoman) == -8);
+    static const char16_t chars[] = {
+        u'\x25cf', // bullet character
+        u'\x25cb', // white circle
+        u'\x25a1', // white square
+        u'1',
+        u'a',
+        u'A',
+        u'i',
+        u'I',
+    };
+    const auto map = [](QTextListFormat::Style s) { return -int(s) - 1; };
+    static_assert(uint(map(QTextListFormat::ListUpperRoman)) == std::size(chars) - 1);
+    const auto idx = map(style);
+    if (idx < 0)
+        return nullptr;
+    else
+        return {chars + idx, 1};
+}
+
 static QString bulletChar(QTextListFormat::Style style)
 {
-    switch(style) {
-    case QTextListFormat::ListDisc:
-        return QChar(0x25cf); // bullet character
-    case QTextListFormat::ListCircle:
-        return QChar(0x25cb); // white circle
-    case QTextListFormat::ListSquare:
-        return QChar(0x25a1); // white square
-    case QTextListFormat::ListDecimal:
-        return QString::fromLatin1("1");
-    case QTextListFormat::ListLowerAlpha:
-        return QString::fromLatin1("a");
-    case QTextListFormat::ListUpperAlpha:
-        return QString::fromLatin1("A");
-    case QTextListFormat::ListLowerRoman:
-        return QString::fromLatin1("i");
-    case QTextListFormat::ListUpperRoman:
-        return QString::fromLatin1("I");
-    default:
-    case QTextListFormat::ListStyleUndefined:
-        return QString();
-    }
+    return bullet_char(style).toString();
 }
 
 static QString borderStyleName(QTextFrameFormat::BorderStyle style)
