@@ -169,7 +169,7 @@ static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSens
 // this won't crash nor produce incorrect results
 __attribute__((__no_sanitize_address__))
 #endif
-qsizetype QtPrivate::qustrlen(const ushort *str) noexcept
+qsizetype QtPrivate::qustrlen(const char16_t *str) noexcept
 {
     qsizetype result = 0;
 
@@ -177,7 +177,7 @@ qsizetype QtPrivate::qustrlen(const ushort *str) noexcept
     // find the 16-byte alignment immediately prior or equal to str
     quintptr misalignment = quintptr(str) & 0xf;
     Q_ASSERT((misalignment & 1) == 0);
-    const ushort *ptr = str - (misalignment / 2);
+    const char16_t *ptr = str - (misalignment / 2);
 
     // load 16 bytes and see if we have a null
     // (aligned loads can never segfault)
@@ -207,7 +207,7 @@ qsizetype QtPrivate::qustrlen(const ushort *str) noexcept
     return ptr - str + idx / 2;
 #endif
 
-    if (sizeof(wchar_t) == sizeof(ushort))
+    if (sizeof(wchar_t) == sizeof(char16_t))
         return wcslen(reinterpret_cast<const wchar_t *>(str));
 
     while (*str++)
@@ -266,10 +266,10 @@ inline RetType UnrollTailLoop<0>::exec(Number, RetType returnIfExited, Functor1,
  * character is not found, this function returns a pointer to the end of the
  * string -- that is, \c{str.end()}.
  */
-const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
+const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
 {
-    const ushort *n = reinterpret_cast<const ushort *>(str.begin());
-    const ushort *e = reinterpret_cast<const ushort *>(str.end());
+    const char16_t *n = str.utf16();
+    const char16_t *e = n + str.size();
 
 #ifdef __SSE2__
     bool loops = true;
@@ -278,7 +278,7 @@ const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
 #  if defined(__AVX2__) && !defined(__OPTIMIZE_SIZE__)
     // we're going to read n[0..15] (32 bytes)
     __m256i mch256 = _mm256_set1_epi32(c | (c << 16));
-    for (const ushort *next = n + 16; next <= e; n = next, next += 16) {
+    for (const char16_t *next = n + 16; next <= e; n = next, next += 16) {
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(n));
         __m256i result = _mm256_cmpeq_epi16(data, mch256);
         uint mask = uint(_mm256_movemask_epi8(result));
@@ -304,7 +304,7 @@ const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
     };
 
     // we're going to read n[0..7] (16 bytes)
-    for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
+    for (const char16_t *next = n + 8; next <= e; n = next, next += 8) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(n));
         if (hasMatch(data, 0xffff))
             return n;
@@ -332,8 +332,8 @@ const ushort *QtPrivate::qustrchr(QStringView str, ushort c) noexcept
 #elif defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
     const uint16x8_t vmask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
     const uint16x8_t ch_vec = vdupq_n_u16(c);
-    for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
-        uint16x8_t data = vld1q_u16(n);
+    for (const char16_t *next = n + 8; next <= e; n = next, next += 8) {
+        uint16x8_t data = vld1q_u16(reinterpret_cast<const uint16_t *>(n));
         uint mask = vaddvq_u16(vandq_u16(vceqq_u16(data, ch_vec), vmask));
         if (ushort(mask)) {
             // found a match
@@ -11956,10 +11956,10 @@ static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt:
     if (from < 0)
         from = qMax(from + str.size(), qsizetype(0));
     if (from < str.size()) {
-        const ushort *s = (const ushort *)str.data();
-        ushort c = ch.unicode();
-        const ushort *n = s + from;
-        const ushort *e = s + str.size();
+        const char16_t *s = str.utf16();
+        char16_t c = ch.unicode();
+        const char16_t *n = s + from;
+        const char16_t *e = s + str.size();
         if (cs == Qt::CaseSensitive) {
             n = QtPrivate::qustrchr(QStringView(n, e), c);
             if (n != e)

@@ -167,11 +167,11 @@ private:
             return result;
         }
 #endif
-        return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
+        return QtPrivate::qustrlen(reinterpret_cast<const char16_t *>(str));
     }
     static qsizetype lengthHelperPointer(const QChar *str) noexcept
     {
-        return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
+        return QtPrivate::qustrlen(reinterpret_cast<const char16_t *>(str));
     }
 
     template <typename Char>

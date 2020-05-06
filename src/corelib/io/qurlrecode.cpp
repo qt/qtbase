@@ -581,7 +581,7 @@ static bool simdCheckNonEncoded(...)
 static int decode(QString &appendTo, const ushort *begin, const ushort *end)
 {
     // fast check whether there's anything to be decoded in the first place
-    const ushort *input = QtPrivate::qustrchr(QStringView(begin, end), '%');
+    const ushort *input = reinterpret_cast<const ushort*>(QtPrivate::qustrchr(QStringView(begin, end), '%'));
     if (Q_LIKELY(input == end))
         return 0;           // nothing to do, it was already decoded!
 
