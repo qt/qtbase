@@ -38,6 +38,9 @@
 **
 ****************************************************************************/
 
+// we need ICC to define the prototype for _rdseed64_step
+#define __INTEL_COMPILER_USE_INTRINSIC_PROTOTYPES
+
 #include "qsimd_p.h"
 #include "qalgorithms.h"
 #include <QByteArray>
@@ -605,6 +608,15 @@ void qDumpCPUFeatures()
 #    define _rdseedXX_step _rdseed32_step
 #  endif
 
+// The parameter to _rdrand64_step & _rdseed64_step is unsigned long long for
+// Clang and GCC but unsigned __int64 for MSVC and ICC, which is unsigned long
+// long on Windows, but unsigned long on Linux.
+namespace {
+template <typename F> struct ExtractParameter;
+template <typename T> struct ExtractParameter<int (T *)> { using Type = T; };
+using randuint = ExtractParameter<decltype(_rdrandXX_step)>::Type;
+}
+
 #  if QT_COMPILER_SUPPORTS_HERE(RDSEED)
 static QT_FUNCTION_TARGET(RDSEED) unsigned *qt_random_rdseed(unsigned *ptr, unsigned *end) noexcept
 {
@@ -613,13 +625,13 @@ static QT_FUNCTION_TARGET(RDSEED) unsigned *qt_random_rdseed(unsigned *ptr, unsi
     // If the independent bit generator used by RDSEED is out of entropy, it
     // may take time to replenish.
     // https://software.intel.com/en-us/articles/intel-digital-random-number-generator-drng-software-implementation-guide
-    while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
-        if (_rdseedXX_step(reinterpret_cast<qregisteruint *>(ptr)) == 0)
+    while (ptr + sizeof(randuint)/sizeof(*ptr) <= end) {
+        if (_rdseedXX_step(reinterpret_cast<randuint *>(ptr)) == 0)
             goto out;
-        ptr += sizeof(qregisteruint)/sizeof(*ptr);
+        ptr += sizeof(randuint)/sizeof(*ptr);
     }
 
-    if (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
+    if (sizeof(*ptr) != sizeof(randuint) && ptr != end) {
         if (_rdseed32_step(ptr) == 0)
             goto out;
         ++ptr;
@@ -638,14 +650,14 @@ static unsigned *qt_random_rdseed(unsigned *ptr, unsigned *)
 static QT_FUNCTION_TARGET(RDRND) unsigned *qt_random_rdrnd(unsigned *ptr, unsigned *end) noexcept
 {
     int retries = 10;
-    while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
-        if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)))
-            ptr += sizeof(qregisteruint)/sizeof(*ptr);
+    while (ptr + sizeof(randuint)/sizeof(*ptr) <= end) {
+        if (_rdrandXX_step(reinterpret_cast<randuint *>(ptr)))
+            ptr += sizeof(randuint)/sizeof(*ptr);
         else if (--retries == 0)
             goto out;
     }
 
-    while (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
+    while (sizeof(*ptr) != sizeof(randuint) && ptr != end) {
         bool ok = _rdrand32_step(ptr);
         if (!ok && --retries)
             continue;
