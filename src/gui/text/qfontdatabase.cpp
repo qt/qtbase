@@ -2213,16 +2213,8 @@ QString QFontDatabase::writingSystemSample(WritingSystem writingSystem)
         sample += QChar(0xac2f);
         break;
     case Vietnamese:
-    {
-        static const char vietnameseUtf8[] = {
-            char(0xef), char(0xbb), char(0xbf), char(0xe1), char(0xbb), char(0x97),
-            char(0xe1), char(0xbb), char(0x99),
-            char(0xe1), char(0xbb), char(0x91),
-            char(0xe1), char(0xbb), char(0x93),
-        };
-        sample += QString::fromUtf8(vietnameseUtf8, sizeof(vietnameseUtf8));
+        sample += u"\x1ED7\x1ED9\x1ED1\x1ED3";
         break;
-    }
     case Ogham:
         sample += QChar(0x1681);
         sample += QChar(0x1682);
