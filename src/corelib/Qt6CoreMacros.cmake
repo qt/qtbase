@@ -898,7 +898,7 @@ function(qt6_generate_win32_rc_file target)
         endif()
 
         set(contents "#include <windows.h>
-${incons}
+${icons}
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION ${version_comma}
 PRODUCTVERSION ${version_comma}
