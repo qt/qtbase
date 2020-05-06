@@ -67,6 +67,7 @@ public:
         Deflate,
         GZip,
         Brotli,
+        Zstandard,
     };
 
     QDecompressHelper() = default;
@@ -103,6 +104,7 @@ private:
 
     qsizetype readZLib(char *data, qsizetype maxSize);
     qsizetype readBrotli(char *data, qsizetype maxSize);
+    qsizetype readZstandard(char *data, qsizetype maxSize);
 
     QByteDataBuffer compressedDataBuffer;
     bool decoderHasData = false;

@@ -73,9 +73,15 @@ void tst_QDecompressHelper::initTestCase()
 {
     Q_INIT_RESOURCE(gzip);
     Q_INIT_RESOURCE(inflate);
+#if QT_CONFIG(zstd)
+    Q_INIT_RESOURCE(zstandard);
+#endif
 }
 void tst_QDecompressHelper::cleanupTestCase()
 {
+#if QT_CONFIG(zstd)
+    Q_CLEANUP_RESOURCE(zstandard);
+#endif
     Q_CLEANUP_RESOURCE(inflate);
     Q_CLEANUP_RESOURCE(gzip);
 }
@@ -98,6 +104,11 @@ void tst_QDecompressHelper::encodingSupported()
     ++expected;
 #endif
 
+#if QT_CONFIG(zstd)
+    QVERIFY(QDecompressHelper::isSupportedEncoding("zstd"));
+    QVERIFY(accepted.contains("zstd"));
+    ++expected;
+#endif
     QCOMPARE(expected, accepted.size());
 }
 
@@ -127,6 +138,12 @@ void tst_QDecompressHelper::sharedDecompress_data()
 #if QT_CONFIG(brotli)
     QTest::newRow("brotli-hello-world")
             << QByteArray("br") << QByteArray::fromBase64("DwWAaGVsbG8gd29ybGQD")
+            << QByteArray("hello world");
+#endif
+
+#if QT_CONFIG(zstd)
+    QTest::newRow("zstandard-hello-world")
+            << QByteArray("zstd") << QByteArray::fromBase64("KLUv/QRYWQAAaGVsbG8gd29ybGRoaR6y")
             << QByteArray("hello world");
 #endif
 }
@@ -339,6 +356,10 @@ void tst_QDecompressHelper::decompressBigData_data()
 
 #if QT_CONFIG(brotli)
     QTest::newRow("brotli-4G") << QByteArray("br") << (srcDir + "/4G.br") << fourGiB;
+#endif
+
+#if QT_CONFIG(zstd)
+    QTest::newRow("zstandard-4G") << QByteArray("zstd") << (":/4G.zst") << fourGiB;
 #endif
 }
 

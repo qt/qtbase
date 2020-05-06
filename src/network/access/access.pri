@@ -120,4 +120,8 @@ qtConfig(http) {
     qtConfig(brotli) {
         QMAKE_USE_PRIVATE += brotli
     }
+
+    qtConfig(zstd) {
+        QMAKE_USE_PRIVATE += zstd
+    }
 }

@@ -48,6 +48,10 @@
 #    include <brotli/decode.h>
 #endif
 
+#if QT_CONFIG(zstd)
+#    include <zstd.h>
+#endif
+
 #include <array>
 
 QT_BEGIN_NAMESPACE
@@ -59,11 +63,14 @@ struct ContentEncodingMapping
 };
 
 constexpr ContentEncodingMapping contentEncodingMapping[] {
-    { "gzip", QDecompressHelper::GZip },
-    { "deflate", QDecompressHelper::Deflate },
+#if QT_CONFIG(zstd)
+    { "zstd", QDecompressHelper::Zstandard },
+#endif
 #if QT_CONFIG(brotli)
     { "br", QDecompressHelper::Brotli },
 #endif
+    { "gzip", QDecompressHelper::GZip },
+    { "deflate", QDecompressHelper::Deflate },
 };
 
 QDecompressHelper::ContentEncoding encodingFromByteArray(const QByteArray &ce) noexcept
@@ -84,6 +91,13 @@ z_stream *toZlibPointer(void *ptr)
 BrotliDecoderState *toBrotliPointer(void *ptr)
 {
     return static_cast<BrotliDecoderState *>(ptr);
+}
+#endif
+
+#if QT_CONFIG(zstd)
+ZSTD_DStream *toZstandardPointer(void *ptr)
+{
+    return static_cast<ZSTD_DStream *>(ptr);
 }
 #endif
 }
@@ -151,6 +165,13 @@ bool QDecompressHelper::setEncoding(ContentEncoding ce)
     case Brotli:
 #if QT_CONFIG(brotli)
         decoderPointer = BrotliDecoderCreateInstance(nullptr, nullptr, nullptr);
+#else
+        Q_UNREACHABLE();
+#endif
+        break;
+    case Zstandard:
+#if QT_CONFIG(zstd)
+        decoderPointer = ZSTD_createDStream();
 #else
         Q_UNREACHABLE();
 #endif
@@ -349,6 +370,9 @@ qsizetype QDecompressHelper::read(char *data, qsizetype maxSize)
     case Brotli:
         bytesRead = readBrotli(data, maxSize);
         break;
+    case Zstandard:
+        bytesRead = readZstandard(data, maxSize);
+        break;
     }
     if (bytesRead == -1)
         clear();
@@ -398,6 +422,14 @@ void QDecompressHelper::clear()
         BrotliDecoderState *brotliDecoderState = toBrotliPointer(decoderPointer);
         if (brotliDecoderState)
             BrotliDecoderDestroyInstance(brotliDecoderState);
+#endif
+        break;
+    }
+    case Zstandard: {
+#if QT_CONFIG(zstd)
+        ZSTD_DStream *zstdStream = toZstandardPointer(decoderPointer);
+        if (zstdStream)
+            ZSTD_freeDStream(zstdStream);
 #endif
         break;
     }
@@ -599,6 +631,52 @@ qsizetype QDecompressHelper::readBrotli(char *data, const qsizetype maxSize)
         // Some input was left unused; move back to the buffer
         input = input.right(QByteArray::size_type(encodedBytesRemaining));
         compressedDataBuffer.prepend(input);
+    }
+    return bytesDecoded;
+#endif
+}
+
+qsizetype QDecompressHelper::readZstandard(char *data, const qsizetype maxSize)
+{
+#if !QT_CONFIG(zstd)
+    Q_UNUSED(data);
+    Q_UNUSED(maxSize);
+    Q_UNREACHABLE();
+#else
+    ZSTD_DStream *zstdStream = toZstandardPointer(decoderPointer);
+
+    QByteArray input;
+    if (!compressedDataBuffer.isEmpty())
+        input = compressedDataBuffer.read();
+    ZSTD_inBuffer inBuf { input.constData(), size_t(input.size()), 0 };
+
+    ZSTD_outBuffer outBuf { data, size_t(maxSize), 0 };
+
+    bool dataLeftover = false;
+    qsizetype bytesDecoded = 0;
+    while (outBuf.pos < outBuf.size && (inBuf.pos < inBuf.size || decoderHasData)) {
+
+        dataLeftover = false;
+        size_t retValue = ZSTD_decompressStream(zstdStream, &outBuf, &inBuf);
+        if (ZSTD_isError(retValue)) {
+            qWarning("ZStandard error: %s", ZSTD_getErrorName(retValue));
+            return -1;
+        } else if (retValue >= 0) {
+            decoderHasData = false;
+            bytesDecoded = outBuf.pos;
+            // if pos == size then there may be data left over in internal buffers
+            if (outBuf.pos == outBuf.size) {
+                decoderHasData = true;
+            } else if (inBuf.pos == inBuf.size && !compressedDataBuffer.isEmpty()) {
+                input = compressedDataBuffer.read();
+                inBuf = { input.constData(), size_t(input.size()), 0 };
+            }
+        }
+    }
+    if (inBuf.pos < inBuf.size) {
+        // Some input was left unused; move back to the buffer
+        input = input.mid(QByteArray::size_type(inBuf.pos));
+        compressedDataBuffer.prepend(std::move(input));
     }
     return bytesDecoded;
 #endif

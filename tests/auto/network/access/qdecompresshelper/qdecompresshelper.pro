@@ -7,5 +7,6 @@ SOURCES += \
     tst_qdecompresshelper.cpp \
     gzip.rcc.cpp \
     inflate.rcc.cpp \
+    zstandard.rcc.cpp \
 
 DEFINES += SRC_DIR="$$PWD"

@@ -9,6 +9,7 @@ qt_add_test(tst_qdecompresshelper
         gzip.rcc.cpp
         inflate.rcc.cpp
         tst_qdecompresshelper.cpp
+        zstandard.rcc.cpp
     DEFINES
         SRC_DIR=${CMAKE_CURRENT_SOURCE_DIR} # special case
     PUBLIC_LIBRARIES

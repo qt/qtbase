@@ -9270,6 +9270,14 @@ void tst_QNetworkReply::contentEncoding_data()
             << QByteArray("br") << QByteArray::fromBase64("DwWAaGVsbG8gd29ybGQD")
             << QByteArray("hello world");
 #endif
+
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(zstd)
+    QTest::newRow("zstandard-hello-world")
+            << QByteArray("zstd") << QByteArray::fromBase64("KLUv/QRYWQAAaGVsbG8gd29ybGRoaR6y")
+            << QByteArray("hello world");
+#else
+    qDebug("Note: ZStandard testdata is only available for developer builds.");
+#endif
 }
 
 void tst_QNetworkReply::contentEncoding()

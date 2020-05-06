@@ -128,6 +128,11 @@ qt_extend_target(Network CONDITION QT_FEATURE_brotli AND QT_FEATURE_http
         WrapBrotli::WrapBrotliDec
 )
 
+qt_extend_target(Network CONDITION QT_FEATURE_http AND QT_FEATURE_zstd
+    LIBRARIES
+        ZSTD::ZSTD
+)
+
 qt_extend_target(Network CONDITION QT_FEATURE_system_zlib
     LIBRARIES
         ZLIB::ZLIB

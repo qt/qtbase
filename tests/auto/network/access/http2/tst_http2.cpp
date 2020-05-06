@@ -801,6 +801,11 @@ void tst_Http2::contentEncoding_data()
                                      "hello world");
 #endif
 
+#if QT_CONFIG(zstd)
+    contentEncodingData.emplace_back(
+            "zstd", QByteArray::fromBase64("KLUv/QRYWQAAaGVsbG8gd29ybGRoaR6y"), "hello world");
+#endif
+
     // Loop through and add the data...
     for (const auto &data : contentEncodingData) {
         const char *name = data.contentEncoding.data();

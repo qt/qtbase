@@ -57,6 +57,10 @@ void tst_QDecompressHelper::decompress_data()
     QTest::addRow("brotli") << QByteArray("br") << srcDir + QString("50mb.txt.br");
     dataAdded = true;
 #endif
+#if QT_CONFIG(zstd)
+    QTest::addRow("zstandard") << QByteArray("zstd") << srcDir + QString("50mb.txt.zst");
+    dataAdded = true;
+#endif
     if (!dataAdded)
         QSKIP("There's no decompression support");
 }
