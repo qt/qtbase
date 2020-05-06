@@ -3714,13 +3714,6 @@ void tst_QFile::moveToTrash()
     QFETCH(bool, create);
     QFETCH(bool, result);
 
-    /* This test makes assumptions about the file system layout
-       which might be wrong - moveToTrash may fail if the file lives
-       on a file system that is different from the home file system, and
-       has no .Trash directory.
-    */
-    const bool mayFail = QStorageInfo(source) != QStorageInfo(QDir::home());
-
 #if defined(Q_OS_WINRT)
     QSKIP("WinRT does not have a trash", SkipAll);
 #endif
@@ -3749,9 +3742,20 @@ void tst_QFile::moveToTrash()
             sourceFile.remove();
         }
     };
+
+    ensureFile(source, create);
+
+    /* This test makes assumptions about the file system layout
+       which might be wrong - moveToTrash may fail if the file lives
+       on a file system that is different from the home file system, and
+       has no .Trash directory.
+    */
+    const QStorageInfo sourceStorage(source);
+    const bool mayFail = sourceStorage.isValid()
+                      && QStorageInfo(source) != QStorageInfo(QDir::home());
+
     // non-static version
     {
-        ensureFile(source, create);
         QFile sourceFile(source);
         const bool success = sourceFile.moveToTrash();
 

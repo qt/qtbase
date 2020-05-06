@@ -1548,8 +1548,8 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
                                         QFileSystemEntry &newLocation, QSystemError &error)
 {
 #ifndef Q_OS_WINRT
-    // we need the "display name" of the file, so can't use nativeFilePath
-    const QString sourcePath = QDir::toNativeSeparators(source.filePath());
+    // we need the "display name" of the file, so can't use nativeAbsoluteFilePath
+    const QString sourcePath = QDir::toNativeSeparators(absoluteName(source).filePath());
 
     /*
         Windows 7 insists on showing confirmation dialogs and ignores the respective
