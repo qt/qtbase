@@ -282,10 +282,10 @@ ProStringList QMakeEvaluator::split_value_list(const QStringRef &vals, int sourc
 
     const QChar *vals_data = vals.data();
     const int vals_len = vals.length();
-    ushort quote = 0;
+    char16_t quote = 0;
     bool hadWord = false;
     for (int x = 0; x < vals_len; x++) {
-        ushort unicode = vals_data[x].unicode();
+        char16_t unicode = vals_data[x].unicode();
         if (unicode == quote) {
             quote = 0;
             hadWord = true;
@@ -313,7 +313,7 @@ ProStringList QMakeEvaluator::split_value_list(const QStringRef &vals, int sourc
             break;
         case '\\':
             if (x + 1 != vals_len) {
-                ushort next = vals_data[++x].unicode();
+                char16_t next = vals_data[++x].unicode();
                 if (next == '\'' || next == '"' || next == '\\') {
                     build += QChar(unicode);
                     unicode = next;

@@ -372,9 +372,9 @@ void QMakeParser::read(ProFile *pro, const QStringRef &in, int line, SubGrammar 
     int wordCount = 0; // Number of words in currently accumulated expression
     int lastIndent = 0; // Previous line's indentation, to detect accidental continuation abuse
     bool lineMarked = true; // For in-expression markers
-    ushort needSep = TokNewStr; // Met unquoted whitespace
-    ushort quote = 0;
-    ushort term = 0;
+    char16_t needSep = TokNewStr; // Met unquoted whitespace
+    char16_t quote = 0;
+    char16_t term = 0;
 
     Context context;
     ushort *ptr;
@@ -450,7 +450,7 @@ void QMakeParser::read(ProFile *pro, const QStringRef &in, int line, SubGrammar 
     }
 
     forever {
-        ushort c;
+        char16_t c;
 
         // First, skip leading whitespace
         for (indent = 0; ; ++cur, ++indent) {
@@ -636,7 +636,7 @@ void QMakeParser::read(ProFile *pro, const QStringRef &in, int line, SubGrammar 
                     }
                 } else if (c == '\\') {
                     static const char symbols[] = "[]{}()$\\'\"";
-                    ushort c2;
+                    char16_t c2;
                     if (cur != end && !((c2 = *cur) & 0xff00) && strchr(symbols, c2)) {
                         c = c2;
                         cur++;
