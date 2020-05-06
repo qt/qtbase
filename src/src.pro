@@ -172,34 +172,13 @@ win32:SUBDIRS += src_winmain
 qtConfig(network) {
     SUBDIRS += src_network
     src_plugins.depends += src_network
-    qtHaveModule(gui):qtConfig(private_tests) {
-        src_network_doc_snippets.subdir = network/doc/snippets
-        src_network_doc_snippets.target = sub-network-doc-snippets
-        src_network_doc_snippets.depends = src_network
-        SUBDIRS += src_network_doc_snippets
-    }
 }
 qtConfig(sql) {
     SUBDIRS += src_sql
     src_plugins.depends += src_sql
-
-    qtConfig(private_tests) {
-        src_sql_doc_snippets.subdir = sql/doc/snippets
-        src_sql_doc_snippets.target = sub-sql-doc-snippets
-        src_sql_doc_snippets.depends = src_sql
-        SUBDIRS += src_sql_doc_snippets
-    }
 }
 qtConfig(xml): SUBDIRS += src_xml
-qtConfig(testlib) {
-    SUBDIRS += src_testlib
-    qtConfig(private_tests) {
-        src_testlib_doc_snippets.subdir = testlib/doc/snippets
-        src_testlib_doc_snippets.target = sub-testlib-doc-snippets
-        src_testlib_doc_snippets.depends = src_testlib
-        SUBDIRS += src_testlib_doc_snippets
-    }
-}
+qtConfig(testlib): SUBDIRS += src_testlib
 
 qtConfig(dbus) {
     force_dbus_bootstrap|qtConfig(private_tests): \
@@ -260,15 +239,7 @@ qtConfig(gui) {
             SUBDIRS += src_printsupport
             src_plugins.depends += src_printsupport
         }
-        qtConfig(opengl) {
-            SUBDIRS += src_openglwidgets
-        }
-        qtConfig(private_tests) {
-            src_widgets_doc_snippets.subdir = widgets/doc/snippets
-            src_widgets_doc_snippets.target = sub-widgets-doc-snippets
-            src_widgets_doc_snippets.depends = src_widgets
-            SUBDIRS += src_widgets_doc_snippets
-        }
+        qtConfig(opengl): SUBDIRS += src_openglwidgets
     }
 }
 SUBDIRS += src_plugins
@@ -276,6 +247,36 @@ SUBDIRS += src_plugins
 nacl: SUBDIRS -= src_network src_testlib
 
 android:!android-embedded: SUBDIRS += src_android src_3rdparty_gradle
+
+qtConfig(private_tests) {
+     qtConfig(network):qtConfig(gui) {
+        src_network_doc_snippets.subdir = network/doc/snippets
+        src_network_doc_snippets.target = sub-network-doc-snippets
+        src_network_doc_snippets.depends = src_network src_gui
+        SUBDIRS += src_network_doc_snippets
+    }
+
+    qtConfig(sql) {
+        src_sql_doc_snippets.subdir = sql/doc/snippets
+        src_sql_doc_snippets.target = sub-sql-doc-snippets
+        src_sql_doc_snippets.depends = src_sql
+        SUBDIRS += src_sql_doc_snippets
+    }
+
+    qtConfig(testlib):qtConfig(widgets):qtConfig(sql) {
+        src_testlib_doc_snippets.subdir = testlib/doc/snippets
+        src_testlib_doc_snippets.target = sub-testlib-doc-snippets
+        src_testlib_doc_snippets.depends = src_testlib src_widgets src_sql
+        SUBDIRS += src_testlib_doc_snippets
+    }
+
+    qtConfig(widgets):qtConfig(printer):qtConfig(opengl) {
+        src_widgets_doc_snippets.subdir = widgets/doc/snippets
+        src_widgets_doc_snippets.target = sub-widgets-doc-snippets
+        src_widgets_doc_snippets.depends = src_widgets src_printsupport src_opengl
+        SUBDIRS += src_widgets_doc_snippets
+    }
+}
 
 TR_EXCLUDE = \
     src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \
