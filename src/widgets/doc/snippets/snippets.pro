@@ -11,3 +11,4 @@ SOURCES += customviewstyle.cpp \
            mdiareasnippets.cpp \
            myscrollarea.cpp
 
+load(qt_common)
