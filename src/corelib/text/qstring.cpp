@@ -879,7 +879,7 @@ static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char 
         e = a + (be - b);
 
     while (a < e) {
-        int diff = foldCase(a->unicode()) - foldCase(uchar(*b));
+        int diff = foldCase(a->unicode()) - foldCase(char16_t{uchar(*b)});
         if ((diff))
             return diff;
         ++a;

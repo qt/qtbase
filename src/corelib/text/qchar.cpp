@@ -1692,6 +1692,7 @@ char32_t QChar::toTitleCase(char32_t ucs4) noexcept
     return convertCase_helper(ucs4, QUnicodeTables::TitleCase);
 }
 
+[[deprecated]]
 static inline uint foldCase(const ushort *ch, const ushort *start)
 {
     char32_t ucs4 = *ch;
@@ -1700,6 +1701,15 @@ static inline uint foldCase(const ushort *ch, const ushort *start)
     return convertCase_helper(ucs4, QUnicodeTables::CaseFold);
 }
 
+static inline char32_t foldCase(const char16_t *ch, const char16_t *start)
+{
+    char32_t ucs4 = *ch;
+    if (QChar::isLowSurrogate(ucs4) && ch > start && QChar::isHighSurrogate(*(ch - 1)))
+        ucs4 = QChar::surrogateToUcs4(*(ch - 1), ucs4);
+    return convertCase_helper(ucs4, QUnicodeTables::CaseFold);
+}
+
+[[deprecated]]
 static inline uint foldCase(uint ch, uint &last) noexcept
 {
     char32_t ucs4 = ch;
@@ -1709,9 +1719,24 @@ static inline uint foldCase(uint ch, uint &last) noexcept
     return convertCase_helper(ucs4, QUnicodeTables::CaseFold);
 }
 
+static inline char32_t foldCase(char32_t ch, char32_t &last) noexcept
+{
+    char32_t ucs4 = ch;
+    if (QChar::isLowSurrogate(ucs4) && QChar::isHighSurrogate(last))
+        ucs4 = QChar::surrogateToUcs4(last, ucs4);
+    last = ch;
+    return convertCase_helper(ucs4, QUnicodeTables::CaseFold);
+}
+
+[[deprecated]]
 static inline ushort foldCase(ushort ch) noexcept
 {
     return convertCase_helper(char16_t{ch}, QUnicodeTables::CaseFold);
+}
+
+static inline char16_t foldCase(char16_t ch) noexcept
+{
+    return convertCase_helper(ch, QUnicodeTables::CaseFold);
 }
 
 static inline QChar foldCase(QChar ch) noexcept
