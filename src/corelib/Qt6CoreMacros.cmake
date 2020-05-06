@@ -819,9 +819,9 @@ endif()
 # an existing rc file.
 #
 function(qt6_generate_win32_rc_file target)
-
+    set(prohibited_target_types INTERFACE_LIBRARY STATIC_LIBRARY OBJECT_LIBRARY)
     get_target_property(target_type ${target} TYPE)
-    if (target_type STREQUAL "INTERFACE_LIBRARY")
+    if(target_type IN_LIST prohibited_target_types)
         return()
     endif()
 
