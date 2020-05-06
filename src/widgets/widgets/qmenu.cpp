@@ -564,6 +564,35 @@ void QMenuPrivate::hideMenu(QMenu *menu)
 {
     if (!menu)
         return;
+
+    // See two execs below. They may trigger an akward situation
+    // when 'menu' (also known as 'q' or 'this' in the many functions
+    // around) to become a dangling pointer if the loop manages
+    // to execute 'deferred delete' ... posted while executing
+    // this same loop. Not good!
+    struct Reposter : QObject
+    {
+        Reposter(QMenu *menu) : q(menu)
+        {
+            Q_ASSERT(q);
+            q->installEventFilter(this);
+        }
+        ~Reposter()
+        {
+            if (deleteLater)
+                q->deleteLater();
+        }
+        bool eventFilter(QObject *obj, QEvent *event) override
+        {
+            if (obj == q && event->type() == QEvent::DeferredDelete)
+                return deleteLater = true;
+
+            return QObject::eventFilter(obj, event);
+        }
+        QMenu *q = nullptr;
+        bool deleteLater = false;
+    };
+
 #if QT_CONFIG(effects)
     QSignalBlocker blocker(menu);
     aboutToHide = true;
@@ -575,6 +604,7 @@ void QMenuPrivate::hideMenu(QMenu *menu)
         QAction *activeAction = currentAction;
 
         menu->setActiveAction(nullptr);
+        const Reposter deleteDeleteLate(menu);
         QTimer::singleShot(60, &eventLoop, SLOT(quit()));
         eventLoop.exec();
 
