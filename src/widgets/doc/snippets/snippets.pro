@@ -1,7 +1,7 @@
 requires(qtHaveModule(widgets))
 requires(qtHaveModule(printsupport))
 
-TEMPLATE = app
+TEMPLATE = lib
 
 TARGET = widgets_snippets
 
