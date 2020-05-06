@@ -609,7 +609,7 @@ class Q_WIDGETS_EXPORT QStyleOptionComboBox : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_ComboBox };
-    enum StyleOptionVersion { Version = 1 };
+    enum StyleOptionVersion { Version = 2 };
 
     bool editable;
     QRect popupRect;
@@ -617,6 +617,7 @@ public:
     QString currentText;
     QIcon currentIcon;
     QSize iconSize;
+    Qt::Alignment textAlignment = Qt::AlignLeft | Qt::AlignVCenter;
 
     QStyleOptionComboBox();
     QStyleOptionComboBox(const QStyleOptionComboBox &other) : QStyleOptionComplex(Version, Type) { *this = other; }

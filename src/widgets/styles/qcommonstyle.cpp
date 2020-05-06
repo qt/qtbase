@@ -2222,7 +2222,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
             if (!cb->currentText.isEmpty() && !cb->editable) {
                 proxy()->drawItemText(p, editRect.adjusted(1, 0, -1, 0),
-                             visualAlignment(cb->direction, Qt::AlignLeft | Qt::AlignVCenter),
+                             visualAlignment(cb->direction, cb->textAlignment),
                              cb->palette, cb->state & State_Enabled, cb->currentText);
             }
             p->restore();

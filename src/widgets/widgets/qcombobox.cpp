@@ -1240,8 +1240,12 @@ void QComboBox::initStyleOption(QStyleOptionComboBox *option) const
         option->activeSubControls = d->hoverControl;
     }
     option->currentText = currentText();
-    if (d->currentIndex.isValid())
+    if (d->currentIndex.isValid()) {
         option->currentIcon = d->itemIcon(d->currentIndex);
+        QVariant alignment = d->model->data(d->currentIndex, Qt::TextAlignmentRole);
+        if (alignment.isValid())
+            option->textAlignment = static_cast<Qt::Alignment>(alignment.toUInt());
+    }
     option->iconSize = iconSize();
     if (d->container && d->container->isVisible())
         option->state |= QStyle::State_On;

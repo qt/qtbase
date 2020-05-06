@@ -2611,7 +2611,7 @@ QStyleOptionComboBox::QStyleOptionComboBox(int version)
     This enum is used to hold information about the version of the style option, and
     is defined for each QStyleOption subclass.
 
-    \value Version 1
+    \value Version 2
 
     The version is used by QStyleOption subclasses to implement
     extensions without breaking compatibility. If you use
@@ -2670,6 +2670,13 @@ QStyleOptionComboBox::QStyleOptionComboBox(int version)
     This variable is currently unused. You can safely ignore it.
 
     \sa QStyle::SC_ComboBoxListBoxPopup
+*/
+
+/*!
+    \variable QStyleOptionGroupBox::textAlignment
+    \brief the alignment of the current text in the combo box
+
+    The default value is Qt::AlignLeft | Qt::AlignVCenter.
 */
 
 /*!

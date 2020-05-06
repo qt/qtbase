@@ -3894,7 +3894,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if (!cb->currentText.isEmpty() && !cb->editable) {
                 QPalette styledPalette(cb->palette);
                 rule.configurePalette(&styledPalette, QPalette::Text, QPalette::Base);
-                drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, styledPalette,
+                drawItemText(p, editRect.adjusted(0, 0, 0, 0), cb->textAlignment, styledPalette,
                              cb->state & State_Enabled, cb->currentText, QPalette::Text);
             }
             p->restore();

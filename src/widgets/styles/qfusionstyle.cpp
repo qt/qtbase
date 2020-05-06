@@ -1059,7 +1059,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             }
             if (!cb->currentText.isEmpty() && !cb->editable) {
                 proxy()->drawItemText(painter, editRect.adjusted(1, 0, -1, 0),
-                                      visualAlignment(cb->direction, Qt::AlignLeft | Qt::AlignVCenter),
+                                      visualAlignment(cb->direction, cb->textAlignment),
                                       cb->palette, cb->state & State_Enabled, cb->currentText,
                                       cb->editable ? QPalette::Text : QPalette::ButtonText);
             }
