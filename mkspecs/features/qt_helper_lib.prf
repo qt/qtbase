@@ -62,26 +62,26 @@ win32|CONFIG(static, static|shared) {
         MODULE_PRI_CONT += "QMAKE_LIBS_$${ucmodule} ="
     } else: if(msvc|qtConfig(debug_and_release)): {
         win32: \
-            MODULE_DEBUG_LIBS = $$prefix$${TARGET}d.$$suffix
+            MODULE_DEBUG_LIBS = $$DESTDIR/$$prefix$${TARGET}d.$$suffix
         else: darwin: \
-            MODULE_DEBUG_LIBS = $$prefix$${TARGET}_debug.$$suffix
+            MODULE_DEBUG_LIBS = $$DESTDIR/$$prefix$${TARGET}_debug.$$suffix
         else: \
             error("'$$QMAKE_PLATFORM' does not do debug_and_release.")
-        MODULE_RELEASE_LIBS = $$prefix$${TARGET}.$$suffix
+        MODULE_RELEASE_LIBS = $$DESTDIR/$$prefix$${TARGET}.$$suffix
         MODULE_PRI_CONT += \
             "QMAKE_LIBS_$${ucmodule} =" \  # Needed for the module to be recognized.
-            "QMAKE_LIBS_$${ucmodule}_DEBUG = \$\$[QT_INSTALL_LIBS/get]/$$val_escape(MODULE_DEBUG_LIBS)" \
-            "QMAKE_LIBS_$${ucmodule}_RELEASE = \$\$[QT_INSTALL_LIBS/get]/$$val_escape(MODULE_RELEASE_LIBS)"
+            "QMAKE_LIBS_$${ucmodule}_DEBUG = $$val_escape(MODULE_DEBUG_LIBS)" \
+            "QMAKE_LIBS_$${ucmodule}_RELEASE = $$val_escape(MODULE_RELEASE_LIBS)"
     } else {
-        MODULE_LIBS = $$prefix$${THE_TARGET}.$$suffix
+        MODULE_LIBS = $$DESTDIR/$$prefix$${THE_TARGET}.$$suffix
         MODULE_PRI_CONT += \
-            "QMAKE_LIBS_$${ucmodule} = \$\$[QT_INSTALL_LIBS/get]/$$val_escape(MODULE_LIBS)"
+            "QMAKE_LIBS_$${ucmodule} = $$val_escape(MODULE_LIBS)"
     }
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error()
 } else: android {
     ABI_TARGET = $$qt5LibraryTarget($$TARGET)
-    ABI_MODULE_LIBS = $$prefix$${ABI_TARGET}.$$suffix
-    MODULE_PRI_CONT = "QMAKE_LIBS_$${ucmodule}_$${QT_ARCH} = \$\$[QT_INSTALL_LIBS/get]/$$val_escape(ABI_MODULE_LIBS)"
+    ABI_MODULE_LIBS = $$DESTDIR/$$prefix$${ABI_TARGET}.$$suffix
+    MODULE_PRI_CONT = "QMAKE_LIBS_$${ucmodule}_$${QT_ARCH} = $$val_escape(ABI_MODULE_LIBS)"
     write_file($$MODULE_PRI, MODULE_PRI_CONT, append)|error()
 }
 
