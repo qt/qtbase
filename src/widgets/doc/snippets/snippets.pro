@@ -5,7 +5,7 @@ TEMPLATE = lib
 
 TARGET = widgets_snippets
 
-QT += widgets printsupport
+QT += widgets printsupport opengl openglwidgets
 
 SOURCES += customviewstyle.cpp \
            filedialogurls.cpp \
