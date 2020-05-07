@@ -125,8 +125,7 @@ using QByteArrayData = QArrayDataPointer<char>;
             static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&qbytearray_literal)), \
             const_cast<char *>(str), \
             Size }; \
-        const QByteArray ba(holder); \
-        return ba; \
+        return QByteArray(holder); \
     }()) \
     /**/
 
