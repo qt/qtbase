@@ -115,6 +115,9 @@ private slots:
 
     /* Future / Technical specification compiler features */
     void runtimeArrays();
+
+    /* treat source code as utf-8 */
+    void utf8source();
 };
 
 #if defined(Q_CC_HPACC)
@@ -1549,6 +1552,19 @@ void tst_Compiler::runtimeArrays()
     int i[QRandomGenerator::global()->generate() & 0x1f];
     Q_UNUSED(i);
 #endif
+}
+
+
+
+void tst_Compiler::utf8source()
+{
+    const char *str = "Ελληνικά";
+    auto u16str = u"Ελληνικά";
+    QCOMPARE(QString::fromUtf16(u16str), QString::fromUtf8(str));
+
+    const char *ae = "\xc3\x86";
+    auto u16ae = u"Æ";
+    QCOMPARE(QString::fromUtf16(u16ae), QString::fromUtf8(ae));
 }
 
 QTEST_MAIN(tst_Compiler)

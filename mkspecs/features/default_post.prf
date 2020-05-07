@@ -166,7 +166,7 @@ c99|c11 {
     unset(cstd)
 }
 
-utf8_source {
+!no_utf8_source {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_UTF8_SOURCE
     QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_UTF8_SOURCE
 }
