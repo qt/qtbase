@@ -148,8 +148,7 @@ struct QByteArrayDataPtr
             Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(Size), \
             str }; \
         QByteArrayDataPtr holder = { qbytearray_literal.data_ptr() }; \
-        const QByteArray ba(holder); \
-        return ba; \
+        return QByteArray(holder); \
     }()) \
     /**/
 
