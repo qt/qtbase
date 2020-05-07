@@ -89,6 +89,9 @@ _qt_library_map = [
     LibraryMapping(
         "application-lib", "Qt6", "Qt::AppManApplication", extra=["COMPONENTS", "AppManApplication"]
     ),
+    LibraryMapping("axbase", "Qt6", "Qt::AxBase", extra=["COMPONENTS", "AxBase"]),
+    LibraryMapping("axcontainer", "Qt6", "Qt::AxContainer", extra=["COMPONENTS", "AxContainer"]),
+    LibraryMapping("axserver", "Qt6", "Qt::AxServer", extra=["COMPONENTS", "AxServer"]),
     LibraryMapping("bluetooth", "Qt6", "Qt::Bluetooth", extra=["COMPONENTS", "Bluetooth"]),
     LibraryMapping("bootstrap", "Qt6", "Qt::Bootstrap", extra=["COMPONENTS", "Bootstrap"]),
     # bootstrap-dbus: Not needed in Qt6!
