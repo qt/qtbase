@@ -97,12 +97,12 @@
 //! [9]
     QVector<quint32> vector;
     vector.resize(16);
-    QRandomGenerator::fillRange(vector.data(), vector.size());
+    QRandomGenerator::global()->fillRange(vector.data(), vector.size());
 //! [9]
 
 //! [10]
     quint32 array[2];
-    QRandomGenerator::fillRange(array);
+    QRandomGenerator::global()->fillRange(array);
 //! [10]
 
 //! [11]
@@ -115,11 +115,11 @@
 //! [12]
 
 //! [13]
-    quint32 v = QRandomGenerator::bounded(256);
+    quint32 v = QRandomGenerator::global()->bounded(256);
 //! [13]
 
 //! [14]
-    quint32 v = QRandomGenerator::bounded(1000, 2000);
+    quint32 v = QRandomGenerator::global()->bounded(1000, 2000);
 //! [14]
 
 //! [15]
