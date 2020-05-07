@@ -303,6 +303,10 @@ public:
 
     QTreeWidgetItem *itemAbove(const QTreeWidgetItem *item) const;
     QTreeWidgetItem *itemBelow(const QTreeWidgetItem *item) const;
+    QList<QTreeWidgetItem*> items(const QMimeData *data) const;
+
+    QModelIndex indexFromItem(const QTreeWidgetItem *item, int column = 0) const;
+    QTreeWidgetItem *itemFromIndex(const QModelIndex &index) const;
 
     void setSelectionModel(QItemSelectionModel *selectionModel) override;
 
@@ -329,29 +333,11 @@ Q_SIGNALS:
 protected:
     bool event(QEvent *e) override;
     virtual QStringList mimeTypes() const;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     virtual QMimeData *mimeData(const QList<QTreeWidgetItem *> &items) const;
-#else
-    virtual QMimeData *mimeData(const QList<QTreeWidgetItem*> items) const;
-#endif
     virtual bool dropMimeData(QTreeWidgetItem *parent, int index,
                               const QMimeData *data, Qt::DropAction action);
     virtual Qt::DropActions supportedDropActions() const;
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-public:
-#else
-protected:
-#endif
-    QList<QTreeWidgetItem*> items(const QMimeData *data) const;
-
-    QModelIndex indexFromItem(const QTreeWidgetItem *item, int column = 0) const;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QModelIndex indexFromItem(QTreeWidgetItem *item, int column = 0) const; // ### Qt 6: remove
-#endif
-    QTreeWidgetItem *itemFromIndex(const QModelIndex &index) const;
-
-protected:
 #if QT_CONFIG(draganddrop)
     void dropEvent(QDropEvent *event) override;
 #endif

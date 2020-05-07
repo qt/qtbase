@@ -202,11 +202,7 @@ public:
     QAction *exec();
     QAction *exec(const QPoint &pos, QAction *at = nullptr);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     static QAction *exec(const QList<QAction *> &actions, const QPoint &pos, QAction *at = nullptr, QWidget *parent = nullptr);
-#else
-    static QAction *exec(QList<QAction*> actions, const QPoint &pos, QAction *at = nullptr, QWidget *parent = nullptr);
-#endif
 
     QSize sizeHint() const override;
 

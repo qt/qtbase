@@ -198,18 +198,9 @@ QDateTimeEdit::QDateTimeEdit(QTime time, QWidget *parent)
     d->init(time.isValid() ? time : QDATETIMEEDIT_TIME_MIN);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
   \internal
 */
-QDateTimeEdit::QDateTimeEdit(const QVariant &var, QVariant::Type parserType, QWidget *parent)
-    : QDateTimeEdit(var, QMetaType::Type(parserType), parent)
-{ }
-/*!
-  \internal
-*/
-#endif
-
 QDateTimeEdit::QDateTimeEdit(const QVariant &var, QMetaType::Type parserType, QWidget *parent)
     : QAbstractSpinBox(*new QDateTimeEditPrivate, parent)
 {

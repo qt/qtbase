@@ -231,6 +231,9 @@ public:
     QTableWidgetItem *item(int row, int column) const;
     void setItem(int row, int column, QTableWidgetItem *item);
     QTableWidgetItem *takeItem(int row, int column);
+    QList<QTableWidgetItem*> items(const QMimeData *data) const;
+    QModelIndex indexFromItem(const QTableWidgetItem *item) const;
+    QTableWidgetItem *itemFromIndex(const QModelIndex &index) const;
 
     QTableWidgetItem *verticalHeaderItem(int row) const;
     void setVerticalHeaderItem(int row, QTableWidgetItem *item);
@@ -315,26 +318,9 @@ Q_SIGNALS:
 protected:
     bool event(QEvent *e) override;
     virtual QStringList mimeTypes() const;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     virtual QMimeData *mimeData(const QList<QTableWidgetItem *> &items) const;
-#else
-    virtual QMimeData *mimeData(const QList<QTableWidgetItem*> items) const;
-#endif
     virtual bool dropMimeData(int row, int column, const QMimeData *data, Qt::DropAction action);
     virtual Qt::DropActions supportedDropActions() const;
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-public:
-#else
-protected:
-#endif
-    QList<QTableWidgetItem*> items(const QMimeData *data) const;
-
-    QModelIndex indexFromItem(const QTableWidgetItem *item) const;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QModelIndex indexFromItem(QTableWidgetItem *item) const; // ### Qt 6: remove
-#endif
-    QTableWidgetItem *itemFromIndex(const QModelIndex &index) const;
 
 protected:
 #if QT_CONFIG(draganddrop)

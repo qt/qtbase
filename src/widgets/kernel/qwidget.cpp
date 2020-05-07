@@ -3097,11 +3097,7 @@ void QWidget::addAction(QAction *action)
 
     \sa removeAction(), QMenu, addAction()
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void QWidget::addActions(const QList<QAction *> &actions)
-#else
-void QWidget::addActions(QList<QAction*> actions)
-#endif
 {
     for(int i = 0; i < actions.count(); i++)
         insertAction(nullptr, actions.at(i));
@@ -3150,11 +3146,7 @@ void QWidget::insertAction(QAction *before, QAction *action)
 
     \sa removeAction(), QMenu, insertAction(), contextMenuPolicy
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void QWidget::insertActions(QAction *before, const QList<QAction*> &actions)
-#else
-void QWidget::insertActions(QAction *before, QList<QAction*> actions)
-#endif
 {
     for(int i = 0; i < actions.count(); ++i)
         insertAction(before, actions.at(i));
@@ -9825,11 +9817,7 @@ void QWidget::hideEvent(QHideEvent *)
     \endtable
 */
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QWidget::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
-#else
-bool QWidget::nativeEvent(const QByteArray &eventType, void *message, long *result)
-#endif
 {
     Q_UNUSED(eventType);
     Q_UNUSED(message);

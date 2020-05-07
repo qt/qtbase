@@ -1047,11 +1047,7 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
     }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
-#else
-bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
-#endif
 {
     return m_widget->nativeEvent(eventType, message, result);
 }

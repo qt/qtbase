@@ -551,13 +551,8 @@ public:
 #ifndef QT_NO_ACTION
     //actions
     void addAction(QAction *action);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void addActions(const QList<QAction*> &actions);
     void insertActions(QAction *before, const QList<QAction*> &actions);
-#else
-    void addActions(QList<QAction*> actions);
-    void insertActions(QAction *before, QList<QAction*> actions);
-#endif
     void insertAction(QAction *before, QAction *action);
     void removeAction(QAction *action);
     QList<QAction*> actions() const;
@@ -648,11 +643,7 @@ protected:
     virtual void showEvent(QShowEvent *event);
     virtual void hideEvent(QHideEvent *event);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     virtual bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result);
-#else
-    virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
-#endif
 
     // Misc. protected functions
     virtual void changeEvent(QEvent *);

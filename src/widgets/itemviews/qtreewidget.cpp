@@ -392,7 +392,6 @@ bool QTreeModel::setData(const QModelIndex &index, const QVariant &value, int ro
     return false;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QTreeModel::clearItemData(const QModelIndex &index)
 {
     if (!checkIndex(index, CheckIndexOption::IndexIsValid))
@@ -411,7 +410,6 @@ bool QTreeModel::clearItemData(const QModelIndex &index)
     emit dataChanged(index, index, QVector<int>{});
     return true;
 }
-#endif
 
 QMap<int, QVariant> QTreeModel::itemData(const QModelIndex &index) const
 {
@@ -3257,11 +3255,7 @@ QStringList QTreeWidget::mimeTypes() const
     If the list of items is empty, \nullptr is returned rather than a
     serialized empty list.
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QMimeData *QTreeWidget::mimeData(const QList<QTreeWidgetItem *> &items) const
-#else
-QMimeData *QTreeWidget::mimeData(const QList<QTreeWidgetItem*> items) const
-#endif
 {
     Q_D(const QTreeWidget);
     if (d->treeModel()->cachedIndexes.isEmpty()) {
@@ -3338,17 +3332,6 @@ QModelIndex QTreeWidget::indexFromItem(const QTreeWidgetItem *item, int column) 
     Q_D(const QTreeWidget);
     return d->index(item, column);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-    \overload
-    \internal
-*/
-QModelIndex QTreeWidget::indexFromItem(QTreeWidgetItem *item, int column) const
-{
-    return indexFromItem(const_cast<const QTreeWidgetItem *>(item), column);
-}
-#endif
 
 /*!
     Returns a pointer to the QTreeWidgetItem associated with the given \a index.

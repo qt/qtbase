@@ -90,12 +90,7 @@ public:
     void setOpenLinks(bool open);
 
 public Q_SLOTS:
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    virtual void setSource(const QUrl &name);
-    void setSource(const QUrl &name, QTextDocument::ResourceType type);
-#else
     void setSource(const QUrl &name, QTextDocument::ResourceType type = QTextDocument::UnknownResource);
-#endif
     virtual void backward();
     virtual void forward();
     virtual void home();
@@ -118,10 +113,7 @@ protected:
     virtual void focusOutEvent(QFocusEvent *ev) override;
     virtual bool focusNextPrevChild(bool next) override;
     virtual void paintEvent(QPaintEvent *e) override;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    virtual
-#endif
-    void doSetSource(const QUrl &name, QTextDocument::ResourceType type = QTextDocument::UnknownResource);
+    virtual void doSetSource(const QUrl &name, QTextDocument::ResourceType type = QTextDocument::UnknownResource);
 
 private:
     Q_DISABLE_COPY(QTextBrowser)

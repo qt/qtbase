@@ -93,11 +93,7 @@ public:
     bool setDWMTitleBar(TitleBarChangeType type);
     void setTitleBarIconAndCaptionVisible(bool visible);
     void mouseEvent(QEvent *event);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     bool handleWinEvent(MSG *message, qintptr *result);
-#else
-    bool handleWinEvent(MSG *message, long *result);
-#endif
     void resizeEvent(QResizeEvent *event);
     void paintEvent(QPaintEvent *event);
     QVistaBackButton *backButton() const { return backButton_; }
@@ -136,11 +132,7 @@ private:
     void drawTitleBar(QPainter *painter);
     void setMouseCursor(QPoint pos);
     void collapseTopFrameStrut();
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     bool winEvent(MSG *message, qintptr *result);
-#else
-    bool winEvent(MSG *message, long *result);
-#endif
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);

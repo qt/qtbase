@@ -2393,25 +2393,6 @@ int QStyle::combinedLayoutSpacing(QSizePolicy::ControlTypes controls1,
     return result;
 }
 
-// ### Qt 6: Remove in favor of template<class T> QDebug operator<<(QDebug, const QFlags<T> &).
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-QT_BEGIN_INCLUDE_NAMESPACE
-#  include <QDebug>
-QT_END_INCLUDE_NAMESPACE
-
-#  if !defined(QT_NO_DEBUG_STREAM)
-QDebug operator<<(QDebug debug, QStyle::State state)
-{
-#    if !defined(QT_NO_DEBUG)
-    return operator<< <QStyle::StateFlag>(debug, state);
-#    else
-    Q_UNUSED(state);
-    return debug;
-#    endif
-}
-#  endif // !QT_NO_DEBUG_STREAM
-#endif // QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
 /*!
     \since 4.6
 

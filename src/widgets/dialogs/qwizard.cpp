@@ -3232,11 +3232,7 @@ void QWizard::paintEvent(QPaintEvent * event)
 /*!
     \reimp
 */
-#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QWizard::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
-#  else
-bool QWizard::nativeEvent(const QByteArray &eventType, void *message, long *result)
-#  endif
 {
 #if QT_CONFIG(style_windowsvista)
     Q_D(QWizard);

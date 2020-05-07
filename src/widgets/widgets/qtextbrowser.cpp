@@ -810,13 +810,6 @@ void QTextBrowser::reload()
     setSource(s, d->currentType);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-void QTextBrowser::setSource(const QUrl &url)
-{
-    setSource(url, QTextDocument::UnknownResource);
-}
-#endif
-
 /*!
     Attempts to load the document at the given \a url with the specified \a type.
 
@@ -832,14 +825,12 @@ void QTextBrowser::setSource(const QUrl &url, QTextDocument::ResourceType type)
     doSetSource(url, type);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 /*!
     Attempts to load the document at the given \a url with the specified \a type.
 
     setSource() calls doSetSource.  In Qt 5, setSource(const QUrl &url) was virtual.
     In Qt 6, doSetSource() is virtual instead, so that it can be overridden in subclasses.
 */
-#endif
 void QTextBrowser::doSetSource(const QUrl &url, QTextDocument::ResourceType type)
 {
     Q_D(QTextBrowser);

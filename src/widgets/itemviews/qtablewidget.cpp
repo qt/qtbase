@@ -480,7 +480,6 @@ bool QTableModel::setItemData(const QModelIndex &index, const QMap<int, QVariant
     return true;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QTableModel::clearItemData(const QModelIndex &index)
 {
     if (!checkIndex(index, CheckIndexOption::IndexIsValid))
@@ -496,7 +495,6 @@ bool QTableModel::clearItemData(const QModelIndex &index)
     emit dataChanged(index, index, QVector<int>{});
     return true;
 }
-#endif
 
 Qt::ItemFlags QTableModel::flags(const QModelIndex &index) const
 {
@@ -2582,11 +2580,7 @@ QStringList QTableWidget::mimeTypes() const
     If the list of items is empty, \nullptr is returned rather than a
     serialized empty list.
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem *> &items) const
-#else
-QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
-#endif
 {
     Q_D(const QTableWidget);
 
@@ -2664,18 +2658,6 @@ QModelIndex QTableWidget::indexFromItem(const QTableWidgetItem *item) const
     Q_D(const QTableWidget);
     return d->tableModel()->index(item);
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-  \internal
-  \obsolete
-  \overload
-*/
-QModelIndex QTableWidget::indexFromItem(QTableWidgetItem *item) const
-{
-    return indexFromItem(const_cast<const QTableWidgetItem *>(item));
-}
-#endif
 
 /*!
   Returns a pointer to the QTableWidgetItem associated with the given \a index.

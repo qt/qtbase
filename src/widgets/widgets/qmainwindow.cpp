@@ -851,11 +851,7 @@ void QMainWindow::removeToolBar(QToolBar *toolbar)
 
     \sa addToolBar(), addToolBarBreak(), Qt::ToolBarArea
 */
-Qt::ToolBarArea QMainWindow::toolBarArea(
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    const
-#endif
-    QToolBar *toolbar) const
+Qt::ToolBarArea QMainWindow::toolBarArea(const QToolBar *toolbar) const
 { return d_func()->layout->toolBarArea(toolbar); }
 
 /*!

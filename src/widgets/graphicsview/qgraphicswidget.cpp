@@ -2006,11 +2006,7 @@ void QGraphicsWidget::addAction(QAction *action)
 
     \sa removeAction(), QMenu, addAction(), QWidget::addActions()
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void QGraphicsWidget::addActions(const QList<QAction *> &actions)
-#else
-void QGraphicsWidget::addActions(QList<QAction *> actions)
-#endif
 {
     for (int i = 0; i < actions.count(); ++i)
         insertAction(nullptr, actions.at(i));
@@ -2067,11 +2063,7 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
 
     \sa removeAction(), QMenu, insertAction(), QWidget::insertActions()
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void QGraphicsWidget::insertActions(QAction *before, const QList<QAction *> &actions)
-#else
-void QGraphicsWidget::insertActions(QAction *before, QList<QAction *> actions)
-#endif
 {
     for (int i = 0; i < actions.count(); ++i)
         insertAction(before, actions.at(i));
