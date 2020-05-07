@@ -90,6 +90,7 @@ public:
     void clear();
 
     static bool isSupportedEncoding(const QByteArray &encoding);
+    static QByteArrayList acceptedEncoding();
 
 private:
     bool countInternal();

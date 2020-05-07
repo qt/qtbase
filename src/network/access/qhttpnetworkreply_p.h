@@ -55,10 +55,6 @@
 
 #include <qplatformdefs.h>
 
-#ifndef QT_NO_COMPRESS
-struct z_stream_s;
-#endif
-
 #include <QtNetwork/qtcpsocket.h>
 // it's safe to include these even if SSL support is not enabled
 #include <QtNetwork/qsslsocket.h>
@@ -79,6 +75,8 @@ struct z_stream_s;
 Q_MOC_INCLUDE(<QtNetwork/QNetworkProxy>)
 #endif
 Q_MOC_INCLUDE(<QtNetwork/QAuthenticator>)
+
+#include <private/qdecompresshelper_p.h>
 
 QT_REQUIRE_CONFIG(http);
 
@@ -157,6 +155,8 @@ public:
 
     static bool isHttpRedirect(int statusCode);
 
+    bool isCompressed() const;
+
 #ifndef QT_NO_SSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &config);
@@ -224,7 +224,7 @@ public:
     bool isChunked();
     bool isConnectionCloseEnabled();
 
-    bool isCompressed();
+    bool isCompressed() const;
     void removeAutoDecompressHeader();
 
     enum ReplyState {
@@ -276,11 +276,7 @@ public:
     char* userProvidedDownloadBuffer;
     QUrl redirectUrl;
 
-#ifndef QT_NO_COMPRESS
-    z_stream_s *inflateStrm;
-    int initializeInflateStream();
-    qint64 uncompressBodyData(QByteDataBuffer *in, QByteDataBuffer *out);
-#endif
+    QDecompressHelper decompressHelper;
 };
 
 

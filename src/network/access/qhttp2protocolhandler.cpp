@@ -1163,8 +1163,11 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
     if (QHttpNetworkReply::isHttpRedirect(statusCode) && redirectUrl.isValid())
         httpReply->setRedirectUrl(redirectUrl);
 
-    if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress)
+    if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress) {
         httpReplyPrivate->removeAutoDecompressHeader();
+        httpReplyPrivate->decompressHelper.setEncoding(
+                httpReplyPrivate->headerField("content-encoding"));
+    }
 
     if (QHttpNetworkReply::isHttpRedirect(statusCode)
         || statusCode == 401 || statusCode == 407) {
@@ -1207,12 +1210,17 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const Frame &frame,
 
         const QByteArray wrapped(data, length);
         if (httpRequest.d->autoDecompress && replyPrivate->isCompressed()) {
-            QByteDataBuffer inDataBuffer;
-            inDataBuffer.append(wrapped);
-            replyPrivate->uncompressBodyData(&inDataBuffer, &replyPrivate->responseData);
-            // Now, make sure replyPrivate's destructor will properly clean up
-            // buffers allocated (if any) by zlib.
-            replyPrivate->autoDecompress = true;
+            Q_ASSERT(replyPrivate->decompressHelper.isValid());
+
+            replyPrivate->decompressHelper.feed(wrapped);
+            while (replyPrivate->decompressHelper.hasData()) {
+                QByteArray output(4 * 1024, Qt::Uninitialized);
+                qint64 read = replyPrivate->decompressHelper.read(output.data(), output.size());
+                if (read > 0) {
+                    output.resize(read);
+                    replyPrivate->responseData.append(std::move(output));
+                }
+            }
         } else {
             replyPrivate->responseData.append(wrapped);
         }

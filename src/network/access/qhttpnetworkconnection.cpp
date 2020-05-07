@@ -297,7 +297,8 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
     value = request.headerField("accept-encoding");
     if (value.isEmpty()) {
 #ifndef QT_NO_COMPRESS
-        request.setHeaderField("Accept-Encoding", "gzip, deflate");
+        const QByteArrayList &acceptedEncoding = QDecompressHelper::acceptedEncoding();
+        request.setHeaderField("Accept-Encoding", acceptedEncoding.join(", "));
         request.d->autoDecompress = true;
 #else
         // if zlib is not available set this to false always

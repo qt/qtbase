@@ -79,6 +79,19 @@ bool QDecompressHelper::isSupportedEncoding(const QByteArray &encoding)
     return encodingFromByteArray(encoding) != QDecompressHelper::None;
 }
 
+QByteArrayList QDecompressHelper::acceptedEncoding()
+{
+    static QByteArrayList accepted = []() {
+        QByteArrayList list;
+        list.reserve(sizeof(contentEncodingMapping) / sizeof(contentEncodingMapping[0]));
+        for (const auto &mapping : contentEncodingMapping) {
+            list << QByteArray(mapping.name);
+        }
+        return list;
+    }();
+    return accepted;
+}
+
 QDecompressHelper::~QDecompressHelper()
 {
     clear();

@@ -82,11 +82,15 @@ void tst_QDecompressHelper::cleanupTestCase()
 
 void tst_QDecompressHelper::encodingSupported()
 {
-    QVERIFY(!QDecompressHelper::isSupportedEncoding("identity"));
-    QVERIFY(!QDecompressHelper::isSupportedEncoding("fake"));
+    const QByteArrayList &accepted = QDecompressHelper::acceptedEncoding();
 
     QVERIFY(QDecompressHelper::isSupportedEncoding("deflate"));
+    QVERIFY(accepted.contains("deflate"));
     QVERIFY(QDecompressHelper::isSupportedEncoding("gzip"));
+    QVERIFY(accepted.contains("gzip"));
+    int expected = 2;
+
+    QCOMPARE(expected, accepted.size());
 }
 
 void tst_QDecompressHelper::sharedDecompress_data()
