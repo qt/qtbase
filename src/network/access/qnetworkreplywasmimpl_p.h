@@ -112,6 +112,8 @@ public:
     void dataReceived(const QByteArray &buffer, int bufferSize);
     void headersReceived(const QByteArray &buffer);
 
+    void setStatusCode(int status, const QByteArray &statusText);
+
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
 

@@ -454,13 +454,19 @@ void QNetworkReplyWasmImplPrivate::_q_bufferOutgoingData()
 
 void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
 {
-    QByteArray buffer(fetch->data, fetch->numBytes);
-
     QNetworkReplyWasmImplPrivate *reply =
             reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
     if (reply) {
+        QByteArray buffer(fetch->data, fetch->numBytes);
         reply->dataReceived(buffer, buffer.size());
     }
+}
+
+void QNetworkReplyWasmImplPrivate::setStatusCode(int status, const QByteArray &statusText)
+{
+    Q_Q(QNetworkReplyWasmImpl);
+    q->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, status);
+    q->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, statusText);
 }
 
 void QNetworkReplyWasmImplPrivate::stateChange(emscripten_fetch_t *fetch)
@@ -488,14 +494,17 @@ void QNetworkReplyWasmImplPrivate::downloadProgress(emscripten_fetch_t *fetch)
 void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
 {
     QNetworkReplyWasmImplPrivate *reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
-    Q_ASSERT(reply);
+    if (reply) {
+        QString reasonStr;
+        if (fetch->status > 600 ||  reply->state == QNetworkReplyPrivate::Aborted)
+            reasonStr = QStringLiteral("Operation canceled");
+        else
+            reasonStr = QString::fromUtf8(fetch->statusText);
 
-    QString reasonStr = QString::fromUtf8(fetch->statusText);
-
-    reply->setReplyAttributes(reinterpret_cast<quintptr>(fetch->userData), fetch->status, reasonStr);
-
-    if (fetch->status >= 400 && !reasonStr.isEmpty())
+        QByteArray statusText(fetch->statusText);
+        reply->setStatusCode(fetch->status, statusText);
         reply->emitReplyError(reply->statusCodeFromHttp(fetch->status, reply->request.url()), reasonStr);
+    }
 
     if (fetch->status >= 400)
         emscripten_fetch_close(fetch); // Also free data on failure.
