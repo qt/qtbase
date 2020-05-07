@@ -350,7 +350,7 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
             glyphs_out[current] = glyphs.glyphs[i];
             ++current;
             if (glyphs.justifications[i].nKashidas) {
-                QChar ch(0x640); // Kashida character
+                QChar ch = u'\x640'; // Kashida character
 
                 glyph_t kashidaGlyph = glyphIndex(ch.unicode());
                 QFixed kashidaWidth;

@@ -496,7 +496,7 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case QPlatformTheme::PasswordMaskDelay:
         return QVariant(int(0));
     case QPlatformTheme::PasswordMaskCharacter:
-        return QVariant(QChar(0x25CF));
+        return QVariant(QChar(u'\x25CF'));
     case QPlatformTheme::StartDragVelocity:
         return QVariant(int(0)); // no limit
     case QPlatformTheme::UseFullScreenForPopupMenu:

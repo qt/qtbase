@@ -1311,7 +1311,7 @@ QString QKeySequencePrivate::keyName(int key, QKeySequence::SequenceFormat forma
 
     if (key && key < Qt::Key_Escape && key != Qt::Key_Space) {
         if (!QChar::requiresSurrogates(key)) {
-            p = QChar(ushort(key)).toUpper();
+            p = QChar::fromUcs2(key).toUpper();
         } else {
             p += QChar(QChar::highSurrogate(key));
             p += QChar(QChar::lowSurrogate(key));
@@ -1348,7 +1348,7 @@ NonSymbol:
             // (Really depends on you locale)
             if (i >= numKeyNames) {
                 if (!QChar::requiresSurrogates(key)) {
-                    p = QChar(ushort(key)).toUpper();
+                    p = QChar::fromUcs2(key).toUpper();
                 } else {
                     p += QChar(QChar::highSurrogate(key));
                     p += QChar(QChar::lowSurrogate(key));

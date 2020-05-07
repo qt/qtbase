@@ -2612,7 +2612,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                     gf.width = iterator.itemWidth;
                     QPainterPrivate::get(p)->drawTextItem(QPointF(iterator.x.toReal(), y.toReal()), gf, eng);
                     if (eng->option.flags() & QTextOption::ShowTabsAndSpaces) {
-                        QChar visualTab(0x2192);
+                        const QChar visualTab = u'\x2192';
                         int w = QFontMetrics(f).horizontalAdvance(visualTab);
                         qreal x = iterator.itemWidth.toReal() - w; // Right-aligned
                         if (x < 0)
@@ -2694,7 +2694,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
             QBrush c = format.foreground();
             if (c.style() != Qt::NoBrush)
                 p->setPen(c.color());
-            QChar visualSpace(si.analysis.flags == QScriptAnalysis::Space ? (ushort)0xb7 : (ushort)0xb0);
+            const QChar visualSpace = si.analysis.flags == QScriptAnalysis::Space ? u'\xb7' : u'\xb0';
             QFont oldFont = p->font();
             p->setFont(eng->font(si));
             p->drawText(QPointF(iterator.x.toReal(), itemBaseLine.toReal()), visualSpace);

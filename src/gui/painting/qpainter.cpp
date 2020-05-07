@@ -7191,7 +7191,7 @@ start_lengthVariant:
             } else if (!tabarraylen && !tabstops) {
                 tabstops = qRound(fm.horizontalAdvance(QLatin1Char('x'))*8);
             }
-        } else if (chr == QChar(ushort(0x9c))) {
+        } else if (chr == u'\x9c') {
             // string with multiple length variants
             hasMoreLengthVariants = true;
             break;

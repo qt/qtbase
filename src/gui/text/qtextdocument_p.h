@@ -85,8 +85,8 @@ class QAbstractTextDocumentLayout;
 class QTextDocument;
 class QTextFrame;
 
-#define QTextBeginningOfFrame QChar(0xfdd0)
-#define QTextEndOfFrame QChar(0xfdd1)
+#define QTextBeginningOfFrame QChar(u'\xfdd0')
+#define QTextEndOfFrame QChar(u'\xfdd1')
 
 class QTextFragmentData : public QFragment<>
 {

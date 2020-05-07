@@ -3456,7 +3456,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
     QFixed extraMargin;
     if (docPrivate->defaultTextOption.flags() & QTextOption::AddSpaceForLineAndParagraphSeparators) {
         QFontMetricsF fm(bl.charFormat().font());
-        extraMargin = QFixed::fromReal(fm.horizontalAdvance(QChar(QChar(0x21B5))));
+        extraMargin = QFixed::fromReal(fm.horizontalAdvance(u'\x21B5'));
     }
 
     const QFixed indent = this->blockIndent(blockFormat);

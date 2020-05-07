@@ -465,7 +465,7 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
 #endif
         break;
     case MD_TEXT_NULLCHAR:
-        s = QString(QChar(0xFFFD)); // CommonMark-required replacement for null
+        s = QString(QChar(u'\xFFFD')); // CommonMark-required replacement for null
         break;
     case MD_TEXT_BR:
         s = QString(Newline);

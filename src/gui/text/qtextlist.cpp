@@ -213,7 +213,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                 int c = item;
                 while (c > 0) {
                     c--;
-                    result.prepend(QChar(baseChar + (c % 26)));
+                    result.prepend(QChar::fromUcs2(baseChar + (c % 26)));
                     c /= 26;
                 }
             }

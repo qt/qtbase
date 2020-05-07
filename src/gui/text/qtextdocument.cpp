@@ -183,15 +183,15 @@ QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
             col = 0;
         } else {
             if (mode == Qt::WhiteSpacePre && plain[i] == QLatin1Char('\t')){
-                rich += QChar(0x00a0U);
+                rich += QChar::Nbsp;
                 ++col;
                 while (col % 8) {
-                    rich += QChar(0x00a0U);
+                    rich += QChar::Nbsp;
                     ++col;
                 }
             }
             else if (mode == Qt::WhiteSpacePre && plain[i].isSpace())
-                rich += QChar(0x00a0U);
+                rich += QChar::Nbsp;
             else if (plain[i] == QLatin1Char('<'))
                 rich += QLatin1String("&lt;");
             else if (plain[i] == QLatin1Char('>'))

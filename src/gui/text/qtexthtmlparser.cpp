@@ -835,14 +835,7 @@ QString QTextHtmlParser::parseEntity()
             if (ok) {
                 if (uc >= 0x80 && uc < 0x80 + (sizeof(windowsLatin1ExtendedCharacters)/sizeof(windowsLatin1ExtendedCharacters[0])))
                     uc = windowsLatin1ExtendedCharacters[uc - 0x80];
-                QString str;
-                if (QChar::requiresSurrogates(uc)) {
-                    str += QChar(QChar::highSurrogate(uc));
-                    str += QChar(QChar::lowSurrogate(uc));
-                } else {
-                    str = QChar(uc);
-                }
-                return str;
+                return QStringView{QChar::fromUcs4(uc)}.toString();
             }
         }
     }

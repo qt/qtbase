@@ -2189,9 +2189,9 @@ QString Scanner::preprocess(const QString &input, bool *hasEscapeSequences)
 
             hexCount = qMin(hexCount, 6);
             bool ok = false;
-            ushort code = output.midRef(hexStart, hexCount).toUShort(&ok, 16);
+            const char16_t code = output.midRef(hexStart, hexCount).toUShort(&ok, 16);
             if (ok) {
-                output.replace(hexStart - 1, hexCount + 1, QChar(code));
+                output.replace(hexStart - 1, hexCount + 1, code);
                 i = hexStart;
             } else {
                 i = hexStart;
