@@ -2001,10 +2001,13 @@ QRhi::FrameOpResult QRhiVulkan::finish()
 
     if (inFrame) {
         // Allocate and begin recording on a new command buffer.
-        if (ofr.active)
+        if (ofr.active) {
             startPrimaryCommandBuffer(&ofr.cbWrapper.cb);
-        else
-            startPrimaryCommandBuffer(&swapChainD->frameRes[swapChainD->currentFrameSlot].cmdBuf);
+        } else {
+            QVkSwapChain::FrameResources &frame(swapChainD->frameRes[swapChainD->currentFrameSlot]);
+            startPrimaryCommandBuffer(&frame.cmdBuf);
+            swapChainD->cbWrapper.cb = frame.cmdBuf;
+        }
     }
 
     executeDeferredReleases(true);

@@ -101,12 +101,16 @@ private slots:
     void renderToTextureTexturedQuadAndUniformBuffer();
     void renderToWindowSimple_data();
     void renderToWindowSimple();
+    void finishWithinSwapchainFrame_data();
+    void finishWithinSwapchainFrame();
     void srbLayoutCompatibility_data();
     void srbLayoutCompatibility();
     void renderPassDescriptorCompatibility_data();
     void renderPassDescriptorCompatibility();
 
 private:
+    void setWindowType(QWindow *window, QRhi::Implementation impl);
+
     struct {
         QRhiNullInitParams null;
 #ifdef TST_GL
@@ -2081,26 +2085,8 @@ void tst_QRhi::renderToTextureTexturedQuadAndUniformBuffer()
     QCOMPARE(result1.pixel(28, 178), empty);
 }
 
-void tst_QRhi::renderToWindowSimple_data()
+void tst_QRhi::setWindowType(QWindow *window, QRhi::Implementation impl)
 {
-    rhiTestData();
-}
-
-void tst_QRhi::renderToWindowSimple()
-{
-    QFETCH(QRhi::Implementation, impl);
-    QFETCH(QRhiInitParams *, initParams);
-
-#ifdef Q_OS_WINRT
-    if (impl == QRhi::D3D11)
-        QSKIP("Skipping window-based QRhi rendering on WinRT as the platform and the D3D11 backend are not prepared for this yet");
-#endif
-
-    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
-    if (!rhi)
-        QSKIP("QRhi could not be created, skipping testing rendering");
-
-    QScopedPointer<QWindow> window(new QWindow);
     switch (impl) {
     case QRhi::OpenGLES2:
 #if QT_CONFIG(opengl)
@@ -2122,6 +2108,29 @@ void tst_QRhi::renderToWindowSimple()
     default:
         break;
     }
+}
+
+void tst_QRhi::renderToWindowSimple_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToWindowSimple()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+#ifdef Q_OS_WINRT
+    if (impl == QRhi::D3D11)
+        QSKIP("Skipping window-based QRhi rendering on WinRT as the platform and the D3D11 backend are not prepared for this yet");
+#endif
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    QScopedPointer<QWindow> window(new QWindow);
+    setWindowType(window.data(), impl);
 
     window->setGeometry(0, 0, 640, 480);
     window->show();
@@ -2239,6 +2248,118 @@ void tst_QRhi::renderToWindowSimple()
 
     QCOMPARE(redCount + blueCount, readbackWidth);
     QVERIFY(redCount < blueCount);
+}
+
+void tst_QRhi::finishWithinSwapchainFrame_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::finishWithinSwapchainFrame()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+#ifdef Q_OS_WINRT
+    if (impl == QRhi::D3D11)
+        QSKIP("Skipping window-based QRhi rendering on WinRT as the platform and the D3D11 backend are not prepared for this yet");
+#endif
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    QScopedPointer<QWindow> window(new QWindow);
+    setWindowType(window.data(), impl);
+
+    window->setGeometry(0, 0, 640, 480);
+    window->show();
+    QVERIFY(QTest::qWaitForWindowExposed(window.data()));
+
+    QScopedPointer<QRhiSwapChain> swapChain(rhi->newSwapChain());
+    swapChain->setWindow(window.data());
+    swapChain->setFlags(QRhiSwapChain::UsedAsTransferSource);
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(swapChain->newCompatibleRenderPassDescriptor());
+    swapChain->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(swapChain->buildOrResize());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->build());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(pipeline->build());
+
+    static const float vertices[] = {
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        0.0f, 1.0f
+    };
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
+    QVERIFY(vbuf->build());
+
+    // exercise begin/endExternal() just a little bit, hence ExternalContentsInPass
+    QVERIFY(rhi->beginFrame(swapChain.data(), QRhi::ExternalContentsInPass) == QRhi::FrameOpSuccess);
+    QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+    QRhiRenderTarget *rt = swapChain->currentFrameRenderTarget();
+    const QSize outputSize = swapChain->currentPixelSize();
+
+    // repeat a sequence of upload, renderpass, readback, finish a number of
+    // times within the same frame
+    for (int i = 0; i < 5; ++i) {
+        QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+        updates->uploadStaticBuffer(vbuf.data(), vertices);
+
+        cb->beginPass(rt, Qt::blue, { 1.0f, 0 }, updates);
+
+        // just have some commands, do not bother with draw calls
+        cb->setGraphicsPipeline(pipeline.data());
+        QRhiViewport viewport(0, 0, float(outputSize.width()), float(outputSize.height()));
+        cb->setViewport(viewport);
+
+        // do a dummy begin/endExternal round: interesting for Vulkan because
+        // there this may start end then submit a secondary command buffer
+        cb->beginExternal();
+        cb->endExternal();
+
+        cb->endPass();
+
+        QRhiReadbackResult readResult;
+        bool ok = false;
+        readResult.completed = [&readResult, &ok, impl] {
+            QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                                readResult.pixelSize.width(), readResult.pixelSize.height(),
+                                QImage::Format_ARGB32_Premultiplied);
+            if (readResult.format == QRhiTexture::RGBA8)
+                wrapperImage = wrapperImage.rgbSwapped();
+
+            if (impl != QRhi::Null)
+                ok = qBlue(wrapperImage.pixel(43, 89)) > 250;
+            else
+                ok = true; // the Null backend does not actually render
+        };
+        QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+        readbackBatch->readBackTexture({}, &readResult); // read back the current backbuffer
+        cb->resourceUpdate(readbackBatch);
+
+        // force submit what we have so far, wait for the queue, and then start
+        // a new primary command buffer
+        rhi->finish();
+
+        QVERIFY(ok);
+    }
+
+    rhi->endFrame(swapChain.data());
 }
 
 void tst_QRhi::srbLayoutCompatibility_data()
