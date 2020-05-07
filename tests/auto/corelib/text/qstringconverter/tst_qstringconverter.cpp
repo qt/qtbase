@@ -1335,14 +1335,6 @@ void tst_QStringConverter::utf8stateful_data()
     QTest::newRow("2of4+invalid") << QByteArray("\360\220") << QByteArray("a") << QString();
     QTest::newRow("3of4+invalid") << QByteArray("\360\220\210") << QByteArray("a") << QString();
 
-    // invalid: sequence too short (the empty second buffer causes a state reset)
-    QTest::newRow("1of2+empty") << QByteArray("\xc2") << QByteArray() << QString();
-    QTest::newRow("1of3+empty") << QByteArray("\xe0") << QByteArray() << QString();
-    QTest::newRow("2of3+empty") << QByteArray("\xe0\xa0") << QByteArray() << QString();
-    QTest::newRow("1of4+empty") << QByteArray("\360") << QByteArray() << QString();
-    QTest::newRow("2of4+empty") << QByteArray("\360\220") << QByteArray() << QString();
-    QTest::newRow("3of4+empty") << QByteArray("\360\220\210") << QByteArray() << QString();
-
     // overlong sequence:
     QTest::newRow("overlong-1of2") << QByteArray("\xc1") << QByteArray("\x81") << QString();
     QTest::newRow("overlong-1of3") << QByteArray("\xe0") << QByteArray("\x81\x81") << QString();
