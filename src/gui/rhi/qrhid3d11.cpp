@@ -264,6 +264,15 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         HRESULT hr = D3D11CreateDevice(adapterToUse, D3D_DRIVER_TYPE_UNKNOWN, nullptr, devFlags,
                                        nullptr, 0, D3D11_SDK_VERSION,
                                        &dev, &featureLevel, &ctx);
+        // We cannot assume that D3D11_CREATE_DEVICE_DEBUG is always available. Retry without it, if needed.
+        if (hr == DXGI_ERROR_SDK_COMPONENT_MISSING && debugLayer) {
+            qCDebug(QRHI_LOG_INFO, "Debug layer was requested but is not available. "
+                                   "Attempting to create D3D11 device without it.");
+            devFlags &= ~D3D11_CREATE_DEVICE_DEBUG;
+            hr = D3D11CreateDevice(adapterToUse, D3D_DRIVER_TYPE_UNKNOWN, nullptr, devFlags,
+                                   nullptr, 0, D3D11_SDK_VERSION,
+                                   &dev, &featureLevel, &ctx);
+        }
         adapterToUse->Release();
         if (FAILED(hr)) {
             qWarning("Failed to create D3D11 device and context: %s", qPrintable(comErrorMessage(hr)));
