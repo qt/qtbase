@@ -1900,10 +1900,11 @@ bool QGuiApplication::event(QEvent *e)
             if (topLevelWindow->flags() != Qt::Desktop)
                 postEvent(topLevelWindow, new QEvent(QEvent::LanguageChange));
         }
-    } else if (e->type() == QEvent::ApplicationFontChange) {
+    } else if (e->type() == QEvent::ApplicationFontChange ||
+               e->type() == QEvent::ApplicationPaletteChange) {
         for (auto *topLevelWindow : QGuiApplication::topLevelWindows()) {
             if (topLevelWindow->flags() != Qt::Desktop)
-                postEvent(topLevelWindow, new QEvent(QEvent::ApplicationFontChange));
+                postEvent(topLevelWindow, new QEvent(e->type()));
         }
     } else if (e->type() == QEvent::Quit) {
         // Close open windows. This is done in order to deliver de-expose
@@ -3271,8 +3272,10 @@ QClipboard * QGuiApplication::clipboard()
 /*!
     \since 5.4
     \fn void QGuiApplication::paletteChanged(const QPalette &palette)
+    \obsolete
 
-    This signal is emitted when the \a palette of the application changes.
+    This signal is emitted when the \a palette of the application changes. Use
+    QEvent::ApplicationPaletteChanged instead.
 
     \sa palette()
 */

@@ -1211,18 +1211,15 @@ void QApplicationPrivate::handlePaletteChanged(const char *className)
 
     // Setting the global application palette is documented to
     // reset any previously set class specific widget palettes.
-    bool sendPaletteChangeToAllWidgets = false;
-    if (!className && !widgetPalettes.isEmpty()) {
-        sendPaletteChangeToAllWidgets = true;
+    if (!className && !widgetPalettes.isEmpty())
         widgetPalettes.clear();
-    }
 
     QGuiApplicationPrivate::handlePaletteChanged(className);
 
     QEvent event(QEvent::ApplicationPaletteChange);
     const QWidgetList widgets = QApplication::allWidgets();
     for (auto widget : widgets) {
-        if (sendPaletteChangeToAllWidgets || (!className && widget->isWindow()) || (className && widget->inherits(className)))
+        if (!widget->isWindow() && widget->inherits(className))
             QCoreApplication::sendEvent(widget, &event);
     }
 
@@ -1734,7 +1731,8 @@ bool QApplication::event(QEvent *e)
 #endif
     }
 
-    if (e->type() == QEvent::LanguageChange || e->type() == QEvent::ApplicationFontChange) {
+    if (e->type() == QEvent::LanguageChange || e->type() == QEvent::ApplicationFontChange ||
+        e->type() == QEvent::ApplicationPaletteChange) {
         // QGuiApplication::event does not account for the cases where
         // there is a top level widget without a window handle. So they
         // need to have the event posted here

@@ -418,6 +418,7 @@ private slots:
     void winIdAfterClose();
     void receivesLanguageChangeEvent();
     void receivesApplicationFontChangeEvent();
+    void receivesApplicationPaletteChangeEvent();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -4988,6 +4989,7 @@ void tst_QWidget::isOpaque()
         QVERIFY(!::isOpaque(&widget));
 
         QApplication::setPalette(old);
+        QApplication::sendPostedEvents(&widget, QEvent::ApplicationPaletteChange);
         QCOMPARE(::isOpaque(&widget), old.color(QPalette::Window).alpha() == 255);
     }
 #endif
@@ -11662,6 +11664,7 @@ public:
     ChangeEventWidget(QWidget *parent = nullptr) : QWidget(parent) {}
     int languageChangeCount = 0;
     int applicationFontChangeCount = 0;
+    int applicationPaletteChangeCount = 0;
 protected:
     bool event(QEvent *e) override
     {
@@ -11669,6 +11672,8 @@ protected:
             languageChangeCount++;
         else if (e->type() == QEvent::ApplicationFontChange)
             applicationFontChangeCount++;
+        else if (e->type() == QEvent::ApplicationPaletteChange)
+            applicationPaletteChangeCount++;
         return QWidget::event(e);
     }
 };
@@ -11679,6 +11684,7 @@ public:
     ChangeEventWindow(QWindow *parent = nullptr) : QWindow(parent) {}
     int languageChangeCount = 0;
     int applicationFontChangeCount = 0;
+    int applicationPaletteChangeCount = 0;
 protected:
     bool event(QEvent *e) override
     {
@@ -11686,6 +11692,8 @@ protected:
             languageChangeCount++;
         else if (e->type() == QEvent::ApplicationFontChange)
             applicationFontChangeCount++;
+        else if (e->type() == QEvent::ApplicationPaletteChange)
+            applicationPaletteChangeCount++;
         return QWindow::event(e);
     }
 };
@@ -11737,6 +11745,33 @@ void tst_QWidget::receivesApplicationFontChangeEvent()
     QCOMPARE(ww.applicationFontChangeCount, 1);
 
     QApplication::setFont(origFont);
+}
+
+void tst_QWidget::receivesApplicationPaletteChangeEvent()
+{
+    // Confirm that any QWindow or top level QWidget only gets a single
+    // ApplicationPaletteChange event when the font is changed
+    const QPalette origPalette = QApplication::palette();
+
+    ChangeEventWidget topLevel;
+    auto childWidget = new ChangeEventWidget(&topLevel);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    ChangeEventWindow ww;
+    ww.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&ww));
+    ChangeEventWidget topLevelNotShown;
+    QPalette changedPalette = origPalette;
+    changedPalette.setColor(QPalette::Base, Qt::red);
+    QApplication::setPalette(changedPalette);
+    QCoreApplication::sendPostedEvents(0, QEvent::ApplicationPaletteChange);
+    QCOMPARE(topLevel.applicationPaletteChangeCount, 1);
+    QCOMPARE(topLevelNotShown.applicationPaletteChangeCount, 1);
+    // QWidget should not be passing the event on automatically
+    QCOMPARE(childWidget->applicationPaletteChangeCount, 0);
+    QCOMPARE(ww.applicationPaletteChangeCount, 1);
+
+    QApplication::setPalette(origPalette);
 }
 
 QTEST_MAIN(tst_QWidget)

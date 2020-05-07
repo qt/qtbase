@@ -188,9 +188,9 @@ Q_SIGNALS:
     void commitDataRequest(QSessionManager &sessionManager);
     void saveStateRequest(QSessionManager &sessionManager);
 #endif
-    void paletteChanged(const QPalette &pal);
     void applicationDisplayNameChanged();
 #if QT_DEPRECATED_SINCE(6, 0)
+    void paletteChanged(const QPalette &pal);
     void fontChanged(const QFont &font);
 #endif
 protected:
