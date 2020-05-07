@@ -38,4 +38,51 @@
 
     In this topic we summarize those changes in Qt Core, and provide guidance
     to handle them.
+
+    \section1 Container Classes
+
+    \section2 QHash, QMultiHash, QSet
+
+    \section3 qHash() Signature
+
+    For custom types, QHash and QMultiHash rely on you providing
+    a \l{The qHash() hashing function} {custom qHash() function}
+    in the same namespace. In Qt 4 and Qt 5, the return
+    value and optional second argument of a \c qHash function
+    was of type \c uint. In Qt 6, it is \c size_t.
+
+    That is, you need to change
+
+    \code
+    uint qHash(MyType x, uint seed);
+    \endcode
+
+    to
+
+    \code
+    size_t qHash(MyType x, size_t seed);
+    \endcode
+
+    This allows QHash, QMultiHash and QSet to hold more than 2^32 items on
+    64 bit platforms.
+
+    \section3 Stability of References
+
+    The implementation of QHash and QMultiHash in Qt 6 got changed from
+    a node based approach to a two stage lookup table. This design allows
+    to keep the memory overhead of a hash instance very small, while
+    at the same time giving good performance.
+
+    One behavioral change to note is that the new QHash implementation
+    will not provide stable references to elements in the hash when the
+    table needs to grow, or when entries are removed. Applications that
+    rely on such stability might now run into undefined behavior.
+
+    \section3 Removal of QHash::insertMulti
+
+    In Qt 5, QHash could be used to create multi-valued hashes by using
+    QHash::insertMulti, and QMultiHash was deriving vom QHash.
+
+    In Qt 6, both types and use cases are distinct, and QHash::insertMulti
+    got removed.
 */
