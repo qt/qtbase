@@ -183,6 +183,7 @@ qt_add_module(Gui
         painting/qpdf.cpp painting/qpdf_p.h
         painting/qpdfwriter.cpp painting/qpdfwriter.h
         painting/qpen.cpp painting/qpen.h
+        painting/qpixellayout.cpp painting/qpixellayout_p.h
         painting/qplatformbackingstore.cpp painting/qplatformbackingstore.h
         painting/qpolygon.cpp painting/qpolygon.h
         painting/qpolygonclipper_p.h

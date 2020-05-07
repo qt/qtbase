@@ -40,6 +40,7 @@
 #include <private/qdrawhelper_neon_p.h>
 #include <private/qblendfunctions_p.h>
 #include <private/qmath_p.h>
+#include <private/qpixellayout_p.h>
 
 #ifdef __ARM_NEON__
 

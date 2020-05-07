@@ -40,6 +40,7 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qpaintengine_raster_p.h>
+#include <private/qpixellayout_p.h>
 
 #if defined(QT_COMPILER_SUPPORTS_SSE4_1)
 

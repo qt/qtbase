@@ -62,8 +62,10 @@
 #include <private/qimage_p.h>
 #include <private/qstatictext_p.h>
 #include <private/qcosmeticstroker_p.h>
-#include "qmemrotate_p.h"
-#include "qrgba64_p.h"
+#include <private/qdrawhelper_p.h>
+#include <private/qmemrotate_p.h>
+#include <private/qpixellayout_p.h>
+#include <private/qrgba64_p.h>
 
 #include "qpaintengine_raster_p.h"
 //   #include "qbezier_p.h"

@@ -47,6 +47,7 @@ HEADERS += \
         painting/qpdf_p.h \
         painting/qpdfwriter.h \
         painting/qpen.h \
+        painting/qpixellayout_p.h \
         painting/qpolygon.h \
         painting/qpolygonclipper_p.h \
         painting/qrangecollection.h \
@@ -100,6 +101,7 @@ SOURCES += \
         painting/qpdf.cpp \
         painting/qpdfwriter.cpp \
         painting/qpen.cpp \
+        painting/qpixellayout.cpp \
         painting/qpolygon.cpp \
         painting/qrangecollection.cpp \
         painting/qrasterizer.cpp \

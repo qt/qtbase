@@ -56,9 +56,9 @@
 #include <limits.h>
 #include <qpa/qplatformpixmap.h>
 #include <private/qcolortransform_p.h>
-#include <private/qdrawhelper_p.h>
 #include <private/qmemrotate_p.h>
 #include <private/qimagescale_p.h>
+#include <private/qpixellayout_p.h>
 #include <private/qsimd_p.h>
 
 #include <qhash.h>

@@ -61,6 +61,7 @@
 #define QT_FT_BEGIN_HEADER
 #define QT_FT_END_HEADER
 #endif
+#include "private/qpixellayout_p.h"
 #include "private/qrasterdefs_p.h"
 #include <private/qsimd_p.h>
 
@@ -148,8 +149,6 @@ typedef void (*SrcOverTransformFunc)(uchar *destPixels, int dbpl,
                                      const QRect &clipRect,
                                      const QTransform &targetRectTransform,
                                      int const_alpha);
-
-typedef void (*MemRotateFunc)(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl);
 
 struct DrawHelper {
     ProcessSpans blendColor;
@@ -845,31 +844,6 @@ static inline QRgba64 interpolate_4_pixels_rgb64(const QRgba64 t[], const QRgba6
 }
 #endif // __SSE2__
 
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
-    quint32 rgb = x >> 8;
-    quint32 a = x << 24;
-    return a | rgb;
-}
-
-static Q_ALWAYS_INLINE quint32 ARGB2RGBA(quint32 x) {
-    quint32 rgb = x << 8;
-    quint32 a = x >> 24;
-    return a | rgb;
-}
-#else
-static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
-    // RGBA8888 is ABGR32 on little endian.
-    quint32 ag = x & 0xff00ff00;
-    quint32 rg = x & 0x00ff00ff;
-    return ag | (rg  << 16) | (rg >> 16);
-}
-
-static Q_ALWAYS_INLINE quint32 ARGB2RGBA(quint32 x) {
-    return RGBA2ARGB(x);
-}
-#endif
-
 static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16(uint x, uint a) {
     a += 1;
     uint t = (((x & 0x07e0)*a) >> 8) & 0x07e0;
@@ -888,14 +862,6 @@ static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE int qt_div_255(int x) { return (x + (x>>
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_257_floor(uint x) { return  (x - (x >> 8)) >> 8; }
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_257(uint x) { return qt_div_257_floor(x + 128); }
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
-
-static Q_ALWAYS_INLINE uint qAlphaRgb30(uint c)
-{
-    uint a = c >> 30;
-    a |= a << 2;
-    a |= a << 4;
-    return a;
-}
 
 template <class T> inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
@@ -978,214 +944,6 @@ inline QRgb qConvertRgb16To32(uint c)
         | ((((c) << 8) & 0xf80000) | (((c) << 3) & 0x70000));
 }
 
-enum QtPixelOrder {
-    PixelOrderRGB,
-    PixelOrderBGR
-};
-
-template<enum QtPixelOrder> inline uint qConvertArgb32ToA2rgb30(QRgb);
-
-template<enum QtPixelOrder> inline uint qConvertRgb32ToRgb30(QRgb);
-
-template<enum QtPixelOrder> inline QRgb qConvertA2rgb30ToArgb32(uint c);
-
-// A combined unpremultiply and premultiply with new simplified alpha.
-// Needed when alpha loses precision relative to other colors during conversion (ARGB32 -> A2RGB30).
-template<unsigned int Shift>
-inline QRgb qRepremultiply(QRgb p)
-{
-    const uint alpha = qAlpha(p);
-    if (alpha == 255 || alpha == 0)
-        return p;
-    p = qUnpremultiply(p);
-    Q_CONSTEXPR  uint mult = 255 / (255 >> Shift);
-    const uint newAlpha = mult * (alpha >> Shift);
-    p = (p & ~0xff000000) | (newAlpha<<24);
-    return qPremultiply(p);
-}
-
-template<unsigned int Shift>
-inline QRgba64 qRepremultiply(QRgba64 p)
-{
-    const uint alpha = p.alpha();
-    if (alpha == 65535 || alpha == 0)
-        return p;
-    p = p.unpremultiplied();
-    Q_CONSTEXPR  uint mult = 65535 / (65535 >> Shift);
-    p.setAlpha(mult * (alpha >> Shift));
-    return p.premultiplied();
-}
-
-template<>
-inline uint qConvertArgb32ToA2rgb30<PixelOrderBGR>(QRgb c)
-{
-    c = qRepremultiply<6>(c);
-    return (c & 0xc0000000)
-        | (((c << 22) & 0x3fc00000) | ((c << 14) & 0x00300000))
-        | (((c << 4) & 0x000ff000) | ((c >> 4) & 0x00000c00))
-        | (((c >> 14) & 0x000003fc) | ((c >> 22) & 0x00000003));
-}
-
-template<>
-inline uint qConvertArgb32ToA2rgb30<PixelOrderRGB>(QRgb c)
-{
-    c = qRepremultiply<6>(c);
-    return (c & 0xc0000000)
-        | (((c << 6) & 0x3fc00000) | ((c >> 2) & 0x00300000))
-        | (((c << 4) & 0x000ff000) | ((c >> 4) & 0x00000c00))
-        | (((c << 2) & 0x000003fc) | ((c >> 6) & 0x00000003));
-}
-
-template<>
-inline uint qConvertRgb32ToRgb30<PixelOrderBGR>(QRgb c)
-{
-    return 0xc0000000
-        | (((c << 22) & 0x3fc00000) | ((c << 14) & 0x00300000))
-        | (((c << 4) & 0x000ff000) | ((c >> 4) & 0x00000c00))
-        | (((c >> 14) & 0x000003fc) | ((c >> 22) & 0x00000003));
-}
-
-template<>
-inline uint qConvertRgb32ToRgb30<PixelOrderRGB>(QRgb c)
-{
-    return 0xc0000000
-        | (((c << 6) & 0x3fc00000) | ((c >> 2) & 0x00300000))
-        | (((c << 4) & 0x000ff000) | ((c >> 4) & 0x00000c00))
-        | (((c << 2) & 0x000003fc) | ((c >> 6) & 0x00000003));
-}
-
-template<>
-inline QRgb qConvertA2rgb30ToArgb32<PixelOrderBGR>(uint c)
-{
-    uint a = c >> 30;
-    a |= a << 2;
-    a |= a << 4;
-    return (a << 24)
-        | ((c << 14) & 0x00ff0000)
-        | ((c >> 4) & 0x0000ff00)
-        | ((c >> 22) & 0x000000ff);
-}
-
-template<>
-inline QRgb qConvertA2rgb30ToArgb32<PixelOrderRGB>(uint c)
-{
-    uint a = c >> 30;
-    a |= a << 2;
-    a |= a << 4;
-    return (a << 24)
-        | ((c >> 6) & 0x00ff0000)
-        | ((c >> 4) & 0x0000ff00)
-        | ((c >> 2) & 0x000000ff);
-}
-
-template<enum QtPixelOrder> inline QRgba64 qConvertA2rgb30ToRgb64(uint rgb);
-
-template<>
-inline QRgba64 qConvertA2rgb30ToRgb64<PixelOrderBGR>(uint rgb)
-{
-    quint16 alpha = rgb >> 30;
-    quint16 blue  = (rgb >> 20) & 0x3ff;
-    quint16 green = (rgb >> 10) & 0x3ff;
-    quint16 red   = rgb & 0x3ff;
-    // Expand the range.
-    alpha |= (alpha << 2);
-    alpha |= (alpha << 4);
-    alpha |= (alpha << 8);
-    red   = (red   << 6) | (red   >> 4);
-    green = (green << 6) | (green >> 4);
-    blue  = (blue  << 6) | (blue  >> 4);
-    return qRgba64(red, green, blue, alpha);
-}
-
-template<>
-inline QRgba64 qConvertA2rgb30ToRgb64<PixelOrderRGB>(uint rgb)
-{
-    quint16 alpha = rgb >> 30;
-    quint16 red   = (rgb >> 20) & 0x3ff;
-    quint16 green = (rgb >> 10) & 0x3ff;
-    quint16 blue  = rgb & 0x3ff;
-    // Expand the range.
-    alpha |= (alpha << 2);
-    alpha |= (alpha << 4);
-    alpha |= (alpha << 8);
-    red   = (red   << 6) | (red   >> 4);
-    green = (green << 6) | (green >> 4);
-    blue  = (blue  << 6) | (blue  >> 4);
-    return qRgba64(red, green, blue, alpha);
-}
-
-template<enum QtPixelOrder> inline unsigned int qConvertRgb64ToRgb30(QRgba64);
-
-template<>
-inline unsigned int qConvertRgb64ToRgb30<PixelOrderBGR>(QRgba64 c)
-{
-    c = qRepremultiply<14>(c);
-    const uint a = c.alpha() >> 14;
-    const uint r = c.red() >> 6;
-    const uint g = c.green() >> 6;
-    const uint b = c.blue() >> 6;
-    return (a << 30) | (b << 20) | (g << 10) | r;
-}
-
-template<>
-inline unsigned int qConvertRgb64ToRgb30<PixelOrderRGB>(QRgba64 c)
-{
-    c = qRepremultiply<14>(c);
-    const uint a = c.alpha() >> 14;
-    const uint r = c.red() >> 6;
-    const uint g = c.green() >> 6;
-    const uint b = c.blue() >> 6;
-    return (a << 30) | (r << 20) | (g << 10) | b;
-}
-
-inline uint qRgbSwapRgb30(uint c)
-{
-    const uint ag = c & 0xc00ffc00;
-    const uint rb = c & 0x3ff003ff;
-    return ag | (rb << 20) | (rb >> 20);
-}
-
-inline int qRed565(quint16 rgb) {
-    const int r = (rgb & 0xf800);
-    return (r >> 8) | (r >> 13);
-}
-
-inline int qGreen565(quint16 rgb) {
-    const int g = (rgb & 0x07e0);
-    return (g >> 3) | (g >> 9);
-}
-
-inline int qBlue565(quint16 rgb) {
-    const int b = (rgb & 0x001f);
-    return (b << 3) | (b >> 2);
-}
-
-// We manually unalias the variables to make sure the compiler
-// fully optimizes both aliased and unaliased cases.
-#define UNALIASED_CONVERSION_LOOP(buffer, src, count, conversion) \
-    if (src == buffer) { \
-        for (int i = 0; i < count; ++i) \
-            buffer[i] = conversion(buffer[i]); \
-    } else { \
-        for (int i = 0; i < count; ++i) \
-            buffer[i] = conversion(src[i]); \
-    }
-
-
-static Q_ALWAYS_INLINE const uint *qt_convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count)
-{
-    UNALIASED_CONVERSION_LOOP(buffer, src, count, qPremultiply);
-    return buffer;
-}
-
-static Q_ALWAYS_INLINE const uint *qt_convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count)
-{
-    UNALIASED_CONVERSION_LOOP(buffer, src, count, [](uint s) { return qPremultiply(RGBA2ARGB(s));});
-    return buffer;
-}
-
-template<bool RGBA> void qt_convertRGBA64ToARGB32(uint *dst, const QRgba64 *src, int count);
-
 const uint qt_bayer_matrix[16][16] = {
     { 0x1, 0xc0, 0x30, 0xf0, 0xc, 0xcc, 0x3c, 0xfc,
       0x3, 0xc3, 0x33, 0xf3, 0xf, 0xcf, 0x3f, 0xff},
@@ -1265,60 +1023,69 @@ struct IntermediateBuffer
     quint32 buffer_ag[BufferSize+2];
 };
 
-struct QDitherInfo {
-    int x;
-    int y;
-};
-
-typedef const uint *(QT_FASTCALL *FetchAndConvertPixelsFunc)(uint *buffer, const uchar *src, int index, int count,
-                                                             const QVector<QRgb> *clut, QDitherInfo *dither);
-typedef void (QT_FASTCALL *ConvertAndStorePixelsFunc)(uchar *dest, const uint *src, int index, int count,
-                                                      const QVector<QRgb> *clut, QDitherInfo *dither);
-
-typedef const QRgba64 *(QT_FASTCALL *FetchAndConvertPixelsFunc64)(QRgba64 *buffer, const uchar *src, int index, int count,
-                                                                 const QVector<QRgb> *clut, QDitherInfo *dither);
-typedef void (QT_FASTCALL *ConvertAndStorePixelsFunc64)(uchar *dest, const QRgba64 *src, int index, int count,
-                                                        const QVector<QRgb> *clut, QDitherInfo *dither);
-
-typedef void (QT_FASTCALL *ConvertFunc)(uint *buffer, int count, const QVector<QRgb> *clut);
-typedef void (QT_FASTCALL *Convert64Func)(quint64 *buffer, int count, const QVector<QRgb> *clut);
-typedef const QRgba64 *(QT_FASTCALL *ConvertTo64Func)(QRgba64 *buffer, const uint *src, int count,
-                                                      const QVector<QRgb> *clut, QDitherInfo *dither);
-typedef void (QT_FASTCALL *RbSwapFunc)(uchar *dst, const uchar *src, int count);
-
-
-struct QPixelLayout
+template <QPixelLayout::BPP bpp>
+inline uint QT_FASTCALL qFetchPixel(const uchar *, int)
 {
-    // Bits per pixel
-    enum BPP {
-        BPPNone,
-        BPP1MSB,
-        BPP1LSB,
-        BPP8,
-        BPP16,
-        BPP24,
-        BPP32,
-        BPP64,
-        BPPCount
-    };
+    Q_UNREACHABLE();
+    return 0;
+}
 
-    bool hasAlphaChannel;
-    bool premultiplied;
-    BPP bpp;
-    RbSwapFunc rbSwap;
-    ConvertFunc convertToARGB32PM;
-    ConvertTo64Func convertToRGBA64PM;
-    FetchAndConvertPixelsFunc fetchToARGB32PM;
-    FetchAndConvertPixelsFunc64 fetchToRGBA64PM;
-    ConvertAndStorePixelsFunc storeFromARGB32PM;
-    ConvertAndStorePixelsFunc storeFromRGB32;
+template <>
+inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP1LSB>(const uchar *src, int index)
+{
+    return (src[index >> 3] >> (index & 7)) & 1;
+}
+
+template <>
+inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP1MSB>(const uchar *src, int index)
+{
+    return (src[index >> 3] >> (~index & 7)) & 1;
+}
+
+template <>
+inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP8>(const uchar *src, int index)
+{
+    return src[index];
+}
+
+template <>
+inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP16>(const uchar *src, int index)
+{
+    return reinterpret_cast<const quint16 *>(src)[index];
+}
+
+template <>
+inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP24>(const uchar *src, int index)
+{
+    return reinterpret_cast<const quint24 *>(src)[index];
+}
+
+template <>
+inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP32>(const uchar *src, int index)
+{
+    return reinterpret_cast<const uint *>(src)[index];
+}
+
+template <>
+inline uint QT_FASTCALL qFetchPixel<QPixelLayout::BPP64>(const uchar *src, int index)
+{
+    // We have to do the conversion in fetch to fit into a 32bit uint
+    QRgba64 c = reinterpret_cast<const QRgba64 *>(src)[index];
+    return c.toArgb32();
+}
+
+typedef uint (QT_FASTCALL *FetchPixelFunc)(const uchar *src, int index);
+
+constexpr FetchPixelFunc qFetchPixelTable[QPixelLayout::BPPCount] = {
+    nullptr, // BPPNone
+    qFetchPixel<QPixelLayout::BPP1MSB>,
+    qFetchPixel<QPixelLayout::BPP1LSB>,
+    qFetchPixel<QPixelLayout::BPP8>,
+    qFetchPixel<QPixelLayout::BPP16>,
+    qFetchPixel<QPixelLayout::BPP24>,
+    qFetchPixel<QPixelLayout::BPP32>,
+    qFetchPixel<QPixelLayout::BPP64>,
 };
-
-extern ConvertAndStorePixelsFunc64 qStoreFromRGBA64PM[QImage::NImageFormats];
-
-extern QPixelLayout qPixelLayouts[QImage::NImageFormats];
-
-extern MemRotateFunc qMemRotateFunctions[QPixelLayout::BPPCount][3];
 
 QT_END_NAMESPACE
 

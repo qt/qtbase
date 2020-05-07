@@ -37,7 +37,8 @@
 **
 ****************************************************************************/
 
-#include "private/qmemrotate_p.h"
+#include "qmemrotate_p.h"
+#include "qpixellayout_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -41,6 +41,7 @@
 #include "qdrawhelper_p.h"
 #include "qdrawhelper_x86_p.h"
 #include "qdrawingprimitive_sse2_p.h"
+#include "qpixellayout_p.h"
 #include "qrgba64_p.h"
 
 #if defined(QT_COMPILER_SUPPORTS_AVX2)

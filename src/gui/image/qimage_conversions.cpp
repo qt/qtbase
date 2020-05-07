@@ -37,10 +37,11 @@
 **
 ****************************************************************************/
 
-#include <private/qdrawhelper_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qcolortrclut_p.h>
+#include <private/qdrawhelper_p.h>
 #include <private/qendian_p.h>
+#include <private/qpixellayout_p.h>
 #include <private/qsimd_p.h>
 #include <private/qimage_p.h>
 
