@@ -462,6 +462,13 @@ void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
     }
 }
 
+void QNetworkReplyWasmImplPrivate::setStatusCode(int status, const QByteArray &statusText)
+{
+    Q_Q(QNetworkReplyWasmImpl);
+    q->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, status);
+    q->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, statusText);
+}
+
 void QNetworkReplyWasmImplPrivate::stateChange(emscripten_fetch_t *fetch)
 {
     if (fetch->readyState == /*HEADERS_RECEIVED*/ 2) {
@@ -498,8 +505,14 @@ void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
             reasonStr = QStringLiteral("Operation canceled");
         else
             reasonStr = QString::fromUtf8(fetch->statusText);
+
+        QByteArray statusText(fetch->statusText);
+        reply->setStatusCode(fetch->status, statusText);
         reply->emitReplyError(reply->statusCodeFromHttp(fetch->status, reply->request.url()), reasonStr);
     }
+
+    if (fetch->status >= 400)
+        emscripten_fetch_close(fetch); // Also free data on failure.
 }
 
 //taken from qhttpthreaddelegate.cpp
