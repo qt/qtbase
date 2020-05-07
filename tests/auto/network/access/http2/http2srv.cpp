@@ -120,6 +120,11 @@ void Http2Server::setResponseBody(const QByteArray &body)
     responseBody = body;
 }
 
+void Http2Server::setContentEncoding(const QByteArray &encoding)
+{
+    contentEncoding = encoding;
+}
+
 void Http2Server::emulateGOAWAY(int timeout)
 {
     Q_ASSERT(timeout >= 0);
@@ -840,6 +845,9 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
         header.push_back(HPack::HeaderField("content-length",
                          QString("%1").arg(responseBody.size()).toLatin1()));
     }
+
+    if (!contentEncoding.isEmpty())
+        header.push_back(HPack::HeaderField("content-encoding", contentEncoding));
 
     HPack::BitOStream ostream(writer.outboundFrame().buffer);
     const bool result = encoder.encodeResponse(ostream, header);

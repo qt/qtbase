@@ -86,6 +86,8 @@ public:
     // To be called before server started:
     void enablePushPromise(bool enabled, const QByteArray &path = QByteArray());
     void setResponseBody(const QByteArray &body);
+    // No content encoding is actually performed, call setResponseBody with already encoded data
+    void setContentEncoding(const QByteArray &contentEncoding);
     void emulateGOAWAY(int timeout);
     void redirectOpenStream(quint16 targetPort);
 
@@ -211,6 +213,8 @@ private:
     bool redirectSent = false;
     quint16 targetPort = 0;
     QAtomicInt interrupted;
+
+    QByteArray contentEncoding;
 protected slots:
     void ignoreErrorSlot();
 };

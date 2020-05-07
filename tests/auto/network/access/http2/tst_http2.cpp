@@ -111,6 +111,9 @@ private slots:
     void connectToHost();
     void maxFrameSize();
 
+    void contentEncoding_data();
+    void contentEncoding();
+
 protected slots:
     // Slots to listen to our in-process server:
     void serverStarted(quint16 port);
@@ -765,6 +768,109 @@ void tst_Http2::maxFrameSize()
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::contentEncoding_data()
+{
+    QTest::addColumn<QByteArray>("encoding");
+    QTest::addColumn<QByteArray>("body");
+    QTest::addColumn<QByteArray>("expected");
+    QTest::addColumn<QNetworkRequest::Attribute>("h2Attribute");
+    QTest::addColumn<H2Type>("connectionType");
+
+    struct ContentEncodingData
+    {
+        ContentEncodingData(QByteArray &&ce, QByteArray &&body, QByteArray &&ex)
+            : contentEncoding(ce), body(body), expected(ex)
+        {
+        }
+        QByteArray contentEncoding;
+        QByteArray body;
+        QByteArray expected;
+    };
+
+    QVector<ContentEncodingData> contentEncodingData;
+    contentEncodingData.emplace_back(
+            "gzip", QByteArray::fromBase64("H4sIAAAAAAAAA8tIzcnJVyjPL8pJAQCFEUoNCwAAAA=="),
+            "hello world");
+    contentEncodingData.emplace_back(
+            "deflate", QByteArray::fromBase64("eJzLSM3JyVcozy/KSQEAGgsEXQ=="), "hello world");
+
+    // Loop through and add the data...
+    for (const auto &data : contentEncodingData) {
+        const char *name = data.contentEncoding.data();
+        QTest::addRow("%s-h2c-upgrade", name)
+                << data.contentEncoding << data.body << data.expected
+                << QNetworkRequest::Http2AllowedAttribute << H2Type::h2c;
+        QTest::addRow("%s-h2c-direct", name)
+                << data.contentEncoding << data.body << data.expected
+                << QNetworkRequest::Http2DirectAttribute << H2Type::h2cDirect;
+
+        if (!clearTextHTTP2)
+            QTest::addRow("%s-h2-ALPN", name)
+                    << data.contentEncoding << data.body << data.expected
+                    << QNetworkRequest::Http2AllowedAttribute << H2Type::h2Alpn;
+
+#if QT_CONFIG(ssl)
+        QTest::addRow("%s-h2-direct", name)
+                << data.contentEncoding << data.body << data.expected
+                << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+#endif
+    }
+}
+
+void tst_Http2::contentEncoding()
+{
+    clearHTTP2State();
+
+#if QT_CONFIG(securetransport)
+    // Normally on macOS we use plain text only for SecureTransport
+    // does not support ALPN on the server side. With 'direct encrytped'
+    // we have to use TLS sockets (== private key) and thus suppress a
+    // keychain UI asking for permission to use a private key.
+    // Our CI has this, but somebody testing locally - will have a problem.
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    auto envRollback = qScopeGuard([]() { qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN"); });
+#endif
+
+    QFETCH(H2Type, connectionType);
+
+    ServerPtr targetServer(newServer(defaultServerSettings, connectionType));
+    QFETCH(QByteArray, body);
+    targetServer->setResponseBody(body);
+    QFETCH(QByteArray, encoding);
+    targetServer->setContentEncoding(encoding);
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    auto url = requestUrl(connectionType);
+    url.setPath("/index.html");
+
+    QNetworkRequest request(url);
+    QFETCH(const QNetworkRequest::Attribute, h2Attribute);
+    request.setAttribute(h2Attribute, QVariant(true));
+
+    auto reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    // Since we're using self-signed certificates,
+    // ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QVERIFY(nRequests == 0);
+    QVERIFY(prefaceOK);
+    QVERIFY(serverGotSettingsACK);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(reply->isFinished());
+    QTEST(reply->readAll(), "expected");
 }
 
 void tst_Http2::serverStarted(quint16 port)

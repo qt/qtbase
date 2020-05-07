@@ -503,6 +503,10 @@ private Q_SLOTS:
 
     void getWithTimeout();
     void postWithTimeout();
+
+    void contentEncoding_data();
+    void contentEncoding();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -9173,6 +9177,57 @@ void tst_QNetworkReply::postWithTimeout()
     QVERIFY(reply3->error() == QNetworkReply::OperationCanceledError);
 
     manager.setTransferTimeout(0);
+}
+
+void tst_QNetworkReply::contentEncoding_data()
+{
+    QTest::addColumn<QByteArray>("encoding");
+    QTest::addColumn<QByteArray>("body");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::newRow("gzip-hello-world")
+            << QByteArray("gzip")
+            << QByteArray::fromBase64("H4sIAAAAAAAAA8tIzcnJVyjPL8pJAQCFEUoNCwAAAA==")
+            << QByteArray("hello world");
+    QTest::newRow("deflate-hello-world")
+            << QByteArray("deflate") << QByteArray::fromBase64("eJzLSM3JyVcozy/KSQEAGgsEXQ==")
+            << QByteArray("hello world");
+}
+
+void tst_QNetworkReply::contentEncoding()
+{
+    QFETCH(QByteArray, encoding);
+    QFETCH(QByteArray, body);
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: %1\r\nContent-Length: %2\r\n\r\n");
+    header = header.arg(encoding, QString::number(body.size()));
+
+    MiniHttpServer server(header.toLatin1() + body);
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    {
+        // Check that we included the content encoding method in our Accept-Encoding header
+        const QByteArray &receivedData = server.receivedData;
+        int start = receivedData.indexOf("Accept-Encoding");
+        QVERIFY(start != -1);
+        int end = receivedData.indexOf("\r\n", start);
+        QVERIFY(end != -1);
+        QByteArray acceptedEncoding = receivedData.mid(start, end - start);
+        acceptedEncoding = acceptedEncoding.mid(acceptedEncoding.indexOf(':') + 1).trimmed();
+        QByteArrayList list = acceptedEncoding.split(',');
+        for (QByteArray &encoding : list)
+            encoding = encoding.trimmed();
+        QVERIFY2(list.contains(encoding), acceptedEncoding.data());
+    }
+
+    QFETCH(QByteArray, expected);
+
+    QCOMPARE(reply->bytesAvailable(), expected.size());
+    QCOMPARE(reply->readAll(), expected);
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
