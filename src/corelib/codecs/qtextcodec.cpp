@@ -1075,7 +1075,7 @@ QString QTextDecoder::toUnicode(const char *chars, int len)
 }
 
 // in qstring.cpp:
-void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept;
+void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept;
 
 /*! \overload
 
@@ -1090,7 +1090,7 @@ void QTextDecoder::toUnicode(QString *target, const char *chars, int len)
         break;
     case 4: // latin1
         target->resize(len);
-        qt_from_latin1((ushort*)target->data(), chars, len);
+        qt_from_latin1((char16_t*)target->data(), chars, len);
         break;
     default:
         *target = c->toUnicode(chars, len, &state);

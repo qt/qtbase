@@ -65,7 +65,6 @@ QT_BEGIN_NAMESPACE
 
 // in qstring.cpp
 void qt_to_latin1_unchecked(uchar *dst, const ushort *uc, qsizetype len);
-void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept;
 
 /*
   This defines a binary data structure for Json data. The data structure is optimised for fast reading

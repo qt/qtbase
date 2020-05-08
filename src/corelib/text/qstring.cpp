@@ -104,6 +104,11 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+// temporary; to easy porting to char16_t
+char16_t *to_utf16(ushort *p) { return reinterpret_cast<char16_t *>(p); }
+}
+
 /*
  * Note on the use of SIMD in qstring.cpp:
  *
@@ -136,8 +141,8 @@ QT_BEGIN_NAMESPACE
 
 #if defined(__mips_dsp)
 // From qstring_mips_dsp_asm.S
-extern "C" void qt_fromlatin1_mips_asm_unroll4 (ushort*, const char*, uint);
-extern "C" void qt_fromlatin1_mips_asm_unroll8 (ushort*, const char*, uint);
+extern "C" void qt_fromlatin1_mips_asm_unroll4 (char16_t*, const char*, uint);
+extern "C" void qt_fromlatin1_mips_asm_unroll8 (char16_t*, const char*, uint);
 extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const ushort *src, int length);
 #endif
 
@@ -611,7 +616,7 @@ bool QtPrivate::isValidUtf16(QStringView s) noexcept
 }
 
 // conversion between Latin 1 and UTF-16
-void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept
+void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept
 {
     /* SIMD:
      * Unpacking with SSE has been shown to improve performance on recent CPUs
@@ -2383,7 +2388,7 @@ QString &QString::operator=(QLatin1String other)
     if (isDetached() && other.size() <= capacity()) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
         d.size = other.size();
         d.data()[other.size()] = 0;
-        qt_from_latin1(d.data(), other.latin1(), other.size());
+        qt_from_latin1(to_utf16(d.data()), other.latin1(), other.size());
     } else {
         *this = fromLatin1(other.latin1(), other.size());
     }
@@ -2553,7 +2558,7 @@ QString &QString::insert(int i, QLatin1String str)
         resize(size() + len);
 
     ::memmove(d.data() + i + len, d.data() + i, (d.size - i - len) * sizeof(QChar));
-    qt_from_latin1(d.data() + i, s, uint(len));
+    qt_from_latin1(to_utf16(d.data() + i), s, uint(len));
     return *this;
 }
 
@@ -2677,7 +2682,7 @@ QString &QString::append(QLatin1String str)
         int len = str.size();
         if (d->needsDetach() || size() + len > capacity())
             reallocData(uint(size() + len) + 1u, true);
-        ushort *i = d.data() + d.size;
+        char16_t *i = to_utf16(d.data() + d.size);
         qt_from_latin1(i, s, uint(len));
         i[len] = '\0';
         d.size += len;
@@ -3285,8 +3290,8 @@ QString &QString::replace(QLatin1String before, QLatin1String after, Qt::CaseSen
 {
     int alen = after.size();
     int blen = before.size();
-    QVarLengthArray<ushort> a(alen);
-    QVarLengthArray<ushort> b(blen);
+    QVarLengthArray<char16_t> a(alen);
+    QVarLengthArray<char16_t> b(blen);
     qt_from_latin1(a.data(), after.latin1(), alen);
     qt_from_latin1(b.data(), before.latin1(), blen);
     return replace((const QChar *)b.data(), blen, (const QChar *)a.data(), alen, cs);
@@ -3307,7 +3312,7 @@ QString &QString::replace(QLatin1String before, QLatin1String after, Qt::CaseSen
 QString &QString::replace(QLatin1String before, const QString &after, Qt::CaseSensitivity cs)
 {
     int blen = before.size();
-    QVarLengthArray<ushort> b(blen);
+    QVarLengthArray<char16_t> b(blen);
     qt_from_latin1(b.data(), before.latin1(), blen);
     return replace((const QChar *)b.data(), blen, after.constData(), after.d.size, cs);
 }
@@ -3327,7 +3332,7 @@ QString &QString::replace(QLatin1String before, const QString &after, Qt::CaseSe
 QString &QString::replace(const QString &before, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
-    QVarLengthArray<ushort> a(alen);
+    QVarLengthArray<char16_t> a(alen);
     qt_from_latin1(a.data(), after.latin1(), alen);
     return replace(before.constData(), before.d.size, (const QChar *)a.data(), alen, cs);
 }
@@ -3347,7 +3352,7 @@ QString &QString::replace(const QString &before, QLatin1String after, Qt::CaseSe
 QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
-    QVarLengthArray<ushort> a(alen);
+    QVarLengthArray<char16_t> a(alen);
     qt_from_latin1(a.data(), after.latin1(), alen);
     return replace(&c, 1, (const QChar *)a.data(), alen, cs);
 }
@@ -5344,7 +5349,7 @@ QString::DataPointer QString::fromLatin1_helper(const char *str, int size)
             size = qstrlen(str);
         d = DataPointer(Data::allocate(size + 1), size);
         d.data()[size] = '\0';
-        ushort *dst = d.data();
+        char16_t *dst = to_utf16(d.data());
 
         qt_from_latin1(dst, str, uint(size));
     }
@@ -8394,7 +8399,7 @@ QString QString::arg(QStringView a, int fieldWidth, QChar fillChar) const
 */
 QString QString::arg(QLatin1String a, int fieldWidth, QChar fillChar) const
 {
-    QVarLengthArray<ushort> utf16(a.size());
+    QVarLengthArray<char16_t> utf16(a.size());
     qt_from_latin1(utf16.data(), a.data(), a.size());
     return arg(QStringView(utf16.data(), utf16.size()), fieldWidth, fillChar);
 }
@@ -9015,7 +9020,7 @@ static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPriv
         switch (part.tag) {
         case QtPrivate::ArgBase::L1:
             if (part.size) {
-                qt_from_latin1(reinterpret_cast<ushort*>(out),
+                qt_from_latin1(reinterpret_cast<char16_t*>(out),
                                reinterpret_cast<const char*>(part.data), part.size);
             }
             break;
@@ -12144,7 +12149,7 @@ qsizetype QtPrivate::findString(QStringView haystack, qsizetype from, QLatin1Str
     if (haystack.size() < needle.size())
         return -1;
 
-    QVarLengthArray<ushort> s(needle.size());
+    QVarLengthArray<char16_t> s(needle.size());
     qt_from_latin1(s.data(), needle.latin1(), needle.size());
     return QtPrivate::findString(haystack, from, QStringView(reinterpret_cast<const QChar*>(s.constData()), s.size()), cs);
 }
@@ -12154,7 +12159,7 @@ qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QStringV
     if (haystack.size() < needle.size())
         return -1;
 
-    QVarLengthArray<ushort> s(haystack.size());
+    QVarLengthArray<char16_t> s(haystack.size());
     qt_from_latin1(s.data(), haystack.latin1(), haystack.size());
     return QtPrivate::findString(QStringView(reinterpret_cast<const QChar*>(s.constData()), s.size()), from, needle, cs);
 }
@@ -12164,9 +12169,9 @@ qsizetype QtPrivate::findString(QLatin1String haystack, qsizetype from, QLatin1S
     if (haystack.size() < needle.size())
         return -1;
 
-    QVarLengthArray<ushort> h(haystack.size());
+    QVarLengthArray<char16_t> h(haystack.size());
     qt_from_latin1(h.data(), haystack.latin1(), haystack.size());
-    QVarLengthArray<ushort> n(needle.size());
+    QVarLengthArray<char16_t> n(needle.size());
     qt_from_latin1(n.data(), needle.latin1(), needle.size());
     return QtPrivate::findString(QStringView(reinterpret_cast<const QChar*>(h.constData()), h.size()), from,
                                  QStringView(reinterpret_cast<const QChar*>(n.constData()), n.size()), cs);
@@ -12631,7 +12636,7 @@ QString QString::toHtmlEscaped() const
  */
 void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out) noexcept
 {
-    qt_from_latin1(reinterpret_cast<ushort *>(out), a, uint(len));
+    qt_from_latin1(reinterpret_cast<char16_t *>(out), a, uint(len));
 }
 
 QT_END_NAMESPACE
