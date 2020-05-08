@@ -12002,16 +12002,16 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
     if (l > 500 && sl > 5)
         return qFindStringBoyerMoore(haystack0, from, needle0, cs);
 
-    auto sv = [sl](const ushort *v) { return QStringView(v, sl); };
+    auto sv = [sl](const char16_t *v) { return QStringView(v, sl); };
     /*
         We use some hashing for efficiency's sake. Instead of
         comparing strings, we compare the hash value of str with that
         of a part of this QString. Only if that matches, we call
         qt_string_compare().
     */
-    const ushort *needle = (const ushort *)needle0.data();
-    const ushort *haystack = (const ushort *)(haystack0.data()) + from;
-    const ushort *end = (const ushort *)(haystack0.data()) + (l - sl);
+    const char16_t *needle = needle0.utf16();
+    const char16_t *haystack = haystack0.utf16() + from;
+    const char16_t *end = haystack0.utf16() + (l - sl);
     const std::size_t sl_minus_1 = sl - 1;
     std::size_t hashNeedle = 0, hashHaystack = 0;
     qsizetype idx;
@@ -12027,13 +12027,13 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
             hashHaystack += haystack[sl_minus_1];
             if (hashHaystack == hashNeedle
                  && qt_compare_strings(needle0, sv(haystack), Qt::CaseSensitive) == 0)
-                return haystack - (const ushort *)haystack0.data();
+                return haystack - haystack0.utf16();
 
             REHASH(*haystack);
             ++haystack;
         }
     } else {
-        const ushort *haystack_start = (const ushort *)haystack0.data();
+        const char16_t *haystack_start = haystack0.utf16();
         for (idx = 0; idx < sl; ++idx) {
             hashNeedle = (hashNeedle<<1) + foldCase(needle + idx, needle);
             hashHaystack = (hashHaystack<<1) + foldCase(haystack + idx, haystack_start);
@@ -12044,7 +12044,7 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
             hashHaystack += foldCase(haystack + sl_minus_1, haystack_start);
             if (hashHaystack == hashNeedle
                  && qt_compare_strings(needle0, sv(haystack), Qt::CaseInsensitive) == 0)
-                return haystack - (const ushort *)haystack0.data();
+                return haystack - haystack0.utf16();
 
             REHASH(foldCase(haystack, haystack_start));
             ++haystack;
