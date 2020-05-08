@@ -62,18 +62,9 @@ class QByteDataBuffer
 {
 private:
     QList<QByteArray> buffers;
-    qint64 bufferCompleteSize;
-    qint64 firstPos;
+    qint64 bufferCompleteSize = 0;
+    qint64 firstPos = 0;
 public:
-    QByteDataBuffer() : bufferCompleteSize(0), firstPos(0)
-    {
-    }
-
-    ~QByteDataBuffer()
-    {
-        clear();
-    }
-
     static inline void popFront(QByteArray &ba, qint64 n)
     {
         ba = QByteArray(ba.constData() + n, ba.size() - n);
