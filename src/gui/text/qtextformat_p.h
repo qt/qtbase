@@ -101,8 +101,15 @@ public:
     inline QFont defaultFont() const { return defaultFnt; }
     void setDefaultFont(const QFont &f);
 
+    inline void setSuperScriptBaseline(qreal baseline) { defaultFormat.setSuperScriptBaseline(baseline); }
+    inline void setSubScriptBaseline(qreal baseline) { defaultFormat.setSubScriptBaseline(baseline); }
+    inline void setBaselineOffset(qreal baseline) { defaultFormat.setBaselineOffset(baseline); }
+
+    inline QTextCharFormat defaultTextFormat() const { return defaultFormat; }
+
 private:
     QFont defaultFnt;
+    QTextCharFormat defaultFormat;
 
     Q_DISABLE_COPY_MOVE(QTextFormatCollection)
 };

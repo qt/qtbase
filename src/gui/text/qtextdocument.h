@@ -208,6 +208,15 @@ public:
     void setDefaultFont(const QFont &font);
     QFont defaultFont() const;
 
+    void setSuperScriptBaseline(qreal baseline);
+    qreal superScriptBaseline() const;
+
+    void setSubScriptBaseline(qreal baseline);
+    qreal subScriptBaseline() const;
+
+    void setBaselineOffset(qreal baseline);
+    qreal baselineOffset() const;
+
     int pageCount() const;
 
     bool isModified() const;

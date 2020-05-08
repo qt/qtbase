@@ -213,6 +213,9 @@ public:
         TextOutline = 0x2022,
         TextUnderlineStyle = 0x2023,
         TextToolTip = 0x2024,
+        TextSuperScriptBaseline = 0x2025,
+        TextSubScriptBaseline = 0x2026,
+        TextBaselineOffset = 0x2027,
 
         IsAnchor = 0x2030,
         AnchorHref = 0x2031,
@@ -569,6 +572,21 @@ public:
     { setProperty(TextToolTip, tip); }
     inline QString toolTip() const
     { return stringProperty(TextToolTip); }
+
+    inline void setSuperScriptBaseline(qreal baseline)
+    { setProperty(TextSuperScriptBaseline, baseline); }
+    inline qreal superScriptBaseline() const
+    { return hasProperty(TextSuperScriptBaseline) ? doubleProperty(TextSuperScriptBaseline) : 50.0; }
+
+    inline void setSubScriptBaseline(qreal baseline)
+    { setProperty(TextSubScriptBaseline, baseline); }
+    inline qreal subScriptBaseline() const
+    { return hasProperty(TextSubScriptBaseline) ? doubleProperty(TextSubScriptBaseline) : 100.0 / 6.0; }
+
+    inline void setBaselineOffset(qreal baseline)
+    { setProperty(TextBaselineOffset, baseline); }
+    inline qreal baselineOffset() const
+    { return hasProperty(TextBaselineOffset) ? doubleProperty(TextBaselineOffset) : 0.0; }
 
     inline void setAnchor(bool anchor)
     { setProperty(IsAnchor, anchor); }

@@ -2511,6 +2511,8 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
 
     const QFixed y = QFixed::fromReal(pos.y()) + line.y + lineBase;
 
+    const QTextFormatCollection *formatCollection = eng->formatCollection();
+
     bool suppressColors = (eng->option.flags() & QTextOption::SuppressColors);
     while (!iterator.atEnd()) {
         QScriptItem &si = iterator.next();
@@ -2525,10 +2527,12 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
         QFixed itemBaseLine = y;
         QFont f = eng->font(si);
         QTextCharFormat format;
+        if (formatCollection != nullptr)
+            format = formatCollection->defaultTextFormat();
 
+        if (eng->hasFormats() || selection || formatCollection) {
+            format.merge(eng->format(&si));
 
-        if (eng->hasFormats() || selection) {
-            format = eng->format(&si);
             if (suppressColors) {
                 format.clearForeground();
                 format.clearBackground();
@@ -2540,14 +2544,20 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
             setPenAndDrawBackground(p, pen, format, QRectF(iterator.x.toReal(), (y - lineBase).toReal(),
                                                            iterator.itemWidth.toReal(), line.height().toReal()));
 
+            const qreal baseLineOffset = format.baselineOffset() / 100.0;
             QTextCharFormat::VerticalAlignment valign = format.verticalAlignment();
-            if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
+            if (valign == QTextCharFormat::AlignSuperScript
+                || valign == QTextCharFormat::AlignSubScript
+                || !qFuzzyIsNull(baseLineOffset))
+            {
                 QFontEngine *fe = f.d->engineForScript(si.analysis.script);
                 QFixed height = fe->ascent() + fe->descent();
+                itemBaseLine -= height * QFixed::fromReal(baseLineOffset);
+
                 if (valign == QTextCharFormat::AlignSubScript)
-                    itemBaseLine += height / 6;
+                    itemBaseLine += height * QFixed::fromReal(format.subScriptBaseline() / 100.0);
                 else if (valign == QTextCharFormat::AlignSuperScript)
-                    itemBaseLine -= height / 2;
+                    itemBaseLine -= height * QFixed::fromReal(format.superScriptBaseline() / 100.0);
             }
         }
 
