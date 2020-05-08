@@ -153,11 +153,7 @@ private Q_SLOTS:
 
     void fromChar16TStar() const
     {
-#if defined(Q_COMPILER_UNICODE_STRINGS)
         fromLiteral(u"Hello, World!");
-#else
-        QSKIP("This test requires C++11 char16_t support enabled in the compiler");
-#endif
     }
 
     void fromWCharTStar() const
@@ -183,12 +179,8 @@ private Q_SLOTS:
 
     void fromChar16TRange() const
     {
-#if defined(Q_COMPILER_UNICODE_STRINGS)
         const char16_t str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
         fromRange(std::begin(str), std::end(str));
-#else
-        QSKIP("This test requires C++11 char16_t support enabled in the compiler");
-#endif
     }
 
     void fromWCharTRange() const
@@ -212,11 +204,7 @@ private Q_SLOTS:
     }
     void fromStdStringChar16T() const
     {
-#ifdef Q_STDLIB_UNICODE_STRINGS
         fromStdString<char16_t>();
-#else
-        QSKIP("This test requires C++11 char16_t support enabled in compiler & stdlib");
-#endif
     }
 
     void comparison();
@@ -285,7 +273,6 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(!sv2.empty());
         Q_STATIC_ASSERT(sv2.size() == 5);
     }
-#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
     {
         Q_STATIC_ASSERT(QStringView(u"Hello").size() == 5);
         constexpr QStringView sv = u"Hello";
@@ -314,36 +301,6 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv3.isEmpty());
         Q_STATIC_ASSERT(sv3.size() == 0);
     }
-#else // storage_type is wchar_t
-    {
-        Q_STATIC_ASSERT(QStringView(L"Hello").size() == 5);
-        constexpr QStringView sv = L"Hello";
-        Q_STATIC_ASSERT(sv.size() == 5);
-        Q_STATIC_ASSERT(!sv.empty());
-        Q_STATIC_ASSERT(!sv.isEmpty());
-        Q_STATIC_ASSERT(!sv.isNull());
-        Q_STATIC_ASSERT(*sv.utf16() == 'H');
-        Q_STATIC_ASSERT(sv[0]      == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.at(0)   == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.front() == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv.first() == QLatin1Char('H'));
-        Q_STATIC_ASSERT(sv[4]      == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.at(4)   == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
-        Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
-
-        constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
-        Q_STATIC_ASSERT(!sv2.isNull());
-        Q_STATIC_ASSERT(!sv2.empty());
-        Q_STATIC_ASSERT(sv2.size() == 5);
-
-        constexpr wchar_t *null = nullptr;
-        constexpr QStringView sv3(null);
-        Q_STATIC_ASSERT(sv3.isNull());
-        Q_STATIC_ASSERT(sv3.isEmpty());
-        Q_STATIC_ASSERT(sv3.size() == 0);
-    }
-#endif
 #endif
 }
 
@@ -364,17 +321,10 @@ void tst_QStringView::basics() const
 
 void tst_QStringView::literals() const
 {
-#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
     const char16_t hello[] = u"Hello";
     const char16_t longhello[] =
             u"Hello World. This is a much longer message, to exercise qustrlen.";
     const char16_t withnull[] = u"a\0zzz";
-#else // storage_type is wchar_t
-    const wchar_t hello[] = L"Hello";
-    const wchar_t longhello[] =
-            L"Hello World. This is a much longer message, to exercise qustrlen.";
-    const wchar_t withnull[] = L"a\0zzz";
-#endif
     Q_STATIC_ASSERT(sizeof(longhello) >= 16);
 
     QCOMPARE(QStringView(hello).size(), 5);
@@ -717,23 +667,19 @@ void tst_QStringView::overloadResolution()
     }
 #endif
 
-#if defined(Q_COMPILER_UNICODE_STRINGS)
     {
         char16_t char16Array[] = u"test";
         QStringViewOverloadResolution::test(char16Array);
         char16_t *char16Pointer = char16Array;
         QStringViewOverloadResolution::test(char16Pointer);
     }
-#endif
 
-#if defined(Q_STDLIB_UNICODE_STRINGS)
     {
         std::u16string string;
         QStringViewOverloadResolution::test(string);
         QStringViewOverloadResolution::test(qAsConst(string));
         QStringViewOverloadResolution::test(std::move(string));
     }
-#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QStringView)
