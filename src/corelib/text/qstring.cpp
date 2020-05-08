@@ -3038,7 +3038,8 @@ QChar *textCopy(const QChar *start, int len)
 bool pointsIntoRange(const QChar *ptr, const ushort *base, int len)
 {
     const QChar *const start = reinterpret_cast<const QChar *>(base);
-    return start <= ptr && ptr < start + len;
+    const std::less<const QChar *> less;
+    return !less(ptr, start) && less(ptr, start + len);
 }
 } // end namespace
 
