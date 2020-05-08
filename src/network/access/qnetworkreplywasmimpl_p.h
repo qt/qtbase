@@ -110,7 +110,7 @@ public:
     void emitReplyError(QNetworkReply::NetworkError errorCode, const QString &);
     void emitDataReadProgress(qint64 done, qint64 total);
     void dataReceived(const QByteArray &buffer, int bufferSize);
-    void headersReceived(const QString &bufferString);
+    void headersReceived(const QByteArray &buffer);
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
