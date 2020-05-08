@@ -720,15 +720,17 @@ public:
     { return str.isNull() ? QString() : fromUtf8(str.data(), qstrnlen(str.constData(), str.size())); }
     static inline QString fromLocal8Bit(const QByteArray &str)
     { return str.isNull() ? QString() : fromLocal8Bit(str.data(), qstrnlen(str.constData(), str.size())); }
-    static QString fromUtf16(const ushort *, int size = -1);
-    static QString fromUcs4(const uint *, int size = -1);
+    static QString fromUtf16(const char16_t *, int size = -1);
+    static QString fromUcs4(const char32_t *, int size = -1);
     static QString fromRawData(const QChar *, int size);
 
-#if defined(Q_COMPILER_UNICODE_STRINGS)
-    static QString fromUtf16(const char16_t *str, int size = -1)
-    { return fromUtf16(reinterpret_cast<const ushort *>(str), size); }
-    static QString fromUcs4(const char32_t *str, int size = -1)
-    { return fromUcs4(reinterpret_cast<const uint *>(str), size); }
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use char16_t* overload.")
+    static QString fromUtf16(const ushort *str, int size = -1)
+    { return fromUtf16(reinterpret_cast<const char16_t *>(str), size); }
+    QT_DEPRECATED_VERSION_X_6_0("Use char32_t* overload.")
+    static QString fromUcs4(const uint *str, int size = -1)
+    { return fromUcs4(reinterpret_cast<const char32_t *>(str), size); }
 #endif
 
     inline int toWCharArray(wchar_t *array) const;

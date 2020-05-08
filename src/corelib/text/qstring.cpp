@@ -5448,6 +5448,7 @@ QString QString::fromUtf8_helper(const char *str, int size)
 }
 
 /*!
+    \since 5.3
     Returns a QString initialized with the first \a size characters
     of the Unicode string \a unicode (ISO-10646-UTF-16 encoded).
 
@@ -5463,7 +5464,7 @@ QString QString::fromUtf8_helper(const char *str, int size)
 
     \sa utf16(), setUtf16(), fromStdU16String()
 */
-QString QString::fromUtf16(const ushort *unicode, int size)
+QString QString::fromUtf16(const char16_t *unicode, int size)
 {
     if (!unicode)
         return QString();
@@ -5476,39 +5477,22 @@ QString QString::fromUtf16(const ushort *unicode, int size)
 }
 
 /*!
-   \fn QString QString::fromUtf16(const char16_t *str, int size)
-   \since 5.3
+    \fn QString QString::fromUtf16(const ushort *str, int size)
+    \obsolete
 
-    Returns a QString initialized with the first \a size characters
-    of the Unicode string \a str (ISO-10646-UTF-16 encoded).
-
-    If \a size is -1 (default), \a str must be \\0'-terminated.
-
-    This function checks for a Byte Order Mark (BOM). If it is missing,
-    host byte order is assumed.
-
-    This function is slow compared to the other Unicode conversions.
-    Use QString(const QChar *, int) or QString(const QChar *) if possible.
-
-    QString makes a deep copy of the Unicode data.
-
-    \sa utf16(), setUtf16(), fromStdU16String()
+    Use the \c char16_t overload.
 */
 
 /*!
-    \fn QString QString::fromUcs4(const char32_t *str, int size)
-    \since 5.3
-
-    Returns a QString initialized with the first \a size characters
-    of the Unicode string \a str (ISO-10646-UCS-4 encoded).
-
-    If \a size is -1 (default), \a str must be \\0'-terminated.
-
-    \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(), fromStdU32String()
-*/
-
-/*!
+    \fn QString QString::fromUcs4(const uint *str, int size)
     \since 4.2
+    \obsolete
+
+    Use the \c char32_t overload instead.
+*/
+
+/*!
+    \since 5.3
 
     Returns a QString initialized with the first \a size characters
     of the Unicode string \a unicode (ISO-10646-UCS-4 encoded).
@@ -5517,7 +5501,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
 
     \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(), fromStdU32String()
 */
-QString QString::fromUcs4(const uint *unicode, int size)
+QString QString::fromUcs4(const char32_t *unicode, int size)
 {
     if (!unicode)
         return QString();
