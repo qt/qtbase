@@ -79,25 +79,22 @@ namespace QtGraphicsAnchorLayout {
 
   Represents a vertex (anchorage point) in the internal graph
 */
-struct AnchorVertex {
-    enum Type {
-        Normal = 0,
-        Pair
-    };
-
+struct AnchorVertex
+{
     AnchorVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge)
-        : m_item(item), m_edge(edge), m_type(Normal) {}
+        : m_item(item), m_edge(edge) {}
 
     AnchorVertex()
-        : m_item(nullptr), m_edge(Qt::AnchorPoint(0)), m_type(Normal) {}
+        : m_item(nullptr), m_edge(Qt::AnchorPoint(0)) {}
+
+    virtual ~AnchorVertex() = default;
 
 #ifdef QT_DEBUG
-    inline QString toString() const;
+    virtual inline QString toString() const;
 #endif
 
     QGraphicsLayoutItem *m_item;
     Qt::AnchorPoint m_edge;
-    uint m_type : 1;
 
     // Current distance from this vertex to the layout edge (Left or Top)
     // Value is calculated from the current anchors sizes.
@@ -246,8 +243,8 @@ struct ParallelAnchorData : public AnchorData
 
 struct AnchorVertexPair : public AnchorVertex {
     AnchorVertexPair(AnchorVertex *v1, AnchorVertex *v2, AnchorData *data)
-        : AnchorVertex(), m_first(v1), m_second(v2), m_removedAnchor(data) {
-        m_type = AnchorVertex::Pair;
+        : AnchorVertex(), m_first(v1), m_second(v2), m_removedAnchor(data)
+    {
     }
 
     AnchorVertex *m_first;
@@ -256,17 +253,21 @@ struct AnchorVertexPair : public AnchorVertex {
     AnchorData *m_removedAnchor;
     QList<AnchorData *> m_firstAnchors;
     QList<AnchorData *> m_secondAnchors;
+
+#ifdef QT_DEBUG
+    inline QString toString() const override
+    {
+        return QString::fromLatin1("(%1, %2)").arg(m_first->toString(), m_second->toString());
+    }
+#endif
 };
 
 #ifdef QT_DEBUG
 inline QString AnchorVertex::toString() const
 {
-    if (m_type == Pair) {
-        const AnchorVertexPair *vp = static_cast<const AnchorVertexPair *>(this);
-        return QString::fromLatin1("(%1, %2)").arg(vp->m_first->toString(), vp->m_second->toString());
-    } else if (!m_item) {
+    if (!m_item)
         return QString::fromLatin1("NULL_%1").arg(quintptr(this));
-    }
+
     QString edge;
     switch (m_edge) {
     case Qt::AnchorLeft:
