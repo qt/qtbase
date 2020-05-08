@@ -819,13 +819,23 @@ bool QAbstractItemModelTesterPrivate::compare(const T1 &t1, const T2 &t2,
         break;
 
     case QAbstractItemModelTester::FailureReportingMode::Warning:
-        if (!result)
-            qCWarning(lcModelTest, formatString, actual, QTest::toString(t1), expected, QTest::toString(t2), file, line);
+        if (!result) {
+            auto t1string = QTest::toString(t1);
+            auto t2string = QTest::toString(t2);
+            qCWarning(lcModelTest, formatString, actual, t1string, expected, t2string, file, line);
+            delete [] t1string;
+            delete [] t2string;
+        }
         break;
 
     case QAbstractItemModelTester::FailureReportingMode::Fatal:
-        if (!result)
-            qFatal(formatString, actual, QTest::toString(t1), expected, QTest::toString(t2), file, line);
+        if (!result) {
+            auto t1string = QTest::toString(t1);
+            auto t2string = QTest::toString(t2);
+            qFatal(formatString, actual, t1string, expected, t2string, file, line);
+            delete [] t1string;
+            delete [] t2string;
+        }
         break;
     }
 
