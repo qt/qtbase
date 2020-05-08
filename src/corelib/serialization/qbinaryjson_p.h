@@ -64,7 +64,7 @@ QT_REQUIRE_CONFIG(binaryjson);
 QT_BEGIN_NAMESPACE
 
 // in qstring.cpp
-void qt_to_latin1_unchecked(uchar *dst, const ushort *uc, qsizetype len);
+void qt_to_latin1_unchecked(uchar *dst, const char16_t *uc, qsizetype len);
 
 /*
   This defines a binary data structure for Json data. The data structure is optimised for fast reading
@@ -281,10 +281,9 @@ public:
     static void copy(char *dest, QStringView src)
     {
         Data *data = reinterpret_cast<Data *>(dest);
-        data->length = src.length();
+        data->length = src.length(); // ### narrows from int to ushort
         auto *l = reinterpret_cast<uchar *>(data->latin1);
-        const auto *uc = reinterpret_cast<const ushort *>(src.utf16());
-        qt_to_latin1_unchecked(l, uc, data->length);
+        qt_to_latin1_unchecked(l, src.utf16(), data->length);
 
         for (uint len = data->length; quintptr(l + len) & 0x3; ++len)
             l[len] = 0;

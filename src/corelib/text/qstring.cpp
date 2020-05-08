@@ -143,7 +143,7 @@ char16_t *to_utf16(ushort *p) { return reinterpret_cast<char16_t *>(p); }
 // From qstring_mips_dsp_asm.S
 extern "C" void qt_fromlatin1_mips_asm_unroll4 (char16_t*, const char*, uint);
 extern "C" void qt_fromlatin1_mips_asm_unroll8 (char16_t*, const char*, uint);
-extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const ushort *src, int length);
+extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const char16_t *src, int length);
 #endif
 
 // internal
@@ -675,7 +675,7 @@ void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept
 }
 
 template <bool Checked>
-static void qt_to_latin1_internal(uchar *dst, const ushort *src, qsizetype length)
+static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype length)
 {
 #if defined(__SSE2__)
     uchar *e = dst + length;
@@ -831,12 +831,12 @@ static void qt_to_latin1_internal(uchar *dst, const ushort *src, qsizetype lengt
 #endif
 }
 
-static void qt_to_latin1(uchar *dst, const ushort *src, qsizetype length)
+static void qt_to_latin1(uchar *dst, const char16_t *src, qsizetype length)
 {
     qt_to_latin1_internal<true>(dst, src, length);
 }
 
-void qt_to_latin1_unchecked(uchar *dst, const ushort *src, qsizetype length)
+void qt_to_latin1_unchecked(uchar *dst, const char16_t *src, qsizetype length)
 {
     qt_to_latin1_internal<false>(dst, src, length);
 }
@@ -5137,7 +5137,7 @@ static QByteArray qt_convert_to_latin1(QStringView string)
     // since we own the only copy, we're going to const_cast the constData;
     // that avoids an unnecessary call to detach() and expansion code that will never get used
     qt_to_latin1(reinterpret_cast<uchar *>(const_cast<char *>(ba.constData())),
-                 reinterpret_cast<const ushort *>(string.data()), string.length());
+                 string.utf16(), string.size());
     return ba;
 }
 
@@ -5148,7 +5148,7 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     // We can return our own buffer to the caller.
     // Conversion to Latin-1 always shrinks the buffer by half.
-    const ushort *data = s.d.data();
+    const char16_t *data = to_utf16(s.d.data());
     int length = s.d.size;
 
     // Move the d pointer over to the bytearray.
@@ -5162,8 +5162,8 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     char *ddata = ba_d.data();
 
-    // multiply the allocated capacity by sizeof(ushort)
-    ba_d.d_ptr()->alloc *= sizeof(ushort);
+    // multiply the allocated capacity by sizeof(char16_t)
+    ba_d.d_ptr()->alloc *= sizeof(char16_t);
 
     // do the in-place conversion
     qt_to_latin1(reinterpret_cast<uchar *>(ddata), data, length);

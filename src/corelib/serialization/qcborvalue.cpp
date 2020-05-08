@@ -1026,7 +1026,7 @@ void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &valu
 }
 
 // in qstring.cpp
-void qt_to_latin1_unchecked(uchar *dst, const ushort *uc, qsizetype len);
+void qt_to_latin1_unchecked(uchar *dst, const char16_t *uc, qsizetype len);
 
 Q_NEVER_INLINE void QCborContainerPrivate::appendAsciiString(QStringView s)
 {
@@ -1039,8 +1039,7 @@ Q_NEVER_INLINE void QCborContainerPrivate::appendAsciiString(QStringView s)
 
     char *ptr = data.data() + e.value + sizeof(ByteData);
     uchar *l = reinterpret_cast<uchar *>(ptr);
-    const ushort *uc = (const ushort *)s.utf16();
-    qt_to_latin1_unchecked(l, uc, len);
+    qt_to_latin1_unchecked(l, s.utf16(), len);
 }
 
 QCborValue QCborContainerPrivate::extractAt_complex(Element e)
