@@ -2600,11 +2600,8 @@ QString& QString::insert(int i, const QChar *unicode, int size)
     const std::less<const ushort*> less = {};
     if (!less(s, d->data()) && less(s, d->data() + d->alloc)) {
         // Part of me - take a copy
-        ushort *tmp = static_cast<ushort *>(::malloc(size * sizeof(QChar)));
-        Q_CHECK_PTR(tmp);
-        memcpy(tmp, s, size * sizeof(QChar));
-        insert(i, reinterpret_cast<const QChar *>(tmp), size);
-        ::free(tmp);
+        const QVarLengthArray<ushort> copy(s, s + size);
+        insert(i, reinterpret_cast<const QChar *>(copy.data()), size);
         return *this;
     }
 
