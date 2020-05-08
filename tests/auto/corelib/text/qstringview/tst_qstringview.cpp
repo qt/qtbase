@@ -575,22 +575,22 @@ size_t size(const QChar *t)
 }
 
 template <typename T>
-typename T::const_iterator cbegin(const T &t) { return t.cbegin(); }
+decltype(auto)             cbegin(const T &t) { return t.begin(); }
 template <typename T>
 const T *                  cbegin(const T *t) { return t; }
 
 template <typename T>
-typename T::const_iterator cend(const T &t) { return t.cend(); }
+decltype(auto)             cend(const T &t) { return t.end(); }
 template <typename T>
 const T *                  cend(const T *t) { return t + size(t); }
 
 template <typename T>
-typename T::const_reverse_iterator crbegin(const T &t) { return t.crbegin(); }
+decltype(auto)                     crbegin(const T &t) { return t.rbegin(); }
 template <typename T>
 std::reverse_iterator<const T*>    crbegin(const T *t) { return std::reverse_iterator<const T*>(cend(t)); }
 
 template <typename T>
-typename T::const_reverse_iterator crend(const T &t) { return t.crend(); }
+decltype(auto)                     crend(const T &t) { return t.rend(); }
 template <typename T>
 std::reverse_iterator<const T*>    crend(const T *t) { return std::reverse_iterator<const T*>(cbegin(t)); }
 
