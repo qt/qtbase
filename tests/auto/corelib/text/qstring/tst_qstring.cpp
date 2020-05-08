@@ -6543,18 +6543,22 @@ void tst_QString::literals()
     QString str(QStringLiteral("abcd"));
 
     QVERIFY(str.length() == 4);
+    QCOMPARE(str.capacity(), 0);
     QVERIFY(str == QLatin1String("abcd"));
     QVERIFY(str.data_ptr()->isStatic());
 
     const QChar *s = str.constData();
     QString str2 = str;
     QVERIFY(str2.constData() == s);
+    QCOMPARE(str2.capacity(), 0);
 
     // detach on non const access
     QVERIFY(str.data() != s);
+    QVERIFY(str.capacity() >= str.length());
 
     QVERIFY(str2.constData() == s);
     QVERIFY(str2.data() != s);
+    QVERIFY(str2.capacity() >= str2.length());
 }
 #endif
 

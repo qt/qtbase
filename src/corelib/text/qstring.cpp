@@ -2283,6 +2283,9 @@ void QString::resize(int size, QChar fillChar)
     need to call this function. If you want to know how many
     characters are in the string, call size().
 
+    \note a statically allocated string will report a capacity of 0,
+    even if it's not empty.
+
     \sa reserve(), squeeze()
 */
 

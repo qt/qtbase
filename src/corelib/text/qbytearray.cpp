@@ -1281,6 +1281,9 @@ QByteArray &QByteArray::operator=(const char *str)
     ever need to call this function. If you want to know how many
     bytes are in the byte array, call size().
 
+    \note a statically allocated byte array will report a capacity of 0,
+    even if it's not empty.
+
     \sa reserve(), squeeze()
 */
 

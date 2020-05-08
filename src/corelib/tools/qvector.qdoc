@@ -438,6 +438,9 @@
     need to call this function. If you want to know how many items are
     in the vector, call size().
 
+    \note a statically allocated vector will report a capacity of 0,
+    even if it's not empty.
+
     \sa reserve(), squeeze()
 */
 

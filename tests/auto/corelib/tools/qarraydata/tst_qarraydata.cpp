@@ -1231,6 +1231,21 @@ void tst_QArrayData::literals()
     }
 
     {
+        QVector<char> v(Q_ARRAY_LITERAL(char, "ABCDEFGHIJ"));
+        QCOMPARE(v.size(), 11);
+        QCOMPARE(v.capacity(), 0);
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(v.at(i), char('A' + i));
+
+        (void)v.begin(); // "detach"
+
+        QCOMPARE(v.size(), 11);
+        QVERIFY(v.capacity() >= v.size());
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(v[i], char('A' + i));
+    }
+
+    {
         // wchar_t is not necessarily 2-bytes
         QArrayDataPointer<wchar_t> d = Q_ARRAY_LITERAL(wchar_t, L"ABCDEFGHIJ");
         QCOMPARE(d.size, 10u + 1u);
@@ -1254,16 +1269,31 @@ void tst_QArrayData::literals()
         QCOMPARE(const_(v)[10], char('\0'));
     }
 
-    {
-        struct LiteralType {
-            int value;
-            Q_DECL_CONSTEXPR LiteralType(int v = 0) : value(v) {}
-        };
+    struct LiteralType {
+        int value;
+        Q_DECL_CONSTEXPR LiteralType(int v = 0) : value(v) {}
+    };
 
+    {
         QArrayDataPointer<LiteralType> d = Q_ARRAY_LITERAL(LiteralType, LiteralType(0), LiteralType(1), LiteralType(2));
         QCOMPARE(d->size, 3);
         for (int i = 0; i < 3; ++i)
             QCOMPARE(d->data()[i].value, i);
+    }
+
+    {
+        QVector<LiteralType> v(Q_ARRAY_LITERAL(LiteralType, LiteralType(0), LiteralType(1), LiteralType(2)));
+        QCOMPARE(v.size(), 3);
+        QCOMPARE(v.capacity(), 0);
+        for (int i = 0; i < 3; ++i)
+            QCOMPARE(v.at(i).value, i);
+
+        (void)v.begin(); // "detach"
+
+        QCOMPARE(v.size(), 3);
+        QVERIFY(v.capacity() >= v.size());
+        for (int i = 0; i < 3; ++i)
+            QCOMPARE(v[i].value, i);
     }
 }
 
