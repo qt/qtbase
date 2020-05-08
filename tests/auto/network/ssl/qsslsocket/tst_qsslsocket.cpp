@@ -151,6 +151,7 @@ public slots:
 #ifndef QT_NO_SSL
 private slots:
     void constructing();
+    void configNoOnDemandLoad();
     void simpleConnect();
     void simpleConnectWithIgnore();
 
@@ -582,6 +583,25 @@ void tst_QSslSocket::constructing()
     QVERIFY(QSslConfiguration::defaultConfiguration().ciphers().isEmpty());
 
     QSslConfiguration::setDefaultConfiguration(savedDefault);
+}
+
+void tst_QSslSocket::configNoOnDemandLoad()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; // NoProxy is enough.
+
+    // We noticed a peculiar situation, where a configuration
+    // set on a socket is not equal to the configuration we
+    // get back from the socket afterwards.
+    auto customConfig = QSslConfiguration::defaultConfiguration();
+    // Setting CA certificates disables loading root certificates
+    // during verification:
+    customConfig.setCaCertificates(customConfig.caCertificates());
+
+    QSslSocket socket;
+    socket.setSslConfiguration(customConfig);
+    QCOMPARE(customConfig, socket.sslConfiguration());
 }
 
 void tst_QSslSocket::simpleConnect()
