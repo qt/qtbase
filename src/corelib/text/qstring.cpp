@@ -2592,7 +2592,8 @@ QString& QString::insert(int i, const QChar *unicode, int size)
         return *this;
 
     const ushort *s = (const ushort *)unicode;
-    if (s >= d->data() && s < d->data() + d->alloc) {
+    const std::less<const ushort*> less = {};
+    if (!less(s, d->data()) && less(s, d->data() + d->alloc)) {
         // Part of me - take a copy
         ushort *tmp = static_cast<ushort *>(::malloc(size * sizeof(QChar)));
         Q_CHECK_PTR(tmp);
