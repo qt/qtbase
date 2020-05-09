@@ -1490,8 +1490,8 @@ uint QXmlStreamReaderPrivate::getChar_helper()
         nbytesread = 0;
     if (device) {
         rawReadBuffer.resize(BUFFER_SIZE);
-        int nbytesreadOrMinus1 = device->read(rawReadBuffer.data() + nbytesread, BUFFER_SIZE - nbytesread);
-        nbytesread += qMax(nbytesreadOrMinus1, 0);
+        qint64 nbytesreadOrMinus1 = device->read(rawReadBuffer.data() + nbytesread, BUFFER_SIZE - nbytesread);
+        nbytesread += qMax(nbytesreadOrMinus1, qint64{0});
     } else {
         if (nbytesread)
             rawReadBuffer += dataBuffer;
