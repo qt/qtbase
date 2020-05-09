@@ -1586,8 +1586,7 @@ void QXmlStreamReaderPrivate::resolveTag()
     int n = attributeStack.size();
 
     if (namespaceProcessing) {
-        for (int a = 0; a < dtdAttributes.size(); ++a) {
-            DtdAttribute &dtdAttribute = dtdAttributes[a];
+        for (DtdAttribute &dtdAttribute : dtdAttributes) {
             if (!dtdAttribute.isNamespaceAttribute
                 || dtdAttribute.defaultValue.isNull()
                 || dtdAttribute.tagName != qualifiedName
@@ -1657,8 +1656,7 @@ void QXmlStreamReaderPrivate::resolveTag()
         }
     }
 
-    for (int a = 0; a < dtdAttributes.size(); ++a) {
-        DtdAttribute &dtdAttribute = dtdAttributes[a];
+    for (DtdAttribute &dtdAttribute : dtdAttributes) {
         if (dtdAttribute.isNamespaceAttribute
             || dtdAttribute.defaultValue.isNull()
             || dtdAttribute.tagName != qualifiedName
@@ -2120,8 +2118,8 @@ void QXmlStreamReader::addExtraNamespaceDeclaration(const QXmlStreamNamespaceDec
  */
 void QXmlStreamReader::addExtraNamespaceDeclarations(const QXmlStreamNamespaceDeclarations &extraNamespaceDeclarations)
 {
-    for (int i = 0; i < extraNamespaceDeclarations.size(); ++i)
-        addExtraNamespaceDeclaration(extraNamespaceDeclarations.at(i));
+    for (const auto &extraNamespaceDeclaration : extraNamespaceDeclarations)
+        addExtraNamespaceDeclaration(extraNamespaceDeclaration);
 }
 
 
@@ -2730,8 +2728,7 @@ Returns the entity's value.
  */
 QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, const QString &name) const
 {
-    for (int i = 0; i < size(); ++i) {
-        const QXmlStreamAttribute &attribute = at(i);
+    for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
             return attribute.value();
     }
@@ -2745,8 +2742,7 @@ QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, const QStrin
  */
 QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1String name) const
 {
-    for (int i = 0; i < size(); ++i) {
-        const QXmlStreamAttribute &attribute = at(i);
+    for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
             return attribute.value();
     }
@@ -2760,8 +2756,7 @@ QStringRef QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1Strin
  */
 QStringRef QXmlStreamAttributes::value(QLatin1String namespaceUri, QLatin1String name) const
 {
-    for (int i = 0; i < size(); ++i) {
-        const QXmlStreamAttribute &attribute = at(i);
+    for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
             return attribute.value();
     }
@@ -2782,8 +2777,7 @@ QStringRef QXmlStreamAttributes::value(QLatin1String namespaceUri, QLatin1String
  */
 QStringRef QXmlStreamAttributes::value(const QString &qualifiedName) const
 {
-    for (int i = 0; i < size(); ++i) {
-        const QXmlStreamAttribute &attribute = at(i);
+    for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.qualifiedName() == qualifiedName)
             return attribute.value();
     }
@@ -2804,8 +2798,7 @@ QStringRef QXmlStreamAttributes::value(const QString &qualifiedName) const
  */
 QStringRef QXmlStreamAttributes::value(QLatin1String qualifiedName) const
 {
-    for (int i = 0; i < size(); ++i) {
-        const QXmlStreamAttribute &attribute = at(i);
+    for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.qualifiedName() == qualifiedName)
             return attribute.value();
     }
@@ -3595,8 +3588,8 @@ void QXmlStreamWriter::writeAttributes(const QXmlStreamAttributes& attributes)
     Q_D(QXmlStreamWriter);
     Q_ASSERT(d->inStartElement);
     Q_UNUSED(d);
-    for (int i = 0; i < attributes.size(); ++i)
-        writeAttribute(attributes.at(i));
+    for (const auto &attr : attributes)
+        writeAttribute(attr);
 }
 
 

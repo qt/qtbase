@@ -668,6 +668,15 @@ public:
     inline void resize(int s) { tos = s - 1; }
     inline bool isEmpty() const { return tos < 0; }
     inline void clear() { tos = -1; }
+
+    using const_iterator = const T*;
+    using iterator = T*;
+    T *begin() { return data; }
+    const T *begin() const { return data; }
+    const T *cbegin() const { return begin(); }
+    T *end() { return data + size(); }
+    const T *end() const { return data + size(); }
+    const T *cend() const { return end(); }
 };
 
 
