@@ -1,7 +1,7 @@
 #! /bin/sh
 #############################################################################
 ##
-## Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+## Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
