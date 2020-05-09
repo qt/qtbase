@@ -117,11 +117,16 @@ PCRE2_UCHAR char2a = ic.c.c3;
 # ifdef FFCPS_CHAR1A2A
 cmp1a = VDUPQ(char1a);
 cmp2a = VDUPQ(char2a);
+cmp1b = VDUPQ(0); /* to avoid errors on older compilers -Werror=maybe-uninitialized */
+cmp2b = VDUPQ(0); /* to avoid errors on older compilers -Werror=maybe-uninitialized */
 # else
 PCRE2_UCHAR char1b = ic.c.c2;
 PCRE2_UCHAR char2b = ic.c.c4;
 if (char1a == char1b)
+  {
   cmp1a = VDUPQ(char1a);
+  cmp1b = VDUPQ(0); /* to avoid errors on older compilers -Werror=maybe-uninitialized */
+  }
 else
   {
   sljit_u32 bit1 = char1a ^ char1b;
@@ -140,7 +145,10 @@ else
   }
 
 if (char2a == char2b)
+  {
   cmp2a = VDUPQ(char2a);
+  cmp2b = VDUPQ(0); /* to avoid errors on older compilers -Werror=maybe-uninitialized */
+  }
 else
   {
   sljit_u32 bit2 = char2a ^ char2b;
@@ -208,8 +216,16 @@ if (p1 < str_ptr)
 else
   data2 = shift_left_n_lanes(data, offs1 - offs2);
  
-data = fast_forward_char_pair_compare(compare1_type, data, cmp1a, cmp1b);
-data2 = fast_forward_char_pair_compare(compare2_type, data2, cmp2a, cmp2b);
+if (compare1_type == compare_match1)
+  data = VCEQQ(data, cmp1a);
+else
+  data = fast_forward_char_pair_compare(compare1_type, data, cmp1a, cmp1b);
+
+if (compare2_type == compare_match1)
+  data2 = VCEQQ(data2, cmp2a);
+else
+  data2 = fast_forward_char_pair_compare(compare2_type, data2, cmp2a, cmp2b);
+
 vect_t eq = VANDQ(data, data2);
 #endif
 
@@ -275,8 +291,14 @@ while (str_ptr < str_end)
   data = VCEQQ(data, cmp1a);
   data2 = VCEQQ(data2, cmp2a);
 # else
-  data = fast_forward_char_pair_compare(compare1_type, data, cmp1a, cmp1b);
-  data2 = fast_forward_char_pair_compare(compare2_type, data2, cmp2a, cmp2b);
+  if (compare1_type == compare_match1)
+    data = VCEQQ(data, cmp1a);
+  else
+    data = fast_forward_char_pair_compare(compare1_type, data, cmp1a, cmp1b);
+  if (compare2_type == compare_match1)
+    data2 = VCEQQ(data2, cmp2a);
+  else
+    data2 = fast_forward_char_pair_compare(compare2_type, data2, cmp2a, cmp2b);
 # endif
 
   eq = VANDQ(data, data2);
