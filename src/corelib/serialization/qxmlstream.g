@@ -497,10 +497,10 @@ public:
     inline uint peekChar();
     inline void putChar(uint c) { putStack.push() = c; }
     inline void putChar(QChar c) { putStack.push() =  c.unicode(); }
-    void putString(const QString &s, int from = 0);
-    void putStringLiteral(const QString &s);
-    void putReplacement(const QString &s);
-    void putReplacementInAttributeValue(const QString &s);
+    void putString(QStringView s, qsizetype from = 0);
+    void putStringLiteral(QStringView s);
+    void putReplacement(QStringView s);
+    void putReplacementInAttributeValue(QStringView s);
     uint getChar_helper();
 
     bool scanUntil(const char *str, short tokenToInject = -1);
@@ -1761,12 +1761,8 @@ entity_ref_in_attribute_value ::= AMPERSAND name SEMICOLON;
 char_ref ::= AMPERSAND HASH char_ref_value SEMICOLON;
 /.
         case $rule_number: {
-            if (uint s = resolveCharRef(3)) {
-                if (s >= 0xffff)
-                    putStringLiteral(QString::fromUcs4(&s, 1));
-                else
-                    putChar((LETTER << 16) | s);
-
+            if (char32_t s = resolveCharRef(3)) {
+                putStringLiteral(QChar::fromUcs4(s));
                 textBuffer.chop(3 + sym(3).len);
                 clearSym();
             } else {

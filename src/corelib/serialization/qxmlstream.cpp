@@ -1458,36 +1458,40 @@ inline int QXmlStreamReaderPrivate::fastScanNMTOKEN()
     return n;
 }
 
-void QXmlStreamReaderPrivate::putString(const QString &s, int from)
+void QXmlStreamReaderPrivate::putString(QStringView s, qsizetype from)
 {
+    if (from != 0) {
+        putString(s.mid(from));
+        return;
+    }
     putStack.reserve(s.size());
-    for (int i = s.size()-1; i >= from; --i)
-        putStack.rawPush() = s.at(i).unicode();
+    for (auto it = s.rbegin(), end = s.rend(); it != end; ++it)
+        putStack.rawPush() = it->unicode();
 }
 
-void QXmlStreamReaderPrivate::putStringLiteral(const QString &s)
+void QXmlStreamReaderPrivate::putStringLiteral(QStringView s)
 {
     putStack.reserve(s.size());
-    for (int i = s.size()-1; i >= 0; --i)
-        putStack.rawPush() = ((LETTER << 16) | s.at(i).unicode());
+    for (auto it = s.rbegin(), end = s.rend(); it != end; ++it)
+        putStack.rawPush() = ((LETTER << 16) | it->unicode());
 }
 
-void QXmlStreamReaderPrivate::putReplacement(const QString &s)
+void QXmlStreamReaderPrivate::putReplacement(QStringView s)
 {
     putStack.reserve(s.size());
-    for (int i = s.size()-1; i >= 0; --i) {
-        ushort c = s.at(i).unicode();
+    for (auto it = s.rbegin(), end = s.rend(); it != end; ++it) {
+        char16_t c = it->unicode();
         if (c == '\n' || c == '\r')
             putStack.rawPush() = ((LETTER << 16) | c);
         else
             putStack.rawPush() = c;
     }
 }
-void QXmlStreamReaderPrivate::putReplacementInAttributeValue(const QString &s)
+void QXmlStreamReaderPrivate::putReplacementInAttributeValue(QStringView s)
 {
     putStack.reserve(s.size());
-    for (int i = s.size()-1; i >= 0; --i) {
-        ushort c = s.at(i).unicode();
+    for (auto it = s.rbegin(), end = s.rend(); it != end; ++it) {
+        char16_t c = it->unicode();
         if (c == '&' || c == ';')
             putStack.rawPush() = c;
         else if (c == '\n' || c == '\r')
