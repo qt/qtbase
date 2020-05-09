@@ -1814,8 +1814,8 @@ bool QXmlStreamReaderPrivate::parse()
         case 240: {
             sym(1).len += sym(2).len + 1;
             QStringView reference = symView(2);
-            if (entityHash.contains(reference)) {
-                Entity &entity = entityHash[reference];
+            if (const auto it = entityHash.find(reference); it != entityHash.end()) {
+                Entity &entity = *it;
                 if (entity.unparsed) {
                     raiseWellFormedError(QXmlStream::tr("Reference to unparsed entity '%1'.").arg(reference));
                 } else {
@@ -1853,9 +1853,9 @@ bool QXmlStreamReaderPrivate::parse()
         case 241: {
             sym(1).len += sym(2).len + 1;
             QStringView reference = symView(2);
-            if (parameterEntityHash.contains(reference)) {
+            if (const auto it = parameterEntityHash.find(reference); it != parameterEntityHash.end()) {
                 referenceToParameterEntityDetected = true;
-                Entity &entity = parameterEntityHash[reference];
+                Entity &entity = *it;
                 if (entity.unparsed || entity.external) {
                     referenceToUnparsedEntityDetected = true;
                 } else {
@@ -1876,8 +1876,8 @@ bool QXmlStreamReaderPrivate::parse()
         case 243: {
             sym(1).len += sym(2).len + 1;
             QStringView reference = symView(2);
-            if (entityHash.contains(reference)) {
-                Entity &entity = entityHash[reference];
+            if (const auto it = entityHash.find(reference); it != entityHash.end()) {
+                Entity &entity = *it;
                 if (entity.unparsed || entity.value.isNull()) {
                     raiseWellFormedError(QXmlStream::tr("Reference to external entity '%1' in attribute value.").arg(reference));
                     break;
