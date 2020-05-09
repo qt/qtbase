@@ -154,12 +154,12 @@
 
 template <typename T> class QXmlStreamSimpleStack {
     T *data;
-    int tos, cap;
+    qsizetype tos, cap;
 public:
     inline QXmlStreamSimpleStack():data(nullptr), tos(-1), cap(0){}
     inline ~QXmlStreamSimpleStack(){ if (data) free(data); }
 
-    inline void reserve(int extraCapacity) {
+    inline void reserve(qsizetype extraCapacity) {
         if (tos + extraCapacity + 1 > cap) {
             cap = qMax(tos + extraCapacity + 1, cap << 1 );
             void *ptr = realloc(static_cast<void *>(data), cap * sizeof(T));
@@ -173,10 +173,10 @@ public:
     inline const T &top() const { return data[tos]; }
     inline T &top() { return data[tos]; }
     inline T &pop() { return data[tos--]; }
-    inline T &operator[](int index) { return data[index]; }
-    inline const T &at(int index) const { return data[index]; }
-    inline int size() const { return tos + 1; }
-    inline void resize(int s) { tos = s - 1; }
+    inline T &operator[](qsizetype index) { return data[index]; }
+    inline const T &at(qsizetype index) const { return data[index]; }
+    inline qsizetype size() const { return tos + 1; }
+    inline void resize(qsizetype s) { tos = s - 1; }
     inline bool isEmpty() const { return tos < 0; }
     inline void clear() { tos = -1; }
 
@@ -210,7 +210,7 @@ public:
         QStringRef qualifiedName;
         NamespaceDeclaration namespaceDeclaration;
         int tagStackStringStorageSize;
-        int namespaceDeclarationsSize;
+        qsizetype namespaceDeclarationsSize;
     };
 
 

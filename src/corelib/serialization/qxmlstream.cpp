@@ -1601,7 +1601,7 @@ QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(const QStringRef &prefix)
 void QXmlStreamReaderPrivate::resolveTag()
 {
     const auto attributeStackCleaner = qScopeGuard([this](){ attributeStack.clear(); });
-    int n = attributeStack.size();
+    const qsizetype n = attributeStack.size();
 
     if (namespaceProcessing) {
         for (DtdAttribute &dtdAttribute : dtdAttributes) {
@@ -1610,7 +1610,7 @@ void QXmlStreamReaderPrivate::resolveTag()
                 || dtdAttribute.tagName != qualifiedName
                 || dtdAttribute.attributeQualifiedName.isNull())
                 continue;
-            int i = 0;
+            qsizetype i = 0;
             while (i < n && symName(attributeStack[i].key) != dtdAttribute.attributeQualifiedName)
                 ++i;
             if (i != n)
@@ -1646,7 +1646,7 @@ void QXmlStreamReaderPrivate::resolveTag()
 
     attributes.resize(n);
 
-    for (int i = 0; i < n; ++i) {
+    for (qsizetype i = 0; i < n; ++i) {
         QXmlStreamAttribute &attribute = attributes[i];
         Attribute &attrib = attributeStack[i];
         QStringRef prefix(symPrefix(attrib.key));
@@ -1663,7 +1663,7 @@ void QXmlStreamReaderPrivate::resolveTag()
             attribute.m_namespaceUri = QXmlStreamStringRef(attributeNamespaceUri);
         }
 
-        for (int j = 0; j < i; ++j) {
+        for (qsizetype j = 0; j < i; ++j) {
             if (attributes[j].name() == attribute.name()
                 && attributes[j].namespaceUri() == attribute.namespaceUri()
                 && (namespaceProcessing || attributes[j].qualifiedName() == attribute.qualifiedName()))
@@ -1680,7 +1680,7 @@ void QXmlStreamReaderPrivate::resolveTag()
             || dtdAttribute.tagName != qualifiedName
             || dtdAttribute.attributeQualifiedName.isNull())
             continue;
-        int i = 0;
+        qsizetype i = 0;
         while (i < n && symName(attributeStack[i].key) != dtdAttribute.attributeQualifiedName)
             ++i;
         if (i != n)
@@ -1698,16 +1698,16 @@ void QXmlStreamReaderPrivate::resolveTag()
             attribute.m_namespaceUri = QXmlStreamStringRef(attributeNamespaceUri);
         }
         attribute.m_isDefault = true;
-        attributes.append(attribute);
+        attributes.append(std::move(attribute));
     }
 }
 
 void QXmlStreamReaderPrivate::resolvePublicNamespaces()
 {
     const Tag &tag = tagStack.top();
-    int n = namespaceDeclarations.size() - tag.namespaceDeclarationsSize;
+    qsizetype n = namespaceDeclarations.size() - tag.namespaceDeclarationsSize;
     publicNamespaceDeclarations.resize(n);
-    for (int i = 0; i < n; ++i) {
+    for (qsizetype i = 0; i < n; ++i) {
         const NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.at(tag.namespaceDeclarationsSize + i);
         QXmlStreamNamespaceDeclaration &publicNamespaceDeclaration = publicNamespaceDeclarations[i];
         publicNamespaceDeclaration.m_prefix = QXmlStreamStringRef(namespaceDeclaration.prefix);
@@ -1718,7 +1718,7 @@ void QXmlStreamReaderPrivate::resolvePublicNamespaces()
 void QXmlStreamReaderPrivate::resolveDtd()
 {
     publicNotationDeclarations.resize(notationDeclarations.size());
-    for (int i = 0; i < notationDeclarations.size(); ++i) {
+    for (qsizetype i = 0; i < notationDeclarations.size(); ++i) {
         const QXmlStreamReaderPrivate::NotationDeclaration &notationDeclaration = notationDeclarations.at(i);
         QXmlStreamNotationDeclaration &publicNotationDeclaration = publicNotationDeclarations[i];
         publicNotationDeclaration.m_name = QXmlStreamStringRef(notationDeclaration.name);
@@ -1728,7 +1728,7 @@ void QXmlStreamReaderPrivate::resolveDtd()
     }
     notationDeclarations.clear();
     publicEntityDeclarations.resize(entityDeclarations.size());
-    for (int i = 0; i < entityDeclarations.size(); ++i) {
+    for (qsizetype i = 0; i < entityDeclarations.size(); ++i) {
         const QXmlStreamReaderPrivate::EntityDeclaration &entityDeclaration = entityDeclarations.at(i);
         QXmlStreamEntityDeclaration &publicEntityDeclaration = publicEntityDeclarations[i];
         publicEntityDeclaration.m_name = QXmlStreamStringRef(entityDeclaration.name);
@@ -1814,7 +1814,7 @@ void QXmlStreamReaderPrivate::startDocument()
         else
             err = QXmlStream::tr("Unsupported XML version.");
     }
-    int n = attributeStack.size();
+    qsizetype n = attributeStack.size();
 
     /* We use this bool to ensure that the pesudo attributes are in the
      * proper order:
@@ -1822,7 +1822,7 @@ void QXmlStreamReaderPrivate::startDocument()
      * [23]     XMLDecl     ::=     '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>' */
     bool hasStandalone = false;
 
-    for (int i = 0; err.isNull() && i < n; ++i) {
+    for (qsizetype i = 0; err.isNull() && i < n; ++i) {
         Attribute &attrib = attributeStack[i];
         QStringRef prefix(symPrefix(attrib.key));
         QStringRef key(symString(attrib.key));
@@ -3052,7 +3052,7 @@ public:
     uint isCodecASCIICompatible :1;
     QByteArray autoFormattingIndent;
     NamespaceDeclaration emptyNamespace;
-    int lastNamespaceDeclaration;
+    qsizetype lastNamespaceDeclaration;
 
 #if QT_CONFIG(textcodec)
     QTextCodec *codec;
@@ -3274,7 +3274,7 @@ QXmlStreamPrivateTagStack::NamespaceDeclaration &QXmlStreamWriterPrivate::findNa
         int n = ++namespacePrefixCount;
         forever {
             s = QLatin1Char('n') + QString::number(n++);
-            int j = namespaceDeclarations.size() - 2;
+            qsizetype j = namespaceDeclarations.size() - 2;
             while (j >= 0 && namespaceDeclarations.at(j).prefix != s)
                 --j;
             if (j < 0)
@@ -3991,7 +3991,7 @@ void QXmlStreamWriterPrivate::writeStartElement(const QString &namespaceUri, con
     write(tag.name);
     inStartElement = lastWasStartElement = true;
 
-    for (int i = lastNamespaceDeclaration; i < namespaceDeclarations.size(); ++i)
+    for (qsizetype i = lastNamespaceDeclaration; i < namespaceDeclarations.size(); ++i)
         writeNamespaceDeclaration(namespaceDeclarations[i]);
     tag.namespaceDeclarationsSize = lastNamespaceDeclaration;
 }
