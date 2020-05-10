@@ -92,8 +92,6 @@ private:
     QCheckBox *invertedGreedinessOptionCheckBox;
     QCheckBox *dontCaptureOptionCheckBox;
     QCheckBox *useUnicodePropertiesOptionCheckBox;
-    QCheckBox *optimizeOnFirstUsageOptionCheckBox;
-    QCheckBox *dontAutomaticallyOptimizeOptionCheckBox;
 
     QSpinBox *offsetSpinBox;
 
