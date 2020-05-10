@@ -81,10 +81,10 @@ inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, qsize
             result=QString::fromUtf8((const char *)input.constData(), realsize);
             break;
         case 2:
-            result=QString::fromUtf16((const ushort *)input.constData(), realsize);
+            result = QString::fromUtf16(reinterpret_cast<const char16_t *>(input.constData()), realsize);
             break;
         case 4:
-            result=QString::fromUcs4((const uint *)input.constData(), realsize);
+            result = QString::fromUcs4(reinterpret_cast<const char32_t *>(input.constData()), realsize);
             break;
         default:
             qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", int(sizeof(SQLTCHAR)));

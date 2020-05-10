@@ -1786,7 +1786,7 @@ void tst_QStringRef::integer_conversion_data()
     QTest::newRow("C -0x10 16")     << QString("-0x10")    << 16 << true  << (qlonglong)-16;
 
     // Let's try some Arabic
-    const quint16 arabic_str[] = { 0x0661, 0x0662, 0x0663, 0x0664, 0x0000 }; // "1234"
+    const char16_t arabic_str[] = { 0x0661, 0x0662, 0x0663, 0x0664, 0x0000 }; // "1234"
     QTest::newRow("ar_SA 1234 0")  << QString::fromUtf16(arabic_str)  << 0  << false << (qlonglong)0;
 }
 
@@ -1850,7 +1850,7 @@ void tst_QStringRef::double_conversion_data()
     QTest::newRow("C 1  ")           << QString("1  ")        << true  << 1.0;
 
     // Let's try some Arabic
-    const quint16 arabic_str[] = { 0x0660, 0x066B, 0x0661, 0x0662,
+    const char16_t arabic_str[] = { 0x0660, 0x066B, 0x0661, 0x0662,
                                     0x0663, 0x0664, 0x0065, 0x0662,
                                     0x0000 };                            // "0.1234e2"
     QTest::newRow("ar_SA") << QString::fromUtf16(arabic_str) << false << 0.0;

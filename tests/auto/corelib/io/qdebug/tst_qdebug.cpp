@@ -454,7 +454,7 @@ void tst_QDebug::qDebugQString() const
     QCOMPARE(s_msg, QString("\"\\U000E0001 \\U00100000\""));
 
     // broken surrogate pairs
-    ushort utf16[] = { 0xDC00, 0xD800, 'x', 0xD800, 0 };
+    char16_t utf16[] = { 0xDC00, 0xD800, 'x', 0xD800, 0 };
     string = QString::fromUtf16(utf16);
     qDebug() << string;
     QCOMPARE(s_msg, QString("\"\\uDC00\\uD800x\\uD800\""));

@@ -192,7 +192,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
         if ((byte0 == 0xff && byte1 == 0xfe) || (byte0 == 0xfe && byte1 == 0xff)
             || (byte0 != 0 && byte1 == 0) || (byte0 == 0 && byte1 != 0)) {
             const QString str = QString::fromUtf16(
-                  reinterpret_cast<const ushort *>(data.constData()), data.size() / 2);
+                  reinterpret_cast<const char16_t *>(data.constData()), data.size() / 2);
             if (!str.isNull()) {
                 if (format == QLatin1String("text/uri-list")) {
                     const auto urls = str.splitRef(QLatin1Char('\n'));

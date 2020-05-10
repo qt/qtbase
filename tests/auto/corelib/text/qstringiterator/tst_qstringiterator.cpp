@@ -195,8 +195,8 @@ void tst_QStringIterator::sweep()
     QString rebuiltString;
 
     while (i.hasNext()) {
-        const uint peekedCodePoint = i.peekNext(~0u);
-        const uint codePoint = i.next(~0u);
+        const char32_t peekedCodePoint = i.peekNext(~0u);
+        const char32_t codePoint = i.next(~0u);
 
         QVERIFY(peekedCodePoint == codePoint);
 
@@ -213,8 +213,8 @@ void tst_QStringIterator::sweep()
     rebuiltString.clear();
 
     while (i.hasPrevious()) {
-        const uint peekedCodePoint = i.peekPrevious(~0u);
-        const uint codePoint = i.previous(~0u);
+        const char32_t peekedCodePoint = i.peekPrevious(~0u);
+        const char32_t codePoint = i.previous(~0u);
 
         QVERIFY(peekedCodePoint == codePoint);
 
@@ -239,8 +239,8 @@ void tst_QStringIterator::sweep()
 
     if (valid) {
         while (i.hasNext()) {
-            const uint peekedCodePoint = i.peekNextUnchecked();
-            const uint codePoint = i.nextUnchecked();
+            const char32_t peekedCodePoint = i.peekNextUnchecked();
+            const char32_t codePoint = i.nextUnchecked();
 
             QVERIFY(peekedCodePoint == codePoint);
             QVERIFY(codePoint <= 0x10FFFFu);
@@ -252,8 +252,8 @@ void tst_QStringIterator::sweep()
         QTEST(rebuiltString, "string");
 
         while (i.hasPrevious()) {
-            const uint peekedCodePoint = i.peekPreviousUnchecked();
-            const uint codePoint = i.previousUnchecked();
+            const char32_t peekedCodePoint = i.peekPreviousUnchecked();
+            const char32_t codePoint = i.previousUnchecked();
 
             QVERIFY(peekedCodePoint == codePoint);
 

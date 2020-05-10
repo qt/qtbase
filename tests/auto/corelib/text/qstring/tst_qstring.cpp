@@ -4464,14 +4464,14 @@ void tst_QString::fromLatin1Roundtrip_data()
     QTest::newRow("null") << QByteArray() << QString();
     QTest::newRow("empty") << QByteArray("") << "";
 
-    static const ushort unicode1[] = { 'H', 'e', 'l', 'l', 'o', 1, '\r', '\n', 0x7f };
+    static const char16_t unicode1[] = { 'H', 'e', 'l', 'l', 'o', 1, '\r', '\n', 0x7f };
     QTest::newRow("ascii-only") << QByteArray("Hello") << QString::fromUtf16(unicode1, 5);
     QTest::newRow("ascii+control") << QByteArray("Hello\1\r\n\x7f") << QString::fromUtf16(unicode1, 9);
 
-    static const ushort unicode3[] = { 'a', 0, 'z' };
+    static const char16_t unicode3[] = { 'a', 0, 'z' };
     QTest::newRow("ascii+nul") << QByteArray("a\0z", 3) << QString::fromUtf16(unicode3, 3);
 
-    static const ushort unicode4[] = { 0x80, 0xc0, 0xff };
+    static const char16_t unicode4[] = { 0x80, 0xc0, 0xff };
     QTest::newRow("non-ascii") << QByteArray("\x80\xc0\xff") << QString::fromUtf16(unicode4, 3);
 }
 
@@ -4509,23 +4509,23 @@ void tst_QString::toLatin1Roundtrip_data()
     QTest::newRow("null") << QByteArray() << QString() << QString();
     QTest::newRow("empty") << QByteArray("") << "" << "";
 
-    static const ushort unicode1[] = { 'H', 'e', 'l', 'l', 'o', 1, '\r', '\n', 0x7f };
+    static const char16_t unicode1[] = { 'H', 'e', 'l', 'l', 'o', 1, '\r', '\n', 0x7f };
     QTest::newRow("ascii-only") << QByteArray("Hello") << QString::fromUtf16(unicode1, 5) << QString::fromUtf16(unicode1, 5);
     QTest::newRow("ascii+control") << QByteArray("Hello\1\r\n\x7f") << QString::fromUtf16(unicode1, 9)  << QString::fromUtf16(unicode1, 9);
 
-    static const ushort unicode3[] = { 'a', 0, 'z' };
+    static const char16_t unicode3[] = { 'a', 0, 'z' };
     QTest::newRow("ascii+nul") << QByteArray("a\0z", 3) << QString::fromUtf16(unicode3, 3) << QString::fromUtf16(unicode3, 3);
 
-    static const ushort unicode4[] = { 0x80, 0xc0, 0xff };
+    static const char16_t unicode4[] = { 0x80, 0xc0, 0xff };
     QTest::newRow("non-ascii") << QByteArray("\x80\xc0\xff") << QString::fromUtf16(unicode4, 3) << QString::fromUtf16(unicode4, 3);
 
-    static const ushort unicodeq[] = { '?', '?', '?', '?', '?' };
+    static const char16_t unicodeq[] = { '?', '?', '?', '?', '?' };
     const QString questionmarks = QString::fromUtf16(unicodeq, 5);
 
-    static const ushort unicode5[] = { 0x100, 0x101, 0x17f, 0x7f00, 0x7f7f };
+    static const char16_t unicode5[] = { 0x100, 0x101, 0x17f, 0x7f00, 0x7f7f };
     QTest::newRow("non-latin1a") << QByteArray("?????") << QString::fromUtf16(unicode5, 5) << questionmarks;
 
-    static const ushort unicode6[] = { 0x180, 0x1ff, 0x8001, 0x8080, 0xfffc };
+    static const char16_t unicode6[] = { 0x180, 0x1ff, 0x8001, 0x8080, 0xfffc };
     QTest::newRow("non-latin1b") << QByteArray("?????") << QString::fromUtf16(unicode6, 5) << questionmarks;
 }
 
@@ -4628,7 +4628,7 @@ void tst_QString::fromLatin1()
 
 void tst_QString::fromUcs4()
 {
-    const uint *null = 0;
+    const char32_t *null = 0;
     QString s;
     s = QString::fromUcs4( null );
     QVERIFY( s.isNull() );
@@ -4640,7 +4640,7 @@ void tst_QString::fromUcs4()
     QVERIFY( s.isNull() );
     QCOMPARE( s.size(), 0 );
 
-    uint nil = '\0';
+    char32_t nil = '\0';
     s = QString::fromUcs4( &nil );
     QVERIFY( !s.isNull() );
     QCOMPARE( s.size(), 0 );
@@ -4648,12 +4648,12 @@ void tst_QString::fromUcs4()
     QVERIFY( !s.isNull() );
     QCOMPARE( s.size(), 0 );
 
-    uint bmp = 'a';
+    char32_t bmp = 'a';
     s = QString::fromUcs4( &bmp, 1 );
     QVERIFY( !s.isNull() );
     QCOMPARE( s.size(), 1 );
 
-    uint smp = 0x10000;
+    char32_t smp = 0x10000;
     s = QString::fromUcs4( &smp, 1 );
     QVERIFY( !s.isNull() );
     QCOMPARE( s.size(), 2 );
@@ -4675,7 +4675,7 @@ void tst_QString::fromUcs4()
 
     // QTBUG-62011: don't mistake ZWNBS for BOM
     // Start with one BOM, to ensure we use the right endianness:
-    const uint text[] = { 0xfeff, 97, 0xfeff, 98, 0xfeff, 99, 0xfeff, 100 };
+    const char32_t text[] = { 0xfeff, 97, 0xfeff, 98, 0xfeff, 99, 0xfeff, 100 };
     s = QString::fromUcs4(text, 8);
     QCOMPARE(s, QStringView(u"a\xfeff" u"b\xfeff" u"c\xfeff" "d"));
 }
@@ -5393,7 +5393,7 @@ void tst_QString::integer_conversion_data()
     QTest::newRow("C -0x10 16")     << QString("-0x10")    << 16 << true  << (qlonglong)-16;
 
     // Let's try some Arabic
-    const quint16 arabic_str[] = { 0x0661, 0x0662, 0x0663, 0x0664, 0x0000 }; // "1234"
+    const char16_t arabic_str[] = { 0x0661, 0x0662, 0x0663, 0x0664, 0x0000 }; // "1234"
     QTest::newRow("ar_SA 1234 0")  << QString::fromUtf16(arabic_str)  << 0  << false << (qlonglong)0;
 }
 
@@ -5456,7 +5456,7 @@ void tst_QString::double_conversion_data()
     QTest::newRow("C 1  ")           << QString("1  ")        << true  << 1.0;
 
     // Let's try some Arabic
-    const quint16 arabic_str[] = { 0x0660, 0x066B, 0x0661, 0x0662,
+    const char16_t arabic_str[] = { 0x0660, 0x066B, 0x0661, 0x0662,
                                     0x0663, 0x0664, 0x0065, 0x0662,
                                     0x0000 };                            // "0.1234e2"
     QTest::newRow("ar_SA") << QString::fromUtf16(arabic_str) << false << 0.0;
@@ -7001,16 +7001,16 @@ void tst_QString::isRightToLeft_data()
     QTest::newRow("latin1-only") << QString("hello") << false;
     QTest::newRow("numbers-latin1") << (QString("12345") + QString("hello")) << false;
 
-    static const ushort unicode1[] = { 0x627, 0x627 };
+    static const char16_t unicode1[] = { 0x627, 0x627 };
     QTest::newRow("arabic-only") << QString::fromUtf16(unicode1, 2) << true;
     QTest::newRow("numbers-arabic") << (QString("12345") + QString::fromUtf16(unicode1, 2)) << true;
     QTest::newRow("numbers-latin1-arabic") << (QString("12345") + QString("hello") + QString::fromUtf16(unicode1, 2)) << false;
     QTest::newRow("numbers-arabic-latin1") << (QString("12345") + QString::fromUtf16(unicode1, 2) + QString("hello")) << true;
 
-    static const ushort unicode2[] = { QChar::highSurrogate(0xE01DAu), QChar::lowSurrogate(0xE01DAu), QChar::highSurrogate(0x2F800u), QChar::lowSurrogate(0x2F800u) };
+    static const char16_t unicode2[] = { QChar::highSurrogate(0xE01DAu), QChar::lowSurrogate(0xE01DAu), QChar::highSurrogate(0x2F800u), QChar::lowSurrogate(0x2F800u) };
     QTest::newRow("surrogates-VS-CJK") << QString::fromUtf16(unicode2, 4) << false;
 
-    static const ushort unicode3[] = { QChar::highSurrogate(0x10800u), QChar::lowSurrogate(0x10800u), QChar::highSurrogate(0x10805u), QChar::lowSurrogate(0x10805u) };
+    static const char16_t unicode3[] = { QChar::highSurrogate(0x10800u), QChar::lowSurrogate(0x10800u), QChar::highSurrogate(0x10805u), QChar::lowSurrogate(0x10805u) };
     QTest::newRow("surrogates-cypriot") << QString::fromUtf16(unicode3, 4) << true;
 
     QTest::newRow("lre") << (QString("12345") + QChar(0x202a) + QString("9") + QChar(0x202c)) << false;

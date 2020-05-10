@@ -126,24 +126,24 @@ void tst_Utf8::roundTrip_data()
     QTest::newRow("utf8_4") << QByteArray(utf8_4) << QString(QChar(QChar::ReplacementCharacter));
 
     static const char utf8_5[] = "\360\220\210\203"; // U+010203
-    static const uint utf32_5[] = { 0x010203 };
+    static const char32_t utf32_5[] = { 0x010203 };
     QTest::newRow("utf8_5") << QByteArray(utf8_5) << QString::fromUcs4(utf32_5, 1);
 
     static const char utf8_6[] = "\364\217\277\275"; // U+10FFFD
-    static const uint utf32_6[] = { 0x10FFFD };
+    static const char32_t utf32_6[] = { 0x10FFFD };
     QTest::newRow("utf8_6") << QByteArray(utf8_6) << QString::fromUcs4(utf32_6, 1);
 
     static const char utf8_7[] = "abc\302\240\303\241\303\251\307\275 \342\202\254def";
-    static const ushort utf16_7[] = { 'a', 'b', 'c', 0x00A0,
-                                      0x00E1, 0x00E9, 0x01FD,
-                                      ' ', 0x20AC, 'd', 'e', 'f', 0 };
+    static const char16_t utf16_7[] = { 'a', 'b', 'c', 0x00A0,
+                                        0x00E1, 0x00E9, 0x01FD,
+                                        ' ', 0x20AC, 'd', 'e', 'f', 0 };
     QTest::newRow("utf8_7") << QByteArray(utf8_7) << QString::fromUtf16(utf16_7);
 
     static const char utf8_8[] = "abc\302\240\303\241\303\251\307\275 \364\217\277\275 \342\202\254def";
-    static const uint utf32_8[] = { 'a', 'b', 'c', 0x00A0,
-                                    0x00E1, 0x00E9, 0x01FD,
-                                    ' ', 0x10FFFD, ' ',
-                                    0x20AC, 'd', 'e', 'f', 0 };
+    static const char32_t utf32_8[] = { 'a', 'b', 'c', 0x00A0,
+                                        0x00E1, 0x00E9, 0x01FD,
+                                        ' ', 0x10FFFD, ' ',
+                                        0x20AC, 'd', 'e', 'f', 0 };
     QTest::newRow("utf8_8") << QByteArray(utf8_8) << QString::fromUcs4(utf32_8);
 }
 

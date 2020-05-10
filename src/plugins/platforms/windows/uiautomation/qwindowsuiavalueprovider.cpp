@@ -72,7 +72,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaValueProvider::SetValue(LPCWSTR val)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     // First sets the value as a text.
-    QString strVal = QString::fromUtf16(reinterpret_cast<const ushort *>(val));
+    QString strVal = QString::fromUtf16(reinterpret_cast<const char16_t *>(val));
     accessible->setText(QAccessible::Value, strVal);
 
     // Then, if the control supports the value interface (range value)
