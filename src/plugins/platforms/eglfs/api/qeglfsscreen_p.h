@@ -94,7 +94,6 @@ private:
     void setPrimarySurface(EGLSurface surface);
 
     EGLDisplay m_dpy;
-    QPointer<QWindow> m_pointerWindow;
     EGLSurface m_surface;
     QPlatformCursor *m_cursor;
 

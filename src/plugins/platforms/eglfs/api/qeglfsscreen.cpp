@@ -39,6 +39,7 @@
 
 #include <QtCore/qtextstream.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformcursor.h>
 #ifndef QT_NO_OPENGL
@@ -149,6 +150,7 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
 #ifndef QT_NO_OPENGL
     const QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     const QList<QOpenGLCompositorWindow *> windows = compositor->windows();
+    QEglFSIntegration *platformIntegration = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
 
     // Generate enter and leave events like a real windowing system would do.
     if (windows.isEmpty())
@@ -157,8 +159,8 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
     // First window is always fullscreen.
     if (windows.count() == 1) {
         QWindow *window = windows[0]->sourceWindow();
-        if (m_pointerWindow != window) {
-            m_pointerWindow = window;
+        if (platformIntegration->pointerWindow() != window) {
+            platformIntegration->setPointerWindow(window);
             QWindowSystemInterface::handleEnterEvent(window, window->mapFromGlobal(pos), pos);
         }
         return;
@@ -169,17 +171,22 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
         QWindow *window = windows[i]->sourceWindow();
         const QRect geom = window->geometry();
         if (geom.contains(pos)) {
-            if (m_pointerWindow != window) {
-                leave = m_pointerWindow;
-                m_pointerWindow = window;
+            if (platformIntegration->pointerWindow() != window) {
+                leave = platformIntegration->pointerWindow();
+                platformIntegration->setPointerWindow(window);
                 enter = window;
             }
             break;
         }
     }
 
-    if (enter && leave)
+    if (enter && leave) {
         QWindowSystemInterface::handleEnterLeaveEvent(enter, leave, enter->mapFromGlobal(pos), pos);
+    } else if (enter) {
+        QWindowSystemInterface::handleEnterEvent(enter, enter->mapFromGlobal(pos), pos);
+    } else if (leave) {
+        QWindowSystemInterface::handleLeaveEvent(leave);
+    }
 #else
     Q_UNUSED(pos);
 #endif
