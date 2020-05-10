@@ -71,11 +71,30 @@ private:
 #endif
 #include <private/qmemory_p.h>
 
+#include <iterator>
+
 QT_BEGIN_NAMESPACE
 
 #include "qxmlstream_p.h"
 
 enum { StreamEOF = ~0U };
+
+namespace {
+template <typename Range>
+auto reversed(Range &r)
+{
+    struct R {
+        Range *r;
+        auto begin() { return std::make_reverse_iterator(std::end(*r)); }
+        auto end() { return std::make_reverse_iterator(std::begin(*r)); }
+    };
+
+    return R{&r};
+}
+
+template <typename Range>
+void reversed(const Range &&) = delete;
+}
 
 /*!
     \enum QXmlStreamReader::TokenType
@@ -1562,8 +1581,7 @@ uint QXmlStreamReaderPrivate::getChar_helper()
 
 QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(const QStringRef &prefix)
 {
-     for (int j = namespaceDeclarations.size() - 1; j >= 0; --j) {
-         const NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.at(j);
+     for (const NamespaceDeclaration &namespaceDeclaration : reversed(namespaceDeclarations)) {
          if (namespaceDeclaration.prefix == prefix) {
              return namespaceDeclaration.namespaceUri;
          }
@@ -3240,8 +3258,7 @@ bool QXmlStreamWriterPrivate::finishStartElement(bool contents)
 
 QXmlStreamPrivateTagStack::NamespaceDeclaration &QXmlStreamWriterPrivate::findNamespace(const QString &namespaceUri, bool writeDeclaration, bool noDefault)
 {
-    for (int j = namespaceDeclarations.size() - 1; j >= 0; --j) {
-        NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations[j];
+    for (NamespaceDeclaration &namespaceDeclaration : reversed(namespaceDeclarations)) {
         if (namespaceDeclaration.namespaceUri == namespaceUri) {
             if (!noDefault || !namespaceDeclaration.prefix.isEmpty())
                 return namespaceDeclaration;
