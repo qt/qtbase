@@ -100,9 +100,10 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace {
-// temporary; to easy porting to char16_t
-char16_t *to_utf16(ushort *p) { return reinterpret_cast<char16_t *>(p); }
+template <typename T, typename Cmp = std::less<>>
+static constexpr bool points_into_range(const T *p, const T *b, const T *e, Cmp less = {}) noexcept
+{
+    return !less(p, b) && less(p, e);
 }
 
 /*
@@ -847,8 +848,8 @@ static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QCha
     if (be - b < ae - a)
         e = a + (be - b);
 
-    uint alast = 0;
-    uint blast = 0;
+    char32_t alast = 0;
+    char32_t blast = 0;
     while (a < e) {
 //         qDebug() << Qt::hex << alast << blast;
 //         qDebug() << Qt::hex << "*a=" << *a << "alast=" << alast << "folded=" << foldCase (*a, alast);
@@ -891,8 +892,8 @@ static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char 
 
 #if defined(__mips_dsp)
 // From qstring_mips_dsp_asm.S
-extern "C" int qt_ucstrncmp_mips_dsp_asm(const ushort *a,
-                                         const ushort *b,
+extern "C" int qt_ucstrncmp_mips_dsp_asm(const char16_t *a,
+                                         const char16_t *b,
                                          unsigned len);
 #endif
 
@@ -912,8 +913,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
 #if defined(__mips_dsp)
     Q_STATIC_ASSERT(sizeof(uint) == sizeof(size_t));
     if (l >= 8) {
-        return qt_ucstrncmp_mips_dsp_asm(reinterpret_cast<const ushort*>(a),
-                                         reinterpret_cast<const ushort*>(b),
+        return qt_ucstrncmp_mips_dsp_asm(reinterpret_cast<const char16_t*>(a),
+                                         reinterpret_cast<const char16_t*>(b),
                                          l);
     }
 #endif // __mips_dsp
@@ -1061,8 +1062,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
 
 static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
 {
-    const ushort *uc = reinterpret_cast<const ushort *>(a);
-    const ushort *e = uc + l;
+    const char16_t *uc = reinterpret_cast<const char16_t *>(a);
+    const char16_t *e = uc + l;
 
 #ifdef __SSE2__
     __m128i nullmask = _mm_setzero_si128();
@@ -1153,7 +1154,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
     c += offset;
 
 #  if !defined(__OPTIMIZE_SIZE__)
-    const auto lambda = [=](size_t i) { return uc[i] - ushort(c[i]); };
+    const auto lambda = [=](size_t i) { return uc[i] - char16_t(c[i]); };
     return UnrollTailLoop<MaxTailLength>::exec(e - uc, 0, lambda, lambda);
 #  endif
 #endif
@@ -2115,9 +2116,9 @@ QString::QString(int size, QChar ch)
     } else {
         d = DataPointer(Data::allocate(size + 1), size);
         d.data()[size] = '\0';
-        ushort *i = d.data() + size;
-        ushort *b = d.data();
-        const ushort value = ch.unicode();
+        char16_t *i = d.data() + size;
+        char16_t *b = d.data();
+        const char16_t value = ch.unicode();
         while (i != b)
            *--i = value;
     }
@@ -2387,7 +2388,7 @@ QString &QString::operator=(QLatin1String other)
     if (isDetached() && other.size() <= capacity()) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
         d.size = other.size();
         d.data()[other.size()] = 0;
-        qt_from_latin1(to_utf16(d.data()), other.latin1(), other.size());
+        qt_from_latin1(d.data(), other.latin1(), other.size());
     } else {
         *this = fromLatin1(other.latin1(), other.size());
     }
@@ -2541,7 +2542,7 @@ QString &QString::insert(int i, QLatin1String str)
         resize(size() + len);
 
     ::memmove(d.data() + i + len, d.data() + i, (d.size - i - len) * sizeof(QChar));
-    qt_from_latin1(to_utf16(d.data() + i), s, uint(len));
+    qt_from_latin1(d.data() + i, s, uint(len));
     return *this;
 }
 
@@ -2557,14 +2558,9 @@ QString& QString::insert(int i, const QChar *unicode, int size)
     if (i < 0 || size <= 0)
         return *this;
 
-    const ushort *s = (const ushort *)unicode;
-    const std::less<const ushort*> less;
-    if (!less(s, d.data()) && less(s, d.data() + d.size)) {
-        // Part of me - take a copy
-        const QVarLengthArray<ushort> copy(s, s + size);
-        insert(i, reinterpret_cast<const QChar *>(copy.data()), size);
-        return *this;
-    }
+    const auto s = reinterpret_cast<const char16_t *>(unicode);
+    if (points_into_range(s, d.data(), d.data() + d.size))
+        return insert(i, QStringView{QVarLengthArray(s, s + size)});
 
     if (Q_UNLIKELY(i > int(d.size)))
         resize(i + size, QLatin1Char(' '));
@@ -2662,7 +2658,7 @@ QString &QString::append(QLatin1String str)
         int len = str.size();
         if (d->needsDetach() || size() + len > capacity())
             reallocData(uint(size() + len) + 1u, true);
-        char16_t *i = to_utf16(d.data() + d.size);
+        char16_t *i = d.data() + d.size;
         qt_from_latin1(i, s, uint(len));
         i[len] = '\0';
         d.size += len;
@@ -2819,7 +2815,7 @@ QString &QString::remove(int pos, int len)
     } else if (len > 0) {
         detach();
         memmove(d.data() + pos, d.data() + pos + len,
-                (d.size - pos - len + 1) * sizeof(ushort));
+                (d.size - pos - len + 1) * sizeof(QChar));
         d.size -= len;
     }
     return *this;
@@ -2867,15 +2863,11 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
 */
 QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 {
-    const auto s = reinterpret_cast<const ushort *>(str.data());
-    const std::less<const ushort *> less;
-    if (!less(s, d.data()) && less(s, d.data() + d.size)) {
-        // Part of me - take a copy
-        const QVarLengthArray<ushort> copy(s, s + str.size());
-        removeStringImpl(*this, QStringView{copy.data(), copy.size()}, cs);
-    } else {
+    const auto s = str.d.data();
+    if (points_into_range(s, d.data(), d.data() + d.size))
+        removeStringImpl(*this, QStringView{QVarLengthArray(s, s + str.size())}, cs);
+    else
         removeStringImpl(*this, qToStringViewIgnoringNull(str), cs);
-    }
     return *this;
 }
 
@@ -3031,7 +3023,7 @@ QChar *textCopy(const QChar *start, int len)
     return copy;
 }
 
-bool pointsIntoRange(const QChar *ptr, const ushort *base, int len)
+static bool pointsIntoRange(const QChar *ptr, const char16_t *base, qsizetype len)
 {
     const QChar *const start = reinterpret_cast<const QChar *>(base);
     const std::less<const QChar *> less;
@@ -3196,7 +3188,7 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
     if (size() == 0)
         return *this;
 
-    ushort cc = (cs == Qt::CaseSensitive ? ch.unicode() : ch.toCaseFolded().unicode());
+    char16_t cc = (cs == Qt::CaseSensitive ? ch.unicode() : ch.toCaseFolded().unicode());
 
     int index = 0;
     while (1) {
@@ -3242,19 +3234,19 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
         const int idx = indexOf(before, 0, cs);
         if (idx != -1) {
             detach();
-            const ushort a = after.unicode();
-            ushort *i = d.data();
-            ushort *const e = i + d.size;
+            const char16_t a = after.unicode();
+            char16_t *i = d.data();
+            char16_t *const e = i + d.size;
             i += idx;
             *i = a;
             if (cs == Qt::CaseSensitive) {
-                const ushort b = before.unicode();
+                const char16_t b = before.unicode();
                 while (++i != e) {
                     if (*i == b)
                         *i = a;
                 }
             } else {
-                const ushort b = foldCase(before.unicode());
+                const char16_t b = foldCase(before.unicode());
                 while (++i != e) {
                     if (foldCase(*i) == b)
                         *i = a;
@@ -4563,7 +4555,7 @@ QString QString::mid(int position, int n) const
         return QString();
     case QContainerImplHelper::Empty:
     {
-        QPair<Data *, ushort *> pair = Data::allocate(0);
+        QPair<Data *, char16_t *> pair = Data::allocate(0);
         DataPointer empty = { pair.first, pair.second, 0 };
         return QString(empty);
     }
@@ -4820,7 +4812,7 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     // We can return our own buffer to the caller.
     // Conversion to Latin-1 always shrinks the buffer by half.
-    const char16_t *data = to_utf16(s.d.data());
+    const char16_t *data = s.d.data();
     int length = s.d.size;
 
     // Move the d pointer over to the bytearray.
@@ -5016,7 +5008,7 @@ QString::DataPointer QString::fromLatin1_helper(const char *str, int size)
             size = qstrlen(str);
         d = DataPointer(Data::allocate(size + 1), size);
         d.data()[size] = '\0';
-        char16_t *dst = to_utf16(d.data());
+        char16_t *dst = d.data();
 
         qt_from_latin1(dst, str, uint(size));
     }
@@ -5066,7 +5058,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     if (!str)
         return QString();
     if (size == 0 || (!*str && size < 0)) {
-        QPair<Data *, ushort *> pair = Data::allocate(0);
+        QPair<Data *, char16_t *> pair = Data::allocate(0);
         QString::DataPointer empty = { pair.first, pair.second, 0 };
         return QString(empty);
     }
@@ -6018,7 +6010,7 @@ const ushort *QString::utf16() const
         // ensure '\0'-termination for ::fromRawData strings
         const_cast<QString*>(this)->reallocData(uint(d.size) + 1u);
     }
-    return d.data();
+    return reinterpret_cast<const ushort *>(d.data());
 }
 
 /*!
@@ -6570,7 +6562,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
             }
             case 'c': {
                 if (length_mod == lm_l)
-                    subst = QChar((ushort) va_arg(ap, int));
+                    subst = QChar::fromUcs2(va_arg(ap, int));
                 else
                     subst = QLatin1Char((uchar) va_arg(ap, int));
                 ++c;
@@ -7548,18 +7540,18 @@ QString QString::repeated(int times) const
     if (result.capacity() != resultSize)
         return QString(); // not enough memory
 
-    memcpy(result.d.data(), d.data(), d.size * sizeof(ushort));
+    memcpy(result.d.data(), d.data(), d.size * sizeof(QChar));
 
     int sizeSoFar = d.size;
-    ushort *end = result.d.data() + sizeSoFar;
+    char16_t *end = result.d.data() + sizeSoFar;
 
     const int halfResultSize = resultSize >> 1;
     while (sizeSoFar <= halfResultSize) {
-        memcpy(end, result.d.data(), sizeSoFar * sizeof(ushort));
+        memcpy(end, result.d.data(), sizeSoFar * sizeof(QChar));
         end += sizeSoFar;
         sizeSoFar <<= 1;
     }
-    memcpy(end, result.d.data(), (resultSize - sizeSoFar) * sizeof(ushort));
+    memcpy(end, result.d.data(), (resultSize - sizeSoFar) * sizeof(QChar));
     result.d.data()[resultSize] = '\0';
     result.d.size = resultSize;
     return result;
@@ -7583,10 +7575,10 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
             if (n.version > version) {
                 int pos = from;
                 if (QChar::requiresSurrogates(n.ucs4)) {
-                    ushort ucs4High = QChar::highSurrogate(n.ucs4);
-                    ushort ucs4Low = QChar::lowSurrogate(n.ucs4);
-                    ushort oldHigh = QChar::highSurrogate(n.old_mapping);
-                    ushort oldLow = QChar::lowSurrogate(n.old_mapping);
+                    char16_t ucs4High = QChar::highSurrogate(n.ucs4);
+                    char16_t ucs4Low = QChar::lowSurrogate(n.ucs4);
+                    char16_t oldHigh = QChar::highSurrogate(n.old_mapping);
+                    char16_t oldLow = QChar::lowSurrogate(n.old_mapping);
                     while (pos < s.length() - 1) {
                         if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low) {
                             if (!d)
@@ -8310,8 +8302,8 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
 }
 
-static inline ushort to_unicode(const QChar c) { return c.unicode(); }
-static inline ushort to_unicode(const char c) { return QLatin1Char{c}.unicode(); }
+static inline char16_t to_unicode(const QChar c) { return c.unicode(); }
+static inline char16_t to_unicode(const char c) { return QLatin1Char{c}.unicode(); }
 
 template <typename Char>
 static int getEscape(const Char *uc, qsizetype *pos, qsizetype len, int maxNumber = 999)
@@ -8557,10 +8549,10 @@ QString QtPrivate::argToQString(QLatin1String pattern, size_t n, const ArgBase *
 */
 bool QString::isSimpleText() const
 {
-    const ushort *p = d.data();
-    const ushort * const end = p + d.size;
+    const char16_t *p = d.data();
+    const char16_t * const end = p + d.size;
     while (p < end) {
-        ushort uc = *p;
+        char16_t uc = *p;
         // sort out regions of complex text formatting
         if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
             return false;
@@ -8727,7 +8719,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     } else if (!size) {
         x = DataPointer(Data::allocate(0), 0);
     } else {
-        x = Data::fromRawData(reinterpret_cast<const ushort *>(unicode), size);
+        x = Data::fromRawData(reinterpret_cast<const char16_t *>(unicode), size);
     }
     return QString(x);
 }
@@ -9680,9 +9672,9 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
             if ((out.byteOrder() == QDataStream::BigEndian) == (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
                 out.writeBytes(reinterpret_cast<const char *>(str.unicode()), uint(sizeof(QChar) * str.length()));
             } else {
-                QVarLengthArray<ushort> buffer(str.length());
-                qbswap<sizeof(ushort)>(str.constData(), str.length(), buffer.data());
-                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), uint(sizeof(ushort) * buffer.size()));
+                QVarLengthArray<char16_t> buffer(str.length());
+                qbswap<sizeof(char16_t)>(str.constData(), str.length(), buffer.data());
+                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), uint(sizeof(char16_t) * buffer.size()));
             }
         } else {
             // write null marker
@@ -9737,7 +9729,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
 
             if ((in.byteOrder() == QDataStream::BigEndian)
                     != (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
-                ushort *data = reinterpret_cast<ushort *>(str.data());
+                char16_t *data = reinterpret_cast<char16_t *>(str.data());
                 qbswap<sizeof(*data)>(data, len, data);
             }
         } else {
@@ -11009,13 +11001,13 @@ bool QStringRef::isRightToLeft() const
 */
 bool QtPrivate::isRightToLeft(QStringView string) noexcept
 {
-    const ushort *p = reinterpret_cast<const ushort*>(string.data());
-    const ushort * const end = p + string.size();
+    const char16_t *p = string.utf16();
+    const char16_t * const end = p + string.size();
     int isolateLevel = 0;
     while (p < end) {
         uint ucs4 = *p;
         if (QChar::isHighSurrogate(ucs4) && p < end - 1) {
-            ushort low = p[1];
+            char16_t low = p[1];
             if (QChar::isLowSurrogate(low)) {
                 ucs4 = QChar::surrogateToUcs4(ucs4, low);
                 ++p;
@@ -11418,33 +11410,34 @@ bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseS
 
 namespace {
 template <typename Pointer>
-uint foldCaseHelper(Pointer ch, Pointer start) = delete;
+char32_t foldCaseHelper(Pointer ch, Pointer start) = delete;
 
 template <>
-uint foldCaseHelper<const QChar*>(const QChar* ch, const QChar* start)
+char32_t foldCaseHelper<const QChar*>(const QChar* ch, const QChar* start)
 {
-    return foldCase(reinterpret_cast<const ushort*>(ch), reinterpret_cast<const ushort*>(start));
+    return foldCase(reinterpret_cast<const char16_t*>(ch),
+                    reinterpret_cast<const char16_t*>(start));
 }
 
 template <>
-uint foldCaseHelper<const char*>(const char* ch, const char*)
+char32_t foldCaseHelper<const char*>(const char* ch, const char*)
 {
-    return foldCase(ushort(uchar(*ch)));
+    return foldCase(char16_t(uchar(*ch)));
 }
 
 template <typename T>
-ushort valueTypeToUtf16(T t) = delete;
+char16_t valueTypeToUtf16(T t) = delete;
 
 template <>
-ushort valueTypeToUtf16<QChar>(QChar t)
+char16_t valueTypeToUtf16<QChar>(QChar t)
 {
     return t.unicode();
 }
 
 template <>
-ushort valueTypeToUtf16<char>(char t)
+char16_t valueTypeToUtf16<char>(char t)
 {
-    return ushort(uchar(t));
+    return char16_t{uchar(t)};
 }
 }
 
@@ -11565,7 +11558,7 @@ static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle,
     if (std::size_t(from) >= std::size_t(haystack.size()))
         return -1;
     if (from >= 0) {
-        ushort c = needle.unicode();
+        char16_t c = needle.unicode();
         const auto b = haystack.data();
         auto n = b + from;
         if (cs == Qt::CaseSensitive) {

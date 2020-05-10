@@ -68,15 +68,15 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
             Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 \
         }; \
         QStringPrivate holder = {  \
-            static_cast<QTypedArrayData<ushort> *>(const_cast<QArrayData *>(&qstring_literal)), \
-            reinterpret_cast<ushort *>(const_cast<qunicodechar *>(QT_UNICODE_LITERAL(str))), \
+            static_cast<QTypedArrayData<char16_t> *>(const_cast<QArrayData *>(&qstring_literal)), \
+            const_cast<qunicodechar *>(QT_UNICODE_LITERAL(str)), \
             Size \
         }; \
         return QString(holder); \
     }()) \
     /**/
 
-using QStringPrivate = QArrayDataPointer<ushort>;
+using QStringPrivate = QArrayDataPointer<char16_t>;
 
 QT_END_NAMESPACE
 

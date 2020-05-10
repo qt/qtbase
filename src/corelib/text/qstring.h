@@ -254,7 +254,7 @@ qsizetype QStringView::lastIndexOf(QLatin1String s, qsizetype from, Qt::CaseSens
 
 class Q_CORE_EXPORT QString
 {
-    typedef QTypedArrayData<ushort> Data;
+    typedef QTypedArrayData<char16_t> Data;
 public:
     typedef QStringPrivate DataPointer;
 
