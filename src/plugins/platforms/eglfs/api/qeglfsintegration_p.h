@@ -52,7 +52,9 @@
 //
 
 #include "qeglfsglobal_p.h"
+#include <QtCore/QPointer>
 #include <QtCore/QVariant>
+#include <QtGui/QWindow>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>
@@ -106,6 +108,9 @@ public:
 
     QFbVtHandler *vtHandler() { return m_vtHandler.data(); }
 
+    QPointer<QWindow> pointerWindow() { return m_pointerWindow; }
+    void setPointerWindow(QWindow *pointerWindow) { m_pointerWindow = pointerWindow; }
+
 private:
     EGLNativeDisplayType nativeDisplay() const;
     void createInputHandlers();
@@ -118,6 +123,7 @@ private:
     QScopedPointer<QPlatformServices> m_services;
     QScopedPointer<QFbVtHandler> m_vtHandler;
     QEvdevKeyboardManager *m_kbdMgr;
+    QPointer<QWindow> m_pointerWindow;
     bool m_disableInputHandlers;
 };
 
