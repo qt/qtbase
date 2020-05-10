@@ -2193,9 +2193,9 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
         return name;
 
     int i = len - 1;
-    QVarLengthArray<ushort> outVector(len);
+    QVarLengthArray<char16_t> outVector(len);
     int used = len;
-    ushort *out = outVector.data();
+    char16_t *out = outVector.data();
     const ushort *p = name.utf16();
     const ushort *prefix = p;
     int up = 0;

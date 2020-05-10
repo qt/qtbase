@@ -1168,8 +1168,8 @@ QT_WARNING_POP
 
 inline QString QString::fromWCharArray(const wchar_t *string, int size)
 {
-    return sizeof(wchar_t) == sizeof(QChar) ? fromUtf16(reinterpret_cast<const ushort *>(string), size)
-                                            : fromUcs4(reinterpret_cast<const uint *>(string), size);
+    return sizeof(wchar_t) == sizeof(QChar) ? fromUtf16(reinterpret_cast<const char16_t *>(string), size)
+                                            : fromUcs4(reinterpret_cast<const char32_t *>(string), size);
 }
 
 inline QString::QString() noexcept {}
