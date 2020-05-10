@@ -898,7 +898,7 @@ void QRegularExpressionPrivate::compilePattern()
     options |= PCRE2_UTF;
 
     PCRE2_SIZE patternErrorOffset;
-    compiledPattern = pcre2_compile_16(pattern.utf16(),
+    compiledPattern = pcre2_compile_16(reinterpret_cast<PCRE2_SPTR16>(pattern.utf16()),
                                        pattern.length(),
                                        options,
                                        &errorCode,
@@ -1163,12 +1163,12 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
 
     if (!previousMatchWasEmpty) {
         result = safe_pcre2_match_16(compiledPattern,
-                                     subjectUtf16, subjectLength,
+                                     reinterpret_cast<PCRE2_SPTR16>(subjectUtf16), subjectLength,
                                      offset, pcreOptions,
                                      matchData, matchContext);
     } else {
         result = safe_pcre2_match_16(compiledPattern,
-                                     subjectUtf16, subjectLength,
+                                     reinterpret_cast<PCRE2_SPTR16>(subjectUtf16), subjectLength,
                                      offset, pcreOptions | PCRE2_NOTEMPTY_ATSTART | PCRE2_ANCHORED,
                                      matchData, matchContext);
 
@@ -1186,7 +1186,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
             }
 
             result = safe_pcre2_match_16(compiledPattern,
-                                         subjectUtf16, subjectLength,
+                                         reinterpret_cast<PCRE2_SPTR16>(subjectUtf16), subjectLength,
                                          offset, pcreOptions,
                                          matchData, matchContext);
         }
