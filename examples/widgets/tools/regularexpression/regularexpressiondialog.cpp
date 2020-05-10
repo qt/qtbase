@@ -219,8 +219,6 @@ RegularExpressionDialog::RegularExpressionDialog(QWidget *parent)
     connect(invertedGreedinessOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
     connect(dontCaptureOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
     connect(useUnicodePropertiesOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
-    connect(optimizeOnFirstUsageOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
-    connect(dontAutomaticallyOptimizeOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
 
     connect(offsetSpinBox, &QSpinBox::valueChanged,
             this, &RegularExpressionDialog::refresh);
@@ -309,10 +307,6 @@ void RegularExpressionDialog::refresh()
         patternOptions |= QRegularExpression::DontCaptureOption;
     if (useUnicodePropertiesOptionCheckBox->isChecked())
         patternOptions |= QRegularExpression::UseUnicodePropertiesOption;
-    if (optimizeOnFirstUsageOptionCheckBox->isChecked())
-        patternOptions |= QRegularExpression::OptimizeOnFirstUsageOption;
-    if (dontAutomaticallyOptimizeOptionCheckBox->isChecked())
-        patternOptions |= QRegularExpression::DontAutomaticallyOptimizeOption;
 
     rx.setPatternOptions(patternOptions);
 
@@ -400,8 +394,6 @@ QWidget *RegularExpressionDialog::setupLeftUi()
     invertedGreedinessOptionCheckBox = new QCheckBox(tr("Inverted greediness"));
     dontCaptureOptionCheckBox = new QCheckBox(tr("Don't capture"));
     useUnicodePropertiesOptionCheckBox = new QCheckBox(tr("Use unicode properties (/u)"));
-    optimizeOnFirstUsageOptionCheckBox = new QCheckBox(tr("Optimize on first usage"));
-    dontAutomaticallyOptimizeOptionCheckBox = new QCheckBox(tr("Don't automatically optimize"));
 
     QGridLayout *patternOptionsCheckBoxLayout = new QGridLayout;
     int gridRow = 0;
@@ -415,9 +407,6 @@ QWidget *RegularExpressionDialog::setupLeftUi()
     patternOptionsCheckBoxLayout->addWidget(dontCaptureOptionCheckBox, gridRow, 2);
     ++gridRow;
     patternOptionsCheckBoxLayout->addWidget(useUnicodePropertiesOptionCheckBox, gridRow, 1);
-    patternOptionsCheckBoxLayout->addWidget(optimizeOnFirstUsageOptionCheckBox, gridRow, 2);
-    ++gridRow;
-    patternOptionsCheckBoxLayout->addWidget(dontAutomaticallyOptimizeOptionCheckBox, gridRow, 1);
 
     layout->addRow(tr("Pattern options:"), patternOptionsCheckBoxLayout);
 
