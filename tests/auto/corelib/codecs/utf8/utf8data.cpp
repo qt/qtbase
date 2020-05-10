@@ -149,9 +149,9 @@ void loadNonCharactersRows()
                             char(0x80 | (uchar(ucs4 >> 6) & 0x3f)),
                             char(0x80 | (uchar(ucs4) & 0x3f)),
                             0 };
-            ushort utf16[] = { QChar::highSurrogate(ucs4), QChar::lowSurrogate(ucs4), 0 };
+            const auto utf16 = QChar::fromUcs4(ucs4);
 
-            QTest::newRow(qPrintable(QString::number(ucs4, 16))) << QByteArray(utf8) << QString::fromUtf16(utf16);
+            QTest::newRow(qPrintable(QString::number(ucs4, 16))) << QByteArray(utf8) << QStringView{utf16}.toString();
         }
     }
 

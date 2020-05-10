@@ -203,7 +203,7 @@ void tst_QStringIterator::sweep()
         if (codePoint == ~0u)
             rebuiltString += *(i.position() - 1);
         else
-            rebuiltString += QString::fromUcs4(&codePoint, 1);
+            rebuiltString += QChar::fromUcs4(codePoint);
 
         ++count;
     }
@@ -244,7 +244,7 @@ void tst_QStringIterator::sweep()
 
             QVERIFY(peekedCodePoint == codePoint);
             QVERIFY(codePoint <= 0x10FFFFu);
-            rebuiltString += QString::fromUcs4(&codePoint, 1);
+            rebuiltString += QChar::fromUcs4(codePoint);
             ++count;
         }
 

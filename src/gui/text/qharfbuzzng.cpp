@@ -333,7 +333,10 @@ _hb_qt_unicode_compose(hb_unicode_funcs_t * /*ufuncs*/,
                        void * /*user_data*/)
 {
     // ### optimize
-    QString s = QString::fromUcs4(&a, 1) + QString::fromUcs4(&b, 1);
+    QString s;
+    s.reserve(4);
+    s += QChar::fromUcs4(a);
+    s += QChar::fromUcs4(b);
     QString normalized = s.normalized(QString::NormalizationForm_C);
 
     QStringIterator it(normalized);
