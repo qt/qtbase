@@ -130,7 +130,7 @@ void qGamma_correct_back_to_linear_cs(QImage *image)
  *****************************************************************************/
 
 // The drawhelper conversions from/to RGB32 are passthroughs which is not always correct for general image conversion
-#if !defined(__ARM_NEON__)
+#if !defined(__ARM_NEON__) || !(Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
 static void QT_FASTCALL storeRGB32FromARGB32PM(uchar *dest, const uint *src, int index, int count,
                                                const QVector<QRgb> *, QDitherInfo *)
 {
@@ -160,7 +160,7 @@ static const uint *QT_FASTCALL fetchRGB32ToARGB32PM(uint *buffer, const uchar *s
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
 extern void QT_FASTCALL storeRGB32FromARGB32PM_sse4(uchar *dest, const uint *src, int index, int count,
                                                     const QVector<QRgb> *, QDitherInfo *);
-#elif defined(__ARM_NEON__)
+#elif defined(__ARM_NEON__) && (Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
 extern void QT_FASTCALL storeRGB32FromARGB32PM_neon(uchar *dest, const uint *src, int index, int count,
                                                     const QVector<QRgb> *, QDitherInfo *);
 #endif
@@ -188,7 +188,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
                 store = storeRGB32FromARGB32PM_sse4;
             else
                 store = storeRGB32FromARGB32PM;
-#elif defined(__ARM_NEON__)
+#elif defined(__ARM_NEON__) && (Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
             store = storeRGB32FromARGB32PM_neon;
 #else
             store = storeRGB32FromARGB32PM;
@@ -350,7 +350,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
                 store = storeRGB32FromARGB32PM_sse4;
             else
                 store = storeRGB32FromARGB32PM;
-#elif defined(__ARM_NEON__)
+#elif defined(__ARM_NEON__) && (Q_BYTE_ORDER == Q_LITTLE_ENDIAN)
             store = storeRGB32FromARGB32PM_neon;
 #else
             store = storeRGB32FromARGB32PM;
