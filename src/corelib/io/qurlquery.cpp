@@ -240,7 +240,7 @@ inline QString QUrlQueryPrivate::recodeFromUser(const QString &input) const
         decode('#'),
         0
     };
-    if (qt_urlRecode(output, input.constData(), input.constData() + input.length(),
+    if (qt_urlRecode(output, input,
                      QUrl::DecodeReserved,
                      prettyDecodedActions))
         return output;
@@ -261,7 +261,7 @@ inline QString QUrlQueryPrivate::recodeToUser(const QString &input, QUrl::Compon
 
     if (!(encoding & QUrl::EncodeDelimiters)) {
         QString output;
-        if (qt_urlRecode(output, input.constData(), input.constData() + input.length(),
+        if (qt_urlRecode(output, input,
                          encoding, nullptr))
             return output;
         return input;
@@ -271,7 +271,7 @@ inline QString QUrlQueryPrivate::recodeToUser(const QString &input, QUrl::Compon
     ushort actions[] = { encode(pairDelimiter.unicode()), encode(valueDelimiter.unicode()),
                          encode('#'), 0 };
     QString output;
-    if (qt_urlRecode(output, input.constData(), input.constData() + input.length(), encoding, actions))
+    if (qt_urlRecode(output, input, encoding, actions))
         return output;
     return input;
 }
@@ -306,7 +306,7 @@ void QUrlQueryPrivate::setQuery(const QString &query)
         // delimiter points to the value delimiter or to the end of this pair
 
         QString key;
-        if (!qt_urlRecode(key, begin, delimiter,
+        if (!qt_urlRecode(key, QStringView{begin, delimiter},
                           QUrl::DecodeReserved,
                           prettyDecodedActions))
             key = QString(begin, delimiter - begin);
@@ -319,7 +319,7 @@ void QUrlQueryPrivate::setQuery(const QString &query)
             itemList.append(qMakePair(key, QString(0, Qt::Uninitialized)));
         } else {
             QString value;
-            if (!qt_urlRecode(value, delimiter + 1, pos,
+            if (!qt_urlRecode(value, QStringView{delimiter + 1, pos},
                               QUrl::DecodeReserved,
                               prettyDecodedActions))
                 value = QString(delimiter + 1, pos - delimiter - 1);
@@ -492,7 +492,7 @@ void QUrlQuery::setQuery(const QString &queryString)
 static void recodeAndAppend(QString &to, const QString &input,
                             QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications)
 {
-    if (!qt_urlRecode(to, input.constData(), input.constData() + input.length(), encoding, tableModifications))
+    if (!qt_urlRecode(to, input, encoding, tableModifications))
         to += input;
 }
 

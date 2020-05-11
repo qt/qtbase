@@ -671,13 +671,13 @@ static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
     meaning "%25" (all percents in the same content).
  */
 
-Q_AUTOTEST_EXPORT int
-qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
+Q_AUTOTEST_EXPORT qsizetype
+qt_urlRecode(QString &appendTo, QStringView in,
              QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications)
 {
     uchar actionTable[sizeof defaultActionTable];
     if (encoding == QUrl::FullyDecoded) {
-        return int(decode(appendTo, QStringView{begin, end}));
+        return int(decode(appendTo, in));
     }
 
     memcpy(actionTable, defaultActionTable, sizeof actionTable);
@@ -691,7 +691,7 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
             actionTable[uchar(*p) - ' '] = *p >> 8;
     }
 
-    return recode(appendTo, reinterpret_cast<const ushort *>(begin), reinterpret_cast<const ushort *>(end),
+    return recode(appendTo, reinterpret_cast<const ushort *>(in.begin()), reinterpret_cast<const ushort *>(in.end()),
                   encoding, actionTable, false);
 }
 

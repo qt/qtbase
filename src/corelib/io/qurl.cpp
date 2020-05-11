@@ -825,7 +825,7 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
     QString output;
     const QChar *begin = input.constData() + from;
     const QChar *end = input.constData() + to;
-    if (qt_urlRecode(output, begin, end, {}, actions))
+    if (qt_urlRecode(output, QStringView{begin, end}, {}, actions))
         return output;
 
     return input.mid(from, to - from);
@@ -833,7 +833,7 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
 
 // appendXXXX functions: copy from the internal form to the external, user form.
 // the internal value is stored in its PrettyDecoded form, so that case is easy.
-static inline void appendToUser(QString &appendTo, const QStringRef &value, QUrl::FormattingOptions options,
+static inline void appendToUser(QString &appendTo, QStringView value, QUrl::FormattingOptions options,
                                 const ushort *actions)
 {
     if (options == QUrl::PrettyDecoded) {
@@ -841,16 +841,9 @@ static inline void appendToUser(QString &appendTo, const QStringRef &value, QUrl
         return;
     }
 
-    if (!qt_urlRecode(appendTo, value.data(), value.end(), options, actions))
+    if (!qt_urlRecode(appendTo, value, options, actions))
         appendTo += value;
 }
-
-static inline void appendToUser(QString &appendTo, const QString &value, QUrl::FormattingOptions options,
-                                const ushort *actions)
-{
-    appendToUser(appendTo, QStringRef(&value), options, actions);
-}
-
 
 inline void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
@@ -900,13 +893,13 @@ inline void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptio
         }
     }
 
-    if (!qt_urlRecode(appendTo, userName.constData(), userName.constEnd(), options, userNameActions))
+    if (!qt_urlRecode(appendTo, userName, options, userNameActions))
         appendTo += userName;
     if (options & QUrl::RemovePassword || !hasPassword()) {
         return;
     } else {
         appendTo += QLatin1Char(':');
-        if (!qt_urlRecode(appendTo, password.constData(), password.constEnd(), options, passwordActions))
+        if (!qt_urlRecode(appendTo, password, options, passwordActions))
             appendTo += password;
     }
 }
@@ -1178,7 +1171,7 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
     if (host.at(0).unicode() == '[') {
         // IPv6 addresses might contain a zone-id which needs to be recoded
         if (options != 0)
-            if (qt_urlRecode(appendTo, host.constBegin(), host.constEnd(), options, nullptr))
+            if (qt_urlRecode(appendTo, host, options, nullptr))
                 return;
         appendTo += host;
     } else {
@@ -1220,7 +1213,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
         --end;
 
         QString decoded;
-        if (mode == QUrl::TolerantMode && qt_urlRecode(decoded, begin, end, QUrl::FullyDecoded, nullptr)) {
+        if (mode == QUrl::TolerantMode && qt_urlRecode(decoded, QStringView{begin, end}, QUrl::FullyDecoded, nullptr)) {
             begin = decoded.constBegin();
             end = decoded.constEnd();
         }
@@ -1251,7 +1244,7 @@ static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end
     if (mode == QUrl::TolerantMode) {
         // this struct is kept in automatic storage because it's only 4 bytes
         const ushort decodeColon[] = { decode(':'), 0 };
-        if (qt_urlRecode(decoded, begin, end, QUrl::ComponentFormattingOption::PrettyDecoded, decodeColon) == 0)
+        if (qt_urlRecode(decoded, QStringView{begin, end}, QUrl::ComponentFormattingOption::PrettyDecoded, decodeColon) == 0)
             decoded = QString(begin, end-begin);
     } else {
       decoded = QString(begin, end-begin);
@@ -1351,7 +1344,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
 
     // check for percent-encoding first
     QString s;
-    if (mode == QUrl::TolerantMode && qt_urlRecode(s, begin, end, { }, nullptr)) {
+    if (mode == QUrl::TolerantMode && qt_urlRecode(s, QStringView{begin, end}, { }, nullptr)) {
         // something was decoded
         // anything encoded left?
         int pos = s.indexOf(QChar(0x25)); // '%'

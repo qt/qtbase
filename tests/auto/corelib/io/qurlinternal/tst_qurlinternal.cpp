@@ -847,7 +847,7 @@ void tst_QUrlInternal::correctEncodedMistakes()
     QString dataTag = QTest::currentDataTag();
     QString output = dataTag;
 
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), { }))
+    if (!qt_urlRecode(output, input, { }))
         output += input;
     QCOMPARE(output, dataTag + expected);
 
@@ -855,7 +855,7 @@ void tst_QUrlInternal::correctEncodedMistakes()
     output = dataTag;
     QString expected2 = QUrl::fromPercentEncoding(expected.toLatin1());
 
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::FullyDecoded))
+    if (!qt_urlRecode(output, input, QUrl::FullyDecoded))
         output += input;
     QCOMPARE(output, dataTag + expected2);
 }
@@ -1019,7 +1019,7 @@ void tst_QUrlInternal::encodingRecode()
     QString output = QTest::currentDataTag();
     expected.prepend(output);
 
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), encodingMode))
+    if (!qt_urlRecode(output, input, encodingMode))
         output += input;
     QCOMPARE(output, expected);
 }
@@ -1047,19 +1047,19 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8()
     // prepend some data to be sure that it remains there
     QString output = QTest::currentDataTag();
 
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::PrettyDecoded))
+    if (!qt_urlRecode(output, input, QUrl::PrettyDecoded))
         output += input;
     QCOMPARE(output, QTest::currentDataTag() + input);
 
     // this is just control
     output = QTest::currentDataTag();
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::FullyEncoded))
+    if (!qt_urlRecode(output, input, QUrl::FullyEncoded))
         output += input;
     QCOMPARE(output, QTest::currentDataTag() + input);
 
     // verify for security reasons that all bad UTF-8 data got replaced by QChar::ReplacementCharacter
     output = QTest::currentDataTag();
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::FullyEncoded))
+    if (!qt_urlRecode(output, input, QUrl::FullyEncoded))
         output += input;
     for (int i = int(strlen(QTest::currentDataTag())); i < output.length(); ++i) {
         QVERIFY2(output.at(i).unicode() < 0x80 || output.at(i) == QChar::ReplacementCharacter,
