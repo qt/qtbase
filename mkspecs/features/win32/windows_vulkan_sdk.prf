@@ -5,7 +5,7 @@ isEmpty(QMAKE_INCDIR_VULKAN) {
 
     # Do not add default include paths as that can knock std headers
     # out of their stride due to their usage of #include_next.
-    contains(QMAKE_DEFAULT_INCDIRS, $$QMAKE_INCDIR_VULKAN): \
+    contains(QMAKE_DEFAULT_INCDIRS, $$re_escape($$QMAKE_INCDIR_VULKAN)): \
         QMAKE_INCDIR_VULKAN =
 
     # Do not export the include dir but resolve it on every qmake call.
