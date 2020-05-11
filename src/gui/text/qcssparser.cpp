@@ -127,6 +127,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "image", QtImage },
     { "image-position", QtImageAlignment },
     { "left", Left },
+    { "letter-spacing", LetterSpacing },
     { "line-height", LineHeight },
     { "list-style", ListStyle },
     { "list-style-type", ListStyleType },
@@ -171,7 +172,8 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "top", Top },
     { "vertical-align", VerticalAlignment },
     { "white-space", Whitespace },
-    { "width", Width }
+    { "width", Width },
+    { "word-spacing", WordSpacing }
 };
 
 static const QCssKnownValue values[NumKnownValues - 1] = {
@@ -386,6 +388,8 @@ static inline bool isInheritable(Property propertyId)
     case FontVariant:
     case TextTransform:
     case LineHeight:
+    case LetterSpacing:
+    case WordSpacing:
         return true;
     default:
         break;
@@ -1247,6 +1251,37 @@ static void setTextDecorationFromValues(const QVector<QCss::Value> &values, QFon
     }
 }
 
+static void setLetterSpacingFromValue(const QCss::Value &value, QFont *font)
+{
+    QString s = value.variant.toString();
+    qreal val;
+    bool ok = false;
+    if (s.endsWith(QLatin1String("em"), Qt::CaseInsensitive)) {
+        s.chop(2);
+        val = s.toDouble(&ok);
+        if (ok)
+            font->setLetterSpacing(QFont::PercentageSpacing, (val + 1.0) * 100);
+    } else if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
+        s.chop(2);
+        val = s.toDouble(&ok);
+        if (ok)
+            font->setLetterSpacing(QFont::AbsoluteSpacing, val);
+    }
+}
+
+static void setWordSpacingFromValue(const QCss::Value &value, QFont *font)
+{
+    QString s = value.variant.toString();
+    if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
+        s.chop(2);
+        qreal val;
+        bool ok = false;
+        val = s.toDouble(&ok);
+        if (ok)
+            font->setWordSpacing(val);
+    }
+}
+
 static void parseShorthandFontProperty(const QVector<QCss::Value> &values, QFont *font, int *fontSizeAdjustment)
 {
     font->setStyle(QFont::StyleNormal);
@@ -1319,6 +1354,8 @@ bool ValueExtractor::extractFont(QFont *font, int *fontSizeAdjustment)
             case Font: parseShorthandFontProperty(decl.d->values, font, fontSizeAdjustment); break;
             case FontVariant: setFontVariantFromValue(val, font); break;
             case TextTransform: setTextTransformFromValue(val, font); break;
+            case LetterSpacing: setLetterSpacingFromValue(val, font); break;
+            case WordSpacing: setWordSpacingFromValue(val, font); break;
             default: continue;
         }
         hit = true;
