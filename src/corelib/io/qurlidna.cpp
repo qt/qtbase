@@ -2605,13 +2605,16 @@ QStringList QUrl::idnWhitelist()
 {
     if (user_idn_whitelist)
         return *user_idn_whitelist;
-    QStringList list;
-    list.reserve(idn_whitelist_size);
-    unsigned int i = 0;
-    while (i < idn_whitelist_size) {
-        list << QLatin1String(idn_whitelist[i]);
-        ++i;
-    }
+    static const QStringList list = [] {
+        QStringList list;
+        list.reserve(idn_whitelist_size);
+        unsigned int i = 0;
+        while (i < idn_whitelist_size) {
+            list << QLatin1String(idn_whitelist[i]);
+            ++i;
+        }
+        return list;
+    }();
     return list;
 }
 
