@@ -2402,6 +2402,8 @@ void QSslSocketPrivate::addDefaultCaCertificate(const QSslCertificate &cert)
 {
     QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
+    if (globalData()->config->caCertificates.contains(cert))
+        return;
     globalData()->config.detach();
     globalData()->config->caCertificates += cert;
     globalData()->dtlsConfig.detach();
