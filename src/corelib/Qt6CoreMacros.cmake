@@ -969,8 +969,7 @@ END
             # We would like to do the following:
             #     target_sources(${target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
             # However, https://gitlab.kitware.com/cmake/cmake/-/issues/20682 doesn't let us.
-            add_library(${target}_${cfg}_rc INTERFACE)
-            target_sources(${target}_${cfg}_rc INTERFACE "${output}")
+            add_library(${target}_${cfg}_rc OBJECT "${output}")
             target_link_libraries(${target} PRIVATE "$<$<CONFIG:${cfg}>:${target}_${cfg}_rc>")
         endwhile()
     endif()
