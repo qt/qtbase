@@ -65,7 +65,7 @@ public:
     enum Shape { Line, Points, Polyline, Polygon, Rect, RoundedRect, Ellipse, Arc,
                  Chord, Pie, Path, Text, Pixmap };
 
-    RenderArea(QWidget *parent = 0);
+    explicit RenderArea(QWidget *parent = nullptr);
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
