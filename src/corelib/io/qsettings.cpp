@@ -748,7 +748,7 @@ bool QSettingsPrivate::iniUnescapedStringList(const QByteArray &str, int from, i
     bool isStringList = false;
     bool inQuotedString = false;
     bool currentValueIsQuoted = false;
-    int escapeVal = 0;
+    char16_t escapeVal = 0;
     int i = from;
     char ch;
 
@@ -854,7 +854,7 @@ StNormal:
 
 StHexEscape:
     if (i >= to) {
-        stringResult += QChar(escapeVal);
+        stringResult += escapeVal;
         goto end;
     }
 
@@ -867,13 +867,13 @@ StHexEscape:
         ++i;
         goto StHexEscape;
     } else {
-        stringResult += QChar(escapeVal);
+        stringResult += escapeVal;
         goto StNormal;
     }
 
 StOctEscape:
     if (i >= to) {
-        stringResult += QChar(escapeVal);
+        stringResult += escapeVal;
         goto end;
     }
 
@@ -884,7 +884,7 @@ StOctEscape:
         ++i;
         goto StOctEscape;
     } else {
-        stringResult += QChar(escapeVal);
+        stringResult += escapeVal;
         goto StNormal;
     }
 
