@@ -250,6 +250,20 @@ inline QDebug printSequentialContainer(QDebug debug, const char *which, const Se
     return debug.maybeSpace();
 }
 
+template <typename AssociativeContainer>
+inline QDebug printAssociativeContainer(QDebug debug, const char *which, const AssociativeContainer &c)
+{
+    const bool oldSetting = debug.autoInsertSpaces();
+    debug.nospace() << which << "(";
+    for (typename AssociativeContainer::const_iterator it = c.constBegin();
+         it != c.constEnd(); ++it) {
+        debug << '(' << it.key() << ", " << it.value() << ')';
+    }
+    debug << ')';
+    debug.setAutoInsertSpaces(oldSetting);
+    return debug.maybeSpace();
+}
+
 } // namespace QtPrivate
 
 template <typename T>
@@ -285,28 +299,25 @@ inline QDebug operator<<(QDebug debug, const std::multimap<Key, T, Compare, Allo
 template <class Key, class T>
 inline QDebug operator<<(QDebug debug, const QMap<Key, T> &map)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
-    debug.nospace() << "QMap(";
-    for (typename QMap<Key, T>::const_iterator it = map.constBegin();
-         it != map.constEnd(); ++it) {
-        debug << '(' << it.key() << ", " << it.value() << ')';
-    }
-    debug << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
+    return QtPrivate::printAssociativeContainer(debug, "QMap", map);
+}
+
+template <class Key, class T>
+inline QDebug operator<<(QDebug debug, const QMultiMap<Key, T> &map)
+{
+    return QtPrivate::printAssociativeContainer(debug, "QMultiMap", map);
 }
 
 template <class Key, class T>
 inline QDebug operator<<(QDebug debug, const QHash<Key, T> &hash)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
-    debug.nospace() << "QHash(";
-    for (typename QHash<Key, T>::const_iterator it = hash.constBegin();
-            it != hash.constEnd(); ++it)
-        debug << '(' << it.key() << ", " << it.value() << ')';
-    debug << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
+    return QtPrivate::printAssociativeContainer(debug, "QHash", hash);
+}
+
+template <class Key, class T>
+inline QDebug operator<<(QDebug debug, const QMultiHash<Key, T> &hash)
+{
+    return QtPrivate::printAssociativeContainer(debug, "QMultiHash", hash);
 }
 
 template <class T1, class T2>
