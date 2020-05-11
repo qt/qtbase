@@ -712,19 +712,35 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
 
 QString QIBusPlatformInputContextPrivate::getSocketPath()
 {
-    QByteArray display(qgetenv("DISPLAY"));
-    QByteArray host = "unix";
+    QByteArray display;
     QByteArray displayNumber = "0";
+    bool isWayland = false;
 
-    int pos = display.indexOf(':');
-    if (pos > 0)
-        host = display.left(pos);
-    ++pos;
-    int pos2 = display.indexOf('.', pos);
-    if (pos2 > 0)
-        displayNumber = display.mid(pos, pos2 - pos);
-    else
-        displayNumber = display.mid(pos);
+    if (qEnvironmentVariableIsSet("IBUS_ADDRESS_FILE")) {
+        QByteArray path = qgetenv("IBUS_ADDRESS_FILE");
+        return QString::fromLocal8Bit(path);
+    } else  if (qEnvironmentVariableIsSet("WAYLAND_DISPLAY")) {
+        display = qgetenv("WAYLAND_DISPLAY");
+        isWayland = true;
+    } else {
+        display = qgetenv("DISPLAY");
+    }
+    QByteArray host = "unix";
+
+    if (isWayland) {
+        displayNumber = display;
+    } else {
+        int pos = display.indexOf(':');
+        if (pos > 0)
+            host = display.left(pos);
+        ++pos;
+        int pos2 = display.indexOf('.', pos);
+        if (pos2 > 0)
+            displayNumber = display.mid(pos, pos2 - pos);
+         else
+            displayNumber = display.mid(pos);
+    }
+
     if (debug)
         qDebug() << "host=" << host << "displayNumber" << displayNumber;
 
