@@ -50,14 +50,7 @@ exists($$_PRO_FILE_PWD_/tests/tests.pro) {
     contains(SUBDIRS, sub_src): sub_tests.depends = sub_src   # The tests may have a run-time only dependency on other parts
     contains(SUBDIRS, sub_tools): sub_tests.depends += sub_tools
     sub_tests.CONFIG = no_default_install
-    !contains(QT_BUILD_PARTS, tests) {
-        sub_tests.CONFIG += no_default_target
-    } else: !uikit {
-        # Make sure these are there in case we need them
-        sub_tools.CONFIG -= no_default_target
-        sub_examples.CONFIG -= no_default_target
-        sub_demos.CONFIG -= no_default_target
-    }
+    !contains(QT_BUILD_PARTS, tests): sub_tests.CONFIG += no_default_target
     SUBDIRS += sub_tests
 }
 
