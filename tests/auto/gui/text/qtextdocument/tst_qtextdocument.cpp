@@ -105,6 +105,7 @@ private slots:
     void toHtmlBodyBgColorTransparent();
     void toHtmlRootFrameProperties();
     void toHtmlLineHeightProperties();
+    void toHtmlDefaultFontSpacingProperties();
     void capitalizationHtmlInExport();
     void wordspacingHtmlExport();
 
@@ -2017,6 +2018,35 @@ void tst_QTextDocument::toHtmlLineHeightProperties()
     expectedOutput.replace("DEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;");
     expectedOutput.append(htmlTail);
 
+    QCOMPARE(doc.toHtml(), expectedOutput);
+}
+
+void tst_QTextDocument::toHtmlDefaultFontSpacingProperties()
+{
+    CREATE_DOC_AND_CURSOR();
+
+    cursor.insertText("Blah");
+
+    QFont fnt = doc.defaultFont();
+    fnt.setLetterSpacing(QFont::AbsoluteSpacing, 13);
+    fnt.setWordSpacing(15);
+    doc.setDefaultFont(fnt);
+
+    QString expectedOutput = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
+                                     "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                     "<html><head><meta name=\"qrichtext\" content=\"1\" />"
+                                     "<style type=\"text/css\">\n"
+                                     "p, li { white-space: pre-wrap; }\n"
+                                     "</style></head>"
+                                     "<body style=\" font-family:'%1'; font-size:%2; "
+                                     "font-weight:%3; font-style:%4; letter-spacing:13px; "
+                                     "word-spacing:15px;\">\n"
+                                     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Blah</p>"
+                                     "</body></html>");
+    expectedOutput = expectedOutput.arg(defaultFont.family())
+                                   .arg(cssFontSizeString(defaultFont))
+                                   .arg(defaultFont.weight() * 8)
+                                   .arg((defaultFont.italic() ? "italic" : "normal"));
     QCOMPARE(doc.toHtml(), expectedOutput);
 }
 

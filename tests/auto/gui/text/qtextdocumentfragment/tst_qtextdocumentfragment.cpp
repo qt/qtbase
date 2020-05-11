@@ -266,6 +266,7 @@ private slots:
     void html_importImageWithoutAspectRatio();
     void html_fromFirefox();
     void html_emptyInlineInsideBlock();
+    void css_fontAndWordSpacing();
 
 private:
     inline void setHtml(const QString &html)
@@ -4249,6 +4250,48 @@ void tst_QTextDocumentFragment::html_emptyInlineInsideBlock()
 {
     doc->setHtml(QString::fromLatin1("<!--StartFragment--><blockquote><span/>Foobar</blockquote><!--EndFragment-->"));
     QVERIFY(doc->firstBlock().blockFormat().leftMargin() > 0);
+}
+
+void tst_QTextDocumentFragment::css_fontAndWordSpacing()
+{
+    {
+        const char html[] = "<body style=\"letter-spacing:13px; word-spacing:15px;\">Foo</span>";
+        doc->setHtml(html);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextCharacter);
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacing).toInt(), 13);
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacingType).toUInt(),
+                 (uint)(QFont::AbsoluteSpacing));
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontWordSpacing).toInt(), 15);
+    }
+    {
+        const char html[] = "<body style=\"letter-spacing:1em; word-spacing:0px;\">Foo</span>";
+        doc->setHtml(html);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextCharacter);
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacing).toInt(), 200);
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacingType).toUInt(),
+                 (uint)(QFont::PercentageSpacing));
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontWordSpacing).toInt(), 0);
+    }
+    {
+        const char html[] = "<body style=\"letter-spacing:0em;\">Foo</span>";
+        doc->setHtml(html);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextCharacter);
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacing).toInt(), 100);
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacingType).toUInt(),
+                 (uint)(QFont::PercentageSpacing));
+    }
+    {
+        const char html[] = "<body style=\"letter-spacing:-0.5em;\">Foo</span>";
+        doc->setHtml(html);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextCharacter);
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacing).toInt(), 50);
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacingType).toUInt(),
+                 (uint)(QFont::PercentageSpacing));
+    }
 }
 
 QTEST_MAIN(tst_QTextDocumentFragment)

@@ -199,6 +199,8 @@ enum Property {
     FontKerning,
     QtForegroundTextureCacheKey,
     QtIcon,
+    LetterSpacing,
+    WordSpacing,
     NumProperties
 };
 

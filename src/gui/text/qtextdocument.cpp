@@ -2357,6 +2357,24 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
         html += (defaultCharFormat.fontItalic() ? QLatin1String("italic") : QLatin1String("normal"));
         html += QLatin1Char(';');
 
+        const bool percentSpacing = (defaultCharFormat.fontLetterSpacingType() == QFont::PercentageSpacing);
+        if (defaultCharFormat.hasProperty(QTextFormat::FontLetterSpacing) &&
+            (!percentSpacing || defaultCharFormat.fontLetterSpacing() != 0.0)) {
+            html += QLatin1String(" letter-spacing:");
+            qreal value = defaultCharFormat.fontLetterSpacing();
+            if (percentSpacing) // Map to em (100% == 0em)
+                value = (value / 100) - 1;
+            html += QString::number(value);
+            html += percentSpacing ? QLatin1String("em;") : QLatin1String("px;");
+        }
+
+        if (defaultCharFormat.hasProperty(QTextFormat::FontWordSpacing) &&
+            defaultCharFormat.fontWordSpacing() != 0.0) {
+            html += QLatin1String(" word-spacing:");
+            html += QString::number(defaultCharFormat.fontWordSpacing());
+            html += QLatin1String("px;");
+        }
+
         // do not set text-decoration on the default font since those values are /always/ propagated
         // and cannot be turned off with CSS
 
