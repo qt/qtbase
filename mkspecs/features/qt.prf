@@ -293,7 +293,7 @@ contains(all_qt_module_deps, qml): \
 
     !isEmpty(SCANNERRESOURCES) {
         IMPORTPATHS += -qrcFiles
-        for (RESOURCE, SCANNERRESOURCES)
+        for (RESOURCE, SCANNERRESOURCES): \
             IMPORTPATHS += $$absolute_path($$system_quote($$RESOURCE), $$_PRO_FILE_PWD_)
     }
 
