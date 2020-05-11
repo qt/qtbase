@@ -143,6 +143,17 @@ if(QT_FEATURE_printdialog)
     )
 endif()
 
+qt_extend_target(PrintSupport CONDITION MACOS AND TARGET Qt::Widgets
+    SOURCES
+        platform/macos/qpaintengine_mac.mm platform/macos/qpaintengine_mac_p.h
+        platform/macos/qcocoaprintdevice_p.h platform/macos/qcocoaprintdevice.mm
+        platform/macos/qcocoaprintersupport_p.h platform/macos/qcocoaprintersupport.mm
+        platform/macos/qprintengine_mac.mm platform/macos/qprintengine_mac_p.h
+    PUBLIC_LIBRARIES
+        Qt::WidgetsPrivate
+        Cups::Cups
+)
+
 qt_extend_target(PrintSupport CONDITION MACOS AND QT_FEATURE_printdialog
     SOURCES
         dialogs/qpagesetupdialog_mac.mm

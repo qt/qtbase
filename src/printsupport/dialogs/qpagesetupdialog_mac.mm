@@ -47,6 +47,8 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <QtPrintSupport/qprintengine.h>
 
+#include <QtPrintSupport/private/qprintengine_mac_p.h>
+
 QT_USE_NAMESPACE
 
 @class QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate);
@@ -114,13 +116,7 @@ void QMacPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality
 {
     Q_Q(QPageSetupDialog);
 
-    // get the NSPrintInfo from the print engine in the platform plugin
-    void *voidp = 0;
-    (void) QMetaObject::invokeMethod(qApp->platformNativeInterface(),
-                                     "NSPrintInfoForPrintEngine",
-                                     Q_RETURN_ARG(void *, voidp),
-                                     Q_ARG(QPrintEngine *, printer->printEngine()));
-    printInfo = static_cast<NSPrintInfo *>(voidp);
+    printInfo = static_cast<QMacPrintEngine *>(printer->printEngine())->printInfo();
     [printInfo retain];
 
     pageLayout = [NSPageLayout pageLayout];

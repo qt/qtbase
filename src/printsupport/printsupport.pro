@@ -11,6 +11,8 @@ include(kernel/kernel.pri)
 include(widgets/widgets.pri)
 include(dialogs/dialogs.pri)
 
+macos: include(platform/macos/macos.pri)
+
 MODULE_PLUGIN_TYPES = \
     printsupport
 load(qt_module)

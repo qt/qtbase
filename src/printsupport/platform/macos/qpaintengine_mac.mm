@@ -41,18 +41,14 @@
 #include <CoreGraphics/CoreGraphics.h>
 
 #include "qpaintengine_mac_p.h"
-#if defined(QT_PRINTSUPPORT_LIB)
 #include "qprintengine_mac_p.h"
-#endif
 
 #include <qbitmap.h>
 #include <qpaintdevice.h>
 #include <qpainterpath.h>
 #include <qpixmapcache.h>
 #include <private/qpaintengine_raster_p.h>
-#if defined(QT_PRINTSUPPORT_LIB)
 #include <qprinter.h>
-#endif
 #include <qstack.h>
 #include <qwidget.h>
 #include <qvarlengtharray.h>
@@ -70,8 +66,6 @@
 #include <private/qpainterpath_p.h>
 #include <private/qtextengine_p.h>
 #include <private/qcoregraphics_p.h>
-
-#include "qcocoahelpers.h"
 
 #include <string.h>
 

@@ -49,6 +49,8 @@
 #include <QtPrintSupport/qprintengine.h>
 #include <qpa/qplatformprintdevice.h>
 
+#include <QtPrintSupport/private/qprintengine_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
@@ -216,13 +218,7 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
     Q_Q(QPrintDialog);
 
     if (printer->outputFormat() == QPrinter::NativeFormat) {
-        // get the NSPrintInfo from the print engine in the platform plugin
-        void *voidp = 0;
-        (void) QMetaObject::invokeMethod(qApp->platformNativeInterface(),
-                                         "NSPrintInfoForPrintEngine",
-                                         Q_RETURN_ARG(void *, voidp),
-                                         Q_ARG(QPrintEngine *, printer->printEngine()));
-        printInfo = static_cast<NSPrintInfo *>(voidp);
+        printInfo = static_cast<QMacPrintEngine *>(printer->printEngine())->printInfo();
         [printInfo retain];
     } else {
         printInfo = [NSPrintInfo.sharedPrintInfo retain];

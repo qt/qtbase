@@ -45,13 +45,10 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qpixmap.h>
 Q_MOC_INCLUDE(<QWindow>)
-Q_MOC_INCLUDE(<qpa/qplatformprintersupport.h>)
-Q_MOC_INCLUDE(<QPrintEngine>)
 
 QT_BEGIN_NAMESPACE
 
 class QWidget;
-class QPlatformPrinterSupport;
 class QPrintEngine;
 class QPlatformMenu;
 class QPlatformMenuBar;
@@ -80,23 +77,6 @@ public Q_SLOTS:
     void onAppFocusWindowChanged(QWindow *window);
 
 private:
-    /*
-        "Virtual" function to create the platform printer support
-        implementation.
-
-        We use an invokable function instead of a virtual one, we do not want
-        this in the QPlatform* API yet.
-
-        This was added here only because QPlatformNativeInterface is a QObject
-        and allow us to use QMetaObject::indexOfMethod() from the printsupport
-        plugin.
-    */
-    Q_INVOKABLE QPlatformPrinterSupport *createPlatformPrinterSupport();
-    /*
-        Function to return the NSPrintInfo * from QMacPaintEnginePrivate.
-        Needed by the native print dialog in the Qt Print Support module.
-    */
-    Q_INVOKABLE void *NSPrintInfoForPrintEngine(QPrintEngine *printEngine);
     /*
         Function to return the default background pixmap.
         Needed by QWizard in the Qt widget module.

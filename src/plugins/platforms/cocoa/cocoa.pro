@@ -89,7 +89,7 @@ qtConfig(sessionmanager) {
 
 RESOURCES += qcocoaresources.qrc
 
-LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework CoreVideo -framework Metal -framework IOSurface -lcups
+LIBS += -framework AppKit -framework CoreServices -framework Carbon -framework IOKit -framework QuartzCore -framework CoreVideo -framework Metal -framework IOSurface
 
 DEFINES += QT_NO_FOREACH
 
@@ -99,21 +99,6 @@ CONFIG += no_app_extension_api_only
 
 qtHaveModule(widgets) {
     QT_FOR_CONFIG += widgets
-
-    SOURCES += qpaintengine_mac.mm
-    HEADERS += qpaintengine_mac_p.h
-
-    qtHaveModule(printsupport) {
-        QT += printsupport-private
-        SOURCES += \
-            qprintengine_mac.mm \
-            qcocoaprintersupport.mm \
-            qcocoaprintdevice.mm
-        HEADERS += \
-            qcocoaprintersupport.h \
-            qcocoaprintdevice.h \
-            qprintengine_mac_p.h
-    }
 
     qtConfig(colordialog) {
         SOURCES += qcocoacolordialoghelper.mm

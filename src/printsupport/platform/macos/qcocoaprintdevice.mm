@@ -39,7 +39,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "qcocoaprintdevice.h"
+#include "qcocoaprintdevice_p.h"
 
 #if QT_CONFIG(mimetype)
 #include <QtCore/qmimedatabase.h>

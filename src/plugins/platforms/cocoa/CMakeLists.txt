@@ -1,7 +1,6 @@
 # Generated from cocoa.pro.
 
 # special case:
-qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
 
 #####################################################################
 ## QCocoaIntegrationPlugin Plugin:
@@ -55,7 +54,6 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         ${FWIOSurface}
         ${FWMetal}
         ${FWQuartzCore}
-        Cups::Cups
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
@@ -110,24 +108,8 @@ qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
         qcocoasessionmanager.cpp qcocoasessionmanager.h
 )
 
-qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::Widgets
-    SOURCES
-        qpaintengine_mac.mm qpaintengine_mac_p.h
-    PUBLIC_LIBRARIES
-        Qt::WidgetsPrivate
-)
-
 #### Keys ignored in scope 7:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
-
-qt_extend_target(QCocoaIntegrationPlugin CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
-    SOURCES
-        qcocoaprintdevice.h qcocoaprintdevice.mm
-        qcocoaprintersupport.h qcocoaprintersupport.mm
-        qprintengine_mac.mm qprintengine_mac_p.h
-    PUBLIC_LIBRARIES
-        Qt::PrintSupportPrivate
-)
 
 qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets
     SOURCES

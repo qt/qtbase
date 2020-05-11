@@ -41,7 +41,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 #include "qprintengine_mac_p.h"
-#include "qcocoaprintersupport.h"
+#include "qcocoaprintersupport_p.h"
 #include <quuid.h>
 #include <QtGui/qpagelayout.h>
 #include <QtCore/qcoreapplication.h>
@@ -790,6 +790,14 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     // No default so that compiler will complain if new keys added and not handled in this engine
     }
     return ret;
+}
+
+NSPrintInfo *QMacPrintEngine::printInfo()
+{
+    Q_D(QMacPrintEngine);
+    if (d->state == QPrinter::Idle && !d->isPrintSessionInitialized())
+        d->initialize();
+    return d->printInfo;
 }
 
 QT_END_NAMESPACE

@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
+
 #include <QtGui/qpaintengine.h>
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtGui/private/qpolygonclipper_p.h>

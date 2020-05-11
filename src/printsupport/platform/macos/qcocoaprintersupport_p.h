@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 John Layt <jlayt@kde.org>
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtPrintSupport module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOAPRINTDEVICE_H
-#define QCOCOAPRINTDEVICE_H
+#ifndef QCOCOAPRINTERSUPPORT_H
+#define QCOCOAPRINTERSUPPORT_H
 
 //
 //  W A R N I N G
@@ -51,72 +51,28 @@
 // We mean it.
 //
 
-#include <qpa/qplatformprintdevice.h>
-
+#include <qpa/qplatformprintersupport.h>
 #ifndef QT_NO_PRINTER
 
-#include <cups/ppd.h>
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaPrintDevice : public QPlatformPrintDevice
+class Q_PRINTSUPPORT_EXPORT QCocoaPrinterSupport : public QPlatformPrinterSupport
 {
 public:
-    QCocoaPrintDevice();
-    explicit QCocoaPrintDevice(const QString &id);
-    virtual ~QCocoaPrintDevice();
+    QCocoaPrinterSupport();
+    ~QCocoaPrinterSupport();
 
-    bool isValid() const override;
-    bool isDefault() const override;
+    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) override;
+    QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode) override;
 
-    QPrint::DeviceState state() const override;
-
-    QPageSize defaultPageSize() const override;
-
-    QMarginsF printableMargins(const QPageSize &pageSize, QPageLayout::Orientation orientation,
-                               int resolution) const override;
-
-    int defaultResolution() const override;
-
-    QPrint::InputSlot defaultInputSlot() const override;
-
-    QPrint::OutputBin defaultOutputBin() const override;
-
-    QPrint::DuplexMode defaultDuplexMode() const override;
-
-    QPrint::ColorMode defaultColorMode() const override;
-
-    PMPrinter macPrinter() const;
-    PMPaper macPaper(const QPageSize &pageSize) const;
-
-protected:
-    void loadPageSizes() const override;
-    void loadResolutions() const override;
-    void loadInputSlots() const override;
-    void loadOutputBins() const override;
-    void loadDuplexModes() const override;
-    void loadColorModes() const override;
-#if QT_CONFIG(mimetype)
-    void loadMimeTypes() const override;
-#endif
-
-private:
-    QPageSize createPageSize(const PMPaper &paper) const;
-    bool openPpdFile();
-
-    // Mac Core Printing
-    PMPrinter m_printer;
-    PMPrintSession m_session;
-    mutable QHash<QString, PMPaper> m_macPapers;
-
-    // PPD File
-    ppd_file_t *m_ppd;
-
-    QMarginsF m_customMargins;
-    mutable QHash<QString, QMarginsF> m_printableMargins;
+    QPrintDevice createPrintDevice(const QString &id) override;
+    QStringList availablePrintDeviceIds() const override;
+    QString defaultPrintDeviceId() const override;
 };
 
 QT_END_NAMESPACE
 
 #endif // QT_NO_PRINTER
-#endif // QCOCOAPRINTDEVICE_H
+#endif // QCOCOAPRINTERSUPPORT_H

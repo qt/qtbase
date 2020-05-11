@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 #ifndef QT_NO_PRINTER
 
@@ -60,7 +60,7 @@
 #include <QtGui/private/qpainter_p.h>
 #include <QtGui/qpagelayout.h>
 
-#include "qcocoaprintdevice.h"
+#include "qcocoaprintdevice_p.h"
 
 #include "qpaintengine_mac_p.h"
 
@@ -92,6 +92,8 @@ public:
     bool newPage();
     bool abort();
     int metric(QPaintDevice::PaintDeviceMetric) const;
+
+    NSPrintInfo *printInfo();
 
     //forwarded functions
 

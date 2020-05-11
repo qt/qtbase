@@ -42,6 +42,8 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformprintplugin.h>
 
+#include <QtPrintSupport/private/qcocoaprintersupport_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QCocoaPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
@@ -57,18 +59,8 @@ QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
 {
     if (key.compare(key, QLatin1String("cocoaprintersupport"), Qt::CaseInsensitive) != 0)
         return 0;
-    QGuiApplication *app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
-    if (!app)
-        return 0;
-    QPlatformNativeInterface *platformNativeInterface = app->platformNativeInterface();
-    int at = platformNativeInterface->metaObject()->indexOfMethod("createPlatformPrinterSupport()");
-    if (at == -1)
-        return 0;
-    QMetaMethod createPlatformPrinterSupport = platformNativeInterface->metaObject()->method(at);
-    QPlatformPrinterSupport *platformPrinterSupport = 0;
-    if (!createPlatformPrinterSupport.invoke(platformNativeInterface, Q_RETURN_ARG(QPlatformPrinterSupport *, platformPrinterSupport)))
-        return 0;
-    return platformPrinterSupport;
+
+    return new QCocoaPrinterSupport();
 }
 
 QT_END_NAMESPACE
