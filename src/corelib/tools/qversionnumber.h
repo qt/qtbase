@@ -157,7 +157,7 @@ class QVersionNumber
         { return isUsingPointer() ? pointer_segments->size() : (inline_segments[InlineSegmentMarker] >> 1); }
 
         void setInlineSize(int len)
-        { inline_segments[InlineSegmentMarker] = 1 + 2 * len; }
+        { inline_segments[InlineSegmentMarker] = qint8(1 + 2 * len); }
 
         void resize(int len)
         {

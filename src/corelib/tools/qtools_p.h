@@ -77,7 +77,7 @@ Q_DECL_CONSTEXPR inline int fromHex(uint c) noexcept
 
 Q_DECL_CONSTEXPR inline char toOct(uint value) noexcept
 {
-    return '0' + char(value & 0x7);
+    return char('0' + (value & 0x7));
 }
 
 Q_DECL_CONSTEXPR inline int fromOct(uint c) noexcept

@@ -90,7 +90,7 @@ public:
 
     inline int index() const
     {
-        return pos - i;
+        return int(pos - i);
     }
 
     inline void setPosition(QString::const_iterator position)

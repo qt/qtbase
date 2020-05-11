@@ -72,7 +72,7 @@ class qfloat16
         // To let our private constructor work, without other code seeing
         // ambiguity when constructing from int, double &c.
         quint16 b16;
-        constexpr inline explicit Wrap(int value) : b16(value) {}
+        constexpr inline explicit Wrap(int value) : b16(quint16(value)) {}
     };
 public:
     constexpr inline qfloat16() noexcept : b16(0) {}
@@ -172,8 +172,8 @@ inline qfloat16::qfloat16(float f) noexcept
 #else
     quint32 u;
     memcpy(&u, &f, sizeof(quint32));
-    b16 = basetable[(u >> 23) & 0x1ff]
-          + ((u & 0x007fffff) >> shifttable[(u >> 23) & 0x1ff]);
+    b16 = quint16(basetable[(u >> 23) & 0x1ff]
+                  + ((u & 0x007fffff) >> shifttable[(u >> 23) & 0x1ff]));
 #endif
 }
 QT_WARNING_POP
@@ -268,8 +268,8 @@ QF16_MAKE_BOOL_OP(float)
 #undef QF16_MAKE_BOOL_OP_FP
 
 #define QF16_MAKE_BOOL_OP_INT(OP) \
-    inline bool operator OP(qfloat16 a, int b) noexcept { return static_cast<float>(a) OP b; } \
-    inline bool operator OP(int a, qfloat16 b) noexcept { return a OP static_cast<float>(b); }
+    inline bool operator OP(qfloat16 a, int b) noexcept { return static_cast<float>(a) OP static_cast<float>(b); } \
+    inline bool operator OP(int a, qfloat16 b) noexcept { return static_cast<float>(a) OP static_cast<float>(b); }
 QF16_MAKE_BOOL_OP_INT(>)
 QF16_MAKE_BOOL_OP_INT(<)
 QF16_MAKE_BOOL_OP_INT(>=)
