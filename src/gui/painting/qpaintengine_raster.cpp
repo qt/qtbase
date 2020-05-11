@@ -3156,7 +3156,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 #ifdef QT_DEBUG_DRAW
     Q_D(QRasterPaintEngine);
     fprintf(stderr," - QRasterPaintEngine::drawTextItem(), (%.2f,%.2f), string=%s ct=%d\n",
-           p.x(), p.y(), QString::fromRawData(ti.chars, ti.num_chars).toLatin1().data(),
+           p.x(), p.y(), QStringView(ti.chars, ti.num_chars).toLatin1().data(),
            d->glyphCacheFormat);
 #endif
 

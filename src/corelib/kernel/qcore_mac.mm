@@ -193,7 +193,7 @@ QDebug operator<<(QDebug dbg, CFStringRef stringRef)
         return dbg << "CFStringRef(0x0)";
 
     if (const UniChar *chars = CFStringGetCharactersPtr(stringRef))
-        dbg << QString::fromRawData(reinterpret_cast<const QChar *>(chars), CFStringGetLength(stringRef));
+        dbg << QStringView(reinterpret_cast<const QChar *>(chars), CFStringGetLength(stringRef));
     else
         dbg << QString::fromCFString(stringRef);
 

@@ -1219,7 +1219,7 @@ QString QTextBlock::text() const
     QTextDocumentPrivate::FragmentIterator end = p->find(pos + length() - 1); // -1 to omit the block separator char
     for (; it != end; ++it) {
         const QTextFragmentData * const frag = it.value();
-        text += QString::fromRawData(buffer.constData() + frag->stringPosition, frag->size_array[0]);
+        text += QStringView(buffer.constData() + frag->stringPosition, frag->size_array[0]);
     }
 
     return text;
