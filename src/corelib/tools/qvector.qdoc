@@ -269,11 +269,6 @@
     The value type of \c InputIterator must be convertible to \c T.
 */
 
-/*!
-    \fn template <typename T> QVector<T>::QVector(QArrayDataPointerRef<T> ref)
-    \internal
-*/
-
 /*! \fn template <typename T> QVector<T>::~QVector()
 
     Destroys the vector.

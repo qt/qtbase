@@ -80,7 +80,6 @@ public:
     QVector<T> &operator=(std::initializer_list<T> args);
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     inline QVector(InputIterator first, InputIterator last);
-    explicit QVector(QArrayDataPointerRef<T> ref) noexcept : d(ref.ptr) {}
 
     bool operator==(const QVector<T> &v) const;
     inline bool operator!=(const QVector<T> &v) const { return !(*this == v); }
