@@ -127,10 +127,6 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qMenuToNSMenu);
     if (resource.toLower() == "qmenubartonsmenu")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qMenuBarToNSMenu);
-    if (resource.toLower() == "qimagetocgimage")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qImageToCGImage);
-    if (resource.toLower() == "cgimagetoqimage")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::cgImageToQImage);
     if (resource.toLower() == "registertouchwindow")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerTouchWindow);
     if (resource.toLower() == "setembeddedinforeignview")
@@ -277,16 +273,6 @@ void *QCocoaNativeInterface::qMenuBarToNSMenu(QPlatformMenuBar *platformMenuBar)
     QCocoaMenuBar *cocoaPlatformMenuBar = static_cast<QCocoaMenuBar *>(platformMenuBar);
     NSMenu *menu = cocoaPlatformMenuBar->nsMenu();
     return reinterpret_cast<void *>(menu);
-}
-
-CGImageRef QCocoaNativeInterface::qImageToCGImage(const QImage &image)
-{
-    return qt_mac_toCGImage(image);
-}
-
-QImage QCocoaNativeInterface::cgImageToQImage(CGImageRef image)
-{
-    return qt_mac_toQImage(image);
 }
 
 void QCocoaNativeInterface::setEmbeddedInForeignView(QPlatformWindow *window, bool embedded)

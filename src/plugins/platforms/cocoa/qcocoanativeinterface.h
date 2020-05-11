@@ -118,10 +118,6 @@ private:
     // Function to return NSMenu * from QPlatformMenuBar
     static void *qMenuBarToNSMenu(QPlatformMenuBar *platformMenuBar);
 
-    // QImage <-> CGImage conversion functions
-    static CGImageRef qImageToCGImage(const QImage &image);
-    static QImage cgImageToQImage(CGImageRef image);
-
     // Set a QWindow as a "guest" (subwindow) of a non-QWindow
     static void setEmbeddedInForeignView(QPlatformWindow *window, bool embedded);
 
