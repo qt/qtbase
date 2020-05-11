@@ -111,8 +111,13 @@ SOURCES += \
         painting/qplatformbackingstore.cpp \
         painting/qpathsimplifier.cpp
 
+webgradients.files = painting/webgradients.binaryjson
+webgradients.prefix = qgradient
+webgradients.base = painting
+
 RESOURCES += \
         painting/qpdf.qrc \
+        webgradients
 
 darwin {
     HEADERS += painting/qcoregraphics_p.h

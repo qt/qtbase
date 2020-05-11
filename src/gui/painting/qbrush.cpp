@@ -1,7 +1,6 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1358,8 +1357,6 @@ QGradient::QGradient()
     based on the gradients from https://webgradients.com/.
 */
 
-#include "webgradients.cpp"
-
 /*!
     \fn QGradient::QGradient(QGradient::Preset preset)
     \since 5.12
@@ -1371,12 +1368,47 @@ QGradient::QGradient()
     to be applied to arbitrary object sizes.
 */
 QGradient::QGradient(Preset preset)
-    : m_type(LinearGradient)
-    , m_spread(PadSpread)
-    , m_stops(qt_preset_gradient_stops(preset))
-    , m_data(qt_preset_gradient_data[preset - 1])
-    , dummy(qt_preset_gradient_dummy())
+    : QGradient()
 {
+    static QHash<int, QGradient> cachedPresets;
+    static QMutex cacheMutex;
+    QMutexLocker locker(&cacheMutex);
+    if (cachedPresets.contains(preset)) {
+        const QGradient &cachedPreset = cachedPresets.value(preset);
+        m_type = cachedPreset.m_type;
+        m_data = cachedPreset.m_data;
+        m_stops = cachedPreset.m_stops;
+        m_spread = cachedPreset.m_spread;
+        dummy = cachedPreset.dummy;
+    } else {
+        static QJsonDocument jsonPresets = []() {
+            QFile webGradients(QLatin1String(":/qgradient/webgradients.binaryjson"));
+            webGradients.open(QFile::ReadOnly);
+            return QJsonDocument::fromBinaryData(webGradients.readAll());
+        }();
+
+        const QJsonValue presetData = jsonPresets[preset - 1];
+        if (!presetData.isObject())
+            return;
+
+        m_type = LinearGradient;
+        setCoordinateMode(ObjectMode);
+        setSpread(PadSpread);
+
+        const QJsonValue start = presetData[QLatin1String("start")];
+        const QJsonValue end = presetData[QLatin1String("end")];
+        m_data.linear.x1 = start[QLatin1String("x")].toDouble();
+        m_data.linear.y1 = start[QLatin1String("y")].toDouble();
+        m_data.linear.x2 = end[QLatin1String("x")].toDouble();
+        m_data.linear.y2 = end[QLatin1String("y")].toDouble();
+
+        for (const QJsonValue &stop : presetData[QLatin1String("stops")].toArray()) {
+            setColorAt(stop[QLatin1String("position")].toDouble(),
+                QColor(QRgb(stop[QLatin1String("color")].toInt())));
+        }
+
+        cachedPresets.insert(preset, *this);
+    }
 }
 
 /*!
@@ -1385,6 +1417,11 @@ QGradient::QGradient(Preset preset)
 QGradient::~QGradient()
 {
 }
+
+QT_END_NAMESPACE
+static void initGradientPresets() { Q_INIT_RESOURCE(qmake_webgradients); }
+Q_CONSTRUCTOR_FUNCTION(initGradientPresets);
+QT_BEGIN_NAMESPACE
 
 /*!
     \enum QGradient::Type

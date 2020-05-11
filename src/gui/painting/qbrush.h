@@ -405,18 +405,6 @@ public:
     inline bool operator!=(const QGradient &other) const
     { return !operator==(other); }
 
-    union QGradientData {
-        struct {
-            qreal x1, y1, x2, y2;
-        } linear;
-        struct {
-            qreal cx, cy, fx, fy, cradius;
-        } radial;
-        struct {
-            qreal cx, cy, angle;
-        } conical;
-    };
-
 private:
     friend class QLinearGradient;
     friend class QRadialGradient;
@@ -426,7 +414,17 @@ private:
     Type m_type;
     Spread m_spread;
     QGradientStops m_stops;
-    QGradientData m_data;
+    union {
+        struct {
+            qreal x1, y1, x2, y2;
+        } linear;
+        struct {
+            qreal cx, cy, fx, fy, cradius;
+        } radial;
+        struct {
+            qreal cx, cy, angle;
+        } conical;
+    } m_data;
     void *dummy; // ### Qt 6: replace with actual content (CoordinateMode, InterpolationMode, ...)
 };
 
