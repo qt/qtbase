@@ -566,7 +566,7 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
     int i = from;
     result.reserve(result.length() + (to - from));
     while (i < to) {
-        int ch = (uchar)key.at(i);
+        char16_t ch = (uchar)key.at(i);
 
         if (ch == '\\') {
             result += QLatin1Char('/');
@@ -577,7 +577,7 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
         if (ch != '%' || i == to - 1) {
             if (uint(ch - 'A') <= 'Z' - 'A') // only for ASCII
                 lowercaseOnly = false;
-            result += QLatin1Char(ch);
+            result += ch;
             ++i;
             continue;
         }
@@ -599,7 +599,7 @@ bool QSettingsPrivate::iniUnescapedKey(const QByteArray &key, int from, int to, 
         }
 
         bool ok;
-        ch = key.mid(firstDigitPos, numDigits).toInt(&ok, 16);
+        ch = key.mid(firstDigitPos, numDigits).toUShort(&ok, 16);
         if (!ok) {
             result += QLatin1Char('%');
             // ### missing U
