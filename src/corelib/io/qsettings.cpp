@@ -746,7 +746,7 @@ bool QSettingsPrivate::iniUnescapedStringList(const QByteArray &str, int from, i
     bool isStringList = false;
     bool inQuotedString = false;
     bool currentValueIsQuoted = false;
-    int escapeVal = 0;
+    char16_t escapeVal = 0;
     int i = from;
     char ch;
 
