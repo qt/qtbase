@@ -49,26 +49,22 @@ QT_REQUIRE_CONFIG(tablewidget);
 
 QT_BEGIN_NAMESPACE
 
-// ### Qt6 unexport the class, remove the user-defined special 3 and make it a literal type.
-class Q_WIDGETS_EXPORT QTableWidgetSelectionRange
+class QTableWidgetSelectionRange
 {
 public:
-    QTableWidgetSelectionRange();
-    QTableWidgetSelectionRange(int top, int left, int bottom, int right);
-    ~QTableWidgetSelectionRange();
+    QTableWidgetSelectionRange() = default;
+    QTableWidgetSelectionRange(int top, int left, int bottom, int right)
+      : m_top(top), m_left(left), m_bottom(bottom), m_right(right)
+    {}
 
-    QTableWidgetSelectionRange(const QTableWidgetSelectionRange &other);
-    QTableWidgetSelectionRange &operator=(const QTableWidgetSelectionRange &other);
-
-    inline int topRow() const { return top; }
-    inline int bottomRow() const { return bottom; }
-    inline int leftColumn() const { return left; }
-    inline int rightColumn() const { return right; }
-    inline int rowCount() const { return bottom - top + 1; }
-    inline int columnCount() const { return right - left + 1; }
-
+    inline int topRow() const { return m_top; }
+    inline int bottomRow() const { return m_bottom; }
+    inline int leftColumn() const { return m_left; }
+    inline int rightColumn() const { return m_right; }
+    inline int rowCount() const { return m_bottom - m_top + 1; }
+    inline int columnCount() const { return m_right - m_left + 1; }
 private:
-    int top, left, bottom, right;
+    int m_top = -1, m_left = -1, m_bottom = -2, m_right = -2;
 };
 
 class QTableWidget;
