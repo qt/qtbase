@@ -812,6 +812,10 @@ endif()
 # QT_TARGET_VERSION: RC File and Product Version
 # QT_TARGET_COPYRIGHT: RC LegalCopyright
 # QT_TARGET_PRODUCT_NAME: RC ProductName
+# QT_TARGET_COMMENTS: RC Comments
+# QT_TARGET_ORIGINAL_FILENAME: RC Original FileName
+# QT_TARGET_TRADEMARKS: RC LegalTrademarks
+# QT_TARGET_INTERNALNAME: RC InternalName
 # QT_TARGET_RC_ICONS: List of paths to icon files
 #
 # If you do not wish to auto-generate rc files, it's possible to provide your
@@ -871,6 +875,18 @@ function(qt6_generate_win32_rc_file target)
             set(product_name "${target}")
         endif()
 
+        set(comments "")
+        get_target_property(target_comments ${target} QT_TARGET_COMMENTS)
+        if (target_comments)
+            set(comments "${target_comments}")
+        endif()
+
+        set(legal_trademarks "")
+        get_target_property(target_trademarks ${target} QT_TARGET_TRADEMARKS)
+        if (target_trademarks)
+            set(legal_trademarks "${target_trademarks}")
+        endif()
+
         set(product_version "")
         if (target_version)
             if(target_version MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+")
@@ -890,8 +906,19 @@ function(qt6_generate_win32_rc_file target)
         endif()
 
         set(file_version "${product_version}")
-        set(original_file_name "$<TARGET_FILE_NAME:${target}>")
         string(REPLACE "." "," version_comma ${product_version})
+
+        set(original_file_name "$<TARGET_FILE_NAME:${target}>")
+        get_target_property(target_original_file_name ${target} QT_TARGET_ORIGINAL_FILENAME)
+        if (target_original_file_name)
+            set(original_file_name "${target_original_file_name}")
+        endif()
+
+        set(internal_name "")
+        get_target_property(target_internal_name ${target} QT_TARGET_INTERNALNAME)
+        if (target_internal_name)
+            set(internal_name "${target_internal_name}")
+        endif()
 
         set(icons "")
         get_target_property(target_icons ${target} QT_TARGET_RC_ICONS)
@@ -929,6 +956,9 @@ BEGIN
             VALUE \"OriginalFilename\", \"${original_file_name}\"
             VALUE \"ProductName\", \"${product_name}\"
             VALUE \"ProductVersion\", \"${product_version}\"
+            VALUE \"Comments\", \"${comments}\"
+            VALUE \"LegalTrademarks\", \"${legal_trademarks}\"
+            VALUE \"InternalName\", \"${internal_name}\"
         END
     END
     BLOCK \"VarFileInfo\"
