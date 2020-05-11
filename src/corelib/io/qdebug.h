@@ -234,7 +234,7 @@ namespace QtPrivate {
 template <typename SequentialContainer>
 inline QDebug printSequentialContainer(QDebug debug, const char *which, const SequentialContainer &c)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
+    const QDebugStateSaver saver(debug);
     debug.nospace() << which << '(';
     typename SequentialContainer::const_iterator it = c.begin(), end = c.end();
     if (it != end) {
@@ -246,22 +246,20 @@ inline QDebug printSequentialContainer(QDebug debug, const char *which, const Se
         ++it;
     }
     debug << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
+    return debug;
 }
 
 template <typename AssociativeContainer>
 inline QDebug printAssociativeContainer(QDebug debug, const char *which, const AssociativeContainer &c)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
+    const QDebugStateSaver saver(debug);
     debug.nospace() << which << "(";
     for (typename AssociativeContainer::const_iterator it = c.constBegin();
          it != c.constEnd(); ++it) {
         debug << '(' << it.key() << ", " << it.value() << ')';
     }
     debug << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
+    return debug;
 }
 
 } // namespace QtPrivate
@@ -332,10 +330,9 @@ inline QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
 template <class T1, class T2>
 inline QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
+    const QDebugStateSaver saver(debug);
     debug.nospace() << "std::pair(" << pair.first << ',' << pair.second << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
+    return debug;
 }
 
 template <typename T>
@@ -347,7 +344,7 @@ inline QDebug operator<<(QDebug debug, const QSet<T> &set)
 template <class T>
 inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
+    const QDebugStateSaver saver(debug);
     debug.nospace() << "QContiguousCache(";
     for (int i = cache.firstIndex(); i <= cache.lastIndex(); ++i) {
         debug << cache[i];
@@ -355,8 +352,7 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
             debug << ", ";
     }
     debug << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
+    return debug;
 }
 
 template <class T>
