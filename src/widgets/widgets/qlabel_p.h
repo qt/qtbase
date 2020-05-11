@@ -92,9 +92,11 @@ public:
     void _q_buddyDeleted();
 #endif
     inline bool needTextControl() const {
+        Q_Q(const QLabel);
         return isTextLabel
                && (effectiveTextFormat != Qt::PlainText
-                   || (textInteractionFlags & (Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard)));
+                   || (textInteractionFlags & (Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard))
+                   || q->focusPolicy() != Qt::NoFocus);
     }
 
     void ensureTextPopulated() const;
