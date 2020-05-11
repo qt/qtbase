@@ -1985,7 +1985,7 @@ void QTriangulator<T>::SimpleToMonotone::createDiagonal(int lower, int upper)
     int prevLower = m_edges.at(lower).previous;
     int prevUpper = m_edges.at(upper).previous;
 
-    Edge e;
+    Edge e = {};
 
     e.twin = m_edges.size() + 1;
     e.next = upper;

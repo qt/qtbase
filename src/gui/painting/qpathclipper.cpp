@@ -316,7 +316,7 @@ static inline qreal coordinate(const QPointF &pos, int axis)
 TreeNode SegmentTree::buildTree(int first, int last, int depth, const RectF &bounds)
 {
     if (depth >= 24 || (last - first) <= 10) {
-        TreeNode node;
+        TreeNode node = {};
         node.leaf = true;
         node.index.interval.first = first;
         node.index.interval.last = last;
