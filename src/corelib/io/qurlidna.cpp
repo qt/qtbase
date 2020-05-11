@@ -2119,13 +2119,16 @@ Q_AUTOTEST_EXPORT bool qt_nameprep(QString *source, int from)
     return true;
 }
 
-static const QChar *qt_find_nonstd3(const QChar *uc, int len, Qt::CaseSensitivity cs)
+static const QChar *qt_find_nonstd3(QStringView in, Qt::CaseSensitivity cs)
 {
+    const QChar * const uc = in.data();
+    const qsizetype len = in.size();
+
     if (len > 63)
         return uc;
 
-    for (int i = 0; i < len; ++i) {
-        ushort c = uc[i].unicode();
+    for (qsizetype i = 0; i < len; ++i) {
+        const char16_t c = uc[i].unicode();
         if (c == '-' && (i == 0 || i == len - 1))
             return uc + i;
 
@@ -2145,22 +2148,21 @@ static const QChar *qt_find_nonstd3(const QChar *uc, int len, Qt::CaseSensitivit
     return nullptr;
 }
 
-Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len)
+Q_AUTOTEST_EXPORT bool qt_check_std3rules(QStringView in)
 {
-    return qt_find_nonstd3(uc, len, Qt::CaseInsensitive) == nullptr;
+    return qt_find_nonstd3(in, Qt::CaseInsensitive) == nullptr;
 }
 
-static bool qt_check_nameprepped_std3(const QChar *in, int len)
+static bool qt_check_nameprepped_std3(QStringView in)
 {
     // fast path: check for lowercase ASCII
-    const QChar *firstNonAscii = qt_find_nonstd3(in, len, Qt::CaseSensitive);
+    const QChar *firstNonAscii = qt_find_nonstd3(in, Qt::CaseSensitive);
     if (firstNonAscii == nullptr) {
         // everything was lowercase ASCII, digits or hyphen
         return true;
     }
 
-    const QChar *e = in + len;
-    QString origin = QString::fromRawData(firstNonAscii, e - firstNonAscii);
+    QString origin = QString::fromRawData(firstNonAscii, in.end() - firstNonAscii);
     QString copy = origin;
     qt_nameprep(&copy, 0);
     return origin == copy;
@@ -2548,7 +2550,7 @@ QString qt_ACE_do(QStringView domain, AceOperation op, AceLeadingDot dot)
         if (simple) {
             // fastest case: this is the common case (non IDN-domains)
             // so we're done
-            if (!qt_check_std3rules(result.constData() + prevLen, labelLength))
+            if (!qt_check_std3rules(QStringView{result.constData() + prevLen, labelLength}))
                 return QString();
         } else {
             // Punycode encoding and decoding cannot be done in-place
@@ -2567,7 +2569,7 @@ QString qt_ACE_do(QStringView domain, AceOperation op, AceLeadingDot dot)
                 QString tmp = qt_punycodeDecoder(aceForm);
                 if (tmp.isEmpty())
                     return QString(); // shouldn't happen, since we've just punycode-encoded it
-                if (qt_check_nameprepped_std3(tmp.constData(), tmp.size())) {
+                if (qt_check_nameprepped_std3(tmp)) {
                     result.resize(prevLen + tmp.size());
                     memcpy(result.data() + prevLen, tmp.constData(), tmp.size() * sizeof(QChar));
                     appended = true;
@@ -2579,7 +2581,7 @@ QString qt_ACE_do(QStringView domain, AceOperation op, AceLeadingDot dot)
                 memcpy(result.data() + prevLen, aceForm.constData(), aceForm.size() * sizeof(QChar));
             }
 
-            if (!qt_check_std3rules(aceForm.constData(), aceForm.size()))
+            if (!qt_check_std3rules(aceForm))
                 return QString();
         }
 

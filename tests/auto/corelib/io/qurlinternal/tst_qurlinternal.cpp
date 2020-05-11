@@ -755,7 +755,7 @@ void tst_QUrlInternal::std3violations()
     {
         QString prepped = source;
         qt_nameprep(&prepped, 0);
-        QVERIFY(!qt_check_std3rules(prepped.constData(), prepped.length()));
+        QVERIFY(!qt_check_std3rules(prepped));
     }
 #endif
 
