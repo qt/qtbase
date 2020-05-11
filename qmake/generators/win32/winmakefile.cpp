@@ -366,7 +366,7 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << Qt::endl;
         if (!rcIcons.isEmpty()) {
             for (int i = 0; i < rcIcons.size(); ++i)
-                ts << QString("IDI_ICON%1\tICON\tDISCARDABLE\t%2").arg(i + 1).arg(cQuoted(rcIcons[i])) << Qt::endl;
+                ts << QString("IDI_ICON%1\tICON\t%2").arg(i + 1).arg(cQuoted(rcIcons[i])) << Qt::endl;
             ts << Qt::endl;
         }
         if (!manifestFile.isEmpty()) {
