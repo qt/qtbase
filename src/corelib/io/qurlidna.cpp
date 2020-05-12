@@ -1442,8 +1442,6 @@ static const NameprepCaseFoldingEntry NameprepCaseFolding[] = {
 
 static void mapToLowerCase(QString *str, int from)
 {
-    int N = sizeof(NameprepCaseFolding) / sizeof(NameprepCaseFolding[0]);
-
     ushort *d = nullptr;
     for (int i = from; i < str->size(); ++i) {
         uint uc = str->at(i).unicode();
@@ -1461,10 +1459,10 @@ static void mapToLowerCase(QString *str, int from)
                     ++i;
                 }
             }
-            const NameprepCaseFoldingEntry *entry = std::lower_bound(NameprepCaseFolding,
-                                                                     NameprepCaseFolding + N,
-                                                                     uc);
-            if ((entry != NameprepCaseFolding + N) && !(uc < *entry)) {
+            const auto entry = std::lower_bound(std::begin(NameprepCaseFolding),
+                                                std::end(NameprepCaseFolding),
+                                                uc);
+            if ((entry != std::end(NameprepCaseFolding)) && !(uc < *entry)) {
                 int l = 1;
                 while (l < 4 && entry->mapping[l])
                     ++l;
