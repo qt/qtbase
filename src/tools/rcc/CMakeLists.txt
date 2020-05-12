@@ -6,6 +6,7 @@
 
 qt_add_tool(rcc
     BOOTSTRAP
+    TARGET_DESCRIPTION "Qt Resource Compiler"
     TOOLS_TARGET Core # special case
     SOURCES
         main.cpp

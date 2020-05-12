@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_tool(qvkgen
+    TARGET_DESCRIPTION "Qt Vulkan Header Generator"
     TOOLS_TARGET Gui # special case
     SOURCES
         qvkgen.cpp

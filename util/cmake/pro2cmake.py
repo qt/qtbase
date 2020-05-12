@@ -3049,6 +3049,19 @@ def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> s
 
     return target_name
 
+def forward_target_info(scope: Scope, extra: [str]):
+    s = scope.get_string("QMAKE_TARGET_PRODUCT")
+    if s:
+        extra.append(f"TARGET_PRODUCT \"{s}\"")
+    s = scope.get_string("QMAKE_TARGET_DESCRIPTION")
+    if s:
+        extra.append(f"TARGET_DESCRIPTION \"{s}\"")
+    s = scope.get_string("QMAKE_TARGET_COMPANY")
+    if s:
+        extra.append(f"TARGET_COMPANY \"{s}\"")
+    s = scope.get_string("QMAKE_TARGET_COPYRIGHT")
+    if s:
+        extra.append(f"TARGET_COPYRIGHT \"{s}\"")
 
 def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     module_name = scope.TARGET
@@ -3092,6 +3105,7 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     scope._is_public_module = is_public_module
 
     target_name = module_name[2:]
+    forward_target_info(scope, extra)
     write_main_part(
         cm_fh,
         target_name,
@@ -3123,6 +3137,8 @@ def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         scope._append_operation("QT", RemoveOperation(["core", "gui"]))
     else:
         extra = []
+
+    forward_target_info(scope, extra)
 
     write_main_part(
         cm_fh,
@@ -3177,7 +3193,6 @@ def write_test(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int =
     )
 
     return test_name
-
 
 def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0) -> str:
     binary_name = scope.TARGET
@@ -3551,6 +3566,8 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
 
     if "static" in scope.get("CONFIG"):
         extra.append("STATIC")
+
+    forward_target_info(scope, extra)
 
     write_main_part(
         cm_fh,

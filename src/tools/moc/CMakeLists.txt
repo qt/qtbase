@@ -6,6 +6,7 @@
 
 qt_add_tool(moc
     BOOTSTRAP
+    TARGET_DESCRIPTION "Qt Meta Object Compiler"
     TOOLS_TARGET Core # special case
     SOURCES
         cbordevice.h

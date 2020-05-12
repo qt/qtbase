@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_tool(qlalr
+    TARGET_DESCRIPTION "Qt Look Ahead LR Parser Generator"
     TOOLS_TARGET Core # special case
     SOURCES
         compress.cpp compress.h

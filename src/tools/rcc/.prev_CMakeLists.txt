@@ -6,6 +6,7 @@
 
 qt_add_tool(rcc
     BOOTSTRAP
+    TARGET_DESCRIPTION "Qt Resource Compiler"
     SOURCES
         main.cpp
         rcc.cpp rcc.h

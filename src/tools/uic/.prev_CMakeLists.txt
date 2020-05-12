@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_tool(uic
+    TARGET_DESCRIPTION "Qt User Interface Compiler"
     SOURCES
         cpp/cppwritedeclaration.cpp cpp/cppwritedeclaration.h
         cpp/cppwriteincludes.cpp cpp/cppwriteincludes.h

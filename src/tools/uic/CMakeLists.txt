@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_tool(uic
+    TARGET_DESCRIPTION "Qt User Interface Compiler"
     TOOLS_TARGET Widgets # special case
     SOURCES
         cpp/cppwritedeclaration.cpp cpp/cppwritedeclaration.h

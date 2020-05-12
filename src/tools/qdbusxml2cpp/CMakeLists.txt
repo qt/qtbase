@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_tool(qdbusxml2cpp
+    TARGET_DESCRIPTION "Qt D-Bus XML to C++ Compiler"
     TOOLS_TARGET DBus # special case
     SOURCES
         qdbusxml2cpp.cpp
