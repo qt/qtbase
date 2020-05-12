@@ -2209,21 +2209,21 @@ static inline void appendEncode(QString* output, uint& delta, uint& bias, uint& 
     ++h;
 }
 
-Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output)
+Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
 {
     uint n = initial_n;
     uint delta = 0;
     uint bias = initial_bias;
 
     int outLen = output->length();
-    output->resize(outLen + ucLength);
+    output->resize(outLen + in.length());
 
     QChar *d = output->data() + outLen;
     bool skipped = false;
     // copy all basic code points verbatim to output.
-    for (uint j = 0; j < (uint) ucLength; ++j) {
-        if (s[j].unicode() < 0x80)
-            *d++ = s[j];
+    for (QChar c : in) {
+        if (c.unicode() < 0x80)
+            *d++ = c;
         else
             skipped = true;
     }
@@ -2246,14 +2246,13 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
 
     // while there are still unprocessed non-basic code points left in
     // the input string...
-    while (h < (uint) ucLength) {
+    while (h < (uint) in.length()) {
         // find the character in the input string with the lowest
         // unicode value.
         uint m = Q_MAXINT;
-        uint j;
-        for (j = 0; j < (uint) ucLength; ++j) {
-            if (s[j].unicode() >= n && s[j].unicode() < m)
-                m = (uint) s[j].unicode();
+        for (QChar c : in) {
+            if (c.unicode() >= n && c.unicode() < m)
+                m = (uint) c.unicode();
         }
 
         // reject out-of-bounds unicode characters
@@ -2265,12 +2264,11 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
         delta += (m - n) * (h + 1);
         n = m;
 
-        // for each code point in the input string
-        for (j = 0; j < (uint) ucLength; ++j) {
+        for (QChar c : in) {
 
             // increase delta until we reach the character with the
             // lowest unicode code. fail if delta overflows.
-            if (s[j].unicode() < n) {
+            if (c.unicode() < n) {
                 ++delta;
                 if (!delta) {
                     output->truncate(outLen);
@@ -2280,7 +2278,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
 
             // if j is the index of the character with the lowest
             // unicode code...
-            if (s[j].unicode() == n) {
+            if (c.unicode() == n) {
                 appendEncode(output, delta, bias, b, h);
             }
         }
@@ -2561,7 +2559,7 @@ QString qt_ACE_do(QStringView domain, AceOperation op, AceLeadingDot dot)
             aceForm.resize(0);
             if (toReserve > aceForm.capacity())
                 aceForm.reserve(toReserve);
-            qt_punycodeEncoder(result.constData() + prevLen, result.size() - prevLen, &aceForm);
+            qt_punycodeEncoder(QStringView{result}.mid(prevLen), &aceForm);
 
             // We use resize()+memcpy() here because we're overwriting the data we've copied
             bool appended = false;

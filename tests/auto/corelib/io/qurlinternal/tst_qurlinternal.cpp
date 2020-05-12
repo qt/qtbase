@@ -244,7 +244,7 @@ void tst_QUrlInternal::idna_testsuite()
     QFETCH(QByteArray, punycode);
 
     QString result;
-    qt_punycodeEncoder((QChar*)unicode.points, numchars, &result);
+    qt_punycodeEncoder(QStringView{unicode.points, numchars}, &result);
     QCOMPARE(result.toLatin1(), punycode);
     QCOMPARE(qt_punycodeDecoder(result), QString::fromUtf16(unicode.points, numchars));
 }
