@@ -56,14 +56,14 @@ static const uint initial_bias = 72;
 static const uint initial_n = 128;
 
 struct NameprepCaseFoldingEntry {
-    uint uc;
-    ushort mapping[4];
+    char32_t uc;
+    char16_t mapping[4];
 };
 
-inline bool operator<(uint one, const NameprepCaseFoldingEntry &other)
+inline bool operator<(char32_t one, const NameprepCaseFoldingEntry &other)
 { return one < other.uc; }
 
-inline bool operator<(const NameprepCaseFoldingEntry &one, uint other)
+inline bool operator<(const NameprepCaseFoldingEntry &one, char32_t other)
 { return one.uc < other; }
 
 static const NameprepCaseFoldingEntry NameprepCaseFolding[] = {
