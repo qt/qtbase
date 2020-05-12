@@ -58,9 +58,7 @@ private slots:
     void insertAndRemoveSubstitutions();
     void serialize_data();
     void serialize();
-#if QT_DEPRECATED_SINCE(5, 13)
-    void lastResortFont();
-#endif
+
     void styleName();
     void defaultFamily_data();
     void defaultFamily();
@@ -500,19 +498,6 @@ void tst_QFont::serialize()
             QString::fromLatin1("%1:\nactual: %2\nexpected: %3").arg(version).arg(readFont.toString()).arg(font.toString())));
     }
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-// QFont::lastResortFont() may abort with qFatal() on QWS/QPA
-// if absolutely no font is found. Just as ducumented for QFont::lastResortFont().
-// This happens on our CI machines which run QWS autotests.
-// ### fixme: Check platforms
-void tst_QFont::lastResortFont()
-{
-    QSKIP("QFont::lastResortFont() may abort with qFatal() on QPA, QTBUG-22325");
-    QFont font;
-    QVERIFY(!font.lastResortFont().isEmpty());
-}
-#endif
 
 void tst_QFont::styleName()
 {

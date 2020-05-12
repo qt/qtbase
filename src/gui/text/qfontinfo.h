@@ -72,9 +72,6 @@ public:
     bool strikeOut() const;
     bool fixedPitch() const;
     QFont::StyleHint styleHint() const;
-#if QT_DEPRECATED_SINCE(5, 5)
-    bool rawMode() const;
-#endif
 
     bool exactMatch() const;
 

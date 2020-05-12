@@ -55,19 +55,7 @@ class Q_GUI_EXPORT QFontMetrics
 {
 public:
     explicit QFontMetrics(const QFont &);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QFontMetrics(const QFont &font, QPaintDevice *pd);
-#ifndef Q_QDOC
-    // the template is necessary to make QFontMetrics(font,nullptr) and QFontMetrics(font,NULL)
-    // not ambiguous. Implementation detail that should not be documented.
-    template<char = 0>
-#endif
-    QFontMetrics(const QFont &font, const QPaintDevice *pd)
-        : QFontMetrics(font, const_cast<QPaintDevice*>(pd))
-    {}
-#else
     QFontMetrics(const QFont &font, const QPaintDevice *pd);
-#endif
     QFontMetrics(const QFontMetrics &);
     ~QFontMetrics();
 
@@ -97,21 +85,8 @@ public:
     int leftBearing(QChar) const;
     int rightBearing(QChar) const;
 
-#if QT_DEPRECATED_SINCE(5, 11)
-    QT_DEPRECATED_X("Use QFontMetrics::horizontalAdvance")
-    int width(const QString &, int len = -1) const;
-    QT_DEPRECATED_X("Use QFontMetrics::horizontalAdvance")
-    int width(const QString &, int len, int flags) const;
-    QT_DEPRECATED_X("Use QFontMetrics::horizontalAdvance")
-    int width(QChar) const;
-#endif
-
     int horizontalAdvance(const QString &, int len = -1) const;
     int horizontalAdvance(QChar) const;
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QT_DEPRECATED int charWidth(const QString &str, int pos) const;
-#endif
 
     QRect boundingRect(QChar) const;
 
@@ -149,19 +124,7 @@ class Q_GUI_EXPORT QFontMetricsF
 {
 public:
     explicit QFontMetricsF(const QFont &font);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QFontMetricsF(const QFont &font, QPaintDevice *pd);
-#ifndef Q_QDOC
-    // the template is necessary to make QFontMetrics(font,nullptr) and QFontMetrics(font,NULL)
-    // not ambiguous. Implementation detail that should not be documented.
-    template<char = 0>
-#endif
-    QFontMetricsF(const QFont &font, const QPaintDevice *pd)
-        : QFontMetricsF(font, const_cast<QPaintDevice*>(pd))
-    {}
-#else
     QFontMetricsF(const QFont &font, const QPaintDevice *pd);
-#endif
     QFontMetricsF(const QFontMetrics &);
     QFontMetricsF(const QFontMetricsF &);
     ~QFontMetricsF();
@@ -191,11 +154,6 @@ public:
 
     qreal leftBearing(QChar) const;
     qreal rightBearing(QChar) const;
-
-#if QT_DEPRECATED_SINCE(5, 11)
-    qreal width(const QString &string) const;
-    qreal width(QChar) const;
-#endif
 
     qreal horizontalAdvance(const QString &string, int length = -1) const;
     qreal horizontalAdvance(QChar) const;

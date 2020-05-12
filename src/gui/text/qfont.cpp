@@ -1634,31 +1634,6 @@ QFont::Capitalization QFont::capitalization() const
     return static_cast<QFont::Capitalization> (d->capital);
 }
 
-#if QT_DEPRECATED_SINCE(5, 5)
-/*!
-    \fn void QFont::setRawMode(bool enable)
-    \deprecated
-
-    If \a enable is true, turns raw mode on; otherwise turns raw mode
-    off. This function only has an effect under X11.
-
-    If raw mode is enabled, Qt will search for an X font with a
-    complete font name matching the family name, ignoring all other
-    values set for the QFont. If the font name matches several fonts,
-    Qt will use the first font returned by X. QFontInfo \e cannot be
-    used to fetch information about a QFont using raw mode (it will
-    return the values set in the QFont for all parameters, including
-    the family name).
-
-    \warning Enabling raw mode has no effect since Qt 5.0.
-
-    \sa rawMode()
-*/
-void QFont::setRawMode(bool)
-{
-}
-#endif
-
 /*!
     Returns \c true if a window system font exactly matching the settings
     of this font is available.
@@ -1769,21 +1744,6 @@ bool QFont::isCopyOf(const QFont & f) const
 {
     return d == f.d;
 }
-
-#if QT_DEPRECATED_SINCE(5, 5)
-/*!
-    \deprecated
-
-    Returns \c true if raw mode is used for font name matching; otherwise
-    returns \c false.
-
-    \sa setRawMode()
-*/
-bool QFont::rawMode() const
-{
-    return false;
-}
-#endif
 
 /*!
     Returns a new QFont that has attributes copied from \a other that
@@ -1920,14 +1880,6 @@ void QFont::removeSubstitutions(const QString &familyName)
 }
 
 /*!
-    \fn void QFont::removeSubstitution(const QString &familyName)
-
-    \obsolete
-
-    This function is deprecated. Use removeSubstitutions() instead.
-*/
-
-/*!
     Returns a sorted list of substituted family names.
 
     \sa insertSubstitution(), removeSubstitution(), substitute()
@@ -2007,45 +1959,6 @@ static void set_extended_font_bits(quint8 bits, QFontPrivate *f)
     Q_ASSERT(f != nullptr);
     f->request.ignorePitch = (bits & 0x01) != 0;
     f->letterSpacingIsAbsolute = (bits & 0x02) != 0;
-}
-#endif
-
-#if QT_DEPRECATED_SINCE(5, 3)
-/*!
-    \fn QString QFont::rawName() const
-    \deprecated
-
-    Returns the name of the font within the underlying window system.
-
-    On X11, this function will return an empty string.
-
-    Using the return value of this function is usually \e not \e
-    portable.
-
-    \sa setRawName()
-*/
-QString QFont::rawName() const
-{
-    return QLatin1String("unknown");
-}
-
-/*!
-    \fn void QFont::setRawName(const QString &name)
-    \deprecated
-
-    Sets a font by its system specific name.
-
-    A font set with setRawName() is still a full-featured QFont. It can
-    be queried (for example with italic()) or modified (for example with
-    setItalic()) and is therefore also suitable for rendering rich text.
-
-    If Qt's internal font database cannot resolve the raw name, the
-    font becomes a raw font with \a name as its family.
-
-    \sa rawName(), setFamily()
-*/
-void QFont::setRawName(const QString &)
-{
 }
 #endif
 
@@ -2180,22 +2093,6 @@ void QFont::cacheStatistics()
 {
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QString QFont::lastResortFamily() const
-
-    \obsolete
-
-    This function is deprecated and is not in use by the font
-    selection algorithm in Qt 5. It always returns "helvetica".
-
-    \sa lastResortFont()
-*/
-QString QFont::lastResortFamily() const
-{
-    return QStringLiteral("helvetica");
-}
-#endif
 
 extern QStringList qt_fallbacksForFamily(const QString &family, QFont::Style style,
                                          QFont::StyleHint styleHint, QChar::Script script);
@@ -2216,24 +2113,6 @@ QString QFont::defaultFamily() const
         return fallbacks.first();
     return QString();
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \fn QString QFont::lastResortFont() const
-
-    \obsolete
-
-    Deprecated function. Since Qt 5.0, this is not used by the font selection algorithm. For
-    compatibility it remains in the API, but will always return the same value as lastResortFamily().
-*/
-QString QFont::lastResortFont() const
-{
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return lastResortFamily();
-QT_WARNING_POP
-}
-#endif
 
 /*!
     \since 5.13
@@ -2739,25 +2618,6 @@ QFont::StyleHint QFontInfo::styleHint() const
     Q_ASSERT(engine != nullptr);
     return (QFont::StyleHint) engine->fontDef.styleHint;
 }
-
-#if QT_DEPRECATED_SINCE(5, 5)
-/*!
-    \deprecated
-
-    Returns \c true if the font is a raw mode font; otherwise returns
-    false.
-
-    If it is a raw mode font, all other functions in QFontInfo will
-    return the same values set in the QFont, regardless of the font
-    actually used.
-
-    \sa QFont::rawMode()
-*/
-bool QFontInfo::rawMode() const
-{
-    return false;
-}
-#endif
 
 /*!
     Returns \c true if the matched window system font is exactly the same
