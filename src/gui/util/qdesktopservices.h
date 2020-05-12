@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -42,7 +42,6 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qstandardpaths.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -59,32 +58,6 @@ public:
     static bool openUrl(const QUrl &url);
     static void setUrlHandler(const QString &scheme, QObject *receiver, const char *method);
     static void unsetUrlHandler(const QString &scheme);
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    //Must match QStandardPaths::StandardLocation
-    enum StandardLocation {
-        DesktopLocation,
-        DocumentsLocation,
-        FontsLocation,
-        ApplicationsLocation,
-        MusicLocation,
-        MoviesLocation,
-        PicturesLocation,
-        TempLocation,
-        HomeLocation,
-        DataLocation,
-        CacheLocation
-    };
-
-    QT_DEPRECATED static QString storageLocation(StandardLocation type) {
-        return storageLocationImpl(static_cast<QStandardPaths::StandardLocation>(type));
-    }
-    QT_DEPRECATED static QString displayName(StandardLocation type) {
-        return QStandardPaths::displayName(static_cast<QStandardPaths::StandardLocation>(type));
-    }
-#endif
-private:
-    static QString storageLocationImpl(QStandardPaths::StandardLocation type);
 };
 
 #endif // QT_NO_DESKTOPSERVICES

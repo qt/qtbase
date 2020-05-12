@@ -2606,12 +2606,6 @@ QString QCoreApplication::applicationName()
     return coreappdata() ? coreappdata()->application : QString();
 }
 
-// Exported for QDesktopServices (Qt4 behavior compatibility)
-Q_CORE_EXPORT QString qt_applicationName_noFallback()
-{
-    return coreappdata()->applicationNameSet ? coreappdata()->application : QString();
-}
-
 /*!
     \property QCoreApplication::applicationVersion
     \since 4.4

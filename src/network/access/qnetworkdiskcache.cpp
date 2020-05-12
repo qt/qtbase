@@ -132,7 +132,7 @@ QString QNetworkDiskCache::cacheDirectory() const
     Prepared cache items will be stored in the new cache directory when
     they are inserted.
 
-    \sa QDesktopServices::CacheLocation
+    \sa QStandardPaths::CacheLocation
 */
 void QNetworkDiskCache::setCacheDirectory(const QString &cacheDir)
 {

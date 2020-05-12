@@ -145,9 +145,6 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     openUrl() function can also be exposed to other applications, opening up
     for application deep linking or a very basic URL-based IPC mechanism.
 
-    \note Since Qt 5, storageLocation() and displayName() are replaced by functionality
-    provided by the QStandardPaths class.
-
     \sa QSystemTrayIcon, QProcess, QStandardPaths
 */
 
@@ -288,89 +285,6 @@ void QDesktopServices::setUrlHandler(const QString &scheme, QObject *receiver, c
 void QDesktopServices::unsetUrlHandler(const QString &scheme)
 {
     setUrlHandler(scheme, nullptr, nullptr);
-}
-
-#if QT_DEPRECATED_SINCE(5, 0)
-/*!
-    \enum QDesktopServices::StandardLocation
-    \since 4.4
-    \obsolete
-    Use QStandardPaths::StandardLocation (see storageLocation() for porting notes)
-
-    This enum describes the different locations that can be queried by
-    QDesktopServices::storageLocation and QDesktopServices::displayName.
-
-    \value DesktopLocation Returns the user's desktop directory.
-    \value DocumentsLocation Returns the user's document.
-    \value FontsLocation Returns the user's fonts.
-    \value ApplicationsLocation Returns the user's applications.
-    \value MusicLocation Returns the users music.
-    \value MoviesLocation Returns the user's movies.
-    \value PicturesLocation Returns the user's pictures.
-    \value TempLocation Returns the system's temporary directory.
-    \value HomeLocation Returns the user's home directory.
-    \value DataLocation Returns a directory location where persistent
-           application data can be stored. QCoreApplication::applicationName
-           and QCoreApplication::organizationName should work on all
-           platforms.
-    \value CacheLocation Returns a directory location where user-specific
-           non-essential (cached) data should be written.
-
-    \sa storageLocation(), displayName()
-*/
-
-/*!
-    \fn QString QDesktopServices::storageLocation(StandardLocation type)
-    \obsolete
-    Use QStandardPaths::writableLocation()
-
-    \note when porting QDesktopServices::DataLocation to QStandardPaths::DataLocation,
-    a different path will be returned.
-
-    \c{QDesktopServices::DataLocation} was \c{GenericDataLocation + "/data/organization/application"},
-    while QStandardPaths::DataLocation is \c{GenericDataLocation + "/organization/application"}.
-
-    Also note that \c{application} could be empty in Qt 4, if QCoreApplication::setApplicationName()
-    wasn't called, while in Qt 5 it defaults to the name of the executable.
-
-    Therefore, if you still need to access the Qt 4 path (for example for data migration to Qt 5), replace
-    \snippet code/src_gui_util_qdesktopservices.cpp 5
-    with
-    \snippet code/src_gui_util_qdesktopservices.cpp 6
-    (assuming an organization name and an application name were set).
-*/
-
-/*!
-    \fn QString QDesktopServices::displayName(StandardLocation type)
-    \obsolete
-    Use QStandardPaths::displayName()
-*/
-#endif
-
-extern Q_CORE_EXPORT QString qt_applicationName_noFallback();
-
-QString QDesktopServices::storageLocationImpl(QStandardPaths::StandardLocation type)
-{
-    if (type == QStandardPaths::AppLocalDataLocation) {
-        // Preserve Qt 4 compatibility:
-        // * QCoreApplication::applicationName() must default to empty
-        // * Unix data location is under the "data/" subdirectory
-        const QString compatAppName = qt_applicationName_noFallback();
-        const QString baseDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        const QString organizationName = QCoreApplication::organizationName();
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
-        QString result = baseDir;
-        if (!organizationName.isEmpty())
-            result += QLatin1Char('/') + organizationName;
-        if (!compatAppName.isEmpty())
-            result += QLatin1Char('/') + compatAppName;
-        return result;
-#elif defined(Q_OS_UNIX)
-        return baseDir + QLatin1String("/data/")
-            + organizationName + QLatin1Char('/') + compatAppName;
-#endif
-    }
-    return QStandardPaths::writableLocation(type);
 }
 
 QT_END_NAMESPACE
