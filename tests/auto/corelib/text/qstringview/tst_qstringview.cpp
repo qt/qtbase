@@ -30,10 +30,19 @@
 #include <QString>
 #include <QChar>
 #include <QStringRef>
+#include <QVarLengthArray>
+#include <QVector>
 
 #include <QTest>
 
 #include <string>
+#include <string_view>
+#include <array>
+#include <vector>
+
+// for negative testing (can't convert from)
+#include <deque>
+#include <list>
 
 template <typename T>
 using CanConvert = std::is_convertible<T, QStringView>;
@@ -77,29 +86,38 @@ Q_STATIC_ASSERT(CanConvert<ushort[123]>::value);
 Q_STATIC_ASSERT(CanConvert<      ushort*>::value);
 Q_STATIC_ASSERT(CanConvert<const ushort*>::value);
 
+static_assert(CanConvert<QVector<ushort>>::value);
+static_assert(CanConvert<QVarLengthArray<ushort>>::value);
+static_assert(CanConvert<std::vector<ushort>>::value);
+static_assert(CanConvert<std::array<ushort, 123>>::value);
+static_assert(!CanConvert<std::deque<ushort>>::value);
+static_assert(!CanConvert<std::list<ushort>>::value);
 
 //
 // char16_t
 //
-
-#if defined(Q_COMPILER_UNICODE_STRINGS)
 
 Q_STATIC_ASSERT(!CanConvert<char16_t>::value);
 
 Q_STATIC_ASSERT(CanConvert<      char16_t*>::value);
 Q_STATIC_ASSERT(CanConvert<const char16_t*>::value);
 
-#endif
-
-#if defined(Q_STDLIB_UNICODE_STRINGS)
-
 Q_STATIC_ASSERT(CanConvert<      std::u16string >::value);
 Q_STATIC_ASSERT(CanConvert<const std::u16string >::value);
 Q_STATIC_ASSERT(CanConvert<      std::u16string&>::value);
 Q_STATIC_ASSERT(CanConvert<const std::u16string&>::value);
 
-#endif
+static_assert(CanConvert<      std::u16string_view >::value);
+static_assert(CanConvert<const std::u16string_view >::value);
+static_assert(CanConvert<      std::u16string_view&>::value);
+static_assert(CanConvert<const std::u16string_view&>::value);
 
+static_assert(CanConvert<QVector<char16_t>>::value);
+static_assert(CanConvert<QVarLengthArray<char16_t>>::value);
+static_assert(CanConvert<std::vector<char16_t>>::value);
+static_assert(CanConvert<std::array<char16_t, 123>>::value);
+static_assert(!CanConvert<std::deque<char16_t>>::value);
+static_assert(!CanConvert<std::list<char16_t>>::value);
 
 //
 // wchar_t
@@ -123,6 +141,17 @@ Q_STATIC_ASSERT(CanConvert<const std::wstring >::value == CanConvertFromWCharT);
 Q_STATIC_ASSERT(CanConvert<      std::wstring&>::value == CanConvertFromWCharT);
 Q_STATIC_ASSERT(CanConvert<const std::wstring&>::value == CanConvertFromWCharT);
 
+static_assert(CanConvert<      std::wstring_view >::value == CanConvertFromWCharT);
+static_assert(CanConvert<const std::wstring_view >::value == CanConvertFromWCharT);
+static_assert(CanConvert<      std::wstring_view&>::value == CanConvertFromWCharT);
+static_assert(CanConvert<const std::wstring_view&>::value == CanConvertFromWCharT);
+
+static_assert(CanConvert<QVector<wchar_t>>::value == CanConvertFromWCharT);
+static_assert(CanConvert<QVarLengthArray<wchar_t>>::value == CanConvertFromWCharT);
+static_assert(CanConvert<std::vector<wchar_t>>::value == CanConvertFromWCharT);
+static_assert(CanConvert<std::array<wchar_t, 123>>::value == CanConvertFromWCharT);
+static_assert(!CanConvert<std::deque<wchar_t>>::value);
+static_assert(!CanConvert<std::list<wchar_t>>::value);
 
 class tst_QStringView : public QObject
 {
@@ -207,6 +236,30 @@ private Q_SLOTS:
         fromStdString<char16_t>();
     }
 
+    void fromUShortContainers() const
+    {
+        fromContainers<ushort>();
+    }
+
+    void fromQCharContainers() const
+    {
+        fromContainers<QChar>();
+    }
+
+    void fromChar16TContainers() const
+    {
+        fromContainers<char16_t>();
+    }
+
+    void fromWCharTContainers() const
+    {
+#ifdef Q_OS_WIN
+        fromContainers<wchar_t>();
+#else
+        QSKIP("This is a Windows-only test");
+#endif
+    }
+
     void comparison();
 
     void overloadResolution();
@@ -220,6 +273,8 @@ private:
     void fromRange(const Char *first, const Char *last) const;
     template <typename Char, typename Container>
     void fromContainer() const;
+    template <typename Char>
+    void fromContainers() const;
     template <typename Char>
     void fromStdString() const { fromContainer<Char, std::basic_string<Char> >(); }
 };
@@ -499,6 +554,14 @@ void tst_QStringView::fromContainer() const
     const auto *data = reinterpret_cast<const Char *>(s.utf16());
     std::copy(data, data + s.size(), std::back_inserter(c));
     conversion_tests(std::move(c));
+}
+
+template <typename Char>
+void tst_QStringView::fromContainers() const
+{
+    fromContainer<Char, QVector<Char>>();
+    fromContainer<Char, QVarLengthArray<Char>>();
+    fromContainer<Char, std::vector<Char>>();
 }
 
 namespace help {
