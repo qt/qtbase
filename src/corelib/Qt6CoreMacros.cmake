@@ -930,6 +930,11 @@ function(qt6_generate_win32_rc_file target)
             endforeach()
         endif()
 
+        set(target_file_type "VFT_DLL")
+        if(target_type STREQUAL "EXECUTABLE")
+            set(target_file_type "VFT_APP")
+        endif()
+
         set(contents "#include <windows.h>
 ${icons}
 VS_VERSION_INFO VERSIONINFO
@@ -942,7 +947,7 @@ FILEFLAGSMASK 0x3fL
     FILEFLAGS 0x0L
 #endif
 FILEOS VOS_NT_WINDOWS32
-FILETYPE VFT_DLL
+FILETYPE ${target_file_type}
 FILESUBTYPE VFT2_UNKNOWN
 BEGIN
     BLOCK \"StringFileInfo\"
