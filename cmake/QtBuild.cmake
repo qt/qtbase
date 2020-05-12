@@ -4674,6 +4674,22 @@ function(qt_enable_msvc_cplusplus_define target visibility)
     endif()
 endfunction()
 
+function(qt_enable_utf8_sources target)
+    set(utf8_flags "")
+    if(MSVC)
+        list(APPEND utf8_flags "-utf-8")
+    elseif(WIN32 AND ICC)
+        list(APPEND utf8_flags "-Qoption,cpp,--unicode_source_kind,UTF-8")
+    endif()
+
+    if(utf8_flags)
+        # Allow opting out by specifying the QT_NO_UTF8_SOURCE target property.
+        set(genex_condition "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_UTF8_SOURCE>>>")
+        set(utf8_flags "$<${genex_condition}:${utf8_flags}>")
+        target_compile_options("${target}" INTERFACE "${utf8_flags}")
+    endif()
+endfunction()
+
 # Equivalent of qmake's qtNomakeTools(directory1 directory2).
 # If QT_NO_MAKE_TOOLS is true, then targets within the given directories will be excluded from the
 # default 'all' target, as well as from install phase.

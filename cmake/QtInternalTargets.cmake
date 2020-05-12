@@ -147,7 +147,7 @@ if (MSVC)
         )
     endif()
 
-    target_compile_options(PlatformCommonInternal INTERFACE -Zc:wchar_t -utf-8)
+    target_compile_options(PlatformCommonInternal INTERFACE -Zc:wchar_t)
 
     target_link_options(PlatformCommonInternal INTERFACE
         -DYNAMICBASE -NXCOMPAT

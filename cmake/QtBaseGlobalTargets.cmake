@@ -271,6 +271,9 @@ add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 # are computed.
 qt_set_language_standards_interface_compile_features(Platform)
 
+# By default enable utf8 sources for both Qt and Qt consumers. Can be opted out.
+qt_enable_utf8_sources(Platform)
+
 # defines PlatformCommonInternal PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
 include(QtInternalTargets)
 
