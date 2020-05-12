@@ -41,6 +41,8 @@
 #include "qurl_p.h"
 
 #include <QtCore/qstringlist.h>
+#include <QtCore/private/qstringiterator_p.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
@@ -1499,23 +1501,9 @@ static bool isMappedToNothing(uint uc)
     }
 }
 
-
-static bool containsProhibitedOuptut(const QString *str, int from)
-{
-    const ushort *in = reinterpret_cast<const ushort *>(str->begin() + from);
-    const ushort *end = (const ushort *)str->data() + str->size();
-    for ( ; in < end; ++in) {
-        uint uc = *in;
-        if (QChar(uc).isHighSurrogate() && in < end - 1) {
-            ushort low = *(in + 1);
-            if (QChar(low).isLowSurrogate()) {
-                ++in;
-                uc = QChar::surrogateToUcs4(uc, low);
-            } else {
-                // unpaired surrogates are prohibited
-                return true;
-            }
-        }
+namespace {
+    static constexpr bool isProhibitedOutputChar(char32_t uc)
+    {
         if (uc <= 0xFFFF) {
             if (uc < 0x80 ||
                 !(uc <= 0x009F
@@ -1538,7 +1526,7 @@ static bool containsProhibitedOuptut(const QString *str, int from)
                 || (uc >= 0xFDD0 && uc <= 0xFDEF)
                 || uc == 0xFEFF
                 || (uc >= 0xFFF9 && uc <= 0xFFFF))) {
-                continue;
+                return false;
             }
         } else {
             if (!((uc >= 0x1D173 && uc <= 0x1D17A)
@@ -1562,11 +1550,24 @@ static bool containsProhibitedOuptut(const QString *str, int from)
                 || (uc >= 0xFFFFE && uc <= 0xFFFFF)
                 || (uc >= 0x100000 && uc <= 0x10FFFD)
                 || (uc >= 0x10FFFE && uc <= 0x10FFFF))) {
-                continue;
+                return false;
             }
         }
         return true;
     }
+} // unnamed namespace
+
+static bool containsProhibitedOuptut(QStringView str, qsizetype from)
+{
+    constexpr char32_t invalid = 0xDEAD;
+    static_assert(isProhibitedOutputChar(invalid));
+
+    QStringIterator it{str, from};
+    while (it.hasNext()) {
+        if (isProhibitedOutputChar(it.next(invalid)))
+            return true;
+    }
+
     return false;
 }
 
@@ -2081,8 +2082,8 @@ Q_AUTOTEST_EXPORT bool qt_nameprep(QString *source, int from)
     qt_string_normalize(source, QString::NormalizationForm_KC, QChar::Unicode_3_2,
                         firstNonAscii > from ? firstNonAscii - 1 : from);
 
-    // Strip prohibited output
-    if (containsProhibitedOuptut(source, firstNonAscii)) {
+    // Check for prohibited output
+    if (containsProhibitedOuptut(*source, firstNonAscii)) {
         source->resize(from);
         return false;
     }
