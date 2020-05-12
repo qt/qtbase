@@ -203,6 +203,8 @@ bool QAndroidPlatformFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::Win
 
     bool isDirDialog = false;
 
+    m_selectedFile.clear();
+
     if (options()->acceptMode() == QFileDialogOptions::AcceptSave) {
         m_intent = getFileDialogIntent("ACTION_CREATE_DOCUMENT");
     } else if (options()->acceptMode() == QFileDialogOptions::AcceptOpen) {
