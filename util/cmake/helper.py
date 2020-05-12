@@ -704,6 +704,7 @@ platform_mapping = {
     "ios": "IOS",
     "freebsd": "FREEBSD",
     "openbsd": "OPENBSD",
+    "mingw": "MINGW",
     "netbsd": "NETBSD",
     "haiku": "HAIKU",
     "netbsd": "NETBSD",
