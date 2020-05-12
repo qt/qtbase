@@ -2240,7 +2240,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString 
 
     // if basic code points were copied, add the delimiter character.
     if (h > 0)
-        *output += QChar(0x2d);
+        *output += QLatin1Char{'-'};
 
     // while there are still unprocessed non-basic code points left in
     // the input string...
@@ -2305,7 +2305,7 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
 
     // find the last delimiter character '-' in the input array. copy
     // all data before this delimiter directly to the output array.
-    int delimiterPos = pc.lastIndexOf(QChar(0x2d));
+    int delimiterPos = pc.lastIndexOf(QLatin1Char{'-'});
     QString output = delimiterPos < 4 ?
                      QString() : pc.mid(start, delimiterPos - start);
 
