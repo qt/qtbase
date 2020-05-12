@@ -921,8 +921,18 @@
     Specifies a list of Android target ABIs. Valid values are: armeabi-v7a,
     arm64-v8a, x86, x86_64.
 
+    You can provide the ABIs as a qmake argument:
+
     \badcode
     qmake ANDROID_ABIS="armeabi-v7a arm64-v8a"
+    \endcode
+
+    Or directly in the \c .pro file:
+
+    \badcode
+    ANDROID_ABIS = \
+        armeabi-v7a \
+        arm64-v8a
     \endcode
 
     \target ANDROID_API_VERSION
