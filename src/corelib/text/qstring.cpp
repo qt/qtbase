@@ -2425,22 +2425,6 @@ QString &QString::operator=(QLatin1String other)
     \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
 
-/*! \fn QString &QString::operator=(char ch)
-
-    \overload operator=()
-
-    Assigns character \a ch to this string. Note that the character is
-    converted to Unicode using the fromLatin1() function, unlike other 8-bit
-    functions that operate on UTF-8 data.
-
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
-    can be useful if you want to ensure that all user-visible strings
-    go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
-*/
-
 /*!
     \overload operator=()
 
@@ -5711,22 +5695,6 @@ QString& QString::fill(QChar ch, int size)
     function).
 
     \sa QString::fromUtf8()
-*/
-
-/*!
-    \fn const QString operator+(const QString &s, char ch)
-    \relates QString
-
-    Returns a string which is the result of concatenating the string
-    \a s and the character \a ch.
-*/
-
-/*!
-    \fn const QString operator+(char ch, const QString &s)
-    \relates QString
-
-    Returns a string which is the result of concatenating the
-    character \a ch and the string \a s.
 */
 
 /*!

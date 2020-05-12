@@ -805,8 +805,6 @@ public:
     { return (*this = fromUtf8(ch)); }
     inline QT_ASCII_CAST_WARN QString &operator=(const QByteArray &a)
     { return (*this = fromUtf8(a)); }
-    inline QT_ASCII_CAST_WARN QString &operator=(char c)
-    { return (*this = QChar::fromLatin1(c)); }
 
     // these are needed, so it compiles with STL support enabled
     inline QT_ASCII_CAST_WARN QString &prepend(const char *s)
@@ -1360,10 +1358,6 @@ inline QT_ASCII_CAST_WARN const QString operator+(const QString &s1, const char 
 { QString t(s1); t += QString::fromUtf8(s2); return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(const char *s1, const QString &s2)
 { QString t = QString::fromUtf8(s1); t += s2; return t; }
-inline QT_ASCII_CAST_WARN const QString operator+(char c, const QString &s)
-{ QString t = s; t.prepend(QChar::fromLatin1(c)); return t; }
-inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, char c)
-{ QString t = s; t += QChar::fromLatin1(c); return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(const QByteArray &ba, const QString &s)
 { QString t = QString::fromUtf8(ba); t += s; return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, const QByteArray &ba)
