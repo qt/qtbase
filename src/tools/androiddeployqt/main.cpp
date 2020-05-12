@@ -1137,7 +1137,7 @@ bool copyAndroidExtraLibs(Options *options)
         return true;
 
     if (options->verbose)
-        fprintf(stdout, "Copying %d external libraries to package.\n", options->extraLibs.size());
+        fprintf(stdout, "Copying %zd external libraries to package.\n", options->extraLibs.size());
 
     for (const QString &extraLib : options->extraLibs) {
         QFileInfo extraLibInfo(extraLib);
@@ -2090,10 +2090,10 @@ bool copyQtFiles(Options *options)
     if (options->verbose) {
         switch (options->deploymentMechanism) {
         case Options::Bundled:
-            fprintf(stdout, "Copying %d dependencies from Qt into package.\n", options->qtDependencies.size());
+            fprintf(stdout, "Copying %zd dependencies from Qt into package.\n", options->qtDependencies.size());
             break;
         case Options::Ministro:
-            fprintf(stdout, "Setting %d dependencies from Qt in package.\n", options->qtDependencies.size());
+            fprintf(stdout, "Setting %zd dependencies from Qt in package.\n", options->qtDependencies.size());
             break;
         };
     }
