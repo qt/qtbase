@@ -202,13 +202,6 @@ public:
     template <typename Char>
     Q_DECL_CONSTEXPR QStringView(const Char *str) noexcept;
 #else
-#if QT_DEPRECATED_SINCE(5, 14)
-    template <typename Array, if_compatible_array<Array> = true>
-    QT_DEPRECATED_VERSION_X_5_14(R"(Use u"~~~" or QStringView(u"~~~") instead of QStringViewLiteral("~~~"))")
-    Q_DECL_CONSTEXPR QStringView(const Array &str, QtPrivate::Deprecated_t) noexcept
-        : QStringView(str, lengthHelperArray(str)) {}
-#endif // QT_DEPRECATED_SINCE
-
     template <typename Array, if_compatible_array<Array> = true>
     Q_DECL_CONSTEXPR QStringView(const Array &str) noexcept
         : QStringView(str, lengthHelperArray(str)) {}

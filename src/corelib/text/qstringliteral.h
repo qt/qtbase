@@ -76,10 +76,6 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
     }()) \
     /**/
 
-#if QT_DEPRECATED_SINCE(5, 14)
-# define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str), QtPrivate::Deprecated)
-#endif
-
 using QStringPrivate = QArrayDataPointer<ushort>;
 
 QT_END_NAMESPACE
