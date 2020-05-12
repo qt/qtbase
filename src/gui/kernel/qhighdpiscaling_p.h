@@ -138,7 +138,6 @@ private:
     static bool m_platformPluginDpiScalingActive;
     static bool m_globalScalingActive;
     static bool m_screenFactorSet;
-    static QDpi m_logicalDpi;
 };
 
 namespace QHighDpi {
