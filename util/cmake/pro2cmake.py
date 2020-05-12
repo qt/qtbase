@@ -371,7 +371,7 @@ def detect_cmake_api_version_used_in_file_content(project_file_path: str) -> Opt
     with open(cmake_project_path, "r") as file_fd:
         contents = file_fd.read()
 
-        new_api_calls = [api_call for api_call in cmake_api_calls[2]]
+        new_api_calls = [cmake_api_calls[2][api_call] for api_call in cmake_api_calls[2]]
         new_api_calls_alternatives = "|".join(new_api_calls)
         match = re.search(new_api_calls_alternatives, contents)
 
