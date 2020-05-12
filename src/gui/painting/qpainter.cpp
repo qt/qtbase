@@ -6160,7 +6160,8 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
     \overload
 
     Draws the given \a text in the \a rectangle specified using the \a option
-    to control its positioning and orientation.
+    to control its positioning, direction, and orientation. The options given
+    in \a option override those set on the QPainter object itself.
 
     By default, QPainter draws text anti-aliased.
 
