@@ -849,6 +849,54 @@ set(libs $<TARGET_FILE:${target}>)
     set(${pri_file_var} ${pri_file} PARENT_SCOPE)
 endfunction()
 
+# Transforms a CMake Qt module name to a qmake Qt module name.
+# Example: Qt6FooPrivate becomes foo_private
+function(qt_get_qmake_module_name result module)
+    string(REGEX REPLACE "^Qt6" "" module "${module}")
+    string(REGEX REPLACE "Private$" "_private" module "${module}")
+    string(REGEX REPLACE "Qpa$" "_qpa_lib_private" module "${module}")
+    string(TOLOWER "${module}" module)
+    set(${result} ${module} PARENT_SCOPE)
+endfunction()
+
+# Generates qt_plugin_XXX.pri files for consumption by qmake
+#
+# QT_PLUGIN.XXX.EXTENDS is set to "-" for the following plugin types:
+#   - generic
+#   - platform, if the plugin is not the default QPA plugin
+# Otherwise, this variable is empty.
+function(qt_generate_plugin_pri_file target pri_file_var)
+    get_target_property(plugin_name ${target} OUTPUT_NAME)
+    get_target_property(plugin_type ${target} QT_PLUGIN_TYPE)
+    get_target_property(default_plugin ${target} QT_DEFAULT_PLUGIN)
+    get_target_property(plugin_class_name ${target} QT_PLUGIN_CLASS_NAME)
+
+    set(plugin_extends "")
+    if(NOT default_plugin AND (plugin_type STREQUAL "generic" OR plugin_type STREQUAL "platforms"))
+        set(plugin_extends "-")
+    endif()
+
+    set(plugin_deps "")
+    get_target_property(target_deps ${target} _qt_target_deps)
+    foreach(dep ${target_deps})
+        list(GET dep 0 dep_name)
+        qt_get_qmake_module_name(dep_name ${dep_name})
+        list(APPEND plugin_deps ${dep_name})
+    endforeach()
+    list(REMOVE_DUPLICATES plugin_deps)
+    list(JOIN plugin_deps " " plugin_deps)
+
+    qt_path_join(pri_target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
+    qt_path_join(pri_file "${pri_target_path}" "qt_plugin_${plugin_name}.pri")
+    qt_configure_file(OUTPUT "${pri_file}" CONTENT "QT_PLUGIN.${plugin_name}.TYPE = ${plugin_type}
+QT_PLUGIN.${plugin_name}.EXTENDS = ${plugin_extends}
+QT_PLUGIN.${plugin_name}.DEPENDS = ${plugin_deps}
+QT_PLUGIN.${plugin_name}.CLASS_NAME = ${plugin_class_name}
+QT_PLUGINS += ${plugin_name}
+")
+    set(${pri_file_var} "${pri_file}" PARENT_SCOPE)
+endfunction()
+
 function(qt_cmake_build_type_to_qmake_build_config out_var build_type)
     if(build_type STREQUAL "Debug")
         set(cfg debug)
@@ -3037,6 +3085,7 @@ function(qt_internal_add_plugin target)
         LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
         RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
         ARCHIVE_OUTPUT_DIRECTORY "${output_directory}"
+        QT_PLUGIN_TYPE "${plugin_type_escaped}"
         QT_PLUGIN_CLASS_NAME "${plugin_class_name}")
         qt_handle_multi_config_output_dirs("${target}")
 
@@ -3127,6 +3176,7 @@ function(qt_internal_add_plugin target)
     endforeach()
 
     qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
+    qt_generate_plugin_pri_file("${target}" pri_file)
 
     if (NOT arg_SKIP_INSTALL)
         # Handle creation of cmake files for consumers of find_package().
@@ -3157,6 +3207,10 @@ function(qt_internal_add_plugin target)
             DESTINATION "${config_install_dir}"
             COMPONENT Devel
         )
+        qt_install(FILES
+            "${pri_file}"
+            DESTINATION "${INSTALL_MKSPECSDIR}/modules"
+        )
 
         # Make the export name of plugins be consistent with modules, so that
         # qt_add_resource adds its additional targets to the same export set in a static Qt build.
@@ -3173,9 +3227,6 @@ function(qt_internal_add_plugin target)
         )
         qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${install_directory}" RELATIVE_RPATH)
     endif()
-
-    # Store the plug-in type in the target property
-    set_property(TARGET "${target}" PROPERTY QT_PLUGIN_TYPE "${plugin_type_escaped}")
 
     if (NOT arg_ALLOW_UNDEFINED_SYMBOLS)
         ### fixme: cmake is missing a built-in variable for this. We want to apply it only to
