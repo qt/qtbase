@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -874,15 +874,6 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->notifyAccessibilityUpdate(event);
 }
-
-#if QT_DEPRECATED_SINCE(5, 0)
-/*!
-    \obsolete
-    \fn void QAccessible::updateAccessibility(QObject *object, int child, Event reason);
-
-    \brief Use QAccessible::updateAccessibility(QAccessibleEvent*) instead.
-*/
-#endif
 
 /*!
     \internal
