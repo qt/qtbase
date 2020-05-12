@@ -5931,34 +5931,11 @@ QString& QString::fill(QChar ch, int size)
     Appends the string view \a str to this string.
 */
 
-/*! \fn QString &QString::operator+=(char ch)
-
-    \overload operator+=()
-
-    Appends the character \a ch to this string. Note that the character is
-    converted to Unicode using the fromLatin1() function, unlike other 8-bit
-    functions that operate on UTF-8 data.
-
-    You can disable this function by defining \c QT_NO_CAST_FROM_ASCII
-    when you compile your applications. This can be useful if you want
-    to ensure that all user-visible strings go through QObject::tr(),
-    for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
-*/
-
 /*! \fn QString &QString::operator+=(QChar ch)
 
     \overload operator+=()
 
     Appends the character \a ch to the string.
-*/
-
-/*! \fn QString &QString::operator+=(QChar::SpecialCharacter c)
-
-    \overload operator+=()
-
-    \internal
 */
 
 /*!

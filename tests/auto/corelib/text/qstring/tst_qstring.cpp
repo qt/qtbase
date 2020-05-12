@@ -447,10 +447,9 @@ private slots:
     void operator_pluseq_qchar_data()         { operator_pluseq_data(true); }
     void operator_pluseq_qbytearray()         { operator_pluseq_impl<QByteArray>(); }
     void operator_pluseq_qbytearray_data()    { operator_pluseq_data(); }
-    void operator_pluseq_char()               { operator_pluseq_impl<char, QString &(QString::*)(char)>(); }
-    void operator_pluseq_char_data()          { operator_pluseq_data(true); }
     void operator_pluseq_charstar()           { operator_pluseq_impl<const char *, QString &(QString::*)(const char *)>(); }
     void operator_pluseq_charstar_data()      { operator_pluseq_data(); }
+    void operator_pluseq_special_cases();
     void operator_pluseq_bytearray_special_cases_data();
     void operator_pluseq_bytearray_special_cases();
 
@@ -2700,6 +2699,17 @@ void tst_QString::append_bytearray_special_cases()
 
         str.append(ba.constData());
         QTEST( str, "res" );
+    }
+}
+
+void tst_QString::operator_pluseq_special_cases()
+{
+    {
+        QString a;
+        a += QChar::CarriageReturn;
+        a += '\r';
+        a += u'\x1111';
+        QCOMPARE(a, QStringView(u"\r\r\x1111"));
     }
 }
 

@@ -570,7 +570,6 @@ public:
         return *this;
     }
 
-    inline QString &operator+=(QChar::SpecialCharacter c) { return append(QChar(c)); }
 #if QT_STRINGVIEW_LEVEL < 2
     inline QString &operator+=(const QString &s) { return append(s); }
     inline QString &operator+=(const QStringRef &s) { return append(s); }
@@ -859,8 +858,6 @@ public:
     { return append(QString::fromUtf8(s)); }
     inline QT_ASCII_CAST_WARN QString &operator+=(const QByteArray &s)
     { return append(QString::fromUtf8(s)); }
-    inline QT_ASCII_CAST_WARN QString &operator+=(char c)
-    { return append(QChar::fromLatin1(c)); }
 
     inline QT_ASCII_CAST_WARN bool operator==(const char *s) const;
     inline QT_ASCII_CAST_WARN bool operator!=(const char *s) const;
