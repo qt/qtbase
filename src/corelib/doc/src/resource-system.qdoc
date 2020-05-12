@@ -144,6 +144,21 @@
     native support for resources. This might change in a future Qt
     release.
 
+   \section2 Resources in a Qt for Python application
+
+    The resource collection file is converted to a Python module by using
+    the resource compiler \l rcc:
+
+    \code
+    rcc -g python application.qrc > application_rc.py
+    \endcode
+
+    The module needs to be imported in the application:
+
+    \code
+    import application_rc.py
+    \endcode
+
     \section1 Compression
 
     \c rcc attempts to compress the content to optimize disk space usage in the
