@@ -575,16 +575,6 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty
     return QMetaPropertyBuilder(this, index);
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-static bool deprecatedIsEditable(const QMetaProperty &prototype)
-{
-    return prototype.isEditable();
-}
-QT_WARNING_POP
-#endif
-
 /*!
     Adds a new property to this class that has the same information as
     \a prototype.  This is used to clone the properties of an existing
@@ -602,7 +592,6 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     property.setDesignable(prototype.isDesignable());
     property.setScriptable(prototype.isScriptable());
     property.setStored(prototype.isStored());
-    property.setEditable(deprecatedIsEditable(prototype));
     property.setUser(prototype.isUser());
     property.setStdCppSet(prototype.hasStdCppSet());
     property.setEnumOrFlag(prototype.isEnumType());
