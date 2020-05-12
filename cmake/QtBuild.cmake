@@ -1181,6 +1181,8 @@ set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_A
 
 set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
 set(__default_private_module_args "PRIVATE_MODULE_INTERFACE")
+set(__default_target_info_args TARGET_VERSION TARGET_PRODUCT TARGET_DESCRIPTION TARGET_COMPANY
+    TARGET_COPYRIGHT)
 
 option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
 
@@ -1863,6 +1865,34 @@ function(qt_set_common_target_properties target)
    endif()
 endfunction()
 
+# Set common, informational target properties.
+#
+# On Windows, these properties are used to generate the version information resource.
+function(qt_set_target_info_properties target)
+    cmake_parse_arguments(arg "" "${__default_target_info_args}" "" ${ARGN})
+    if("${arg_TARGET_VERSION}" STREQUAL "")
+        set(arg_TARGET_VERSION "${PROJECT_VERSION}.0")
+    endif()
+    if("${arg_TARGET_PRODUCT}" STREQUAL "")
+        set(arg_TARGET_PRODUCT "Qt6")
+    endif()
+    if("${arg_TARGET_DESCRIPTION}" STREQUAL "")
+        set(arg_TARGET_DESCRIPTION "C++ Application Development Framework")
+    endif()
+    if("${arg_TARGET_COMPANY}" STREQUAL "")
+        set(arg_TARGET_COMPANY "The Qt Company Ltd.")
+    endif()
+    if("${arg_TARGET_COPYRIGHT}" STREQUAL "")
+        set(arg_TARGET_COPYRIGHT "Copyright (C) 2020 The Qt Company Ltd.")
+    endif()
+    set_target_properties(${target} PROPERTIES
+        QT_TARGET_VERSION "${arg_TARGET_VERSION}"
+        QT_TARGET_COMPANY_NAME "${arg_TARGET_COMPANY}"
+        QT_TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
+        QT_TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
+        QT_TARGET_PRODUCT_NAME "${arg_TARGET_PRODUCT}")
+endfunction()
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -1879,7 +1909,7 @@ function(qt_add_module target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_CONFIG_HEADER_FILE;SKIP_DEPENDS_INCLUDE"
-        "CONFIG_MODULE_NAME;PRECOMPILED_HEADER"
+        "CONFIG_MODULE_NAME;PRECOMPILED_HEADER;${__default_target_info_args}"
         "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
@@ -1956,12 +1986,8 @@ function(qt_add_module target)
             ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
             VERSION ${PROJECT_VERSION}
             SOVERSION ${PROJECT_VERSION_MAJOR}
-            QT_TARGET_VERSION "${PROJECT_VERSION}.0"
-            QT_TARGET_COMPANY_NAME "The Qt Company Ltd."
-            QT_TARGET_DESCRIPTION "C++ Application Development Framework"
-            QT_TARGET_COPYRIGHT "Copyright (C) 2020 The Qt Company Ltd."
-            QT_TARGET_PRODUCT_NAME "Qt6"
-        )
+            )
+        qt_set_target_info_properties(${target} ${ARGN})
         qt_handle_multi_config_output_dirs("${target}")
 
         if (arg_SKIP_DEPENDS_INCLUDE)
@@ -2716,6 +2742,7 @@ set(__qt_add_plugin_optional_args
 )
 set(__qt_add_plugin_single_args
     "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH;OUTPUT_NAME"
+    ${__default_target_info_args}
 )
 set(__qt_add_plugin_multi_args
     "${__default_private_args};${__default_public_args};DEFAULT_IF"
@@ -2781,6 +2808,7 @@ function(qt_internal_add_plugin target)
     endif()
 
     qt_set_common_target_properties(${target})
+    qt_set_target_info_properties(${target} ${ARGN} TARGET_VERSION "${arg_VERSION}")
 
     # Make sure the Qt6 plugin library names are like they were in Qt5 qmake land.
     # Whereas the Qt6 CMake target names are like the Qt5 CMake target names.
@@ -3020,6 +3048,7 @@ set(__qt_add_executable_optional_args
 )
 set(__qt_add_executable_single_args
     "OUTPUT_DIRECTORY;INSTALL_DIRECTORY;VERSION"
+    ${__default_target_info_args}
 )
 set(__qt_add_executable_multi_args
     "EXE_FLAGS;${__default_private_args};${__default_public_args}"
@@ -3074,9 +3103,8 @@ function(qt_add_executable name)
         else()
             message(FATAL_ERROR "Invalid version format")
         endif()
-
-        set_target_properties(${name} PROPERTIES QT_TARGET_VERSION "${arg_VERSION}")
     endif()
+    qt_set_target_info_properties(${name} ${ARGN} TARGET_VERSION "${arg_VERSION}")
 
     if (WIN32)
         qt6_generate_win32_rc_file(${name})
@@ -3744,7 +3772,8 @@ endfunction()
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
 function(qt_add_tool name)
-    qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL" "TOOLS_TARGET"
+    qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL"
+                               "TOOLS_TARGET;${__default_target_info_args}"
                                "${__default_private_args}" ${ARGN})
 
     # Handle case when a tool does not belong to a module and it can't be built either (like
@@ -3855,6 +3884,11 @@ function(qt_add_tool name)
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         DISABLE_AUTOGEN_TOOLS ${disable_autogen_tools}
+        TARGET_VERSION "${arg_TARGET_VERSION}"
+        TARGET_PRODUCT "${arg_TARGET_PRODUCT}"
+        TARGET_DESCRIPTION "${arg_TARGET_DESCRIPTION}"
+        TARGET_COMPANY "${arg_TARGET_COMPANY}"
+        TARGET_COPYRIGHT "${arg_TARGET_COPYRIGHT}"
     )
     qt_internal_add_target_aliases("${name}")
 
