@@ -5097,20 +5097,28 @@ namespace QtPrivate {
 namespace DeprecatedRefClassBehavior {
 void warn(WarningType w, EmittingClass c)
 {
-    static const char deprecatedBehaviorString[] =
+    const char *deprecatedBehaviorString =
             "The corresponding behavior is deprecated, and will be changed"
              " in a future version of Qt.";
 
     const char *emittingClassName = nullptr;
-    const char *containerClassName = nullptr;
 
     switch (c) {
     case EmittingClass::QByteRef:
         emittingClassName = "QByteRef";
-        containerClassName = "QByteArray";
         break;
     case EmittingClass::QCharRef:
         emittingClassName = "QCharRef";
+        break;
+    }
+
+    const char *containerClassName = nullptr;
+
+    switch (c) {
+    case EmittingClass::QByteRef:
+        containerClassName = "QByteArray";
+        break;
+    case EmittingClass::QCharRef:
         containerClassName = "QString";
         break;
     }
@@ -5121,7 +5129,7 @@ void warn(WarningType w, EmittingClass c)
                  emittingClassName, containerClassName, deprecatedBehaviorString);
         break;
     case WarningType::DelayedDetach:
-        qWarning("Using %s with on a %s that is not already detached. %s",
+        qWarning("Using %s on a %s that is not already detached. %s",
                  emittingClassName, containerClassName, deprecatedBehaviorString);
         break;
     }
