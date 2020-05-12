@@ -1887,9 +1887,9 @@ void QTextEngine::validate() const
         layoutData->string = block.text();
         const bool nextBlockValid = block.next().isValid();
         if (!nextBlockValid && option.flags() & QTextOption::ShowDocumentTerminator) {
-            layoutData->string += QLatin1Char(0xA7);
+            layoutData->string += QLatin1Char('\xA7');
         } else if (option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
-            layoutData->string += QLatin1Char(nextBlockValid ? 0xb6 : 0x20);
+            layoutData->string += QLatin1Char(nextBlockValid ? '\xB6' : '\x20');
         }
 
     } else {
