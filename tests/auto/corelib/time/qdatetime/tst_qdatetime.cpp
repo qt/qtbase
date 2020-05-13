@@ -119,6 +119,8 @@ private slots:
     void fromStringDateFormat();
     void fromStringStringFormat_data();
     void fromStringStringFormat();
+    void fromStringStringFormat_localTimeZone_data();
+    void fromStringStringFormat_localTimeZone();
 #if defined(Q_OS_WIN) && QT_CONFIG(textdate)
     void fromString_LOCALE_ILDATE();
 #endif
@@ -2675,6 +2677,7 @@ void tst_QDateTime::fromStringStringFormat()
 
     QDateTime dt = QDateTime::fromString(string, format);
 
+    QCOMPARE(dt, expected);
     if (expected.isValid()) {
         QCOMPARE(dt.timeSpec(), expected.timeSpec());
 #if QT_CONFIG(timezone)
@@ -2684,7 +2687,42 @@ void tst_QDateTime::fromStringStringFormat()
         // OffsetFromUTC needs an offset check - we may as well do it for all:
         QCOMPARE(dt.offsetFromUtc(), expected.offsetFromUtc());
     }
-    QCOMPARE(dt, expected);
+}
+
+void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
+{
+    QTest::addColumn<QByteArray>("localTimeZone");
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<QDateTime>("expected");
+
+#if QT_CONFIG(timezone)
+    QTimeZone etcGmtWithOffset("Etc/GMT+3");
+    if (etcGmtWithOffset.isValid()) {
+        QTest::newRow("local-timezone-with-offset:Etc/GMT+3") << QByteArrayLiteral("GMT")
+            << QString("2008-10-13 Etc/GMT+3 11.50") << QString("yyyy-MM-dd t hh.mm")
+            << QDateTime(QDate(2008, 10, 13), QTime(11, 50), etcGmtWithOffset);
+    }
+    QTimeZone gmtWithOffset("GMT-2");
+    if (gmtWithOffset.isValid()) {
+        QTest::newRow("local-timezone-with-offset:GMT-2") << QByteArrayLiteral("GMT")
+            << QString("2008-10-13 GMT-2 11.50") << QString("yyyy-MM-dd t hh.mm")
+            << QDateTime(QDate(2008, 10, 13), QTime(11, 50), gmtWithOffset);
+    }
+    QTimeZone gmt("GMT");
+    if (gmt.isValid()) {
+        QTest::newRow("local-timezone-with-offset:GMT") << QByteArrayLiteral("GMT")
+            << QString("2008-10-13 GMT 11.50") << QString("yyyy-MM-dd t hh.mm")
+            << QDateTime(QDate(2008, 10, 13), QTime(11, 50), gmt);
+    }
+#endif
+}
+
+void tst_QDateTime::fromStringStringFormat_localTimeZone()
+{
+    QFETCH(QByteArray, localTimeZone);
+    TimeZoneRollback useZone(localTimeZone);  // enforce test's time zone
+    fromStringStringFormat();  // call basic fromStringStringFormat test
 }
 
 #if defined(Q_OS_WIN) && QT_CONFIG(textdate)

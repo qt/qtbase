@@ -1726,29 +1726,26 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringRef str) co
 QDateTimeParser::ParsedSection
 QDateTimeParser::findTimeZoneName(QStringRef str, const QDateTime &when) const
 {
-    int index = startsWithLocalTimeZone(str);
-    if (index > 0)  // won't actually use the offset, but need it to be valid
-        return ParsedSection(Acceptable, when.toLocalTime().offsetFromUtc(), index);
-
+    const int systemLength = startsWithLocalTimeZone(str);
 #if QT_CONFIG(timezone)
-    const int size = str.length();
-
     // Collect up plausibly-valid characters; let QTimeZone work out what's
     // truly valid.
-    for (; index < size; ++index) {
-        const QChar here = str[index];
-        if (here >= 127 || (!here.isLetterOrNumber() && !QLatin1String("/-_.+:").contains(here)))
-            break;
-    }
+    const auto invalidZoneNameCharacter = [] (const QChar &c) {
+        return c.unicode() >= 127u
+               || (!c.isLetterOrNumber() && !QLatin1String("+-./:_").contains(c));
+    };
+    int index = std::distance(str.cbegin(),
+                              std::find_if(str.cbegin(), str.cend(), invalidZoneNameCharacter));
 
-    while (index > 0) {
+    for (; index > systemLength; --index) {  // Find longest match
         str.truncate(index);
         QTimeZone zone(str.toLatin1());
         if (zone.isValid())
             return ParsedSection(Acceptable, zone.offsetFromUtc(when), index);
-        index--; // maybe we collected too much ...
     }
 #endif
+    if (systemLength > 0)  // won't actually use the offset, but need it to be valid
+        return ParsedSection(Acceptable, when.toLocalTime().offsetFromUtc(), systemLength);
     return ParsedSection();
 }
 
