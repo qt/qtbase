@@ -105,9 +105,6 @@ private:
     // deregisters.
     static void registerTouchWindow(QWindow *window,  bool enable);
 
-    // Enable the unified title and toolbar area for a window.
-    static void setContentBorderEnabled(QWindow *window, bool enable);
-
     // Set the size of the unified title and toolbar area.
     static void setContentBorderThickness(QWindow *window, int topThickness, int bottomThickness);
 

@@ -170,6 +170,20 @@ protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 };
 
+// ----------------- QPlatformInterface -----------------
+
+namespace QPlatformInterface::Private {
+
+#if defined(Q_OS_MACOS)
+struct Q_GUI_EXPORT QCocoaWindow
+{
+    QT_DECLARE_PLATFORM_INTERFACE(QCocoaWindow)
+    virtual void setContentBorderEnabled(bool enable) = 0;
+};
+#endif
+
+} // QPlatformInterface::Private
+
 QT_END_NAMESPACE
 
 #endif //QPLATFORMWINDOW_H

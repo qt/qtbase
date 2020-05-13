@@ -41,6 +41,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformwindow.h>
 
 #include <AppKit/AppKit.h>
 
@@ -52,6 +53,7 @@ using namespace QPlatformInterface::Private;
 
 QT_DEFINE_PLATFORM_INTERFACE(QCocoaGLContext, QOpenGLContext);
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QCocoaGLIntegration);
+QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QCocoaWindow);
 
 QOpenGLContext *QPlatformInterface::QCocoaGLContext::fromNative(NSOpenGLContext *nativeContext, QOpenGLContext *shareContext)
 {

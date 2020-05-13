@@ -118,8 +118,6 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerContentBorderArea);
     if (resource.toLower() == "setcontentborderareaenabled")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setContentBorderAreaEnabled);
-    if (resource.toLower() == "setcontentborderenabled")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setContentBorderEnabled);
     if (resource.toLower() == "setnstoolbar")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setNSToolbar);
     if (resource.toLower() == "testcontentborderposition")
@@ -258,16 +256,6 @@ void QCocoaNativeInterface::setContentBorderAreaEnabled(QWindow *window, quintpt
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     if (cocoaWindow)
         cocoaWindow->setContentBorderAreaEnabled(identifier, enable);
-}
-
-void QCocoaNativeInterface::setContentBorderEnabled(QWindow *window, bool enable)
-{
-    if (!window)
-        return;
-
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
-    if (cocoaWindow)
-        cocoaWindow->setContentBorderEnabled(enable);
 }
 
 void QCocoaNativeInterface::setNSToolbar(QWindow *window, void *nsToolbar)

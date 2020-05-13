@@ -98,7 +98,8 @@ class QDebug;
 
 class QCocoaMenuBar;
 
-class QCocoaWindow : public QObject, public QPlatformWindow
+class QCocoaWindow : public QObject, public QPlatformWindow,
+    public QPlatformInterface::Private::QCocoaWindow
 {
     Q_OBJECT
 public:
@@ -192,7 +193,7 @@ public:
     void setContentBorderThickness(int topThickness, int bottomThickness);
     void registerContentBorderArea(quintptr identifier, int upper, int lower);
     void setContentBorderAreaEnabled(quintptr identifier, bool enable);
-    void setContentBorderEnabled(bool enable);
+    void setContentBorderEnabled(bool enable) override;
     bool testContentBorderAreaPosition(int position) const;
     void applyContentBorderThickness(NSWindow *window = nullptr);
     void updateNSToolbar();

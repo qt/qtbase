@@ -67,9 +67,7 @@
 #include "qtoolbar_p.h"
 #endif
 #include "qwidgetanimator_p.h"
-#ifdef Q_OS_MACOS
-#include <qpa/qplatformnativeinterface.h>
-#endif
+#include <QtGui/qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1351,28 +1349,23 @@ bool QMainWindow::event(QEvent *event)
 
     \since 5.2
 */
-void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
+void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool enabled)
 {
 #ifdef Q_OS_MACOS
+    if (!isWindow())
+        return;
+
     Q_D(QMainWindow);
-    if (isWindow()) {
-        d->useUnifiedToolBar = set;
-        createWinId();
+    d->useUnifiedToolBar = enabled;
+    createWinId();
 
-        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-        if (!nativeInterface)
-            return; // Not Cocoa platform plugin.
-        QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
-            nativeInterface->nativeResourceFunctionForIntegration("setContentBorderEnabled");
-        if (!function)
-            return; // Not Cocoa platform plugin.
+    using namespace QPlatformInterface::Private;
+    if (auto *platformWindow = dynamic_cast<QCocoaWindow*>(window()->windowHandle()->handle()))
+        platformWindow->setContentBorderEnabled(enabled);
 
-        typedef void (*SetContentBorderEnabledFunction)(QWindow *window, bool enable);
-        (reinterpret_cast<SetContentBorderEnabledFunction>(function))(window()->windowHandle(), set);
-        update();
-    }
+    update();
 #else
-    Q_UNUSED(set)
+    Q_UNUSED(enabled)
 #endif
 }
 
