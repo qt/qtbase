@@ -2862,16 +2862,30 @@ QString &QString::remove(int pos, int len)
 template<typename T>
 static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs)
 {
-    const int needleSize = needle.size();
-    if (needleSize) {
-        if (needleSize == 1) {
-            s.remove(needle.front(), cs);
-        } else {
-            int i = 0;
-            while ((i = s.indexOf(needle, i, cs)) != -1)
-                s.remove(i, needleSize);
-        }
+    const auto needleSize = needle.size();
+    if (!needleSize)
+        return;
+
+    // avoid detach if nothing to do:
+    int i = s.indexOf(needle, 0, cs);
+    if (i < 0)
+        return;
+
+    const auto beg = s.begin(); // detaches
+    auto dst = beg + i;
+    auto src = beg + i + needleSize;
+    const auto end = s.end();
+    // loop invariant: [beg, dst[ is partial result
+    //                 [src, end[ still to be checked for needles
+    while (src < end) {
+        const auto i = s.indexOf(needle, src - beg, cs);
+        const auto hit = i == -1 ? end : beg + i;
+        const auto skipped = hit - src;
+        memmove(dst, src, skipped * sizeof(QChar));
+        dst += skipped;
+        src = hit + needleSize;
     }
+    s.truncate(dst - beg);
 }
 
 /*!
