@@ -70,8 +70,6 @@ public:
         Working,            // The reply is uploading/downloading data.
         Finished,           // The reply has finished.
         Aborted,            // The reply has been aborted.
-        WaitingForSession,  // The reply is waiting for the session to open before connecting.
-        Reconnecting        // The reply will reconnect to once roaming has completed.
     };
 
     QNetworkReplyPrivate();

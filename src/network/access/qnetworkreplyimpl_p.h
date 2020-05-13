@@ -158,8 +158,6 @@ public:
     QIODevice *copyDevice;
     QAbstractNetworkCache *networkCache() const;
 
-    bool migrateBackend();
-
     bool cacheEnabled;
     QIODevice *cacheSaveDevice;
 
@@ -175,7 +173,6 @@ public:
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
     qint64 bytesUploaded;
-    qint64 preMigrationDownloaded;
 
     QString httpReasonPhrase;
     int httpStatusCode;

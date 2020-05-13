@@ -56,7 +56,7 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       copyDevice(nullptr),
       cacheEnabled(false), cacheSaveDevice(nullptr),
       notificationHandlingPaused(false),
-      bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1), preMigrationDownloaded(-1),
+      bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
       httpStatusCode(0),
       state(Idle)
       , downloadBufferReadPosition(0)
@@ -157,8 +157,6 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
 
     lastBytesDownloaded = bytesDownloaded;
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (preMigrationDownloaded != Q_INT64_C(-1))
-        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
     // emit readyRead before downloadProgress incase this will cause events to be
     // processed and we get into a recursive call (as in QProgressDialog).
@@ -525,8 +523,6 @@ void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
     Q_Q(QNetworkReplyImpl);
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (preMigrationDownloaded != Q_INT64_C(-1))
-        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
     // important: At the point of this readyRead(), the data parameter list must be empty,
     // else implicit sharing will trigger memcpy when the user is reading data!
@@ -653,13 +649,11 @@ void QNetworkReplyImplPrivate::finished()
 {
     Q_Q(QNetworkReplyImpl);
 
-    if (state == Finished || state == Aborted || state == WaitingForSession)
+    if (state == Finished || state == Aborted)
         return;
 
     pauseNotificationHandling();
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (preMigrationDownloaded != Q_INT64_C(-1))
-        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
     resumeNotificationHandling();
 
@@ -787,8 +781,6 @@ void QNetworkReplyImpl::abort()
 
     // call finished which will emit signals
     d->error(OperationCanceledError, tr("Operation canceled"));
-    if (d->state == QNetworkReplyPrivate::WaitingForSession)
-        d->state = QNetworkReplyPrivate::Working;
     d->finished();
     d->state = QNetworkReplyPrivate::Aborted;
 
@@ -917,51 +909,6 @@ bool QNetworkReplyImpl::event(QEvent *e)
     }
 
     return QObject::event(e);
-}
-
-/*
-    Migrates the backend of the QNetworkReply to a new network connection if required.  Returns
-    true if the reply is migrated or it is not required; otherwise returns \c false.
-*/
-bool QNetworkReplyImplPrivate::migrateBackend()
-{
-    Q_Q(QNetworkReplyImpl);
-
-    // Network reply is already finished or aborted, don't need to migrate.
-    if (state == Finished || state == Aborted)
-        return true;
-
-    // Request has outgoing data, not migrating.
-    if (outgoingData)
-        return false;
-
-    // Request is serviced from the cache, don't need to migrate.
-    if (copyDevice)
-        return true;
-
-    // Backend does not support resuming download.
-    if (backend && !backend->canResume())
-        return false;
-
-    state = QNetworkReplyPrivate::Reconnecting;
-
-    cookedHeaders.clear();
-    rawHeaders.clear();
-
-    preMigrationDownloaded = bytesDownloaded;
-
-    delete backend;
-    backend = manager->d_func()->findBackend(operation, request);
-
-    if (backend) {
-        backend->setParent(q);
-        backend->reply = this;
-        backend->setResumeOffset(bytesDownloaded);
-    }
-
-    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-
-    return true;
 }
 
 QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,

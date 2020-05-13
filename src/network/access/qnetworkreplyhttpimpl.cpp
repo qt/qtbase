@@ -281,10 +281,6 @@ void QNetworkReplyHttpImpl::abort()
         // call finished which will emit signals
         // FIXME shouldn't this be emitted Queued?
         d->error(OperationCanceledError, tr("Operation canceled"));
-
-        // If state is WaitingForSession, calling finished has no effect
-        if (d->state == QNetworkReplyPrivate::WaitingForSession)
-            d->state = QNetworkReplyPrivate::Working;
         d->finished();
     }
 
@@ -443,7 +439,6 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , cacheSaveDevice(nullptr)
     , cacheEnabled(false)
     , resumeOffset(0)
-    , preMigrationDownloaded(-1)
     , bytesDownloaded(0)
     , bytesBuffered(0)
     , transferTimeout(nullptr)
@@ -1063,8 +1058,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
         return;
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (preMigrationDownloaded != Q_INT64_C(-1))
-        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
     emit q->readyRead();
     // emit readyRead before downloadProgress incase this will cause events to be
@@ -1983,12 +1976,10 @@ void QNetworkReplyHttpImplPrivate::finished()
     Q_Q(QNetworkReplyHttpImpl);
     if (transferTimeout)
       transferTimeout->stop();
-    if (state == Finished || state == Aborted || state == WaitingForSession)
+    if (state == Finished || state == Aborted)
         return;
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (preMigrationDownloaded != Q_INT64_C(-1))
-        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
     // if we don't know the total size of or we received everything save the cache
     if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)
@@ -2060,47 +2051,6 @@ void QNetworkReplyHttpImplPrivate::_q_metaDataChanged()
     }
     emit q->metaDataChanged();
 }
-
-/*
-    Migrates the backend of the QNetworkReply to a new network connection if required.  Returns
-    true if the reply is migrated or it is not required; otherwise returns \c false.
-*/
-bool QNetworkReplyHttpImplPrivate::migrateBackend()
-{
-    Q_Q(QNetworkReplyHttpImpl);
-
-    // Network reply is already finished or aborted, don't need to migrate.
-    if (state == Finished || state == Aborted)
-        return true;
-
-    // Backend does not support resuming download.
-    if (!canResume())
-        return false;
-
-    // Request has outgoing data, not migrating.
-    if (outgoingData)
-        return false;
-
-    // Request is serviced from the cache, don't need to migrate.
-    if (cacheLoadDevice)
-        return true;
-
-    state = Reconnecting;
-
-    cookedHeaders.clear();
-    rawHeaders.clear();
-
-    preMigrationDownloaded = bytesDownloaded;
-
-    setResumeOffset(bytesDownloaded);
-
-    emit q->abortHttpRequest();
-
-    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-
-    return true;
-}
-
 
 void QNetworkReplyHttpImplPrivate::createCache()
 {

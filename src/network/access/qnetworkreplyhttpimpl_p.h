@@ -229,11 +229,9 @@ public:
 #endif
 
 
-    bool migrateBackend();
     bool canResume() const;
     void setResumeOffset(quint64 offset);
     quint64 resumeOffset;
-    qint64 preMigrationDownloaded;
 
     qint64 bytesDownloaded;
     qint64 bytesBuffered;
