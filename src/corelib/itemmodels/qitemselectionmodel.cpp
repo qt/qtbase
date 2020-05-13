@@ -87,14 +87,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QItemSelectionRange::QItemSelectionRange(const QItemSelectionRange &other)
-
-    Copy constructor. Constructs a new selection range with the same contents
-    as the \a other range given.
-
-*/
-
-/*!
     \fn QItemSelectionRange::QItemSelectionRange(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 
     Constructs a new selection range containing only the index specified
@@ -229,13 +221,6 @@ bool QItemSelectionRange::intersects(const QItemSelectionRange &other) const
             && isValid() && other.isValid()
             );
 }
-
-/*!
-    \fn QItemSelectionRange QItemSelectionRange::intersect(const QItemSelectionRange &other) const
-    \obsolete
-
-    Use intersected(\a other) instead.
-*/
 
 /*!
     \fn QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &other) const
