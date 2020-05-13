@@ -51,6 +51,7 @@ class QStringMatcherPrivate;
 
 class Q_CORE_EXPORT QStringMatcher
 {
+    void updateSkipTable();
 public:
     QStringMatcher();
     explicit QStringMatcher(const QString &pattern,
@@ -79,8 +80,7 @@ private:
     Qt::CaseSensitivity q_cs;
     struct Data {
         uchar q_skiptable[256];
-        const QChar *uc;
-        int len;
+        QStringView sv;
     };
     union {
         uint q_data[256];
