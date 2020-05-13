@@ -107,21 +107,6 @@ QT_END_NAMESPACE
 QT_BEGIN_NAMESPACE
 
 /*!
-    \since 5.6
-
-    \macro QT_NO_PROCESS_COMBINED_ARGUMENT_START
-    \relates QProcess
-
-    Disables the
-    \l {QProcess::start(const QString &, QIODevice::OpenMode)}
-    {QProcess::start}() overload taking a single string.
-    In most cases where it is used, the user intends for the first argument
-    to be treated atomically as per the other overload.
-
-    \sa QProcess::start(const QString &command, QIODevice::OpenMode mode)
-*/
-
-/*!
     \class QProcessEnvironment
     \inmodule QtCore
 
@@ -984,12 +969,6 @@ void QProcessPrivate::setErrorAndEmit(QProcess::ProcessError error, const QStrin
     Q_ASSERT(error != QProcess::UnknownError);
     setError(error, description);
     emit q->errorOccurred(processError);
-#if QT_DEPRECATED_SINCE(5, 6)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    emit q->error(processError);
-QT_WARNING_POP
-#endif
 }
 
 /*!
@@ -1255,32 +1234,6 @@ QProcess::~QProcess()
 #endif
     d->cleanup();
 }
-
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    \obsolete
-    Returns the read channel mode of the QProcess. This function is
-    equivalent to processChannelMode()
-
-    \sa processChannelMode()
-*/
-QProcess::ProcessChannelMode QProcess::readChannelMode() const
-{
-    return processChannelMode();
-}
-
-/*!
-    \obsolete
-
-    Use setProcessChannelMode(\a mode) instead.
-
-    \sa setProcessChannelMode()
-*/
-void QProcess::setReadChannelMode(ProcessChannelMode mode)
-{
-    setProcessChannelMode(mode);
-}
-#endif
 
 /*!
     \since 4.2
@@ -2252,63 +2205,6 @@ QStringList QProcess::splitCommand(QStringView command)
 }
 
 /*!
-    \obsolete
-    \overload
-
-    Starts the command \a command in a new process.
-    The OpenMode is set to \a mode.
-
-    \a command is a single string of text containing both the program name
-    and its arguments. The arguments are separated by one or more spaces.
-    For example:
-
-    \snippet code/src_corelib_io_qprocess.cpp 5
-
-    Arguments containing spaces must be quoted to be correctly supplied to
-    the new process. For example:
-
-    \snippet code/src_corelib_io_qprocess.cpp 6
-
-    Literal quotes in the \a command string are represented by triple quotes.
-    For example:
-
-    \snippet code/src_corelib_io_qprocess.cpp 7
-
-    After the \a command string has been split and unquoted, this function
-    behaves like the overload which takes the arguments as a string list.
-
-    You can disable this overload by defining \c
-    QT_NO_PROCESS_COMBINED_ARGUMENT_START when you compile your applications.
-    This can be useful if you want to ensure that you are not splitting arguments
-    unintentionally, for example. In virtually all cases, using the other overload
-    is the preferred method.
-
-    On operating systems where the system API for passing command line
-    arguments to a subprocess natively uses a single string (Windows), one can
-    conceive command lines which cannot be passed via QProcess's portable
-    list-based API. In these rare cases you need to use setProgram() and
-    setNativeArguments() instead of this function.
-
-    \sa splitCommand()
-
-*/
-#if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
-void QProcess::start(const QString &command, OpenMode mode)
-{
-    QStringList args = splitCommand(command);
-    if (args.isEmpty()) {
-        Q_D(QProcess);
-        d->setErrorAndEmit(QProcess::FailedToStart, tr("No program defined"));
-        return;
-    }
-
-    const QString prog = args.takeFirst();
-
-    start(prog, args, mode);
-}
-#endif
-
-/*!
     \since 5.0
 
     Returns the program the process was last started with.
@@ -2460,29 +2356,6 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
 }
 
 /*!
-    \obsolete
-    \overload
-
-    Starts the program \a command in a new process, waits for it to finish,
-    and then returns the exit code.
-
-    Argument handling is identical to the respective start() overload.
-
-    After the \a command string has been split and unquoted, this function
-    behaves like the overload which takes the arguments as a string list.
-
-    \sa start(), splitCommand()
-*/
-int QProcess::execute(const QString &command)
-{
-    QStringList args = splitCommand(command);
-    if (args.isEmpty())
-        return -2;
-    QString program = args.takeFirst();
-    return execute(program, args);
-}
-
-/*!
     \overload startDetached()
 
     Starts the program \a program with the arguments \a arguments in a
@@ -2511,32 +2384,6 @@ bool QProcess::startDetached(const QString &program,
     process.setArguments(arguments);
     process.setWorkingDirectory(workingDirectory);
     return process.startDetached(pid);
-}
-
-/*!
-    \obsolete
-    \overload startDetached()
-
-    Starts the command \a command in a new process, and detaches from it.
-    Returns \c true on success; otherwise returns \c false.
-
-    Argument handling is identical to the respective start() overload.
-
-    After the \a command string has been split and unquoted, this function
-    behaves like the overload which takes the arguments as a string list.
-
-    \sa start(const QString &command, QIODevice::OpenMode mode), splitCommand()
-*/
-bool QProcess::startDetached(const QString &command)
-{
-    QStringList args = splitCommand(command);
-    if (args.isEmpty())
-        return false;
-
-    QProcess process;
-    process.setProgram(args.takeFirst());
-    process.setArguments(args);
-    return process.startDetached();
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE

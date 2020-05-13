@@ -158,16 +158,7 @@ public:
     explicit QProcess(QObject *parent = nullptr);
     virtual ~QProcess();
 
-    void start(const QString &program, const QStringList &arguments, OpenMode mode = ReadWrite);
-#if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X(
-        "Use QProcess::start(const QString &program, const QStringList &arguments,"
-        "OpenMode mode = ReadWrite) instead"
-    )
-    void start(const QString &command, OpenMode mode = ReadWrite);
-#endif
-#endif
+    void start(const QString &program, const QStringList &arguments = {}, OpenMode mode = ReadWrite);
     void start(OpenMode mode = ReadWrite);
     bool startDetached(qint64 *pid = nullptr);
     bool open(OpenMode mode = ReadWrite) override;
@@ -178,12 +169,6 @@ public:
     QStringList arguments() const;
     void setArguments(const QStringList & arguments);
 
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QProcess::processChannelMode() instead")
-    ProcessChannelMode readChannelMode() const;
-    QT_DEPRECATED_X("Use QProcess::setProcessChannelMode() instead")
-    void setReadChannelMode(ProcessChannelMode mode);
-#endif
     ProcessChannelMode processChannelMode() const;
     void setProcessChannelMode(ProcessChannelMode mode);
     InputChannelMode inputChannelMode() const;
@@ -252,21 +237,9 @@ public:
     bool isSequential() const override;
     void close() override;
 
-    static int execute(const QString &program, const QStringList &arguments);
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X(
-        "Use QProcess::execute(const QString &program, const QStringList &arguments) instead"
-    )
-    static int execute(const QString &command);
-#endif
-    static bool startDetached(const QString &program, const QStringList &arguments,
+    static int execute(const QString &program, const QStringList &arguments = {});
+    static bool startDetached(const QString &program, const QStringList &arguments = {},
                               const QString &workingDirectory = QString(), qint64 *pid = nullptr);
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_X(
-        "Use QProcess::startDetached(const QString &program, const QStringList &arguments) instead"
-    )
-    static bool startDetached(const QString &command);
-#endif
 
     static QStringList systemEnvironment();
 
@@ -281,10 +254,6 @@ public Q_SLOTS:
 Q_SIGNALS:
     void started(QPrivateSignal);
     void finished(int exitCode, QProcess::ExitStatus exitStatus = NormalExit);
-#if QT_DEPRECATED_SINCE(5, 6)
-    QT_DEPRECATED_X("Use QProcess::errorOccurred(QProcess::ProcessError) instead")
-    void error(QProcess::ProcessError error);
-#endif
     void errorOccurred(QProcess::ProcessError error);
     void stateChanged(QProcess::ProcessState state, QPrivateSignal);
 

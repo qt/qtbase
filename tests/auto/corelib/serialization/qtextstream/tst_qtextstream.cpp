@@ -1486,7 +1486,7 @@ void tst_QTextStream::readAllFromStdin()
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess stdinProcess;
-    stdinProcess.start("readAllStdinProcess/readAllStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
+    stdinProcess.start("readAllStdinProcess/readAllStdinProcess", {}, QIODevice::ReadWrite | QIODevice::Text);
     stdinProcess.setReadChannel(QProcess::StandardError);
 
     QTextStream stream(&stdinProcess);
@@ -1507,7 +1507,7 @@ void tst_QTextStream::readLineFromStdin()
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess stdinProcess;
-    stdinProcess.start("readLineStdinProcess/readLineStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
+    stdinProcess.start("readLineStdinProcess/readLineStdinProcess", {}, QIODevice::ReadWrite | QIODevice::Text);
     stdinProcess.setReadChannel(QProcess::StandardError);
 
     stdinProcess.write("abc\n");

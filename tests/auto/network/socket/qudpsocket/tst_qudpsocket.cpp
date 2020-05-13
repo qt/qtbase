@@ -1088,7 +1088,7 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess serverProcess;
-    serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
+    serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"), {},
                         QIODevice::ReadWrite | QIODevice::Text);
 
     const auto serverProcessCleaner = qScopeGuard([&serverProcess] {
@@ -1112,7 +1112,7 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 
     QProcess clientProcess;
     clientProcess.start(QString::fromLatin1("clientserver/clientserver connectedclient %1 %2")
-                        .arg(QLatin1String("127.0.0.1")).arg(serverPort),
+                        .arg(QLatin1String("127.0.0.1")).arg(serverPort), {},
                         QIODevice::ReadWrite | QIODevice::Text);
 
     const auto clientProcessCleaner = qScopeGuard([&clientProcess] {
@@ -1162,7 +1162,7 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess serverProcess;
-    serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
+    serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"), {},
                         QIODevice::ReadWrite | QIODevice::Text);
 
     const auto serverProcessCleaner = qScopeGuard([&serverProcess] {
@@ -1186,7 +1186,7 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
 
     QProcess clientProcess;
     clientProcess.start(QString::fromLatin1("clientserver/clientserver unconnectedclient %1 %2")
-                        .arg(QLatin1String("127.0.0.1")).arg(serverPort),
+                        .arg(QLatin1String("127.0.0.1")).arg(serverPort), {},
                         QIODevice::ReadWrite | QIODevice::Text);
 
     const auto clientProcessCleaner = qScopeGuard([&clientProcess] {
