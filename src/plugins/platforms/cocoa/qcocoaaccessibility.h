@@ -36,17 +36,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #ifndef QCOCOAACCESIBILITY_H
 #define QCOCOAACCESIBILITY_H
 
-#include <AppKit/AppKit.h>
+#ifndef QT_NO_ACCESSIBILITY
 
-#include <QtGui>
 #include <qpa/qplatformaccessibility.h>
 
 #include "qcocoaaccessibilityelement.h"
-
-#ifndef QT_NO_ACCESSIBILITY
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +79,7 @@ namespace QCocoaAccessible {
     demand.
 */
 
+#if defined(__OBJC__)
 NSString *macRole(QAccessibleInterface *interface);
 NSString *macSubrole(QAccessibleInterface *interface);
 bool shouldBeIgnored(QAccessibleInterface *interface);
@@ -89,6 +88,7 @@ NSString *getTranslatedAction(const QString &qtAction);
 QString translateAction(NSString *nsAction, QAccessibleInterface *interface);
 bool hasValueAttribute(QAccessibleInterface *interface);
 id getValueAttribute(QAccessibleInterface *interface);
+#endif // __OBJC__
 
 }
 

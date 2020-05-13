@@ -71,6 +71,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoaeventdispatcher.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
@@ -88,8 +90,6 @@
 #include <qpa/qplatformnativeinterface.h>
 
 #include <QtCore/qdebug.h>
-
-#include <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
 

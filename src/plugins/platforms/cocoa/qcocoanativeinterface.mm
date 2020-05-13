@@ -37,9 +37,12 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoanativeinterface.h"
 #include "qcocoawindow.h"
 #include "qcocoamenu.h"
+#include "qcocoansmenu.h"
 #include "qcocoamenubar.h"
 #include "qcocoahelpers.h"
 #include "qcocoaapplicationdelegate.h"
@@ -62,8 +65,6 @@
 #include <QtGui/private/qcoregraphics_p.h>
 
 #include <QtPlatformHeaders/qcocoawindowfunctions.h>
-
-#include <AppKit/AppKit.h>
 
 #if QT_CONFIG(vulkan)
 #include <MoltenVK/mvk_vulkan.h>

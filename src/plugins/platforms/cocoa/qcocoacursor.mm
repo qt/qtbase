@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoacursor.h"
 #include "qcocoawindow.h"
 #include "qcocoascreen.h"

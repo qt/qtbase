@@ -40,11 +40,15 @@
 #ifndef QCOCOASCREEN_H
 #define QCOCOASCREEN_H
 
-#include <AppKit/AppKit.h>
-
 #include "qcocoacursor.h"
 
 #include <qpa/qplatformintegration.h>
+
+#include <CoreGraphics/CoreGraphics.h>
+#include <CoreVideo/CoreVideo.h>
+
+Q_FORWARD_DECLARE_OBJC_CLASS(NSScreen);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSArray);
 
 QT_BEGIN_NAMESPACE
 
@@ -136,8 +140,10 @@ QDebug operator<<(QDebug debug, const QCocoaScreen *screen);
 
 QT_END_NAMESPACE
 
+#if defined(__OBJC__)
 @interface NSScreen (QtExtras)
 @property(readonly) CGDirectDisplayID qt_displayId;
 @end
+#endif
 
 #endif // QCOCOASCREEN_H

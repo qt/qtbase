@@ -36,6 +36,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include <AppKit/AppKit.h>
+#include <QuartzCore/QuartzCore.h>
+
 #include "qcocoawindow.h"
 #include "qcocoaintegration.h"
 #include "qcocoascreen.h"
@@ -56,9 +60,6 @@
 #include <qpa/qplatformscreen.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
-
-#include <AppKit/AppKit.h>
-#include <QuartzCore/QuartzCore.h>
 
 #include <QDebug>
 
@@ -149,7 +150,7 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
     , m_alertRequest(NoAlertRequest)
-    , monitor(nil)
+    , m_monitor(nil)
     , m_drawContentBorderGradient(false)
     , m_topContentBorderThickness(0)
     , m_bottomContentBorderThickness(0)
@@ -389,7 +390,7 @@ void QCocoaWindow::setVisible(bool visible)
                     removeMonitor();
                     NSEventMask eventMask = NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown
                                           | NSEventMaskOtherMouseDown | NSEventMaskMouseMoved;
-                    monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *e) {
+                    m_monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *e) {
                         const auto button = cocoaButton2QtButton(e);
                         const auto buttons = currentlyPressedMouseButtons();
                         const auto eventType = cocoaEvent2QtMouseEvent(e);
@@ -1678,10 +1679,10 @@ bool QCocoaWindow::alwaysShowToolWindow() const
 
 void QCocoaWindow::removeMonitor()
 {
-    if (!monitor)
+    if (!m_monitor)
         return;
-    [NSEvent removeMonitor:monitor];
-    monitor = nil;
+    [NSEvent removeMonitor:m_monitor];
+    m_monitor = nil;
 }
 
 bool QCocoaWindow::setWindowModified(bool modified)

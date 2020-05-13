@@ -639,6 +639,20 @@ Q_CONSTRUCTOR_FUNCTION(qt_apple_check_os_version);
 
 // -------------------------------------------------------------------------
 
+void QMacNotificationObserver::remove()
+{
+    if (observer)
+        [[NSNotificationCenter defaultCenter] removeObserver:observer];
+    observer = nullptr;
+}
+
+// -------------------------------------------------------------------------
+
+QMacKeyValueObserver::QMacKeyValueObserver(const QMacKeyValueObserver &other)
+    : QMacKeyValueObserver(other.object, other.keyPath, *other.callback.get())
+{
+}
+
 void QMacKeyValueObserver::addObserver(NSKeyValueObservingOptions options)
 {
     [object addObserver:observer forKeyPath:keyPath options:options context:callback.get()];

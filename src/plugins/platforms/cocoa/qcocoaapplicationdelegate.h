@@ -84,24 +84,26 @@
 // We mean it.
 //
 
-
-#import <AppKit/AppKit.h>
+#ifndef QCOCOAAPPLICATIONDELEGATE_H
+#define QCOCOAAPPLICATIONDELEGATE_H
 
 #include <qglobal.h>
 #include <private/qcore_mac_p.h>
+
 #include "qcocoansmenu.h"
 
-@interface QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) : NSObject <NSApplicationDelegate>
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaApplicationDelegate, NSObject <NSApplicationDelegate>
 @property (nonatomic, retain) NSMenu *dockMenu;
 + (instancetype)sharedDelegate;
 - (void)setReflectionDelegate:(NSObject<NSApplicationDelegate> *)oldDelegate;
 - (void)removeAppleEventHandlers;
 - (bool)inLaunch;
-@end
+)
 
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaApplicationDelegate);
-
+#if defined(__OBJC__)
 @interface QCocoaApplicationDelegate (MenuAPI)
 - (void)qt_itemFired:(QCocoaNSMenuItem *)item;
 @end
+#endif
 
+#endif // QCOCOAAPPLICATIONDELEGATE_H

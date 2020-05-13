@@ -42,8 +42,6 @@
 
 #include <QtCore/qglobal.h>
 
-#include <AppKit/AppKit.h>
-
 QT_BEGIN_NAMESPACE
 
 class QCocoaWindowManager

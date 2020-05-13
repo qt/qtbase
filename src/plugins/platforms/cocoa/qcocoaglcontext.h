@@ -46,7 +46,8 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
 
-#include <AppKit/AppKit.h>
+Q_FORWARD_DECLARE_OBJC_CLASS(NSOpenGLContext);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSOpenGLPixelFormat);
 
 QT_BEGIN_NAMESPACE
 

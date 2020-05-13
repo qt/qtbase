@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoawindowmanager.h"
 #include "qcocoawindow.h"
 

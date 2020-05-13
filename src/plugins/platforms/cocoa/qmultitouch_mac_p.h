@@ -52,13 +52,15 @@
 #define QMULTITOUCH_MAC_P_H
 
 #include <QtCore/qglobal.h>
-
-#import <AppKit/AppKit.h>
-
 #include <qpa/qwindowsysteminterface.h>
 #include <qhash.h>
 #include <QtCore>
 #include <QtGui/qtouchdevice.h>
+
+#include <QtCore/private/qcore_mac_p.h>
+
+Q_FORWARD_DECLARE_OBJC_CLASS(NSTouch);
+QT_FORWARD_DECLARE_OBJC_ENUM(NSTouchPhase, unsigned long);
 
 QT_BEGIN_NAMESPACE
 

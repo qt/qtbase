@@ -38,6 +38,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include <qpa/qplatformtheme.h>
 
 #include "qcocoamenuitem.h"

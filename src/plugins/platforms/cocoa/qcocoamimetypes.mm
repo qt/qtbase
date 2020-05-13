@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoamimetypes.h"
 #include <QtGui/private/qmacmime_p.h>
 #include "qcocoahelpers.h"

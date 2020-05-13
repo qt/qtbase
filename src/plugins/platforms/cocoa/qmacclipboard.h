@@ -43,7 +43,7 @@
 #include <QtGui>
 #include <QtGui/private/qmacmime_p.h>
 
-#import <AppKit/AppKit.h>
+#include <ApplicationServices/ApplicationServices.h>
 
 QT_BEGIN_NAMESPACE
 

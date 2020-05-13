@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qnswindowdelegate.h"
 #include "qcocoahelpers.h"
 #include "qcocoawindow.h"

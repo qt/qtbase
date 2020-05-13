@@ -39,6 +39,9 @@
 
 #include <QtGui/qtguiglobal.h>
 
+#include <AppKit/AppKit.h>
+#include <MetalKit/MetalKit.h>
+
 #include "qnsview.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"

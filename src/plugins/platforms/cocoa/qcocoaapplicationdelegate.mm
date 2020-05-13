@@ -71,13 +71,15 @@
  **
  ****************************************************************************/
 
+#include <AppKit/AppKit.h>
 
-#import "qcocoaapplicationdelegate.h"
+#include "qcocoaapplicationdelegate.h"
 #include "qcocoaintegration.h"
 #include "qcocoamenu.h"
 #include "qcocoamenuloader.h"
 #include "qcocoamenuitem.h"
 #include "qcocoansmenu.h"
+#include "qcocoahelpers.h"
 
 #if QT_CONFIG(sessionmanager)
 #  include "qcocoasessionmanager.h"

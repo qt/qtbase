@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
@@ -45,8 +47,6 @@
 #include <qdebug.h>
 #include <QtPlatformHeaders/qcocoanativecontext.h>
 #include <dlfcn.h>
-
-#import <AppKit/AppKit.h>
 
 static inline QByteArray getGlString(GLenum param)
 {

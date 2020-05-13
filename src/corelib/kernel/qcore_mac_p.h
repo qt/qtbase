@@ -81,6 +81,24 @@
 
 #define QT_MAC_WEAK_IMPORT(symbol) extern "C" decltype(symbol) symbol __attribute__((weak_import));
 
+#if defined(__OBJC__)
+#define QT_DECLARE_NAMESPACED_OBJC_INTERFACE(classname, definition) \
+    @interface QT_MANGLE_NAMESPACE(classname) : \
+    definition \
+    @end \
+    QT_NAMESPACE_ALIAS_OBJC_CLASS(classname);
+#else
+#define QT_DECLARE_NAMESPACED_OBJC_INTERFACE(classname, definition) \
+    Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(classname)); \
+    using classname = QT_MANGLE_NAMESPACE(classname);
+#endif
+
+#define QT_FORWARD_DECLARE_OBJC_ENUM(name, type) \
+    typedef type name;
+
+Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
+
 QT_BEGIN_NAMESPACE
 template <typename T, typename U, U (*RetainFunction)(U), void (*ReleaseFunction)(U)>
 class QAppleRefCounted
@@ -307,24 +325,25 @@ QT_MAC_WEAK_IMPORT(_os_activity_current);
 
 // -------------------------------------------------------------------------
 
-#if defined( __OBJC__)
-class QMacNotificationObserver
+class Q_CORE_EXPORT QMacNotificationObserver
 {
 public:
     QMacNotificationObserver() {}
 
+#if defined( __OBJC__)
     template<typename Functor>
-    QMacNotificationObserver(id object, NSNotificationName name, Functor callback) {
+    QMacNotificationObserver(NSObject *object, NSNotificationName name, Functor callback) {
         observer = [[NSNotificationCenter defaultCenter] addObserverForName:name
             object:object queue:nil usingBlock:^(NSNotification *) {
                 callback();
             }
         ];
     }
+#endif
 
     QMacNotificationObserver(const QMacNotificationObserver& other) = delete;
     QMacNotificationObserver(QMacNotificationObserver&& other) : observer(other.observer) {
-        other.observer = nil;
+        other.observer = nullptr;
     }
 
     QMacNotificationObserver &operator=(const QMacNotificationObserver& other) = delete;
@@ -332,26 +351,20 @@ public:
         if (this != &other) {
             remove();
             observer = other.observer;
-            other.observer = nil;
+            other.observer = nullptr;
         }
         return *this;
     }
 
-    void remove() {
-        if (observer)
-            [[NSNotificationCenter defaultCenter] removeObserver:observer];
-        observer = nil;
-    }
+    void remove();
     ~QMacNotificationObserver() { remove(); }
 
 private:
-    id observer = nil;
+    NSObject *observer = nullptr;
 };
 
 QT_END_NAMESPACE
-@interface QT_MANGLE_NAMESPACE(KeyValueObserver) : NSObject
-@end
-QT_NAMESPACE_ALIAS_OBJC_CLASS(KeyValueObserver);
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(KeyValueObserver, NSObject)
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QMacKeyValueObserver
@@ -361,16 +374,17 @@ public:
 
     QMacKeyValueObserver() {}
 
+#if defined( __OBJC__)
     // Note: QMacKeyValueObserver must not outlive the object observed!
-    QMacKeyValueObserver(id object, NSString *keyPath, Callback callback,
+    QMacKeyValueObserver(NSObject *object, NSString *keyPath, Callback callback,
         NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew)
         : object(object), keyPath(keyPath), callback(new Callback(callback))
     {
         addObserver(options);
     }
+#endif
 
-    QMacKeyValueObserver(const QMacKeyValueObserver &other)
-         : QMacKeyValueObserver(other.object, other.keyPath, *other.callback.get()) {}
+    QMacKeyValueObserver(const QMacKeyValueObserver &other);
 
     QMacKeyValueObserver(QMacKeyValueObserver &&other) { swap(other, *this); }
 
@@ -397,15 +411,16 @@ private:
         std::swap(first.callback, second.callback);
     }
 
+#if defined( __OBJC__)
     void addObserver(NSKeyValueObservingOptions options);
+#endif
 
-    id object = nil;
+    NSObject *object = nullptr;
     NSString *keyPath = nullptr;
     std::unique_ptr<Callback> callback;
 
     static KeyValueObserver *observer;
 };
-#endif
 
 // -------------------------------------------------------------------------
 

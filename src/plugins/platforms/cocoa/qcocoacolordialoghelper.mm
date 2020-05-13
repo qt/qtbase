@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include <QtCore/qdebug.h>
 #include <QtCore/qtimer.h>
 #include <qpa/qplatformtheme.h>
@@ -45,8 +47,6 @@
 #include "qcocoahelpers.h"
 #include "qcocoaeventdispatcher.h"
 #include "private/qcoregraphics_p.h"
-
-#import <AppKit/AppKit.h>
 
 QT_USE_NAMESPACE
 

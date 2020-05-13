@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoamenuloader.h"
 
 #include "qcocoahelpers.h"

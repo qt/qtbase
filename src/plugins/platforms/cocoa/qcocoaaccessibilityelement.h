@@ -36,28 +36,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #ifndef QCOCOAACCESIBILITYELEMENT_H
 #define QCOCOAACCESIBILITYELEMENT_H
+
+#ifndef QT_NO_ACCESSIBILITY
 
 #include <QtCore/qglobal.h>
 
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtGui/qaccessible.h>
 
-#ifndef QT_NO_ACCESSIBILITY
-
-#import <Cocoa/Cocoa.h>
-#import <AppKit/NSAccessibility.h>
-
-#import <qaccessible.h>
-
-@interface QT_MANGLE_NAMESPACE(QMacAccessibilityElement) : NSObject <NSAccessibilityElement>
-
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QMacAccessibilityElement, NSObject <NSAccessibilityElement>
 - (instancetype)initWithId:(QAccessible::Id)anId;
 + (instancetype)elementWithId:(QAccessible::Id)anId;
-
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
+)
 
 #endif // QT_NO_ACCESSIBILITY
 

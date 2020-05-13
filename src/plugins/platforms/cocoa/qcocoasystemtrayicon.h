@@ -47,18 +47,20 @@
 #if QT_CONFIG(systemtrayicon)
 
 #include <QtCore/qstring.h>
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <QtGui/qpa/qplatformsystemtrayicon.h>
 
 #include "qcocoamenu.h"
 
 QT_FORWARD_DECLARE_CLASS(QCocoaSystemTrayIcon);
 
-@interface QT_MANGLE_NAMESPACE(QStatusItemDelegate) : NSObject <NSUserNotificationCenterDelegate>
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QStatusItemDelegate, NSObject <NSUserNotificationCenterDelegate>
 - (instancetype)initWithSysTray:(QCocoaSystemTrayIcon *)platformSystemTray;
 @property (nonatomic, assign) QCocoaSystemTrayIcon *platformSystemTray;
-@end
+)
 
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QStatusItemDelegate);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSStatusItem);
 
 QT_BEGIN_NAMESPACE
 

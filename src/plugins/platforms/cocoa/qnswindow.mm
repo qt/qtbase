@@ -39,6 +39,8 @@
 
 #if !defined(QNSWINDOW_PROTOCOL_IMPLMENTATION)
 
+#include <AppKit/AppKit.h>
+
 #include "qnswindow.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"

@@ -38,6 +38,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoamenu.h"
 #include "qcocoansmenu.h"
 

@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoakeymapper.h"
 
 #include <QtCore/QDebug>

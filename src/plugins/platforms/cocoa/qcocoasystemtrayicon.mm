@@ -72,6 +72,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoasystemtrayicon.h"
 
 #ifndef QT_NO_SYSTEMTRAYICON
@@ -83,13 +85,12 @@
 #include <QtCore/private/qcore_mac_p.h>
 
 #include "qcocoamenu.h"
+#include "qcocoansmenu.h"
 
 #include "qcocoahelpers.h"
 #include "qcocoaintegration.h"
 #include "qcocoascreen.h"
 #include <QtGui/private/qcoregraphics_p.h>
-
-#import <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE
 

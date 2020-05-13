@@ -37,12 +37,15 @@
 **
 ****************************************************************************/
 
-#import "qcocoansmenu.h"
+#include <AppKit/AppKit.h>
+
+#include "qcocoansmenu.h"
 #include "qcocoamenu.h"
 #include "qcocoamenuitem.h"
 #include "qcocoamenubar.h"
 #include "qcocoawindow.h"
-#import "qnsview.h"
+#include "qnsview.h"
+#include "qcocoahelpers.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qcoreevent.h>

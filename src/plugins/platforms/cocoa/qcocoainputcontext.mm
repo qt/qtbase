@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qnsview.h"
 #include "qcocoainputcontext.h"
 #include "qcocoanativeinterface.h"

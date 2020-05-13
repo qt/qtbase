@@ -51,12 +51,11 @@
 // We mean it.
 //
 
-#import <AppKit/AppKit.h>
 #include <QtCore/private/qcore_mac_p.h>
 
 QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);
 
-@interface QT_MANGLE_NAMESPACE(QCocoaMenuLoader) : NSObject
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaMenuLoader, NSObject
 + (instancetype)sharedMenuLoader;
 - (NSMenu *)menu;
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
@@ -68,8 +67,6 @@ QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);
 - (NSMenuItem *)appSpecificMenuItem:(QCocoaMenuItem *)platformItem;
 - (void)qtTranslateApplicationMenu;
 - (NSArray<NSMenuItem *> *)mergeable;
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuLoader);
+)
 
 #endif // QCOCOAMENULOADER_P_H

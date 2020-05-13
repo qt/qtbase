@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#import <AppKit/AppKit.h>
+#include <AppKit/AppKit.h>
 
 #include "qcocoatheme.h"
 

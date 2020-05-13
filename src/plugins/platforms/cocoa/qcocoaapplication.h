@@ -83,16 +83,13 @@
 // We mean it.
 //
 
+#ifndef QCOCOAAPPLICATION_H
+#define QCOCOAAPPLICATION_H
+
 #include <qglobal.h>
 #include <QtCore/private/qcore_mac_p.h>
 
-#import <AppKit/AppKit.h>
-
-
-@interface QT_MANGLE_NAMESPACE(QNSApplication) : NSApplication
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSApplication);
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSApplication, NSApplication)
 
 QT_BEGIN_NAMESPACE
 
@@ -101,3 +98,4 @@ void qt_resetNSApplicationSendEvent();
 
 QT_END_NAMESPACE
 
+#endif // QCOCOAAPPLICATION_H

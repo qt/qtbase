@@ -43,6 +43,7 @@
 
 #include <QtCore/QList>
 #include <qpa/qplatformmenu.h>
+
 #include "qcocoamenuitem.h"
 #include "qcocoansmenu.h"
 

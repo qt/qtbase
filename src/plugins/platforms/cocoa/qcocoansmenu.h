@@ -51,32 +51,26 @@
 // We mean it.
 //
 
-#import <AppKit/AppKit.h>
-
-#include "qcocoahelpers.h"
+#include <QtCore/private/qcore_mac_p.h>
 
 QT_FORWARD_DECLARE_CLASS(QCocoaMenu);
 QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);
 
-@interface QT_MANGLE_NAMESPACE(QCocoaNSMenuDelegate) : NSObject <NSMenuDelegate>
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaNSMenuDelegate, NSObject <NSMenuDelegate>
 + (instancetype)sharedMenuDelegate;
 - (NSMenuItem *)findItemInMenu:(NSMenu *)menu forKey:(NSString *)key modifiers:(NSUInteger)modifiers;
-@end
+)
 
-@interface QT_MANGLE_NAMESPACE(QCocoaNSMenu) : NSMenu
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaNSMenu, NSMenu
 @property (readonly, nonatomic) QCocoaMenu *platformMenu;
 - (instancetype)initWithPlatformMenu:(QCocoaMenu *)menu;
-@end
+)
 
-@interface QT_MANGLE_NAMESPACE(QCocoaNSMenuItem) : NSMenuItem
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QCocoaNSMenuItem, NSMenuItem
 @property (nonatomic) QCocoaMenuItem *platformMenuItem;
 + (instancetype)separatorItemWithPlatformMenuItem:(QCocoaMenuItem *)menuItem;
 - (instancetype)initWithPlatformMenuItem:(QCocoaMenuItem *)menuItem;
 - (instancetype)init;
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenu);
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenuItem);
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenuDelegate);
+)
 
 #endif // QCOCOANSMENU_H

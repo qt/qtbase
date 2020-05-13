@@ -40,10 +40,10 @@
 #ifndef QWINDOWSCURSOR_H
 #define QWINDOWSCURSOR_H
 
-#include <AppKit/AppKit.h>
-
 #include <QtCore>
 #include <qpa/qplatformcursor.h>
+
+Q_FORWARD_DECLARE_OBJC_CLASS(NSCursor);
 
 QT_BEGIN_NAMESPACE
 

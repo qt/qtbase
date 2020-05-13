@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include <qpa/qplatformtheme.h>
 
 #include "qcocoafiledialoghelper.h"
@@ -64,8 +66,7 @@
 
 #include <qpa/qplatformnativeinterface.h>
 
-#import <AppKit/NSSavePanel.h>
-#import <CoreFoundation/CFNumber.h>
+#include <CoreFoundation/CFNumber.h>
 
 QT_FORWARD_DECLARE_CLASS(QString)
 QT_FORWARD_DECLARE_CLASS(QStringList)

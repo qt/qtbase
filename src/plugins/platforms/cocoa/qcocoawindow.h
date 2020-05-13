@@ -40,8 +40,6 @@
 #ifndef QCOCOAWINDOW_H
 #define QCOCOAWINDOW_H
 
-#include <AppKit/AppKit.h>
-
 #include <qpa/qplatformwindow.h>
 #include <QRect>
 #include <QPointer>
@@ -54,6 +52,15 @@
 
 #if QT_CONFIG(vulkan)
 #include <MoltenVK/mvk_vulkan.h>
+#endif
+
+Q_FORWARD_DECLARE_OBJC_CLASS(NSWindow);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSCursor);
+
+#if !defined(__OBJC__)
+using NSInteger = long;
+using NSUInteger = unsigned long;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -262,7 +269,7 @@ public: // for QNSView
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest;
-    id monitor;
+    NSObject *m_monitor;
 
     bool m_drawContentBorderGradient;
     int m_topContentBorderThickness;

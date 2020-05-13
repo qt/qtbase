@@ -40,9 +40,6 @@
 #ifndef QNSVIEW_H
 #define QNSVIEW_H
 
-#include <AppKit/AppKit.h>
-#include <MetalKit/MetalKit.h>
-
 #include <QtCore/private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -51,14 +48,13 @@ class QCocoaGLContext;
 class QPointF;
 QT_END_NAMESPACE
 
-@interface QT_MANGLE_NAMESPACE(QNSView) : NSView
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSView, NSView
 @property (nonatomic, retain) NSCursor *cursor;
 - (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow;
 - (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;
-@end
+)
 
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSView);
-
+#if defined(__OBJC__)
 @interface QNSView (MouseAPI)
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
 - (void)resetMouseButtons;
@@ -76,5 +72,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSView);
 @interface QNSView (QtExtras)
 @property (nonatomic, readonly) QCocoaWindow *platformWindow;
 @end
+#endif // __OBJC__
+
 
 #endif //QNSVIEW_H

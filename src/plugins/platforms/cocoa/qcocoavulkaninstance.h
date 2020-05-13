@@ -49,8 +49,6 @@
 #include <QtCore/QHash>
 #include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 
-#include <AppKit/AppKit.h>
-
 QT_BEGIN_NAMESPACE
 
 class QCocoaVulkanInstance : public QBasicPlatformVulkanInstance

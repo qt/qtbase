@@ -40,13 +40,12 @@
 #ifndef QCOCOAKEYMAPPER_H
 #define QCOCOAKEYMAPPER_H
 
-#include "qcocoahelpers.h"
-
-#include <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 
 #include <QtCore/QList>
 #include <QtGui/QKeyEvent>
+
+#include <QtCore/private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 

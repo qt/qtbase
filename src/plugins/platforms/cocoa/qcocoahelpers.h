@@ -51,8 +51,6 @@
 // We mean it.
 //
 
-#include <AppKit/AppKit.h>
-
 #include <private/qguiapplication_p.h>
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qloggingcategory.h>
@@ -61,6 +59,8 @@
 
 #include <objc/runtime.h>
 #include <objc/message.h>
+
+#if defined(__OBJC__)
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSView));
 
@@ -376,6 +376,8 @@ QSendSuperHelper<Args...> qt_objcDynamicSuperHelper(id receiver, SEL selector, A
 
 // Same as calling super, but the super_class field resolved at runtime instead of compile time
 #define qt_objcDynamicSuper(...) qt_objcDynamicSuperHelper(self, _cmd, ##__VA_ARGS__)
+
+#endif // __OBJC__
 
 #endif //QCOCOAHELPERS_H
 

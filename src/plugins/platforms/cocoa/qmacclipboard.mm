@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qmacclipboard.h"
 #include <QtGui/qclipboard.h>
 #include <QtGui/qguiapplication.h>

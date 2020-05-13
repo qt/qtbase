@@ -44,9 +44,9 @@
 #include <QPointer>
 #include <QtCore/private/qcore_mac_p.h>
 
-#include <AppKit/AppKit.h>
-
 QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
+
+#if defined(__OBJC__)
 
 // @compatibility_alias doesn't work with categories or their methods
 #define FullScreenProperty QT_MANGLE_NAMESPACE(FullScreenProperty)
@@ -69,10 +69,11 @@ QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
 typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
-@interface QT_MANGLE_NAMESPACE(QNSWindow) : NSWindow<QNSWindowProtocol> @end
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindow);
+#else
+class QCocoaNSWindow;
+#endif // __OBJC__
 
-@interface QT_MANGLE_NAMESPACE(QNSPanel) : NSPanel<QNSWindowProtocol> @end
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanel);
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSWindow, NSWindow <QNSWindowProtocol>)
+QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSPanel, NSPanel <QNSWindowProtocol>)
 
 #endif // QNSWINDOW_H

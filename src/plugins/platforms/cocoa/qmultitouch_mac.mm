@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qmultitouch_mac_p.h"
 #include "qcocoahelpers.h"
 #include "qcocoascreen.h"

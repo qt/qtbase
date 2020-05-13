@@ -45,7 +45,7 @@
 
 #include <QtGui/qaccessible.h>
 
-#import <AppKit/NSAccessibility.h>
+#include <AppKit/NSAccessibility.h>
 
 @implementation QNSView (Accessibility)
 

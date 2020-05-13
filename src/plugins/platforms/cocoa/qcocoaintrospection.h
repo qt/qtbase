@@ -71,8 +71,11 @@
 **
 ****************************************************************************/
 
+#ifndef QCOCOAINTROSPECTION_H
+#define QCOCOAINTROSPECTION_H
+
 #include <qglobal.h>
-#import <objc/objc-class.h>
+#include <objc/objc-class.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,3 +83,5 @@ void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class prox
 void qt_cocoa_change_back_implementation(Class baseClass, SEL originalSel, SEL backupSel);
 
 QT_END_NAMESPACE
+
+#endif // QCOCOAINTROSPECTION_H

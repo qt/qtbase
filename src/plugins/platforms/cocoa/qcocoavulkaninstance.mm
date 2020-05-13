@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoavulkaninstance.h"
 #include "qcocoawindow.h"
 

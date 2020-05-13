@@ -71,6 +71,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include "qcocoaapplication.h"
 
 #include "qcocoaintrospection.h"

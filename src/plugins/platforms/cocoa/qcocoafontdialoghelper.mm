@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <AppKit/AppKit.h>
+
 #include <QtCore/qtimer.h>
 #include <QtGui/qfontdatabase.h>
 #include <qpa/qplatformtheme.h>
@@ -48,8 +50,6 @@
 #include "qcocoafontdialoghelper.h"
 #include "qcocoahelpers.h"
 #include "qcocoaeventdispatcher.h"
-
-#import <AppKit/AppKit.h>
 
 #if !CGFLOAT_DEFINED
 typedef float CGFloat;  // Should only not be defined on 32-bit platforms
