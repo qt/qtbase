@@ -46,6 +46,10 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFunctions>
 
+#ifndef GL_UNPACK_ROW_LENGTH
+#define GL_UNPACK_ROW_LENGTH              0x0CF2
+#endif
+
 #ifndef GL_RGB10_A2
 #define GL_RGB10_A2                       0x8059
 #endif
@@ -161,66 +165,68 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
     bool premultiplied = false;
     QImage::Format imageformat = QImage::toImageFormat(graphicsBuffer->format());
     QImage image(graphicsBuffer->data(), size.width(), size.height(), graphicsBuffer->bytesPerLine(), imageformat);
-    if (graphicsBuffer->bytesPerLine() != (size.width() * 4)) {
-        needsConversion = true;
-    } else {
-        switch (imageformat) {
-        case QImage::Format_ARGB32_Premultiplied:
+    switch (imageformat) {
+    case QImage::Format_ARGB32_Premultiplied:
+        premultiplied = true;
+        Q_FALLTHROUGH();
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32:
+        swizzle = true;
+        break;
+    case QImage::Format_RGBA8888_Premultiplied:
+        premultiplied = true;
+        Q_FALLTHROUGH();
+    case QImage::Format_RGBX8888:
+    case QImage::Format_RGBA8888:
+        break;
+    case QImage::Format_BGR30:
+    case QImage::Format_A2BGR30_Premultiplied:
+        if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
+            pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
+            internalFormat = GL_RGB10_A2;
             premultiplied = true;
-            Q_FALLTHROUGH();
-        case QImage::Format_RGB32:
-        case QImage::Format_ARGB32:
-            swizzle = true;
-            break;
-        case QImage::Format_RGBA8888_Premultiplied:
-            premultiplied = true;
-            Q_FALLTHROUGH();
-        case QImage::Format_RGBX8888:
-        case QImage::Format_RGBA8888:
-            break;
-        case QImage::Format_BGR30:
-        case QImage::Format_A2BGR30_Premultiplied:
-            if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
-                pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
-                internalFormat = GL_RGB10_A2;
-                premultiplied = true;
-            } else {
-                needsConversion = true;
-            }
-            break;
-        case QImage::Format_RGB30:
-        case QImage::Format_A2RGB30_Premultiplied:
-            if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
-                pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
-                internalFormat = GL_RGB10_A2;
-                premultiplied = true;
-                swizzle = true;
-            } else {
-                needsConversion = true;
-            }
-            break;
-        default:
+        } else {
             needsConversion = true;
-            break;
         }
+        break;
+    case QImage::Format_RGB30:
+    case QImage::Format_A2RGB30_Premultiplied:
+        if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
+            pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
+            internalFormat = GL_RGB10_A2;
+            premultiplied = true;
+            swizzle = true;
+        } else {
+            needsConversion = true;
+        }
+        break;
+    default:
+        needsConversion = true;
+        break;
     }
+    if (!needsConversion && image.bytesPerLine() != (size.width() * 4) && ctx->isOpenGLES() && ctx->format().majorVersion() < 3)
+        needsConversion = true;
     if (needsConversion)
-        image = image.convertToFormat(QImage::Format_RGBA8888);
+        image.convertTo(QImage::Format_RGBA8888);
 
+    bool needsRowLength = (image.bytesPerLine() != image.width() * 4);
     QOpenGLFunctions *funcs = ctx->functions();
 
     QRect rect = subRect;
     if (rect.isNull() || rect == QRect(QPoint(0,0),size)) {
+        if (needsRowLength)
+            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.bytesPerLine() / 4);
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, size.width(), size.height(), 0, GL_RGBA, pixelType, image.constBits());
+        if (needsRowLength)
+            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     } else {
-#ifndef QT_OPENGL_ES_2
-        if (!ctx->isOpenGLES()) {
-            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.width());
+        if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
+            // OpenGL 2.1+ or OpenGL ES/3+
+            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.bytesPerLine() / 4);
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, pixelType,
                                    image.constScanLine(rect.y()) + rect.x() * 4);
             funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
         } else
-#endif
         {
             // if the rect is wide enough it's cheaper to just
             // extend it instead of doing an image copy
@@ -232,7 +238,7 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
             // if the sub-rect is full-width we can pass the image data directly to
             // OpenGL instead of copying, since there's no gap between scanlines
 
-            if (rect.width() == size.width()) {
+            if (rect.width() == image.bytesPerLine() / 4) {
                 funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, rect.y(), rect.width(), rect.height(), GL_RGBA, pixelType,
                                        image.constScanLine(rect.y()));
             } else {
