@@ -535,7 +535,10 @@ static QString getRelocatablePrefix()
 #if defined(QT_STATIC)
     prefixPath = prefixFromAppDirHelper();
 #elif defined(Q_OS_DARWIN) && QT_CONFIG(framework)
-    auto qtCoreBundle = CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.QtCore"));
+#ifndef QT_LIBINFIX
+    #define QT_LIBINFIX ""
+#endif
+    auto qtCoreBundle = CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.QtCore" QT_LIBINFIX));
     if (!qtCoreBundle) {
         // When running Qt apps over Samba shares, CoreFoundation will fail to find
         // the Resources directory inside the bundle, This directory is a symlink,
@@ -548,7 +551,7 @@ static QString getRelocatablePrefix()
             auto bundle = CFBundleRef(CFArrayGetValueAtIndex(allBundles, i));
             auto url = QCFType<CFURLRef>(CFBundleCopyBundleURL(bundle));
             auto path = QCFType<CFStringRef>(CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle));
-            if (CFStringHasSuffix(path, CFSTR("/QtCore.framework"))) {
+            if (CFStringHasSuffix(path, CFSTR("/QtCore" QT_LIBINFIX ".framework"))) {
                 qtCoreBundle = bundle;
                 break;
             }
