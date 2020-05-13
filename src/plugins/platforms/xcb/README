@@ -1,7 +1,1 @@
 Requires libxcb >= 1.9.1.
-
-REDUCING RUNTIME DEPENDENCIES
-
-The '-qt-xcb' configure option can be used to get rid of most xcb- dependencies. Only libxcb will
-still be linked dynamically, since it will be most likely be pulled in via other dependencies anyway.
-This should allow for binaries that are portable across most modern Linux distributions.
