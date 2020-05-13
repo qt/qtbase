@@ -607,7 +607,6 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     return true;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 /*!
     \reimp
  */
@@ -615,7 +614,6 @@ bool QSqlTableModel::clearItemData(const QModelIndex &index)
 {
     return setData(index, QVariant(), Qt::EditRole);
 }
-#endif
 
 /*!
     This function simply calls QSqlQueryModel::setQuery(\a query).

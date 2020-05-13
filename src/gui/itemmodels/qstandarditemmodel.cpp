@@ -2994,20 +2994,9 @@ bool QStandardItemModel::setData(const QModelIndex &index, const QVariant &value
     return true;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 /*!
     \reimp
  */
-#else
-/*!
-  \since 5.12
-  Removes the data stored in all the roles for the given \a index.
-  Returns \c true if \a index is valid and data was cleared, \c false
-  otherwise.
-
-  \sa setData(), data()
-*/
-#endif
 bool QStandardItemModel::clearItemData(const QModelIndex &index)
 {
     if (!checkIndex(index, CheckIndexOption::IndexIsValid))

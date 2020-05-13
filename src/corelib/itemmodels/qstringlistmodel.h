@@ -59,9 +59,7 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     bool clearItemData(const QModelIndex &index) override;
-#endif
 
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 

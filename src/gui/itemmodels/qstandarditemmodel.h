@@ -333,11 +333,7 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-    bool clearItemData(const QModelIndex &index)
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    override
-#endif
-    ;
+    bool clearItemData(const QModelIndex &index) override;
 
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
