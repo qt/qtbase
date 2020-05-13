@@ -52,6 +52,7 @@
 #include "qcocoamenubar.h"
 #include "qcocoawindow.h"
 #include "qcocoascreen.h"
+#include "qcocoaapplicationdelegate.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -102,6 +103,12 @@ void QCocoaMenu::setFont(const QFont &font)
 NSMenu *QCocoaMenu::nsMenu() const
 {
     return static_cast<NSMenu *>(m_nativeMenu);
+}
+
+void QCocoaMenu::setAsDockMenu() const
+{
+    QMacAutoReleasePool pool;
+    QCocoaApplicationDelegate.sharedDelegate.dockMenu = m_nativeMenu;
 }
 
 void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)

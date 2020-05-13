@@ -84,15 +84,6 @@ private:
     static void removeFromMimeList(void *macPasteboardMime);
     static void registerDraggedTypes(const QStringList &types);
 
-    // Dock menu support
-    static void setDockMenu(QPlatformMenu *platformMenu);
-
-    // Function to return NSMenu * from QPlatformMenu
-    static void *qMenuToNSMenu(QPlatformMenu *platformMenu);
-
-    // Function to return NSMenu * from QPlatformMenuBar
-    static void *qMenuBarToNSMenu(QPlatformMenuBar *platformMenuBar);
-
     // Set a QWindow as a "guest" (subwindow) of a non-QWindow
     static void setEmbeddedInForeignView(QPlatformWindow *window, bool embedded);
 

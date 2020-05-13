@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaWindow;
 
 class QCocoaMenuBar : public QPlatformMenuBar
+                    , public QPlatformInterface::Private::QCocoaMenuBar
 {
     Q_OBJECT
 public:
@@ -63,8 +64,7 @@ public:
     QWindow *parentWindow() const override;
     QPlatformMenu *menuForTag(quintptr tag) const override;
 
-    inline NSMenu *nsMenu() const
-        { return m_nativeMenu; }
+    NSMenu *nsMenu() const override { return m_nativeMenu; }
 
     static void updateMenuBarImmediately();
 

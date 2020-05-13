@@ -40,6 +40,10 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
+#include <qtwidgetsglobal.h>
+
+QT_USE_NAMESPACE
+
 #include "qmenu.h"
 #if QT_CONFIG(menubar)
 #include "qmenubar.h"
@@ -51,6 +55,8 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <qpa/qplatformnativeinterface.h>
+
+using namespace QPlatformInterface::Private;
 
 QT_BEGIN_NAMESPACE
 
@@ -84,12 +90,9 @@ inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePla
 NSMenu *QMenu::toNSMenu()
 {
     Q_D(QMenu);
-    // Call into the cocoa platform plugin: qMenuToNSMenu(platformMenu())
-    QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("qmenutonsmenu");
-    if (function) {
-        typedef void* (*QMenuToNSMenuFunction)(QPlatformMenu *platformMenu);
-        return reinterpret_cast<NSMenu *>(reinterpret_cast<QMenuToNSMenuFunction>(function)(d->createPlatformMenu()));
-    }
+    if (auto *cocoaPlatformMenu = dynamic_cast<QCocoaMenu *>(d->createPlatformMenu()))
+        return cocoaPlatformMenu->nsMenu();
+
     return nil;
 }
 
@@ -104,12 +107,8 @@ NSMenu *QMenu::toNSMenu()
 void QMenu::setAsDockMenu()
 {
     Q_D(QMenu);
-    // Call into the cocoa platform plugin: setDockMenu(platformMenu())
-    QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("setdockmenu");
-    if (function) {
-        typedef void (*SetDockMenuFunction)(QPlatformMenu *platformMenu);
-        reinterpret_cast<SetDockMenuFunction>(function)(d->createPlatformMenu());
-    }
+    if (auto *cocoaPlatformMenu = dynamic_cast<QCocoaMenu *>(d->createPlatformMenu()))
+        cocoaPlatformMenu->setAsDockMenu();
 }
 
 
@@ -161,12 +160,9 @@ void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* 
 */
 NSMenu *QMenuBar::toNSMenu()
 {
-    // Call into the cocoa platform plugin: qMenuBarToNSMenu(platformMenuBar())
-    QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("qmenubartonsmenu");
-    if (function) {
-        typedef void* (*QMenuBarToNSMenuFunction)(QPlatformMenuBar *platformMenuBar);
-        return reinterpret_cast<NSMenu *>(reinterpret_cast<QMenuBarToNSMenuFunction>(function)(platformMenuBar()));
-    }
+    if (auto *cocoaMenuBar = dynamic_cast<QCocoaMenuBar *>(platformMenuBar()))
+        return cocoaMenuBar->nsMenu();
+
     return nil;
 }
 #endif // QT_CONFIG(menubar)

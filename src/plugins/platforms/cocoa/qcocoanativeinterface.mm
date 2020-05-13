@@ -102,12 +102,6 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::removeFromMimeList);
     if (resource.toLower() == "registerdraggedtypes")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerDraggedTypes);
-    if (resource.toLower() == "setdockmenu")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setDockMenu);
-    if (resource.toLower() == "qmenutonsmenu")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qMenuToNSMenu);
-    if (resource.toLower() == "qmenubartonsmenu")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qMenuBarToNSMenu);
     if (resource.toLower() == "registertouchwindow")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerTouchWindow);
     if (resource.toLower() == "setembeddedinforeignview")
@@ -187,28 +181,6 @@ void QCocoaNativeInterface::removeFromMimeList(void *macPasteboardMime)
 void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
 {
     qt_mac_registerDraggedTypes(types);
-}
-
-void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
-{
-    QMacAutoReleasePool pool;
-    QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
-    NSMenu *menu = cocoaPlatformMenu->nsMenu();
-    [QCocoaApplicationDelegate sharedDelegate].dockMenu = menu;
-}
-
-void *QCocoaNativeInterface::qMenuToNSMenu(QPlatformMenu *platformMenu)
-{
-    QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
-    NSMenu *menu = cocoaPlatformMenu->nsMenu();
-    return reinterpret_cast<void *>(menu);
-}
-
-void *QCocoaNativeInterface::qMenuBarToNSMenu(QPlatformMenuBar *platformMenuBar)
-{
-    QCocoaMenuBar *cocoaPlatformMenuBar = static_cast<QCocoaMenuBar *>(platformMenuBar);
-    NSMenu *menu = cocoaPlatformMenuBar->nsMenu();
-    return reinterpret_cast<void *>(menu);
 }
 
 void QCocoaNativeInterface::setEmbeddedInForeignView(QPlatformWindow *window, bool embedded)
