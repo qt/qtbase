@@ -1695,7 +1695,7 @@ static bool win_message_handler(QtMsgType type, const QMessageLogContext &contex
     if (shouldLogToStderr())
         return false; // Leave logging up to stderr handler
 
-    const QString formattedMessage = qFormatLogMessage(type, context, message).append('\n');
+    const QString formattedMessage = qFormatLogMessage(type, context, message).append(QLatin1Char('\n'));
     win_outputDebugString_helper(formattedMessage);
 
     return true; // Prevent further output to stderr
