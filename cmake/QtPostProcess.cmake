@@ -323,6 +323,19 @@ function(qt_generate_install_prefixes out_var)
     set(${out_var} "${content}" PARENT_SCOPE)
 endfunction()
 
+function(qt_wrap_string_in_if_multi_config content out_var)
+    set(${out_var} "
+get_property(__qt_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(__qt_is_multi_config)
+${content}endif()
+unset(__qt_is_multi_config)\n" PARENT_SCOPE)
+endfunction()
+
+function(qt_wrap_string_in_if_ninja_multi_config content out_var)
+    set(${out_var} "if(CMAKE_GENERATOR STREQUAL \"Ninja Multi-Config\")
+${content}endif()\n" PARENT_SCOPE)
+endfunction()
+
 function(qt_generate_build_internals_extra_cmake_code)
     if(PROJECT_NAME STREQUAL "QtBase")
         foreach(var IN LISTS QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT)
@@ -343,25 +356,49 @@ function(qt_generate_build_internals_extra_cmake_code)
 
         endif()
         if(CMAKE_CONFIGURATION_TYPES)
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_CONFIGURATION_TYPES \"${CMAKE_CONFIGURATION_TYPES}\" CACHE STRING \"\" FORCE)\n")
+            string(APPEND multi_config_specific
+                "    set(CMAKE_CONFIGURATION_TYPES \"${CMAKE_CONFIGURATION_TYPES}\" CACHE STRING \"\" FORCE)\n")
         endif()
         if(CMAKE_TRY_COMPILE_CONFIGURATION)
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_TRY_COMPILE_CONFIGURATION \"${CMAKE_TRY_COMPILE_CONFIGURATION}\")\n")
+            string(APPEND multi_config_specific
+                "    set(CMAKE_TRY_COMPILE_CONFIGURATION \"${CMAKE_TRY_COMPILE_CONFIGURATION}\")\n")
         endif()
+        if(multi_config_specific)
+            qt_wrap_string_in_if_multi_config(
+                "${multi_config_specific}"
+                multi_config_specific)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${multi_config_specific}")
+        endif()
+
         if(QT_MULTI_CONFIG_FIRST_CONFIG)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(QT_MULTI_CONFIG_FIRST_CONFIG \"${QT_MULTI_CONFIG_FIRST_CONFIG}\")\n")
+                "\nset(QT_MULTI_CONFIG_FIRST_CONFIG \"${QT_MULTI_CONFIG_FIRST_CONFIG}\")\n")
         endif()
+        # When building standalone tests against a multi-config Qt, we want to choose the first
+        # configuration, rather than default to Debug.
+        if(multi_config_specific)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "
+if(QT_BUILD_STANDALONE_TESTS)
+    set(CMAKE_BUILD_TYPE \"\${QT_MULTI_CONFIG_FIRST_CONFIG}\" CACHE STRING \"Choose the type of build.\" FORCE)
+endif()\n")
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${multi_config_specific}")
+        endif()
+
         if(CMAKE_CROSS_CONFIGS)
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_CROSS_CONFIGS \"${CMAKE_CROSS_CONFIGS}\" CACHE STRING \"\")\n")
+            string(APPEND ninja_multi_config_specific
+                "    set(CMAKE_CROSS_CONFIGS \"${CMAKE_CROSS_CONFIGS}\" CACHE STRING \"\")\n")
         endif()
         if(CMAKE_DEFAULT_BUILD_TYPE)
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(CMAKE_DEFAULT_BUILD_TYPE \"${CMAKE_DEFAULT_BUILD_TYPE}\" CACHE STRING \"\")\n")
+            string(APPEND ninja_multi_config_specific
+                "    set(CMAKE_DEFAULT_BUILD_TYPE \"${CMAKE_DEFAULT_BUILD_TYPE}\" CACHE STRING \"\")\n")
         endif()
+        if(ninja_multi_config_specific)
+            qt_wrap_string_in_if_ninja_multi_config(
+                "${ninja_multi_config_specific}"
+                ninja_multi_config_specific)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${ninja_multi_config_specific}")
+        endif()
+
         if(DEFINED BUILD_WITH_PCH)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(BUILD_WITH_PCH \"${BUILD_WITH_PCH}\" CACHE STRING \"\")\n")
