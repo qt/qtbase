@@ -21,6 +21,8 @@ qt_internal_add_test(tst_qnetworkreply
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../tst_qnetworkreply.cpp
+        ../data/gzip.rcc.cpp
+        ../data/zstandard.rcc.cpp
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate

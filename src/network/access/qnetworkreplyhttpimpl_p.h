@@ -73,6 +73,8 @@
 
 Q_MOC_INCLUDE(<QtNetwork/QAuthenticator>)
 
+#include <private/qdecompresshelper_p.h>
+
 QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
@@ -108,9 +110,6 @@ public:
     // From reply
     Q_PRIVATE_SLOT(d_func(), void replyDownloadData(QByteArray))
     Q_PRIVATE_SLOT(d_func(), void replyFinished())
-    Q_PRIVATE_SLOT(d_func(), void replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >,
-                                                        int, QString, bool, QSharedPointer<char>,
-                                                        qint64, qint64, bool))
     Q_PRIVATE_SLOT(d_func(), void replyDownloadProgressSlot(qint64,qint64))
     Q_PRIVATE_SLOT(d_func(), void httpAuthenticationRequired(const QHttpNetworkRequest &, QAuthenticator *))
     Q_PRIVATE_SLOT(d_func(), void httpError(QNetworkReply::NetworkError, const QString &))
@@ -258,6 +257,8 @@ public:
 
     QNetworkRequest redirectRequest;
 
+    QDecompressHelper decompressHelper;
+
     bool loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest);
     void invalidateCache();
     bool sendCacheContents(const QNetworkCacheMetaData &metaData);
@@ -274,7 +275,7 @@ public:
     void replyDownloadData(QByteArray);
     void replyFinished();
     void replyDownloadMetaData(const QList<QPair<QByteArray,QByteArray> > &, int, const QString &,
-                               bool, QSharedPointer<char>, qint64, qint64, bool);
+                               bool, QSharedPointer<char>, qint64, qint64, bool, bool);
     void replyDownloadProgressSlot(qint64,qint64);
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);

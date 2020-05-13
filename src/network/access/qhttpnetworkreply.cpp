@@ -46,6 +46,8 @@
 #    include <QtNetwork/qsslconfiguration.h>
 #endif
 
+#include <private/qdecompresshelper_p.h>
+
 QT_BEGIN_NAMESPACE
 
 QHttpNetworkReply::QHttpNetworkReply(const QUrl &url, QObject *parent)
@@ -348,7 +350,6 @@ void QHttpNetworkReplyPrivate::clearHttpLayerInformation()
     currentChunkRead = 0;
     lastChunkRead = false;
     connectionCloseEnabled = true;
-    decompressHelper.clear();
     fields.clear();
 }
 
@@ -554,11 +555,6 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
             headerField("proxy-connection").toLower().contains("close")) ||
             (majorVersion == 1 && minorVersion == 0 &&
             (connectionHeaderField.isEmpty() && !headerField("proxy-connection").toLower().contains("keep-alive")));
-        if (autoDecompress && isCompressed()) {
-            if (!decompressHelper.setEncoding(headerField("content-encoding")))
-                return -1; // Either the encoding was unsupported or the decoder could not be set up
-            decompressHelper.setMinimumArchiveBombSize(request.minimumArchiveBombSize());
-        }
     }
     return bytes;
 }
@@ -660,42 +656,18 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
 {
     qint64 bytes = 0;
 
-    // for compressed data we'll allocate a temporary one that we then decompress
-    QByteDataBuffer *tempOutDataBuffer = (autoDecompress ? new QByteDataBuffer : out);
-
-
     if (isChunked()) {
         // chunked transfer encoding (rfc 2616, sec 3.6)
-        bytes += readReplyBodyChunked(socket, tempOutDataBuffer);
+        bytes += readReplyBodyChunked(socket, out);
     } else if (bodyLength > 0) {
         // we have a Content-Length
-        bytes += readReplyBodyRaw(socket, tempOutDataBuffer, bodyLength - contentRead);
+        bytes += readReplyBodyRaw(socket, out, bodyLength - contentRead);
         if (contentRead + bytes == bodyLength)
             state = AllDoneState;
     } else {
         // no content length. just read what's possible
-        bytes += readReplyBodyRaw(socket, tempOutDataBuffer, socket->bytesAvailable());
+        bytes += readReplyBodyRaw(socket, out, socket->bytesAvailable());
     }
-
-    // This is true if there is compressed encoding and we're supposed to use it.
-    if (autoDecompress) {
-        QScopedPointer holder(tempOutDataBuffer);
-        if (!decompressHelper.isValid())
-            return -1;
-
-        decompressHelper.feed(std::move(*tempOutDataBuffer));
-        while (decompressHelper.hasData()) {
-            QByteArray output(4 * 1024, Qt::Uninitialized);
-            qint64 read = decompressHelper.read(output.data(), output.size());
-            if (read < 0) {
-                return -1;
-            } else if (read > 0) {
-                output.resize(read);
-                out->append(std::move(output));
-            }
-        }
-    }
-
     contentRead += bytes;
     return bytes;
 }

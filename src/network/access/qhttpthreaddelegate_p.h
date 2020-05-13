@@ -119,6 +119,8 @@ public:
     QString incomingErrorDetail;
     QHttp2Configuration http2Parameters;
 
+    bool isCompressed;
+
 protected:
     // The zerocopy download buffer, if used:
     QSharedPointer<char> downloadBuffer;
@@ -142,7 +144,7 @@ signals:
     void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *);
 #endif
     void downloadMetaData(const QList<QPair<QByteArray,QByteArray> > &, int, const QString &, bool,
-                          QSharedPointer<char>, qint64, qint64, bool);
+                          QSharedPointer<char>, qint64, qint64, bool, bool);
     void downloadProgress(qint64, qint64);
     void downloadData(const QByteArray &);
     void error(QNetworkReply::NetworkError, const QString &);

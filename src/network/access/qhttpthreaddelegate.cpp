@@ -545,6 +545,7 @@ void QHttpThreadDelegate::synchronousFinishedSlot()
             incomingErrorCode = statusCodeFromHttp(httpReply->statusCode(), httpRequest.url());
     }
 
+    isCompressed = httpReply->isCompressed();
     synchronousDownloadData = httpReply->readAll();
 
     QMetaObject::invokeMethod(httpReply, "deleteLater", Qt::QueuedConnection);
@@ -634,6 +635,7 @@ void QHttpThreadDelegate::headerChangedSlot()
     incomingContentLength = httpReply->contentLength();
     removedContentLength = httpReply->removedContentLength();
     isHttp2Used = httpReply->isHttp2Used();
+    isCompressed = httpReply->isCompressed();
 
     emit downloadMetaData(incomingHeaders,
                           incomingStatusCode,
@@ -642,7 +644,8 @@ void QHttpThreadDelegate::headerChangedSlot()
                           downloadBuffer,
                           incomingContentLength,
                           removedContentLength,
-                          isHttp2Used);
+                          isHttp2Used,
+                          isCompressed);
 }
 
 void QHttpThreadDelegate::synchronousHeaderChangedSlot()

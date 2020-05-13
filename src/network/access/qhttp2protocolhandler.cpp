@@ -1233,13 +1233,8 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
     if (QHttpNetworkReply::isHttpRedirect(statusCode) && redirectUrl.isValid())
         httpReply->setRedirectUrl(redirectUrl);
 
-    if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress) {
+    if (httpReplyPrivate->isCompressed() && httpRequest.d->autoDecompress)
         httpReplyPrivate->removeAutoDecompressHeader();
-        httpReplyPrivate->decompressHelper.setEncoding(
-                httpReplyPrivate->headerField("content-encoding"));
-        httpReplyPrivate->decompressHelper.setMinimumArchiveBombSize(
-                httpReplyPrivate->request.minimumArchiveBombSize());
-    }
 
     if (QHttpNetworkReply::isHttpRedirect(statusCode)) {
         // Note: This status code can trigger uploadByteDevice->reset() in
@@ -1276,27 +1271,12 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const Frame &frame,
 
     if (const auto length = frame.dataSize()) {
         const char *data = reinterpret_cast<const char *>(frame.dataBegin());
-        auto &httpRequest = stream.request();
         auto replyPrivate = httpReply->d_func();
 
         replyPrivate->totalProgress += length;
 
         const QByteArray wrapped(data, length);
-        if (httpRequest.d->autoDecompress && replyPrivate->isCompressed()) {
-            Q_ASSERT(replyPrivate->decompressHelper.isValid());
-
-            replyPrivate->decompressHelper.feed(wrapped);
-            while (replyPrivate->decompressHelper.hasData()) {
-                QByteArray output(4 * 1024, Qt::Uninitialized);
-                qint64 read = replyPrivate->decompressHelper.read(output.data(), output.size());
-                if (read > 0) {
-                    output.resize(read);
-                    replyPrivate->responseData.append(std::move(output));
-                }
-            }
-        } else {
-            replyPrivate->responseData.append(wrapped);
-        }
+        replyPrivate->responseData.append(wrapped);
 
         if (replyPrivate->shouldEmitSignals()) {
             if (connectionType == Qt::DirectConnection) {

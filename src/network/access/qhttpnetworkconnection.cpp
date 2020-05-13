@@ -48,6 +48,7 @@
 #include <qnetworkproxy.h>
 #include <qauthenticator.h>
 #include <qcoreapplication.h>
+#include <private/qdecompresshelper_p.h>
 
 #include <qbuffer.h>
 #include <qpair.h>

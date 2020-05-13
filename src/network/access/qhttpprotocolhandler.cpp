@@ -177,8 +177,7 @@ void QHttpProtocolHandler::_q_receiveReply()
                    m_connection->d_func()->emitReplyError(m_socket, m_reply, QNetworkReply::RemoteHostClosedError);
                    break;
                }
-           } else if (!replyPrivate->isChunked() && !replyPrivate->autoDecompress
-                 && replyPrivate->bodyLength > 0) {
+           } else if (!replyPrivate->isChunked() && replyPrivate->bodyLength > 0) {
                  // bulk files like images should fulfill these properties and
                  // we can therefore save on memory copying
                 qint64 haveRead = replyPrivate->readBodyFast(m_socket, &replyPrivate->responseData);

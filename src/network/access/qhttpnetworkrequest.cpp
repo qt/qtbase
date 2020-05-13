@@ -57,7 +57,6 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       customVerb(other.customVerb),
       priority(other.priority),
       uploadByteDevice(other.uploadByteDevice),
-      minimumArchiveBombSize(other.minimumArchiveBombSize),
       autoDecompress(other.autoDecompress),
       pipeliningAllowed(other.pipeliningAllowed),
       http2Allowed(other.http2Allowed),
@@ -94,7 +93,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (redirectPolicy == other.redirectPolicy)
         && (peerVerifyName == other.peerVerifyName)
         && (needResendWithCredentials == other.needResendWithCredentials)
-        && (minimumArchiveBombSize == other.minimumArchiveBombSize);
+        ;
 }
 
 QByteArray QHttpNetworkRequest::methodName() const
@@ -404,16 +403,6 @@ QString QHttpNetworkRequest::peerVerifyName() const
 void QHttpNetworkRequest::setPeerVerifyName(const QString &peerName)
 {
     d->peerVerifyName = peerName;
-}
-
-qint64 QHttpNetworkRequest::minimumArchiveBombSize() const
-{
-    return d->minimumArchiveBombSize;
-}
-
-void QHttpNetworkRequest::setMinimumArchiveBombSize(qint64 threshold)
-{
-    d->minimumArchiveBombSize = threshold;
 }
 
 QT_END_NAMESPACE

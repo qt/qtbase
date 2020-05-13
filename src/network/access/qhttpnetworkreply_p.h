@@ -274,8 +274,6 @@ public:
 
     char* userProvidedDownloadBuffer;
     QUrl redirectUrl;
-
-    QDecompressHelper decompressHelper;
 };
 
 

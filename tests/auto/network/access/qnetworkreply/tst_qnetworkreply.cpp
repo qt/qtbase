@@ -509,6 +509,12 @@ private Q_SLOTS:
 
     void contentEncoding_data();
     void contentEncoding();
+    void contentEncodingBigPayload_data();
+    void contentEncodingBigPayload();
+    void cacheWithContentEncoding_data();
+    void cacheWithContentEncoding();
+    void downloadProgressWithContentEncoding_data();
+    void downloadProgressWithContentEncoding();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -871,9 +877,15 @@ public:
     {
     }
 
-    QIODevice *data(const QUrl &) override
+    QIODevice *data(const QUrl &url) override
     {
-        return 0;
+        QIODevice *device = nullptr;
+        auto it = m_buffers.constFind(url);
+        if (it != m_buffers.cend()) {
+            device = *it;
+            device->seek(0);
+        }
+        return device;
     }
 
     bool remove(const QUrl &url) override
@@ -900,7 +912,6 @@ public:
     {
         QUrl url = buffer->property("url").toUrl();
         m_insertedUrls << url;
-        delete m_buffers.take(url);
     }
 
     void clear() override { m_insertedUrls.clear(); }
@@ -1588,6 +1599,12 @@ void tst_QNetworkReply::initTestCase()
     if (QSslSocket::activeBackend() == QStringLiteral("openssl"))
         flukeCertTlsError = QSslError::SelfSignedCertificate;
 #endif
+
+    // For content encoding tests
+    Q_INIT_RESOURCE(gzip);
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(zstd)
+    Q_INIT_RESOURCE(zstandard);
+#endif
 }
 
 void tst_QNetworkReply::cleanupTestCase()
@@ -1596,6 +1613,12 @@ void tst_QNetworkReply::cleanupTestCase()
     if (!wronlyFileName.isNull())
         QFile::remove(wronlyFileName);
 #endif
+
+    // For content encoding tests
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(zstd)
+    Q_CLEANUP_RESOURCE(zstandard);
+#endif
+    Q_CLEANUP_RESOURCE(gzip);
 }
 
 void tst_QNetworkReply::cleanupTestData()
@@ -9411,6 +9434,142 @@ void tst_QNetworkReply::contentEncoding()
 
     QCOMPARE(reply->bytesAvailable(), expected.size());
     QCOMPARE(reply->readAll(), expected);
+}
+
+void tst_QNetworkReply::contentEncodingBigPayload_data()
+{
+    QTest::addColumn<QByteArray>("encoding");
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<qint64>("expectedSize");
+
+    qint64 fourGiB = 4ll * 1024ll * 1024ll * 1024ll;
+
+    QTest::addRow("gzip-4GB") << QByteArray("gzip") << (":/4G.gz") << fourGiB;
+
+#if QT_CONFIG(brotli)
+    QTest::addRow("brotli-4GB") << QByteArray("br") << (testDataDir + "./4G.br") << fourGiB;
+#endif
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(zstd)
+    QTest::addRow("zstd-4GB") << QByteArray("zstd") << (":/4G.zst") << fourGiB;
+#else
+    qDebug("Note: ZStandard testdata is only available for developer builds.");
+#endif
+}
+
+void tst_QNetworkReply::contentEncodingBigPayload()
+{
+    QFETCH(QString, path);
+    QFile compressedFile(path);
+    QVERIFY(compressedFile.open(QIODevice::ReadOnly));
+    QByteArray body = compressedFile.readAll();
+
+    QFETCH(QByteArray, encoding);
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: %1\r\nContent-Length: %2\r\n\r\n");
+    header = header.arg(encoding, QString::number(body.size()));
+
+    MiniHttpServer server(header.toLatin1() + body);
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    // QDecompressHelper will abort the download if the compressed to decompressed size ratio
+    // differs too much, so we override it
+    request.setMinimumArchiveBombSize(-1);
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15000);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QFETCH(qint64, expectedSize);
+
+    QCOMPARE(reply->bytesAvailable(), expectedSize);
+    QByteArray output(512 * 1024 * 1024, Qt::Uninitialized);
+    qint64 total = 0;
+    while (reply->bytesAvailable()) {
+        qint64 read = reply->read(output.data(), output.size());
+        QVERIFY(read != -1);
+        total += read;
+
+        static const auto isZero = [](char c) { return c == '\0'; };
+        bool allZero = std::all_of(output.cbegin(), output.cbegin() + read, isZero);
+        QVERIFY(allZero);
+    }
+    QCOMPARE(total, expectedSize);
+}
+
+void tst_QNetworkReply::cacheWithContentEncoding_data()
+{
+    contentEncoding_data();
+}
+
+void tst_QNetworkReply::cacheWithContentEncoding()
+{
+    QFETCH(QByteArray, encoding);
+    QFETCH(QByteArray, body);
+    QFETCH(QByteArray, expected);
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: %1\r\nContent-Length: %2\r\n\r\n");
+    header = header.arg(encoding, QString::number(body.size()));
+
+    MiniHttpServer server(header.toLatin1() + body);
+
+    MySpyMemoryCache *cache = new MySpyMemoryCache(this);
+    manager.setCache(cache);
+    auto unsetCache = qScopeGuard([this](){ manager.setCache(nullptr); });
+
+    QUrl url("http://localhost:" + QString::number(server.serverPort()));
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QByteArray output = reply->readAll();
+    QIODevice *device = cache->data(url);
+    QVERIFY(device);
+    QByteArray fromCache = device->readAll();
+    QCOMPARE(output, expected);
+    QCOMPARE(fromCache, expected);
+}
+
+void tst_QNetworkReply::downloadProgressWithContentEncoding_data()
+{
+    contentEncoding_data();
+}
+
+void tst_QNetworkReply::downloadProgressWithContentEncoding()
+{
+    QFETCH(QByteArray, encoding);
+    QFETCH(QByteArray, body);
+    QFETCH(QByteArray, expected);
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: %1\r\nContent-Length: %2\r\n\r\n");
+    header = header.arg(encoding, QString::number(body.size()));
+
+    MiniHttpServer server(header.toLatin1() + body);
+
+    QUrl url("http://localhost:" + QString::number(server.serverPort()));
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply(manager.get(request));
+    // Limit the amount of bytes we read so we get more than one downloadProgress emission
+    reply->setReadBufferSize(5);
+
+    qint64 bytesReceived = -1;
+    connect(reply.data(), &QNetworkReply::downloadProgress, this,
+            [reply = reply.data(), &expected, &bytesReceived](qint64 recv, qint64 total) {
+                qint64 previous = bytesReceived;
+                bytesReceived = recv;
+                if (bytesReceived > expected.size()) {
+                    qWarning("bytesReceived greater than expected size!");
+                    reply->abort();
+                }
+                if (bytesReceived < previous) {
+                    qWarning("bytesReceived shrank!");
+                    reply->abort();
+                }
+            });
+
+    SlowReader reader(reply.data());
+
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(bytesReceived, expected.size());
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
