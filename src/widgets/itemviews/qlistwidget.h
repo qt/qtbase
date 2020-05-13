@@ -150,7 +150,6 @@ public:
 private:
     QListModel *listModel() const;
     int rtti;
-    QVector<void *> dummy;
     QListWidget *view;
     QListWidgetItemPrivate *d;
     Qt::ItemFlags itemFlags;
