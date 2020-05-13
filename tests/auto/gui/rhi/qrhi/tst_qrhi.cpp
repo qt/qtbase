@@ -519,9 +519,8 @@ void tst_QRhi::nativeTexture()
 #ifdef TST_VK
     case QRhi::Vulkan:
     {
-        auto *image = static_cast<const VkImage *>(nativeTex.object);
+        auto image = VkImage(nativeTex.object);
         QVERIFY(image);
-        QVERIFY(*image);
         QVERIFY(nativeTex.layout >= 1); // VK_IMAGE_LAYOUT_GENERAL
         QVERIFY(nativeTex.layout <= 8); // VK_IMAGE_LAYOUT_PREINITIALIZED
     }
@@ -530,27 +529,24 @@ void tst_QRhi::nativeTexture()
 #ifdef TST_GL
     case QRhi::OpenGLES2:
     {
-        auto *textureId = static_cast<const uint *>(nativeTex.object);
+        auto textureId = uint(nativeTex.object);
         QVERIFY(textureId);
-        QVERIFY(*textureId);
     }
         break;
 #endif
 #ifdef TST_D3D11
     case QRhi::D3D11:
     {
-        auto *texture = static_cast<void * const *>(nativeTex.object);
+        auto *texture = reinterpret_cast<void *>(nativeTex.object);
         QVERIFY(texture);
-        QVERIFY(*texture);
     }
         break;
 #endif
 #ifdef TST_MTL
     case QRhi::Metal:
     {
-        void * const * texture = (void * const *)nativeTex.object;
+        auto texture = (void *)nativeTex.object;
         QVERIFY(texture);
-        QVERIFY(*texture);
     }
         break;
 #endif

@@ -241,7 +241,7 @@ void Window::customRender()
             if (nativeTexture.object) {
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
                 if (graphicsApi == Metal) {
-                    qDebug() << "Metal texture: " << *(void**)nativeTexture.object;
+                    qDebug() << "Metal texture: " << nativeTexture.object;
                     // Now could cast to id<MTLTexture> and do something with
                     // it, keeping in mind that copy operations are only done
                     // in beginPass, while rendering into a texture may only

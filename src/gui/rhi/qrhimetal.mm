@@ -2592,14 +2592,14 @@ bool QMetalTexture::build()
 
 bool QMetalTexture::buildFrom(QRhiTexture::NativeTexture src)
 {
-    void * const * tex = (void * const *) src.object;
-    if (!tex || !*tex)
+    id<MTLTexture> tex = id<MTLTexture>(src.object);
+    if (tex == 0)
         return false;
 
     if (!prepareBuild())
         return false;
 
-    d->tex = (id<MTLTexture>) *tex;
+    d->tex = tex;
 
     d->owns = false;
 
@@ -2615,7 +2615,7 @@ bool QMetalTexture::buildFrom(QRhiTexture::NativeTexture src)
 
 QRhiTexture::NativeTexture QMetalTexture::nativeTexture()
 {
-    return {&d->tex, 0};
+    return {quint64(d->tex), 0};
 }
 
 id<MTLTexture> QMetalTextureData::viewForLevel(int level)

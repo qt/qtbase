@@ -3776,14 +3776,14 @@ bool QGles2Texture::build()
 
 bool QGles2Texture::buildFrom(QRhiTexture::NativeTexture src)
 {
-    const uint *textureId = static_cast<const uint *>(src.object);
-    if (!textureId || !*textureId)
+    const uint textureId = uint(src.object);
+    if (textureId == 0)
         return false;
 
     if (!prepareBuild())
         return false;
 
-    texture = *textureId;
+    texture = textureId;
     specified = true;
 
     QRHI_RES_RHI(QRhiGles2);
@@ -3799,7 +3799,7 @@ bool QGles2Texture::buildFrom(QRhiTexture::NativeTexture src)
 
 QRhiTexture::NativeTexture QGles2Texture::nativeTexture()
 {
-    return {&texture, 0};
+    return {texture, 0};
 }
 
 QGles2Sampler::QGles2Sampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,

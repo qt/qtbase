@@ -2937,14 +2937,14 @@ bool QD3D11Texture::build()
 
 bool QD3D11Texture::buildFrom(QRhiTexture::NativeTexture src)
 {
-    auto *srcTex = static_cast<ID3D11Texture2D * const *>(src.object);
-    if (!srcTex || !*srcTex)
+    ID3D11Texture2D *srcTex = reinterpret_cast<ID3D11Texture2D *>(src.object);
+    if (srcTex == nullptr)
         return false;
 
     if (!prepareBuild())
         return false;
 
-    tex = *srcTex;
+    tex = srcTex;
 
     if (!finishBuild())
         return false;
@@ -2960,7 +2960,7 @@ bool QD3D11Texture::buildFrom(QRhiTexture::NativeTexture src)
 
 QRhiTexture::NativeTexture QD3D11Texture::nativeTexture()
 {
-    return {&tex, 0};
+    return {quint64(tex), 0};
 }
 
 ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)

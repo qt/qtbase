@@ -5570,14 +5570,14 @@ bool QVkTexture::build()
 
 bool QVkTexture::buildFrom(QRhiTexture::NativeTexture src)
 {
-    auto *img = static_cast<const VkImage*>(src.object);
-    if (!img || !*img)
+    VkImage img = VkImage(src.object);
+    if (img == 0)
         return false;
 
     if (!prepareBuild())
         return false;
 
-    image = *img;
+    image = img;
 
     if (!finishBuild())
         return false;
@@ -5595,7 +5595,7 @@ bool QVkTexture::buildFrom(QRhiTexture::NativeTexture src)
 
 QRhiTexture::NativeTexture QVkTexture::nativeTexture()
 {
-    return {&image, usageState.layout};
+    return {quint64(image), usageState.layout};
 }
 
 void QVkTexture::setNativeLayout(int layout)
