@@ -373,6 +373,7 @@ private slots:
     void remove_string();
     void remove_regexp_data();
     void remove_regexp();
+    void remove_extra();
     void swap();
 
     void prepend_qstring()            { prepend_impl<QString>(); }
@@ -3097,6 +3098,15 @@ void tst_QString::remove_regexp()
         QTEST( s2, "result" );
     } else {
         QCOMPARE( 0, 0 ); // shut Qt Test
+    }
+}
+
+void tst_QString::remove_extra()
+{
+    {
+        QString s = "The quick brown fox jumps over the lazy dog. "
+                    "The lazy dog jumps over the quick brown fox.";
+        s.remove(s);
     }
 }
 
