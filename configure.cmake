@@ -419,7 +419,7 @@ qt_feature("force_asserts" PUBLIC
 )
 qt_feature("headersclean"
     LABEL "Check for clean headers"
-    AUTODETECT QT_FEATURE_developer_build
+    AUTODETECT OFF
     CONDITION NOT WASM
 )
 qt_feature_config("headersclean" QMAKE_PRIVATE_CONFIG)

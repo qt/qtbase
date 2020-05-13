@@ -832,7 +832,7 @@
         },
         "headersclean": {
             "label": "Check for clean headers",
-            "autoDetect": "features.developer-build",
+            "autoDetect": false,
             "condition": "!config.wasm",
             "output": [ "privateConfig" ]
         },
