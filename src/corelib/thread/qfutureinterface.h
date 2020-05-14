@@ -140,6 +140,7 @@ public:
     bool isThrottled() const;
     bool isResultReadyAt(int index) const;
     bool isValid() const;
+    int loadState() const;
 
     void cancel();
     void setSuspended(bool suspend);
@@ -151,6 +152,7 @@ public:
     bool waitForNextResult();
     void waitForResult(int resultIndex);
     void waitForResume();
+    void suspendIfRequested();
 
     QMutex &mutex() const;
     QtPrivate::ExceptionStore &exceptionStore();
@@ -233,6 +235,7 @@ public:
 
     inline void reportResult(const T *result, int index = -1);
     inline void reportAndMoveResult(T &&result, int index = -1);
+    inline void reportResult(T &&result, int index = -1);
     inline void reportResult(const T &result, int index = -1);
     inline void reportResults(const QVector<T> &results, int beginIndex = -1, int count = -1);
     inline void reportFinished(const T *result);
@@ -283,6 +286,12 @@ void QFutureInterface<T>::reportAndMoveResult(T &&result, int index)
     const int insertIndex = store.moveResult(index, std::forward<T>(result));
     if (!store.filterMode() || oldResultCount < store.count()) // Let's make sure it's not in pending results.
         reportResultsReady(insertIndex, store.count());
+}
+
+template<typename T>
+void QFutureInterface<T>::reportResult(T &&result, int index)
+{
+    reportAndMoveResult(std::move(result), index);
 }
 
 template <typename T>

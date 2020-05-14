@@ -259,6 +259,37 @@ void QFutureInterfaceBase::waitForResume()
     d->pausedWaitCondition.wait(&d->m_mutex);
 }
 
+void QFutureInterfaceBase::suspendIfRequested()
+{
+    const auto canSuspend = [] (int state) {
+        // can suspend only if 1) in any suspend-related state; 2) not canceled
+        return (state & suspendingOrSuspended) && !(state & Canceled);
+    };
+
+    // return early if possible to avoid taking the mutex lock.
+    {
+        const int state = d->state.loadRelaxed();
+        if (!canSuspend(state))
+            return;
+    }
+
+    QMutexLocker lock(&d->m_mutex);
+    const int state = d->state.loadRelaxed();
+    if (!canSuspend(state))
+        return;
+
+    // Note: expecting that Suspending and Suspended are mutually exclusive
+    if (!(state & Suspended)) {
+        // switch state in case this is the first invocation
+        switch_from_to(d->state, Suspending, Suspended);
+        d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
+    }
+
+    // decrease active thread count since this thread will wait.
+    const ThreadPoolThreadReleaser releaser(d->pool());
+    d->pausedWaitCondition.wait(&d->m_mutex);
+}
+
 int QFutureInterfaceBase::progressValue() const
 {
     const QMutexLocker lock(&d->m_mutex);
@@ -359,6 +390,11 @@ int QFutureInterfaceBase::expectedResultCount()
 bool QFutureInterfaceBase::queryState(State state) const
 {
     return d->state.loadRelaxed() & state;
+}
+
+int QFutureInterfaceBase::loadState() const
+{
+    return d->state.loadRelaxed();
 }
 
 void QFutureInterfaceBase::waitForResult(int resultIndex)

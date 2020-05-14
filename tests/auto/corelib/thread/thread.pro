@@ -18,7 +18,8 @@ qtConfig(thread) {
         qthreadpool \
         qthreadstorage \
         qwaitcondition \
-        qwritelocker
+        qwritelocker \
+        qpromise
 }
 
 qtHaveModule(concurrent) {

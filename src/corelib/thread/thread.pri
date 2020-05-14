@@ -72,7 +72,8 @@ qtConfig(future) {
         thread/qfuturesynchronizer.h \
         thread/qfuturewatcher.h \
         thread/qfuturewatcher_p.h \
-        thread/qresultstore.h
+        thread/qresultstore.h \
+        thread/qpromise.h
 
     SOURCES += \
         thread/qexception.cpp \

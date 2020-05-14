@@ -66,6 +66,10 @@ enum class Launch { Sync, Async, Inherit };
 
 namespace QtPrivate {
 
+template<class T, class U>
+using EnableIfSameOrConvertible = std::enable_if_t<std::is_same_v<T, U>
+                                                   || std::is_convertible_v<T, U>>;
+
 template<class T>
 using EnableForVoid = std::enable_if_t<std::is_same_v<T, void>>;
 
