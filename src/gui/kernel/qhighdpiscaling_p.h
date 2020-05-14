@@ -218,8 +218,7 @@ inline QPoint position(QRectF rect) { return rect.center().toPoint(); }
 template <typename T, typename C>
 T fromNativePixels(const T &value, const C *context)
 {
-    QPoint nativePosition = position(value);
-    QHighDpiScaling::ScaleAndOrigin so = QHighDpiScaling::scaleAndOrigin(context, &nativePosition);
+    QHighDpiScaling::ScaleAndOrigin so = QHighDpiScaling::scaleAndOrigin(context);
     return scale(value, qreal(1) / so.factor, so.origin);
 }
 
