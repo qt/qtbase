@@ -1709,14 +1709,14 @@ void QSslSocketBackendPrivate::fetchCaRootForCert(const QSslCertificate &cert)
 //This is the callback from QWindowsCaRootFetcher, trustedRoot will be invalid (default constructed) if it failed.
 void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertificate trustedRoot)
 {
-    Q_Q(QSslSocket);
     if (!trustedRoot.isNull() && !trustedRoot.isBlacklisted()) {
         if (s_loadRootCertsOnDemand) {
             //Add the new root cert to default cert list for use by future sockets
             QSslSocket::addDefaultCaCertificate(trustedRoot);
         }
         //Add the new root cert to this socket for future connections
-        q->addCaCertificate(trustedRoot);
+        if (!configuration.caCertificates.contains(trustedRoot))
+            configuration.caCertificates += trustedRoot;
         //Remove the broken chain ssl errors (as chain is verified by windows)
         for (int i=sslErrors.count() - 1; i >= 0; --i) {
             if (sslErrors.at(i).certificate() == cert) {
