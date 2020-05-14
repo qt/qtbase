@@ -34,6 +34,7 @@ class tst_QTaggedPointer : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void constExpr();
     void construction();
     void dereferenceOperator();
     void pointerOperator();
@@ -45,6 +46,38 @@ private Q_SLOTS:
     void customTagType();
     void taggedLinkedList();
 };
+
+void tst_QTaggedPointer::constExpr()
+{
+    {
+        constexpr QTaggedPointer<int> p;
+        Q_UNUSED(p);
+    }
+    {
+        enum Foo : uint {};
+        constexpr QTaggedPointer<int, Foo> p;
+        Q_UNUSED(p);
+    }
+    {
+        enum Foo : int {};
+        constexpr QTaggedPointer<int, Foo> p;
+        Q_UNUSED(p);
+    }
+    {
+        constexpr QTaggedPointer<int> p = nullptr;
+        Q_UNUSED(p);
+    }
+    {
+        enum Foo : uint {};
+        constexpr QTaggedPointer<int, Foo> p = nullptr;
+        Q_UNUSED(p);
+    }
+    {
+        enum Foo : int {};
+        constexpr QTaggedPointer<int, Foo> p = nullptr;
+        Q_UNUSED(p);
+    }
+}
 
 void tst_QTaggedPointer::construction()
 {
