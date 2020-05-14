@@ -62,6 +62,7 @@ qt_add_module(Test
         QT_BUILD_TESTLIB_LIB # special case
     LIBRARIES
         Qt::CorePrivate
+        Threads::Threads # special case
     PUBLIC_LIBRARIES
         Qt::Core
     PRIVATE_MODULE_INTERFACE
