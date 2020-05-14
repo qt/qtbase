@@ -47,6 +47,7 @@
 #include <qcoreapplication.h>
 #endif
 
+#include <qoperatingsystemversion.h>
 #include <qt_windows.h>
 #include <shlobj.h>
 #include <intshcut.h>
@@ -99,7 +100,11 @@ static bool isProcessLowIntegrity() {
     // Disable function until Qt CI is updated
     return false;
 #else
-    HANDLE process_token = GetCurrentProcessToken(); // non-leaking pseudo-handle
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8)
+        return false;
+    // non-leaking pseudo-handle. Expanded inline function GetCurrentProcessToken()
+    // (was made an inline function in Windows 8).
+    const auto process_token = HANDLE(quintptr(-4));
 
     QVarLengthArray<char,256> token_info_buf(256);
     auto* token_info = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(token_info_buf.data());

@@ -1636,7 +1636,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         if (len == rawlen) {
             auto oldSize = data.size();
             auto newSize = oldSize;
-            if (!add_overflow(newSize, len, &newSize)) {
+            if (!add_overflow(newSize, len, &newSize) && newSize < MaxByteArraySize) {
                 if (newSize != oldSize)
                     data.resize(newSize);
 
