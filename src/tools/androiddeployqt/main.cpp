@@ -1609,7 +1609,7 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
     }
 
     if (options.useLLVM)
-        readElf = QString::fromLatin1("%1 -needed-libs %2").arg(shellQuote(readElf), shellQuote(fileName));
+        readElf = QString::fromLatin1("%1 --needed-libs %2").arg(shellQuote(readElf), shellQuote(fileName));
     else
         readElf = QString::fromLatin1("%1 -d -W %2").arg(shellQuote(readElf), shellQuote(fileName));
 
@@ -1915,7 +1915,7 @@ bool stripFile(const Options &options, const QString &fileName)
     }
 
     if (options.useLLVM)
-        strip = QString::fromLatin1("%1 -strip-all %2").arg(shellQuote(strip), shellQuote(fileName));
+        strip = QString::fromLatin1("%1 --strip-all %2").arg(shellQuote(strip), shellQuote(fileName));
     else
         strip = QString::fromLatin1("%1 %2").arg(shellQuote(strip), shellQuote(fileName));
 
