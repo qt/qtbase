@@ -1187,7 +1187,7 @@ void tst_QStringRef::toNum()
     QVERIFY(ok);
     QString::number(d + 1e32, 'e', 17).leftRef(-1).toFloat(&ok);
     QVERIFY(!ok);
-    a = QString::number(-d, 'e', 17).leftRef(-1).toFloat(&ok);
+    QString::number(-d, 'e', 17).leftRef(-1).toFloat(&ok);
     QVERIFY(ok);
     QString::number(-d - 1e32, 'e', 17).leftRef(-1).toFloat(&ok);
     QVERIFY(!ok);
