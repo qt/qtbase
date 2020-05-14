@@ -6148,31 +6148,27 @@ static QString detachAndConvertCase(T &str, QStringIterator it, QUnicodeTables::
 
     do {
         const auto folded = fullConvertCase(it.nextUnchecked(), which);
-        if (Q_UNLIKELY(folded[1])) {
-            if (folded[0] == *pp && !folded[2]) {
+        if (Q_UNLIKELY(folded.size() > 1)) {
+            if (folded.chars[0] == *pp && folded.size() == 2) {
                 // special case: only second actually changed (e.g. surrogate pairs),
                 // avoid slow case
                 ++pp;
-                *pp++ = folded[1];
+                *pp++ = folded.chars[1];
             } else {
                 // slow path: the string is growing
                 int inpos = it.index() - 1;
                 int outpos = pp - s.constBegin();
 
-                int foldedSize = 2; // must be at least 2, b/c folded[1] != NUL
-                while (folded[foldedSize])
-                    ++foldedSize;
-
-                s.replace(outpos, 1, reinterpret_cast<const QChar *>(folded.data()), foldedSize);
-                pp = const_cast<QChar *>(s.constBegin()) + outpos + foldedSize;
+                s.replace(outpos, 1, reinterpret_cast<const QChar *>(folded.data()), folded.size());
+                pp = const_cast<QChar *>(s.constBegin()) + outpos + folded.size();
 
                 // do we need to adjust the input iterator too?
                 // if it is pointing to s's data, str is empty
                 if (str.isEmpty())
-                    it = QStringIterator(s.constBegin(), inpos + foldedSize, s.constEnd());
+                    it = QStringIterator(s.constBegin(), inpos + folded.size(), s.constEnd());
             }
         } else {
-            *pp++ = folded[0];
+            *pp++ = folded.chars[0];
         }
     } while (it.hasNext());
 

@@ -1590,11 +1590,21 @@ QChar::UnicodeVersion QChar::currentUnicodeVersion() noexcept
     return UNICODE_DATA_VERSION;
 }
 
-using FullConvertCaseResult = std::array<char16_t, MaxSpecialCaseLength + 1>;
-static FullConvertCaseResult fullConvertCase(char32_t uc, QUnicodeTables::Case which) noexcept
+static auto fullConvertCase(char32_t uc, QUnicodeTables::Case which) noexcept
 {
-    FullConvertCaseResult result = {};
-    auto pp = result.begin();
+    struct R {
+        char16_t chars[MaxSpecialCaseLength + 1];
+        qint8 sz;
+
+        // iterable
+        auto begin() const { return chars; }
+        auto end() const { return chars + sz; }
+        // QStringView-compatible
+        auto data() const { return chars; }
+        auto size() const { return sz; }
+    } result;
+
+    auto pp = result.chars;
 
     const auto fold = qGetProp(uc)->cases[which];
     const auto caseDiff = fold.diff;
@@ -1609,6 +1619,7 @@ static FullConvertCaseResult fullConvertCase(char32_t uc, QUnicodeTables::Case w
         for (char16_t c : QChar::fromUcs4(uc + caseDiff))
             *pp++ = c;
     }
+    result.sz = pp - result.chars;
     return result;
 }
 
