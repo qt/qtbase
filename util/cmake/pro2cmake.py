@@ -1311,7 +1311,8 @@ class Scope(object):
         v = self.get(key, inherit=inherit)
         if len(v) == 0:
             return default
-        assert len(v) == 1
+        if len(v) > 1:
+            return ' '.join(v)
         return v[0]
 
     def _map_files(
