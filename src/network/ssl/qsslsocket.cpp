@@ -2252,6 +2252,7 @@ void QSslSocketPrivate::init()
     writeBuffer.clear();
     configuration.peerCertificate.clear();
     configuration.peerCertificateChain.clear();
+    fetchAuthorityInformation = false;
 }
 
 /*!

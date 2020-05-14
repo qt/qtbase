@@ -62,17 +62,7 @@ QT_REQUIRE_CONFIG(schannel);
 #include <schnlsp.h>
 #undef SECURITY_WIN32
 
-#include <memory>
-
 QT_BEGIN_NAMESPACE
-
-struct QHCertStoreDeleter {
-    void operator()(HCERTSTORE store)
-    {
-        CertCloseStore(store, 0);
-    }
-};
-typedef std::unique_ptr<void, QHCertStoreDeleter> QHCertStorePointer;
 
 class QSslSocketBackendPrivate final : public QSslSocketPrivate
 {
