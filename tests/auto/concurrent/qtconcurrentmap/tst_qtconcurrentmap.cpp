@@ -483,17 +483,15 @@ void testMappedThreadPool(QThreadPool *pool,
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-// TODO: enable when QTBUG-83918 is fixed
+    const QList<ResultObject> result3 = QtConcurrent::blockingMapped(pool,
+                sourceObjectList, mapObject);
+    QCOMPARE(result3, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-//    const QList<ResultObject> result3 = QtConcurrent::blockingMapped(pool,
-//                sourceObjectList, mapObject);
-//    QCOMPARE(result3, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
-
-//    const QList<ResultObject> result4 = QtConcurrent::blockingMapped<QList<ResultObject>>(pool,
-//                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject);
-//    QCOMPARE(result4, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    const QList<ResultObject> result4 = QtConcurrent::blockingMapped<QList<ResultObject>>(pool,
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject);
+    QCOMPARE(result4, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 }
 
 int multiplyBy3(int x)
@@ -678,17 +676,15 @@ void testMappedReducedThreadPool(QThreadPool *pool,
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-// TODO: enable when QTBUG-83918 is fixed
+    const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(pool,
+                sourceObjectList, mapObject, reduceObject);
+    QCOMPARE(result3, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-//    const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(pool,
-//                sourceObjectList, mapObject, reduceObject);
-//    QCOMPARE(result3, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
-
-//    const ResultObject result4 = QtConcurrent::blockingMappedReduced<ResultObject>(pool,
-//                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
-//    QCOMPARE(result4, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    const ResultObject result4 = QtConcurrent::blockingMappedReduced<ResultObject>(pool,
+                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
+    QCOMPARE(result4, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 }
 
 int intCube(int x)
@@ -930,18 +926,16 @@ void testMappedReducedInitialValueThreadPool(QThreadPool *pool,
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-// TODO: enable when QTBUG-83918 is fixed
+    const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(
+                pool, sourceObjectList, mapObject, reduceObject, initialObject);
+    QCOMPARE(result3, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-//    const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(
-//                pool, sourceObjectList, mapObject, reduceObject, initialObject);
-//    QCOMPARE(result3, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
-
-//    const ResultObject result4 = QtConcurrent::blockingMappedReduced<ResultObject>(
-//                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-//                mapObject, reduceObject, initialObject);
-//    QCOMPARE(result4, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    const ResultObject result4 = QtConcurrent::blockingMappedReduced<ResultObject>(
+                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                mapObject, reduceObject, initialObject);
+    QCOMPARE(result4, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 }
 
 void tst_QtConcurrentMap::mappedReducedInitialValueThreadPool()

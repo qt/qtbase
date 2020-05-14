@@ -127,17 +127,15 @@ void testFilterThreadPool(QThreadPool *pool,
                           FilterObject filterObject)
 {
     QList<SourceObject> copy1 = sourceObjectList;
-//    QList<SourceObject> copy2 = sourceObjectList;
+    QList<SourceObject> copy2 = sourceObjectList;
 
     QtConcurrent::filter(pool, copy1, filterObject).waitForFinished();
     QCOMPARE(copy1, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-// TODO: enable when QTBUG-83918 is fixed
-
-//    QtConcurrent::blockingFilter(pool, copy2, filterObject);
-//    QCOMPARE(copy2, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    QtConcurrent::blockingFilter(pool, copy2, filterObject);
+    QCOMPARE(copy2, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 }
 
 class KeepOddIntegers
@@ -244,17 +242,15 @@ void testFilteredThreadPool(QThreadPool *pool,
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-// TODO: enable when QTBUG-83918 is fixed
+    const QList<ResultObject> result3 = QtConcurrent::blockingFiltered(
+                pool, sourceObjectList, filterObject);
+    QCOMPARE(result3, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-//    const QList<ResultObject> result3 = QtConcurrent::blockingFiltered(
-//                pool, sourceObjectList, filterObject);
-//    QCOMPARE(result3, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
-
-//    const QList<ResultObject> result4 = QtConcurrent::blockingFiltered<QList<ResultObject>>(
-//                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(), filterObject);
-//    QCOMPARE(result4, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    const QList<ResultObject> result4 = QtConcurrent::blockingFiltered<QList<ResultObject>>(
+                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(), filterObject);
+    QCOMPARE(result4, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 }
 
 void tst_QtConcurrentFilter::filteredThreadPool()
@@ -436,18 +432,16 @@ void testFilteredReducedThreadPool(QThreadPool *pool,
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-// TODO: enable when QTBUG-83918 is fixed
+    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                pool, sourceObjectList, filterObject, reduceObject);
+    QCOMPARE(result3, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-//    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-//                pool, sourceObjectList, filterObject, reduceObject);
-//    QCOMPARE(result3, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
-
-//    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-//                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-//                filterObject, reduceObject);
-//    QCOMPARE(result4, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                filterObject, reduceObject);
+    QCOMPARE(result4, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 }
 
 void tst_QtConcurrentFilter::filteredReducedThreadPool()
@@ -711,18 +705,16 @@ void testFilteredReducedInitialValueThreadPool(QThreadPool *pool,
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-// TODO: enable when QTBUG-83918 is fixed
+    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                pool, sourceObjectList, filterObject, reduceObject, initialObject);
+    QCOMPARE(result3, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-//    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-//                pool, sourceObjectList, filterObject, reduceObject, initialObject);
-//    QCOMPARE(result3, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
-
-//    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-//                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-//                filterObject, reduceObject, initialObject);
-//    QCOMPARE(result4, expectedResult);
-//    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                filterObject, reduceObject, initialObject);
+    QCOMPARE(result4, expectedResult);
+    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 }
 
 void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()

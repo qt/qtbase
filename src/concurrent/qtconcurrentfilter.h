@@ -127,29 +127,28 @@ QFuture<ResultType> filteredReduced(const Sequence &sequence,
 }
 
 #ifndef Q_CLANG_QDOC
-template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
-QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(
-                                    QThreadPool *pool,
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+QFuture<ResultType> filteredReduced(QThreadPool *pool,
                                     const Sequence &sequence,
                                     KeepFunctor keep,
                                     ReduceFunctor reduce,
                                     ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                           | SequentialReduce))
 {
-    return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
-        (pool, sequence, keep, reduce, options);
+    return startFilteredReduced<ResultType>(pool, sequence, keep, reduce, options);
 }
 
-template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
-QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(
-                                    const Sequence &sequence,
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+QFuture<ResultType> filteredReduced(const Sequence &sequence,
                                     KeepFunctor keep,
                                     ReduceFunctor reduce,
                                     ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                           | SequentialReduce))
 {
-    return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
-        (QThreadPool::globalInstance(), sequence, keep, reduce, options);
+    return startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+                                            sequence, keep, reduce, options);
 }
 
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -241,9 +240,9 @@ QFuture<ResultType> filteredReduced(Iterator begin,
 }
 
 #ifndef Q_CLANG_QDOC
-template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
-QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(
-                                    QThreadPool *pool,
+template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+QFuture<ResultType> filteredReduced(QThreadPool *pool,
                                     Iterator begin,
                                     Iterator end,
                                     KeepFunctor keep,
@@ -251,21 +250,20 @@ QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filtere
                                     ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                           | SequentialReduce))
 {
-   return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
-       (pool, begin, end, keep, reduce, options);
+   return startFilteredReduced<ResultType>(pool, begin, end, keep, reduce, options);
 }
 
-template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
-QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(
-                                    Iterator begin,
+template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+QFuture<ResultType> filteredReduced(Iterator begin,
                                     Iterator end,
                                     KeepFunctor keep,
                                     ReduceFunctor reduce,
                                     ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                           | SequentialReduce))
 {
-   return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
-       (QThreadPool::globalInstance(), begin, end, keep, reduce, options);
+   return startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+                                           begin, end, keep, reduce, options);
 }
 
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -339,14 +337,16 @@ QFuture<typename qValueType<Iterator>::value_type> filtered(Iterator begin,
 template <typename Sequence, typename KeepFunctor>
 void blockingFilter(QThreadPool *pool, Sequence &sequence, KeepFunctor keep)
 {
-    filterInternal(pool, sequence, keep, QtPrivate::PushBackWrapper()).startBlocking();
+    QFuture<void> future = filterInternal(pool, sequence, keep, QtPrivate::PushBackWrapper());
+    future.waitForFinished();
 }
 
 template <typename Sequence, typename KeepFunctor>
 void blockingFilter(Sequence &sequence, KeepFunctor keep)
 {
-    filterInternal(QThreadPool::globalInstance(), sequence, keep, QtPrivate::PushBackWrapper())
-        .startBlocking();
+    QFuture<void> future = filterInternal(QThreadPool::globalInstance(), sequence, keep,
+                                          QtPrivate::PushBackWrapper());
+    future.waitForFinished();
 }
 
 // blocking filteredReduced() on sequences
@@ -358,8 +358,9 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(pool, sequence, keep, reduce, options)
-        .startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, sequence, keep,
+                                 reduce, options);
+    return future.result();
 }
 
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor>
@@ -369,8 +370,9 @@ ResultType blockingFilteredReduced(const Sequence &sequence,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
-        sequence, keep, reduce, options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+                                 sequence, keep, reduce, options);
+    return future.result();
 }
 
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -384,8 +386,9 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(pool, sequence, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, sequence, keep, reduce,
+        ResultType(std::forward<InitialValueType>(initialValue)), options);
+    return future.result();
 }
 
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -398,34 +401,37 @@ ResultType blockingFilteredReduced(const Sequence &sequence,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(QThreadPool::globalInstance(), sequence, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+        sequence, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)), options);
+    return future.result();
 }
 
 #ifndef Q_CLANG_QDOC
-template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
-typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(
-                                   QThreadPool *pool,
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+ResultType blockingFilteredReduced(QThreadPool *pool,
                                    const Sequence &sequence,
                                    KeepFunctor keep,
                                    ReduceFunctor reduce,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
-        (pool, sequence, keep, reduce, options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, sequence, keep,
+                                 reduce, options);
+    return future.result();
 }
 
-template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
-typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(
-                                   const Sequence &sequence,
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+ResultType blockingFilteredReduced(const Sequence &sequence,
                                    KeepFunctor keep,
                                    ReduceFunctor reduce,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
-        (QThreadPool::globalInstance(), sequence, keep, reduce, options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+                                 sequence, keep, reduce, options);
+    return future.result();
 }
 
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -440,8 +446,9 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(pool, sequence, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, sequence, keep, reduce,
+        ResultType(std::forward<InitialValueType>(initialValue)), options);
+    return future.result();
 }
 
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -455,8 +462,9 @@ ResultType blockingFilteredReduced(const Sequence &sequence,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(QThreadPool::globalInstance(), sequence, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+        sequence, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)), options);
+    return future.result();
 }
 #endif
 
@@ -470,8 +478,9 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(pool, begin, end, keep, reduce, options)
-        .startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep,
+                                 reduce, options);
+    return future.result();
 }
 
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor>
@@ -482,10 +491,10 @@ ResultType blockingFilteredReduced(Iterator begin,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(QThreadPool::globalInstance(), begin, end, keep,
-        reduce, options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+                                 begin, end, keep, reduce, options);
+    return future.result();
 }
-
 
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
           typename InitialValueType,
@@ -499,8 +508,9 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(pool, begin, end, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep, reduce,
+        ResultType(std::forward<InitialValueType>(initialValue)), options);
+    return future.result();
 }
 
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -514,14 +524,15 @@ ResultType blockingFilteredReduced(Iterator begin,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(QThreadPool::globalInstance(), begin, end, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+        begin, end, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)), options);
+    return future.result();
 }
 
 #ifndef Q_CLANG_QDOC
-template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
-typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(
-                                   QThreadPool *pool,
+template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+ResultType blockingFilteredReduced(QThreadPool *pool,
                                    Iterator begin,
                                    Iterator end,
                                    KeepFunctor keep,
@@ -529,21 +540,23 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFiltered
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
-        (pool, begin, end, keep, reduce, options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep,
+                                                                  reduce, options);
+    return future.result();
 }
 
-template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
-typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(
-                                   Iterator begin,
+template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
+          typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+ResultType blockingFilteredReduced(Iterator begin,
                                    Iterator end,
                                    KeepFunctor keep,
                                    ReduceFunctor reduce,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
-        (QThreadPool::globalInstance(), begin, end, keep, reduce, options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+                                 begin, end, keep, reduce, options);
+    return future.result();
 }
 
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -558,8 +571,9 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(pool, begin, end, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep, reduce,
+        ResultType(std::forward<InitialValueType>(initialValue)), options);
+    return future.result();
 }
 
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -574,8 +588,9 @@ ResultType blockingFilteredReduced(Iterator begin,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(QThreadPool::globalInstance(), begin, end, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options).startBlocking();
+    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
+        begin, end, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)), options);
+    return future.result();
 }
 #endif
 
@@ -583,30 +598,30 @@ ResultType blockingFilteredReduced(Iterator begin,
 template <typename Sequence, typename KeepFunctor>
 Sequence blockingFiltered(QThreadPool *pool, const Sequence &sequence, KeepFunctor keep)
 {
-    return startFilteredReduced<Sequence>(pool, sequence, keep, QtPrivate::PushBackWrapper(),
-        OrderedReduce).startBlocking();
+    return blockingFilteredReduced<Sequence>(pool, sequence, keep, QtPrivate::PushBackWrapper(),
+        OrderedReduce);
 }
 
 template <typename Sequence, typename KeepFunctor>
 Sequence blockingFiltered(const Sequence &sequence, KeepFunctor keep)
 {
-    return startFilteredReduced<Sequence>(QThreadPool::globalInstance(), sequence, keep,
-        QtPrivate::PushBackWrapper(), OrderedReduce).startBlocking();
+    return blockingFilteredReduced<Sequence>(QThreadPool::globalInstance(), sequence, keep,
+        QtPrivate::PushBackWrapper(), OrderedReduce);
 }
 
 // blocking filtered() on iterators
 template <typename OutputSequence, typename Iterator, typename KeepFunctor>
 OutputSequence blockingFiltered(QThreadPool *pool, Iterator begin, Iterator end, KeepFunctor keep)
 {
-    return startFilteredReduced<OutputSequence>(pool, begin, end, keep,
-        QtPrivate::PushBackWrapper(), OrderedReduce).startBlocking();
+    return blockingFilteredReduced<OutputSequence>(pool, begin, end, keep,
+        QtPrivate::PushBackWrapper(), OrderedReduce);
 }
 
 template <typename OutputSequence, typename Iterator, typename KeepFunctor>
 OutputSequence blockingFiltered(Iterator begin, Iterator end, KeepFunctor keep)
 {
-    return startFilteredReduced<OutputSequence>(QThreadPool::globalInstance(), begin, end, keep,
-        QtPrivate::PushBackWrapper(), OrderedReduce).startBlocking();
+    return blockingFilteredReduced<OutputSequence>(QThreadPool::globalInstance(), begin, end, keep,
+        QtPrivate::PushBackWrapper(), OrderedReduce);
 }
 
 } // namespace QtConcurrent
