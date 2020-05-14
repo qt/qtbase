@@ -589,6 +589,13 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     whenever the target mip level is not zero. In practice this feature will be
     unsupported with OpenGL ES 2.0, while it will likely be supported everywhere
     else.
+
+    \value UIntAttributes Indicates that specifying input attributes with an unsigned
+    integer type for a shader pipeline is supported. When not supported, build()
+    will succeed but just show a warning message and the values of unsigned int
+    type attributes will be broken. In practice this feature will be unsupported
+    with OpenGL ES 2.0 and OpenGL 2.x, while it will likely be supported
+    everywhere else.
  */
 
 /*!

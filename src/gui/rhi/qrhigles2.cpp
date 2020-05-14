@@ -521,6 +521,7 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.nonBaseLevelFramebufferTexture = true;
 
     caps.texelFetch = caps.ctxMajor >= 3; // 3.0 or ES 3.0
+    caps.uintAttributes = caps.ctxMajor >= 3; // 3.0 or ES 3.0
 
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -869,6 +870,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.texelFetch;
     case QRhi::RenderToNonBaseMipLevel:
         return caps.nonBaseLevelFramebufferTexture;
+    case QRhi::UIntAttributes:
+        return caps.uintAttributes;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2162,14 +2165,42 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         normalize = true;
                         size = 1;
                         break;
+                    case QRhiVertexInputAttribute::UInt4:
+                        type = GL_UNSIGNED_INT;
+                        size = 4;
+                        break;
+                    case QRhiVertexInputAttribute::UInt3:
+                        type = GL_UNSIGNED_INT;
+                        size = 3;
+                        break;
+                    case QRhiVertexInputAttribute::UInt2:
+                        type = GL_UNSIGNED_INT;
+                        size = 2;
+                        break;
+                    case QRhiVertexInputAttribute::UInt:
+                        type = GL_UNSIGNED_INT;
+                        size = 1;
+                        break;
                     default:
                         break;
                     }
 
                     const int locationIdx = it->location();
                     quint32 ofs = it->offset() + cmd.args.bindVertexBuffer.offset;
-                    f->glVertexAttribPointer(GLuint(locationIdx), size, type, normalize, stride,
-                                             reinterpret_cast<const GLvoid *>(quintptr(ofs)));
+                    if (type == GL_UNSIGNED_INT) {
+                        if (caps.uintAttributes) {
+                            f->glVertexAttribIPointer(GLuint(locationIdx), size, type, stride,
+                                                      reinterpret_cast<const GLvoid *>(quintptr(ofs)));
+                        } else {
+                            qWarning("Current RHI backend does not support UIntAttributes. Check supported features.");
+                            // This is a trick to disable this attribute
+                            if (locationIdx < TRACKED_ATTRIB_COUNT)
+                                enabledAttribArrays[locationIdx] = true;
+                        }
+                    } else {
+                        f->glVertexAttribPointer(GLuint(locationIdx), size, type, normalize, stride,
+                                                 reinterpret_cast<const GLvoid *>(quintptr(ofs)));
+                    }
                     if (locationIdx >= TRACKED_ATTRIB_COUNT || !enabledAttribArrays[locationIdx]) {
                         if (locationIdx < TRACKED_ATTRIB_COUNT)
                             enabledAttribArrays[locationIdx] = true;

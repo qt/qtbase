@@ -566,6 +566,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::RenderToNonBaseMipLevel:
         return true;
+    case QRhi::UIntAttributes:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3099,6 +3101,14 @@ static inline MTLVertexFormat toMetalAttributeFormat(QRhiVertexInputAttribute::F
             return MTLVertexFormatUCharNormalized;
         else
             Q_UNREACHABLE();
+    case QRhiVertexInputAttribute::UInt4:
+        return MTLVertexFormatUInt4;
+    case QRhiVertexInputAttribute::UInt3:
+        return MTLVertexFormatUInt3;
+    case QRhiVertexInputAttribute::UInt2:
+        return MTLVertexFormatUInt2;
+    case QRhiVertexInputAttribute::UInt:
+        return MTLVertexFormatUInt;
     default:
         Q_UNREACHABLE();
         return MTLVertexFormatFloat4;

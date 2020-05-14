@@ -200,7 +200,11 @@ public:
         Float,
         UNormByte4,
         UNormByte2,
-        UNormByte
+        UNormByte,
+        UInt4,
+        UInt3,
+        UInt2,
+        UInt
     };
 
     QRhiVertexInputAttribute() = default;
@@ -1450,7 +1454,8 @@ public:
         ReadBackNonUniformBuffer,
         ReadBackNonBaseMipLevel,
         TexelFetch,
-        RenderToNonBaseMipLevel
+        RenderToNonBaseMipLevel,
+        UIntAttributes
     };
 
     enum BeginFrameFlag {
