@@ -632,9 +632,10 @@ QString QWindowsContext::registerWindowClass(QString cname,
     // has already been registered by another instance of Qt then
     // add a UUID. The check needs to be performed for each name
     // in case new message windows are added (QTBUG-81347).
+    // Note: GetClassInfo() returns != 0 when a class exists.
     const auto appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
     WNDCLASS wcinfo;
-    const bool classExists = GetClassInfo(appInstance, reinterpret_cast<LPCWSTR>(cname.utf16()), &wcinfo) == TRUE
+    const bool classExists = GetClassInfo(appInstance, reinterpret_cast<LPCWSTR>(cname.utf16()), &wcinfo) != FALSE
         && wcinfo.lpfnWndProc != proc;
 
     if (classExists)
