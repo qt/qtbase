@@ -1025,6 +1025,31 @@ QDataStream &QDataStream::operator>>(char *&s)
     return readBytes(s, len);
 }
 
+/*!
+ \overload
+
+ Reads a char from the stream into char \a chr.
+*/
+QDataStream &QDataStream::operator>>(char16_t &c)
+{
+    quint16 u;
+    *this >> u;
+    c = char16_t(u);
+    return *this;
+}
+
+/*!
+ \overload
+
+ Reads a char from the stream into char \a chr.
+*/
+QDataStream &QDataStream::operator>>(char32_t &c)
+{
+    quint32 u;
+    *this >> u;
+    c = char32_t(u);
+    return *this;
+}
 
 /*!
     Reads the buffer \a s from the stream and returns a reference to
@@ -1335,6 +1360,30 @@ QDataStream &QDataStream::operator<<(const char *s)
     *this << (quint32)len;                        // write length specifier
     writeRawData(s, len);
     return *this;
+}
+
+/*!
+  \overload
+  \since 6.0
+
+  Writes a character, \a c, to the stream. Returns a reference to
+  the stream
+*/
+QDataStream &QDataStream::operator<<(char16_t c)
+{
+    return *this << qint16(c);
+}
+
+/*!
+  \overload
+  \since 6.0
+
+  Writes a character, \a c, to the stream. Returns a reference to
+  the stream
+*/
+QDataStream &QDataStream::operator<<(char32_t c)
+{
+    return *this << qint32(c);
 }
 
 /*!

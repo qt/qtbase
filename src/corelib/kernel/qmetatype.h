@@ -85,6 +85,8 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(Long, 32, long) \
     F(Short, 33, short) \
     F(Char, 34, char) \
+    F(Char16, 56, char16_t) \
+    F(Char32, 57, char32_t) \
     F(ULong, 35, ulong) \
     F(UShort, 36, ushort) \
     F(UChar, 37, uchar) \
@@ -451,7 +453,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = QCborMap,
+        LastCoreType = Char32,
         FirstGuiType = QFont,
         LastGuiType = QColorSpace,
         FirstWidgetsType = QSizePolicy,
@@ -482,6 +484,7 @@ public:
         Nullptr = 51,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
         QCborSimpleType = 52, QCborValue = 53, QCborArray = 54, QCborMap = 55,
+        Char16 = 56, Char32 = 57,
 
         // Gui types
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,

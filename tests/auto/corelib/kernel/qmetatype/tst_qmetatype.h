@@ -136,6 +136,12 @@ template<> struct TestValueFactory<QMetaType::Short> {
 template<> struct TestValueFactory<QMetaType::Char> {
     static char *create() { return new char('c'); }
 };
+template<> struct TestValueFactory<QMetaType::Char16> {
+    static char16_t *create() { return new char16_t('c'); }
+};
+template<> struct TestValueFactory<QMetaType::Char32> {
+    static char32_t *create() { return new char32_t('c'); }
+};
 template<> struct TestValueFactory<QMetaType::ULong> {
     static ulong *create() { return new ulong(ULONG_MAX); }
 };

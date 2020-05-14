@@ -163,6 +163,8 @@ public:
     QDataStream &operator>>(float &f);
     QDataStream &operator>>(double &f);
     QDataStream &operator>>(char *&str);
+    QDataStream &operator>>(char16_t &c);
+    QDataStream &operator>>(char32_t &c);
 
     QDataStream &operator<<(qint8 i);
     QDataStream &operator<<(quint8 i);
@@ -178,6 +180,9 @@ public:
     QDataStream &operator<<(float f);
     QDataStream &operator<<(double f);
     QDataStream &operator<<(const char *str);
+    QDataStream &operator<<(char16_t c);
+    QDataStream &operator<<(char32_t c);
+
 
     QDataStream &readBytes(char *&, uint &len);
     int readRawData(char *, int len);
