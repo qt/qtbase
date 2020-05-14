@@ -336,7 +336,7 @@ void QWidgetResizeHandler::keyPressEvent(QKeyEvent * e)
     switch (e->key()) {
     case Qt::Key_Left:
         pos.rx() -= delta;
-        if (pos.x() <= QDesktopWidgetPrivate::geometry().left()) {
+        if (pos.x() <= QGuiApplication::primaryScreen()->virtualGeometry().left()) {
             if (mode == TopLeft || mode == BottomLeft) {
                 moveOffset.rx() += delta;
                 invertedMoveOffset.rx() += delta;
@@ -361,7 +361,7 @@ void QWidgetResizeHandler::keyPressEvent(QKeyEvent * e)
         break;
     case Qt::Key_Right:
         pos.rx() += delta;
-        if (pos.x() >= QDesktopWidgetPrivate::geometry().right()) {
+        if (pos.x() >= QGuiApplication::primaryScreen()->virtualGeometry().right()) {
             if (mode == TopRight || mode == BottomRight) {
                 moveOffset.rx() += delta;
                 invertedMoveOffset.rx() += delta;
@@ -386,7 +386,7 @@ void QWidgetResizeHandler::keyPressEvent(QKeyEvent * e)
         break;
     case Qt::Key_Up:
         pos.ry() -= delta;
-        if (pos.y() <= QDesktopWidgetPrivate::geometry().top()) {
+        if (pos.y() <= QGuiApplication::primaryScreen()->virtualGeometry().top()) {
             if (mode == TopLeft || mode == TopRight) {
                 moveOffset.ry() += delta;
                 invertedMoveOffset.ry() += delta;
@@ -411,7 +411,7 @@ void QWidgetResizeHandler::keyPressEvent(QKeyEvent * e)
         break;
     case Qt::Key_Down:
         pos.ry() += delta;
-        if (pos.y() >= QDesktopWidgetPrivate::geometry().bottom()) {
+        if (pos.y() >= QGuiApplication::primaryScreen()->virtualGeometry().bottom()) {
             if (mode == BottomLeft || mode == BottomRight) {
                 moveOffset.ry() += delta;
                 invertedMoveOffset.ry() += delta;

@@ -212,7 +212,7 @@ QWhatsThat::QWhatsThat(const QString& txt, QWidget* parent, QWidget *showTextFor
     }
     else
     {
-        int sw = QDesktopWidgetPrivate::width() / 3;
+        int sw = QGuiApplication::primaryScreen()->virtualGeometry().width() / 3;
         if (sw < 200)
             sw = 200;
         else if (sw > 300)

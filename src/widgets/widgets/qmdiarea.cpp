@@ -1744,7 +1744,7 @@ QSize QMdiArea::sizeHint() const
     }
     const int scaleFactor = 3 * (nestedCount + 1);
 
-    QSize desktopSize = QDesktopWidgetPrivate::size();
+    QSize desktopSize = QGuiApplication::primaryScreen()->virtualSize();
     QSize size(desktopSize.width() * 2 / scaleFactor, desktopSize.height() * 2 / scaleFactor);
     for (QMdiSubWindow *child : d_func()->childWindows) {
         if (!sanityCheck(child, "QMdiArea::sizeHint"))

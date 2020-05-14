@@ -7252,8 +7252,8 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
 
     // ### Qt 6 - Perhaps it makes sense to dumb down the restoreGeometry() logic, see QTBUG-69104
 
-    if (restoredScreenNumber >= QDesktopWidgetPrivate::numScreens())
-        restoredScreenNumber = QDesktopWidgetPrivate::primaryScreen();
+    if (restoredScreenNumber >= qMax(QGuiApplication::screens().size(), 1))
+        restoredScreenNumber = 0;
     const qreal screenWidthF = qreal(QDesktopWidgetPrivate::screenGeometry(restoredScreenNumber).width());
     // Sanity check bailing out when large variations of screen sizes occur due to
     // high DPI scaling or different levels of DPI awareness.

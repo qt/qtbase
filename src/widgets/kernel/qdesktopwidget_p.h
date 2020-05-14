@@ -84,18 +84,7 @@ class QDesktopWidgetPrivate : public QWidgetPrivate {
 public:
     ~QDesktopWidgetPrivate() { qDeleteAll(screens); }
     void _q_updateScreens();
-    void _q_availableGeometryChanged();
     QDesktopScreenWidget *widgetForScreen(QScreen *qScreen) const;
-
-    static bool isVirtualDesktop();
-
-    static QRect geometry();
-    static QSize size();
-    static int width();
-    static int height();
-
-    static int numScreens();
-    static int primaryScreen();
 
     static int screenNumber(const QWidget *widget = nullptr);
     static int screenNumber(const QPoint &);

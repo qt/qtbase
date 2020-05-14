@@ -3021,7 +3021,7 @@ QSize QDockAreaLayout::minimumSize() const
 QRect QDockAreaLayout::constrainedRect(QRect rect, QWidget* widget)
 {
     QRect desktop;
-    if (QDesktopWidgetPrivate::isVirtualDesktop())
+    if (QGuiApplication::primaryScreen()->virtualSiblings().size() > 1)
         desktop = QDesktopWidgetPrivate::screenGeometry(rect.topLeft());
     else
         desktop = QDesktopWidgetPrivate::screenGeometry(widget);

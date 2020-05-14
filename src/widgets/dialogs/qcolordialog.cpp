@@ -1706,7 +1706,7 @@ void QColorDialogPrivate::initWidgets()
 #else
     // small displays (e.g. PDAs) cannot fit the full color dialog,
     // so just use the color picker.
-    smallDisplay = (QDesktopWidgetPrivate::width() < 480 || QDesktopWidgetPrivate::height() < 350);
+    smallDisplay = (QGuiApplication::primaryScreen()->virtualGeometry().width() < 480 || QGuiApplication::primaryScreen()->virtualGeometry().height() < 350);
     const int lumSpace = topLay->spacing() / 2;
 #endif
 

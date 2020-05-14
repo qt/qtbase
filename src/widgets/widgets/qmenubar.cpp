@@ -1625,7 +1625,7 @@ QSize QMenuBar::minimumSizeHint() const
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, nullptr, this);
     int spaceBelowMenuBar = style()->styleHint(QStyle::SH_MainWindow_SpaceBelowMenuBar, nullptr, this);
     if(as_gui_menubar) {
-        int w = parentWidget() ? parentWidget()->width() : QDesktopWidgetPrivate::width();
+        int w = parentWidget() ? parentWidget()->width() : QGuiApplication::primaryScreen()->virtualGeometry().width();
         d->calcActionRects(w - (2 * fw), 0);
         for (int i = 0; ret.isNull() && i < d->actions.count(); ++i)
             ret = d->actionRects.at(i).size();
@@ -1675,7 +1675,7 @@ QSize QMenuBar::sizeHint() const
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, nullptr, this);
     int spaceBelowMenuBar = style()->styleHint(QStyle::SH_MainWindow_SpaceBelowMenuBar, nullptr, this);
     if(as_gui_menubar) {
-        const int w = parentWidget() ? parentWidget()->width() : QDesktopWidgetPrivate::width();
+        const int w = parentWidget() ? parentWidget()->width() : QGuiApplication::primaryScreen()->virtualGeometry().width();
         d->calcActionRects(w - (2 * fw), 0);
         for (int i = 0; i < d->actionRects.count(); ++i) {
             const QRect &actionRect = d->actionRects.at(i);

@@ -373,7 +373,7 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
 
 int QTipLabel::getTipScreen(const QPoint &pos, QWidget *w)
 {
-    if (QDesktopWidgetPrivate::isVirtualDesktop())
+    if (QGuiApplication::primaryScreen()->virtualSiblings().size() > 1)
         return QDesktopWidgetPrivate::screenNumber(pos);
     else
         return QDesktopWidgetPrivate::screenNumber(w);

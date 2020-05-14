@@ -2,7 +2,6 @@ TEMPLATE=subdirs
 SUBDIRS=\
    qapplication \
    qboxlayout \
-   qdesktopwidget \
    qformlayout \
    qgesturerecognizer \
    qgridlayout \

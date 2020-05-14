@@ -46,9 +46,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtGui/qcursor.h>
-#ifdef QT_INCLUDE_COMPAT
-# include <QtWidgets/qdesktopwidget.h>
-#endif
 #include <QtGui/qguiapplication.h>
 
 QT_BEGIN_NAMESPACE

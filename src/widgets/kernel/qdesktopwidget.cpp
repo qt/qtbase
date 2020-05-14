@@ -71,11 +71,6 @@ int QDesktopScreenWidget::screenNumber() const
     return desktopWidgetP->screens.indexOf(const_cast<QDesktopScreenWidget *>(this));
 }
 
-const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
-{
-    return QDesktopWidgetPrivate::screenGeometry(widget);
-}
-
 const QRect QDesktopWidgetPrivate::screenGeometry(const QWidget *widget)
 {
     if (Q_UNLIKELY(!widget)) {
@@ -87,11 +82,6 @@ const QRect QDesktopWidgetPrivate::screenGeometry(const QWidget *widget)
     if (rect.isNull())
         return screenGeometry(screenNumber(widget));
     else return rect;
-}
-
-const QRect QDesktopWidget::availableGeometry(const QWidget *widget) const
-{
-    return QDesktopWidgetPrivate::availableGeometry(widget);
 }
 
 const QRect QDesktopWidgetPrivate::availableGeometry(const QWidget *widget)
@@ -122,7 +112,6 @@ void QDesktopWidgetPrivate::_q_updateScreens()
     Q_Q(QDesktopWidget);
     const QList<QScreen *> screenList = QGuiApplication::screens();
     const int targetLength = screenList.length();
-    bool screenCountChanged = false;
 
     // Re-build our screens list. This is the easiest way to later compute which signals to emit.
     // Create new screen widgets as necessary. While iterating, keep the old list in place so
@@ -147,11 +136,8 @@ void QDesktopWidgetPrivate::_q_updateScreens()
             screenWidget = new QDesktopScreenWidget(qScreen, screenGeometry);
             QObject::connect(qScreen, SIGNAL(geometryChanged(QRect)),
                              q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
-            QObject::connect(qScreen, SIGNAL(availableGeometryChanged(QRect)),
-                             q, SLOT(_q_availableGeometryChanged()), Qt::QueuedConnection);
             QObject::connect(qScreen, SIGNAL(destroyed()),
                              q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
-            screenCountChanged = true;
         }
         // record all the screens and the overall geometry.
         newScreens.push_back(screenWidget);
@@ -165,43 +151,9 @@ void QDesktopWidgetPrivate::_q_updateScreens()
 
     // Delete the QDesktopScreenWidget that are not used any more.
     foreach (QDesktopScreenWidget *screen, newScreens) {
-        if (!screens.contains(screen)) {
+        if (!screens.contains(screen))
             delete screen;
-            screenCountChanged = true;
-        }
     }
-
-    // Finally, emit the signals.
-    if (screenCountChanged) {
-        // Notice that we trigger screenCountChanged even if a screen was removed and another one added,
-        // in which case the total number of screens did not change. This is the only way for applications
-        // to notice that a screen was swapped out against another one.
-#if QT_DEPRECATED_SINCE(5, 11)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit q->screenCountChanged(targetLength);
-QT_WARNING_POP
-#endif
-    }
-#if QT_DEPRECATED_SINCE(5, 11)
-    foreach (int changedScreen, changedScreens)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit q->resized(changedScreen);
-QT_WARNING_POP
-#endif
-}
-
-void QDesktopWidgetPrivate::_q_availableGeometryChanged()
-{
-#if QT_DEPRECATED_SINCE(5, 11)
-    Q_Q(QDesktopWidget);
-    if (QScreen *screen = qobject_cast<QScreen *>(q->sender()))
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        emit q->workAreaResized(QGuiApplication::screens().indexOf(screen));
-QT_WARNING_POP
-#endif
 }
 
 QDesktopWidget::QDesktopWidget()
@@ -211,68 +163,10 @@ QDesktopWidget::QDesktopWidget()
     setObjectName(QLatin1String("desktop"));
     d->_q_updateScreens();
     connect(qApp, SIGNAL(screenAdded(QScreen*)), this, SLOT(_q_updateScreens()));
-#if QT_DEPRECATED_SINCE(5, 11)
-    connect(qApp, SIGNAL(primaryScreenChanged(QScreen*)), this, SIGNAL(primaryScreenChanged()));
-#endif
 }
 
 QDesktopWidget::~QDesktopWidget()
 {
-}
-
-#if QT_DEPRECATED_SINCE(5, 11)
-bool QDesktopWidget::isVirtualDesktop() const
-{
-    return QDesktopWidgetPrivate::isVirtualDesktop();
-}
-#endif
-
-bool QDesktopWidgetPrivate::isVirtualDesktop()
-{
-    return QGuiApplication::primaryScreen()->virtualSiblings().size() > 1;
-}
-
-QRect QDesktopWidgetPrivate::geometry()
-{
-    return QGuiApplication::primaryScreen()->virtualGeometry();
-}
-
-QSize QDesktopWidgetPrivate::size()
-{
-    return geometry().size();
-}
-
-int QDesktopWidgetPrivate::width()
-{
-    return geometry().width();
-}
-
-int QDesktopWidgetPrivate::height()
-{
-    return geometry().height();
-}
-
-#if QT_DEPRECATED_SINCE(5, 11)
-int QDesktopWidget::primaryScreen() const
-{
-    return QDesktopWidgetPrivate::primaryScreen();
-}
-#endif
-
-int QDesktopWidgetPrivate::primaryScreen()
-{
-    return 0;
-}
-
-int QDesktopWidgetPrivate::numScreens()
-{
-    return qMax(QGuiApplication::screens().size(), 1);
-}
-
-#if QT_DEPRECATED_SINCE(5, 11)
-int QDesktopWidget::numScreens() const
-{
-    return QDesktopWidgetPrivate::numScreens();
 }
 
 QWidget *QDesktopWidget::screen(int screen)
@@ -283,24 +177,11 @@ QWidget *QDesktopWidget::screen(int screen)
     return d->screens.at(screen);
 }
 
-const QRect QDesktopWidget::availableGeometry(int screenNo) const
-{
-    return QDesktopWidgetPrivate::availableGeometry(screenNo);
-}
-#endif
-
 const QRect QDesktopWidgetPrivate::availableGeometry(int screenNo)
 {
     const QScreen *screen = QDesktopWidgetPrivate::screen(screenNo);
     return screen ? screen->availableGeometry() : QRect();
 }
-
-#if QT_DEPRECATED_SINCE(5, 11)
-const QRect QDesktopWidget::screenGeometry(int screenNo) const
-{
-    return QDesktopWidgetPrivate::screenGeometry(screenNo);
-}
-#endif
 
 const QRect QDesktopWidgetPrivate::screenGeometry(int screenNo)
 {
@@ -308,20 +189,15 @@ const QRect QDesktopWidgetPrivate::screenGeometry(int screenNo)
     return screen ? screen->geometry() : QRect();
 }
 
-int QDesktopWidget::screenNumber(const QWidget *w) const
-{
-    return QDesktopWidgetPrivate::screenNumber(w);
-}
-
 int QDesktopWidgetPrivate::screenNumber(const QWidget *w)
 {
     if (!w)
-        return primaryScreen();
+        return 0;
 
     const QList<QScreen *> allScreens = QGuiApplication::screens();
     QList<QScreen *> screens = allScreens;
     if (screens.isEmpty()) // This should never happen
-        return primaryScreen();
+        return 0;
 
     // If there is more than one virtual desktop
     if (screens.count() != screens.constFirst()->virtualSiblings().count()) {
@@ -352,17 +228,10 @@ int QDesktopWidgetPrivate::screenNumber(const QWidget *w)
     return allScreens.indexOf(widgetScreen);
 }
 
-#if QT_DEPRECATED_SINCE(5, 11)
-int QDesktopWidget::screenNumber(const QPoint &p) const
-{
-    return QDesktopWidgetPrivate::screenNumber(p);
-}
-#endif
-
 int QDesktopWidgetPrivate::screenNumber(const QPoint &p)
 {
     QScreen *screen = QGuiApplication::screenAt(p);
-    return screen ? QGuiApplication::screens().indexOf(screen) : primaryScreen();
+    return screen ? QGuiApplication::screens().indexOf(screen) : 0;
 }
 
 QScreen *QDesktopWidgetPrivate::screen(int screenNo)
@@ -373,10 +242,6 @@ QScreen *QDesktopWidgetPrivate::screen(int screenNo)
     if (screenNo < 0 || screenNo >= screens.size())
         return nullptr;
     return screens.at(screenNo);
-}
-
-void QDesktopWidget::resizeEvent(QResizeEvent *)
-{
 }
 
 QT_END_NAMESPACE

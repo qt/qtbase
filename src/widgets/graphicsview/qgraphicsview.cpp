@@ -1293,7 +1293,7 @@ QSize QGraphicsView::sizeHint() const
     if (d->scene) {
         QSizeF baseSize = d->matrix.mapRect(sceneRect()).size();
         baseSize += QSizeF(d->frameWidth * 2, d->frameWidth * 2);
-        return baseSize.boundedTo((3 * QDesktopWidgetPrivate::size()) / 4).toSize();
+        return baseSize.boundedTo((3 * QGuiApplication::primaryScreen()->virtualSize()) / 4).toSize();
     }
     return QAbstractScrollArea::sizeHint();
 }
