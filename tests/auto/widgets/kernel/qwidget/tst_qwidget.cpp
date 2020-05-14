@@ -417,6 +417,7 @@ private slots:
 
     void winIdAfterClose();
     void receivesLanguageChangeEvent();
+    void deleteWindowInCloseEvent();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -11703,6 +11704,24 @@ void tst_QWidget::receivesLanguageChangeEvent()
     QCOMPARE(topLevelNotShown.languageChangeCount, 1);
     QCOMPARE(childWidget->languageChangeCount, 1);
     QCOMPARE(ww.languageChangeCount, 1);
+}
+
+class DeleteOnCloseEventWidget : public QWidget
+{
+protected:
+    virtual void closeEvent(QCloseEvent *e) override
+    {
+        e->accept();
+        delete this;
+    }
+};
+
+void tst_QWidget::deleteWindowInCloseEvent()
+{
+    // Just checking if closing this widget causes a crash
+    auto widget = new DeleteOnCloseEventWidget;
+    widget->close();
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QWidget)
