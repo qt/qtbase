@@ -43,8 +43,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qalgorithms.h>
 #include <QtCore/qmath.h>
-
-#include <limits.h>
+#include <QtCore/qtypeinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,10 +79,13 @@ public:
     static constexpr quintptr tagMask() { return QtPrivate::TagInfo<T>::alignment - 1; }
     static constexpr quintptr pointerMask() { return ~tagMask(); }
 
-    explicit QTaggedPointer(T *pointer = nullptr, Tag tag = Tag()) noexcept
+    constexpr QTaggedPointer() noexcept : d(0) {}
+    constexpr QTaggedPointer(std::nullptr_t) noexcept : QTaggedPointer() {}
+
+    explicit QTaggedPointer(T *pointer, Tag tag = Tag()) noexcept
         : d(quintptr(pointer))
     {
-        Q_STATIC_ASSERT(sizeof(Type*) == sizeof(QTaggedPointer<Type>));
+        Q_STATIC_ASSERT(sizeof(Type*) == sizeof(QTaggedPointer));
 
         Q_ASSERT_X((quintptr(pointer) & tagMask()) == 0,
             "QTaggedPointer<T, Tag>", "Pointer is not aligned");
@@ -107,15 +109,9 @@ public:
         return !isNull();
     }
 
-    QTaggedPointer<T, Tag> &operator=(T *other) noexcept
+    QTaggedPointer &operator=(T *other) noexcept
     {
         d = reinterpret_cast<quintptr>(other) | (d & tagMask());
-        return *this;
-    }
-
-    QTaggedPointer<T, Tag> &operator=(std::nullptr_t) noexcept
-    {
-        d &= tagMask();
         return *this;
     }
 
@@ -147,58 +143,62 @@ public:
         return !data();
     }
 
-    void swap(QTaggedPointer<T, Tag> &other) noexcept
+    void swap(QTaggedPointer &other) noexcept
     {
         qSwap(d, other.d);
     }
 
-    friend inline bool operator==(const QTaggedPointer<T, Tag> &lhs, const QTaggedPointer<T, Tag> &rhs) noexcept
+    friend inline bool operator==(QTaggedPointer lhs, QTaggedPointer rhs) noexcept
     {
         return lhs.data() == rhs.data();
     }
 
-    friend inline bool operator!=(const QTaggedPointer<T, Tag> &lhs, const QTaggedPointer<T, Tag> &rhs) noexcept
+    friend inline bool operator!=(QTaggedPointer lhs, QTaggedPointer rhs) noexcept
     {
         return lhs.data() != rhs.data();
     }
 
-    friend inline bool operator==(const QTaggedPointer<T, Tag> &lhs, std::nullptr_t) noexcept
+    friend inline bool operator==(QTaggedPointer lhs, std::nullptr_t) noexcept
     {
         return lhs.isNull();
     }
 
-    friend inline bool operator==(std::nullptr_t, const QTaggedPointer<T, Tag> &rhs) noexcept
+    friend inline bool operator==(std::nullptr_t, QTaggedPointer rhs) noexcept
     {
         return rhs.isNull();
     }
 
-    friend inline bool operator!=(const QTaggedPointer<T, Tag> &lhs, std::nullptr_t) noexcept
+    friend inline bool operator!=(QTaggedPointer lhs, std::nullptr_t) noexcept
     {
         return !lhs.isNull();
     }
 
-    friend inline bool operator!=(std::nullptr_t, const QTaggedPointer<T, Tag> &rhs) noexcept
+    friend inline bool operator!=(std::nullptr_t, QTaggedPointer rhs) noexcept
     {
         return !rhs.isNull();
     }
 
-    friend inline bool operator!(const QTaggedPointer<T, Tag> &ptr) noexcept
+    friend inline bool operator!(QTaggedPointer ptr) noexcept
     {
         return !ptr.data();
+    }
+
+    friend inline void swap(QTaggedPointer &p1, QTaggedPointer &p2) noexcept
+    {
+        p1.swap(p2);
     }
 
 protected:
     quintptr d;
 };
 
-template <typename T>
-Q_DECLARE_TYPEINFO_BODY(QTaggedPointer<T>, Q_MOVABLE_TYPE);
+template <typename T, typename Tag>
+constexpr inline std::size_t qHash(QTaggedPointer<T, Tag> p, std::size_t seed = 0) noexcept
+{ return qHash(p.data(), seed); }
 
 template <typename T, typename Tag>
-inline void swap(QTaggedPointer<T, Tag> &p1, QTaggedPointer<T, Tag> &p2) noexcept
-{
-    p1.swap(p2);
-}
+class QTypeInfo<QTaggedPointer<T, Tag>>
+    : public QTypeInfoMerger<QTaggedPointer<T, Tag>, quintptr> {};
 
 QT_END_NAMESPACE
 
