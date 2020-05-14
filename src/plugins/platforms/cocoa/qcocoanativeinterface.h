@@ -63,8 +63,6 @@ public:
 
     NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) override;
 
-    QFunctionPointer platformFunction(const QByteArray &function) const override;
-
 public Q_SLOTS:
     void onAppFocusWindowChanged(QWindow *window);
 

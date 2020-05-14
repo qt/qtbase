@@ -202,8 +202,7 @@ public:
     QWindow *childWindowAt(QPoint windowPoint);
     bool shouldRefuseKeyWindowAndFirstResponder();
 
-    static QPoint bottomLeftClippedByNSWindowOffsetStatic(QWindow *window);
-    QPoint bottomLeftClippedByNSWindowOffset() const;
+    QPoint bottomLeftClippedByNSWindowOffset() const override;
 
     enum RecreationReason {
         RecreationNotNeeded = 0,

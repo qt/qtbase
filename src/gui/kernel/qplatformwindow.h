@@ -179,6 +179,7 @@ struct Q_GUI_EXPORT QCocoaWindow
 {
     QT_DECLARE_PLATFORM_INTERFACE(QCocoaWindow)
     virtual void setContentBorderEnabled(bool enable) = 0;
+    virtual QPoint bottomLeftClippedByNSWindowOffset() const = 0;
 };
 #endif
 

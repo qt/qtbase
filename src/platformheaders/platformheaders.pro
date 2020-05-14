@@ -5,7 +5,6 @@ include(xcbfunctions/xcbfunctions.pri)
 include(eglfsfunctions/eglfsfunctions.pri)
 include(windowsfunctions/windowsfunctions.pri)
 include(helper/helper.pri)
-include(cocoafunctions/cocoafunctions.pri)
 include(waylandfunctions/waylandfunctions.pri)
 include(linuxfbfunctions/linuxfbfunctions.pri)
 

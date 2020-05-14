@@ -64,8 +64,6 @@
 
 #include <QtGui/private/qcoregraphics_p.h>
 
-#include <QtPlatformHeaders/private/qcocoawindowfunctions_p.h>
-
 #if QT_CONFIG(vulkan)
 #include <MoltenVK/mvk_vulkan.h>
 #endif
@@ -158,14 +156,6 @@ void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
 {
     Q_UNUSED(window);
     QCocoaMenuBar::updateMenuBarImmediately();
-}
-
-QFunctionPointer QCocoaNativeInterface::platformFunction(const QByteArray &function) const
-{
-    if (function == QCocoaWindowFunctions::bottomLeftClippedByNSWindowOffsetIdentifier())
-        return QFunctionPointer(QCocoaWindowFunctions::BottomLeftClippedByNSWindowOffset(QCocoaWindow::bottomLeftClippedByNSWindowOffsetStatic));
-
-    return nullptr;
 }
 
 void QCocoaNativeInterface::addToMimeList(void *macPasteboardMime)

@@ -1881,13 +1881,6 @@ bool QCocoaWindow::shouldRefuseKeyWindowAndFirstResponder()
     return false;
 }
 
-QPoint QCocoaWindow::bottomLeftClippedByNSWindowOffsetStatic(QWindow *window)
-{
-    if (window->handle())
-        return static_cast<QCocoaWindow *>(window->handle())->bottomLeftClippedByNSWindowOffset();
-    return QPoint();
-}
-
 QPoint QCocoaWindow::bottomLeftClippedByNSWindowOffset() const
 {
     if (!m_view)
