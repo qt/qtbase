@@ -243,10 +243,14 @@ bool QWidgetWindow::event(QEvent *event)
     }
 
     switch (event->type()) {
-    case QEvent::Close:
+    case QEvent::Close: {
+        // The widget might be deleted in the close event handler.
+        QPointer<QObject> guard = this;
         handleCloseEvent(static_cast<QCloseEvent *>(event));
-        QWindow::event(event);
+        if (guard)
+            QWindow::event(event);
         return true;
+    }
 
     case QEvent::Enter:
     case QEvent::Leave:

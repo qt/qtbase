@@ -399,6 +399,8 @@ private slots:
     void closeEvent();
     void closeWithChildWindow();
 
+    void deleteWindowInCloseEvent();
+
 private:
     bool ensureScreenSize(int width, int height);
 
@@ -11142,6 +11144,24 @@ void tst_QWidget::closeWithChildWindow()
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QVERIFY(!childWidget->isVisible());
+}
+
+class DeleteOnCloseEventWidget : public QWidget
+{
+protected:
+    virtual void closeEvent(QCloseEvent *e) override
+    {
+        e->accept();
+        delete this;
+    }
+};
+
+void tst_QWidget::deleteWindowInCloseEvent()
+{
+    // Just checking if closing this widget causes a crash
+    auto widget = new DeleteOnCloseEventWidget;
+    widget->close();
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QWidget)
