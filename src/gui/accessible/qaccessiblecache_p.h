@@ -72,6 +72,8 @@ public:
     static QAccessibleCache *instance();
     QAccessibleInterface *interfaceForId(QAccessible::Id id) const;
     QAccessible::Id idForInterface(QAccessibleInterface *iface) const;
+    QAccessible::Id idForObject(QObject *obj) const;
+    bool containsObject(QObject *obj) const;
     QAccessible::Id insert(QObject *object, QAccessibleInterface *iface) const;
     void deleteInterface(QAccessible::Id id, QObject *obj = nullptr);
 
@@ -88,7 +90,7 @@ private:
 
     mutable QHash<QAccessible::Id, QAccessibleInterface *> idToInterface;
     mutable QHash<QAccessibleInterface *, QAccessible::Id> interfaceToId;
-    mutable QHash<QObject *, QAccessible::Id> objectToId;
+    mutable QMultiHash<QObject *, QPair<QAccessible::Id, const QMetaObject*>> objectToId;
 
 #ifdef Q_OS_MAC
     void removeCocoaElement(QAccessible::Id axid);

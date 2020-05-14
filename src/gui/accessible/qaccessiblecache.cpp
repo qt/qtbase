@@ -108,20 +108,51 @@ QAccessible::Id QAccessibleCache::idForInterface(QAccessibleInterface *iface) co
     return interfaceToId.value(iface);
 }
 
+QAccessible::Id QAccessibleCache::idForObject(QObject *obj) const
+{
+    if (obj) {
+        const QMetaObject *mo = obj->metaObject();
+        for (auto pair : objectToId.values(obj)) {
+            if (pair.second == mo) {
+                return pair.first;
+            }
+        }
+    }
+    return 0;
+}
+
+/*!
+ * \internal
+ *
+ * returns true if the cache has an interface for the object and its corresponding QMetaObject
+ */
+bool QAccessibleCache::containsObject(QObject *obj) const
+{
+    if (obj) {
+        const QMetaObject *mo = obj->metaObject();
+        for (auto pair : objectToId.values(obj)) {
+            if (pair.second == mo) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *iface) const
 {
     Q_ASSERT(iface);
     Q_UNUSED(object)
 
     // object might be 0
-    Q_ASSERT(!objectToId.contains(object));
+    Q_ASSERT(!containsObject(object));
     Q_ASSERT_X(!interfaceToId.contains(iface), "", "Accessible interface inserted into cache twice!");
 
     QAccessible::Id id = acquireId();
     QObject *obj = iface->object();
     Q_ASSERT(object == obj);
     if (obj) {
-        objectToId.insert(obj, id);
+        objectToId.insert(obj, qMakePair(id, obj->metaObject()));
         connect(obj, &QObject::destroyed, this, &QAccessibleCache::objectDestroyed);
     }
     idToInterface.insert(id, iface);
@@ -132,8 +163,33 @@ QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *
 
 void QAccessibleCache::objectDestroyed(QObject* obj)
 {
-    QAccessible::Id id = objectToId.value(obj);
-    if (id) {
+    /*
+    In some cases we might add a not fully-constructed object to the cache. This might happen with
+    for instance QWidget subclasses that are in the construction phase. If updateAccessibility() is
+    called in the constructor of QWidget (directly or indirectly), it it will end up asking for the
+    classname of that widget in order to know which accessibility interface subclass the
+    accessibility factory should instantiate and return. However, since that requires a virtual
+    call to metaObject(), it will return the metaObject() of QWidget (not for the subclass), and so
+    the factory will ultimately return a rather generic QAccessibleWidget instead of a more
+    specialized interface. Even though it is a "incomplete" interface it will be put in the cache
+    and it will be usable as if the object is a widget. In order for the cache to not just return
+    the same generic QAccessibleWidget for that object, we have to check if the cache matches
+    the objects QMetaObject. We therefore use a QMultiHash and also store the QMetaObject * in
+    the value. We therefore might potentially store several values for the corresponding object
+    (in theory one for each level in the class inheritance chain)
+
+    This means that after the object have been fully constructed, we will at some point again query
+    for the interface for the same object, but now its metaObject() returns the correct
+    QMetaObject, so it won't return the QAccessibleWidget that is associated with the object in the
+    cache. Instead it will go to the factory and create the _correct_ specialized interface for the
+    object. If that succeeded, it will also put that entry in the cache. We will therefore in those
+    cases insert *two* cache entries for the same object (using QMultiHash). They both must live
+    until the object is destroyed.
+
+    So when the object is destroyed we might have to delete two entries from the cache.
+    */
+    for (auto pair : objectToId.values(obj)) {
+        QAccessible::Id id = pair.first;
         Q_ASSERT_X(idToInterface.contains(id), "", "QObject with accessible interface deleted, where interface not in cache!");
         deleteInterface(id, obj);
     }

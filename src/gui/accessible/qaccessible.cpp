@@ -674,7 +674,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     if (!object)
         return nullptr;
 
-    if (Id id = QAccessibleCache::instance()->objectToId.value(object))
+    if (Id id = QAccessibleCache::instance()->idForObject(object))
         return QAccessibleCache::instance()->interfaceForId(id);
 
     // Create a QAccessibleInterface for the object class. Start by the most
@@ -688,7 +688,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
             InterfaceFactory factory = qAccessibleFactories()->at(i - 1);
             if (QAccessibleInterface *iface = factory(cn, object)) {
                 QAccessibleCache::instance()->insert(object, iface);
-                Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(object));
+                Q_ASSERT(QAccessibleCache::instance()->containsObject(object));
                 return iface;
             }
         }
@@ -709,7 +709,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
             QAccessibleInterface *result = factory->create(cn, object);
             if (result) {   // Need this condition because of QDesktopScreenWidget
                 QAccessibleCache::instance()->insert(object, result);
-                Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(object));
+                Q_ASSERT(QAccessibleCache::instance()->containsObject(object));
             }
             return result;
         }
@@ -719,7 +719,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     if (object == qApp) {
         QAccessibleInterface *appInterface = new QAccessibleApplication;
         QAccessibleCache::instance()->insert(object, appInterface);
-        Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(qApp));
+        Q_ASSERT(QAccessibleCache::instance()->containsObject(qApp));
         return appInterface;
     }
 
