@@ -419,6 +419,7 @@ private slots:
     void receivesLanguageChangeEvent();
     void receivesApplicationFontChangeEvent();
     void receivesApplicationPaletteChangeEvent();
+    void deleteWindowInCloseEvent();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -11772,6 +11773,24 @@ void tst_QWidget::receivesApplicationPaletteChangeEvent()
     QCOMPARE(ww.applicationPaletteChangeCount, 1);
 
     QApplication::setPalette(origPalette);
+}
+
+class DeleteOnCloseEventWidget : public QWidget
+{
+protected:
+    virtual void closeEvent(QCloseEvent *e) override
+    {
+        e->accept();
+        delete this;
+    }
+};
+
+void tst_QWidget::deleteWindowInCloseEvent()
+{
+    // Just checking if closing this widget causes a crash
+    auto widget = new DeleteOnCloseEventWidget;
+    widget->close();
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QWidget)
