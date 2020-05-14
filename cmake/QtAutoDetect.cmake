@@ -172,8 +172,15 @@ function(qt_auto_detect_cmake_config)
 
         set(CMAKE_TRY_COMPILE_CONFIGURATION "${QT_MULTI_CONFIG_FIRST_CONFIG}" PARENT_SCOPE)
         if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+            # Create build-<config>.ninja files for all specified configurations.
             set(CMAKE_CROSS_CONFIGS "all" CACHE STRING "")
+
+            # The configuration that will be considered the main one (for example when
+            # configuring standalone tests with a single-config generator like Ninja).
             set(CMAKE_DEFAULT_BUILD_TYPE "${QT_MULTI_CONFIG_FIRST_CONFIG}" CACHE STRING "")
+
+            # By default when ninja is called without parameters, it will build all configurations.
+            set(CMAKE_DEFAULT_CONFIGS "all" CACHE STRING "")
         endif()
     endif()
 endfunction()

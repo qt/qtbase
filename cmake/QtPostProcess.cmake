@@ -381,7 +381,6 @@ function(qt_generate_build_internals_extra_cmake_code)
 if(QT_BUILD_STANDALONE_TESTS)
     set(CMAKE_BUILD_TYPE \"\${QT_MULTI_CONFIG_FIRST_CONFIG}\" CACHE STRING \"Choose the type of build.\" FORCE)
 endif()\n")
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${multi_config_specific}")
         endif()
 
         if(CMAKE_CROSS_CONFIGS)
@@ -391,6 +390,10 @@ endif()\n")
         if(CMAKE_DEFAULT_BUILD_TYPE)
             string(APPEND ninja_multi_config_specific
                 "    set(CMAKE_DEFAULT_BUILD_TYPE \"${CMAKE_DEFAULT_BUILD_TYPE}\" CACHE STRING \"\")\n")
+        endif()
+        if(CMAKE_DEFAULT_CONFIGS)
+            string(APPEND ninja_multi_config_specific
+                "    set(CMAKE_DEFAULT_CONFIGS \"${CMAKE_DEFAULT_CONFIGS}\" CACHE STRING \"\")\n")
         endif()
         if(ninja_multi_config_specific)
             qt_wrap_string_in_if_ninja_multi_config(
