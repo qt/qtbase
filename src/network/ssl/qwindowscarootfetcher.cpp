@@ -42,12 +42,18 @@
 #include <QtCore/QThread>
 #include <QtGlobal>
 
+#include <QtCore/qscopeguard.h>
+
 #ifdef QSSLSOCKET_DEBUG
 #include "qssl_p.h" // for debug categories
 #include <QtCore/QElapsedTimer>
 #endif
 
 #include "qsslsocket_p.h" // Transitively includes Wincrypt.h
+
+#if QT_CONFIG(openssl)
+#include "qsslsocket_openssl_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -69,8 +75,67 @@ public:
 
 Q_GLOBAL_STATIC(QWindowsCaRootFetcherThread, windowsCaRootFetcherThread);
 
-QWindowsCaRootFetcher::QWindowsCaRootFetcher(const QSslCertificate &certificate, QSslSocket::SslMode sslMode)
-    : cert(certificate), mode(sslMode)
+#if QT_CONFIG(openssl)
+namespace {
+
+const QList<QSslCertificate> buildVerifiedChain(const QList<QSslCertificate> &caCertificates,
+                                                PCCERT_CHAIN_CONTEXT chainContext,
+                                                const QString &peerVerifyName)
+{
+    // We ended up here because OpenSSL verification failed to
+    // build a chain, with intermediate certificate missing
+    // but "Authority Information Access" extension present.
+    // Also, apparently the normal CA fetching path was disabled
+    // by setting custom CA certificates. We convert wincrypt's
+    // structures in QSslCertificate and give OpenSSL the second
+    // chance to verify the now (apparently) complete chain.
+    // In addition, wincrypt gives us a benifit of some checks
+    // we don't have in OpenSSL back-end.
+    Q_ASSERT(chainContext);
+
+    if (!chainContext->cChain)
+        return {};
+
+    QList<QSslCertificate> verifiedChain;
+
+    CERT_SIMPLE_CHAIN *chain = chainContext->rgpChain[chainContext->cChain - 1];
+    if (!chain)
+        return {};
+
+    if (chain->TrustStatus.dwErrorStatus & CERT_TRUST_IS_PARTIAL_CHAIN)
+        return {}; // No need to mess with OpenSSL (the chain is still incomplete).
+
+    for (DWORD i = 0; i < chain->cElement; ++i) {
+        CERT_CHAIN_ELEMENT *element = chain->rgpElement[i];
+        QSslCertificate cert(QByteArray(reinterpret_cast<const char*>(element->pCertContext->pbCertEncoded),
+                             int(element->pCertContext->cbCertEncoded)), QSsl::Der);
+
+        if (cert.isBlacklisted())
+            return {};
+
+        if (element->TrustStatus.dwErrorStatus & CERT_TRUST_IS_REVOKED) // Good to know!
+            return {};
+
+        if (element->TrustStatus.dwErrorStatus & CERT_TRUST_IS_NOT_SIGNATURE_VALID)
+            return {};
+
+        verifiedChain.append(cert);
+    }
+
+    // We rely on OpenSSL's ability to find other problems.
+    const auto tlsErrors = QSslSocketBackendPrivate::verify(caCertificates, verifiedChain, peerVerifyName);
+    if (tlsErrors.size())
+        verifiedChain.clear();
+
+    return verifiedChain;
+}
+
+} // unnamed namespace
+#endif // QT_CONFIG(openssl)
+
+QWindowsCaRootFetcher::QWindowsCaRootFetcher(const QSslCertificate &certificate, QSslSocket::SslMode sslMode,
+                                             const QList<QSslCertificate> &caCertificates, const QString &hostName)
+    : cert(certificate), mode(sslMode), explicitlyTrustedCAs(caCertificates), peerVerifyName(hostName)
 {
     moveToThread(windowsCaRootFetcherThread());
 }
@@ -106,11 +171,12 @@ void QWindowsCaRootFetcher::start()
     stopwatch.start();
 #endif
     PCCERT_CHAIN_CONTEXT chain;
+    auto additionalStore = createAdditionalStore();
     BOOL result = CertGetCertificateChain(
         nullptr, //default engine
         wincert,
         nullptr, //current date/time
-        nullptr, //default store
+        additionalStore.get(), //default store (nullptr) or CAs an application trusts
         &parameters,
         0, //default dwFlags
         nullptr, //reserved
@@ -156,6 +222,16 @@ void QWindowsCaRootFetcher::start()
                     trustedRoot = QSslCertificate(QByteArray((const char *)finalChain->rgpElement[finalChain->cElement - 1]->pCertContext->pbCertEncoded
                         , finalChain->rgpElement[finalChain->cElement - 1]->pCertContext->cbCertEncoded), QSsl::Der);
             }
+        } else if (explicitlyTrustedCAs.size()) {
+            // Setting custom CA in configuration, and those CAs are not trusted by MS.
+#if QT_CONFIG(openssl)
+            const auto verifiedChain = buildVerifiedChain(explicitlyTrustedCAs, chain, peerVerifyName);
+            if (verifiedChain.size())
+                trustedRoot = verifiedChain.last();
+#else
+            //It's only OpenSSL code-path that can trigger such a fetch.
+            Q_UNREACHABLE();
+#endif
         }
         CertFreeCertificateChain(chain);
     }
@@ -163,6 +239,51 @@ void QWindowsCaRootFetcher::start()
 
     emit finished(cert, trustedRoot);
     deleteLater();
+}
+
+QHCertStorePointer QWindowsCaRootFetcher::createAdditionalStore() const
+{
+    QHCertStorePointer customStore;
+    if (explicitlyTrustedCAs.isEmpty())
+        return customStore;
+
+    if (HCERTSTORE rawPtr = CertOpenStore(CERT_STORE_PROV_MEMORY, 0, 0, 0, nullptr)) {
+        customStore.reset(rawPtr);
+
+        unsigned rootsAdded = 0;
+        for (const QSslCertificate &caCert : explicitlyTrustedCAs) {
+            const auto der = caCert.toDer();
+            PCCERT_CONTEXT winCert = CertCreateCertificateContext(X509_ASN_ENCODING,
+                                                                  reinterpret_cast<const BYTE *>(der.data()),
+                                                                  DWORD(der.length()));
+            if (!winCert) {
+#if defined(QSSLSOCKET_DEBUG)
+                qCWarning(lcSsl) << "CA fetcher, failed to convert QSslCertificate"
+                                 << "to the native representation";
+#endif // QSSLSOCKET_DEBUG
+                continue;
+            }
+            const auto deleter = qScopeGuard([winCert](){
+                CertFreeCertificateContext(winCert);
+            });
+            if (CertAddCertificateContextToStore(customStore.get(), winCert, CERT_STORE_ADD_ALWAYS, nullptr))
+                ++rootsAdded;
+#if defined(QSSLSOCKET_DEBUG)
+            else //Why assert? With flags we're using and winCert check - should not happen!
+                Q_ASSERT("CertAddCertificateContextToStore() failed");
+#endif // QSSLSOCKET_DEBUG
+        }
+        if (!rootsAdded) //Useless store, no cert was added.
+            customStore.reset();
+#if defined(QSSLSOCKET_DEBUG)
+    } else {
+
+        qCWarning(lcSsl) << "CA fetcher, failed to create a custom"
+                         << "store for explicitly trusted CA certificate";
+#endif // QSSLSOCKET_DEBUG
+    }
+
+    return customStore;
 }
 
 QT_END_NAMESPACE

@@ -528,6 +528,9 @@ QList<QSslCertificateExtension> QSslCertificate::extensions() const
         result << QSslCertificatePrivate::convertExtension(ext);
     }
 
+    // Converting an extension may result in an error(s), clean them up.
+    Q_UNUSED(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+
     return result;
 }
 
