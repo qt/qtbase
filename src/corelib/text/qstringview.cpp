@@ -360,6 +360,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn const QChar *QStringView::constData() const
+    \since 6.0
+
+    Returns a const pointer to the first character in the string.
+
+    \note The character array represented by the return value is \e not null-terminated.
+
+    \sa data(), begin(), end(), utf16()
+*/
+
+/*!
     \fn const storage_type *QStringView::utf16() const
 
     Returns a const pointer to the first character in the string.
