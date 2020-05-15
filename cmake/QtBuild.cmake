@@ -43,12 +43,61 @@ qt_configure_process_path(INSTALL_PLUGINSDIR
                           "${INSTALL_ARCHDATADIR}/plugins"
                           "Plugins [ARCHDATADIR/plugins]")
 
-set(INSTALL_TARGETS_DEFAULT_ARGS
-    RUNTIME DESTINATION "${INSTALL_BINDIR}"
-    LIBRARY DESTINATION "${INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${INSTALL_LIBDIR}" COMPONENT Devel
-    INCLUDES DESTINATION "${INSTALL_INCLUDEDIR}"
-)
+# Given CMAKE_CONFIG and ALL_CMAKE_CONFIGS, determines if a directory suffix needs to be appended
+# to each destination, and sets the computed install target destination arguments in OUT_VAR.
+# Defaults used for each of the destination types, and can be configured per destination type.
+function(qt_get_install_target_default_args)
+    qt_parse_all_arguments(arg "qt_get_install_target_default_args"
+                               "" "OUT_VAR;CMAKE_CONFIG;RUNTIME;LIBRARY;ARCHIVE;INCLUDES;BUNDLE"
+                                  "ALL_CMAKE_CONFIGS" ${ARGN})
+
+    if(NOT arg_CMAKE_CONFIG)
+        message(FATAL_ERROR "No value given for CMAKE_CONFIG.")
+    endif()
+    if(NOT arg_ALL_CMAKE_CONFIGS)
+        message(FATAL_ERROR "No value given for ALL_CMAKE_CONFIGS.")
+    endif()
+    list(LENGTH arg_ALL_CMAKE_CONFIGS all_configs_count)
+    list(GET arg_ALL_CMAKE_CONFIGS 0 first_config)
+
+    set(suffix "")
+    if(all_configs_count GREATER 1 AND NOT arg_CMAKE_CONFIG STREQUAL first_config)
+        set(suffix "/${arg_CMAKE_CONFIG}")
+    endif()
+
+    set(runtime "${INSTALL_BINDIR}")
+    if(arg_RUNTIME)
+        set(runtime "${arg_RUNTIME}")
+    endif()
+
+    set(library "${INSTALL_LIBDIR}")
+    if(arg_LIBRARY)
+        set(library "${arg_LIBRARY}")
+    endif()
+
+    set(archive "${INSTALL_LIBDIR}")
+    if(arg_ARCHIVE)
+        set(archive "${arg_ARCHIVE}")
+    endif()
+
+    set(includes "${INSTALL_INCLUDEDIR}")
+    if(arg_INCLUDES)
+        set(includes "${arg_INCLUDES}")
+    endif()
+
+    set(bundle "${INSTALL_BINDIR}")
+    if(arg_BUNDLE)
+        set(bundle "${arg_BUNDLE}")
+    endif()
+
+    set(args
+        RUNTIME DESTINATION  "${runtime}${suffix}"
+        LIBRARY DESTINATION  "${library}${suffix}"
+        ARCHIVE DESTINATION  "${archive}${suffix}" COMPONENT Devel
+        BUNDLE DESTINATION   "${bundle}${suffix}"
+        INCLUDES DESTINATION "${includes}${suffix}")
+    set(${arg_OUT_VAR} "${args}" PARENT_SCOPE)
+endfunction()
 
 if (WIN32)
     set(_default_libexec "${INSTALL_ARCHDATADIR}/bin")
@@ -1750,6 +1799,14 @@ function(qt_finalize_framework_headers_copy target)
     endif()
 endfunction()
 
+function(qt_get_cmake_configurations out_var)
+    set(possible_configs "${CMAKE_BUILD_TYPE}")
+    if(CMAKE_CONFIGURATION_TYPES)
+        set(possible_configs "${CMAKE_CONFIGURATION_TYPES}")
+    endif()
+    set(${out_var} "${possible_configs}" PARENT_SCOPE)
+endfunction()
+
 function(qt_clone_property_for_configs target property configs)
     get_target_property(value "${target}" "${property}")
     foreach(config ${configs})
@@ -1759,10 +1816,7 @@ function(qt_clone_property_for_configs target property configs)
 endfunction()
 
 function(qt_handle_multi_config_output_dirs target)
-    set(possible_configs "${CMAKE_BUILD_TYPE}")
-    if(CMAKE_CONFIGURATION_TYPES)
-        set(possible_configs "${CMAKE_CONFIGURATION_TYPES}")
-    endif()
+    qt_get_cmake_configurations(possible_configs)
     qt_clone_property_for_configs(${target} LIBRARY_OUTPUT_DIRECTORY "${possible_configs}")
     qt_clone_property_for_configs(${target} RUNTIME_OUTPUT_DIRECTORY "${possible_configs}")
     qt_clone_property_for_configs(${target} ARCHIVE_OUTPUT_DIRECTORY "${possible_configs}")
@@ -3183,12 +3237,20 @@ function(qt_add_executable name)
             list(APPEND additional_install_args EXCLUDE_FROM_ALL COMPONENT "ExcludedExecutables")
         endif()
 
-        qt_install(TARGETS "${name}"
-            ${additional_install_args} # Needs to be before the DESTINATIONS.
-            RUNTIME DESTINATION "${arg_INSTALL_DIRECTORY}"
-            LIBRARY DESTINATION "${arg_INSTALL_DIRECTORY}"
-            BUNDLE DESTINATION "${arg_INSTALL_DIRECTORY}"
-            )
+        qt_get_cmake_configurations(cmake_configs)
+        foreach(cmake_config ${cmake_configs})
+            qt_get_install_target_default_args(
+                OUT_VAR install_targets_default_args
+                CMAKE_CONFIG "${cmake_config}"
+                ALL_CMAKE_CONFIGS "${cmake_configs}"
+                RUNTIME "${arg_INSTALL_DIRECTORY}"
+                LIBRARY "${arg_INSTALL_DIRECTORY}"
+                BUNDLE "${arg_INSTALL_DIRECTORY}")
+            qt_install(TARGETS "${name}"
+                       ${additional_install_args} # Needs to be before the DESTINATIONS.
+                       CONFIGURATIONS ${cmake_config}
+                       ${install_targets_default_args})
+        endforeach()
     endif()
 endfunction()
 
@@ -3877,15 +3939,10 @@ function(qt_add_tool name)
         set(no_qt NO_QT)
     endif()
 
-    set(no_install "")
-    if(arg_NO_INSTALL)
-        set(no_install NO_INSTALL)
-    endif()
-
     qt_add_executable("${name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
         ${bootstrap}
         ${no_qt}
-        ${no_install}
+        NO_INSTALL
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
@@ -3918,9 +3975,23 @@ function(qt_add_tool name)
         # Also append the tool to the module list.
         qt_internal_append_known_module_tool("${arg_TOOLS_TARGET}" "${name}")
 
-        qt_install(TARGETS "${name}"
-                   EXPORT "${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}ToolsTargets"
-                   DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})
+        qt_get_cmake_configurations(cmake_configs)
+
+        set(install_initial_call_args
+            EXPORT "${INSTALL_CMAKE_NAMESPACE}${arg_TOOLS_TARGET}ToolsTargets")
+
+        foreach(cmake_config ${cmake_configs})
+            qt_get_install_target_default_args(
+                OUT_VAR install_targets_default_args
+                CMAKE_CONFIG "${cmake_config}"
+                ALL_CMAKE_CONFIGS "${cmake_configs}")
+            qt_install(TARGETS "${name}"
+                       ${install_initial_call_args}
+                       CONFIGURATIONS ${cmake_config}
+                       ${install_targets_default_args})
+            unset(install_initial_call_args)
+        endforeach()
+
         qt_apply_rpaths(TARGET "${name}" INSTALL_PATH "${INSTALL_BINDIR}" RELATIVE_RPATH)
 
     endif()
