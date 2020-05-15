@@ -109,7 +109,7 @@ key_t QSharedMemoryPrivate::handle()
      0 already existed
      1 created
   */
-int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
+int QT_PREPEND_NAMESPACE(QSharedMemoryPrivate)::createUnixKeyFile(const QString &fileName)
 {
     int fd = qt_safe_open(QFile::encodeName(fileName).constData(),
             O_EXCL | O_CREAT | O_RDWR, 0640);
