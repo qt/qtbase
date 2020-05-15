@@ -100,7 +100,7 @@ QVariant MyModel::data(const QModelIndex &index, int role) const
         break;
     case Qt::TextAlignmentRole:
         if (row == 1 && col == 1) //change text alignment only for cell(1,1)
-            return Qt::AlignRight + Qt::AlignVCenter;
+            return int(Qt::AlignRight | Qt::AlignVCenter);
         break;
     case Qt::CheckStateRole:
         if (row == 1 && col == 0) //add a checkbox to cell(1,0)
