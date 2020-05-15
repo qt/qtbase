@@ -3231,8 +3231,8 @@ void QTreeViewPrivate::drawAnimatedOperation(QPainter *painter) const
 QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) const
 {
     Q_Q(const QTreeView);
-    QPixmap pixmap(rect.size() * q->devicePixelRatio());
-    pixmap.setDevicePixelRatio(q->devicePixelRatio());
+    QPixmap pixmap(rect.size() * q->devicePixelRatioF());
+    pixmap.setDevicePixelRatio(q->devicePixelRatioF());
     if (rect.size().isEmpty())
         return pixmap;
     pixmap.fill(Qt::transparent); //the base might not be opaque, and we don't want uninitialized pixels.
