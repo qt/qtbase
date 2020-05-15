@@ -170,24 +170,20 @@ struct QTypeInfoQuery<T, typename std::enable_if<QTypeInfo<T>::isRelocatable || 
 
     \snippet code/src_corelib_global_qglobal.cpp 51
 */
-template <class T, class T1, class T2 = T1, class T3 = T1, class T4 = T1>
+template <class T, class...Ts>
 class QTypeInfoMerger
 {
+    static_assert(sizeof...(Ts) > 0);
 public:
-    enum {
-        isSpecialized = true,
-        isComplex = QTypeInfoQuery<T1>::isComplex || QTypeInfoQuery<T2>::isComplex
-                    || QTypeInfoQuery<T3>::isComplex || QTypeInfoQuery<T4>::isComplex,
-        isStatic = QTypeInfoQuery<T1>::isStatic || QTypeInfoQuery<T2>::isStatic
-                    || QTypeInfoQuery<T3>::isStatic || QTypeInfoQuery<T4>::isStatic,
-        isRelocatable = QTypeInfoQuery<T1>::isRelocatable && QTypeInfoQuery<T2>::isRelocatable
-                    && QTypeInfoQuery<T3>::isRelocatable && QTypeInfoQuery<T4>::isRelocatable,
-        isLarge = sizeof(T) > sizeof(void*),
-        isPointer = false,
-        isIntegral = false,
-        isDummy = false,
-        sizeOf = sizeof(T)
-    };
+    static constexpr bool isSpecialized = true;
+    static constexpr bool isComplex = ((QTypeInfoQuery<Ts>::isComplex) || ...);
+    static constexpr bool isStatic =  ((QTypeInfoQuery<Ts>::isStatic) || ...);
+    static constexpr bool isRelocatable = ((QTypeInfoQuery<Ts>::isRelocatable) && ...);
+    static constexpr bool isLarge = sizeof(T) > sizeof(void*);
+    static constexpr bool isPointer = false;
+    static constexpr bool isIntegral = false;
+    static constexpr bool isDummy = false;
+    static constexpr std::size_t sizeOf = sizeof(T);
 };
 
 #define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
