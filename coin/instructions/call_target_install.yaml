@@ -1,0 +1,9 @@
+type: Group
+instructions:
+  - type: ExecuteCommand
+    command: "{{.Env.TARGET_ENV_PREFIX}} cmake -DQT_BUILD_DIR={{.BuildDir}} -P {{.Env.COIN_CMAKE_INSTALL_SCRIPT_PATH}}/bin/qt-cmake-private-install.cmake"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install package.

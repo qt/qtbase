@@ -24,21 +24,14 @@ instructions:
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
       Failed to build sources. In the current state bug can be everywhere.
-  - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --install ."
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to install package.
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_INSTALL_SCRIPT_PATH
+    variableValue: "{{.InstallDir}}/host"
+  - !include "{{qt/qtbase}}/call_host_install.yaml"
   - type: EnvironmentVariable
     variableName: DESTDIR
     variableValue: "{{.InstallRoot}}"
-  - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --install ."
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to install package for archiving.
+  - !include "{{qt/qtbase}}/call_host_install.yaml"
   - type: EnvironmentVariable
     variableName: DESTDIR
     variableValue: ""
@@ -56,21 +49,14 @@ instructions:
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
       Failed to build sources. In the current state bug can be everywhere.
-  - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake --install ."
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to install package.
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_INSTALL_SCRIPT_PATH
+    variableValue: "{{.InstallDir}}/target"
+  - !include "{{qt/qtbase}}/call_target_install.yaml"
   - type: EnvironmentVariable
     variableName: DESTDIR
     variableValue: "{{.InstallRoot}}"
-  - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake --install ."
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to install package for archiving.
+  - !include "{{qt/qtbase}}/call_target_install.yaml"
   - type: EnvironmentVariable
     variableName: DESTDIR
     variableValue: ""

@@ -224,6 +224,19 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-standalone-test.in"
 qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_standalone_test_bin_name}"
            DESTINATION "${INSTALL_BINDIR}")
 
+# Create an installation script that the CI can use to handle installation for both
+# single and multiple configurations.
+set(__qt_cmake_install_script_name "qt-cmake-private-install.cmake")
+if(CMAKE_CONFIGURATION_TYPES)
+    set(__qt_configured_configs "${CMAKE_CONFIGURATION_TYPES}")
+elseif(CMAKE_BUILD_TYPE)
+    set(__qt_configured_configs "${CMAKE_BUILD_TYPE}")
+endif()
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/${__qt_cmake_install_script_name}.in"
+    "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_install_script_name}" @ONLY)
+qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_install_script_name}"
+           DESTINATION "${INSTALL_BINDIR}")
+
 ## Library to hold global features:
 ## These features are stored and accessed via Qt::GlobalConfig, but the
 ## files always lived in Qt::Core, so we keep it that way
