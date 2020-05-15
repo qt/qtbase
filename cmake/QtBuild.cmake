@@ -1572,8 +1572,7 @@ function(qt_install_injections target build_dir install_dir)
 endfunction()
 
 
-function(qt_read_headers_pri target resultVarPrefix)
-    qt_internal_module_info(module "${target}")
+function(qt_read_headers_pri module_include_dir resultVarPrefix)
     file(STRINGS "${module_include_dir}/headers.pri" headers_pri_contents)
     foreach(line ${headers_pri_contents})
         if("${line}" MATCHES "SYNCQT.HEADER_FILES = (.*)")
@@ -1909,7 +1908,7 @@ function(qt_add_module target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_CONFIG_HEADER_FILE;SKIP_DEPENDS_INCLUDE"
-        "CONFIG_MODULE_NAME;PRECOMPILED_HEADER;${__default_target_info_args}"
+        "MODULE_INCLUDE_NAME;CONFIG_MODULE_NAME;PRECOMPILED_HEADER;${__default_target_info_args}"
         "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
@@ -2012,6 +2011,13 @@ function(qt_add_module target)
     if(${arg_NO_MODULE_HEADERS} OR ${arg_NO_SYNC_QT})
         set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_HAS_HEADERS OFF)
     else()
+        if(arg_MODULE_INCLUDE_NAME)
+            set(module_include_name ${arg_MODULE_INCLUDE_NAME})
+        else()
+            set(module_include_name ${module})
+        endif()
+        set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_INCLUDE_NAME "${module_include_name}")
+
         # Use QT_BUILD_DIR for the syncqt call.
         # So we either write the generated files into the qtbase non-prefix build root, or the
         # module specific build root.
@@ -2019,7 +2025,7 @@ function(qt_add_module target)
         set(syncqt_full_command "${HOST_PERL}" -w "${QT_SYNCQT}"
                                  -quiet
                                  -check-includes
-                                 -module "${module}"
+                                 -module "${module_include_name}"
                                  -version "${PROJECT_VERSION}"
                                  -outdir "${QT_BUILD_DIR}"
                                  -builddir "${PROJECT_BINARY_DIR}"
@@ -2029,7 +2035,8 @@ function(qt_add_module target)
         set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_HAS_HEADERS ON)
 
         ### FIXME: Can we replace headers.pri?
-        qt_read_headers_pri("${target}" "module_headers")
+        set(module_include_dir "${QT_BUILD_DIR}/${INSTALL_INCLUDEDIR}/${module_include_name}")
+        qt_read_headers_pri("${module_include_dir}" "module_headers")
         set(module_depends_header "${module_include_dir}/${module}Depends")
         if(is_framework)
             if(NOT is_interface_lib)
@@ -2043,7 +2050,7 @@ function(qt_add_module target)
             set_property(TARGET ${target} APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
         endif()
         if (NOT ${arg_HEADER_MODULE})
-            set_property(TARGET "${target}" PROPERTY MODULE_HEADER "${module_include_dir}/${module}")
+            set_property(TARGET "${target}" PROPERTY MODULE_HEADER "${module_include_dir}/${module_include_name}")
         endif()
 
         if(module_headers_qpa)
@@ -2052,7 +2059,7 @@ function(qt_add_module target)
             else()
                 qt_install(
                     FILES ${module_headers_qpa}
-                    DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/qpa)
+                    DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module_include_name}/qpa)
             endif()
         endif()
     endif()
