@@ -1505,9 +1505,29 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cmd.args.subImage.data = cbD->retainImage(img);
         cbD->commands.append(cmd);
     } else if (!rawData.isEmpty() && isCompressed) {
+        if (!texD->compressedAtlasBuilt && (texD->flags() & QRhiTexture::UsedAsCompressedAtlas)) {
+            // Build on first upload since glCompressedTexImage2D cannot take nullptr data
+            quint32 byteSize = 0;
+            compressedFormatInfo(texD->m_format, texD->m_pixelSize, nullptr, &byteSize, nullptr);
+            QByteArray zeroBuf(byteSize, 0);
+            QGles2CommandBuffer::Command cmd;
+            cmd.cmd = QGles2CommandBuffer::Command::CompressedImage;
+            cmd.args.compressedImage.target = texD->target;
+            cmd.args.compressedImage.texture = texD->texture;
+            cmd.args.compressedImage.faceTarget = faceTargetBase + uint(layer);
+            cmd.args.compressedImage.level = level;
+            cmd.args.compressedImage.glintformat = texD->glintformat;
+            cmd.args.compressedImage.w = texD->m_pixelSize.width();
+            cmd.args.compressedImage.h = texD->m_pixelSize.height();
+            cmd.args.compressedImage.size = byteSize;
+            cmd.args.compressedImage.data = cbD->retainData(zeroBuf);
+            cbD->commands.append(cmd);
+            texD->compressedAtlasBuilt = true;
+        }
+
         const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
                                                              : subresDesc.sourceSize();
-        if (texD->specified) {
+        if (texD->specified || texD->compressedAtlasBuilt) {
             QGles2CommandBuffer::Command cmd;
             cmd.cmd = QGles2CommandBuffer::Command::CompressedSubImage;
             cmd.args.compressedSubImage.target = texD->target;
@@ -3666,6 +3686,7 @@ void QGles2Texture::release()
 
     texture = 0;
     specified = false;
+    compressedAtlasBuilt = false;
 
     QRHI_RES_RHI(QRhiGles2);
     if (owns)
@@ -3785,6 +3806,7 @@ bool QGles2Texture::buildFrom(QRhiTexture::NativeTexture src)
 
     texture = textureId;
     specified = true;
+    compressedAtlasBuilt = true;
 
     QRHI_RES_RHI(QRhiGles2);
     QRHI_PROF;

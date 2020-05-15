@@ -1496,9 +1496,6 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
     the size of the source image() must match the subresource. When providing
     raw data instead, sufficient number of bytes must be provided in data().
 
-    \note With compressed textures the first upload must always match the
-    subresource size due to graphics API limitations with some backends.
-
     sourceTopLeft() is supported only for QImage-based uploads, and specifies
     the top-left corner of the source rectangle.
 
@@ -2197,6 +2194,9 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
 
      \value UsedWithLoadStore The texture is going to be used with image
      load/store operations, for example, in a compute shader.
+
+     \value UsedAsCompressedAtlas The texture has a compressed format and the
+     dimensions of subresource uploads may not match the texture size.
  */
 
 /*!

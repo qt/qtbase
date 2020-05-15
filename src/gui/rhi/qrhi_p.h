@@ -727,7 +727,8 @@ public:
         sRGB = 1 << 4,
         UsedAsTransferSource = 1 << 5,
         UsedWithGenerateMips = 1 << 6,
-        UsedWithLoadStore = 1 << 7
+        UsedWithLoadStore = 1 << 7,
+        UsedAsCompressedAtlas = 1 << 8
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

@@ -148,6 +148,7 @@ struct QGles2Texture : public QRhiTexture
     GLenum gltype;
     QGles2SamplerData samplerState;
     bool specified = false;
+    bool compressedAtlasBuilt = false;
     int mipLevelCount = 0;
 
     enum Access {
