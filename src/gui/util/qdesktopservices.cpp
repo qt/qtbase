@@ -253,6 +253,23 @@ bool QDesktopServices::openUrl(const QUrl &url)
 
     For more information, see the Apple Developer Documentation for
     \l{https://developer.apple.com/documentation/uikit/core_app/allowing_apps_and_websites_to_link_to_your_content/communicating_with_other_apps_using_custom_urls?language=objc}{Communicating with Other Apps Using Custom URLs}.
+    \warning It is not possible to claim support for some well known URL schemes, including http and https. This is only allowed for Universal Links.
+
+    To claim support for http and https the above entry in the Info.plist file
+    is not allowed. This is only possible when you add your domain to the
+    Entitlements file:
+
+    \snippet code/src_gui_util_qdesktopservices.cpp 7
+
+    iOS will search for /.well-known/apple-app-site-association on your domain,
+    when the application is installed. If you want to listen to
+    https://your.domain.com/help?topic=ABCDEF you need to provide the following
+    content there:
+
+    \snippet code/src_gui_util_qdesktopservices.cpp 8
+
+    For more information, see the Apple Developer Documentation for
+    \l{https://developer.apple.com/documentation/safariservices/supporting_associated_domains_in_your_app}[Supporting Associated Domains}.
 
     If setUrlHandler() is used to set a new handler for a scheme which already
     has a handler, the existing handler is simply replaced with the new one.

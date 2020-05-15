@@ -96,3 +96,25 @@ QDesktopServices::storageLocation(QDesktopServices::DataLocation)
 QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
     "/data/organization/application"
 //! [6]
+
+//! [7]
+<key>com.apple.developer.associated-domains</key>
+<array>
+    <string>applinks:your.domain.com</string>
+</array>
+//! [7]
+
+//! [8]
+{
+    "applinks": {
+        "apps": [],
+        "details": [{
+            "appIDs" : [ "ABCDE12345.com.example.app" ],
+            "components": [{
+                "/": "/help",
+                "?": { "topic": "?*"}
+            }]
+        }]
+    }
+}
+//! [8]
