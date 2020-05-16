@@ -56,7 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDesktopWidget;
 class QAndroidPlatformServices;
 class QAndroidSystemLocale;
 class QPlatformAccessibility;

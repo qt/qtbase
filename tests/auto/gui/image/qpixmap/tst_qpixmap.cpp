@@ -33,7 +33,6 @@
 #include <qimage.h>
 #include <qimagereader.h>
 #ifndef QT_NO_WIDGETS
-#include <qdesktopwidget.h>
 #include <qsplashscreen.h>
 #endif
 #include <qpaintengine.h>

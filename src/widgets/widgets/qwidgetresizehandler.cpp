@@ -41,7 +41,6 @@
 
 #include "qframe.h"
 #include "qapplication.h"
-#include "qdesktopwidget.h"
 #include <private/qdesktopwidget_p.h>
 #include "qcursor.h"
 #if QT_CONFIG(sizegrip)
@@ -221,7 +220,7 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
 
     // Workaround for window managers which refuse to move a tool window partially offscreen.
     if (QGuiApplication::platformName() == QLatin1String("xcb")) {
-        const QRect desktop = QDesktopWidgetPrivate::availableGeometry(widget);
+        const QRect desktop = QWidgetPrivate::availableScreenGeometry(widget);
         pp.rx() = qMax(pp.x(), desktop.left());
         pp.ry() = qMax(pp.y(), desktop.top());
         p.rx() = qMin(p.x(), desktop.right());

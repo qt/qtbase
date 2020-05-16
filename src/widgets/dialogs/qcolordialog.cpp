@@ -40,7 +40,6 @@
 #include "qcolordialog.h"
 
 #include "qapplication.h"
-#include "qdesktopwidget.h"
 #include <private/qdesktopwidget_p.h>
 #include "qdrawutil.h"
 #include "qevent.h"
@@ -1565,7 +1564,7 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
 
 QColor QColorDialogPrivate::grabScreenColor(const QPoint &p)
 {
-    const QDesktopWidget *desktop = QApplication::desktop();
+    const QWidget *desktop = QApplication::desktop();
     const QPixmap pixmap = QGuiApplication::primaryScreen()->grabWindow(desktop->winId(), p.x(), p.y(), 1, 1);
     QImage i = pixmap.toImage();
     return i.pixel(0, 0);

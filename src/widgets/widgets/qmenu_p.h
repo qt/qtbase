@@ -522,8 +522,6 @@ public:
     bool tearoffHighlighted : 1;
     //menu fading/scrolling effects
     bool doChildEffects : 1;
-
-    int popupScreen = -1;
 };
 
 QT_END_NAMESPACE

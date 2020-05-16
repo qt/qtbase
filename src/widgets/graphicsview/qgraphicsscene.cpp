@@ -226,7 +226,6 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/QMetaMethod>
 #include <QtWidgets/qapplication.h>
-#include <QtWidgets/qdesktopwidget.h>
 #include <QtGui/qevent.h>
 #include <QtWidgets/qgraphicslayout.h>
 #include <QtWidgets/qgraphicsproxywidget.h>

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -52,56 +52,96 @@
 #define QDESKTOPWIDGET_P_H
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include "QDesktopWidget"
 #include "private/qwidget_p.h"
 
-#include <QtCore/qalgorithms.h>
 #include <QtGui/qscreen.h>
+#include <QtCore/private/qflatmap_p.h>
 
 QT_BEGIN_NAMESPACE
+
+class QDesktopWidgetPrivate;
+
+class Q_WIDGETS_EXPORT QDesktopWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    QDesktopWidget();
+    ~QDesktopWidget();
+
+
+private:
+    Q_DISABLE_COPY(QDesktopWidget)
+    Q_DECLARE_PRIVATE(QDesktopWidget)
+
+    friend class QApplication;
+    friend class QApplicationPrivate;
+};
 
 class QDesktopScreenWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit QDesktopScreenWidget(QScreen *screen, const QRect &geometry);
+    explicit QDesktopScreenWidget(QScreen *, const QRect &geometry);
 
-    int screenNumber() const;
-    void setScreenGeometry(const QRect &geometry);
-
-    QScreen *assignedScreen() const { return m_screen.data(); }
-    QRect screenGeometry() const { return m_geometry; }
-
-private:
-    // The widget updates its screen and geometry automatically. We need to save them separately
-    // to detect changes, and trigger the appropriate signals.
-    const QPointer<QScreen> m_screen;
-    QRect m_geometry;
+    QScreen *screen() const;
 };
 
 class QDesktopWidgetPrivate : public QWidgetPrivate {
     Q_DECLARE_PUBLIC(QDesktopWidget)
 
 public:
-    ~QDesktopWidgetPrivate() { qDeleteAll(screens); }
-    void _q_updateScreens();
-    QDesktopScreenWidget *widgetForScreen(QScreen *qScreen) const;
+    ~QDesktopWidgetPrivate();
+    void updateScreens();
+    QDesktopScreenWidget *widgetForScreen(QScreen *qScreen) const
+    {
+        return screenWidgets.value(qScreen);
+    }
 
-    static int screenNumber(const QWidget *widget = nullptr);
-    static int screenNumber(const QPoint &);
+    static inline int screenNumber(const QWidget *widget = nullptr)
+    {
+        if (!widget)
+            return 0;
+        return QGuiApplication::screens().indexOf(widget->screen());
+    }
 
-    static QScreen *screen(int screenNo = -1);
+    static inline int screenNumber(const QPoint &point)
+    {
+        int screenNo = 0;
+        if (QScreen *screen = QGuiApplication::screenAt(point))
+            screenNo = QGuiApplication::screens().indexOf(screen);
+        return screenNo;
+    }
 
-    static const QRect screenGeometry(int screen = -1);
-    static const QRect screenGeometry(const QWidget *widget);
-    static const QRect screenGeometry(const QPoint &point)
+    static inline QScreen *screen(int screenNo = -1)
+    {
+        const QList<QScreen *> screens = QGuiApplication::screens();
+        if (screenNo == -1)
+            screenNo = 0;
+        if (screenNo < 0 || screenNo >= screens.size())
+            return nullptr;
+        return screens.at(screenNo);
+    }
+
+    static inline QRect screenGeometry(int screenNo = -1)
+    {
+        QRect rect;
+        if (const QScreen *s = screen(screenNo))
+            rect = s->geometry();
+        return rect;
+    }
+    static inline QRect screenGeometry(const QPoint &point)
     { return screenGeometry(screenNumber(point)); }
 
-    static const QRect availableGeometry(int screen = -1);
-    static const QRect availableGeometry(const QWidget *widget);
-    static const QRect availableGeometry(const QPoint &point)
+    static inline QRect availableGeometry(int screenNo = -1)
+    {
+        QRect rect;
+        if (const QScreen *s = screen(screenNo))
+            rect = s->availableGeometry();
+        return rect;
+    }
+    static inline QRect availableGeometry(const QPoint &point)
     { return availableGeometry(screenNumber(point)); }
 
-    QList<QDesktopScreenWidget *> screens;
+    QFlatMap<QScreen*, QDesktopScreenWidget*> screenWidgets;
 };
 
 QT_END_NAMESPACE

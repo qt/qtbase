@@ -40,7 +40,6 @@
 #include "qtoolbutton.h"
 
 #include <qapplication.h>
-#include <qdesktopwidget.h>
 #include <private/qdesktopwidget_p.h>
 #include <qdrawutil.h>
 #include <qevent.h>

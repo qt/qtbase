@@ -28,7 +28,6 @@
 
 
 #include <QtTest/QtTestWidgets>
-#include <QtWidgets/qdesktopwidget.h>
 #include <QtWidgets/qgraphicseffect.h>
 #include <QtWidgets/qgraphicsview.h>
 #include <QtWidgets/qgraphicsscene.h>

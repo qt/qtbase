@@ -54,7 +54,6 @@
 #include <QTabBar>
 #include <QLabel>
 #include <QLayout>
-#include <QDesktopWidget>
 #include <QTabWidget>
 #include <QProxyStyle>
 #include <qdebug.h>

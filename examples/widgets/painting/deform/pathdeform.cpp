@@ -60,7 +60,6 @@
 #include <QPainter>
 #include <QSlider>
 #include <QLabel>
-#include <QDesktopWidget>
 #include <qmath.h>
 
 PathDeformControls::PathDeformControls(QWidget *parent,

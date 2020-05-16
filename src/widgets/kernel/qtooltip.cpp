@@ -40,7 +40,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
 #include <qapplication.h>
-#include <qdesktopwidget.h>
 #include <private/qdesktopwidget_p.h>
 #include <qevent.h>
 #include <qpointer.h>
@@ -139,7 +138,7 @@ public:
     bool tipChanged(const QPoint &pos, const QString &text, QObject *o);
     void placeTip(const QPoint &pos, QWidget *w);
 
-    static int getTipScreen(const QPoint &pos, QWidget *w);
+    static QScreen *getTipScreen(const QPoint &pos, QWidget *w);
 protected:
     void timerEvent(QTimerEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
@@ -366,12 +365,12 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
     return false;
 }
 
-int QTipLabel::getTipScreen(const QPoint &pos, QWidget *w)
+QScreen *QTipLabel::getTipScreen(const QPoint &pos, QWidget *w)
 {
-    if (QGuiApplication::primaryScreen()->virtualSiblings().size() > 1)
-        return QDesktopWidgetPrivate::screenNumber(pos);
-    else
-        return QDesktopWidgetPrivate::screenNumber(w);
+    int screenNo = QGuiApplication::primaryScreen()->virtualSiblings().size() > 1
+                 ? QDesktopWidgetPrivate::screenNumber(pos)
+                 : QDesktopWidgetPrivate::screenNumber(w);
+    return QDesktopWidgetPrivate::screen(screenNo);
 }
 
 void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
@@ -396,8 +395,7 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
 #endif //QT_NO_STYLE_STYLESHEET
 
     QPoint p = pos;
-    const QScreen *screen = QGuiApplication::screens().value(getTipScreen(pos, w),
-                                                             QGuiApplication::primaryScreen());
+    const QScreen *screen = getTipScreen(pos, w);
     // a QScreen's handle *should* never be null, so this is a bit paranoid
     if (const QPlatformScreen *platformScreen = screen ? screen->handle() : nullptr) {
         const QSize cursorSize = QHighDpi::fromNativePixels(platformScreen->cursor()->size(),
@@ -494,16 +492,18 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
     }
 
     if (!text.isEmpty()){ // no tip can be reused, create new tip:
+        QWidget *tipLabelParent = [pos, w]() -> QWidget* {
 #ifdef Q_OS_WIN32
-        // On windows, we can't use the widget as parent otherwise the window will be
-        // raised when the tooltip will be shown
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-        new QTipLabel(text, pos, QApplication::desktop()->screen(QTipLabel::getTipScreen(pos, w)), msecDisplayTime);
-QT_WARNING_POP
+            // On windows, we can't use the widget as parent otherwise the window will be
+            // raised when the tooltip will be shown
+            QScreen *screen = QTipLabel::getTipScreen(pos, w);
+            return QApplication::desktop(screen);
 #else
-        new QTipLabel(text, pos, w, msecDisplayTime); // sets QTipLabel::instance to itself
+            Q_UNUSED(pos);
+            return w;
 #endif
+        }();
+        new QTipLabel(text, pos, tipLabelParent, msecDisplayTime); // sets QTipLabel::instance to itself
         QTipLabel::instance->setTipRect(w, rect);
         QTipLabel::instance->placeTip(pos, w);
         QTipLabel::instance->setObjectName(QLatin1String("qtooltip_label"));

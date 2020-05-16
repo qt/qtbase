@@ -60,7 +60,6 @@
 #include "qstyle.h"
 #include "qgridlayout.h"
 #include "qapplication.h"
-#include "qdesktopwidget.h"
 #include <private/qdesktopwidget_p.h>
 #include "qbitmap.h"
 
@@ -132,7 +131,7 @@ static QIcon messageIcon2qIcon(QSystemTrayIcon::MessageIcon icon)
     of type QEvent::ToolTip. Additionally, the QSystemTrayIcon receives wheel events of
     type QEvent::Wheel. These are not supported on any other platform.
 
-    \sa QDesktopServices, QDesktopWidget, {Desktop Integration}, {System Tray Icon Example}
+    \sa QDesktopServices, {Desktop Integration}, {System Tray Icon Example}
 */
 
 /*!
@@ -533,7 +532,7 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     msgLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
     // smart size for the message label
-    int limit = QDesktopWidgetPrivate::availableGeometry(msgLabel).size().width() / 3;
+    int limit = QWidgetPrivate::availableScreenGeometry(msgLabel).width() / 3;
     if (msgLabel->sizeHint().width() > limit) {
         msgLabel->setWordWrap(true);
         if (msgLabel->sizeHint().width() > limit) {

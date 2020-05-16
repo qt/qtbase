@@ -37,7 +37,6 @@
 #include <qstyle.h>
 #include <QVBoxLayout>
 #include <QSizeGrip>
-#include <QDesktopWidget>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsView>
 #include <QWindow>

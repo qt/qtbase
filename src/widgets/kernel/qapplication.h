@@ -51,7 +51,6 @@
 QT_BEGIN_NAMESPACE
 
 
-class QDesktopWidget;
 class QStyle;
 class QEventLoop;
 class QIcon;
@@ -106,7 +105,7 @@ public:
     static QWidgetList allWidgets();
     static QWidgetList topLevelWidgets();
 
-    static QDesktopWidget *desktop();
+    static QWidget *desktop(QScreen *screen = nullptr);
 
     static QWidget *activePopupWidget();
     static QWidget *activeModalWidget();

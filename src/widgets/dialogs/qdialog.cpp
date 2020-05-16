@@ -49,7 +49,6 @@
 #endif
 
 #include "qevent.h"
-#include "qdesktopwidget.h"
 #include <private/qdesktopwidget_p.h>
 #include "qapplication.h"
 #include "qlayout.h"

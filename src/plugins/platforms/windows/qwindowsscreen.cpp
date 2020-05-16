@@ -120,7 +120,7 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     return true;
 }
 
-// from QDesktopWidget, taking WindowsScreenDataList as LPARAM
+// from monitorData, taking WindowsScreenDataList as LPARAM
 BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM p)
 {
     QWindowsScreenData data;

@@ -41,7 +41,6 @@
 
 #include <qaction.h>
 #include <qapplication.h>
-#include <qdesktopwidget.h>
 #include <qdrawutil.h>
 #include <qevent.h>
 #include <qfontmetrics.h>

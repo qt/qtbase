@@ -47,7 +47,6 @@
 #include "qapplication.h"
 #include "qboxlayout.h"
 #include "qlayoutitem.h"
-#include "qdesktopwidget.h"
 #include <private/qdesktopwidget_p.h>
 #include "qevent.h"
 #include "qframe.h"

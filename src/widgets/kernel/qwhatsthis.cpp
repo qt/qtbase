@@ -41,7 +41,6 @@
 #include "qpointer.h"
 #include "qapplication.h"
 #include <private/qguiapplication_p.h>
-#include "qdesktopwidget.h"
 #include <private/qdesktopwidget_p.h>
 #include "qevent.h"
 #include "qpixmap.h"

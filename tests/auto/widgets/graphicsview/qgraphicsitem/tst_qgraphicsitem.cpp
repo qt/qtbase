@@ -38,7 +38,6 @@
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
 #include <QCursor>
-#include <QDesktopWidget>
 #include <QScreen>
 #include <QLabel>
 #include <QDial>

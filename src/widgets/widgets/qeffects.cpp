@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qapplication.h"
-#include "qdesktopwidget.h"
 #include "qeffects_p.h"
 #include "qevent.h"
 #include "qimage.h"
@@ -53,15 +52,6 @@
 #include <private/qdesktopwidget_p.h>
 
 QT_BEGIN_NAMESPACE
-
-static QWidget *effectParent(const QWidget* w)
-{
-    const int screenNumber = w ? QGuiApplication::screens().indexOf(w->screen()) : 0;
-    QT_WARNING_PUSH // ### Qt 6: Find a replacement for QDesktopWidget::screen()
-    QT_WARNING_DISABLE_DEPRECATED
-    return QApplication::desktop()->screen(screenNumber);
-    QT_WARNING_POP
-}
 
 /*
   Internal class QAlphaWidget.
@@ -108,7 +98,7 @@ static QAlphaWidget* q_blend = nullptr;
   Constructs a QAlphaWidget.
 */
 QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
-    : QWidget(effectParent(w), f)
+    : QWidget(QApplication::desktop(w ? w->screen() : nullptr), f)
 {
 #ifndef Q_OS_WIN
     setEnabled(false);
@@ -389,7 +379,7 @@ static QRollEffect* q_roll = nullptr;
   Construct a QRollEffect widget.
 */
 QRollEffect::QRollEffect(QWidget* w, Qt::WindowFlags f, DirFlags orient)
-    : QWidget(effectParent(w), f), orientation(orient)
+    : QWidget(QApplication::desktop(w ? w->screen() : nullptr), f), orientation(orient)
 {
 #ifndef Q_OS_WIN
     setEnabled(false);

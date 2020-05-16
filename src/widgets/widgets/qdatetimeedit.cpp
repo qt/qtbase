@@ -42,7 +42,6 @@
 #include <qabstractspinbox.h>
 #include <qapplication.h>
 #include <qdatetimeedit.h>
-#include <qdesktopwidget.h>
 #include <private/qdesktopwidget_p.h>
 #include <qdebug.h>
 #include <qevent.h>

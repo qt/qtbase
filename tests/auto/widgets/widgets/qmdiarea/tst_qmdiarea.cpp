@@ -40,7 +40,6 @@
 #include <QStyleOption>
 #include <QVBoxLayout>
 #include <QLineEdit>
-#include <QDesktopWidget>
 #include <QDockWidget>
 #include <QScrollBar>
 #include <QTextEdit>

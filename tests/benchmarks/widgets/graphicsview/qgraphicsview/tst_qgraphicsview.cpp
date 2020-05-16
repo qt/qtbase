@@ -33,7 +33,6 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtGui/QImage>
 #include <QtGui/QPixmapCache>
-#include <QtWidgets/QDesktopWidget>
 
 #include "chiptester/chiptester.h"
 //#define CALLGRIND_DEBUG
@@ -69,7 +68,7 @@ public:
 
     void tryResize(int width, int height)
     {
-        QDesktopWidget *desktop = QApplication::desktop();
+        QWidget *desktop = QApplication::desktop();
         if (desktop->width() < width)
             width = desktop->width();
         if (desktop->height() < height)

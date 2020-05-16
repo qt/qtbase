@@ -27,7 +27,6 @@
 **
 ****************************************************************************/
 
-#include <QDesktopWidget>
 #include <QHeaderView>
 #include <QProxyStyle>
 #include <QSignalSpy>

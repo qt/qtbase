@@ -40,7 +40,6 @@
 #include "qsplashscreen.h"
 
 #include "qapplication.h"
-#include "qdesktopwidget.h"
 #include <private/qdesktopwidget_p.h>
 #include "qpainter.h"
 #include "qpixmap.h"
@@ -294,25 +293,14 @@ void QSplashScreen::setPixmap(const QPixmap &pixmap)
 // 3) If a widget with associated QWindow is found, use that
 // 4) When nothing can be found, try to center it over the cursor
 
-#if QT_DEPRECATED_SINCE(5, 15)
-static inline int screenNumberOf(const QDesktopScreenWidget *dsw)
-{
-    auto desktopWidgetPrivate =
-        static_cast<QDesktopWidgetPrivate *>(qt_widget_private(QApplication::desktop()));
-    return desktopWidgetPrivate->screens.indexOf(const_cast<QDesktopScreenWidget *>(dsw));
-}
-#endif
-
 const QScreen *QSplashScreenPrivate::screenFor(const QWidget *w)
 {
     if (w && w->screen())
         return w->screen();
 
     for (const QWidget *p = w; p !=nullptr ; p = p->parentWidget()) {
-#if QT_DEPRECATED_SINCE(5, 15)
         if (auto dsw = qobject_cast<const QDesktopScreenWidget *>(p))
-            return QGuiApplication::screens().value(screenNumberOf(dsw));
-#endif
+            return dsw->screen();
         if (QWindow *window = p->windowHandle())
             return window->screen();
     }

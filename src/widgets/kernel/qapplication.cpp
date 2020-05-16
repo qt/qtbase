@@ -42,7 +42,7 @@
 #include "qapplication.h"
 #include "qclipboard.h"
 #include "qcursor.h"
-#include "qdesktopwidget.h"
+#include "qdesktopwidget_p.h"
 #include "qdir.h"
 #include "qevent.h"
 #include "qfile.h"
@@ -2521,22 +2521,30 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 /*!
     \internal
 
-    Returns the desktop widget (also called the root window).
+    Returns the desktop widget (also called the root window) for \a screen.
+
+    If \a screen is nullptr, then the widget that represents the entire virtual
+    desktop is returned, and its geometry will be the union of all screens.
+
+    Use the desktop widget for a specific screen as the parent of a new toplevel
+    widget to position the widget on a specific screen.
 
     The desktop may be composed of multiple screens, so it would be incorrect,
     for example, to attempt to \e center some widget in the desktop's geometry.
-    QDesktopWidget has various functions for obtaining useful geometries upon
-    the desktop, such as QDesktopWidget::screenGeometry() and
-    QDesktopWidget::availableGeometry().
+    Use QScreen::geometry() and QScreen::availableGeometry() to get the dimensions
+    of a specific screen instead.
 */
-QDesktopWidget *QApplication::desktop()
+QWidget *QApplication::desktop(QScreen *screen)
 {
     CHECK_QAPP_INSTANCE(nullptr)
     if (!qt_desktopWidget || // not created yet
          !(qt_desktopWidget->windowType() == Qt::Desktop)) { // reparented away
         qt_desktopWidget = new QDesktopWidget();
     }
-    return qt_desktopWidget;
+    if (!screen)
+        return qt_desktopWidget;
+    QDesktopWidgetPrivate *dwp = static_cast<QDesktopWidgetPrivate*>(qt_widget_private(qt_desktopWidget));
+    return dwp->widgetForScreen(screen);
 }
 
 /*

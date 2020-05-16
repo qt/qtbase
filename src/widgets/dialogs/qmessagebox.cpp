@@ -47,7 +47,6 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qstyleoption.h>
 #include <QtWidgets/qgridlayout.h>
-#include <QtWidgets/qdesktopwidget.h>
 #include <QtWidgets/qpushbutton.h>
 #include <QtWidgets/qcheckbox.h>
 #include <QtGui/qaccessible.h>

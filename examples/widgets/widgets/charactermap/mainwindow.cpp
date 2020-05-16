@@ -55,7 +55,6 @@
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QClipboard>
-#include <QDesktopWidget>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFontComboBox>

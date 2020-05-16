@@ -54,7 +54,6 @@
 #include "qmacnativewidget_mac.h"
 #endif
 #include "qapplication.h"
-#include "qdesktopwidget.h"
 #ifndef QT_NO_ACCESSIBILITY
 # include "qaccessible.h"
 #endif
@@ -324,8 +323,8 @@ QRect QMenuPrivate::popupGeometry() const
 {
     Q_Q(const QMenu);
     return useFullScreenForPopup()
-        ? QDesktopWidgetPrivate::screenGeometry(q)
-        : QDesktopWidgetPrivate::availableGeometry(q);
+        ? QWidgetPrivate::screenGeometry(q)
+        : QWidgetPrivate::availableScreenGeometry(q);
 }
 
 QRect QMenuPrivate::popupGeometry(int screen) const
@@ -2385,15 +2384,12 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
     // Ensure that we get correct sizeHints by placing this window on the correct screen.
     // However if the QMenu was constructed with a QDesktopScreenWidget as its parent,
     // then initialScreenIndex was set, so we should respect that for the lifetime of this menu.
-    // Use d->popupScreen to remember, because initialScreenIndex will be reset after the first showing.
     // However if eventLoop exists, then exec() already did this by calling createWinId(); so leave it alone. (QTBUG-76162)
     if (!eventLoop) {
         bool screenSet = false;
-        const int screenIndex = topData()->initialScreenIndex;
-        if (screenIndex >= 0)
-            popupScreen = screenIndex;
-        if (auto s = QGuiApplication::screens().value(popupScreen)) {
-            if (setScreen(s))
+        QScreen *screen = topData()->initialScreen;
+        if (screen) {
+            if (setScreen(screen))
                 itemsDirty = true;
             screenSet = true;
         } else if (QMenu *parentMenu = qobject_cast<QMenu *>(parent)) {

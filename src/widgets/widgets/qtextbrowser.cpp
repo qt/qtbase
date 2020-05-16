@@ -44,7 +44,6 @@
 #include <qapplication.h>
 #include <private/qapplication_p.h>
 #include <qevent.h>
-#include <qdesktopwidget.h>
 #include <qdebug.h>
 #include <qabstracttextdocumentlayout.h>
 #include "private/qtextdocumentlayout_p.h"

@@ -31,7 +31,6 @@
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
 #include <QtGui/QStaticText>
-#include <QtWidgets/QDesktopWidget>
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsRectItem>
@@ -504,8 +503,8 @@ static QPixmap grabWidgetWithoutRepaint(const QWidget *widget, QRect clipArea)
     // because GDI functions can't grab OpenGL layer content.
     // Instead the whole screen should be captured, with an adjusted clip area, which contains
     // the final composited content.
-    QDesktopWidget *desktopWidget = QApplication::desktop();
-    const QWidget *mainScreenWidget = desktopWidget->screen();
+    QWidget *desktopWidget = QApplication::desktop(QGuiApplication::primaryScreen());
+    const QWidget *mainScreenWidget = desktopWidget;
     targetWidget = mainScreenWidget;
     clipArea = QRect(widget->mapToGlobal(clipArea.topLeft()),
                      widget->mapToGlobal(clipArea.bottomRight()));

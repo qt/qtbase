@@ -43,7 +43,7 @@ namespace QtDiag {
 static const char *qtWidgetClasses[] = {
     "QAbstractItemView", "QAbstractScrollArea", "QAbstractSlider", "QAbstractSpinBox",
     "QCalendarWidget", "QCheckBox", "QColorDialog", "QColumnView", "QComboBox",
-    "QCommandLinkButton", "QDateEdit", "QDateTimeEdit", "QDesktopWidget", "QDial",
+    "QCommandLinkButton", "QDateEdit", "QDateTimeEdit", "QDial",
     "QDialog", "QDialogButtonBox", "QDockWidget", "QDoubleSpinBox", "QErrorMessage",
     "QFileDialog", "QFontComboBox", "QFontDialog", "QFrame", "QGraphicsView",
     "QGroupBox", "QHeaderView", "QInputDialog", "QLCDNumber", "QLabel", "QLineEdit",

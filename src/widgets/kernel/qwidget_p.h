@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -61,6 +61,7 @@
 #include "QtGui/qinputmethod.h"
 #include "QtGui/qopengl.h"
 #include "QtGui/qsurfaceformat.h"
+#include "QtGui/qscreen.h"
 #include "QtWidgets/qsizepolicy.h"
 #include "QtWidgets/qstyle.h"
 #include "QtWidgets/qapplication.h"
@@ -144,8 +145,7 @@ struct QTLWExtra {
     QRect frameStrut;
     QRect normalGeometry; // used by showMin/maximized/FullScreen
     Qt::WindowFlags savedFlags; // Save widget flags while showing fullscreen
-    // ### TODO replace initialScreenIndex with QScreen *, in case the screens change at runtime
-    int initialScreenIndex; // Screen number when passing a QDesktop[Screen]Widget as parent.
+    QScreen *initialScreen; // Screen when passing a QDesktop[Screen]Widget as parent.
 
 #ifndef QT_NO_OPENGL
     std::vector<std::unique_ptr<QPlatformTextureList>> widgetTextures;
@@ -476,13 +476,11 @@ public:
 
     void setModal_sys();
 
-    // This is an helper function that return the available geometry for
-    // a widget and takes care is this one is in QGraphicsView.
-    // If the widget is not embed in a scene then the geometry available is
-    // null, we let QDesktopWidget decide for us.
-    static QRect screenGeometry(const QWidget *widget)
+    // These helper functions return the (available) geometry for the screen
+    // the widget is on, and takes care if this one is embedded in a QGraphicsView.
+    static QRect graphicsViewParentRect(const QWidget *widget)
     {
-        QRect screen;
+        QRect rect;
 #if QT_CONFIG(graphicsview)
         QGraphicsProxyWidget *ancestorProxy = widget->d_func()->nearestGraphicsProxyWidget(widget);
         //It's embedded if it has an ancestor
@@ -491,16 +489,30 @@ public:
                 // One view, let be smart and return the viewport rect then the popup is aligned
                 if (ancestorProxy->scene()->views().size() == 1) {
                     QGraphicsView *view = ancestorProxy->scene()->views().at(0);
-                    screen = view->mapToScene(view->viewport()->rect()).boundingRect().toRect();
+                    rect = view->mapToScene(view->viewport()->rect()).boundingRect().toRect();
                 } else {
-                    screen = ancestorProxy->scene()->sceneRect().toRect();
+                    rect = ancestorProxy->scene()->sceneRect().toRect();
                 }
             }
         }
 #else
         Q_UNUSED(widget);
 #endif
-        return screen;
+        return rect;
+    }
+    static QRect screenGeometry(const QWidget *widget)
+    {
+        QRect rect = graphicsViewParentRect(widget);
+        if (rect.isNull())
+            rect = widget->screen()->geometry();
+        return rect;
+    }
+    static QRect availableScreenGeometry(const QWidget *widget)
+    {
+        QRect rect = graphicsViewParentRect(widget);
+        if (rect.isNull())
+            rect = widget->screen()->availableGeometry();
+        return rect;
     }
 
     inline void setRedirected(QPaintDevice *replacement, const QPoint &offset)

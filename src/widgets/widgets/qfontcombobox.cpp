@@ -46,7 +46,6 @@
 #include <qevent.h>
 #include <qapplication.h>
 #include <private/qcombobox_p.h>
-#include <QDesktopWidget>
 #include <private/qdesktopwidget_p.h>
 #include <qdebug.h>
 
@@ -545,7 +544,7 @@ bool QFontComboBox::event(QEvent *e)
         QListView *lview = qobject_cast<QListView*>(view());
         if (lview) {
             lview->window()->setFixedWidth(qMin(width() * 5 / 3,
-                               QDesktopWidgetPrivate::availableGeometry(lview).width()));
+                                           QWidgetPrivate::availableScreenGeometry(lview).width()));
         }
     }
     return QComboBox::event(e);

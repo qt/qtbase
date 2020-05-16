@@ -11,7 +11,6 @@ HEADERS += \
 	kernel/qapplication_p.h \
         kernel/qwidgetrepaintmanager_p.h \
 	kernel/qboxlayout.h \
-	kernel/qdesktopwidget.h \
 	kernel/qgridlayout.h \
         kernel/qlayout.h \
 	kernel/qlayout_p.h \

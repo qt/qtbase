@@ -42,7 +42,6 @@
 #include <qstyle.h>
 #include <qlayout.h>
 #include <qapplication.h>
-#include <qdesktopwidget.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include <qaccessible.h>
 #endif
@@ -355,7 +354,7 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
 
         if(!defaultPopDown || (fitUp && !fitDown))
             pos.setY(qMax(screenRect.y(), q->mapToGlobal(QPoint(0, adjustedActionRect.top()-popup_size.height())).y()));
-        QMenuPrivate::get(activeMenu)->topData()->initialScreenIndex = QGuiApplication::screens().indexOf(popupScreen);
+        QMenuPrivate::get(activeMenu)->topData()->initialScreen = popupScreen;
         activeMenu->popup(pos);
         if(activateFirst)
             activeMenu->d_func()->setFirstActionActive();

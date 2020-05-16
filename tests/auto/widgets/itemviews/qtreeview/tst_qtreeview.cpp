@@ -28,7 +28,6 @@
 
 #include "../../../../shared/fakedirmodel.h"
 
-#include <QDesktopWidget>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>

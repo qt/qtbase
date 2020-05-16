@@ -157,7 +157,6 @@
 #endif
 #include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
-#include "QtWidgets/qdesktopwidget.h"
 #include <private/qapplication_p.h>
 #include <private/qdesktopwidget_p.h>
 #if QT_CONFIG(lineedit)
@@ -921,7 +920,7 @@ void QCompleterPrivate::_q_autoResizePopup()
 
 void QCompleterPrivate::showPopup(const QRect& rect)
 {
-    const QRect screen = QDesktopWidgetPrivate::availableGeometry(widget);
+    const QRect screen = QWidgetPrivate::availableScreenGeometry(widget);
     Qt::LayoutDirection dir = widget->layoutDirection();
     QPoint pos;
     int rh, w;

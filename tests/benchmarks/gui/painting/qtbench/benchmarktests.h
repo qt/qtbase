@@ -31,7 +31,6 @@
 
 #include <QApplication>
 #include <QTextDocument>
-#include <QDesktopWidget>
 #include <QTextLayout>
 #include <QFontMetrics>
 #include <QDebug>

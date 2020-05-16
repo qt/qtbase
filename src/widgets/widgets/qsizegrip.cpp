@@ -48,7 +48,6 @@
 #include "qstyleoption.h"
 #include "qlayout.h"
 #include "qdebug.h"
-#include <QDesktopWidget>
 
 #include <private/qwidget_p.h>
 #include <private/qdesktopwidget_p.h>
@@ -304,7 +303,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
     bool hasVerticalSizeConstraint = true;
     bool hasHorizontalSizeConstraint = true;
     if (tlw->isWindow())
-        availableGeometry = QDesktopWidgetPrivate::availableGeometry(tlw);
+        availableGeometry = QWidgetPrivate::availableScreenGeometry(tlw);
     else {
         const QWidget *tlwParent = tlw->parentWidget();
         // Check if tlw is inside QAbstractScrollArea/QScrollArea.

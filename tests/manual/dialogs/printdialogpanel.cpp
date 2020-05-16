@@ -37,7 +37,6 @@
 #include <QPrintPreviewDialog>
 #include <QPageSetupDialog>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QGroupBox>
 #include <QCheckBox>
 #include <QLabel>

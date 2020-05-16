@@ -41,7 +41,6 @@
 #include <QtWidgets/QColorDialog>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QDesktopWidget>
 
 class tst_languageChange : public QObject
 {

@@ -38,7 +38,6 @@
 #include <QStatusBar>
 #include <QListWidget>
 #include <QWidgetAction>
-#include <QDesktopWidget>
 #include <QScreen>
 #include <QSpinBox>
 #include <qdialog.h>

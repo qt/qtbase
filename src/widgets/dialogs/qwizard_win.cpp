@@ -52,7 +52,6 @@
 #include <QtCore/QDebug>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWindow>
-#include <QtWidgets/QDesktopWidget>
 
 #include <uxtheme.h>
 #include <vssym32.h>

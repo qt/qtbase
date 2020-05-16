@@ -165,7 +165,6 @@
 #include <QPainter>
 #include <QFontMetrics>
 #include <QStyleOption>
-#include <QDesktopWidget>
 #include <private/qdesktopwidget_p.h>
 #include <QDebug>
 #include <qmath.h>
@@ -1733,7 +1732,7 @@ QMdiArea::~QMdiArea()
 */
 QSize QMdiArea::sizeHint() const
 {
-    // Calculate a proper scale factor for QDesktopWidget::size().
+    // Calculate a proper scale factor for the desktop's size.
     // This also takes into account that we can have nested workspaces.
     int nestedCount = 0;
     QWidget *widget = this->parentWidget();

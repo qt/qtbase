@@ -44,7 +44,6 @@
 #include <qstyle.h>
 #include <qwidget.h>
 #include <qstylefactory.h>
-#include <qdesktopwidget.h>
 #include <private/qwidget_p.h>
 #include <private/qwidgetrepaintmanager_p.h>
 #include <private/qapplication_p.h>
@@ -9170,7 +9169,7 @@ void tst_QWidget::translucentWidget()
     QPixmap widgetSnapshot;
 
 #ifdef Q_OS_WIN
-    QWidget *desktopWidget = QApplication::desktop()->screen(0);
+    QWidget *desktopWidget = QApplication::desktop();
     widgetSnapshot = grabWindow(desktopWidget->windowHandle(), labelPos.x(), labelPos.y(), label.width(), label.height());
 #else
     widgetSnapshot = label.grab(QRect(QPoint(0, 0), label.size()));

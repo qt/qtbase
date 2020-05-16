@@ -56,7 +56,6 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QPushButton>
-#include <QDesktopWidget>
 #include <QApplication>
 #include <QMessageBox>
 

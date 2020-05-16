@@ -344,8 +344,6 @@ QString QPlatformScreen::serialNumber() const
     physicalSize() function, since this is the function it uses to calculate the dpi to use when
     converting point sizes to pixels sizes. However, this is unfortunate on some systems, as the
     native system fakes its dpi size.
-
-    QPlatformScreen is also used by the public api QDesktopWidget for information about the desktop.
  */
 
 /*! \fn QRect QPlatformScreen::geometry() const = 0

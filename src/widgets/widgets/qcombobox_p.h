@@ -372,7 +372,7 @@ public:
     void updateArrow(QStyle::StateFlag state);
     bool updateHoverControl(const QPoint &pos);
     void trySetValidIndex();
-    QRect popupGeometry(int screen = -1) const;
+    QRect popupGeometry() const;
     QStyle::SubControl newHoverControl(const QPoint &pos);
     int computeWidthHint() const;
     QSize recomputeSizeHint(QSize &sh) const;
