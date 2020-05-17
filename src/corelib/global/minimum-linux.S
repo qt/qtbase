@@ -62,7 +62,7 @@
 
     .section    ".note.GNU-stack", "", progbits
     .section    ".note.ABI-tag", "a", note
-    .align      4       /* we have 32-bit data */
+    .balign     4       /* we have 32-bit data */
 
 /*  * For the format of the note section's contents, see Elf32_Nhdr / Elf64_Nhdr */
     .long       .Lnameend-.Lname        /* n_namesz */
