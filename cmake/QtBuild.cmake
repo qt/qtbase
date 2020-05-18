@@ -687,10 +687,10 @@ QMAKE_DEPENDS_${uclib}_LD = ${deps}
 endfunction()
 
 # Generates module .pri files for consumption by qmake
-function(qt_generate_module_pri_file target target_path config_module_name pri_files_var)
+function(qt_generate_module_pri_file target)
     set(flags INTERNAL_MODULE HEADER_MODULE)
     set(options)
-    set(multiopts QMAKE_MODULE_CONFIG)
+    set(multiopts)
     cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
 
     qt_internal_module_info(module "${target}")
@@ -742,13 +742,16 @@ function(qt_generate_module_pri_file target target_path config_module_name pri_f
 
     list(JOIN module_internal_config " " joined_module_internal_config)
 
-    if(arg_QMAKE_MODULE_CONFIG)
-        string(REPLACE ";" " " module_build_config "${arg_QMAKE_MODULE_CONFIG}")
+    get_target_property(config_module_name ${target} ${property_prefix}QT_CONFIG_MODULE_NAME)
+    get_target_property(qmake_module_config ${target} ${property_prefix}QT_QMAKE_MODULE_CONFIG)
+    if(qmake_module_config)
+        string(REPLACE ";" " " module_build_config "${qmake_module_config}")
         set(module_build_config "\nQT.${config_module_name}.CONFIG = ${module_build_config}")
     else()
         set(module_build_config "")
     endif()
 
+    qt_path_join(target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
     if (NOT ${arg_INTERNAL_MODULE})
         if(arg_HEADER_MODULE)
             set(module_plugin_types "")
@@ -809,7 +812,7 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
 ${libraries_content}"
     )
 
-    set("${pri_files_var}" "${pri_files}" PARENT_SCOPE)
+    qt_install(FILES "${pri_files}" DESTINATION ${INSTALL_MKSPECSDIR}/modules)
 endfunction()
 
 # Generates qt_ext_XXX.pri files for consumption by qmake
@@ -2060,8 +2063,8 @@ function(qt_watch_current_list_dir variable access value current_list_file stack
             # We've found a file we're looking for. Call the finalizer.
             if(${CMAKE_VERSION} VERSION_LESS "3.18.0")
                 # Make finalizer known functions here:
-                if(func STREQUAL "qt_generate_prl_file")
-                    qt_generate_prl_file(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
+                if(func STREQUAL "qt_finalize_module")
+                    qt_finalize_module(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
                 else()
                     message(FATAL_ERROR "qt_watch_current_list_dir doesn't know about ${func}. Consider adding it.")
                 endif()
@@ -2169,9 +2172,14 @@ function(qt_add_module target)
         add_library("${target}" STATIC)
     endif()
 
+    set(property_prefix "INTERFACE_")
     if(NOT is_interface_lib)
         qt_set_common_target_properties(${target})
+        set(property_prefix "")
     endif()
+    set_target_properties(${target} PROPERTIES
+        ${property_prefix}QT_CONFIG_MODULE_NAME "${arg_CONFIG_MODULE_NAME}"
+        ${property_prefix}QT_QMAKE_MODULE_CONFIG "${arg_QMAKE_MODULE_CONFIG}")
 
     set(is_framework 0)
     if(QT_FEATURE_framework AND NOT ${arg_HEADER_MODULE} AND NOT ${arg_STATIC})
@@ -2584,16 +2592,6 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         unset(arg_INTERNAL_MODULE)
     endif()
 
-    qt_path_join(pri_target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
-    qt_generate_module_pri_file("${target}" "${pri_target_path}" ${arg_CONFIG_MODULE_NAME}
-        module_pri_files
-        ${arg_INTERNAL_MODULE}
-        ${header_module}
-        QMAKE_MODULE_CONFIG
-            ${arg_QMAKE_MODULE_CONFIG}
-        )
-    qt_install(FILES "${module_pri_files}" DESTINATION ${INSTALL_MKSPECSDIR}/modules)
-
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
     if(NOT arg_HEADER_MODULE)
@@ -2642,7 +2640,12 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
 
     qt_describe_module(${target})
-    qt_add_list_file_finalizer(qt_generate_prl_file ${target})
+    qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${header_module})
+endfunction()
+
+function(qt_finalize_module target)
+    qt_generate_prl_file(${target})
+    qt_generate_module_pri_file("${target}" ${ARGN})
 endfunction()
 
 # Add libraries to variable ${out_libs_var} in a way that duplicates
