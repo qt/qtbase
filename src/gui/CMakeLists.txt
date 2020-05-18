@@ -332,13 +332,14 @@ qt_extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
 # used direct public linkage against either libGLESv2 or libGL, depending
 # on the opengl _feature_. This is done by hand now here (where the
 # feature is available).
+# On Windows with 'dynamic' OpenGL we must not link to opengl32.
 # DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
 # available until the qt_add_module call.
 if(QT_FEATURE_opengl)
     if(QT_FEATURE_opengles2)
         find_package(GLESv2)
         target_link_libraries(Gui PUBLIC GLESv2::GLESv2)
-    else()
+    elseif(NOT QT_FEATURE_opengl_dynamic)
         find_package(OpenGL)
         target_link_libraries(Gui PUBLIC OpenGL::GL)
     endif()
@@ -360,9 +361,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
 
 #### Keys ignored in scope 2:.:.:gui.pro:QT_FEATURE_opengl:
 # MODULE_CONFIG = "opengl"
-
-#### Keys ignored in scope 3:.:.:gui.pro:QT_FEATURE_angle:
-# MODULE_AUX_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/QtANGLE"
 
 qt_extend_target(Gui CONDITION MACOS
     LIBRARIES

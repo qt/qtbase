@@ -3,15 +3,14 @@ LIBS += -lwinspool -limm32 -loleaut32
 
 QT_FOR_CONFIG += gui
 
-qtConfig(opengl):!qtConfig(opengles2):!qtConfig(dynamicgl): LIBS *= -lopengl32
+qtConfig(opengl):!qtConfig(dynamicgl): LIBS *= -lopengl32
 
 mingw: QMAKE_USE *= uuid
-# For the dialog helpers:
+
 LIBS += -lshlwapi -lwtsapi32
 
 QMAKE_USE_PRIVATE += \
     advapi32 \
-    d3d9/nolink \
     ole32 \
     shell32 \
     user32 \
@@ -70,18 +69,10 @@ INCLUDEPATH += $$PWD
 
 qtConfig(opengl): HEADERS += $$PWD/qwindowsopenglcontext.h
 
-qtConfig(opengles2) {
-    SOURCES += $$PWD/qwindowseglcontext.cpp
-    HEADERS += $$PWD/qwindowseglcontext.h
-} else: qtConfig(opengl) {
+# Only WGL is supported in Qt 6, ANGLE is removed
+qtConfig(opengl) {
     SOURCES += $$PWD/qwindowsglcontext.cpp
     HEADERS += $$PWD/qwindowsglcontext.h
-}
-
-# Dynamic GL needs both WGL and EGL
-qtConfig(dynamicgl) {
-    SOURCES += $$PWD/qwindowseglcontext.cpp
-    HEADERS += $$PWD/qwindowseglcontext.h
 }
 
 qtConfig(systemtrayicon) {
@@ -121,10 +112,3 @@ RESOURCES += $$PWD/openglblacklists.qrc
 
 qtConfig(accessibility): include($$PWD/uiautomation/uiautomation.pri)
 
-qtConfig(combined-angle-lib) {
-    DEFINES *= LIBEGL_NAME=$${LIBQTANGLE_NAME}
-    DEFINES *= LIBGLESV2_NAME=$${LIBQTANGLE_NAME}
-} else {
-    DEFINES *= LIBEGL_NAME=$${LIBEGL_NAME}
-    DEFINES *= LIBGLESV2_NAME=$${LIBGLESV2_NAME}
-}

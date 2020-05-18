@@ -280,13 +280,10 @@ Gui, printing, widget options:
 
   -no-opengl ........... Disable OpenGL support
   -opengl <api> ........ Enable OpenGL support. Supported APIs:
-                         es2 (default on Windows), desktop (default on Unix),
-                         dynamic (Windows only)
+                         es2, desktop (default on Unix),
+                         dynamic (Windows only, default on Windows)
   -opengles3 ........... Enable OpenGL ES 3.x support instead of ES 2.x [auto]
   -egl ................. Enable EGL support [auto]
-  -angle ............... Use bundled ANGLE to support OpenGL ES 2.0 [auto]
-                         (Windows only)
-  -combined-angle-lib .. Merge LibEGL and LibGLESv2 into LibANGLE (Windows only)
 
   -qpa <name> .......... Select default QPA backend(s) (e.g., xcb, cocoa, windows)
                          A prioritized list separated by semi-colons.

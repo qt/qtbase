@@ -84,10 +84,7 @@
 
 #include <limits.h>
 
-#if QT_CONFIG(opengles2) || defined(QT_OPENGL_DYNAMIC)
-#  include "qwindowseglcontext.h"
-#endif
-#if !defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2)
+#if !defined(QT_NO_OPENGL)
 #  include "qwindowsglcontext.h"
 #endif
 
@@ -418,13 +415,6 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
         }
         qCWarning(lcQpaGl, "System OpenGL failed. Falling back to Software OpenGL.");
         return QOpenGLStaticContext::create(true);
-    // If ANGLE is requested, use it, don't try anything else.
-    case QWindowsOpenGLTester::AngleRendererD3d9:
-    case QWindowsOpenGLTester::AngleRendererD3d11:
-    case QWindowsOpenGLTester::AngleRendererD3d11Warp:
-        return QWindowsEGLStaticContext::create(requestedRenderer);
-    case QWindowsOpenGLTester::Gles:
-        return QWindowsEGLStaticContext::create(requestedRenderer);
     case QWindowsOpenGLTester::SoftwareRasterizer:
         if (QWindowsStaticOpenGLContext *swCtx = QOpenGLStaticContext::create(true))
             return swCtx;
@@ -450,17 +440,8 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
             return glCtx;
         }
     }
-    if (QWindowsOpenGLTester::Renderers glesRenderers = supportedRenderers & QWindowsOpenGLTester::GlesMask) {
-        if (QWindowsEGLStaticContext *eglCtx = QWindowsEGLStaticContext::create(glesRenderers))
-            return eglCtx;
-    }
     return QOpenGLStaticContext::create(true);
-#elif QT_CONFIG(opengles2)
-    QWindowsOpenGLTester::Renderers glesRenderers = QWindowsOpenGLTester::requestedGlesRenderer();
-    if (glesRenderers == QWindowsOpenGLTester::InvalidRenderer)
-        glesRenderers = QWindowsOpenGLTester::supportedRenderers(QWindowsOpenGLTester::AngleRendererD3d11);
-    return QWindowsEGLStaticContext::create(glesRenderers);
-#elif !defined(QT_NO_OPENGL)
+#else
     return QOpenGLStaticContext::create();
 #endif
 }
@@ -483,9 +464,7 @@ QPlatformOpenGLContext *QWindowsIntegration::createPlatformOpenGLContext(QOpenGL
 
 QOpenGLContext::OpenGLModuleType QWindowsIntegration::openGLModuleType()
 {
-#if QT_CONFIG(opengles2)
-    return QOpenGLContext::LibGLES;
-#elif !defined(QT_OPENGL_DYNAMIC)
+#if !defined(QT_OPENGL_DYNAMIC)
     return QOpenGLContext::LibGL;
 #else
     if (const QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())

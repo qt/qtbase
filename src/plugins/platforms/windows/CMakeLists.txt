@@ -43,7 +43,6 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         ${CMAKE_CURRENT_SOURCE_DIR}
     LIBRARIES
         advapi32
-        d3d9
         gdi32
         ole32
         shell32
@@ -131,34 +130,20 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_directwrite3
 #### Keys ignored in scope 6:.:.:windows.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl AND NOT QT_FEATURE_opengles2
+qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl
     PUBLIC_LIBRARIES
         opengl32
 )
 
-qt_extend_target(QWindowsIntegrationPlugin CONDITION mingw
+qt_extend_target(QWindowsIntegrationPlugin CONDITION MINGW
     PUBLIC_LIBRARIES
         uuid
 )
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
-        qwindowsopenglcontext.h
-)
-
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengles2
-    SOURCES
-        qwindowseglcontext.cpp qwindowseglcontext.h
-)
-
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
-    SOURCES
         qwindowsglcontext.cpp qwindowsglcontext.h
-)
-
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_dynamicgl
-    SOURCES
-        qwindowseglcontext.cpp qwindowseglcontext.h
+        qwindowsopenglcontext.h
 )
 
 qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_systemtrayicon
@@ -227,12 +212,7 @@ qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility AN
         Qt::WindowsUIAutomationSupportPrivate
 )
 
-qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility AND mingw
+qt_extend_target(QWindowsIntegrationPlugin CONDITION MINGW AND QT_FEATURE_accessibility
     PUBLIC_LIBRARIES
         uuid
 )
-
-# special case:
-# qt_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_combined_angle_lib ...
-# qt_extend_target(QWindowsIntegrationPlugin CONDITION NOT QT_FEATURE_combined_angle_lib ...
-

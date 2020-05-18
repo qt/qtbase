@@ -29,10 +29,6 @@
     "QtEdidSupport" => "$basedir/src/platformsupport/edid",
     "QtLinuxOfonoSupport" => "$basedir/src/platformsupport/linuxofono",
     "QtPlatformHeaders" => "$basedir/src/platformheaders",
-    "QtANGLE/KHR" => "!$basedir/src/3rdparty/angle/include/KHR",
-    "QtANGLE/GLES2" => "!$basedir/src/3rdparty/angle/include/GLES2",
-    "QtANGLE/GLES3" => "!$basedir/src/3rdparty/angle/include/GLES3",
-    "QtANGLE/EGL" => "!$basedir/src/3rdparty/angle/include/EGL",
     "QtZlib" => "!>$basedir/src/corelib;$basedir/src/3rdparty/zlib",
     "QtOpenGLExtensions" => "$basedir/src/openglextensions",
     "QtEglFSDeviceIntegration" => "$basedir/src/plugins/platforms/eglfs",
@@ -85,12 +81,11 @@
 );
 
 @qpa_headers = ( qr/^(?!qplatformheaderhelper)qplatform/, qr/^qwindowsystem/ );
-my @angle_headers = ('egl.h', 'eglext.h', 'eglext_angle.h', 'eglplatform.h', 'gl2.h', 'gl2ext.h', 'gl2ext_angle.h', 'gl2platform.h', 'ShaderLang.h', 'khrplatform.h');
 my @internal_zlib_headers = ( "crc32.h", "deflate.h", "gzguts.h", "inffast.h", "inffixed.h", "inflate.h", "inftrees.h", "trees.h", "zutil.h" );
 my @zlib_headers = ( "zconf.h", "zlib.h" );
 @ignore_headers = ( @internal_zlib_headers );
-@ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h", @zlib_headers, @angle_headers);
-@ignore_for_qt_begin_namespace_check = ( "qt_windows.h", @zlib_headers, @angle_headers);
+@ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h", @zlib_headers);
+@ignore_for_qt_begin_namespace_check = ( "qt_windows.h", @zlib_headers);
 %inject_headers = (
     "$basedir/src/corelib/global" => [ "qconfig.h", "qconfig_p.h" ],
     "$basedir/src/gui/vulkan" => [ "^qvulkanfunctions.h", "^qvulkanfunctions_p.h" ]

@@ -136,24 +136,6 @@ qt_add_qmake_lib_dependency(xrender xlib)
 
 #### Tests
 
-# angle_d3d11_qdtd
-qt_config_compile_test(angle_d3d11_qdtd
-    LABEL "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT"
-    CODE
-"
-#include <d3d11.h>
-
-int main(int argc, char **argv)
-{
-    (void)argc; (void)argv;
-    /* BEGIN TEST: */
-D3D11_QUERY_DATA_TIMESTAMP_DISJOINT qdtd;
-(void) qdtd;
-    /* END TEST: */
-    return 0;
-}
-")
-
 # drm_atomic
 qt_config_compile_test(drm_atomic
     LABEL "DRM Atomic API"
@@ -559,20 +541,6 @@ qt_feature("accessibility-atspi-bridge" PUBLIC PRIVATE
     CONDITION QT_FEATURE_accessibility AND QT_FEATURE_xcb AND QT_FEATURE_dbus AND ATSPI2_FOUND
 )
 qt_feature_definition("accessibility-atspi-bridge" "QT_NO_ACCESSIBILITY_ATSPI_BRIDGE" NEGATE VALUE "1")
-qt_feature("angle" PUBLIC
-    LABEL "ANGLE"
-    AUTODETECT QT_FEATURE_opengles2 OR QT_FEATURE_opengl_dynamic
-    CONDITION NOT QT_FEATURE_opengl_desktop AND QT_FEATURE_dxguid AND tests.fxc AND ( QT_FEATURE_direct3d9 OR ( WINRT AND QT_FEATURE_direct3d11 AND libs.d3dcompiler ) ) OR FIXME
-)
-qt_feature("angle_d3d11_qdtd" PRIVATE
-    LABEL "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT"
-    CONDITION QT_FEATURE_angle AND TEST_angle_d3d11_qdtd
-)
-qt_feature("combined-angle-lib" PUBLIC
-    LABEL "Combined ANGLE Library"
-    AUTODETECT OFF
-    CONDITION QT_FEATURE_angle
-)
 qt_feature("directfb" PRIVATE
     SECTION "Platform plugins"
     LABEL "DirectFB"
@@ -599,33 +567,9 @@ qt_feature("directwrite2" PRIVATE
     CONDITION QT_FEATURE_directwrite1 AND libs.dwrite_2 OR FIXME
     EMIT_IF WIN32
 )
-qt_feature("dxguid" PRIVATE
-    LABEL "DirectX GUID"
-    CONDITION WIN32 AND libs.dxguid OR FIXME
-)
-qt_feature("direct3d9" PRIVATE
-    LABEL "Direct 3D 9"
-    CONDITION WIN32 AND NOT WINRT AND libs.d3d9 OR FIXME
-)
-qt_feature("dxgi" PRIVATE
-    LABEL "DirectX GI"
-    CONDITION WIN32 AND libs.dxgi OR FIXME
-)
-qt_feature("dxgi1_2" PRIVATE
-    LABEL "DirectX GI 1.2"
-    CONDITION QT_FEATURE_dxgi AND libs.dxgi1_2 OR FIXME
-)
-qt_feature("direct3d11" PRIVATE
-    LABEL "Direct 3D 11"
-    CONDITION QT_FEATURE_dxgi AND libs.d3d11 OR FIXME
-)
-qt_feature("direct3d11_1" PRIVATE
-    LABEL "Direct 3D 11.1"
-    CONDITION QT_FEATURE_direct3d11 AND QT_FEATURE_dxgi1_2 AND libs.d3d11_1 OR FIXME
-)
 qt_feature("direct2d" PRIVATE
     LABEL "Direct 2D"
-    CONDITION WIN32 AND NOT WINRT AND QT_FEATURE_direct3d11 AND libs.d2d1 OR FIXME
+    CONDITION WIN32 AND NOT WINRT AND libs.d2d1 OR FIXME
 )
 qt_feature("direct2d1_1" PRIVATE
     LABEL "Direct 2D 1.1"
@@ -729,13 +673,13 @@ qt_feature("mtdev" PRIVATE
 qt_feature("opengles2" PUBLIC
     LABEL "OpenGL ES 2.0"
     CONDITION NOT WIN32 AND ( NOT WATCHOS AND NOT QT_FEATURE_opengl_desktop AND GLESv2_FOUND )
-    ENABLE INPUT_opengl STREQUAL 'es2' OR INPUT_angle STREQUAL 'yes'
+    ENABLE INPUT_opengl STREQUAL 'es2'
     DISABLE INPUT_opengl STREQUAL 'desktop' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
 qt_feature_config("opengles2" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("opengles3" PUBLIC
     LABEL "OpenGL ES 3.0"
-    CONDITION QT_FEATURE_opengles2 AND NOT QT_FEATURE_angle AND TEST_opengles3
+    CONDITION QT_FEATURE_opengles2 AND TEST_opengles3
 )
 qt_feature("opengles31" PUBLIC
     LABEL "OpenGL ES 3.1"
@@ -745,24 +689,23 @@ qt_feature("opengles32" PUBLIC
     LABEL "OpenGL ES 3.2"
     CONDITION QT_FEATURE_opengles31 AND TEST_opengles32
 )
-qt_feature("opengl-desktop"
-    LABEL "Desktop OpenGL"
-    CONDITION ( WIN32 AND NOT WINRT AND NOT QT_FEATURE_opengles2 AND ( MSVC OR OpenGL_OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_OpenGL_FOUND )
-    ENABLE INPUT_opengl STREQUAL 'desktop'
-    DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
-)
 qt_feature("opengl-dynamic"
     LABEL "Dynamic OpenGL"
-    AUTODETECT OFF
     CONDITION WIN32 AND NOT WINRT
-    DISABLE INPUT_angle STREQUAL 'yes' OR INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
+    DISABLE INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
 )
 qt_feature("dynamicgl" PUBLIC
     LABEL "Dynamic OpenGL: dynamicgl"
     CONDITION QT_FEATURE_opengl_dynamic
-    DISABLE INPUT_angle STREQUAL 'yes' OR INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
+    DISABLE INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
 )
 qt_feature_definition("opengl-dynamic" "QT_OPENGL_DYNAMIC")
+qt_feature("opengl-desktop"
+    LABEL "Desktop OpenGL"
+    CONDITION ( WIN32 AND NOT WINRT AND NOT QT_FEATURE_opengl_dynamic AND ( MSVC OR OpenGL_OpenGL_FOUND ) ) OR ( NOT WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_OpenGL_FOUND )
+    ENABLE INPUT_opengl STREQUAL 'desktop'
+    DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
+)
 qt_feature("opengl" PUBLIC
     LABEL "OpenGL"
     CONDITION QT_FEATURE_opengl_desktop OR QT_FEATURE_opengl_dynamic OR QT_FEATURE_opengles2
@@ -782,7 +725,7 @@ qt_feature("openvg" PUBLIC
 )
 qt_feature("egl" PUBLIC PRIVATE
     LABEL "EGL"
-    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( QT_FEATURE_angle OR EGL_FOUND ) AND ( QT_FEATURE_dlopen OR NOT UNIX OR INTEGRITY )
+    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( EGL_FOUND ) AND ( QT_FEATURE_dlopen OR NOT UNIX OR INTEGRITY )
 )
 qt_feature_definition("egl" "QT_NO_EGL" NEGATE VALUE "1")
 qt_feature("egl_x11" PRIVATE
@@ -1208,23 +1151,23 @@ qt_configure_end_summary_section() # end of "Text formats" section
 qt_configure_add_summary_entry(ARGS "egl")
 qt_configure_add_summary_entry(ARGS "openvg")
 qt_configure_add_summary_section(NAME "OpenGL")
-qt_configure_add_summary_entry(
-    ARGS "angle"
-    CONDITION WIN32
-)
-qt_configure_add_summary_entry(
-    ARGS "combined-angle-lib"
-    CONDITION QT_FEATURE_angle
-)
 qt_configure_add_summary_entry(ARGS "opengl-desktop")
 qt_configure_add_summary_entry(
     ARGS "opengl-dynamic"
     CONDITION WIN32
 )
-qt_configure_add_summary_entry(ARGS "opengles2")
-qt_configure_add_summary_entry(ARGS "opengles3")
-qt_configure_add_summary_entry(ARGS "opengles31")
-qt_configure_add_summary_entry(ARGS "opengles32")
+qt_configure_add_summary_entry(
+    ARGS "opengles2"
+    CONDITION NOT WIN32)
+qt_configure_add_summary_entry(
+    ARGS "opengles3"
+    CONDITION NOT WIN32)
+qt_configure_add_summary_entry(
+    ARGS "opengles31"
+    CONDITION NOT WIN32)
+qt_configure_add_summary_entry(
+    ARGS "opengles32"
+    CONDITION NOT WIN32)
 qt_configure_end_summary_section() # end of "OpenGL" section
 qt_configure_add_summary_entry(ARGS "vulkan")
 qt_configure_add_summary_entry(ARGS "sessionmanager")
@@ -1302,11 +1245,6 @@ qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "No QPA platform plugin enabled! This will produce a Qt that cannot run GUI applications.  See \"Platform backends\" in the output of --help."
     CONDITION QT_FEATURE_gui AND LINUX AND NOT ANDROID AND NOT QT_FEATURE_xcb AND NOT QT_FEATURE_eglfs AND NOT QT_FEATURE_directfb AND NOT QT_FEATURE_linuxfb
-)
-qt_configure_add_report_entry(
-    TYPE WARNING
-    MESSAGE "Using OpenGL ES 2.0 on Windows without ANGLE.  The build will most likely fail.  Specify -opengl desktop to use regular OpenGL."
-    CONDITION WIN32 AND ( QT_FEATURE_opengles2 OR QT_FEATURE_opengl_dynamic ) AND NOT QT_FEATURE_angle
 )
 qt_configure_add_report_entry(
     TYPE WARNING

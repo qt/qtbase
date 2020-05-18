@@ -60,9 +60,6 @@ QT_BEGIN_NAMESPACE
 
 enum ResourceType {
     RenderingContextType,
-    EglContextType,
-    EglDisplayType,
-    EglConfigType,
     HandleType,
     GlHandleType,
     GetDCType,
@@ -74,9 +71,6 @@ static int resourceType(const QByteArray &key)
 {
     static const char *names[] = { // match ResourceType
         "renderingcontext",
-        "eglcontext",
-        "egldisplay",
-        "eglconfig",
         "handle",
         "glhandle",
         "getdc",
@@ -205,19 +199,6 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
     if (!context || !context->handle()) {
         qWarning("%s: '%s' requested for null context or context without handle.", __FUNCTION__, resource.constData());
         return nullptr;
-    }
-
-    auto *glcontext = static_cast<QWindowsOpenGLContext *>(context->handle());
-    switch (resourceType(resource)) {
-    case RenderingContextType: // Fall through.
-    case EglContextType:
-        return glcontext->nativeContext();
-    case EglDisplayType:
-        return glcontext->nativeDisplay();
-    case EglConfigType:
-        return glcontext->nativeConfig();
-    default:
-        break;
     }
 
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());

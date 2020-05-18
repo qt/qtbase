@@ -113,9 +113,6 @@ src_3rdparty_freetype.target = sub-3rdparty-freetype
 src_3rdparty_gradle.subdir = $$PWD/3rdparty/gradle
 src_3rdparty_gradle.target = sub-3rdparty-gradle
 
-src_angle.subdir = $$PWD/angle
-src_angle.target = sub-angle
-
 src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui
 src_gui.depends = src_corelib src_tools_rcc
@@ -202,10 +199,6 @@ qtConfig(gui) {
     qtConfig(harfbuzz):!qtConfig(system-harfbuzz) {
         SUBDIRS += src_3rdparty_harfbuzzng
         src_gui.depends += src_3rdparty_harfbuzzng
-    }
-    qtConfig(angle) {
-        SUBDIRS += src_angle
-        src_gui.depends += src_angle
     }
     qtConfig(png):!qtConfig(system-png) {
         SUBDIRS += src_3rdparty_libpng

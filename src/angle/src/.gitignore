@@ -1,6 +1,0 @@
-/libGLESv2/renderer/
-/compiler/glslang_lex.cpp
-/compiler/glslang_tab.cpp
-/compiler/glslang_tab.h
-/compiler/preprocessor/ExpressionParser.cpp
-/compiler/preprocessor/Tokenizer.cpp
