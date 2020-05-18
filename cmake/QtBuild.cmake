@@ -698,7 +698,7 @@ function(qt_generate_module_pri_file target target_path config_module_name pri_f
 
     set(property_prefix)
     if(arg_HEADER_MODULE)
-        set(property_prefix "interface_")
+        set(property_prefix "INTERFACE_")
     endif()
 
     get_target_property(enabled_features "${target}"
