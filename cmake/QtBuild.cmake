@@ -686,6 +686,50 @@ QMAKE_DEPENDS_${uclib}_LD = ${deps}
     set(${out_var} "${content}" PARENT_SCOPE)
 endfunction()
 
+# Retrieves the direct Qt module dependencies of the given Qt module.
+# By default, the private dependencies are returned.
+# Pass the PUBLIC option to return the public dependencies.
+function(qt_get_direct_module_dependencies target out_var)
+    cmake_parse_arguments(arg "PUBLIC" "" "" ${ARGN})
+    set(dependencies "")
+    if(arg_PUBLIC)
+        get_target_property(libs ${target} INTERFACE_LINK_LIBRARIES)
+    else()
+        get_target_property(libs ${target} LINK_LIBRARIES)
+    endif()
+    if(NOT libs)
+        set(libs "")
+    endif()
+    get_target_property(target_type ${target} TYPE)
+    while(libs)
+        list(POP_FRONT libs lib)
+        string(GENEX_STRIP "${lib}" lib)
+        if(NOT lib OR NOT TARGET "${lib}")
+            continue()
+        endif()
+        get_target_property(lib_type ${lib} TYPE)
+        if (lib_type STREQUAL "INTERFACE_LIBRARY" AND "${lib}" MATCHES "^Qt::(.*)")
+            # Found a version-less target like Qt::Core outside of qtbase.
+            # Skip this one and use what this target points to, e.g. Qt6::Core.
+            get_target_property(ifacelibs ${lib} INTERFACE_LINK_LIBRARIES)
+            list(PREPEND libs ${ifacelibs})
+            continue()
+        endif()
+        if(lib_type STREQUAL "OBJECT_LIBRARY")
+            # Skip object libraries, because they're already part of ${target}.
+            continue()
+        elseif(lib_type STREQUAL "STATIC_LIBRARY" AND target_type STREQUAL "SHARED_LIBRARY")
+            # Skip static libraries if ${target} is a shared library.
+            continue()
+        endif()
+        get_target_property(lib_config_module_name ${lib} "_qt_config_module_name")
+        if(lib_config_module_name)
+            list(APPEND dependencies ${lib_config_module_name})
+        endif()
+    endwhile()
+    set(${out_var} ${dependencies} PARENT_SCOPE)
+endfunction()
+
 # Generates module .pri files for consumption by qmake
 function(qt_generate_module_pri_file target)
     set(flags INTERNAL_MODULE HEADER_MODULE)
@@ -742,7 +786,7 @@ function(qt_generate_module_pri_file target)
 
     list(JOIN module_internal_config " " joined_module_internal_config)
 
-    get_target_property(config_module_name ${target} ${property_prefix}QT_CONFIG_MODULE_NAME)
+    get_target_property(config_module_name ${target} _qt_config_module_name)
     get_target_property(qmake_module_config ${target} ${property_prefix}QT_QMAKE_MODULE_CONFIG)
     if(qmake_module_config)
         string(REPLACE ";" " " module_build_config "${qmake_module_config}")
@@ -764,6 +808,9 @@ function(qt_generate_module_pri_file target)
             endif()
         endif()
 
+        qt_get_direct_module_dependencies(${target} public_dependencies PUBLIC)
+        list(JOIN public_dependencies " " public_dependencies)
+
         qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
         list(APPEND pri_files "${pri_file_name}")
 
@@ -778,7 +825,7 @@ QT.${config_module_name}.includes = $$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE
 QT.${config_module_name}.frameworks =
 QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE
 QT.${config_module_name}.plugin_types = ${module_plugin_types}
-QT.${config_module_name}.depends =
+QT.${config_module_name}.depends = ${public_dependencies}
 QT.${config_module_name}.uses =
 QT.${config_module_name}.module_config = ${joined_module_internal_config}
 QT.${config_module_name}.DEFINES = QT_${module_define}_LIB
@@ -800,6 +847,13 @@ QT_MODULES += ${config_module_name}
         qt_get_qmake_libraries_pri_content(libraries_content ${config_module_name})
     endif()
 
+    set(private_dependencies "")
+    if(NOT arg_HEADER_MODULE)
+        qt_get_direct_module_dependencies(${target} private_dependencies)
+    endif()
+    list(APPEND private_dependencies "${config_module_name}")
+    list(JOIN private_dependencies " " private_dependencies)
+
     file(GENERATE
         OUTPUT "${private_pri_file}"
         CONTENT
@@ -809,7 +863,7 @@ QT.${config_module_name}_private.module =
 QT.${config_module_name}_private.libs = $$QT_MODULE_LIB_BASE
 QT.${config_module_name}_private.includes = $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}
 QT.${config_module_name}_private.frameworks =
-QT.${config_module_name}_private.depends = ${config_module_name}
+QT.${config_module_name}_private.depends = ${private_dependencies}
 QT.${config_module_name}_private.uses =
 QT.${config_module_name}_private.module_config = ${joined_module_internal_config}
 QT.${config_module_name}_private.enabled_features = ${enabled_private_features}
@@ -2155,11 +2209,11 @@ function(qt_add_module target)
         "MODULE_INCLUDE_NAME;CONFIG_MODULE_NAME;PRECOMPILED_HEADER;${__default_target_info_args}"
         "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
+    qt_internal_add_qt_repo_known_module("${target}")
+
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
     endif()
-
-    qt_internal_add_qt_repo_known_module("${target}")
 
     ### Define Targets:
     set(is_interface_lib 0)
@@ -2177,12 +2231,13 @@ function(qt_add_module target)
     endif()
 
     set(property_prefix "INTERFACE_")
-    if(NOT is_interface_lib)
+    if(NOT arg_HEADER_MODULE)
         qt_set_common_target_properties(${target})
         set(property_prefix "")
     endif()
+
     set_target_properties(${target} PROPERTIES
-        ${property_prefix}QT_CONFIG_MODULE_NAME "${arg_CONFIG_MODULE_NAME}"
+        _qt_config_module_name "${arg_CONFIG_MODULE_NAME}"
         ${property_prefix}QT_QMAKE_MODULE_CONFIG "${arg_QMAKE_MODULE_CONFIG}")
 
     set(is_framework 0)
@@ -2225,6 +2280,8 @@ function(qt_add_module target)
         set(target_private "${target}Private")
         add_library("${target_private}" INTERFACE)
         qt_internal_add_target_aliases("${target_private}")
+        set_target_properties(${target_private} PROPERTIES
+            _qt_config_module_name ${arg_CONFIG_MODULE_NAME}_private)
     endif()
 
     if(NOT arg_HEADER_MODULE)
@@ -2451,6 +2508,8 @@ function(qt_add_module target)
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config.h")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config_p.h")
     endif()
+
+    set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_config_module_name)
 
     if(NOT arg_HEADER_MODULE)
         if(DEFINED module_headers_private)
