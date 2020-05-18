@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_module(DeviceDiscoverySupport
+    CONFIG_MODULE_NAME devicediscovery_support # special case
     STATIC
     INTERNAL_MODULE
     SOURCES
