@@ -139,6 +139,8 @@ void QTabBarPrivate::updateMacBorderMetrics()
     }
 
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    if (!nativeInterface)
+        return;
     quintptr identifier = reinterpret_cast<quintptr>(q);
 
     // Set geometry
