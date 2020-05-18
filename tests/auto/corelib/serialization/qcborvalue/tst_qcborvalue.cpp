@@ -1926,10 +1926,23 @@ void tst_QCborValue::validation_data()
     // Add QCborStreamReader-specific limitations due to use of QByteArray and
     // QString, which are allocated by QArrayData::allocate().
     const qsizetype MaxInvalid = std::numeric_limits<QByteArray::size_type>::max();
-    const qsizetype MinInvalid = MaxByteArraySize + 1;
+    const qsizetype MinInvalid = MaxByteArraySize + 1 - sizeof(QByteArray::size_type);
     addValidationColumns();
     addValidationData(MinInvalid);
     addValidationLargeData(MinInvalid, MaxInvalid);
+
+    // Chunked strings whose total overflows the limit, but each individual
+    // chunk doesn't. 0x5a for 32-bit, 0x5b for 64-bit.
+    char toolong[1 + sizeof(qsizetype)];
+    toolong[0] = sizeof(MinInvalid) > 4 ? 0x5b : 0x5a;
+    qToBigEndian(MinInvalid - 1, toolong + 1);
+    QTest::addRow("bytearray-2chunked+1-too-big-for-qbytearray-%llx", MinInvalid)
+            << ("\x5f\x41z" + QByteArray(toolong, sizeof(toolong)) + '\xff')
+            << 0 << CborErrorDataTooLarge;
+    toolong[0] |= 0x20;
+    QTest::addRow("string-2chunked+1-too-big-for-qbytearray-%llx", MinInvalid)
+            << ("\x7f\x61z" + QByteArray(toolong, sizeof(toolong)) + '\xff')
+            << 0 << CborErrorDataTooLarge;
 
     // These tests say we have arrays and maps with very large item counts.
     // They are meant to ensure we don't pre-allocate a lot of memory
