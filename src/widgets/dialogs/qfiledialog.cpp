@@ -1378,8 +1378,8 @@ QStringList qt_make_filter_list(const QString &filter)
 
     \snippet code/src_gui_dialogs_qfiledialog.cpp 6
 
-    \note This is not supported on Android's native file dialog. Use
-        \l{setMimeTypeFilters()} instead.
+    \note With Android's native file dialog, the mime type matching the given
+        name filter is used because only mime types are supported.
 
     \sa setMimeTypeFilters(), setNameFilters()
 */
@@ -1431,9 +1431,6 @@ QStringList qt_strip_filters(const QStringList &filters)
     filters for each file type. For example, JPEG images have three possible
     extensions; if your application can open such files, selecting the
     \c image/jpeg mime type as a filter will allow you to open all of them.
-
-    \note This is not supported on Android's native file dialog. Use
-        \l{setMimeTypeFilters()} instead.
 */
 void QFileDialog::setNameFilters(const QStringList &filters)
 {

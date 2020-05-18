@@ -45,6 +45,12 @@
 #include <qpa/qplatformthemefactory_p.h>
 #include <qpa/qplatformintegration.h>
 
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QDBusPendingCall>
+#include <QDBusPendingCallWatcher>
+#include <QDBusPendingReply>
+
 QT_BEGIN_NAMESPACE
 
 class QXdgDesktopPortalThemePrivate : public QPlatformThemePrivate
@@ -60,6 +66,7 @@ public:
     }
 
     QPlatformTheme *baseTheme;
+    uint fileChooserPortalVersion = 0;
 };
 
 QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
@@ -90,6 +97,21 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
     // 3) Fall back on the built-in "null" platform theme.
     if (!d->baseTheme)
         d->baseTheme = new QPlatformTheme;
+
+    // Get information about portal version
+    QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
+                                                          QLatin1String("/org/freedesktop/portal/desktop"),
+                                                          QLatin1String("org.freedesktop.DBus.Properties"),
+                                                          QLatin1String("Get"));
+    message << QLatin1String("org.freedesktop.portal.FileChooser") << QLatin1String("version");
+    QDBusPendingCall pendingCall = QDBusConnection::sessionBus().asyncCall(message);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(pendingCall);
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, [d] (QDBusPendingCallWatcher *watcher) {
+        QDBusPendingReply<QVariant> reply = *watcher;
+        if (reply.isValid()) {
+            d->fileChooserPortalVersion = reply.value().toUInt();
+        }
+    });
 }
 
 QPlatformMenuItem* QXdgDesktopPortalTheme::createPlatformMenuItem() const
@@ -131,7 +153,9 @@ QPlatformDialogHelper* QXdgDesktopPortalTheme::createPlatformDialogHelper(Dialog
     Q_D(const QXdgDesktopPortalTheme);
 
     if (type == FileDialog) {
-        if (d->baseTheme->usePlatformNativeDialog(type))
+        // Older versions of FileChooser portal don't support opening directories, therefore we fallback
+        // to native file dialog opened inside the sandbox to open a directory.
+        if (d->fileChooserPortalVersion < 3 && d->baseTheme->usePlatformNativeDialog(type))
             return new QXdgDesktopPortalFileDialog(static_cast<QPlatformFileDialogHelper*>(d->baseTheme->createPlatformDialogHelper(type)));
 
         return new QXdgDesktopPortalFileDialog;

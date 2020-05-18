@@ -46,23 +46,21 @@ information about a particular change.
  - QtNetwork:
    * QNetworkConfigurationManager, QNetworkConfiguration and QNetworkSession
      are deprecated, to be removed in Qt 6.
+   * QNetworkAccessManager::activeConfiguration, configuration and
+     setConfiguration are deprecated, to be removed in Qt 6.
+   * QNetworkAccessManager::networkAccessible, setNetworkAccessible and
+     the NetworkAccessibility enum are deprecated, to be removed in Qt 6.
+   * QLocalSocket::error() (the signal) is deprecated; superseded by
+     errorOccurred()
+   * QAbstractSocket::error() (the signal) is deprecated; superseded by
+     errorOccurred()
+   * QNetworkReply::error() (the signal) is deprecated; superseded by
+     errorOccurred()
+   * [QTBUG-80369] QSslSocket::sslErrors() (the getter) was deprecated and
+     superseded by sslHandshakeErrors()
 
- - [REVERTED] [QTBUG-80369] QAbstractSocket::error() (the getter) is
-   deprecated; superseded by socketError().
- - [REVERTED] [QTBUG-80369] QLocalSocket::error() (the getter) is
-   deprecated; superseded by socketError().
- - [QTBUG-80369] QSslSocket::sslErrors() (the getter) was deprecated and
-   superseded by sslHandshakeErrors()
- - [REVERTED] [QTBUG-80369] QNetworkReply::error() (the getter) was
-   deprecated; superseded by networkError().
  - [QTBUG-81630][QTBUG-80312] QLinkedList is deprecated and will be moved
    to Qt5Compat in Qt 6. It is recommended to use std::list instead.
- - QLocalSocket::error() (the signal) is deprecated; superseded by
-   errorOccurred()
- - QAbstractSocket::error() (the signal) is deprecated; superseded by
-   errorOccurred()
- - QNetworkReply::error() (the signal) is deprecated; superseded by
-   errorOccurred()
 
 See also the various sections below, which include many more deprecations.
 

@@ -42,10 +42,17 @@ defineReplace(cmakeTargetPaths) {
 }
 
 defineReplace(cmakePortablePaths) {
+    SYSR = $$[QT_SYSROOT]
+    !isEmpty(SYSR): SYSR = ${CMAKE_SYSROOT}
     variable = $$1
     out =
     for(v, variable) {
-        out += $$[QT_SYSROOT]$$cmakeTargetPath($$v)
+        path = $$cmakeTargetPath($$v)
+        contains(path, /.*): \
+            sysroot_prefix = $$SYSR
+        else: \
+            sysroot_prefix = $$SYSR/
+        out += $${sysroot_prefix}$${path}
     }
     return ($$join(out, ";"))
 }
