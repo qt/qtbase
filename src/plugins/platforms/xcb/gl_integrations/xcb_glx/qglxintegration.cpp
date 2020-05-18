@@ -786,6 +786,10 @@ void QGLXContext::queryDummyContext()
         }
     }
 
+    static bool nomultithread = qEnvironmentVariableIsSet("QT_XCB_NO_THREADED_OPENGL");
+    if (nomultithread)
+        m_supportsThreading = false;
+
     context.doneCurrent();
     if (oldContext && oldSurface)
         oldContext->makeCurrent(oldSurface);
