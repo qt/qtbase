@@ -666,6 +666,9 @@ QByteArray QColorSpace::iccProfile() const
     If the ICC profile is not supported an invalid QColorSpace is returned
     where you can still read the original ICC profile using iccProfile().
 
+    \note If the QByteArray data is created from external sources it should be
+    at least 4 byte aligned.
+
     \sa iccProfile()
 */
 QColorSpace QColorSpace::fromIccProfile(const QByteArray &iccProfile)
