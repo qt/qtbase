@@ -614,6 +614,11 @@ bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descNa
 
 bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
 {
+    Q_ASSERT((reinterpret_cast<qintptr>(data.constData()) & 0x3) == 0);
+    if (reinterpret_cast<qintptr>(data.constData()) & 0x3) {
+        qCWarning(lcIcc) << "fromIccProfile: Unaligned profile data";
+        return false;
+    }
     if (data.size() < qsizetype(sizeof(ICCProfileHeader))) {
         qCWarning(lcIcc) << "fromIccProfile: failed size sanity 1";
         return false;
