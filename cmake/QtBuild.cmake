@@ -2018,7 +2018,7 @@ function(qt_add_list_file_finalizer func)
         PROPERTY QT_LIST_FILE_FINALIZER_FUNCS ${func})
     foreach(i RANGE 1 9)
         set(arg "${ARGV${i}}")
-        if(i GREATER_EQUAL ARGC)
+        if(i GREATER_EQUAL ARGC OR "${arg}" STREQUAL "")
             set(arg "IGNORE")
         endif()
         set_property(GLOBAL APPEND
