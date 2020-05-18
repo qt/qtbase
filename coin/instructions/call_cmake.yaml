@@ -1,7 +1,7 @@
 type: Group
 instructions:
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} {{.InstallDir}}\\bin\\qt-cmake {{.Env.COIN_CMAKE_ARGS}}"
+    command: "{{.Env.ENV_PREFIX}} {{.InstallDir}}\\bin\\qt-cmake-private {{.Env.COIN_CMAKE_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
@@ -12,7 +12,7 @@ instructions:
       property: host.os
       equals_value: Windows
   - type: ExecuteCommand
-    command: "{{.InstallDir}}/bin/qt-cmake {{.Env.COIN_CMAKE_ARGS}}"
+    command: "{{.InstallDir}}/bin/qt-cmake-private {{.Env.COIN_CMAKE_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200

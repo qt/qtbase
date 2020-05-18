@@ -11,7 +11,7 @@ instructions:
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
     variableValue: "-DQT_BUILD_STANDALONE_TESTS=ON -S {{.SourceDir}} -B ."
-  - !include "{{qt/qtbase}}/call_cmake.yaml"
+  - !include "{{qt/qtbase}}/call_cmake_for_standalone_tests.yaml"
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
     maxTimeInSeconds: 6000
