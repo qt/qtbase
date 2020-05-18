@@ -1974,6 +1974,8 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                                                                   reinterpret_cast<void **>(&directWriteFontFace2)))) {
                     if (directWriteFontFace2->IsColorFont())
                         isColorFont = directWriteFontFace2->GetPaletteEntryCount() > 0;
+
+                    directWriteFontFace2->Release();
                 }
 #endif
                 useDw = useDw || useDirectWrite(hintingPreference, fam, isColorFont);
@@ -1995,9 +1997,8 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                         fedw->glyphFormat = QFontEngine::Format_ARGB;
                     fedw->initFontInfo(fontDef, dpi);
                     fe = fedw;
-                } else {
-                    directWriteFontFace->Release();
                 }
+                directWriteFontFace->Release();
             } else if (useDw) {
                 const QString errorString = qt_error_string(int(hr));
                 qWarning().noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
