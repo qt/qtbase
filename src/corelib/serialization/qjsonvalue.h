@@ -230,7 +230,7 @@ public:
     QJsonValueRef* operator->() { return &valueRef; }
 };
 
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonValue)
+Q_DECLARE_SHARED(QJsonValue)
 
 Q_CORE_EXPORT size_t qHash(const QJsonValue &value, size_t seed = 0);
 

@@ -88,7 +88,7 @@ public:
     inline int position() const { return m_position; }
     inline int size() const { return m_size; }
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QXmlStreamStringRef)
+Q_DECLARE_SHARED(QXmlStreamStringRef)
 
 
 class QXmlStreamReaderPrivate;

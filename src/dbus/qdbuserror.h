@@ -132,7 +132,7 @@ private:
     // so the following field cannot be used:
     void *unused;
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusError)
+Q_DECLARE_SHARED(QDBusError)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusError &);

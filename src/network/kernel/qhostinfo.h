@@ -156,7 +156,7 @@ private:
                               QtPrivate::QSlotObjectBase *slotObj);
 };
 
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QHostInfo)
+Q_DECLARE_SHARED(QHostInfo)
 
 QT_END_NAMESPACE
 

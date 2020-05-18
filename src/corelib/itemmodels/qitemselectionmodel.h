@@ -257,7 +257,7 @@ public:
                       const QItemSelectionRange &other,
                       QItemSelection *result);
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QItemSelection)
+Q_DECLARE_SHARED(QItemSelection)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);

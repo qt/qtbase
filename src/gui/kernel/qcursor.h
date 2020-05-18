@@ -119,7 +119,7 @@ private:
     friend Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept;
     QCursorData *d;
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QCursor)
+Q_DECLARE_SHARED(QCursor)
 
 Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept;
 inline bool operator!=(const QCursor &lhs, const QCursor &rhs) noexcept { return !(lhs == rhs); }

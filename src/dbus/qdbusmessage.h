@@ -129,7 +129,7 @@ private:
     friend class QDBusMessagePrivate;
     QDBusMessagePrivate *d_ptr;
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusMessage)
+Q_DECLARE_SHARED(QDBusMessage)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusMessage &);

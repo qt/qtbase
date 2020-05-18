@@ -93,7 +93,7 @@ private:
     };
 };
 
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QSqlError)
+Q_DECLARE_SHARED(QSqlError)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_SQL_EXPORT QDebug operator<<(QDebug, const QSqlError &);

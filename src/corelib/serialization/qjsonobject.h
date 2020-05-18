@@ -300,7 +300,7 @@ private:
     QExplicitlySharedDataPointer<QCborContainerPrivate> o;
 };
 
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonObject)
+Q_DECLARE_SHARED(QJsonObject)
 
 Q_CORE_EXPORT size_t qHash(const QJsonObject &object, size_t seed = 0);
 

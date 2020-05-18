@@ -79,7 +79,7 @@ public:
 private:
     void doCheck();
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusObjectPath)
+Q_DECLARE_SHARED(QDBusObjectPath)
 
 inline QDBusObjectPath::QDBusObjectPath(const char *objectPath)
     : m_path(QString::fromLatin1(objectPath))
@@ -132,7 +132,7 @@ public:
 private:
     void doCheck();
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusSignature)
+Q_DECLARE_SHARED(QDBusSignature)
 
 inline QDBusSignature::QDBusSignature(const char *dBusSignature)
     : m_signature(QString::fromLatin1(dBusSignature))
@@ -179,7 +179,7 @@ public:
     inline QVariant variant() const
     { return m_variant; }
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusVariant)
+Q_DECLARE_SHARED(QDBusVariant)
 
 inline  QDBusVariant::QDBusVariant(const QVariant &dBusVariant)
     : m_variant(dBusVariant) { }

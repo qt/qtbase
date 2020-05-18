@@ -224,7 +224,7 @@ private:
 #endif
 };
 
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPainterPath)
+Q_DECLARE_SHARED(QPainterPath)
 Q_DECLARE_TYPEINFO(QPainterPath::Element, Q_PRIMITIVE_TYPE);
 
 #ifndef QT_NO_DATASTREAM

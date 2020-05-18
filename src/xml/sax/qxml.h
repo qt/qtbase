@@ -188,7 +188,7 @@ private:
 };
 
 Q_DECLARE_TYPEINFO(QXmlAttributes::Attribute, Q_MOVABLE_TYPE);
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QXmlAttributes)
+Q_DECLARE_SHARED(QXmlAttributes)
 
 //
 // SAX Input Source

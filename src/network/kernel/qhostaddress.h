@@ -160,7 +160,7 @@ protected:
     QExplicitlySharedDataPointer<QHostAddressPrivate> d;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QHostAddress::ConversionMode)
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QHostAddress)
+Q_DECLARE_SHARED(QHostAddress)
 
 inline bool operator ==(QHostAddress::SpecialAddress address1, const QHostAddress &address2)
 { return address2 == address1; }

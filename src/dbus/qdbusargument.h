@@ -150,7 +150,7 @@ protected:
     friend class QDBusArgumentPrivate;
     mutable QDBusArgumentPrivate *d;
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusArgument)
+Q_DECLARE_SHARED(QDBusArgument)
 
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QDBusArgument)

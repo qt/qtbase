@@ -212,7 +212,7 @@ private:
     friend class QDBusConnectionPrivate;
     QDBusConnectionPrivate *d;
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusConnection)
+Q_DECLARE_SHARED(QDBusConnection)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::RegisterOptions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDBusConnection::VirtualObjectRegisterOptions)

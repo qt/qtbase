@@ -76,7 +76,7 @@ public:
 private:
     QString tName, iColumn, dColumn;
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QSqlRelation)
+Q_DECLARE_SHARED(QSqlRelation)
 
 class QSqlRelationalTableModelPrivate;
 

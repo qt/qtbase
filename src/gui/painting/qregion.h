@@ -157,7 +157,7 @@ Q_GUI_EXPORT
     static const struct QRegionData shared_empty;
     static void cleanUp(QRegionData *x);
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QRegion)
+Q_DECLARE_SHARED(QRegion)
 
 /*****************************************************************************
   QRegion stream functions

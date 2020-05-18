@@ -95,7 +95,7 @@ public:
 
     bool intersects(const QPolygon &r) const;
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPolygon)
+Q_DECLARE_SHARED(QPolygon)
 
 inline QPolygon::QPolygon(int asize) : QVector<QPoint>(asize) {}
 
@@ -170,7 +170,7 @@ public:
 
     bool intersects(const QPolygonF &r) const;
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPolygonF)
+Q_DECLARE_SHARED(QPolygonF)
 
 inline QPolygonF::QPolygonF(int asize) : QVector<QPointF>(asize) {}
 
