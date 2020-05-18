@@ -754,7 +754,11 @@ function(qt_generate_module_pri_file target target_path config_module_name pri_f
             set(module_plugin_types "")
         else()
             get_target_property(module_plugin_types ${target} MODULE_PLUGIN_TYPES)
-            list(JOIN module_plugin_types " " module_plugin_types)
+            if(module_plugin_types)
+                list(JOIN module_plugin_types " " module_plugin_types)
+            else()
+                set(module_plugin_types "")
+            endif()
         endif()
 
         qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
