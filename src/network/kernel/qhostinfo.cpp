@@ -72,8 +72,6 @@ QT_BEGIN_NAMESPACE
 
 //#define QHOSTINFO_DEBUG
 
-Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
-
 namespace {
 struct ToBeLookedUpEquals {
     typedef bool result_type;
@@ -100,6 +98,25 @@ std::pair<OutputIt1, OutputIt2> separate_if(InputIt first, InputIt last, OutputI
         ++first;
     }
     return std::make_pair(dest1, dest2);
+}
+
+QHostInfoLookupManager* theHostInfoLookupManager()
+{
+    static QHostInfoLookupManager* theManager = nullptr;
+    static QBasicMutex theMutex;
+
+    const QMutexLocker locker(&theMutex);
+    if (theManager == nullptr) {
+        theManager = new QHostInfoLookupManager();
+        Q_ASSERT(QCoreApplication::instance());
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::destroyed, [] {
+            const QMutexLocker locker(&theMutex);
+            delete theManager;
+            theManager = nullptr;
+        });
+    }
+
+    return theManager;
 }
 
 }
