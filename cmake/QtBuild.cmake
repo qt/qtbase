@@ -3464,9 +3464,13 @@ function(qt_add_benchmark target)
             ${ARGV}
     )
 
+    if(NOT arg_OUTPUT_DIRECTORY)
+        set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+
     qt_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
-        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" # avoid polluting bin directory
+        OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
     )
 
@@ -3497,9 +3501,13 @@ function(qt_add_manual_test target)
             ${ARGV}
     )
 
+    if(NOT arg_OUTPUT_DIRECTORY)
+        set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+
     qt_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
-        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" # avoid polluting bin directory
+        OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
     )
 
