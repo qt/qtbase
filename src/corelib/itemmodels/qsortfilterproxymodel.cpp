@@ -177,6 +177,7 @@ public:
     QModelIndex last_top_source;
 
     bool filter_recursive;
+    bool accept_children;
     bool complete_insert;
     bool dynamic_sortfilter;
     QRowsRemoval itemsBeingRemoved;
@@ -305,7 +306,8 @@ public:
     bool needsReorder(const QVector<int> &source_rows, const QModelIndex &source_parent) const;
 
     bool filterAcceptsRowInternal(int source_row, const QModelIndex &source_parent) const;
-    bool filterRecursiveAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+    bool recursiveChildAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+    bool recursiveParentAcceptsRow(const QModelIndex &source_parent) const;
 };
 
 typedef QHash<QModelIndex, QSortFilterProxyModelPrivate::Mapping *> IndexMap;
@@ -325,23 +327,49 @@ void QSortFilterProxyModelPrivate::_q_sourceModelDestroyed()
 bool QSortFilterProxyModelPrivate::filterAcceptsRowInternal(int source_row, const QModelIndex &source_parent) const
 {
     Q_Q(const QSortFilterProxyModel);
-    return filter_recursive
-            ? filterRecursiveAcceptsRow(source_row, source_parent)
-            : q->filterAcceptsRow(source_row, source_parent);
-}
-
-bool QSortFilterProxyModelPrivate::filterRecursiveAcceptsRow(int source_row, const QModelIndex &source_parent) const
-{
-    Q_Q(const QSortFilterProxyModel);
 
     if (q->filterAcceptsRow(source_row, source_parent))
         return true;
+
+    // Go up the tree and accept this row if a parent is accepted
+    if (accept_children && recursiveParentAcceptsRow(source_parent))
+        return true;
+
+    // Go down the tree and accept this row if a child is accepted
+    if (filter_recursive && recursiveChildAcceptsRow(source_row, source_parent))
+        return true;
+
+    return false;
+}
+
+bool QSortFilterProxyModelPrivate::recursiveParentAcceptsRow(const QModelIndex &source_parent) const
+{
+    Q_Q(const QSortFilterProxyModel);
+
+    if (source_parent.isValid()) {
+        const QModelIndex index = source_parent.parent();
+
+        if (q->filterAcceptsRow(source_parent.row(), index))
+            return true;
+
+        return recursiveParentAcceptsRow(index);
+    }
+
+    return false;
+}
+
+bool QSortFilterProxyModelPrivate::recursiveChildAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    Q_Q(const QSortFilterProxyModel);
 
     const QModelIndex index = model->index(source_row, 0, source_parent);
     const int count = model->rowCount(index);
 
     for (int i = 0; i < count; ++i) {
-        if (filterRecursiveAcceptsRow(i, index))
+        if (q->filterAcceptsRow(i, index))
+            return true;
+
+        if (recursiveChildAcceptsRow(i, index))
             return true;
     }
 
@@ -1878,6 +1906,7 @@ QSortFilterProxyModel::QSortFilterProxyModel(QObject *parent)
     d->filter_column = 0;
     d->filter_role = Qt::DisplayRole;
     d->filter_recursive = false;
+    d->accept_children = false;
     d->dynamic_sortfilter = true;
     d->complete_insert = false;
     connect(this, SIGNAL(modelReset()), this, SLOT(_q_clearMapping()));
@@ -2763,6 +2792,7 @@ void QSortFilterProxyModel::setFilterRole(int role)
 
     The default value is false.
 
+    \sa autoAcceptChildRows
     \sa filterAcceptsRow()
 */
 
@@ -2787,6 +2817,43 @@ void QSortFilterProxyModel::setRecursiveFilteringEnabled(bool recursive)
     d->filter_recursive = recursive;
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
     emit recursiveFilteringEnabledChanged(recursive);
+}
+
+/*!
+    \since 6.0
+    \property QSortFilterProxyModel::autoAcceptChildRows
+    \brief if true the proxy model will not filter out children of accepted
+    rows, even if they themselves would be filtered out otherwise.
+
+    The default value is false.
+
+    \sa recursiveFilteringEnabled
+    \sa filterAcceptsRow()
+*/
+
+/*!
+    \since 6.0
+    \fn void QSortFilterProxyModel::showMatchesChildrenChanged(bool autoAcceptChildRows)
+    \brief This signals is emitted when the value of the \a autoAcceptChildRows property is changed.
+
+    \sa autoAcceptChildRows
+*/
+bool QSortFilterProxyModel::autoAcceptChildRows() const
+{
+    Q_D(const QSortFilterProxyModel);
+    return d->accept_children;
+}
+
+void QSortFilterProxyModel::setAutoAcceptChildRows(bool accept)
+{
+    Q_D(QSortFilterProxyModel);
+    if (d->accept_children == accept)
+        return;
+
+    d->filter_about_to_be_changed();
+    d->accept_children = accept;
+    d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
+    emit autoAcceptChildRowsChanged(accept);
 }
 
 #if QT_DEPRECATED_SINCE(5, 11)

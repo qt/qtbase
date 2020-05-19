@@ -72,6 +72,7 @@ class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
     Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole NOTIFY sortRoleChanged)
     Q_PROPERTY(int filterRole READ filterRole WRITE setFilterRole NOTIFY filterRoleChanged)
     Q_PROPERTY(bool recursiveFilteringEnabled READ isRecursiveFilteringEnabled WRITE setRecursiveFilteringEnabled NOTIFY recursiveFilteringEnabledChanged)
+    Q_PROPERTY(bool autoAcceptChildRows READ autoAcceptChildRows WRITE setAutoAcceptChildRows NOTIFY autoAcceptChildRowsChanged)
 
 public:
     explicit QSortFilterProxyModel(QObject *parent = nullptr);
@@ -115,6 +116,9 @@ public:
 
     bool isRecursiveFilteringEnabled() const;
     void setRecursiveFilteringEnabled(bool recursive);
+
+    bool autoAcceptChildRows() const;
+    void setAutoAcceptChildRows(bool accept);
 
 public Q_SLOTS:
 #if QT_CONFIG(regularexpression)
@@ -190,6 +194,7 @@ Q_SIGNALS:
     void sortRoleChanged(int sortRole);
     void filterRoleChanged(int filterRole);
     void recursiveFilteringEnabledChanged(bool recursiveFilteringEnabled);
+    void autoAcceptChildRowsChanged(bool autoAcceptChildRows);
 
 private:
     Q_DECLARE_PRIVATE(QSortFilterProxyModel)
