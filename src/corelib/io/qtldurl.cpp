@@ -56,6 +56,8 @@ enum TLDMatchType {
     ExceptionMatch,
 };
 
+// Scan the auto-generated table of TLDs for an entry. For more details
+// see comments in file:  util/corelib/qurl-generateTLDs/main.cpp
 static bool containsTLDEntry(QStringView entry, TLDMatchType match)
 {
     const QStringView matchSymbols[] = {
@@ -64,18 +66,36 @@ static bool containsTLDEntry(QStringView entry, TLDMatchType match)
         u"!",
     };
     const auto symbol = matchSymbols[match];
-    int index = qt_hash(entry, qt_hash(symbol)) % tldCount;
+    const int index = qt_hash(entry, qt_hash(symbol)) % tldCount;
 
     // select the right chunk from the big table
     short chunk = 0;
     uint chunkIndex = tldIndices[index], offset = 0;
-    while (chunk < tldChunkCount && tldIndices[index] >= tldChunks[chunk]) {
+
+    // The offset in the big string, of the group that our entry hashes into.
+    const auto tldGroupOffset = tldIndices[index];
+
+    // It should always be inside all chunks' total size.
+    Q_ASSERT(tldGroupOffset < tldChunks[tldChunkCount - 1]);
+    // All offsets are stored in non-decreasing order.
+    // This check is within bounds as tldIndices has length tldCount+1.
+    Q_ASSERT(tldGroupOffset <= tldIndices[index + 1]);
+    // The last extra entry in tldIndices
+    // should be equal to the total of all chunks' lengths.
+    Q_ASSERT(tldIndices[tldCount] == tldChunks[tldChunkCount - 1]);
+
+    // Find which chunk contains the tldGroupOffset
+    while (tldGroupOffset >= tldChunks[chunk]) {
         chunkIndex -= tldChunks[chunk];
         offset += tldChunks[chunk];
         chunk++;
+
+        // We can not go above the number of chunks we have, since all our
+        // indices are less than the total chunks' size (see asserts above).
+        Q_ASSERT(chunk < tldChunkCount);
     }
 
-    // check all the entries from the given index
+    // check all the entries from the given offset
     while (chunkIndex < tldIndices[index+1] - offset) {
         const auto utf8 = tldData[chunk] + chunkIndex;
         if ((symbol.isEmpty() || QLatin1Char(*utf8) == symbol) && entry == QString::fromUtf8(utf8 + symbol.size()))
