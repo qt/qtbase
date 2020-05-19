@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the utils of the Qt Toolkit.
@@ -145,8 +145,12 @@ int main(int argc, char **argv)
         entry.append(st);
         entry.append("\\0");
     }
-    outFile.write("static const quint32 tldIndices[] = {\n");
-    outDataBuffer.write("\nstatic const char *tldData[] = {");
+
+    outFile.write("// After the tldCount \"real\" entries in tldIndices, include a final entry\n");
+    outFile.write("// that records the sum of the lengths of all the chunks, i.e. the index\n");
+    outFile.write("// just past the end of tldChunks.\n");
+    outFile.write("static const quint32 tldIndices[tldCount + 1] = {\n");
+    outDataBuffer.write("static const char *tldData[tldChunkCount] = {");
 
     int totalUtf8Size = 0;
     int chunkSize = 0; // strlen of the current chunk (sizeof is bigger by 1)
@@ -177,17 +181,23 @@ int main(int argc, char **argv)
         }
     }
     chunks.append(QString::number(totalUtf8Size));
+
+    // Write one extra entry, at tldIndices[tldCount], that contains the total size.
     outFile.write(QByteArray::number(totalUtf8Size));
     outFile.write("\n};\n");
 
     outDataBuffer.write("\n};\n");
     outDataBuffer.close();
-    outFile.write(outDataBufferBA);
 
-    // write chunk information
+    // First we have to define tldChunkCount.
     outFile.write("\nstatic const quint16 tldChunkCount = ");
     outFile.write(QByteArray::number(chunks.count()));
-    outFile.write(";\nstatic const quint32 tldChunks[] = {");
+    outFile.write(";\n");
+
+    // Write tldData[tldChunkCount] = {...}.
+    outFile.write(outDataBufferBA);
+
+    outFile.write("static const quint32 tldChunks[tldChunkCount] = {");
     outFile.write(chunks.join(", ").toLatin1());
     outFile.write("};\n");
     outFile.close();
