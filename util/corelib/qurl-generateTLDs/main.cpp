@@ -62,7 +62,7 @@ static QString utf8encode(const QByteArray &array) // turns e.g. tranøy.no to t
 
     Takes the public suffix list (see usage message), a list of DNS domains
     whose child domains should not be presumed to trust one another, and
-    converts it to a form that lets qtbase/src/corelib/io/qtldurl.cpp's query
+    converts it to a form that lets qtbase/src/network/kernel/qtldurl.cpp's query
     functions find entries efficiently.
 
     Each line of the suffix file (aside from comments and blanks) gives a suffix
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
         printf("       wget https://publicsuffix.org/list/public_suffix_list.dat -O public_suffix_list.dat\n");
         printf("       grep -v '^//' public_suffix_list.dat | grep . > public_suffix_list.dat.trimmed\n");
         printf("       ./%s public_suffix_list.dat.trimmed public_suffix_list.cpp\n\n", argv[0]);
-        printf("Now replace the code in qtbase/src/corelib/io/qurltlds_p.h with public_suffix_list.cpp's contents\n\n");
+        printf("Now replace the code in qtbase/src/network/kernel/qurltlds_p.h with public_suffix_list.cpp's contents\n\n");
         return 1;
     }
     QFile file(argv[1]);
