@@ -125,6 +125,8 @@ qt_add_module(Core
         serialization/qjsonwriter.cpp serialization/qjsonwriter_p.h
         serialization/qtextstream.cpp serialization/qtextstream.h serialization/qtextstream_p.h
         serialization/qxmlstream.cpp serialization/qxmlstream.h serialization/qxmlstream_p.h
+        serialization/qxmlstreamgrammar.cpp serialization/qxmlstreamgrammar_p.h
+        serialization/qxmlstreamparser_p.h
         serialization/qxmlutils.cpp serialization/qxmlutils_p.h
         statemachine/qabstractstate.cpp statemachine/qabstractstate.h statemachine/qabstractstate_p.h
         statemachine/qabstracttransition.cpp statemachine/qabstracttransition.h statemachine/qabstracttransition_p.h

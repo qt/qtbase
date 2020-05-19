@@ -70,10 +70,10 @@ private:
 #include <private/qmemory_p.h>
 
 #include <iterator>
+#include "qxmlstream_p.h"
+#include "qxmlstreamparser_p.h"
 
 QT_BEGIN_NAMESPACE
-
-#include "qxmlstream_p.h"
 
 enum { StreamEOF = ~0U };
 

@@ -21,6 +21,8 @@ HEADERS += \
     serialization/qtextstream_p.h \
     serialization/qxmlstream.h \
     serialization/qxmlstream_p.h \
+    serialization/qxmlstreamgrammar_p.h \
+    serialization/qxmlstreamparser_p.h \
     serialization/qxmlutils_p.h
 
 SOURCES += \
@@ -37,6 +39,7 @@ SOURCES += \
     serialization/qjsonparser.cpp \
     serialization/qtextstream.cpp \
     serialization/qxmlstream.cpp \
+    serialization/qxmlstreamgrammar.cpp \
     serialization/qxmlutils.cpp
 
 qtConfig(cborstreamreader): {

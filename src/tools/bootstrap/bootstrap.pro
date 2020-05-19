@@ -82,6 +82,7 @@ SOURCES += \
            ../../corelib/serialization/qtextstream.cpp \
            ../../corelib/serialization/qxmlutils.cpp \
            ../../corelib/serialization/qxmlstream.cpp \
+           ../../corelib/serialization/qxmlstreamgrammar.cpp \
            ../../corelib/text/qbytearray.cpp \
            ../../corelib/text/qbytearraylist.cpp \
            ../../corelib/text/qbytearraymatcher.cpp \

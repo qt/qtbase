@@ -1,151 +1,4 @@
-----------------------------------------------------------------------------
---
--- Copyright (C) 2020 The Qt Company Ltd.
--- Contact: https://www.qt.io/licensing/
---
--- This file is part of the QtCore module of the Qt Toolkit.
---
--- $QT_BEGIN_LICENSE:LGPL$
--- Commercial License Usage
--- Licensees holding valid commercial Qt licenses may use this file in
--- accordance with the commercial license agreement provided with the
--- Software or, alternatively, in accordance with the terms contained in
--- a written agreement between you and The Qt Company. For licensing terms
--- and conditions see https://www.qt.io/terms-conditions. For further
--- information use the contact form at https://www.qt.io/contact-us.
---
--- GNU Lesser General Public License Usage
--- Alternatively, this file may be used under the terms of the GNU Lesser
--- General Public License version 3 as published by the Free Software
--- Foundation and appearing in the file LICENSE.LGPL3 included in the
--- packaging of this file. Please review the following information to
--- ensure the GNU Lesser General Public License version 3 requirements
--- will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
---
--- GNU General Public License Usage
--- Alternatively, this file may be used under the terms of the GNU
--- General Public License version 2.0 or (at your option) the GNU General
--- Public license version 3 or any later version approved by the KDE Free
--- Qt Foundation. The licenses are as published by the Free Software
--- Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
--- included in the packaging of this file. Please review the following
--- information to ensure the GNU General Public License requirements will
--- be met: https://www.gnu.org/licenses/gpl-2.0.html and
--- https://www.gnu.org/licenses/gpl-3.0.html.
---
--- $QT_END_LICENSE$
---
-----------------------------------------------------------------------------
-
-%parser QXmlStreamGrammar
-%impl           qxmlstreamparser_p.h
-
-%expect 4
-
-%token NOTOKEN
-%token SPACE " "
-%token LANGLE "<"
-%token RANGLE ">"
-%token AMPERSAND "&"
-%token HASH "#"
-%token QUOTE "\'"
-%token DBLQUOTE "\""
-%token LBRACK "["
-%token RBRACK "]"
-%token LPAREN "("
-%token RPAREN ")"
-%token PIPE "|"
-%token EQ "="
-%token PERCENT "%"
-%token SLASH "/"
-%token COLON ":"
-%token SEMICOLON ";"
-%token COMMA ","
-%token DASH "-"
-%token PLUS "+"
-%token STAR "*"
-%token DOT "."
-%token QUESTIONMARK "?"
-%token BANG "!"
-%token LETTER "[a-zA-Z]"
-%token DIGIT "[0-9]"
-
--- after langle_bang
-%token CDATA_START "[CDATA["
-%token DOCTYPE "DOCTYPE"
-%token ELEMENT "ELEMENT"
-%token ATTLIST "ATTLIST"
-%token ENTITY "ENTITY"
-%token NOTATION "NOTATION"
-
--- entity decl
-%token SYSTEM "SYSTEM"
-%token PUBLIC "PUBLIC"
-%token NDATA "NDATA"
-
--- default decl
-%token REQUIRED "REQUIRED"
-%token IMPLIED "IMPLIED"
-%token FIXED "FIXED"
-
--- conent spec
-%token EMPTY "EMPTY"
-%token ANY "ANY"
-%token PCDATA "PCDATA"
-
--- error
-%token ERROR
-
--- entities
-%token PARSE_ENTITY
-%token ENTITY_DONE
-%token UNRESOLVED_ENTITY
-
--- att type
-%token CDATA "CDATA"
-%token ID "ID"
-%token IDREF "IDREF"
-%token IDREFS "IDREFS"
-%token ENTITY "ENTITY"
-%token ENTITIES "ENTITIES"
-%token NMTOKEN "NMTOKEN"
-%token NMTOKENS "NMTOKENS"
-
--- xml declaration
-%token XML "<?xml"
-%token VERSION "version"
-
-%nonassoc SHIFT_THERE
-%nonassoc AMPERSAND
-          BANG
-          COLON
-          COMMA
-          DASH
-          DBLQUOTE
-          DIGIT
-          DOT
-          ENTITY_DONE
-          EQ
-          HASH
-          LBRACK
-          LETTER
-          LPAREN
-          PERCENT
-          PIPE
-          PLUS
-          QUESTIONMARK
-          QUOTE
-          RANGLE
-          RBRACK
-          RPAREN
-          SEMICOLON
-          SLASH
-          SPACE
-          STAR
-
-%start document
-
-/./****************************************************************************
+/****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
@@ -218,6 +71,8 @@
 
 #ifndef QXMLSTREAMPARSER_P_H
 #define QXMLSTREAMPARSER_P_H
+
+QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_XMLSTREAMREADER
 
@@ -485,18 +340,12 @@ bool QXmlStreamReaderPrivate::parse()
             act = state_stack[tos++];
         ResumeReduction:
             switch (r) {
-./
 
-document ::= PARSE_ENTITY content;
-/.
-        case $rule_number:
+        case 0:
             setType(QXmlStreamReader::EndDocument);
         break;
-./
 
-document ::= prolog;
-/.
-        case $rule_number:
+        case 1:
             if (type != QXmlStreamReader::Invalid) {
                 if (hasSeenTag || inParseEntity) {
                     setType(QXmlStreamReader::EndDocument);
@@ -510,218 +359,104 @@ document ::= prolog;
                 }
             }
         break;
-./
 
-
-prolog ::= prolog stag content etag;
-prolog ::= prolog empty_element_tag;
-prolog ::= prolog comment;
-prolog ::= prolog xml_decl;
-prolog ::= prolog processing_instruction;
-prolog ::= prolog doctype_decl;
-prolog ::= prolog SPACE;
-prolog ::=;
-
-entity_done ::= ENTITY_DONE;
-/.
-        case $rule_number:
+        case 10:
             entityReferenceStack.pop()->isCurrentlyReferenced = false;
             if (entityReferenceStack.isEmpty())
                 entityLength = 0;
             clearSym();
         break;
-./
 
-
-xml_decl_start ::= XML;
-/.
-        case $rule_number:
+        case 11:
             if (!scanString(spell[VERSION], VERSION, false) && atEnd) {
-                resume($rule_number);
+                resume(11);
                 return false;
             }
         break;
-./
 
-xml_decl ::= xml_decl_start VERSION space_opt EQ space_opt literal attribute_list_opt QUESTIONMARK RANGLE;
-/.
-        case $rule_number:
+        case 12:
             setType(QXmlStreamReader::StartDocument);
             documentVersion = symString(6);
             startDocument();
         break;
-./
 
-external_id ::= SYSTEM literal;
-/.
-        case $rule_number:
+        case 13:
             hasExternalDtdSubset = true;
             dtdSystemId = symString(2);
         break;
-./
-external_id ::= PUBLIC public_literal space literal;
-/.
-        case $rule_number:
+
+        case 14:
             checkPublicLiteral(symString(2));
             dtdPublicId = symString(2);
             dtdSystemId = symString(4);
             hasExternalDtdSubset = true;
         break;
-./
-external_id ::=;
 
-doctype_decl_start ::= langle_bang DOCTYPE qname space;
-/.
-        case $rule_number:
+        case 16:
             if (!scanPublicOrSystem() && atEnd) {
-                resume($rule_number);
+                resume(16);
                 return false;
             }
             dtdName = symString(3);
         break;
-./
 
-doctype_decl ::= langle_bang DOCTYPE qname RANGLE;
-/.
-        case $rule_number:./
-doctype_decl ::= langle_bang DOCTYPE qname markup space_opt RANGLE;
-/.
-        case $rule_number:
+        case 17:
+        case 18:
             dtdName = symString(3);
             Q_FALLTHROUGH();
-./
-doctype_decl ::= doctype_decl_start external_id space_opt markup space_opt RANGLE;
-/.
-        case $rule_number:./
-doctype_decl ::= doctype_decl_start external_id space_opt RANGLE;
-/.
-        case $rule_number:
+
+        case 19:
+        case 20:
             setType(QXmlStreamReader::DTD);
             text = &textBuffer;
         break;
-./
 
-markup_start ::= LBRACK;
-/.
-        case $rule_number:
+        case 21:
             scanDtd = true;
         break;
-./
 
-markup ::= markup_start markup_list RBRACK;
-/.
-        case $rule_number:
+        case 22:
             scanDtd = false;
         break;
-./
 
-
-markup_list ::= markup_decl | space | pereference;
-markup_list ::= markup_list markup_decl | markup_list space | markup_list pereference;
-markup_list ::=;
-
-markup_decl ::= element_decl | attlist_decl | entity_decl | entity_done | notation_decl | processing_instruction | comment;
-
-
-element_decl_start ::= langle_bang ELEMENT qname space;
-/.
-        case $rule_number:
+        case 37:
             if (!scanString(spell[EMPTY], EMPTY, false)
                 && !scanString(spell[ANY], ANY, false)
                 && atEnd) {
-                resume($rule_number);
+                resume(37);
                 return false;
             }
         break;
-./
 
-element_decl ::= element_decl_start content_spec space_opt RANGLE;
-
-
-content_spec ::= EMPTY | ANY | mixed | children;
-
-pcdata_start ::= HASH;
-/.
-        case $rule_number:
+        case 43:
             if (!scanString(spell[PCDATA], PCDATA, false) && atEnd) {
-                resume($rule_number);
+                resume(43);
                 return false;
             }
         break;
-./
 
-pcdata ::= pcdata_start PCDATA;
-
-questionmark_or_star_or_plus_opt ::= QUESTIONMARK | STAR | PLUS;
-questionmark_or_star_or_plus_opt ::=;
-
-cp ::= qname questionmark_or_star_or_plus_opt | choice_or_seq questionmark_or_star_or_plus_opt;
-
-cp_pipe_or_comma_list ::= cp space_opt;
-cp_pipe_or_comma_list ::= cp space_opt PIPE space_opt cp_pipe_list space_opt;
-cp_pipe_or_comma_list ::= cp space_opt COMMA space_opt cp_comma_list space_opt;
-cp_pipe_list ::= cp | cp_pipe_list space_opt PIPE space_opt cp;
-cp_comma_list ::= cp | cp_comma_list space_opt COMMA space_opt cp;
-
-
-name_pipe_list ::= PIPE space_opt qname;
-name_pipe_list ::= name_pipe_list space_opt PIPE space_opt qname;
-
-star_opt ::= | STAR;
-
-mixed ::= LPAREN space_opt pcdata space_opt RPAREN star_opt;
-mixed ::= LPAREN space_opt pcdata space_opt name_pipe_list space_opt RPAREN STAR;
-
-choice_or_seq ::= LPAREN space_opt cp_pipe_or_comma_list RPAREN;
-
-children ::= choice_or_seq questionmark_or_star_or_plus_opt;
-
-
-nmtoken_pipe_list ::= nmtoken;
-nmtoken_pipe_list ::= nmtoken_pipe_list space_opt PIPE space_opt nmtoken;
-
-
-att_type ::= CDATA;
-/.
-        case $rule_number: {
+        case 68: {
             lastAttributeIsCData = true;
         } break;
-./
-att_type ::= ID | IDREF | IDREFS | ENTITY | ENTITIES | NMTOKEN | NMTOKENS;
-att_type ::= LPAREN space_opt nmtoken_pipe_list space_opt RPAREN space;
-att_type ::= NOTATION LPAREN space_opt nmtoken_pipe_list space_opt RPAREN space;
 
-
-default_declhash ::= HASH;
-/.
-        case $rule_number:
+        case 78:
             if (!scanAfterDefaultDecl() && atEnd) {
-                resume($rule_number);
+                resume(78);
                 return false;
             }
         break;
-./
 
-default_decl ::= default_declhash REQUIRED;
-default_decl ::= default_declhash IMPLIED;
-default_decl ::= attribute_value;
-default_decl ::= default_declhash FIXED space attribute_value;
-attdef_start ::= space qname space;
-/.
-        case $rule_number:
+        case 83:
                 sym(1) = sym(2);
                 lastAttributeValue.clear();
                 lastAttributeIsCData = false;
                 if (!scanAttType() && atEnd) {
-                    resume($rule_number);
+                    resume(83);
                     return false;
                 }
         break;
-./
 
-attdef ::= attdef_start att_type default_decl;
-/.
-        case $rule_number: {
+        case 84: {
             DtdAttribute &dtdAttribute = dtdAttributes.push();
             dtdAttribute.tagName.clear();
             dtdAttribute.isCDATA = lastAttributeIsCData;
@@ -741,15 +476,8 @@ attdef ::= attdef_start att_type default_decl;
 
             }
         } break;
-./
 
-attdef_list ::= attdef;
-attdef_list ::= attdef_list attdef;
-
-attlist_decl ::= langle_bang ATTLIST qname space_opt RANGLE;
-attlist_decl ::= langle_bang ATTLIST qname attdef_list space_opt RANGLE;
-/.
-        case $rule_number: {
+        case 88: {
             if (referenceToUnparsedEntityDetected && !standalone)
                 break;
             int n = dtdAttributes.size();
@@ -768,26 +496,20 @@ attlist_decl ::= langle_bang ATTLIST qname attdef_list space_opt RANGLE;
                 }
             }
         } break;
-./
 
-entity_decl_start ::= langle_bang ENTITY name space;
-/.
-        case $rule_number: {
+        case 89: {
             if (!scanPublicOrSystem() && atEnd) {
-                resume($rule_number);
+                resume(89);
                 return false;
             }
             EntityDeclaration &entityDeclaration = entityDeclarations.push();
             entityDeclaration.clear();
             entityDeclaration.name = symString(3);
         } break;
-./
 
-entity_decl_start ::= langle_bang ENTITY PERCENT space name space;
-/.
-        case $rule_number: {
+        case 90: {
             if (!scanPublicOrSystem() && atEnd) {
-                resume($rule_number);
+                resume(90);
                 return false;
             }
             EntityDeclaration &entityDeclaration = entityDeclarations.push();
@@ -795,26 +517,20 @@ entity_decl_start ::= langle_bang ENTITY PERCENT space name space;
             entityDeclaration.name = symString(5);
             entityDeclaration.parameter = true;
         } break;
-./
 
-entity_decl_external ::= entity_decl_start SYSTEM literal;
-/.
-        case $rule_number: {
+        case 91: {
             if (!scanNData() && atEnd) {
-                resume($rule_number);
+                resume(91);
                 return false;
             }
             EntityDeclaration &entityDeclaration = entityDeclarations.top();
             entityDeclaration.systemId = symString(3);
             entityDeclaration.external = true;
         } break;
-./
 
-entity_decl_external ::= entity_decl_start PUBLIC public_literal space literal;
-/.
-        case $rule_number: {
+        case 92: {
             if (!scanNData() && atEnd) {
-                resume($rule_number);
+                resume(92);
                 return false;
             }
             EntityDeclaration &entityDeclaration = entityDeclarations.top();
@@ -822,26 +538,17 @@ entity_decl_external ::= entity_decl_start PUBLIC public_literal space literal;
             entityDeclaration.systemId = symString(5);
             entityDeclaration.external = true;
         } break;
-./
 
-entity_decl ::= entity_decl_external NDATA name space_opt RANGLE;
-/.
-        case $rule_number: {
+        case 93: {
             EntityDeclaration &entityDeclaration = entityDeclarations.top();
             entityDeclaration.notationName = symString(3);
             if (entityDeclaration.parameter)
                 raiseWellFormedError(QXmlStream::tr("NDATA in parameter entity declaration."));
         }
         Q_FALLTHROUGH();
-./
 
-entity_decl ::= entity_decl_external space_opt RANGLE;
-/.
-        case $rule_number:./
-
-entity_decl ::= entity_decl_start entity_value space_opt RANGLE;
-/.
-        case $rule_number: {
+        case 94:
+        case 95: {
             if (referenceToUnparsedEntityDetected && !standalone) {
                 entityDeclarations.pop();
                 break;
@@ -858,12 +565,8 @@ entity_decl ::= entity_decl_start entity_value space_opt RANGLE;
                 hash.insert(qToStringViewIgnoringNull(entity.name), entity);
             }
         } break;
-./
 
-
-processing_instruction ::= LANGLE QUESTIONMARK name space;
-/.
-        case $rule_number: {
+        case 96: {
             setType(QXmlStreamReader::ProcessingInstruction);
             int pos = sym(4).pos + sym(4).len;
             processingInstructionTarget = symString(3);
@@ -876,56 +579,39 @@ processing_instruction ::= LANGLE QUESTIONMARK name space;
                     raiseWellFormedError(QXmlStream::tr("%1 is an invalid processing instruction name.")
                                          .arg(processingInstructionTarget));
             } else if (type != QXmlStreamReader::Invalid){
-                resume($rule_number);
+                resume(96);
                 return false;
             }
         } break;
-./
 
-processing_instruction ::= LANGLE QUESTIONMARK name QUESTIONMARK RANGLE;
-/.
-        case $rule_number:
+        case 97:
             setType(QXmlStreamReader::ProcessingInstruction);
             processingInstructionTarget = symString(3);
             if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive))
                 raiseWellFormedError(QXmlStream::tr("Invalid processing instruction name."));
         break;
-./
 
-
-langle_bang ::= LANGLE BANG;
-/.
-        case $rule_number:
+        case 98:
             if (!scanAfterLangleBang() && atEnd) {
-                resume($rule_number);
+                resume(98);
                 return false;
             }
         break;
-./
 
-comment_start ::= langle_bang DASH DASH;
-/.
-        case $rule_number:
+        case 99:
             if (!scanUntil("--")) {
-                resume($rule_number);
+                resume(99);
                 return false;
             }
         break;
-./
 
-comment ::= comment_start RANGLE;
-/.
-        case $rule_number: {
+        case 100: {
             setType(QXmlStreamReader::Comment);
             int pos = sym(1).pos + 4;
             text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
         } break;
-./
 
-
-cdata ::= langle_bang CDATA_START;
-/.
-        case $rule_number: {
+        case 101: {
             setType(QXmlStreamReader::Characters);
             isCDATA = true;
             isWhitespace = false;
@@ -933,252 +619,131 @@ cdata ::= langle_bang CDATA_START;
             if (scanUntil("]]>", -1)) {
                 text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
             } else {
-                resume($rule_number);
+                resume(101);
                 return false;
             }
         } break;
-./
 
-notation_decl_start ::= langle_bang NOTATION name space;
-/.
-        case $rule_number: {
+        case 102: {
             if (!scanPublicOrSystem() && atEnd) {
-                resume($rule_number);
+                resume(102);
                 return false;
             }
             NotationDeclaration &notationDeclaration = notationDeclarations.push();
             notationDeclaration.name = symString(3);
         } break;
-./
 
-notation_decl ::= notation_decl_start SYSTEM literal space_opt RANGLE;
-/.
-        case $rule_number: {
+        case 103: {
             NotationDeclaration &notationDeclaration = notationDeclarations.top();
             notationDeclaration.systemId = symString(3);
             notationDeclaration.publicId.clear();
         } break;
-./
 
-notation_decl ::= notation_decl_start PUBLIC public_literal space_opt RANGLE;
-/.
-        case $rule_number: {
+        case 104: {
             NotationDeclaration &notationDeclaration = notationDeclarations.top();
             notationDeclaration.systemId.clear();
             checkPublicLiteral((notationDeclaration.publicId = symString(3)));
         } break;
-./
 
-notation_decl ::= notation_decl_start PUBLIC public_literal space literal space_opt RANGLE;
-/.
-        case $rule_number: {
+        case 105: {
             NotationDeclaration &notationDeclaration = notationDeclarations.top();
             checkPublicLiteral((notationDeclaration.publicId = symString(3)));
             notationDeclaration.systemId = symString(5);
         } break;
-./
 
-
-
-content_char ::= RANGLE | HASH | LBRACK | RBRACK | LPAREN | RPAREN | PIPE | EQ | PERCENT | SLASH | COLON | SEMICOLON | COMMA | DASH | PLUS | STAR | DOT | QUESTIONMARK | BANG | QUOTE | DBLQUOTE | LETTER | DIGIT;
-
-scan_content_char ::= content_char;
-/.
-        case $rule_number:
+        case 129:
             isWhitespace = false;
             Q_FALLTHROUGH();
-./
 
-scan_content_char ::= SPACE;
-/.
-        case $rule_number:
+        case 130:
             sym(1).len += fastScanContentCharList();
             if (atEnd && !inParseEntity) {
-                resume($rule_number);
+                resume(130);
                 return false;
             }
         break;
-./
 
-content_char_list ::= content_char_list char_ref;
-content_char_list ::= content_char_list entity_ref;
-content_char_list ::= content_char_list entity_done;
-content_char_list ::= content_char_list scan_content_char;
-content_char_list ::= char_ref;
-content_char_list ::= entity_ref;
-content_char_list ::= entity_done;
-content_char_list ::= scan_content_char;
-
-
-character_content ::= content_char_list %prec SHIFT_THERE;
-/.
-        case $rule_number:
+        case 139:
             if (!textBuffer.isEmpty()) {
                 setType(QXmlStreamReader::Characters);
                 text = &textBuffer;
             }
         break;
-./
 
-literal ::= QUOTE QUOTE;
-/.
-        case $rule_number:./
-literal ::= DBLQUOTE DBLQUOTE;
-/.
-        case $rule_number:
+        case 140:
+        case 141:
             clearSym();
         break;
-./
-literal ::= QUOTE literal_content_with_dblquote QUOTE;
-/.
-        case $rule_number:./
-literal ::= DBLQUOTE literal_content_with_quote DBLQUOTE;
-/.
-        case $rule_number:
+
+        case 142:
+        case 143:
             sym(1) = sym(2);
         break;
-./
 
-literal_content_with_dblquote ::= literal_content_with_dblquote literal_content;
-/.
-        case $rule_number:./
-literal_content_with_quote ::= literal_content_with_quote literal_content;
-/.
-        case $rule_number:./
-literal_content_with_dblquote ::= literal_content_with_dblquote DBLQUOTE;
-/.
-        case $rule_number:./
-literal_content_with_quote ::= literal_content_with_quote QUOTE;
-/.
-        case $rule_number:
+        case 144:
+        case 145:
+        case 146:
+        case 147:
             sym(1).len += sym(2).len;
         break;
-./
-literal_content_with_dblquote ::= literal_content;
-literal_content_with_quote ::= literal_content;
-literal_content_with_dblquote ::= DBLQUOTE;
-literal_content_with_quote ::= QUOTE;
 
-literal_content_start ::= LETTER | DIGIT | RANGLE | HASH | LBRACK | RBRACK | LPAREN | RPAREN | PIPE | EQ | PERCENT | SLASH | COLON | SEMICOLON | COMMA | DASH | PLUS | STAR | DOT | QUESTIONMARK | BANG;
-
-literal_content_start ::= SPACE;
-/.
-        case $rule_number:
+        case 173:
             if (normalizeLiterals)
                 textBuffer.data()[textBuffer.size()-1] = QLatin1Char(' ');
         break;
-./
 
-literal_content ::= literal_content_start;
-/.
-        case $rule_number:
+        case 174:
             sym(1).len += fastScanLiteralContent();
             if (atEnd) {
-                resume($rule_number);
+                resume(174);
                 return false;
             }
         break;
-./
 
-
-public_literal ::= literal;
-/.
-        case $rule_number: {
+        case 175: {
             if (!QXmlUtils::isPublicID(symString(1))) {
                 raiseWellFormedError(QXmlStream::tr("%1 is an invalid PUBLIC identifier.").arg(symString(1)));
-                resume($rule_number);
+                resume(175);
                 return false;
             }
         } break;
-./
 
-entity_value ::= QUOTE QUOTE;
-/.
-        case $rule_number:./
-entity_value ::= DBLQUOTE DBLQUOTE;
-/.
-        case $rule_number:
+        case 176:
+        case 177:
             clearSym();
         break;
-./
 
-entity_value ::= QUOTE entity_value_content_with_dblquote QUOTE;
-/.
-        case $rule_number:./
-entity_value ::= DBLQUOTE entity_value_content_with_quote DBLQUOTE;
-/.
-        case $rule_number:
+        case 178:
+        case 179:
             sym(1) = sym(2);
         break;
-./
 
-entity_value_content_with_dblquote ::= entity_value_content_with_dblquote entity_value_content;
-/.
-        case $rule_number:./
-entity_value_content_with_quote ::= entity_value_content_with_quote entity_value_content;
-/.
-        case $rule_number:./
-entity_value_content_with_dblquote ::= entity_value_content_with_dblquote DBLQUOTE;
-/.
-        case $rule_number:./
-entity_value_content_with_quote ::= entity_value_content_with_quote QUOTE;
-/.
-        case $rule_number:
+        case 180:
+        case 181:
+        case 182:
+        case 183:
             sym(1).len += sym(2).len;
         break;
-./
-entity_value_content_with_dblquote ::= entity_value_content;
-entity_value_content_with_quote ::= entity_value_content;
-entity_value_content_with_dblquote ::= DBLQUOTE;
-entity_value_content_with_quote ::= QUOTE;
 
-entity_value_content ::= LETTER | DIGIT | LANGLE | RANGLE | HASH | LBRACK | RBRACK | LPAREN | RPAREN | PIPE | EQ | SLASH | COLON | SEMICOLON | COMMA | SPACE | DASH | PLUS | STAR | DOT | QUESTIONMARK | BANG;
-entity_value_content ::= char_ref | entity_ref_in_entity_value | entity_done;
-
-
-attribute_value ::= QUOTE QUOTE;
-/.
-        case $rule_number:./
-attribute_value ::= DBLQUOTE DBLQUOTE;
-/.
-        case $rule_number:
+        case 213:
+        case 214:
             clearSym();
         break;
-./
-attribute_value ::= QUOTE attribute_value_content_with_dblquote QUOTE;
-/.
-        case $rule_number:./
-attribute_value ::= DBLQUOTE attribute_value_content_with_quote DBLQUOTE;
-/.
-        case $rule_number:
+
+        case 215:
+        case 216:
             sym(1) = sym(2);
             lastAttributeValue = symString(1);
         break;
-./
 
-attribute_value_content_with_dblquote ::= attribute_value_content_with_dblquote attribute_value_content;
-/.
-        case $rule_number:./
-attribute_value_content_with_quote ::= attribute_value_content_with_quote attribute_value_content;
-/.
-        case $rule_number:./
-attribute_value_content_with_dblquote ::= attribute_value_content_with_dblquote DBLQUOTE;
-/.
-        case $rule_number:./
-attribute_value_content_with_quote ::= attribute_value_content_with_quote QUOTE;
-/.
-        case $rule_number:
+        case 217:
+        case 218:
+        case 219:
+        case 220:
             sym(1).len += sym(2).len;
         break;
-./
-attribute_value_content_with_dblquote ::= attribute_value_content | DBLQUOTE;
-attribute_value_content_with_quote ::= attribute_value_content | QUOTE;
 
-attribute_value_content ::= literal_content | char_ref | entity_ref_in_attribute_value | entity_done;
-
-attribute ::= qname space_opt EQ space_opt attribute_value;
-/.
-        case $rule_number: {
+        case 229: {
             QStringRef prefix = symPrefix(1);
             if (prefix.isEmpty() && symString(1) == QLatin1String("xmlns") && namespaceProcessing) {
                 NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
@@ -1247,16 +812,8 @@ attribute ::= qname space_opt EQ space_opt attribute_value;
                 }
             }
         } break;
-./
 
-
-
-attribute_list_opt ::= | space | space attribute_list space_opt;
-attribute_list ::= attribute | attribute_list space attribute;
-
-stag_start ::= LANGLE qname;
-/.
-        case $rule_number: {
+        case 235: {
             normalizeLiterals = true;
             Tag &tag = tagStack_push();
             prefix = tag.namespaceDeclaration.prefix  = addToStringStorage(symPrefix(2));
@@ -1265,32 +822,20 @@ stag_start ::= LANGLE qname;
             if ((!prefix.isEmpty() && !QXmlUtils::isNCName(prefix)) || !QXmlUtils::isNCName(name))
                 raiseWellFormedError(QXmlStream::tr("Invalid XML name."));
         } break;
-./
 
-
-empty_element_tag ::= stag_start attribute_list_opt SLASH RANGLE;
-/.
-        case $rule_number:
+        case 236:
             isEmptyElement = true;
             Q_FALLTHROUGH();
-./
 
-
-stag ::= stag_start attribute_list_opt RANGLE;
-/.
-        case $rule_number:
+        case 237:
             setType(QXmlStreamReader::StartElement);
             resolveTag();
             if (tagStack.size() == 1 && hasSeenTag && !inParseEntity)
                 raiseWellFormedError(QXmlStream::tr("Extra content at end of document."));
             hasSeenTag = true;
         break;
-./
 
-
-etag ::= LANGLE SLASH qname space_opt RANGLE;
-/.
-        case $rule_number: {
+        case 238: {
             setType(QXmlStreamReader::EndElement);
             Tag &tag = tagStack_pop();
 
@@ -1300,12 +845,8 @@ etag ::= LANGLE SLASH qname space_opt RANGLE;
             if (qualifiedName != symName(3))
                 raiseWellFormedError(QXmlStream::tr("Opening and ending tag mismatch."));
         } break;
-./
 
-
-unresolved_entity ::= UNRESOLVED_ENTITY;
-/.
-        case $rule_number:
+        case 239:
             if (entitiesMustBeDeclared()) {
                 raiseWellFormedError(QXmlStream::tr("Entity '%1' not declared.").arg(unresolvedEntity));
                 break;
@@ -1313,11 +854,8 @@ unresolved_entity ::= UNRESOLVED_ENTITY;
             setType(QXmlStreamReader::EntityReference);
             name = &unresolvedEntity;
         break;
-./
 
-entity_ref ::= AMPERSAND name SEMICOLON;
-/.
-        case $rule_number: {
+        case 240: {
             sym(1).len += sym(2).len + 1;
             QStringView reference = symView(2);
             if (const auto it = entityHash.find(reference); it != entityHash.end()) {
@@ -1355,11 +893,8 @@ entity_ref ::= AMPERSAND name SEMICOLON;
             clearSym();
 
         } break;
-./
 
-pereference ::= PERCENT name SEMICOLON;
-/.
-        case $rule_number: {
+        case 241: {
             sym(1).len += sym(2).len + 1;
             QStringView reference = symView(2);
             if (const auto it = parameterEntityHash.find(reference); it != parameterEntityHash.end()) {
@@ -1377,20 +912,12 @@ pereference ::= PERCENT name SEMICOLON;
                 raiseWellFormedError(QXmlStream::tr("Entity '%1' not declared.").arg(symString(2)));
             }
         } break;
-./
 
-
-
-entity_ref_in_entity_value ::= AMPERSAND name SEMICOLON;
-/.
-        case $rule_number:
+        case 242:
             sym(1).len += sym(2).len + 1;
         break;
-./
 
-entity_ref_in_attribute_value ::= AMPERSAND name SEMICOLON;
-/.
-        case $rule_number: {
+        case 243: {
             sym(1).len += sym(2).len + 1;
             QStringView reference = symView(2);
             if (const auto it = entityHash.find(reference); it != entityHash.end()) {
@@ -1425,11 +952,8 @@ entity_ref_in_attribute_value ::= AMPERSAND name SEMICOLON;
                 raiseWellFormedError(QXmlStream::tr("Entity '%1' not declared.").arg(reference));
             }
         } break;
-./
 
-char_ref ::= AMPERSAND HASH char_ref_value SEMICOLON;
-/.
-        case $rule_number: {
+        case 244: {
             if (char32_t s = resolveCharRef(3)) {
                 putStringLiteral(QChar::fromUcs4(s));
                 textBuffer.chop(3 + sym(3).len);
@@ -1438,96 +962,49 @@ char_ref ::= AMPERSAND HASH char_ref_value SEMICOLON;
                 raiseWellFormedError(QXmlStream::tr("Invalid character reference."));
             }
         } break;
-./
 
-
-char_ref_value ::= LETTER | DIGIT;
-char_ref_value ::= char_ref_value LETTER;
-/.
-        case $rule_number:./
-char_ref_value ::= char_ref_value DIGIT;
-/.
-        case $rule_number:
+        case 247:
+        case 248:
             sym(1).len += sym(2).len;
         break;
-./
 
-
-content ::= content character_content;
-content ::= content stag content etag;
-content ::= content empty_element_tag;
-content ::= content comment;
-content ::= content cdata;
-content ::= content xml_decl;
-content ::= content processing_instruction;
-content ::= content doctype_decl;
-content ::= content unresolved_entity;
-content ::=  ;
-
-
-space ::=  SPACE;
-/.
-        case $rule_number:
+        case 259:
             sym(1).len += fastScanSpace();
             if (atEnd) {
-                resume($rule_number);
+                resume(259);
                 return false;
             }
         break;
-./
 
-
-space_opt ::=;
-space_opt ::= space;
-
-qname ::= LETTER;
-/.
-        case $rule_number: {
+        case 262: {
             sym(1).len += fastScanName(&sym(1).prefix);
             if (atEnd) {
-                resume($rule_number);
+                resume(262);
                 return false;
             }
         } break;
-./
 
-name ::= LETTER;
-/.
-        case $rule_number:
+        case 263:
             sym(1).len += fastScanName();
             if (atEnd) {
-                resume($rule_number);
+                resume(263);
                 return false;
             }
         break;
-./
 
-nmtoken ::= LETTER;
-/.
-        case $rule_number:./
-nmtoken ::= DIGIT;
-/.
-        case $rule_number:./
-nmtoken ::= DOT;
-/.
-        case $rule_number:./
-nmtoken ::= DASH;
-/.
-        case $rule_number:./
-nmtoken ::= COLON;
-/.
-        case $rule_number:
+        case 264:
+        case 265:
+        case 266:
+        case 267:
+        case 268:
             sym(1).len += fastScanNMTOKEN();
             if (atEnd) {
-                resume($rule_number);
+                resume(268);
                 return false;
             }
 
         break;
-./
 
-
-/.
     default:
         ;
     } // switch
@@ -1544,6 +1021,7 @@ nmtoken ::= COLON;
 
 #endif
 
+QT_END_NAMESPACE
+
 #endif
 
-./
