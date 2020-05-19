@@ -40,12 +40,11 @@
 #include "qthreadpool.h"
 #include "qthreadpool_p.h"
 #include "qdeadlinetimer.h"
+#include "qcoreapplication.h"
 
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
-
-Q_GLOBAL_STATIC(QThreadPool, theInstance)
 
 /*
     QThread wrapper, provides synchronization against a ThreadPool
@@ -478,7 +477,13 @@ QThreadPool::~QThreadPool()
 */
 QThreadPool *QThreadPool::globalInstance()
 {
-    return theInstance();
+    static QPointer<QThreadPool> theInstance;
+    static QBasicMutex theMutex;
+
+    const QMutexLocker locker(&theMutex);
+    if (theInstance.isNull() && !QCoreApplication::closingDown())
+        theInstance = new QThreadPool();
+    return theInstance;
 }
 
 /*!

@@ -878,8 +878,10 @@ QCoreApplication::~QCoreApplication()
     } QT_CATCH (...) {
         // swallow the exception, since destructors shouldn't throw
     }
-    if (globalThreadPool)
+    if (globalThreadPool) {
         globalThreadPool->waitForDone();
+        delete globalThreadPool;
+    }
 #endif
 
 #ifndef QT_NO_QOBJECT
