@@ -253,6 +253,14 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv2.empty());
     }
     {
+        constexpr QStringView sv = nullptr;
+        Q_STATIC_ASSERT(sv.size() == 0);
+        Q_STATIC_ASSERT(sv.isNull());
+        Q_STATIC_ASSERT(sv.empty());
+        Q_STATIC_ASSERT(sv.isEmpty());
+        Q_STATIC_ASSERT(sv.utf16() == nullptr);
+    }
+    {
         constexpr QStringView sv = u"";
         Q_STATIC_ASSERT(sv.size() == 0);
         Q_STATIC_ASSERT(!sv.isNull());
