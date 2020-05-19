@@ -74,7 +74,6 @@ public:
 
     void sendCallOutEvent(QFutureCallOutEvent *event);
 
-    QList<QFutureCallOutEvent *> pendingCallOutEvents;
     QAtomicInt pendingResultsReady;
     int maximumPendingResultsReady;
 

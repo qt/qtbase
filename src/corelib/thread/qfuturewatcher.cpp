@@ -137,9 +137,11 @@ void QFutureWatcherBase::cancel()
 
     If \a paused is true, this function pauses the asynchronous computation
     represented by the future(). If the computation is already paused, this
-    function does nothing. This QFutureWatcher will stop delivering progress
-    and result ready signals while the future is paused. Signal delivery will
-    continue once the computation is resumed.
+    function does nothing. QFutureWatcher will not immediately stop delivering
+    progress and result ready signals when the future is paused. At the moment
+    of pausing there may still be computations that are in progress and cannot
+    be stopped. Signals for such computations will still be delivered after
+    pause.
 
     If \a paused is false, this function resumes the asynchronous computation.
     If the computation was not previously paused, this function does nothing.
@@ -314,25 +316,7 @@ bool QFutureWatcherBase::event(QEvent *event)
     Q_D(QFutureWatcherBase);
     if (event->type() == QEvent::FutureCallOut) {
         QFutureCallOutEvent *callOutEvent = static_cast<QFutureCallOutEvent *>(event);
-
-        if (futureInterface().isPaused()) {
-            d->pendingCallOutEvents.append(callOutEvent->clone());
-            return true;
-        }
-
-        if (callOutEvent->callOutType == QFutureCallOutEvent::Resumed
-            && !d->pendingCallOutEvents.isEmpty()) {
-            // send the resume
-            d->sendCallOutEvent(callOutEvent);
-
-            // next send all pending call outs
-            for (int i = 0; i < d->pendingCallOutEvents.count(); ++i)
-                d->sendCallOutEvent(d->pendingCallOutEvents.at(i));
-            qDeleteAll(d->pendingCallOutEvents);
-            d->pendingCallOutEvents.clear();
-        } else {
-            d->sendCallOutEvent(callOutEvent);
-        }
+        d->sendCallOutEvent(callOutEvent);
         return true;
     }
     return QObject::event(event);
@@ -403,8 +387,6 @@ void QFutureWatcherBase::disconnectOutputInterface(bool pendingAssignment)
     if (pendingAssignment) {
         Q_D(QFutureWatcherBase);
         d->pendingResultsReady.storeRelaxed(0);
-        qDeleteAll(d->pendingCallOutEvents);
-        d->pendingCallOutEvents.clear();
         d->finished = false; /* May soon be amended, during connectOutputInterface() */
     }
 
@@ -541,7 +523,15 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
 */
 
 /*! \fn template <typename T> void QFutureWatcher<T>::paused()
-    This signal is emitted when the watched future is paused.
+    This signal is emitted when the state of the watched future is
+    set to paused.
+
+    \note This signal only informs that pause has been requested. It
+    doesn't indicate that all background operations are stopped. Signals
+    for computations that were in progress at the moment of pausing will
+    still be delivered.
+
+    \sa setPaused(), pause()
 */
 
 /*! \fn template <typename T> void QFutureWatcher<T>::resumed()

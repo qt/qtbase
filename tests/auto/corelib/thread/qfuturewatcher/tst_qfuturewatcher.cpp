@@ -678,18 +678,22 @@ void tst_QFutureWatcher::pauseEvents()
         QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
         QVERIFY(resultReadySpy.isValid());
 
+        QSignalSpy pauseSpy(&watcher, &QFutureWatcher<int>::paused);
+        QVERIFY(pauseSpy.isValid());
+
         watcher.setFuture(iface.future());
         watcher.pause();
+
+        QTRY_COMPARE(pauseSpy.count(), 1);
 
         int value = 0;
         iface.reportFinished(&value);
 
-        QTest::qWait(10);
-        QCOMPARE(resultReadySpy.count(), 0);
+        // A result is reported, although the watcher is paused.
+        // The corresponding event should be also reported.
+        QTRY_COMPARE(resultReadySpy.count(), 1);
 
         watcher.resume();
-        QTRY_VERIFY2(!resultReadySpy.isEmpty(), "Result didn't arrive");
-        QCOMPARE(resultReadySpy.count(), 1);
     }
     {
         QFutureInterface<int> iface;
