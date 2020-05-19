@@ -781,6 +781,7 @@ QT.${config_module_name}.module_config = ${joined_module_internal_config}
 QT.${config_module_name}.DEFINES = QT_${module_define}_LIB
 QT.${config_module_name}.enabled_features = ${enabled_features}
 QT.${config_module_name}.disabled_features = ${disabled_features}${module_build_config}
+QT_CONFIG += ${enabled_features}
 QT_MODULES += ${config_module_name}
 "
         )
