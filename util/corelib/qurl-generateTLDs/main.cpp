@@ -149,8 +149,8 @@ int main(int argc, char **argv)
     outFile.write("// After the tldCount \"real\" entries in tldIndices, include a final entry\n");
     outFile.write("// that records the sum of the lengths of all the chunks, i.e. the index\n");
     outFile.write("// just past the end of tldChunks.\n");
-    outFile.write("static const quint32 tldIndices[tldCount + 1] = {\n");
-    outDataBuffer.write("static const char *tldData[tldChunkCount] = {");
+    outFile.write("static constexpr quint32 tldIndices[tldCount + 1] = {\n");
+    outDataBuffer.write("static const char * const tldData[tldChunkCount] = {");
 
     int totalUtf8Size = 0;
     int chunkSize = 0; // strlen of the current chunk (sizeof is bigger by 1)
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
     // Write tldData[tldChunkCount] = {...}.
     outFile.write(outDataBufferBA);
 
-    outFile.write("static const quint32 tldChunks[tldChunkCount] = {");
+    outFile.write("static constexpr quint32 tldChunks[tldChunkCount] = {");
     outFile.write(chunks.join(", ").toLatin1());
     outFile.write("};\n");
     outFile.close();
