@@ -712,7 +712,7 @@ int QWindowsContext::screenDepth() const
 QString QWindowsContext::windowsErrorMessage(unsigned long errorCode)
 {
     QString rc = QString::fromLatin1("#%1: ").arg(errorCode);
-    ushort *lpMsgBuf;
+    char16_t *lpMsgBuf;
 
     const DWORD len = FormatMessage(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
