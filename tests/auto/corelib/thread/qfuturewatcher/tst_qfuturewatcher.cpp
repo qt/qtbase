@@ -58,6 +58,8 @@ private slots:
     void changeFuture();
     void cancelEvents();
     void pauseEvents();
+    void suspended();
+    void suspendedEvents();
     void finishedState();
     void throttling();
     void incrementalMapResults();
@@ -721,6 +723,95 @@ void tst_QFutureWatcher::pauseEvents()
         QTest::qWait(10);
         QCOMPARE(resultReadySpy.count(), 0);
     }
+}
+
+void tst_QFutureWatcher::suspended()
+{
+    QFutureWatcher<void> watcher;
+    QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
+    QSignalSpy pausedSpy(&watcher, &QFutureWatcher<int>::paused);
+    QSignalSpy suspendedSpy(&watcher, &QFutureWatcher<int>::suspended);
+    QSignalSpy finishedSpy(&watcher, &QFutureWatcher<int>::finished);
+
+    const int numValues = 25;
+    std::vector<int> values(numValues, 0);
+    std::atomic_int count = 0;
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(3);
+
+    QFuture<int> future = QtConcurrent::mapped(&pool, values, [&](int value) {
+        ++count;
+        // Sleep, to make sure not all threads will start at once.
+        QThread::msleep(50);
+        return value;
+    });
+    watcher.setFuture(future);
+
+    // Allow some threads to start before pausing.
+    QThread::msleep(200);
+
+    watcher.pause();
+    watcher.pause();
+    QTRY_COMPARE(suspendedSpy.count(), 1); // suspended() should be emitted only once
+    QCOMPARE(pausedSpy.count(), 2); // paused() is emitted as many times as requested
+
+    // Make sure QFutureWatcher::resultReadyAt() is emitted only for already started threads.
+    const auto resultReadyAfterPaused = resultReadySpy.count();
+    QCOMPARE(resultReadyAfterPaused, count);
+
+    // Make sure no more results are reported before resuming.
+    QThread::msleep(200);
+    QCOMPARE(resultReadyAfterPaused, resultReadySpy.count());
+    resultReadySpy.clear();
+
+    watcher.resume();
+    QTRY_COMPARE(finishedSpy.count(), 1);
+
+    // Make sure that no more suspended() signals have been emitted.
+    QCOMPARE(suspendedSpy.count(), 1);
+
+    // Make sure the rest of results were reported after resume.
+    QCOMPARE(resultReadySpy.count(), numValues - resultReadyAfterPaused);
+}
+
+void tst_QFutureWatcher::suspendedEvents()
+{
+    QFutureInterface<void> iface;
+    iface.reportStarted();
+
+    QFutureWatcher<void> watcher;
+
+    QSignalSpy pausedSpy(&watcher, &QFutureWatcher<void>::paused);
+    QVERIFY(pausedSpy.isValid());
+
+    QSignalSpy suspendedSpy(&watcher, &QFutureWatcher<void>::suspended);
+    QVERIFY(suspendedSpy.isValid());
+
+    bool pausedBeforeSuspended = false;
+    bool notSuspendedBeforePasused = false;
+    connect(&watcher, &QFutureWatcher<void>::paused,
+            [&] { notSuspendedBeforePasused = (suspendedSpy.count() == 0); });
+    connect(&watcher, &QFutureWatcher<void>::suspended,
+            [&] { pausedBeforeSuspended = (pausedSpy.count() == 1); });
+
+    watcher.setFuture(iface.future());
+    iface.reportSuspended();
+
+    // Make sure reportPaused() is ignored if the state is not paused
+    pausedSpy.wait(100);
+    QCOMPARE(pausedSpy.count(), 0);
+    QCOMPARE(suspendedSpy.count(), 0);
+
+    iface.setPaused(true);
+    iface.reportSuspended();
+
+    QTRY_COMPARE(suspendedSpy.count(), 1);
+    QCOMPARE(pausedSpy.count(), 1);
+    QVERIFY(notSuspendedBeforePasused);
+    QVERIFY(pausedBeforeSuspended);
+
+    iface.reportFinished();
 }
 
 // Test that the finished state for the watcher gets

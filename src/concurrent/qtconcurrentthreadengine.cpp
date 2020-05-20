@@ -219,6 +219,12 @@ void ThreadEngineBase::acquireBarrierSemaphore()
     barrier.acquire();
 }
 
+void ThreadEngineBase::reportIfPausedDone() const
+{
+    if (futureInterface && futureInterface->isPaused())
+        futureInterface->reportSuspended();
+}
+
 bool ThreadEngineBase::isCanceled()
 {
     if (futureInterface)
@@ -304,8 +310,15 @@ void ThreadEngineBase::run() // implements QRunnable.
             // struct wants to be throttled by making a worker thread exit.
             // Respect that request unless this is the only worker thread left
             // running, in which case it has to keep going.
-            if (threadThrottleExit())
+            if (threadThrottleExit()) {
                 return;
+            } else {
+                // If the last worker thread is throttled and the state is paused,
+                // it means that pause has been requested, and it is already
+                // in effect (because all previous threads have already exited).
+                // Report the "Suspended" state.
+                reportIfPausedDone();
+            }
         }
 
 #ifndef QT_NO_EXCEPTIONS

@@ -113,6 +113,7 @@ private slots:
     void iterators();
     void iteratorsThread();
     void pause();
+    void suspend();
     void throttling();
     void voidConversions();
 #ifndef QT_NO_EXCEPTIONS
@@ -1332,6 +1333,43 @@ void tst_QFuture::pause()
     QVERIFY(!Interface.isPaused());
 
     Interface.reportFinished();
+}
+
+void tst_QFuture::suspend()
+{
+    QFutureInterface<void> interface;
+
+    interface.reportStarted();
+    QFuture<void> f = interface.future();
+    QVERIFY(!interface.isSuspended());
+
+    interface.reportSuspended();
+    QVERIFY(!interface.isSuspended());
+
+    // pause
+    interface.togglePaused();
+    QVERIFY(!interface.isSuspended());
+    QVERIFY(interface.isPaused());
+
+    interface.reportSuspended();
+    QVERIFY(interface.isSuspended());
+    QVERIFY(interface.isPaused());
+
+    // resume
+    interface.togglePaused();
+    QVERIFY(!interface.isSuspended());
+    QVERIFY(!interface.isPaused());
+
+    // pause again
+    interface.togglePaused();
+    interface.reportSuspended();
+
+    interface.reportCanceled();
+    QVERIFY(!interface.isSuspended());
+    QVERIFY(!interface.isPaused());
+    QVERIFY(interface.isCanceled());
+
+    interface.reportFinished();
 }
 
 class ResultObject : public QObject

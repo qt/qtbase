@@ -111,6 +111,7 @@ public:
 
     void setPaused(bool paused) { d.setPaused(paused); }
     bool isPaused() const { return d.isPaused(); }
+    bool isSuspended() const { return d.isSuspended(); }
     void pause() { setPaused(true); }
     void resume() { setPaused(false); }
     void togglePaused() { d.togglePaused(); }

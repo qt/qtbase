@@ -74,7 +74,8 @@ public:
         Resumed,
         Progress,
         ProgressRange,
-        ResultsReady
+        ResultsReady,
+        Suspended
     };
 
     QFutureCallOutEvent()

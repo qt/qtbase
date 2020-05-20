@@ -70,6 +70,7 @@ public:
     bool isRunning() const;
     bool isCanceled() const;
     bool isPaused() const;
+    bool isSuspended() const;
 
     void waitForFinished();
 
@@ -82,6 +83,7 @@ Q_SIGNALS:
     void finished();
     void canceled();
     void paused();
+    void suspended();
     void resumed();
     void resultReadyAt(int resultIndex);
     void resultsReadyAt(int beginIndex, int endIndex);
@@ -147,6 +149,7 @@ public:
     bool isRunning() const;
     bool isCanceled() const;
     bool isPaused() const;
+    bool isSuspended() const
 
     void waitForFinished();
 
@@ -157,6 +160,7 @@ Q_SIGNALS:
     void finished();
     void canceled();
     void paused();
+    void suspended();
     void resumed();
     void resultReadyAt(int resultIndex);
     void resultsReadyAt(int beginIndex, int endIndex);

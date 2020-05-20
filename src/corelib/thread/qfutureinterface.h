@@ -85,7 +85,8 @@ public:
         Paused    = 0x10,
         Throttled = 0x20,
         // Pending means that the future depends on another one, which is not finished yet
-        Pending   = 0x40
+        Pending   = 0x40,
+        Suspended = 0x80
     };
 
     QFutureInterfaceBase(State initialState = NoState);
@@ -125,6 +126,7 @@ public:
     bool isCanceled() const;
     bool isFinished() const;
     bool isPaused() const;
+    bool isSuspended() const;
     bool isThrottled() const;
     bool isResultReadyAt(int index) const;
     bool isValid() const;
@@ -132,6 +134,7 @@ public:
     void cancel();
     void setPaused(bool paused);
     void togglePaused();
+    void reportSuspended() const;
     void setThrottled(bool enable);
 
     void waitForFinished();

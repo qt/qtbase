@@ -69,8 +69,8 @@ QT_BEGIN_NAMESPACE
     QFutureWatcher.
 
     Status changes are reported via the started(), finished(), canceled(),
-    paused(), resumed(), resultReadyAt(), and resultsReadyAt() signals.
-    Progress information is provided from the progressRangeChanged(),
+    paused(), resumed(), suspended(), resultReadyAt(), and resultsReadyAt()
+    signals. Progress information is provided from the progressRangeChanged(),
     void progressValueChanged(), and progressTextChanged() signals.
 
     Throttling control is provided by the setPendingResultsLimit() function.
@@ -292,13 +292,26 @@ bool QFutureWatcherBase::isCanceled() const
     pause() function; otherwise returns \c false.
 
     Be aware that the computation may still be running even though this
-    function returns \c true. See setPaused() for more details.
+    function returns \c true. See setPaused() for more details. To check
+    if pause actually took effect, use isSuspended() instead.
 
-    \sa setPaused(), togglePaused()
+    \sa setPaused(), togglePaused(), isSuspended()
 */
 bool QFutureWatcherBase::isPaused() const
 {
     return futureInterface().queryState(QFutureInterfaceBase::Paused);
+}
+
+/*! \fn template <typename T> bool QFutureWatcher<T>::isSuspended() const
+
+    Returns \c true if a paused asynchronous computation has been suspended,
+    and no more results or progress changes are expected.
+
+    \sa suspended(), paused(), isPaused()
+*/
+bool QFutureWatcherBase::isSuspended() const
+{
+    return futureInterface().isSuspended();
 }
 
 /*! \fn template <typename T> void QFutureWatcher<T>::waitForFinished()
@@ -431,6 +444,11 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
                 break;
             emit q->paused();
         break;
+        case QFutureCallOutEvent::Suspended:
+            if (q->futureInterface().isCanceled())
+                break;
+            emit q->suspended();
+        break;
         case QFutureCallOutEvent::Resumed:
             if (q->futureInterface().isCanceled())
                 break;
@@ -529,9 +547,18 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
     \note This signal only informs that pause has been requested. It
     doesn't indicate that all background operations are stopped. Signals
     for computations that were in progress at the moment of pausing will
-    still be delivered.
+    still be delivered. To to be informed when pause() actually
+    took effect, use the suspended() signal.
 
-    \sa setPaused(), pause()
+    \sa setPaused(), pause(), suspended()
+*/
+
+/*! \fn template <typename T> void QFutureWatcher<T>::suspended()
+    This signal is emitted when pause() took effect, meaning that there are
+    no more running computations. After receiving this signal no more result
+    ready or progress reporting signals are expected.
+
+    \sa setPaused(), pause(), paused()
 */
 
 /*! \fn template <typename T> void QFutureWatcher<T>::resumed()

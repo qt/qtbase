@@ -99,6 +99,7 @@ public:
     void setProgressValue(int progress);
     void setProgressRange(int minimum, int maximum);
     void acquireBarrierSemaphore();
+    void reportIfPausedDone() const;
 
 protected: // The user overrides these:
     virtual void start() {}

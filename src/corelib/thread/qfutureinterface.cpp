@@ -110,7 +110,7 @@ void QFutureInterfaceBase::cancel()
     if (d->state.loadRelaxed() & Canceled)
         return;
 
-    switch_from_to(d->state, Paused, Canceled);
+    switch_from_to(d->state, Paused | Suspended, Canceled);
     d->waitCondition.wakeAll();
     d->pausedWaitCondition.wakeAll();
     d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
@@ -124,7 +124,7 @@ void QFutureInterfaceBase::setPaused(bool paused)
         switch_on(d->state, Paused);
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
     } else {
-        switch_off(d->state, Paused);
+        switch_off(d->state, Paused | Suspended);
         d->pausedWaitCondition.wakeAll();
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Resumed));
     }
@@ -134,13 +134,27 @@ void QFutureInterfaceBase::togglePaused()
 {
     QMutexLocker locker(&d->m_mutex);
     if (d->state.loadRelaxed() & Paused) {
-        switch_off(d->state, Paused);
+        switch_off(d->state, Paused | Suspended);
         d->pausedWaitCondition.wakeAll();
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Resumed));
     } else {
         switch_on(d->state, Paused);
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
     }
+}
+
+void QFutureInterfaceBase::reportSuspended() const
+{
+    // Needs to be called when pause is in effect,
+    // i.e. no more events will be reported.
+
+    QMutexLocker locker(&d->m_mutex);
+    const int state = d->state;
+    if (!(state & Paused) || (state & Suspended))
+        return;
+
+    switch_on(d->state, Suspended);
+    d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
 }
 
 void QFutureInterfaceBase::setThrottled(bool enable)
@@ -179,6 +193,11 @@ bool QFutureInterfaceBase::isFinished() const
 bool QFutureInterfaceBase::isPaused() const
 {
     return queryState(Paused);
+}
+
+bool QFutureInterfaceBase::isSuspended() const
+{
+    return queryState(Suspended);
 }
 
 bool QFutureInterfaceBase::isThrottled() const
@@ -612,7 +631,9 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
         it.batchedAdvance();
     }
 
-    if (state.loadRelaxed() & QFutureInterfaceBase::Paused)
+    if (state.loadRelaxed() & QFutureInterfaceBase::Suspended)
+        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
+    else if (state.loadRelaxed() & QFutureInterfaceBase::Paused)
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
 
     if (state.loadRelaxed() & QFutureInterfaceBase::Canceled)
