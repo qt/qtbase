@@ -2908,10 +2908,11 @@ void tst_QDateTime::fromStringStringFormat_data()
         << QString(u8"yyyy🤣MM🤣ddThh🤣mm🤣ss.zt")
         << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);
 
-    // QTBUG-84349
-    QTest::newRow("QTBUG-84349: positive sign in month")
-            << QStringLiteral("9922+221102233Z") << QStringLiteral("yyyyMMddHHmmsst")
-            << QDateTime();
+    // Two tests derived from malformed ASN.1 strings (QTBUG-84349):
+    QTest::newRow("ASN.1:UTC")
+        << u"22+221102233Z"_qs << u"yyMMddHHmmsst"_qs << QDateTime();
+    QTest::newRow("ASN.1:Generalized")
+        << u"9922+221102233Z"_qs << u"yyyyMMddHHmmsst"_qs << QDateTime();
 
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")

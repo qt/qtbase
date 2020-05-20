@@ -261,13 +261,6 @@ QDateTime QAsn1Element::toDateTime() const
     if (mValue.back() != 'Z')
         return result;
 
-    // In addition, check that we only have digits representing the
-    // date/time. This should not really be necessary (there's no such
-    // thing as negative months/days/etc.); it's a workaround for
-    // QTBUG-84349.
-    if (!std::all_of(mValue.begin(), mValue.end() - 1, isAsciiDigit))
-        return result;
-
     if (mType == UtcTimeType && mValue.size() == 13) {
         result = QDateTime::fromString(QString::fromLatin1(mValue),
                                        QStringLiteral("yyMMddHHmmsst"));
