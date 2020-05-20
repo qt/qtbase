@@ -139,6 +139,9 @@ void QVncScreen::enableClientCursor(QVncClient *client)
 void QVncScreen::disableClientCursor(QVncClient *client)
 {
 #if QT_CONFIG(cursor)
+    if (!clientCursor)
+        return;
+
     uint clientCount = clientCursor->removeClient(client);
     if (clientCount == 0) {
         delete clientCursor;
