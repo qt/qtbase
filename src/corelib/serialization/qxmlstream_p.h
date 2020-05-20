@@ -58,14 +58,24 @@
 
 QT_BEGIN_NAMESPACE
 
-template <typename T> class QXmlStreamSimpleStack {
+template <typename T> class QXmlStreamSimpleStack
+{
     T *data;
     qsizetype tos, cap;
 public:
-    inline QXmlStreamSimpleStack():data(nullptr), tos(-1), cap(0){}
-    inline ~QXmlStreamSimpleStack(){ if (data) free(data); }
+    inline QXmlStreamSimpleStack()
+        : data(nullptr), tos(-1), cap(0)
+    {}
+    inline ~QXmlStreamSimpleStack()
+    {
+        if (data) {
+            std::destroy_n(data, size());
+            free(data);
+        }
+    }
 
-    inline void reserve(qsizetype extraCapacity) {
+    inline void reserve(qsizetype extraCapacity)
+    {
         if (tos + extraCapacity + 1 > cap) {
             cap = qMax(tos + extraCapacity + 1, cap << 1 );
             void *ptr = realloc(static_cast<void *>(data), cap * sizeof(T));
@@ -74,11 +84,11 @@ public:
         }
     }
 
-    inline T &push() { reserve(1); return data[++tos]; }
-    inline T &rawPush() { return data[++tos]; }
+    inline T &push() { reserve(1); return rawPush(); }
+    inline T &rawPush() {  return *new (data + (++tos)) T; }
     inline const T &top() const { return data[tos]; }
     inline T &top() { return data[tos]; }
-    inline T &pop() { return data[tos--]; }
+    inline T pop() { T t = std::move(data[tos]); std::destroy_at(data + tos); --tos; return t; }
     inline T &operator[](qsizetype index) { return data[index]; }
     inline const T &at(qsizetype index) const { return data[index]; }
     inline qsizetype size() const { return tos + 1; }
@@ -147,8 +157,8 @@ public:
     QXmlStreamSimpleStack<Tag> tagStack;
 
 
-    inline Tag &tagStack_pop() {
-        Tag& tag = tagStack.pop();
+    inline Tag tagStack_pop() {
+        Tag tag = tagStack.pop();
         tagStackStringStorageSize = tag.tagStackStringStorageSize;
         namespaceDeclarations.resize(tag.namespaceDeclarationsSize);
         tagsDone = tagStack.isEmpty();

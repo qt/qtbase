@@ -3037,7 +3037,7 @@ bool QXmlStreamWriterPrivate::finishStartElement(bool contents)
 
     if (inEmptyElement) {
         write("/>");
-        QXmlStreamWriterPrivate::Tag &tag = tagStack_pop();
+        QXmlStreamWriterPrivate::Tag tag = tagStack_pop();
         lastNamespaceDeclaration = tag.namespaceDeclarationsSize;
         lastWasStartElement = false;
     } else {
@@ -3496,7 +3496,7 @@ void QXmlStreamWriter::writeEndElement()
     if (d->inStartElement && !d->inEmptyElement) {
         d->write("/>");
         d->lastWasStartElement = d->inStartElement = false;
-        QXmlStreamWriterPrivate::Tag &tag = d->tagStack_pop();
+        QXmlStreamWriterPrivate::Tag tag = d->tagStack_pop();
         d->lastNamespaceDeclaration = tag.namespaceDeclarationsSize;
         return;
     }
@@ -3506,7 +3506,7 @@ void QXmlStreamWriter::writeEndElement()
     if (d->tagStack.isEmpty())
         return;
     d->lastWasStartElement = false;
-    QXmlStreamWriterPrivate::Tag &tag = d->tagStack_pop();
+    QXmlStreamWriterPrivate::Tag tag = d->tagStack_pop();
     d->lastNamespaceDeclaration = tag.namespaceDeclarationsSize;
     d->write("</");
     if (!tag.namespaceDeclaration.prefix.isEmpty()) {

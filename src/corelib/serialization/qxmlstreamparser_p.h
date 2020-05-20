@@ -90,7 +90,7 @@ bool QXmlStreamReaderPrivate::parse()
         attributes.clear();
         if (isEmptyElement) {
             setType(QXmlStreamReader::EndElement);
-            Tag &tag = tagStack_pop();
+            Tag tag = tagStack_pop();
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
             name = tag.name;
             qualifiedName = tag.qualifiedName;
@@ -837,7 +837,7 @@ bool QXmlStreamReaderPrivate::parse()
 
         case 238: {
             setType(QXmlStreamReader::EndElement);
-            Tag &tag = tagStack_pop();
+            Tag tag = tagStack_pop();
 
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
             name = tag.name;
