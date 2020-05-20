@@ -2684,10 +2684,20 @@ QPointF QWindow::mapToGlobal(const QPointF &pos) const
         return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapToGlobalF(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
 
-    if (QHighDpiScaling::isActive())
-        return QHighDpiScaling::mapPositionToGlobal(pos, d->globalPosition(), this);
+    if (!QHighDpiScaling::isActive())
+        return pos + d->globalPosition();
 
-    return pos + QPointF(d->globalPosition());
+    // The normal pos + windowGlobalPos calculation may give a point which is outside
+    // screen geometry for windows which span multiple screens, due to the way QHighDpiScaling
+    // creates gaps between screens in the the device indendent cooordinate system.
+    //
+    // Map the position (and the window's global position) to native coordinates, perform
+    // the addition, and then map back to device independent coordinates.
+    QPointF nativeLocalPos = QHighDpi::toNativeLocalPosition(pos, this);
+    QPointF nativeWindowGlobalPos = QHighDpi::toNativeGlobalPosition(QPointF(d->globalPosition()), this);
+    QPointF nativeGlobalPos = nativeLocalPos + nativeWindowGlobalPos;
+    QPointF deviceIndependentGlobalPos = QHighDpi::fromNativeGlobalPosition(nativeGlobalPos, this);
+    return deviceIndependentGlobalPos;
 }
 
 /*!
@@ -2716,10 +2726,16 @@ QPointF QWindow::mapFromGlobal(const QPointF &pos) const
         return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapFromGlobalF(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
 
-    if (QHighDpiScaling::isActive())
-        return QHighDpiScaling::mapPositionFromGlobal(pos, d->globalPosition(), this);
+    if (!QHighDpiScaling::isActive())
+        return pos - d->globalPosition();
 
-    return pos - QPointF(d->globalPosition());
+    // Calculate local position in the native coordinate system. (See comment for the
+    // correspinding mapToGlobal() code above).
+    QPointF nativeGlobalPos = QHighDpi::toNativeGlobalPosition(pos, this);
+    QPointF nativeWindowGlobalPos = QHighDpi::toNativeGlobalPosition(QPointF(d->globalPosition()), this);
+    QPointF nativeLocalPos = nativeGlobalPos - nativeWindowGlobalPos;
+    QPointF deviceIndependentLocalPos = QHighDpi::fromNativeLocalPosition(nativeLocalPos, this);
+    return deviceIndependentLocalPos;
 }
 
 /*!
