@@ -1606,7 +1606,9 @@ void tst_QByteArray::resizeAfterFromRawData()
     QByteArray array = QByteArray::fromRawData(buffer.constData(), buffer.size());
     QVERIFY(array.constData() == buffer.constData());
     array.resize(5);
-    QVERIFY(array.constData() == buffer.constData());
+    QVERIFY(array.constData() != buffer.constData());
+    // check null termination
+    QVERIFY(array.constData()[5] == 0);
 }
 
 void tst_QByteArray::appendAfterFromRawData()

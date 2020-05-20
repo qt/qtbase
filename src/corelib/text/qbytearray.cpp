@@ -1714,23 +1714,11 @@ void QByteArray::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (!d->isShared() && !d->isMutable() && size < int(d.size)) {
-        d.size = size;
-        return;
-    }
-
-    if (size == 0 && !(d->flags() & Data::CapacityReserved)) {
-        d = DataPointer(Data::allocate(0), 0);
-    } else {
-        if (d->needsDetach() || size > capacity()
-                || (!(d->flags() & Data::CapacityReserved) && size < int(d.size)
-                    && size < (capacity() >> 1)))
-            reallocData(uint(size) + 1u, d->detachFlags() | Data::GrowsForward);
-        d.size = size;
-        if (d->isMutable()) {
-            d.data()[size] = '\0';
-        }
-    }
+    if (d->needsDetach() || size > capacity())
+        reallocData(uint(size) + 1u, d->detachFlags() | Data::GrowsForward);
+    d.size = size;
+    if (d->allocatedCapacity())
+        d.data()[size] = 0;
 }
 
 /*!

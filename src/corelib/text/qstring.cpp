@@ -2242,17 +2242,11 @@ void QString::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (!d->isShared() && !d->isMutable() && size < int(d.size)) {
-        d.size = size;
-        return;
-    }
-
     if (d->needsDetach() || size > capacity())
         reallocData(uint(size) + 1u, true);
     d.size = size;
-    if (d->isMutable()) {
-        d.data()[size] = '\0';
-    }
+    if (d->allocatedCapacity())
+        d.data()[size] = 0;
 }
 
 /*!
