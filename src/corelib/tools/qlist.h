@@ -239,6 +239,7 @@ public:
     void append(const_iterator i1, const_iterator i2);
     void append(rvalue_ref t) { emplaceBack(std::move(t)); }
     void append(const QList<T> &l) { append(l.constBegin(), l.constEnd()); }
+    void append(QList<T> &&l);
     void prepend(rvalue_ref t);
     void prepend(const T &t);
 
@@ -434,14 +435,19 @@ public:
 
     // comfort
     QList<T> &operator+=(const QList<T> &l) { append(l.cbegin(), l.cend()); return *this; }
+    QList<T> &operator+=(QList<T> &&l) { append(std::move(l)); return *this; }
     inline QList<T> operator+(const QList<T> &l) const
     { QList n = *this; n += l; return n; }
+    inline QList<T> operator+(QList<T> &&l) const
+    { QList n = *this; n += std::move(l); return n; }
     inline QList<T> &operator+=(const T &t)
     { append(t); return *this; }
     inline QList<T> &operator<< (const T &t)
     { append(t); return *this; }
     inline QList<T> &operator<<(const QList<T> &l)
     { *this += l; return *this; }
+    inline QList<T> &operator<<(QList<T> &&l)
+    { *this += std::move(l); return *this; }
     inline QList<T> &operator+=(rvalue_ref t)
     { append(std::move(t)); return *this; }
     inline QList<T> &operator<<(rvalue_ref t)
@@ -578,6 +584,33 @@ inline void QList<T>::append(const_iterator i1, const_iterator i2)
         d->copyAppend(i1, i2);
     }
 }
+
+template <typename T>
+inline void QList<T>::append(QList<T> &&other)
+{
+    if (other.isEmpty())
+        return;
+    if (other.d->needsDetach() || !std::is_nothrow_move_constructible_v<T>)
+        return append(other);
+
+    const size_t newSize = size() + other.size();
+    if (d->needsDetach() || newSize > d->allocatedCapacity()) {
+        DataPointer detached(Data::allocate(d->detachCapacity(newSize),
+                                            d->detachFlags() | Data::GrowsForward));
+
+        if (!d->needsDetach())
+            detached->moveAppend(begin(), end());
+        else
+            detached->copyAppend(cbegin(), cend());
+        detached->moveAppend(other.begin(), other.end());
+
+        d.swap(detached);
+    } else {
+        // we're detached and we can just move data around
+        d->moveAppend(other.begin(), other.end());
+    }
+}
+
 
 template <typename T>
 inline typename QList<T>::iterator

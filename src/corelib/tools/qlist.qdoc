@@ -670,6 +670,15 @@
     \sa operator<<(), operator+=()
 */
 
+/*! \fn template <typename T> void QList<T>::append(QList<T> &&value)
+    \overload
+
+    \since 6.0
+
+    Moves the items of the \a value list to the end of this list.
+
+    \sa operator<<(), operator+=()
+*/
 
 /*!
     \fn template <typename T> void QList<T>::prepend(const T &value)
@@ -1290,6 +1299,14 @@
     \sa operator+(), append()
 */
 
+/*! \fn template <typename T> QList<T> &QList<T>::operator+=(QList<T> &&other)
+    \since 6.0
+
+    \overload
+
+    \sa operator+(), append()
+*/
+
 /*! \fn template <typename T> void QList<T>::operator+=(const T &value)
 
     \overload
@@ -1315,6 +1332,14 @@
     \sa operator+=()
 */
 
+/*! \fn template <typename T> QList<T> QList<T>::operator+(QList<T> &&other) const
+    \since 6.0
+
+    \overload
+
+    \sa operator+=()
+*/
+
 /*! \fn template <typename T> QList<T> &QList<T>::operator<<(const T &value)
 
     Appends \a value to the list and returns a reference to this list.
@@ -1334,6 +1359,12 @@
 /*! \fn template <typename T> QList<T> &QList<T>::operator<<(const QList<T> &other)
 
     Appends \a other to the list and returns a reference to the list.
+*/
+
+/*! \fn template <typename T> QList<T> &QList<T>::operator<<(QList<T> &&other)
+    \since 6.0
+
+    \overload
 */
 
 /*! \typedef QList::iterator

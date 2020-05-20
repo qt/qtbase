@@ -216,6 +216,7 @@ private slots:
     void appendMovable() const;
     void appendCustom() const;
     void appendRvalue() const;
+    void appendList() const;
     void at() const;
     void capacityInt() const;
     void capacityMovable() const;
@@ -693,6 +694,200 @@ void tst_QList::appendRvalue() const
     QVERIFY(world.isEmpty());
     QCOMPARE(v.front(), QString("hello"));
     QCOMPARE(v.back(),  QString("world"));
+}
+
+struct ConstructionCounted
+{
+    ConstructionCounted(int i) : i(i) { }
+    ConstructionCounted(ConstructionCounted &&other) noexcept
+        : i(other.i), copies(other.copies), moves(other.moves + 1)
+    {
+        // set to some easily noticeable values
+        other.i = -64;
+        other.copies = -64;
+        other.moves = -64;
+    }
+    ConstructionCounted &operator=(ConstructionCounted &&other) noexcept
+    {
+        i = other.i;
+        copies = other.copies;
+        moves = other.moves + 1;
+        // set to some easily noticeable values
+        other.i = -64;
+        other.copies = -64;
+        other.moves = -64;
+        return *this;
+    }
+    ConstructionCounted(const ConstructionCounted &other) noexcept
+        : i(other.i), copies(other.copies + 1), moves(other.moves)
+    {
+    }
+    ConstructionCounted &operator=(const ConstructionCounted &other) noexcept
+    {
+        i = other.i;
+        copies = other.copies + 1;
+        moves = other.moves;
+        return *this;
+    }
+    ~ConstructionCounted() = default;
+
+    friend bool operator==(const ConstructionCounted &lhs, const ConstructionCounted &rhs)
+    {
+        return lhs.i == rhs.i;
+    }
+
+    QString toString() { return QString::number(i); }
+
+    int i;
+    int copies = 0;
+    int moves = 0;
+};
+QT_BEGIN_NAMESPACE
+namespace QTest {
+char *toString(const ConstructionCounted &cc)
+{
+    char *str = new char[5];
+    qsnprintf(str, 4, "%d", cc.i);
+    return str;
+}
+}
+QT_END_NAMESPACE
+
+void tst_QList::appendList() const
+{
+    // By const-ref
+    {
+        QList<int> v1 = { 1, 2, 3, 4 };
+        QList<int> v2 = { 5, 6, 7, 8 };
+        v1.append(v2);
+        QCOMPARE(v2.size(), 4);
+        QCOMPARE(v1.size(), 8);
+        QList<int> expected = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        QCOMPARE(v1, expected);
+
+        QList<int> doubleExpected = { 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8 };
+        // append self to self
+        v1.append(v1);
+        QCOMPARE(v1.size(), 16);
+        QCOMPARE(v1, doubleExpected);
+        v1.resize(8);
+
+        // append to self, but was shared
+        QList v1_2(v1);
+        v1.append(v1);
+        QCOMPARE(v1_2.size(), 8);
+        QCOMPARE(v1_2, expected);
+        QCOMPARE(v1.size(), 16);
+        QCOMPARE(v1, doubleExpected);
+        v1.resize(8);
+
+        // append empty
+        QList<int> v3;
+        v1.append(v3);
+
+        // append to empty
+        QList<int> v4;
+        v4.append(v1);
+        QCOMPARE(v4, expected);
+
+        v1 = { 1, 2, 3, 4 };
+        // Using operators
+        // <<
+        QList<int> v5;
+        v5 << v1 << v2;
+        QCOMPARE(v5, expected);
+
+        // +=
+        QList<int> v6;
+        v6 += v1;
+        v6 += v2;
+        QCOMPARE(v6, expected);
+
+        // +
+        QCOMPARE(v1 + v2, expected);
+    }
+    // By move
+    {
+        QList<ConstructionCounted> v1 = { 1, 2, 3, 4 };
+        // Sanity check
+        QCOMPARE(v1.at(3).moves, 0);
+        QCOMPARE(v1.at(3).copies, 1); // because of initializer list
+
+        QList<ConstructionCounted> v2 = { 5, 6, 7, 8 };
+        v1.append(std::move(v2));
+        QCOMPARE(v1.size(), 8);
+        QList<ConstructionCounted> expected = { 1, 2, 3, 4, 5, 6, 7, 8 };
+        QCOMPARE(v1, expected);
+        QCOMPARE(v1.at(0).copies, 1);
+        QCOMPARE(v1.at(0).moves, 1);
+
+        QCOMPARE(v1.at(4).copies, 1); // was v2.at(0)
+        QCOMPARE(v1.at(4).moves, 1);
+
+        // append move from empty
+        QList<ConstructionCounted> v3;
+        v1.append(std::move(v3));
+        QCOMPARE(v1.size(), 8);
+        QCOMPARE(v1, expected);
+
+        for (qsizetype i = 0; i < v1.size(); ++i) {
+            const auto &counter = v1.at(i);
+            QCOMPARE(counter.copies, 1);
+            QCOMPARE(counter.moves, 1);
+        }
+
+        // append move to empty
+        QList<ConstructionCounted> v4;
+        v4.reserve(64);
+        v4.append(std::move(v1));
+        QCOMPARE(v4.size(), 8);
+        QCOMPARE(v4, expected);
+
+        for (qsizetype i = 0; i < v4.size(); ++i) {
+            const auto &counter = v4.at(i);
+            QCOMPARE(counter.copies, 1);
+            QCOMPARE(counter.moves, 2);
+        }
+
+        QVERIFY(v4.capacity() >= 64);
+
+        v1.swap(v4); // swap back...
+
+        // append move from shared
+        QList<ConstructionCounted> v5 = { 1, 2, 3, 4 };
+        QList<ConstructionCounted> v5_2(v5);
+        v1.append(std::move(v5_2));
+        QCOMPARE(v1.size(), 12);
+        QList<ConstructionCounted> expectedTwelve = { 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4 };
+        QCOMPARE(v1, expectedTwelve);
+        QCOMPARE(v5.size(), 4);
+        QList<ConstructionCounted> expectedFour = { 1, 2, 3, 4 };
+        QCOMPARE(v5, expectedFour);
+
+        QCOMPARE(v5.at(0).copies, 1); // from constructing with std::initializer_list
+        QCOMPARE(v5.at(0).moves, 0);
+
+        // Using operators
+        // <<
+        QList<ConstructionCounted> v6;
+        v6 << (QList<ConstructionCounted>() << 1 << 2);
+        v6 << (QList<ConstructionCounted>() << 3 << 4);
+        QCOMPARE(v6, expectedFour);
+        QCOMPARE(v6.at(0).copies, 2);
+        QCOMPARE(v6.at(0).moves, 1);
+
+        // +=
+        QList<ConstructionCounted> v7;
+        v7 += (QList<ConstructionCounted>() << 1 << 2);
+        v7 += (QList<ConstructionCounted>() << 3 << 4);
+        QCOMPARE(v7, expectedFour);
+
+        // +
+        QList<ConstructionCounted> v8;
+        QCOMPARE(v8 + (QList<ConstructionCounted>() << 1 << 2 << 3 << 4), expectedFour);
+        v8 = { 1, 2 };
+        QCOMPARE(v8 + (QList<ConstructionCounted>() << 3 << 4), expectedFour);
+    }
 }
 
 void tst_QList::at() const
