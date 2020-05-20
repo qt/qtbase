@@ -94,6 +94,34 @@ public:
     bool isEmpty() const { return m_size == 0; }
     bool isNull() const { return !m_string; }
     QString toString() const { return view().toString(); }
+
+#define MAKE_OP(op) \
+    friend auto operator op(const XmlStringRef &lhs, const XmlStringRef &rhs) noexcept { return lhs.view() op rhs.view(); } \
+    /*end*/
+    MAKE_OP(==)
+    MAKE_OP(!=)
+    MAKE_OP(<=)
+    MAKE_OP(>=)
+    MAKE_OP(<)
+    MAKE_OP(>)
+#ifdef __cpp_impl_three_way_comparison
+    MAKE_OP(<=>)
+#endif
+#undef MAKE_OP
+#define MAKE_OP(op) \
+    friend auto operator op(const XmlStringRef &lhs, QStringView rhs) noexcept { return lhs.view() op rhs; } \
+    friend auto operator op(QStringView lhs, const XmlStringRef &rhs) noexcept { return lhs op rhs.view(); } \
+    /*end*/
+    MAKE_OP(==)
+    MAKE_OP(!=)
+    MAKE_OP(<=)
+    MAKE_OP(>=)
+    MAKE_OP(<)
+    MAKE_OP(>)
+#ifdef __cpp_impl_three_way_comparison
+    MAKE_OP(<=>)
+#endif
+#undef MAKE_OP
 };
 
 }

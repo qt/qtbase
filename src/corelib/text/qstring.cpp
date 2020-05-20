@@ -1186,8 +1186,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
     return 0;
 }
 
-template <typename Number>
-constexpr int lencmp(Number lhs, Number rhs) noexcept
+constexpr int lencmp(qsizetype lhs, qsizetype rhs) noexcept
 {
     return lhs == rhs ? 0 :
            lhs >  rhs ? 1 :
@@ -1283,6 +1282,49 @@ static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
     return r ? r : lencmp(lhs.size(), rhs.size());
 }
 
+static int qt_compare_strings(QBasicUtf8StringView<false> lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
+{
+    if (cs == Qt::CaseSensitive)
+        return QUtf8::compareUtf8(lhs.data(), lhs.size(), rhs.data(), rhs.size());
+    else
+        return ucstricmp8(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
+
+static int qt_compare_strings(QStringView lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs) noexcept
+{
+    return -qt_compare_strings(rhs, lhs, cs);
+}
+
+static int qt_compare_strings(QLatin1String lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs) noexcept
+{
+    return qt_compare_strings(lhs, rhs.toString(), cs); // ### optimize!
+}
+
+static int qt_compare_strings(QBasicUtf8StringView<false> lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
+{
+    return -qt_compare_strings(rhs, lhs, cs);
+}
+
+static int qt_compare_strings(QBasicUtf8StringView<false> lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs) noexcept
+{
+    if (lhs.isEmpty())
+        return lencmp(0, rhs.size());
+    if (cs == Qt::CaseInsensitive)
+        return qt_compare_strings(lhs.toString(), rhs.toString(), cs); // ### optimize!
+    const auto l = std::min(lhs.size(), rhs.size());
+    int r = qstrncmp(lhs.data(), rhs.data(), l);
+    return r ? r : lencmp(lhs.size(), rhs.size());
+}
+
+int QAnyStringView::compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs) noexcept
+{
+    return lhs.visit([rhs, cs](auto lhs) {
+        return rhs.visit([lhs, cs](auto rhs) {
+            return qt_compare_strings(lhs, rhs, cs);
+        });
+    });
+}
+
 /*!
     \relates QStringView
     \internal
@@ -1329,19 +1371,19 @@ int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensit
 /*!
     \relates QStringView
     \internal
+    \since 6.0
+    \overload
+*/
+int QtPrivate::compareStrings(QStringView lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs) noexcept
+{
+    return qt_compare_strings(lhs, rhs, cs);
+}
+
+/*!
+    \relates QStringView
+    \internal
     \since 5.10
     \overload
-
-    Returns an integer that compares to 0 as \a lhs compares to \a rhs.
-
-    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
-    otherwise the comparison is case-insensitive.
-
-    Case-sensitive comparison is based exclusively on the numeric Unicode values
-    of the characters and is very fast, but is not what a human would expect.
-    Consider sorting user-visible strings with QString::localeAwareCompare().
-
-    \sa {Comparing Strings}
 */
 int QtPrivate::compareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
@@ -1375,23 +1417,43 @@ int QtPrivate::compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
     \internal
     \since 6.0
     \overload
-
-    Returns an integer that compares to 0 as \a lhs compares to \a rhs.
-
-    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
-    otherwise the comparison is case-insensitive.
-
-    Case-sensitive comparison is based exclusively on the numeric values of the
-    decoded Unicode code points and is very fast, but is not what a human would
-    expect. Consider sorting user-visible strings with
-    QString::localeAwareCompare().
 */
-int QtPrivate::compareStringsUtf8(const char *u8str, qsizetype u8len, QStringView rhs, Qt::CaseSensitivity cs) noexcept
+int QtPrivate::compareStrings(QLatin1String lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs) noexcept
 {
-    if (cs == Qt::CaseSensitive)
-        return QUtf8::compareUtf8(u8str, u8len, rhs.data(), rhs.size());
-    else
-        return ucstricmp8(u8str, u8str + u8len, rhs.begin(), rhs.end());
+    return qt_compare_strings(lhs, rhs, cs);
+}
+
+/*!
+    \relates QStringView
+    \internal
+    \since 6.0
+    \overload
+*/
+int QtPrivate::compareStrings(QBasicUtf8StringView<false> lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
+{
+    return qt_compare_strings(lhs, rhs, cs);
+}
+
+/*!
+    \relates QStringView
+    \internal
+    \since 6.0
+    \overload
+*/
+int QtPrivate::compareStrings(QBasicUtf8StringView<false> lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
+{
+    return qt_compare_strings(lhs, rhs, cs);
+}
+
+/*!
+    \relates QStringView
+    \internal
+    \since 6.0
+    \overload
+*/
+int QtPrivate::compareStrings(QBasicUtf8StringView<false> lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs) noexcept
+{
+    return qt_compare_strings(lhs, rhs, cs);
 }
 
 #define REHASH(a) \
@@ -4794,6 +4856,21 @@ static QByteArray qt_convert_to_latin1(QStringView string);
 QByteArray QString::toLatin1_helper(const QString &string)
 {
     return qt_convert_to_latin1(string);
+}
+
+/*!
+    \since 6.0
+    \internal
+    \relates QAnyStringView
+
+    Returns a UTF-16 representation of \a string as a QString.
+
+    \sa QString::toLatin1(), QStringView::toLatin1(), QtPrivate::convertToUtf8(),
+    QtPrivate::convertToLocal8Bit(), QtPrivate::convertToUcs4()
+*/
+QString QtPrivate::convertToQString(QAnyStringView string)
+{
+    return string.visit([] (auto string) { return string.toString(); });
 }
 
 /*!

@@ -53,7 +53,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
-#include <QtCore/qstringview.h>
+#include <QtCore/qanystringview.h>
 #include <QtCore/qstringtokenizer.h>
 
 #include <string>
@@ -80,6 +80,12 @@ class QStringList;
 namespace QtPrivate {
 template <bool...B> class BoolList;
 }
+
+// QStringAlgorithms inline functions:
+
+int QtPrivate::compareStringsUtf8(const char *lhs, qsizetype lhss, QStringView rhs, Qt::CaseSensitivity cs) noexcept
+{ return compareStrings(QUtf8StringView(lhs, lhss), rhs, cs); }
+
 
 class QLatin1String
 {
@@ -281,6 +287,44 @@ bool QStringView::contains(QLatin1String s, Qt::CaseSensitivity cs) const noexce
 { return indexOf(s, 0, cs) != qsizetype(-1); }
 qsizetype QStringView::lastIndexOf(QLatin1String s, qsizetype from, Qt::CaseSensitivity cs) const noexcept
 { return QtPrivate::lastIndexOf(*this, from, s, cs); }
+
+//
+// QAnyStringView members that require QLatin1String
+//
+
+constexpr QAnyStringView::QAnyStringView(QLatin1String str) noexcept
+    : m_data{str.data()}, m_size{size_t(str.size()) | Tag::Latin1} {}
+
+constexpr QLatin1String QAnyStringView::asLatin1StringView() const
+{
+    Q_ASSERT(isLatin1());
+    return QLatin1String{m_data_utf8, int(size())};
+}
+
+template <typename Visitor>
+constexpr decltype(auto) QAnyStringView::visit(Visitor &&v) const
+{
+    if (isUtf16())
+        return std::forward<Visitor>(v)(asStringView());
+    else if (isLatin1())
+        return std::forward<Visitor>(v)(asLatin1StringView());
+    else
+        return std::forward<Visitor>(v)(asUtf8StringView());
+}
+
+//
+// QAnyStringView members that require QAnyStringView::visit()
+//
+
+constexpr QChar QAnyStringView::front() const
+{
+    return visit([] (auto that) { return QAnyStringView::toQChar(that.front()); });
+}
+constexpr QChar QAnyStringView::back() const
+{
+    return visit([] (auto that) { return QAnyStringView::toQChar(that.back()); });
+}
+
 
 class Q_CORE_EXPORT QString
 {
@@ -976,6 +1020,7 @@ QString QLatin1String::toString() const { return *this; }
 //
 // QStringView inline members that require QString:
 //
+
 QString QStringView::toString() const
 { return Q_ASSERT(size() == length()), QString(data(), length()); }
 
@@ -995,6 +1040,29 @@ short QStringView::toShort(bool *ok, int base) const
 { return QString::toIntegral_helper<short>(*this, ok, base); }
 ushort QStringView::toUShort(bool *ok, int base) const
 { return QString::toIntegral_helper<ushort>(*this, ok, base); }
+
+//
+// QUtf8StringView inline members that require QString:
+//
+
+template <bool UseChar8T>
+QString QBasicUtf8StringView<UseChar8T>::toString() const
+{
+    Q_ASSERT(size() == int(size()));
+    return QString::fromUtf8(data(), int(size()));
+}
+
+//
+// QAnyStringView inline members that require QString:
+//
+
+QAnyStringView::QAnyStringView(const QByteArray &str) noexcept
+    : QAnyStringView{str.isNull() ? nullptr : str.data(), str.size()} {}
+QAnyStringView::QAnyStringView(const QString &str) noexcept
+    : QAnyStringView{str.isNull() ? nullptr : str.data(), str.size()} {}
+
+QString QAnyStringView::toString() const
+{ return QtPrivate::convertToQString(*this); }
 
 //
 // QString inline members
@@ -1383,6 +1451,7 @@ inline bool operator> (QLatin1String lhs, QChar rhs) noexcept { return   rhs <  
 inline bool operator<=(QLatin1String lhs, QChar rhs) noexcept { return !(rhs <  lhs); }
 inline bool operator>=(QLatin1String lhs, QChar rhs) noexcept { return !(rhs >  lhs); }
 
+#if 0
 // QStringView <> QStringView
 inline bool operator==(QStringView lhs, QStringView rhs) noexcept { return lhs.size() == rhs.size() && QtPrivate::compareStrings(lhs, rhs) == 0; }
 inline bool operator!=(QStringView lhs, QStringView rhs) noexcept { return !(lhs == rhs); }
@@ -1390,6 +1459,7 @@ inline bool operator< (QStringView lhs, QStringView rhs) noexcept { return QtPri
 inline bool operator<=(QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
 inline bool operator> (QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >  0; }
 inline bool operator>=(QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
+#endif
 
 // QStringView <> QChar
 inline bool operator==(QStringView lhs, QChar rhs) noexcept { return lhs == QStringView(&rhs, 1); }

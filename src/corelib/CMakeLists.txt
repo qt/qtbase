@@ -150,6 +150,7 @@ qt_add_module(Core
         serialization/qxmlstreamgrammar.cpp serialization/qxmlstreamgrammar_p.h
         serialization/qxmlstreamparser_p.h
         serialization/qxmlutils.cpp serialization/qxmlutils_p.h
+        text/qanystringview.h
         text/qbytearray.cpp text/qbytearray.h text/qbytearray_p.h
         text/qbytearrayalgorithms.h
         text/qbytearraylist.cpp text/qbytearraylist.h
@@ -175,6 +176,7 @@ qt_add_module(Core
         text/qtextboundaryfinder.cpp text/qtextboundaryfinder.h
         text/qunicodetables_p.h
         text/qunicodetools.cpp text/qunicodetools_p.h
+        text/qutf8stringview.h
         text/qvsnprintf.cpp
         thread/qmutex.h
         thread/qreadwritelock.h

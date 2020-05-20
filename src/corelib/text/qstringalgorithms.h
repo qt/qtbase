@@ -48,9 +48,27 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef __cpp_char8_t
+# define QT_BEGIN_HAS_CHAR8_T_NAMESPACE inline namespace q_has_char8_t {
+# define QT_BEGIN_NO_CHAR8_T_NAMESPACE namespace q_no_char8_t {
+#else
+# define QT_BEGIN_HAS_CHAR8_T_NAMESPACE namespace q_has_char8_t {
+# define QT_BEGIN_NO_CHAR8_T_NAMESPACE inline namespace q_no_char8_t {
+#endif
+#define QT_END_HAS_CHAR8_T_NAMESPACE }
+#define QT_END_NO_CHAR8_T_NAMESPACE }
+
+// declare namespaces:
+QT_BEGIN_HAS_CHAR8_T_NAMESPACE
+QT_END_HAS_CHAR8_T_NAMESPACE
+QT_BEGIN_NO_CHAR8_T_NAMESPACE
+QT_END_NO_CHAR8_T_NAMESPACE
+
 class QByteArray;
 class QLatin1String;
 class QStringView;
+template <bool> class QBasicUtf8StringView;
+class QAnyStringView;
 class QChar;
 
 namespace QtPrivate {
@@ -60,10 +78,15 @@ Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION const char16_t *qustrchr(QS
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QStringView   lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QStringView   lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QStringView   lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
-Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStringsUtf8(const char *, qsizetype, QStringView rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QLatin1String lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QBasicUtf8StringView<false> lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QBasicUtf8StringView<false> lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QBasicUtf8StringView<false> lhs, QBasicUtf8StringView<false> rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 
+Q_DECL_DEPRECATED inline int compareStringsUtf8(const char *lhs, qsizetype lhss, QStringView rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool startsWith(QStringView   haystack, QStringView   needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool startsWith(QStringView   haystack, QLatin1String needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
@@ -90,6 +113,8 @@ Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION QLatin1String trimmed(QLati
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION qsizetype count(QStringView haystack, QChar needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION qsizetype count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+
+Q_REQUIRED_RESULT Q_CORE_EXPORT QString convertToQString(QAnyStringView s);
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray convertToLatin1(QStringView str);
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray convertToUtf8(QStringView str);

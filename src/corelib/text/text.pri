@@ -1,6 +1,7 @@
 # Qt text / string / character / unicode / byte array module
 
 HEADERS +=  \
+        text/qanystringview.h \
         text/qbytearray.h \
         text/qbytearray_p.h \
         text/qbytearrayalgorithms.h \
@@ -30,8 +31,8 @@ HEADERS +=  \
         text/qstringtokenizer.h \
         text/qtextboundaryfinder.h \
         text/qunicodetables_p.h \
-        text/qunicodetools_p.h
-
+        text/qunicodetools_p.h \
+        text/qutf8stringview.h
 
 SOURCES += \
         text/qbytearray.cpp \
