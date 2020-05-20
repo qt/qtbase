@@ -932,8 +932,7 @@ void QRhiD3D11::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
     QD3D11CommandBuffer::Command cmd;
     cmd.cmd = QD3D11CommandBuffer::Command::DebugMarkBegin;
-    strncpy(cmd.args.debugMark.s, name.constData(), sizeof(cmd.args.debugMark.s));
-    cmd.args.debugMark.s[sizeof(cmd.args.debugMark.s) - 1] = '\0';
+    qstrncpy(cmd.args.debugMark.s, name.constData(), sizeof(cmd.args.debugMark.s));
     cbD->commands.append(cmd);
 }
 
@@ -956,8 +955,7 @@ void QRhiD3D11::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
     QD3D11CommandBuffer::Command cmd;
     cmd.cmd = QD3D11CommandBuffer::Command::DebugMarkMsg;
-    strncpy(cmd.args.debugMark.s, msg.constData(), sizeof(cmd.args.debugMark.s));
-    cmd.args.debugMark.s[sizeof(cmd.args.debugMark.s) - 1] = '\0';
+    qstrncpy(cmd.args.debugMark.s, msg.constData(), sizeof(cmd.args.debugMark.s));
     cbD->commands.append(cmd);
 }
 
