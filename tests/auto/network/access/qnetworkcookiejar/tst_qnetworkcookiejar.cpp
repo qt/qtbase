@@ -37,6 +37,7 @@
 #include <QtNetwork/QNetworkRequest>
 #if QT_CONFIG(topleveldomain)
 #include "private/qtldurl_p.h"
+#include "private/qurltlds_p.h"
 #endif
 
 class tst_QNetworkCookieJar: public QObject
@@ -477,6 +478,23 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
     QTest::newRow("yes-wildcard4") << "anything.sendai.jp" << true;
     QTest::newRow("yes-wildcard5") << "foo.sch.uk" << true;
     QTest::newRow("yes-wildcard6") << "something.platform.sh" << true;
+
+    int i;
+    for (i = 0; tldIndices[i] < tldChunks[0]; i++)  { }
+    Q_ASSERT(i < tldCount);
+    int TLDsInFirstChunk = i;
+
+    const char *lastGroupFromFirstChunk = &tldData[0][tldIndices[TLDsInFirstChunk - 1]];
+    QTest::addRow("lastGroupFromFirstChunk: %s", lastGroupFromFirstChunk)
+        << lastGroupFromFirstChunk
+        << true;
+
+    Q_ASSERT(tldChunkCount > 1);    // There are enough TLDs to fill 64K bytes
+    const char *lastGroupFromLastChunk =
+        &tldData[tldChunkCount-1][tldIndices[tldCount - 1] - tldChunks[tldChunkCount - 2]];
+    QTest::addRow("lastGroupFromLastChunk: %s", lastGroupFromLastChunk)
+        << lastGroupFromLastChunk
+        << true;
 }
 
 void tst_QNetworkCookieJar::effectiveTLDs()
