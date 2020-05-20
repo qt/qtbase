@@ -243,7 +243,7 @@ public:
 
 
     QXmlStreamAttributes attributes;
-    QStringRef namespaceForPrefix(const QStringRef &prefix);
+    QStringRef namespaceForPrefix(QStringView prefix);
     void resolveTag();
     void resolvePublicNamespaces();
     void resolveDtd();
@@ -251,7 +251,7 @@ public:
     bool checkStartDocument();
     void startDocument();
     void parseError();
-    void checkPublicLiteral(const QStringRef &publicId);
+    void checkPublicLiteral(QStringView publicId);
 
     bool scanDtd;
     QStringRef lastAttributeValue;

@@ -1533,7 +1533,7 @@ uint QXmlStreamReaderPrivate::getChar_helper()
     return StreamEOF;
 }
 
-QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(const QStringRef &prefix)
+QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(QStringView prefix)
 {
      for (const NamespaceDeclaration &namespaceDeclaration : reversed(namespaceDeclarations)) {
          if (namespaceDeclaration.prefix == prefix) {
@@ -1712,7 +1712,7 @@ uint QXmlStreamReaderPrivate::resolveCharRef(int symbolIndex)
 }
 
 
-void QXmlStreamReaderPrivate::checkPublicLiteral(const QStringRef &publicId)
+void QXmlStreamReaderPrivate::checkPublicLiteral(QStringView publicId)
 {
 //#x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
 
