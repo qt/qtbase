@@ -1265,10 +1265,11 @@ QString QObject::objectName() const
     return d->extraData ? d->extraData->objectName : QString();
 }
 
-/*
+/*!
+    \fn void QObject::setObjectName(const QString &name)
     Sets the object's name to \a name.
 */
-void QObject::setObjectName(const QString &name)
+void QObject::doSetObjectName(const QString &name)
 {
     Q_D(QObject);
 
@@ -1278,6 +1279,24 @@ void QObject::setObjectName(const QString &name)
 
     if (d->extraData->objectName != name) {
         d->extraData->objectName.setValueBypassingBindings(name);
+        d->extraData->objectName.notify(); // also emits a signal
+    }
+}
+
+/*!
+    \overload
+    \since 6.4
+*/
+void QObject::setObjectName(QAnyStringView name)
+{
+    Q_D(QObject);
+
+    d->ensureExtraData();
+
+    d->extraData->objectName.removeBindingUnlessInWrapper();
+
+    if (d->extraData->objectName.value() != name) {
+        d->extraData->objectName.setValueBypassingBindings(name.toString());
         d->extraData->objectName.notify(); // also emits a signal
     }
 }

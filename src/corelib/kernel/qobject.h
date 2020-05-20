@@ -145,7 +145,12 @@ public:
 #endif // QT_NO_TRANSLATION
 
     QString objectName() const;
+#if QT_CORE_REMOVED_SINCE(6, 4)
     void setObjectName(const QString &name);
+#endif
+    Q_WEAK_OVERLOAD
+    void setObjectName(const QString &name) { doSetObjectName(name); }
+    void setObjectName(QAnyStringView name);
     QBindable<QString> bindableObjectName();
 
     inline bool isWidgetType() const { return d_ptr->isWidget; }
@@ -449,6 +454,7 @@ protected:
     friend class QThreadData;
 
 private:
+    void doSetObjectName(const QString &name);
     Q_DISABLE_COPY(QObject)
     Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
 

@@ -205,6 +205,15 @@ QCalendar::QCalendar(QStringView name)
 QCalendar::QCalendar(QLatin1String name)
     : QCalendar(QAnyStringView{name}) {}
 
+
+#include "qobject.h"
+
+void QObject::setObjectName(const QString &name)
+{
+    setObjectName<void>(name);
+}
+
+
 #include "qversionnumber.h"
 
 QT_WARNING_PUSH
@@ -229,5 +238,6 @@ QT_WARNING_POP
 
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
+// order sections alphabetically to reduce chances of merge conflicts
 
 #endif // QT_CORE_REMOVED_SINCE(6, 4)
