@@ -582,14 +582,14 @@ template <typename T>
 constexpr inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 
 constexpr inline int qRound(double d)
-{ return d >= 0.0 ? int(d + 0.5) : int(d - double(int(d-1)) + 0.5) + int(d-1); }
+{ return d >= 0.0 ? int(d + 0.5) : int(d - 0.5); }
 constexpr inline int qRound(float d)
-{ return d >= 0.0f ? int(d + 0.5f) : int(d - float(int(d-1)) + 0.5f) + int(d-1); }
+{ return d >= 0.0f ? int(d + 0.5f) : int(d - 0.5f); }
 
 constexpr inline qint64 qRound64(double d)
-{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - double(qint64(d-1)) + 0.5) + qint64(d-1); }
+{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - 0.5); }
 constexpr inline qint64 qRound64(float d)
-{ return d >= 0.0f ? qint64(d + 0.5f) : qint64(d - float(qint64(d-1)) + 0.5f) + qint64(d-1); }
+{ return d >= 0.0f ? qint64(d + 0.5f) : qint64(d - 0.5f); }
 
 namespace QTypeTraits {
 

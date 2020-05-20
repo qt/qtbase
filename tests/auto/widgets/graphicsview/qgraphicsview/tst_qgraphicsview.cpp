@@ -4840,6 +4840,7 @@ public:
     {
         setFlag(QGraphicsItem::ItemIsFocusable, true);
         setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+        setPen(Qt::NoPen); // Avoid adding a half pixel border to the rect.
     }
 
     QVariant inputMethodQuery(Qt::InputMethodQuery) const override

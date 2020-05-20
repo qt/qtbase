@@ -973,7 +973,7 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds \a d to the nearest integer.
 
-    Rounds half up (e.g. 0.5 -> 1, -0.5 -> 0).
+    Rounds half away from zero (e.g. 0.5 -> 1, -0.5 -> -1).
 
     Example:
 
@@ -985,7 +985,7 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds \a d to the nearest integer.
 
-    Rounds half up (e.g. 0.5f -> 1, -0.5f -> 0).
+    Rounds half away from zero (e.g. 0.5f -> 1, -0.5f -> -1).
 
     Example:
 
@@ -997,7 +997,7 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds \a d to the nearest 64-bit integer.
 
-    Rounds half up (e.g. 0.5 -> 1, -0.5 -> 0).
+    Rounds half away from zero (e.g. 0.5 -> 1, -0.5 -> -1).
 
     Example:
 
@@ -1009,7 +1009,7 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds \a d to the nearest 64-bit integer.
 
-    Rounds half up (e.g. 0.5f -> 1, -0.5f -> 0).
+    Rounds half away from zero (e.g. 0.5f -> 1, -0.5f -> -1).
 
     Example:
 

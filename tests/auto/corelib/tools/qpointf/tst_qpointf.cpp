@@ -381,7 +381,7 @@ void tst_QPointF::toPoint_data()
 
     QTest::newRow("(0.0, 0.0) ==> (0, 0)") << QPointF(0, 0) << QPoint(0, 0);
     QTest::newRow("(0.5, 0.5) ==> (1, 1)") << QPointF(0.5, 0.5) << QPoint(1, 1);
-    QTest::newRow("(-0.5, -0.5) ==> (0, 0)") << QPointF(-0.5, -0.5) << QPoint(0, 0);
+    QTest::newRow("(-0.5, -0.5) ==> (-1, -1)") << QPointF(-0.5, -0.5) << QPoint(-1, -1);
 }
 
 void tst_QPointF::toPoint()
