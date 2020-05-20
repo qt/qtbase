@@ -54,11 +54,11 @@
 #include <QOpenGLFunctions>
 #include <QRandomGenerator>
 #include <qmath.h>
+#include <QElapsedTimer>
 
 Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *screen)
     : m_initialized(false)
     , m_format(format)
-    , m_currentWindow(0)
 {
     m_context = new QOpenGLContext(this);
     if (screen)
@@ -89,22 +89,31 @@ HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer, QScreen *scre
     create();
 
     updateColor();
+
+    connect(renderer.data(), &Renderer::requestUpdate, this, &QWindow::requestUpdate);
 }
 
 void HelloWindow::exposeEvent(QExposeEvent *)
 {
-    m_renderer->setAnimating(this, isExposed());
     if (isExposed())
-        m_renderer->render();
+        render();
 }
 
 bool HelloWindow::event(QEvent *ev)
 {
-    if (ev->type() == QEvent::UpdateRequest) {
-        m_renderer->render();
-        requestUpdate();
-    }
+    if (ev->type() == QEvent::UpdateRequest && isExposed())
+        render();
     return QWindow::event(ev);
+}
+
+void HelloWindow::render()
+{
+    static QElapsedTimer timer;
+    if (!timer.isValid())
+        timer.start();
+    qreal a = (qreal)(((timer.elapsed() * 3) % 36000) / 100.0);
+    auto call = [this, r = m_renderer.data(), a, c = color()]() { r->render(this, a, c); };
+    QMetaObject::invokeMethod(m_renderer.data(), call);
 }
 
 void HelloWindow::mousePressEvent(QMouseEvent *)
@@ -114,14 +123,11 @@ void HelloWindow::mousePressEvent(QMouseEvent *)
 
 QColor HelloWindow::color() const
 {
-    QMutexLocker locker(&m_colorLock);
     return m_color;
 }
 
 void HelloWindow::updateColor()
 {
-    QMutexLocker locker(&m_colorLock);
-
     QColor colors[] =
     {
         QColor(100, 255, 0),
@@ -132,40 +138,12 @@ void HelloWindow::updateColor()
     m_colorIndex = 1 - m_colorIndex;
 }
 
-void Renderer::setAnimating(HelloWindow *window, bool animating)
+void Renderer::render(HelloWindow *surface, qreal angle, const QColor &color)
 {
-    QMutexLocker locker(&m_windowLock);
-    if (m_windows.contains(window) == animating)
-        return;
-
-    if (animating) {
-        m_windows << window;
-        if (m_windows.size() == 1)
-            window->requestUpdate();
-    } else {
-        m_currentWindow = 0;
-        m_windows.removeOne(window);
-    }
-}
-
-void Renderer::render()
-{
-    QMutexLocker locker(&m_windowLock);
-
-    if (m_windows.isEmpty())
-        return;
-
-    HelloWindow *surface = m_windows.at(m_currentWindow);
-    QColor color = surface->color();
-
-    m_currentWindow = (m_currentWindow + 1) % m_windows.size();
-
     if (!m_context->makeCurrent(surface))
         return;
 
     QSize viewSize = surface->size();
-
-    locker.unlock();
 
     if (!m_initialized) {
         initialize();
@@ -192,9 +170,9 @@ void Renderer::render()
     m_program->setAttributeBuffer(normalAttr, GL_FLOAT, verticesSize, 3);
 
     QMatrix4x4 modelview;
-    modelview.rotate(m_fAngle, 0.0f, 1.0f, 0.0f);
-    modelview.rotate(m_fAngle, 1.0f, 0.0f, 0.0f);
-    modelview.rotate(m_fAngle, 0.0f, 0.0f, 1.0f);
+    modelview.rotate(angle, 0.0f, 1.0f, 0.0f);
+    modelview.rotate(angle, 1.0f, 0.0f, 0.0f);
+    modelview.rotate(angle, 0.0f, 0.0f, 1.0f);
     modelview.translate(0.0f, -0.2f, 0.0f);
 
     m_program->setUniformValue(matrixUniform, modelview);
@@ -204,7 +182,7 @@ void Renderer::render()
 
     m_context->swapBuffers(surface);
 
-    m_fAngle += 1.0f;
+    emit requestUpdate();
 }
 
 Q_GLOBAL_STATIC(QMutex, initMutex)
@@ -250,7 +228,6 @@ void Renderer::initialize()
     matrixUniform = m_program->uniformLocation("matrix");
     colorUniform = m_program->uniformLocation("sourceColor");
 
-    m_fAngle = 0;
     createGeometry();
 
     m_vbo.create();
