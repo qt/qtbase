@@ -882,8 +882,8 @@ QRectF QPlatformWindow::windowClosestAcceptableGeometry(const QRectF &nativeRect
     However, it is not concerned with how Qt renders into the window it represents.
 
     Visible QWindows will always have a QPlatformWindow. However, it is not necessary for
-    all windows to have a QBackingStore. This is the case for QOpenGLWidget. And could be the case for
-    windows where some  3.party renders into it.
+    all windows to have a QBackingStore. This is the case for QOpenGLWindow. And could be the case for
+    windows where some third party renders into it.
 
     The platform specific window handle can be retrieved by the winId function.
 
