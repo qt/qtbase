@@ -793,7 +793,12 @@ QT_MODULES += ${config_module_name}
     qt_path_join(private_pri_file "${target_path}" "qt_lib_${config_module_name}_private.pri")
     list(APPEND pri_files "${private_pri_file}")
 
-    qt_get_qmake_libraries_pri_content(libraries_content ${config_module_name})
+    if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+        ### FIXME QTBUG-84348
+        set(libraries_content "")
+    else()
+        qt_get_qmake_libraries_pri_content(libraries_content ${config_module_name})
+    endif()
 
     file(GENERATE
         OUTPUT "${private_pri_file}"
