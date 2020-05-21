@@ -32,7 +32,7 @@ QOBJS = \
         qcryptographichash.o qdatetime.o qhash.o \
         qlocale.o qlocale_tools.o qmap.o qregularexpression.o qregexp.o qringbuffer.o \
         qstringbuilder.o qstring.o qstringconverter.o qstringlist.o qversionnumber.o \
-	qvsnprintf.o qxmlstream.o qxmlutils.o \
+	qvsnprintf.o \
         pcre2_auto_possess.o pcre2_chartables.o pcre2_compile.o pcre2_config.o \
         pcre2_context.o pcre2_dfa_match.o pcre2_error.o pcre2_extuni.o \
         pcre2_find_bracket.o pcre2_jit_compile.o pcre2_maketables.o pcre2_match.o \
@@ -110,8 +110,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/serialization/qjsonparser.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qjsonvalue.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qtextstream.cpp \
-	   $(SOURCE_PATH)/src/corelib/serialization/qxmlstream.cpp \
-	   $(SOURCE_PATH)/src/corelib/serialization/qxmlutils.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qbytearray.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qbytearraylist.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qbytearraymatcher.cpp \
@@ -524,12 +522,6 @@ qjsonobject.o: $(SOURCE_PATH)/src/corelib/serialization/qjsonobject.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qjsonvalue.o: $(SOURCE_PATH)/src/corelib/serialization/qjsonvalue.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qxmlstream.o: $(SOURCE_PATH)/src/corelib/serialization/qxmlstream.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qxmlutils.o: $(SOURCE_PATH)/src/corelib/serialization/qxmlutils.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qtextstream.o: $(SOURCE_PATH)/src/corelib/serialization/qtextstream.cpp

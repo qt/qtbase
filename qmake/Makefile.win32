@@ -117,8 +117,6 @@ QTOBJS= \
 	qvariant.obj \
 	qsettings_win.obj \
 	qmetatype.obj \
-	qxmlstream.obj \
-	qxmlutils.obj \
 	qnumeric.obj \
 	qlogging.obj \
 	qcborstreamwriter.obj \

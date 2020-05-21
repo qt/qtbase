@@ -78,7 +78,6 @@ qt_add_tool(qmake # special case
         ../src/corelib/serialization/qjsonvalue.cpp ../src/corelib/serialization/qjsonvalue.h
         ../src/corelib/serialization/qjsonwriter_p.h
         ../src/corelib/serialization/qtextstream.cpp ../src/corelib/serialization/qtextstream.h
-        ../src/corelib/serialization/qxmlstream.cpp ../src/corelib/serialization/qxmlstream.h
         ../src/corelib/serialization/qxmlutils.cpp ../src/corelib/serialization/qxmlutils_p.h
         ../src/corelib/tools/qarraydata.cpp ../src/corelib/tools/qarraydata.h
         ../src/corelib/tools/qarraydataops.h

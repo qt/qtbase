@@ -168,8 +168,6 @@ SOURCES += \
     qvariant.cpp \
     qversionnumber.cpp \
     qvsnprintf.cpp \
-    qxmlstream.cpp \
-    qxmlutils.cpp
 
 HEADERS += \
     qabstractfileengine_p.h \
@@ -227,8 +225,6 @@ HEADERS += \
     quuid.h \
     qvector.h \
     qversionnumber.h \
-    qxmlstream.h \
-    qxmlutils_p.h
 
 include(../src/3rdparty/pcre2/pcre2.pri)
 
