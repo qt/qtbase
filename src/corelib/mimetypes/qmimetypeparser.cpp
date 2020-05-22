@@ -157,7 +157,7 @@ QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState curren
 }
 
 // Parse int number from an (attribute) string
-bool QMimeTypeParserBase::parseNumber(const QStringRef &n, int *target, QString *errorMessage)
+bool QMimeTypeParserBase::parseNumber(QStringView n, int *target, QString *errorMessage)
 {
     bool ok;
     *target = n.toInt(&ok);

@@ -302,7 +302,7 @@ QString QMimeType::genericIconName() const
         // media type (e.g.  "video" in "video/ogg") and appending "-x-generic"
         // (i.e. "video-x-generic" in the previous example).
         const QString group = name();
-        QStringRef groupRef(&group);
+        QStringView groupRef(group);
         const int slashindex = groupRef.indexOf(QLatin1Char('/'));
         if (slashindex != -1)
             groupRef = groupRef.left(slashindex);

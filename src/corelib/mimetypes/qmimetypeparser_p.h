@@ -72,7 +72,7 @@ public:
 
     bool parse(QIODevice *dev, const QString &fileName, QString *errorMessage);
 
-    static bool parseNumber(const QStringRef &n, int *target, QString *errorMessage);
+    static bool parseNumber(QStringView n, int *target, QString *errorMessage);
 
 protected:
     virtual bool process(const QMimeType &t, QString *errorMessage) = 0;

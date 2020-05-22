@@ -250,7 +250,7 @@ void QMimeDatabasePrivate::loadIcon(QMimeTypePrivate &mimePrivate)
 
 static QString fallbackParent(const QString &mimeTypeName)
 {
-    const QStringRef myGroup = mimeTypeName.leftRef(mimeTypeName.indexOf(QLatin1Char('/')));
+    const QStringView myGroup = QStringView{mimeTypeName}.left(mimeTypeName.indexOf(QLatin1Char('/')));
     // All text/* types are subclasses of text/plain.
     if (myGroup == QLatin1String("text") && mimeTypeName != QLatin1String("text/plain"))
         return QLatin1String("text/plain");

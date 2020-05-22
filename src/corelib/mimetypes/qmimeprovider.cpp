@@ -306,7 +306,7 @@ bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result, QMimeBin
                     const bool caseSensitive = flagsAndWeight & 0x100;
                     if (caseSensitiveCheck || !caseSensitive) {
                         result.addMatch(QLatin1String(mimeType), weight,
-                                        QLatin1Char('*') + fileName.midRef(charPos + 1), fileName.size() - charPos - 2);
+                                        QLatin1Char('*') + QStringView{fileName}.mid(charPos + 1), fileName.size() - charPos - 2);
                         success = true;
                     }
                 }
