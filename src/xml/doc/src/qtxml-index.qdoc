@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -35,20 +35,16 @@
     QXmlStreamWriter classes. The classes are both easier to use and more compliant with the
     XML standard.
 
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qtxml.cpp 0
-
-    \if !defined(qtforpython)
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
-
-    \snippet code/doc_src_qtxml.pro 1
-    \endif
-
     The \l{Qt XML C++ Classes} page gives an overview over the available classes
     in this module.
+
+    \include module-use.qdocinc using qt module
+    \snippet snippets/CMakeLists.txt cmake_use
+
+    See also the \l[QtDoc]{Building with CMake} overview.
+
+    \include module-use.qdocinc building with qmake
+    \snippet snippets/snippets.pro qmake_use
 
     \section1 Licenses
 

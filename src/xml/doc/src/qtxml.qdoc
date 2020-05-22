@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -37,16 +37,4 @@
     documents iteratively (SAX), we recommend using Qt Core's QXmlStreamReader and
     QXmlStreamWriter classes. The classes are both easier to use and more compliant with the
     XML standard.
-
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qtxml.cpp 0
-
-    \if !defined(qtforpython)
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
-
-    \snippet code/doc_src_qtxml.pro 1
-    \endif
 */
