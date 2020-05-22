@@ -925,20 +925,20 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
         thePath = qt_normalizePathSegments(path, isLocalFile() ? QDirPrivate::DefaultNormalization : QDirPrivate::RemotePath);
     }
 
-    QStringRef thePathRef(&thePath);
+    QStringView thePathView(thePath);
     if (options & QUrl::RemoveFilename) {
         const int slash = path.lastIndexOf(QLatin1Char('/'));
         if (slash == -1)
             return;
-        thePathRef = path.leftRef(slash + 1);
+        thePathView = QStringView{path}.left(slash + 1);
     }
     // check if we need to remove trailing slashes
     if (options & QUrl::StripTrailingSlash) {
-        while (thePathRef.length() > 1 && thePathRef.endsWith(QLatin1Char('/')))
-            thePathRef.chop(1);
+        while (thePathView.length() > 1 && thePathView.endsWith(QLatin1Char('/')))
+            thePathView.chop(1);
     }
 
-    appendToUser(appendTo, thePathRef, options,
+    appendToUser(appendTo, thePathView, options,
                  appendingTo == FullUrl || options & QUrl::EncodeDelimiters ? pathInUrl : pathInIsolation);
 }
 
@@ -1527,7 +1527,7 @@ inline QString QUrlPrivate::mergePaths(const QString &relativePath) const
     if (!path.contains(QLatin1Char('/')))
         newPath = relativePath;
     else
-        newPath = path.leftRef(path.lastIndexOf(QLatin1Char('/')) + 1) + relativePath;
+        newPath = QStringView{path}.left(path.lastIndexOf(QLatin1Char('/')) + 1) + relativePath;
 
     return newPath;
 }
@@ -3813,7 +3813,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     } else if (deslashified.startsWith(QLatin1String("//"))) {
         // magic for shared drive on windows
         int indexOfPath = deslashified.indexOf(QLatin1Char('/'), 2);
-        QStringRef hostSpec = deslashified.midRef(2, indexOfPath - 2);
+        QStringView hostSpec = QStringView{deslashified}.mid(2, indexOfPath - 2);
         // Check for Windows-specific WebDAV specification: "//host@SSL/path".
         if (hostSpec.endsWith(webDavSslTag(), Qt::CaseInsensitive)) {
             hostSpec.truncate(hostSpec.size() - 4);
@@ -4138,7 +4138,7 @@ static QUrl adjustFtpPath(QUrl url)
     if (url.scheme() == ftpScheme()) {
         QString path = url.path(QUrl::PrettyDecoded);
         if (path.startsWith(QLatin1String("//")))
-            url.setPath(QLatin1String("/%2F") + path.midRef(2), QUrl::TolerantMode);
+            url.setPath(QLatin1String("/%2F") + QStringView{path}.mid(2), QUrl::TolerantMode);
     }
     return url;
 }
@@ -4262,7 +4262,7 @@ QUrl QUrl::fromUserInput(const QString &userInput)
     if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty()))
     {
         int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
-        const QStringRef hostscheme = trimmedString.leftRef(dotIndex);
+        const QStringView hostscheme = QStringView{trimmedString}.left(dotIndex);
         if (hostscheme.compare(ftpScheme(), Qt::CaseInsensitive) == 0)
             urlPrepended.setScheme(ftpScheme());
         return adjustFtpPath(urlPrepended);
