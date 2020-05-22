@@ -52,6 +52,9 @@
 
 #include <private/qprinterinfo_p.h>
 
+#define QT_STATICPLUGIN
+#include <qpa/qplatformprintplugin.h>
+
 QT_BEGIN_NAMESPACE
 
 QCocoaPrinterSupport::QCocoaPrinterSupport()
@@ -107,6 +110,27 @@ QString QCocoaPrinterSupport::defaultPrintDeviceId() const
     }
     return QString();
 }
+
+class QCocoaPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QPlatformPrinterSupportFactoryInterface_iid FILE "cocoa.json")
+
+public:
+    QPlatformPrinterSupport *create(const QString &);
+};
+
+QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
+{
+    if (key.compare(key, QLatin1String("cocoaprintersupport"), Qt::CaseInsensitive) != 0)
+        return 0;
+
+    return new QCocoaPrinterSupport();
+}
+
+Q_IMPORT_PLUGIN(QCocoaPrinterSupportPlugin)
+
+#include "qcocoaprintersupport.moc"
 
 QT_END_NAMESPACE
 

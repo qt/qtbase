@@ -1,8 +1,5 @@
 # Generated from printsupport.pro.
 
-if(MACOS)
-    add_subdirectory(cocoa)
-endif()
 if(WIN32)
     # add_subdirectory(windows) # special case TODO
 endif()

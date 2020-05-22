@@ -149,6 +149,8 @@ qt_extend_target(PrintSupport CONDITION MACOS AND TARGET Qt::Widgets
         platform/macos/qcocoaprintdevice_p.h platform/macos/qcocoaprintdevice.mm
         platform/macos/qcocoaprintersupport_p.h platform/macos/qcocoaprintersupport.mm
         platform/macos/qprintengine_mac.mm platform/macos/qprintengine_mac_p.h
+    NO_PCH_SOURCES
+        "platform/macos/qcocoaprintersupport.mm"
     PUBLIC_LIBRARIES
         Qt::WidgetsPrivate
         Cups::Cups
