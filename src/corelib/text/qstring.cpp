@@ -7183,18 +7183,18 @@ QString QString::number(double n, char f, int prec)
 
 namespace {
 template<class ResultList, class StringSource>
-static ResultList splitString(const StringSource &source, const QChar *sep,
-                              Qt::SplitBehavior behavior, Qt::CaseSensitivity cs, const int separatorSize)
+static ResultList splitString(const StringSource &source, QStringView sep,
+                              Qt::SplitBehavior behavior, Qt::CaseSensitivity cs)
 {
     ResultList list;
     typename StringSource::size_type start = 0;
     typename StringSource::size_type end;
     typename StringSource::size_type extra = 0;
-    while ((end = QtPrivate::findString(QStringView(source.constData(), source.size()), start + extra, QStringView(sep, separatorSize), cs)) != -1) {
+    while ((end = QtPrivate::findString(QStringView(source.constData(), source.size()), start + extra, sep, cs)) != -1) {
         if (start != end || behavior == Qt::KeepEmptyParts)
             list.append(source.mid(start, end - start));
-        start = end + separatorSize;
-        extra = (separatorSize == 0 ? 1 : 0);
+        start = end + sep.size();
+        extra = (sep.size() == 0 ? 1 : 0);
     }
     if (start != source.size() || behavior == Qt::KeepEmptyParts)
         list.append(source.mid(start, -1));
@@ -7245,7 +7245,7 @@ QT_WARNING_POP
 */
 QStringList QString::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QStringList>(*this, sep.constData(), behavior, cs, sep.size());
+    return splitString<QStringList>(*this, sep, behavior, cs);
 }
 
 #if QT_DEPRECATED_SINCE(5, 15)
@@ -7275,8 +7275,7 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
 QVector<QStringRef> QString::splitRef(const QString &sep, Qt::SplitBehavior behavior,
                                       Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef>>(QStringRef(this), sep.constData(), behavior,
-                                            cs, sep.size());
+    return splitString<QVector<QStringRef>>(QStringRef(this), sep, behavior, cs);
 }
 
 #if QT_DEPRECATED_SINCE(5, 15)
@@ -7297,7 +7296,7 @@ QVector<QStringRef> QString::splitRef(const QString &sep, SplitBehavior behavior
 */
 QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QStringList>(*this, &sep, behavior, cs, 1);
+    return splitString<QStringList>(*this, QStringView(&sep, 1), behavior, cs);
 }
 
 #if QT_DEPRECATED_SINCE(5, 15)
@@ -7318,7 +7317,7 @@ QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivit
 QVector<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior,
                                       Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(QStringRef(this), &sep, behavior, cs, 1);
+    return splitString<QVector<QStringRef> >(QStringRef(this), QStringView(&sep, 1), behavior, cs);
 }
 
 #if QT_DEPRECATED_SINCE(5, 15)
@@ -7346,7 +7345,7 @@ QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::Cas
 */
 QVector<QStringRef> QStringRef::split(const QString &sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(*this, sep.constData(), behavior, cs, sep.size());
+    return splitString<QVector<QStringRef> >(*this, sep, behavior, cs);
 }
 
 #if QT_DEPRECATED_SINCE(5, 15)
@@ -7367,7 +7366,7 @@ QVector<QStringRef> QStringRef::split(const QString &sep, QString::SplitBehavior
 */
 QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    return splitString<QVector<QStringRef> >(*this, &sep, behavior, cs, 1);
+    return splitString<QVector<QStringRef> >(*this, QStringView(&sep, 1), behavior, cs);
 }
 
 #if QT_DEPRECATED_SINCE(5, 15)
