@@ -771,7 +771,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
                 int endIndex = ret.indexOf(QLatin1Char(')'), startIndex + 2);
                 if (endIndex < 0)
                     break;
-                QStringRef envVarName = ret.midRef(startIndex + 2, endIndex - startIndex - 2);
+                auto envVarName = QStringView{ret}.mid(startIndex + 2, endIndex - startIndex - 2);
                 QString value = QString::fromLocal8Bit(qgetenv(envVarName.toLocal8Bit().constData()));
                 ret.replace(startIndex, endIndex - startIndex + 1, value);
                 startIndex += value.length();
