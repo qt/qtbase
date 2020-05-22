@@ -1256,6 +1256,9 @@ QString QIcon::fallbackThemeName()
     themeSearchPath() containing an index.theme
     file describing its contents.
 
+    \note This should be done before creating \l QGuiApplication, to ensure
+    correct initialization.
+
     \sa fallbackThemeName(), themeSearchPaths(), themeName()
 */
 void QIcon::setFallbackThemeName(const QString &name)
