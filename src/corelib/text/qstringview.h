@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
 class QString;
 class QStringRef;
 class QStringView;
+class QRegularExpression;
 
 namespace QtPrivate {
 template <typename Char>
@@ -338,6 +339,21 @@ public:
     Q_REQUIRED_RESULT Q_CORE_EXPORT double toDouble(bool *ok = nullptr) const;
 
     Q_REQUIRED_RESULT inline int toWCharArray(wchar_t *array) const; // defined in qstring.h
+
+
+    Q_REQUIRED_RESULT Q_CORE_EXPORT
+    QList<QStringView> split(QStringView sep,
+                             Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                             Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT
+    QList<QStringView> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
+                             Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+
+#if QT_CONFIG(regularexpression)
+    Q_REQUIRED_RESULT Q_CORE_EXPORT
+    QList<QStringView> split(const QRegularExpression &sep,
+                             Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
+#endif
 
     //
     // STL compatibility API:

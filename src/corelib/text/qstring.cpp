@@ -7197,7 +7197,7 @@ static ResultList splitString(const StringSource &source, QStringView sep,
         extra = (sep.size() == 0 ? 1 : 0);
     }
     if (start != source.size() || behavior == Qt::KeepEmptyParts)
-        list.append(source.mid(start, -1));
+        list.append(source.mid(start));
     return list;
 }
 
@@ -7381,10 +7381,37 @@ QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior
 }
 #endif
 
+
+/*!
+    \fn QList<QStringView> QStringView::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+    \fn QList<QStringView> QStringView::split(QStringView sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+
+
+    Splits the string into substring references wherever \a sep occurs, and
+    returns the list of those strings.
+
+    See QString::split() for how \a sep, \a behavior and \a cs interact to form
+    the result.
+
+    \note All references are valid as long this string is alive. Destroying this
+    string will cause all references to be dangling pointers.
+
+    \since 6.0
+*/
+QList<QStringView> QStringView::split(QStringView sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return splitString<QVector<QStringView>>(QStringView(*this), sep, behavior, cs);
+}
+
+QList<QStringView> QStringView::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return split(QStringView(&sep, 1), behavior, cs);
+}
+
 #if QT_CONFIG(regularexpression)
 namespace {
-template<class ResultList, typename MidMethod>
-static ResultList splitString(const QString &source, MidMethod mid, const QRegularExpression &re,
+template<class ResultList, typename String>
+static ResultList splitString(const String &source, const QRegularExpression &re,
                               Qt::SplitBehavior behavior)
 {
     ResultList list;
@@ -7400,12 +7427,12 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegul
         QRegularExpressionMatch match = iterator.next();
         end = match.capturedStart();
         if (start != end || behavior == Qt::KeepEmptyParts)
-            list.append((source.*mid)(start, end - start));
+            list.append(source.mid(start, end - start));
         start = match.capturedEnd();
     }
 
     if (start != source.size() || behavior == Qt::KeepEmptyParts)
-        list.append((source.*mid)(start, -1));
+        list.append(source.mid(start));
 
     return list;
 }
@@ -7440,7 +7467,7 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegul
 */
 QStringList QString::split(const QRegularExpression &re, Qt::SplitBehavior behavior) const
 {
-    return splitString<QStringList>(*this, &QString::mid, re, behavior);
+    return splitString<QStringList>(*this, re, behavior);
 }
 
 #  if QT_DEPRECATED_SINCE(5, 15)
@@ -7471,7 +7498,25 @@ QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior)
 */
 QVector<QStringRef> QString::splitRef(const QRegularExpression &re, Qt::SplitBehavior behavior) const
 {
-    return splitString<QVector<QStringRef> >(*this, &QString::midRef, re, behavior);
+    return splitString<QVector<QStringRef> >(QStringRef(this), re, behavior);
+}
+
+/*!
+    \since 6.0
+
+    Splits the string into substring views wherever the regular expression
+    \a re matches, and returns the list of those strings. If \a re
+    does not match anywhere in the string, splitRef() returns a
+    single-element vector containing this string reference.
+
+    \note All references are valid as long this string is alive. Destroying this
+    string will cause all references to be dangling pointers.
+
+    \sa split() QStringRef
+*/
+QList<QStringView> QStringView::split(const QRegularExpression &re, Qt::SplitBehavior behavior) const
+{
+    return splitString<QList<QStringView>>(*this, re, behavior);
 }
 
 #  if QT_DEPRECATED_SINCE(5, 15)

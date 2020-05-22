@@ -5685,18 +5685,40 @@ template<> struct StringSplitWrapper<QString>
 {
     const QString &string;
 
-    QStringList split(const QString &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.split(sep, behavior, cs); }
-    QStringList split(QChar sep, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.split(sep, behavior, cs); }
-    QStringList split(const QRegularExpression &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts) const { return string.split(sep, behavior); }
+    QStringList split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.split(sep, behavior, cs); }
+    QStringList split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.split(sep, behavior, cs); }
+    QStringList split(const QRegularExpression &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const { return string.split(sep, behavior); }
 };
 
 template<> struct StringSplitWrapper<QStringRef>
 {
     const QString &string;
-    QVector<QStringRef> split(const QString &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
-    QVector<QStringRef> split(QChar sep, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
-    QVector<QStringRef> split(const QRegularExpression &sep, QString::SplitBehavior behavior = QString::KeepEmptyParts) const { return string.splitRef(sep, behavior); }
+    QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
+    QVector<QStringRef> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.splitRef(sep, behavior, cs); }
+    QVector<QStringRef> split(const QRegularExpression &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const { return string.splitRef(sep, behavior); }
 };
+
+template<> struct StringSplitWrapper<QStringView>
+{
+    const QString &string;
+    QList<QStringView> split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    { return QStringView{string}.split(sep, behavior, cs); }
+    QList<QStringView> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    { return QStringView{string}.split(sep, behavior, cs); }
+    QList<QStringView> split(const QRegularExpression &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const
+    { return QStringView{string}.split(sep, behavior); }
+};
+
+static bool operator==(const QList<QStringView> &result, const QStringList &expected)
+{
+    if (expected.size() != result.size())
+        return false;
+    for (int i = 0; i < expected.size(); ++i)
+        if (expected.at(i) != result.at(i))
+            return false;
+    return true;
+}
+
 
 static bool operator ==(const QStringList &left, const QVector<QStringRef> &right)
 {
@@ -5732,22 +5754,22 @@ void tst_QString::split(const QString &string, const QString &sep, QStringList r
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-    list = str.split(sep, QString::KeepEmptyParts);
+    list = str.split(sep, Qt::KeepEmptyParts);
     QVERIFY(list == result);
-    list = str.split(re, QString::KeepEmptyParts);
+    list = str.split(re, Qt::KeepEmptyParts);
     QVERIFY(list == result);
     if (sep.size() == 1) {
-        list = str.split(sep.at(0), QString::KeepEmptyParts);
+        list = str.split(sep.at(0), Qt::KeepEmptyParts);
         QVERIFY(list == result);
     }
 
     result.removeAll("");
-    list = str.split(sep, QString::SkipEmptyParts);
+    list = str.split(sep, Qt::SkipEmptyParts);
     QVERIFY(list == result);
-    list = str.split(re, QString::SkipEmptyParts);
+    list = str.split(re, Qt::SkipEmptyParts);
     QVERIFY(list == result);
     if (sep.size() == 1) {
-        list = str.split(sep.at(0), QString::SkipEmptyParts);
+        list = str.split(sep.at(0), Qt::SkipEmptyParts);
         QVERIFY(list == result);
     }
 QT_WARNING_POP
@@ -5759,6 +5781,7 @@ void tst_QString::split()
     QFETCH(QString, sep);
     QFETCH(QStringList, result);
     split<QStringList>(str, sep, result);
+    split<QVector<QStringView>>(str, sep, result);
 }
 
 void tst_QString::splitRef_data()
@@ -5804,7 +5827,7 @@ void tst_QString::split_regexp(const QString &_string, const QString &pattern, Q
 
     result.removeAll(QString());
 
-    list = string.split(RegExp(pattern), QString::SkipEmptyParts);
+    list = string.split(RegExp(pattern), Qt::SkipEmptyParts);
     QVERIFY(list == result);
 }
 
@@ -5814,6 +5837,7 @@ void tst_QString::split_regularexpression()
     QFETCH(QString, pattern);
     QFETCH(QStringList, result);
     split_regexp<QStringList, QRegularExpression>(string, pattern, result);
+    split_regexp<QList<QStringView>, QRegularExpression>(string, pattern, result);
 }
 
 void tst_QString::splitRef_regularexpression_data()
