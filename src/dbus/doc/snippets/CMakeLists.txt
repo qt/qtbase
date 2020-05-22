@@ -1,0 +1,4 @@
+#! [cmake_use]
+find_package(Qt6 COMPONENTS DBus REQUIRED)
+target_link_libraries(mytarget Qt::DBus)
+#! [cmake_use]

@@ -10,8 +10,9 @@ project = QtDBus
 # Images should be placed in <rootdir>/dic/images and examples in
 # <rootdir>/examples.
 # Paths are relative to the  location of this file.
-exampledirs += ../../../examples/dbus \
-               snippets
+exampledirs += . \
+               snippets \
+               ../../../examples/dbus
 
 headerdirs += ..
 imagedirs += images \
@@ -24,7 +25,7 @@ examplesinstallpath     = dbus
 
 tagfile = qtdbus.tags
 
-depends += qtdoc qtcore
+depends += qtcore qtdoc qmake qtcmake
 
 # The following parameters are for creating a qhp file, the qhelpgenerator
 # program can convert the qhp file into a qch file which can be opened in
