@@ -981,8 +981,8 @@ private:
     static QByteArray toUtf8_helper(const QString &);
     static QByteArray toLocal8Bit_helper(const QChar *data, int size);
     static int toUcs4_helper(const ushort *uc, int length, uint *out);
-    static qlonglong toIntegral_helper(const QChar *data, int len, bool *ok, int base);
-    static qulonglong toIntegral_helper(const QChar *data, uint len, bool *ok, int base);
+    static qlonglong toIntegral_helper(QStringView string, bool *ok, int base);
+    static qulonglong toIntegral_helper(QStringView string, bool *ok, uint base);
     void replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen);
     friend class QStringRef;
     friend class QStringView;
@@ -991,13 +991,13 @@ private:
     friend struct QAbstractConcatenable;
 
     template <typename T> static
-    T toIntegral_helper(const QChar *data, int len, bool *ok, int base)
+    T toIntegral_helper(QStringView string, bool *ok, int base)
     {
         using Int64 = typename std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type;
         using Int32 = typename std::conditional<std::is_unsigned<T>::value, uint, int>::type;
 
-        // we select the right overload by casting size() to int or uint
-        Int64 val = toIntegral_helper(data, Int32(len), ok, base);
+        // we select the right overload by casting base to int or uint
+        Int64 val = toIntegral_helper(string, ok, Int32(base));
         if (T(val) != val) {
             if (ok)
                 *ok = false;
