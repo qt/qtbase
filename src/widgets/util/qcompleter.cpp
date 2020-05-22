@@ -984,7 +984,7 @@ static bool completeOnLoaded(const QFileSystemModel *model,
     // The user is typing something within that directory and is not in a subdirectory yet.
     const auto separator = QLatin1Char('/');
     return prefix.startsWith(path, caseSensitivity) && prefix.at(pathSize) == separator
-        && !prefix.rightRef(prefixSize - pathSize - 1).contains(separator);
+        && !QStringView{prefix}.right(prefixSize - pathSize - 1).contains(separator);
 }
 
 void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)

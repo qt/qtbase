@@ -326,7 +326,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
             qWarning("QTextBrowser: No document for %s", url.toString().toLatin1().constData());
 
         if (q->isVisible()) {
-            const QStringRef firstTag = txt.leftRef(txt.indexOf(QLatin1Char('>')) + 1);
+            const QStringView firstTag = QStringView{txt}.left(txt.indexOf(QLatin1Char('>')) + 1);
             if (firstTag.startsWith(QLatin1String("<qt")) && firstTag.contains(QLatin1String("type")) && firstTag.contains(QLatin1String("detail"))) {
 #ifndef QT_NO_CURSOR
                 QGuiApplication::restoreOverrideCursor();

@@ -106,7 +106,7 @@ void QLineEditPrivate::_q_completionHighlighted(const QString &newText)
     } else {
         int c = control->cursor();
         QString text = control->text();
-        q->setText(text.leftRef(c) + newText.midRef(c));
+        q->setText(QStringView{text}.left(c) + QStringView{newText}.mid(c));
         control->moveCursor(control->end(), false);
 #ifndef Q_OS_ANDROID
         const bool mark = true;

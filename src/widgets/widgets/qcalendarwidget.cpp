@@ -107,7 +107,7 @@ QString QCalendarDateSectionValidator::highlightString(const QString &str, int p
     if (pos == 0)
         return QLatin1String("<b>") + str + QLatin1String("</b>");
     int startPos = str.length() - pos;
-    return str.midRef(0, startPos) + QLatin1String("<b>") + str.midRef(startPos, pos) + QLatin1String("</b>");
+    return QStringView{str}.mid(0, startPos) + QLatin1String("<b>") + QStringView{str}.mid(startPos, pos) + QLatin1String("</b>");
 
 }
 
@@ -548,7 +548,7 @@ void QCalendarDateValidator::setFormat(const QString &format)
     bool quoting = false;
     QString separator;
     while (pos < format.size()) {
-        const QStringRef mid = format.midRef(pos);
+        const QStringView mid = QStringView{format}.mid(pos);
         int offset = 1;
 
         if (mid.startsWith(quote)) {

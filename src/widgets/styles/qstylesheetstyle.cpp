@@ -3781,7 +3781,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 textRect.setWidth(textRect.width() - mi.tabWidth);
                 const QRect vTextRect = visualRect(opt->direction, m->rect, textRect);
 
-                QStringRef s(&mi.text);
+                QStringView s(mi.text);
                 p->setPen(mi.palette.buttonText().color());
                 if (!s.isEmpty()) {
                     int text_flags = Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;

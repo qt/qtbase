@@ -1151,12 +1151,12 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path)
     if (separatorPosition < 0)
         separatorPosition = path.size();
     if (separatorPosition == 1) {
-        return QDir::homePath() + path.midRef(1);
+        return QDir::homePath() + QStringView{path}.mid(1);
     } else {
 #if defined(Q_OS_VXWORKS) || defined(Q_OS_INTEGRITY)
         const QString homePath = QDir::homePath();
 #else
-        const QByteArray userName = path.midRef(1, separatorPosition - 1).toLocal8Bit();
+        const QByteArray userName = QStringView{path}.mid(1, separatorPosition - 1).toLocal8Bit();
 # if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_WASM)
         passwd pw;
         passwd *tmpPw;
@@ -1178,7 +1178,7 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path)
         const QString homePath = QString::fromLocal8Bit(pw->pw_dir);
 # endif
 #endif
-        return homePath + path.midRef(separatorPosition);
+        return homePath + QStringView{path}.mid(separatorPosition);
     }
 }
 #endif
@@ -4051,11 +4051,11 @@ QString QFileDialogPrivate::getEnvironmentVariable(const QString &string)
 {
 #ifdef Q_OS_UNIX
     if (string.size() > 1 && string.startsWith(QLatin1Char('$'))) {
-        return QString::fromLocal8Bit(qgetenv(string.midRef(1).toLatin1().constData()));
+        return QString::fromLocal8Bit(qgetenv(QStringView{string}.mid(1).toLatin1().constData()));
     }
 #else
     if (string.size() > 2 && string.startsWith(QLatin1Char('%')) && string.endsWith(QLatin1Char('%'))) {
-        return QString::fromLocal8Bit(qgetenv(string.midRef(1, string.size() - 2).toLatin1().constData()));
+        return QString::fromLocal8Bit(qgetenv(QStringView{string}.mid(1, string.size() - 2).toLatin1().constData()));
     }
 #endif
     return string;

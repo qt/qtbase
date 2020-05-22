@@ -1539,13 +1539,13 @@ static QString computeElidedText(Qt::TextElideMode mode, const QString &text)
     QString ret;
     switch (mode) {
     case Qt::ElideRight:
-        ret = text.leftRef(2) + Ellipses;
+        ret = QStringView{text}.left(2) + Ellipses;
         break;
     case Qt::ElideMiddle:
-        ret = text.leftRef(1) + Ellipses + text.rightRef(1);
+        ret = QStringView{text}.left(1) + Ellipses + QStringView{text}.right(1);
         break;
     case Qt::ElideLeft:
-        ret = Ellipses + text.rightRef(2);
+        ret = Ellipses + QStringView{text}.right(2);
         break;
     case Qt::ElideNone:
         ret = text;

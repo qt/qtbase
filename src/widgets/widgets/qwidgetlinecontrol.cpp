@@ -1215,14 +1215,14 @@ QString QWidgetLineControl::maskString(int pos, const QString &str, bool clear) 
                     int n = findInMask(i, true, true, str[(int)strIndex]);
                     if (n != -1) {
                         if (str.length() != 1 || i == 0 || (i > 0 && (!m_maskData[i-1].separator || m_maskData[i-1].maskChar != str[(int)strIndex]))) {
-                            s += fill.midRef(i, n - i + 1);
+                            s += QStringView{fill}.mid(i, n - i + 1);
                             i = n + 1; // update i to find + 1
                         }
                     } else {
                         // search for valid m_blank if not
                         n = findInMask(i, true, false, str[(int)strIndex]);
                         if (n != -1) {
-                            s += fill.midRef(i, n - i);
+                            s += QStringView{fill}.mid(i, n - i);
                             switch (m_maskData[n].caseMode) {
                             case MaskInputData::Upper:
                                 s += str[(int)strIndex].toUpper();
