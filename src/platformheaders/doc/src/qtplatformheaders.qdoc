@@ -88,7 +88,7 @@
     #include <QtPlatformHeaders/QXcbWindowFunctions>
     \endcode
 
-    As the module is header-only, no further modifications to the .pro files are required to use it.
+    As the module is header-only, no modifications to your build system are required.
 
     \note The module name (\c QtPlatformHeaders) must appear in the \c #include directive.
     \note It is not necessary to enclose the code in \c #ifdef directives depending on platform.
