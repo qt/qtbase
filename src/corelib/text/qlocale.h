@@ -1120,8 +1120,9 @@ public:
     NumberOptions numberOptions() const;
 
     enum QuotationStyle { StandardQuotation, AlternateQuotation };
-    QString quoteString(const QString &str, QuotationStyle style = StandardQuotation) const;
-    QString quoteString(const QStringRef &str, QuotationStyle style = StandardQuotation) const;
+    QString quoteString(const QString &str, QuotationStyle style = StandardQuotation) const
+    { return quoteString(QStringView(str), style); }
+    QString quoteString(QStringView str, QuotationStyle style = StandardQuotation) const;
 
     QString createSeparatedList(const QStringList &strl) const;
 

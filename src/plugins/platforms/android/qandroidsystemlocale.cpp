@@ -156,9 +156,9 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
         return QString();
     }
     case StringToStandardQuotation:
-        return m_locale.quoteString(in.value<QStringRef>());
+        return m_locale.quoteString(in.value<QStringView>());
     case StringToAlternateQuotation:
-        return m_locale.quoteString(in.value<QStringRef>(), QLocale::AlternateQuotation);
+        return m_locale.quoteString(in.value<QStringView>(), QLocale::AlternateQuotation);
     case ListToSeparatedString:
         return m_locale.createSeparatedList(in.value<QStringList>());
     case LocaleChanged:

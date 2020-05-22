@@ -116,8 +116,8 @@ public:
         CurrencyToString, // QString in: qlonglong, qulonglong or double
         Collation, // QString
         UILanguages, // QStringList
-        StringToStandardQuotation, // QString in: QStringRef to quote
-        StringToAlternateQuotation, // QString in: QStringRef to quote
+        StringToStandardQuotation, // QString in: QStringView to quote
+        StringToAlternateQuotation, // QString in: QStringView to quote
         ScriptId, // uint
         ListToSeparatedString, // QString
         LocaleChanged, // system locale changed
@@ -515,7 +515,7 @@ Q_STATIC_ASSERT(!ascii_isspace(uchar('\377')));
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QStringRef)
+Q_DECLARE_METATYPE(QStringView)
 Q_DECLARE_METATYPE(QList<Qt::DayOfWeek>)
 #ifndef QT_NO_SYSTEMLOCALE
 Q_DECLARE_METATYPE(QSystemLocale::CurrencyToStringArgument)

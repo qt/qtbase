@@ -58,7 +58,6 @@
 #endif
 
 Q_DECLARE_METATYPE(QLocale::FormatType)
-Q_DECLARE_METATYPE(QStringView)
 
 class tst_QLocale : public QObject
 {

@@ -1124,22 +1124,20 @@ QLocale::NumberOptions QLocale::numberOptions() const
 }
 
 /*!
+  \fn QString QLocale::quoteString(const QString &str, QuotationStyle style) const
+
     \since 4.8
 
     Returns \a str quoted according to the current locale using the given
     quotation \a style.
 */
-QString QLocale::quoteString(const QString &str, QuotationStyle style) const
-{
-    return quoteString(QStringRef(&str), style);
-}
 
 /*!
-    \since 4.8
+    \since 6.0
 
     \overload
 */
-QString QLocale::quoteString(const QStringRef &str, QuotationStyle style) const
+QString QLocale::quoteString(QStringView str, QuotationStyle style) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == systemData()) {

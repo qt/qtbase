@@ -380,7 +380,7 @@ static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &
     return QString::fromCFString(result);
 }
 
-static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &str)
+static QVariant macQuoteString(QSystemLocale::QueryType type, QStringView str)
 {
     QString begin, end;
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
@@ -494,7 +494,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     }
     case StringToStandardQuotation:
     case StringToAlternateQuotation:
-        return macQuoteString(type, in.value<QStringRef>());
+        return macQuoteString(type, in.value<QStringView>());
     default:
         break;
     }
