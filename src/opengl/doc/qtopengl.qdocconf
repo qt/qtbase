@@ -15,12 +15,13 @@ headerdirs += ..
 sourcedirs  += .. \
                ../../../examples/opengl/doc/src
 exampledirs += ../../../examples/opengl \
-               ../ \
-               snippets
+               . \
+               snippets \
+               ..
 imagedirs   += images \
                ../../../examples/opengl/doc/images
 
-depends += qtdoc qtcore qtgui qtwidgets qmake
+depends += qtcore qtgui qtwidgets qtdoc qmake qtcmake
 
 examplesinstallpath     = opengl
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -35,28 +35,4 @@
     use OpenGL in Qt applications.
 
     \warning This module should not be used anymore for new code.
-
-    OpenGL is a standard API for rendering 3D graphics. OpenGL only
-    deals with 3D rendering and provides little or no support for GUI
-    programming issues. The user interface for an OpenGL application
-    must be created with another toolkit, such as Cocoa on the \macos
-    platform, Microsoft Foundation Classes (MFC) under Windows, or Qt
-    on both platforms.
-
-    \note OpenGL is a trademark of Silicon Graphics, Inc. in
-    the United States and other countries.
-
-    The Qt OpenGL module makes it easy to use OpenGL in Qt applications.
-
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qtopengl.cpp 0
-
-    \if !defined(qtforpython)
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
-
-    \snippet code/doc_src_qtopengl.pro 1
-    \endif
 */

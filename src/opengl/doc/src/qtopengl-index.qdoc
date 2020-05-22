@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -34,6 +34,8 @@
     \warning This module should not be used anymore for new code. Please
     use the corresponding OpenGL classes in \l{Qt GUI}.
 
+    \section1 Introduction
+
     OpenGL is a standard API for rendering 3D graphics. OpenGL only
     deals with 3D rendering and provides little or no support for GUI
     programming issues. The user interface for an OpenGL application
@@ -46,18 +48,6 @@
     other Qt widget, except that it opens an OpenGL display buffer where
     you can use the OpenGL API to render the contents.
 
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qtopengl.cpp 0
-
-    \if !defined(qtforpython)
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
-
-    \snippet code/doc_src_qtopengl.pro 1
-    \endif
-
     The Qt OpenGL module is implemented as a platform-independent Qt/C++
     wrapper around the platform-dependent GLX (version 1.3 or later),
     WGL, or AGL C APIs. Although the basic functionality provided is very
@@ -67,6 +57,14 @@
 
     The \l{Qt OpenGL C++ Classes} page gives an overview over the available classes
     in this module.
+
+    \include module-use.qdocinc using qt module
+    \snippet snippets/CMakeLists.txt cmake_use
+
+    See also the \l[QtDoc]{Building with CMake} overview.
+
+    \include module-use.qdocinc building with qmake
+    \snippet snippets/snippets.pro qmake_use
 
     \section1 Licenses and Trademarks
 
