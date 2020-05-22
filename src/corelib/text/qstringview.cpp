@@ -914,6 +914,36 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn qsizetype QStringView::count(QChar ch, Qt::CaseSensitivity cs) const noexcept
+
+    \since 6.0
+    \overload count()
+
+    Returns the number of occurrences of the character \a ch in the
+    string reference.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa QString::count(), contains(), indexOf()
+*/
+
+/*!
+    \fn qsizetype QStringView::count(QStringView str, Qt::CaseSensitivity cs) const noexcept
+
+    \since 6.0
+    \overload count()
+
+    Returns the number of (potentially overlapping) occurrences of the
+    string reference \a str in this string reference.
+
+    If \a cs is Qt::CaseSensitive (default), the search is
+    case sensitive; otherwise the search is case insensitive.
+
+    \sa QString::count(), contains(), indexOf()
+*/
+
+/*!
   \fn qint64 QStringView::toLongLong(bool *ok, int base) const
 
     Returns the string converted to a \c{long long} using base \a

@@ -151,8 +151,6 @@ static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle, qsizetype 
 template <>
 inline qsizetype qLastIndexOf(QString haystack, QChar needle,
                               qsizetype from, Qt::CaseSensitivity cs) noexcept = delete; // unwanted, would detach
-static inline qsizetype qt_string_count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
-static inline qsizetype qt_string_count(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
 
 static inline bool qt_starts_with(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
 static inline bool qt_starts_with(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs);
@@ -4021,7 +4019,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
 int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
+    return int(QtPrivate::count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
 /*!
@@ -4038,7 +4036,7 @@ int QString::count(const QString &str, Qt::CaseSensitivity cs) const
 int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(qt_string_count(QStringView(unicode(), size()), ch, cs));
+    return int(QtPrivate::count(QStringView(unicode(), size()), ch, cs));
 }
 
 /*!
@@ -4055,7 +4053,7 @@ int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
+    return int(QtPrivate::count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -10932,7 +10930,7 @@ int QStringRef::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity
 int QStringRef::count(const QString &str, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
+    return int(QtPrivate::count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
 /*!
@@ -10950,7 +10948,7 @@ int QStringRef::count(const QString &str, Qt::CaseSensitivity cs) const
 int QStringRef::count(QChar ch, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(qt_string_count(QStringView(unicode(), size()), ch, cs));
+    return int(QtPrivate::count(QStringView(unicode(), size()), ch, cs));
 }
 
 /*!
@@ -10968,7 +10966,7 @@ int QStringRef::count(QChar ch, Qt::CaseSensitivity cs) const
 int QStringRef::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(qt_string_count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
+    return int(QtPrivate::count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
 }
 
 /*!
@@ -11221,7 +11219,7 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
     \sa indexOf(), count()
 */
 
-static inline qsizetype qt_string_count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
+qsizetype QtPrivate::count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) noexcept
 {
     qsizetype num = 0;
     qsizetype i = -1;
@@ -11236,8 +11234,7 @@ static inline qsizetype qt_string_count(QStringView haystack, QStringView needle
     return num;
 }
 
-static inline qsizetype qt_string_count(QStringView haystack, QChar ch,
-                                  Qt::CaseSensitivity cs)
+qsizetype QtPrivate::count(QStringView haystack, QChar ch, Qt::CaseSensitivity cs) noexcept
 {
     qsizetype num = 0;
     if (cs == Qt::CaseSensitive) {

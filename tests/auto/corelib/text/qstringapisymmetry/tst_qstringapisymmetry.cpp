@@ -603,6 +603,20 @@ private Q_SLOTS:
     void toNumber_QByteArray_data() { toNumber_data(); }
     void toNumber_QByteArray() { toNumber_impl<QByteArray>(); }
 
+private:
+    void count_data();
+    template <typename String> void count_impl();
+
+private Q_SLOTS:
+    void count_QString_data() { count_data(); }
+    void count_QString() { count_impl<QString>(); }
+    void count_QStringRef_data() { count_data(); }
+    void count_QStringRef() { count_impl<QStringRef>(); }
+    void count_QStringView_data() { count_data(); }
+    void count_QStringView() { count_impl<QStringView>(); }
+    void count_QByteArray_data() { count_data(); }
+    void count_QByteArray() { count_impl<QByteArray>(); }
+
     //
     // UTF-16-only checks:
     //
@@ -1711,6 +1725,43 @@ void tst_QStringApiSymmetry::toNumber_impl()
         if (is_ok)
             QCOMPARE(qint64(d), result);
     }
+}
+
+
+void tst_QStringApiSymmetry::count_data()
+{
+    QTest::addColumn<QString>("data");
+    QTest::addColumn<QString>("needle");
+    QTest::addColumn<qsizetype>("result");
+
+    QTest::addRow("xxx") << QString::fromUtf8("xxx") << QString::fromUtf8("x") << qsizetype(3);
+    QTest::addRow("xyzaaaxyz") << QString::fromUtf8("xyzaaaxyz") << QString::fromUtf8("xyz") << qsizetype(2);
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::count_impl()
+{
+    QFETCH(const QString, data);
+    QFETCH(const QString, needle);
+    QFETCH(qsizetype, result);
+
+    const auto utf8 = data.toUtf8();
+    const auto l1s  = data.toLatin1();
+    const auto l1   = l1s.isNull() ? QLatin1String() : QLatin1String(l1s);
+
+    const auto ref = data.isNull() ? QStringRef() : QStringRef(&data);
+    const auto s = make<String>(ref, l1, utf8);
+
+    const auto nutf8 = needle.toUtf8();
+    const auto nl1s  = needle.toLatin1();
+    const auto nl1   = nl1s.isNull() ? QLatin1String() : QLatin1String(l1s);
+
+    const auto nref = needle.isNull() ? QStringRef() : QStringRef(&needle);
+    const auto ns = make<String>(nref, nl1, nutf8);
+
+    QCOMPARE(s.count(ns), result);
+    if (ns.length() == 1)
+        QCOMPARE(s.count(ns.data()[0]), result);
 }
 
 //
