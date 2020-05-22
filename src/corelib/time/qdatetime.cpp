@@ -156,7 +156,7 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
     // or           "ddd MMM dd[ hh:mm:ss] yyyy [±hhmm]" - permissive RFC 850, 1036 (read only)
     ParsedRfcDateTime result;
 
-    auto words = s.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
+    auto words = QStringView{s}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
     if (words.size() < 3 || words.size() > 6)
         return result;
     const QChar colon(QLatin1Char(':'));
@@ -1440,7 +1440,7 @@ struct ParsedInt { int value = 0; bool ok = false; };
 /*
     /internal
 
-    Read an int that must be the whole text.  QStringRef::toInt() will ignore
+    Read an int that must be the whole text.  QStringView ::toInt() will ignore
     spaces happily; but ISO date format should not.
 */
 ParsedInt readInt(QStringView text)
@@ -1477,7 +1477,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return rfcDateImpl(string).date;
     default:
     case Qt::TextDate: {
-        QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
+        auto parts = QStringView{string}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
 
         if (parts.count() != 4)
             return QDate();
@@ -2384,7 +2384,7 @@ static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
   \internal
   Implemented here to share qt_tzname()
 */
-int QDateTimeParser::startsWithLocalTimeZone(const QStringRef name)
+int QDateTimeParser::startsWithLocalTimeZone(QStringView name)
 {
     QDateTimePrivate::DaylightStatus zones[2] = {
         QDateTimePrivate::StandardTime,
@@ -4752,7 +4752,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         return QDateTime(date, time, spec, offset);
     }
     case Qt::TextDate: {
-        QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
+        QVector<QStringView > parts = QStringView{string}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
 
         if ((parts.count() < 5) || (parts.count() > 6))
             return QDateTime();
@@ -4787,7 +4787,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         if (!ok || !month || !day) {
             month = fromShortMonthName(parts.at(2));
             if (month) {
-                QStringRef dayStr = parts.at(1);
+                QStringView  dayStr = parts.at(1);
                 if (dayStr.endsWith(QLatin1Char('.'))) {
                     dayStr = dayStr.left(dayStr.size() - 1);
                     day = dayStr.toInt(&ok);
@@ -4803,7 +4803,8 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         if (!date.isValid())
             return QDateTime();
 
-        QVector<QStringRef> timeParts = parts.at(timePart).split(QLatin1Char(':'));
+        // ### fixme, use QStringView::tokenize() when available
+        QVector<QStringView > timeParts = parts.at(timePart).split(QLatin1Char(':'));
         if (timeParts.count() < 2 || timeParts.count() > 3)
             return QDateTime();
 
@@ -4818,7 +4819,8 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         int second = 0;
         int millisecond = 0;
         if (timeParts.count() > 2) {
-            const QVector<QStringRef> secondParts = timeParts.at(2).split(QLatin1Char('.'));
+            // ### fixme, use QStringView::tokenize() when available
+            const QVector<QStringView > secondParts = timeParts.at(2).split(QLatin1Char('.'));
             if (secondParts.size() > 2) {
                 return QDateTime();
             }

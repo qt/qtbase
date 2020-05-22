@@ -356,7 +356,7 @@ int QDateTimeParser::sectionPos(const SectionNode &sn) const
 
 */
 
-static QString unquote(const QStringRef &str)
+static QString unquote(QStringView str)
 {
     const QChar quote(QLatin1Char('\''));
     const QChar slash(QLatin1Char('\\'));
@@ -393,7 +393,7 @@ static inline int countRepeat(const QString &str, int index, int maxCount)
 
 static inline void appendSeparator(QStringList *list, const QString &string, int from, int size, int lastQuote)
 {
-    const QStringRef separator = string.midRef(from, size);
+    const QStringView separator = QStringView(string).mid(from, size);
     list->append(lastQuote >= from ? unquote(separator) : separator.toString());
 }
 
@@ -510,7 +510,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
                 if (parserType != QMetaType::QTime) {
                     const SectionNode sn = { MonthSection, i - add, countRepeat(newFormat, i, 4), 0 };
                     newSectionNodes.append(sn);
-                    newSeparators.append(unquote(newFormat.midRef(index, i - index)));
+                    newSeparators.append(unquote(QStringView{newFormat}.mid(index, i - index)));
                     i += sn.count - 1;
                     index = i + 1;
                     newDisplay |= MonthSection;
@@ -759,7 +759,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
     }
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
-    QStringRef sectionTextRef = text->midRef(offset, sectionmaxsize);
+    QStringView sectionTextRef = QStringView{*text}.mid(offset, sectionmaxsize);
 
     QDTPDEBUG << "sectionValue for" << sn.name()
               << "with text" << *text << "and (at" << offset
@@ -845,7 +845,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
             int last = -1, used = -1;
 
             Q_ASSERT(sectiontextSize <= sectionmaxsize);
-            QStringRef digitsStr = sectionTextRef.left(sectiontextSize);
+            QStringView digitsStr = sectionTextRef.left(sectiontextSize);
             for (int digits = sectiontextSize; digits >= 1; --digits) {
                 digitsStr.truncate(digits);
                 int tmp = (int)loc.toUInt(digitsStr, &ok);
@@ -1159,8 +1159,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
     for (int index = 0; index < sectionNodesCount; ++index) {
         Q_ASSERT(state != Invalid);
         const QString &separator = separators.at(index);
-        if (input->midRef(pos, separator.size()) != separator) {
-            QDTPDEBUG << "invalid because" << input->midRef(pos, separator.size())
+        if (QStringView{*input}.mid(pos, separator.size()) != separator) {
+            QDTPDEBUG << "invalid because" << QStringView{*input}.mid(pos, separator.size())
                       << "!=" << separator
                       << index << pos << currentSectionIndex;
             return StateNode();
@@ -1206,10 +1206,10 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
             current = &zoneOffset;
             if (sect.used > 0) {
                 // Synchronize with what findTimeZone() found:
-                QStringRef zoneName = input->midRef(pos, sect.used);
+                QStringView zoneName = QStringView{*input}.mid(pos, sect.used);
                 Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
 
-                const QStringRef offsetStr = zoneName.startsWith(QLatin1String("UTC"))
+                const QStringView offsetStr = zoneName.startsWith(QLatin1String("UTC"))
                                              ? zoneName.mid(3) : zoneName;
                 const bool isUtcOffset = offsetStr.startsWith(QLatin1Char('+'))
                                          || offsetStr.startsWith(QLatin1Char('-'));
@@ -1271,8 +1271,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         isSet |= sn.type;
     }
 
-    if (input->midRef(pos) != separators.last()) {
-        QDTPDEBUG << "invalid because" << input->midRef(pos)
+    if (QStringView{*input}.mid(pos) != separators.last()) {
+        QDTPDEBUG << "invalid because" << QStringView{*input}.mid(pos)
                   << "!=" << separators.last() << pos;
         return StateNode();
     }
@@ -1653,7 +1653,7 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
   Return's .value is UTC offset in seconds.
   The caller must verify that the offset is within a valid range.
  */
-QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringRef str) const
+QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) const
 {
     const bool startsWithUtc = str.startsWith(QLatin1String("UTC"));
     // Get rid of UTC prefix if it exists
@@ -1673,7 +1673,7 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringRef str) co
     // We deal only with digits at this point (except ':'), so collect them
     const int digits = hasColon ? colonPosition + 3 : 4;
     int i = 0;
-    for (const int offsetLength = qMin(digits, str.size()); i < offsetLength; ++i) {
+    for (const int offsetLength = qMin(qsizetype(digits), str.size()); i < offsetLength; ++i) {
         if (i != colonPosition && !str.at(i).isDigit())
             break;
     }
@@ -1694,7 +1694,7 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringRef str) co
     const int hours = str.mid(0, hoursLength).toInt(&isInt);
     if (!isInt)
         return ParsedSection();
-    const QStringRef minutesStr = str.mid(hasColon ? colonPosition + 1 : 2, 2);
+    const QStringView minutesStr = str.mid(hasColon ? colonPosition + 1 : 2, 2);
     const int minutes = minutesStr.isEmpty() ? 0 : minutesStr.toInt(&isInt);
     if (!isInt)
         return ParsedSection();
@@ -1724,7 +1724,7 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringRef str) co
   See QTimeZonePrivate::isValidId() for the format of zone names.
  */
 QDateTimeParser::ParsedSection
-QDateTimeParser::findTimeZoneName(QStringRef str, const QDateTime &when) const
+QDateTimeParser::findTimeZoneName(QStringView str, const QDateTime &when) const
 {
     const int systemLength = startsWithLocalTimeZone(str);
 #if QT_CONFIG(timezone)
@@ -1756,7 +1756,7 @@ QDateTimeParser::findTimeZoneName(QStringRef str, const QDateTime &when) const
   See QTimeZonePrivate::isValidId() for the format of zone names.
  */
 QDateTimeParser::ParsedSection
-QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when,
+QDateTimeParser::findTimeZone(QStringView str, const QDateTime &when,
                               int maxVal, int minVal) const
 {
     ParsedSection section = findUtcOffset(str);
@@ -1800,7 +1800,7 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
     }
     if (used)
         *used = str.size();
-    if (QStringRef(&str).trimmed().isEmpty()) {
+    if (QStringView(str).trimmed().isEmpty()) {
         return PossibleBoth;
     }
     const QLatin1Char space(' ');
@@ -1983,7 +1983,7 @@ QString QDateTimeParser::SectionNode::format() const
   number that is within min and max.
 */
 
-bool QDateTimeParser::potentialValue(const QStringRef &str, int min, int max, int index,
+bool QDateTimeParser::potentialValue(QStringView str, int min, int max, int index,
                                      const QDateTime &currentValue, int insert) const
 {
     if (str.isEmpty()) {
@@ -2023,7 +2023,7 @@ bool QDateTimeParser::potentialValue(const QStringRef &str, int min, int max, in
 /*!
   \internal
 */
-bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, const QStringRef &text) const
+bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, QStringView text) const
 {
     Q_ASSERT(text.size() < sectionMaxSize(index));
     const SectionNode &node = sectionNode(index);

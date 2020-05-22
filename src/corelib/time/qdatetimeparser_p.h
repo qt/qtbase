@@ -220,12 +220,12 @@ private:
                   int year, QString *monthName = nullptr, int *used = nullptr) const;
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
                 QString *dayName = nullptr, int *used = nullptr) const;
-    ParsedSection findUtcOffset(QStringRef str) const;
-    ParsedSection findTimeZoneName(QStringRef str, const QDateTime &when) const;
-    ParsedSection findTimeZone(QStringRef str, const QDateTime &when,
+    ParsedSection findUtcOffset(QStringView str) const;
+    ParsedSection findTimeZoneName(QStringView str, const QDateTime &when) const;
+    ParsedSection findTimeZone(QStringView str, const QDateTime &when,
                                int maxVal, int minVal) const;
     // Implemented in qdatetime.cpp:
-    static int startsWithLocalTimeZone(const QStringRef name);
+    static int startsWithLocalTimeZone(const QStringView name);
 
     enum AmPmFinder {
         Neither = -1,
@@ -238,12 +238,12 @@ private:
     AmPmFinder findAmPm(QString &str, int index, int *used = nullptr) const;
 #endif // datestring
 
-    bool potentialValue(const QStringRef &str, int min, int max, int index,
+    bool potentialValue(QStringView str, int min, int max, int index,
                         const QDateTime &currentValue, int insert) const;
     bool potentialValue(const QString &str, int min, int max, int index,
                         const QDateTime &currentValue, int insert) const
     {
-        return potentialValue(QStringRef(&str), min, max, index, currentValue, insert);
+        return potentialValue(QStringView(str), min, max, index, currentValue, insert);
     }
 
 protected: // for the benefit of QDateTimeEditPrivate
@@ -261,10 +261,10 @@ protected: // for the benefit of QDateTimeEditPrivate
     int absoluteMax(int index, const QDateTime &value = QDateTime()) const;
     int absoluteMin(int index) const;
 
-    bool skipToNextSection(int section, const QDateTime &current, const QStringRef &sectionText) const;
+    bool skipToNextSection(int section, const QDateTime &current, QStringView sectionText) const;
     bool skipToNextSection(int section, const QDateTime &current, const QString &sectionText) const
     {
-        return skipToNextSection(section, current, QStringRef(&sectionText));
+        return skipToNextSection(section, current, QStringView(sectionText));
     }
     QString stateName(State s) const;
     QString getAmPmText(AmPm ap, Case cs) const;

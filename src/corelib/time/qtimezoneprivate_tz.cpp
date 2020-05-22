@@ -95,7 +95,7 @@ static QTzTimeZoneHash loadTzTimeZones()
         // Comment lines are prefixed with a #
         if (!line.isEmpty() && line.at(0) != u'#') {
             // Data rows are tab-separated columns Region, Coordinates, ID, Optional Comments
-            const auto parts = line.splitRef(QLatin1Char('\t'));
+            const auto parts = QStringView{line}.split(QLatin1Char('\t'));
             QTzTimeZone zone;
             zone.country = QLocalePrivate::codeToCountry(parts.at(0));
             if (parts.size() > 3)
