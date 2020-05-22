@@ -2800,7 +2800,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     if (ok != nullptr)
         *ok = true;
     const QString keysString = QString::fromLatin1(keys);
-    const QVector<QStringRef> splitKeys = keysString.splitRef(QLatin1Char('|'));
+    const auto splitKeys = QStringView{keysString}.split(QLatin1Char('|'));
     if (splitKeys.isEmpty())
         return 0;
     // ### TODO write proper code: do not allocate memory, so we can go nothrow
@@ -2808,8 +2808,8 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
     int count = mobj->d.data[handle + offset];
     int data = mobj->d.data[handle + offset + 1];
-    for (const QStringRef &untrimmed : splitKeys) {
-        const QStringRef trimmed = untrimmed.trimmed();
+    for (QStringView untrimmed : splitKeys) {
+        const QStringView trimmed = untrimmed.trimmed();
         QByteArray qualified_key = trimmed.toLatin1();
         const char *key = qualified_key.constData();
         uint scope = 0;
