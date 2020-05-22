@@ -112,10 +112,9 @@ extern QFactoryLoader *qt_iconEngineFactoryLoader(); // qicon.cpp
 void QIconLoader::ensureInitialized()
 {
     if (!m_initialized) {
+        if (!QGuiApplicationPrivate::platformTheme())
+            return; // it's too early: try again later (QTBUG-74252)
         m_initialized = true;
-
-        Q_ASSERT(qApp);
-
         m_systemTheme = systemThemeName();
 
         if (m_systemTheme.isEmpty())
@@ -125,6 +124,16 @@ void QIconLoader::ensureInitialized()
     }
 }
 
+/*!
+    \internal
+    Gets an instance.
+
+    \l QIcon::setFallbackThemeName() should be called before QGuiApplication is
+    created, to avoid a race condition (QTBUG-74252). When this function is
+    called from there, ensureInitialized() does not succeed because there
+    is no QPlatformTheme yet, so systemThemeName() is empty, and we don't want
+    m_systemTheme to get intialized to the fallback theme instead of the normal one.
+*/
 QIconLoader *QIconLoader::instance()
 {
    iconLoaderInstance()->ensureInitialized();
