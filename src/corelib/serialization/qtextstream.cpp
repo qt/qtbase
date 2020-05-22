@@ -2542,21 +2542,6 @@ QTextStream &QTextStream::operator<<(QLatin1String string)
 }
 
 /*!
-    \since 5.6
-    \overload
-
-    Writes \a string to the stream, and returns a reference to the
-    QTextStream.
-*/
-QTextStream &QTextStream::operator<<(const QStringRef &string)
-{
-    Q_D(QTextStream);
-    CHECK_VALID_STREAM(*this);
-    d->putString(string.data(), string.size());
-    return *this;
-}
-
-/*!
     \overload
 
     Writes \a array to the stream. The contents of \a array are

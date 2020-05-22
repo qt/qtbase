@@ -329,19 +329,6 @@ int QCollator::compare(const QString &s1, const QString &s2) const
 /*!
     \overload
 
-    Compares \a s1 with \a s2.
-
-    Returns an integer less than, equal to, or greater than zero depending on
-    whether \a s1 sorts before, with or after \a s2.
- */
-int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
-{
-    return compare(QStringView(s1), QStringView(s2));
-}
-
-/*!
-    \overload
-
     Compares \a s1 with \a s2. \a len1 and \a len2 specify the lengths of the
     QChar arrays pointed to by \a s1 and \a s2.
 

@@ -971,17 +971,6 @@ public:
     qulonglong toULongLong(const QString &s, bool *ok = nullptr) const;
     float toFloat(const QString &s, bool *ok = nullptr) const;
     double toDouble(const QString &s, bool *ok = nullptr) const;
-
-    short toShort(const QStringRef &s, bool *ok = nullptr) const;
-    ushort toUShort(const QStringRef &s, bool *ok = nullptr) const;
-    int toInt(const QStringRef &s, bool *ok = nullptr) const;
-    uint toUInt(const QStringRef &s, bool *ok = nullptr) const;
-    long toLong(const QStringRef &s, bool *ok = nullptr) const;
-    ulong toULong(const QStringRef &s, bool *ok = nullptr) const;
-    qlonglong toLongLong(const QStringRef &s, bool *ok = nullptr) const;
-    qulonglong toULongLong(const QStringRef &s, bool *ok = nullptr) const;
-    float toFloat(const QStringRef &s, bool *ok = nullptr) const;
-    double toDouble(const QStringRef &s, bool *ok = nullptr) const;
 #endif
 
     short toShort(QStringView s, bool *ok = nullptr) const;

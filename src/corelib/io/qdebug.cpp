@@ -634,20 +634,6 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(const QStringRef &t)
-
-    Writes the string, \a t, to the stream and returns a reference to the
-    stream. Normally, QDebug prints the string inside quotes and transforms
-    non-printable characters to their Unicode values (\\u1234).
-
-    To print non-printable characters without transformation, enable the
-    noquote() functionality. Note that some QDebug backends might not be 8-bit
-    clean.
-
-    See the QString overload for examples.
-*/
-
-/*!
     \since 5.10
     \fn QDebug &QDebug::operator<<(QStringView s)
 
