@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -41,15 +41,13 @@
     The \l{SQL Programming} guide contains information about development using
     Qt SQL.
 
-    \section1 Getting Started
-    To enable Qt SQL in a project, add this directive into the C++ files:
-    \code
-    #include <QtSql>
-    \endcode
-    To link against the Qt SQL module, add this line to the project file:
-    \code
-    QT += sql
-    \endcode
+    \include module-use.qdocinc using qt module
+    \snippet snippets/CMakeLists.txt cmake_use
+
+    See also the \l[QtDoc]{Building with CMake} overview.
+
+    \include module-use.qdocinc building with qmake
+    \snippet snippets/snippets.pro qmake_use
 
     \section1 Licenses and Attributions
 
@@ -81,18 +79,6 @@
     \brief Provides a driver layer, SQL API layer, and a user
     interface layer for SQL databases.
 
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qtsql.cpp 0
-
-    \if !defined(qtforpython)
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
-
-    \snippet code/doc_src_qtsql.pro 1
-    \endif
-
-    See the \l{SQL Programming} guide for information about using this
-    module in your applications.
+    See the \l{Qt SQL} page and the \l{SQL Programming} guide for further
+    information about using this module in your application.
 */

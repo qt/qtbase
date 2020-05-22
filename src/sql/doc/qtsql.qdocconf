@@ -26,7 +26,7 @@ qhp.QtSql.subprojects.classes.selectors = class fake:headerfile
 qhp.QtSql.subprojects.classes.sortPages = true
 tagfile                 = ../../../doc/qtsql/qtsql.tags
 
-depends                 += qtcore qtwidgets qtdoc qmake
+depends                 += qtcore qtwidgets qtdoc qmake qtcmake
 
 headerdirs  += ..
 
@@ -35,6 +35,7 @@ sourcedirs  += .. \
 
 exampledirs += ../../../examples/sql \
                ../ \
+               . \ \
                snippets
 
 imagedirs   += images \
