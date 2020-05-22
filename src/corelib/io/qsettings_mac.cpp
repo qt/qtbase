@@ -413,11 +413,11 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
     }
 
     while ((nextDot = domainName.indexOf(QLatin1Char('.'), curPos)) != -1) {
-        javaPackageName.prepend(domainName.midRef(curPos, nextDot - curPos));
+        javaPackageName.prepend(QStringView{domainName}.mid(curPos, nextDot - curPos));
         javaPackageName.prepend(QLatin1Char('.'));
         curPos = nextDot + 1;
     }
-    javaPackageName.prepend(domainName.midRef(curPos));
+    javaPackageName.prepend(QStringView{domainName}.mid(curPos));
     javaPackageName = std::move(javaPackageName).toLower();
     if (curPos == 0)
         javaPackageName.prepend(QLatin1String("com."));
@@ -509,7 +509,7 @@ QStringList QMacSettingsPrivate::children(const QString &prefix, ChildSpec spec)
                     QString currentKey =
                             qtKey(static_cast<CFStringRef>(CFArrayGetValueAtIndex(cfarray, k)));
                     if (currentKey.startsWith(prefix))
-                        processChild(currentKey.midRef(startPos), spec, result);
+                        processChild(QStringView{currentKey}.mid(startPos), spec, result);
                 }
             }
         }

@@ -303,7 +303,7 @@ QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::F
 }
 #endif
 
-void QSettingsPrivate::processChild(QStringRef key, ChildSpec spec, QStringList &result)
+void QSettingsPrivate::processChild(QStringView key, ChildSpec spec, QStringList &result)
 {
     if (spec != AllKeys) {
         int slashPos = key.indexOf(QLatin1Char('/'));
@@ -478,9 +478,9 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
     if (s.startsWith(QLatin1Char('@'))) {
         if (s.endsWith(QLatin1Char(')'))) {
             if (s.startsWith(QLatin1String("@ByteArray("))) {
-                return QVariant(s.midRef(11, s.size() - 12).toLatin1());
+                return QVariant(QStringView{s}.mid(11, s.size() - 12).toLatin1());
             } else if (s.startsWith(QLatin1String("@String("))) {
-                return QVariant(s.midRef(8, s.size() - 9).toString());
+                return QVariant(QStringView{s}.mid(8, s.size() - 9).toString());
             } else if (s.startsWith(QLatin1String("@Variant("))
                        || s.startsWith(QLatin1String("@DateTime("))) {
 #ifndef QT_NO_DATASTREAM
@@ -493,7 +493,7 @@ QVariant QSettingsPrivate::stringToVariant(const QString &s)
                     version = QDataStream::Qt_4_0;
                     offset = 9;
                 }
-                QByteArray a = s.midRef(offset).toLatin1();
+                QByteArray a = QStringView{s}.mid(offset).toLatin1();
                 QDataStream stream(&a, QIODevice::ReadOnly);
                 stream.setVersion(version);
                 QVariant result;
@@ -1309,14 +1309,14 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
                 &confFile->originalKeys)->lowerBound( thePrefix);
         while (j != confFile->originalKeys.constEnd() && j.key().startsWith(thePrefix)) {
             if (!confFile->removedKeys.contains(j.key()))
-                processChild(j.key().originalCaseKey().midRef(startPos), spec, result);
+                processChild(QStringView{j.key().originalCaseKey()}.mid(startPos), spec, result);
             ++j;
         }
 
         j = const_cast<const ParsedSettingsMap *>(
                 &confFile->addedKeys)->lowerBound(thePrefix);
         while (j != confFile->addedKeys.constEnd() && j.key().startsWith(thePrefix)) {
-            processChild(j.key().originalCaseKey().midRef(startPos), spec, result);
+            processChild(QStringView{j.key().originalCaseKey()}.mid(startPos), spec, result);
             ++j;
         }
 
