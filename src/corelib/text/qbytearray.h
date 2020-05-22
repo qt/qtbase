@@ -417,7 +417,7 @@ public:
     static inline QByteArray fromStdString(const std::string &s);
     inline std::string toStdString() const;
 
-    inline int size() const { return d->size; }
+    inline int size() const { return int(d->size); }
     inline int count() const { return size(); }
     inline int length() const { return size(); }
     bool isNull() const;

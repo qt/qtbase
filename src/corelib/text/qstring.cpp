@@ -2364,7 +2364,7 @@ void QString::reallocData(uint alloc, bool grow)
         allocOptions |= QArrayData::GrowsForward;
 
     if (d->needsDetach()) {
-        DataPointer dd(Data::allocate(alloc, allocOptions), qMin(int(alloc) - 1, d.size));
+        DataPointer dd(Data::allocate(alloc, allocOptions), qMin(qsizetype(alloc) - 1, d.size));
         ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
         dd.data()[dd.size] = 0;
         d = dd;
@@ -2595,7 +2595,7 @@ QString& QString::insert(int i, const QChar *unicode, int size)
     if (Q_UNLIKELY(i > int(d.size)))
         resize(i + size, QLatin1Char(' '));
     else
-        resize(d.size + size);
+        resize(int(d.size) + size);
 
     ::memmove(d.data() + i + size, d.data() + i, (d.size - i - size) * sizeof(QChar));
     memcpy(d.data() + i, s, size * sizeof(QChar));

@@ -690,7 +690,7 @@ struct QMovableArrayOps
 
         struct Mover
         {
-            Mover(T *&start, const T *finish, int &sz)
+            Mover(T *&start, const T *finish, qsizetype &sz)
                 : destination(start)
                 , source(start)
                 , n(finish - start)
@@ -707,7 +707,7 @@ struct QMovableArrayOps
             T *&destination;
             const T *const source;
             size_t n;
-            int &size;
+            qsizetype &size;
         } mover(e, this->end(), this->size);
 
         // destroy the elements we're erasing

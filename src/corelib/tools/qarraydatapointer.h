@@ -70,17 +70,17 @@ public:
         ref();
     }
 
-    constexpr QArrayDataPointer(Data *header, T *adata, size_t n = 0) noexcept
-        : d(header), ptr(adata), size(int(n))
+    constexpr QArrayDataPointer(Data *header, T *adata, qsizetype n = 0) noexcept
+        : d(header), ptr(adata), size(n)
     {
     }
 
-    explicit QArrayDataPointer(QPair<QTypedArrayData<T> *, T *> adata, size_t n = 0) noexcept
-        : d(adata.first), ptr(adata.second), size(int(n))
+    explicit QArrayDataPointer(QPair<QTypedArrayData<T> *, T *> adata, qsizetype n = 0) noexcept
+        : d(adata.first), ptr(adata.second), size(n)
     {
     }
 
-    static QArrayDataPointer fromRawData(const T *rawData, size_t length) noexcept
+    static QArrayDataPointer fromRawData(const T *rawData, qsizetype length) noexcept
     {
         Q_ASSERT(rawData || !length);
         return { nullptr, const_cast<T *>(rawData), length };
@@ -212,7 +212,7 @@ protected:
     T *ptr;
 
 public:
-    int size;
+    qsizetype size;
 };
 
 template <class T>

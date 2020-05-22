@@ -1675,7 +1675,7 @@ QByteArray &QByteArray::fill(char ch, int size)
 void QByteArray::reallocData(uint alloc, Data::ArrayOptions options)
 {
     if (d->needsDetach()) {
-        DataPointer dd(Data::allocate(alloc, options), qMin(int(alloc) - 1, d.size));
+        DataPointer dd(Data::allocate(alloc, options), qMin(qsizetype(alloc) - 1, d.size));
         ::memcpy(dd.data(), d.data(), dd.size);
         dd.data()[dd.size] = 0;
         d = dd;
