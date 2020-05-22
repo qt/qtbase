@@ -27,15 +27,16 @@ qhp.QtConcurrent.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtconcurrent/qtconcurrent.tags
 
-depends                 += qtcore qtdoc
+depends                 += qtcore qtdoc qmake qtcmake
 
 headerdirs  += ..
 
 sourcedirs  += ..
 
 exampledirs += ../../../examples/qtconcurrent \
-               ../ \
-               snippets
+               snippets \
+               .. \
+               .
 
 manifestmeta.highlighted.names = "QtConcurrent/QtConcurrent Progress Dialog Example"
 
