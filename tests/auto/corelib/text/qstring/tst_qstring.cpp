@@ -393,8 +393,6 @@ private slots:
 
     void prepend_qstring()            { prepend_impl<QString>(); }
     void prepend_qstring_data()       { prepend_data(true); }
-    void prepend_qstringref()         { prepend_impl<QStringRef>(); }
-    void prepend_qstringref_data()    { prepend_data(true); }
     void prepend_qstringview()        { prepend_impl<QStringView, QString &(QString::*)(QStringView)>(); }
     void prepend_qstringview_data()   { prepend_data(true); }
     void prepend_qlatin1string()      { prepend_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
@@ -414,8 +412,6 @@ private slots:
 
     void append_qstring()            { append_impl<QString>(); }
     void append_qstring_data()       { append_data(); }
-    void append_qstringref()         { append_impl<QStringRef>(); }
-    void append_qstringref_data()    { append_data(); }
     void append_qstringview()        { append_impl<QStringView,  QString &(QString::*)(QStringView)>(); }
     void append_qstringview_data()   { append_data(true); }
     void append_qlatin1string()      { append_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
@@ -436,8 +432,6 @@ private slots:
 
     void operator_pluseq_qstring()            { operator_pluseq_impl<QString>(); }
     void operator_pluseq_qstring_data()       { operator_pluseq_data(); }
-    void operator_pluseq_qstringref()         { operator_pluseq_impl<QStringRef>(); }
-    void operator_pluseq_qstringref_data()    { operator_pluseq_data(); }
     void operator_pluseq_qstringview()        { operator_pluseq_impl<QStringView, QString &(QString::*)(QStringView)>(); }
     void operator_pluseq_qstringview_data()   { operator_pluseq_data(true); }
     void operator_pluseq_qlatin1string()      { operator_pluseq_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
@@ -459,8 +453,6 @@ private slots:
 
     void insert_qstring()            { insert_impl<QString>(); }
     void insert_qstring_data()       { insert_data(true); }
-    void insert_qstringref()         { insert_impl<QStringRef>(); }
-    void insert_qstringref_data()    { insert_data(true); }
     void insert_qstringview()        { insert_impl<QStringView, QString &(QString::*)(int, QStringView)>(); }
     void insert_qstringview_data()   { insert_data(true); }
     void insert_qlatin1string()      { insert_impl<QLatin1String, QString &(QString::*)(int, QLatin1String)>(); }

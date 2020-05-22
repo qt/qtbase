@@ -3789,24 +3789,6 @@ int QString::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
-    \since 4.8
-
-    \overload indexOf()
-
-    Returns the index position of the first occurrence of the string
-    reference \a str in this string, searching forward from index
-    position \a from. Returns -1 if \a str is not found.
-
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
-*/
-int QString::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
-{
-    // ### Qt6: qsizetype
-    return int(QtPrivate::findString(QStringView(unicode(), length()), from, QStringView(str.unicode(), str.length()), cs));
-}
-
-/*!
   Returns the index position of the last occurrence of the string \a
   str in this string, searching backward from index position \a
   from. If \a from is -1 (default), the search starts at the last
@@ -3866,29 +3848,6 @@ int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
     // ### Qt6: qsizetype
     return int(qLastIndexOf(QStringView(*this), ch, from, cs));
 }
-
-#if QT_STRINGVIEW_LEVEL < 2
-/*!
-  \since 4.8
-  \overload lastIndexOf()
-
-  Returns the index position of the last occurrence of the string
-  reference \a str in this string, searching backward from index
-  position \a from. If \a from is -1 (default), the search starts at
-  the last character; if \a from is -2, at the next to last character
-  and so on. Returns -1 if \a str is not found.
-
-  If \a cs is Qt::CaseSensitive (default), the search is case
-  sensitive; otherwise the search is case insensitive.
-
-  \sa indexOf(), contains(), count()
-*/
-int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
-{
-    // ### Qt6: qsizetype
-    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
-}
-#endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
   \fn int QString::lastIndexOf(QStringView str, int from, Qt::CaseSensitivity cs) const
@@ -4080,7 +4039,7 @@ int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 }
 
 /*!
-    \since 4.8
+    \since 6.0
     \overload count()
     Returns the number of (potentially overlapping) occurrences of the
     string reference \a str in this string.
@@ -4090,10 +4049,10 @@ int QString::count(QChar ch, Qt::CaseSensitivity cs) const
 
     \sa contains(), indexOf()
 */
-int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
+int QString::count(QStringView str, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(QtPrivate::count(QStringView(unicode(), size()), QStringView(str.unicode(), str.size()), cs));
+    return int(QtPrivate::count(*this, str, cs));
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -4705,24 +4664,6 @@ bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
     return qt_starts_with(*this, c, cs);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
-/*!
-    \since 4.8
-    \overload
-    Returns \c true if the string starts with the string reference \a s;
-    otherwise returns \c false.
-
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
-
-    \sa endsWith()
-*/
-bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
-{
-    return qt_starts_with(*this, s, cs);
-}
-#endif
-
 /*!
     \fn bool QString::startsWith(QStringView str, Qt::CaseSensitivity cs) const
     \since 5.10
@@ -4750,22 +4691,6 @@ bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
     \sa startsWith()
 */
 bool QString::endsWith(const QString &s, Qt::CaseSensitivity cs) const
-{
-    return qt_ends_with(*this, s, cs);
-}
-
-/*!
-    \since 4.8
-    \overload endsWith()
-    Returns \c true if the string ends with the string reference \a s;
-    otherwise returns \c false.
-
-    If \a cs is Qt::CaseSensitive (default), the search is case
-    sensitive; otherwise the search is case insensitive.
-
-    \sa startsWith()
-*/
-bool QString::endsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 {
     return qt_ends_with(*this, s, cs);
 }
@@ -5880,17 +5805,6 @@ int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const noexcept
     return qt_compare_strings(*this, other, cs);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
-/*!
-  \fn int QString::compare(const QStringRef &ref, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-  \overload compare()
-
-  Compares the string reference, \a ref, with the string and returns
-  an integer less than, equal to, or greater than zero if the string
-  is less than, equal to, or greater than \a ref.
-*/
-#endif
-
 /*!
     \internal
     \since 5.0
@@ -5912,7 +5826,12 @@ int QString::compare_helper(const QChar *data1, int length1, const char *data2, 
 }
 
 /*!
-  \fn int QString::compare(const QString &s1, const QStringRef &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
+  \fn int QString::compare(const QString &s1, QStringView s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
+  \overload compare()
+*/
+
+/*!
+  \fn int QString::compare(QStringView s1, const QString &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
   \overload compare()
 */
 
@@ -5946,8 +5865,8 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
 */
 
 /*!
-    \fn int QString::localeAwareCompare(const QStringRef &other) const
-    \since 4.5
+    \fn int QString::localeAwareCompare(QStringView other) const
+    \since 6.0
     \overload localeAwareCompare()
 
     Compares this string with the \a other string and returns an
@@ -5962,8 +5881,8 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
 */
 
 /*!
-    \fn int QString::localeAwareCompare(const QString &s1, const QStringRef &s2)
-    \since 4.5
+    \fn int QString::localeAwareCompare(QStringView s1, QStringView s2)
+    \since 6.0
     \overload localeAwareCompare()
 
     Compares \a s1 with \a s2 and returns an integer less than, equal
@@ -10657,24 +10576,6 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     Appends the given string view \a str to this string and returns the result.
 */
-
-/*!
-    \fn QString &QString::append(const QStringRef &reference)
-    \since 4.4
-
-    Appends the given string \a reference to this string and returns the result.
- */
-QString &QString::append(const QStringRef &str)
-{
-    if (str.string() == this) {
-        str.appendTo(this);
-    } else if (!str.isNull()) {
-        int oldSize = size();
-        resize(oldSize + str.size());
-        memcpy(data() + oldSize, str.unicode(), str.size() * sizeof(QChar));
-    }
-    return *this;
-}
 
 /*!
     \fn QStringRef::left(int n) const

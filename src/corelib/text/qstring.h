@@ -399,7 +399,6 @@ public:
     int indexOf(QLatin1String s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #if QT_STRINGVIEW_LEVEL < 2
     int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int indexOf(const QStringRef &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
     Q_REQUIRED_RESULT int indexOf(QStringView s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return int(QtPrivate::findString(*this, from, s, cs)); } // ### Qt6: qsizetype
@@ -407,7 +406,6 @@ public:
     int lastIndexOf(QLatin1String s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #if QT_STRINGVIEW_LEVEL < 2
     int lastIndexOf(const QString &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int lastIndexOf(const QStringRef &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
 
     Q_REQUIRED_RESULT int lastIndexOf(QStringView s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
@@ -416,13 +414,12 @@ public:
     inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #if QT_STRINGVIEW_LEVEL < 2
     inline bool contains(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline bool contains(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
     inline bool contains(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     inline bool contains(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
     int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    int count(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
 #if QT_CONFIG(regularexpression)
     int indexOf(const QRegularExpression &re, int from = 0,
@@ -469,7 +466,6 @@ public:
 
 #if QT_STRINGVIEW_LEVEL < 2
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    bool startsWith(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
@@ -478,7 +474,6 @@ public:
 
 #if QT_STRINGVIEW_LEVEL < 2
     bool endsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    bool endsWith(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
     Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::endsWith(*this, s, cs); }
@@ -535,7 +530,6 @@ public:
     QString &insert(int i, const QChar *uc, int len);
 #if QT_STRINGVIEW_LEVEL < 2
     inline QString &insert(int i, const QString &s) { return insert(i, s.constData(), s.length()); }
-    inline QString &insert(int i, const QStringRef &s);
 #endif
     inline QString &insert(int i, QStringView v) { return insert(i, v.data(), v.length()); }
     QString &insert(int i, QLatin1String s);
@@ -544,7 +538,6 @@ public:
     QString &append(const QChar *uc, int len);
 #if QT_STRINGVIEW_LEVEL < 2
     QString &append(const QString &s);
-    QString &append(const QStringRef &s);
 #endif
     inline QString &append(QStringView v) { return append(v.data(), v.length()); }
     QString &append(QLatin1String s);
@@ -553,7 +546,6 @@ public:
     inline QString &prepend(const QChar *uc, int len) { return insert(0, uc, len); }
 #if QT_STRINGVIEW_LEVEL < 2
     inline QString &prepend(const QString &s) { return insert(0, s); }
-    inline QString &prepend(const QStringRef &s) { return insert(0, s); }
 #endif
     inline QString &prepend(QStringView v) { return prepend(v.data(), v.length()); }
     inline QString &prepend(QLatin1String s) { return insert(0, s); }
@@ -568,7 +560,6 @@ public:
 
 #if QT_STRINGVIEW_LEVEL < 2
     inline QString &operator+=(const QString &s) { return append(s); }
-    inline QString &operator+=(const QStringRef &s) { return append(s); }
 #endif
     inline QString &operator+=(QStringView v) { return append(v); }
     inline QString &operator+=(QLatin1String s) { return append(s); }
@@ -737,7 +728,6 @@ public:
 
 #if QT_STRINGVIEW_LEVEL < 2
     int compare(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
-    inline int compare(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 #endif
     int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
     inline int compare(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
@@ -754,16 +744,17 @@ public:
     static inline int compare(QLatin1String s1, const QString &s2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept
     { return -s2.compare(s1, cs); }
-
-    static int compare(const QString &s1, const QStringRef &s2,
-                       Qt::CaseSensitivity = Qt::CaseSensitive) noexcept;
+    static int compare(const QString &s1, QStringView s2, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept
+    { return s1.compare(s2, cs); }
+    static int compare(QStringView s1, const QString &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept
+    { return -s2.compare(s1, cs); }
 
     int localeAwareCompare(const QString& s) const;
+    int localeAwareCompare(QStringView s) const;
     static int localeAwareCompare(const QString& s1, const QString& s2)
     { return s1.localeAwareCompare(s2); }
 
-    int localeAwareCompare(const QStringRef &s) const;
-    static int localeAwareCompare(const QString& s1, const QStringRef& s2);
+    static int localeAwareCompare(QStringView s1, QStringView s2);
 
     // ### Qt6: make inline except for the long long versions
     short  toShort(bool *ok=nullptr, int base=10) const;
@@ -1205,8 +1196,6 @@ inline QString::const_iterator QString::constEnd() const
 { return reinterpret_cast<const QChar*>(d.data() + d.size); }
 #if QT_STRINGVIEW_LEVEL < 2
 inline bool QString::contains(const QString &s, Qt::CaseSensitivity cs) const
-{ return indexOf(s, 0, cs) != -1; }
-inline bool QString::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
 { return indexOf(s, 0, cs) != -1; }
 #endif
 inline bool QString::contains(QLatin1String s, Qt::CaseSensitivity cs) const
@@ -1680,14 +1669,8 @@ inline bool operator> (const QStringRef &lhs, const QString &rhs) noexcept { ret
 inline bool operator<=(const QStringRef &lhs, const QString &rhs) noexcept { return rhs >= lhs; }
 inline bool operator>=(const QStringRef &lhs, const QString &rhs) noexcept { return rhs <= lhs; }
 
-#if QT_STRINGVIEW_LEVEL < 2
-inline int QString::compare(const QStringRef &s, Qt::CaseSensitivity cs) const noexcept
-{ return QString::compare_helper(constData(), length(), s.constData(), s.length(), cs); }
-#endif
 inline int QString::compare(QStringView s, Qt::CaseSensitivity cs) const noexcept
 { return -s.compare(*this, cs); }
-inline int QString::compare(const QString &s1, const QStringRef &s2, Qt::CaseSensitivity cs) noexcept
-{ return QString::compare_helper(s1.constData(), s1.length(), s2.constData(), s2.length(), cs); }
 inline int QStringRef::compare(const QString &s, Qt::CaseSensitivity cs) const noexcept
 { return QString::compare_helper(constData(), length(), s.constData(), s.length(), cs); }
 inline int QStringRef::compare(const QStringRef &s, Qt::CaseSensitivity cs) const noexcept
@@ -1855,9 +1838,9 @@ inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QStringRef &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) <= 0; }
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
-inline int QString::localeAwareCompare(const QStringRef &s) const
+inline int QString::localeAwareCompare(QStringView s) const
 { return localeAwareCompare_helper(constData(), length(), s.constData(), s.length()); }
-inline int QString::localeAwareCompare(const QString& s1, const QStringRef& s2)
+inline int QString::localeAwareCompare(QStringView s1, QStringView s2)
 { return localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
 inline int QStringRef::localeAwareCompare(const QString &s) const
 { return QString::localeAwareCompare_helper(constData(), length(), s.constData(), s.length()); }
@@ -1880,9 +1863,6 @@ inline bool QStringRef::contains(QChar c, Qt::CaseSensitivity cs) const
 { return indexOf(c, 0, cs) != -1; }
 inline bool QStringRef::contains(QStringView s, Qt::CaseSensitivity cs) const noexcept
 { return indexOf(s, 0, cs) != -1; }
-
-inline QString &QString::insert(int i, const QStringRef &s)
-{ return insert(i, s.constData(), s.length()); }
 
 #if !defined(QT_USE_FAST_OPERATOR_PLUS) && !defined(QT_USE_QSTRINGBUILDER)
 inline QString operator+(const QString &s1, const QStringRef &s2)
