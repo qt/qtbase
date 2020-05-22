@@ -454,7 +454,7 @@ int main(int argc, char *argv[])
                     qPrintable(g_options.apkPath));
             return 1;
         }
-        if (!execCommand(g_options.makeCommand, nullptr, g_options.verbose)) {
+        if (!execCommand(g_options.makeCommand, nullptr, true)) {
             if (!g_options.skipAddInstallRoot) {
                 // we need to run make INSTALL_ROOT=path install to install the application file(s) first
                 if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
