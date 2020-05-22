@@ -1,6 +1,10 @@
 TEMPLATE = app
 TARGET = testlib_cppsnippet
-QT = core testlib sql widgets
+QT = core sql widgets
+
+#! [qmake_use]
+QT += testlib
+#! [qmake_use]
 
 SOURCES += code/src_qtestlib_qtestcase.cpp \
            code/doc_src_qtestlib.cpp \

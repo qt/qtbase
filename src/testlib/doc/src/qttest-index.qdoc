@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -40,17 +40,13 @@
           to work with the Qt version it was developed against. However, source
           compatibility is guaranteed.
 
-    \section1 Getting Started
+    \include module-use.qdocinc using qt module
+    \snippet snippets/CMakeLists.txt cmake_use
 
-    To enable Qt Test in a project, add this directive into the C++ files:
+    See also the \l[QtDoc]{Building with CMake} overview.
 
-    \snippet code/doc_src_qttest.cpp 0
-
-    \if !define(qtforpython)
-    To link against Qt Test, add this line to the project file:
-
-    \snippet code/doc_src_qttest.pro 1
-    \endif
+    \include module-use.qdocinc building with qmake
+    \snippet snippets/snippets.pro qmake_use
 
     \section1 Articles and Guides
 

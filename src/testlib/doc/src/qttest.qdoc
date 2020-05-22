@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -35,22 +35,6 @@
 
     \brief Provides classes for unit testing Qt applications and libraries.
 
-    Applications that use Qt's unit testing classes need to
-    be configured to be built against the Qt Test module.
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet code/doc_src_qttest.cpp 0
-
-    \if !defined(qtforpython)
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
-
-    \snippet code/doc_src_qttest.pro 1
-    \endif
-
-    See \l{Qt Test Overview} for an introduction on how to use
-    Qt's unit testing features with your applications.
-
+    See the \l{Qt Test} page and the \l{Qt Test Overview} guide for further
+    information about using this module in your application.
 */
-
