@@ -90,11 +90,13 @@ QMAKE_EXTRA_COMPILERS += moc_objc_header
 INCREDIBUILD_XGE += moc_objc_header
 
 #moc sources
+moc_sources = $$SOURCES
+precompile_header: moc_sources += $$NO_PCH_SOURCES
 moc_source.CONFIG = no_link moc_verify
 moc_source.dependency_type = TYPE_C
 moc_source.commands = ${QMAKE_FUNC_mocCmdBase} ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
 moc_source.output = $$MOC_DIR/$${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_EXT_CPP_MOC}
-moc_source.input = SOURCES
+moc_source.input = moc_sources
 moc_source.name = MOC ${QMAKE_FILE_IN}
 moc_source.depends += $$WIN_INCLUDETEMP $$moc_predefs.output
 silent:moc_source.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_source.commands
