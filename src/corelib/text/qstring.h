@@ -247,10 +247,6 @@ private:
 Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
 
 // Qt 4.x compatibility
-#if QT_DEPRECATED_SINCE(5, 14)
-QT_DEPRECATED_X("Use QLatin1String")
-typedef QLatin1String QLatin1Literal;
-#endif
 
 //
 // QLatin1String inline implementations
@@ -386,12 +382,6 @@ public:
     arg(Args &&...args) const
     { return qToStringViewIgnoringNull(*this).arg(std::forward<Args>(args)...); }
 
-#if QT_DEPRECATED_SINCE(5, 14)
-    QT_DEPRECATED_X("Use vasprintf(), arg() or QTextStream instead")
-    QString &vsprintf(const char *format, va_list ap) Q_ATTRIBUTE_FORMAT_PRINTF(2, 0);
-    QT_DEPRECATED_X("Use asprintf(), arg() or QTextStream instead")
-    QString &sprintf(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
-#endif
     static QString vasprintf(const char *format, va_list ap) Q_ATTRIBUTE_FORMAT_PRINTF(1, 0);
     static QString asprintf(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
@@ -585,33 +575,6 @@ public:
     inline QString &remove(const QRegularExpression &re)
     { return replace(re, QString()); }
 #endif
-
-#if QT_DEPRECATED_SINCE(5, 15)
-    enum SplitBehavior // ### Qt 6: replace with Qt:: version
-    {
-        KeepEmptyParts Q_DECL_ENUMERATOR_DEPRECATED,
-        SkipEmptyParts Q_DECL_ENUMERATOR_DEPRECATED
-    };
-
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QStringList split(const QString &sep, SplitBehavior behavior,
-                                        Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QVector<QStringRef> splitRef(const QString &sep, SplitBehavior behavior,
-                                                   Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QStringList split(QChar sep, SplitBehavior behavior,
-                                        Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QVector<QStringRef> splitRef(QChar sep, SplitBehavior behavior,
-                                                   Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-#if QT_CONFIG(regularexpression)
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QStringList split(const QRegularExpression &sep, SplitBehavior behavior) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QVector<QStringRef> splitRef(const QRegularExpression &sep, SplitBehavior behavior) const;
-#endif
-#endif // 5.15 deprecations
 
 public:
     Q_REQUIRED_RESULT
@@ -927,14 +890,7 @@ public:
     static QString fromNSString(const NSString *string);
     NSString *toNSString() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
-    // compatibility
-#if QT_DEPRECATED_SINCE(5, 9)
-    struct Null { };
-    QT_DEPRECATED_X("use QString()")
-    static const Null null;
-    inline QString(const Null &) {}
-    inline QString &operator=(const Null &) { *this = QString(); return *this; }
-#endif
+
     inline bool isNull() const { return d->isNull(); }
 
 
@@ -1204,19 +1160,6 @@ inline bool QString::contains(QChar c, Qt::CaseSensitivity cs) const
 { return indexOf(c, 0, cs) != -1; }
 inline bool QString::contains(QStringView s, Qt::CaseSensitivity cs) const noexcept
 { return indexOf(s, 0, cs) != -1; }
-
-#if QT_DEPRECATED_SINCE(5, 9)
-inline bool operator==(QString::Null, QString::Null) { return true; }
-QT_DEPRECATED_X("use QString::isNull()")
-inline bool operator==(QString::Null, const QString &s) { return s.isNull(); }
-QT_DEPRECATED_X("use QString::isNull()")
-inline bool operator==(const QString &s, QString::Null) { return s.isNull(); }
-inline bool operator!=(QString::Null, QString::Null) { return false; }
-QT_DEPRECATED_X("use !QString::isNull()")
-inline bool operator!=(QString::Null, const QString &s) { return !s.isNull(); }
-QT_DEPRECATED_X("use !QString::isNull()")
-inline bool operator!=(const QString &s, QString::Null) { return !s.isNull(); }
-#endif
 
 inline bool operator==(QLatin1String s1, QLatin1String s2) noexcept
 { return s1.size() == s2.size() && (!s1.size() || !memcmp(s1.latin1(), s2.latin1(), s1.size())); }
@@ -1496,15 +1439,6 @@ public:
     int count(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-
-#if QT_DEPRECATED_SINCE(5, 15)
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QVector<QStringRef> split(const QString &sep, QString::SplitBehavior behavior,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
-    QVector<QStringRef> split(QChar sep, QString::SplitBehavior behavior,
-                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-#endif // 5.15 deprecations
 
     Q_REQUIRED_RESULT
     QVector<QStringRef> split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
@@ -1880,14 +1814,6 @@ inline QString operator+(const QStringRef &s1, QChar s2)
 inline QString operator+(QChar s1, const QStringRef &s2)
 { QString t; t.reserve(1 + s2.size()); t += s1; t += s2; return t; }
 #endif // !(QT_USE_FAST_OPERATOR_PLUS || QT_USE_QSTRINGBUILDER)
-
-namespace Qt {
-#if QT_DEPRECATED_SINCE(5, 0)
-QT_DEPRECATED inline QString escape(const QString &plain) {
-    return plain.toHtmlEscaped();
-}
-#endif
-}
 
 namespace QtPrivate {
 // used by qPrintable() and qUtf8Printable() macros

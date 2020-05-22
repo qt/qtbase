@@ -1367,10 +1367,6 @@ inline char qToLower(char ch)
 }
 
 
-#if QT_DEPRECATED_SINCE(5, 9)
-const QString::Null QString::null = { };
-#endif
-
 /*!
   \macro QT_RESTRICTED_CAST_FROM_ASCII
   \relates QString
@@ -6246,22 +6242,6 @@ QString QString::toUpper_helper(QString &str)
     return QUnicodeTables::convertCase(str, QUnicodeTables::UpperCase);
 }
 
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-    \obsolete
-
-    Use asprintf(), arg() or QTextStream instead.
-*/
-QString &QString::sprintf(const char *cformat, ...)
-{
-    va_list ap;
-    va_start(ap, cformat);
-    *this = vasprintf(cformat, ap);
-    va_end(ap);
-    return *this;
-}
-#endif
-
 // ### Qt 6: Consider whether this function shouldn't be removed See task 202871.
 /*!
     \since 5.5
@@ -6305,18 +6285,6 @@ QString QString::asprintf(const char *cformat, ...)
     va_end(ap);
     return s;
 }
-
-#if QT_DEPRECATED_SINCE(5, 14)
-/*!
-    \obsolete
-
-    Use vasprintf(), arg() or QTextStream instead.
-*/
-QString &QString::vsprintf(const char *cformat, va_list ap)
-{
-    return *this = vasprintf(cformat, ap);
-}
-#endif
 
 static void append_utf8(QString &qs, const char *cs, int len)
 {
@@ -7216,16 +7184,6 @@ static ResultList splitString(const StringSource &source, QStringView sep,
     return list;
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-Qt::SplitBehavior mapSplitBehavior(QString::SplitBehavior sb)
-{
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return sb & QString::SkipEmptyParts ? Qt::SkipEmptyParts : Qt::KeepEmptyParts;
-QT_WARNING_POP
-}
-#endif
-
 } // namespace
 
 /*!
@@ -7263,17 +7221,6 @@ QStringList QString::split(const QString &sep, Qt::SplitBehavior behavior, Qt::C
     return splitString<QStringList>(*this, sep, behavior, cs);
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \obsolete
-*/
-QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{
-    return split(sep, mapSplitBehavior(behavior), cs);
-}
-#endif
-
 /*!
     Splits the string into substring references wherever \a sep occurs, and
     returns the list of those strings.
@@ -7293,18 +7240,6 @@ QVector<QStringRef> QString::splitRef(const QString &sep, Qt::SplitBehavior beha
     return splitString<QVector<QStringRef>>(QStringRef(this), sep, behavior, cs);
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \obsolete
-    \since 5.4
-*/
-QVector<QStringRef> QString::splitRef(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{
-    return splitRef(sep, mapSplitBehavior(behavior), cs);
-}
-#endif
-
 /*!
     \overload
     \since 5.14
@@ -7313,17 +7248,6 @@ QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensit
 {
     return splitString<QStringList>(*this, QStringView(&sep, 1), behavior, cs);
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \obsolete
-*/
-QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{
-    return split(sep, mapSplitBehavior(behavior), cs);
-}
-#endif
 
 /*!
     \overload
@@ -7334,17 +7258,6 @@ QVector<QStringRef> QString::splitRef(QChar sep, Qt::SplitBehavior behavior,
 {
     return splitString<QVector<QStringRef> >(QStringRef(this), QStringView(&sep, 1), behavior, cs);
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \since 5.4
-*/
-QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{
-    return splitRef(sep, mapSplitBehavior(behavior), cs);
-}
-#endif
 
 /*!
     Splits the string into substrings references wherever \a sep occurs, and
@@ -7363,18 +7276,6 @@ QVector<QStringRef> QStringRef::split(const QString &sep, Qt::SplitBehavior beha
     return splitString<QVector<QStringRef> >(*this, sep, behavior, cs);
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \since 5.4
-    \obsolete
-*/
-QVector<QStringRef> QStringRef::split(const QString &sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{
-    return split(sep, mapSplitBehavior(behavior), cs);
-}
-#endif
-
 /*!
     \overload
     \since 5.14
@@ -7383,19 +7284,6 @@ QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt:
 {
     return splitString<QVector<QStringRef> >(*this, QStringView(&sep, 1), behavior, cs);
 }
-
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \since 5.4
-    \obsolete
-*/
-QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
-{
-    return split(sep, mapSplitBehavior(behavior), cs);
-}
-#endif
-
 
 /*!
     \fn QList<QStringView> QStringView::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
@@ -7485,18 +7373,6 @@ QStringList QString::split(const QRegularExpression &re, Qt::SplitBehavior behav
     return splitString<QStringList>(*this, re, behavior);
 }
 
-#  if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \since 5.0
-    \obsolete
-*/
-QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior) const
-{
-    return split(re, mapSplitBehavior(behavior));
-}
-#  endif
-
 /*!
     \overload
     \since 5.14
@@ -7534,17 +7410,6 @@ QList<QStringView> QStringView::split(const QRegularExpression &re, Qt::SplitBeh
     return splitString<QList<QStringView>>(*this, re, behavior);
 }
 
-#  if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \overload
-    \since 5.4
-    \obsolete
-*/
-QVector<QStringRef> QString::splitRef(const QRegularExpression &re, SplitBehavior behavior) const
-{
-    return splitRef(re, mapSplitBehavior(behavior));
-}
-#  endif
 #endif // QT_CONFIG(regularexpression)
 
 /*!

@@ -379,13 +379,6 @@ void tst_QVariant::isNull()
     QString str1;
     QVariant var1( str1 );
     QVERIFY( var1.isNull() );
-#if QT_DEPRECATED_SINCE(5, 9)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QVariant var2( QString::null );
-QT_WARNING_POP
-    QVERIFY( var2.isNull() );
-#endif
 
     QVariant var3( QString( "blah" ) );
     QVERIFY( !var3.isNull() );
@@ -404,19 +397,6 @@ QT_WARNING_POP
     QVERIFY( var6.isNull() );
     QVariant varLL( (qlonglong)0 );
     QVERIFY( !varLL.isNull() );
-
-#if QT_DEPRECATED_SINCE(5, 9)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QVariant var7(QString::null);
-QT_WARNING_POP
-    QVERIFY(var7.isNull());
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    var7 = QVariant::fromValue<QString>(QString::null);
-QT_WARNING_POP
-    QVERIFY(var7.isNull());
-#endif
 
     QVariant var8(QMetaType::Nullptr, nullptr);
     QVERIFY(var8.isNull());
