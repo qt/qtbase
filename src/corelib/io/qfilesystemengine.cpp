@@ -90,7 +90,7 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
                 if (separatorPos != -1) {
                     if (fi.isDir() && !target.endsWith(slash))
                         target.append(slash);
-                    target.append(tmpPath.midRef(separatorPos));
+                    target.append(QStringView{tmpPath}.mid(separatorPos));
                 }
                 tmpPath = QDir::cleanPath(target);
                 separatorPos = 0;
@@ -156,7 +156,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
 
             const QStringList &paths = QDir::searchPaths(filePath.left(prefixSeparator));
             for (int i = 0; i < paths.count(); i++) {
-                entry = QFileSystemEntry(QDir::cleanPath(paths.at(i) % QLatin1Char('/') % filePath.midRef(prefixSeparator + 1)));
+                entry = QFileSystemEntry(QDir::cleanPath(paths.at(i) % QLatin1Char('/') % QStringView{filePath}.mid(prefixSeparator + 1)));
                 // Recurse!
                 if (_q_resolveEntryAndCreateLegacyEngine_recursive(entry, data, engine, true))
                     return true;

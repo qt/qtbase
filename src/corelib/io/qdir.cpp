@@ -177,7 +177,7 @@ inline QStringList QDirPrivate::splitFilters(const QString &nameFilter, QChar se
 {
     if (sep.isNull())
         sep = getFilterSepChar(nameFilter);
-    const QVector<QStringRef> split = nameFilter.splitRef(sep);
+    const auto split = QStringView{nameFilter}.split(sep);
     QStringList ret;
     ret.reserve(split.size());
     for (const auto &e : split)
@@ -777,7 +777,7 @@ QString QDir::filePath(const QString &fileName) const
     if (fileName.startsWith(QLatin1Char('/')) || fileName.startsWith(QLatin1Char('\\'))) {
         // Handle the "absolute except for drive" case (i.e. \blah not c:\blah):
         const int drive = drivePrefixLength(ret);
-        return drive > 0 ? ret.leftRef(drive) % fileName : fileName;
+        return drive > 0 ? QStringView{ret}.left(drive) % fileName : fileName;
     }
 #endif // Q_OS_WIN
 
@@ -810,7 +810,7 @@ QString QDir::absoluteFilePath(const QString &fileName) const
         // Combine absoluteDirPath's drive with fileName
         const int drive = drivePrefixLength(absoluteDirPath);
         if (Q_LIKELY(drive))
-            return absoluteDirPath.leftRef(drive) % fileName;
+            return QStringView{absoluteDirPath}.left(drive) % fileName;
 
         qWarning("Base directory's drive is not a letter: %s",
                  qUtf8Printable(QDir::toNativeSeparators(absoluteDirPath)));
@@ -860,7 +860,6 @@ QString QDir::relativeFilePath(const QString &fileName) const
     QString result;
     const auto dirElts = dir.tokenize(QLatin1Char('/'), Qt::SkipEmptyParts);
     const auto fileElts = file.tokenize(QLatin1Char('/'), Qt::SkipEmptyParts);
-
 
     const auto dend = dirElts.end();
     const auto fend = fileElts.end();

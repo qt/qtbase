@@ -306,7 +306,7 @@ static QString readSymLink(const QFileSystemEntry &link)
                 result = result.mid(4);
                 // cut off UNC in addition when the link points at a UNC share
                 // in which case we need to prepend another backslash to get \\server\share
-                if (result.leftRef(3) == QLatin1String("UNC")) {
+                if (QStringView{result}.left(3) == QLatin1String("UNC")) {
                     result.replace(0, 3, QLatin1Char('\\'));
                 }
             }
@@ -378,7 +378,7 @@ static QString readLink(const QFileSystemEntry &link)
 static bool uncShareExists(const QString &server)
 {
     // This code assumes the UNC path is always like \\?\UNC\server...
-    const QVector<QStringRef> parts = server.splitRef(QLatin1Char('\\'), Qt::SkipEmptyParts);
+    const auto parts = QStringView{server}.split(QLatin1Char('\\'), Qt::SkipEmptyParts);
     if (parts.count() >= 3) {
         QStringList shares;
         if (QFileSystemEngine::uncListSharesOnServer(QLatin1String("\\\\") + parts.at(2), &shares))
@@ -1195,7 +1195,7 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
     if (removeEmptyParents) {
         dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
         for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
-            const QStringRef chunkRef = dirName.leftRef(slash);
+            const auto chunkRef = QStringView{dirName}.left(slash);
             if (chunkRef.length() == 2 && chunkRef.at(0).isLetter() && chunkRef.at(1) == QLatin1Char(':'))
                 break;
             const QString chunk = chunkRef.toString();

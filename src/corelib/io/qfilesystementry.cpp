@@ -59,7 +59,7 @@ static bool isUncRoot(const QString &server)
     if (idx == -1 || idx + 1 == localPath.length())
         return true;
 
-    return localPath.rightRef(localPath.length() - idx - 1).trimmed().isEmpty();
+    return QStringView{localPath}.right(localPath.length() - idx - 1).trimmed().isEmpty();
 }
 
 static inline QString fixIfRelativeUncPath(const QString &path)
