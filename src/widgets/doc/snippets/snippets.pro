@@ -2,7 +2,11 @@ TEMPLATE = lib
 
 TARGET = widgets_snippets
 
-QT += widgets printsupport opengl openglwidgets
+#! [qmake_use]
+QT += widgets
+#! [qmake_use]
+
+QT += printsupport opengl openglwidgets
 
 SOURCES += customviewstyle.cpp \
            filedialogurls.cpp \
