@@ -713,7 +713,7 @@ QUtf8::ValidUtf8Result QUtf8::isValidUtf8(const char *chars, qsizetype len)
     return { true, isValidAscii };
 }
 
-int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, const QChar *utf16, qsizetype u16len)
+int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, const QChar *utf16, qsizetype u16len) noexcept
 {
     uint uc1, uc2;
     auto src1 = reinterpret_cast<const uchar *>(utf8);

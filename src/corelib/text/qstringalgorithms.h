@@ -62,6 +62,7 @@ Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QStringV
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QStringView   lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int compareStringsUtf8(const char *, qsizetype, QStringView rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
 
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool startsWith(QStringView   haystack, QStringView   needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;

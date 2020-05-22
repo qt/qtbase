@@ -1168,6 +1168,7 @@ static int compareElementRecursive(const QCborContainerPrivate *c1, const Elemen
         if (!(e1.flags & Element::StringIsAscii) || !(e2.flags & Element::StringIsAscii)) {
             // Case 2: one of them is UTF-8 and the other is UTF-16, so lengths
             // are NOT comparable. We need to convert to UTF-16 first...
+            // (we can't use QUtf8::compareUtf8 because we need to compare lengths)
             auto string = [](const Element &e, const ByteData *b) {
                 return e.flags & Element::StringIsUtf16 ? b->asQStringRaw() : b->toUtf8String();
             };

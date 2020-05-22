@@ -338,7 +338,7 @@ struct QUtf8
         bool isValidAscii;
     };
     static ValidUtf8Result isValidUtf8(const char *, qsizetype);
-    static int compareUtf8(const char *, qsizetype, const QChar *, qsizetype);
+    static int compareUtf8(const char *, qsizetype, const QChar *, qsizetype) noexcept;
     static int compareUtf8(const char *, qsizetype, QLatin1String s);
 };
 

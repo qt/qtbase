@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -871,6 +871,35 @@ static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char 
     return 1;
 }
 
+// Case-insensitive comparison between a Unicode string and a UTF-8 string
+static int ucstricmp8(const char *utf8, const char *utf8end, const QChar *utf16, const QChar *utf16end)
+{
+    auto src1 = reinterpret_cast<const uchar *>(utf8);
+    auto end1 = reinterpret_cast<const uchar *>(utf8end);
+    QStringIterator src2(utf16, utf16end);
+
+    while (src1 < end1 && src2.hasNext()) {
+        uint uc1;
+        uint *output = &uc1;
+        uchar b = *src1++;
+        int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
+        if (res < 0) {
+            // decoding error
+            uc1 = QChar::ReplacementCharacter;
+        } else {
+            uc1 = QChar::toCaseFolded(uc1);
+        }
+
+        uint uc2 = QChar::toCaseFolded(src2.next());
+        int diff = uc1 - uc2;   // can't underflow
+        if (diff)
+            return diff;
+    }
+
+    // the shorter string sorts first
+    return (end1 > src1) - int(src2.hasNext());
+}
+
 #if defined(__mips_dsp)
 // From qstring_mips_dsp_asm.S
 extern "C" int qt_ucstrncmp_mips_dsp_asm(const char16_t *a,
@@ -1332,6 +1361,30 @@ int QtPrivate::compareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensit
 int QtPrivate::compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
     return qt_compare_strings(lhs, rhs, cs);
+}
+
+/*!
+    \relates QStringView
+    \internal
+    \since 6.0
+    \overload
+
+    Returns an integer that compares to 0 as \a lhs compares to \a rhs.
+
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
+    otherwise the comparison is case-insensitive.
+
+    Case-sensitive comparison is based exclusively on the numeric values of the
+    decoded Unicode code points and is very fast, but is not what a human would
+    expect. Consider sorting user-visible strings with
+    QString::localeAwareCompare().
+*/
+int QtPrivate::compareStringsUtf8(const char *u8str, qsizetype u8len, QStringView rhs, Qt::CaseSensitivity cs) noexcept
+{
+    if (cs == Qt::CaseSensitive)
+        return QUtf8::compareUtf8(u8str, u8len, rhs.data(), rhs.size());
+    else
+        return ucstricmp8(u8str, u8str + u8len, rhs.begin(), rhs.end());
 }
 
 #define REHASH(a) \
