@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -58,6 +58,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef __cpp_char8_t
+enum char8_t : uchar {};
+#endif
+
 struct QUtf8BaseTraits
 {
     static const bool isTrusted = false;
@@ -72,19 +76,40 @@ struct QUtf8BaseTraits
     static void appendByte(uchar *&ptr, uchar b)
     { *ptr++ = b; }
 
+    static void appendByte(char8_t *&ptr, char8_t b)
+    { *ptr++ = b; }
+
     static uchar peekByte(const uchar *ptr, qsizetype n = 0)
+    { return ptr[n]; }
+
+    static uchar peekByte(const char8_t *ptr, int n = 0)
     { return ptr[n]; }
 
     static qptrdiff availableBytes(const uchar *ptr, const uchar *end)
     { return end - ptr; }
 
+    static qptrdiff availableBytes(const char8_t *ptr, const char8_t *end)
+    { return end - ptr; }
+
     static void advanceByte(const uchar *&ptr, qsizetype n = 1)
+    { ptr += n; }
+
+    static void advanceByte(const char8_t *&ptr, int n = 1)
     { ptr += n; }
 
     static void appendUtf16(ushort *&ptr, ushort uc)
     { *ptr++ = uc; }
 
+    static void appendUtf16(char16_t *&ptr, ushort uc)
+    { *ptr++ = char16_t(uc); }
+
     static void appendUcs4(ushort *&ptr, uint uc)
+    {
+        appendUtf16(ptr, QChar::highSurrogate(uc));
+        appendUtf16(ptr, QChar::lowSurrogate(uc));
+    }
+
+    static void appendUcs4(char16_t *&ptr, char32_t uc)
     {
         appendUtf16(ptr, QChar::highSurrogate(uc));
         appendUtf16(ptr, QChar::lowSurrogate(uc));
@@ -93,18 +118,33 @@ struct QUtf8BaseTraits
     static ushort peekUtf16(const ushort *ptr, qsizetype n = 0)
     { return ptr[n]; }
 
+    static ushort peekUtf16(const char16_t *ptr, int n = 0)
+    { return ptr[n]; }
+
     static qptrdiff availableUtf16(const ushort *ptr, const ushort *end)
     { return end - ptr; }
 
+    static qptrdiff availableUtf16(const char16_t *ptr, const char16_t *end)
+    { return end - ptr; }
+
     static void advanceUtf16(const ushort *&ptr, qsizetype n = 1)
+    { ptr += n; }
+
+    static void advanceUtf16(const char16_t *&ptr, int n = 1)
     { ptr += n; }
 
     // it's possible to output to UCS-4 too
     static void appendUtf16(uint *&ptr, ushort uc)
     { *ptr++ = uc; }
 
+    static void appendUtf16(char32_t *&ptr, ushort uc)
+    { *ptr++ = char32_t(uc); }
+
     static void appendUcs4(uint *&ptr, uint uc)
     { *ptr++ = uc; }
+
+    static void appendUcs4(char32_t *&ptr, uint uc)
+    { *ptr++ = char32_t(uc); }
 };
 
 struct QUtf8BaseTraitsNoAscii : public QUtf8BaseTraits
