@@ -260,6 +260,98 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
     nextAscii = end;
     return src;
 }
+
+// Compare only the US-ASCII beginning of [src8, end8) and [src16, end16)
+// and advance src8 and src16 to the first character that could not be compared
+static void simdCompareAscii(const char8_t *&src8, const char8_t *end8, const char16_t *&src16, const char16_t *end16)
+{
+    int bitSpacing = 1;
+    qptrdiff len = qMin(end8 - src8, end16 - src16);
+    qptrdiff offset = 0;
+    uint mask = 0;
+
+    // do sixteen characters at a time
+    for ( ; offset + 16 < len; offset += 16) {
+        __m128i data8 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src8 + offset));
+#ifdef __AVX2__
+        // AVX2 version, use 256-bit registers and VPMOVXZBW
+        __m256i data16 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src16 + offset));
+
+        // expand US-ASCII as if it were Latin1 and confirm it's US-ASCII
+        __m256i datax8 = _mm256_cvtepu8_epi16(data8);
+        mask = _mm256_movemask_epi8(datax8);
+        if (mask)
+            break;
+
+        // compare Latin1 to UTF-16
+        __m256i latin1cmp = _mm256_cmpeq_epi16(datax8, data16);
+        mask = ~_mm256_movemask_epi8(latin1cmp);
+        if (mask)
+            break;
+#else
+        // non-AVX2 code
+        __m128i datalo16 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src16 + offset));
+        __m128i datahi16 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src16 + offset) + 1);
+
+        // expand US-ASCII as if it were Latin1, we'll confirm later
+        __m128i datalo8 = _mm_unpacklo_epi8(data8, _mm_setzero_si128());
+        __m128i datahi8 = _mm_unpackhi_epi8(data8, _mm_setzero_si128());
+
+        // compare Latin1 to UTF-16
+        __m128i latin1cmplo = _mm_cmpeq_epi16(datalo8, datalo16);
+        __m128i latin1cmphi = _mm_cmpeq_epi16(datahi8, datahi16);
+        mask = _mm_movemask_epi8(latin1cmphi) << 16;
+        mask |= ushort(_mm_movemask_epi8(latin1cmplo));
+        mask = ~mask;
+        if (mask)
+            break;
+
+        // confirm it was US-ASCII
+        mask = _mm_movemask_epi8(data8);
+        if (mask) {
+            bitSpacing = 0;
+            break;
+        }
+#endif
+    }
+
+    // helper for comparing 4 or 8 characters
+    auto cmp_lt_16 = [&mask, &offset](int n, __m128i data8, __m128i data16) {
+        // n = 4  ->  sizemask = 0xff
+        // n = 8  ->  sizemask = 0xffff
+        unsigned sizemask = (1U << (2 * n)) - 1;
+
+        // expand as if Latin1
+        data8 = _mm_unpacklo_epi8(data8, _mm_setzero_si128());
+
+        // compare and confirm it's US-ASCII
+        __m128i latin1cmp = _mm_cmpeq_epi16(data8, data16);
+        mask = ~_mm_movemask_epi8(latin1cmp) & sizemask;
+        mask |= _mm_movemask_epi8(data8);
+        if (mask == 0)
+            offset += n;
+    };
+
+    // do eight characters at a time
+    if (mask == 0 && offset + 8 < len) {
+        __m128i data8 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src8 + offset));
+        __m128i data16 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src16 + offset));
+        cmp_lt_16(8, data8, data16);
+    }
+
+    // do four characters
+    if (mask == 0 && offset + 4 < len) {
+        __m128i data8 = _mm_cvtsi32_si128(qFromUnaligned<quint32>(src8 + offset));
+        __m128i data16 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src16 + offset));
+        cmp_lt_16(4, data8, data16);
+    }
+
+    // correct the source pointers to point to the first character we couldn't deal with
+    if (mask)
+        offset += qCountTrailingZeroBits(mask) >> bitSpacing;
+    src8 += offset;
+    src16 += offset;
+}
 #elif defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
 static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const ushort *&src, const ushort *end)
 {
@@ -356,6 +448,10 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
     nextAscii = end;
     return src;
 }
+
+static void simdCompareAscii(const char8_t *&, const char8_t *, const char16_t *&, const char16_t *)
+{
+}
 #else
 static inline bool simdEncodeAscii(uchar *, const ushort *, const ushort *, const ushort *)
 {
@@ -371,6 +467,10 @@ static inline const uchar *simdFindNonAscii(const uchar *src, const uchar *end, 
 {
     nextAscii = end;
     return src;
+}
+
+static void simdCompareAscii(const char8_t *&, const char8_t *, const char16_t *&, const char16_t *)
+{
 }
 #endif
 
@@ -720,27 +820,31 @@ int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, const QChar *utf16, qs
     auto src2 = reinterpret_cast<const char16_t *>(utf16);
     auto end2 = src2 + u16len;
 
-    while (src1 < end1 && src2 < end2) {
-        char32_t uc1 = *src1++;
-        char32_t uc2 = *src2++;
+    do {
+        simdCompareAscii(src1, end1, src2, end2);
 
-        if (uc1 >= 0x80) {
-            char32_t *output = &uc1;
-            int res = QUtf8Functions::fromUtf8<QUtf8BaseTraitsNoAscii>(uc1, output, src1, end1);
-            if (res < 0) {
-                // decoding error
-                uc1 = QChar::ReplacementCharacter;
+        if (src1 < end1 && src2 < end2) {
+            char32_t uc1 = *src1++;
+            char32_t uc2 = *src2++;
+
+            if (uc1 >= 0x80) {
+                char32_t *output = &uc1;
+                int res = QUtf8Functions::fromUtf8<QUtf8BaseTraitsNoAscii>(uc1, output, src1, end1);
+                if (res < 0) {
+                    // decoding error
+                    uc1 = QChar::ReplacementCharacter;
+                }
+
+                // Only decode the UTF-16 surrogate pair if the UTF-8 code point
+                // wasn't US-ASCII (a surrogate cannot match US-ASCII).
+                if (QChar::isHighSurrogate(uc2) && src2 < end2 && QChar::isLowSurrogate(*src2))
+                    uc2 = QChar::surrogateToUcs4(uc2, *src2++);
             }
 
-            // Only decode the UTF-16 surrogate pair if the UTF-8 code point
-            // wasn't US-ASCII (a surrogate cannot match US-ASCII).
-            if (QChar::isHighSurrogate(uc2) && src2 < end2 && QChar::isLowSurrogate(*src2))
-                uc2 = QChar::surrogateToUcs4(uc2, *src2++);
+            if (uc1 != uc2)
+                return int(uc1) - int(uc2);
         }
-
-        if (uc1 != uc2)
-            return int(uc1) - int(uc2);
-    }
+    } while (src1 < end1 && src2 < end2);
 
     // the shorter string sorts first
     return (end1 > src1) - int(end2 > src2);
