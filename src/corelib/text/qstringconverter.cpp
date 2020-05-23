@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -715,27 +715,35 @@ QUtf8::ValidUtf8Result QUtf8::isValidUtf8(const char *chars, qsizetype len)
 
 int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, const QChar *utf16, qsizetype u16len) noexcept
 {
-    uint uc1, uc2;
-    auto src1 = reinterpret_cast<const uchar *>(utf8);
+    auto src1 = reinterpret_cast<const char8_t *>(utf8);
     auto end1 = src1 + u8len;
-    QStringIterator src2(utf16, utf16 + u16len);
+    auto src2 = reinterpret_cast<const char16_t *>(utf16);
+    auto end2 = src2 + u16len;
 
-    while (src1 < end1 && src2.hasNext()) {
-        uchar b = *src1++;
-        uint *output = &uc1;
-        int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
-        if (res < 0) {
-            // decoding error
-            uc1 = QChar::ReplacementCharacter;
+    while (src1 < end1 && src2 < end2) {
+        char32_t uc1 = *src1++;
+        char32_t uc2 = *src2++;
+
+        if (uc1 >= 0x80) {
+            char32_t *output = &uc1;
+            int res = QUtf8Functions::fromUtf8<QUtf8BaseTraitsNoAscii>(uc1, output, src1, end1);
+            if (res < 0) {
+                // decoding error
+                uc1 = QChar::ReplacementCharacter;
+            }
+
+            // Only decode the UTF-16 surrogate pair if the UTF-8 code point
+            // wasn't US-ASCII (a surrogate cannot match US-ASCII).
+            if (QChar::isHighSurrogate(uc2) && src2 < end2 && QChar::isLowSurrogate(*src2))
+                uc2 = QChar::surrogateToUcs4(uc2, *src2++);
         }
 
-        uc2 = src2.next();
         if (uc1 != uc2)
             return int(uc1) - int(uc2);
     }
 
     // the shorter string sorts first
-    return (end1 > src1) - int(src2.hasNext());
+    return (end1 > src1) - int(end2 > src2);
 }
 
 int QUtf8::compareUtf8(const char *utf8, qsizetype u8len, QLatin1String s)
