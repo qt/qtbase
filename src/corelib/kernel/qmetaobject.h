@@ -137,33 +137,32 @@ public:
         return invoke(object, Qt::AutoConnection, QGenericReturnArgument(),
                       val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
     }
-
     bool invokeOnGadget(void *gadget,
-                QGenericReturnArgument returnValue,
-                QGenericArgument val0 = QGenericArgument(nullptr),
-                QGenericArgument val1 = QGenericArgument(),
-                QGenericArgument val2 = QGenericArgument(),
-                QGenericArgument val3 = QGenericArgument(),
-                QGenericArgument val4 = QGenericArgument(),
-                QGenericArgument val5 = QGenericArgument(),
-                QGenericArgument val6 = QGenericArgument(),
-                QGenericArgument val7 = QGenericArgument(),
-                QGenericArgument val8 = QGenericArgument(),
-                QGenericArgument val9 = QGenericArgument()) const;
+                        QGenericReturnArgument returnValue,
+                        QGenericArgument val0 = QGenericArgument(nullptr),
+                        QGenericArgument val1 = QGenericArgument(),
+                        QGenericArgument val2 = QGenericArgument(),
+                        QGenericArgument val3 = QGenericArgument(),
+                        QGenericArgument val4 = QGenericArgument(),
+                        QGenericArgument val5 = QGenericArgument(),
+                        QGenericArgument val6 = QGenericArgument(),
+                        QGenericArgument val7 = QGenericArgument(),
+                        QGenericArgument val8 = QGenericArgument(),
+                        QGenericArgument val9 = QGenericArgument()) const;
     inline bool invokeOnGadget(void *gadget,
-                       QGenericArgument val0 = QGenericArgument(nullptr),
-                       QGenericArgument val1 = QGenericArgument(),
-                       QGenericArgument val2 = QGenericArgument(),
-                       QGenericArgument val3 = QGenericArgument(),
-                       QGenericArgument val4 = QGenericArgument(),
-                       QGenericArgument val5 = QGenericArgument(),
-                       QGenericArgument val6 = QGenericArgument(),
-                       QGenericArgument val7 = QGenericArgument(),
-                       QGenericArgument val8 = QGenericArgument(),
-                       QGenericArgument val9 = QGenericArgument()) const
+                               QGenericArgument val0 = QGenericArgument(nullptr),
+                               QGenericArgument val1 = QGenericArgument(),
+                               QGenericArgument val2 = QGenericArgument(),
+                               QGenericArgument val3 = QGenericArgument(),
+                               QGenericArgument val4 = QGenericArgument(),
+                               QGenericArgument val5 = QGenericArgument(),
+                               QGenericArgument val6 = QGenericArgument(),
+                               QGenericArgument val7 = QGenericArgument(),
+                               QGenericArgument val8 = QGenericArgument(),
+                               QGenericArgument val9 = QGenericArgument()) const
     {
         return invokeOnGadget(gadget, QGenericReturnArgument(),
-                      val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
+                              val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
     }
 
     inline bool isValid() const { return mobj != nullptr; }
