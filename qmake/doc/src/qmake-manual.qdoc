@@ -4434,7 +4434,6 @@
         \li QT_INSTALL_DOCS - location of documentation
         \li QT_INSTALL_EXAMPLES - location of examples
         \li QT_INSTALL_HEADERS - location for all header files
-        \li QT_INSTALL_IMPORTS - location of QML 1.x extensions
         \li QT_INSTALL_LIBEXECS - location of executables required by libraries at runtime
         \li QT_INSTALL_LIBS - location of libraries
         \li QT_INSTALL_PLUGINS - location of Qt plugins

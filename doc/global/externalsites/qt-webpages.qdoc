@@ -101,11 +101,6 @@
 */
 
 /*!
-    \externalpage http://doc.qt.io/qt-4.8/qtquick.html
-    \title Qt Quick 1 Reference Documentation
-*/
-
-/*!
     \externalpage http://wiki.qt.io/Qt_Localization
     \title external: Translating Qt Into Other Languages
 */

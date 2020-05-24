@@ -82,7 +82,6 @@ For example:
 
 - Qt Assistant, the Qt documentation reader
 - Qt QML Scene, the viewer for Qt Quick 2 files
-- Qt QML Viewer, the viewer for Qt Quick 1 files
 and - Qt Designer, the GUI designer for Qt widgets-based applications
 
 You can use Qt Creator to develop with other Qt versions as well:

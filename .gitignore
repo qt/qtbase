@@ -45,7 +45,6 @@ qt*-config.pri
 !/lib/README
 /plugins/
 
-/imports/
 /qml/
 
 /doc/*.qch
