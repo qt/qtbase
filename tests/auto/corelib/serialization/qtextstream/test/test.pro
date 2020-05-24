@@ -16,7 +16,6 @@ win32 {
 
 TESTDATA += \
     ../rfc3261.txt \
-    ../shift-jis.txt \
     ../task113817.txt \
     ../qtextstream.qrc \
     ../tst_qtextstream.cpp \

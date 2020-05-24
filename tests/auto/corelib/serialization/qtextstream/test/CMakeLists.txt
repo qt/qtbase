@@ -6,7 +6,6 @@
 
 # Collect test data
 list(APPEND test_data "../rfc3261.txt")
-list(APPEND test_data "../shift-jis.txt")
 list(APPEND test_data "../task113817.txt")
 list(APPEND test_data "../qtextstream.qrc")
 list(APPEND test_data "../tst_qtextstream.cpp")
