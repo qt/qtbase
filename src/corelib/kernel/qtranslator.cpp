@@ -70,6 +70,9 @@
 
 #include "qobject_p.h"
 
+#include <vector>
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 enum Tag { Tag_End = 1, Tag_SourceText16, Tag_Translation, Tag_Context16, Tag_Obsolete1,
@@ -300,10 +303,10 @@ public:
     qsizetype unmapLength;
 
     // The resource object in case we loaded the translations from a resource
-    QResource *resource;
+    std::unique_ptr<QResource> resource;
 
     // used if the translator has dependencies
-    QList<QTranslator*> subTranslators;
+    std::vector<std::unique_ptr<QTranslator>> subTranslators;
 
     // Pointers and offsets into unmapPointer[unmapLength] array, or user
     // provided data array
@@ -531,7 +534,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         // If the translation is in a non-compressed resource file, the data is already in
         // memory, so no need to use QFile to copy it again.
         Q_ASSERT(!d->resource);
-        d->resource = new QResource(realname);
+        d->resource = std::make_unique<QResource>(realname);
         if (resource->isValid() && resource->compressionAlgorithm() == QResource::NoCompression
                 && resource->size() >= MagicLength
                 && !memcmp(resource->data(), magic, MagicLength)) {
@@ -542,7 +545,6 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
 #endif
             ok = true;
         } else {
-            delete resource;
             resource = nullptr;
         }
     }
@@ -615,7 +617,6 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
     if (!d->resource)
         delete [] unmapPointer;
 
-    delete d->resource;
     d->resource = nullptr;
     d->unmapPointer = nullptr;
     d->unmapLength = 0;
@@ -864,21 +865,18 @@ bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString
     if (ok && !isValidNumerusRules(numerusRulesArray, numerusRulesLength))
         ok = false;
     if (ok) {
-        const int dependenciesCount = dependencies.count();
-        subTranslators.reserve(dependenciesCount);
-        for (int i = 0 ; i < dependenciesCount; ++i) {
-            QTranslator *translator = new QTranslator;
-            subTranslators.append(translator);
-            ok = translator->load(dependencies.at(i), directory);
+        subTranslators.reserve(std::size_t(dependencies.size()));
+        for (const QString &dependency : std::as_const(dependencies)) {
+            auto translator = std::make_unique<QTranslator>();
+            ok = translator->load(dependency, directory);
             if (!ok)
                 break;
+            subTranslators.push_back(std::move(translator));
         }
 
         // In case some dependencies fail to load, unload all the other ones too.
-        if (!ok) {
-            qDeleteAll(subTranslators);
+        if (!ok)
             subTranslators.clear();
-        }
     }
 
     if (!ok) {
@@ -1055,7 +1053,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
     }
 
 searchDependencies:
-    for (QTranslator *translator : subTranslators) {
+    for (const auto &translator : subTranslators) {
         QString tn = translator->translate(context, sourceText, comment, n);
         if (!tn.isNull())
             return tn;
@@ -1083,7 +1081,6 @@ void QTranslatorPrivate::clear()
             delete [] unmapPointer;
     }
 
-    delete resource;
     resource = nullptr;
     unmapPointer = nullptr;
     unmapLength = 0;
@@ -1096,7 +1093,6 @@ void QTranslatorPrivate::clear()
     offsetLength = 0;
     numerusRulesLength = 0;
 
-    qDeleteAll(subTranslators);
     subTranslators.clear();
 
     language.clear();
@@ -1140,7 +1136,7 @@ bool QTranslator::isEmpty() const
 {
     Q_D(const QTranslator);
     return !d->messageArray && !d->offsetArray && !d->contextArray
-            && d->subTranslators.isEmpty();
+            && d->subTranslators.empty();
 }
 
 /*!
