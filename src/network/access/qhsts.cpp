@@ -194,7 +194,7 @@ bool QHstsCache::isKnownHost(const QUrl &url) const
 
     bool superDomainMatch = false;
     const QString hostNameAsString(url.host());
-    HostName nameToTest(static_cast<QStringRef>(&hostNameAsString));
+    HostName nameToTest(QStringView{hostNameAsString});
     while (nameToTest.fragment.size()) {
         auto const pos = knownHosts.find(nameToTest);
         if (pos != knownHosts.end()) {

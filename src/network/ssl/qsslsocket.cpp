@@ -3083,13 +3083,13 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
         return false;
 
     // Check characters preceding * (if any) match
-    if (wildcard && hostname.leftRef(wildcard).compare(cn.leftRef(wildcard), Qt::CaseInsensitive) != 0)
+    if (wildcard && QStringView{hostname}.left(wildcard).compare(QStringView{cn}.left(wildcard), Qt::CaseInsensitive) != 0)
         return false;
 
     // Check characters following first . match
     int hnDot = hostname.indexOf(QLatin1Char('.'));
-    if (hostname.midRef(hnDot + 1) != cn.midRef(firstCnDot + 1)
-        && hostname.midRef(hnDot + 1) != QLatin1String(QUrl::toAce(cn.mid(firstCnDot + 1)))) {
+    if (QStringView{hostname}.mid(hnDot + 1) != QStringView{cn}.mid(firstCnDot + 1)
+        && QStringView{hostname}.mid(hnDot + 1) != QLatin1String(QUrl::toAce(cn.mid(firstCnDot + 1)))) {
         return false;
     }
 

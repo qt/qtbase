@@ -94,18 +94,18 @@ private:
     struct HostName
     {
         explicit HostName(const QString &n) : name(n) { }
-        explicit HostName(const QStringRef &r) : fragment(r) { }
+        explicit HostName(QStringView r) : fragment(r) { }
 
         bool operator < (const HostName &rhs) const
         {
             if (fragment.size()) {
                 if (rhs.fragment.size())
                     return fragment < rhs.fragment;
-                return fragment < QStringRef(&rhs.name);
+                return fragment < QStringView{rhs.name};
             }
 
             if (rhs.fragment.size())
-                return QStringRef(&name) < rhs.fragment;
+                return QStringView{name} < rhs.fragment;
             return name < rhs.name;
         }
 
@@ -114,7 +114,7 @@ private:
         // name, removing subdomain names (such HostName object is 'transient', it
         // must not outlive the original QString object.
         QString name;
-        QStringRef fragment;
+        QStringView fragment;
     };
 
     mutable std::map<HostName, QHstsPolicy> knownHosts;

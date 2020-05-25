@@ -298,15 +298,15 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
         quint16 port = 8080;
 
         int pos = entry.indexOf(QLatin1Char('='));
-        QStringRef scheme;
-        QStringRef protocolTag;
+        QStringView scheme;
+        QStringView protocolTag;
         if (pos != -1) {
-            scheme = protocolTag = entry.leftRef(pos);
+            scheme = protocolTag = QStringView{entry}.left(pos);
             server = pos + 1;
         }
         pos = entry.indexOf(QLatin1String("://"), server);
         if (pos != -1) {
-            scheme = entry.midRef(server, pos - server);
+            scheme = QStringView{entry}.mid(server, pos - server);
             server = pos + 3;
         }
 
@@ -329,7 +329,7 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
         pos = entry.indexOf(QLatin1Char(':'), server);
         if (pos != -1) {
             bool ok;
-            uint value = entry.midRef(pos + 1).toUInt(&ok);
+            uint value = QStringView{entry}.mid(pos + 1).toUInt(&ok);
             if (!ok || value > 65535)
                 continue;       // invalid port number
 

@@ -580,10 +580,10 @@ static void _q_parseDosDir(const QStringList &tokens, const QString &userName, Q
     int permissions = QUrlInfo::ReadOwner | QUrlInfo::WriteOwner
                       | QUrlInfo::ReadGroup | QUrlInfo::WriteGroup
                       | QUrlInfo::ReadOther | QUrlInfo::WriteOther;
-    QStringRef ext;
+    QStringView ext;
     int extIndex = name.lastIndexOf(QLatin1Char('.'));
     if (extIndex != -1)
-        ext = name.midRef(extIndex + 1);
+        ext = QStringView{name}.mid(extIndex + 1);
     if (ext == QLatin1String("exe") || ext == QLatin1String("bat") || ext == QLatin1String("com"))
         permissions |= QUrlInfo::ExeOwner | QUrlInfo::ExeGroup | QUrlInfo::ExeOther;
     info->setPermissions(permissions);
@@ -949,19 +949,19 @@ void QFtpPI::readyRead()
         QString endOfMultiLine(QLatin1String(count, 4));
         QString lineCont(endOfMultiLine);
         lineCont[3] = QLatin1Char('-');
-        QStringRef lineLeft4 = line.leftRef(4);
+        QStringView lineLeft4 = QStringView{line}.left(4);
 
         while (lineLeft4 != endOfMultiLine) {
             if (lineLeft4 == lineCont)
-                replyText += line.midRef(4); // strip 'xyz-'
+                replyText += QStringView{line}.mid(4); // strip 'xyz-'
             else
                 replyText += line;
             if (!commandSocket.canReadLine())
                 return;
             line = QString::fromUtf8(commandSocket.readLine());
-            lineLeft4 = line.leftRef(4);
+            lineLeft4 = QStringView{line}.left(4);
         }
-        replyText += line.midRef(4); // strip reply code 'xyz '
+        replyText += QStringView{line}.mid(4); // strip reply code 'xyz '
         if (replyText.endsWith(QLatin1String("\r\n")))
             replyText.chop(2);
 
@@ -1078,7 +1078,7 @@ bool QFtpPI::processReply()
         } else {
             ++portPos;
             QChar delimiter = replyText.at(portPos);
-            const auto epsvParameters = replyText.midRef(portPos).split(delimiter);
+            const auto epsvParameters = QStringView{replyText}.mid(portPos).split(delimiter);
 
             waitForDtpToConnect = true;
             dtp.connectToHost(commandSocket.peerAddress().toString(),
@@ -1207,7 +1207,7 @@ bool QFtpPI::startNextCmd()
 
     pendingCommands.pop_front();
 #if defined(QFTPPI_DEBUG)
-    qDebug("QFtpPI send: %s", currentCmd.leftRef(currentCmd.length() - 2).toLatin1().constData());
+    qDebug("QFtpPI send: %s", QStringView{currentCmd}.left(currentCmd.length() - 2).toLatin1().constData());
 #endif
     state = Waiting;
     commandSocket.write(currentCmd.toUtf8());
@@ -2031,7 +2031,7 @@ int QFtp::rename(const QString &oldname, const QString &newname)
 */
 int QFtp::rawCommand(const QString &command)
 {
-    const QString cmd = QStringRef(&command).trimmed() + QLatin1String("\r\n");
+    const QString cmd = QStringView{command}.trimmed() + QLatin1String("\r\n");
     return d_func()->addCommand(new QFtpCommand(RawCommand, QStringList(cmd)));
 }
 
@@ -2262,7 +2262,7 @@ void QFtpPrivate::_q_startNextCommand()
     // through.
     if (c->command == QFtp::Login && !proxyHost.isEmpty()) {
         QString loginString;
-        loginString += QStringRef(&c->rawCmds.constFirst()).trimmed() + QLatin1Char('@') + host;
+        loginString += QStringView{c->rawCmds.constFirst()}.trimmed() + QLatin1Char('@') + host;
         if (port && port != 21)
             loginString += QLatin1Char(':') + QString::number(port);
         loginString += QLatin1String("\r\n");

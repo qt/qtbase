@@ -532,7 +532,7 @@ bool q_resolveOpenSslSymbols()
 struct NumericallyLess
 {
     typedef bool result_type;
-    result_type operator()(const QStringRef &lhs, const QStringRef &rhs) const
+    result_type operator()(QStringView lhs, QStringView rhs) const
     {
         bool ok = false;
         int b = 0;
@@ -552,10 +552,10 @@ struct NumericallyLess
 struct LibGreaterThan
 {
     typedef bool result_type;
-    result_type operator()(const QString &lhs, const QString &rhs) const
+    result_type operator()(QStringView lhs, QStringView rhs) const
     {
-        const QVector<QStringRef> lhsparts = lhs.splitRef(QLatin1Char('.'));
-        const QVector<QStringRef> rhsparts = rhs.splitRef(QLatin1Char('.'));
+        const QVector<QStringView> lhsparts = lhs.split(QLatin1Char('.'));
+        const QVector<QStringView> rhsparts = rhs.split(QLatin1Char('.'));
         Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
 
         // note: checking rhs < lhs, the same as lhs > rhs

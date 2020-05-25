@@ -136,7 +136,7 @@ void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
 
 static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr, QString *scopeId)
 {
-    QStringRef tmp(&address);
+    QStringView tmp(address);
     int scopeIdPos = tmp.lastIndexOf(QLatin1Char('%'));
     if (scopeIdPos != -1) {
         *scopeId = tmp.mid(scopeIdPos + 1).toString();
@@ -144,7 +144,7 @@ static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr,
     } else {
         scopeId->clear();
     }
-    return QIPAddressUtils::parseIp6(addr, tmp.constBegin(), tmp.constEnd()) == nullptr;
+    return QIPAddressUtils::parseIp6(addr, tmp.begin(), tmp.end()) == nullptr;
 }
 
 bool QHostAddressPrivate::parse(const QString &ipString)
@@ -1103,7 +1103,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         return invalid;
 
     int slash = subnet.indexOf(QLatin1Char('/'));
-    QStringRef netStr(&subnet);
+    QStringView netStr(subnet);
     if (slash != -1)
         netStr.truncate(slash);
 
@@ -1123,7 +1123,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
             netmask = parser.prefixLength();
         } else {
             bool ok;
-            netmask = subnet.midRef(slash + 1).toUInt(&ok);
+            netmask = QStringView{subnet}.mid(slash + 1).toUInt(&ok);
             if (!ok)
                 return invalid;     // failed to parse the subnet
         }
