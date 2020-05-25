@@ -2788,10 +2788,12 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                             && uniform.type != QShaderDescription::Float
                             && uniform.type != QShaderDescription::Vec2
                             && uniform.type != QShaderDescription::Vec3
-                            && uniform.type != QShaderDescription::Vec4)
+                            && uniform.type != QShaderDescription::Vec4
+                            && uniform.type != QShaderDescription::Mat3
+                            && uniform.type != QShaderDescription::Mat4)
                     {
                         qWarning("Uniform with buffer binding %d, buffer offset %d, type %d is an array, "
-                                 "but arrays are only supported for float, vec2, vec3, and vec4. "
+                                 "but arrays are only supported for float, vec2, vec3, vec4, mat3 and mat4. "
                                  "Only the first element will be set.",
                                  uniform.binding, uniform.offset, uniform.type);
                     }
@@ -2848,17 +2850,24 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                         break;
                     case QShaderDescription::Mat3:
                     {
-                        // 4 floats per column (or row, if row-major)
-                        float mat[9];
-                        const float *srcMat = reinterpret_cast<const float *>(src);
-                        memcpy(mat, srcMat, 3 * sizeof(float));
-                        memcpy(mat + 3, srcMat + 4, 3 * sizeof(float));
-                        memcpy(mat + 6, srcMat + 8, 3 * sizeof(float));
-                        f->glUniformMatrix3fv(uniform.glslLocation, 1, GL_FALSE, mat);
+                        const int elemCount = uniform.arrayDim;
+                        if (elemCount < 1) {
+                            // 4 floats per column (or row, if row-major)
+                            float mat[9];
+                            const float *srcMat = reinterpret_cast<const float *>(src);
+                            memcpy(mat, srcMat, 3 * sizeof(float));
+                            memcpy(mat + 3, srcMat + 4, 3 * sizeof(float));
+                            memcpy(mat + 6, srcMat + 8, 3 * sizeof(float));
+                            f->glUniformMatrix3fv(uniform.glslLocation, 1, GL_FALSE, mat);
+                        } else {
+                            packedFloatArray.resize(elemCount * 9);
+                            qrhi_std140_to_packed(packedFloatArray.data(), 3, elemCount * 3, src);
+                            f->glUniformMatrix3fv(uniform.glslLocation, elemCount, GL_FALSE, packedFloatArray.constData());
+                        }
                     }
                         break;
                     case QShaderDescription::Mat4:
-                        f->glUniformMatrix4fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
+                        f->glUniformMatrix4fv(uniform.glslLocation, qMax(1, uniform.arrayDim), GL_FALSE, reinterpret_cast<const float *>(src));
                         break;
                     case QShaderDescription::Int:
                         f->glUniform1i(uniform.glslLocation, *reinterpret_cast<const qint32 *>(src));
