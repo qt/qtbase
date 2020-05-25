@@ -646,6 +646,17 @@
             "label": "ccache",
             "type": "files",
             "files": [ "ccache" ]
+        },
+        "intelcet": {
+            "label": "Support for Intel Control-flow Enforcement Technology",
+            "type": "compile",
+            "test": {
+                "main": [
+                    "#if !defined(__CET__)",
+                    "#  error Intel CET not available",
+                    "#endif"
+                ]
+            }
         }
     },
 
@@ -1411,6 +1422,11 @@
             "purpose": "Enable the Qt installation to be relocated.",
             "autoDetect": "features.shared",
             "condition": "features.dlopen || config.win32 || !features.shared",
+            "output": [ "privateFeature" ]
+        },
+        "intelcet": {
+            "label": "Using Intel CET",
+            "condition": "tests.intelcet",
             "output": [ "privateFeature" ]
         }
     },
