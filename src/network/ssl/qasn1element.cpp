@@ -241,9 +241,9 @@ QDateTime QAsn1Element::toDateTime() const
 
     // QDateTime::fromString is lenient and accepts +- signs in front
     // of the year; but ASN.1 doesn't allow them.
-    const auto isAsciiDigit = [](QChar c)
+    const auto isAsciiDigit = [](char c)
     {
-        return c >= QLatin1Char('0') && c <= QLatin1Char('9');
+        return c >= '0' && c <= '9';
     };
 
     if (!isAsciiDigit(mValue[0]))
