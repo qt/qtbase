@@ -49,6 +49,7 @@
 
 #include <QDebug>
 #include <QGuiApplication>
+#include <QTouchDevice>
 
 #include <errno.h>
 #include <sys/keycodes.h>
