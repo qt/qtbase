@@ -646,9 +646,9 @@ static inline GLenum toGlCompressedTextureFormat(QRhiTexture::Format format, QRh
     switch (format) {
     case QRhiTexture::BC1:
         return srgb ? 0x8C4C : 0x83F0;
-    case QRhiTexture::BC3:
+    case QRhiTexture::BC2:
         return srgb ? 0x8C4E : 0x83F2;
-    case QRhiTexture::BC5:
+    case QRhiTexture::BC3:
         return srgb ? 0x8C4F : 0x83F3;
 
     case QRhiTexture::ETC2_RGB8:
