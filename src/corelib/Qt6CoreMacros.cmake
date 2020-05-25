@@ -567,9 +567,11 @@ endif()
 # MANUAL_MOC_JSON_FILES parameter. The latter can be obtained by running moc with
 # the --output-json parameter.
 # Params:
-#   INSTALL_DIR: Location where to install the metatypes file (Optional)
-#   COPY_OVER_INSTALL: When present will install the file via a post build step
-#   copy rather than using install
+#   INSTALL_DIR: Location where to install the metatypes file. For public consumption,
+#                defaults to a ${CMAKE_INSTALL_PREFIX}/lib/metatypes directory.
+#                Executable metatypes files are never installed.
+#   COPY_OVER_INSTALL: (Qt Internal) When present will install the file via a post build step
+#   copy rather than using install.
 function(qt6_generate_meta_types_json_file target)
 
     get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
@@ -578,22 +580,6 @@ function(qt6_generate_meta_types_json_file target)
     endif()
 
     cmake_parse_arguments(arg "COPY_OVER_INSTALL" "INSTALL_DIR" "MANUAL_MOC_JSON_FILES" ${ARGN})
-
-    if (NOT QT_BUILDING_QT)
-        if (NOT arg_INSTALL_DIR)
-            message(FATAL_ERROR "Please specify an install directory using INSTALL_DIR")
-        endif()
-    else()
-        # Automatically fill install args when building qt
-        set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
-        set(args)
-        if (NOT QT_WILL_INSTALL)
-            set(arg_COPY_OVER_INSTALL TRUE)
-        endif()
-        if (NOT arg_INSTALL_DIR)
-            set(arg_INSTALL_DIR "${metatypes_install_dir}")
-        endif()
-    endif()
 
     get_target_property(target_type ${target} TYPE)
     if (target_type STREQUAL "INTERFACE_LIBRARY")
@@ -606,6 +592,19 @@ function(qt6_generate_meta_types_json_file target)
         return()
     endif()
 
+    # Whether the generated json file needs to be installed for prefix-builds, or copied for
+    # non-prefix builds. Regardless of the type of build, executable metatypes.json files should
+    # not be installed. Only library .json files should be installed.
+    set(should_install "TRUE")
+    if (target_type STREQUAL "EXECUTABLE")
+        set(should_install "FALSE")
+    endif()
+
+    # Automatically fill default install args when not specified.
+    if (NOT arg_INSTALL_DIR)
+        set(arg_INSTALL_DIR "lib/metatypes")
+    endif()
+
     get_target_property(target_binary_dir ${target} BINARY_DIR)
     set(type_list_file "${target_binary_dir}/meta_types/${target}_json_file_list.txt")
     set(type_list_file_manual "${target_binary_dir}/meta_types/${target}_json_file_list_manual.txt")
@@ -613,7 +612,7 @@ function(qt6_generate_meta_types_json_file target)
     get_target_property(uses_automoc ${target} AUTOMOC)
     set(automoc_args)
     set(automoc_dependencies)
-    #Handle automoc generated data
+    # Handle automoc generated data
     if (uses_automoc)
         # Tell automoc to output json files)
         set_property(TARGET "${target}" APPEND PROPERTY
@@ -729,7 +728,8 @@ function(qt6_generate_meta_types_json_file target)
         set(arg_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${arg_INSTALL_DIR}")
     endif()
 
-    if (arg_COPY_OVER_INSTALL AND NOT EXISTS ${arg_INSTALL_DIR}/${metatypes_file_name})
+    if (should_install AND arg_COPY_OVER_INSTALL
+          AND NOT EXISTS ${arg_INSTALL_DIR}/${metatypes_file_name})
         file(MAKE_DIRECTORY "${arg_INSTALL_DIR}")
         file(TOUCH "${arg_INSTALL_DIR}/${metatypes_file_name}")
     endif()
@@ -751,50 +751,69 @@ function(qt6_generate_meta_types_json_file target)
     set(metatypes_file_genex_build)
     set(metatypes_file_genex_install)
     if (arg_COPY_OVER_INSTALL)
-        set(metatypes_file_genex_build
-            "$<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:${arg_INSTALL_DIR}/${metatypes_file_name}>>"
-        )
+        if(should_install)
+            set(metatypes_file_genex_build
+                "$<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:${arg_INSTALL_DIR}/${metatypes_file_name}>>"
+            )
+        endif()
     else()
         set(metatypes_file_genex_build
             "$<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:${metatypes_file}>>"
         )
-        set(metatypes_file_genex_install
-            "$<INSTALL_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:$<INSTALL_PREFIX>/${arg_INSTALL_DIR}/${metatypes_file_name}>>"
-        )
+        if(should_install)
+            set(metatypes_file_genex_install
+                "$<INSTALL_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:$<INSTALL_PREFIX>/${arg_INSTALL_DIR}/${metatypes_file_name}>>"
+            )
+        endif()
     endif()
     set_source_files_properties(${metatypes_file} PROPERTIES HEADER_FILE_ONLY TRUE)
 
     set_target_properties(${target} PROPERTIES
         INTERFACE_QT_MODULE_HAS_META_TYPES YES
         INTERFACE_QT_MODULE_META_TYPES_FROM_BUILD YES
-        INTERFACE_QT_META_TYPES_BUILD_FILE ${metatypes_file}
+        INTERFACE_QT_META_TYPES_BUILD_FILE "${metatypes_file}"
         QT_MODULE_META_TYPES_FILE_GENEX_BUILD "${metatypes_file_genex_build}"
         QT_MODULE_META_TYPES_FILE_GENEX_INSTALL "${metatypes_file_genex_install}"
     )
     target_sources(${target} INTERFACE ${metatypes_file_genex_build} ${metatypes_file_genex_install})
 
-    if (arg_COPY_OVER_INSTALL)
-        get_target_property(target_type ${target} TYPE)
-        set(command_args
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${metatypes_file}"
-                "${arg_INSTALL_DIR}/${metatypes_file_name}"
-        )
-        if (target_type STREQUAL "OBJECT_LIBRARY")
-            add_custom_target(${target}_metatypes_copy
-                DEPENDS "${metatypes_file}"
-                ${command_args}
+    # Installation is complicated, because there are multiple combinations.
+    # In non-prefix builds (signaled by arg_COPY_OVER_INSTALL == TRUE), Qt modules are /copied/
+    # into the qt_prefix/lib/metatypes.
+    # In prefix builds (signaled by arg_COPY_OVER_INSTALL == FALSE), Qt modules are /installed/
+    # into the qt_prefix/lib/metatypes.
+    # Currently only the internal qt_add_module sets arg_COPY_OVER_INSTALL.
+    #
+    # Tests and examples are executables, and thus will not have their meta types installed, but
+    # they will have them generated (if this function is called).
+    #
+    # Regular libraries and plugins (which are not part of the Qt build), will be /installed/
+    # into a lib/metatypes directory relative to their prefix, rather than the Qt prefix (only
+    # outside of a Qt build).
+    # We don't support non-prefix builds for libraries or plugins which are not part of the official
+    # Qt build. Aka everything non-prefix / COPY_OVER_INSTALL related are implementation details
+    # that users shouldn't use.
+    if(should_install)
+        if (arg_COPY_OVER_INSTALL)
+            set(command_args
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${metatypes_file}"
+                    "${arg_INSTALL_DIR}/${metatypes_file_name}"
             )
-            add_dependencies(${target} ${target}_metatypes_copy)
+            if (target_type STREQUAL "OBJECT_LIBRARY")
+                add_custom_target(${target}_metatypes_copy
+                    DEPENDS "${metatypes_file}"
+                    ${command_args}
+                )
+                add_dependencies(${target} ${target}_metatypes_copy)
+            else()
+                add_custom_command(TARGET ${target} POST_BUILD
+                    ${command_args}
+                )
+            endif()
         else()
-            add_custom_command(TARGET ${target} POST_BUILD
-                ${command_args}
-            )
+            install(FILES "${metatypes_file}" DESTINATION "${arg_INSTALL_DIR}")
         endif()
-    else()
-        install(FILES "${metatypes_file}"
-            DESTINATION "${arg_INSTALL_DIR}"
-        )
     endif()
 endfunction()
 
