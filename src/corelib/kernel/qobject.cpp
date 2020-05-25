@@ -147,7 +147,7 @@ static QBasicMutex _q_ObjectMutexPool[131];
 
 /**
  * \internal
- * mutex to be locked when accessing the connectionlists or the senders list
+ * mutex to be locked when accessing the connection lists or the senders list
  */
 static inline QBasicMutex *signalSlotLock(const QObject *o)
 {
@@ -189,7 +189,7 @@ QObjectPrivate::QObjectPrivate(int version)
 
     // QObjectData initialization
     q_ptr = nullptr;
-    parent = nullptr;                                 // no parent yet. It is set by setParent()
+    parent = nullptr;                           // no parent yet. It is set by setParent()
     isWidget = false;                           // assume not a widget object
     blockSig = false;                           // not blocking signals
     wasDeleted = false;                         // double-delete catcher
@@ -656,7 +656,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     \fn QSignalBlocker::QSignalBlocker(QSignalBlocker &&other)
 
     Move-constructs a signal blocker from \a other. \a other will have
-    a no-op destructor, while repsonsibility for restoring the
+    a no-op destructor, while responsibility for restoring the
     QObject::signalsBlocked() state is transferred to the new object.
 */
 
@@ -664,7 +664,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     \fn QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other)
 
     Move-assigns this signal blocker from \a other. \a other will have
-    a no-op destructor, while repsonsibility for restoring the
+    a no-op destructor, while responsibility for restoring the
     QObject::signalsBlocked() state is transferred to this object.
 
     The object's signals this signal blocker was blocking prior to
@@ -694,7 +694,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     \fn void QSignalBlocker::unblock()
 
     Temporarily restores the QObject::signalsBlocked() state to what
-    it was before this QSignaBlocker's constructor ran. To undo, use
+    it was before this QSignalBlocker's constructor ran. To undo, use
     reblock().
 
     The numbers of reblock() and unblock() calls are not counted, so
@@ -3102,7 +3102,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     \c {disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method) }
     but uses QMetaMethod to represent the signal and the method to be disconnected.
 
-    Additionally this function returnsfalse and no signals and slots disconnected
+    Additionally this function returns false and no signals and slots disconnected
     if:
     \list 1
 
@@ -3137,7 +3137,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     }
     if (method.mobj) {
         if(method.methodType() == QMetaMethod::Constructor) {
-            qWarning("QObject::disconect: cannot use constructor as argument %s::%s",
+            qWarning("QObject::disconnect: cannot use constructor as argument %s::%s",
                      receiver->metaObject()->className(), method.methodSignature().constData());
             return false;
         }
@@ -3161,13 +3161,13 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     // If we are here sender is not nullptr. If signal is not nullptr while signal_index
     // is -1 then this signal is not a member of sender.
     if (signal.mobj && signal_index == -1) {
-        qWarning("QObject::disconect: signal %s not found on class %s",
+        qWarning("QObject::disconnect: signal %s not found on class %s",
                  signal.methodSignature().constData(), sender->metaObject()->className());
         return false;
     }
-    // If this condition is true then method is not a member of receeiver.
+    // If this condition is true then method is not a member of receiver.
     if (receiver && method.mobj && method_index == -1) {
-        qWarning("QObject::disconect: method %s not found on class %s",
+        qWarning("QObject::disconnect: method %s not found on class %s",
                  method.methodSignature().constData(), receiver->metaObject()->className());
         return false;
     }
@@ -3585,7 +3585,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
             if (sigIndex < 0) {
                 // if no exactly fitting signal (name + complete parameter type list) could be found
                 // look for just any signal with the correct name and at least the slot's parameter list.
-                // Note: if more than one of thoses signals exist, the one that gets connected is
+                // Note: if more than one of those signals exist, the one that gets connected is
                 // chosen 'at random' (order of declaration in source file)
                 QList<QByteArray> compatibleSignals;
                 const QMetaObject *smo = co->metaObject();
@@ -4868,7 +4868,7 @@ void qDeleteInEventHandler(QObject *o)
     \a receiver is the receiver object, may not be \nullptr, will be equal to sender when
                 connecting to a static function or a functor
     \a slot a pointer only used when using Qt::UniqueConnection
-    \a type the Qt::ConnctionType passed as argument to connect
+    \a type the Qt::ConnectionType passed as argument to connect
     \a types an array of integer with the metatype id of the parameter of the signal
              to be used with queued connection
              must stay valid at least for the whole time of the connection, this function
@@ -5025,7 +5025,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 }
 
 /*! \fn template<typename PointerToMemberFunction> bool QObject::disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method)
-    \overload diconnect()
+    \overload disconnect()
     \threadsafe
 
     Disconnects \a signal in object \a sender from \a method in object
@@ -5076,7 +5076,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     if \a receiver is left out, so you cannot disconnect a
     specifically-named slot on all objects.
 
-    \note It is not possible to use this overload to diconnect signals
+    \note It is not possible to use this overload to disconnect signals
     connected to functors or lambda expressions. That is because it is not
     possible to compare them. Instead, use the overload that takes a
     QMetaObject::Connection
@@ -5111,7 +5111,7 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
 
 /*!
  \internal
- Used by QML to connect a signal by index to a slot implemented in JavaScript (wrapped in a custom QSlotOBjectBase subclass).
+ Used by QML to connect a signal by index to a slot implemented in JavaScript (wrapped in a custom QSlotObjectBase subclass).
 
  The signal_index is an index relative to the number of methods.
  */
