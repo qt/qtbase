@@ -105,7 +105,7 @@ static int getFontWeight(const QString &weightString)
         return QFont::Light;
     if (s == QLatin1String("thin"))
         return QFont::Thin;
-    const QStringRef s2 = s.midRef(2);
+    const QStringView s2 = QStringView{s}.mid(2);
     if (s.startsWith(QLatin1String("ex")) || s.startsWith(QLatin1String("ul"))) {
             if (s2 == QLatin1String("tralight") || s == QLatin1String("tra light"))
                 return QFont::ExtraLight;
@@ -511,11 +511,11 @@ static QStringList familyList(const QFontDef &req)
 
     family_list << req.families;
     if (!req.family.isEmpty()) {
-        const auto list = req.family.splitRef(QLatin1Char(','));
+        const auto list = QStringView{req.family}.split(QLatin1Char(','));
         const int numFamilies = list.size();
         family_list.reserve(numFamilies);
         for (int i = 0; i < numFamilies; ++i) {
-            QStringRef str = list.at(i).trimmed();
+            auto str = list.at(i).trimmed();
             if ((str.startsWith(QLatin1Char('"')) && str.endsWith(QLatin1Char('"')))
                 || (str.startsWith(QLatin1Char('\'')) && str.endsWith(QLatin1Char('\''))))
                 str = str.mid(1, str.length() - 2);

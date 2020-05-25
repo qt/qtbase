@@ -328,17 +328,17 @@ bool operator<(const QTextHtmlEntity &entity1, const QTextHtmlEntity &entity2)
 }
 #endif
 
-static bool operator<(const QStringRef &entityStr, const QTextHtmlEntity &entity)
+static bool operator<(QStringView entityStr, const QTextHtmlEntity &entity)
 {
     return entityStr < QLatin1String(entity.name);
 }
 
-static bool operator<(const QTextHtmlEntity &entity, const QStringRef &entityStr)
+static bool operator<(const QTextHtmlEntity &entity, QStringView entityStr)
 {
     return QLatin1String(entity.name) < entityStr;
 }
 
-static QChar resolveEntity(const QStringRef &entity)
+static QChar resolveEntity(QStringView entity)
 {
     const QTextHtmlEntity *start = &entities[0];
     const QTextHtmlEntity *end = &entities[MAX_ENTITY];
@@ -804,7 +804,7 @@ QString QTextHtmlParser::parseEntity()
 {
     const int recover = pos;
     int entityLen = 0;
-    QStringRef entity;
+    QStringView entity;
     while (pos < len) {
         QChar c = txt.at(pos++);
         if (c.isSpace() || pos - recover > 9) {
@@ -815,7 +815,7 @@ QString QTextHtmlParser::parseEntity()
         ++entityLen;
     }
     if (entityLen) {
-        entity = QStringRef(&txt, recover, entityLen);
+        entity = QStringView(txt).mid(recover, entityLen);
         QChar resolved = resolveEntity(entity);
         if (!resolved.isNull())
             return QString(resolved);
@@ -1503,7 +1503,7 @@ static void setWidthAttribute(QTextLength *width, const QString &valueStr)
     if (ok) {
         *width = QTextLength(QTextLength::FixedLength, realVal);
     } else {
-        QStringRef value = QStringRef(&valueStr).trimmed();
+        auto value = QStringView(valueStr).trimmed();
         if (!value.isEmpty() && value.endsWith(QLatin1Char('%'))) {
             value.truncate(value.size() - 1);
             realVal = value.toDouble(&ok);

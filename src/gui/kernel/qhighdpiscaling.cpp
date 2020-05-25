@@ -505,8 +505,8 @@ void QHighDpiScaling::updateHighDpiScaling()
     if (qEnvironmentVariableIsSet(screenFactorsEnvVar)) {
         int i = 0;
         const QString spec = qEnvironmentVariable(screenFactorsEnvVar);
-        const auto specs = spec.splitRef(QLatin1Char(';'));
-        for (const QStringRef &spec : specs) {
+        const auto specs = QStringView{spec}.split(u';');
+        for (const auto &spec : specs) {
             int equalsPos = spec.lastIndexOf(QLatin1Char('='));
             qreal factor = 0;
             if (equalsPos > 0) {

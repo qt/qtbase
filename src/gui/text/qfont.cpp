@@ -2019,7 +2019,7 @@ size_t qHash(const QFont &font, size_t seed) noexcept
  */
 bool QFont::fromString(const QString &descrip)
 {
-    const QStringRef sr = QStringRef(&descrip).trimmed();
+    const auto sr = QStringView(descrip).trimmed();
     const auto l = sr.split(QLatin1Char(','));
     const int count = l.count();
     if (!count || (count > 2 && count < 9) || count > 11 ||

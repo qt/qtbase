@@ -5309,14 +5309,14 @@ QMap<QString, QString> qt_getImageText(const QImage &image, const QString &descr
 QMap<QString, QString> qt_getImageTextFromDescription(const QString &description)
 {
     QMap<QString, QString> text;
-    const auto pairs = description.splitRef(QLatin1String("\n\n"));
-    for (const QStringRef &pair : pairs) {
+    const auto pairs = QStringView{description}.split(u"\n\n");
+    for (const auto &pair : pairs) {
         int index = pair.indexOf(QLatin1Char(':'));
         if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
             if (!pair.trimmed().isEmpty())
                 text.insert(QLatin1String("Description"), pair.toString().simplified());
         } else {
-            const QStringRef key = pair.left(index);
+            const auto key = pair.left(index);
             if (!key.trimmed().isEmpty())
                 text.insert(key.toString(), pair.mid(index + 2).toString().simplified());
         }

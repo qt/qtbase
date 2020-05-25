@@ -403,14 +403,14 @@ ValueExtractor::ValueExtractor(const QVector<Declaration> &decls, const QPalette
 LengthData ValueExtractor::lengthValue(const Value& v)
 {
     const QString str = v.variant.toString();
-    QStringRef s(&str);
+    QStringView s(str);
     LengthData data;
     data.unit = LengthData::None;
-    if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive))
+    if (s.endsWith(u"px", Qt::CaseInsensitive))
         data.unit = LengthData::Px;
-    else if (s.endsWith(QLatin1String("ex"), Qt::CaseInsensitive))
+    else if (s.endsWith(u"ex", Qt::CaseInsensitive))
         data.unit = LengthData::Ex;
-    else if (s.endsWith(QLatin1String("em"), Qt::CaseInsensitive))
+    else if (s.endsWith(u"em", Qt::CaseInsensitive))
         data.unit = LengthData::Em;
 
     if (data.unit != LengthData::None)
@@ -1513,7 +1513,7 @@ bool Declaration::realValue(qreal *real, const char *unit) const
     if (unit && v.type != Value::Length)
         return false;
     const QString str = v.variant.toString();
-    QStringRef s(&str);
+    QStringView s(str);
     if (unit) {
         const QLatin1String unitStr(unit);
         if (!s.endsWith(unitStr, Qt::CaseInsensitive))
@@ -1532,7 +1532,7 @@ static bool intValueHelper(const QCss::Value &v, int *i, const char *unit)
     if (unit && v.type != Value::Length)
         return false;
     const QString str = v.variant.toString();
-    QStringRef s(&str);
+    QStringView s(str);
     if (unit) {
         const QLatin1String unitStr(unit);
         if (!s.endsWith(unitStr, Qt::CaseInsensitive))
@@ -1584,7 +1584,7 @@ QRect Declaration::rectValue() const
     const QStringList func = v.variant.toStringList();
     if (func.count() != 2 || func.at(0).compare(QLatin1String("rect")) != 0)
         return QRect();
-    const auto args = func[1].splitRef(QLatin1Char(' '), Qt::SkipEmptyParts);
+    const auto args = QStringView{func[1]}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
     if (args.count() != 4)
         return QRect();
     QRect rect(args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3].toInt());
@@ -2009,8 +2009,8 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
                     return false;
                 break;
             case QCss::AttributeSelector::MatchIncludes: {
-                const auto lst = attrValue.splitRef(QLatin1Char(' '));
-                if (!lst.contains(QStringRef(&a.value)))
+                const auto lst = QStringView{attrValue}.split(u' ');
+                if (!lst.contains(QStringView(a.value)))
                     return false;
                 break;
             }
@@ -2189,7 +2189,7 @@ QString Scanner::preprocess(const QString &input, bool *hasEscapeSequences)
 
             hexCount = qMin(hexCount, 6);
             bool ok = false;
-            const char16_t code = output.midRef(hexStart, hexCount).toUShort(&ok, 16);
+            const char16_t code = QStringView{output}.mid(hexStart, hexCount).toUShort(&ok, 16);
             if (ok) {
                 output.replace(hexStart - 1, hexCount + 1, code);
                 i = hexStart;
