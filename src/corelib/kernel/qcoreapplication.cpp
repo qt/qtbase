@@ -73,6 +73,7 @@
 #include <private/qlocale_p.h>
 #include <private/qlocking_p.h>
 #include <private/qhooks_p.h>
+#include <private/qtextcodec_p.h>
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX)
@@ -594,7 +595,7 @@ void QCoreApplicationPrivate::initLocale()
         return;
     qt_locale_initialized = true;
 
-#ifdef Q_OS_ANDROID
+#ifdef QT_LOCALE_IS_UTF8
     // Android's Bionic didn't get nl_langinfo until NDK 15 (Android 8.0),
     // which is too new for Qt, so we just assume it's always UTF-8.
     auto nl_langinfo = [](int) { return "UTF-8"; };
