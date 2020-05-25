@@ -319,7 +319,7 @@ void QPropertyObserverPointer::setBindingToMarkDirty(QPropertyBindingPrivate *bi
 void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, void *propertyDataPtr)
 {
     bool knownIfPropertyChanged = false;
-    bool propertyChanged =true;
+    bool propertyChanged = true;
 
     auto observer = const_cast<QPropertyObserver*>(ptr);
     while (observer) {

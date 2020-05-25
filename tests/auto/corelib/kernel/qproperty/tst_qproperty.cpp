@@ -222,11 +222,11 @@ void tst_QProperty::avoidDependencyAllocationAfterFirstEval()
     QCOMPARE(propWithBinding.value(), int(11));
 
     QVERIFY(QPropertyBasePointer::get(propWithBinding).bindingPtr());
-    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2);
+    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
 
     firstDependency = 100;
     QCOMPARE(propWithBinding.value(), int(110));
-    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2);
+    QCOMPARE(QPropertyBasePointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
 }
 
 void tst_QProperty::propertyArrays()
