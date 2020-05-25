@@ -427,6 +427,7 @@ QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLCont
 }
 #endif
 
+#if QT_CONFIG(qqnx_pps)
 QPlatformInputContext *QQnxIntegration::inputContext() const
 {
     qIntegrationDebug();
@@ -434,6 +435,7 @@ QPlatformInputContext *QQnxIntegration::inputContext() const
         return m_qpaInputContext;
     return m_inputContext;
 }
+#endif
 
 void QQnxIntegration::moveToScreen(QWindow *window, int screen)
 {
