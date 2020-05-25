@@ -414,7 +414,7 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
     if (buttonState & 0x01)
         buttons |= Qt::LeftButton;
     if (buttonState & 0x02)
-        buttons |= Qt::MidButton;
+        buttons |= Qt::MiddleButton;
     if (buttonState & 0x04)
         buttons |= Qt::RightButton;
     if (buttonState & 0x08)
@@ -430,20 +430,51 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
 
     if (w) {
         // Inject mouse event into Qt only if something has changed.
-        if (m_lastGlobalMousePoint != globalPoint ||
-            m_lastLocalMousePoint != localPoint ||
-            m_lastButtonState != buttons) {
-            if (m_lastButtonState != 0 && buttons == 0)
+        if (m_lastGlobalMousePoint != globalPoint || m_lastLocalMousePoint != localPoint) {
+            QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons,
+                                                     Qt::NoButton, QEvent::MouseMove);
+            qScreenEventDebug() << "Qt mouse move, w=" << w << ", (" << localPoint.x() << ","
+                                << localPoint.y() << "), b=" << static_cast<int>(buttons);
+        }
+
+        if (m_lastButtonState != buttons) {
+            static const auto supportedButtons = { Qt::LeftButton,   Qt::MiddleButton,
+                                                   Qt::RightButton,  Qt::ExtraButton1,
+                                                   Qt::ExtraButton2, Qt::ExtraButton3,
+                                                   Qt::ExtraButton4, Qt::ExtraButton5 };
+
+            int releasedButtons = (m_lastButtonState ^ buttons) & ~buttons;
+            for (auto button : supportedButtons) {
+                if (releasedButtons & button) {
+                    QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons,
+                                                             button, QEvent::MouseButtonRelease);
+                    qScreenEventDebug() << "Qt mouse release, w=" << w << ", (" << localPoint.x()
+                                        << "," << localPoint.y() << "), b=" << button;
+                }
+            }
+
+            if (m_lastButtonState != 0 && buttons == 0) {
                 (static_cast<QQnxWindow *>(w->handle()))->handleActivationEvent();
-            QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons);
-            qScreenEventDebug() << "Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << static_cast<int>(buttons);
+            }
+
+            int pressedButtons = (m_lastButtonState ^ buttons) & buttons;
+            for (auto button : supportedButtons) {
+                if (pressedButtons & button) {
+                    QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons,
+                                                             button, QEvent::MouseButtonPress);
+                    qScreenEventDebug() << "Qt mouse press, w=" << w << ", (" << localPoint.x()
+                                        << "," << localPoint.y() << "), b=" << button;
+                }
+            }
         }
 
         if (wheelDelta) {
             // Screen only supports a single wheel, so we will assume Vertical orientation for
             // now since that is pretty much standard.
-            QWindowSystemInterface::handleWheelEvent(w, localPoint, globalPoint, wheelDelta, Qt::Vertical);
-            qScreenEventDebug() << "Qt wheel, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), d=" << static_cast<int>(wheelDelta);
+            QPoint angleDelta(0, wheelDelta);
+            QWindowSystemInterface::handleWheelEvent(w, localPoint, globalPoint, QPoint(), angleDelta);
+            qScreenEventDebug() << "Qt wheel, w=" << w << ", (" << localPoint.x() << ","
+                                << localPoint.y() << "), d=" << static_cast<int>(wheelDelta);
         }
     }
 
