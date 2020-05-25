@@ -69,6 +69,7 @@ private slots:
     void genericPropertyBindingBool();
     void staticChangeHandler();
     void setBindingFunctor();
+    void multipleObservers();
 };
 
 void tst_QProperty::functorBinding()
@@ -684,6 +685,41 @@ void tst_QProperty::setBindingFunctor()
     property.setBinding([&injectedValue]() { return injectedValue.value(); });
     injectedValue = 200;
     QCOMPARE(property.value(), 200);
+}
+
+void tst_QProperty::multipleObservers()
+{
+    QProperty<int> property;
+    property.setValue(5);
+    QCOMPARE(property.value(), 5);
+
+    int value1 = 1;
+    auto changeHandler = property.onValueChanged([&]() { value1 = property.value(); });
+    QCOMPARE(value1, 1);
+
+    int value2 = 2;
+    auto subscribeHandler = property.subscribe([&]() { value2 = property.value(); });
+    QCOMPARE(value2, 5);
+
+    property.setValue(6);
+    QCOMPARE(property.value(), 6);
+    QCOMPARE(value1, 6);
+    QCOMPARE(value2, 6);
+
+    property.setBinding([]() { return 12; });
+    QCOMPARE(value1, 12);
+    QCOMPARE(value2, 12);
+    QCOMPARE(property.value(), 12);
+
+    property.setBinding(QPropertyBinding<int>());
+    QCOMPARE(value1, 12);
+    QCOMPARE(value2, 12);
+    QCOMPARE(property.value(), 12);
+
+    property.setValue(22);
+    QCOMPARE(value1, 22);
+    QCOMPARE(value2, 22);
+    QCOMPARE(property.value(), 22);
 }
 
 QTEST_MAIN(tst_QProperty);

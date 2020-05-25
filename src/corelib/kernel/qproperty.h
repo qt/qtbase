@@ -254,16 +254,16 @@ public:
 
     void setValue(T &&newValue)
     {
+        d.priv.removeBinding();
         if (d.setValueAndReturnTrueIfChanged(std::move(newValue)))
             notify();
-        d.priv.removeBinding();
     }
 
     void setValue(const T &newValue)
     {
+        d.priv.removeBinding();
         if (d.setValueAndReturnTrueIfChanged(newValue))
             notify();
-        d.priv.removeBinding();
     }
 
     QProperty<T> &operator=(T &&newValue)

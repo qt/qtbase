@@ -101,6 +101,13 @@ public:
         firstObserver = observer;
     }
 
+    QPropertyObserverPointer takeObservers()
+    {
+        auto observers = firstObserver;
+        firstObserver.ptr = nullptr;
+        return observers;
+    }
+
     void clearDependencyObservers() {
         for (size_t i = 0; i < inlineDependencyObservers.size(); ++i) {
             QPropertyObserver empty;

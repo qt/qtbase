@@ -83,8 +83,11 @@ void QPropertyBase::moveAssign(QPropertyBase &&other, void *propertyDataPtr)
 QPropertyBase::~QPropertyBase()
 {
     QPropertyBasePointer d{this};
-    if (auto observer = d.firstObserver())
+    for (auto observer = d.firstObserver(); observer;) {
+        auto next = observer.nextObserver();
         observer.unlink();
+        observer = next;
+    }
     if (auto binding = d.bindingPtr())
         binding->unlinkAndDeref();
 }
@@ -95,18 +98,19 @@ QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding 
     QPropertyBindingPrivatePtr newBinding = binding.d;
 
     QPropertyBasePointer d{this};
-
-    auto observer = d.firstObserver();
-    if (observer)
-        observer.unlink();
+    QPropertyObserverPointer observer;
 
     if (auto *existingBinding = d.bindingPtr()) {
         if (existingBinding == newBinding.data())
             return QUntypedPropertyBinding(oldBinding.data());
         oldBinding = QPropertyBindingPrivatePtr(existingBinding);
+        observer = oldBinding->takeObservers();
         oldBinding->unlinkAndDeref();
         d_ptr &= FlagMask;
+    } else {
+        observer = d.firstObserver();
     }
+
     if (newBinding) {
         newBinding.data()->ref.ref();
         d_ptr = (d_ptr & FlagMask) | reinterpret_cast<quintptr>(newBinding.data());
@@ -115,8 +119,10 @@ QUntypedPropertyBinding QPropertyBase::setBinding(const QUntypedPropertyBinding 
         newBinding->setProperty(propertyDataPtr);
         if (observer)
             newBinding->prependObserver(observer);
+    } else if (observer) {
+        d.setObservers(observer.ptr);
     } else {
-        d_ptr &= ~BindingBit;
+        d_ptr &= ~QPropertyBase::BindingBit;
     }
 
     return QUntypedPropertyBinding(oldBinding.data());
@@ -135,6 +141,12 @@ QPropertyBindingPrivate *QPropertyBasePointer::bindingPtr() const
     if (ptr->d_ptr & QPropertyBase::BindingBit)
         return reinterpret_cast<QPropertyBindingPrivate*>(ptr->d_ptr & ~QPropertyBase::FlagMask);
     return nullptr;
+}
+
+void QPropertyBasePointer::setObservers(QPropertyObserver *observer)
+{
+    observer->prev = reinterpret_cast<QPropertyObserver**>(&(ptr->d_ptr));
+    ptr->d_ptr = (reinterpret_cast<quintptr>(observer) & ~QPropertyBase::FlagMask);
 }
 
 void QPropertyBasePointer::addObserver(QPropertyObserver *observer)
@@ -199,18 +211,13 @@ void QPropertyBase::removeBinding()
 {
     QPropertyBasePointer d{this};
 
-    auto observer = d.firstObserver();
-    if (observer)
-        observer.unlink();
-
     if (auto *existingBinding = d.bindingPtr()) {
+        auto observer = existingBinding->takeObservers();
         existingBinding->unlinkAndDeref();
-        d_ptr &= FlagMask;
+        d_ptr &= ExtraBit;
+        if (observer)
+            d.setObservers(observer.ptr);
     }
-    d_ptr &= ~BindingBit;
-
-    if (observer)
-        observer.observeProperty(d);
 }
 
 void QPropertyBase::registerWithCurrentlyEvaluatingBinding() const

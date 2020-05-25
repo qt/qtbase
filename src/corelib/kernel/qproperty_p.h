@@ -65,6 +65,7 @@ struct Q_AUTOTEST_EXPORT QPropertyBasePointer
 
     QPropertyBindingPrivate *bindingPtr() const;
 
+    void setObservers(QPropertyObserver *observer);
     void addObserver(QPropertyObserver *observer);
     void setFirstObserver(QPropertyObserver *observer);
     QPropertyObserverPointer firstObserver() const;
