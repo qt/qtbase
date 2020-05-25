@@ -529,6 +529,13 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
     if (q->parent())
         q->parent()->create();
 
+    // QPlatformWindow will poll geometry() during construction below. Set the
+    // screen here so that high-dpi scaling will use the correct scale factor.
+    if (q->isTopLevel()) {
+        if (QScreen *screen = screenForGeometry(geometry))
+            setTopLevelScreen(screen, false);
+    }
+
     QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     platformWindow = nativeHandle ? platformIntegration->createForeignWindow(q, nativeHandle)
         : platformIntegration->createPlatformWindow(q);
@@ -1726,8 +1733,11 @@ void QWindow::setGeometry(const QRect &rect)
 
     d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
-        QRect nativeRect;
         QScreen *newScreen = d->screenForGeometry(rect);
+        if (newScreen && isTopLevel())
+            d->setTopLevelScreen(newScreen, true);
+
+        QRect nativeRect;
         if (newScreen && isTopLevel())
             nativeRect = QHighDpi::toNativePixels(rect, newScreen);
         else
