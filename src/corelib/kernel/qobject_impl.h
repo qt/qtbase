@@ -75,7 +75,7 @@ namespace QtPrivate {
     { static const int *types() { static const int t[sizeof...(Args) + 1] = { (QtPrivate::QMetaTypeIdHelper<Args>::qt_metatype_id())..., 0 }; return t; } };
 
     // implementation of QSlotObjectBase for which the slot is a static function
-    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
     template<typename Func, typename Args, typename R> class QStaticSlotObject : public QSlotObjectBase
     {
         typedef QtPrivate::FunctionPointer<Func> FuncType;

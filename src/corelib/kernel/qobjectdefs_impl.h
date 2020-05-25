@@ -403,7 +403,7 @@ namespace QtPrivate {
     };
 
     // implementation of QSlotObjectBase for which the slot is a pointer to member function of a QObject
-    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
     template<typename Func, typename Args, typename R> class QSlotObject : public QSlotObjectBase
     {
         typedef QtPrivate::FunctionPointer<Func> FuncType;
@@ -428,7 +428,7 @@ namespace QtPrivate {
     };
     // implementation of QSlotObjectBase for which the slot is a functor (or lambda)
     // N is the number of arguments
-    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    // Args and R are the List of arguments and the return type of the signal to which the slot is connected.
     template<typename Func, int N, typename Args, typename R> class QFunctorSlotObject : public QSlotObjectBase
     {
         typedef QtPrivate::Functor<Func, N> FuncType;
