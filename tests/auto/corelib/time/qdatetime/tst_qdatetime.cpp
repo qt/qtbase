@@ -121,9 +121,6 @@ private slots:
     void fromStringStringFormat();
     void fromStringStringFormat_localTimeZone_data();
     void fromStringStringFormat_localTimeZone();
-#if defined(Q_OS_WIN) && QT_CONFIG(textdate)
-    void fromString_LOCALE_ILDATE();
-#endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void fromStringToStringLocale_data();
     void fromStringToStringLocale();
@@ -2213,6 +2210,12 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << invalidDateTime();
     QTest::newRow("text second fraction") << QString::fromLatin1("Mon 6. May 2013 01:02:03.456")
         << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 456));
+
+    const QDateTime ref(QDate(1974, 12, 1), QTime(13, 2));
+    QTest::newRow("day:,:month")
+        << QStringLiteral("Sun 1. Dec 13:02:00 1974") << Qt::TextDate << ref;
+    QTest::newRow("month:day")
+        << QStringLiteral("Sun Dec 1 13:02:00 1974") << Qt::TextDate << ref;
 #endif // textdate
 
     // Test Qt::ISODate format.
@@ -2724,19 +2727,6 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone()
     TimeZoneRollback useZone(localTimeZone);  // enforce test's time zone
     fromStringStringFormat();  // call basic fromStringStringFormat test
 }
-
-#if defined(Q_OS_WIN) && QT_CONFIG(textdate)
-// Windows only
-void tst_QDateTime::fromString_LOCALE_ILDATE()
-{
-    QString date1 = QLatin1String("Sun 1. Dec 13:02:00 1974");
-    QString date2 = QLatin1String("Sun Dec 1 13:02:00 1974");
-
-    QDateTime ref(QDate(1974, 12, 1), QTime(13, 2));
-    QCOMPARE(ref, QDateTime::fromString(date2, Qt::TextDate));
-    QCOMPARE(ref, QDateTime::fromString(date1, Qt::TextDate));
-}
-#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
