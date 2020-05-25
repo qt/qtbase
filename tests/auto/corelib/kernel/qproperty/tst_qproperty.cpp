@@ -70,6 +70,7 @@ private slots:
     void staticChangeHandler();
     void setBindingFunctor();
     void multipleObservers();
+    void propertyAlias();
 };
 
 void tst_QProperty::functorBinding()
@@ -720,6 +721,52 @@ void tst_QProperty::multipleObservers()
     QCOMPARE(value1, 22);
     QCOMPARE(value2, 22);
     QCOMPARE(property.value(), 22);
+}
+
+void tst_QProperty::propertyAlias()
+{
+    QScopedPointer<QProperty<int>> property(new QProperty<int>);
+    property->setValue(5);
+    QPropertyAlias alias(property.get());
+    QVERIFY(alias.isValid());
+    QCOMPARE(alias.value(), 5);
+
+    int value1 = 1;
+    auto changeHandler = alias.onValueChanged([&]() { value1 = alias.value(); });
+    QCOMPARE(value1, 1);
+
+    int value2 = 2;
+    auto subscribeHandler = alias.subscribe([&]() { value2 = alias.value(); });
+    QCOMPARE(value2, 5);
+
+    alias.setValue(6);
+    QVERIFY(alias.isValid());
+    QCOMPARE(alias.value(), 6);
+    QCOMPARE(value1, 6);
+    QCOMPARE(value2, 6);
+
+    alias.setBinding([]() { return 12; });
+    QCOMPARE(value1, 12);
+    QCOMPARE(value2, 12);
+    QCOMPARE(alias.value(), 12);
+
+    alias.setValue(22);
+    QCOMPARE(value1, 22);
+    QCOMPARE(value2, 22);
+    QCOMPARE(alias.value(), 22);
+
+    property.reset();
+
+    QVERIFY(!alias.isValid());
+    QCOMPARE(alias.value(), int());
+    QCOMPARE(value1, 22);
+    QCOMPARE(value2, 22);
+
+    // Does not crash
+    alias.setValue(25);
+    QCOMPARE(alias.value(), int());
+    QCOMPARE(value1, 22);
+    QCOMPARE(value2, 22);
 }
 
 QTEST_MAIN(tst_QProperty);

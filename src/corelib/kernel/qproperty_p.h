@@ -88,6 +88,7 @@ struct QPropertyObserverPointer
 
     void setBindingToMarkDirty(QPropertyBindingPrivate *binding);
     void setChangeHandler(void (*changeHandler)(QPropertyObserver *, void *));
+    void setAliasedProperty(void *propertyPtr);
 
     void notify(QPropertyBindingPrivate *triggeringBinding, void *propertyDataPtr);
     void observeProperty(QPropertyBasePointer property);
