@@ -791,6 +791,8 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
         return srgb ? VK_FORMAT_B8G8R8A8_SRGB : VK_FORMAT_B8G8R8A8_UNORM;
     case QRhiTexture::R8:
         return srgb ? VK_FORMAT_R8_SRGB : VK_FORMAT_R8_UNORM;
+    case QRhiTexture::RG8:
+        return srgb ? VK_FORMAT_R8G8_SRGB : VK_FORMAT_R8G8_UNORM;
     case QRhiTexture::R16:
         return VK_FORMAT_R16_UNORM;
     case QRhiTexture::RED_OR_ALPHA8:
@@ -884,10 +886,16 @@ static inline QRhiTexture::Format colorTextureFormatFromVkFormat(VkFormat format
         return QRhiTexture::BGRA8;
     case VK_FORMAT_R8_UNORM:
         return QRhiTexture::R8;
+    case VK_FORMAT_R8G8_UNORM:
+        return QRhiTexture::RG8;
     case VK_FORMAT_R8_SRGB:
         if (flags)
             (*flags) |= QRhiTexture::sRGB;
         return QRhiTexture::R8;
+    case VK_FORMAT_R8G8_SRGB:
+        if (flags)
+            (*flags) |= QRhiTexture::sRGB;
+        return QRhiTexture::RG8;
     case VK_FORMAT_R16_UNORM:
         return QRhiTexture::R16;
     default: // this cannot assert, must warn and return unknown

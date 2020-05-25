@@ -2247,6 +2247,12 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
 #else
         return srgb ? MTLPixelFormatR8Unorm_sRGB : MTLPixelFormatR8Unorm;
 #endif
+    case QRhiTexture::RG8:
+#ifdef Q_OS_MACOS
+        return MTLPixelFormatRG8Unorm;
+#else
+        return srgb ? MTLPixelFormatRG8Unorm_sRGB : MTLPixelFormatRG8Unorm;
+#endif
     case QRhiTexture::R16:
         return MTLPixelFormatR16Unorm;
     case QRhiTexture::RED_OR_ALPHA8:

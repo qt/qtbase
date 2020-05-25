@@ -738,6 +738,7 @@ public:
         RGBA8,
         BGRA8,
         R8,
+        RG8,
         R16,
         RED_OR_ALPHA8,
 

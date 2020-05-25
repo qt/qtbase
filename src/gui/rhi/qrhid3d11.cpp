@@ -1138,6 +1138,8 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
         return srgb ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
     case QRhiTexture::R8:
         return DXGI_FORMAT_R8_UNORM;
+    case QRhiTexture::RG8:
+        return DXGI_FORMAT_R8G8_UNORM;
     case QRhiTexture::R16:
         return DXGI_FORMAT_R16_UNORM;
     case QRhiTexture::RED_OR_ALPHA8:
@@ -1218,6 +1220,8 @@ static inline QRhiTexture::Format colorTextureFormatFromDxgiFormat(DXGI_FORMAT f
         return QRhiTexture::BGRA8;
     case DXGI_FORMAT_R8_UNORM:
         return QRhiTexture::R8;
+    case DXGI_FORMAT_R8G8_UNORM:
+        return QRhiTexture::RG8;
     case DXGI_FORMAT_R16_UNORM:
         return QRhiTexture::R16;
     default: // this cannot assert, must warn and return unknown

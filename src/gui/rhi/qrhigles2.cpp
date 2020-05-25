@@ -145,6 +145,14 @@ QT_BEGIN_NAMESPACE
 #define GL_R8                             0x8229
 #endif
 
+#ifndef GL_RG8
+#define GL_RG8                            0x822B
+#endif
+
+#ifndef GL_RG
+#define GL_RG                             0x8227
+#endif
+
 #ifndef GL_R16
 #define GL_R16                            0x822A
 #endif
@@ -719,6 +727,12 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2
         *glformat = GL_RED;
         *gltype = GL_UNSIGNED_BYTE;
         break;
+    case QRhiTexture::RG8:
+        *glintformat = GL_RG8;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RG;
+        *gltype = GL_UNSIGNED_BYTE;
+        break;
     case QRhiTexture::RED_OR_ALPHA8:
         *glintformat = caps.coreProfile ? GL_R8 : GL_ALPHA;
         *glsizedintformat = *glintformat;
@@ -785,6 +799,9 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
         return caps.bgraExternalFormat;
 
     case QRhiTexture::R8:
+        return caps.r8Format;
+
+    case QRhiTexture::RG8:
         return caps.r8Format;
 
     case QRhiTexture::R16:
