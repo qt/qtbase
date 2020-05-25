@@ -50,7 +50,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtCore/qt_windows.h>
 #include <qpa/qplatformintegration.h>
-#include <QtWindowsUIAutomationSupport/private/qwindowsuiawrapper_p.h>
+#include <QtGui/private/qwindowsuiawrapper_p.h>
 
 #include <QtCore/private/qwinregistry_p.h>
 

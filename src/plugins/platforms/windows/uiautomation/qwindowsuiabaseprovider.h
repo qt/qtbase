@@ -47,7 +47,7 @@
 #include <QtCore/qpointer.h>
 
 #include <qwindowscombase.h>
-#include <QtWindowsUIAutomationSupport/private/qwindowsuiawrapper_p.h>
+#include <QtGui/private/qwindowsuiawrapper_p.h>
 
 QT_BEGIN_NAMESPACE
 

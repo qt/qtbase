@@ -460,6 +460,22 @@ qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
         ${FWFoundation}
 )
 
+qt_extend_target(Gui CONDITION WIN32 AND NOT WINRT AND QT_FEATURE_accessibility
+    SOURCES
+        accessible/windows/apisupport/qwindowsuiawrapper_p.h
+        accessible/windows/apisupport/uiaattributeids_p.h
+        accessible/windows/apisupport/uiacontroltypeids_p.h
+        accessible/windows/apisupport/uiaerrorids_p.h
+        accessible/windows/apisupport/uiaeventids_p.h
+        accessible/windows/apisupport/uiageneralids_p.h
+        accessible/windows/apisupport/uiaserverinterfaces_p.h
+        accessible/windows/apisupport/uiaclientinterfaces_p.h
+        accessible/windows/apisupport/uiapatternids_p.h
+        accessible/windows/apisupport/uiapropertyids_p.h
+        accessible/windows/apisupport/uiatypes_p.h
+        accessible/windows/apisupport/qwindowsuiawrapper.cpp
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_action
     SOURCES
         kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h

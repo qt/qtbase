@@ -347,12 +347,6 @@ _qt_library_map = [
     LibraryMapping("webview", "Qt6", "Qt::WebView", extra=["COMPONENTS", "WebView"]),
     LibraryMapping("widgets", "Qt6", "Qt::Widgets", extra=["COMPONENTS", "Widgets"]),
     LibraryMapping("window-lib", "Qt6", "Qt::AppManWindow", extra=["COMPONENTS", "AppManWindow"]),
-    LibraryMapping(
-        "windowsuiautomation_support",
-        "Qt6",
-        "Qt::WindowsUIAutomationSupport",
-        extra=["COMPONENTS", "WindowsUIAutomationSupport"],
-    ),
     LibraryMapping("winextras", "Qt6", "Qt::WinExtras", extra=["COMPONENTS", "WinExtras"]),
     LibraryMapping("x11extras", "Qt6", "Qt::X11Extras", extra=["COMPONENTS", "X11Extras"]),
     LibraryMapping("xcb_qpa_lib", "Qt6", "Qt::XcbQpa", extra=["COMPONENTS", "XcbQpa"]),

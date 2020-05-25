@@ -1,6 +1,3 @@
-qtHaveModule(windowsuiautomation_support-private): \
-    QT += windowsuiautomation_support-private
-
 SOURCES += \
     $$PWD/qwindowsuiaaccessibility.cpp \
     $$PWD/qwindowsuiaprovidercache.cpp \

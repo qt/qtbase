@@ -22,4 +22,6 @@ qtConfig(accessibility) {
 
         LIBS_PRIVATE += -framework Foundation
     }
+
+    win32:!winrt: include(windows/windows.pri)
 }

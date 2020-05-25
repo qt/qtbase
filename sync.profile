@@ -12,7 +12,6 @@
     "QtDBus" => "$basedir/src/dbus",
     "QtConcurrent" => "$basedir/src/concurrent",
     "QtAccessibilitySupport" => "$basedir/src/platformsupport/accessibility",
-    "QtWindowsUIAutomationSupport" => "$basedir/src/platformsupport/windowsuiautomation",
     "QtLinuxAccessibilitySupport" => "$basedir/src/platformsupport/linuxaccessibility",
     "QtDeviceDiscoverySupport" => "$basedir/src/platformsupport/devicediscovery",
     "QtEventDispatcherSupport" => "$basedir/src/platformsupport/eventdispatchers",

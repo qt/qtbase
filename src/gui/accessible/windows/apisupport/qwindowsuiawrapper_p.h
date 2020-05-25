@@ -68,7 +68,7 @@ QT_REQUIRE_CONFIG(accessibility);
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsUiaWrapper
+class Q_GUI_EXPORT QWindowsUiaWrapper
 {
     QWindowsUiaWrapper();
     virtual ~QWindowsUiaWrapper();
