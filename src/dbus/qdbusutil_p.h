@@ -68,18 +68,15 @@ namespace Q_DBUS_NO_EXPORT QDBusUtil
 {
     Q_DBUS_EXPORT bool isValidInterfaceName(const QString &ifaceName);
 
-    Q_DBUS_EXPORT bool isValidUniqueConnectionName(const QStringRef &busName);
-    inline bool isValidUniqueConnectionName(const QString &busName) { return isValidUniqueConnectionName(QStringRef(&busName)); }
+    Q_DBUS_EXPORT bool isValidUniqueConnectionName(QStringView busName);
 
     Q_DBUS_EXPORT bool isValidBusName(const QString &busName);
 
-    Q_DBUS_EXPORT bool isValidMemberName(const QStringRef &memberName);
-    inline bool isValidMemberName(const QString &memberName) { return isValidMemberName(QStringRef(&memberName)); }
+    Q_DBUS_EXPORT bool isValidMemberName(QStringView memberName);
 
     Q_DBUS_EXPORT bool isValidErrorName(const QString &errorName);
 
-    Q_DBUS_EXPORT bool isValidPartOfObjectPath(const QStringRef &path);
-    inline bool isValidPartOfObjectPath(const QString &path) { return isValidPartOfObjectPath(QStringRef(&path)); }
+    Q_DBUS_EXPORT bool isValidPartOfObjectPath(QStringView path);
 
     Q_DBUS_EXPORT bool isValidObjectPath(const QString &path);
 

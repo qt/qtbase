@@ -392,7 +392,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
             break;
         int end = fullpath.indexOf(QLatin1Char('/'), start);
         end = (end == -1 ? length : end);
-        QStringRef pathComponent(&fullpath, start, end - start);
+        QStringView pathComponent = QStringView{fullpath}.mid(start, end - start);
 
         QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it =
             std::lower_bound(node->children.constBegin(), node->children.constEnd(), pathComponent);
@@ -435,7 +435,7 @@ static QObject *findChildObject(const QDBusConnectionPrivate::ObjectTreeNode *ro
 
             int pos = fullpath.indexOf(QLatin1Char('/'), start);
             pos = (pos == -1 ? length : pos);
-            QStringRef pathComponent(&fullpath, start, pos - start);
+            auto pathComponent = QStringView{fullpath}.mid(start, pos - start);
 
             const QObjectList children = obj->children();
 
@@ -604,7 +604,7 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
     }
 }
 
-static void huntAndUnregister(const QVector<QStringRef> &pathComponents, int i, QDBusConnection::UnregisterMode mode,
+static void huntAndUnregister(const QVector<QStringView> &pathComponents, int i, QDBusConnection::UnregisterMode mode,
                               QDBusConnectionPrivate::ObjectTreeNode *node)
 {
     if (pathComponents.count() == i) {
@@ -2410,12 +2410,12 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
 void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode)
 {
     QDBusConnectionPrivate::ObjectTreeNode *node = &rootNode;
-    QVector<QStringRef> pathComponents;
+    QVector<QStringView> pathComponents;
     int i;
     if (path == QLatin1String("/")) {
         i = 0;
     } else {
-        pathComponents = path.splitRef(QLatin1Char('/'));
+        pathComponents = QStringView{path}.split(QLatin1Char('/'));
         i = 1;
     }
 

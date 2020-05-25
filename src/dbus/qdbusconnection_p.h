@@ -156,8 +156,8 @@ public:
             : name(n), obj(nullptr), flags(0) { }
         inline bool operator<(const QString &other) const
             { return name < other; }
-        inline bool operator<(const QStringRef &other) const
-            { return QStringRef(&name) < other; }
+        inline bool operator<(QStringView other) const
+            { return name < other; }
         inline bool isActive() const
         { return obj || !children.isEmpty(); }
 

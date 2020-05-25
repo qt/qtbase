@@ -331,15 +331,15 @@ namespace QDBusUtil
 
     /*!
         \internal
-        \fn bool isValidPartOfObjectPath(const QStringRef &part)
+        \fn bool isValidPartOfObjectPath(QStringView part)
         See isValidObjectPath
     */
-    bool isValidPartOfObjectPath(const QStringRef &part)
+    bool isValidPartOfObjectPath(QStringView part)
     {
         if (part.isEmpty())
             return false;       // can't be valid if it's empty
 
-        const QChar *c = part.unicode();
+        const QChar *c = part.data();
         for (int i = 0; i < part.length(); ++i)
             if (!isValidCharacterNoDash(c[i]))
                 return false;
@@ -372,11 +372,11 @@ namespace QDBusUtil
         if (ifaceName.isEmpty() || ifaceName.length() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
 
-        const auto parts = ifaceName.splitRef(QLatin1Char('.'));
+        const auto parts = QStringView{ifaceName}.split(QLatin1Char('.'));
         if (parts.count() < 2)
             return false;           // at least two parts
 
-        for (const QStringRef &part : parts)
+        for (auto part : parts)
             if (!isValidMemberName(part))
                 return false;
 
@@ -384,13 +384,13 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool isValidUniqueConnectionName(const QStringRef &connName)
+        \fn bool isValidUniqueConnectionName(QStringView connName)
         Returns \c true if \a connName is a valid unique connection name.
 
         Unique connection names start with a colon (":") and are followed by a list of dot-separated
         components composed of ASCII letters, digits, the hyphen or the underscore ("_") character.
     */
-    bool isValidUniqueConnectionName(const QStringRef &connName)
+    bool isValidUniqueConnectionName(QStringView connName)
     {
         if (connName.isEmpty() || connName.length() > DBUS_MAXIMUM_NAME_LENGTH ||
             !connName.startsWith(QLatin1Char(':')))
@@ -400,11 +400,11 @@ namespace QDBusUtil
         if (parts.count() < 1)
             return false;
 
-        for (const QStringRef &part : parts) {
+        for (QStringView part : parts) {
             if (part.isEmpty())
                  return false;
 
-            const QChar* c = part.unicode();
+            const QChar* c = part.data();
             for (int j = 0; j < part.length(); ++j)
                 if (!isValidCharacter(c[j]))
                     return false;
@@ -442,15 +442,15 @@ namespace QDBusUtil
         if (busName.startsWith(QLatin1Char(':')))
             return isValidUniqueConnectionName(busName);
 
-        const auto parts = busName.splitRef(QLatin1Char('.'));
+        const auto parts = QStringView{busName}.split(QLatin1Char('.'));
         if (parts.count() < 1)
             return false;
 
-        for (const QStringRef &part : parts) {
+        for (QStringView part : parts) {
             if (part.isEmpty())
                 return false;
 
-            const QChar *c = part.unicode();
+            const QChar *c = part.data();
             if (isValidNumber(c[0]))
                 return false;
             for (int j = 0; j < part.length(); ++j)
@@ -462,17 +462,17 @@ namespace QDBusUtil
     }
 
     /*!
-        \fn bool isValidMemberName(const QStringRef &memberName)
+        \fn bool isValidMemberName(QStringView memberName)
         Returns \c true if \a memberName is a valid member name. A valid member name does not exceed
         255 characters in length, is not empty, is composed only of ASCII letters, digits and
         underscores, but does not start with a digit.
     */
-    bool isValidMemberName(const QStringRef &memberName)
+    bool isValidMemberName(QStringView memberName)
     {
         if (memberName.isEmpty() || memberName.length() > DBUS_MAXIMUM_NAME_LENGTH)
             return false;
 
-        const QChar* c = memberName.unicode();
+        const QChar* c = memberName.data();
         if (isValidNumber(c[0]))
             return false;
         for (int j = 0; j < memberName.length(); ++j)
@@ -520,8 +520,8 @@ namespace QDBusUtil
             return false;
 
         // it starts with /, so we skip the empty first part
-        const auto parts = path.midRef(1).split(QLatin1Char('/'));
-        for (const QStringRef &part : parts)
+        const auto parts = QStringView{path}.mid(1).split(QLatin1Char('/'));
+        for (QStringView part : parts)
             if (!isValidPartOfObjectPath(part))
                 return false;
 

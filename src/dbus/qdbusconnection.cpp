@@ -890,7 +890,7 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
     if (!d || !d->connection || !object || !options || !QDBusUtil::isValidObjectPath(path))
         return false;
 
-    auto pathComponents = path.splitRef(QLatin1Char('/'));
+    auto pathComponents = QStringView{path}.split(QLatin1Char('/'));
     if (pathComponents.constLast().isEmpty())
         pathComponents.removeLast();
     QDBusWriteLocker locker(RegisterObjectAction, d);
@@ -998,7 +998,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
     if (!d || !d->connection || !QDBusUtil::isValidObjectPath(path))
         return nullptr;
 
-    auto pathComponents = path.splitRef(QLatin1Char('/'));
+    auto pathComponents = QStringView{path}.split(QLatin1Char('/'));
     if (pathComponents.constLast().isEmpty())
         pathComponents.removeLast();
 
