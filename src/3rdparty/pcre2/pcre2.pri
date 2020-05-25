@@ -5,6 +5,11 @@ win32: MODULE_DEFINES += PCRE2_STATIC
 
 DEFINES += HAVE_CONFIG_H
 
+qtConfig(intelcet) {
+    QMAKE_CFLAGS += QMAKE_CFLAGS_SHSTK
+    QMAKE_CXXFLAGS += QMAKE_CXXFLAGS_SHSTK
+}
+
 SOURCES += \
     $$PWD/src/pcre2_auto_possess.c \
     $$PWD/src/pcre2_chartables.c \
