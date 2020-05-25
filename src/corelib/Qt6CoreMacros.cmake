@@ -619,7 +619,7 @@ function(qt6_generate_meta_types_json_file target)
             AUTOMOC_MOC_OPTIONS "--output-json"
         )
 
-        if(CMAKE_BUILD_TYPE)
+        if(NOT CMAKE_CONFIGURATION_TYPES)
             set(cmake_autogen_cache_file
                 "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
             set(mutli_config_args
