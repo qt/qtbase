@@ -2883,6 +2883,8 @@ QColor &QColor::operator=(Qt::GlobalColor color) noexcept
     Returns \c true if this color has the same color specification and component values as \a color;
     otherwise returns \c false.
 
+    ExtendedRgb and Rgb specifications are considered matching in this context.
+
     \sa spec()
 */
 bool QColor::operator==(const QColor &color) const noexcept
@@ -2896,6 +2898,12 @@ bool QColor::operator==(const QColor &color) const noexcept
                     || ct.ahsl.lightness == USHRT_MAX
                     || color.ct.ahsl.lightness == USHRT_MAX)
                 && (qAbs(ct.ahsl.lightness - color.ct.ahsl.lightness)) < 50);
+    } else if ((cspec == ExtendedRgb || color.cspec == ExtendedRgb) &&
+               (cspec == color.cspec || cspec == Rgb || color.cspec == Rgb))  {
+        return qFuzzyCompare(alphaF(), color.alphaF())
+            && qFuzzyCompare(redF(), color.redF())
+            && qFuzzyCompare(greenF(), color.greenF())
+            && qFuzzyCompare(blueF(), color.blueF());
     } else {
         return (cspec == color.cspec
                 && ct.argb.alpha == color.ct.argb.alpha
@@ -2911,6 +2919,8 @@ bool QColor::operator==(const QColor &color) const noexcept
 /*!
     Returns \c true if this color has different color specification or component values from
     \a color; otherwise returns \c false.
+
+    ExtendedRgb and Rgb specifications are considered matching in this context.
 
     \sa spec()
 */

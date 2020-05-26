@@ -106,6 +106,8 @@ private slots:
 
     void achromaticHslHue();
 
+    void equality();
+
     void premultiply();
     void unpremultiply_sse4();
     void qrgba64();
@@ -1680,6 +1682,24 @@ void tst_QColor::achromaticHslHue()
 
     QColor hsl = color.toHsl();
     QCOMPARE(hsl.hslHue(), -1);
+}
+
+void tst_QColor::equality()
+{
+    QColor red = Qt::red;
+    QColor black = Qt::black;
+
+    QCOMPARE(red, red);
+    QCOMPARE(black, black);
+    QVERIFY(red != black);
+
+    // Encodings must match
+    QVERIFY(red != red.toHsv());
+    QVERIFY(black.toHsl() != black);
+
+    // Except for ExtendedRgb and Rgb, as it can be an automatic upgrade.
+    QCOMPARE(red, red.toExtendedRgb());
+    QCOMPARE(black.toExtendedRgb(), black);
 }
 
 void tst_QColor::premultiply()
