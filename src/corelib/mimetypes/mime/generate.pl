@@ -60,7 +60,7 @@ if ($zlib) {
 if ($fname eq "--zstd") {
     $fname = shift @ARGV;
     if (checkCommand("zstd")) {
-        $compress = "zstd -cq19 --single-thread";
+        $compress = "zstd -cq19 -T1";
         $macro = "MIME_DATABASE_IS_ZSTD";
     }
 }
