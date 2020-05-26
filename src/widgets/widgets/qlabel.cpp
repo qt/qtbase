@@ -1025,6 +1025,9 @@ bool QLabel::event(QEvent *e)
                ) {
         d->setLayoutItemMargins(QStyle::SE_LabelLayoutItem);
         d->updateLabel();
+    } else if (type == QEvent::Polish) {
+        if (d->needTextControl())
+            d->ensureTextControl();
     }
 
     return QFrame::event(e);
