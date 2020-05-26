@@ -132,7 +132,7 @@ namespace {
         Path() {}
         Path(const QString & p, bool ud) : path(p), userDefined(ud) {}
         QString path;
-        bool userDefined; //!< true - user defined, overridden by setPath
+        bool userDefined = false; //!< true - user defined, overridden by setPath
     };
 }
 typedef QHash<int, Path> PathHash;
