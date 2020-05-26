@@ -646,7 +646,7 @@ QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db, InternalDatabaseEnu
 #elif defined(MIME_DATABASE_IS_GZIP)
     std::unique_ptr<char []> uncompressed(new char[size]);
     z_stream zs = {};
-    zs.next_in = mimetype_database;
+    zs.next_in = const_cast<Bytef *>(mimetype_database);
     zs.avail_in = sizeof(mimetype_database);
     zs.next_out = reinterpret_cast<Bytef *>(uncompressed.get());
     zs.avail_out = size;
