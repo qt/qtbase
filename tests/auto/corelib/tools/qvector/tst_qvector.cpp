@@ -2793,36 +2793,40 @@ void tst_QVector::emplaceConsistentWithStdVectorImpl() const
     stdVec.emplace(stdVec.begin() + 3, 'g');
     vecEq(qVec, stdVec);
 
+    T t;
+    // while QVector is safe with regards to emplacing elements moved form itself, it's UB
+    // for std::vector, so do the moving in two steps there.
     qVec.emplaceBack(std::move(qVec[0]));
-    stdVec.emplace_back(std::move(stdVec[0]));
+    stdVec.emplace_back(std::move(t = std::move(stdVec[0])));
     vecEq(qVec, stdVec);
 
     squeezeVec(qVec, stdVec);
 
     qVec.emplaceBack(std::move(qVec[1]));
-    stdVec.emplace_back(std::move(stdVec[1]));
+    stdVec.emplace_back(std::move(t = std::move(stdVec[1])));
     vecEq(qVec, stdVec);
 
     squeezeVec(qVec, stdVec);
 
     qVec.emplace(3, std::move(qVec[5]));
-    stdVec.emplace(stdVec.begin() + 3, std::move(stdVec[5]));
+    stdVec.emplace(stdVec.begin() + 3, std::move(t = std::move(stdVec[5])));
+
     vecEq(qVec, stdVec);
 
     qVec.emplaceBack(qVec[3]);
-    stdVec.emplace_back(stdVec[3]);
+    stdVec.emplace_back((t = stdVec[3]));
     vecEq(qVec, stdVec);
 
     squeezeVec(qVec, stdVec);
 
     qVec.emplaceBack(qVec[4]);
-    stdVec.emplace_back(stdVec[4]);
+    stdVec.emplace_back((t = stdVec[4]));
     vecEq(qVec, stdVec);
 
     squeezeVec(qVec, stdVec);
 
     qVec.emplace(5, qVec[7]);
-    stdVec.emplace(stdVec.begin() + 5, stdVec[7]);
+    stdVec.emplace(stdVec.begin() + 5, (t = stdVec[7]));
     vecEq(qVec, stdVec);
 }
 
