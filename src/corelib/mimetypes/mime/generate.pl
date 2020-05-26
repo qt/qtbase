@@ -67,9 +67,9 @@ if ($fname eq "--zstd") {
 
 # Check if xml (from xmlstarlet) is in $PATH
 my $cmd;
-if (checkCommand("xml")) {
+if (checkCommand("xmlstarlet")) {
     # Minify the data before compressing
-    $cmd = "xml sel -D -B -t -c / $fname";
+    $cmd = "xmlstarlet sel -D -B -t -c / $fname";
     $cmd .= "| $compress" if $compress;
 } elsif ($compress) {
     $cmd = "$compress < $fname"
