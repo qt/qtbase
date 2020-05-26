@@ -304,10 +304,10 @@ void tst_QColorSpace::loadImage()
     QVERIFY(defaultProPhotoRgb.iccProfile() != image.colorSpace().iccProfile());
 
     QColorTransform transform = image.colorSpace().transformationToColorSpace(QColorSpace::SRgb);
-    qreal maxRed = 0;
-    qreal maxBlue = 0;
-    qreal maxRed2 = 0;
-    qreal maxBlue2 = 0;
+    float maxRed = 0;
+    float maxBlue = 0;
+    float maxRed2 = 0;
+    float maxBlue2 = 0;
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
             QColor p = image.pixelColor(x, y);

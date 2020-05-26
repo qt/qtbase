@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -109,8 +109,8 @@ public:
     int alpha() const noexcept;
     void setAlpha(int alpha);
 
-    qreal alphaF() const noexcept;
-    void setAlphaF(qreal alpha);
+    float alphaF() const noexcept;
+    void setAlphaF(float alpha);
 
     int red() const noexcept;
     int green() const noexcept;
@@ -119,18 +119,18 @@ public:
     void setGreen(int green);
     void setBlue(int blue);
 
-    qreal redF() const noexcept;
-    qreal greenF() const noexcept;
-    qreal blueF() const noexcept;
-    void setRedF(qreal red);
-    void setGreenF(qreal green);
-    void setBlueF(qreal blue);
+    float redF() const noexcept;
+    float greenF() const noexcept;
+    float blueF() const noexcept;
+    void setRedF(float red);
+    void setGreenF(float green);
+    void setBlueF(float blue);
 
     void getRgb(int *r, int *g, int *b, int *a = nullptr) const;
     void setRgb(int r, int g, int b, int a = 255);
 
-    void getRgbF(qreal *r, qreal *g, qreal *b, qreal *a = nullptr) const;
-    void setRgbF(qreal r, qreal g, qreal b, qreal a = 1.0);
+    void getRgbF(float *r, float *g, float *b, float *a = nullptr) const;
+    void setRgbF(float r, float g, float b, float a = 1.0);
 
     QRgba64 rgba64() const noexcept;
     void setRgba64(QRgba64 rgba) noexcept;
@@ -147,47 +147,47 @@ public:
     int hsvSaturation() const noexcept;
     int value() const noexcept;
 
-    qreal hueF() const noexcept; // 0.0 <= hueF < 360.0
-    qreal saturationF() const noexcept;
-    qreal hsvHueF() const noexcept; // 0.0 <= hueF < 360.0
-    qreal hsvSaturationF() const noexcept;
-    qreal valueF() const noexcept;
+    float hueF() const noexcept; // 0.0 <= hueF < 360.0
+    float saturationF() const noexcept;
+    float hsvHueF() const noexcept; // 0.0 <= hueF < 360.0
+    float hsvSaturationF() const noexcept;
+    float valueF() const noexcept;
 
     void getHsv(int *h, int *s, int *v, int *a = nullptr) const;
     void setHsv(int h, int s, int v, int a = 255);
 
-    void getHsvF(qreal *h, qreal *s, qreal *v, qreal *a = nullptr) const;
-    void setHsvF(qreal h, qreal s, qreal v, qreal a = 1.0);
+    void getHsvF(float *h, float *s, float *v, float *a = nullptr) const;
+    void setHsvF(float h, float s, float v, float a = 1.0);
 
     int cyan() const noexcept;
     int magenta() const noexcept;
     int yellow() const noexcept;
     int black() const noexcept;
 
-    qreal cyanF() const noexcept;
-    qreal magentaF() const noexcept;
-    qreal yellowF() const noexcept;
-    qreal blackF() const noexcept;
+    float cyanF() const noexcept;
+    float magentaF() const noexcept;
+    float yellowF() const noexcept;
+    float blackF() const noexcept;
 
     void getCmyk(int *c, int *m, int *y, int *k, int *a = nullptr) const;
     void setCmyk(int c, int m, int y, int k, int a = 255);
 
-    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = nullptr) const;
-    void setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
+    void getCmykF(float *c, float *m, float *y, float *k, float *a = nullptr) const;
+    void setCmykF(float c, float m, float y, float k, float a = 1.0);
 
     int hslHue() const noexcept; // 0 <= hue < 360
     int hslSaturation() const noexcept;
     int lightness() const noexcept;
 
-    qreal hslHueF() const noexcept; // 0.0 <= hueF < 360.0
-    qreal hslSaturationF() const noexcept;
-    qreal lightnessF() const noexcept;
+    float hslHueF() const noexcept; // 0.0 <= hueF < 360.0
+    float hslSaturationF() const noexcept;
+    float lightnessF() const noexcept;
 
     void getHsl(int *h, int *s, int *l, int *a = nullptr) const;
     void setHsl(int h, int s, int l, int a = 255);
 
-    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = nullptr) const;
-    void setHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
+    void getHslF(float *h, float *s, float *l, float *a = nullptr) const;
+    void setHslF(float h, float s, float l, float a = 1.0);
 
     QColor toRgb() const noexcept;
     QColor toHsv() const noexcept;
@@ -201,19 +201,19 @@ public:
     static QColor fromRgba(QRgb rgba) noexcept;
 
     static QColor fromRgb(int r, int g, int b, int a = 255);
-    static QColor fromRgbF(qreal r, qreal g, qreal b, qreal a = 1.0);
+    static QColor fromRgbF(float r, float g, float b, float a = 1.0);
 
     static QColor fromRgba64(ushort r, ushort g, ushort b, ushort a = USHRT_MAX) noexcept;
     static QColor fromRgba64(QRgba64 rgba) noexcept;
 
     static QColor fromHsv(int h, int s, int v, int a = 255);
-    static QColor fromHsvF(qreal h, qreal s, qreal v, qreal a = 1.0);
+    static QColor fromHsvF(float h, float s, float v, float a = 1.0);
 
     static QColor fromCmyk(int c, int m, int y, int k, int a = 255);
-    static QColor fromCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
+    static QColor fromCmykF(float c, float m, float y, float k, float a = 1.0);
 
     static QColor fromHsl(int h, int s, int l, int a = 255);
-    static QColor fromHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
+    static QColor fromHslF(float h, float s, float l, float a = 1.0);
 
     Q_REQUIRED_RESULT QColor lighter(int f = 150) const noexcept;
     Q_REQUIRED_RESULT QColor darker(int f = 200) const noexcept;
