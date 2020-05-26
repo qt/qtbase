@@ -206,7 +206,11 @@ public:
         : QStringConverter(name, flags)
     {}
 
-#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
+#if defined(Q_QDOC)
+    QString operator()(const QString &);
+    QString operator()(QStringView);
+    QString operator()(const QChar *, qsizetype);
+#else
     template<typename T>
     struct DecodedData
     {
@@ -218,18 +222,9 @@ public:
     { return DecodedData<const QString &>{this, str}; }
     DecodedData<QStringView> operator()(QStringView in)
     { return DecodedData<QStringView>{this, in}; }
-#else
-    QByteArray operator()(const QString &in)
-    {
-        return encode(QStringView(in));
-    }
-    QByteArray operator()(QStringView in)
-    {
-        return encode(in);
-    }
-#endif
-    QByteArray operator()(const QChar *in, qsizetype length)
+    DecodedData<QStringView> operator()(const QChar *in, qsizetype length)
     { return (*this)(QStringView(in, length)); }
+#endif
 
     qsizetype requiredSpace(qsizetype inputLength) const
     { return iface->fromUtf16Len(inputLength); }
@@ -249,14 +244,12 @@ private:
 
 class QStringDecoder : public QStringConverter
 {
-#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
     struct View {
         const char *ch;
         qsizetype l;
         const char *data() const { return ch; }
         qsizetype length() const { return l; }
     };
-#endif
 
 protected:
     QSTRINGCONVERTER_CONSTEXPR QStringDecoder(const Interface *i)
@@ -273,7 +266,11 @@ public:
         : QStringConverter(name, f)
     {}
 
-#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
+#if defined(Q_QDOC)
+    QString operator()(const QByteArray &ba);
+    QString operator()(const char *in, qsizetype length);
+    QString operator()(const char *chars);
+#else
     template<typename T>
     struct EncodedData
     {
@@ -287,13 +284,6 @@ public:
     { return EncodedData<View>{this, {in, length}}; }
     EncodedData<View> operator()(const char *chars)
     { return EncodedData<View>{this, {chars, qsizetype(strlen(chars))}}; }
-#else
-    QString operator()(const QByteArray &ba)
-    { return decode(ba.data(), ba.length()); }
-    QString operator()(const char *in, qsizetype length)
-    { return decode(in, length); }
-    QString operator()(const char *chars)
-    { return decode(chars, strlen(chars)); }
 #endif
 
     qsizetype requiredSpace(qsizetype inputLength) const
@@ -338,7 +328,7 @@ struct QConcatenable<QStringEncoder::DecodedData<T>>
     static qsizetype size(const QStringEncoder::DecodedData<T> &s) { return s.encoder->requiredSpace(s.data.length()); }
     static inline void appendTo(const QStringEncoder::DecodedData<T> &s, char *&out)
     {
-        out = s.decoder->appendToBuffer(out, s.data.data(), s.data.length());
+        out = s.encoder->appendToBuffer(out, s.data.data(), s.data.length());
     }
 };
 
