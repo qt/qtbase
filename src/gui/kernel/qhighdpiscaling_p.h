@@ -263,6 +263,22 @@ T toNativeLocalPosition(const T &value, const C *context)
     return scale(value, QHighDpiScaling::factor(context));
 }
 
+template <typename T, typename C>
+T fromNativeGlobalPosition(const T &value, const C *context)
+{
+    QHighDpiScaling::ScaleAndOrigin so =
+        QHighDpiScaling::scaleAndOrigin(context, position(value, QHighDpiScaling::Point::Native));
+    return scale(value, qreal(1) / so.factor, so.origin);
+}
+
+template <typename T, typename C>
+T toNativeGlobalPosition(const T &value, const C *context)
+{
+    QHighDpiScaling::ScaleAndOrigin so =
+        QHighDpiScaling::scaleAndOrigin(context, position(value, QHighDpiScaling::Point::DeviceIndependent));
+    return scale(value, so.factor, so.origin);
+}
+
 template <typename T>
 inline T fromNative(const T &value, qreal scaleFactor, QPoint origin = QPoint(0, 0))
 {
