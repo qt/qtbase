@@ -14,12 +14,15 @@ qt_add_module(WinMain
       $<TARGET_PROPERTY:Qt::Core,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
+set_property(TARGET WinMain PROPERTY OUTPUT_NAME qtmain)
+
 qt_extend_target(WinMain CONDITION WINRT
     SOURCES qtmain_winrt.cpp
 )
 
 qt_extend_target(WinMain CONDITION NOT WINRT
     SOURCES qtmain_win.cpp
+    LIBRARIES shell32
 )
 
 qt_extend_target(WinMain CONDITION MINGW
