@@ -281,11 +281,21 @@ bool Moc::parseEnum(EnumDef *def)
     }
     if (!test(LBRACE))
         return false;
+    auto handleInclude = [this]() {
+        if (test(MOC_INCLUDE_BEGIN))
+            currentFilenames.push(symbol().unquotedLexem());
+        if (test(NOTOKEN)) {
+            next(MOC_INCLUDE_END);
+            currentFilenames.pop();
+        }
+    };
     do {
         if (lookup() == RBRACE) // accept trailing comma
             break;
+        handleInclude();
         next(IDENTIFIER);
         def->values += lexem();
+        handleInclude();
         skipCxxAttributes();
     } while (test(EQ) ? until(COMMA) : test(COMMA));
     next(RBRACE);

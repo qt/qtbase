@@ -30,11 +30,13 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            related-metaobjects-in-gadget.h \
            related-metaobjects-name-conflict.h \
            namespace.h cxx17-namespaces.h \
-           cxx-attributes.h
+           cxx-attributes.h \
+           enum_inc.h enum_with_include.h
 
 # No platform specifics in the JSON files, so that we can compare them
 JSON_HEADERS = $$HEADERS
 JSON_HEADERS -= cxx-attributes.h
+JSON_HEADERS -= enum_inc.h
 
 if(*-g++*|*-icc*|*-clang*|*-llvm):!win32-*: HEADERS += os9-newlines.h win-newlines.h
 if(*-g++*|*-clang*): HEADERS += dollars.h
