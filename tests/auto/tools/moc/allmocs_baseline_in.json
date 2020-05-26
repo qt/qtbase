@@ -713,6 +713,23 @@
     {
         "classes": [
             {
+                "className": "Foo",
+                "object": true,
+                "qualifiedClassName": "Foo",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "enum_with_include.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
                 "classInfos": [
                     {
                         "name": "Test",
