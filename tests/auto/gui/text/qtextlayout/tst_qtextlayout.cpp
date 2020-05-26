@@ -2016,6 +2016,21 @@ void tst_QTextLayout::textWidthVsWIdth()
     // minimum right bearing reported by the font engine doesn't cover all the glyphs in the font.
     // The result is that this test may fail in some cases. We should fix this by running the test
     // with a font that we know have no suprising right bearings. See qtextlayout.cpp for details.
+    QFontMetricsF fontMetrics(layout.font());
+    QSet<char16_t> checked;
+    qreal minimumRightBearing = 0.0;
+    for (int i = 0; i < layout.text().size(); ++i) {
+        QChar c = layout.text().at(i);
+        if (!checked.contains(c.unicode())) {
+            qreal rightBearing = fontMetrics.rightBearing(c);
+            if (rightBearing < minimumRightBearing)
+                minimumRightBearing = rightBearing;
+            checked.insert(c.unicode());
+        }
+    }
+    if (minimumRightBearing < fontMetrics.minRightBearing())
+        QSKIP("Font reports invalid minimum right bearing, and can't be used for this test.");
+
     for (int width = 100; width < 1000; ++width) {
         layout.beginLayout();
         QTextLine line = layout.createLine();
