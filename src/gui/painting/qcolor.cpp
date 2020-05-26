@@ -2879,8 +2879,10 @@ QColor &QColor::operator=(Qt::GlobalColor color) noexcept
 }
 
 /*!
-    Returns \c true if this color has the same RGB and alpha values as \a color;
+    Returns \c true if this color has the same color specification and component values as \a color;
     otherwise returns \c false.
+
+    \sa spec()
 */
 bool QColor::operator==(const QColor &color) const noexcept
 {
@@ -2906,8 +2908,10 @@ bool QColor::operator==(const QColor &color) const noexcept
 }
 
 /*!
-    Returns \c true if this color has a different RGB and alpha values from
+    Returns \c true if this color has different color specification or component values from
     \a color; otherwise returns \c false.
+
+    \sa spec()
 */
 bool QColor::operator!=(const QColor &color) const noexcept
 { return !operator==(color); }
