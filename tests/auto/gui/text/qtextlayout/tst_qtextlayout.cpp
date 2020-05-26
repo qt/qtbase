@@ -2000,6 +2000,9 @@ void tst_QTextLayout::textWidthVsWIdth()
     layout.setCacheEnabled(true);
     QTextOption opt;
     opt.setWrapMode(QTextOption::WrapAnywhere);
+#if defined(Q_OS_WIN)
+    layout.setFont(QFont(QString::fromLatin1("Arial")));
+#endif
     layout.setTextOption(opt);
     layout.setText(QString::fromLatin1(
                        "g++ -c -m64 -pipe -g -fvisibility=hidden -fvisibility-inlines-hidden -Wall -W -D_REENTRANT -fPIC -DCORE_LIBRARY -DIDE_LIBRARY_BASENAME=\"lib\" -DWITH_TESTS "
