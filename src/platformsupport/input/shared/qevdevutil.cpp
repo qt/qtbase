@@ -47,9 +47,9 @@ ParsedSpecification parseSpecification(const QString &specification)
 {
     ParsedSpecification result;
 
-    result.args = specification.splitRef(QLatin1Char(':'));
+    result.args = QStringView{specification}.split(QLatin1Char(':'));
 
-    for (const QStringRef &arg : qAsConst(result.args)) {
+    for (const auto &arg : qAsConst(result.args)) {
         if (arg.startsWith(QLatin1String("/dev/"))) {
             // if device is specified try to use it
             result.devices.append(arg.toString());

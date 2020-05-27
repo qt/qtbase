@@ -68,7 +68,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     auto parsed = QEvdevUtil::parseSpecification(spec);
     m_spec = std::move(parsed.spec);
 
-    for (const QStringRef &arg : qAsConst(parsed.args)) {
+    for (const auto &arg : qAsConst(parsed.args)) {
         if (arg.startsWith(QLatin1String("xoffset="))) {
             m_xoffset = arg.mid(8).toInt();
         } else if (arg.startsWith(QLatin1String("yoffset="))) {

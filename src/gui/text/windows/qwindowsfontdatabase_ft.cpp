@@ -138,9 +138,9 @@ static FontKeys &fontKeys()
 #if QT_CONFIG(regularexpression)
                 realKey.remove(sizeListMatch);
 #endif
-                const auto fontNames = QStringRef(&realKey).trimmed().split(QLatin1Char('&'));
+                const auto fontNames = QStringView(realKey).trimmed().split(QLatin1Char('&'));
                 fontKey.fontNames.reserve(fontNames.size());
-                for (const QStringRef &fontName : fontNames)
+                for (const auto &fontName : fontNames)
                     fontKey.fontNames.append(fontName.trimmed().toString());
                 result.append(fontKey);
             }

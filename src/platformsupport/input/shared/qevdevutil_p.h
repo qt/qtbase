@@ -54,7 +54,7 @@
 #include <QString>
 #include <QStringList>
 #include <QVector>
-#include <QStringRef>
+#include <QStringView>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +64,7 @@ struct ParsedSpecification
 {
     QString spec;
     QStringList devices;
-    QVector<QStringRef> args;
+    QVector<QStringView> args;
 };
 
 ParsedSpecification parseSpecification(const QString &specification);

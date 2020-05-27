@@ -711,7 +711,7 @@ public:
     {
         Q_ASSERT(!systemFont);
         const int split = gtkFontName.lastIndexOf(QChar::Space);
-        float size = gtkFontName.midRef(split + 1).toFloat();
+        float size = QStringView{gtkFontName}.mid(split + 1).toFloat();
         QString fontName = gtkFontName.left(split);
 
         systemFont = new QFont(fontName, size);
