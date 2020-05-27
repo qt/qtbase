@@ -78,6 +78,10 @@ public:
 private:
     void fillRect(QImage *image, int x, int y, int w, int h, QRgb col);
     inline QRgb color(uchar index) const;
+    static bool withinSizeLimit(int width, int height)
+    {
+        return quint64(width) * height < 16384 * 16384; // Reject unreasonable header values
+    }
 
     // GIF specific stuff
     QRgb* globalcmap;
@@ -351,6 +355,10 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
 
                 QImage::Format format = trans_index >= 0 ? QImage::Format_ARGB32 : QImage::Format_RGB32;
                 if (image->isNull()) {
+                    if (!withinSizeLimit(swidth, sheight)) {
+                        state = Error;
+                        return -1;
+                    }
                     (*image) = QImage(swidth, sheight, format);
                     bpl = image->bytesPerLine();
                     bits = image->bits();
@@ -412,6 +420,11 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
 
                     if (backingstore.width() < w
                         || backingstore.height() < h) {
+
+                        if (!withinSizeLimit(w, h)) {
+                            state = Error;
+                            return -1;
+                        }
                         // We just use the backing store as a byte array
                         backingstore = QImage(qMax(backingstore.width(), w),
                                               qMax(backingstore.height(), h),
