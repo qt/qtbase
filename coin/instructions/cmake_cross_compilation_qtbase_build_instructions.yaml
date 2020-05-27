@@ -7,34 +7,40 @@ instructions:
   - type: ChangeDirectory
     directory: "{{.BuildDir}}/build"
   - type: MakeDirectory
-    directory: host
-  - type: MakeDirectory
     directory: target
-  - type: SetBuildDirectory
-    directory: "{{.SourceDir}}/build/host"
-  - type: ChangeDirectory
-    directory: "{{.BuildDir}}"
-  - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/host -DBUILD_TESTING=OFF {{.SourceDir}}"
-    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to call cmake.
-  - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
-    userMessageOnFailure: >
-      Failed to build sources. In the current state bug can be everywhere.
-  - type: EnvironmentVariable
-    variableName: COIN_CMAKE_INSTALL_SCRIPT_PATH
-    variableValue: "{{.BuildDir}}"
-  - !include "{{qt/qtbase}}/call_host_install.yaml"
-  - type: EnvironmentVariable
-    variableName: DESTDIR
-    variableValue: "{{.InstallRoot}}"
-  - !include "{{qt/qtbase}}/call_host_install.yaml"
+  - type: Group
+    instructions:
+      - type: MakeDirectory
+        directory: host
+      - type: SetBuildDirectory
+        directory: "{{.SourceDir}}/build/host"
+      - type: ChangeDirectory
+        directory: "{{.BuildDir}}"
+      - type: ExecuteCommand
+        command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/host -DBUILD_TESTING=OFF {{.SourceDir}}"
+        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+        maxTimeInSeconds: 6000
+        maxTimeBetweenOutput: 1200
+        userMessageOnFailure: >
+          Failed to call cmake.
+      - type: ExecuteCommand
+        command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
+        maxTimeInSeconds: 6000
+        maxTimeBetweenOutput: 1200
+        userMessageOnFailure: >
+          Failed to build sources. In the current state bug can be everywhere.
+      - type: EnvironmentVariable
+        variableName: COIN_CMAKE_INSTALL_SCRIPT_PATH
+        variableValue: "{{.BuildDir}}"
+      - !include "{{qt/qtbase}}/call_host_install.yaml"
+      - type: EnvironmentVariable
+        variableName: DESTDIR
+        variableValue: "{{.InstallRoot}}"
+      - !include "{{qt/qtbase}}/call_host_install.yaml"
+    enable_if:
+      condition: property
+      property: platformDependency
+      equals_value: null
   - type: EnvironmentVariable
     variableName: DESTDIR
     variableValue: ""
@@ -42,8 +48,22 @@ instructions:
     directory: "{{.SourceDir}}/build/target"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
+  - type: AppendToEnvironmentVariable
+    variableName: TARGET_CONFIGURE_ARGS
+    variableValue: " -DQT_HOST_PATH={{.AgentWorkingDir}}/install"
+    disable_if:
+      condition: property
+      property: platformDependency
+      equals_value: null
+  - type: AppendToEnvironmentVariable
+    variableName: TARGET_CONFIGURE_ARGS
+    variableValue: " -DQT_HOST_PATH={{.InstallDir}}/host"
+    enable_if:
+      condition: property
+      property: platformDependency
+      equals_value: null
   - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake {{.Env.TARGET_CONFIGURE_ARGS}} -DQT_HOST_PATH={{.InstallDir}}/host -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/target -DBUILD_TESTING=OFF {{.SourceDir}}"
+    command: "{{.Env.TARGET_ENV_PREFIX}} cmake {{.Env.TARGET_CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/target -DBUILD_TESTING=OFF {{.SourceDir}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
