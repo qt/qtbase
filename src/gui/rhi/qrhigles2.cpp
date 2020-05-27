@@ -3378,17 +3378,17 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
 {
     if (var.type == QShaderDescription::Struct) {
         qWarning("Nested structs are not supported at the moment. '%s' ignored.",
-                 qPrintable(var.name));
+                 var.name.constData());
         return;
     }
     QGles2UniformDescription uniform;
     uniform.type = var.type;
-    const QByteArray name = namePrefix + var.name.toUtf8();
+    const QByteArray name = namePrefix + var.name;
     uniform.glslLocation = f->glGetUniformLocation(program, name.constData());
     if (uniform.glslLocation >= 0) {
         if (var.arrayDims.count() > 1) {
             qWarning("Array '%s' has more than one dimension. This is not supported.",
-                     qPrintable(var.name));
+                     var.name.constData());
             return;
         }
         uniform.binding = binding;
@@ -3403,10 +3403,10 @@ void QRhiGles2::gatherUniforms(GLuint program,
                                const QShaderDescription::UniformBlock &ub,
                                QVector<QGles2UniformDescription> *dst)
 {
-    QByteArray prefix = ub.structName.toUtf8() + '.';
+    QByteArray prefix = ub.structName + '.';
     for (const QShaderDescription::BlockVariable &blockMember : ub.members) {
         if (blockMember.type == QShaderDescription::Struct) {
-            QByteArray structPrefix = prefix + blockMember.name.toUtf8();
+            QByteArray structPrefix = prefix + blockMember.name;
 
             const int baseOffset = blockMember.offset;
             if (blockMember.arrayDims.isEmpty()) {
@@ -3414,8 +3414,9 @@ void QRhiGles2::gatherUniforms(GLuint program,
                     registerUniformIfActive(structMember, structPrefix, ub.binding, baseOffset, program, dst);
             } else {
                 if (blockMember.arrayDims.count() > 1) {
-                    qWarning("Array of struct '%s' has more than one dimension. Only the first dimension is used.",
-                             qPrintable(blockMember.name));
+                    qWarning("Array of struct '%s' has more than one dimension. Only the first "
+                             "dimension is used.",
+                             blockMember.name.constData());
                 }
                 const int dim = blockMember.arrayDims.first();
                 const int elemSize = blockMember.size / dim;
@@ -3437,8 +3438,7 @@ void QRhiGles2::gatherSamplers(GLuint program, const QShaderDescription::InOutVa
                                QVector<QGles2SamplerDescription> *dst)
 {
     QGles2SamplerDescription sampler;
-    const QByteArray name = v.name.toUtf8();
-    sampler.glslLocation = f->glGetUniformLocation(program, name.constData());
+    sampler.glslLocation = f->glGetUniformLocation(program, v.name.constData());
     if (sampler.glslLocation >= 0) {
         sampler.binding = v.binding;
         dst->append(sampler);
@@ -4202,8 +4202,7 @@ bool QGles2GraphicsPipeline::create()
     }
 
     for (auto inVar : vsDesc.inputVariables()) {
-        const QByteArray name = inVar.name.toUtf8();
-        rhiD->f->glBindAttribLocation(program, GLuint(inVar.location), name.constData());
+        rhiD->f->glBindAttribLocation(program, GLuint(inVar.location), inVar.name);
     }
 
     if (needsCompile && !rhiD->linkProgram(program))

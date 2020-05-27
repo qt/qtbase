@@ -812,7 +812,8 @@ QDebug operator<<(QDebug dbg, const QShaderDescription::BlockVariable &var)
 QDebug operator<<(QDebug dbg, const QShaderDescription::UniformBlock &blk)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "UniformBlock(" << blk.blockName << ' ' << blk.structName << " size=" << blk.size;
+    dbg.nospace() << "UniformBlock(" << blk.blockName << ' ' << blk.structName
+                  << " size=" << blk.size;
     if (blk.binding >= 0)
         dbg.nospace() << " binding=" << blk.binding;
     if (blk.descriptorSet >= 0)
@@ -824,14 +825,16 @@ QDebug operator<<(QDebug dbg, const QShaderDescription::UniformBlock &blk)
 QDebug operator<<(QDebug dbg, const QShaderDescription::PushConstantBlock &blk)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "PushConstantBlock(" << blk.name << " size=" << blk.size << ' ' << blk.members << ')';
+    dbg.nospace() << "PushConstantBlock(" << blk.name << " size=" << blk.size << ' ' << blk.members
+                  << ')';
     return dbg;
 }
 
 QDebug operator<<(QDebug dbg, const QShaderDescription::StorageBlock &blk)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "StorageBlock(" << blk.blockName << ' ' << blk.instanceName << " knownSize=" << blk.knownSize;
+    dbg.nospace() << "StorageBlock(" << blk.blockName << ' ' << blk.instanceName
+                  << " knownSize=" << blk.knownSize;
     if (blk.binding >= 0)
         dbg.nospace() << " binding=" << blk.binding;
     if (blk.descriptorSet >= 0)
@@ -904,7 +907,7 @@ static void serializeDecorations(QDataStream *stream, const QShaderDescription::
 static QJsonObject inOutObject(const QShaderDescription::InOutVariable &v)
 {
     QJsonObject obj;
-    obj[nameKey] = v.name;
+    obj[nameKey] = QString::fromUtf8(v.name);
     obj[typeKey] = typeStr(v.type);
     addDeco(&obj, v);
     return obj;
@@ -912,7 +915,7 @@ static QJsonObject inOutObject(const QShaderDescription::InOutVariable &v)
 
 static void serializeInOutVar(QDataStream *stream, const QShaderDescription::InOutVariable &v)
 {
-    (*stream) << v.name;
+    (*stream) << QString::fromUtf8(v.name);
     (*stream) << int(v.type);
     serializeDecorations(stream, v);
 }
@@ -920,7 +923,7 @@ static void serializeInOutVar(QDataStream *stream, const QShaderDescription::InO
 static QJsonObject blockMemberObject(const QShaderDescription::BlockVariable &v)
 {
     QJsonObject obj;
-    obj[nameKey] = v.name;
+    obj[nameKey] = QString::fromUtf8(v.name);
     obj[typeKey] = typeStr(v.type);
     obj[offsetKey] = v.offset;
     obj[sizeKey] = v.size;
@@ -947,7 +950,7 @@ static QJsonObject blockMemberObject(const QShaderDescription::BlockVariable &v)
 
 static void serializeBlockMemberVar(QDataStream *stream, const QShaderDescription::BlockVariable &v)
 {
-    (*stream) << v.name;
+    (*stream) << QString::fromUtf8(v.name);
     (*stream) << int(v.type);
     (*stream) << v.offset;
     (*stream) << v.size;
@@ -981,8 +984,8 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     QJsonArray juniformBlocks;
     for (const QShaderDescription::UniformBlock &b : uniformBlocks) {
         QJsonObject juniformBlock;
-        juniformBlock[blockNameKey] = b.blockName;
-        juniformBlock[structNameKey] = b.structName;
+        juniformBlock[blockNameKey] = QString::fromUtf8(b.blockName);
+        juniformBlock[structNameKey] = QString::fromUtf8(b.structName);
         juniformBlock[sizeKey] = b.size;
         if (b.binding >= 0)
             juniformBlock[bindingKey] = b.binding;
@@ -1000,7 +1003,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     QJsonArray jpushConstantBlocks;
     for (const QShaderDescription::PushConstantBlock &b : pushConstantBlocks) {
         QJsonObject jpushConstantBlock;
-        jpushConstantBlock[nameKey] = b.name;
+        jpushConstantBlock[nameKey] = QString::fromUtf8(b.name);
         jpushConstantBlock[sizeKey] = b.size;
         QJsonArray members;
         for (const QShaderDescription::BlockVariable &v : b.members)
@@ -1014,8 +1017,8 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     QJsonArray jstorageBlocks;
     for (const QShaderDescription::StorageBlock &b : storageBlocks) {
         QJsonObject jstorageBlock;
-        jstorageBlock[blockNameKey] = b.blockName;
-        jstorageBlock[instanceNameKey] = b.instanceName;
+        jstorageBlock[blockNameKey] = QString::fromUtf8(b.blockName);
+        jstorageBlock[instanceNameKey] = QString::fromUtf8(b.instanceName);
         jstorageBlock[knownSizeKey] = b.knownSize;
         if (b.binding >= 0)
             jstorageBlock[bindingKey] = b.binding;
@@ -1033,7 +1036,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     QJsonArray jcombinedSamplers;
     for (const QShaderDescription::InOutVariable &v : qAsConst(combinedImageSamplers)) {
         QJsonObject sampler;
-        sampler[nameKey] = v.name;
+        sampler[nameKey] = QString::fromUtf8(v.name);
         sampler[typeKey] = typeStr(v.type);
         addDeco(&sampler, v);
         jcombinedSamplers.append(sampler);
@@ -1044,7 +1047,7 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
     QJsonArray jstorageImages;
     for (const QShaderDescription::InOutVariable &v : qAsConst(storageImages)) {
         QJsonObject image;
-        image[nameKey] = v.name;
+        image[nameKey] = QString::fromUtf8(v.name);
         image[typeKey] = typeStr(v.type);
         addDeco(&image, v);
         jstorageImages.append(image);
@@ -1072,8 +1075,8 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
 
     (*stream) << int(uniformBlocks.count());
     for (const QShaderDescription::UniformBlock &b : uniformBlocks) {
-        (*stream) << b.blockName;
-        (*stream) << b.structName;
+        (*stream) << QString::fromUtf8(b.blockName);
+        (*stream) << QString::fromUtf8(b.structName);
         (*stream) << b.size;
         (*stream) << b.binding;
         (*stream) << b.descriptorSet;
@@ -1084,7 +1087,7 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
 
     (*stream) << int(pushConstantBlocks.count());
     for (const QShaderDescription::PushConstantBlock &b : pushConstantBlocks) {
-        (*stream) << b.name;
+        (*stream) << QString::fromUtf8(b.name);
         (*stream) << b.size;
         (*stream) << int(b.members.count());
         for (const QShaderDescription::BlockVariable &v : b.members)
@@ -1093,8 +1096,8 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
 
     (*stream) << int(storageBlocks.count());
     for (const QShaderDescription::StorageBlock &b : storageBlocks) {
-        (*stream) << b.blockName;
-        (*stream) << b.instanceName;
+        (*stream) << QString::fromUtf8(b.blockName);
+        (*stream) << QString::fromUtf8(b.instanceName);
         (*stream) << b.knownSize;
         (*stream) << b.binding;
         (*stream) << b.descriptorSet;
@@ -1105,14 +1108,14 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
 
     (*stream) << int(combinedImageSamplers.count());
     for (const QShaderDescription::InOutVariable &v : qAsConst(combinedImageSamplers)) {
-        (*stream) << v.name;
+        (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
         serializeDecorations(stream, v);
     }
 
     (*stream) << int(storageImages.count());
     for (const QShaderDescription::InOutVariable &v : qAsConst(storageImages)) {
-        (*stream) << v.name;
+        (*stream) << QString::fromUtf8(v.name);
         (*stream) << int(v.type);
         serializeDecorations(stream, v);
     }
@@ -1124,7 +1127,7 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
 static QShaderDescription::InOutVariable inOutVar(const QJsonObject &obj)
 {
     QShaderDescription::InOutVariable var;
-    var.name = obj[nameKey].toString();
+    var.name = obj[nameKey].toString().toUtf8();
     var.type = mapType(obj[typeKey].toString());
     if (obj.contains(locationKey))
         var.location = obj[locationKey].toInt();
@@ -1166,7 +1169,9 @@ static void deserializeDecorations(QDataStream *stream, int version, QShaderDesc
 static QShaderDescription::InOutVariable deserializeInOutVar(QDataStream *stream, int version)
 {
     QShaderDescription::InOutVariable var;
-    (*stream) >> var.name;
+    QString tmp;
+    (*stream) >> tmp;
+    var.name = tmp.toUtf8();
     int t;
     (*stream) >> t;
     var.type = QShaderDescription::VariableType(t);
@@ -1177,7 +1182,7 @@ static QShaderDescription::InOutVariable deserializeInOutVar(QDataStream *stream
 static QShaderDescription::BlockVariable blockVar(const QJsonObject &obj)
 {
     QShaderDescription::BlockVariable var;
-    var.name = obj[nameKey].toString();
+    var.name = obj[nameKey].toString().toUtf8();
     var.type = mapType(obj[typeKey].toString());
     var.offset = obj[offsetKey].toInt();
     var.size = obj[sizeKey].toInt();
@@ -1203,7 +1208,9 @@ static QShaderDescription::BlockVariable blockVar(const QJsonObject &obj)
 static QShaderDescription::BlockVariable deserializeBlockMemberVar(QDataStream *stream, int version)
 {
     QShaderDescription::BlockVariable var;
-    (*stream) >> var.name;
+    QString tmp;
+    (*stream) >> tmp;
+    var.name = tmp.toUtf8();
     int t;
     (*stream) >> t;
     var.type = QShaderDescription::VariableType(t);
@@ -1260,8 +1267,8 @@ void QShaderDescriptionPrivate::loadDoc(const QJsonDocument &doc)
         for (int i = 0; i < ubs.count(); ++i) {
             QJsonObject ubObj = ubs[i].toObject();
             QShaderDescription::UniformBlock ub;
-            ub.blockName = ubObj[blockNameKey].toString();
-            ub.structName = ubObj[structNameKey].toString();
+            ub.blockName = ubObj[blockNameKey].toString().toUtf8();
+            ub.structName = ubObj[structNameKey].toString().toUtf8();
             ub.size = ubObj[sizeKey].toInt();
             if (ubObj.contains(bindingKey))
                 ub.binding = ubObj[bindingKey].toInt();
@@ -1279,7 +1286,7 @@ void QShaderDescriptionPrivate::loadDoc(const QJsonDocument &doc)
         for (int i = 0; i < pcs.count(); ++i) {
             QJsonObject pcObj = pcs[i].toObject();
             QShaderDescription::PushConstantBlock pc;
-            pc.name = pcObj[nameKey].toString();
+            pc.name = pcObj[nameKey].toString().toUtf8();
             pc.size = pcObj[sizeKey].toInt();
             QJsonArray members = pcObj[membersKey].toArray();
             for (const QJsonValue &member : members)
@@ -1293,8 +1300,8 @@ void QShaderDescriptionPrivate::loadDoc(const QJsonDocument &doc)
         for (int i = 0; i < ubs.count(); ++i) {
             QJsonObject sbObj = ubs[i].toObject();
             QShaderDescription::StorageBlock sb;
-            sb.blockName = sbObj[blockNameKey].toString();
-            sb.instanceName = sbObj[instanceNameKey].toString();
+            sb.blockName = sbObj[blockNameKey].toString().toUtf8();
+            sb.instanceName = sbObj[instanceNameKey].toString().toUtf8();
             sb.knownSize = sbObj[knownSizeKey].toInt();
             if (sbObj.contains(bindingKey))
                 sb.binding = sbObj[bindingKey].toInt();
@@ -1346,8 +1353,11 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
     (*stream) >> count;
     uniformBlocks.resize(count);
     for (int i = 0; i < count; ++i) {
-        (*stream) >> uniformBlocks[i].blockName;
-        (*stream) >> uniformBlocks[i].structName;
+        QString tmp;
+        (*stream) >> tmp;
+        uniformBlocks[i].blockName = tmp.toUtf8();
+        (*stream) >> tmp;
+        uniformBlocks[i].structName = tmp.toUtf8();
         (*stream) >> uniformBlocks[i].size;
         (*stream) >> uniformBlocks[i].binding;
         (*stream) >> uniformBlocks[i].descriptorSet;
@@ -1361,7 +1371,9 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
     (*stream) >> count;
     pushConstantBlocks.resize(count);
     for (int i = 0; i < count; ++i) {
-        (*stream) >> pushConstantBlocks[i].name;
+        QString tmp;
+        (*stream) >> tmp;
+        pushConstantBlocks[i].name = tmp.toUtf8();
         (*stream) >> pushConstantBlocks[i].size;
         int memberCount;
         (*stream) >> memberCount;
@@ -1373,8 +1385,11 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
     (*stream) >> count;
     storageBlocks.resize(count);
     for (int i = 0; i < count; ++i) {
-        (*stream) >> storageBlocks[i].blockName;
-        (*stream) >> storageBlocks[i].instanceName;
+        QString tmp;
+        (*stream) >> tmp;
+        storageBlocks[i].blockName = tmp.toUtf8();
+        (*stream) >> tmp;
+        storageBlocks[i].instanceName = tmp.toUtf8();
         (*stream) >> storageBlocks[i].knownSize;
         (*stream) >> storageBlocks[i].binding;
         (*stream) >> storageBlocks[i].descriptorSet;
@@ -1388,7 +1403,9 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
     (*stream) >> count;
     combinedImageSamplers.resize(count);
     for (int i = 0; i < count; ++i) {
-        (*stream) >> combinedImageSamplers[i].name;
+        QString tmp;
+        (*stream) >> tmp;
+        combinedImageSamplers[i].name = tmp.toUtf8();
         int t;
         (*stream) >> t;
         combinedImageSamplers[i].type = QShaderDescription::VariableType(t);
@@ -1398,7 +1415,9 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
     (*stream) >> count;
     storageImages.resize(count);
     for (int i = 0; i < count; ++i) {
-        (*stream) >> storageImages[i].name;
+        QString tmp;
+        (*stream) >> tmp;
+        storageImages[i].name = tmp.toUtf8();
         int t;
         (*stream) >> t;
         storageImages[i].type = QShaderDescription::VariableType(t);

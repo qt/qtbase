@@ -91,11 +91,11 @@ void tst_QShader::simpleCompileCheckResults()
     for (const QShaderDescription::InOutVariable &v : desc.inputVariables()) {
         switch (v.location) {
         case 0:
-            QCOMPARE(v.name, QLatin1String("position"));
+            QCOMPARE(v.name, QByteArrayLiteral("position"));
             QCOMPARE(v.type, QShaderDescription::Vec4);
             break;
         case 1:
-            QCOMPARE(v.name, QLatin1String("color"));
+            QCOMPARE(v.name, QByteArrayLiteral("color"));
             QCOMPARE(v.type, QShaderDescription::Vec3);
             break;
         default:
@@ -107,7 +107,7 @@ void tst_QShader::simpleCompileCheckResults()
     for (const QShaderDescription::InOutVariable &v : desc.outputVariables()) {
         switch (v.location) {
         case 0:
-            QCOMPARE(v.name, QLatin1String("v_color"));
+            QCOMPARE(v.name, QByteArrayLiteral("v_color"));
             QCOMPARE(v.type, QShaderDescription::Vec3);
             break;
         default:
@@ -117,8 +117,8 @@ void tst_QShader::simpleCompileCheckResults()
     }
     QCOMPARE(desc.uniformBlocks().count(), 1);
     const QShaderDescription::UniformBlock blk = desc.uniformBlocks().first();
-    QCOMPARE(blk.blockName, QLatin1String("buf"));
-    QCOMPARE(blk.structName, QLatin1String("ubuf"));
+    QCOMPARE(blk.blockName, QByteArrayLiteral("buf"));
+    QCOMPARE(blk.structName, QByteArrayLiteral("ubuf"));
     QCOMPARE(blk.size, 68);
     QCOMPARE(blk.binding, 0);
     QCOMPARE(blk.descriptorSet, 0);
@@ -129,14 +129,14 @@ void tst_QShader::simpleCompileCheckResults()
         case 0:
             QCOMPARE(v.offset, 0);
             QCOMPARE(v.size, 64);
-            QCOMPARE(v.name, QLatin1String("mvp"));
+            QCOMPARE(v.name, QByteArrayLiteral("mvp"));
             QCOMPARE(v.type, QShaderDescription::Mat4);
             QCOMPARE(v.matrixStride, 16);
             break;
         case 1:
             QCOMPARE(v.offset, 64);
             QCOMPARE(v.size, 4);
-            QCOMPARE(v.name, QLatin1String("opacity"));
+            QCOMPARE(v.name, QByteArrayLiteral("opacity"));
             QCOMPARE(v.type, QShaderDescription::Float);
             break;
         default:
@@ -314,7 +314,7 @@ void tst_QShader::loadV3()
     for (const QShaderDescription::InOutVariable &v : desc.inputVariables()) {
         switch (v.location) {
         case 0:
-            QCOMPARE(v.name, QLatin1String("qt_TexCoord"));
+            QCOMPARE(v.name, QByteArrayLiteral("qt_TexCoord"));
             QCOMPARE(v.type, QShaderDescription::Vec2);
             break;
         default:
@@ -326,7 +326,7 @@ void tst_QShader::loadV3()
     for (const QShaderDescription::InOutVariable &v : desc.outputVariables()) {
         switch (v.location) {
         case 0:
-            QCOMPARE(v.name, QLatin1String("fragColor"));
+            QCOMPARE(v.name, QByteArrayLiteral("fragColor"));
             QCOMPARE(v.type, QShaderDescription::Vec4);
             break;
         default:
@@ -336,8 +336,8 @@ void tst_QShader::loadV3()
     }
     QCOMPARE(desc.uniformBlocks().count(), 1);
     const QShaderDescription::UniformBlock blk = desc.uniformBlocks().first();
-    QCOMPARE(blk.blockName, QLatin1String("buf"));
-    QCOMPARE(blk.structName, QLatin1String("ubuf"));
+    QCOMPARE(blk.blockName, QByteArrayLiteral("buf"));
+    QCOMPARE(blk.structName, QByteArrayLiteral("ubuf"));
     QCOMPARE(blk.size, 68);
     QCOMPARE(blk.binding, 0);
     QCOMPARE(blk.descriptorSet, 0);
@@ -348,14 +348,14 @@ void tst_QShader::loadV3()
         case 0:
             QCOMPARE(v.offset, 0);
             QCOMPARE(v.size, 64);
-            QCOMPARE(v.name, QLatin1String("qt_Matrix"));
+            QCOMPARE(v.name, QByteArrayLiteral("qt_Matrix"));
             QCOMPARE(v.type, QShaderDescription::Mat4);
             QCOMPARE(v.matrixStride, 16);
             break;
         case 1:
             QCOMPARE(v.offset, 64);
             QCOMPARE(v.size, 4);
-            QCOMPARE(v.name, QLatin1String("opacity"));
+            QCOMPARE(v.name, QByteArrayLiteral("opacity"));
             QCOMPARE(v.type, QShaderDescription::Float);
             break;
         default:
@@ -477,7 +477,7 @@ void tst_QShader::loadV4()
     for (const QShaderDescription::InOutVariable &v : desc.inputVariables()) {
         switch (v.location) {
         case 0:
-            QCOMPARE(v.name, QLatin1String("qt_TexCoord"));
+            QCOMPARE(v.name, QByteArrayLiteral("qt_TexCoord"));
             QCOMPARE(v.type, QShaderDescription::Vec2);
             break;
         default:
@@ -489,7 +489,7 @@ void tst_QShader::loadV4()
     for (const QShaderDescription::InOutVariable &v : desc.outputVariables()) {
         switch (v.location) {
         case 0:
-            QCOMPARE(v.name, QLatin1String("fragColor"));
+            QCOMPARE(v.name, QByteArrayLiteral("fragColor"));
             QCOMPARE(v.type, QShaderDescription::Vec4);
             break;
         default:
@@ -499,8 +499,8 @@ void tst_QShader::loadV4()
     }
     QCOMPARE(desc.uniformBlocks().count(), 1);
     const QShaderDescription::UniformBlock blk = desc.uniformBlocks().first();
-    QCOMPARE(blk.blockName, QLatin1String("buf"));
-    QCOMPARE(blk.structName, QLatin1String("ubuf"));
+    QCOMPARE(blk.blockName, QByteArrayLiteral("buf"));
+    QCOMPARE(blk.structName, QByteArrayLiteral("ubuf"));
     QCOMPARE(blk.size, 68);
     QCOMPARE(blk.binding, 0);
     QCOMPARE(blk.descriptorSet, 0);
@@ -511,14 +511,14 @@ void tst_QShader::loadV4()
         case 0:
             QCOMPARE(v.offset, 0);
             QCOMPARE(v.size, 64);
-            QCOMPARE(v.name, QLatin1String("qt_Matrix"));
+            QCOMPARE(v.name, QByteArrayLiteral("qt_Matrix"));
             QCOMPARE(v.type, QShaderDescription::Mat4);
             QCOMPARE(v.matrixStride, 16);
             break;
         case 1:
             QCOMPARE(v.offset, 64);
             QCOMPARE(v.size, 4);
-            QCOMPARE(v.name, QLatin1String("opacity"));
+            QCOMPARE(v.name, QByteArrayLiteral("opacity"));
             QCOMPARE(v.type, QShaderDescription::Float);
             break;
         default:
