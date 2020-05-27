@@ -204,3 +204,22 @@ function(qt_auto_detect_fpmath)
     endif()
 endfunction()
 qt_auto_detect_fpmath()
+
+function(qt_handle_apple_app_extension_api_only)
+    if(APPLE)
+        # Build Qt libraries with -fapplication-extension. Needed to avoid linker warnings
+        # transformed into errors on darwin platforms.
+        set(flags "-fapplication-extension")
+        set(genex_condition "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_APP_EXTENSION_ONLY_API>>>")
+        set(flags "$<${genex_condition}:${flags}>")
+        target_compile_options(PlatformModuleInternal INTERFACE ${flags})
+        target_link_options(PlatformModuleInternal INTERFACE ${flags})
+        target_compile_options(PlatformPluginInternal INTERFACE ${flags})
+        target_link_options(PlatformPluginInternal INTERFACE ${flags})
+    endif()
+endfunction()
+function(qt_disable_apple_app_extension_api_only target)
+    set_target_properties("${target}" PROPERTIES QT_NO_APP_EXTENSION_ONLY_API TRUE)
+endfunction()
+
+qt_handle_apple_app_extension_api_only()

@@ -64,6 +64,10 @@ qt_add_module(XcbQpa
         XKB::XKB
 )
 
+# special case begin
+qt_disable_apple_app_extension_api_only(XcbQpa)
+# special case end
+
 ## Scopes:
 #####################################################################
 

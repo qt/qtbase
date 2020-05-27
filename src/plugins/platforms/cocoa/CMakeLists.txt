@@ -63,6 +63,10 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         Qt::ThemeSupportPrivate
 )
 
+# special case begin
+qt_disable_apple_app_extension_api_only(QCocoaIntegrationPlugin)
+# special case end
+
 # Resources:
 set(qcocoaresources_resource_files
     "images/sizeallcursor.png"

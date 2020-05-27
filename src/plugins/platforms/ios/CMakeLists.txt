@@ -37,6 +37,10 @@ add_qt_plugin(QIOSIntegrationPlugin
         Qt::GuiPrivate
 )
 
+# special case begin
+qt_disable_apple_app_extension_api_only(QIOSIntegrationPlugin)
+# special case end
+
 #### Keys ignored in scope 1:.:.:kernel.pro:<TRUE>:
 # OTHER_FILES = "quiview_textinput.mm" "quiview_accessibility.mm"
 
