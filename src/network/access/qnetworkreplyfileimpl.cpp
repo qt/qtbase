@@ -134,7 +134,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, con
         if (fi.isDir()) {
             QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url.toString());
             setError(QNetworkReply::ContentOperationNotPermittedError, msg);
-            QMetaObject::invokeMethod(this, "errorOccured", Qt::QueuedConnection,
+            QMetaObject::invokeMethod(this, "errorOccurred", Qt::QueuedConnection,
                 Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentOperationNotPermittedError));
             QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
             return;
