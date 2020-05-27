@@ -293,8 +293,8 @@ static QString locatePlugin(const QString& fileName)
 
     // Split up "subdir/filename"
     const int slash = fileName.lastIndexOf(QLatin1Char('/'));
-    const QStringRef baseName = fileName.midRef(slash + 1);
-    const QStringRef basePath = isAbsolute ? QStringRef() : fileName.leftRef(slash + 1); // keep the '/'
+    const auto baseName = QStringView{fileName}.mid(slash + 1);
+    const auto basePath = isAbsolute ? QStringView() : QStringView{fileName}.left(slash + 1); // keep the '/'
 
     const bool debug = qt_debug_component();
 

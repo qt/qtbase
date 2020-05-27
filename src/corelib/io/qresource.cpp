@@ -388,7 +388,7 @@ QResourcePrivate::ensureInitialized() const
     if(!that->absoluteFilePath.startsWith(QLatin1Char(':')))
         that->absoluteFilePath.prepend(QLatin1Char(':'));
 
-    QStringRef path(&fileName);
+    QStringView path(fileName);
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
 

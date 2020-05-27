@@ -766,7 +766,7 @@ static QString decodeFsEncString(const QString &str)
             if (str.at(i) == QLatin1Char('\\') &&
                 str.at(i+1) == QLatin1Char('x')) {
                 bool bOk;
-                const int code = str.midRef(i+2, 2).toInt(&bOk, 16);
+                const int code = QStringView{str}.mid(i+2, 2).toInt(&bOk, 16);
                 // only decode characters between 0x20 and 0x7f but not
                 // the backslash to prevent collisions
                 if (bOk && code >= 0x20 && code < 0x80 && code != '\\') {

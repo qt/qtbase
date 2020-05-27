@@ -400,18 +400,6 @@ size_t qHash(const QByteArray &key, size_t seed) noexcept
     return qHashBits(key.constData(), size_t(key.size()), seed);
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
-size_t qHash(const QString &key, size_t seed) noexcept
-{
-    return qHashBits(key.unicode(), size_t(key.size())*sizeof(QChar), seed);
-}
-
-size_t qHash(const QStringRef &key, size_t seed) noexcept
-{
-    return qHashBits(key.unicode(), size_t(key.size())*sizeof(QChar), seed);
-}
-#endif
-
 size_t qHash(QStringView key, size_t seed) noexcept
 {
     return qHashBits(key.data(), key.size()*sizeof(QChar), seed);

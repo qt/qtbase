@@ -1103,7 +1103,7 @@ static QString wrapText(const QString &names, int optionNameMaxWidth, const QStr
             const int numChars = breakAt - lineStart;
             //qDebug() << "breakAt=" << description.at(breakAt) << "breakAtSpace=" << breakAtSpace << lineStart << "to" << breakAt << description.mid(lineStart, numChars);
             text += indentation + nextNameSection().leftJustified(optionNameMaxWidth) + QLatin1Char(' ');
-            text += description.midRef(lineStart, numChars) + nl;
+            text += QStringView{description}.mid(lineStart, numChars) + nl;
             x = 0;
             lastBreakable = -1;
             lineStart = nextLineStart;

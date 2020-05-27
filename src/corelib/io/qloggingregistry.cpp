@@ -190,7 +190,7 @@ void QLoggingRule::parse(QStringView pattern)
 void QLoggingSettingsParser::setContent(const QString &content)
 {
     _rules.clear();
-    const auto lines = content.splitRef(QLatin1Char('\n'));
+    const auto lines = QStringView{content}.split(QLatin1Char('\n'));
     for (const auto &line : lines)
         parseNextLine(line);
 }

@@ -667,7 +667,7 @@ bool QLibrary::isLibrary(const QString &fileName)
     QString completeSuffix = QFileInfo(fileName).completeSuffix();
     if (completeSuffix.isEmpty())
         return false;
-    const QVector<QStringRef> suffixes = completeSuffix.splitRef(QLatin1Char('.'));
+    const auto suffixes = QStringView{completeSuffix}.split(QLatin1Char('.'));
     QStringList validSuffixList;
 
 # if defined(Q_OS_HPUX)
@@ -702,12 +702,12 @@ bool QLibrary::isLibrary(const QString &fileName)
     int suffix;
     int suffixPos = -1;
     for (suffix = 0; suffix < validSuffixList.count() && suffixPos == -1; ++suffix)
-        suffixPos = suffixes.indexOf(QStringRef(&validSuffixList.at(suffix)));
+        suffixPos = suffixes.indexOf(validSuffixList.at(suffix));
 
     bool valid = suffixPos != -1;
     for (int i = suffixPos + 1; i < suffixes.count() && valid; ++i)
         if (i != suffixPos)
-            suffixes.at(i).toInt(&valid);
+            (void)suffixes.at(i).toInt(&valid);
     return valid;
 #endif
 }
