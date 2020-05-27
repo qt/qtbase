@@ -193,7 +193,7 @@ isEmpty($${target_prefix}.INCDIRS) {
             cxx_flags += $$QMAKE_LFLAGS_SHLIB -o $$QMAKE_SYSTEM_NULL_DEVICE -v
         else: darwin:clang: \
             # Need to link to pick up library paths
-            cxx_flags += $$QMAKE_LFLAGS_SHLIB -o /dev/null -v -Wl,-v
+            cxx_flags += -g0 $$QMAKE_LFLAGS_SHLIB -o /dev/null -v -Wl,-v
         else: \
             # Just preprocess, might not pick up library paths
             cxx_flags += -E -v
