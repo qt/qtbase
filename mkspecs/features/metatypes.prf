@@ -24,6 +24,15 @@ moc_json_source.depends = $${MOC_JSON_CPP_BASE}${QMAKE_FILE_BASE}$${QMAKE_EXT_CP
 moc_json_source.commands = $$escape_expand(\\n)  # force creation of rule
 moc_json_source.variable_out = MOC_JSON_FILES
 
+# Add an empty JSON file so that the moc_collect_json rule is executed even if there are no files
+# to run moc on.
+!build_pass {
+    MOC_EMPTY_JSON = "[]"
+    MOC_EMPTY_JSON_FILE = $$OUT_PWD/$${MOC_JSON_H_BASE}$${first(QMAKE_EXT_CPP)}.json
+    write_file($${MOC_EMPTY_JSON_FILE}, MOC_EMPTY_JSON)
+    MOC_JSON_FILES += $${MOC_EMPTY_JSON_FILE}
+}
+
 TARGET_BASENAME = $$lower($$basename(TARGET))
 TARGET_BASENAME ~= s/\s/_/g
 
