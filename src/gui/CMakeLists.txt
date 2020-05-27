@@ -374,13 +374,12 @@ qt_extend_target(Gui CONDITION APPLE
     SOURCES
         image/qimage_darwin.mm
         painting/qcoregraphics.mm painting/qcoregraphics_p.h
+        painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+        platform/darwin/qmacmime.mm platform/darwin/qmacmime_p.h
     LIBRARIES
         ${FWCoreGraphics}
-)
-
-qt_extend_target(Gui CONDITION APPLE
-    SOURCES
-        painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+    PUBLIC_LIBRARIES
+        ${FWImageIO}
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_animation
@@ -735,11 +734,11 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
         rhi/qrhivulkan_p_p.h
+        vulkan/qbasicvulkanplatforminstance.cpp vulkan/qbasicvulkanplatforminstance_p.h
         vulkan/qplatformvulkaninstance.cpp vulkan/qplatformvulkaninstance.h
         vulkan/qvulkanfunctions.cpp
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
-        vulkan/qbasicvulkanplatforminstance.cpp vulkan/qbasicvulkanplatforminstance_p.h
     PUBLIC_LIBRARIES
         Vulkan::Vulkan_nolink
 )
@@ -808,14 +807,6 @@ add_custom_command(
 qt_extend_target(Gui CONDITION WASM
     SOURCES
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
-)
-
-qt_extend_target(Gui CONDITION IOS OR MACOS
-    SOURCES
-        platform/darwin/qmacmime.mm
-        platform/darwin/qmacmime_p.h
-    PUBLIC_LIBRARIES
-        ${FWImageIO}
 )
 
 qt_extend_target(Gui CONDITION IOS OR MACOS
