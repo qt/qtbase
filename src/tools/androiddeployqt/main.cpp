@@ -983,9 +983,10 @@ bool readInputFile(Options *options)
         const QJsonValue deploymentDependencies = jsonObject.value(QLatin1String("deployment-dependencies"));
         if (!deploymentDependencies.isUndefined()) {
             QString deploymentDependenciesString = deploymentDependencies.toString();
-            const auto dependencies = deploymentDependenciesString.splitRef(QLatin1Char(','));
-            for (const QStringRef &dependency : dependencies) {
-                QString path = options->qtInstallDirectory + QLatin1Char('/') + dependency;
+            const auto dependencies = QStringView{deploymentDependenciesString}.split(QLatin1Char(','));
+            for (const auto &dependency : dependencies) {
+                QString path = options->qtInstallDirectory + QChar::fromLatin1('/');
+                path += dependency;
                 if (QFileInfo(path).isDir()) {
                     QDirIterator iterator(path, QDirIterator::Subdirectories);
                     while (iterator.hasNext()) {
@@ -1137,7 +1138,7 @@ bool copyAndroidExtraLibs(Options *options)
         return true;
 
     if (options->verbose)
-        fprintf(stdout, "Copying %zd external libraries to package.\n", options->extraLibs.size());
+        fprintf(stdout, "Copying %zd external libraries to package.\n", qsizetype(options->extraLibs.size()));
 
     for (const QString &extraLib : options->extraLibs) {
         QFileInfo extraLibInfo(extraLib);

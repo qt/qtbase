@@ -394,12 +394,12 @@ static void formatMemberFnPtr(QTextStream &str, const SignalSlot &s,
     const int parenPos = s.signature.indexOf(QLatin1Char('('));
     Q_ASSERT(parenPos >= 0);
     if (useQOverload) {
-        const auto parameters = s.signature.midRef(parenPos + 1,
+        const auto parameters = QStringView{s.signature}.mid(parenPos + 1,
                                                    s.signature.size() - parenPos - 2);
         str << "qOverload<" << parameters << ">(";
     }
 
-    const auto functionName = s.signature.leftRef(parenPos);
+    const auto functionName = QStringView{s.signature}.left(parenPos);
     str << '&' << s.className << "::" << functionName;
 
     if (useQOverload)
@@ -441,9 +441,9 @@ void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSl
         break;
     case Language::Python:
         str << sender.name << '.'
-            << sender.signature.leftRef(sender.signature.indexOf(QLatin1Char('(')))
+            << QStringView{sender.signature}.left(sender.signature.indexOf(QLatin1Char('(')))
             << ".connect(" << receiver.name << '.'
-            << receiver.signature.leftRef(receiver.signature.indexOf(QLatin1Char('(')))
+            << QStringView{receiver.signature}.left(receiver.signature.indexOf(QLatin1Char('(')))
             << ')';
         break;
     }

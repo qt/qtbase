@@ -315,7 +315,7 @@ void WriteIncludes::writeHeaders(const OrderedSet &headers, bool global)
     // Check for the old headers 'qslider.h' and replace by 'QtGui/QSlider'
     for (const QString &header : headers) {
         const QString value = m_oldHeaderToNewHeader.value(header, header);
-        const auto trimmed = QStringRef(&value).trimmed();
+        const auto trimmed = QStringView(value).trimmed();
         if (!trimmed.isEmpty())
             m_output << "#include " << openingQuote << trimmed << closingQuote << '\n';
     }

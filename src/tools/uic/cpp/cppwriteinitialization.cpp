@@ -1308,7 +1308,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             QTextStream str(&setFunction);
             if (stdset) {
                 str << language::derefPointer <<"set" << propertyName.at(0).toUpper()
-                    << propertyName.midRef(1) << '(';
+                    << QStringView{propertyName}.mid(1) << '(';
             } else {
                 str << language::derefPointer << QLatin1String("setProperty(\"")
                     << propertyName << "\", ";
@@ -2156,7 +2156,7 @@ void WriteInitialization::addInitializer(Item *item,
     if (!value.isEmpty()) {
         QString setter;
         QTextStream str(&setter);
-        str << language::derefPointer << "set" << name.at(0).toUpper() << name.midRef(1) << '(';
+        str << language::derefPointer << "set" << name.at(0).toUpper() << QStringView{name}.mid(1) << '(';
         if (column >= 0)
             str << column << ", ";
         str << value << ");";
