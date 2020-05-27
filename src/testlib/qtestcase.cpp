@@ -102,7 +102,7 @@
 # if !defined(Q_CC_MINGW) || (defined(Q_CC_MINGW) && defined(__MINGW64_VERSION_MAJOR))
 #  include <crtdbg.h>
 # endif
-#include <windows.h> // for Sleep
+#include <qt_windows.h> // for Sleep
 #endif
 #ifdef Q_OS_UNIX
 #include <errno.h>
