@@ -708,9 +708,11 @@ function(qt_get_direct_module_dependencies target out_var)
             continue()
         endif()
         get_target_property(lib_type ${lib} TYPE)
-        if (lib_type STREQUAL "INTERFACE_LIBRARY" AND "${lib}" MATCHES "^Qt::(.*)")
+        get_target_property(is_versionless_target ${lib} _qt_is_versionless_target)
+        if (lib_type STREQUAL "INTERFACE_LIBRARY" AND is_versionless_target)
             # Found a version-less target like Qt::Core outside of qtbase.
             # Skip this one and use what this target points to, e.g. Qt6::Core.
+            # Make sure to process Private interface libraries as-is.
             get_target_property(ifacelibs ${lib} INTERFACE_LINK_LIBRARIES)
             list(PREPEND libs ${ifacelibs})
             continue()
@@ -849,9 +851,8 @@ QT_MODULES += ${config_module_name}
 
     set(private_dependencies "")
     if(NOT arg_HEADER_MODULE)
-        qt_get_direct_module_dependencies(${target} private_dependencies)
+        qt_get_direct_module_dependencies(${target}Private private_dependencies PUBLIC)
     endif()
-    list(APPEND private_dependencies "${config_module_name}")
     list(JOIN private_dependencies " " private_dependencies)
 
     file(GENERATE
@@ -1189,7 +1190,12 @@ function(qt_internal_export_modern_cmake_config_targets_file)
 
         add_library("${target}Versionless" INTERFACE)
         target_link_libraries("${target}Versionless" INTERFACE "${target}")
-        set_target_properties("${target}Versionless" PROPERTIES EXPORT_NAME "${target}")
+        set_target_properties("${target}Versionless" PROPERTIES
+            EXPORT_NAME "${target}"
+            _qt_is_versionless_target "TRUE")
+        set_property(TARGET "${target}Versionless"
+                     APPEND PROPERTY EXPORT_PROPERTIES _qt_is_versionless_target)
+
         qt_install(TARGETS "${target}Versionless" EXPORT ${export_name})
     endforeach()
     qt_install(EXPORT ${export_name} NAMESPACE Qt:: DESTINATION "${__arg_CONFIG_INSTALL_DIR}")
@@ -2239,6 +2245,7 @@ function(qt_add_module target)
     set_target_properties(${target} PROPERTIES
         _qt_config_module_name "${arg_CONFIG_MODULE_NAME}"
         ${property_prefix}QT_QMAKE_MODULE_CONFIG "${arg_QMAKE_MODULE_CONFIG}")
+    set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES _qt_config_module_name)
 
     set(is_framework 0)
     if(QT_FEATURE_framework AND NOT ${arg_HEADER_MODULE} AND NOT ${arg_STATIC})
@@ -2282,6 +2289,8 @@ function(qt_add_module target)
         qt_internal_add_target_aliases("${target_private}")
         set_target_properties(${target_private} PROPERTIES
             _qt_config_module_name ${arg_CONFIG_MODULE_NAME}_private)
+        set_property(TARGET "${target_private}" APPEND PROPERTY
+                     EXPORT_PROPERTIES _qt_config_module_name)
     endif()
 
     if(NOT arg_HEADER_MODULE)
@@ -2508,8 +2517,6 @@ function(qt_add_module target)
         set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config.h")
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config_p.h")
     endif()
-
-    set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_config_module_name)
 
     if(NOT arg_HEADER_MODULE)
         if(DEFINED module_headers_private)
