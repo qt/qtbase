@@ -2133,7 +2133,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
           QFileInfo fileInfo = it.fileInfo();
 
           if (!fileInfo.isDir()) {
-              const QString destination = dataPath + QLatin1Char('/') + fileInfo.filePath().midRef(resourcePath.length());
+              const QString destination = dataPath + QLatin1Char('/') + QStringView{fileInfo.filePath()}.mid(resourcePath.length());
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
               if (!QFile::copy(fileInfo.filePath(), destination)) {
