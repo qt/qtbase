@@ -849,7 +849,7 @@ QSize QPlatformWindow::windowSizeIncrement() const
 */
 QRect QPlatformWindow::windowGeometry() const
 {
-    return QHighDpi::toNativePixels(window()->geometry(), window());
+    return QHighDpi::toNativeWindowGeometry(window()->geometry(), window());
 }
 
 /*!
@@ -857,7 +857,7 @@ QRect QPlatformWindow::windowGeometry() const
 */
 QRect QPlatformWindow::windowFrameGeometry() const
 {
-    return QHighDpi::toNativePixels(window()->frameGeometry(), window());
+    return QHighDpi::toNativeWindowGeometry(window()->frameGeometry(), window());
 }
 
 /*!
@@ -868,10 +868,10 @@ QRect QPlatformWindow::windowFrameGeometry() const
 
 QRectF QPlatformWindow::closestAcceptableGeometry(const QWindow *qWindow, const QRectF &nativeRect)
 {
-    const QRectF rectF = QHighDpi::fromNativePixels(nativeRect, qWindow);
+    const QRectF rectF = QHighDpi::fromNativeWindowGeometry(nativeRect, qWindow);
     const QRectF correctedGeometryF = qt_window_private(const_cast<QWindow *>(qWindow))->closestAcceptableGeometry(rectF);
     return !correctedGeometryF.isEmpty() && rectF != correctedGeometryF
-        ? QHighDpi::toNativePixels(correctedGeometryF, qWindow) : nativeRect;
+        ? QHighDpi::toNativeWindowGeometry(correctedGeometryF, qWindow) : nativeRect;
 }
 
 QRectF QPlatformWindow::windowClosestAcceptableGeometry(const QRectF &nativeRect) const

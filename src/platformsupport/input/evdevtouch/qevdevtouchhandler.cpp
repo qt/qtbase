@@ -720,7 +720,7 @@ QRect QEvdevTouchScreenData::screenGeometry() const
 {
     if (m_forceToActiveWindow) {
         QWindow *win = QGuiApplication::focusWindow();
-        return win ? QHighDpi::toNativePixels(win->geometry(), win) : QRect();
+        return win ? QHighDpi::toNativeWindowGeometry(win->geometry(), win) : QRect();
     }
 
     // Now it becomes tricky. Traditionally we picked the primaryScreen()

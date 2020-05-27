@@ -1784,9 +1784,7 @@ QRect QWindow::geometry() const
     Q_D(const QWindow);
     if (d->platformWindow) {
         const auto nativeGeometry = d->platformWindow->geometry();
-        return isTopLevel()
-            ? QHighDpi::fromNativePixels(nativeGeometry, this)
-            : QHighDpi::fromNativeLocalPosition(nativeGeometry, this);
+        return QHighDpi::fromNativeWindowGeometry(nativeGeometry, this);
     }
     return d->geometry;
 }
@@ -1816,7 +1814,7 @@ QRect QWindow::frameGeometry() const
     Q_D(const QWindow);
     if (d->platformWindow) {
         QMargins m = frameMargins();
-        return QHighDpi::fromNativePixels(d->platformWindow->geometry(), this).adjusted(-m.left(), -m.top(), m.right(), m.bottom());
+        return QHighDpi::fromNativeWindowGeometry(d->platformWindow->geometry(), this).adjusted(-m.left(), -m.top(), m.right(), m.bottom());
     }
     return d->geometry;
 }
@@ -1833,7 +1831,7 @@ QPoint QWindow::framePosition() const
     Q_D(const QWindow);
     if (d->platformWindow) {
         QMargins margins = frameMargins();
-        return QHighDpi::fromNativePixels(d->platformWindow->geometry().topLeft(), this) - QPoint(margins.left(), margins.top());
+        return QHighDpi::fromNativeWindowGeometry(d->platformWindow->geometry().topLeft(), this) - QPoint(margins.left(), margins.top());
     }
     return d->geometry.topLeft();
 }
@@ -1851,7 +1849,7 @@ void QWindow::setFramePosition(const QPoint &point)
     d->positionPolicy = QWindowPrivate::WindowFrameInclusive;
     d->positionAutomatic = false;
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(point, size()), this));
+        d->platformWindow->setGeometry(QHighDpi::toNativeWindowGeometry(QRect(point, size()), this));
     } else {
         d->geometry.moveTopLeft(point);
     }

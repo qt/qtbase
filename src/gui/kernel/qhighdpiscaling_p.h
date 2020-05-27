@@ -279,6 +279,22 @@ T toNativeGlobalPosition(const T &value, const C *context)
     return scale(value, so.factor, so.origin);
 }
 
+template <typename T, typename C>
+T fromNativeWindowGeometry(const T &value, const C *context)
+{
+    QHighDpiScaling::ScaleAndOrigin so = QHighDpiScaling::scaleAndOrigin(context);
+    QPoint effectiveOrigin = (context && context->isTopLevel()) ? so.origin : QPoint(0,0);
+    return scale(value, qreal(1) / so.factor, effectiveOrigin);
+}
+
+template <typename T, typename C>
+T toNativeWindowGeometry(const T &value, const C *context)
+{
+    QHighDpiScaling::ScaleAndOrigin so = QHighDpiScaling::scaleAndOrigin(context);
+    QPoint effectiveOrigin = (context && context->isTopLevel()) ? so.origin : QPoint(0,0);
+    return scale(value, so.factor, effectiveOrigin);
+}
+
 template <typename T>
 inline T fromNative(const T &value, qreal scaleFactor, QPoint origin = QPoint(0, 0))
 {
