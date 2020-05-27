@@ -1504,6 +1504,8 @@ glyph_t QFontEngineFT::glyphIndex(uint ucs4) const
                 FT_Set_Charmap(face, freetype->symbol_map);
                 glyph = FT_Get_Char_Index(face, ucs4);
                 FT_Set_Charmap(face, freetype->unicode_map);
+                if (!glyph && symbol && ucs4 < 0x100)
+                    glyph = FT_Get_Char_Index(face, ucs4 + 0xf000);
             }
         }
         if (ucs4 < QFreetypeFace::cmapCacheSize)
@@ -1547,6 +1549,8 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
                     FT_Set_Charmap(face, freetype->symbol_map);
                     glyph = FT_Get_Char_Index(face, uc);
                     FT_Set_Charmap(face, freetype->unicode_map);
+                    if (!glyph && symbol && uc < 0x100)
+                        glyph = FT_Get_Char_Index(face, uc + 0xf000);
                 }
                 glyphs->glyphs[glyph_pos] = glyph;
                 if (uc < QFreetypeFace::cmapCacheSize)
